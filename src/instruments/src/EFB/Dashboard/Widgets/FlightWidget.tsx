@@ -45,7 +45,6 @@ export const FlightWidget = () => {
         costInd,
         arrivingRunway,
         departingRunway,
-        aircraftReg,
     } = data;
     const { flightPlanProgress } = useAppSelector((state) => state.flightProgress);
 
@@ -155,9 +154,9 @@ export const FlightWidget = () => {
                                 </div>
                                 <div className="my-auto w-full h-0.5 bg-theme-accent" />
                                 <div className="flex flex-row mt-4">
-                                    <InformationEntry title="CI" info={avgWind} />
+                                    <InformationEntry title="CI" info={costInd} />
                                     <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                    <InformationEntry title="AVG WIND" info={costInd} />
+                                    <InformationEntry title="AVG WIND" info={avgWind} />
                                     <div className="my-auto w-2 h-8 bg-theme-accent" />
                                     <InformationEntry title="CRZ" info={crzAlt} />
                                 </div>

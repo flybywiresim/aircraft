@@ -1,4 +1,3 @@
-import { useSimVar } from '@instruments/common/simVars';
 import { Checklist } from '../Checklists';
 
 export const afterStartChecklist: Checklist = {
@@ -22,10 +21,7 @@ export const afterStartChecklist: Checklist = {
         {
             item: 'RUDDER TRIM',
             result: 'ZERO',
-            condition: () => {
-                const [v1] = useSimVar('RUDDER TRIM PCT', 'Number');
-                return Math.abs(v1) < 0.01;
-            },
+            condition: () => SimVar.GetSimVarValue('RUDDER TRIM PCT', 'percent') === 0,
         },
     ],
 };

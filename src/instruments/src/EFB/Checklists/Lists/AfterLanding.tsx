@@ -1,4 +1,3 @@
-import { useSimVar } from '@instruments/common/simVars';
 import { Checklist } from '../Checklists';
 
 export const afterLandingChecklist: Checklist = {
@@ -7,45 +6,27 @@ export const afterLandingChecklist: Checklist = {
         {
             item: 'FLAPS',
             result: 'RETRACTED',
-            condition: () => {
-                const [v1] = useSimVar('FLAPS_SET', 'Number');
-                return v1 === 0;
-            },
+            condition: () => SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'Number') === 0,
         },
         {
             item: 'SPOILERS',
             result: 'DISARMED',
-            condition: () => {
-                const [v1] = useSimVar('SPOILERS ARMED', 'Number');
-                return v1 === 0;
-            },
+            condition: () => !SimVar.GetSimVarValue('L:A32NX_SPOILERS_ARMED', 'Bool'),
         },
         {
             item: 'APU',
             result: 'START',
-            condition: undefined,
+            condition: () => !!SimVar.GetSimVarValue('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'Bool'),
         },
         {
             item: 'RADAR',
             result: 'OFF',
-            condition: () => {
-                const [v1] = useSimVar(
-                    'L:XMLVAR_A320_WEATHERRADAR_SYS',
-                    'Number',
-                );
-                return v1 === 1;
-            },
+            condition: () => SimVar.GetSimVarValue('L:XMLVAR_A320_WEATHERRADAR_SYS', 'Number') === 1,
         },
         {
             item: 'PREDICTIVE WINDSHEER SYSTEM',
             result: 'OFF',
-            condition: () => {
-                const [v1] = useSimVar(
-                    'L:A32NX_SWITCH_RADAR_PWS_POSITION',
-                    'Number',
-                );
-                return v1 === 0;
-            },
+            condition: () => SimVar.GetSimVarValue('L:A32NX_SWITCH_RADAR_PWS_POSITION', 'Number') === 0,
         },
     ],
 };

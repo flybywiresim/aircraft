@@ -18,7 +18,7 @@ import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { WeatherWidget } from './WeatherWidget';
-import { getChecklistCompletion, isChecklistCompleted, setSelectedChecklistIndex } from '../../Store/features/checklists';
+import { getChecklistCompletion, areAllChecklistItemsCompleted, setSelectedChecklistIndex } from '../../Store/features/checklists';
 
 export const RemindersWidget = () => {
     const { allFailures, activeFailures } = useFailuresOrchestrator();
@@ -110,12 +110,12 @@ export const RemindersWidget = () => {
                                     >
                                         <div className="absolute top-0 left-0 flex-row w-full h-2 bg-theme-secondary">
                                             <div
-                                                className={`h-full ${isChecklistCompleted(clIndex) ? 'bg-colors-lime-400' : 'bg-theme-highlight'}`}
-                                                style={{ width: `${getChecklistCompletion(clIndex) * 100}%` }}
+                                                className={`h-full ${areAllChecklistItemsCompleted(clIndex) ? 'bg-colors-lime-400' : 'bg-theme-highlight'}`}
+                                                style={{ width: `${getChecklistCompletion(clIndex) * 100}%`, transition: 'width 0.5s ease' }}
                                             />
                                         </div>
                                         <h2 className="font-bold">{checklist.name}</h2>
-                                        <IconArrowRight className={`mt-auto ml-auto ${isChecklistCompleted(clIndex) ? 'text-colors-lime-400' : 'text-theme-highlight'}`} />
+                                        <IconArrowRight className={`mt-auto ml-auto ${areAllChecklistItemsCompleted(clIndex) ? 'text-colors-lime-400' : 'text-theme-highlight'}`} />
                                     </Link>
                                 ))}
                             </div>

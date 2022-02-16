@@ -997,7 +997,7 @@ const NavigraphChartsUI = () => {
                                 className={`w-full flex-shrink uppercase ${!simbriefDataLoaded && 'rounded-r-none'}`}
                                 onChange={handleIcaoChange}
                             />
-                            {(!simbriefDataLoaded) && (
+                            {(simbriefDataLoaded) && (
                                 <SelectGroup className="flex-shrink-0 rounded-l-none">
                                     <SelectItem
                                         selected={icao === departingAirport}
@@ -1202,7 +1202,7 @@ const LocalFileChartUI = () => {
                                 className={`w-full flex-shrink uppercase ${!simbriefDataLoaded && 'rounded-r-none'}`}
                                 onChange={handleIcaoChange}
                             />
-                            {(!simbriefDataLoaded) && (
+                            {(simbriefDataLoaded) && (
                                 <SelectGroup className="flex-shrink-0 rounded-l-none">
                                     <SelectItem
                                         selected={icao === departingAirport}

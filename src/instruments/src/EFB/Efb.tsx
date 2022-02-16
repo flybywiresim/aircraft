@@ -7,6 +7,7 @@ import { Battery, BatteryCharging } from 'react-bootstrap-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { distanceTo } from 'msfs-geo';
+import useInterval from '@instruments/common/useInterval';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
 import NavigraphClient, { NavigraphContext } from './ChartsApi/Navigraph';
 import 'react-toastify/dist/ReactToastify.css';
@@ -31,6 +32,8 @@ import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists } from './Checklists/Checklists';
+import { CHECKLISTS } from './Checklists/Lists';
+import { setChecklistItemCompletion, setChecklistItems } from './Store/features/checklists';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 240;
@@ -167,10 +170,29 @@ const Efb = () => {
         }
     }, [batteryLevel, powerState]);
 
+    const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
+    const { checklists } = useAppSelector((state) => state.checklists);
+
     useEffect(() => {
         if (powerState === PowerStates.SHUTOFF) {
             dispatch(clearEfbState());
         } else if (powerState === PowerStates.LOADED) {
+            const checklistItemsEmpty = checklists.every((checklist) => !checklist.items.length);
+
+            if (checklistItemsEmpty) {
+                CHECKLISTS.forEach((checklist, index) => {
+                    dispatch(setChecklistItems({
+                        checklistIndex: index,
+                        itemArr: checklist.items.map((item) => {
+                            if (item.divider) {
+                                return { completed: true, divider: true };
+                            }
+                            return { completed: false };
+                        }),
+                    }));
+                });
+            }
+
             if ((!simbriefData || !isSimbriefDataLoaded()) && autoSimbriefImport === 'ENABLED') {
                 fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
                     dispatch(action);
@@ -180,6 +202,27 @@ const Efb = () => {
             }
         }
     }, [powerState]);
+
+    const setAutomaticItemStates = () => {
+        if (!autoFillChecklists) return;
+
+        const firstUnmarkedIdx = checklists.findIndex((cl) => !cl.markedCompleted);
+
+        if (firstUnmarkedIdx === -1) return;
+
+        CHECKLISTS[firstUnmarkedIdx].items.forEach((item, itemIdx) => {
+            if (item.condition !== undefined) {
+                const condEval = item.condition();
+                if (checklists[firstUnmarkedIdx].items[itemIdx].completed !== undefined) {
+                    dispatch(setChecklistItemCompletion({ checklistIndex: firstUnmarkedIdx, itemIndex: itemIdx, completionValue: condEval }));
+                }
+            }
+        });
+    };
+
+    useInterval(() => {
+        setAutomaticItemStates();
+    }, 3000);
 
     const offToLoaded = () => {
         const shouldWait = powerState === PowerStates.SHUTOFF;

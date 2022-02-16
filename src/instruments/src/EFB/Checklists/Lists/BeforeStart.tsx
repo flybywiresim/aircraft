@@ -1,6 +1,5 @@
 // https://docs.flybywiresim.com/pilots-corner/a32nx-briefing/a32nx_api/
 
-import { useSimVar } from '@instruments/common/simVars';
 import { Checklist } from '../Checklists';
 
 export const beforeStartChecklist: Checklist = {
@@ -20,34 +19,20 @@ export const beforeStartChecklist: Checklist = {
             item: 'SIGNS',
             result: 'ON/AUTO',
             condition: () => {
-                const [v1] = useSimVar(
-                    'L:XMLVAR_SWITCH_OVHD_INTLT_NONSMOKING_POSITION',
-                    'Number',
-                );
-                const [v2] = useSimVar(
-                    'L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION',
-                    'Number',
-                );
-                return (v1 === 0 || v1 === 1) && (v2 === 0 || v2 === 1);
+                // TODO: This is not working 😻
+                const seatbeltsOn = SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position', 'Number') === 1;
+                const noSmokingPos = SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'Number');
+                return seatbeltsOn && (noSmokingPos === 0 || noSmokingPos === 1);
             },
         },
         {
             item: 'ADIRS',
             result: 'NAV',
             condition: () => {
-                const [v1] = useSimVar(
-                    'L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB',
-                    'Number',
-                );
-                const [v2] = useSimVar(
-                    'L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB',
-                    'Number',
-                );
-                const [v3] = useSimVar(
-                    'L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB',
-                    'Number',
-                );
-                return v1 === 1 && v2 === 1 && v3 === 1;
+                const ir1 = SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB', 'Number');
+                const ir2 = SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB', 'Number');
+                const ir3 = SimVar.GetSimVarValue('L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB', 'Number');
+                return ir1 === 1 && ir2 === 1 && ir3 === 1;
             },
         },
         {
@@ -80,7 +65,7 @@ export const beforeStartChecklist: Checklist = {
             item: 'BEACON',
             result: 'ON',
             condition: () => {
-                const [v1] = useSimVar('LIGHT BEACON', 'Number');
+                const v1 = SimVar.GetSimVarValue('LIGHT BEACON', 'Number');
                 return v1 === 1;
             },
         },

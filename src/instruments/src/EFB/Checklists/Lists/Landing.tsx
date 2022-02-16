@@ -1,5 +1,3 @@
-import { useSimVar } from '@instruments/common/simVars';
-
 export const landingChecklist = {
     name: 'LANDING',
     items: [
@@ -11,13 +9,7 @@ export const landingChecklist = {
         {
             item: 'A/THR',
             result: 'SPEED / OFF',
-            condition: () => {
-                const [v1] = useSimVar(
-                    'L:A32NX_AUTOTHRUST_DISCONNECT',
-                    'Number',
-                );
-                return v1 === 1;
-            },
+            condition: undefined,
         },
         {
             item: 'AUTOBRAKE',

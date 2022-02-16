@@ -1,71 +1,46 @@
 import React from 'react';
-import useInterval from '@instruments/common/useInterval';
+import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { ChecklistPage } from './ChecklistsPage';
 import { CHECKLISTS } from './Lists';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import {
-    isChecklistCompleted,
-    setChecklistItemCompletion,
-    setChecklistItems,
+    areAllChecklistItemsCompleted,
+    setChecklistCompletion, setChecklistItemCompletion,
     setSelectedChecklistIndex,
 } from '../Store/features/checklists';
-import { useAppDispatch, store, useAppSelector } from '../Store/store';
+import { useAppDispatch, useAppSelector } from '../Store/store';
 
-CHECKLISTS.forEach((checklist, index) => {
-    store.dispatch(setChecklistItems({
-        checklistIndex: index,
-        itemArr: checklist.items.map((item) => {
-            if (item.divider) {
-                return { completed: true };
-            }
-            return { completed: false };
-        }),
-    }));
-});
+export interface ChecklistItem {
+    item: string;
+    result: string;
+    condition?: () => boolean;
+    divider?: boolean;
+}
 
 export interface Checklist {
     name: string;
-    items: {
-        item: string;
-        result: string;
-        condition?: () => boolean;
-        divider?: boolean;
-    }[]
+    items: ChecklistItem[]
 }
 
 export const Checklists = () => {
     const dispatch = useAppDispatch();
 
-    // Checklist conditions have to be evaluated everytime in the same order as the conditions uses useSimVar and this
-    // makes use of useState() that always needs to be called in the same order for each redraw
-    const setAutomaticItemStates = () => {
-        CHECKLISTS.forEach((cl, clIdx) => {
-            cl.items.forEach((it, itIdx) => {
-                if (it.condition !== undefined) {
-                    const condEval = it.condition();
-                    if (!isChecklistCompleted(clIdx)) { // do not overwrite status for completed checklists
-                        dispatch(setChecklistItemCompletion({ checklistIndex: clIdx, itemIndex: itIdx, completionValue: condEval }));
-                    }
-                }
-            });
-        });
-    };
-    useInterval(setAutomaticItemStates, 3_000);
-
     const handleClick = (index: number) => {
         dispatch(setSelectedChecklistIndex(index));
     };
 
-    const { selectedChecklistIndex } = useAppSelector((state) => state.checklists);
+    const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.checklists);
+
+    const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
 
     const getTabClassName = (index: number) => {
-        if (index === selectedChecklistIndex && isChecklistCompleted(index)) {
+        if (index === selectedChecklistIndex && areAllChecklistItemsCompleted(index)) {
             return 'bg-colors-lime-400 text-theme-body border-colors-lime-400';
         }
         if (index === selectedChecklistIndex) {
             return 'bg-theme-highlight text-theme-body border-theme-highlight';
         }
-        if (isChecklistCompleted(index)) {
+        if (areAllChecklistItemsCompleted(index)) {
             return 'bg-theme-body border-colors-lime-400 text-colors-lime-400';
         }
         return 'bg-theme-accent border-theme-accent text-theme-text hover:bg-theme-highlight hover:text-theme-body';
@@ -88,6 +63,21 @@ export const Checklists = () => {
                             ))}
                         </div>
                     </ScrollableContainer>
+                    <div
+                        className="flex justify-center items-center h-12 text-red-500 hover:text-theme-body bg-theme-body hover:bg-red-500 rounded-md border border-red-500 transition duration-100"
+                        onClick={() => {
+                            checklists[selectedChecklistIndex].items.forEach((_, itemIdx) => {
+                                if (autoFillChecklists && CHECKLISTS[selectedChecklistIndex].items[itemIdx].condition) {
+                                    return;
+                                }
+
+                                dispatch(setChecklistItemCompletion({ checklistIndex: selectedChecklistIndex, itemIndex: itemIdx, completionValue: false }));
+                            });
+                            dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: false }));
+                        }}
+                    >
+                        Reset Checklist
+                    </div>
                 </div>
                 <ChecklistPage />
             </div>
