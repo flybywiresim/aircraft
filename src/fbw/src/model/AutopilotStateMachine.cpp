@@ -3522,7 +3522,8 @@ void AutopilotStateMachineModelClass::step()
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_SRS) ||
     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_SRS_GA) ||
     (((AutopilotStateMachine_U.in.data.flight_phase == 0.0) || (AutopilotStateMachine_U.in.data.flight_phase == 1.0) ||
-      (AutopilotStateMachine_U.in.data.flight_phase == 7.0)) && (!AutopilotStateMachine_DWork.Delay1_DSTATE.armed.CLB))));
+      (AutopilotStateMachine_U.in.data.flight_phase == 7.0)) && (!AutopilotStateMachine_DWork.Delay1_DSTATE.armed.CLB) &&
+     (AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_NONE))));
   if ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_ALT_CPT) ||
       ((AutopilotStateMachine_DWork.Delay1_DSTATE.output.mode == vertical_mode_ALT) && (std::abs
         (AutopilotStateMachine_U.in.data.H_ind_ft - AutopilotStateMachine_U.in.input.H_fcu_ft) < 40.0))) {

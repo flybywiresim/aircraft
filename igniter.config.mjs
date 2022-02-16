@@ -5,6 +5,7 @@ export default new TaskOfTasks('a32nx', [
     new TaskOfTasks('build', [
         new TaskOfTasks('instruments', getInstrumentsIgniterTasks(), true),
         new ExecTask('atsu','npm run build:atsu', ['src/atsu', 'flybywire-aircraft-a320-neo/html_ui/JS/atsu']),
+        new ExecTask('sentry-client','npm run build:sentry-client', ['src/sentry-client', 'flybywire-aircraft-a320-neo/html_ui/JS/sentry-client']),
         new ExecTask('failures','npm run build:failures', ['src/failures', 'flybywire-aircraft-a320-neo/html_ui/JS/generated/failures.js']),
         new ExecTask('behavior','node src/behavior/build.js', ['src/behavior', 'flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated']),
         new ExecTask('model','node src/model/build.js', ['src/model', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model']),
@@ -28,7 +29,7 @@ export default new TaskOfTasks('a32nx', [
     ], true),
 
     new TaskOfTasks('dist', [
-        new ExecTask('manifests', 'node scripts/build.js'),
         new ExecTask('metadata', 'bash scripts/metadata.sh'),
+        new ExecTask('manifests', 'node scripts/build.js'),
     ]),
 ]);

@@ -1987,17 +1987,18 @@ void AutopilotLawsModelClass::step()
     AutopilotLaws_U.in.time.dt, &L, &AutopilotLaws_DWork.sf_WashoutFilter_n);
   rtb_Delay_j = ((AutopilotLaws_U.in.input.vertical_mode == AutopilotLaws_P.CompareGSTRACK_const) ||
                  (AutopilotLaws_U.in.input.vertical_mode == AutopilotLaws_P.CompareGSTRACK2_const));
-  AutopilotLaws_SignalEnablerGSTrack(AutopilotLaws_P.Gain4_Gain_g * L, rtb_Delay_j,
-    &AutopilotLaws_DWork.DelayInput1_DSTATE);
+  AutopilotLaws_SignalEnablerGSTrack(AutopilotLaws_P.Gain4_Gain_g * L, rtb_Delay_j, &Phi2);
   AutopilotLaws_LagFilter(AutopilotLaws_U.in.data.nav_gs_error_deg, AutopilotLaws_P.LagFilter1_C1_p,
     AutopilotLaws_U.in.time.dt, &rtb_Y_j, &AutopilotLaws_DWork.sf_LagFilter_cu);
   rtb_Cos1_pk = AutopilotLaws_P.DiscreteDerivativeVariableTs_Gain_o * rtb_Y_j;
-  AutopilotLaws_LagFilter(rtb_Y_j + AutopilotLaws_P.Gain3_Gain_n * ((rtb_Cos1_pk - AutopilotLaws_DWork.Delay_DSTATE_n) /
-    AutopilotLaws_U.in.time.dt), AutopilotLaws_P.LagFilter_C1_m, AutopilotLaws_U.in.time.dt, &Phi2,
-    &AutopilotLaws_DWork.sf_LagFilter_j);
+  AutopilotLaws_DWork.DelayInput1_DSTATE = look1_binlxpw(AutopilotLaws_U.in.data.H_radio_ft,
+    AutopilotLaws_P.ScheduledGain2_BreakpointsForDimension1_h, AutopilotLaws_P.ScheduledGain2_Table_f, 4U);
+  AutopilotLaws_LagFilter(rtb_Y_j + (rtb_Cos1_pk - AutopilotLaws_DWork.Delay_DSTATE_n) / AutopilotLaws_U.in.time.dt *
+    AutopilotLaws_DWork.DelayInput1_DSTATE, AutopilotLaws_P.LagFilter_C1_m, AutopilotLaws_U.in.time.dt,
+    &AutopilotLaws_DWork.DelayInput1_DSTATE, &AutopilotLaws_DWork.sf_LagFilter_j);
   L = look1_binlxpw(AutopilotLaws_U.in.data.H_radio_ft, AutopilotLaws_P.ScheduledGain_BreakpointsForDimension1_ec,
                     AutopilotLaws_P.ScheduledGain_Table_l, 6U);
-  AutopilotLaws_SignalEnablerGSTrack(AutopilotLaws_P.Gain3_Gain_c * (AutopilotLaws_DWork.DelayInput1_DSTATE + Phi2 * L),
+  AutopilotLaws_SignalEnablerGSTrack(AutopilotLaws_P.Gain3_Gain_c * (Phi2 + AutopilotLaws_DWork.DelayInput1_DSTATE * L),
     (AutopilotLaws_U.in.data.H_radio_ft > AutopilotLaws_P.CompareToConstant_const_k) &&
     AutopilotLaws_U.in.data.nav_gs_valid, &rtb_Divide);
   AutopilotLaws_storevalue(rtb_error_d == AutopilotLaws_P.CompareToConstant6_const_e,
