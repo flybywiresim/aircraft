@@ -56,7 +56,7 @@ type ToolBarButtonProps = {
 
 const ToolBarButton: FC<ToolBarButtonProps> = ({ to, children }) => {
     const history = useHistory();
-
+    // TODO: Apparently this is broken in sim 💀💀💀💀💀
     return (
         <Link
             to={to}

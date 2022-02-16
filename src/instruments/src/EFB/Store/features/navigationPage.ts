@@ -118,10 +118,11 @@ export const navigationTabSlice = createSlice({
         editPinnedChart: (state, action: PayloadAction<{chartId: string} & Partial<PinnedChart>>) => {
             const editIndex = state.pinnedCharts.findIndex((chart) => chart.chartId === action.payload.chartId);
 
-            const editedProperties = Object.fromEntries(
-                Object.entries(action.payload)
-                    .filter((([key]) => key !== 'chartId')),
-            );
+            const editedProperties = {};
+
+            Object.entries(action.payload)
+                .filter((([key]) => key !== 'chartId'))
+                .forEach(([key, value]) => editedProperties[key] = value);
 
             state.pinnedCharts[editIndex] = { ...state.pinnedCharts[editIndex], ...editedProperties };
         },

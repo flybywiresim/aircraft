@@ -1,4 +1,3 @@
-import { useSimVar } from '@instruments/common/simVars';
 import { Checklist } from '../Checklists';
 
 export const approachChecklist: Checklist = {
@@ -17,13 +16,7 @@ export const approachChecklist: Checklist = {
         {
             item: 'SEAT BELTS',
             result: 'ON',
-            condition: () => {
-                const [v1] = useSimVar(
-                    'CABIN SEATBELTS ALERT SWITCH',
-                    'Number',
-                );
-                return v1 === 1;
-            },
+            condition: () => !!SimVar.GetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'Number'),
         },
         {
             item: 'BARO REF',

@@ -74,7 +74,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
         onStart: () => {
             shutoffTimerRef.current = setInterval(() => {
                 setShutoffBarPercent((old) => old + 20);
-            }, 50);
+            }, 400);
         },
     });
 
@@ -93,7 +93,12 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
             }, 5_000);
         }, 30_000);
 
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            if (shutoffTimerRef.current) {
+                clearInterval(shutoffTimerRef.current);
+            }
+        };
     }, []);
 
     return (
@@ -123,7 +128,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                     >
                         <div className={`${showSchedTimes ? '-translate-y-1/4' : 'translate-y-1/4'} transform transition text-right duration-100 flex flex-col space-y-1`}>
                             <p>{departingAirport}</p>
-                            <p>{schedInParsed}</p>
+                            <p>{schedOutParsed}</p>
                         </div>
                         <div className="flex flex-row w-32">
                             <div className="h-1 bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }} />
@@ -131,7 +136,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                         </div>
                         <div className={`${showSchedTimes ? '-translate-y-1/4' : 'translate-y-1/4'} transform transition duration-100 flex flex-col space-y-1`}>
                             <p>{arrivingAirport}</p>
-                            <p>{schedOutParsed}</p>
+                            <p>{schedInParsed}</p>
                         </div>
                     </div>
                 )}

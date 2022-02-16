@@ -1,4 +1,3 @@
-import { useSimVar } from '@instruments/common/simVars';
 import { Checklist } from '../Checklists';
 
 export const securingAircraftChecklist: Checklist = {
@@ -8,15 +7,15 @@ export const securingAircraftChecklist: Checklist = {
             item: 'ADIRS',
             result: 'OFF',
             condition: () => {
-                const [v1] = useSimVar(
+                const v1 = SimVar.GetSimVarValue(
                     'L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB',
                     'Number',
                 );
-                const [v2] = useSimVar(
+                const v2 = SimVar.GetSimVarValue(
                     'L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB',
                     'Number',
                 );
-                const [v3] = useSimVar(
+                const v3 = SimVar.GetSimVarValue(
                     'L:A32NX_OVHD_ADIRS_IR_3_MODE_SELECTOR_KNOB',
                     'Number',
                 );
@@ -26,31 +25,18 @@ export const securingAircraftChecklist: Checklist = {
         {
             item: 'OXYGEN',
             result: 'OFF',
-            condition: () => {
-                const [v1] = useSimVar(
-                    'A32NX_OXYGEN_PASSENGER_LIGHT_ON',
-                    'Number',
-                );
-                // TODO - 0 does not see to work
-                return v1 === 0;
-            },
+            condition: () => !!SimVar.GetSimVarValue('L:PUSH_OVHD_OXYGEN_CREW', 'bool'),
         },
         {
             item: 'APU BLEED',
             result: 'OFF',
-            condition: () => {
-                const [v1] = useSimVar(
-                    'L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON',
-                    'Number',
-                );
-                return v1 === 0;
-            },
+            condition: () => !SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', 'Number'),
         },
         {
             item: 'EMER EXIT LT',
             result: 'OFF',
             condition: () => {
-                const [v1] = useSimVar(
+                const v1 = SimVar.GetSimVarValue(
                     'L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION',
                     'Number',
                 );
@@ -61,11 +47,11 @@ export const securingAircraftChecklist: Checklist = {
             item: 'SIGNS',
             result: 'OFF',
             condition: () => {
-                const [v1] = useSimVar(
+                const v1 = SimVar.GetSimVarValue(
                     'CABIN SEATBELTS ALERT SWITCH',
                     'Number',
                 );
-                const [v2] = useSimVar(
+                const v2 = SimVar.GetSimVarValue(
                     'L:XMLVAR_SWITCH_OVHD_INTLT_NONSMOKING_POSITION',
                     'Number',
                 );
@@ -76,15 +62,15 @@ export const securingAircraftChecklist: Checklist = {
             item: 'APU and BAT',
             result: 'OFF',
             condition: () => {
-                const [v1] = useSimVar(
+                const v1 = SimVar.GetSimVarValue(
                     'L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON',
                     'Number',
                 );
-                const [v2] = useSimVar(
+                const v2 = SimVar.GetSimVarValue(
                     'L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO',
                     'Number',
                 );
-                const [v3] = useSimVar(
+                const v3 = SimVar.GetSimVarValue(
                     'L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO',
                     'Number',
                 );

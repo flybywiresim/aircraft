@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 
 import { Toggle } from '../../UtilComponents/Form/Toggle';
@@ -23,6 +23,7 @@ export const RealismPage = () => {
     const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
     const [datalinkTransmissionTime, setDatalinkTransmissionTime] = usePersistentProperty('CONFIG_DATALINK_TRANSMISSION_TIME', 'FAST');
     const [, setDatalinkTransmissionTimeSimVar] = useSimVar('L:A32NX_CONFIG_DATALINK_TIME', 'number', 0);
+    const [autoFillChecklists, setAutoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -148,6 +149,10 @@ export const RealismPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
+            </SettingItem>
+
+            <SettingItem name="Autofill Checklists" unrealistic>
+                <Toggle value={!!autoFillChecklists} onToggle={(value) => setAutoFillChecklists(value ? 1 : 0)} />
             </SettingItem>
 
         </SettingsPage>

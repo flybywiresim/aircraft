@@ -1,4 +1,3 @@
-import { useSimVar } from '@instruments/common/simVars';
 import { Checklist } from '../Checklists';
 
 export const afterTakeoffClimbChecklist: Checklist = {
@@ -7,24 +6,20 @@ export const afterTakeoffClimbChecklist: Checklist = {
         {
             item: 'LDG GEAR',
             result: 'UP',
-            condition: undefined,
+            condition: () => SimVar.GetSimVarValue('GEAR HANDLE POSITION', 'Bool') === 0,
         },
         {
             item: 'FLAPS',
             result: 'RETRACTED',
-            condition: () => {
-                const [v1] = useSimVar('FLAPS_SET', 'Number');
-                return v1 === 0;
-            },
+            condition: () => SimVar.GetSimVarValue('L:A32NX_FLAPS_CONF_INDEX', 'Number') === 0,
         },
         {
             item: 'PACKS-NEW',
             result: 'ON',
             condition: () => {
-                // TODO - does not seem to work in sim
-                const [v1] = useSimVar('A32NX_AIRCOND_PACK1_TOGGLE', 'Number');
-                const [v2] = useSimVar('A32NX_AIRCOND_PACK2_TOGGLE', 'Number');
-                return v1 === 1 && v2 === 1;
+                const packOneOn = !!SimVar.GetSimVarValue('L:A32NX_AIRCOND_PACK1_TOGGLE', 'Number');
+                const packTwoOn = !!SimVar.GetSimVarValue('L:A32NX_AIRCOND_PACK2_TOGGLE', 'Number');
+                return packOneOn && packTwoOn;
             },
         },
         {
