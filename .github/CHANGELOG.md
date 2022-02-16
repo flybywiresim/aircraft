@@ -148,6 +148,14 @@
 1. [ATHR] Fix ATHR Speed Undershoot - @IbrahimK42 (IbrahimK42)
 1. [FLIGHTMODEL] Improved pitch stability in turbulence - @aguther (Andreas Guther)
 1. [AP] Fix DES not being armed in ALT CST and altitude constraint changing to FCU altitude - @aguther (Andreas Guther)
+1. [COND] Add cabin temperature simulation and control - @mjuhe (Miquel Juhe)
+1. [COND] Improve air conditioning pack flow model - @mjuhe (Miquel Juhe)
+1. [FBW] Fix Rudder Trim Signal - @IbrahimK42 (IbrahimK42)
+1. [TCAS] Implemented traffic advisories, resolution advisories, and collision avoidance logic - @wpine215 (Iceman) @2hwk (2Cas#1022)
+1. [PFD] Implemented TCAS guidance on vertical speed tape - @wpine215 (Iceman)
+1. [SOUNDS] Connected TCAS TA/RA logic to TCAS Wwise events - @wpine215 (Iceman)  @2hwk (2Cas#1022)
+1. [ENGINE] Overall improvement of thrust limits - @Taz5150 (TazX [Z+2]#0405)
+1. [ATC] Implement ident button and fix auto mode - @tracernz (Mike)
 
 ## 0.7.0
 

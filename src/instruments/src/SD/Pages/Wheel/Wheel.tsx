@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
+import { render } from '@instruments/common/index';
 import classNames from 'classnames';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
-import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
+import { setIsEcamPage } from '@instruments/common/defaults';
 import { PageTitle } from '../../Common/PageTitle';
 import './Wheel.scss';
 import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
@@ -338,4 +338,4 @@ const Wheels = ({ x, y, left, right }: WheelsProps) => {
     );
 };
 
-ReactDOM.render(<SimVarProvider><WheelPage /></SimVarProvider>, getRenderTarget());
+render(<SimVarProvider><WheelPage /></SimVarProvider>);

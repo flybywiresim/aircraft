@@ -1,10 +1,11 @@
-import './Hyd.scss';
-import ReactDOM from 'react-dom';
 import React, { useEffect, useState } from 'react';
+import { render } from '@instruments/common/index';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
-import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
+import { setIsEcamPage } from '@instruments/common/defaults';
 import { ptuArray, levels } from './common';
 import { Triangle } from '../../Common/Shapes';
+
+import './Hyd.scss';
 
 setIsEcamPage('hyd_page');
 
@@ -448,4 +449,4 @@ const PTU = ({ x, y, ptuScenario } : PTUProps) => {
     );
 };
 
-ReactDOM.render(<SimVarProvider><HydPage /></SimVarProvider>, getRenderTarget());
+render(<SimVarProvider><HydPage /></SimVarProvider>);

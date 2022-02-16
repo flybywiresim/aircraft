@@ -23,8 +23,9 @@ use systems::{
     },
     shared::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
-        ElectricalBuses, EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons,
-        HydraulicColor, PneumaticValve, ReservoirAirPressure,
+        ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1, EngineCorrectedN2,
+        EngineFirePushButtons, EngineStartState, HydraulicColor, PneumaticBleed, PneumaticValve,
+        ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -315,6 +316,22 @@ impl A320Pneumatic {
             .change_spatial_volume(blue_hydraulic_reservoir.available_volume());
         self.yellow_hydraulic_reservoir_with_valve
             .change_spatial_volume(yellow_hydraulic_reservoir.available_volume());
+    }
+}
+impl PneumaticBleed for A320Pneumatic {
+    fn apu_bleed_is_on(&self) -> bool {
+        self.apu_bleed_air_valve.is_open()
+    }
+    fn engine_crossbleed_is_on(&self) -> bool {
+        self.cross_bleed_valve.is_open()
+    }
+}
+impl EngineStartState for A320Pneumatic {
+    fn left_engine_state(&self) -> EngineState {
+        self.fadec.engine_state(1)
+    }
+    fn right_engine_state(&self) -> EngineState {
+        self.fadec.engine_state(2)
     }
 }
 impl SimulationElement for A320Pneumatic {
@@ -1027,6 +1044,15 @@ impl A320PneumaticOverheadPanel {
             2 => self.engine_2_bleed.is_auto(),
             _ => panic!("Invalid engine number"),
         }
+    }
+}
+impl EngineBleedPushbutton for A320PneumaticOverheadPanel {
+    fn left_engine_bleed_pushbutton_is_auto(&self) -> bool {
+        self.engine_1_bleed.is_auto()
+    }
+
+    fn right_engine_bleed_pushbutton_is_auto(&self) -> bool {
+        self.engine_2_bleed.is_auto()
     }
 }
 impl SimulationElement for A320PneumaticOverheadPanel {
