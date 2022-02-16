@@ -1,9 +1,7 @@
-import ReactDOM from 'react-dom';
 import React from 'react';
-import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
+import { render } from '@instruments/common/index';
+import { setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
-
-import './Fctl.scss';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
@@ -13,6 +11,8 @@ import { HydraulicSystem } from '../../Common/HydraulicSystem';
 import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
 import { ComponentSidePositionProps } from '../../Common/ComponentSidePositionProps';
 import { Spoilers } from '../../Common/Spoilers';
+
+import './Fctl.scss';
 
 setIsEcamPage('fctl_page');
 
@@ -169,7 +169,7 @@ const Stabilizer = ({ x, y }: ComponentPositionProps) => (
 const Aileron = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps) => {
     const textPositionX = side === 'left' ? -40 : 40;
 
-    const [aileronDeflection] = useSimVar(`L:A32NX_3D_AILERON_${side.toUpperCase()}_DEFLECTION`, 'number', 50);
+    const [aileronDeflection] = useSimVar(`L:A32NX_HYD_AILERON_${side.toUpperCase()}_DEFLECTION`, 'number', 50);
     const aileronDeflectPctNormalized = aileronDeflection * 54;
     const cursorPath = `M${side === 'left' ? 1 : -1} ${side === 'left' ? 51 + aileronDeflectPctNormalized
         : 51 - aileronDeflectPctNormalized} l${side === 'right' ? '-' : ''}15 -7 l0 14Z`;
@@ -286,4 +286,4 @@ const Note: React.FunctionComponent<ComponentPositionProps> = ({ x, y, children 
     <text x={x} y={y} className="Note" textAnchor="middle" alignmentBaseline="central">{children}</text>
 );
 
-ReactDOM.render(<SimVarProvider><FctlPage /></SimVarProvider>, getRenderTarget());
+render(<SimVarProvider><FctlPage /></SimVarProvider>);

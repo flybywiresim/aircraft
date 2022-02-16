@@ -3,8 +3,12 @@ use crate::{
     overhead::{IndicationLight, OnOffFaultPushButton},
     shared::{
         arinc429::{Arinc429Word, SignStatus},
+<<<<<<< HEAD
         MachNumber,
         AirDataSource,
+=======
+        GroundSpeed, MachNumber,
+>>>>>>> 378bd10f821e5050e299d49f5c47fcab75b6740a
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -393,6 +397,11 @@ impl SimulationElement for AirDataInertialReferenceSystem {
         )
     }
 }
+impl GroundSpeed for AirDataInertialReferenceSystem {
+    fn ground_speed(&self) -> Velocity {
+        self.adirus[0].ground_speed()
+    }
+}
 
 pub struct AirDataInertialReferenceUnit {
     state_id: VariableIdentifier,
@@ -469,6 +478,11 @@ impl SimulationElement for AirDataInertialReferenceUnit {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.state_id, self.state())
+    }
+}
+impl GroundSpeed for AirDataInertialReferenceUnit {
+    fn ground_speed(&self) -> Velocity {
+        self.ir.ground_speed()
     }
 }
 
@@ -1050,6 +1064,11 @@ impl SimulationElement for InertialReference {
         self.wind_velocity.write_to(writer);
         self.latitude.write_to(writer);
         self.longitude.write_to(writer);
+    }
+}
+impl GroundSpeed for InertialReference {
+    fn ground_speed(&self) -> Velocity {
+        self.ground_speed.value()
     }
 }
 

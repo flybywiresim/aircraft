@@ -1,7 +1,7 @@
 class CDUAocMessagesReceived {
     static ShowPage(mcdu, messages = null, page = 0) {
         if (!messages) {
-            messages = mcdu.getMessages();
+            messages = mcdu.atsuManager.aoc.inputMessages();
         }
         mcdu.clearDisplay();
 
@@ -16,16 +16,21 @@ class CDUAocMessagesReceived {
         const msgTimeHeaders = [];
         msgTimeHeaders.length = 6;
         for (let i = 5; i > 0; i--) {
-            let header = "";
-            if (messages[offset - i]) {
-                header += messages[offset - i]["time"];
-                if (messages[offset - i]["opened"]) {
-                    header += " - VIEWED[color]green";
-                } else {
-                    header += " - NEW[color]green";
+            let headerLeft = "";
+            let headerRight = "";
+
+            if (messages.length > (offset - i) && messages[offset - i]) {
+                let sender = messages[offset - i].Station;
+                if (messages[offset - i].Type === Atsu.AtsuMessageType.ATIS) {
+                    sender = messages[offset - i].Reports[0].airport;
+                }
+                headerLeft += `${messages[offset - i].Timestamp.mcduTimestamp()} FROM ${sender}[color]green`;
+                if (!messages[offset - i].Confirmed) {
+                    headerRight = "NEW[color]green";
                 }
             }
-            msgTimeHeaders[i] = header;
+
+            msgTimeHeaders[i] = [headerLeft, headerRight];
         }
 
         let left = false, right = false;
@@ -45,16 +50,16 @@ class CDUAocMessagesReceived {
 
         mcdu.setTemplate([
             ["AOC RCVD MSGS"],
-            [msgTimeHeaders[5]],
-            [`${messages[offset - 5] ? "<" + messages[offset - 5]["type"] : "NO MESSAGES"}`],
-            [msgTimeHeaders[4]],
-            [`${messages[offset - 4] ? "<" + messages[offset - 4]["type"] : ""}`],
-            [msgTimeHeaders[3]],
-            [`${messages[offset - 3] ? "<" + messages[offset - 3]["type"] : ""}`],
-            [msgTimeHeaders[2]],
-            [`${messages[offset - 2] ? "<" + messages[offset - 2]["type"] : ""}`],
-            [msgTimeHeaders[1]],
-            [`${messages[offset - 1] ? "<" + messages[offset - 1]["type"] : ""}`],
+            [msgTimeHeaders[5][0], msgTimeHeaders[5][1]],
+            [`${messages[offset - 5] ? "<" + translateAtsuMessageType(messages[offset - 5].Type) : "NO MESSAGES"}`],
+            [msgTimeHeaders[4][0], msgTimeHeaders[4][1]],
+            [`${messages[offset - 4] ? "<" + translateAtsuMessageType(messages[offset - 4].Type) : ""}`],
+            [msgTimeHeaders[3][0], msgTimeHeaders[3][1]],
+            [`${messages[offset - 3] ? "<" + translateAtsuMessageType(messages[offset - 3].Type) : ""}`],
+            [msgTimeHeaders[2][0], msgTimeHeaders[2][1]],
+            [`${messages[offset - 2] ? "<" + translateAtsuMessageType(messages[offset - 2].Type) : ""}`],
+            [msgTimeHeaders[1][0], msgTimeHeaders[1][1]],
+            [`${messages[offset - 1] ? "<" + translateAtsuMessageType(messages[offset - 1].Type) : ""}`],
             [""],
             ["<RETURN"]
         ]);
@@ -67,10 +72,10 @@ class CDUAocMessagesReceived {
             mcdu.onLeftInput[i] = (value) => {
                 if (messages[offset - 5 + i]) {
                     if (value === FMCMainDisplay.clrValue) {
-                        mcdu.deleteMessage(offset - 5 + i);
-                        CDUAocMessagesReceived.ShowPage(mcdu, messages, page);
+                        mcdu.atsuManager.removeMessage(messages[offset - 5 + i].UniqueMessageID);
+                        CDUAocMessagesReceived.ShowPage(mcdu, null, page);
                     } else {
-                        CDUAocRequestsMessage.ShowPage(mcdu, messages[offset - 5 + i]);
+                        CDUAocRequestsMessage.ShowPage(mcdu, messages, offset - 5 + i);
                     }
                 }
             };
