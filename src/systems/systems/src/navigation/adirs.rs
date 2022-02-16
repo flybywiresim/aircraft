@@ -3,12 +3,10 @@ use crate::{
     overhead::{IndicationLight, OnOffFaultPushButton},
     shared::{
         arinc429::{Arinc429Word, SignStatus},
-<<<<<<< HEAD
         MachNumber,
         AirDataSource,
-=======
-        GroundSpeed, MachNumber,
->>>>>>> 378bd10f821e5050e299d49f5c47fcab75b6740a
+        GroundSpeed,
+
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
