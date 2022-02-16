@@ -148,11 +148,11 @@ struct SecBusInputs {
 
   ElacOutBus elac2;
 
-  // SfccBus sfcc1;
+  SfccBus sfcc1;
 
-  // SfccBus sfcc2;
+  SfccBus sfcc2;
 
-  // LgciuBus lgciu1;
+  LgciuBus lgciu1;
 
-  // LgciuBus lgciu2;
+  LgciuBus lgciu2;
 };

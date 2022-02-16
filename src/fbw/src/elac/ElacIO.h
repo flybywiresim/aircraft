@@ -153,9 +153,9 @@ struct ElacBusInputs {
 
   RaBus ra2;
 
-  // SfccBus sfcc1;
+  SfccBus sfcc1;
 
-  // SfccBus sfcc2;
+  SfccBus sfcc2;
 
   FcdcBus fcdc1;
 

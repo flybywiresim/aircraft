@@ -73,6 +73,8 @@ struct FacDiscreteOutputs {
 };
 
 struct FacBusInputs {
+  FacBus facOpp;
+
   FmgcABus fmgcOwn;
 
   FmgcABus fmgcOpp;
@@ -87,7 +89,7 @@ struct FacBusInputs {
 
   ElacOutBus elac2;
 
-  // SfccBus sfccOwn;
+  SfccBus sfccOwn;
 
-  // LgciuBus lgciuOwn;
+  LgciuBus lgciuOwn;
 };

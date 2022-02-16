@@ -551,3 +551,27 @@ struct AdirsBusses {
 
   InertialReferenceBus irsBus;
 };
+
+struct SfccBus {
+  // Label 45
+  Arinc429DiscreteWord slatFlapComponentStatus;
+  // Label 46
+  Arinc429DiscreteWord slatFlapSystemStatus;
+  // Label 47
+  Arinc429DiscreteWord slatFlapActualPosition;
+  // Label 127
+  Arinc429NumericWord slatActualPosition;
+  // Label 137
+  Arinc429NumericWord flapActualPosition;
+};
+
+struct LgciuBus {
+  // Label 20
+  Arinc429DiscreteWord discreteWord1;
+  // Label 21
+  Arinc429DiscreteWord discreteWord2;
+  // Label 22
+  Arinc429DiscreteWord discreteWord3;
+  // Label 23
+  Arinc429DiscreteWord discreteWord4;
+};
