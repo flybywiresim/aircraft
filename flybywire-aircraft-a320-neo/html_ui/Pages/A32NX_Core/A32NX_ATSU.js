@@ -462,15 +462,16 @@ const validateScratchpadSpeed = (value) => {
  *   - -1 = unknonw
  * @param {FMCMainDisplay} mcdu The current MCDU instance
  * @param {string} waypoint The entered waypoint
+ * @param {boolean} allowTime Indicates if time entries are allowed
  * @returns A tuple with the type and null or a NXSystemMessage-entry in case of a failure
  */
-const classifyScratchpadWaypointType = async (mcdu, waypoint) => {
+const classifyScratchpadWaypointType = async (mcdu, waypoint, allowTime) => {
     if (mcdu.isLatLonFormat(waypoint)) {
         return [0, null];
     }
 
     // time formatted
-    if (/([0-2][0-4][0-5][0-9]Z?)/.test(waypoint) && waypoint.length <= 5) {
+    if (allowTime && /^([0-2][0-4][0-5][0-9]Z?)$/.test(waypoint)) {
         return [1, null];
     }
 
