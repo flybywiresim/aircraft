@@ -3,6 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage, CpdlcMessageRequestedResponseType, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
+import { RequestMessage } from '@atsu/messages/RequestMessage';
 import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';
 import { WilcoUnableButtons } from './elements/WilcoUnableButtons';
 import { RogerButtons } from './elements/RogerButtons';
@@ -176,8 +177,12 @@ const DCDU: React.FC = () => {
         let cpdlcMessage : CpdlcMessage | undefined = undefined;
         if (serialized.Type === AtsuMessageType.CPDLC) {
             cpdlcMessage = new CpdlcMessage();
-            cpdlcMessage.deserialize(serialized);
+        } else if (serialized.Type === AtsuMessageType.Request) {
+            cpdlcMessage = new RequestMessage();
+        } else {
+            return;
         }
+        cpdlcMessage.deserialize(serialized);
 
         if (cpdlcMessage !== undefined && cpdlcMessage.UniqueMessageID !== undefined) {
             const oldMessage = messages.get(cpdlcMessage.UniqueMessageID);
