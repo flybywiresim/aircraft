@@ -498,20 +498,6 @@ void FlyByWireInterface::setupLocalVariables() {
 
     idElacPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_PUSHBUTTON_STATUS");
     idElacFaultLightOn[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_FAULT_LIGHT_ON");
-    idElacLeftAileronPosition[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_AILERON_L_POS");
-    idElacRightAileronPosition[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_AILERON_R_POS");
-    idElacLeftElevatorPosition[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_ELEVATOR_L_POS");
-    idElacRightElevatorPosition[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_ELEVATOR_R_POS");
-    idElacThsPosition[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_THS_POS");
-    idElacLeftSidestickPitchCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_SIDESTICK_L_PITCH");
-    idElacRightSidestickPitchCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_SIDESTICK_R_PITCH");
-    idElacLeftSidestickRollCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_SIDESTICK_L_ROLL");
-    idElacRightSidestickRollCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_SIDESTICK_R_ROLL");
-    idElacRudderPedalPosition[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_RUDDER_PEDAL");
-    idElacAileronCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_AILERON_COMMAND");
-    idElacYawDamperCommand[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_YAW_DAMPER_COMMAND");
-    idElacDiscreteStatusWord1[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_DISCRETE_WORD_1");
-    idElacDiscreteStatusWord2[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_DISCRETE_WORD_2");
   }
 
   for (int i = 0; i < 3; i++) {
@@ -946,21 +932,6 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacsBusOutputs[elacIndex] = elacs[elacIndex].getBusOutputs();
 
   idElacFaultLightOn[elacIndex]->set(!elacsDiscreteOutputs[elacIndex].digitalOperationValidated);
-
-  idElacLeftAileronPosition[elacIndex]->set(elacsBusOutputs[elacIndex].leftAileronPosition.toSimVar());
-  idElacRightAileronPosition[elacIndex]->set(elacsBusOutputs[elacIndex].rightAileronPosition.toSimVar());
-  idElacLeftElevatorPosition[elacIndex]->set(elacsBusOutputs[elacIndex].leftElevatorPosition.toSimVar());
-  idElacRightElevatorPosition[elacIndex]->set(elacsBusOutputs[elacIndex].rightElevatorPosition.toSimVar());
-  idElacThsPosition[elacIndex]->set(elacsBusOutputs[elacIndex].thsPosition.toSimVar());
-  idElacLeftSidestickPitchCommand[elacIndex]->set(elacsBusOutputs[elacIndex].leftSidestickPitchCommand.toSimVar());
-  idElacRightSidestickPitchCommand[elacIndex]->set(elacsBusOutputs[elacIndex].rightSidestickPitchCommand.toSimVar());
-  idElacLeftSidestickRollCommand[elacIndex]->set(elacsBusOutputs[elacIndex].leftSidestickRollCommand.toSimVar());
-  idElacRightSidestickRollCommand[elacIndex]->set(elacsBusOutputs[elacIndex].rightSidestickRollCommand.toSimVar());
-  idElacRudderPedalPosition[elacIndex]->set(elacsBusOutputs[elacIndex].rudderPedalPosition.toSimVar());
-  idElacAileronCommand[elacIndex]->set(elacsBusOutputs[elacIndex].aileronCommand.toSimVar());
-  idElacYawDamperCommand[elacIndex]->set(elacsBusOutputs[elacIndex].yawDamperCommand.toSimVar());
-  idElacDiscreteStatusWord1[elacIndex]->set(elacsBusOutputs[elacIndex].discreteStatusWord1.toSimVar());
-  idElacDiscreteStatusWord2[elacIndex]->set(elacsBusOutputs[elacIndex].discreteStatusWord2.toSimVar());
 
   return true;
 }

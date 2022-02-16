@@ -386,21 +386,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idElacPushbuttonStatus[2];
   std::unique_ptr<LocalVariable> idElacFaultLightOn[2];
 
-  std::unique_ptr<LocalVariable> idElacLeftAileronPosition[2];
-  std::unique_ptr<LocalVariable> idElacRightAileronPosition[2];
-  std::unique_ptr<LocalVariable> idElacLeftElevatorPosition[2];
-  std::unique_ptr<LocalVariable> idElacRightElevatorPosition[2];
-  std::unique_ptr<LocalVariable> idElacThsPosition[2];
-  std::unique_ptr<LocalVariable> idElacLeftSidestickPitchCommand[2];
-  std::unique_ptr<LocalVariable> idElacRightSidestickPitchCommand[2];
-  std::unique_ptr<LocalVariable> idElacLeftSidestickRollCommand[2];
-  std::unique_ptr<LocalVariable> idElacRightSidestickRollCommand[2];
-  std::unique_ptr<LocalVariable> idElacRudderPedalPosition[2];
-  std::unique_ptr<LocalVariable> idElacAileronCommand[2];
-  std::unique_ptr<LocalVariable> idElacYawDamperCommand[2];
-  std::unique_ptr<LocalVariable> idElacDiscreteStatusWord1[2];
-  std::unique_ptr<LocalVariable> idElacDiscreteStatusWord2[2];
-
   std::unique_ptr<LocalVariable> idSecPushbuttonStatus[3];
   std::unique_ptr<LocalVariable> idSecFaultLightOn[3];
 
