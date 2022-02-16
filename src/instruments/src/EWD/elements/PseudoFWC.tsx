@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { NXDataStore } from '@shared/persistence';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { useUpdate } from '@instruments/common/hooks';
 
 const mapOrder = (array, order) => {
     array.sort((a, b) => {
@@ -132,6 +133,7 @@ const PseudoFWC: React.FC = () => {
 
     const [eng1FireTest] = useSimVar('L:A32NX_FIRE_TEST_ENG1', 'bool', 500);
     const [eng2FireTest] = useSimVar('L:A32NX_FIRE_TEST_ENG2', 'bool', 500);
+    const [apuFireTest] = useSimVar('L:A32NX_FIRE_TEST_APU', 'bool', 500);
     const onGround = Simplane.getIsGrounded();
     const [throttle1Position] = useSimVar('L:XMLVAR_Throttle1Position', 'number', 100);
     const [throttle2Position] = useSimVar('L:XMLVAR_Throttle2Position', 'number', 100);
@@ -142,6 +144,17 @@ const PseudoFWC: React.FC = () => {
     const [fireButton1] = useSimVar('L:A32NX_FIRE_BUTTON_ENG1', 'bool', 500);
     const [fireButton2] = useSimVar('L:A32NX_FIRE_BUTTON_ENG2', 'bool', 500);
     const [fireButtonAPU] = useSimVar('L:A32NX_FIRE_BUTTON_APU', 'bool', 500);
+
+    const [eng1Agent1PB] = useSimVar('L:A32NX_FIRE_ENG1_AGENT1_Discharge', 'bool', 500);
+    const [eng1Agent2PB] = useSimVar('L:A32NX_FIRE_ENG1_AGENT2_Discharge', 'bool', 500);
+    const [eng2Agent1PB] = useSimVar('L:A32NX_FIRE_ENG2_AGENT1_Discharge', 'bool', 500);
+    const [eng2Agent2PB] = useSimVar('L:A32NX_FIRE_ENG2_AGENT2_Discharge', 'bool', 500);
+    const [apuAgentPB] = useSimVar('L:A32NX_FIRE_APU_AGENT1_Discharge', 'bool', 500);
+    const [apuMasterSwitch] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool', 500);
+    const [timerEng1FirePBOut, setTimerEng1FirePBOut] = useState<number | null>(null);
+    const [agent1Discharge, setAgent1Discharge] = useState(false);
+    const [timerEng2FirePBOut, setTimerEng2FirePBOut] = useState<number | null>(null);
+    const [agent2Discharge, setAgent2Discharge] = useState(false);
 
     // Check out updateTakeoffConfigWarnings(_test) {
 
@@ -160,6 +173,8 @@ const PseudoFWC: React.FC = () => {
             codesToReturn: ['000001001', '000001002', '000001003', '000001004', '000001005', '000001006', '000001007', '000001008', '000001009', '000001010', '000001011', '000001012'],
             memoInhibit: ldgmemo === 1,
             failure: 0,
+            sysPage: '',
+            side: 'LEFT',
         },
         '0000050': {
             flightPhaseInhib: [],
@@ -168,6 +183,8 @@ const PseudoFWC: React.FC = () => {
             codesToReturn: ['000005001'],
             memoInhibit: tomemo === 1 || ldgmemo === 1,
             failure: 0,
+            sysPage: '',
+            side: 'LEFT',
         },
         '0000030': {
             flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
@@ -178,6 +195,8 @@ const PseudoFWC: React.FC = () => {
             codesToReturn: ['000003001', '000003002', '000003003', '000003004', '000003005', '000003006', '000003007', '000003008'],
             memoInhibit: tomemo === 1 || ldgmemo === 1,
             failure: 0,
+            sysPage: '',
+            side: 'LEFT',
         },
         '0000031': {
             flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
@@ -188,6 +207,8 @@ const PseudoFWC: React.FC = () => {
             codesToReturn: ['000003101', '000003102', '000003103', '000003104', '000003105', '000003106', '000003107', '000003108'],
             memoInhibit: tomemo === 1 || ldgmemo === 1,
             failure: 0,
+            sysPage: '',
+            side: 'LEFT',
         },
         '0000055':
             {
@@ -197,6 +218,8 @@ const PseudoFWC: React.FC = () => {
                 codesToReturn: ['000005501'],
                 memoInhibit: tomemo === 1 || ldgmemo === 1,
                 failure: 0,
+                sysPage: '',
+                side: 'LEFT',
             },
         '0000080':
             {
@@ -206,6 +229,8 @@ const PseudoFWC: React.FC = () => {
                 codesToReturn: ['000008001'],
                 memoInhibit: tomemo === 1 || ldgmemo === 1,
                 failure: 0,
+                sysPage: '',
+                side: 'LEFT',
             },
         '0000090':
             {
@@ -215,6 +240,8 @@ const PseudoFWC: React.FC = () => {
                 codesToReturn: ['000009001'],
                 memoInhibit: tomemo === 1 || ldgmemo === 1,
                 failure: 0,
+                sysPage: '',
+                side: 'LEFT',
             },
         '0000095':
             {
@@ -224,6 +251,8 @@ const PseudoFWC: React.FC = () => {
                 codesToReturn: ['000009501'],
                 memoInhibit: tomemo === 1 || ldgmemo === 1,
                 failure: 0,
+                sysPage: '',
+                side: 'LEFT',
             },
         '0000100':
             {
@@ -233,6 +262,8 @@ const PseudoFWC: React.FC = () => {
                 codesToReturn: ['000010001'],
                 memoInhibit: tomemo === 1 || ldgmemo === 1,
                 failure: 0,
+                sysPage: '',
+                side: 'LEFT',
             },
         '0000105':
             {
@@ -242,6 +273,8 @@ const PseudoFWC: React.FC = () => {
                 codesToReturn: ['000010501'], // config memo
                 memoInhibit: tomemo === 1 || ldgmemo === 1,
                 failure: 0,
+                sysPage: '',
+                side: 'LEFT',
             },
         '0000110':
             {
@@ -251,6 +284,8 @@ const PseudoFWC: React.FC = () => {
                 codesToReturn: ['000011001', '0000011002'], // config memo
                 memoInhibit: tomemo === 1 || ldgmemo === 1,
                 failure: 0,
+                sysPage: '',
+                side: 'LEFT',
             },
         '0000305':
             {
@@ -260,26 +295,108 @@ const PseudoFWC: React.FC = () => {
                 codesToReturn: ['000030501'], // Not inhibited
                 memoInhibit: tomemo === 1 || ldgmemo === 1,
                 failure: 0,
+                sysPage: '',
+                side: 'LEFT',
             },
         '2600010': {
             flightPhaseInhib: [],
-            simVarIsActive: () => eng1FireTest,
+            simVarIsActive: () => eng1FireTest === 1 || fireButton1 === 1,
             whichCodeToReturn: [
                 0,
                 throttle1Position !== 1 && !onGround ? 1 : null,
-                (throttle1Position !== 1 || throttle2Position) !== 1 && onGround ? 2 : null,
+                (throttle1Position !== 1 || throttle2Position !== 1) && onGround ? 2 : null,
                 3,
                 !parkBrake && onGround ? 4 : null,
                 onGround ? 5 : null,
                 onGround ? 6 : null,
                 7,
                 !fireButton1 ? 8 : null,
+                !onGround && fireButton1 && !eng1Agent1PB ? 9 : null,
+                eng1Agent1PB === 1 && !onGround && !eng1Agent1PB ? 10 : null,
+                !agent2Discharge && onGround ? 11 : null,
+                onGround ? 12 : null,
+                !onGround ? 13 : null,
+                !onGround && eng1Agent1PB === 1 && !eng1Agent2PB ? 14 : null,
+                (!onGround && eng1Agent1PB === 1 && !eng1Agent2PB) || (!eng1Agent2PB && eng1Agent1PB) ? 15 : null,
             ],
-            codesToReturn: ['260001001', '260001002', '260001003', '260001004', '260001005', '260001006', '260001007', '260001008', '260001009', '260001010', '260001011', '260001012', '260001013', '260001014', '260001015', '260001016'],
+            codesToReturn: ['260001001', '260001002', '260001003', '260001004', '260001005',
+                '260001006', '260001007', '260001008', '260001009', '260001010', '260001011',
+                '260001012', '260001013', '260001014', '260001015', '260001016'],
             memoInhibit: false,
             failure: 3,
+            sysPage: 'ENG',
+            side: 'LEFT',
+        },
+        '2600020': {
+            flightPhaseInhib: [],
+            simVarIsActive: () => eng2FireTest === 1 || fireButton2 === 1,
+            whichCodeToReturn: [
+                0,
+                throttle2Position !== 1 && !onGround ? 1 : null,
+                (throttle1Position !== 1 || throttle2Position !== 1) && onGround ? 2 : null,
+                3,
+                !parkBrake && onGround ? 4 : null,
+                onGround ? 5 : null,
+                onGround ? 6 : null,
+                7,
+                !fireButton2 ? 8 : null,
+                !onGround && fireButton2 && !eng2Agent1PB ? 9 : null,
+                eng2Agent1PB === 1 && !onGround && !eng2Agent1PB ? 10 : null,
+                !agent2Discharge && onGround ? 11 : null,
+                onGround ? 12 : null,
+                !onGround ? 13 : null,
+                !onGround && eng2Agent1PB === 1 && !eng2Agent2PB ? 14 : null,
+                (!onGround && eng2Agent1PB === 1 && !eng2Agent2PB) || (!eng2Agent2PB && eng2Agent1PB) ? 15 : null,
+            ],
+            codesToReturn: ['260002001', '260002002', '260002003', '260002004', '260002005',
+                '260002006', '260002007', '260002008', '260002009', '260002010', '260002011',
+                '260002012', '260002013', '260002014', '260002015', '260002016'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: 'ENG',
+            side: 'LEFT',
+        },
+        '2600030': {
+            flightPhaseInhib: [],
+            simVarIsActive: () => apuFireTest === 1 || fireButtonAPU === 1,
+            whichCodeToReturn: [
+                0,
+                !fireButtonAPU ? 1 : null,
+                fireButtonAPU === 1 && !apuAgentPB ? 2 : null,
+                // Countdown timer TODO
+                fireButtonAPU === 1 && !apuAgentPB ? 3 : null,
+                apuMasterSwitch === 1 ? 4 : null,
+            ],
+            codesToReturn: ['260003001', '260003002', '260003003', '260003004', '260003005'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: 'APU',
+            side: 'LEFT',
         },
     };
+
+    useUpdate((deltaTime) => {
+        if (timerEng1FirePBOut !== null) {
+            if (setTimerEng1FirePBOut > 0) {
+                if (deltaTime < 1000) {
+                    setTimerEng1FirePBOut(setTimerEng1FirePBOut - (deltaTime / 1000));
+                }
+            } else {
+                setTimerEng1FirePBOut(null);
+                setAgent1Discharge(true);
+            }
+        }
+        if (timerEng2FirePBOut !== null) {
+            if (setTimerEng2FirePBOut > 0) {
+                if (deltaTime < 1000) {
+                    setTimerEng2FirePBOut(setTimerEng2FirePBOut - (deltaTime / 1000));
+                }
+            } else {
+                setTimerEng2FirePBOut(null);
+                setAgent2Discharge(true);
+            }
+        }
+    });
 
     useEffect(() => {
         console.log('TO Config check');
@@ -318,28 +435,53 @@ const PseudoFWC: React.FC = () => {
     }, [callPushAft, callPushAll, callPushForward]);
 
     useEffect(() => {
-        let tempMemoArray = memoMessage;
-        for (const [key, value] of Object.entries(EWDMessageBoolean)) {
-            // if (key === '0000010') {
-            //     console.log(value);
-            //     console.log(value.simVarIsActive());
-            // }
+        console.log('FireText');
+        if (eng1FireTest === 0 && eng2FireTest === 0 && apuFireTest === 0) {
+            SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'bool', 0);
+            SimVar.SetSimVarValue('L:Generic_Master_Warning_Active', 'bool', 0);
+        }
+    }, [eng1FireTest, eng2FireTest, apuFireTest]);
 
+    useEffect(() => {
+        let tempMemoArray = memoMessage;
+        const warningsCount = { 3: 0, 2: 0 };
+        for (const [key, value] of Object.entries(EWDMessageBoolean)) {
             if (value.simVarIsActive()) {
                 if (!value.memoInhibit) {
-                    if (!value.flightPhaseInhib.some((e) => e === flightPhase)) {
-                        const newCode = value.codesToReturn.filter((item, index) => value.whichCodeToReturn.includes(index));
-                        // console.log('new code');
-                        // console.log(newCode);
+                    if (value.failure || !value.flightPhaseInhib.some((e) => e === flightPhase)) {
+                        if (value.failure === 3) {
+                            SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', 1);
+                            SimVar.SetSimVarValue('L:Generic_Master_Warning_Active', 'Bool', 1);
+                        }
+                        if (value.failure === 2) {
+                            SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'Bool', 1);
+                            SimVar.SetSimVarValue('L:Generic_Master_Caution_Active', 'Bool', 1);
+                        }
+                        console.log('Which Codes');
+                        console.log(value.whichCodeToReturn);
+                        const newCode: string[] = [];
+                        const codeIndex = value.whichCodeToReturn.filter((e) => e !== null);
+                        codeIndex.forEach((e: number) => {
+                            newCode.push(value.codesToReturn[e]);
+                        });
+
+                        // Remove nulls from fire test
+                        console.log('new code');
+                        console.log(newCode);
                         // // Check memoMessage does not already have current code
-                        // console.log('Some in existing');
-                        // console.log();
+                        // console.log('new code after');
+                        // console.log(newCode1);
                         const tempArray = tempMemoArray.filter((e) => !value.codesToReturn.includes(e));
                         // console.log('Before concat');
                         // console.log(tempArray);
                         tempMemoArray = tempArray.concat(newCode);
-                        // console.log('After concat');
-                        // console.log(tempMemoArray);
+                        console.log('After concat');
+                        console.log(tempMemoArray);
+
+                        if (value.sysPage !== '') {
+                            const eicas = document.getElementsByTagName('a320-neo-eicas-element');
+                            console.log(eicas);
+                        }
                     }
                 }
             } else {
@@ -365,23 +507,35 @@ const PseudoFWC: React.FC = () => {
         setMemoMessage(orderedMemoArray);
     }, [flightPhase,
         fuel, usrStartRefueling, engine1State, engine2State, spoilersArmed, seatBelt, noSmoking, configPortableDevices, strobeLightsOn, leftOuterInnerValve, rightOuterInnerValve,
-        fobRounded, unit, gpwsFlapMode, autoBrake, flapsHandle,
-        adirsRemainingAlignTime, adiru1State, adiru2State, adiru3State,
-        cabinReady, toconfig,
+        fobRounded, unit, gpwsFlapMode, autoBrake, flapsHandle, throttle1Position, throttle2Position,
+        adiru1State, adiru2State, adiru3State, apuFireTest, apuAgentPB,
+        cabinReady, toconfig, eng1Agent1PB, eng1Agent2PB, eng1FireTest, eng2FireTest,
+        eng2Agent1PB, eng2Agent2PB, eng2FireTest, apuAgentPB, apuMasterSwitch,
+        adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
+        adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
     ]);
 
     useEffect(() => {
-        // console.log('Inside memoMessage');
-        // console.log(JSON.stringify(memoMessage));
+        console.log('Inside memoMessage');
+        console.log(JSON.stringify(memoMessage));
         [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
-            SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${value}`, 'number', -1);
+            SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${value}`, 'string', '');
         });
         if (memoMessage.length > 0) {
             memoMessage.forEach((value, index) => {
-                SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${index + 1}`, 'number', parseInt(value));
+                // console.log(`Value for L:A32NX_EWD_LOWER_LEFT_LINE_${index + 1}`);
+                // console.log(parseInt(value));
+                SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${index + 1}`, 'string', value);
             });
         }
     }, [memoMessage]);
+
+    const [sim] = useSimVar('L:A32NX_EWD_LOWER_LEFT_LINE_1', 'number', 100);
+
+    useEffect(() => {
+        console.log('Freshly minted SimVar in PseudoFWC');
+        console.log(sim);
+    }, [sim]);
 
     return (<></>);
 };

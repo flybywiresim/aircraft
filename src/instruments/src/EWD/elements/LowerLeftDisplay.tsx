@@ -1,7 +1,7 @@
 import EWDMessageParser from '@instruments/common/EWDMessageParser';
 import EWDMessages from '@instruments/common/EWDMessages';
 import { useSimVar } from '@instruments/common/simVars';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const padEWDCode = (code: number) => code.toString().padStart(9, '0');
 
@@ -29,6 +29,10 @@ export const LowerLeftDisplay: React.FC<LowerLeftDisplayProps> = ({ x, y }) => {
     ].join('\r');
 
     // const message = mesgPool[5];
+    useEffect(() => {
+        console.log(`Inside Lower Left Display and Line 1 is ${line1}`);
+        console.log(padEWDCode(line1));
+    }, [line1]);
 
     return (
         <g id="LowerLeftDisplay">
