@@ -1,10 +1,12 @@
 #![cfg(any(target_arch = "wasm32", doc))]
+mod ailerons;
 mod autobrakes;
 mod brakes;
 mod flaps;
 mod nose_wheel_steering;
 
 use a320_systems::A320;
+use ailerons::ailerons;
 use autobrakes::autobrakes;
 use brakes::brakes;
 use flaps::flaps;
@@ -37,7 +39,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
                 (ElectricalBusType::DirectCurrentHot(2), 13),
                 (ElectricalBusType::DirectCurrentGndFltService, 15),
             ])?
-            .with_auxiliary_power_unit("OVHD_APU_START_PB_IS_AVAILABLE", 8)?
+            .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8)?
             .with_failures(vec![
                 (24_000, FailureType::TransformerRectifier(1)),
                 (24_001, FailureType::TransformerRectifier(2)),
@@ -89,6 +91,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .provides_aircraft_variable("GPS GROUND SPEED", "Knots", 0)?
             .provides_aircraft_variable("GPS GROUND MAGNETIC TRACK", "Degrees", 0)?
             .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
+            .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
+            .provides_aircraft_variable("INTERACTIVE POINT OPEN:3", "Percent", 0)?
             .provides_aircraft_variable("PLANE PITCH DEGREES", "Degrees", 0)?
             .provides_aircraft_variable("PLANE BANK DEGREES", "Degrees", 0)?
             .provides_aircraft_variable("PLANE HEADING DEGREES MAGNETIC", "Degrees", 0)?
@@ -154,6 +158,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             .with_aspect(autobrakes)?
             .with_aspect(nose_wheel_steering)?
             .with_aspect(flaps)?
+            .with_aspect(ailerons)?
             .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {

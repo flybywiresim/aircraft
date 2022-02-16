@@ -214,8 +214,7 @@ mod tests {
     use crate::electrical::ElectricalBus;
     use crate::electrical::Electricity;
 
-    use crate::hydraulic::update_iterator::FixedStepLoop;
-    use crate::shared::PotentialOrigin;
+    use crate::shared::{update_iterator::FixedStepLoop, PotentialOrigin};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext};
 
     use crate::simulation::test::{SimulationTestBed, TestBed};

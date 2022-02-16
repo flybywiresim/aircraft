@@ -107,6 +107,7 @@
 1. [FDR] Added additional values to help debug in some cases - @aguther (Andreas Guther)
 1. [ATHR] Added switch to use externally defined thrust limits and separated thrust limits into own model - @aguther (Andreas Guther)
 1. [FBW] Improved sideslip controller - @IbrahimK42 (IbrahimK42)
+1. [API] DOME light switch did not move when set to "dim" via SimConnect - @pre-martin (Martin)
 1. [AP] Further improved ALT CST* and ALT CST conditions - @aguther (Andreas Guther)
 1. [MCDU] Added support for connecting MCDU to external devices - @tyler58546 (tyler58546)
 1. [ATHR] Improvement of ATHR laws - @IbrahimK42(IbrahimK42), @aguther (Andreas Guther)
@@ -130,10 +131,31 @@
 1. [AP] Improved LOC ALGIN and ROLL OUT during Autoland - @aguther (Andreas Guther)
 1. [HYD] Simple hydraulic model placeholder for flaps and slats - @Crocket63
 1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
+1. [EFB] Added Hoppie configuration to ATSU/ATC page - @svengcz (Sven Czarnian)
+1. [EFB] Added Datalink simulation rate - @svengcz (Sven Czarnian)
+1. [ATSU] Add PDC/CPDLC communication via Hoppie - @svengcz (Sven Czarnian)
 1. [AP] Fix: adjustment of vertical speed limitation in SPD/MACH law - @IbrahimK42 (IbrahimK42)
+1. [HYD] Ailerons hydraulic control (only visual and hydraulics) - @Crocket63
 1. [MISC] Animation speed/behaviors for button, switches and knobs - @bouveng (Johan Bouveng)
 1. [AP] Added Autoland capability for special terrain profiles, i.e. KSEA 16R - @aguther (Andreas Guther)
 1. [ATHR] Adjustment of ATHR SPD/MACH gains - @IbrahimK42 (IbrahimK42)
+1. [ATHR] Fix ATHR Alt Soft Mode - @IbrahimK42 (IbrahimK42)
+1. [HYD] Simplified max step loop updater - @Crocket63
+1. [MISC] Fix for bleed/hyd system failure in some conditions - @Crocket63
+1. [ECAM] Add pack abnormally off warnings - @tracernz (Mike)
+1. [ELEC] Fix emergency elec on init in flight wrongly triggering the RAT - @Crocket63
+1. [ATHR] Fix ATHR Speed Undershoot - @IbrahimK42 (IbrahimK42)
+1. [FLIGHTMODEL] Improved pitch stability in turbulence - @aguther (Andreas Guther)
+1. [AP] Fix DES not being armed in ALT CST and altitude constraint changing to FCU altitude - @aguther (Andreas Guther)
+1. [COND] Add cabin temperature simulation and control - @mjuhe (Miquel Juhe)
+1. [COND] Improve air conditioning pack flow model - @mjuhe (Miquel Juhe)
+1. [FBW] Fix Rudder Trim Signal - @IbrahimK42 (IbrahimK42)
+1. [TCAS] Implemented traffic advisories, resolution advisories, and collision avoidance logic - @wpine215 (Iceman) @2hwk (2Cas#1022)
+1. [PFD] Implemented TCAS guidance on vertical speed tape - @wpine215 (Iceman)
+1. [SOUNDS] Connected TCAS TA/RA logic to TCAS Wwise events - @wpine215 (Iceman)  @2hwk (2Cas#1022)
+1. [ENGINE] Overall improvement of thrust limits - @Taz5150 (TazX [Z+2]#0405)
+1. [ATC] Implement ident button and fix auto mode - @tracernz (Mike)
+
 ## 0.7.0
 
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)

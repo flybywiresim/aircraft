@@ -1,8 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Slider, Toggle } from '@flybywiresim/react-components';
+import { Hoppie } from '@flybywiresim/api-client';
 import { useSimVar } from '@instruments/common/simVars';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
-import { HttpError } from '@flybywiresim/api-client';
 import { PopUp } from '@shared/popup';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
@@ -11,6 +11,11 @@ import ThrottleConfig from './ThrottleConfig/ThrottleConfig';
 import SimpleInput from '../Components/Form/SimpleInput/SimpleInput';
 import { Navbar } from '../Components/Navbar';
 import { SimbriefUserIdContext } from '../Efb';
+import {
+    FbwAircraftSentryClient,
+    SENTRY_CONSENT_KEY,
+    SentryConsentState,
+} from '../../../../sentry-client/src/FbwAircraftSentryClient';
 
 type ButtonType = {
     name: string,
@@ -239,6 +244,7 @@ const SimOptionsPage = () => {
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
     const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8380');
+    const [tcasDebug, setTcasDebug] = usePersistentProperty('TCAS_DEBUG', '0');
 
     const fpSyncButtons: ButtonType[] = [
         { name: 'None', setting: 'NONE' },
@@ -328,6 +334,14 @@ const SimOptionsPage = () => {
                         />
                     </div>
 
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">TCAS Debug</span>
+                            <span className="text-lg text-gray-500 ml-2">(testing)</span>
+                        </span>
+                        <Toggle value={tcasDebug === '1'} onToggle={(value) => setTcasDebug(value ? '1' : '0')} />
+                    </div>
+
                 </div>
                 <ControlSettings setShowSettings={setShowThrottleSettings} />
             </>
@@ -348,6 +362,8 @@ const RealismPage = () => {
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
     const [realisticTiller, setRealisticTiller] = usePersistentProperty('REALISTIC_TILLER_ENABLED', '0');
     const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
+    const [datalinkTransmissionTime, setDatalinkTransmissionTime] = usePersistentProperty('CONFIG_DATALINK_TRANSMISSION_TIME', 'FAST');
+    const [, setDatalinkTransmissionTimeSimVar] = useSimVar('L:A32NX_CONFIG_DATALINK_TIME', 'number', 0);
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -370,6 +386,12 @@ const RealismPage = () => {
     const steeringSeparationButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Disabled', setting: '0', simVarValue: 0 },
         { name: 'Enabled', setting: '1', simVarValue: 1 },
+    ];
+
+    const datalinkTransmissionTimeButtons: (ButtonType & SimVarButton)[] = [
+        { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
+        { name: 'Fast', setting: 'FAST', simVarValue: 2 },
+        { name: 'Real', setting: 'REAL', simVarValue: 0 },
     ];
 
     return (
@@ -473,6 +495,24 @@ const RealismPage = () => {
                         <span className="text-lg text-gray-300 mr-1">Home Cockpit Mode</span>
                         <Toggle value={homeCockpit === '1'} onToggle={(value) => setHomeCockpit(value ? '1' : '0')} />
                     </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span className="text-lg text-gray-300">DATALINK transmission time</span>
+                        <SelectGroup>
+                            {datalinkTransmissionTimeButtons.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => {
+                                        setDatalinkTransmissionTime(button.setting);
+                                        setDatalinkTransmissionTimeSimVar(button.simVarValue);
+                                    }}
+                                    selected={datalinkTransmissionTime === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </div>
                 </div>
             </>
         )}
@@ -486,10 +526,14 @@ const ATSUAOCPage = () => {
     const [metarSource, setMetarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
     const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
+    const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
     const [simbriefError, setSimbriefError] = useState(false);
     const { simbriefUserId, setSimbriefUserId } = useContext(SimbriefUserIdContext);
     const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
+
+    const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
+    const [hoppieError, setHoppieError] = useState(false);
 
     function getSimbriefUserData(value: string): Promise<any> {
         const SIMBRIEF_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -509,7 +553,7 @@ const ATSUAOCPage = () => {
             .then((response) => {
                 // 400 status means request was invalid, probably invalid username so preserve to display error properly
                 if (!response.ok && response.status !== 400) {
-                    throw new HttpError(response.status);
+                    throw new Error(response.status.toString());
                 }
 
                 return response.json();
@@ -534,7 +578,7 @@ const ATSUAOCPage = () => {
         });
     }
 
-    function handleUsernameInput(value: string) {
+    function handleSimbriefUsernameInput(value: string) {
         getSimbriefUserId(value).then((response) => {
             setSimbriefUserId(response);
             setSimbriefDisplay(response);
@@ -545,6 +589,49 @@ const ATSUAOCPage = () => {
                 setSimbriefError(false);
             }, 4000);
         });
+    }
+
+    function getHoppieResponse(value: string): Promise<any> {
+        const body = {
+            logon: value,
+            from: 'FBWA32NX',
+            to: 'ALL-CALLSIGNS',
+            type: 'ping',
+            packet: '',
+        };
+        return Hoppie.sendRequest(body).then((resp) => resp.response);
+    }
+
+    function validateHoppieUserId(value: string):Promise<any> {
+        return new Promise((resolve, reject) => {
+            if (!value) {
+                reject(new Error('No Hoppie user ID provided'));
+            }
+            getHoppieResponse(value)
+                .then((response) => {
+                    if (response === 'error {illegal logon code}') {
+                        reject(new Error(`Error: Unknown user ID: ${response}`));
+                    }
+                    resolve(value);
+                })
+                .catch((_error) => {
+                    reject(_error);
+                });
+        });
+    }
+
+    function handleHoppieUsernameInput(value: string) {
+        if (value !== '') {
+            validateHoppieUserId(value).then((response) => {
+                setHoppieUserId(response);
+                setHoppieError(false);
+            }).catch(() => {
+                setHoppieError(true);
+                setTimeout(() => {
+                    setHoppieError(false);
+                }, 4000);
+            });
+        }
     }
 
     const atisSourceButtons: ButtonType[] = [
@@ -578,6 +665,20 @@ const ATSUAOCPage = () => {
             );
         } else {
             setTelexEnabled('DISABLED');
+        }
+    }
+
+    function handleSentryToggle(toggleValue: boolean) {
+        if (toggleValue) {
+            FbwAircraftSentryClient.requestConsent().then((didConsent) => {
+                if (didConsent) {
+                    setSentryEnabled(SentryConsentState.Given);
+                } else {
+                    setSentryEnabled(SentryConsentState.Refused);
+                }
+            });
+        } else {
+            setSentryEnabled(SentryConsentState.Refused);
         }
     }
 
@@ -625,10 +726,17 @@ const ATSUAOCPage = () => {
                     ))}
                 </SelectGroup>
             </div>
+
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">TELEX</span>
                 <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
             </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Error Reporting</span>
+                <Toggle value={sentryEnabled === SentryConsentState.Given} onToggle={(toggleValue) => handleSentryToggle(toggleValue)} />
+            </div>
+
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">
                     SimBrief Username/Pilot ID
@@ -642,8 +750,26 @@ const ATSUAOCPage = () => {
                         className="w-30"
                         value={simbriefDisplay}
                         noLabel
-                        onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
+                        onBlur={(value) => handleSimbriefUsernameInput(value.replace(/\s/g, ''))}
                         onChange={(value) => setSimbriefDisplay(value)}
+                    />
+                </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">
+                    Hoppie User ID
+                    <span className={`${!hoppieError && 'hidden'} text-red-600`}>
+                        <span className="text-white"> | </span>
+                        Hoppie Error
+                    </span>
+                </span>
+                <div className="flex flex-row items-center">
+                    <SimpleInput
+                        className="w-30"
+                        value={hoppieUserId}
+                        noLabel
+                        onBlur={(value) => handleHoppieUsernameInput(value.replace(/\s/g, ''))}
+                        onChange={(value) => setHoppieUserId(value)}
                     />
                 </div>
             </div>

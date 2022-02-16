@@ -19,7 +19,6 @@
 #include "SimConnectInterface.h"
 #include "SpoilersHandler.h"
 #include "ThrottleAxisMapping.h"
-#include "ThrustLimits.h"
 
 class FlyByWireInterface {
  public:
@@ -62,8 +61,6 @@ class FlyByWireInterface {
   bool wasInSlew = false;
 
   double autothrustThrustLimitReverse = -45;
-  bool autothrustThrustLimitUseExternal = false;
-  bool autothrustThrustLimitUseExternalFlex = false;
 
   bool flightDirectorConnectLatch_1 = false;
   bool flightDirectorConnectLatch_2 = false;
@@ -105,12 +102,10 @@ class FlyByWireInterface {
   AutothrustModelClass::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
 
-  ThrustLimitsModelClass thrustLimits;
-  ThrustLimitsModelClass::ExternalInputs_ThrustLimits_T thrustLimitsInput = {};
-
   InterpolatingLookupTable throttleLookupTable;
 
   bool developmentLocalVariablesEnabled = false;
+  bool useCalculatedLocalizerAndGlideSlope = false;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_condition_Flare;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_radio_fpm;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_c_fpm;
@@ -338,7 +333,6 @@ class FlyByWireInterface {
   bool updateAutopilotStateMachine(double sampleTime);
   bool updateAutopilotLaws(double sampleTime);
   bool updateFlyByWire(double sampleTime);
-  bool updateThrustLimits(double sampleTime);
   bool updateAutothrust(double sampleTime);
 
   bool updateSpoilers(double sampleTime);
