@@ -3260,6 +3260,12 @@ impl ElacComputer {
     }
 
     fn update_elevator_requested_position(&mut self) {
+
+        // If no computer power, hydraulics of elevator targets center position
+        if !self.is_powered {
+            self.elevator_requested_position =Ratio::new::<ratio>(0.5);
+        }
+
         for controller in &mut self.left_elevator_controllers {
             controller.set_requested_position(self.elevator_requested_position);
         }
@@ -3275,16 +3281,6 @@ impl ElacComputer {
         }
 
         for controller in &mut self.right_aileron_controllers {
-            controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        }
-    }
-
-    fn set_elevator_no_position_control(&mut self) {
-        for controller in &mut self.left_elevator_controllers {
-            controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        }
-
-        for controller in &mut self.right_elevator_controllers {
             controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
         }
     }
@@ -3423,21 +3419,17 @@ impl ElacComputer {
         green_circuit_available: bool,
         yellow_circuit_available: bool,
     ) {
-        if self.is_powered {
-            self.set_left_elevator_position_control(LeftElevatorHydConfiguration::from_hyd_state(
-                green_circuit_available,
-                blue_circuit_available,
-            ));
+        self.set_left_elevator_position_control(LeftElevatorHydConfiguration::from_hyd_state(
+            green_circuit_available,
+            blue_circuit_available,
+        ));
 
-            self.set_right_elevator_position_control(
-                RightElevatorHydConfiguration::from_hyd_state(
-                    blue_circuit_available,
-                    yellow_circuit_available,
-                ),
-            );
-        } else {
-            self.set_elevator_no_position_control();
-        }
+        self.set_right_elevator_position_control(
+            RightElevatorHydConfiguration::from_hyd_state(
+                blue_circuit_available,
+                yellow_circuit_available,
+            ),
+        );
     }
 
     fn update_aileron(&mut self, green_circuit_available: bool, blue_circuit_available: bool) {
