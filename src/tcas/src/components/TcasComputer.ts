@@ -158,7 +158,7 @@ export class TcasComputer implements TcasComponent {
 
     private debug: boolean;
 
-    private sendListener = RegisterViewListener('JS_LISTENER_SIMVARS');
+    private sendListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
     private updateThrottler: UpdateThrottler; // Utility to restrict updates
 
