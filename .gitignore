@@ -60,3 +60,4 @@ src/instruments/buildSrc/custom/*
 /flybywire-aircraft-a320-neo/MCDU SERVER/
 /src/mcdu-server/client/build
 !/flybywire-aircraft-a320-neo/CORS SERVER/*
+flybywire-aircraft-a320-neo/html_ui/JS/sentry-client/sentry-client.js
