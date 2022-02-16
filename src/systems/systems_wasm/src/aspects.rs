@@ -1000,7 +1000,7 @@ mod tests {
 
         #[test]
         fn min_sim_connect_value() {
-            assert!(sim_connect_32k_pos_to_f64(u32::MAX - 16384) <= 0.001);
+            assert!(sim_connect_32k_pos_to_f64((u32::MAX - 16384).into()) <= 0.001);
         }
 
         #[test]
