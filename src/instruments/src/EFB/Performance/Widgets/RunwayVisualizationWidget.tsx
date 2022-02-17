@@ -97,7 +97,7 @@ const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runw
                     style={{ bottom: `${bottomPercentage}%` }}
                 >
                     {showText && (
-                        <p className="absolute -top-0.5 w-full font-bold text-center text-current transform -translate-y-full">
+                        <p className={`absolute w-full font-bold text-center text-current transform -top-0.5 ${bottomPercentage < 95 ? '-translate-y-full' : 'translate-y-full'}`}>
                             {label.label}
                             {' '}
                             { Math.round(distanceUnit === 'ft' ? Units.metreToFoot(label.distance) : label.distance) }
