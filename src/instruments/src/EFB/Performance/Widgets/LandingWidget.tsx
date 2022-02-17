@@ -367,7 +367,7 @@ export const LandingWidget = () => {
     };
 
     return (
-        <div className="flex flex-row justify-between h-efb">
+        <div className="flex overflow-hidden flex-row justify-between h-efb">
             <div className="w-full">
                 <div className="flex flex-col justify-between w-full h-full">
                     <div className="mb-4">
@@ -663,7 +663,7 @@ export const LandingWidget = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="flex overflow-hidden flex-row w-full rounded-xl border-2 border-theme-accent divide-x-2 divide-theme-accent">
+                    <div className="flex overflow-hidden flex-row w-full rounded-lg border-2 border-theme-accent divide-x-2 divide-theme-accent">
                         <OutputDisplay
                             label="Maximum Manual"
                             value={distanceUnit === 'ft'
@@ -688,7 +688,7 @@ export const LandingWidget = () => {
                     </div>
                 </div>
             </div>
-            <div className="my-auto mx-10 w-2 h-5/6 rounded-full bg-theme-accent" />
+            <div className="my-auto mx-10 w-2 h-5/6 bg-theme-accent rounded-full" />
             <div className="mt-4">
                 <RunwayVisualizationWidget
                     mainLength={displayedRunwayLength}
