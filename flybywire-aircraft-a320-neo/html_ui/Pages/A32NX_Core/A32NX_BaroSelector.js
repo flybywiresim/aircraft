@@ -35,7 +35,7 @@ class A32NX_BaroSelector {
 
         this.callbackDispatchedAt = this.totalDeltaTime;
         SimVar.GetSimVarArrayValues(batch, (values) => {
-            if (!values || !values[0]) { // make sure next lines does not throw exception
+            if (!values || !values[0] || !values[0][0]) { // make sure next lines does not throw exception
                 return;
             }
             const icao = values[0][0].substr(2).trim();
