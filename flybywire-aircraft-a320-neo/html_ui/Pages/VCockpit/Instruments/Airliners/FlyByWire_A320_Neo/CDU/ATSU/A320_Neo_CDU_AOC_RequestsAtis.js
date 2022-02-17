@@ -6,7 +6,7 @@ class CDUAocRequestsAtis {
             arrival: "",
             selected: "",
             manual: false,
-            formatId: 0,
+            formatID: 1,
             sendStatus: ""
         };
 
@@ -142,7 +142,7 @@ class CDUAocRequestsAtis {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[0] = () => {
-            store.formatId = (store.formatID + 1) % 2;
+            store.formatID = (store.formatID + 1) % 2;
             CDUAocRequestsAtis.ShowPage(mcdu, store);
         };
         mcdu.rightInputDelay[1] = () => {

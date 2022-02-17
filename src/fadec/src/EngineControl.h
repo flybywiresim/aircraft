@@ -951,7 +951,7 @@ class EngineControl {
       isFlexActive = false;
     }
 
-    if (isFlexActive && prevThrustLimitType == 3 && thrustLimitType == 1) {
+    if (isFlexActive && !isTransitionActive && thrustLimitType == 1) {
       isTransitionActive = true;
       transitionStartTime = simulationTime;
       transitionFactor = 0.2;
