@@ -158,6 +158,12 @@ const PseudoFWC: React.FC = () => {
     const [agent2Discharge, setAgent2Discharge] = useState(false);
 
     const [flightPhaseInhibitOverride] = useSimVar('L:A32NX_FWC_INHIBOVRD', 'bool', 500);
+    const [nwSteeringDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'bool', 500);
+    const [hydPTU] = useSimVar('L:A32NX_HYD_PTU_ON_ECAM_MEMO', 'bool', 500);
+    const [ratDeployed] = useSimVar('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100', 500);
+    const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'enum', 1000);
+    const [predWSOn] = useSimVar('L:A32NX_SWITCH_RADAR_PWS_Position', 'bool', 1000);
+    const [gpwsOff] = useSimVar('L:A32NX_GPWS_TERR_OFF', 'bool', 500);
 
     // Check out updateTakeoffConfigWarnings(_test) {
 
@@ -217,7 +223,7 @@ const PseudoFWC: React.FC = () => {
                 '260002012', '260002013', '260002014', '260002015', '260002016'],
             memoInhibit: false,
             failure: 3,
-            sysPage: 'ENG',
+            sysPage: 0,
             side: 'LEFT',
         },
         '2600030': {
@@ -234,7 +240,7 @@ const PseudoFWC: React.FC = () => {
             codesToReturn: ['260003001', '260003002', '260003003', '260003004', '260003005'],
             memoInhibit: false,
             failure: 3,
-            sysPage: 'APU',
+            sysPage: 6,
             side: 'LEFT',
         },
         '0000010': {
@@ -409,7 +415,83 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'RIGHT',
         },
-
+        '0000200':
+        {
+            flightPhaseInhib: [3, 4, 5, 6, 7, 8],
+            simVarIsActive: () => [1, 2, 9, 10].includes(flightPhase) && parkBrake === 1,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000020001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000040':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => nwSteeringDisc === 1,
+            whichCodeToReturn: [engine1State > 0 || engine2State > 1 ? 1 : 0],
+            codesToReturn: ['000004001', '000004002'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000160':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => hydPTU === 1,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000016001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000210':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => ratDeployed > 0,
+            whichCodeToReturn: [[1, 2].includes(flightPhase) ? 1 : 0],
+            codesToReturn: ['000021001', '000021002'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000070':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => engSelectorPosition === 2,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000007001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000540':
+        {
+            flightPhaseInhib: [1, 10],
+            simVarIsActive: () => predWSOn === 0 && ![1, 10].includes(flightPhase),
+            whichCodeToReturn: [[3, 4, 5, 7, 8, 9].includes(flightPhase) || toconfig === 1 ? 1 : 0],
+            codesToReturn: ['000054001', '000054002'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000545':
+        {
+            flightPhaseInhib: [1, 10],
+            simVarIsActive: () => gpwsOff === 1 && ![1, 10].includes(flightPhase),
+            whichCodeToReturn: [[3, 4, 5, 7, 8, 9].includes(flightPhase) || toconfig === 1 ? 1 : 0],
+            codesToReturn: ['000054501', '000054502'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
     };
 
     useUpdate((deltaTime) => {
@@ -504,8 +586,8 @@ const PseudoFWC: React.FC = () => {
                         });
 
                         // Remove nulls from fire test
-                        console.log('new code');
-                        console.log(newCode);
+                        // console.log('new code');
+                        // console.log(newCode);
                         // // Check memoMessage does not already have current code
                         // console.log('new code after');
                         // console.log(newCode1);
@@ -518,7 +600,7 @@ const PseudoFWC: React.FC = () => {
                         }
 
                         if (value.sysPage > -1) {
-                            SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'Enum', value.sysPage);
+                            SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', value.sysPage);
                         }
                     }
                 }
@@ -550,14 +632,15 @@ const PseudoFWC: React.FC = () => {
         // console.log(orderedMemoArray);
         setMemoMessageLeft(orderedMemoArrayLeft);
         setMemoMessageRight(orderedMemoArrayRight);
-    }, [flightPhase,
+    }, [flightPhase, flightPhaseInhibitOverride,
         fuel, usrStartRefueling, engine1State, engine2State, spoilersArmed, seatBelt, noSmoking, configPortableDevices, strobeLightsOn, leftOuterInnerValve, rightOuterInnerValve,
         fobRounded, unit, gpwsFlapMode, autoBrake, flapsHandle, throttle1Position, throttle2Position,
-        adiru1State, adiru2State, adiru3State, apuFireTest, apuAgentPB,
+        adiru1State, adiru2State, adiru3State, apuFireTest, apuAgentPB, parkBrake,
         cabinReady, toconfig, eng1Agent1PB, eng1Agent2PB, eng1FireTest, eng2FireTest,
         eng2Agent1PB, eng2Agent2PB, eng2FireTest, apuAgentPB, apuMasterSwitch,
         adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
         adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
+        nwSteeringDisc, hydPTU, ratDeployed, engSelectorPosition, predWSOn, gpwsOff,
     ]);
 
     useEffect(() => {

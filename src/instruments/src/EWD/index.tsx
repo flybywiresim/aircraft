@@ -15,11 +15,6 @@ export const EWD: React.FC = () => {
         return url ? parseInt(url.substring(url.length - 1), 10) : 0;
     });
 
-    const [spoiler] = useSimVar('L:A32NX_SPOILER_FETTLING', 'bool', 500);
-    useEffect(() => {
-        console.log(`Spoiler is ${spoiler}`);
-    }, [spoiler]);
-
     return (
         <DisplayUnit
             electricitySimvar="L:A32NX_ELEC_AC_2_BUS_IS_POWERED"
