@@ -9,6 +9,7 @@ include_directories(
         AFTER
         "${CMAKE_SOURCE_DIR}/src"
         "${CMAKE_SOURCE_DIR}/src/commandline"
+        "${CMAKE_SOURCE_DIR}/src/fmt/include"
         "${CMAKE_SOURCE_DIR}/../fbw/src"
         "${CMAKE_SOURCE_DIR}/../fbw/src/model"
         "${CMAKE_SOURCE_DIR}/../fbw/src/zlib"
@@ -31,6 +32,8 @@ add_executable(
         ../fbw/src/zlib/zfstream.cc
         ../fbw/src/zlib/zutil.c
         src/commandline/CommandLine.cpp
+        src/fmt/src/format.cc
+        src/fmt/src/os.cc
         src/FlightDataRecorderConverter.cpp
         src/main.cpp
 )
