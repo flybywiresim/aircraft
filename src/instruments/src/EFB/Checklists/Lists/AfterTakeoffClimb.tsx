@@ -1,6 +1,6 @@
-import { Checklist } from '../Checklists';
+import { ChecklistDefinition } from '../Checklists';
 
-export const afterTakeoffClimbChecklist: Checklist = {
+export const afterTakeoffClimbChecklist: ChecklistDefinition = {
     name: 'AFTER TAKEOFF / CLIMB',
     items: [
         {
