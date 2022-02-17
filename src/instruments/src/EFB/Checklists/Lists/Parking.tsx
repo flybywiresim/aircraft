@@ -1,6 +1,6 @@
-import { Checklist } from '../Checklists';
+import { ChecklistDefinition } from '../Checklists';
 
-export const parkingChecklist: Checklist = {
+export const parkingChecklist: ChecklistDefinition = {
     name: 'PARKING',
     items: [
         {

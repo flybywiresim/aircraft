@@ -6,7 +6,7 @@ interface ChecklistItem {
     divider?: boolean;
 }
 
-interface Checklist {
+export interface Checklist {
     name: string;
     items: ChecklistItem[];
     markedCompleted: boolean;

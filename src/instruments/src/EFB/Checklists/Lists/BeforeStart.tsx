@@ -1,8 +1,8 @@
 // https://docs.flybywiresim.com/pilots-corner/a32nx-briefing/a32nx_api/
 
-import { Checklist } from '../Checklists';
+import { ChecklistDefinition } from '../Checklists';
 
-export const beforeStartChecklist: Checklist = {
+export const beforeStartChecklist: ChecklistDefinition = {
     name: 'BEFORE START',
     items: [
         {
@@ -64,10 +64,7 @@ export const beforeStartChecklist: Checklist = {
         {
             item: 'BEACON',
             result: 'ON',
-            condition: () => {
-                const v1 = SimVar.GetSimVarValue('LIGHT BEACON', 'Number');
-                return v1 === 1;
-            },
+            condition: () => SimVar.GetSimVarValue('LIGHT BEACON', 'Number') === 1,
         },
         {
             item: 'THR LEVERS',

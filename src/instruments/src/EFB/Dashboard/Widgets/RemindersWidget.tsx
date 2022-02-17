@@ -3,6 +3,7 @@ import { IconArrowRight } from '@tabler/icons';
 import { A320Failure } from '@flybywiresim/failures';
 import { Link } from 'react-router-dom';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { Check } from 'react-bootstrap-icons';
 import {
     setChartId,
     setChartLinks,
@@ -18,18 +19,17 @@ import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { WeatherWidget } from './WeatherWidget';
-import { getChecklistCompletion, areAllChecklistItemsCompleted, setSelectedChecklistIndex } from '../../Store/features/checklists';
+import {
+    areAllChecklistItemsCompleted, Checklist,
+    getChecklistCompletion,
+    setSelectedChecklistIndex,
+} from '../../Store/features/checklists';
 
 export const RemindersWidget = () => {
-    const { allFailures, activeFailures } = useFailuresOrchestrator();
-    const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
     const navigraph = useNavigraph();
-    const dispatch = useAppDispatch();
-    const [, setChartSource] = usePersistentProperty('EFB_CHART_SOURCE');
 
     const { departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
     const { userDepartureIcao, userDestinationIcao } = useAppSelector((state) => state.dashboard);
-    const { checklists } = useAppSelector((state) => state.checklists);
 
     return (
         <div className="w-full">
@@ -45,85 +45,148 @@ export const RemindersWidget = () => {
                             </div>
                         </RemindersSection>
                         {navigraph.hasToken && (
-                            <RemindersSection title="Pinned Charts" pageLinkPath="/navigation">
-                                <div className="grid grid-cols-2">
-                                    {/* A spread here is necessary to make Redux not kill itself */}
-                                    {[...pinnedCharts].sort((a, b) => b.timeAccessed - a.timeAccessed).map(({
-                                        chartId,
-                                        chartName,
-                                        icao,
-                                        tabIndex,
-                                        title,
-                                    }, index) => (
-                                        <Link
-                                            to="/navigation"
-                                            className={`flex flex-col flex-wrap p-2 mt-4 bg-theme-accent rounded-md ${index && index % 2 !== 0 && 'ml-4'}`}
-                                            onClick={() => {
-                                                setChartSource('NAVIGRAPH');
-                                                dispatch(setChartDimensions({ width: undefined, height: undefined }));
-                                                dispatch(setChartLinks({ light: '', dark: '' }));
-                                                dispatch(setChartName(chartName));
-                                                dispatch(setChartId(chartId));
-                                                dispatch(setIcao(icao));
-                                                dispatch(setTabIndex(tabIndex));
-                                                dispatch(setChartRotation(0));
-                                                dispatch(editPinnedChart({
-                                                    chartId,
-                                                    timeAccessed: new Date().getTime(),
-                                                }));
-                                            }}
-                                        >
-                                            <h2 className="font-bold">{icao}</h2>
-                                            <span className="mt-2 font-inter">{title}</span>
-                                            <IconArrowRight className="mt-auto ml-auto text-theme-highlight" />
-                                        </Link>
-                                    ))}
-                                </div>
-                                {!pinnedCharts.length && (
-                                    <h1 className="m-auto my-4 font-bold opacity-60">No Pinned Charts</h1>
-                                )}
-                            </RemindersSection>
+                            <PinnedChartsReminder />
                         )}
-                        <RemindersSection title="Maintenance" pageLinkPath="/failures">
-                            <div className="flex flex-row flex-wrap">
-                                {Array
-                                    .from(activeFailures)
-                                // Sorts the failures by name length, greatest to least
-                                    .sort((a, b) => (allFailures.find((f) => f.identifier === b)?.name ?? '').length - (allFailures.find((f) => f.identifier === a)?.name ?? '').length)
-                                    .map((failure) => (
-                                        <ActiveFailureReminder name={allFailures.find((it) => it.identifier === failure)?.name ?? '<unknown>'} />
-                                    ))}
-                                {!activeFailures.size && (
-                                    <h1 className="m-auto my-4 font-bold opacity-60">No Active Failures</h1>
-                                )}
-                            </div>
-                        </RemindersSection>
-                        <RemindersSection title="Checklists" pageLinkPath="/checklists">
-                            <div className="grid grid-cols-2">
-                                {checklists.map((checklist, clIndex) => (
-                                    <Link
-                                        to="/checklists"
-                                        className={`relative overflow-hidden flex flex-col flex-wrap px-2 pt-3 pb-2 mt-4 bg-theme-accent rounded-md ${clIndex && clIndex % 2 !== 0 && 'ml-4'}`}
-                                        onClick={() => {
-                                            dispatch(setSelectedChecklistIndex(clIndex));
-                                        }}
-                                    >
-                                        <div className="absolute top-0 left-0 flex-row w-full h-2 bg-theme-secondary">
-                                            <div
-                                                className={`h-full ${areAllChecklistItemsCompleted(clIndex) ? 'bg-colors-lime-400' : 'bg-theme-highlight'}`}
-                                                style={{ width: `${getChecklistCompletion(clIndex) * 100}%`, transition: 'width 0.5s ease' }}
-                                            />
-                                        </div>
-                                        <h2 className="font-bold">{checklist.name}</h2>
-                                        <IconArrowRight className={`mt-auto ml-auto ${areAllChecklistItemsCompleted(clIndex) ? 'text-colors-lime-400' : 'text-theme-highlight'}`} />
-                                    </Link>
-                                ))}
-                            </div>
-                        </RemindersSection>
+                        <MaintenanceReminder />
+                        <ChecklistReminder />
                     </div>
                 </ScrollableContainer>
             </div>
         </div>
+    );
+};
+
+const PinnedChartsReminder = () => {
+    const dispatch = useAppDispatch();
+    const [, setChartSource] = usePersistentProperty('EFB_CHART_SOURCE');
+    const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
+
+    return (
+        <RemindersSection title="Pinned Charts" pageLinkPath="/navigation">
+            <div className="grid grid-cols-2">
+                {/* A spread here is necessary to make Redux not kill itself */}
+                {[...pinnedCharts].sort((a, b) => b.timeAccessed - a.timeAccessed).map(({
+                    chartId,
+                    chartName,
+                    icao,
+                    tabIndex,
+                    title,
+                }, index) => (
+                    <Link
+                        to="/navigation"
+                        className={`flex flex-col flex-wrap p-2 mt-4 bg-theme-accent rounded-md ${index && index % 2 !== 0 && 'ml-4'}`}
+                        onClick={() => {
+                            setChartSource('NAVIGRAPH');
+                            dispatch(setChartDimensions({ width: undefined, height: undefined }));
+                            dispatch(setChartLinks({ light: '', dark: '' }));
+                            dispatch(setChartName(chartName));
+                            dispatch(setChartId(chartId));
+                            dispatch(setIcao(icao));
+                            dispatch(setTabIndex(tabIndex));
+                            dispatch(setChartRotation(0));
+                            dispatch(editPinnedChart({
+                                chartId,
+                                timeAccessed: new Date().getTime(),
+                            }));
+                        }}
+                    >
+                        <h2 className="font-bold">{icao}</h2>
+                        <span className="mt-2 font-inter">{title}</span>
+                        <IconArrowRight className="mt-auto ml-auto text-theme-highlight" />
+                    </Link>
+                ))}
+            </div>
+            {!pinnedCharts.length && (
+                <h1 className="m-auto my-4 font-bold opacity-60">No Pinned Charts</h1>
+            )}
+        </RemindersSection>
+    );
+};
+
+const MaintenanceReminder = () => {
+    const { allFailures, activeFailures } = useFailuresOrchestrator();
+
+    return (
+        <RemindersSection title="Maintenance" pageLinkPath="/failures">
+            <div className="flex flex-row flex-wrap">
+                {Array
+                    .from(activeFailures)
+                    // Sorts the failures by name length, greatest to least
+                    .sort((a, b) => (allFailures.find((f) => f.identifier === b)?.name ?? '').length - (allFailures.find((f) => f.identifier === a)?.name ?? '').length)
+                    .map((failure) => (
+                        <ActiveFailureReminder
+                            name={allFailures.find((it) => it.identifier === failure)?.name ?? '<unknown>'}
+                        />
+                    ))}
+                {!activeFailures.size && (
+                    <h1 className="m-auto my-4 font-bold opacity-60">No Active Failures</h1>
+                )}
+            </div>
+        </RemindersSection>
+    );
+};
+
+interface ChecklistReminderWidgetProps {
+    checklist: Checklist,
+    checklistIndex: number
+}
+
+const ChecklistReminderWidget = ({ checklist, checklistIndex }: ChecklistReminderWidgetProps) => {
+    const dispatch = useAppDispatch();
+
+    let color = 'text-theme-highlight';
+
+    if (areAllChecklistItemsCompleted(checklistIndex)) {
+        if (checklist.markedCompleted) {
+            color = 'text-colors-lime-400';
+        } else {
+            color = 'text-colors-orange-400';
+        }
+    }
+
+    return (
+        <Link
+            to="/checklists"
+            className={`relative overflow-hidden flex flex-col flex-wrap px-2 pt-3 pb-2 mt-4 bg-theme-accent rounded-md 
+            ${checklistIndex && checklistIndex % 2 !== 0 && 'ml-4'}
+            ${color}
+            `}
+            onClick={() => {
+                dispatch(setSelectedChecklistIndex(checklistIndex));
+            }}
+        >
+            <div className="absolute top-0 left-0 flex-row w-full h-2 text-current bg-theme-secondary">
+                <div
+                    className="h-full text-current bg-current"
+                    style={{
+                        width: `${getChecklistCompletion(checklistIndex) * 100}%`,
+                        transition: 'width 0.5s ease',
+                    }}
+                />
+            </div>
+
+            <h2 className="font-bold">{checklist.name}</h2>
+
+            {checklist.markedCompleted ? (
+                <Check className="mt-auto ml-auto text-colors-lime-400" size={28} />
+            ) : (
+                <IconArrowRight className="mt-auto ml-auto text-current" />
+            )}
+        </Link>
+    );
+};
+
+const ChecklistReminder = () => {
+    const { checklists } = useAppSelector((state) => state.checklists);
+
+    return (
+        <RemindersSection title="Checklists" pageLinkPath="/checklists">
+            <div className="grid grid-cols-2">
+                {checklists.map((checklist, clIndex) => (
+                    <ChecklistReminderWidget checklist={checklist} checklistIndex={clIndex} />
+                ))}
+            </div>
+        </RemindersSection>
     );
 };
 

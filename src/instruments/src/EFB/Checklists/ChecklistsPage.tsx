@@ -24,9 +24,32 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
     const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.checklists);
     const isItemCompleted = checklists[selectedChecklistIndex].items[index]?.completed;
 
+    const firstIncompleteIdx = checklists[selectedChecklistIndex].items.findIndex((item, index) => {
+        // Let's go ahead and skip checklist items that have a completion-determination function as those can't be manually checked.
+        if (autoFillChecklists) {
+            return !item.completed && !CHECKLISTS[selectedChecklistIndex].items[index].condition;
+        }
+
+        return !item.completed;
+    });
+
+    const itemCheckedAfterIncomplete = checklists[selectedChecklistIndex].items.slice(firstIncompleteIdx).some((item) => item.completed && !item.divider);
+
+    const itemImproperlyUnchecked = index === firstIncompleteIdx && itemCheckedAfterIncomplete;
+
+    let color = 'text-white';
+
+    if (isItemCompleted) {
+        color = 'text-colors-lime-400';
+    }
+
+    if (itemImproperlyUnchecked && !autoFillChecklists) {
+        color = 'text-red-500';
+    }
+
     return (
         <div
-            className="flex flex-row items-center py-2 space-x-4"
+            className={`flex flex-row items-center py-2 space-x-4 ${color}`}
             onClick={() => {
                 if (item.condition && autoFillChecklists) {
                     setChecklistShake(true);
@@ -51,9 +74,7 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
         >
             {item.item && (
                 <div
-                    className={`flex-shrink-0 flex items-center justify-center border-4 w-8 h-8 ${isItemCompleted
-                        ? 'border-colors-lime-400'
-                        : 'border-white'}`}
+                    className="flex flex-shrink-0 justify-center items-center w-8 h-8 text-current border-4 border-current"
                 >
                     {(!!autoFillChecklists && item.condition) && (
                         <LockFill size={40} className={`${checklistShake && 'shake text-red-500'}`} />
@@ -63,17 +84,11 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
                     )}
                 </div>
             )}
-            <div className={`flex flex-row items-center w-full ${isItemCompleted
-                ? 'text-colors-lime-400'
-                : 'text-white'}`}
-            >
+            <div className="flex flex-row items-center w-full text-current">
                 <div className="text-current whitespace-nowrap">
                     {item.item}
                 </div>
-                <div className={`w-full h-1 ${item.item && 'mx-4'} ${(isItemCompleted && !item.divider)
-                    ? 'bg-colors-lime-400'
-                    : 'bg-white'}`}
-                />
+                <div className={`w-full h-1 text-current ${item.item && 'mx-4'} ${(item.divider) ? 'bg-white' : 'bg-current'}`} />
                 <div className="text-current whitespace-nowrap">
                     {item.result}
                 </div>
@@ -167,6 +182,7 @@ export const ChecklistPage = () => {
                     ))}
                 </div>
             </ScrollableContainer>
+
             <CompletionButton />
         </div>
     );
