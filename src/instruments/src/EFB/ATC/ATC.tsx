@@ -24,7 +24,9 @@ export const ATC = () => {
     const [hoppieEnabled, setHoppieEnabled] = useState(SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1 ? 'ENABLED' : 'DISABLED');
 
     const loadAtc = useCallback(() => {
+        if (atisSource !== 'vatsim' && atisSource !== 'ivao') return;
         apiClient.ATC.get((atisSource as string).toLowerCase()).then((res) => {
+            if (!res) return;
             let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
             allAtc = allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975);
             for (const a of allAtc) {
