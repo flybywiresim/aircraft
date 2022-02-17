@@ -56,12 +56,23 @@ export class FbwAircraftSentryClient {
             return Promise.resolve(false);
         }
 
+        this.runClientSubscription(config);
+
         if (config.root) {
             console.log('[SentryClient] Starting as root client');
 
             return this.runRootClientFlow(config);
         }
 
+        return Promise.resolve(false);
+    }
+
+    /**
+     * Runs the client subscription (subscribes to the NXDataStore property and controls the client accordingly)
+     *
+     * @param config a {@link FbwAircraftSentryClientConfiguration} object
+     */
+    private async runClientSubscription(config: FbwAircraftSentryClientConfiguration) {
         NXDataStore.getAndSubscribe(SENTRY_CONSENT_KEY, (key, value) => {
             if (value === SentryConsentState.Given) {
                 console.log('[SentryClient] Synchronised consent state is Given. Initializing sentry');
@@ -71,8 +82,6 @@ export class FbwAircraftSentryClient {
                 FbwAircraftSentryClient.closeSentry();
             }
         });
-
-        return Promise.resolve(false);
     }
 
     /**
@@ -93,21 +102,36 @@ export class FbwAircraftSentryClient {
         case SentryConsentState.Unknown:
             console.log('[SentryClient] Consent state is Unknown. Asking for consent');
 
-            return FbwAircraftSentryClient.requestConsent().then((didConsent) => {
-                if (didConsent) {
-                    NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Given);
+            // It seems that for some people, spawning the popup / writing to NXDataStore can cause a CTD if the flight is not fully loaded.
+            // So instead, we wait for a bit after the FlightStart event to show it and gather consent.
+            return new Promise((resolve, reject) => {
+                const instrument = document.querySelector('vcockpit-panel > *');
 
-                    console.log('[SentryClient] User requested consent state Given. Initializing sentry');
+                if (instrument) {
+                    instrument.addEventListener('FlightStart', () => {
+                        // ...and give ourselves some breathing room
+                        setTimeout(() => {
+                            resolve(FbwAircraftSentryClient.requestConsent().then((didConsent) => {
+                                if (didConsent) {
+                                    NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Given);
 
-                    return FbwAircraftSentryClient.attemptInitializeSentry(config);
+                                    console.log('[SentryClient] User requested consent state Given. Initializing sentry');
+
+                                    return FbwAircraftSentryClient.attemptInitializeSentry(config);
+                                }
+
+                                NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
+
+                                console.log('[SentryClient] User requested consent state Refused. Doing nothing');
+
+                                return false;
+                            }).catch(() => false));
+                        }, 1_000);
+                    });
+                } else {
+                    reject(new Error('[SentryClient] Could not find an instrument element to hook onto'));
                 }
-
-                NXDataStore.set(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
-
-                console.log('[SentryClient] User requested consent state Refused. Doing nothing');
-
-                return false;
-            }).catch(() => false);
+            });
         case SentryConsentState.Refused:
             console.log('[SentryClient] Consent state is Refused. Doing nothing');
             break;
@@ -130,8 +154,8 @@ export class FbwAircraftSentryClient {
         return new Promise<boolean>((resolve) => {
             popup.showPopUp(
                 'A32NX - ERROR REPORTING',
-                'Are you willing to help us by enabling anonymous error reporting? This is 100% optional and we will never collect your personal data, '
-                + 'but it will help us diagnose issues quickly.',
+                'Are you willing to help FlyByWire Simulations by enabling anonymous reporting of errors that may occur in the future? '
+                + 'This is 100% optional and we will never collect your personal data, but it will help us diagnose issues quickly.',
                 'normal',
                 () => resolve(true),
                 () => resolve(false),
