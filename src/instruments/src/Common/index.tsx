@@ -15,9 +15,9 @@ export const render = (Slot: React.ReactElement, enableSentryTracing = false, se
         buildInfoFilePrefix: 'a32nx',
         enableTracing: enableSentryTracing,
         root: sentryRootClient,
-    }).then(() => {
-        ReactDOM.render(<SimVarProvider>{Slot}</SimVarProvider>, Defaults.getRenderTarget());
     });
+
+    ReactDOM.render(<SimVarProvider>{Slot}</SimVarProvider>, Defaults.getRenderTarget());
 };
 
 /**
