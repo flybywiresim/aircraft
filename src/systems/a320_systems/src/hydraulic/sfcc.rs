@@ -282,16 +282,19 @@ impl SfccChannel for SlatsChannel {
         !self.feedback_equals_demanded()
     }
 
-
     fn generate_configuration(
         &self,
         _context: &UpdateContext,
         flaps_handle: &impl HandlePositionMemory,
         adiru: &impl AirDataSource,
     ) -> FlapsConf {
+        //I've decided that the Slats channel will never
+        //produce a Conf1F configuration.
+        //It's a design choice.
         match (flaps_handle.previous_position(), flaps_handle.position()) {
-            (_, to) if to != 0 => FlapsConf::from(to),
-            (from, 0) if self.alpha_lock_engaged && from > 0 => FlapsConf::Conf1,
+            (_, 1) => FlapsConf::from(1),
+            (_, to) if to != 0 => FlapsConf::from(to+1),
+            (_, 0) if self.alpha_lock_engaged => FlapsConf::Conf1,
             (_, 0) => FlapsConf::Conf0,
             (_, _) => self.calculated_conf,
         }
@@ -397,10 +400,15 @@ mod tests {
         test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
         Aircraft,
     };
+    use systems::
+        electrical::{
+            test::TestElectricitySource, ElectricalBus, Electricity, ElectricitySource,
+            ExternalPowerSource,
+        };
     use systems::landing_gear::{LandingGearControlInterfaceUnit};
     use systems::navigation::adirs::{AirDataInertialReferenceSystem};
-    use systems::shared::{LgciuWeightOnWheels,LgciuSensors};
-    use uom::si::{angular_velocity::degree_per_second, pressure::psi};
+    use systems::shared::{LgciuWeightOnWheels,LgciuSensors,PotentialOrigin};
+    use uom::si::{angular_velocity::degree_per_second, pressure::psi,electric_potential::volt};
 
     struct SfccTestFppu {
         feedback_angle: Angle,
@@ -426,22 +434,63 @@ mod tests {
         adirs: AirDataInertialReferenceSystem,
         slats_fppu: SfccTestFppu,
         flaps_fppu: SfccTestFppu,
+        powered_source_ac: TestElectricitySource,
+        ac_1_bus: ElectricalBus,
+        ac_2_bus: ElectricalBus,
+        dc_1_bus: ElectricalBus,
+        dc_2_bus: ElectricalBus,
+        dc_ess_bus: ElectricalBus,
+        dc_hot_1_bus: ElectricalBus,
+        dc_hot_2_bus: ElectricalBus,
     }
 
     impl A320SfccTestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 sf_electronic_complex: SlatsFlapsElectronicComplex::new(context),
-                lgcius: [LandingGearControlInterfaceUnit::new(
-                    ElectricalBusType::DirectCurrentEssential),LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrent(2))],
+                lgcius: [LandingGearControlInterfaceUnit::new(context, 1,ElectricalBusType::DirectCurrentEssential),LandingGearControlInterfaceUnit::new(context,2,ElectricalBusType::DirectCurrent(2))],
                 adirs: AirDataInertialReferenceSystem::new(context),
                 slats_fppu: SfccTestFppu::new(),
                 flaps_fppu: SfccTestFppu::new(),
+                powered_source_ac: TestElectricitySource::powered(context,PotentialOrigin::EngineGenerator(1)),
+                ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
+                ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
+                dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
+                dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
+                dc_ess_bus: ElectricalBus::new(
+                    context,
+                    ElectricalBusType::DirectCurrentEssential,
+                ),
+                dc_hot_1_bus: ElectricalBus::new(
+                    context,
+                    ElectricalBusType::DirectCurrentHot(1),
+                ),
+                dc_hot_2_bus: ElectricalBus::new(
+                    context,
+                    ElectricalBusType::DirectCurrentHot(2),
+                ),
+
             }
         }
     }
 
     impl Aircraft for A320SfccTestAircraft {
+        fn update_before_power_distribution(
+            &mut self,
+            _: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
+            self.powered_source_ac
+            .power_with_potential(ElectricPotential::new::<volt>(115.));
+            electricity.supplied_by(&self.powered_source_ac);
+            electricity.flow(&self.powered_source_ac, &self.ac_1_bus);
+            electricity.flow(&self.powered_source_ac, &self.ac_2_bus);
+            electricity.flow(&self.powered_source_ac, &self.dc_1_bus);
+            electricity.flow(&self.powered_source_ac, &self.dc_2_bus);
+            electricity.flow(&self.powered_source_ac, &self.dc_ess_bus);
+            electricity.flow(&self.powered_source_ac, &self.dc_hot_1_bus);
+            electricity.flow(&self.powered_source_ac, &self.dc_hot_2_bus);
+        }
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.sf_electronic_complex.update(context, [self.adirs.adirus(0), self.adirs.adirus(1)],[&self.lgcius[0], &self.lgcius[1]],
                         &self.flaps_fppu, &self.slats_fppu);
@@ -450,6 +499,9 @@ mod tests {
     impl SimulationElement for A320SfccTestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
             self.sf_electronic_complex.accept(visitor);
+            self.lgcius[0].accept(visitor);
+            self.lgcius[1].accept(visitor);
+            self.adirs.accept(visitor);
             visitor.visit(self);
         }
 
@@ -496,6 +548,11 @@ mod tests {
             self
         }
 
+        fn set_alpha(mut self, alpha: f64) -> Self {
+            self.write_by_name("INCIDENCE ALPHA", alpha);
+            self
+        }
+
         fn get_flaps_demanded_angle(&self,sfcc_id: usize) -> f64 {
             self.query(|a| {
                 a.sf_electronic_complex.sfcc[sfcc_id]
@@ -522,6 +579,13 @@ mod tests {
             self.query(|a| {
                 a.sf_electronic_complex.sfcc[sfcc_id]
                     .slats_channel.calculated_conf
+            })
+        }
+
+        fn is_alpha_lock_engaged(&self, sfcc_id: usize) -> bool {
+            self.query(|a| {
+                a.sf_electronic_complex.sfcc[sfcc_id]
+                    .slats_channel.alpha_lock_engaged
             })
         }
 
@@ -571,16 +635,337 @@ mod tests {
     }
 
     #[test]
-    fn dummy_test() {
-        assert!(1==1)
+    fn test_lgciu_on_ground() {
+        let mut test_bed = test_bed_with(true).run_one_tick();
+
+        assert!(test_bed.lgciu_on_ground());
+        test_bed = test_bed_with(false);
+        assert!(!test_bed.lgciu_on_ground())
     }
 
     #[test]
-    fn test_lgciu_on_ground() {
-        let mut test_bed = test_bed_with(true);
+    fn sfcc_flaps_test_regular_handle_increase_transitions_flaps_target_airspeed_below_100() {
+        let angle_delta: f64 = 0.1;
+        let mut test_bed = test_bed_with(true)
+            .set_indicated_airspeed(50.)
+            .run_one_tick();
 
-        assert!(test_bed.lgciu_on_ground());
-        test_bed = test_bed_with(true);
-        assert!(!test_bed.lgciu_on_ground())
+        test_bed.test_conf(0, 0., 0., FlapsConf::Conf0, FlapsConf::Conf0, angle_delta,0);
+        test_bed.test_conf(0, 0., 0., FlapsConf::Conf0, FlapsConf::Conf0, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
+
+        test_bed.test_conf(1, 10., 18., FlapsConf::Conf1, FlapsConf::Conf1F, angle_delta,0);
+        test_bed.test_conf(1, 10., 18., FlapsConf::Conf1, FlapsConf::Conf1F, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
+
+        test_bed.test_conf(2, 15., 22., FlapsConf::Conf2, FlapsConf::Conf2, angle_delta,0);
+        test_bed.test_conf(2, 15., 22., FlapsConf::Conf2, FlapsConf::Conf2, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
+
+        test_bed.test_conf(3, 20., 22., FlapsConf::Conf3, FlapsConf::Conf3, angle_delta,0);
+        test_bed.test_conf(3, 20., 22., FlapsConf::Conf3, FlapsConf::Conf3, angle_delta,1);
+
+
+        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
+
+        test_bed.test_conf(4, 40., 27., FlapsConf::ConfFull, FlapsConf::ConfFull, angle_delta,0);
+        test_bed.test_conf(4, 40., 27., FlapsConf::ConfFull, FlapsConf::ConfFull, angle_delta,1);
+    }
+
+    #[test]
+    fn sfcc_flaps_test_regular_handle_increase_transitions_flaps_target_airspeed_above_100() {
+        let angle_delta: f64 = 0.1;
+        let mut test_bed = test_bed_with(true)
+            .set_indicated_airspeed(150.)
+            .run_one_tick();
+
+        test_bed.test_conf(0, 0., 0., FlapsConf::Conf0, FlapsConf::Conf0, angle_delta,0);
+        test_bed.test_conf(0, 0., 0., FlapsConf::Conf0, FlapsConf::Conf0, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
+
+        test_bed.test_conf(1, 0., 18., FlapsConf::Conf1, FlapsConf::Conf1, angle_delta,0);
+        test_bed.test_conf(1, 0., 18., FlapsConf::Conf1, FlapsConf::Conf1, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
+
+        test_bed.test_conf(2, 15., 22., FlapsConf::Conf2, FlapsConf::Conf2, angle_delta,0);
+        test_bed.test_conf(2, 15., 22., FlapsConf::Conf2, FlapsConf::Conf2, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
+
+        test_bed.test_conf(3, 20., 22., FlapsConf::Conf3, FlapsConf::Conf3, angle_delta,0);
+        test_bed.test_conf(3, 20., 22., FlapsConf::Conf3, FlapsConf::Conf3, angle_delta,1);
+
+
+        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
+
+        test_bed.test_conf(4, 40., 27., FlapsConf::ConfFull, FlapsConf::ConfFull, angle_delta,0);
+        test_bed.test_conf(4, 40., 27., FlapsConf::ConfFull, FlapsConf::ConfFull, angle_delta,1);
+    }
+
+        //Tests regular transition 2->1 below and above 210 knots
+    #[test]
+    fn sfcc_flaps_test_regular_handle_transition_pos_2_to_1() {
+        let mut test_bed = test_bed_with(false)
+            .set_indicated_airspeed(150.)
+            .set_flaps_handle_position(2)
+            .run_one_tick();
+
+        for sid in 0..2 {
+            assert_eq!(test_bed.get_flaps_conf(sid), FlapsConf::Conf2);
+            assert_eq!(test_bed.get_slats_conf(sid), FlapsConf::Conf2);
+        }
+
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
+
+        for sid in 0..2 {
+            assert_eq!(test_bed.get_flaps_conf(sid), FlapsConf::Conf1F);
+            assert_eq!(test_bed.get_slats_conf(sid), FlapsConf::Conf1);
+        }
+
+        test_bed = test_bed
+            .set_indicated_airspeed(220.)
+            .set_flaps_handle_position(2)
+            .run_one_tick();
+
+        for sid in 0..2 {
+            assert_eq!(test_bed.get_flaps_conf(sid), FlapsConf::Conf2);
+            assert_eq!(test_bed.get_slats_conf(sid), FlapsConf::Conf2);
+        }
+
+
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
+        for sid in 0..2 {
+            assert_eq!(test_bed.get_flaps_conf(sid), FlapsConf::Conf1);
+            assert_eq!(test_bed.get_slats_conf(sid), FlapsConf::Conf1);
+        }
+    }
+
+
+    //Tests transition between Conf1F to Conf1 above 210 knots
+    #[test]
+    fn sfcc_flaps_test_regular_handle_transition_pos_1_to_1() {
+        let mut test_bed = test_bed_with(true)
+            .set_indicated_airspeed(50.)
+            .set_flaps_handle_position(1)
+            .run_one_tick();
+
+        for sid in 0..2 {
+            assert_eq!(test_bed.get_flaps_conf(sid), FlapsConf::Conf1F);
+            assert_eq!(test_bed.get_slats_conf(sid), FlapsConf::Conf1);
+        }
+
+        test_bed = test_bed.set_indicated_airspeed(220.).run_one_tick();
+
+        for sid in 0..2 {
+            assert_eq!(test_bed.get_flaps_conf(sid), FlapsConf::Conf1);
+            assert_eq!(test_bed.get_slats_conf(sid), FlapsConf::Conf1);
+        }
+    }
+
+
+    // Tests flaps configuration and angles for regular
+    // decreasing handle transitions, i.e 4->3->2->1->0 in sequence
+    // below 210 knots
+    #[test]
+    fn sfcc_flaps_test_regular_decrease_handle_transition_flaps_target_airspeed_below_210() {
+        let angle_delta: f64 = 0.1;
+        let mut test_bed = test_bed_with(true)
+            .set_indicated_airspeed(150.)
+            .run_one_tick();
+
+        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
+
+        test_bed.test_conf(4, 40., 27., FlapsConf::ConfFull, FlapsConf::ConfFull, angle_delta,0);
+        test_bed.test_conf(4, 40., 27., FlapsConf::ConfFull, FlapsConf::ConfFull, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
+
+        test_bed.test_conf(3, 20., 22., FlapsConf::Conf3, FlapsConf::Conf3, angle_delta,0);
+        test_bed.test_conf(3, 20., 22., FlapsConf::Conf3, FlapsConf::Conf3, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
+
+        test_bed.test_conf(2, 15., 22., FlapsConf::Conf2, FlapsConf::Conf2, angle_delta,0);
+        test_bed.test_conf(2, 15., 22., FlapsConf::Conf2, FlapsConf::Conf2, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
+
+        test_bed.test_conf(1, 10., 18., FlapsConf::Conf1, FlapsConf::Conf1F, angle_delta,0);
+        test_bed.test_conf(1, 10., 18., FlapsConf::Conf1, FlapsConf::Conf1F, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
+
+        test_bed.test_conf(0, 0., 0., FlapsConf::Conf0, FlapsConf::Conf0, angle_delta,0);
+        test_bed.test_conf(0, 0., 0., FlapsConf::Conf0, FlapsConf::Conf0, angle_delta,1);
+    }
+
+    // Tests flaps configuration and angles for regular
+    // decreasing handle transitions, i.e 4->3->2->1->0 in sequence
+    // above 210 knots
+    #[test]
+    fn sfcc_flaps_test_regular_decrease_handle_transition_flaps_target_airspeed_above_210() {
+        let angle_delta: f64 = 0.1;
+        let mut test_bed = test_bed_with(true)
+            .set_indicated_airspeed(220.)
+            .run_one_tick();
+
+        test_bed = test_bed.set_flaps_handle_position(4).run_one_tick();
+
+        test_bed.test_conf(4, 40., 27., FlapsConf::ConfFull, FlapsConf::ConfFull, angle_delta,0);
+        test_bed.test_conf(4, 40., 27., FlapsConf::ConfFull, FlapsConf::ConfFull, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(3).run_one_tick();
+
+        test_bed.test_conf(3, 20., 22., FlapsConf::Conf3, FlapsConf::Conf3, angle_delta,0);
+        test_bed.test_conf(3, 20., 22., FlapsConf::Conf3, FlapsConf::Conf3, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(2).run_one_tick();
+
+        test_bed.test_conf(2, 15., 22., FlapsConf::Conf2, FlapsConf::Conf2, angle_delta,0);
+        test_bed.test_conf(2, 15., 22., FlapsConf::Conf2, FlapsConf::Conf2, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick();
+
+        test_bed.test_conf(1, 0., 18., FlapsConf::Conf1, FlapsConf::Conf1, angle_delta,0);
+        test_bed.test_conf(1, 0., 18., FlapsConf::Conf1, FlapsConf::Conf1, angle_delta,1);
+
+        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick();
+
+        test_bed.test_conf(0, 0., 0., FlapsConf::Conf0, FlapsConf::Conf0, angle_delta,0);
+        test_bed.test_conf(0, 0., 0., FlapsConf::Conf0, FlapsConf::Conf0, angle_delta,1);
+    }
+
+    #[test]
+    fn sfcc_flaps_test_alpha_lock() {
+        let mut test_bed = test_bed_with(true)
+            .set_indicated_airspeed(50.)
+            .set_alpha(0.);
+        test_bed = test_bed.set_flaps_handle_position(1).run_one_tick().run_one_tick();
+
+        assert!(!test_bed.is_alpha_lock_engaged(0));
+        assert!(!test_bed.is_alpha_lock_engaged(1));
+
+        //alpha lock should not engaged while on ground
+        //below 60 IAS
+        test_bed = test_bed.set_alpha(8.7).run_one_tick().run_one_tick();
+        assert!(!test_bed.is_alpha_lock_engaged(0));
+        assert!(!test_bed.is_alpha_lock_engaged(1));
+
+        test_bed = test_bed.set_alpha(8.7).set_indicated_airspeed(61.).run_one_tick().run_one_tick();
+        assert!(test_bed.is_alpha_lock_engaged(0));
+        assert!(test_bed.is_alpha_lock_engaged(1));
+
+        //alpha lock test angle logic - airspeed fixed
+        test_bed = test_bed_with(false)
+            .set_indicated_airspeed(160.)
+            .set_flaps_handle_position(1);
+        test_bed.set_on_ground(false);
+
+
+        test_bed = test_bed.set_alpha(8.7).run_one_tick().run_one_tick();
+        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick().run_one_tick();
+
+        for sid in 0..2 {
+            assert!(test_bed.is_alpha_lock_engaged(sid));
+            assert_eq!(test_bed.get_flaps_conf(sid),FlapsConf::Conf0);
+            assert_eq!(test_bed.get_slats_conf(sid),FlapsConf::Conf1);
+        }
+
+        test_bed = test_bed.set_alpha(8.).run_one_tick().run_one_tick();
+
+        for sid in 0..2 {
+            assert!(test_bed.is_alpha_lock_engaged(sid));
+            assert_eq!(test_bed.get_flaps_conf(sid),FlapsConf::Conf0);
+            assert_eq!(test_bed.get_slats_conf(sid),FlapsConf::Conf1);
+        }
+
+        test_bed = test_bed.set_alpha(7.5).run_one_tick().run_one_tick();
+
+        for sid in 0..2 {
+            assert!(!test_bed.is_alpha_lock_engaged(sid));
+            assert_eq!(test_bed.get_flaps_conf(sid),FlapsConf::Conf0);
+            assert_eq!(test_bed.get_slats_conf(sid),FlapsConf::Conf0);
+        }
+
+        //alpha lock should not work if already at handle pos 0
+        test_bed = test_bed.set_flaps_handle_position(0);
+        test_bed = test_bed.set_alpha(8.7).run_one_tick().run_one_tick();
+
+        for sid in 0..2 {
+            assert!(!test_bed.is_alpha_lock_engaged(sid));
+            assert_eq!(test_bed.get_flaps_conf(sid),FlapsConf::Conf0);
+            assert_eq!(test_bed.get_slats_conf(sid),FlapsConf::Conf0);
+        }
+
+        //alpha lock test speed logic - angle fixed
+        test_bed = test_bed_with(false)
+            .set_alpha(0.)
+            .set_flaps_handle_position(1);
+
+        test_bed = test_bed.set_indicated_airspeed(145.).run_one_tick().run_one_tick();
+        test_bed = test_bed.set_flaps_handle_position(0).run_one_tick().run_one_tick();
+        for sid in 0..2 {
+            assert!(test_bed.is_alpha_lock_engaged(sid));
+            assert_eq!(test_bed.get_flaps_conf(sid),FlapsConf::Conf0);
+            assert_eq!(test_bed.get_slats_conf(sid),FlapsConf::Conf1);
+        }
+
+        test_bed = test_bed.set_indicated_airspeed(153.).run_one_tick().run_one_tick();
+
+        for sid in 0..2 {
+            assert!(test_bed.is_alpha_lock_engaged(sid));
+            assert_eq!(test_bed.get_flaps_conf(sid),FlapsConf::Conf0);
+            assert_eq!(test_bed.get_slats_conf(sid),FlapsConf::Conf1);
+        }
+
+        test_bed = test_bed.set_indicated_airspeed(155.).run_one_tick().run_one_tick();
+
+        for sid in 0..2 {
+            assert!(!test_bed.is_alpha_lock_engaged(sid));
+        assert_eq!(test_bed.get_flaps_conf(sid),FlapsConf::Conf0);
+            assert_eq!(test_bed.get_slats_conf(sid),FlapsConf::Conf0);
+        }
+
+        //alpha lock should not work if already at handle pos 0
+        test_bed = test_bed.set_flaps_handle_position(0);
+        test_bed = test_bed.set_indicated_airspeed(140.).run_one_tick().run_one_tick();
+
+        for sid in 0..2 {
+            assert!(!test_bed.is_alpha_lock_engaged(sid));
+            assert_eq!(test_bed.get_flaps_conf(sid),FlapsConf::Conf0);
+            assert_eq!(test_bed.get_slats_conf(sid),FlapsConf::Conf0);
+        }
+
+        //alpha lock test combined - this only
+        //tests if the mode engages, does not test
+        //the configuration (tested above)
+        test_bed = test_bed_with(false)
+            .set_flaps_handle_position(1);
+
+        test_bed = test_bed.set_indicated_airspeed(130.).set_alpha(9.).run_one_tick().run_one_tick();
+
+        for sid in 0..2 {
+            assert!(test_bed.is_alpha_lock_engaged(sid));
+        }
+        test_bed = test_bed.set_alpha(7.).run_one_tick();
+        for sid in 0..2 {
+            assert!(test_bed.is_alpha_lock_engaged(sid));
+        }
+        test_bed = test_bed.set_indicated_airspeed(130.).set_alpha(9.).run_one_tick();
+        test_bed = test_bed.set_indicated_airspeed(180.).run_one_tick().run_one_tick();
+        for sid in 0..2 {
+            assert!(test_bed.is_alpha_lock_engaged(sid));
+        }
+
+
+        test_bed = test_bed.set_indicated_airspeed(180.).set_alpha(7.).run_one_tick().run_one_tick();
+        for sid in 0..2 {
+            assert!(!test_bed.is_alpha_lock_engaged(sid));
+        }
     }
 }
