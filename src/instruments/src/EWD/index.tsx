@@ -4,6 +4,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { render } from '../Common';
 import UpperDisplay from './elements/UpperDisplay';
 import LowerLeftDisplay from './elements/LowerLeftDisplay';
+import LowerRightDisplay from './elements/LowerRightDisplay';
 import PseudoFWC from './elements/PseudoFWC';
 
 import './style.scss';
@@ -30,6 +31,7 @@ export const EWD: React.FC = () => {
                 <line className="Separator" x1="522" y1="533" x2="764" y2="533" strokeLinecap="round" />
                 <line className="Separator" x1="484" y1="552" x2="484" y2="724" strokeLinecap="round" />
                 <LowerLeftDisplay x={10} y={565} />
+                <LowerRightDisplay x={520} y={565} />
                 {/* */}
                 <PseudoFWC />
             </svg>

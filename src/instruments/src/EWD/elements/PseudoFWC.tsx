@@ -75,7 +75,8 @@ const adirsMessage2 = (adirs, engineRunning) => {
 };
 
 const PseudoFWC: React.FC = () => {
-    const [memoMessage, setMemoMessage] = useState<string[]>([]);
+    const [memoMessageLeft, setMemoMessageLeft] = useState<string[]>([]);
+    const [memoMessageRight, setMemoMessageRight] = useState<string[]>([]);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
     const [fuel] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'percent', 500);
     const [usrStartRefueling] = useSimVar('L:A32NX_REFUEL_STARTED_BY_USR', 'bool', 500);
@@ -156,148 +157,11 @@ const PseudoFWC: React.FC = () => {
     const [timerEng2FirePBOut, setTimerEng2FirePBOut] = useState<number | null>(null);
     const [agent2Discharge, setAgent2Discharge] = useState(false);
 
+    const [flightPhaseInhibitOverride] = useSimVar('L:A32NX_FWC_INHIBOVRD', 'bool', 500);
+
     // Check out updateTakeoffConfigWarnings(_test) {
 
     const EWDMessageBoolean = {
-        '0000010': {
-            flightPhaseInhib: [1, 3, 6, 10],
-            simVarIsActive: () => tomemo,
-            whichCodeToReturn: [
-                autoBrake === 3 ? 1 : 0,
-                noSmoking && configPortableDevices ? 3 : 2,
-                cabinReady ? 5 : 4,
-                spoilersArmed ? 7 : 6,
-                flapsHandle >= 1 && flapsHandle <= 3 ? 9 : 8,
-                toconfig ? 11 : 10,
-            ],
-            codesToReturn: ['000001001', '000001002', '000001003', '000001004', '000001005', '000001006', '000001007', '000001008', '000001009', '000001010', '000001011', '000001012'],
-            memoInhibit: ldgmemo === 1,
-            failure: 0,
-            sysPage: '',
-            side: 'LEFT',
-        },
-        '0000050': {
-            flightPhaseInhib: [],
-            simVarIsActive: () => fuel === 100 || usrStartRefueling,
-            whichCodeToReturn: [0],
-            codesToReturn: ['000005001'],
-            memoInhibit: tomemo === 1 || ldgmemo === 1,
-            failure: 0,
-            sysPage: '',
-            side: 'LEFT',
-        },
-        '0000030': {
-            flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
-            simVarIsActive: () => adirsRemainingAlignTime >= 240 && [adiru1State, adiru2State, adiru3State].every((a) => a === 1),
-            whichCodeToReturn: [
-                adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
-            ],
-            codesToReturn: ['000003001', '000003002', '000003003', '000003004', '000003005', '000003006', '000003007', '000003008'],
-            memoInhibit: tomemo === 1 || ldgmemo === 1,
-            failure: 0,
-            sysPage: '',
-            side: 'LEFT',
-        },
-        '0000031': {
-            flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
-            simVarIsActive: () => adirsRemainingAlignTime > 0 && adirsRemainingAlignTime < 240 && [adiru1State, adiru2State, adiru3State].every((a) => a === 1),
-            whichCodeToReturn: [
-                adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
-            ],
-            codesToReturn: ['000003101', '000003102', '000003103', '000003104', '000003105', '000003106', '000003107', '000003108'],
-            memoInhibit: tomemo === 1 || ldgmemo === 1,
-            failure: 0,
-            sysPage: '',
-            side: 'LEFT',
-        },
-        '0000055':
-            {
-                flightPhaseInhib: [],
-                simVarIsActive: () => spoilersArmed,
-                whichCodeToReturn: [0],
-                codesToReturn: ['000005501'],
-                memoInhibit: tomemo === 1 || ldgmemo === 1,
-                failure: 0,
-                sysPage: '',
-                side: 'LEFT',
-            },
-        '0000080':
-            {
-                flightPhaseInhib: [],
-                simVarIsActive: () => seatBelt,
-                whichCodeToReturn: [0],
-                codesToReturn: ['000008001'],
-                memoInhibit: tomemo === 1 || ldgmemo === 1,
-                failure: 0,
-                sysPage: '',
-                side: 'LEFT',
-            },
-        '0000090':
-            {
-                flightPhaseInhib: [],
-                simVarIsActive: () => noSmoking && !configPortableDevices,
-                whichCodeToReturn: [0],
-                codesToReturn: ['000009001'],
-                memoInhibit: tomemo === 1 || ldgmemo === 1,
-                failure: 0,
-                sysPage: '',
-                side: 'LEFT',
-            },
-        '0000095':
-            {
-                flightPhaseInhib: [],
-                simVarIsActive: () => noSmoking && configPortableDevices,
-                whichCodeToReturn: [0],
-                codesToReturn: ['000009501'],
-                memoInhibit: tomemo === 1 || ldgmemo === 1,
-                failure: 0,
-                sysPage: '',
-                side: 'LEFT',
-            },
-        '0000100':
-            {
-                flightPhaseInhib: [],
-                simVarIsActive: () => flightPhase >= 6 && flightPhase <= 8 && strobeLightsOn === 2,
-                whichCodeToReturn: [0],
-                codesToReturn: ['000010001'],
-                memoInhibit: tomemo === 1 || ldgmemo === 1,
-                failure: 0,
-                sysPage: '',
-                side: 'LEFT',
-            },
-        '0000105':
-            {
-                flightPhaseInhib: [],
-                simVarIsActive: () => leftOuterInnerValve || rightOuterInnerValve,
-                whichCodeToReturn: [0],
-                codesToReturn: ['000010501'], // config memo
-                memoInhibit: tomemo === 1 || ldgmemo === 1,
-                failure: 0,
-                sysPage: '',
-                side: 'LEFT',
-            },
-        '0000110':
-            {
-                flightPhaseInhib: [],
-                simVarIsActive: () => fobRounded < 3000,
-                whichCodeToReturn: [unit === '1' ? 0 : 1],
-                codesToReturn: ['000011001', '0000011002'], // config memo
-                memoInhibit: tomemo === 1 || ldgmemo === 1,
-                failure: 0,
-                sysPage: '',
-                side: 'LEFT',
-            },
-        '0000305':
-            {
-                flightPhaseInhib: [],
-                simVarIsActive: () => gpwsFlapMode,
-                whichCodeToReturn: [0],
-                codesToReturn: ['000030501'], // Not inhibited
-                memoInhibit: tomemo === 1 || ldgmemo === 1,
-                failure: 0,
-                sysPage: '',
-                side: 'LEFT',
-            },
         '2600010': {
             flightPhaseInhib: [],
             simVarIsActive: () => eng1FireTest === 1 || fireButton1 === 1,
@@ -324,7 +188,7 @@ const PseudoFWC: React.FC = () => {
                 '260001012', '260001013', '260001014', '260001015', '260001016'],
             memoInhibit: false,
             failure: 3,
-            sysPage: 'ENG',
+            sysPage: 0,
             side: 'LEFT',
         },
         '2600020': {
@@ -373,6 +237,179 @@ const PseudoFWC: React.FC = () => {
             sysPage: 'APU',
             side: 'LEFT',
         },
+        '0000010': {
+            flightPhaseInhib: [1, 3, 6, 10],
+            simVarIsActive: () => tomemo,
+            whichCodeToReturn: [
+                autoBrake === 3 ? 1 : 0,
+                noSmoking && configPortableDevices ? 3 : 2,
+                cabinReady ? 5 : 4,
+                spoilersArmed ? 7 : 6,
+                flapsHandle >= 1 && flapsHandle <= 3 ? 9 : 8,
+                toconfig ? 11 : 10,
+            ],
+            codesToReturn: ['000001001', '000001002', '000001003', '000001004', '000001005', '000001006', '000001007', '000001008', '000001009', '000001010', '000001011', '000001012'],
+            memoInhibit: ldgmemo === 1,
+            failure: 0,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        '0000050': {
+            flightPhaseInhib: [],
+            simVarIsActive: () => fuel === 100 || usrStartRefueling,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000005001'],
+            memoInhibit: tomemo === 1 || ldgmemo === 1,
+            failure: 0,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        '0000030': {
+            flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
+            simVarIsActive: () => adirsRemainingAlignTime >= 240 && [adiru1State, adiru2State, adiru3State].every((a) => a === 1),
+            whichCodeToReturn: [
+                adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
+            ],
+            codesToReturn: ['000003001', '000003002', '000003003', '000003004', '000003005', '000003006', '000003007', '000003008'],
+            memoInhibit: tomemo === 1 || ldgmemo === 1,
+            failure: 0,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        '0000031': {
+            flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
+            simVarIsActive: () => adirsRemainingAlignTime > 0 && adirsRemainingAlignTime < 240 && [adiru1State, adiru2State, adiru3State].every((a) => a === 1),
+            whichCodeToReturn: [
+                adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
+            ],
+            codesToReturn: ['000003101', '000003102', '000003103', '000003104', '000003105', '000003106', '000003107', '000003108'],
+            memoInhibit: tomemo === 1 || ldgmemo === 1,
+            failure: 0,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        '0000055':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => spoilersArmed,
+                whichCodeToReturn: [0],
+                codesToReturn: ['000005501'],
+                memoInhibit: tomemo === 1 || ldgmemo === 1,
+                failure: 0,
+                sysPage: -1,
+                side: 'LEFT',
+            },
+        '0000080':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => seatBelt,
+                whichCodeToReturn: [0],
+                codesToReturn: ['000008001'],
+                memoInhibit: tomemo === 1 || ldgmemo === 1,
+                failure: 0,
+                sysPage: -1,
+                side: 'LEFT',
+            },
+        '0000090':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => noSmoking && !configPortableDevices,
+                whichCodeToReturn: [0],
+                codesToReturn: ['000009001'],
+                memoInhibit: tomemo === 1 || ldgmemo === 1,
+                failure: 0,
+                sysPage: -1,
+                side: 'LEFT',
+            },
+        '0000095':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => noSmoking && configPortableDevices,
+                whichCodeToReturn: [0],
+                codesToReturn: ['000009501'],
+                memoInhibit: tomemo === 1 || ldgmemo === 1,
+                failure: 0,
+                sysPage: -1,
+                side: 'LEFT',
+            },
+        '0000100':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => flightPhase >= 6 && flightPhase <= 8 && strobeLightsOn === 2,
+                whichCodeToReturn: [0],
+                codesToReturn: ['000010001'],
+                memoInhibit: tomemo === 1 || ldgmemo === 1,
+                failure: 0,
+                sysPage: -1,
+                side: 'LEFT',
+            },
+        '0000105':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => leftOuterInnerValve || rightOuterInnerValve,
+                whichCodeToReturn: [0],
+                codesToReturn: ['000010501'], // config memo
+                memoInhibit: tomemo === 1 || ldgmemo === 1,
+                failure: 0,
+                sysPage: -1,
+                side: 'LEFT',
+            },
+        '0000110':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => fobRounded < 3000,
+                whichCodeToReturn: [unit === '1' ? 0 : 1],
+                codesToReturn: ['000011001', '0000011002'], // config memo
+                memoInhibit: tomemo === 1 || ldgmemo === 1,
+                failure: 0,
+                sysPage: -1,
+                side: 'LEFT',
+            },
+        '0000305':
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => gpwsFlapMode,
+                whichCodeToReturn: [0],
+                codesToReturn: ['000030501'], // Not inhibited
+                memoInhibit: tomemo === 1 || ldgmemo === 1,
+                failure: 0,
+                sysPage: -1,
+                side: 'LEFT',
+            },
+        '0000140':
+            {
+                flightPhaseInhib: [1, 2, 6, 7, 8, 9, 10],
+                simVarIsActive: () => [3, 4, 5].includes(flightPhase) && !flightPhaseInhibitOverride,
+                whichCodeToReturn: [0],
+                codesToReturn: ['000014001'],
+                memoInhibit: false,
+                failure: 0,
+                sysPage: -1,
+                side: 'RIGHT',
+            },
+        '0000150':
+            {
+                flightPhaseInhib: [1, 2, 3, 4, 5, 6, 9, 10],
+                simVarIsActive: () => [7, 8].includes(flightPhase) && !flightPhaseInhibitOverride,
+                whichCodeToReturn: [0],
+                codesToReturn: ['000015001'],
+                memoInhibit: false,
+                failure: 0,
+                sysPage: -1,
+                side: 'RIGHT',
+            },
+        '0000060':
+        {
+            flightPhaseInhib: [1, 8, 9, 10],
+            simVarIsActive: () => speedBrake > 0,
+            whichCodeToReturn: [[2, 3, 4, 5].includes(flightPhase) ? 1 : 0],
+            codesToReturn: ['000006001', '000006002'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+
     };
 
     useUpdate((deltaTime) => {
@@ -443,7 +480,8 @@ const PseudoFWC: React.FC = () => {
     }, [eng1FireTest, eng2FireTest, apuFireTest]);
 
     useEffect(() => {
-        let tempMemoArray = memoMessage;
+        let tempMemoArrayLeft = memoMessageLeft;
+        let tempMemoArrayRight = memoMessageRight;
         const warningsCount = { 3: 0, 2: 0 };
         for (const [key, value] of Object.entries(EWDMessageBoolean)) {
             if (value.simVarIsActive()) {
@@ -457,8 +495,8 @@ const PseudoFWC: React.FC = () => {
                             SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'Bool', 1);
                             SimVar.SetSimVarValue('L:Generic_Master_Caution_Active', 'Bool', 1);
                         }
-                        console.log('Which Codes');
-                        console.log(value.whichCodeToReturn);
+                        // console.log('Which Codes');
+                        // console.log(value.whichCodeToReturn);
                         const newCode: string[] = [];
                         const codeIndex = value.whichCodeToReturn.filter((e) => e !== null);
                         codeIndex.forEach((e: number) => {
@@ -471,16 +509,16 @@ const PseudoFWC: React.FC = () => {
                         // // Check memoMessage does not already have current code
                         // console.log('new code after');
                         // console.log(newCode1);
-                        const tempArray = tempMemoArray.filter((e) => !value.codesToReturn.includes(e));
-                        // console.log('Before concat');
-                        // console.log(tempArray);
-                        tempMemoArray = tempArray.concat(newCode);
-                        console.log('After concat');
-                        console.log(tempMemoArray);
+                        if (value.side === 'LEFT') {
+                            const tempArrayLeft = tempMemoArrayLeft.filter((e) => !value.codesToReturn.includes(e));
+                            tempMemoArrayLeft = tempArrayLeft.concat(newCode);
+                        } else {
+                            const tempArrayRight = tempMemoArrayRight.filter((e) => !value.codesToReturn.includes(e));
+                            tempMemoArrayRight = tempArrayRight.concat(newCode);
+                        }
 
-                        if (value.sysPage !== '') {
-                            const eicas = document.getElementsByTagName('a320-neo-eicas-element');
-                            console.log(eicas);
+                        if (value.sysPage > -1) {
+                            SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'Enum', value.sysPage);
                         }
                     }
                 }
@@ -488,23 +526,30 @@ const PseudoFWC: React.FC = () => {
                 // Remove value if present
                 // console.log('Inside delete bit');
                 const codesToReturn = value.codesToReturn;
-                // setMemoMessage((memoMessage) => memoMessage.filter((e) => !codesToReturn.includes(e)));
-                // console.log(tempMemoArray);
-                const tempArray = tempMemoArray.filter((e) => !codesToReturn.includes(e));
-                tempMemoArray = tempArray;
+                if (value.side === 'LEFT') {
+                    const tempArrayLeft = tempMemoArrayLeft.filter((e) => !codesToReturn.includes(e));
+                    tempMemoArrayLeft = tempArrayLeft;
+                } else {
+                    const tempArrayRight = tempMemoArrayRight.filter((e) => !codesToReturn.includes(e));
+                    tempMemoArrayRight = tempArrayRight;
+                }
             }
         }
-        const mesgOrder: string[] = [];
+        const mesgOrderLeft: string[] = [];
+        const mesgOrderRight: string[] = [];
         for (const [key, value] of Object.entries(EWDMessageBoolean)) {
-            mesgOrder.push(...value.codesToReturn);
+            if (value.side === 'LEFT') {
+                mesgOrderLeft.push(...value.codesToReturn);
+            } else {
+                mesgOrderRight.push(...value.codesToReturn);
+            }
         }
-        // console.log('Actual message order');
-        // console.log(mesgOrder);
-        // console.log('Message order');
-        // console.log(tempMemoArray);
-        const orderedMemoArray = mapOrder(tempMemoArray, mesgOrder);
+
+        const orderedMemoArrayLeft = mapOrder(tempMemoArrayLeft, mesgOrderLeft);
+        const orderedMemoArrayRight = mapOrder(tempMemoArrayRight, mesgOrderRight);
         // console.log(orderedMemoArray);
-        setMemoMessage(orderedMemoArray);
+        setMemoMessageLeft(orderedMemoArrayLeft);
+        setMemoMessageRight(orderedMemoArrayRight);
     }, [flightPhase,
         fuel, usrStartRefueling, engine1State, engine2State, spoilersArmed, seatBelt, noSmoking, configPortableDevices, strobeLightsOn, leftOuterInnerValve, rightOuterInnerValve,
         fobRounded, unit, gpwsFlapMode, autoBrake, flapsHandle, throttle1Position, throttle2Position,
@@ -516,26 +561,32 @@ const PseudoFWC: React.FC = () => {
     ]);
 
     useEffect(() => {
-        console.log('Inside memoMessage');
-        console.log(JSON.stringify(memoMessage));
+        console.log('Inside memoMessage LEFT');
+        console.log(JSON.stringify(memoMessageLeft));
         [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
             SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${value}`, 'string', '');
         });
-        if (memoMessage.length > 0) {
-            memoMessage.forEach((value, index) => {
+        if (memoMessageLeft.length > 0) {
+            memoMessageLeft.forEach((value, index) => {
                 // console.log(`Value for L:A32NX_EWD_LOWER_LEFT_LINE_${index + 1}`);
                 // console.log(parseInt(value));
                 SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${index + 1}`, 'string', value);
             });
         }
-    }, [memoMessage]);
-
-    const [sim] = useSimVar('L:A32NX_EWD_LOWER_LEFT_LINE_1', 'number', 100);
+    }, [memoMessageLeft]);
 
     useEffect(() => {
-        console.log('Freshly minted SimVar in PseudoFWC');
-        console.log(sim);
-    }, [sim]);
+        console.log('Inside memoMessage RIGHT');
+        console.log(JSON.stringify(memoMessageRight));
+        [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
+            SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_RIGHT_LINE_${value}`, 'string', '');
+        });
+        if (memoMessageRight.length > 0) {
+            memoMessageRight.forEach((value, index) => {
+                SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_RIGHT_LINE_${index + 1}`, 'string', value);
+            });
+        }
+    }, [memoMessageRight]);
 
     return (<></>);
 };
