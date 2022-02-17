@@ -7,9 +7,9 @@ import { beforeTakeoffChecklist } from './BeforeTakeoff';
 import { landingChecklist } from './Landing';
 import { parkingChecklist } from './Parking';
 import { securingAircraftChecklist } from './SecuringAircraft';
-import { Checklist } from '../Checklists';
+import { ChecklistDefinition } from '../Checklists';
 
-export const CHECKLISTS: Checklist[] = [
+export const CHECKLISTS: ChecklistDefinition[] = [
     beforeStartChecklist,
     afterStartChecklist,
     beforeTakeoffChecklist,

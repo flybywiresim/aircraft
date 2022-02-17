@@ -1,6 +1,6 @@
-import { Checklist } from '../Checklists';
+import { ChecklistDefinition } from '../Checklists';
 
-export const afterStartChecklist: Checklist = {
+export const afterStartChecklist: ChecklistDefinition = {
     name: 'AFTER START',
     items: [
         {
