@@ -132,12 +132,11 @@ const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runw
     return (
         <div className="flex h-full">
             <div className="flex relative flex-col h-full">
-                <div className="flex-grow bg-red-900 " />
+                <div className="flex-shrink-0 bg-red-900" style={{ height: `${100 - mainHeightPercentage()}%` }} />
                 <div className="bg-green-200 opacity-50" style={{ height: `${todaHeightPercentage()}%` }} />
                 <div className="bg-gray-700 opacity-50" style={{ height: `${asdaHeightPercentage()}%` }} />
                 <div
-                    className="relative w-44 bg-black"
-                    style={{ height: `${mainHeightPercentage()}%` }}
+                    className="relative flex-shrink-0 w-44 h-full bg-black"
                 >
                     <div className="flex overflow-hidden absolute inset-0 flex-col justify-between py-3 px-2.5 h-full border-4 border-white">
                         <div>
