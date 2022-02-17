@@ -155,6 +155,7 @@
 1. [SOUNDS] Connected TCAS TA/RA logic to TCAS Wwise events - @wpine215 (Iceman)  @2hwk (2Cas#1022)
 1. [ENGINE] Overall improvement of thrust limits - @Taz5150 (TazX [Z+2]#0405)
 1. [ATC] Implement ident button and fix auto mode - @tracernz (Mike)
+1. [FLIGHTMODEL] Prevent default stall warning bool from being activated - @donstim (donbikes#4084)
 
 ## 0.7.0
 
