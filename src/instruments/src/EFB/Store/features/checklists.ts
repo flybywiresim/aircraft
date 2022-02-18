@@ -1,19 +1,20 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState, store } from '../store';
 
-interface ChecklistItem {
+interface ChecklistTrackingItem {
     completed: boolean;
     divider?: boolean;
+    hasCondition: boolean;
 }
 
-export interface Checklist {
+export interface TrackingChecklist {
     name: string;
-    items: ChecklistItem[];
+    items: ChecklistTrackingItem[];
     markedCompleted: boolean;
 }
 
 interface ChecklistState {
-    checklists: Checklist[];
+    checklists: TrackingChecklist[];
     selectedChecklistIndex: number;
 }
 
@@ -72,7 +73,7 @@ export const checklistsSlice = createSlice({
     name: 'checklists',
     initialState,
     reducers: {
-        setChecklistItems: (state, action: PayloadAction<{checklistIndex: number, itemArr: ChecklistItem[]}>) => {
+        setChecklistItems: (state, action: PayloadAction<{checklistIndex: number, itemArr: ChecklistTrackingItem[]}>) => {
             state.checklists[action.payload.checklistIndex].items = action.payload.itemArr;
         },
         setChecklistItemCompletion: (state, action: PayloadAction<{checklistIndex: number, itemIndex: number, completionValue: boolean}>) => {

@@ -11,8 +11,6 @@ interface DashboardState {
     userDestinationIcao?: string;
     departureMetar?: MetarParserType;
     destinationMetar?: MetarParserType;
-    showDepartureMetar: boolean;
-    showDestinationMetar: boolean;
 }
 
 const initialState: DashboardState = {
@@ -20,8 +18,6 @@ const initialState: DashboardState = {
     userDestinationIcao: undefined,
     departureMetar: undefined,
     destinationMetar: undefined,
-    showDepartureMetar: false,
-    showDestinationMetar: false,
 };
 
 export const dashboardSlice = createSlice({
@@ -40,12 +36,6 @@ export const dashboardSlice = createSlice({
         setDestinationMetar: (state, action: PayloadAction<MetarParserType | undefined>) => {
             state.destinationMetar = action.payload;
         },
-        setShowDepartureMetar: (state, action: PayloadAction<boolean>) => {
-            state.showDepartureMetar = action.payload;
-        },
-        setShowDestinationMetar: (state, action: PayloadAction<boolean>) => {
-            state.showDestinationMetar = action.payload;
-        },
     },
 });
 
@@ -54,7 +44,5 @@ export const {
     setUserDestinationIcao,
     setDepartureMetar,
     setDestinationMetar,
-    setShowDepartureMetar,
-    setShowDestinationMetar,
 } = dashboardSlice.actions;
 export default dashboardSlice.reducer;
