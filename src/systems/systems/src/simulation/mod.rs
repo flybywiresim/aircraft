@@ -110,21 +110,24 @@ impl From<StartState> for f64 {
 
 impl Default for StartState {
     fn default() -> Self {
-        StartState::Apron
+        StartState::Cruise
     }
 }
 
 pub struct InitContext<'a> {
+    start_state: StartState,
     electrical_identifier_provider: &'a mut dyn ElectricalElementIdentifierProvider,
     registry: &'a mut dyn VariableRegistry,
 }
 
 impl<'a> InitContext<'a> {
     pub fn new(
+        start_state: StartState,
         electricity: &'a mut impl ElectricalElementIdentifierProvider,
         registry: &'a mut impl VariableRegistry,
     ) -> Self {
         Self {
+            start_state,
             electrical_identifier_provider: electricity,
             registry,
         }
@@ -332,11 +335,12 @@ pub struct Simulation<T: Aircraft> {
 }
 impl<T: Aircraft> Simulation<T> {
     pub fn new<U: FnOnce(&mut InitContext) -> T>(
+        start_state: StartState,
         aircraft_ctor_fn: U,
         registry: &mut impl VariableRegistry,
     ) -> Self {
         let mut electricity = Electricity::new();
-        let mut context = InitContext::new(&mut electricity, registry);
+        let mut context = InitContext::new(start_state, &mut electricity, registry);
         let update_context = UpdateContext::new_for_simulation(&mut context);
         Self {
             aircraft: (aircraft_ctor_fn)(&mut context),
@@ -390,7 +394,7 @@ impl<T: Aircraft> Simulation<T> {
     /// #     }
     /// # }
     /// let mut registry = MyVariableRegistry::new();
-    /// let mut simulation = Simulation::new(MyAircraft::new, &mut registry);
+    /// let mut simulation = Simulation::new(Default::default(), MyAircraft::new, &mut registry);
     /// let mut reader_writer = MySimulatorReaderWriter::new();
     /// // For each frame, call the tick function.
     /// simulation.tick(Duration::from_millis(50), &mut reader_writer)
@@ -796,8 +800,8 @@ mod tests {
         }
 
         #[test]
-        fn default_is_apron() {
-            assert_eq!(StartState::Apron, Default::default());
+        fn default_is_cruise() {
+            assert_eq!(StartState::Cruise, Default::default());
         }
 
         #[test]

@@ -50,7 +50,7 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         aircraft_ctor_fn: U,
     ) -> Result<(Simulation<T>, MsfsHandler), Box<dyn Error>> {
         let mut registry = self.variable_registry.unwrap();
-        let simulation = Simulation::new(aircraft_ctor_fn, &mut registry);
+        let simulation = Simulation::new(Default::default(), aircraft_ctor_fn, &mut registry);
 
         Ok((
             simulation,
