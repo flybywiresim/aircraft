@@ -25,7 +25,7 @@ class CDUAtcConnectionStatus {
         }
 
         let nextStation = "-----------";
-        if (mcdu.atsuManager.atc.nextStation() !== '') {
+        if (mcdu.atsuManager.atc.nextStation() !== "") {
             nextStation = `${mcdu.atsuManager.atc.nextStation()}[color]green`;
         }
 
