@@ -89,14 +89,14 @@ impl From<f64> for StartState {
     fn from(value: f64) -> Self {
         match value {
             x if x < 0.9 => Default::default(),
-            x if x < 1.9 => StartState::Hangar,
-            x if x < 2.9 => StartState::Apron,
-            x if x < 3.9 => StartState::Taxi,
-            x if x < 4.9 => StartState::Runway,
-            x if x < 5.9 => StartState::Climb,
-            x if x < 6.9 => StartState::Cruise,
-            x if x < 7.9 => StartState::Approach,
-            x if x < 8.9 => StartState::Final,
+            x if x < 1.9 => Self::Hangar,
+            x if x < 2.9 => Self::Apron,
+            x if x < 3.9 => Self::Taxi,
+            x if x < 4.9 => Self::Runway,
+            x if x < 5.9 => Self::Climb,
+            x if x < 6.9 => Self::Cruise,
+            x if x < 7.9 => Self::Approach,
+            x if x < 8.9 => Self::Final,
             _ => Default::default(),
         }
     }
@@ -119,7 +119,7 @@ impl From<StartState> for f64 {
 
 impl Default for StartState {
     fn default() -> Self {
-        StartState::Cruise
+        Self::Cruise
     }
 }
 
