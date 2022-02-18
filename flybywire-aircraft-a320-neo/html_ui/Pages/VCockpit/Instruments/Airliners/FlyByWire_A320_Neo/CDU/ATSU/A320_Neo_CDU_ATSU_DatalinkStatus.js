@@ -2,7 +2,7 @@ class CDUAtsuDatalinkStatus {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATSUDatalinkStatus;
-        mcdu.activeSystem = 'ATSU';
+        mcdu.activeSystem = "ATSU";
 
         function updateView() {
             if (mcdu.page.Current === mcdu.page.ATSUDatalinkStatus) {
