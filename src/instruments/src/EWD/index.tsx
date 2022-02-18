@@ -27,7 +27,7 @@ export const EWD: React.FC = () => {
                 <line className="Separator" x1="484" y1="552" x2="484" y2="724" strokeLinecap="round" />
                 <LowerLeftDisplay x={10} y={565} />
                 <LowerRightDisplay x={520} y={565} />
-                {/* */}
+                {/*  */}
                 <PseudoFWC />
             </svg>
         </DisplayUnit>

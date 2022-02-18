@@ -3,6 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { NXDataStore } from '@shared/persistence';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useUpdate } from '@instruments/common/hooks';
+import { Att10sFlag } from 'instruments/src/ISIS/Att10sFlag';
 
 const mapOrder = (array, order) => {
     array.sort((a, b) => {
@@ -164,6 +165,24 @@ const PseudoFWC: React.FC = () => {
     const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'enum', 1000);
     const [predWSOn] = useSimVar('L:A32NX_SWITCH_RADAR_PWS_Position', 'bool', 1000);
     const [gpwsOff] = useSimVar('L:A32NX_GPWS_TERR_OFF', 'bool', 500);
+    const [tcasMode] = useSimVar('L:A32NX_TCAS_MODE', 'enum', 500);
+    const [compMesgCount] = useSimVar('L:A32NX_COMPANY_MSG_COUNT', 'number', 500);
+    const [eng1AntiIce] = useSimVar('ENG ANTI ICE:1', 'bool', 500);
+    const [eng2AntiIce] = useSimVar('ENG ANTI ICE:2', 'bool', 500);
+    const [wingAntiIce] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_WING_Pressed', 'bool', 500);
+    const [apuBleedValveOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool', 500);
+    const [apuAvail] = useSimVar('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool', 500);
+    const [landingLight2Retracted] = useSimVar('L:LANDING_2_Retracted', 'bool', 500);
+    const [landingLight3Retracted] = useSimVar('L:LANDING_3_Retracted', 'bool', 500);
+    const [brakeFan] = useSimVar('L:A32NX_BRAKE_FAN', 'bool', 500);
+    const [dmcSwitchingKnob] = useSimVar('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'enum', 500);
+    const [ndXfrKnob] = useSimVar('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'bool', 500);
+    const [gpwsFlaps3] = useSimVar('L:A32NX_GPWS_FLAPS3', 'bool', 500);
+    const [autoBrakesArmedMode] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum', 500);
+    const [manLandingElevation] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'number', 500);
+    const [fuelXFeedPBOn] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_XFEED_Pressed', 'bool', 500);
+    const [ATTKnob] = useSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum', 500);
+    const [AIRKnob] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum', 500);
 
     // Check out updateTakeoffConfigWarnings(_test) {
 
@@ -492,6 +511,182 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'RIGHT',
         },
+        '0000320':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => tcasMode === 0 && flightPhase !== 6,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000032001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000325':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => tcasMode === 0 && flightPhase === 6,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000032501'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000552':
+        {
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: () => compMesgCount > 0,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000055201'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000260':
+        {
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: () => eng1AntiIce === 1 || eng2AntiIce === 1,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000026001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000270':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => wingAntiIce === 1,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000027001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000275': // Engine AntiIce has a timer logic
+        {
+            flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
+            simVarIsActive: () => wingAntiIce === 1,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000027501'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000170':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => apuAvail === 1 && !apuBleedValveOpen,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000017001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000180':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => apuAvail === 1 && apuBleedValveOpen === 1,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000018001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000190':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => !landingLight2Retracted || !landingLight3Retracted,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000019001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000220':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => brakeFan === 1,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000022001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000290':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => ndXfrKnob !== 1 || dmcSwitchingKnob !== 1,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000029001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000300':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => gpwsFlaps3 === 1,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000030001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000025':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => [7, 8].includes(flightPhase),
+            whichCodeToReturn: [parseInt(autoBrakesArmedMode) - 1],
+            codesToReturn: ['000002201', '000002202', '000002203', '000002204'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000230':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => manLandingElevation > 0,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000023001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000250':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => fuelXFeedPBOn === 1,
+            whichCodeToReturn: [[3, 4, 5].includes(flightPhase) ? 1 : 0],
+            codesToReturn: ['000025001', '000025002'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
+        '0000680':
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: () => ATTKnob !== 1 || AIRKnob !== 1,
+            whichCodeToReturn: [0],
+            codesToReturn: ['000068001'],
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'RIGHT',
+        },
     };
 
     useUpdate((deltaTime) => {
@@ -641,6 +836,10 @@ const PseudoFWC: React.FC = () => {
         adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
         adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
         nwSteeringDisc, hydPTU, ratDeployed, engSelectorPosition, predWSOn, gpwsOff,
+        tcasMode, compMesgCount, eng1AntiIce, eng2AntiIce, wingAntiIce,
+        apuAvail, apuBleedValveOpen, landingLight2Retracted, landingLight3Retracted,
+        brakeFan, dmcSwitchingKnob, ndXfrKnob, gpwsFlaps3, autoBrakesArmedMode,
+        manLandingElevation, fuelXFeedPBOn, ATTKnob, AIRKnob,
     ]);
 
     useEffect(() => {
