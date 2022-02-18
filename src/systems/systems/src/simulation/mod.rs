@@ -76,6 +76,15 @@ pub enum StartState {
     Final,
 }
 
+impl StartState {
+    pub fn is_in_flight(&self) -> bool {
+        matches!(
+            self,
+            Self::Climb | Self::Cruise | Self::Approach | Self::Final
+        )
+    }
+}
+
 impl From<f64> for StartState {
     fn from(value: f64) -> Self {
         match value {
@@ -828,6 +837,24 @@ mod tests {
         fn includes_hash() {
             let mut hashmap: FxHashMap<StartState, bool> = FxHashMap::default();
             hashmap.insert(StartState::Climb, true);
+        }
+
+        #[rstest]
+        #[case(StartState::Climb)]
+        #[case(StartState::Cruise)]
+        #[case(StartState::Approach)]
+        #[case(StartState::Final)]
+        fn is_in_flight_when(#[case] state: StartState) {
+            assert!(state.is_in_flight());
+        }
+
+        #[rstest]
+        #[case(StartState::Hangar)]
+        #[case(StartState::Apron)]
+        #[case(StartState::Taxi)]
+        #[case(StartState::Runway)]
+        fn is_not_in_flight_when(#[case] state: StartState) {
+            assert!(!state.is_in_flight());
         }
     }
 }
