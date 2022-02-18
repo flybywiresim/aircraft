@@ -83,6 +83,10 @@ impl StartState {
             Self::Climb | Self::Cruise | Self::Approach | Self::Final
         )
     }
+
+    pub fn is_on_ground(&self) -> bool {
+        !self.is_in_flight()
+    }
 }
 
 impl From<f64> for StartState {
@@ -855,6 +859,24 @@ mod tests {
         #[case(StartState::Runway)]
         fn is_not_in_flight_when(#[case] state: StartState) {
             assert!(!state.is_in_flight());
+        }
+
+        #[rstest]
+        #[case(StartState::Hangar)]
+        #[case(StartState::Apron)]
+        #[case(StartState::Taxi)]
+        #[case(StartState::Runway)]
+        fn is_on_ground_when(#[case] state: StartState) {
+            assert!(state.is_on_ground());
+        }
+
+        #[rstest]
+        #[case(StartState::Climb)]
+        #[case(StartState::Cruise)]
+        #[case(StartState::Approach)]
+        #[case(StartState::Final)]
+        fn is_not_on_ground_when(#[case] state: StartState) {
+            assert!(!state.is_on_ground());
         }
     }
 }
