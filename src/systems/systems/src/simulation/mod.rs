@@ -136,6 +136,10 @@ impl<'a> InitContext<'a> {
     pub fn get_identifier(&mut self, name: String) -> VariableIdentifier {
         self.registry.get(name)
     }
+
+    pub fn start_state(&self) -> StartState {
+        self.start_state
+    }
 }
 
 impl<'a> ElectricalElementIdentifierProvider for InitContext<'a> {
