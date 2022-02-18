@@ -76,19 +76,6 @@ pub enum StartState {
     Final,
 }
 
-impl StartState {
-    pub fn is_in_flight(&self) -> bool {
-        matches!(
-            self,
-            Self::Climb | Self::Cruise | Self::Approach | Self::Final
-        )
-    }
-
-    pub fn is_on_ground(&self) -> bool {
-        !self.is_in_flight()
-    }
-}
-
 impl From<f64> for StartState {
     fn from(value: f64) -> Self {
         match value {
@@ -152,6 +139,17 @@ impl<'a> InitContext<'a> {
 
     pub fn start_state(&self) -> StartState {
         self.start_state
+    }
+
+    pub fn is_in_flight(&self) -> bool {
+        matches!(
+            self.start_state,
+            StartState::Climb | StartState::Cruise | StartState::Approach | StartState::Final
+        )
+    }
+
+    pub fn is_on_ground(&self) -> bool {
+        !self.is_in_flight()
     }
 }
 
@@ -795,12 +793,12 @@ impl<T: Writer> Write<Duration> for T {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
     mod start_state {
         use super::*;
         use fxhash::FxHashMap;
         use ntest::assert_about_eq;
-        use rstest::rstest;
 
         #[rstest]
         #[case(1., StartState::Hangar)]
@@ -842,14 +840,22 @@ mod tests {
             let mut hashmap: FxHashMap<StartState, bool> = FxHashMap::default();
             hashmap.insert(StartState::Climb, true);
         }
+    }
+
+    mod init_context {
+        use super::*;
+        use test::TestVariableRegistry;
 
         #[rstest]
         #[case(StartState::Climb)]
         #[case(StartState::Cruise)]
         #[case(StartState::Approach)]
         #[case(StartState::Final)]
-        fn is_in_flight_when(#[case] state: StartState) {
-            assert!(state.is_in_flight());
+        fn is_in_flight_when(#[case] start_state: StartState) {
+            let mut electricity = Electricity::new();
+            let mut registry: TestVariableRegistry = Default::default();
+            let context = InitContext::new(start_state, &mut electricity, &mut registry);
+            assert!(context.is_in_flight());
         }
 
         #[rstest]
@@ -857,8 +863,11 @@ mod tests {
         #[case(StartState::Apron)]
         #[case(StartState::Taxi)]
         #[case(StartState::Runway)]
-        fn is_not_in_flight_when(#[case] state: StartState) {
-            assert!(!state.is_in_flight());
+        fn is_not_in_flight_when(#[case] start_state: StartState) {
+            let mut electricity = Electricity::new();
+            let mut registry: TestVariableRegistry = Default::default();
+            let context = InitContext::new(start_state, &mut electricity, &mut registry);
+            assert!(!context.is_in_flight());
         }
 
         #[rstest]
@@ -866,8 +875,11 @@ mod tests {
         #[case(StartState::Apron)]
         #[case(StartState::Taxi)]
         #[case(StartState::Runway)]
-        fn is_on_ground_when(#[case] state: StartState) {
-            assert!(state.is_on_ground());
+        fn is_on_ground_when(#[case] start_state: StartState) {
+            let mut electricity = Electricity::new();
+            let mut registry: TestVariableRegistry = Default::default();
+            let context = InitContext::new(start_state, &mut electricity, &mut registry);
+            assert!(context.is_on_ground());
         }
 
         #[rstest]
@@ -875,8 +887,11 @@ mod tests {
         #[case(StartState::Cruise)]
         #[case(StartState::Approach)]
         #[case(StartState::Final)]
-        fn is_not_on_ground_when(#[case] state: StartState) {
-            assert!(!state.is_on_ground());
+        fn is_not_on_ground_when(#[case] start_state: StartState) {
+            let mut electricity = Electricity::new();
+            let mut registry: TestVariableRegistry = Default::default();
+            let context = InitContext::new(start_state, &mut electricity, &mut registry);
+            assert!(!context.is_on_ground());
         }
     }
 }
