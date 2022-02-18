@@ -16,7 +16,7 @@ class CDUAtsuDatalinkStatus {
         SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
         let vhf3Mode = "AOC ONLY";
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+        if (SimVar.GetSimVarValue("L:A32NX_HOPPIE_ACTIVE", "number") === 1) {
             vhf3Mode = "ATC/AOC";
         }
 
