@@ -12,7 +12,7 @@ class CDUProgressPage {
         const adirsUsesGpsAsPrimary = SimVar.GetSimVarValue("L:A32NX_ADIRS_USES_GPS_AS_PRIMARY", "Bool");
         const gpsPrimaryStatus = adirsUsesGpsAsPrimary ? "{green}GPS PRIMARY{end}" : "";
         let flCrz = "-----";
-        switch (mcdu.currentFlightPhase) {
+        switch (mcdu.flightPhaseManager.phase) {
             case FmgcFlightPhases.PREFLIGHT:
             case FmgcFlightPhases.TAKEOFF: {
                 if (mcdu._cruiseEntered) {
@@ -36,7 +36,7 @@ class CDUProgressPage {
             }
         }
         let flightPhase;
-        switch (mcdu.currentFlightPhase) {
+        switch (mcdu.flightPhaseManager.phase) {
             case FmgcFlightPhases.PREFLIGHT:
             case FmgcFlightPhases.TAKEOFF:
                 flightPhase = "TO";

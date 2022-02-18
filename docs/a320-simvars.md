@@ -12,6 +12,8 @@
 1. [Engine and FADEC System](#engine-and-fadec-system)
 1. [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
 1. [Pneumatic](#pneumatic)
+1. [Landing Gear (ATA 32)](#landing-gear-ata-32)
+1. [ATC (ATA 34)](#atc-ata-34)
 
 ## Uncategorized
 
@@ -41,14 +43,6 @@
     - boolean
     - whether one of the brakes are hot (>300°C)
 
-- XMLVAR_Auto
-    - Used in the `.flt` files to set a default value for the ATC 3 way switch on the TCAS panel
-    - Maps to the `I:XMLVAR_Auto` variable which is the actual backing var for the switch
-
-- XMLVAR_ALT_MODE_REQUESTED
-    - Used in the `.flt` files to set a default value for the ALT RPTG 2 way switch on the TCAS panel
-    - Maps to the `I:XMLVAR_ALT_MODE_REQUESTED` variable which is the actual backing var for the switch
-
 - A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position
     - Position (0-2)
     - 0 is SHUT, 1 is AUTO, 2 is OPEN
@@ -61,17 +55,9 @@
     - Bool
     - True if fault in pack 1
 
-- A32NX_AIRCOND_PACK1_TOGGLE
-    - Bool
-    - True if pack 1 is on
-
 - A32NX_AIRCOND_PACK2_FAULT
     - Bool
     - True if fault in pack 2
-
-- A32NX_AIRCOND_PACK2_TOGGLE
-    - Bool
-    - True if pack 2 is on
 
 - A32NX_AIRCOND_HOTAIR_FAULT
     - Bool
@@ -252,47 +238,47 @@
     - Bool
     - True when the FWC decides that flight phase inhibits should be overridden (and ignored)
 
-- A32NX_VSPEEDS_VS
+- A32NX_SPEEDS_VS
     - Number
     - Current config stall speed
     - is mach corrected
 
-- A32NX_VSPEEDS_VLS
+- A32NX_SPEEDS_VLS
     - Number
     - Current config minimum selectable speed
     - is mach corrected
 
-- A32NX_VSPEEDS_F
+- A32NX_SPEEDS_F
     - Number
     - F-Speed (approach)
 
-- A32NX_VSPEEDS_S
+- A32NX_SPEEDS_S
     - Number
     - S-Speed (approach)
 
-- A32NX_VSPEEDS_GD
+- A32NX_SPEEDS_GD
     - Number
     - Green Dot speed (clean config or O)
     - is mach corrected
 
-- A32NX_VSPEEDS_LANDING_CONF3
+- A32NX_SPEEDS_LANDING_CONF3
     - Bool
     - True if FLAPS 3 is selected in perf page
 
-- A32NX_VSPEEDS_TO_CONF
+- A32NX_SPEEDS_TO_CONF
     - Number
     - Flaps config for TakeOff, 1, 2 or 3
 
-- A32NX_VSPEEDS_V2
+- A32NX_SPEEDS_V2
     - Number
     - TakeOff V2 Speed calculated based on A32NX_VSPEEDS_TO_CONF config
 
-- A32NX_VSPEEDS_VLS_APP
+- A32NX_SPEEDS_VLS_APP
     - Number
     - vls calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
     - is mach corrected
 
-- A32NX_VSPEEDS_VAPP
+- A32NX_SPEEDS_VAPP
     - Number
     - vapp calculated for config full  whether A32NX_VSPEEDS_LANDING_CONF3 or not
     - is mach corrected
@@ -2132,6 +2118,47 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Air Conditioning / Pressurisation / Ventilation
 
+- A32NX_COND_{id}_TEMP
+    - Degree Celsius
+    - Temperature as measured in each of the cabin zones and cockpit
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_COND_{id}_DUCT_TEMP
+    - Degree Celsius
+    - Temperature of trim air coming out of the ducts in the cabin and cockpit
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_COND_PACK_FLOW_VALVE_{index}_IS_OPEN
+    - Bool
+    - True if the respective {1 or 2} pack flow valve is open
+
+- A32NX_COND_PACK_FLOW
+    - Percent
+    - Percentage flow coming out of the packs into the cabin (LO: 80%, NORM: 100%, HI: 120%)
+
+- A32NX_OVHD_COND_{id}_SELECTOR_KNOB
+    - Percentage
+    - Percent rotation of the overhead temperature selectors for each of the cabin zones
+    - To transform the value into degree celsius use this formula: this * 0.12 + 18
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_OVHD_COND_PACK_{index}_PB_IS_ON
+    - Bool
+    - True if pack {1 or 2} pushbutton is pressed in the on position (no white light)
+
+- A32NX_OVHD_COND_PACK_{index}_PB_HAS_FAULT
+    - Bool
+    - True if pack {1 or 2} has a fault
+
 - A32NX_PRESS_CABIN_ALTITUDE
     - Feet
     - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure
@@ -2336,3 +2363,106 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_HAS_FAULT:
     - Indicates whether the fault light is on for the engine bleed push button
     - Bool
+
+## Landing Gear (ATA 32)
+
+- A32NX_LGCIU_{number}_{gear}_GEAR_COMPRESSED
+    - Indicates if the shock absorber is compressed (not fully extended)
+    - Bool
+    - {number}
+        - 1
+        - 2
+    - {gear}
+        - NOSE
+        - LEFT
+        - RIGHT
+
+## ATC (ATA 34)
+
+- A32NX_TRANSPONDER_MODE
+    - The transponder mode selector switch position
+    - Enum
+      Mode | Value
+      --- | ---
+      STBY | 0
+      AUTO | 1
+      ON | 2
+
+- A32NX_TRANSPONDER_SYSTEM
+    - The transponder system selector switch position
+    - Enum
+      System | Value
+      --- | ---
+      Transponder 1 | 0
+      Transponder 2 | 1
+
+- A32NX_TRANSPONDER_ALT_RPTG
+    - The transponder altitude reporting switch position
+    - Bool
+
+- A32NX_SWITCH_TCAS_Position
+  - Enum
+  - Read-Only
+  - Selected TCAS Mode
+      Description | Value
+      --- | ---
+      STBY | 0
+      TA | 1
+      TA/RA | 2
+
+- A32NX_SWITCH_TCAS_Traffic_Position
+  - Enum
+  - Read-Only
+  - Selected TCAS Display Mode
+      Description | Value
+      --- | ---
+      THREAT | 0
+      ALL | 1
+      ABV | 2
+      BELOW | 3
+
+- A32NX_TCAS_MODE
+  - Enum
+  - Read-Only
+  - Whether TCAS has been set to standby, TA Only or TA/RA Mode (see ATC panel)
+  Description | Value
+      --- | ---
+      STBY | 0
+      TA | 1
+      TA/RA | 2
+
+- A32NX_TCAS_SENSITIVITY
+  - Number
+  - Read-Only
+  - Current sensitivity level
+
+- A32NX_TCAS_STATE
+  - Enum
+  - Read-Only
+  - Currently active traffic/resolution advisory state
+      Description | Value
+      --- | ---
+      NONE | 0
+      TA | 1
+      RA | 2
+
+- A32NX_TCAS_RA_CORRECTIVE
+  - boolean
+  - Read-Only
+  - Active RA is corrective?
+
+- A32NX_TCAS_VSPEED_RED:{number}
+    - Feet per minute
+    - Read-Only
+	- Lower and upper red vertical speed range of current active RA
+    - {number}
+        - 0
+        - 1
+
+- A32NX_TCAS_VSPEED_GREEN:{number}
+    - Feet per minute
+    - Read-Only
+	- Lower and upper green vertical speed range of current active RA
+    - {number}
+        - 0
+        - 1

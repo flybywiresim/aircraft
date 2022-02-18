@@ -22,6 +22,7 @@ path.join(__dirname, 'client/build/HoneywellMCDU.ttf');
 path.join(__dirname, 'client/build/HoneywellMCDUSmall.ttf');
 path.join(__dirname, 'client/build/index.html');
 path.join(__dirname, 'client/build/mcdu-r2-c.png');
+path.join(__dirname, 'client/build/button-click.mp3');
 path.join(__dirname, '../../node_modules/pdf-to-printer/dist/SumatraPDF.exe');
 path.join(__dirname, '../../node_modules/linebreak/src/classes.trie');
 path.join(__dirname, '../../node_modules/pdfkit/js/data/Helvetica.afm');
@@ -198,6 +199,9 @@ function start() {
         case '.jpg':
             contentType = 'image/jpg';
             break;
+        case '.mp3':
+            contentType = 'audio/mpeg';
+            break;
         default:
             break;
         }
@@ -288,6 +292,7 @@ function start() {
                         console.log(`\nCan't connect? You may need to open TCP ports ${httpPort} and ${websocketPort} on your firewall.`);
                         console.log('See the documentation for more information:');
                         console.log('\x1b[47m\x1b[30mhttps://docs.flybywiresim.com/fbw-a32nx/feature-guides/web-mcdu/#firewall-configuration\x1b[0m\n');
+                        console.log('Add "/sound" to your browser´s URL to get click sounds.');
 
                         if (selectedPrinter) {
                             console.log(`Printer: ${selectedPrinter.name}`);
