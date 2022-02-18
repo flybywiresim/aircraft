@@ -16,7 +16,7 @@ class CDUAtcConnectionStatus {
 
         let currentStation = "-----------[color]white";
         let atcDisconnect = "DISCONNECT\xa0[color]cyan";
-        if (mcdu.atsuManager.atc.currentStation() !== '') {
+        if (mcdu.atsuManager.atc.currentStation() !== "") {
             currentStation = `${mcdu.atsuManager.atc.currentStation()}[color]green`;
             atcDisconnect = "DISCONNECT*[color]cyan";
             store["disconnectAvail"] = true;
