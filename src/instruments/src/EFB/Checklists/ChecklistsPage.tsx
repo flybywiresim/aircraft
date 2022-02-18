@@ -24,16 +24,18 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
     const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.checklists);
     const isItemCompleted = checklists[selectedChecklistIndex].items[index]?.completed;
 
-    const firstIncompleteIdx = checklists[selectedChecklistIndex].items.findIndex((item, index) => {
+    const firstIncompleteIdx = checklists[selectedChecklistIndex].items.findIndex((item) => {
         // Let's go ahead and skip checklist items that have a completion-determination function as those can't be manually checked.
         if (autoFillChecklists) {
-            return !item.completed && !CHECKLISTS[selectedChecklistIndex].items[index].condition;
+            return !item.completed && !item.hasCondition;
         }
 
         return !item.completed;
     });
 
-    const itemCheckedAfterIncomplete = checklists[selectedChecklistIndex].items.slice(firstIncompleteIdx).some((item) => item.completed && !item.divider);
+    const itemCheckedAfterIncomplete = checklists[selectedChecklistIndex].items
+        .slice(firstIncompleteIdx)
+        .some((item) => item.completed && !item.divider && !item.hasCondition);
 
     const itemImproperlyUnchecked = index === firstIncompleteIdx && itemCheckedAfterIncomplete;
 
@@ -43,7 +45,7 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
         color = 'text-colors-lime-400';
     }
 
-    if (itemImproperlyUnchecked && !autoFillChecklists) {
+    if (itemImproperlyUnchecked) {
         color = 'text-red-500';
     }
 
@@ -116,7 +118,7 @@ const CompletionButton = () => {
         if (selectedChecklistIndex < checklists.length - 1) {
             return (
                 <div
-                    className="flex justify-center items-center py-2 w-full text-theme-highlight hover:text-theme-body bg-theme-body hover:bg-theme-highlight rounded-md border border-theme-highlight transition duration-100"
+                    className="flex justify-center items-center py-2 w-full text-theme-highlight hover:text-theme-body bg-theme-body hover:bg-theme-highlight rounded-md border-2 border-theme-highlight transition duration-100"
                     onClick={() => {
                         dispatch(setSelectedChecklistIndex(selectedChecklistIndex + 1));
                     }}
@@ -127,7 +129,7 @@ const CompletionButton = () => {
         }
 
         return (
-            <div className="flex justify-center items-center py-2 w-full text-theme-highlight bg-theme-body rounded-md border border-theme-highlight">
+            <div className="flex justify-center items-center py-2 w-full text-theme-highlight bg-theme-body rounded-md border-2 border-theme-highlight">
                 The last checklist is complete
             </div>
         );
@@ -136,7 +138,7 @@ const CompletionButton = () => {
     if (firstIncompleteIdx !== -1) {
         return (
             <div
-                className="flex justify-center items-center py-2 w-full hover:text-theme-body bg-theme-body rounded-md border transition duration-100 border-colors-lime-400 hover:bg-colors-lime-400 text-colors-lime-400"
+                className="flex justify-center items-center py-2 w-full hover:text-theme-body bg-theme-body rounded-md border-2 transition duration-100 border-colors-lime-400 hover:bg-colors-lime-400 text-colors-lime-400"
                 onClick={() => {
                     dispatch(setChecklistItemCompletion({
                         checklistIndex: selectedChecklistIndex,
@@ -153,7 +155,7 @@ const CompletionButton = () => {
     if (areAllChecklistItemsCompleted(selectedChecklistIndex)) {
         return (
             <div
-                className="flex justify-center items-center py-2 w-full hover:text-theme-body bg-theme-body rounded-md border transition duration-100 border-colors-lime-400 hover:bg-colors-lime-400 text-colors-lime-400"
+                className="flex justify-center items-center py-2 w-full hover:text-theme-body bg-theme-body rounded-md border-2 transition duration-100 border-colors-lime-400 hover:bg-colors-lime-400 text-colors-lime-400"
                 onClick={() => {
                     dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: true }));
                 }}
@@ -164,7 +166,7 @@ const CompletionButton = () => {
     }
 
     return (
-        <div className="flex justify-center items-center py-2 w-full bg-theme-body rounded-md border border-colors-lime-400 text-colors-lime-400">
+        <div className="flex justify-center items-center py-2 w-full bg-theme-body rounded-md border-2 border-colors-lime-400 text-colors-lime-400">
             There are remaining autofill checklist items that have not yet been completed
         </div>
     );

@@ -21,6 +21,7 @@ import {
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { toast } from 'react-toastify';
+import { useHistory } from 'react-router-dom';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { SelectGroup, SelectItem } from '../UtilComponents/Form/Select';
 import NavigraphClient, {
@@ -51,6 +52,10 @@ import {
     addPinnedChart,
     isChartPinned,
 } from '../Store/features/navigationPage';
+import { PageLink, PageRedirect, pathify, TabRoutes } from '../Utils/routing';
+import { TODCalculator } from '../TODCalculator/TODCalculator';
+import { LandingWidget } from '../Performance/Widgets/LandingWidget';
+import { Navbar } from '../UtilComponents/Navbar';
 
 type LocalFileChart = {
     fileName: string;
@@ -480,7 +485,7 @@ const ChartComponent = () => {
                                     const width = isFullScreen ? 804 : 1278;
 
                                     const scale = width / (chartDimensions.width ?? 0);
-                                    const height = chartDimensions.height ?? 0 * scale;
+                                    const height = (chartDimensions.height ?? 0) * scale;
 
                                     dispatch(setChartDimensions({ width, height }));
                                 }
@@ -994,7 +999,7 @@ const NavigraphChartsUI = () => {
                                 value={icao}
                                 noLabel
                                 maxLength={4}
-                                className={`w-full flex-shrink uppercase ${!simbriefDataLoaded && 'rounded-r-none'}`}
+                                className={`w-full flex-shrink uppercase ${simbriefDataLoaded && 'rounded-r-none'}`}
                                 onChange={handleIcaoChange}
                             />
                             {(simbriefDataLoaded) && (
@@ -1199,7 +1204,7 @@ const LocalFileChartUI = () => {
                                 placeholder="File Name"
                                 value={icao}
                                 noLabel
-                                className={`w-full flex-shrink uppercase ${!simbriefDataLoaded && 'rounded-r-none'}`}
+                                className={`w-full flex-shrink uppercase ${simbriefDataLoaded && 'rounded-r-none'}`}
                                 onChange={handleIcaoChange}
                             />
                             {(simbriefDataLoaded) && (
@@ -1262,6 +1267,20 @@ const LocalFileChartUI = () => {
 const NavigraphNav = () => {
     const navigraph = useNavigraph();
 
+    useInterval(async () => {
+        try {
+            await navigraph.getToken();
+        } catch (e) {
+            toast.error(`Navigraph Authentication Error: ${e.message}`, { autoClose: 10_000 });
+        }
+    }, (navigraph.tokenRefreshInterval * 1000));
+
+    useEffect(() => {
+        if (!navigraph.hasToken) {
+            navigraph.authenticate();
+        }
+    }, []);
+
     return (
         <>
             {NavigraphClient.hasSufficientEnv
@@ -1283,64 +1302,37 @@ const NavigraphNav = () => {
     );
 };
 
-export const Navigation = () => {
-    const navigraph = useNavigraph();
+const tabs: PageLink[] = [
+    { name: 'Local Files', component: <LocalFileChartUI /> },
+    { name: 'Navigraph', component: <NavigraphNav /> },
+];
 
+export const Navigation = () => {
     const dispatch = useAppDispatch();
 
-    const [chartSource, setChartSource] = usePersistentProperty('EFB_CHART_SOURCE', 'NAVIGRAPH');
-    const usingNavigraph = chartSource === 'NAVIGRAPH';
-
-    useInterval(async () => {
-        if (chartSource === 'NAVIGRAPH') {
-            try {
-                await navigraph.getToken();
-            } catch (e) {
-                toast.error(`Navigraph Authentication Error: ${e.message}`, { autoClose: 10_000 });
-            }
-        }
-    }, (navigraph.tokenRefreshInterval * 1000));
-
-    useEffect(() => {
-        if (chartSource === 'NAVIGRAPH' && !navigraph.hasToken) {
-            navigraph.authenticate();
-        }
-    }, []);
+    const history = useHistory();
 
     return (
         <div className="w-full h-full">
-            <div className="flex flex-row justify-between items-start w-full">
-                <h1 className="mb-4 font-bold">Navigation & Charts</h1>
-                <SelectGroup>
-                    <SelectItem
-                        selected={chartSource === 'NAVIGRAPH'}
-                        onSelect={() => {
-                            dispatch(setChartLinks({ light: '', dark: '' }));
-                            dispatch(setChartName({ light: '', dark: '' }));
-                            dispatch(setTabIndex(0));
-                            setChartSource('NAVIGRAPH');
-                        }}
-                    >
-                        Navigraph
-                    </SelectItem>
-                    <SelectItem
-                        selected={chartSource === 'LOCAL_FILES'}
-                        onSelect={() => {
-                            dispatch(setChartLinks({ light: '', dark: '' }));
-                            dispatch(setChartName({ light: '', dark: '' }));
-                            dispatch(setTabIndex(0));
-                            setChartSource('LOCAL_FILES');
-                        }}
-                    >
-                        Local Files
-                    </SelectItem>
-                </SelectGroup>
+            <div className="relative">
+                <h1 className="font-bold">Navigation & Charts</h1>
+                <Navbar
+                    className="absolute top-0 right-0"
+                    tabs={tabs.map((tab) => tab.name)}
+                    onSelected={(index) => {
+                        history.push(`/navigation/${pathify(tabs[index].name)}`);
+
+                        dispatch(setChartLinks({ light: '', dark: '' }));
+                        dispatch(setChartName({ light: '', dark: '' }));
+                        dispatch(setTabIndex(0));
+                    }}
+                />
             </div>
-            {usingNavigraph ? (
-                <NavigraphNav />
-            ) : (
-                <LocalFileChartUI />
-            )}
+
+            <div className="mt-4">
+                <PageRedirect basePath="/navigation" tabs={tabs} />
+                <TabRoutes basePath="/navigation" tabs={tabs} />
+            </div>
         </div>
     );
 };

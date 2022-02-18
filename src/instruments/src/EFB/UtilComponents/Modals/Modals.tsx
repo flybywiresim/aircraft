@@ -121,7 +121,7 @@ export const ModalContainer = () => {
     const { modal } = useModals();
 
     return (
-        <div className={`fixed inset-0 z-50 bg-opacity-70 transition duration-200 ${modal ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`fixed inset-0 z-50 transition duration-200 ${modal ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <div className="absolute inset-0 bg-theme-body opacity-75" />
             <div className="flex absolute inset-0 flex-col justify-center items-center">
                 {modal}

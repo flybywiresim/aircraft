@@ -107,7 +107,6 @@ const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runw
                 </div>
             );
         });
-        console.log(elements);
 
         return <>{elements}</>;
     }), [labels, distanceUnit]);

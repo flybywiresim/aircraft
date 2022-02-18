@@ -6,13 +6,13 @@ import { Metar } from '@flybywiresim/api-client';
 import { Droplet, Speedometer2, ThermometerHalf, Wind } from 'react-bootstrap-icons';
 import { parseMetar } from '../../Utils/parseMetar';
 import { MetarParserType } from '../../../Common/metarTypes';
-import { usePersistentProperty } from '../../../Common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '../../../Common/persistence';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ColoredMetar } from './ColorMetar';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
     setDepartureMetar,
-    setDestinationMetar, setShowDepartureMetar, setShowDestinationMetar,
+    setDestinationMetar,
     setUserDepartureIcao,
     setUserDestinationIcao,
 } from '../../Store/features/dashboard';
@@ -63,9 +63,13 @@ const MetarParserTypeProp: MetarParserType = {
     flight_category: '',
 };
 
-interface WeatherWidgetProps { name: 'origin'|'destination'; simbriefIcao: string; userIcao?: string}
+interface WeatherWidgetProps {
+    name: 'origin'|'destination';
+    simbriefIcao: string;
+    userIcao?: string
+}
 
-export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userIcao }) => {
+export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, userIcao }) => {
     const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
     const dispatch = useAppDispatch();
     const [simbriefIcaoAtLoading, setSimbriefIcaoAtLoading] = useState(simbriefIcao);
@@ -78,10 +82,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
     const metar = useAppSelector((state) => (name === 'origin' ? state.dashboard.departureMetar : state.dashboard.destinationMetar)) ?? MetarParserTypeProp;
     const setMetar = name === 'origin' ? setDepartureMetar : setDestinationMetar;
 
-    const showMetar = useAppSelector((state) => (name === 'origin'
-        ? state.dashboard.showDepartureMetar
-        : state.dashboard.showDestinationMetar));
-    const setShowMetar = name === 'origin' ? setShowDepartureMetar : setShowDestinationMetar;
+    const [showMetar, setShowMetar] = usePersistentNumberProperty(`CONFIG_SHOW_METAR_${name}`, 0);
 
     const BaroValue = () => {
         const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
@@ -163,7 +164,7 @@ export const WeatherWidget:FC<WeatherWidgetProps> = ({ name, simbriefIcao, userI
                             />
                             <div className="flex flex-row space-x-2">
                                 <p>Raw</p>
-                                <Toggle value={showMetar} onToggle={(value) => dispatch(setShowMetar(value))} />
+                                <Toggle value={!!showMetar} onToggle={(value) => setShowMetar(value ? 1 : 0)} />
                             </div>
                         </div>
                         <div style={{ minHeight: '100px' }}>

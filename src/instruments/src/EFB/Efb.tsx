@@ -185,9 +185,10 @@ const Efb = () => {
                         checklistIndex: index,
                         itemArr: checklist.items.map((item) => {
                             if (item.divider) {
-                                return { completed: true, divider: true };
+                                return { completed: true, divider: true, hasCondition: item.condition !== undefined };
                             }
-                            return { completed: false };
+
+                            return { completed: false, divider: false, hasCondition: item.condition !== undefined };
                         }),
                     }));
                 });

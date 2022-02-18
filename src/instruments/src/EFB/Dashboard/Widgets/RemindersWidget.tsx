@@ -1,9 +1,9 @@
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 import { IconArrowRight } from '@tabler/icons';
 import { A320Failure } from '@flybywiresim/failures';
 import { Link } from 'react-router-dom';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { Check } from 'react-bootstrap-icons';
+import { ArrowDown, ArrowUp, Check, PencilFill } from 'react-bootstrap-icons';
 import {
     setChartId,
     setChartLinks,
@@ -20,39 +20,37 @@ import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { WeatherWidget } from './WeatherWidget';
 import {
-    areAllChecklistItemsCompleted, Checklist,
+    areAllChecklistItemsCompleted, TrackingChecklist,
     getChecklistCompletion,
     setSelectedChecklistIndex,
 } from '../../Store/features/checklists';
 
-export const RemindersWidget = () => {
-    const navigraph = useNavigraph();
+interface ActiveFailureReminderProps {
+    name: string,
+}
 
+const ActiveFailureReminder: FC<ActiveFailureReminderProps> = ({ name }) => (
+    <div className="flex flex-col flex-wrap p-2 mt-4 mr-4 bg-theme-highlight rounded-md border-2 border-theme-highlight">
+        <h3 className="font-bold text-black">Active Failure</h3>
+        <span className="mt-2 text-black font-inter">{name}</span>
+        <span className="ml-auto text-black">
+            <IconArrowRight />
+        </span>
+    </div>
+);
+
+const WeatherReminder = () => {
     const { departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
     const { userDepartureIcao, userDestinationIcao } = useAppSelector((state) => state.dashboard);
 
     return (
-        <div className="w-full">
-            <h1 className="mb-4 font-bold">Important Information</h1>
-            <div className="p-6 w-full h-efb rounded-lg border-2 border-theme-accent">
-                <ScrollableContainer height={51}>
-                    <div className="flex flex-col space-y-4">
-                        <RemindersSection title="Weather" noLink>
-                            <div className="space-y-6">
-                                <WeatherWidget name="origin" simbriefIcao={departingAirport} userIcao={userDepartureIcao} />
-                                <div className="w-full h-1 bg-theme-accent rounded-full" />
-                                <WeatherWidget name="destination" simbriefIcao={arrivingAirport} userIcao={userDestinationIcao} />
-                            </div>
-                        </RemindersSection>
-                        {navigraph.hasToken && (
-                            <PinnedChartsReminder />
-                        )}
-                        <MaintenanceReminder />
-                        <ChecklistReminder />
-                    </div>
-                </ScrollableContainer>
+        <RemindersSection title="Weather" noLink>
+            <div className="space-y-6">
+                <WeatherWidget name="origin" simbriefIcao={departingAirport} userIcao={userDepartureIcao} />
+                <div className="w-full h-1 bg-theme-accent rounded-full" />
+                <WeatherWidget name="destination" simbriefIcao={arrivingAirport} userIcao={userDestinationIcao} />
             </div>
-        </div>
+        </RemindersSection>
     );
 };
 
@@ -60,6 +58,9 @@ const PinnedChartsReminder = () => {
     const dispatch = useAppDispatch();
     const [, setChartSource] = usePersistentProperty('EFB_CHART_SOURCE');
     const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
+    const navigraph = useNavigraph();
+
+    // if (!navigraph.hasToken) return null;
 
     return (
         <RemindersSection title="Pinned Charts" pageLinkPath="/navigation">
@@ -127,7 +128,7 @@ const MaintenanceReminder = () => {
 };
 
 interface ChecklistReminderWidgetProps {
-    checklist: Checklist,
+    checklist: TrackingChecklist,
     checklistIndex: number
 }
 
@@ -176,7 +177,7 @@ const ChecklistReminderWidget = ({ checklist, checklistIndex }: ChecklistReminde
     );
 };
 
-const ChecklistReminder = () => {
+const ChecklistsReminder = () => {
     const { checklists } = useAppSelector((state) => state.checklists);
 
     return (
@@ -187,6 +188,106 @@ const ChecklistReminder = () => {
                 ))}
             </div>
         </RemindersSection>
+    );
+};
+
+type ReminderKey = 'weather' | 'charts' | 'maintenance' | 'checklists';
+
+const REMINDERS = new Map<ReminderKey, JSX.Element>([
+    ['weather', <WeatherReminder />],
+    ['charts', <PinnedChartsReminder />],
+    ['maintenance', <MaintenanceReminder />],
+    ['checklists', <ChecklistsReminder />],
+]);
+
+interface ReminderKeyEditCardProps {
+    reminderKey: ReminderKey;
+    index: number;
+    setter: (destIndex: number) => void;
+    keyArrLen: number;
+}
+
+const ReminderKeyEditCard = ({ reminderKey, setter, index, keyArrLen }: ReminderKeyEditCardProps) => (
+    <div className="flex flex-row justify-between items-center p-4 w-full bg-theme-accent rounded-md">
+        <h1>{reminderKey}</h1>
+        <div className="flex flex-row">
+            <div className="w-10">
+                <ArrowUp
+                    size={25}
+                    onClick={() => {
+                        if (index === 0) {
+                            setter(keyArrLen - 1);
+                        } else {
+                            setter(index - 1);
+                        }
+                    }}
+                />
+            </div>
+            <div className="w-10">
+                <ArrowDown
+                    size={25}
+                    onClick={() => {
+                        if (index === keyArrLen - 1) {
+                            setter(0);
+                        } else {
+                            setter(index + 1);
+                        }
+                    }}
+                />
+            </div>
+        </div>
+    </div>
+);
+
+export const RemindersWidget = () => {
+    const [orderedReminderKeys, setOrderedReminderKeys] = usePersistentProperty('REMINDER_WIDGET_ORDERED_KEYS', 'charts,maintenance,checklists,weather');
+    const reminderKeyArr = orderedReminderKeys.split(',') as ReminderKey[];
+
+    const [reorderMode, setReorderMode] = useState(false);
+
+    const arrayMove = (element: ReminderKey, toIndex: number) => {
+        reminderKeyArr.splice(reminderKeyArr.indexOf(element), 1);
+        reminderKeyArr.splice(toIndex, 0, element);
+
+        return reminderKeyArr.toString();
+    };
+
+    return (
+        <div className="w-full">
+            <div className="flex flex-row justify-between items-center space-x-3">
+                <h1 className="font-bold">Important Information</h1>
+                <PencilFill
+                    className={`transition duration-100 ${reorderMode && 'text-theme-highlight'}`}
+                    size={25}
+                    onClick={() => setReorderMode((old) => !old)}
+                />
+            </div>
+            <div className="relative p-6 mt-4 w-full h-efb rounded-lg border-2 border-theme-accent">
+                <ScrollableContainer height={51}>
+                    <div className="flex flex-col space-y-4">
+                        {reminderKeyArr.map((key) => REMINDERS.get(key))}
+                    </div>
+                </ScrollableContainer>
+                <div className={`absolute inset-0 z-40 transition duration-100 ${reorderMode ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                    <div className="absolute inset-0 bg-theme-body opacity-80" />
+                    <div className="absolute inset-0">
+                        <ScrollableContainer height={51}>
+                            <div className="p-6 space-y-4">
+                                {reminderKeyArr.map((key, index) => (
+                                    <ReminderKeyEditCard
+                                        reminderKey={key}
+                                        keyArrLen={reminderKeyArr.length}
+                                        setter={(index) => setOrderedReminderKeys(arrayMove(key, index))}
+                                        index={index}
+                                        key={key}
+                                    />
+                                ))}
+                            </div>
+                        </ScrollableContainer>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 
@@ -211,20 +312,6 @@ const RemindersSection: FC<RemindersSectionProps> = ({ title, children, pageLink
         </div>
 
         {children}
-    </div>
-);
-
-interface ActiveFailureReminderProps {
-    name: string,
-}
-
-const ActiveFailureReminder: FC<ActiveFailureReminderProps> = ({ name }) => (
-    <div className="flex flex-col flex-wrap p-2 mt-4 mr-4 bg-theme-highlight rounded-md border-2 border-theme-highlight">
-        <h3 className="font-bold text-black">Active Failure</h3>
-        <span className="mt-2 text-black font-inter">{name}</span>
-        <span className="ml-auto text-black">
-            <IconArrowRight />
-        </span>
     </div>
 );
 
