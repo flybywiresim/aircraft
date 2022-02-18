@@ -151,6 +151,18 @@ impl<'a> InitContext<'a> {
     pub fn is_on_ground(&self) -> bool {
         !self.is_in_flight()
     }
+
+    pub fn has_engines_running(&self) -> bool {
+        matches!(
+            self.start_state,
+            StartState::Taxi
+                | StartState::Runway
+                | StartState::Climb
+                | StartState::Cruise
+                | StartState::Approach
+                | StartState::Final
+        )
+    }
 }
 
 impl<'a> ElectricalElementIdentifierProvider for InitContext<'a> {
@@ -892,6 +904,30 @@ mod tests {
             let mut registry: TestVariableRegistry = Default::default();
             let context = InitContext::new(start_state, &mut electricity, &mut registry);
             assert!(!context.is_on_ground());
+        }
+
+        #[rstest]
+        #[case(StartState::Taxi)]
+        #[case(StartState::Runway)]
+        #[case(StartState::Climb)]
+        #[case(StartState::Cruise)]
+        #[case(StartState::Approach)]
+        #[case(StartState::Final)]
+        fn has_engines_running_when(#[case] start_state: StartState) {
+            let mut electricity = Electricity::new();
+            let mut registry: TestVariableRegistry = Default::default();
+            let context = InitContext::new(start_state, &mut electricity, &mut registry);
+            assert!(context.has_engines_running());
+        }
+
+        #[rstest]
+        #[case(StartState::Hangar)]
+        #[case(StartState::Apron)]
+        fn does_not_have_engines_running_when(#[case] start_state: StartState) {
+            let mut electricity = Electricity::new();
+            let mut registry: TestVariableRegistry = Default::default();
+            let context = InitContext::new(start_state, &mut electricity, &mut registry);
+            assert!(!context.has_engines_running());
         }
     }
 }
