@@ -64,6 +64,56 @@ impl VariableIdentifier {
     }
 }
 
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd)]
+pub enum StartState {
+    Hangar,
+    Apron,
+    Taxi,
+    Runway,
+    Climb,
+    Cruise,
+    Approach,
+    Final,
+}
+
+impl From<f64> for StartState {
+    fn from(value: f64) -> Self {
+        match value {
+            x if x < 0.9 => Default::default(),
+            x if x < 1.9 => StartState::Hangar,
+            x if x < 2.9 => StartState::Apron,
+            x if x < 3.9 => StartState::Taxi,
+            x if x < 4.9 => StartState::Runway,
+            x if x < 5.9 => StartState::Climb,
+            x if x < 6.9 => StartState::Cruise,
+            x if x < 7.9 => StartState::Approach,
+            x if x < 8.9 => StartState::Final,
+            _ => Default::default(),
+        }
+    }
+}
+
+impl From<StartState> for f64 {
+    fn from(state: StartState) -> Self {
+        match state {
+            StartState::Hangar => 1.,
+            StartState::Apron => 2.,
+            StartState::Taxi => 3.,
+            StartState::Runway => 4.,
+            StartState::Climb => 5.,
+            StartState::Cruise => 6.,
+            StartState::Approach => 7.,
+            StartState::Final => 8.,
+        }
+    }
+}
+
+impl Default for StartState {
+    fn default() -> Self {
+        StartState::Apron
+    }
+}
+
 pub struct InitContext<'a> {
     electrical_identifier_provider: &'a mut dyn ElectricalElementIdentifierProvider,
     registry: &'a mut dyn VariableRegistry,
@@ -683,6 +733,7 @@ read_write_uom!(Angle, degree);
 read_write_uom!(AngularVelocity, revolution_per_minute);
 
 read_write_into!(MachNumber);
+read_write_into!(StartState);
 
 impl<T: Reader> Read<f64> for T {
     fn convert(&mut self, value: f64) -> f64 {
@@ -717,5 +768,58 @@ impl<T: Reader> Read<Duration> for T {
 impl<T: Writer> Write<Duration> for T {
     fn convert(&mut self, value: Duration) -> f64 {
         value.as_secs_f64()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod start_state {
+        use super::*;
+        use fxhash::FxHashMap;
+        use ntest::assert_about_eq;
+        use rstest::rstest;
+
+        #[rstest]
+        #[case(1., StartState::Hangar)]
+        #[case(2., StartState::Apron)]
+        #[case(3., StartState::Taxi)]
+        #[case(4., StartState::Runway)]
+        #[case(5., StartState::Climb)]
+        #[case(6., StartState::Cruise)]
+        #[case(7., StartState::Approach)]
+        #[case(8., StartState::Final)]
+        fn converts_to_and_from_f64(#[case] value: f64, #[case] expected: StartState) {
+            assert_eq!(expected, value.into());
+            assert_about_eq!(value, f64::from(expected));
+        }
+
+        #[test]
+        fn default_is_apron() {
+            assert_eq!(StartState::Apron, Default::default());
+        }
+
+        #[test]
+        fn converts_0_f64_to_default() {
+            assert_eq!(StartState::default(), (0.).into())
+        }
+
+        #[test]
+        fn converts_greater_than_8_point_9_f64_to_default() {
+            assert_eq!(StartState::default(), (9.).into());
+            assert_eq!(StartState::default(), (f64::MAX).into());
+        }
+
+        #[test]
+        fn includes_partial_ord_operators() {
+            assert!(StartState::Climb < StartState::Cruise);
+        }
+
+        #[test]
+        fn includes_hash() {
+            let mut hashmap: FxHashMap<StartState, bool> = FxHashMap::default();
+            hashmap.insert(StartState::Climb, true);
+        }
     }
 }
