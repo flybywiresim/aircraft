@@ -25,7 +25,7 @@ const combinedReducer = combineReducers({
     flightProgress: flightProgressReducer,
     navigationTab: navigationTabReducer,
     dashboard: dashboardReducer,
-    checklists: checklistsReducer,
+    trackingChecklists: checklistsReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {

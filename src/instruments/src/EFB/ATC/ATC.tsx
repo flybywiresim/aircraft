@@ -20,23 +20,21 @@ export const ATC = () => {
     const [displayedActiveFrequency, setDisplayedActiveFrequency] = useState<string>();
     const [displayedStandbyFrequency, setDisplayedStandbyFrequency] = useState<string>();
     const [currentAtc, setCurrentAtc] = useState<ATCInfoExtended>();
-    const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 5000);
-    const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
+    const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 10_000);
+    const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 10_000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
     const [hoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
     const [hoppieActive, setHoppieActive] = useSimVar('L:A32NX_HOPPIE_ACTIVE', 'number');
     const [mcduFlightNoSet] = useSimVar('L:A32NX_MCDU_FLT_NO_SET', 'boolean');
     const [callsign] = useSimVar('ATC FLIGHT NUMBER', 'string');
 
-    const [atcDataPending, setAtcDataPending] = useState(false);
+    const [atcDataPending, setAtcDataPending] = useState(true);
 
     const { showModal } = useModals();
 
     const loadAtc = useCallback(async () => {
         if (atisSource.toLowerCase() !== 'vatsim' && atisSource.toLowerCase() !== 'ivao') return;
         const atisSourceReq = atisSource.toLowerCase();
-
-        setAtcDataPending(true);
 
         try {
             const atcRes = await apiClient.ATC.get(atisSourceReq);

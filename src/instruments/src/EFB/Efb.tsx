@@ -31,9 +31,9 @@ import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/
 
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
-import { Checklists } from './Checklists/Checklists';
+import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
-import { setChecklistItemCompletion, setChecklistItems } from './Store/features/checklists';
+import { setChecklistItems } from './Store/features/checklists';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 240;
@@ -171,7 +171,7 @@ const Efb = () => {
     }, [batteryLevel, powerState]);
 
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
-    const { checklists } = useAppSelector((state) => state.checklists);
+    const { checklists } = useAppSelector((state) => state.trackingChecklists);
 
     useEffect(() => {
         if (powerState === PowerStates.SHUTOFF) {
@@ -204,27 +204,9 @@ const Efb = () => {
         }
     }, [powerState]);
 
-    const setAutomaticItemStates = () => {
+    useInterval(() => {
         if (!autoFillChecklists) return;
 
-        const firstUnmarkedIdx = checklists.findIndex((cl) => !cl.markedCompleted);
-
-        if (firstUnmarkedIdx === -1) return;
-
-        CHECKLISTS[firstUnmarkedIdx].items.forEach((clItem, itemIdx) => {
-            const associatedTrackingItem = checklists[firstUnmarkedIdx].items[itemIdx];
-
-            if (!clItem.condition || !associatedTrackingItem) return;
-
-            dispatch(setChecklistItemCompletion({
-                checklistIndex: firstUnmarkedIdx,
-                itemIndex: itemIdx,
-                completionValue: clItem.condition(),
-            }));
-        });
-    };
-
-    useInterval(() => {
         setAutomaticItemStates();
     }, 3000);
 
