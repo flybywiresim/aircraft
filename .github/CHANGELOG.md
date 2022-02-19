@@ -159,6 +159,7 @@
 1. [EFB] Colored raw Metar in EFB weather widget - @frankkopp (Frank Kopp)
 1. [AP] Fix Target Altitude to be set in all FM requested modes - @IbrahimK42 (IbrahimK42)
 1. [AP] Fix G/S condition - @aguther (Andreas Guther)
+1. [DUs] Override MSFS menu animation setting for display units - @tracernz (Mike)
 
 ## 0.7.0
 
