@@ -308,7 +308,7 @@ export class Atc {
 
         // expecting a LOGON or denied message
         if (this.nextAtc !== '' && request !== undefined && response !== undefined) {
-            if (request.Message.startsWith('REQUEST')) {
+            if (request.Message === 'REQUEST LOGON') {
                 // logon accepted by ATC
                 if (response.Message.includes('LOGON ACCEPTED')) {
                     this.dcduLink.setAtcLogonMessage(`CURRENT ATC UNIT @${this.nextAtc}@`);
