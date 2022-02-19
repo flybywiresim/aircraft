@@ -6,6 +6,7 @@
 1. [EIS Display System](#eis-display-system)
 1. [Fly-By-Wire System](#fly-by-wire-system)
 1. [ADIRS](#adirs)
+1. [Flight Management System](#flight-management-system)
 1. [Autopilot System](#autopilot-system)
 1. [Autothrust System](#autothrust-system)
 1. [Throttle Mapping System](#throttle-mapping-system)
@@ -16,6 +17,20 @@
 1. [ATC (ATA 34)](#atc-ata-34)
 
 ## Uncategorized
+
+- A32NX_START_STATE
+  - Enum
+  - Indicates the state in which MSFS started
+  - State | Value
+    --- | ---
+    Hangar | 1
+    Apron | 2
+    Taxi | 3
+    Runway | 4
+    Climb | 5
+    Cruise | 6
+    Approach | 7
+    Final | 8
 
 - A32NX_NO_SMOKING_MEMO
     - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM
