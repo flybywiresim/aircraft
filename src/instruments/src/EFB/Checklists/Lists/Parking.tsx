@@ -6,22 +6,22 @@ export const parkingChecklist: ChecklistDefinition = {
         {
             item: 'APU BLEED',
             result: 'ON',
-            condition: () => !!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', 'Number'),
+            condition: () => !!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', 'Bool'),
         },
         {
             item: 'ENGINES',
             result: 'OFF',
             condition: () => {
-                const engOneN1 = SimVar.GetSimVarValue('ENG N1 RPM:1', 'Percent');
-                const engTwoN1 = SimVar.GetSimVarValue('ENG N1 RPM:2', 'Percent');
+                const engOneN2 = SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'Number');
+                const engTwoN2 = SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'Number');
 
-                return engOneN1 === 0 && engTwoN1 === 0;
+                return engOneN2 === 0 && engTwoN2 === 0;
             },
         },
         {
             item: 'SEAT BELTS',
             result: 'OFF',
-            condition: () => !SimVar.GetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'Number'),
+            condition: () => !SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'Bool'),
         },
         {
             item: 'EXT LT',

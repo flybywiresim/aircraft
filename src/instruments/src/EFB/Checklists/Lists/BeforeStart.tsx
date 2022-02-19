@@ -19,8 +19,7 @@ export const beforeStartChecklist: ChecklistDefinition = {
             item: 'SIGNS',
             result: 'ON/AUTO',
             condition: () => {
-                // TODO: This is not working 😻
-                const seatbeltsOn = SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_SEATBELT_Position', 'Number') === 1;
+                const seatbeltsOn = !!SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'Bool');
                 const noSmokingPos = SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'Number');
                 return seatbeltsOn && (noSmokingPos === 0 || noSmokingPos === 1);
             },
