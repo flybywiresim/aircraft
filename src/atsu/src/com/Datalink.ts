@@ -71,7 +71,7 @@ export class Datalink {
                 });
                 this.waitedTimeHoppie = 0;
             } else {
-                this.waitedTimeHoppie += 200;
+                this.waitedTimeHoppie += 5000;
             }
 
             if (NXApiConnector.pollInterval() <= this.waitedTimeNXApi) {
@@ -82,9 +82,9 @@ export class Datalink {
                 });
                 this.waitedTimeNXApi = 0;
             } else {
-                this.waitedTimeNXApi += 200;
+                this.waitedTimeNXApi += 5000;
             }
-        }, 200);
+        }, 5000);
     }
 
     private estimateTransmissionTime(): void {
