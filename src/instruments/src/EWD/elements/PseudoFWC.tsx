@@ -133,10 +133,14 @@ const PseudoFWC: React.FC = () => {
     const [cargofwdLocked] = useSimVar('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool', 1000);
     const [cargoaftLocked] = useSimVar('L:A32NX_AFT_DOOR_CARGO_LOCKED', 'bool', 1000);
 
+    const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 500);
+    const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 500);
+    const onGround = left1LandingGear === 1 && right1LandingGear === 1;
+    const [landingGearDown] = useSimVar('GEAR HANDLE POSITION', 'bool', 500);
+
     const [eng1FireTest] = useSimVar('L:A32NX_FIRE_TEST_ENG1', 'bool', 500);
     const [eng2FireTest] = useSimVar('L:A32NX_FIRE_TEST_ENG2', 'bool', 500);
     const [apuFireTest] = useSimVar('L:A32NX_FIRE_TEST_APU', 'bool', 500);
-    const onGround = Simplane.getIsGrounded();
     const [throttle1Position] = useSimVar('L:XMLVAR_Throttle1Position', 'number', 100);
     const [throttle2Position] = useSimVar('L:XMLVAR_Throttle2Position', 'number', 100);
     const [engine1ValueSwitch] = useSimVar('FUELSYSTEM VALVE SWITCH:1', 'bool', 500);
@@ -183,6 +187,20 @@ const PseudoFWC: React.FC = () => {
     const [fuelXFeedPBOn] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_XFEED_Pressed', 'bool', 500);
     const [ATTKnob] = useSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum', 500);
     const [AIRKnob] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum', 500);
+
+    const [emergencyElectricGeneratorPotential] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number', 500);
+    const emergencyGeneratorOn = emergencyElectricGeneratorPotential > 0 ? 1 : 0;
+    const landASAPRed = !onGround
+    && (
+        fireButton1 === 1
+        || fireButton2 === 1
+        || fireButtonAPU === 1
+        || emergencyGeneratorOn
+        || (engine1State === 0 && engine2State === 0)
+        || (greenLP === 1 && yellowLP === 1)
+        || (yellowLP === 1 && blueLP === 1)
+        || (greenLP === 1 && blueLP === 1)
+    );
 
     // Check out updateTakeoffConfigWarnings(_test) {
 
@@ -274,7 +292,26 @@ const PseudoFWC: React.FC = () => {
                 toconfig ? 11 : 10,
             ],
             codesToReturn: ['000001001', '000001002', '000001003', '000001004', '000001005', '000001006', '000001007', '000001008', '000001009', '000001010', '000001011', '000001012'],
-            memoInhibit: ldgmemo === 1,
+            memoInhibit: false,
+            failure: 0,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        '0000020': {
+            flightPhaseInhib: [1, 2, 3, 4, 5, 9, 10],
+            simVarIsActive: () => ldgmemo,
+            whichCodeToReturn: [
+                landingGearDown === 1 ? 1 : 0,
+                noSmoking && configPortableDevices ? 3 : 2,
+                cabinReady ? 5 : 4,
+                spoilersArmed ? 7 : 6,
+                !gpwsFlaps3 && flapsHandle !== 4 ? 8 : null,
+                !gpwsFlaps3 && flapsHandle === 4 ? 9 : null,
+                gpwsFlaps3 === 1 && flapsHandle !== 3 ? 10 : null,
+                gpwsFlaps3 === 1 && flapsHandle === 3 ? 11 : null,
+            ],
+            codesToReturn: ['000002001', '000002002', '000002003', '000002004', '000002005', '000002006', '000002007', '000002008', '000002009', '000002010', '000002011', '000002012'],
+            memoInhibit: false,
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
@@ -379,7 +416,7 @@ const PseudoFWC: React.FC = () => {
                 sysPage: -1,
                 side: 'LEFT',
             },
-        '0000110':
+        '0000110': // FOB BELOW 3 T or 6600 LBS
             {
                 flightPhaseInhib: [],
                 simVarIsActive: () => fobRounded < 3000,
@@ -401,7 +438,7 @@ const PseudoFWC: React.FC = () => {
                 sysPage: -1,
                 side: 'LEFT',
             },
-        '0000140':
+        '0000140': // T.O. INHIBIT
             {
                 flightPhaseInhib: [1, 2, 6, 7, 8, 9, 10],
                 simVarIsActive: () => [3, 4, 5].includes(flightPhase) && !flightPhaseInhibitOverride,
@@ -412,7 +449,7 @@ const PseudoFWC: React.FC = () => {
                 sysPage: -1,
                 side: 'RIGHT',
             },
-        '0000150':
+        '0000150': // LDG INHIBIT
             {
                 flightPhaseInhib: [1, 2, 3, 4, 5, 6, 9, 10],
                 simVarIsActive: () => [7, 8].includes(flightPhase) && !flightPhaseInhibitOverride,
@@ -423,7 +460,33 @@ const PseudoFWC: React.FC = () => {
                 sysPage: -1,
                 side: 'RIGHT',
             },
-        '0000060':
+        '0000350': // LAND ASAP RED
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => landASAPRed,
+                whichCodeToReturn: [0],
+                codesToReturn: ['000035001'],
+                memoInhibit: false,
+                failure: 0,
+                sysPage: -1,
+                side: 'RIGHT',
+            },
+        '0000360': // LAND ASAP AMBER
+            {
+                flightPhaseInhib: [],
+                simVarIsActive: () => !landASAPRed && !onGround && (
+                    engine1State === 0
+                    || engine2State === 0
+                    || fobRounded < 3000
+                ),
+                whichCodeToReturn: [0],
+                codesToReturn: ['000036001'],
+                memoInhibit: false,
+                failure: 0,
+                sysPage: -1,
+                side: 'RIGHT',
+            },
+        '0000060': // SPEED BRK
         {
             flightPhaseInhib: [1, 8, 9, 10],
             simVarIsActive: () => speedBrake > 0,
@@ -839,7 +902,7 @@ const PseudoFWC: React.FC = () => {
         tcasMode, compMesgCount, eng1AntiIce, eng2AntiIce, wingAntiIce,
         apuAvail, apuBleedValveOpen, landingLight2Retracted, landingLight3Retracted,
         brakeFan, dmcSwitchingKnob, ndXfrKnob, gpwsFlaps3, autoBrakesArmedMode,
-        manLandingElevation, fuelXFeedPBOn, ATTKnob, AIRKnob,
+        manLandingElevation, fuelXFeedPBOn, ATTKnob, AIRKnob, emergencyGeneratorOn,
     ]);
 
     useEffect(() => {
