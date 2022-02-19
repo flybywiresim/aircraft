@@ -219,8 +219,10 @@ export class AtcSystem {
         const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
         if (message !== undefined) {
             // avoid double sends
-            if (message.Response !== undefined && (message.Response.ComStatus === AtsuMessageComStatus.Sending || message.Response.ComStatus === AtsuMessageComStatus.Sent)) {
-                return;
+            if (message.ResponseType === response) {
+                if (message.Response !== undefined && (message.Response.ComStatus === AtsuMessageComStatus.Sending || message.Response.ComStatus === AtsuMessageComStatus.Sent)) {
+                    return;
+                }
             }
 
             message.ResponseType = response;
