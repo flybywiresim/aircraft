@@ -47,7 +47,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
 
     return (
         <div className="w-50">
-            <h1 className=" mb-4">
+            <h1 className="mb-4 text-center">
                 Axis
                 {' '}
                 {throttleCount === 1 ? throttleNumber : '1 & 2'}

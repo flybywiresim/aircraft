@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import Button, { BUTTON_TYPE } from '../../UtilComponents/Button/Button';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ProgressBar } from '../../UtilComponents/Progress/Progress';
 
