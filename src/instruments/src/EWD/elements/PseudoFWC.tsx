@@ -3,7 +3,6 @@ import { useSimVar } from '@instruments/common/simVars';
 import { NXDataStore } from '@shared/persistence';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useUpdate } from '@instruments/common/hooks';
-import { Att10sFlag } from 'instruments/src/ISIS/Att10sFlag';
 
 const mapOrder = (array, order) => {
     array.sort((a, b) => {
@@ -157,10 +156,18 @@ const PseudoFWC: React.FC = () => {
     const [eng2Agent2PB] = useSimVar('L:A32NX_FIRE_ENG2_AGENT2_Discharge', 'bool', 500);
     const [apuAgentPB] = useSimVar('L:A32NX_FIRE_APU_AGENT1_Discharge', 'bool', 500);
     const [apuMasterSwitch] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool', 500);
-    const [timerEng1FirePBOut, setTimerEng1FirePBOut] = useState<number | null>(null);
-    const [agent1Discharge, setAgent1Discharge] = useState(false);
-    const [timerEng2FirePBOut, setTimerEng2FirePBOut] = useState<number | null>(null);
-    const [agent2Discharge, setAgent2Discharge] = useState(false);
+    const [timerEng1Agent1Timer, setTimerEng1Agent1Timer] = useState<number>(-1);
+    const [timerEng1Agent2Timer, setTimerEng1Agent2Timer] = useState<number>(-1);
+    const [agent1Eng1Discharge, setAgent1Eng1Discharge] = useState(false);
+    const [agent2Eng1Discharge, setAgent2Eng1Discharge] = useState(false);
+
+    const [timerEng2Agent1Timer, setTimerEng2Agent1Timer] = useState<number>(-1);
+    const [timerEng2Agent2Timer, setTimerEng2Agent2Timer] = useState<number>(-1);
+    const [agent1Eng2Discharge, setAgent1Eng2Discharge] = useState(false);
+    const [agent2Eng2Discharge, setAgent2Eng2Discharge] = useState(false);
+
+    const [agentApuAgentTimer, setApuAgentTimer] = useState<number>(-1);
+    const [agentAPUDischarge, setAgentAPUDischarge] = useState(false);
 
     const [flightPhaseInhibitOverride] = useSimVar('L:A32NX_FWC_INHIBOVRD', 'bool', 500);
     const [nwSteeringDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'bool', 500);
@@ -189,6 +196,15 @@ const PseudoFWC: React.FC = () => {
     const [AIRKnob] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum', 500);
 
     const [emergencyElectricGeneratorPotential] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number', 500);
+    const [N1Eng1] = useSimVar('L:A32NX_ENGINE_N1:1', 'number', 500);
+    const [N1Eng2] = useSimVar('L:A32NX_ENGINE_N1:2', 'number', 500);
+    const [N1IdleEng1] = useSimVar('L:A32NX_ENGINE_IDLE_N1:1', 'number', 500);
+    const [N1IdleEng2] = useSimVar('L:A32NX_ENGINE_IDEL_N1:2', 'number', 500);
+    const N1AboveIdle = Math.floor(N1Eng1) > N1IdleEng1 ? 1 : 0;
+    const N2AboveIdle = Math.floor(N1Eng2) > N1IdleEng2 ? 1 : 0;
+    const [radioAlt] = useSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'Feet', 500);
+    const [fac1Failed] = useSimVar('L:A32NX_FBW_FAC_FAILED:1', 'bool', 500);
+
     const emergencyGeneratorOn = emergencyElectricGeneratorPotential > 0 ? 1 : 0;
     const landASAPRed = !onGround
     && (
@@ -202,29 +218,95 @@ const PseudoFWC: React.FC = () => {
         || (greenLP === 1 && blueLP === 1)
     );
 
-    // Check out updateTakeoffConfigWarnings(_test) {
+    const engDualFault = !onGround && (
+        (fireButton1 === 1 && fireButton2)
+        || (!engine1ValueSwitch && !engine2ValueSwitch)
+        || (engine1State === 0 && engine2State === 0)
+        || (!N1AboveIdle && !N2AboveIdle)
+    );
+
+    const [masterWarningButtonLeft] = useSimVar('L:PUSH_AUTOPILOT_MASTERWARN_L', 'bool', 100);
+    const [masterCautionButtonLeft] = useSimVar('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool', 100);
+    const [masterWarningButtonRight] = useSimVar('L:PUSH_AUTOPILOT_MASTERWARN_R', 'bool', 100);
+    const [masterCautionButtonRight] = useSimVar('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool', 100);
+    const [clearButtonLeft] = useSimVar('L:A32NX_BTN_CLR', 'bool', 100);
+    const [clearButtonRight] = useSimVar('L:A32NX_BTN_CLR2', 'bool', 100);
+    const [failures, setFailures] = useState<string[]>([]);
+    const [recallFailures, setRecallFailures] = useState<string[]>([]);
+
+    const masterWarning = (toggle: number) => {
+        console.log(`Master warning and toggle is ${toggle}`);
+        SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', toggle);
+        SimVar.SetSimVarValue('L:Generic_Master_Warning_Active', 'Bool', toggle);
+    };
+
+    const masterCaution = (toggle: number) => {
+        SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'Bool', toggle);
+        SimVar.SetSimVarValue('L:Generic_Master_Caution_Active', 'Bool', toggle);
+    };
+
+    useEffect(() => {
+        console.log(`Master caution${masterCautionButtonLeft}`);
+        console.log(`Master warning ${masterCautionButtonLeft}`);
+
+        if (masterWarningButtonLeft === 1 || masterWarningButtonRight === 1) {
+            masterWarning(0);
+        }
+        if (masterCautionButtonLeft === 1 || masterCautionButtonRight === 1) {
+            masterCaution(0);
+        }
+    }, [masterCautionButtonLeft, masterCautionButtonRight, masterWarningButtonLeft, masterWarningButtonRight]);
+
+    useEffect(() => {
+        console.log(failures);
+        if (typeof failures !== 'undefined' && failures.length > 0) {
+            setRecallFailures((failures) => failures);
+            setFailures((failures) => failures.slice(1));
+        }
+        SimVar.SetSimVarValue('L:A32NX_BTN_CLR', 'Bool', 0);
+        SimVar.SetSimVarValue('L:A32NX_BTN_CLR2', 'Bool', 0);
+    }, [clearButtonLeft, clearButtonRight]);
 
     const EWDMessageBoolean = {
-        '2600010': {
+        '7700027': { // DUAL ENGINE FAILURE
+            flightPhaseInhib: [],
+            simVarIsActive: () => engDualFault === 1,
+            whichCodeToReturn: [
+                0,
+                !emergencyGeneratorOn ? 1 : null,
+                5,
+                !(apuMasterSwitch === 1 || apuAvail === 1) && radioAlt < 2500 ? 6 : null,
+                N1AboveIdle === 1 || N2AboveIdle === 1 ? 7 : null,
+                fac1Failed === 1 ? 8 : null,
+                9, 10, 11,
+            ],
+            codesToReturn: ['770002701', '770002702', '770002703', '770002704', '770002705', '770002706', '770002707', '770002708', '770002709', '770002710', '770002711', '770002712'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: 0,
+            side: 'LEFT',
+        },
+        '2600010': { // ENG 1 FIRE
             flightPhaseInhib: [],
             simVarIsActive: () => eng1FireTest === 1 || fireButton1 === 1,
             whichCodeToReturn: [
                 0,
                 throttle1Position !== 1 && !onGround ? 1 : null,
                 (throttle1Position !== 1 || throttle2Position !== 1) && onGround ? 2 : null,
-                3,
+                !parkBrake && onGround ? 3 : null,
                 !parkBrake && onGround ? 4 : null,
                 onGround ? 5 : null,
                 onGround ? 6 : null,
-                7,
+                !engine1ValueSwitch ? null : 7,
                 !fireButton1 ? 8 : null,
-                !onGround && fireButton1 && !eng1Agent1PB ? 9 : null,
-                eng1Agent1PB === 1 && !onGround && !eng1Agent1PB ? 10 : null,
-                !agent2Discharge && onGround ? 11 : null,
+                !onGround && fireButton1 && !agent1Eng1Discharge && !eng1Agent1PB ? 9 : null,
+                agent1Eng1Discharge && !onGround && !eng1Agent1PB ? 10 : null,
+                eng1Agent1PB === 1 && onGround ? 11 : null,
                 onGround ? 12 : null,
                 !onGround ? 13 : null,
-                !onGround && eng1Agent1PB === 1 && !eng1Agent2PB ? 14 : null,
-                (!onGround && eng1Agent1PB === 1 && !eng1Agent2PB) || (!eng1Agent2PB && eng1Agent1PB) ? 15 : null,
+                // Fix this logic
+                !onGround && eng1Agent1PB === 1 && !agent2Eng2Discharge ? 14 : null,
+                (agent2Eng2Discharge && eng1Agent1PB === 0) || (!onGround && eng1Agent1PB === 1 && !agent2Eng2Discharge) ? 15 : null,
             ],
             codesToReturn: ['260001001', '260001002', '260001003', '260001004', '260001005',
                 '260001006', '260001007', '260001008', '260001009', '260001010', '260001011',
@@ -241,19 +323,19 @@ const PseudoFWC: React.FC = () => {
                 0,
                 throttle2Position !== 1 && !onGround ? 1 : null,
                 (throttle1Position !== 1 || throttle2Position !== 1) && onGround ? 2 : null,
-                3,
+                !parkBrake && onGround ? 3 : null,
                 !parkBrake && onGround ? 4 : null,
                 onGround ? 5 : null,
                 onGround ? 6 : null,
-                7,
+                !engine2ValueSwitch ? null : 7,
                 !fireButton2 ? 8 : null,
-                !onGround && fireButton2 && !eng2Agent1PB ? 9 : null,
-                eng2Agent1PB === 1 && !onGround && !eng2Agent1PB ? 10 : null,
-                !agent2Discharge && onGround ? 11 : null,
+                !onGround && fireButton1 && !agent1Eng2Discharge && !eng1Agent1PB ? 9 : null,
+                agent1Eng2Discharge && !onGround && !eng2Agent1PB ? 10 : null,
+                eng2Agent1PB === 1 && onGround ? 11 : null,
                 onGround ? 12 : null,
                 !onGround ? 13 : null,
-                !onGround && eng2Agent1PB === 1 && !eng2Agent2PB ? 14 : null,
-                (!onGround && eng2Agent1PB === 1 && !eng2Agent2PB) || (!eng2Agent2PB && eng2Agent1PB) ? 15 : null,
+                !onGround && eng2Agent1PB === 1 && !agent2Eng2Discharge ? 14 : null,
+                (agent2Eng2Discharge && eng2Agent1PB === 1) || (!onGround && eng2Agent1PB === 1 && !agent2Eng2Discharge) ? 15 : null,
             ],
             codesToReturn: ['260002001', '260002002', '260002003', '260002004', '260002005',
                 '260002006', '260002007', '260002008', '260002009', '260002010', '260002011',
@@ -269,9 +351,8 @@ const PseudoFWC: React.FC = () => {
             whichCodeToReturn: [
                 0,
                 !fireButtonAPU ? 1 : null,
-                fireButtonAPU === 1 && !apuAgentPB ? 2 : null,
-                // Countdown timer TODO
-                fireButtonAPU === 1 && !apuAgentPB ? 3 : null,
+                !agentAPUDischarge && !apuAgentPB ? 2 : null,
+                agentAPUDischarge && !apuAgentPB ? 3 : null,
                 apuMasterSwitch === 1 ? 4 : null,
             ],
             codesToReturn: ['260003001', '260003002', '260003003', '260003004', '260003005'],
@@ -752,25 +833,94 @@ const PseudoFWC: React.FC = () => {
         },
     };
 
+    useEffect(() => {
+        if (!eng1FireTest) {
+            setTimerEng1Agent1Timer(10);
+        }
+    }, [fireButton1]);
+
+    useEffect(() => {
+        if (!eng1FireTest) {
+            setTimerEng1Agent2Timer(30);
+        }
+    }, [eng1Agent1PB]);
+
+    useEffect(() => {
+        if (!eng2FireTest) {
+            console.log('Setting timer for Eng2 Agent 1');
+            setTimerEng2Agent1Timer(10);
+        }
+    }, [fireButton2]);
+
+    useEffect(() => {
+        if (!eng2FireTest) {
+            setTimerEng2Agent2Timer(30);
+        }
+    }, [eng2Agent1PB]);
+
+    useEffect(() => {
+        if (!apuFireTest) {
+            setApuAgentTimer(10);
+        }
+    }, [fireButtonAPU]);
+
+    useEffect(() => {
+        console.log('FireTest');
+        if (eng1FireTest === 0 && eng2FireTest === 0 && apuFireTest === 0) {
+            masterWarning(false);
+        }
+    }, [eng1FireTest, eng2FireTest, apuFireTest]);
+
     useUpdate((deltaTime) => {
-        if (timerEng1FirePBOut !== null) {
-            if (setTimerEng1FirePBOut > 0) {
+        if (fireButton1 === 1 && timerEng1Agent1Timer !== -1) {
+            if (timerEng1Agent1Timer > 0) {
                 if (deltaTime < 1000) {
-                    setTimerEng1FirePBOut(setTimerEng1FirePBOut - (deltaTime / 1000));
+                    setTimerEng1Agent1Timer(timerEng1Agent1Timer - (deltaTime / 1000));
                 }
             } else {
-                setTimerEng1FirePBOut(null);
-                setAgent1Discharge(true);
+                setTimerEng1Agent1Timer(-1);
+                setAgent1Eng1Discharge(true);
             }
         }
-        if (timerEng2FirePBOut !== null) {
-            if (setTimerEng2FirePBOut > 0) {
+        if (agent1Eng1Discharge && timerEng1Agent2Timer !== -1) {
+            if (timerEng1Agent2Timer > 0) {
                 if (deltaTime < 1000) {
-                    setTimerEng2FirePBOut(setTimerEng2FirePBOut - (deltaTime / 1000));
+                    setTimerEng1Agent2Timer(timerEng1Agent2Timer - (deltaTime / 1000));
                 }
             } else {
-                setTimerEng2FirePBOut(null);
-                setAgent2Discharge(true);
+                setTimerEng1Agent2Timer(-1);
+                setAgent2Eng1Discharge(true);
+            }
+        }
+        console.log(`TimeEng2Agent1 is ${timerEng2Agent1Timer}`);
+        if (fireButton2 === 1 && timerEng2Agent1Timer !== -1) {
+            if (timerEng2Agent1Timer > 0) {
+                if (deltaTime < 1000) {
+                    setTimerEng2Agent1Timer(timerEng2Agent1Timer - (deltaTime / 1000));
+                }
+            } else {
+                setTimerEng2Agent1Timer(-1);
+                setAgent1Eng2Discharge(true);
+            }
+        }
+        if (agent1Eng2Discharge && timerEng2Agent2Timer !== -1) {
+            if (timerEng2Agent2Timer > 0) {
+                if (deltaTime < 1000) {
+                    setTimerEng2Agent2Timer(timerEng2Agent2Timer - (deltaTime / 1000));
+                }
+            } else {
+                setTimerEng2Agent2Timer(-1);
+                setAgent2Eng2Discharge(true);
+            }
+        }
+        if (fireButtonAPU === 1 && agentApuAgentTimer !== -1) {
+            if (agentApuAgentTimer > 0) {
+                if (deltaTime < 1000) {
+                    setApuAgentTimer(agentApuAgentTimer - (deltaTime / 1000));
+                }
+            } else {
+                setApuAgentTimer(-1);
+                setAgentAPUDischarge(true);
             }
         }
     });
@@ -783,7 +933,6 @@ const PseudoFWC: React.FC = () => {
             if (engine1Generator && engine2Generator && !greenLP && !yellowLP && !blueLP && eng1pumpPBisAuto && eng2pumpPBisAuto) {
                 systemStatus = true;
             }
-            // console.log(`EnginGen ${engine1Generator}  ${engine2Generator} LP pumps ${!greenLP} && ${!yellowLP} && ${!blueLP} PBauto ${eng1pumpPBisAuto}  ${eng2pumpPBisAuto}`);
             const speeds = !!(v1Speed <= vrSpeed && vrSpeed <= v2Speed);
             const doors = !!(cabin === 0 && catering === 0 && cargoaftLocked && cargofwdLocked);
             const flapsAgree = !!(flapsMcduEntered && flapsHandle === flapsMcdu);
@@ -812,46 +961,34 @@ const PseudoFWC: React.FC = () => {
     }, [callPushAft, callPushAll, callPushForward]);
 
     useEffect(() => {
-        console.log('FireText');
-        if (eng1FireTest === 0 && eng2FireTest === 0 && apuFireTest === 0) {
-            SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'bool', 0);
-            SimVar.SetSimVarValue('L:Generic_Master_Warning_Active', 'bool', 0);
-        }
-    }, [eng1FireTest, eng2FireTest, apuFireTest]);
-
-    useEffect(() => {
         let tempMemoArrayLeft = memoMessageLeft;
         let tempMemoArrayRight = memoMessageRight;
-        const warningsCount = { 3: 0, 2: 0 };
+
         for (const [key, value] of Object.entries(EWDMessageBoolean)) {
             if (value.simVarIsActive()) {
-                if (!value.memoInhibit) {
+                if (!value.memoInhibit && (failures.length === 0 || value.failure > 0)) {
                     if (value.failure || !value.flightPhaseInhib.some((e) => e === flightPhase)) {
-                        if (value.failure === 3) {
-                            SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', 1);
-                            SimVar.SetSimVarValue('L:Generic_Master_Warning_Active', 'Bool', 1);
+                        if (value.failure > 0 && !failures.includes(key)) {
+                            console.log('New failure');
+                            setFailures([...failures, key]);
+                            if (value.failure === 3) {
+                                masterWarning(1);
+                            } else {
+                                masterCaution(1);
+                            }
+                        } else {
+                            console.log('Already have that failure');
                         }
-                        if (value.failure === 2) {
-                            SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'Bool', 1);
-                            SimVar.SetSimVarValue('L:Generic_Master_Caution_Active', 'Bool', 1);
-                        }
-                        // console.log('Which Codes');
-                        // console.log(value.whichCodeToReturn);
                         const newCode: string[] = [];
                         const codeIndex = value.whichCodeToReturn.filter((e) => e !== null);
                         codeIndex.forEach((e: number) => {
                             newCode.push(value.codesToReturn[e]);
                         });
-
-                        // Remove nulls from fire test
-                        // console.log('new code');
-                        // console.log(newCode);
-                        // // Check memoMessage does not already have current code
-                        // console.log('new code after');
-                        // console.log(newCode1);
                         if (value.side === 'LEFT') {
-                            const tempArrayLeft = tempMemoArrayLeft.filter((e) => !value.codesToReturn.includes(e));
-                            tempMemoArrayLeft = tempArrayLeft.concat(newCode);
+                            if ((value.failure > 0 && failures.includes(key)) || failures.length === 0) {
+                                const tempArrayLeft = tempMemoArrayLeft.filter((e) => !value.codesToReturn.includes(e));
+                                tempMemoArrayLeft = tempArrayLeft.concat(newCode);
+                            }
                         } else {
                             const tempArrayRight = tempMemoArrayRight.filter((e) => !value.codesToReturn.includes(e));
                             tempMemoArrayRight = tempArrayRight.concat(newCode);
@@ -892,9 +1029,10 @@ const PseudoFWC: React.FC = () => {
         setMemoMessageRight(orderedMemoArrayRight);
     }, [flightPhase, flightPhaseInhibitOverride,
         fuel, usrStartRefueling, engine1State, engine2State, spoilersArmed, seatBelt, noSmoking, configPortableDevices, strobeLightsOn, leftOuterInnerValve, rightOuterInnerValve,
-        fobRounded, unit, gpwsFlapMode, autoBrake, flapsHandle, throttle1Position, throttle2Position,
+        fobRounded, unit, gpwsFlapMode, autoBrake, flapsHandle, throttle1Position, throttle2Position, parkingBrake,
         adiru1State, adiru2State, adiru3State, apuFireTest, apuAgentPB, parkBrake,
         cabinReady, toconfig, eng1Agent1PB, eng1Agent2PB, eng1FireTest, eng2FireTest,
+        fireButton1, fireButton2, fireButtonAPU,
         eng2Agent1PB, eng2Agent2PB, eng2FireTest, apuAgentPB, apuMasterSwitch,
         adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
         adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
@@ -903,6 +1041,7 @@ const PseudoFWC: React.FC = () => {
         apuAvail, apuBleedValveOpen, landingLight2Retracted, landingLight3Retracted,
         brakeFan, dmcSwitchingKnob, ndXfrKnob, gpwsFlaps3, autoBrakesArmedMode,
         manLandingElevation, fuelXFeedPBOn, ATTKnob, AIRKnob, emergencyGeneratorOn,
+        landASAPRed, engDualFault, fac1Failed, failures,
     ]);
 
     useEffect(() => {
