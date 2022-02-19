@@ -92,7 +92,7 @@ export const checklistsSlice = createSlice({
  * @returns The percentage of the checklist that is complete (0-1)
  */
 export const getChecklistCompletion = (checklistIndex: number): number => {
-    const checklists = (store.getState() as RootState).checklists.checklists[checklistIndex];
+    const checklists = (store.getState() as RootState).trackingChecklists.checklists[checklistIndex];
     const numCompletedItems = checklists.items.filter((item) => item.completed && !item.divider).length;
     return numCompletedItems / checklists.items.filter((item) => !item.divider).length;
 };

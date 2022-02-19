@@ -21,7 +21,7 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
     const dispatch = useAppDispatch();
     const [checklistShake, setChecklistShake] = useState(false);
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
-    const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.checklists);
+    const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
     const isItemCompleted = checklists[selectedChecklistIndex].items[index]?.completed;
 
     const firstIncompleteIdx = checklists[selectedChecklistIndex].items.findIndex((item) => {
@@ -99,7 +99,7 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
 };
 
 const CompletionButton = () => {
-    const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.checklists);
+    const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
 
     const firstIncompleteIdx = checklists[selectedChecklistIndex].items.findIndex((item, index) => {
@@ -172,7 +172,7 @@ const CompletionButton = () => {
 };
 
 export const ChecklistPage = () => {
-    const { selectedChecklistIndex } = useAppSelector((state) => state.checklists);
+    const { selectedChecklistIndex } = useAppSelector((state) => state.trackingChecklists);
 
     return (
         <div className="flex overflow-visible flex-col justify-between p-8 w-full h-efb rounded-lg border-2 border-theme-accent">

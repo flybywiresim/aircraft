@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { ChecklistPage } from './ChecklistsPage';
 import { CHECKLISTS } from './Lists';
@@ -8,7 +8,7 @@ import {
     setChecklistCompletion, setChecklistItemCompletion,
     setSelectedChecklistIndex,
 } from '../Store/features/checklists';
-import { useAppDispatch, useAppSelector } from '../Store/store';
+import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store';
 
 export interface ChecklistItem {
     item: string;
@@ -22,6 +22,25 @@ export interface ChecklistDefinition {
     items: ChecklistItem[]
 }
 
+export const setAutomaticItemStates = () => {
+    const checklists = (store.getState() as RootState).trackingChecklists.checklists;
+    const firstUnmarkedIdx = checklists.findIndex((cl) => !cl.markedCompleted);
+
+    if (firstUnmarkedIdx === -1) return;
+
+    CHECKLISTS[firstUnmarkedIdx].items.forEach((clItem, itemIdx) => {
+        const associatedTrackingItem = checklists[firstUnmarkedIdx].items[itemIdx];
+
+        if (!clItem.condition || !associatedTrackingItem) return;
+
+        store.dispatch(setChecklistItemCompletion({
+            checklistIndex: firstUnmarkedIdx,
+            itemIndex: itemIdx,
+            completionValue: clItem.condition(),
+        }));
+    });
+};
+
 export const Checklists = () => {
     const dispatch = useAppDispatch();
 
@@ -29,7 +48,7 @@ export const Checklists = () => {
         dispatch(setSelectedChecklistIndex(index));
     };
 
-    const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.checklists);
+    const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
 
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
 
@@ -56,6 +75,12 @@ export const Checklists = () => {
 
         return 'bg-theme-accent border-2 border-theme-accent text-theme-text hover:bg-theme-highlight hover:text-theme-body';
     };
+
+    useEffect(() => {
+        if (!autoFillChecklists) return;
+
+        setAutomaticItemStates();
+    }, [selectedChecklistIndex]);
 
     return (
         <>
