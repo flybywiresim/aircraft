@@ -4,7 +4,6 @@ import { A320Failure } from '@flybywiresim/failures';
 import { Link } from 'react-router-dom';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { ArrowDown, ArrowUp, Check, PencilFill } from 'react-bootstrap-icons';
-import { NXDataStore } from '@shared/persistence';
 import {
     setChartId,
     setChartLinks,
@@ -179,7 +178,7 @@ const ChecklistReminderWidget = ({ checklist, checklistIndex }: ChecklistReminde
 };
 
 const ChecklistsReminder = () => {
-    const { checklists } = useAppSelector((state) => state.checklists);
+    const { checklists } = useAppSelector((state) => state.trackingChecklists);
 
     return (
         <RemindersSection title="Checklists" pageLinkPath="/checklists">
