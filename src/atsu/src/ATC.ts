@@ -9,6 +9,9 @@ import { Datalink } from './com/Datalink';
 import { Atsu } from './ATSU';
 import { DcduLink } from './components/DcduLink';
 
+/*
+ * Defines the ATC system for CPDLC communication
+ */
 export class Atc {
     private parent: Atsu | undefined = undefined;
 
