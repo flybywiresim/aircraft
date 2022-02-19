@@ -4,7 +4,6 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
-import Button from '../../UtilComponents/Button/Button';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 
@@ -78,7 +77,13 @@ export const SimOptionsPage = () => {
                     </SettingItem>
 
                     <SettingItem name="Throttle Detents">
-                        <Button className="bg-theme-highlight" text="Calibrate" onClick={() => setShowThrottleSettings(true)} />
+                        <button
+                            type="button"
+                            className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                            onClick={() => setShowThrottleSettings(true)}
+                        >
+                            Calibrate
+                        </button>
                     </SettingItem>
 
                 </SettingsPage>

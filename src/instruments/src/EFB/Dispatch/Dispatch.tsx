@@ -1,11 +1,10 @@
 import React from 'react';
 
-import { useHistory } from 'react-router-dom';
 import { OverviewPage } from './Pages/OverviewPage';
 import { LoadSheetWidget } from './Pages/LoadsheetPage';
 import { Navbar } from '../UtilComponents/Navbar';
 import { FuelPage } from './Pages/FuelPage';
-import { TabRoutes, PageLink, pathify, PageRedirect } from '../Utils/routing';
+import { TabRoutes, PageLink, PageRedirect } from '../Utils/routing';
 
 export const Dispatch = () => {
     const tabs: PageLink[] = [

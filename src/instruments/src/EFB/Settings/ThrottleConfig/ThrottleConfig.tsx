@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
+import { ExclamationCircleFill } from 'react-bootstrap-icons';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import Button, { BUTTON_TYPE } from '../../UtilComponents/Button/Button';
 import { SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
 
 import { BaseThrottleConfig } from './BaseThrottleConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
+import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 
 interface ThrottleConfigProps {
     isShown: boolean,
@@ -14,11 +16,11 @@ interface ThrottleConfigProps {
 }
 
 export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
-    const [isDualAxis, setDualAxis] = usePersistentProperty('THROTTLE_DUAL_AXIS', '1');
+    const [isDualAxis, setDualAxis] = usePersistentNumberProperty('THROTTLE_DUAL_AXIS', 1);
 
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [validConfig, setValidConfig] = useState(true);
-    const [validationErrors, setValidationErrors] = useState<string>();
+    const [validationError, setValidationError] = useState<string>();
 
     const [reverserOnAxis1, setReverserOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
     const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
@@ -45,33 +47,35 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 2),
     ];
 
+    const modals = useModals();
+
     useEffect(() => {
         if (reverserOnAxis1 === 0 && selectedIndex < 2) {
             setSelectedIndex(2);
         }
     }, [reverserOnAxis1, selectedIndex]);
 
+    const getOverlapErrors = (mappingsAxis: ThrottleSimvar[]) => {
+        const overlapErrors: string[] = [];
+
+        for (let index = reverserOnAxis1 ? 0 : 2; index < mappingsAxis.length; index++) {
+            const element = mappingsAxis[index];
+
+            for (let nextIndex = index + 1; nextIndex < mappingsAxis.length; nextIndex++) {
+                const nextElement = mappingsAxis[nextIndex];
+                if (element.getHiGetter() >= nextElement.getLowGetter() || element.getLowGetter() >= nextElement.getHiGetter()) {
+                    overlapErrors.push(`${element.readableName} (${element.getLowGetter().toFixed(2)}) overlaps with ${nextElement.readableName} (${nextElement.getLowGetter().toFixed(2)})`);
+                }
+            }
+        }
+
+        return overlapErrors;
+    };
+
     useEffect(() => {
-        const errors: string[] = [];
-        for (let index = reverserOnAxis1 ? 0 : 2; index < mappingsAxisOne.length; index++) {
-            const element = mappingsAxisOne[index];
-            for (let nextIndex = index + 1; nextIndex < mappingsAxisOne.length; nextIndex++) {
-                const nextElement = mappingsAxisOne[nextIndex];
-                if (element.getHiGetter() >= nextElement.getLowGetter() || element.getLowGetter() >= nextElement.getHiGetter()) {
-                    errors.push(`${element.readableName} (${element.getLowGetter().toFixed(2)}) overlaps with ${nextElement.readableName} (${nextElement.getLowGetter().toFixed(2)})`);
-                }
-            }
-        }
-        for (let index = reverserOnAxis1 ? 0 : 2; index < mappingsAxisTwo.length; index++) {
-            const element = mappingsAxisTwo[index];
-            for (let nextIndex = index + 1; nextIndex < mappingsAxisTwo.length; nextIndex++) {
-                const nextElement = mappingsAxisTwo[nextIndex];
-                if (element.getHiGetter() >= nextElement.getLowGetter() || element.getLowGetter() >= nextElement.getHiGetter()) {
-                    errors.push(`${element.readableName} (${element.getLowGetter().toFixed(2)}) overlaps with ${nextElement.readableName} (${nextElement.getLowGetter().toFixed(2)})`);
-                }
-            }
-        }
-        setValidationErrors(errors[0]);
+        const errors: string[] = [...getOverlapErrors(mappingsAxisOne), ...getOverlapErrors(mappingsAxisTwo)];
+
+        setValidationError(errors[0]);
         setValidConfig(errors.length === 0);
     }, [mappingsAxisOne, mappingsAxisTwo]);
 
@@ -122,11 +126,12 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         </VerticalSelectGroup>
     );
 
-    if (isShown) {
-        return (
-            <div className="flex flex-col text-center">
-                <div className="py-6 rounded-xl">
+    if (!isShown) return null;
 
+    return (
+        <div className="flex flex-col justify-between h-content-section-full">
+            <div className="space-y-6">
+                <div>
                     <div className="flex flex-row justify-center p-4 mt-auto mb-8 space-x-16 w-full rounded-lg border-2 border-theme-accent">
                         <div className="flex flex-row space-x-4">
                             <div>Reverser On Axis</div>
@@ -135,26 +140,24 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         <div className="flex flex-row space-x-4">
                             <div>Independent Axis</div>
                             <Toggle
-                                value={!!parseInt(isDualAxis)}
+                                value={!!isDualAxis}
                                 onToggle={(value) => {
-                                    setDualAxis(value ? '1' : '0');
+                                    setDualAxis(value ? 1 : 0);
                                 }}
                             />
                         </div>
                     </div>
 
-                    {parseInt(isDualAxis) === 1 && (
-                        <div className="flex flex-row justify-center rounded-xl">
-                            <div className="ml-4" />
-
+                    {isDualAxis ? (
+                        <div className="flex flex-row justify-between rounded-xl">
                             <BaseThrottleConfig
                                 mappingsAxisOne={mappingsAxisOne}
                                 disabled={false}
                                 throttleNumber={1}
-                                throttleCount={parseInt(isDualAxis) === 0 ? 2 : 1}
+                                throttleCount={isDualAxis ? 1 : 2}
                                 activeIndex={selectedIndex}
                             />
-                            <div className="mt-auto mr-8 mb-auto ml-8">
+                            <div className="m-auto">
                                 {navigationBar}
                             </div>
                             <BaseThrottleConfig
@@ -164,77 +167,99 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                                 throttleCount={1}
                                 activeIndex={selectedIndex}
                             />
-                            <div className="mr-4" />
+                        </div>
+                    ) : (
+                        <div className="flex flex-row justify-center rounded-xl">
+                            <BaseThrottleConfig
+                                mappingsAxisOne={mappingsAxisOne}
+                                mappingsAxisTwo={mappingsAxisTwo}
+                                disabled={false}
+                                throttleNumber={1}
+                                throttleCount={2}
+                                activeIndex={selectedIndex}
+                            />
+                            <div className="mt-auto mb-auto ml-8">
+                                {navigationBar}
+                            </div>
                         </div>
                     )}
-
-                    {parseInt(isDualAxis) === 0
-            && (
-                <div className="flex flex-row justify-center ml-4 rounded-xl">
-                    <BaseThrottleConfig
-                        mappingsAxisOne={mappingsAxisOne}
-                        mappingsAxisTwo={mappingsAxisTwo}
-                        disabled={false}
-                        throttleNumber={1}
-                        throttleCount={2}
-                        activeIndex={selectedIndex}
-                    />
-                    <div className="mt-auto mb-auto ml-8">
-                        {navigationBar}
-                    </div>
                 </div>
-            )}
-                </div>
-                <h1 className="text-red-600">{validConfig ? ' ' : validationErrors}</h1>
 
-                <div className="flex flex-row justify-between p-4 mt-40 mb-2 w-full rounded-lg border-2 border-theme-accent">
-                    <div>
-                        <Button
-                            text="Back"
-                            type={BUTTON_TYPE.BLUE}
-                            onClick={() => onClose()}
-                            className="hover:bg-blue-600 hover:border-blue-600"
-                        />
+                {!validConfig && (
+                    <div className="overflow-hidden w-full rounded-md border-2 border-theme-accent">
+                        <div className="flex justify-center items-center py-3 w-full bg-red-500">
+                            <ExclamationCircleFill size={25} />
+                        </div>
+                        <h2 className="py-4 text-center">
+                            {validationError}
+                        </h2>
                     </div>
-                    <div className="flex flex-row space-x-3">
-                        <Button
-                            text="Reset to Defaults"
-                            type={BUTTON_TYPE.BLUE}
-                            onClick={() => {
-                                defaultsToThrottle(1);
-                            }}
-                            className="hover:bg-blue-600 hover:border-blue-600"
-                        />
-                        <Button
-                            text="Load from File"
-                            type={BUTTON_TYPE.BLUE}
-                            onClick={() => {
-                                syncToThrottle(1);
-                            }}
-                            className="hover:bg-blue-600 hover:border-blue-600"
-                        />
-                        <Button
-                            text="Apply"
-                            type={validConfig ? BUTTON_TYPE.BLUE : BUTTON_TYPE.NONE}
-                            onClick={() => applyLocalVar(1)}
-                            className={`${validConfig ? 'hover:bg-blue-600 hover:border-blue-600' : 'bg-gray-500 border-gray-500 opacity-30'}`}
-                        />
-                        <Button
-                            text="Save and Apply"
-                            type={BUTTON_TYPE.GREEN}
-                            onClick={() => {
-                                if (validConfig) {
-                                    syncToDisk(1);
-                                    applyLocalVar(1);
-                                }
-                            }}
-                            disabled={!validConfig}
-                            className={`${validConfig ? 'bg-green-500 border-green-500 hover:bg-green-600 hover:border-green-600' : 'opacity-30'}`}
-                        />
-                    </div>
+                )}
+            </div>
+
+            <div className="flex flex-row justify-between p-4 w-full rounded-lg border-2 border-theme-accent">
+                <div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                    >
+                        Back
+                    </button>
+                </div>
+                <div className="flex flex-row space-x-3">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            modals.showModal(
+                                <PromptModal
+                                    title="Throttle Configuration Reset"
+                                    bodyText="Are you sure that you want to reset your current throttle configuration settings to their default states? This action is irreversible."
+                                    onConfirm={() => {
+                                        defaultsToThrottle(1);
+                                    }}
+                                />,
+                            );
+                        }}
+                        className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                    >
+                        Reset to Defaults
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            syncToThrottle(1);
+                        }}
+                        className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                    >
+                        Load from File
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => applyLocalVar(1)}
+                        className={`py-2.5 px-5 rounded-md transition duration-100 border-2 ${validConfig
+                            ? 'bg-theme-highlight text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight'
+                            : 'bg-theme-accent border-theme-accent opacity-30'}`}
+                    >
+                        Apply
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (validConfig) {
+                                syncToDisk(1);
+                                applyLocalVar(1);
+                            }
+                        }}
+                        disabled={!validConfig}
+                        className={`py-2.5 px-5 rounded-md transition duration-100 border-2 ${validConfig
+                            ? 'bg-green-400 text-theme-body hover:text-green-400 hover:bg-theme-body border-green-400'
+                            : 'bg-theme-accent border-theme-accent opacity-30'}`}
+                    >
+                        Save and Apply
+                    </button>
                 </div>
             </div>
-        );
-    }
-    return <></>;
+        </div>
+    );
 };

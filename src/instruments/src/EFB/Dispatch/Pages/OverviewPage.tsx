@@ -48,12 +48,12 @@ export const OverviewPage = () => {
     };
 
     return (
-        <div className="overflow-hidden p-6 mt-4 mr-3 w-1/2 rounded-lg border-2 h-efb border-theme-accent">
+        <div className="overflow-hidden p-6 mt-4 mr-3 w-1/2 h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <h1 className="font-bold">Airbus A320neo</h1>
             <p>{airline}</p>
 
             <div className="flex justify-center items-center mt-6">
-                <NoseOutline className="mr-32 -ml-96 h-64 flip-horizontal text-theme-text" />
+                <NoseOutline className="mr-32 -ml-96 h-64 text-theme-text flip-horizontal" />
             </div>
 
             <div className="flex flex-row mt-8 space-x-16">

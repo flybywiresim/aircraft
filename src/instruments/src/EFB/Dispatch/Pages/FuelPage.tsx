@@ -266,7 +266,7 @@ export const FuelPage = () => {
     };
 
     return (
-        <div className="flex relative flex-col justify-between mt-6 h-efb">
+        <div className="flex relative flex-col justify-between mt-6 h-content-section-reduced">
             <div className="z-30">
                 <div className="flex absolute inset-x-0 top-0 flex-col items-center mx-auto space-y-3">
                     <TankReadoutWidget
@@ -293,7 +293,7 @@ export const FuelPage = () => {
                     />
                 </div>
                 <div className="flex absolute inset-x-0 top-40 flex-row justify-between">
-                    <div className="overflow-hidden w-min rounded-2xl border-2 divide-y border-theme-accent divide-theme-accent">
+                    <div className="overflow-hidden w-min rounded-2xl border-2 border-theme-accent divide-y divide-theme-accent">
                         <TankReadoutWidget
                             title="Left Inner Tank"
                             current={LInnCurrent}
@@ -313,7 +313,7 @@ export const FuelPage = () => {
                             convertedFuelValue={convertFuelValueCenter(LOutCurrent)}
                         />
                     </div>
-                    <div className="overflow-hidden w-min rounded-2xl border-2 divide-y border-theme-accent divide-theme-accent">
+                    <div className="overflow-hidden w-min rounded-2xl border-2 border-theme-accent divide-y divide-theme-accent">
                         <TankReadoutWidget
                             title="Right Inner Tank"
                             current={RInnCurrent}
@@ -362,22 +362,22 @@ export const FuelPage = () => {
                     />
                     {/* tl overlay */}
                     <div
-                        className="absolute z-10 bottom-overlay-t-y left-overlay-tl bg-theme-body -rotate-26.5"
+                        className="absolute bottom-overlay-t-y left-overlay-tl z-10 bg-theme-body -rotate-26.5"
                         style={{ transform: 'rotate(-26.5deg)', width: '490px', height: '140px', bottom: '240px', left: '82px' }}
                     />
                     {/* tr overlay */}
                     <div
-                        className="absolute z-10 right-overlay-tr bottom-overlay-t-y bg-theme-body rotate-26.5"
+                        className="absolute right-overlay-tr bottom-overlay-t-y z-10 bg-theme-body rotate-26.5"
                         style={{ transform: 'rotate(26.5deg)', width: '490px', height: '140px', bottom: '240px', right: '82px' }}
                     />
                     {/* bl overlay */}
                     <div
-                        className="absolute z-10 bottom-overlay-b-y left-overlay-bl bg-theme-body -rotate-18.5"
+                        className="absolute bottom-overlay-b-y left-overlay-bl z-10 bg-theme-body -rotate-18.5"
                         style={{ transform: 'rotate(-18.5deg)', width: '484px', height: '101px', bottom: '78px', left: '144px' }}
                     />
                     {/* br overlay */}
                     <div
-                        className="absolute z-10 right-overlay-br bottom-overlay-b-y bg-theme-body rotate-18.5"
+                        className="absolute right-overlay-br bottom-overlay-b-y z-10 bg-theme-body rotate-18.5"
                         style={{ transform: 'rotate(18.5deg)', width: '484px', height: '101px', bottom: '78px', right: '144px' }}
                     />
                 </div>
@@ -399,7 +399,7 @@ export const FuelPage = () => {
                             <div className="flex flex-row">
                                 <div className="relative">
                                     <SimpleInput
-                                        className={`w-32 ${!simbriefDataLoaded && 'rounded-r-none'}`}
+                                        className={`w-32 ${simbriefDataLoaded && 'rounded-r-none'}`}
                                         noLeftMargin
                                         noLabel
                                         placeholder={round(totalFuel()).toString()}
@@ -411,9 +411,9 @@ export const FuelPage = () => {
                                     />
                                     <div className="absolute top-2 right-4 text-lg text-gray-400">{currentUnit()}</div>
                                 </div>
-                                {!simbriefDataLoaded && (
+                                {simbriefDataLoaded && (
                                     <div
-                                        className="flex justify-center items-center px-2 rounded-md rounded-l-none bg-theme-highlight"
+                                        className="flex justify-center items-center px-2 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md rounded-l-none border-2 border-theme-highlight transition duration-100"
                                         onClick={simbriefDataLoaded ? undefined : handleFuelAutoFill}
                                     >
                                         <CloudArrowDown size={26} />
