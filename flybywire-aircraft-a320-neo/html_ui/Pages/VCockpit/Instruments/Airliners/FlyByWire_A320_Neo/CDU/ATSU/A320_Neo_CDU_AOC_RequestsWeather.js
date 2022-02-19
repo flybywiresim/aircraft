@@ -52,7 +52,7 @@ class CDUAocRequestsWeather {
             if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
                 mcdu.setTemplate([
                     ["AOC WEATHER REQUEST"],
-                    [`WX TYPE`, "AIRPORTS"],
+                    ["\xa0WX TYPE", "AIRPORTS\xa0"],
                     [`↓${reqTypes[data.requestId]}[color]cyan`, airports[0]],
                     [""],
                     ["", airports[1]],
@@ -62,8 +62,8 @@ class CDUAocRequestsWeather {
                     ["", airports[3]],
                     [""],
                     [""],
-                    ["RETURN TO", `${data.sendStatus}\xa0`],
-                    ["<AOC MENU", sendMessage]
+                    ["AOC MENU", `${data.sendStatus}\xa0`],
+                    ["<RETURN", sendMessage]
                 ]);
             }
         };
