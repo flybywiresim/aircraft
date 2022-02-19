@@ -44,6 +44,10 @@ class CDUAtcDepartReq {
         if (store.firstCall && store.from === "") {
             if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
                 store.from = mcdu.flightPlanManager.getOrigin().ident;
+            }
+        }
+        if (store.firstCall && store.to === "") {
+            if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
                 store.to = mcdu.flightPlanManager.getDestination().ident;
             }
         }
