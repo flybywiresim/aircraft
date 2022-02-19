@@ -8,7 +8,6 @@ import { FuelPage } from './Pages/FuelPage';
 import { TabRoutes, PageLink, pathify, PageRedirect } from '../Utils/routing';
 
 export const Dispatch = () => {
-    const history = useHistory();
     const tabs: PageLink[] = [
         { name: 'Overview', component: <OverviewPage /> },
         { name: 'OFP', component: <LoadSheetWidget /> },
@@ -21,8 +20,8 @@ export const Dispatch = () => {
                 <h1 className="font-bold text-[#ff0ff]">Dispatch</h1>
                 <Navbar
                     className="absolute top-0 right-0"
-                    tabs={tabs.map((tab) => tab.name)}
-                    onSelected={(index) => history.push(`/dispatch/${pathify(tabs[index].name)}`)}
+                    tabs={tabs}
+                    basePath="/dispatch"
                 />
             </div>
             <PageRedirect basePath="/dispatch" tabs={tabs} />

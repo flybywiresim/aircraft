@@ -211,13 +211,16 @@ const Efb = () => {
 
         if (firstUnmarkedIdx === -1) return;
 
-        CHECKLISTS[firstUnmarkedIdx].items.forEach((item, itemIdx) => {
-            if (item.condition !== undefined) {
-                const condEval = item.condition();
-                if (checklists[firstUnmarkedIdx].items[itemIdx].completed !== undefined) {
-                    dispatch(setChecklistItemCompletion({ checklistIndex: firstUnmarkedIdx, itemIndex: itemIdx, completionValue: condEval }));
-                }
-            }
+        CHECKLISTS[firstUnmarkedIdx].items.forEach((clItem, itemIdx) => {
+            const associatedTrackingItem = checklists[firstUnmarkedIdx].items[itemIdx];
+
+            if (!clItem.condition || !associatedTrackingItem) return;
+
+            dispatch(setChecklistItemCompletion({
+                checklistIndex: firstUnmarkedIdx,
+                itemIndex: itemIdx,
+                completionValue: clItem.condition(),
+            }));
         });
     };
 

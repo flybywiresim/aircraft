@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import * as apiClient from '@flybywiresim/api-client';
 import useInterval from '@instruments/common/useInterval';
 import { Link } from 'react-router-dom';
-import { Gear } from 'react-bootstrap-icons';
+import { CloudArrowDown, Gear } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import { usePersistentProperty } from '../../Common/persistence';
@@ -27,25 +28,40 @@ export const ATC = () => {
     const [mcduFlightNoSet] = useSimVar('L:A32NX_MCDU_FLT_NO_SET', 'boolean');
     const [callsign] = useSimVar('ATC FLIGHT NUMBER', 'string');
 
+    const [atcDataPending, setAtcDataPending] = useState(false);
+
     const { showModal } = useModals();
 
-    const loadAtc = useCallback(() => {
+    const loadAtc = useCallback(async () => {
         if (atisSource.toLowerCase() !== 'vatsim' && atisSource.toLowerCase() !== 'ivao') return;
-        apiClient.ATC.get(atisSource.toString().toLowerCase()).then((res) => {
-            if (!res) return;
-            let allAtc : ATCInfoExtended[] = res as ATCInfoExtended[];
+        const atisSourceReq = atisSource.toLowerCase();
+
+        setAtcDataPending(true);
+
+        try {
+            const atcRes = await apiClient.ATC.get(atisSourceReq);
+            if (!atcRes) return;
+            let allAtc : ATCInfoExtended[] = atcRes as ATCInfoExtended[];
+
             allAtc = allAtc.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975);
+
             for (const a of allAtc) {
                 a.distance = getDistanceFromLatLonInNm(a.latitude, a.longitude, currentLatitude, currentLongitude);
                 if (a.visualRange === 0 && a.type === apiClient.AtcType.ATIS) {
                     a.visualRange = 100;
                 }
             }
+
             allAtc.sort((a1, a2) => (a1.distance > a2.distance ? 1 : -1));
             allAtc = allAtc.slice(0, 26);
             allAtc.push({ callsign: 'UNICOM', frequency: '122.800', type: apiClient.AtcType.RADAR, visualRange: 999999, distance: 0, latitude: 0, longitude: 0, textAtis: [] });
+
             setControllers(allAtc.filter((a) => a.distance <= a.visualRange));
-        });
+        } catch (_) {
+            toast.error(_);
+        }
+
+        setAtcDataPending(false);
     }, [currentLatitude, currentLongitude, atisSource]);
 
     const getDistanceFromLatLonInNm = (lat1, lon1, lat2, lon2) : number => {
@@ -69,7 +85,7 @@ export const ATC = () => {
         return 0;
     };
 
-    const fromFrequency = (frequency:number): string => {
+    const fromFrequency = (frequency: number): string => {
         if (frequency) {
             let converted: string = frequency.toString().replace('.', '');
             converted = `${converted.substring(0, 3)}.${converted.substring(3)}`;
@@ -190,37 +206,46 @@ export const ATC = () => {
             </div>
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') ? (
                 <div className="w-full h-efb">
-                    <ScrollableContainer height={29}>
-                        <div className="grid grid-cols-2">
-                            {controllers && controllers.map((controller, index) => (
-                                <div className={`${index && index % 2 !== 0 && 'ml-4'}`}>
-                                    <div className="overflow-hidden relative p-6 mt-4 w-full bg-theme-secondary rounded-md">
-                                        <h2 className="font-bold">
-                                            {controller.callsign}
-                                        </h2>
-                                        <h2>
-                                            {controller.frequency}
-                                        </h2>
+                    <div className="relative">
+                        <ScrollableContainer height={29}>
+                            <div className="grid grid-cols-2">
+                                {controllers && controllers.map((controller, index) => (
+                                    <div className={`${index && index % 2 !== 0 && 'ml-4'}`}>
+                                        <div className="overflow-hidden relative p-6 mt-4 w-full bg-theme-secondary rounded-md">
+                                            <h2 className="font-bold">
+                                                {controller.callsign}
+                                            </h2>
+                                            <h2>
+                                                {controller.frequency}
+                                            </h2>
 
-                                        <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
-                                            <div
-                                                className="flex justify-center items-center w-full bg-theme-highlight bg-opacity-80"
-                                                onClick={() => setActiveFrequency(toFrequency(controller.frequency))}
-                                            >
-                                                <h2>Set Active</h2>
-                                            </div>
-                                            <div
-                                                className="flex justify-center items-center w-full bg-yellow-500 bg-opacity-80"
-                                                onClick={() => setStandbyFrequency(toFrequency(controller.frequency))}
-                                            >
-                                                <h2>Set Standby</h2>
+                                            <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
+                                                <div
+                                                    className="flex justify-center items-center w-full bg-theme-highlight bg-opacity-80"
+                                                    onClick={() => setActiveFrequency(toFrequency(controller.frequency))}
+                                                >
+                                                    <h2>Set Active</h2>
+                                                </div>
+                                                <div
+                                                    className="flex justify-center items-center w-full bg-yellow-500 bg-opacity-80"
+                                                    onClick={() => setStandbyFrequency(toFrequency(controller.frequency))}
+                                                >
+                                                    <h2>Set Standby</h2>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                        </ScrollableContainer>
+                        <div className={`absolute flex items-center justify-center inset-0 transition duration-200 bg-theme-body h-full border-2 border-theme-accent rounded-md
+                            ${atcDataPending ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                        >
+                            {atcDataPending && (
+                                <CloudArrowDown className="animate-bounce" size={40} />
+                            )}
                         </div>
-                    </ScrollableContainer>
+                    </div>
                     <div className="flex flex-row mt-4 h-96 rounded-lg border-2 border-theme-accent divide-x-2 divide-theme-accent">
                         <div className="flex flex-col justify-between p-6">
                             <div>
