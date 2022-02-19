@@ -71,20 +71,18 @@ export class DcduLink {
                 this.validateNotificationCondition();
 
                 // add buffered messages
-                while (this.messages.length !== DcduLink.MaxDcduFileSize) {
-                    if (this.bufferedMessages.length !== 0) {
-                        const data = this.bufferedMessages.shift();
-                        const message = this.atc.messages().find((elem) => elem.UniqueMessageID === data.MessageId);
-                        if (message !== undefined) {
-                            this.messages.push(data);
+                while (this.bufferedMessages.length !== 0 && this.messages.length !== DcduLink.MaxDcduFileSize) {
+                    const data = this.bufferedMessages.shift();
+                    const message = this.atc.messages().find((elem) => elem.UniqueMessageID === data.MessageId);
+                    if (message !== undefined) {
+                        this.messages.push(data);
 
-                            // pushed a new inbound message
-                            if (!data.MessageRead) {
-                                this.setupIntervals();
-                            }
-
-                            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+                        // pushed a new inbound message
+                        if (!data.MessageRead) {
+                            this.setupIntervals();
                         }
+
+                        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
                     }
                 }
             }
