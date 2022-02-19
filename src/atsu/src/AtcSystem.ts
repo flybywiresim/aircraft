@@ -211,6 +211,20 @@ export class AtcSystem {
         this.dcduLink.setAtcLogonMessage(`NEXT ATC: ${station}`);
         this.notificationTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
+        // check if the logon was successful within five minutes
+        setTimeout(() => {
+            // check if we have to timeout the logon request
+            if (this.logonInProgress()) {
+                const currentTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+                const delta = currentTime - this.notificationTime;
+
+                // validate that no second notification is triggered
+                if (delta >= 300) {
+                    this.resetLogon();
+                }
+            }
+        }, 300000);
+
         return this.datalink.sendMessage(message, false);
     }
 
