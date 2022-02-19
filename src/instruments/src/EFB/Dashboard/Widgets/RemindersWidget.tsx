@@ -74,7 +74,7 @@ const PinnedChartsReminder = () => {
                     title,
                 }, index) => (
                     <Link
-                        to="/navigation"
+                        to="/navigation/navigraph"
                         className={`flex flex-col flex-wrap p-2 mt-4 bg-theme-accent rounded-md ${index && index % 2 !== 0 && 'ml-4'}`}
                         onClick={() => {
                             setChartSource('NAVIGRAPH');
@@ -240,7 +240,7 @@ const ReminderKeyEditCard = ({ reminderKey, setter, index, keyArrLen }: Reminder
 );
 
 export const RemindersWidget = () => {
-    const [orderedReminderKeys, setOrderedReminderKeys] = usePersistentProperty('REMINDER_WIDGET_ORDERED_KEYS', 'charts,maintenance,checklists,weather');
+    const [orderedReminderKeys, setOrderedReminderKeys] = usePersistentProperty('REMINDER_WIDGET_ORDERED_KEYS', 'weather,charts,maintenance,checklists');
     const reminderKeyArr = orderedReminderKeys.split(',') as ReminderKey[];
 
     const [reorderMode, setReorderMode] = useState(false);

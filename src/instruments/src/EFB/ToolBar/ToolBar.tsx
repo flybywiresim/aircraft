@@ -9,7 +9,7 @@ import {
     Calculator,
     JournalCheck, HouseDoor,
 } from 'react-bootstrap-icons';
-import { Link, useHistory } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 export const ToolBar = () => (
     <nav className="flex overflow-hidden flex-col flex-shrink-0 justify-between w-32">
@@ -49,20 +49,20 @@ export const ToolBar = () => (
     </nav>
 );
 
-type ToolBarButtonProps = {
-    to: string,
+interface ToolBarButtonProps {
+    to: string;
 }
 
-const ToolBarButton: FC<ToolBarButtonProps> = ({ to, children }) => {
-    const history = useHistory();
-    // TODO: Apparently this is broken in sim 💀💀💀💀💀
-    return (
-        <Link
-            to={to}
-            className={`${history.location.pathname.includes(to) ? 'bg-theme-accent text-theme-text' : 'text-theme-unselected'}`
-            + ' flex w-min items-center justify-center hover:text-theme-text hover:bg-theme-accent transition duration-100 py-3.5 px-3.5 rounded-md mt-4'}
-        >
-            {children}
-        </Link>
-    );
-};
+const toolbarClassName = (active: boolean) => `${active
+    ? 'bg-theme-accent text-theme-text'
+    : 'text-theme-unselected'} flex w-min items-center justify-center hover:text-theme-text hover:bg-theme-accent transition duration-100 py-3.5 px-3.5 rounded-md mt-4`;
+
+const ToolBarButton: FC<ToolBarButtonProps> = ({ to, children }) => (
+    <NavLink
+        to={to}
+        activeClassName={toolbarClassName(true)}
+        className={toolbarClassName(false)}
+    >
+        {children}
+    </NavLink>
+);

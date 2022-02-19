@@ -73,8 +73,8 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
         },
         onStart: () => {
             shutoffTimerRef.current = setInterval(() => {
-                setShutoffBarPercent((old) => old + 20);
-            }, 400);
+                setShutoffBarPercent((old) => old + 5);
+            }, 100);
         },
     });
 
