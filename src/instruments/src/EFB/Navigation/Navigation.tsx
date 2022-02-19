@@ -21,7 +21,6 @@ import {
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { toast } from 'react-toastify';
-import { useHistory } from 'react-router-dom';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { SelectGroup, SelectItem } from '../UtilComponents/Form/Select';
 import NavigraphClient, {
@@ -149,7 +148,7 @@ const AuthUi = () => {
     }, (navigraph.auth.interval * 1000));
 
     return (
-        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full h-efb bg-theme-accent rounded-lg">
+        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full h-content-section-reduced bg-theme-accent rounded-lg">
             <div className="flex flex-col justify-center items-center">
                 <ShieldLock className="mr-2" size={40} />
                 <h2 className="flex justify-center items-center mt-2">
@@ -988,7 +987,7 @@ const NavigraphChartsUI = () => {
     const { altIcao, departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full h-efb rounded-lg">
+        <div className="flex overflow-x-hidden flex-row w-full h-content-section-reduced rounded-lg">
             <>
                 {!isFullScreen && (
                     <div className="flex-shrink-0" style={{ width: '450px' }}>
@@ -1194,7 +1193,7 @@ const LocalFileChartUI = () => {
     const { altIcao, departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full h-efb rounded-lg">
+        <div className="flex overflow-x-hidden flex-row w-full h-content-section-reduced rounded-lg">
             <>
                 {!isFullScreen && (
                     <div className="overflow-hidden flex-shrink-0" style={{ width: '450px' }}>
@@ -1293,7 +1292,7 @@ const NavigraphNav = () => {
                     </>
                 )
                 : (
-                    <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full h-efb bg-theme-secondary rounded-lg shadow-lg">
+                    <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full h-content-section-reduced bg-theme-secondary rounded-lg">
                         <p className="pt-6 mb-6 text-3xl">Insufficient .env file</p>
                     </div>
                 )}
@@ -1308,8 +1307,6 @@ const tabs: PageLink[] = [
 
 export const Navigation = () => {
     const dispatch = useAppDispatch();
-
-    const history = useHistory();
 
     return (
         <div className="w-full h-full">

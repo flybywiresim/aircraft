@@ -265,7 +265,7 @@ export const RemindersWidget = () => {
                     onClick={() => setReorderMode((old) => !old)}
                 />
             </div>
-            <div className="relative p-6 mt-4 w-full h-efb rounded-lg border-2 border-theme-accent">
+            <div className="relative p-6 mt-4 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
                 <ScrollableContainer height={51}>
                     <div className="flex flex-col space-y-4">
                         {reminderKeyArr.map((key) => REMINDERS.get(key))}

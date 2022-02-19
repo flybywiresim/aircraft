@@ -367,7 +367,7 @@ export const LandingWidget = () => {
     };
 
     return (
-        <div className="flex overflow-hidden flex-row justify-between h-efb">
+        <div className="flex overflow-hidden flex-row justify-between h-content-section-reduced">
             <div className="w-full">
                 <div className="flex flex-col justify-between w-full h-full">
                     <div className="mb-4">

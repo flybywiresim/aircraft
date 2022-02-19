@@ -110,7 +110,7 @@ export const FlightWidget = () => {
                     </h1>
                 )}
             </div>
-            <div className="overflow-hidden relative p-6 w-full h-efb rounded-lg border-2 border-theme-accent">
+            <div className="overflow-hidden relative p-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
                 <div className="flex flex-col justify-between h-full">
                     <div className="space-y-8">
                         <div className="flex flex-row justify-between">
@@ -186,10 +186,10 @@ export const FlightWidget = () => {
                     <button
                         type="button"
                         onClick={fetchData}
-                        className="flex justify-center items-center p-2 space-x-4 w-full text-navy bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
+                        className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-lg border-2 border-theme-highlight transition duration-100"
                     >
                         <CloudArrowDown size={26} />
-                        <p className="text-navy">Import OFP from simBrief</p>
+                        <p className="text-current">Import SimBrief Data</p>
                     </button>
                 </div>
 
@@ -206,10 +206,10 @@ export const FlightWidget = () => {
                                         <button
                                             type="button"
                                             onClick={fetchData}
-                                            className="flex justify-center items-center p-2 space-x-4 w-full text-navy bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
+                                            className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-lg border-2 border-theme-highlight transition duration-100"
                                         >
                                             <CloudArrowDown size={26} />
-                                            <p className="text-navy">Import SimBrief Data</p>
+                                            <p className="text-current">Import SimBrief Data</p>
                                         </button>
                                     </div>
                                 )}

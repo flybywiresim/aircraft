@@ -22,9 +22,9 @@
 :root.theme-light {
     --color-highlight: #3B82F6;
     --color-body: #E4E4E4;
-    --color-secondary: #bebebe;
+    --color-secondary: #BEBEBE;
     --color-text: #000000;
-    --color-unselected: #C9C9C9;
+    --color-unselected: #696969;
     --color-accent: #d0d0d0;
     --color-statusbar: #FFFFFF;
 }

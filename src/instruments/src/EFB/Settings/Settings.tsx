@@ -34,7 +34,7 @@ export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
             tabs.map((tab) => (
                 <Link
                     to={`settings/${pathify(tab.name)}`}
-                    className="flex justify-between items-center p-6 rounded-md border-2 border-transparent transition duration-100 bg-theme-accent hover:border-theme-highlight"
+                    className="flex justify-between items-center p-6 bg-theme-accent rounded-md border-2 border-transparent hover:border-theme-highlight transition duration-100"
                 >
                     <p className="text-2xl">{tab.name}</p>
                     <ChevronRight size={30} />
@@ -56,7 +56,7 @@ export const Settings = () => {
     ];
 
     return (
-        <div className="w-full h-efb">
+        <div className="w-full h-content-section-reduced">
             <Switch>
                 <Route exact path="/settings">
                     <h1 className="mb-4 font-bold">Settings</h1>
@@ -75,7 +75,7 @@ type SettingsPageProps = {
 export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => (
     <div>
         <Link to="/settings" className="inline-block mb-4">
-            <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
+            <div className="flex flex-row items-center space-x-3 hover:text-theme-highlight transition duration-100">
                 <ArrowLeft size={30} />
                 <h1 className="font-bold text-current">
                     Settings
@@ -84,7 +84,7 @@ export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => (
                 </h1>
             </div>
         </Link>
-        <div className="py-2 px-6 w-full rounded-lg border-2 h-efb border-theme-accent">
+        <div className="py-2 px-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <ScrollableContainer height={53}>
                 <div className="h-full divide-y-2 divide-theme-accent">
                     {children}

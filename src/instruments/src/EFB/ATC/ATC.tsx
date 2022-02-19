@@ -202,7 +202,7 @@ export const ATC = () => {
                 </button>
             </div>
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') ? (
-                <div className="w-full h-efb">
+                <div className="w-full h-content-section-reduced">
                     <div className="relative">
                         <ScrollableContainer height={29}>
                             <div className="grid grid-cols-2">
@@ -268,7 +268,7 @@ export const ATC = () => {
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-col justify-center items-center mt-4 space-y-8 w-full h-efb rounded-lg border-2 border-theme-accent shadow-md">
+                <div className="flex flex-col justify-center items-center mt-4 space-y-8 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
                     <h1 className="max-w-4xl text-center">This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page</h1>
                     <Link
                         to="/settings/atsu-/-aoc"
