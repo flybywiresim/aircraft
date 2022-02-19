@@ -34,7 +34,7 @@ export function LandingSystem({ LSButtonPressed, pitch, roll }) {
 }
 
 const LandingSystemInfo = ({ displayed }) => {
-    if (!displayed || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {
+    if (!displayed || !getSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number')) {
         return null;
     }
 
