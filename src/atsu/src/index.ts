@@ -10,7 +10,7 @@ import { MetarMessage } from './messages/MetarMessage';
 import { TafMessage } from './messages/TafMessage';
 import { AtisMessage, AtisType } from './messages/AtisMessage';
 import { AocSystem } from './AocSystem';
-import { AtcSystem } from './AtcSystem';
+import { Atc } from './ATC';
 
 export {
     AtsuStatusCodes,
@@ -32,5 +32,5 @@ export {
     AtisMessage,
     AtisType,
     AocSystem,
-    AtcSystem,
+    Atc,
 };
