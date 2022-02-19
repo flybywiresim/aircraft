@@ -47,15 +47,9 @@ export const securingAircraftChecklist: ChecklistDefinition = {
             item: 'SIGNS',
             result: 'OFF',
             condition: () => {
-                const v1 = SimVar.GetSimVarValue(
-                    'CABIN SEATBELTS ALERT SWITCH',
-                    'Number',
-                );
-                const v2 = SimVar.GetSimVarValue(
-                    'L:XMLVAR_SWITCH_OVHD_INTLT_NONSMOKING_POSITION',
-                    'Number',
-                );
-                return v1 === 0 && v2 === 2;
+                const seatbeltsOn = !SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'Bool');
+                const noSmokingPos = SimVar.GetSimVarValue('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'Number');
+                return seatbeltsOn && noSmokingPos === 2;
             },
         },
         {
