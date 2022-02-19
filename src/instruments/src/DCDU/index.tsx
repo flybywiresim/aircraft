@@ -43,9 +43,9 @@ const DCDU: React.FC = () => {
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
     const [messages, setMessages] = useState(new Map<number, [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined]>());
     const [statusMessage, setStatusMessage] = useState({ sender: '', message: '', remainingMilliseconds: 0 });
+    const [events] = useState(RegisterViewListener('JS_LISTENER_SIMVARS', undefined, true));
     const [messageUid, setMessageUid] = useState(-1);
     const [atcMessage, setAtcMessage] = useState('');
-    const maxMessageCount = 5;
 
     // functions to handle the status area
     const isStatusAvailable = (sender: string) => statusMessage.sender === sender || statusMessage.message.length === 0;
@@ -72,6 +72,7 @@ const DCDU: React.FC = () => {
 
         const entry = updateMap.get(uid);
         if (entry !== undefined) {
+            events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_READ', uid);
             entry[3] = response;
             entry[2] = true;
             updateMap.set(uid, entry);
@@ -80,10 +81,14 @@ const DCDU: React.FC = () => {
         setMessages(updateMap);
     };
 
+    const sendResponse = (uid: number, response: CpdlcMessageResponse) => events.triggerToAllSubscribers('A32NX_ATSU_SEND_RESPONSE', uid, response);
+
     // functions to handle the internal queue
     const closeMessage = (uid: number) => {
         const sortedMessages = sortedMessageArray(messages);
         const index = sortedMessages.findIndex((element) => element[0].UniqueMessageID === uid);
+
+        events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_CLOSED', uid);
 
         if (index !== -1) {
             resetStatus('');
@@ -150,17 +155,8 @@ const DCDU: React.FC = () => {
         setMessageUid(sortedMessages[index][0].UniqueMessageID);
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_PRINT', 'A32NX_DCDU_BTN_MPR_PRINT'], () => {
-        if (messages.size === 0) {
-            return;
-        }
-
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number') !== -1) {
-            setStatus('Mainpage', 'PRINTER BUSY');
-            return;
-        }
-
         if (messageUid !== -1) {
-            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number', messageUid);
+            events.triggerToAllSubscribers('A32NX_ATSU_PRINT_MESSAGE', messageUid);
         }
     });
 
@@ -248,18 +244,6 @@ const DCDU: React.FC = () => {
                 resetStatus('');
             }
         }
-
-        // check the number of unread messages
-        let unreadMessages = 0;
-        messages.forEach((message) => {
-            if (message[0].Direction === AtsuMessageDirection.Input && !message[2]) {
-                unreadMessages += 1;
-            }
-        });
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_UNREAD_MSGS', 'number', unreadMessages);
-
-        // update if the DCDU is full
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean', messages.size >= maxMessageCount ? 1 : 0);
     });
 
     // prepare the data
@@ -342,6 +326,7 @@ const DCDU: React.FC = () => {
                             setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
+                            sendResponse={sendResponse}
                             closeMessage={closeMessage}
                         />
                     ))}
@@ -352,6 +337,7 @@ const DCDU: React.FC = () => {
                             setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
+                            sendResponse={sendResponse}
                             closeMessage={closeMessage}
                         />
                     ))}
@@ -362,6 +348,7 @@ const DCDU: React.FC = () => {
                             setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
+                            sendResponse={sendResponse}
                             closeMessage={closeMessage}
                         />
                     ))}
