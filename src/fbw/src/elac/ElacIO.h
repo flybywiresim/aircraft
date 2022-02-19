@@ -131,9 +131,9 @@ struct ElacDiscreteOutputs {
   // K4-1
   bool rightAileronActiveMode;
 
-  bool leftElevatorActiveMode;
+  bool leftElevatorDampingMode;
 
-  bool rightElevatorActiveMode;
+  bool rightElevatorDampingMode;
 
   bool thsActive;
 };

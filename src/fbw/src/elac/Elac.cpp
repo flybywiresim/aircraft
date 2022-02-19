@@ -394,8 +394,8 @@ ElacDiscreteOutputs Elac::getDiscreteOutputs() {
     output.ap2Authorised = false;
     output.leftAileronActiveMode = false;
     output.rightAileronActiveMode = false;
-    output.leftElevatorActiveMode = false;
-    output.rightElevatorActiveMode = false;
+    output.leftElevatorDampingMode = false;
+    output.rightElevatorDampingMode = false;
     output.thsActive = false;
   } else {
     output.pitchAxisOk = canEngageInPitch;
@@ -405,8 +405,8 @@ ElacDiscreteOutputs Elac::getDiscreteOutputs() {
     output.ap2Authorised = false;
     output.leftAileronActiveMode = (isEngagedInRoll || leftAileronCrossCommandActive) && leftAileronAvail;
     output.rightAileronActiveMode = (isEngagedInRoll || rightAileronCrossCommandActive) && rightAileronAvail;
-    output.leftElevatorActiveMode = isEngagedInPitch && leftElevatorAvail;
-    output.rightElevatorActiveMode = isEngagedInPitch && rightElevatorAvail;
+    output.leftElevatorDampingMode = isEngagedInPitch && leftElevatorAvail;
+    output.rightElevatorDampingMode = isEngagedInPitch && rightElevatorAvail;
     output.thsActive = isEngagedInPitch && !discreteInputs.thsMotorFault;
   }
 

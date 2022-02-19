@@ -113,6 +113,8 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateFcdc(calculatedSampleTime, i);
   }
 
+  result &= updateServoSolenoidStatus();
+
   // update additional recording data
   result &= updateAdditionalData(calculatedSampleTime);
 
@@ -540,6 +542,32 @@ void FlyByWireInterface::setupLocalVariables() {
     idFacDiscreteWord4[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_4");
     idFacDeltaRRudderTrim[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DELTA_R_RUDDER_TRIM");
     idFacRudderTrimPos[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_RUDDER_TRIM_POS");
+  }
+
+  for (int i = 0; i < 2; i++) {
+    string aileronStringLeft = i == 0 ? "BLUE" : "GREEN";
+    string aileronStringRight = i == 0 ? "GREEN" : "BLUE";
+    string elevatorStringLeft = i == 0 ? "BLUE" : "GREEN";
+    string elevatorStringRight = i == 0 ? "BLUE" : "YELLOW";
+    string yawDamperString = i == 0 ? "GREEN" : "YELLOW";
+    string idString = std::to_string(i + 1);
+
+    idLeftAileronSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_LEFT_" + aileronStringLeft + "_AIL_SERVO_SOLENOID_ENERGIZED");
+    idRightAileronSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_RIGHT_" + aileronStringRight + "_AIL_SERVO_SOLENOID_ENERGIZED");
+    idLeftElevatorSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_LEFT_" + elevatorStringLeft + "_ELEV_SERVO_SOLENOID_ENERGIZED");
+    idRightElevatorSolenoidEnergized[i] =
+        make_unique<LocalVariable>("A32NX_RIGHT_" + elevatorStringRight + "_ELEV_SERVO_SOLENOID_ENERGIZED");
+
+    idYawDamperSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_" + yawDamperString + "_YAW_DAMPER_SERVO_SOLENOID_ENERGIZED");
+    idRudderTrimActiveModeCommanded[i] = make_unique<LocalVariable>("A32NX_RUDDER_TRIM_" + idString + "_ACTIVE_MODE_COMMANDED");
+    idRudderTravelLimitActiveModeCommanded[i] =
+        make_unique<LocalVariable>("A32NX_RUDDER_TRAVEL_LIM_" + idString + "_ACTIVE_MODE_COMMANDED");
+  }
+
+  for (int i = 0; i < 3; i++) {
+    string idString = std::to_string(i + 1);
+
+    idTHSActiveModeCommanded[i] = make_unique<LocalVariable>("A32NX_THS_" + idString + "_ACTIVE_MODE_COMMANDED");
   }
 
   for (int i = 0; i < 2; i++) {
@@ -1175,6 +1203,35 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   idFacDiscreteWord5[facIndex]->set(facsBusOutputs[facIndex].discreteWord5.toSimVar());
   idFacDeltaRRudderTrim[facIndex]->set(facsBusOutputs[facIndex].deltaRRudderTrim.toSimVar());
   idFacRudderTrimPos[facIndex]->set(facsBusOutputs[facIndex].rudderTrimPos.toSimVar());
+
+  return true;
+}
+
+bool FlyByWireInterface::updateServoSolenoidStatus() {
+  idLeftAileronSolenoidEnergized[0]->set(elacsDiscreteOutputs[0].leftAileronActiveMode);
+  idRightAileronSolenoidEnergized[0]->set(elacsDiscreteOutputs[0].rightAileronActiveMode);
+  idLeftAileronSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].leftAileronActiveMode);
+  idRightAileronSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].rightAileronActiveMode);
+
+  idLeftElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[1].leftElevatorDampingMode ||
+                                          secsDiscreteOutputs[1].leftElevatorDampingMode);
+  idRightElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[1].rightElevatorDampingMode ||
+                                           secsDiscreteOutputs[1].rightElevatorDampingMode);
+  idLeftElevatorSolenoidEnergized[1]->set(elacsDiscreteOutputs[0].leftElevatorDampingMode ||
+                                          secsDiscreteOutputs[0].leftElevatorDampingMode);
+  idRightElevatorSolenoidEnergized[1]->set(elacsDiscreteOutputs[0].rightElevatorDampingMode ||
+                                           secsDiscreteOutputs[0].rightElevatorDampingMode);
+
+  idTHSActiveModeCommanded[0]->set(elacsDiscreteOutputs[1].thsActive);
+  idTHSActiveModeCommanded[1]->set(elacsDiscreteOutputs[0].thsActive || secsDiscreteOutputs[0].thsActive);
+  idTHSActiveModeCommanded[2]->set(secsDiscreteOutputs[1].thsActive);
+
+  idYawDamperSolenoidEnergized[0]->set(facsDiscreteOutputs[0].yawDamperEngaged);
+  idYawDamperSolenoidEnergized[1]->set(facsDiscreteOutputs[1].yawDamperEngaged);
+  idRudderTrimActiveModeCommanded[0]->set(facsDiscreteOutputs[0].rudderTrimEngaged);
+  idRudderTrimActiveModeCommanded[1]->set(facsDiscreteOutputs[1].rudderTrimEngaged);
+  idRudderTravelLimitActiveModeCommanded[0]->set(facsDiscreteOutputs[0].rudderTravelLimEngaged);
+  idRudderTravelLimitActiveModeCommanded[1]->set(facsDiscreteOutputs[1].rudderTravelLimEngaged);
 
   return true;
 }

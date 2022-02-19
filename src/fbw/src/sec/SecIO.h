@@ -120,17 +120,9 @@ struct SecDiscreteOutputs {
   bool secFailed;
 
   // Relays
-  bool leftSpoiler1ActiveMode;
+  bool leftElevatorDampingMode;
 
-  bool rightSpoiler1ActiveMode;
-
-  bool leftSpoiler2ActiveMode;
-
-  bool rightSpoiler2ActiveMode;
-
-  bool leftElevatorActiveMode;
-
-  bool rightElevatorActiveMode;
+  bool rightElevatorDampingMode;
 
   bool thsActive;
 };

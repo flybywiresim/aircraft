@@ -343,6 +343,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeValid;
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeDeviation;
 
+  // FCDC bus label Lvars
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord1[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord2[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord3[2];
@@ -369,11 +370,14 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight4Pos[2];
   std::unique_ptr<LocalVariable> idFcdcSpoilerRight5Pos[2];
 
+  // FCDC discrete output Lvars
   std::unique_ptr<LocalVariable> idFcdcPriorityCaptGreen[2];
   std::unique_ptr<LocalVariable> idFcdcPriorityCaptRed[2];
   std::unique_ptr<LocalVariable> idFcdcPriorityFoGreen[2];
   std::unique_ptr<LocalVariable> idFcdcPriorityFoRed[2];
+  std::unique_ptr<LocalVariable> idFcdcFault[2];
 
+  // control surface servo fault input Lvars
   std::unique_ptr<LocalVariable> idElevFaultLeft[2];
   std::unique_ptr<LocalVariable> idElevFaultRight[2];
   std::unique_ptr<LocalVariable> idAilFaultLeft[2];
@@ -381,15 +385,31 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idSplrFaultLeft[5];
   std::unique_ptr<LocalVariable> idSplrFaultRight[5];
 
-  std::unique_ptr<LocalVariable> idFcdcFault[2];
-
+  // ELAC discrete input Lvars
   std::unique_ptr<LocalVariable> idElacPushbuttonStatus[2];
+
+  // ELAC discrete output Lvars
   std::unique_ptr<LocalVariable> idElacFaultLightOn[2];
 
+  // SEC discrete input Lvars
   std::unique_ptr<LocalVariable> idSecPushbuttonStatus[3];
+
+  // SEC discrete output Lvars
   std::unique_ptr<LocalVariable> idSecFaultLightOn[3];
 
+  // Flight controls solenoid valve energization Lvars
+  std::unique_ptr<LocalVariable> idLeftAileronSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idRightAileronSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idLeftElevatorSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idRightElevatorSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idTHSActiveModeCommanded[3];
+  std::unique_ptr<LocalVariable> idYawDamperSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idRudderTrimActiveModeCommanded[2];
+  std::unique_ptr<LocalVariable> idRudderTravelLimitActiveModeCommanded[2];
+
+  // FAC discrete input Lvars
   std::unique_ptr<LocalVariable> idFacPushbuttonStatus[2];
+  // FAC discrete output Lvars
   std::unique_ptr<LocalVariable> idFacFaultLightOn[2];
 
   std::unique_ptr<LocalVariable> idFacDiscreteWord1[2];
@@ -454,6 +474,8 @@ class FlyByWireInterface {
   bool updateFcdc(double sampleTime, int fcdcIndex);
 
   bool updateFac(double sampleTime, int facIndex);
+
+  bool updateServoSolenoidStatus();
 
   bool updateSpoilers(double sampleTime);
 
