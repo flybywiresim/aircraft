@@ -277,7 +277,9 @@ export class Atc {
         if (request.RequestedResponses === CpdlcMessageRequestedResponseType.NotRequired && response === undefined) {
             // received the station message for the DCDU
             if (request.Message.includes('CURRENT ATC')) {
-                this.dcduLink.setAtcLogonMessage(request.Message);
+                if (this.currentAtc !== '') {
+                    this.dcduLink.setAtcLogonMessage(request.Message);
+                }
                 return true;
             }
 
