@@ -107,7 +107,6 @@ class FlyByWireInterface {
   bool developmentLocalVariablesEnabled = false;
   bool useCalculatedLocalizerAndGlideSlope = false;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_condition_Flare;
-  std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_radio_fpm;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_H_dot_c_fpm;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_H_dot_deg;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_bz_deg;
@@ -167,6 +166,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAutopilotActive_2;
 
   std::unique_ptr<LocalVariable> idAutopilotAutothrustMode;
+
+  std::unique_ptr<LocalVariable> idAutopilot_H_dot_radio;
 
   std::unique_ptr<LocalVariable> idFcuTrkFpaModeActive;
   std::unique_ptr<LocalVariable> idFcuSelectedFpa;
@@ -313,6 +314,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAileronPositionRight;
   std::shared_ptr<AnimationAileronHandler> animationAileronHandler;
 
+  std::unique_ptr<LocalVariable> idRadioReceiverUsage;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerValid;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerDeviation;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerDistance;
