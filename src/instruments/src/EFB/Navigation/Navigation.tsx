@@ -215,12 +215,13 @@ const ChartComponent = () => {
     useEffect(() => {
         let visible = false;
 
+        console.log(boundingBox, aircraftLatitude, aircraftLongitude);
+
         if (boundingBox
             && aircraftLatitude >= boundingBox.bottomLeft.lat
             && aircraftLatitude <= boundingBox.topRight.lat
             && aircraftLongitude >= boundingBox.bottomLeft.lon
-            && aircraftLongitude <= boundingBox.topRight.lon
-        ) {
+            && aircraftLongitude <= boundingBox.topRight.lon) {
             const dx = boundingBox.topRight.xPx - boundingBox.bottomLeft.xPx;
             const dy = boundingBox.bottomLeft.yPx - boundingBox.topRight.yPx;
             const dLat = boundingBox.topRight.lat - boundingBox.bottomLeft.lat;
@@ -331,8 +332,6 @@ const ChartComponent = () => {
     };
 
     useEffect(() => {
-        console.log(chartDimensions);
-
         if (!chartDimensions.height && !chartDimensions.width) {
             const img = new Image();
             img.onload = function () {
@@ -521,7 +520,7 @@ const ChartComponent = () => {
                 )}
 
                 { (aircraftIconVisible && boundingBox) && (
-                    <svg viewBox={`0 0 ${boundingBox.width} ${boundingBox.height}`} style={{ position: 'absolute', top: 0, left: 0 }}>
+                    <svg viewBox={`0 0 ${boundingBox.width} ${boundingBox.height}`} className="absolute top-0 left-0 z-30">
                         <g
                             className="transition duration-100"
                             transform={`translate(${aircraftIconPosition.x} ${aircraftIconPosition.y}) rotate(${aircraftIconPosition.r})`}
@@ -1318,10 +1317,9 @@ export const Navigation = () => {
                 <h1 className="font-bold">Navigation & Charts</h1>
                 <Navbar
                     className="absolute top-0 right-0"
-                    tabs={tabs.map((tab) => tab.name)}
-                    onSelected={(index) => {
-                        history.push(`/navigation/${pathify(tabs[index].name)}`);
-
+                    tabs={tabs}
+                    basePath="/navigation"
+                    onSelected={() => {
                         dispatch(setChartLinks({ light: '', dark: '' }));
                         dispatch(setChartName({ light: '', dark: '' }));
                         dispatch(setTabIndex(0));

@@ -25,7 +25,6 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
     const isItemCompleted = checklists[selectedChecklistIndex].items[index]?.completed;
 
     const firstIncompleteIdx = checklists[selectedChecklistIndex].items.findIndex((item) => {
-        // Let's go ahead and skip checklist items that have a completion-determination function as those can't be manually checked.
         if (autoFillChecklists) {
             return !item.completed && !item.hasCondition;
         }
@@ -35,7 +34,7 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
 
     const itemCheckedAfterIncomplete = checklists[selectedChecklistIndex].items
         .slice(firstIncompleteIdx)
-        .some((item) => item.completed && !item.divider && !item.hasCondition);
+        .some((item) => item.completed && !item.divider && (autoFillChecklists ? !item.hasCondition : true));
 
     const itemImproperlyUnchecked = index === firstIncompleteIdx && itemCheckedAfterIncomplete;
 
