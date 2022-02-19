@@ -28,12 +28,6 @@ export class AtcSystem {
 
     private messageQueue: CpdlcMessage[] = [];
 
-    private dcduBufferedMessages: number[] = [];
-
-    private unreadMessagesLastCycle: number = 0;
-
-    private lastRingTime: number = 0;
-
     public maxUplinkDelay: number = -1;
 
     constructor(parent: AtsuManager, datalink: Datalink) {
