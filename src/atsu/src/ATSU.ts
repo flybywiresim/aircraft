@@ -3,7 +3,7 @@
 
 import { Datalink } from './com/Datalink';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
-import { AtcSystem } from './AtcSystem';
+import { Atc } from './ATC';
 import { AocSystem } from './AocSystem';
 import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
@@ -20,7 +20,7 @@ export class Atsu {
 
     public aoc = new AocSystem(this.datalink);
 
-    public atc = new AtcSystem(this, this.datalink);
+    public atc = new Atc(this, this.datalink);
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
@@ -95,7 +95,7 @@ export class Atsu {
             if (retval === AtsuStatusCodes.Ok) {
                 this.registerMessage(message);
             }
-        } else if (AtcSystem.isRelevantMessage(message)) {
+        } else if (Atc.isRelevantMessage(message)) {
             retval = await this.atc.sendMessage(message);
             if (retval === AtsuStatusCodes.Ok) {
                 this.registerMessage(message);
@@ -119,7 +119,7 @@ export class Atsu {
 
         if (AocSystem.isRelevantMessage(message)) {
             this.aoc.insertMessage(message);
-        } else if (AtcSystem.isRelevantMessage(message)) {
+        } else if (Atc.isRelevantMessage(message)) {
             this.atc.insertMessage(message);
         }
     }

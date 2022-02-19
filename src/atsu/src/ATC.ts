@@ -9,7 +9,7 @@ import { Datalink } from './com/Datalink';
 import { Atsu } from './ATSU';
 import { DcduLink } from './components/DcduLink';
 
-export class AtcSystem {
+export class Atc {
     private parent: Atsu | undefined = undefined;
 
     private datalink: Datalink | undefined = undefined;

@@ -1,7 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtcSystem } from '../AtcSystem';
+import { Atc } from '../ATC';
 import { Atsu } from '../ATSU';
 import { AtsuMessageDirection } from '../messages/AtsuMessage';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
@@ -22,7 +22,7 @@ export class DcduLink {
 
     private atsu: Atsu | undefined = undefined;
 
-    private atc: AtcSystem | undefined = undefined;
+    private atc: Atc | undefined = undefined;
 
     private messages: DcduMessage[] = [];
 
@@ -32,7 +32,7 @@ export class DcduLink {
 
     private atcRingInterval: number | undefined = undefined;
 
-    constructor(atsu: Atsu, atc: AtcSystem) {
+    constructor(atsu: Atsu, atc: Atc) {
         this.atsu = atsu;
         this.atc = atc;
 
