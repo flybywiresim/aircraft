@@ -43,9 +43,8 @@ module.exports = {
                 'out-tk': '5.25rem',
             }),
             height: () => ({
-                'efb': '54rem',
-                'efb-nav': '45.75rem',
-                '124': '34.75rem',
+                'content-section-reduced': '54rem',
+                'content-section-full': '57.25rem',
             }),
             inset: () => ({
                 'ctr-tk-y': '18.75rem',

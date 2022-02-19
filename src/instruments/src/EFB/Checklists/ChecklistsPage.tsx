@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CheckLg, LockFill } from 'react-bootstrap-icons';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
+import { toast } from 'react-toastify';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import {
     areAllChecklistItemsCompleted,
@@ -38,7 +39,7 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
 
     const itemImproperlyUnchecked = index === firstIncompleteIdx && itemCheckedAfterIncomplete;
 
-    let color = 'text-white';
+    let color = 'text-theme-text';
 
     if (isItemCompleted) {
         color = 'text-colors-lime-400';
@@ -48,11 +49,21 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
         color = 'text-red-500';
     }
 
+    const [autoItemTouches, setAutoItemTouches] = useState(0);
+
+    useEffect(() => {
+        if (autoItemTouches === 5) {
+            toast.info('You cannot interact with this item because you have enabled the autofill checklist option in the Realism settings page.');
+            setAutoItemTouches(0);
+        }
+    }, [autoItemTouches]);
+
     return (
         <div
             className={`flex flex-row items-center py-2 space-x-4 ${color}`}
             onClick={() => {
                 if (item.condition && autoFillChecklists) {
+                    setAutoItemTouches((old) => old + 1);
                     setChecklistShake(true);
                     setTimeout(() => {
                         setChecklistShake(false);
@@ -89,7 +100,7 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
                 <div className="text-current whitespace-nowrap">
                     {item.item}
                 </div>
-                <div className={`w-full h-1 text-current ${item.item && 'mx-4'} ${(item.divider) ? 'bg-white' : 'bg-current'}`} />
+                <div className={`w-full h-1 text-current ${item.item && 'mx-4'} ${(item.divider) ? 'bg-theme-text' : 'bg-current'}`} />
                 <div className="text-current whitespace-nowrap">
                     {item.result}
                 </div>
@@ -175,7 +186,7 @@ export const ChecklistPage = () => {
     const { selectedChecklistIndex } = useAppSelector((state) => state.trackingChecklists);
 
     return (
-        <div className="flex overflow-visible flex-col justify-between p-8 w-full h-efb rounded-lg border-2 border-theme-accent">
+        <div className="flex overflow-visible flex-col justify-between p-8 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <ScrollableContainer height={46}>
                 <div className="space-y-4">
                     {CHECKLISTS[selectedChecklistIndex].items.map((it, index) => (

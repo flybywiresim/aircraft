@@ -50,9 +50,9 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             completedBarBeginValue={props.lowerBoundDetentGetter.toFixed(2)}
                             completedBarEnd={(props.upperBoundDetentGetter + 1) * 50}
                             completedBarEndValue={props.upperBoundDetentGetter.toFixed(2)}
-                            bgcolor="#3b82f6"
+                            bgcolor="var(--color-highlight)"
                             vertical
-                            baseBgColor="rgba(55, 65, 81, var(--tw-bg-opacity))"
+                            baseBgColor="var(--color-accent)"
                             completed={(props.throttlePosition + 1) / 2 * 100}
                             completionValue={props.throttlePosition}
                             greenBarsWhenInRange
@@ -82,14 +82,15 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                                     }
                                 }}
                             />
-                            <Button
-                                className="bg-blue-500 hover:bg-blue-600 border-blue-500 hover:border-blue-600"
-                                text="Set From Throttle"
+                            <button
+                                className="py-3 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
                                 onClick={() => {
                                     setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter, deadZone);
                                 }}
-                                type={BUTTON_TYPE.NONE}
-                            />
+                                type="button"
+                            >
+                                Set From Throttle
+                            </button>
                         </div>
                     )}
                 {props.expertMode
@@ -145,9 +146,9 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                             completedBarBeginValue={props.lowerBoundDetentGetter.toFixed(2)}
                             completedBarEnd={(props.upperBoundDetentGetter + 1) * 50}
                             completedBarEndValue={props.upperBoundDetentGetter.toFixed(2)}
-                            bgcolor="#3b82f6"
+                            bgcolor="var(--color-highlight)"
                             vertical
-                            baseBgColor="rgba(55, 65, 81, var(--tw-bg-opacity))"
+                            baseBgColor="var(--color-accent)"
                             completed={(props.throttlePosition + 1) / 2 * 100}
                             completionValue={props.throttlePosition}
                             greenBarsWhenInRange

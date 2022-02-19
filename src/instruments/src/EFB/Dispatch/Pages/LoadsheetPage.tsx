@@ -81,7 +81,7 @@ export const LoadSheetWidget = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
-        <div className="overflow-hidden relative p-6 mt-4 w-full h-efb rounded-lg border-2 border-theme-accent shadow-md">
+        <div className="overflow-hidden relative p-6 mt-4 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <>
                 <div className="overflow-hidden absolute top-6 right-16 bg-theme-secondary rounded-md">
                     <button
@@ -120,10 +120,10 @@ export const LoadSheetWidget = () => {
                                     <button
                                         type="button"
                                         onClick={fetchData}
-                                        className="flex justify-center items-center py-2 px-16 space-x-4 bg-theme-highlight rounded-lg border-2 border-theme-secondary shadow-lg focus:outline-none"
+                                        className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-lg border-2 border-theme-highlight transition duration-100"
                                     >
-                                        <CloudArrowDown className="text-navy" size={26} />
-                                        <p className="text-navy">Import SimBrief Data</p>
+                                        <CloudArrowDown size={26} />
+                                        <p className="text-current">Import SimBrief Data</p>
                                     </button>
                                 </div>
                             )}
