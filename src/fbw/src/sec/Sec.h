@@ -72,7 +72,7 @@ class Sec {
 
   bool cpuStopped;
 
-  SRFlipFlop cpuStoppedFlipFlop = SRFlipFlop(false);
+  SRFlipFlop cpuStoppedFlipFlop = SRFlipFlop(true);
 
   PulseNode resetPulseNode = PulseNode(false);
 
