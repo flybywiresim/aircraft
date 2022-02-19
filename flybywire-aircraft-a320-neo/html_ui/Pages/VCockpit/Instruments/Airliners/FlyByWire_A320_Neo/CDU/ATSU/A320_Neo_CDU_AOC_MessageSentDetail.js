@@ -5,7 +5,7 @@ class CDUAocMessageSentDetail {
         const lines = message.serialize(Atsu.AtsuMessageSerializationFormat.MCDU).split("\n");
 
         // mark message as read
-        mcdu.atsuManager.messageRead(message.UniqueMessageID);
+        mcdu.atsu.messageRead(message.UniqueMessageID);
 
         const msgArrows = messages.length > 1 ? " {}" : "";
 
@@ -68,7 +68,7 @@ class CDUAocMessageSentDetail {
         };
 
         mcdu.onRightInput[5] = () => {
-            mcdu.atsuManager.printMessage(message);
+            mcdu.atsu.printMessage(message);
         };
 
     }

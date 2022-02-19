@@ -3,7 +3,7 @@
 
 import { NXDataStore } from '@shared/persistence';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
-import { AtsuManager } from '../AtsuManager';
+import { Atsu } from '../ATSU';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
 import { FreetextMessage } from '../messages/FreetextMessage';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageType } from '../messages/AtsuMessage';
@@ -23,7 +23,7 @@ export class Datalink {
 
     private firstPollHoppie = true;
 
-    private enqueueReceivedMessages(parent: AtsuManager, messages: AtsuMessage[]): void {
+    private enqueueReceivedMessages(parent: Atsu, messages: AtsuMessage[]): void {
         messages.forEach((message) => {
             // ignore empty messages (happens sometimes in CPDLC with buggy ATC software)
             if (message.Message.length !== 0) {
@@ -33,7 +33,7 @@ export class Datalink {
         });
     }
 
-    constructor(parent: AtsuManager) {
+    constructor(parent: Atsu) {
         // copy the datalink transmission time data
         switch (NXDataStore.get('CONFIG_DATALINK_TRANSMISSION_TIME', 'FAST')) {
         case 'REAL':

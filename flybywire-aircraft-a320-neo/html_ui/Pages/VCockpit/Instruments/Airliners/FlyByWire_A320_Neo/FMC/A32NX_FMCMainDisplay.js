@@ -176,7 +176,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.efisSymbols = undefined;
 
         // ATSU data
-        this.atsuManager = undefined;
+        this.atsu = undefined;
         this.pdcMessage = undefined;
         this.holdSpeedTarget = undefined;
         this.holdIndex = undefined;
@@ -500,7 +500,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.setHoldSpeedMessageActive = false;
 
         // ATSU data
-        this.atsuManager = new Atsu.AtsuManager(this);
+        this.atsu = new Atsu.Atsu(this);
         this.pdcMessage = undefined;
 
         // Reset SimVars
@@ -2133,7 +2133,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            this.atsuManager.connectToNetworks(flightNo)
+            this.atsu.connectToNetworks(flightNo)
                 .then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 0);

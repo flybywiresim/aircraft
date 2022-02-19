@@ -6,11 +6,11 @@ import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
-import { AtsuManager } from './AtsuManager';
+import { Atsu } from './ATSU';
 import { DcduLink } from './components/DcduLink';
 
 export class AtcSystem {
-    private parent: AtsuManager | undefined = undefined;
+    private parent: Atsu | undefined = undefined;
 
     private datalink: Datalink | undefined = undefined;
 
@@ -30,7 +30,7 @@ export class AtcSystem {
 
     public maxUplinkDelay: number = -1;
 
-    constructor(parent: AtsuManager, datalink: Datalink) {
+    constructor(parent: Atsu, datalink: Datalink) {
         this.parent = parent;
         this.datalink = datalink;
         this.dcduLink = new DcduLink(parent, this);

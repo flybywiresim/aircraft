@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtcSystem } from '../AtcSystem';
-import { AtsuManager } from '../AtsuManager';
+import { Atsu } from '../ATSU';
 import { AtsuMessageDirection } from '../messages/AtsuMessage';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
@@ -20,7 +20,7 @@ export class DcduLink {
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
-    private atsu: AtsuManager | undefined = undefined;
+    private atsu: Atsu | undefined = undefined;
 
     private atc: AtcSystem | undefined = undefined;
 
@@ -32,7 +32,7 @@ export class DcduLink {
 
     private atcRingInterval: number | undefined = undefined;
 
-    constructor(atsu: AtsuManager, atc: AtcSystem) {
+    constructor(atsu: Atsu, atc: AtcSystem) {
         this.atsu = atsu;
         this.atc = atc;
 

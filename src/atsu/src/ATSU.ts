@@ -9,9 +9,9 @@ import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMess
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
 
 /**
- * Defines the ATSU manager
+ * Defines the ATSU
  */
-export class AtsuManager {
+export class Atsu {
     private datalink = new Datalink(this);
 
     private fltNo: string = '';

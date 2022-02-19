@@ -56,8 +56,8 @@ class CDUAocDepartReq {
             }
         );
 
-        if (mcdu.atsuManager.flightNumber().length !== 0 && mcdu.flightPlanManager.getOrigin() !== null) {
-            mcdu.pdcMessage.Callsign = mcdu.atsuManager.flightNumber();
+        if (mcdu.atsu.flightNumber().length !== 0 && mcdu.flightPlanManager.getOrigin() !== null) {
+            mcdu.pdcMessage.Callsign = mcdu.atsu.flightNumber();
             flightNo = mcdu.pdcMessage.Callsign + "[color]green";
         }
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
@@ -102,11 +102,11 @@ class CDUAocDepartReq {
             if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
                 CDUAocDepartReq.ShowPage1(mcdu, store);
-            } else if (mcdu.atsuManager.flightNumber().length === 0) {
+            } else if (mcdu.atsu.flightNumber().length === 0) {
                 mcdu.addNewMessage(NXFictionalMessages.fltNbrMissing);
                 CDUAocDepartReq.ShowPage1(mcdu, store);
             } else {
-                mcdu.atsuManager.isRemoteStationAvailable(value).then((code) => {
+                mcdu.atsu.isRemoteStationAvailable(value).then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                         mcdu.pdcMessage.Station = "";
@@ -151,7 +151,7 @@ class CDUAocDepartReq {
             CDUAocDepartReq.ShowPage1(mcdu, store);
 
             // publish the message
-            mcdu.atsuManager.sendMessage(mcdu.pdcMessage).then((code) => {
+            mcdu.atsu.sendMessage(mcdu.pdcMessage).then((code) => {
                 if (code === Atsu.AtsuStatusCodes.Ok) {
                     mcdu.pdcMessage = undefined;
                     store["sendStatus"] = "SENT";

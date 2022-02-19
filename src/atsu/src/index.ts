@@ -1,5 +1,5 @@
 import { AtsuStatusCodes } from './AtsuStatusCodes';
-import { AtsuManager } from './AtsuManager';
+import { Atsu } from './ATSU';
 import { FreetextMessage } from './messages/FreetextMessage';
 import { PdcMessage } from './messages/PdcMessage';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessageNetwork, AtsuMessageType } from './messages/AtsuMessage';
@@ -20,7 +20,7 @@ export {
     AtsuMessageNetwork,
     AtsuMessageSerializationFormat,
     AtsuMessageType,
-    AtsuManager,
+    Atsu,
     AtsuTimestamp,
     CpdlcMessage,
     CpdlcMessageResponse,
