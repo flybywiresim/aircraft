@@ -1,7 +1,5 @@
-import React, { useContext } from 'react';
-
+import React, { useRef, useContext } from 'react';
 import './McduButtons.css';
-
 import { WebsocketContext } from './WebsocketContext';
 
 const ButtonGrid = ({ children, x, y, width, height }) => (
@@ -18,17 +16,38 @@ const ButtonRow = ({ children }) => (
 
 const Button = ({ sound, name }) => {
     const socket = useContext(WebsocketContext);
+    const timeout = useRef();
+    const buttonHeldTime = 1500;
 
-    function mcduButtonPress() {
-        return () => {
-            if (sound) new Audio('button-click.mp3').play();
-            socket.sendMessage(`event:${name}`);
-        };
+    function pressButton(event) {
+        if (event.defaultPrevented) {
+            event.preventDefault();
+        }
+        if (sound) {
+            new Audio('button-click.mp3').play();
+        }
+        socket.sendMessage(`event:${name}`);
+        timeout.current = setTimeout(() => {
+            socket.sendMessage(`event:${name}_Held`);
+        }, buttonHeldTime);
+    }
+
+    function releaseButton(event) {
+        event.preventDefault();
+        if (timeout.current) {
+            clearTimeout(timeout.current);
+        }
     }
 
     if (name.length) {
         return (
-            <div className="button" onClick={mcduButtonPress()} />
+            <div
+                className="button"
+                onMouseDown={(e) => pressButton(e)}
+                onMouseUp={(e) => releaseButton(e)}
+                onTouchStart={(e) => pressButton(e)}
+                onTouchEnd={(e) => releaseButton(e)}
+            />
         );
     }
     return <div className="dummy" />;
