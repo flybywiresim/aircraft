@@ -41,6 +41,8 @@ export class AtcSystem {
 
     private atisMessages: Map<string, [number, AtisMessage[]]> = new Map();
 
+    public maxUplinkDelay: number = -1;
+
     constructor(parent: AtsuManager, datalink: Datalink) {
         this.parent = parent;
         this.datalink = datalink;
@@ -235,6 +237,21 @@ export class AtcSystem {
         return this.datalink.sendMessage(message, false);
     }
 
+    private async handover(station: string): Promise<AtsuStatusCodes> {
+        if (this.nextAtc !== '' && station !== this.nextAtc) {
+            return AtsuStatusCodes.SystemBusy;
+        }
+
+        if (this.currentAtc !== '') {
+            const retval = await this.logoffWithoutReset();
+            if (retval !== AtsuStatusCodes.Ok) {
+                return retval;
+            }
+        }
+
+        return this.logon(station);
+    }
+
     private async logoffWithoutReset(): Promise<AtsuStatusCodes> {
         if (this.currentAtc === '') {
             return AtsuStatusCodes.NoAtc;
@@ -248,6 +265,7 @@ export class AtcSystem {
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'LOGOFF';
 
+        this.maxUplinkDelay = -1;
         this.parent.registerMessage(message);
 
         return this.datalink.sendMessage(message, true).then((error) => error);
@@ -397,7 +415,7 @@ export class AtcSystem {
                 const entries = request.Message.split(' ');
                 if (entries.length >= 2) {
                     const station = entries[1].replace(/@/gi, '');
-                    this.logon(station);
+                    this.handover(station);
                     return true;
                 }
             }

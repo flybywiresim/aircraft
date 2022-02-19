@@ -3,7 +3,7 @@ class CDUAtcConnectionNotification {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCNotification;
 
-        let flightNo = "______[color]amber";
+        let flightNo = "-------[color]white";
         let atcStation = "____[color]amber";
         let atcStationAvail = false;
         let flightNoAvail = false;

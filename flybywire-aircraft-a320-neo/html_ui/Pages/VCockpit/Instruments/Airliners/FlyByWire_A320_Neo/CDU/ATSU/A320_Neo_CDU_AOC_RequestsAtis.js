@@ -67,7 +67,7 @@ class CDUAocRequestsAtis {
             if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
                 mcdu.setTemplate([
                     ["AOC ATIS REQUEST"],
-                    ["AIRPORT", "↓FORMAT FOR"],
+                    ["\xa0AIRPORT", "↓FORMAT FOR\xa0"],
                     [`${arrText}[color]cyan`, formatString],
                     ["", "", "-------SELECT ONE-------"],
                     [arrivalText, enrouteText],
@@ -77,7 +77,7 @@ class CDUAocRequestsAtis {
                     [""],
                     [""],
                     [""],
-                    ["RETURN TO", `${store.sendStatus}`],
+                    ["\xa0RETURN TO", `${store.sendStatus}\xa0`],
                     ["<AOC MENU", sendMessage]
                 ]);
             }
