@@ -81,7 +81,7 @@ export const McduButtons = ({ sound }) => (
                 <Button sound={sound} name="R6" />
             </ButtonRow>
         </ButtonGrid>
-        <ButtonGrid x={122} y={804} width={745} height={180}>
+        <ButtonGrid x={115} y={804} width={745} height={180}>
             <ButtonRow>
                 <Button sound={sound} name="DIR" />
                 <Button sound={sound} name="PROG" />
@@ -99,7 +99,7 @@ export const McduButtons = ({ sound }) => (
                 <Button sound={sound} name="MENU" />
             </ButtonRow>
         </ButtonGrid>
-        <ButtonGrid x={122} y={985} width={260} height={260}>
+        <ButtonGrid x={115} y={985} width={260} height={260}>
             <ButtonRow>
                 <Button sound={sound} name="AIRPORT" />
                 <Button sound={sound} name="" />
@@ -113,7 +113,7 @@ export const McduButtons = ({ sound }) => (
                 <Button sound={sound} name="DOWN" />
             </ButtonRow>
         </ButtonGrid>
-        <ButtonGrid x={440} y={1015} width={522} height={616}>
+        <ButtonGrid x={435} y={1013} width={522} height={616}>
             <ButtonRow>
                 <Button sound={sound} name="A" />
                 <Button sound={sound} name="B" />
@@ -157,7 +157,7 @@ export const McduButtons = ({ sound }) => (
                 <Button sound={sound} name="CLR" />
             </ButtonRow>
         </ButtonGrid>
-        <ButtonGrid x={135} y={1250} width={300} height={375}>
+        <ButtonGrid x={128} y={1250} width={300} height={375}>
             <ButtonRow>
                 <Button sound={sound} name="1" />
                 <Button sound={sound} name="2" />
