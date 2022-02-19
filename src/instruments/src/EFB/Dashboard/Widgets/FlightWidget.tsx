@@ -98,7 +98,7 @@ export const FlightWidget = () => {
 
     return (
         <div className="w-full">
-            <div className={`flex flex-row justify-between items-center ${simbriefDataLoaded ? 'mb-4' : 'mb-2'}`}>
+            <div className="flex flex-row justify-between items-center mb-4">
                 <h1 className="font-bold">Your Flight</h1>
                 {simbriefDataLoaded && (
                     <h1>

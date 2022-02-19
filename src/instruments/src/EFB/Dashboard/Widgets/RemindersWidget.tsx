@@ -4,6 +4,7 @@ import { A320Failure } from '@flybywiresim/failures';
 import { Link } from 'react-router-dom';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { ArrowDown, ArrowUp, Check, PencilFill } from 'react-bootstrap-icons';
+import { NXDataStore } from '@shared/persistence';
 import {
     setChartId,
     setChartLinks,
@@ -191,13 +192,13 @@ const ChecklistsReminder = () => {
     );
 };
 
-type ReminderKey = 'weather' | 'charts' | 'maintenance' | 'checklists';
+type ReminderKey = 'Weather' | 'Pinned Charts' | 'Maintenance' | 'Checklists';
 
 const REMINDERS = new Map<ReminderKey, JSX.Element>([
-    ['weather', <WeatherReminder />],
-    ['charts', <PinnedChartsReminder />],
-    ['maintenance', <MaintenanceReminder />],
-    ['checklists', <ChecklistsReminder />],
+    ['Weather', <WeatherReminder />],
+    ['Pinned Charts', <PinnedChartsReminder />],
+    ['Maintenance', <MaintenanceReminder />],
+    ['Checklists', <ChecklistsReminder />],
 ]);
 
 interface ReminderKeyEditCardProps {
@@ -240,7 +241,10 @@ const ReminderKeyEditCard = ({ reminderKey, setter, index, keyArrLen }: Reminder
 );
 
 export const RemindersWidget = () => {
-    const [orderedReminderKeys, setOrderedReminderKeys] = usePersistentProperty('REMINDER_WIDGET_ORDERED_KEYS', 'weather,charts,maintenance,checklists');
+    const [orderedReminderKeys, setOrderedReminderKeys] = usePersistentProperty(
+        'REMINDER_WIDGET_ORDERED_KEYS',
+        'Weather,Pinned Charts,Maintenance,Checklists',
+    );
     const reminderKeyArr = orderedReminderKeys.split(',') as ReminderKey[];
 
     const [reorderMode, setReorderMode] = useState(false);
