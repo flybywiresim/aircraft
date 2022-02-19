@@ -42,121 +42,29 @@ export class AtcSystem {
         this.dcduLink = new DcduLink(parent, this);
     }
 
-        // initialize the variables for the DCDU communication
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE_UID', 'number', -1);
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', -1);
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', -1);
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number', -1);
-
-        setInterval(() => {
-            const cpdlcOnline = SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1;
-
-            if (this.cdplcResetRequired && !cpdlcOnline) {
-                if (this.currentAtc !== '') {
-                    this.logoff();
-                }
-                if (this.nextAtc !== '') {
-                    this.resetLogon();
-                }
-
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_RESET');
-                this.cdplcResetRequired = false;
-            } else if (cpdlcOnline) {
-                this.cdplcResetRequired = true;
-
-                this.handleDcduMessageSync();
-                this.handlePilotNotifications();
-
-                // check if we have to timeout the logon request
-                if (this.logonInProgress()) {
-                    const currentTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-                    const delta = currentTime - this.notificationTime;
-                    if (delta >= 300) {
-                        this.resetLogon();
-                    }
-                }
+    public resetAtc() {
+        if (this.cdplcResetRequired) {
+            if (this.currentAtc !== '') {
+                this.logoff();
             }
-        }, 100);
-    }
-
-    private handleDcduMessageSync() {
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE_UID', 'number') !== -1) {
-            this.removeMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE_UID', 'number'));
-            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE_UID', 'number', -1);
-        }
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number') !== -1 && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number') !== -1) {
-            this.sendResponse(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number'), SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number') as CpdlcMessageResponse);
-            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', -1);
-            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', -1);
-        }
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number') !== -1) {
-            const message = this.parent.findMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number'));
-            if (message !== undefined) {
-                this.parent.printMessage(message);
-            }
-            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number', -1);
-        }
-
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number') === 1) {
-            SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 0);
-            SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number', 0);
-        }
-
-        // check if the buffer of the DCDU is available
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
-            while (this.dcduBufferedMessages.length !== 0) {
-                if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') !== 0) {
-                    break;
-                }
-
-                const uid = this.dcduBufferedMessages.shift();
-                const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
-                if (message !== undefined) {
-                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
-                }
-            }
-        }
-    }
-
-    private handlePilotNotifications() {
-        const unreadMessages = SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_UNREAD_MSGS', 'number');
-
-        if (unreadMessages !== 0) {
-            const currentTime = new Date().getTime();
-            let callRing = false;
-
-            if (this.unreadMessagesLastCycle < unreadMessages) {
-                this.lastRingTime = 0;
-                callRing = true;
-            } else {
-                const delta = Math.round(Math.abs((currentTime - this.lastRingTime) / 1000));
-
-                if (delta >= 10) {
-                    this.lastRingTime = currentTime;
-                    callRing = SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean') === 1;
-                }
+            if (this.nextAtc !== '') {
+                this.resetLogon();
             }
 
-            if (callRing) {
-                SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
-                Coherent.call('PLAY_INSTRUMENT_SOUND', 'cpdlc_ring');
-                this.lastRingTime = currentTime;
-
-                // ensure that the timeout is longer than the sound
-                setTimeout(() => SimVar.SetSimVarValue('W:cpdlc_ring', 'boolean', 0), 2000);
-            }
-        } else {
-            SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 0);
+            this.cdplcResetRequired = false;
         }
-
-        this.unreadMessagesLastCycle = unreadMessages;
     }
 
     public async connect(flightNo: string): Promise<AtsuStatusCodes> {
         if (this.currentAtc !== '') {
-            return this.logoff().then(() => HoppieConnector.connect(flightNo));
+            await this.logoff();
         }
-        return HoppieConnector.connect(flightNo);
+        return HoppieConnector.connect(flightNo).then((code) => {
+            if (code === AtsuStatusCodes.Ok) {
+                this.cdplcResetRequired = true;
+            }
+            return code;
+        });
     }
 
     public async disconnect(): Promise<AtsuStatusCodes> {

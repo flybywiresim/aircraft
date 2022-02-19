@@ -48,6 +48,10 @@ export class Datalink {
         }
 
         setInterval(() => {
+            if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+                parent.atc.resetAtc();
+            }
+
             // update the internal timer
             if (this.overallDelay <= 200) {
                 this.overallDelay = 0;
