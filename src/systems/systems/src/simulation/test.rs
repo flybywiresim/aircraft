@@ -24,7 +24,9 @@ use super::{
 use crate::landing_gear::LandingGear;
 use crate::shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus};
 use crate::simulation::update_context::Delta;
-use crate::simulation::{DeltaContext, InitContext, VariableIdentifier, VariableRegistry};
+use crate::simulation::{
+    DeltaContext, InitContext, StartState, VariableIdentifier, VariableRegistry,
+};
 
 pub trait TestBed {
     type Aircraft: Aircraft;
@@ -201,10 +203,17 @@ pub struct SimulationTestBed<T: Aircraft> {
 }
 impl<T: Aircraft> SimulationTestBed<T> {
     pub fn new<U: FnOnce(&mut InitContext) -> T>(aircraft_ctor_fn: U) -> Self {
+        Self::new_with_start_state(Default::default(), aircraft_ctor_fn)
+    }
+
+    pub fn new_with_start_state<U: FnOnce(&mut InitContext) -> T>(
+        start_state: StartState,
+        aircraft_ctor_fn: U,
+    ) -> Self {
         let mut variable_registry = TestVariableRegistry::default();
         let mut test_bed = Self {
             reader_writer: TestReaderWriter::new(),
-            simulation: Simulation::new(aircraft_ctor_fn, &mut variable_registry),
+            simulation: Simulation::new(start_state, aircraft_ctor_fn, &mut variable_registry),
             variable_registry,
         };
 

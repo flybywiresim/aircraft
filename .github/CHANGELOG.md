@@ -157,6 +157,8 @@
 1. [ATC] Implement ident button and fix auto mode - @tracernz (Mike)
 1. [FLIGHTMODEL] Prevent default stall warning bool from being activated - @donstim (donbikes#4084)
 1. [EFB] Colored raw Metar in EFB weather widget - @frankkopp (Frank Kopp)
+1. [AP] Fix Target Altitude to be set in all FM requested modes - @IbrahimK42 (IbrahimK42)
+1. [AP] Fix G/S condition - @aguther (Andreas Guther)
 
 ## 0.7.0
 

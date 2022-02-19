@@ -455,7 +455,8 @@ mod tests {
     fn context(delta_time: Duration, altitude: Length) -> UpdateContext {
         let mut electricity = Electricity::new();
         let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+        let mut init_context =
+            InitContext::new(Default::default(), &mut electricity, &mut registry);
 
         UpdateContext::new(
             &mut init_context,
