@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 import { ExclamationCircleFill } from 'react-bootstrap-icons';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
-import Button, { BUTTON_TYPE } from '../../UtilComponents/Button/Button';
 import { SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
 
 import { BaseThrottleConfig } from './BaseThrottleConfig';

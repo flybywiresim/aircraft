@@ -51,9 +51,7 @@ import {
     addPinnedChart,
     isChartPinned,
 } from '../Store/features/navigationPage';
-import { PageLink, PageRedirect, pathify, TabRoutes } from '../Utils/routing';
-import { TODCalculator } from '../TODCalculator/TODCalculator';
-import { LandingWidget } from '../Performance/Widgets/LandingWidget';
+import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 
 type LocalFileChart = {
