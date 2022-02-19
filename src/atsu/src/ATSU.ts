@@ -4,7 +4,7 @@
 import { Datalink } from './com/Datalink';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { Atc } from './ATC';
-import { AocSystem } from './AocSystem';
+import { Aoc } from './AOC';
 import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
 
@@ -18,7 +18,7 @@ export class Atsu {
 
     private messageCounter = 0;
 
-    public aoc = new AocSystem(this.datalink);
+    public aoc = new Aoc(this.datalink);
 
     public atc = new Atc(this, this.datalink);
 
@@ -35,7 +35,7 @@ export class Atsu {
             return AtsuStatusCodes.Ok;
         }
 
-        let retvalAoc = await AocSystem.connect(flightNo);
+        let retvalAoc = await Aoc.connect(flightNo);
         if (retvalAoc === AtsuStatusCodes.Ok || retvalAoc === AtsuStatusCodes.TelexDisabled) {
             retvalAoc = AtsuStatusCodes.Ok;
         }
@@ -46,7 +46,7 @@ export class Atsu {
             if (retvalAtc === AtsuStatusCodes.Ok || retvalAtc === AtsuStatusCodes.NoHoppieConnection) {
                 retvalAtc = AtsuStatusCodes.Ok;
             } else {
-                AocSystem.disconnect();
+                Aoc.disconnect();
             }
         }
 
@@ -62,7 +62,7 @@ export class Atsu {
     }
 
     public async disconnectFromNetworks(): Promise<AtsuStatusCodes> {
-        let retvalAoc = await AocSystem.disconnect();
+        let retvalAoc = await Aoc.disconnect();
         if (retvalAoc === AtsuStatusCodes.Ok || retvalAoc === AtsuStatusCodes.NoTelexConnection) {
             retvalAoc = AtsuStatusCodes.Ok;
         }
@@ -90,7 +90,7 @@ export class Atsu {
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         let retval = AtsuStatusCodes.UnknownMessage;
 
-        if (AocSystem.isRelevantMessage(message)) {
+        if (Aoc.isRelevantMessage(message)) {
             retval = await this.aoc.sendMessage(message);
             if (retval === AtsuStatusCodes.Ok) {
                 this.registerMessage(message);
@@ -117,7 +117,7 @@ export class Atsu {
         message.UniqueMessageID = ++this.messageCounter;
         message.Timestamp = new AtsuTimestamp();
 
-        if (AocSystem.isRelevantMessage(message)) {
+        if (Aoc.isRelevantMessage(message)) {
             this.aoc.insertMessage(message);
         } else if (Atc.isRelevantMessage(message)) {
             this.atc.insertMessage(message);

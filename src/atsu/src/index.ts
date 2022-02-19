@@ -9,7 +9,7 @@ import { WeatherMessage } from './messages/WeatherMessage';
 import { MetarMessage } from './messages/MetarMessage';
 import { TafMessage } from './messages/TafMessage';
 import { AtisMessage, AtisType } from './messages/AtisMessage';
-import { AocSystem } from './AocSystem';
+import { Aoc } from './AOC';
 import { Atc } from './ATC';
 
 export {
@@ -31,6 +31,6 @@ export {
     TafMessage,
     AtisMessage,
     AtisType,
-    AocSystem,
+    Aoc,
     Atc,
 };
