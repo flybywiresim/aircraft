@@ -295,6 +295,34 @@ export class Vhf {
             console.log(`Relevant airports: ${this.airportsInRange}`);
             console.log(`Relevant frequencies SITA: ${this.frequencyOverlapSita}`);
             console.log(`Relevant frequencies ARINC: ${this.frequencyOverlapArinc}`);
+
+            // use the average over all reachable stations to estimate the datarate
+            this.arincDatarate = 0.0;
+            this.sitaDatarate = 0.0;
+
+            let arincCount = 0;
+            let sitaCount = 0;
+            this.airportsInRange.forEach((airport) => {
+                if (airport.SitaReachable) {
+                    this.sitaDatarate += airport.SimulatedDatarateSita;
+                    sitaCount += 1;
+                }
+
+                if (airport.ArincReachable) {
+                    this.arincDatarate += airport.SimulatedDatarateArinc;
+                    arincCount += 1;
+                }
+            });
+
+            if (sitaCount !== 0) {
+                this.sitaDatarate /= sitaCount;
+            }
+            if (arincCount !== 0) {
+                this.arincDatarate /= arincCount;
+            }
+
+            console.log(`ARINC datarate: ${this.arincDatarate}`);
+            console.log(`SITA datarate: ${this.sitaDatarate}`);
         });
     }
 }
