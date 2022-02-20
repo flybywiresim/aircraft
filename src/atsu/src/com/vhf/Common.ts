@@ -15,6 +15,9 @@ export class OwnAircraft extends Aircraft {
     public PressureAltitude = 0.0;
 }
 
+// maximum search range in NM
+export const MaxSearchRange = 400;
+
 // use a simple line of sight algorithm to calculate the maximum distance
 // it ignores the topolography, but simulates the earth curvature
 // reference: https://audio.vatsim.net/storage/AFV%20User%20Guide.pdf

@@ -4,7 +4,7 @@
 import { ATC } from '@flybywiresim/api-client';
 import { MathUtils } from '@shared/MathUtils';
 import { NXDataStore } from '@shared/persistence';
-import { OwnAircraft, maximumDistanceLoS } from './Common';
+import { MaxSearchRange, OwnAircraft, maximumDistanceLoS } from './Common';
 
 // worldwide international airports
 // assumptions: international airports provide VHDL communication (i.e. USA)
@@ -87,8 +87,8 @@ const VhfDatalinkAirports: string[] = [
     'YPDN', 'YAVV', 'YBCG', 'YMHB', 'YMML', 'YWLM', 'YPPH', 'YPPD', 'YBMC', 'YSSY', 'YBTL', 'YPXM', 'YPCC', 'NCRG', 'SCIP', 'NFFN', 'NFNA', 'NTAA',
     'PGUM', 'PLCH', 'NGTA', 'PKWA', 'PKMJ', 'PTKK', 'PTSA', 'PTPN', 'PTYA', 'ANAU', 'NWWW', 'NZAA', 'NZCH', 'NZQN', 'NZWN', 'YSNF', 'PGRO', 'PGSN',
     'PGWT', 'NIUE', 'PTRO', 'AYPY', 'AYMH', 'NSFA', 'AGGH', 'NFTF', 'NFTV', 'NGFU', 'NVSS', 'NVVV', 'NLWF', 'NLWW'];
+
 // filter parameters to find preselect conditional relevant stations
-const MaxSearchRange = 600;
 const MaxAirportsInRange = 50;
 
 // VDL frequencies and specifications
