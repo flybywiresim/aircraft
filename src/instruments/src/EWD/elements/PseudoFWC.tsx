@@ -3,6 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { NXDataStore } from '@shared/persistence';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useUpdate } from '@instruments/common/hooks';
+import { FailuresOrchestrator } from 'failures/src';
 
 const mapOrder = (array, order) => {
     array.sort((a, b) => {
@@ -140,8 +141,10 @@ const PseudoFWC: React.FC = () => {
     const [eng1FireTest] = useSimVar('L:A32NX_FIRE_TEST_ENG1', 'bool', 500);
     const [eng2FireTest] = useSimVar('L:A32NX_FIRE_TEST_ENG2', 'bool', 500);
     const [apuFireTest] = useSimVar('L:A32NX_FIRE_TEST_APU', 'bool', 500);
-    const [throttle1Position] = useSimVar('L:XMLVAR_Throttle1Position', 'number', 100);
-    const [throttle2Position] = useSimVar('L:XMLVAR_Throttle2Position', 'number', 100);
+    const [throttle1PositionActual] = useSimVar('L:XMLVAR_Throttle1Position', 'number', 100);
+    const [throttle2PositionActual] = useSimVar('L:XMLVAR_Throttle2Position', 'number', 100);
+    const throttle1Position = Math.floor(throttle1PositionActual);
+    const throttle2Position = Math.floor(throttle2PositionActual);
     const [engine1ValueSwitch] = useSimVar('FUELSYSTEM VALVE SWITCH:1', 'bool', 500);
     const [engine2ValueSwitch] = useSimVar('FUELSYSTEM VALVE SWITCH:2', 'bool', 500);
     const [parkingBrake] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'bool', 500);
@@ -206,7 +209,7 @@ const PseudoFWC: React.FC = () => {
     const [fac1Failed] = useSimVar('L:A32NX_FBW_FAC_FAILED:1', 'bool', 500);
 
     const emergencyGeneratorOn = emergencyElectricGeneratorPotential > 0 ? 1 : 0;
-    const landASAPRed = !onGround
+    const landASAPRed: boolean = !!(!onGround
     && (
         fireButton1 === 1
         || fireButton2 === 1
@@ -216,7 +219,7 @@ const PseudoFWC: React.FC = () => {
         || (greenLP === 1 && yellowLP === 1)
         || (yellowLP === 1 && blueLP === 1)
         || (greenLP === 1 && blueLP === 1)
-    );
+    ));
 
     const engDualFault = !onGround && (
         (fireButton1 === 1 && fireButton2)
@@ -231,8 +234,18 @@ const PseudoFWC: React.FC = () => {
     const [masterCautionButtonRight] = useSimVar('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool', 100);
     const [clearButtonLeft] = useSimVar('L:A32NX_BTN_CLR', 'bool', 100);
     const [clearButtonRight] = useSimVar('L:A32NX_BTN_CLR2', 'bool', 100);
+    const [recallButton] = useSimVar('L:A32NX_BTN_RCL', 'bool', 100);
     const [failures, setFailures] = useState<string[]>([]);
+    const [allCurrentFailures, setAllCurrentFailures] = useState<string[]>([]);
     const [recallFailures, setRecallFailures] = useState<string[]>([]);
+    const [activeFailure, setActiveFailure] = useState(1);
+    const [recallReset, setRecallReset] = useState(1);
+
+    const [autothrustLeverWarningFlex] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool', 500);
+    const [autothrustLeverWarningTOGA] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool', 500);
+    const thrustLeverNotSet = autothrustLeverWarningFlex === 1 || autothrustLeverWarningTOGA === 1;
+    const [antiskidActive] = useSimVar('ANTISKID BRAKES ACTIVE', 'bool', 500);
+    const [tcasFault] = useSimVar('L:A32NX_TCAS_FAULT', 'bool', 500);
 
     const masterWarning = (toggle: number) => {
         console.log(`Master warning and toggle is ${toggle}`);
@@ -246,28 +259,88 @@ const PseudoFWC: React.FC = () => {
     };
 
     useEffect(() => {
-        console.log(`Master caution${masterCautionButtonLeft}`);
-        console.log(`Master warning ${masterCautionButtonLeft}`);
-
         if (masterWarningButtonLeft === 1 || masterWarningButtonRight === 1) {
+            console.log(`Master caution${masterWarningButtonLeft}`);
             masterWarning(0);
         }
         if (masterCautionButtonLeft === 1 || masterCautionButtonRight === 1) {
+            console.log(`Master warning ${masterCautionButtonLeft}`);
             masterCaution(0);
         }
     }, [masterCautionButtonLeft, masterCautionButtonRight, masterWarningButtonLeft, masterWarningButtonRight]);
 
     useEffect(() => {
-        console.log(failures);
-        if (typeof failures !== 'undefined' && failures.length > 0) {
-            setRecallFailures((failures) => failures);
-            setFailures((failures) => failures.slice(1));
-        }
-        SimVar.SetSimVarValue('L:A32NX_BTN_CLR', 'Bool', 0);
-        SimVar.SetSimVarValue('L:A32NX_BTN_CLR2', 'Bool', 0);
-    }, [clearButtonLeft, clearButtonRight]);
+        console.log('Clear buttons pressed');
+        if (clearButtonLeft === 1 || clearButtonRight === 1) {
+            if (typeof failures !== 'undefined' && failures.length > 0) {
+                console.log('We have failures to remove');
+                const updatedFailures = failures.slice(1);
+                console.log('Failures are currently');
+                console.log(failures);
+                console.log('All current failures');
+                console.log(allCurrentFailures);
+                const updatedRecallFailures = allCurrentFailures.filter((item) => !updatedFailures.includes(item));
+                console.log('Recall failures updated to ');
+                console.log(updatedRecallFailures);
+                setRecallFailures(updatedRecallFailures);
+                setFailures(updatedFailures);
+                setActiveFailure(updatedFailures.length === 0 ? 0 : 1);
+                setRecallReset(1);
+            } else {
+                setRecallFailures([]);
+            }
 
-    const EWDMessageBoolean = {
+            SimVar.SetSimVarValue('L:A32NX_BTN_CLR', 'Bool', 0);
+            SimVar.SetSimVarValue('L:A32NX_BTN_CLR2', 'Bool', 0);
+        }
+        console.log(`Recall button is ${recallButton}`);
+        if (recallButton) {
+            console.log(`You pressed recall and recallFailures is ${JSON.stringify(recallFailures)}`);
+            if (recallFailures.length > 0) {
+                console.log('Inside recall');
+                const recall = recallFailures[0];
+                const updatedRecallFailures = recallFailures.slice(1);
+                console.log('Updated recall is ');
+                console.log(updatedRecallFailures);
+                const updatedFailures: string[] = failures.concat([recall]);
+                console.log('Updated failures is');
+                console.log(updatedFailures);
+                setRecallFailures(updatedRecallFailures);
+                setFailures(updatedFailures);
+                setRecallReset(0);
+            }
+        }
+    }, [clearButtonLeft, clearButtonRight, recallButton]);
+
+    useEffect(() => {
+        // console.log('Change in failure state');
+        if (typeof failures !== 'undefined' && failures.length > 0) {
+            if (activeFailure !== 1) {
+                setActiveFailure(1);
+            }
+        }
+        if (allCurrentFailures.length === 0) {
+            setActiveFailure(0);
+            setRecallFailures([]);
+        }
+    }, [failures]);
+
+    interface EWDItem {
+        flightPhaseInhib: number[],
+        simVarIsActive: () => boolean,
+        whichCodeToReturn: any[],
+        codesToReturn: string[],
+        memoInhibit: boolean,
+        failure: number,
+        sysPage: number,
+        side: string
+    }
+
+    interface EWDMessageBooleanDict {
+        [key: string] : EWDItem
+    }
+
+    const EWDMessageBoolean: EWDMessageBooleanDict = {
         '7700027': { // DUAL ENGINE FAILURE
             flightPhaseInhib: [],
             simVarIsActive: () => engDualFault === 1,
@@ -305,8 +378,8 @@ const PseudoFWC: React.FC = () => {
                 onGround ? 12 : null,
                 !onGround ? 13 : null,
                 // Fix this logic
-                !onGround && eng1Agent1PB === 1 && !agent2Eng2Discharge ? 14 : null,
-                (agent2Eng2Discharge && eng1Agent1PB === 0) || (!onGround && eng1Agent1PB === 1 && !agent2Eng2Discharge) ? 15 : null,
+                !onGround && eng1Agent1PB === 1 && !agent2Eng1Discharge ? 14 : null,
+                (agent2Eng1Discharge && eng1Agent1PB === 0) || (!onGround && eng1Agent1PB === 1 && !agent2Eng1Discharge) ? 15 : null,
             ],
             codesToReturn: ['260001001', '260001002', '260001003', '260001004', '260001005',
                 '260001006', '260001007', '260001008', '260001009', '260001010', '260001011',
@@ -316,7 +389,7 @@ const PseudoFWC: React.FC = () => {
             sysPage: 0,
             side: 'LEFT',
         },
-        '2600020': {
+        '2600020': { // ENG 2 FIRE
             flightPhaseInhib: [],
             simVarIsActive: () => eng2FireTest === 1 || fireButton2 === 1,
             whichCodeToReturn: [
@@ -345,7 +418,7 @@ const PseudoFWC: React.FC = () => {
             sysPage: 0,
             side: 'LEFT',
         },
-        '2600030': {
+        '2600030': { // APU FIRE
             flightPhaseInhib: [],
             simVarIsActive: () => apuFireTest === 1 || fireButtonAPU === 1,
             whichCodeToReturn: [
@@ -361,7 +434,63 @@ const PseudoFWC: React.FC = () => {
             sysPage: 6,
             side: 'LEFT',
         },
-        '0000010': {
+        '7700647': { // THR LEVERS NOT SET  (on ground)
+            flightPhaseInhib: [1, 4, 5, 6, 7, 8, 10],
+            simVarIsActive: () => [2, 3, 4, 8, 9].includes(flightPhase) && (
+                (throttle1Position !== 3 && thrustLeverNotSet) || (throttle2Position !== 3 && thrustLeverNotSet)
+            ),
+            whichCodeToReturn: [
+                0,
+                autothrustLeverWarningFlex === 1 ? 1 : null,
+                autothrustLeverWarningTOGA === 1 ? 2 : null,
+            ],
+            codesToReturn: ['770064701', '770064702', '770064703'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 9, // Should be -1
+            side: 'LEFT',
+        },
+        '7700642': { // THR LEVERS NOT SET  (in flight)
+            flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
+            simVarIsActive: () => throttle1Position === 4 || throttle2Position === 4,
+            whichCodeToReturn: [0, 1],
+            codesToReturn: ['770064201', '770064202'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 9,
+            side: 'LEFT',
+        },
+        '3200060': { // NW ANTI SKID INACTIVE
+            flightPhaseInhib: [4, 5],
+            simVarIsActive: () => antiskidActive === 0,
+            whichCodeToReturn: [0, 1],
+            codesToReturn: ['320006001', '320006002'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 9,
+            side: 'LEFT',
+        },
+        '3400500': { // TCAS FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: () => ![1, 10].includes(flightPhase) && tcasFault === 1,
+            whichCodeToReturn: [0],
+            codesToReturn: ['340050001'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        '3400507': { // NAV TCAS STBY (in flight)
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: () => flightPhase === 6 && tcasMode === 0,
+            whichCodeToReturn: [0],
+            codesToReturn: ['340050701'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        '0000010': { // T.O MEMO
             flightPhaseInhib: [1, 3, 6, 10],
             simVarIsActive: () => tomemo,
             whichCodeToReturn: [
@@ -373,12 +502,12 @@ const PseudoFWC: React.FC = () => {
                 toconfig ? 11 : 10,
             ],
             codesToReturn: ['000001001', '000001002', '000001003', '000001004', '000001005', '000001006', '000001007', '000001008', '000001009', '000001010', '000001011', '000001012'],
-            memoInhibit: false,
+            memoInhibit: failures.length > 0,
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
         },
-        '0000020': {
+        '0000020': { // LANDING MEMO
             flightPhaseInhib: [1, 2, 3, 4, 5, 9, 10],
             simVarIsActive: () => ldgmemo,
             whichCodeToReturn: [
@@ -392,7 +521,7 @@ const PseudoFWC: React.FC = () => {
                 gpwsFlaps3 === 1 && flapsHandle === 3 ? 11 : null,
             ],
             codesToReturn: ['000002001', '000002002', '000002003', '000002004', '000002005', '000002006', '000002007', '000002008', '000002009', '000002010', '000002011', '000002012'],
-            memoInhibit: false,
+            memoInhibit: failures.length > 0,
             failure: 0,
             sysPage: -1,
             side: 'LEFT',
@@ -438,7 +567,6 @@ const PseudoFWC: React.FC = () => {
                 whichCodeToReturn: [0],
                 codesToReturn: ['000005501'],
                 memoInhibit: tomemo === 1 || ldgmemo === 1,
-                failure: 0,
                 sysPage: -1,
                 side: 'LEFT',
             },
@@ -578,7 +706,7 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'RIGHT',
         },
-        '0000200':
+        '0000200': // PARK BRK
         {
             flightPhaseInhib: [3, 4, 5, 6, 7, 8],
             simVarIsActive: () => [1, 2, 9, 10].includes(flightPhase) && parkBrake === 1,
@@ -655,7 +783,7 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'RIGHT',
         },
-        '0000320':
+        '0000320': // TCAS STBY
         {
             flightPhaseInhib: [],
             simVarIsActive: () => tcasMode === 0 && flightPhase !== 6,
@@ -666,7 +794,7 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'RIGHT',
         },
-        '0000325':
+        '0000325': // TCAS STBY in flight
         {
             flightPhaseInhib: [],
             simVarIsActive: () => tcasMode === 0 && flightPhase === 6,
@@ -892,7 +1020,7 @@ const PseudoFWC: React.FC = () => {
                 setAgent2Eng1Discharge(true);
             }
         }
-        console.log(`TimeEng2Agent1 is ${timerEng2Agent1Timer}`);
+        // console.log(`TimeEng2Agent1 is ${timerEng2Agent1Timer}`);
         if (fireButton2 === 1 && timerEng2Agent1Timer !== -1) {
             if (timerEng2Agent1Timer > 0) {
                 if (deltaTime < 1000) {
@@ -928,7 +1056,7 @@ const PseudoFWC: React.FC = () => {
     useEffect(() => {
         console.log('TO Config check');
         if (tomemo) {
-        //  Note that fuel tank low pressure and gravity feed warnings are not included
+        // TODO Note that fuel tank low pressure and gravity feed warnings are not included
             let systemStatus = false;
             if (engine1Generator && engine2Generator && !greenLP && !yellowLP && !blueLP && eng1pumpPBisAuto && eng2pumpPBisAuto) {
                 systemStatus = true;
@@ -963,32 +1091,52 @@ const PseudoFWC: React.FC = () => {
     useEffect(() => {
         let tempMemoArrayLeft = memoMessageLeft;
         let tempMemoArrayRight = memoMessageRight;
+        let tempFailureArrayLeft: string[] = [];
+        const allFailureKeys: string[] = [];
+        const currentFailures = failures;
+        console.log('Rewrite triggered');
 
         for (const [key, value] of Object.entries(EWDMessageBoolean)) {
+            // console.log(`Key is ${key}`);
             if (value.simVarIsActive()) {
+                // console.log(`${key} is active`);
                 if (!value.memoInhibit && (failures.length === 0 || value.failure > 0)) {
-                    if (value.failure || !value.flightPhaseInhib.some((e) => e === flightPhase)) {
-                        if (value.failure > 0 && !failures.includes(key)) {
-                            console.log('New failure');
-                            setFailures([...failures, key]);
-                            if (value.failure === 3) {
-                                masterWarning(1);
+                    if (!value.flightPhaseInhib.some((e) => e === flightPhase)) {
+                        const newCode: string[] = [];
+                        if (value.failure > 0) {
+                            allFailureKeys.push(key);
+                            console.log('Recall failures is currently');
+                            console.log(recallFailures);
+                            if (!failures.includes(key) && !recallFailures.includes(key) && recallReset === 1) {
+                                console.log('New failure');
+                                currentFailures.push(key);
+                                if (value.failure === 3) {
+                                    masterWarning(1);
+                                }
+                                if (value.failure === 2) {
+                                    masterCaution(1);
+                                }
                             } else {
-                                masterCaution(1);
+                                console.log('Already have that failure');
+                            }
+                            if (!recallFailures.includes(key)) {
+                                const codeIndex = value.whichCodeToReturn.filter((e) => e !== null);
+                                codeIndex.forEach((e: number) => {
+                                    newCode.push(value.codesToReturn[e]);
+                                });
                             }
                         } else {
-                            console.log('Already have that failure');
+                            const codeIndex = value.whichCodeToReturn.filter((e) => e !== null);
+                            codeIndex.forEach((e: number) => {
+                                newCode.push(value.codesToReturn[e]);
+                            });
                         }
-                        const newCode: string[] = [];
-                        const codeIndex = value.whichCodeToReturn.filter((e) => e !== null);
-                        codeIndex.forEach((e: number) => {
-                            newCode.push(value.codesToReturn[e]);
-                        });
                         if (value.side === 'LEFT') {
-                            if ((value.failure > 0 && failures.includes(key)) || failures.length === 0) {
-                                const tempArrayLeft = tempMemoArrayLeft.filter((e) => !value.codesToReturn.includes(e));
-                                tempMemoArrayLeft = tempArrayLeft.concat(newCode);
-                            }
+                            const tempArrayLeft = tempMemoArrayLeft.filter((e) => !value.codesToReturn.includes(e));
+                            tempMemoArrayLeft = tempArrayLeft.concat(newCode);
+
+                            const tempFailureLeft = tempFailureArrayLeft.filter((e) => !value.codesToReturn.includes(e));
+                            tempFailureArrayLeft = tempFailureLeft.concat(newCode);
                         } else {
                             const tempArrayRight = tempMemoArrayRight.filter((e) => !value.codesToReturn.includes(e));
                             tempMemoArrayRight = tempArrayRight.concat(newCode);
@@ -1001,7 +1149,6 @@ const PseudoFWC: React.FC = () => {
                 }
             } else {
                 // Remove value if present
-                // console.log('Inside delete bit');
                 const codesToReturn = value.codesToReturn;
                 if (value.side === 'LEFT') {
                     const tempArrayLeft = tempMemoArrayLeft.filter((e) => !codesToReturn.includes(e));
@@ -1012,6 +1159,7 @@ const PseudoFWC: React.FC = () => {
                 }
             }
         }
+
         const mesgOrderLeft: string[] = [];
         const mesgOrderRight: string[] = [];
         for (const [key, value] of Object.entries(EWDMessageBoolean)) {
@@ -1022,11 +1170,26 @@ const PseudoFWC: React.FC = () => {
             }
         }
 
+        console.log('Current, All, Recall, Updated');
+        console.log(currentFailures);
+        console.log(allFailureKeys);
+        console.log(recallFailures);
+        const updatedFailures = currentFailures.filter((e) => allFailureKeys.includes(e) && !recallFailures.includes(e));
+        console.log(updatedFailures);
+        const updatedFailuresOrdered = mapOrder(updatedFailures, mesgOrderLeft);
+        if (updatedFailures.length > 0) {
+            console.log('Failures are going to swap out other messages');
+            console.log(tempFailureArrayLeft);
+            const orderedFailures = mapOrder(tempFailureArrayLeft, mesgOrderLeft);
+            tempMemoArrayLeft = orderedFailures;
+        }
         const orderedMemoArrayLeft = mapOrder(tempMemoArrayLeft, mesgOrderLeft);
         const orderedMemoArrayRight = mapOrder(tempMemoArrayRight, mesgOrderRight);
         // console.log(orderedMemoArray);
         setMemoMessageLeft(orderedMemoArrayLeft);
         setMemoMessageRight(orderedMemoArrayRight);
+        setAllCurrentFailures(allFailureKeys);
+        setFailures(updatedFailuresOrdered);
     }, [flightPhase, flightPhaseInhibitOverride,
         fuel, usrStartRefueling, engine1State, engine2State, spoilersArmed, seatBelt, noSmoking, configPortableDevices, strobeLightsOn, leftOuterInnerValve, rightOuterInnerValve,
         fobRounded, unit, gpwsFlapMode, autoBrake, flapsHandle, throttle1Position, throttle2Position, parkingBrake,
@@ -1041,27 +1204,22 @@ const PseudoFWC: React.FC = () => {
         apuAvail, apuBleedValveOpen, landingLight2Retracted, landingLight3Retracted,
         brakeFan, dmcSwitchingKnob, ndXfrKnob, gpwsFlaps3, autoBrakesArmedMode,
         manLandingElevation, fuelXFeedPBOn, ATTKnob, AIRKnob, emergencyGeneratorOn,
-        landASAPRed, engDualFault, fac1Failed, failures,
+        landASAPRed, engDualFault, fac1Failed, thrustLeverNotSet, antiskidActive,
+        tcasFault, activeFailure,
     ]);
 
     useEffect(() => {
-        console.log('Inside memoMessage LEFT');
-        console.log(JSON.stringify(memoMessageLeft));
         [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
             SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${value}`, 'string', '');
         });
         if (memoMessageLeft.length > 0) {
             memoMessageLeft.forEach((value, index) => {
-                // console.log(`Value for L:A32NX_EWD_LOWER_LEFT_LINE_${index + 1}`);
-                // console.log(parseInt(value));
                 SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_LEFT_LINE_${index + 1}`, 'string', value);
             });
         }
     }, [memoMessageLeft]);
 
     useEffect(() => {
-        console.log('Inside memoMessage RIGHT');
-        console.log(JSON.stringify(memoMessageRight));
         [1, 2, 3, 4, 5, 6, 7].forEach((value) => {
             SimVar.SetSimVarValue(`L:A32NX_EWD_LOWER_RIGHT_LINE_${value}`, 'string', '');
         });

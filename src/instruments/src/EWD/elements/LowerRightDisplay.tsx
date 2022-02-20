@@ -1,7 +1,7 @@
 import EWDMessageParser from '@instruments/common/EWDMessageParser';
 import EWDMessages from '@instruments/common/EWDMessages';
 import { useSimVar } from '@instruments/common/simVars';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 const padEWDCode = (code: number) => code.toString().padStart(9, '0');
 
@@ -27,11 +27,6 @@ export const LowerRightDisplay: React.FC<LowerRightDisplayProps> = ({ x, y }) =>
         EWDMessages[padEWDCode(line6)],
         EWDMessages[padEWDCode(line7)],
     ].join('\r');
-
-    useEffect(() => {
-        console.log(`Inside Lower Right Display and Line 1 is ${line1}`);
-        console.log(padEWDCode(line1));
-    }, [line1]);
 
     return (
         <g id="LowerRightDisplay">
