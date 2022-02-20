@@ -1395,15 +1395,26 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             this.socket = undefined;
         }
 
-        this.socket = new WebSocket(`ws://127.0.0.1:${port}`);
+        const url = `ws://127.0.0.1:${port}`;
+
+        this.socket = new WebSocket(url);
+
+        this.socket.onerror = () => {
+            console.log(`WebSocket connection error. Maybe MCDU Server disconnected? (${url})`);
+        };
+
+        this.socket.onclose = () => {
+            console.log(`Websocket connection to MCDU Server closed. (${url})`);
+        };
 
         this.socket.onopen = () => {
+            console.log(`Websocket connection to MCDU Server established. (${url})`);
             (new NXNotif).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
             this.sendToSocket("mcduConnected");
             this.sendUpdate();
         };
 
-        this.socket.addEventListener('message', (event) => {
+        this.socket.onmessage = (event) => {
             const message = event.data;
             if (message.startsWith("event:")) {
                 SimVar.SetSimVarValue(`H:A320_Neo_CDU_1_BTN_${message.substring(6)}`, "number", 0);
@@ -1412,7 +1423,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             if (message === "requestUpdate") {
                 this.sendUpdate();
             }
-        });
+        };
     }
 
     /**
