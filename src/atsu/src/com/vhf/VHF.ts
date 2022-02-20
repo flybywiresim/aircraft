@@ -1,7 +1,10 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { ATC } from '@flybywiresim/api-client';
 import { MathUtils } from '@shared/MathUtils';
+import { NXDataStore } from '@shared/persistence';
+import { OwnAircraft, maximumDistanceLoS } from './Common';
 
 // worldwide international airports
 // assumptions: international airports provide VHDL communication (i.e. USA)
@@ -88,61 +91,33 @@ const VhfDatalinkAirports: string[] = [
 const MaxSearchRange = 600;
 const MaxAirportsInRange = 50;
 
-// VHDL frequencies
+// VDL frequencies and specifications
 const SitaFrequency = 137.975;
 const ArincFrequency = 137.275;
+const VdlMaxDatarate = 2400; // 2400 b/s
 
 // physical parameters to simulate the signal quality
+const AdditiveNoiseOverlapDB = 1.4;
 const MinimumSignalDB = 35.0;
 const OptimalSignalDB = 75.0;
 const ReceiverAntennaGainDBI = 25.0;
 // is equal to 50W emitter power
 const SignalStrengthDBW = 39.1202;
-const MaxAllowedFrequencyDampingDB = SignalStrengthDBW + ReceiverAntennaGainDBI + MinimumSignalDB;
-
-interface NPCPlane {
-    name: string,
-    uId: number,
-    lat: number,
-    lon: number,
-    alt: number,
-    heading: number
-}
-
-class Aircraft {
-    public Latitude = 0.0;
-
-    public Longitude = 0.0;
-
-    public Altitude = 0.0;
-}
-
-class OwnAircraft extends Aircraft {
-    public AltitudeAboveGround = 0.0;
-
-    public PressureAltitude = 0.0;
-}
-
-class RemoteAircraft extends Aircraft {
-    public UniqueId = '';
-
-    public Seen = false;
-
-    constructor(traffic: NPCPlane) {
-        super();
-        this.UniqueId = traffic.uId.toFixed(0);
-        this.Latitude = traffic.lat;
-        this.Longitude = traffic.lon;
-        this.Altitude = traffic.alt;
-    }
-}
 
 class Airport {
     public Latitude = 0.0;
 
     public Longitude = 0.0;
 
-    public Icao = 0.0;
+    public Icao = '';
+
+    public SitaReachable = false;
+
+    public ArincReachable = false;
+
+    public SimulatedDatarateSita = 0.0;
+
+    public SimulatedDatarateArinc = 0.0;
 }
 
 /*
@@ -157,11 +132,11 @@ export class Vhf {
 
     private presentPosition: OwnAircraft = new OwnAircraft();
 
-    private relevantFrequencies: number[] = [];
+    private frequencyOverlapSita: number = 0;
+
+    private frequencyOverlapArinc: number = 0;
 
     private airportsInRange: Airport[] = [];
-
-    private aircraftsInRange: RemoteAircraft[] = [];
 
     private updatePresentPosition() {
         this.presentPosition.Latitude = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
@@ -179,11 +154,36 @@ export class Vhf {
         return (4.0 * Math.PI * meters * (frequency * 1000000) / 299792458) ** 2.0;
     }
 
-    // use a simple line of sight algorithm to calculate the maximum distance
-    // it ignores the topolography, but simulates the earth curvature
-    // reference: https://audio.vatsim.net/storage/AFV%20User%20Guide.pdf
-    private maximumDistanceLoS(altitude: number): number {
-        return 1.23 * Math.sqrt(Math.abs(this.presentPosition.PressureAltitude - altitude));
+    // calculates the simulated received signal strength
+    private receivedSignalPower(overlappingFrequencies: number): number {
+        return SignalStrengthDBW + ReceiverAntennaGainDBI - AdditiveNoiseOverlapDB * overlappingFrequencies;
+    }
+
+    private estimateDatarate(sita: boolean, distance: number, airport: Airport): boolean {
+        const signalPower = this.receivedSignalPower(sita ? this.frequencyOverlapSita : this.frequencyOverlapArinc);
+        const freespaceLoss = this.freespacePathLoss(sita ? SitaFrequency : ArincFrequency, distance);
+        const snr = signalPower - freespaceLoss;
+
+        if (snr >= MinimumSignalDB) {
+            // get the quality ratio normalized by the simulated signal power range
+            const qualityRatio = Math.min(1.0, (snr - MinimumSignalDB) / (OptimalSignalDB - MinimumSignalDB));
+
+            // use a sigmoid function to estimate the scaling of the datarate
+            // parametrized to jump from 1.0 to 0.02 (y) between 0.0 and 1.0 (x)
+            // minimum scaling is 10% of the optimal datarate
+            // inverse of quality ratio is needed to estimate the quality loss
+            const scaling = Math.max(0.1, 1.0 / (Math.exp(9.0 * (1.0 - qualityRatio) - 5.0) + 1.0));
+
+            if (sita) {
+                airport.SimulatedDatarateSita = VdlMaxDatarate * scaling;
+            } else {
+                airport.SimulatedDatarateArinc = VdlMaxDatarate * scaling;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private async updateRelevantAirports(): Promise<void> {
@@ -209,7 +209,7 @@ export class Vhf {
 
                 // found an international airport
                 if (VhfDatalinkAirports.findIndex((elem) => elem === icao) !== -1) {
-                    const maxDistance = this.maximumDistanceLoS(fetched[3]);
+                    const maxDistance = maximumDistanceLoS(this.presentPosition.PressureAltitude, fetched[3]);
                     const distance = MathUtils.computeDistance3D(fetched[0], fetched[1], fetched[3],
                         this.presentPosition.Latitude, this.presentPosition.Longitude, this.presentPosition.PressureAltitude);
 
@@ -218,45 +218,75 @@ export class Vhf {
                         airport.Latitude = fetched[0];
                         airport.Longitude = fetched[1];
                         airport.Icao = icao;
-                        this.airportsInRange.push(airport);
+
+                        airport.ArincReachable = this.estimateDatarate(false, distance, airport);
+                        airport.SitaReachable = this.estimateDatarate(true, distance, airport);
+
+                        if (airport.ArincReachable || airport.SitaReachable) {
+                            this.airportsInRange.push(airport);
+                        }
                     }
                 }
             });
         });
     }
 
-    private async updateRemoteAircrafts(): Promise<void> {
-        await Coherent.call('GET_AIR_TRAFFIC').then((obj: NPCPlane[]) => {
-            this.aircraftsInRange.forEach((aircraft) => aircraft.Seen = false);
+    private greatCircleDistance(latitude: number, longitude: number): number {
+        const deg2rad = (deg) => deg * (Math.PI / 180);
 
-            obj.forEach((traffic) => {
-                // skip invalid aircraft
-                if (!traffic.lat || !traffic.lon || !traffic.alt || !traffic.uId) {
-                    return;
-                }
+        const R = 6371; // Radius of the earth in km
+        const dLat = deg2rad(this.presentPosition.Latitude - latitude); // deg2rad below
+        const dLon = deg2rad(this.presentPosition.Longitude - longitude);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+              + Math.cos(deg2rad(latitude)) * Math.cos(deg2rad(this.presentPosition.Latitude))
+              * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const d = R * c * 0.5399568; // Distance in nm
 
-                let aircraft: RemoteAircraft | undefined = this.aircraftsInRange.find((elem) => elem && elem.UniqueId === traffic.uId.toFixed(0));
-                if (!aircraft) {
-                    aircraft = new RemoteAircraft(traffic);
-                    this.aircraftsInRange.push(aircraft);
-                }
+        return d;
+    }
 
-                aircraft.Seen = true;
-            });
+    private async updateUsedVoiceFrequencies(): Promise<void> {
+        const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA').toLowerCase();
+        this.frequencyOverlapArinc = 0;
+        this.frequencyOverlapSita = 0;
 
-            if (obj.length !== 0) {
-                this.aircraftsInRange = this.aircraftsInRange.filter((aircraft) => {
-                    if (aircraft.Seen === true) {
-                        const maxDistance = this.maximumDistanceLoS(aircraft.Altitude);
-                        const distance = MathUtils.computeDistance3D(aircraft.Latitude, aircraft.Longitude, aircraft.Altitude,
-                            this.presentPosition.Latitude, this.presentPosition.Longitude, this.presentPosition.PressureAltitude);
-                        return distance <= maxDistance;
+        if (storedAtisSrc === 'vatsim' || storedAtisSrc === 'ivao') {
+            ATC.get(storedAtisSrc).then((res) => {
+                if (!res) return;
+
+                res = res.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975 && this.greatCircleDistance(a.latitude, a.longitude) <= MaxSearchRange);
+                res.forEach((controller) => {
+                    const frequency = parseFloat(controller.frequency);
+
+                    if (frequency >= SitaFrequency - 0.009 && frequency <= SitaFrequency + 0.009) {
+                        // check 8.33 kHz spacing for SITA
+                        this.frequencyOverlapSita += 1;
+                    } else if (frequency >= ArincFrequency - 0.009 && frequency <= ArincFrequency + 0.009) {
+                        // check 8.33 kHz spacing for ARINC
+                        this.frequencyOverlapArinc += 1;
+                    } else if (frequency >= SitaFrequency - 0.025 && frequency <= SitaFrequency + 0.025) {
+                        // check the direct 25 kHz neighbors for SITA
+                        this.frequencyOverlapSita += 1;
+                    } else if (frequency >= ArincFrequency - 0.025 && frequency <= ArincFrequency + 0.025) {
+                        // check the direct 25 kHz neighbors for ARINC
+                        this.frequencyOverlapArinc += 1;
                     }
-                    return false;
                 });
-            }
+            });
+        }
+    }
 
-            return obj.length !== 0;
+    private async updateRemoteData(): Promise<void> {
+        return this.updateUsedVoiceFrequencies().then(() => this.updateRelevantAirports());
+    }
+
+    public calculateVhdl3Slots() {
+        this.updatePresentPosition();
+        this.updateRemoteData().then(() => {
+            console.log(`Relevant airports: ${this.airportsInRange}`);
+            console.log(`Relevant frequencies SITA: ${this.frequencyOverlapSita}`);
+            console.log(`Relevant frequencies ARINC: ${this.frequencyOverlapArinc}`);
         });
     }
 }
