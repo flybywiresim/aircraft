@@ -55,8 +55,8 @@ export const ATC = () => {
             allAtc.push({ callsign: 'UNICOM', frequency: '122.800', type: apiClient.AtcType.RADAR, visualRange: 999999, distance: 0, latitude: 0, longitude: 0, textAtis: [] });
 
             setControllers(allAtc.filter((a) => a.distance <= a.visualRange));
-        } catch (_) {
-            toast.error(_);
+        } catch (e) {
+            toast.error(e.message);
         }
 
         setAtcDataPending(false);
