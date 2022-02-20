@@ -187,11 +187,8 @@ export class Vhf {
         requestBatch.add('C:fs9gps:NearestAirportCurrentICAO', 'string', 'string');
         requestBatch.add('C:fs9gps:WaypointAirportElevation', 'feet');
 
-        const acLat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
-        const acLon = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
-
-        await SimVar.SetSimVarValue('C:fs9gps:NearestAirportCurrentLatitude', 'degree latitude', acLat);
-        await SimVar.SetSimVarValue('C:fs9gps:NearestAirportCurrentLongitude', 'degree longitude', acLon);
+        await SimVar.SetSimVarValue('C:fs9gps:NearestAirportCurrentLatitude', 'degree latitude', this.presentPosition.Latitude);
+        await SimVar.SetSimVarValue('C:fs9gps:NearestAirportCurrentLongitude', 'degree longitude', this.presentPosition.Longitude);
         await SimVar.SetSimVarValue('C:fs9gps:NearestAirportMaximumItems', 'number', Vhf.MaxAirportsInRange);
         await SimVar.SetSimVarValue('C:fs9gps:NearestAirportMaximumDistance', 'nautical miles', Vhf.MaxDatalinkDistance);
 
