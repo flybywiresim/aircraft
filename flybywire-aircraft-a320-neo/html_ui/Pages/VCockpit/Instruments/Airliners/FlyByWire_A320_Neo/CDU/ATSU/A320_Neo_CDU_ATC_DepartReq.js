@@ -6,8 +6,8 @@ class CDUAtcDepartReq {
             mcdu.pdcMessage = new Atsu.PdcMessage();
         }
 
-        let flightNo = "______[color]amber";
-        let fromTo = "____|____[color]amber";
+        let flightNo = "-------[color]white";
+        let fromTo = "----|----[color]white";
         const atis = new CDU_SingleValueField(mcdu,
             "string",
             mcdu.pdcMessage.Atis,
@@ -72,11 +72,11 @@ class CDUAtcDepartReq {
 
         mcdu.setTemplate([
             ["DEPART REQUEST"],
-            ["ATC FLT NBR", "A/C TYPE"],
+            ["\xa0ATC FLT NBR", "A/C TYPE\xa0"],
             [flightNo, "A20N[color]cyan"],
-            ["FROM/TO"],
+            ["\xa0FROM/TO"],
             [fromTo],
-            ["GATE", "ATIS"],
+            ["\xa0GATE", "ATIS\xa0"],
             [gate, atis],
             ["---------FREE TEXT---------"],
             [freetext],

@@ -7,8 +7,8 @@ class CDUAocDepartReq {
             mcdu.pdcMessage = new Atsu.PdcMessage();
         }
 
-        let flightNo = "______[color]amber";
-        let fromTo = "____|____[color]amber";
+        let flightNo = "-------[color]white";
+        let fromTo = "----|----[color]white";
         let station = "____[color]amber";
         const atis = new CDU_SingleValueField(mcdu,
             "string",
@@ -60,9 +60,13 @@ class CDUAocDepartReq {
             mcdu.pdcMessage.Callsign = mcdu.atsuManager.flightNumber();
             flightNo = mcdu.pdcMessage.Callsign + "[color]green";
         }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
+        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             mcdu.pdcMessage.Origin = mcdu.flightPlanManager.getOrigin().ident;
+        }
+        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
             mcdu.pdcMessage.Destination = mcdu.flightPlanManager.getDestination().ident;
+        }
+        if (mcdu.pdcMessage.Origin !== "" && mcdu.pdcMessage.Destination !== "") {
             fromTo = mcdu.pdcMessage.Origin + "/" + mcdu.pdcMessage.Destination + "[color]cyan";
         }
         if (mcdu.pdcMessage.Station !== "") {
@@ -77,17 +81,17 @@ class CDUAocDepartReq {
 
         mcdu.setTemplate([
             ["DEPART REQUEST"],
-            ["ATC FLT NBR", "A/C TYPE"],
+            ["\xa0ATC FLT NBR", "A/C TYPE\xa0"],
             [flightNo, "A20N[color]cyan"],
-            ["FROM/TO", "ATIS"],
+            ["\xa0FROM/TO", "ATIS\xa0"],
             [fromTo, atis],
-            ["GATE", "STATION"],
+            ["\xa0GATE", "STATION\xa0"],
             [gate, station],
             ["---------FREE TEXT---------"],
             [freetext],
             ["", "MORE\xa0"],
             ["", "FREE TEXT>[color]white"],
-            ["\xa0AOC MENU", store["sendStatus"]],
+            ["\xa0AOC MENU", `${store["sendStatus"]}\xa0`],
             ["<RETURN", reqDisplButton]
         ]);
 

@@ -82,8 +82,8 @@ class CDUAtcMessage {
             [`{small}${lines[offset + 6] ? lines[offset + 6] : ""}{end}`],
             [`${lines[offset + 7] ? lines[offset + 7] : ""}`],
             [`{small}${lines[offset + 8] ? lines[offset + 8] : ""}{end}`],
-            ["RETURN TO"],
-            ["<RCVD MSGS", "PRINT*[color]cyan"]
+            ["\xa0MSG RECORD"],
+            ["<RETURN", "PRINT*[color]cyan"]
         ]);
 
         mcdu.onNextPage = () => {
