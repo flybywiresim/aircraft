@@ -46,23 +46,6 @@ const GIT_COMMIT_SHA = process.env.GITHUB_SHA
 const MS_FILETIME_EPOCH = 116444736000000000n;
 const A32NX = path.resolve(__dirname, '..', 'flybywire-aircraft-a320-neo');
 
-const contentEntries = [];
-let totalPackageSize = 0;
-
-for (const filename of readdir(A32NX)) {
-    const stat = fs.statSync(filename, { bigint: true });
-    contentEntries.push({
-        path: path.relative(A32NX, filename.replace(path.sep, '/')),
-        size: Number(stat.size),
-        date: Number((stat.mtimeNs / 100n) + MS_FILETIME_EPOCH),
-    });
-    totalPackageSize += Number(stat.size);
-}
-
-fs.writeFileSync(path.join(A32NX, 'layout.json'), JSON.stringify({
-    content: contentEntries,
-}, null, 2));
-
 const edition = require('../package.json').edition;
 
 let titlePostfix;
@@ -78,13 +61,6 @@ if (edition === 'stable') {
     titlePostfix = `branch ${GIT_BRANCH}`;
 }
 const title = `A32NX (${titlePostfix})`;
-
-fs.writeFileSync(path.join(A32NX, 'manifest.json'), JSON.stringify({
-    ...require('../manifest-base.json'),
-    title: title,
-    package_version: require('../package.json').version + `-${GIT_COMMIT_SHA}`,
-    total_package_size: totalPackageSize.toString().padStart(20, '0'),
-}, null, 2));
 
 // This copies one of two prepared DDS files from the src folder
 // (src/Textures/decals 4k/) to the aircraft folder
@@ -115,3 +91,27 @@ if (edition === 'stable') {
 } else {
     copyDDSFiles('/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-red.dds');
 }
+
+const contentEntries = [];
+let totalPackageSize = 0;
+
+for (const filename of readdir(A32NX)) {
+    const stat = fs.statSync(filename, { bigint: true });
+    contentEntries.push({
+        path: path.relative(A32NX, filename.replace(path.sep, '/')),
+        size: Number(stat.size),
+        date: Number((stat.mtimeNs / 100n) + MS_FILETIME_EPOCH),
+    });
+    totalPackageSize += Number(stat.size);
+}
+
+fs.writeFileSync(path.join(A32NX, 'layout.json'), JSON.stringify({
+    content: contentEntries,
+}, null, 2));
+
+fs.writeFileSync(path.join(A32NX, 'manifest.json'), JSON.stringify({
+    ...require('../manifest-base.json'),
+    title: title,
+    package_version: require('../package.json').version + `-${GIT_COMMIT_SHA}`,
+    total_package_size: totalPackageSize.toString().padStart(20, '0'),
+}, null, 2));
