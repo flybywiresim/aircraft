@@ -8,16 +8,6 @@
     position: relative;
 }
 
-.AppDark {
-    --app-width: min(100vw, calc(var(--vh) * var(--aspect-ratio)));
-    --app-height: calc(min(var(--vh), calc(100vw * calc(1 / var(--aspect-ratio)))) - calc(var(--app-width) * var(--top-padding)));
-    height: var(--app-height);
-    padding-top: calc(var(--app-width) * var(--top-padding));
-    left: calc(50vw - calc(var(--app-width) / 2));
-    width: var(--app-width);
-    position: relative;
-}
-
 .normal {
   --aspect-ratio: calc(1290/2000);
   --top-padding: .146;
@@ -25,15 +15,8 @@
 }
 
 .normal .App {
-  background-image: url("mcdu-a32nx.png");
   background-size: contain;
   background-repeat: no-repeat;
-}
-
-.normal .AppDark {
-    background-image: url("mcdu-a32nx-dark.png");
-    background-size: contain;
-    background-repeat: no-repeat;
 }
 
 .fullscreen {

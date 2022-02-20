@@ -60,9 +60,14 @@ function App() {
         }
     }, [lastMessage]);
 
+    let backgroundImageUrl = 'mcdu-a32nx.png';
+    if (dark) {
+        backgroundImageUrl = 'mcdu-a32nx-dark.png';
+    }
+
     return (
         <div className={fullscreen ? 'fullscreen' : 'normal'}>
-            <div className={dark ? 'AppDark' : 'App'}>
+            <div className="App" style={{ backgroundImage: `url(${backgroundImageUrl})` }}>
                 <WebsocketContext.Provider value={{ sendMessage, lastMessage, readyState }}>
                     {!fullscreen && (
                         <>
