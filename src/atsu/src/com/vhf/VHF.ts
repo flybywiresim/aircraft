@@ -189,6 +189,7 @@ export class Vhf {
     }
 
     private async updateRelevantAirports(): Promise<void> {
+        this.stationsUpperAirspace = 0;
         this.airportsInRange = [];
 
         // prepare the request with the information
@@ -227,6 +228,11 @@ export class Vhf {
                         if (airport.ArincReachable || airport.SitaReachable) {
                             this.airportsInRange.push(airport);
                         }
+                    }
+
+                    // assume that all upper stations are reachable within the maximum range
+                    if (distance <= MaxSearchRange) {
+                        this.stationsUpperAirspace += 1;
                     }
                 }
             });
