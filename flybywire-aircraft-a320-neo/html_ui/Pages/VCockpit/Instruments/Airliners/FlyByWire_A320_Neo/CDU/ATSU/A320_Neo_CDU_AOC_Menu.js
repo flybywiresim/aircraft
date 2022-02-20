@@ -8,13 +8,13 @@ class CDUAocMenu {
             ["<INIT/PRES", "FREE TEXT>"],
             ["", ""],
             ["<WX REQUEST", "DEPART REQ>"],
-            ["", "RECEIVED"],
+            ["", "RECEIVED\xa0"],
             ["<ATIS", "MESSAGES>"],
-            ["", "SENT"],
+            ["", "SENT\xa0"],
             ["<W/B[color]white", "MESSAGES>"],
             [""],
             ["", "DIVERSION>[color]inop"],
-            ["ATSU DLK"],
+            ["\xa0ATSU DLK"],
             ["<RETURN", "MISC>[color]inop"]
         ]);
 

@@ -64,17 +64,70 @@ impl VariableIdentifier {
     }
 }
 
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd)]
+pub enum StartState {
+    Hangar,
+    Apron,
+    Taxi,
+    Runway,
+    Climb,
+    Cruise,
+    Approach,
+    Final,
+}
+
+impl From<f64> for StartState {
+    fn from(value: f64) -> Self {
+        match value {
+            x if x < 0.9 => Default::default(),
+            x if x < 1.9 => Self::Hangar,
+            x if x < 2.9 => Self::Apron,
+            x if x < 3.9 => Self::Taxi,
+            x if x < 4.9 => Self::Runway,
+            x if x < 5.9 => Self::Climb,
+            x if x < 6.9 => Self::Cruise,
+            x if x < 7.9 => Self::Approach,
+            x if x < 8.9 => Self::Final,
+            _ => Default::default(),
+        }
+    }
+}
+
+impl From<StartState> for f64 {
+    fn from(state: StartState) -> Self {
+        match state {
+            StartState::Hangar => 1.,
+            StartState::Apron => 2.,
+            StartState::Taxi => 3.,
+            StartState::Runway => 4.,
+            StartState::Climb => 5.,
+            StartState::Cruise => 6.,
+            StartState::Approach => 7.,
+            StartState::Final => 8.,
+        }
+    }
+}
+
+impl Default for StartState {
+    fn default() -> Self {
+        Self::Cruise
+    }
+}
+
 pub struct InitContext<'a> {
+    start_state: StartState,
     electrical_identifier_provider: &'a mut dyn ElectricalElementIdentifierProvider,
     registry: &'a mut dyn VariableRegistry,
 }
 
 impl<'a> InitContext<'a> {
     pub fn new(
+        start_state: StartState,
         electricity: &'a mut impl ElectricalElementIdentifierProvider,
         registry: &'a mut impl VariableRegistry,
     ) -> Self {
         Self {
+            start_state,
             electrical_identifier_provider: electricity,
             registry,
         }
@@ -82,6 +135,33 @@ impl<'a> InitContext<'a> {
 
     pub fn get_identifier(&mut self, name: String) -> VariableIdentifier {
         self.registry.get(name)
+    }
+
+    pub fn start_state(&self) -> StartState {
+        self.start_state
+    }
+
+    pub fn is_in_flight(&self) -> bool {
+        matches!(
+            self.start_state,
+            StartState::Climb | StartState::Cruise | StartState::Approach | StartState::Final
+        )
+    }
+
+    pub fn is_on_ground(&self) -> bool {
+        !self.is_in_flight()
+    }
+
+    pub fn has_engines_running(&self) -> bool {
+        matches!(
+            self.start_state,
+            StartState::Taxi
+                | StartState::Runway
+                | StartState::Climb
+                | StartState::Cruise
+                | StartState::Approach
+                | StartState::Final
+        )
     }
 }
 
@@ -282,11 +362,12 @@ pub struct Simulation<T: Aircraft> {
 }
 impl<T: Aircraft> Simulation<T> {
     pub fn new<U: FnOnce(&mut InitContext) -> T>(
+        start_state: StartState,
         aircraft_ctor_fn: U,
         registry: &mut impl VariableRegistry,
     ) -> Self {
         let mut electricity = Electricity::new();
-        let mut context = InitContext::new(&mut electricity, registry);
+        let mut context = InitContext::new(start_state, &mut electricity, registry);
         let update_context = UpdateContext::new_for_simulation(&mut context);
         Self {
             aircraft: (aircraft_ctor_fn)(&mut context),
@@ -340,7 +421,7 @@ impl<T: Aircraft> Simulation<T> {
     /// #     }
     /// # }
     /// let mut registry = MyVariableRegistry::new();
-    /// let mut simulation = Simulation::new(MyAircraft::new, &mut registry);
+    /// let mut simulation = Simulation::new(Default::default(), MyAircraft::new, &mut registry);
     /// let mut reader_writer = MySimulatorReaderWriter::new();
     /// // For each frame, call the tick function.
     /// simulation.tick(Duration::from_millis(50), &mut reader_writer)
@@ -683,6 +764,7 @@ read_write_uom!(Angle, degree);
 read_write_uom!(AngularVelocity, revolution_per_minute);
 
 read_write_into!(MachNumber);
+read_write_into!(StartState);
 
 impl<T: Reader> Read<f64> for T {
     fn convert(&mut self, value: f64) -> f64 {
@@ -717,5 +799,135 @@ impl<T: Reader> Read<Duration> for T {
 impl<T: Writer> Write<Duration> for T {
     fn convert(&mut self, value: Duration) -> f64 {
         value.as_secs_f64()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    mod start_state {
+        use super::*;
+        use fxhash::FxHashMap;
+        use ntest::assert_about_eq;
+
+        #[rstest]
+        #[case(1., StartState::Hangar)]
+        #[case(2., StartState::Apron)]
+        #[case(3., StartState::Taxi)]
+        #[case(4., StartState::Runway)]
+        #[case(5., StartState::Climb)]
+        #[case(6., StartState::Cruise)]
+        #[case(7., StartState::Approach)]
+        #[case(8., StartState::Final)]
+        fn converts_to_and_from_f64(#[case] value: f64, #[case] expected: StartState) {
+            assert_eq!(expected, value.into());
+            assert_about_eq!(value, f64::from(expected));
+        }
+
+        #[test]
+        fn default_is_cruise() {
+            assert_eq!(StartState::Cruise, Default::default());
+        }
+
+        #[test]
+        fn converts_0_f64_to_default() {
+            assert_eq!(StartState::default(), (0.).into())
+        }
+
+        #[test]
+        fn converts_greater_than_8_point_9_f64_to_default() {
+            assert_eq!(StartState::default(), (9.).into());
+            assert_eq!(StartState::default(), (f64::MAX).into());
+        }
+
+        #[test]
+        fn includes_partial_ord_operators() {
+            assert!(StartState::Climb < StartState::Cruise);
+        }
+
+        #[test]
+        fn includes_hash() {
+            let mut hashmap: FxHashMap<StartState, bool> = FxHashMap::default();
+            hashmap.insert(StartState::Climb, true);
+        }
+    }
+
+    mod init_context {
+        use super::*;
+        use test::TestVariableRegistry;
+
+        #[rstest]
+        #[case(StartState::Climb)]
+        #[case(StartState::Cruise)]
+        #[case(StartState::Approach)]
+        #[case(StartState::Final)]
+        fn is_in_flight_when(#[case] start_state: StartState) {
+            let mut electricity = Electricity::new();
+            let mut registry: TestVariableRegistry = Default::default();
+            let context = InitContext::new(start_state, &mut electricity, &mut registry);
+            assert!(context.is_in_flight());
+        }
+
+        #[rstest]
+        #[case(StartState::Hangar)]
+        #[case(StartState::Apron)]
+        #[case(StartState::Taxi)]
+        #[case(StartState::Runway)]
+        fn is_not_in_flight_when(#[case] start_state: StartState) {
+            let mut electricity = Electricity::new();
+            let mut registry: TestVariableRegistry = Default::default();
+            let context = InitContext::new(start_state, &mut electricity, &mut registry);
+            assert!(!context.is_in_flight());
+        }
+
+        #[rstest]
+        #[case(StartState::Hangar)]
+        #[case(StartState::Apron)]
+        #[case(StartState::Taxi)]
+        #[case(StartState::Runway)]
+        fn is_on_ground_when(#[case] start_state: StartState) {
+            let mut electricity = Electricity::new();
+            let mut registry: TestVariableRegistry = Default::default();
+            let context = InitContext::new(start_state, &mut electricity, &mut registry);
+            assert!(context.is_on_ground());
+        }
+
+        #[rstest]
+        #[case(StartState::Climb)]
+        #[case(StartState::Cruise)]
+        #[case(StartState::Approach)]
+        #[case(StartState::Final)]
+        fn is_not_on_ground_when(#[case] start_state: StartState) {
+            let mut electricity = Electricity::new();
+            let mut registry: TestVariableRegistry = Default::default();
+            let context = InitContext::new(start_state, &mut electricity, &mut registry);
+            assert!(!context.is_on_ground());
+        }
+
+        #[rstest]
+        #[case(StartState::Taxi)]
+        #[case(StartState::Runway)]
+        #[case(StartState::Climb)]
+        #[case(StartState::Cruise)]
+        #[case(StartState::Approach)]
+        #[case(StartState::Final)]
+        fn has_engines_running_when(#[case] start_state: StartState) {
+            let mut electricity = Electricity::new();
+            let mut registry: TestVariableRegistry = Default::default();
+            let context = InitContext::new(start_state, &mut electricity, &mut registry);
+            assert!(context.has_engines_running());
+        }
+
+        #[rstest]
+        #[case(StartState::Hangar)]
+        #[case(StartState::Apron)]
+        fn does_not_have_engines_running_when(#[case] start_state: StartState) {
+            let mut electricity = Electricity::new();
+            let mut registry: TestVariableRegistry = Default::default();
+            let context = InitContext::new(start_state, &mut electricity, &mut registry);
+            assert!(!context.has_engines_running());
+        }
     }
 }
