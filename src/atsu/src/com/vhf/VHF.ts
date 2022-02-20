@@ -4,7 +4,7 @@
 import { ATC } from '@flybywiresim/api-client';
 import { MathUtils } from '@shared/MathUtils';
 import { NXDataStore } from '@shared/persistence';
-import { MaxSearchRange, OwnAircraft, maximumDistanceLoS } from './Common';
+import { MaxSearchRange, OwnAircraft, VdlMaxDatarate, maximumDistanceLoS } from './Common';
 
 // worldwide international airports
 // assumptions: international airports provide VHDL communication (i.e. USA)
@@ -94,7 +94,6 @@ const MaxAirportsInRange = 50;
 // VDL frequencies and specifications
 const SitaFrequency = 137.975;
 const ArincFrequency = 137.275;
-const VdlMaxDatarate = 31500; // 31.5 kb/s
 
 // physical parameters to simulate the signal quality
 const AdditiveNoiseOverlapDB = 1.4;

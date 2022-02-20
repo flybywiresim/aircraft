@@ -17,6 +17,8 @@ export class OwnAircraft extends Aircraft {
 
 // maximum search range in NM
 export const MaxSearchRange = 400;
+// maximum datarate under optimal conditions: 31.5 kb/s
+export const VdlMaxDatarate = 31500;
 
 // use a simple line of sight algorithm to calculate the maximum distance
 // it ignores the topolography, but simulates the earth curvature
