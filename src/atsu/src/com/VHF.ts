@@ -166,6 +166,17 @@ export class Vhf {
         this.presentPosition.PressureAltitude = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
     }
 
+    private maximumDistanceLoS(altitude: number): number {
+        // use a simple line of sight algorithm to calculate the maximum distance
+        // it ignores the topolography, but simulates the earth curvature
+        // reference: https://audio.vatsim.net/storage/AFV%20User%20Guide.pdf
+        let distance = 1.23 * Math.sqrt(Math.abs(this.presentPosition.PressureAltitude - altitude));
+        if (distance > Vhf.MaxDatalinkDistance) {
+            distance = Vhf.MaxDatalinkDistance;
+        }
+        return distance;
+    }
+
     private async updateRelevantAirports(): Promise<void> {
         this.airportsInRange = [];
 
