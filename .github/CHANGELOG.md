@@ -158,6 +158,9 @@
 1. [AP] Fix Target Altitude to be set in all FM requested modes - @IbrahimK42 (IbrahimK42)
 1. [AP] Fix G/S condition - @aguther (Andreas Guther)
 1. [DUs] Override MSFS menu animation setting for display units - @tracernz (Mike)
+1. [AP] Furhter improved FLARE law for various conditions - @aguther (Andreas Guther)
+1. [SOUNDS] Use estimated landing rate for touchdown sound selection - @aguther (Andreas Guther)
+1. [ATHR] Increase spool up/down speed for THR IDLE and THR CLB to better match real plane - @aguther (Andreas Guther)
 
 ## 0.7.0
 
