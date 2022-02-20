@@ -143,6 +143,10 @@ export class Vhf {
 
     private static MaxAirportsInRange = 50;
 
+    private recListener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_MAPS', () => {
+        this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', true);
+    });
+
     private presentPosition: OwnAircraft = new OwnAircraft();
 
     private airportsInRange: Airport[] = [];
@@ -238,9 +242,10 @@ export class Vhf {
             if (obj.length !== 0) {
                 this.aircraftsInRange = this.aircraftsInRange.filter((aircraft) => {
                     if (aircraft.Seen === true) {
+                        const maxDistance = this.maximumDistanceLoS(aircraft.Altitude);
                         const distance = MathUtils.computeDistance3D(aircraft.Latitude, aircraft.Longitude, aircraft.Altitude,
                             this.presentPosition.Latitude, this.presentPosition.Longitude, this.presentPosition.PressureAltitude);
-                        return distance <= Vhf.MaxDatalinkDistance;
+                        return distance <= maxDistance;
                     }
                     return false;
                 });
