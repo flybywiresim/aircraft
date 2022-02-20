@@ -47,6 +47,7 @@ const NXSystemMessages = {
     newCrzAlt:              new McduMessage("NEW CRZ ALT - HHHHH", false, true, "HHHHH"),
     noIntersectionFound:    new McduMessage("NO INTERSECTION FOUND", false, false),
     notAllowed:             new McduMessage("NOT ALLOWED", false, false),
+    notAllowedInNav:        new McduMessage("NOT ALLOWED IN NAV", false, false),
     notInDatabase:          new McduMessage("NOT IN DATABASE", false, false),
     rwyLsMismatch:          new McduMessage("RWY/LS MISMATCH", true, true),
     selectDesiredSystem:    new McduMessage("SELECT DESIRED SYSTEM", false, false),

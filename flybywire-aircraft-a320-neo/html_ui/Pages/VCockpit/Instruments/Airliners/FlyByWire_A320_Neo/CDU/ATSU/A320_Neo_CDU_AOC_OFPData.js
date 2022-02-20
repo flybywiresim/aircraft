@@ -198,8 +198,8 @@ class CDUAocOfpData {
             [buildStationValue(paxStations.rows14_21), buildTotalCargoValue()],
             [paxStations.rows22_29.name, "OFP REQUEST"],
             [buildStationValue(paxStations.rows22_29), requestButton],
-            ["", "BOARDING"],
-            ["<AOC MENU", loadButton]
+            ["\xa0AOC MENU", "BOARDING\xa0"],
+            ["<RETURN", loadButton]
         ];
         mcdu.setTemplate(display);
 

@@ -2,18 +2,18 @@ class CDUAtcConnection {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.setTemplate([
-            ["CONNECTION"],
+            ["\xa0CONNECTION"],
             [""],
             ["<NOTIFICATION"],
             [""],
             [""],
-            ["CONNECTION"],
+            ["\xa0CONNECTION"],
             ["<STATUS"],
             [""],
             [""],
-            ["", "MAX UPLINK\xa0[color]inop"],
-            ["", "DELAY>[color]inop"],
-            ["ATC MENU"],
+            ["", "MAX UPLINK\xa0"],
+            ["", "DELAY>"],
+            ["\xa0ATC MENU"],
             ["<RETURN"]
         ]);
 
@@ -36,6 +36,13 @@ class CDUAtcConnection {
         };
         mcdu.onLeftInput[5] = () => {
             CDUAtcMenu.ShowPage1(mcdu);
+        };
+
+        mcdu.rightInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[4] = () => {
+            CDUAtcMaxUplinkDelay.ShowPage(mcdu);
         };
     }
 }

@@ -131,8 +131,6 @@
 1. [AP] Improved LOC ALGIN and ROLL OUT during Autoland - @aguther (Andreas Guther)
 1. [HYD] Simple hydraulic model placeholder for flaps and slats - @Crocket63
 1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
-1. [EFB] Added Hoppie configuration to ATSU/ATC page - @svengcz (Sven Czarnian)
-1. [EFB] Added Datalink simulation rate - @svengcz (Sven Czarnian)
 1. [ATSU] Add PDC/CPDLC communication via Hoppie - @svengcz (Sven Czarnian)
 1. [AP] Fix: adjustment of vertical speed limitation in SPD/MACH law - @IbrahimK42 (IbrahimK42)
 1. [HYD] Ailerons hydraulic control (only visual and hydraulics) - @Crocket63
@@ -159,6 +157,7 @@
 1. [EFB] Colored raw Metar in EFB weather widget - @frankkopp (Frank Kopp)
 1. [AP] Fix Target Altitude to be set in all FM requested modes - @IbrahimK42 (IbrahimK42)
 1. [AP] Fix G/S condition - @aguther (Andreas Guther)
+1. [DUs] Override MSFS menu animation setting for display units - @tracernz (Mike)
 1. [FLIGHTMODEL] Flight model improvements - @donstim (donbikes#4084)
 
 ## 0.7.0
