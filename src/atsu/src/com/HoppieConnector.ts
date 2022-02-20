@@ -167,7 +167,7 @@ export class HoppieConnector {
             const metadata = entries[0].split(' ');
             const sender = metadata[0].toUpperCase();
             const type = metadata[1].toLowerCase();
-            const content = entries[1].replace(/{/, '').replace(/}/, '');
+            const content = entries[1].replace(/{/, '').replace(/}/, '').toUpperCase();
 
             switch (type) {
             case 'telex':
