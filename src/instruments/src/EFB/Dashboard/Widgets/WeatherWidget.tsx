@@ -64,7 +64,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const source = metarSource === 'MSFS' ? 'MS' : metarSource;
     const [metarError, setErrorMetar] = useState('NO VALID ICAO CHOSEN');
-    const [usingColordMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
+    const [usingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
 
     const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
         .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
@@ -244,7 +244,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                         {metar.raw_text
                                             ? (
                                                 <>
-                                                    {usingColordMetar
+                                                    {usingColoredMetar
                                                         ? (
                                                             <>
                                                                 <ColoredMetar metar={metar} />
