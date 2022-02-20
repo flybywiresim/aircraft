@@ -292,7 +292,8 @@ export class Vhf {
     public async calculateDatarates(): Promise<void> {
         this.updatePresentPosition();
         return this.updateRemoteData().then(() => {
-            console.log(`Relevant airports: ${this.airportsInRange}`);
+            console.log(`Relevant airports: ${this.relevantAirports}`);
+            console.log(`Upper sector airports: ${this.stationsUpperAirspace}`);
             console.log(`Relevant frequencies SITA: ${this.frequencyOverlapSita}`);
             console.log(`Relevant frequencies ARINC: ${this.frequencyOverlapArinc}`);
 
