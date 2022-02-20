@@ -826,7 +826,7 @@ const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
     const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
-    const [usingColordMetar, setUsingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
+    const [usingColoredMetar, setUsingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
 
     return (
         <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
@@ -845,7 +845,7 @@ const FlyPadPage = () => {
             <div className="py-4 flex flex-row justify-between items-center">
                 <span className="text-lg text-gray-300">Colored Metar</span>
                 <div className="flex flex-row items-center py-1.5">
-                    <Toggle value={!!usingColordMetar} onToggle={(value) => setUsingColoredMetar(value ? 1 : 0)} />
+                    <Toggle value={!!usingColoredMetar} onToggle={(value) => setUsingColoredMetar(value ? 1 : 0)} />
                 </div>
             </div>
         </div>
