@@ -126,9 +126,11 @@ class Airport {
  * - The SNR is simulated and the resulting datarate is defined per airport
  */
 export class Vhf {
-    private recListener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_MAPS', () => {
-        this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', true);
-    });
+    public stationsUpperAirspace: number = 0;
+
+    public sitaDatarate: number = 0.0;
+
+    public arincDatarate: number = 0.0;
 
     private presentPosition: OwnAircraft = new OwnAircraft();
 
