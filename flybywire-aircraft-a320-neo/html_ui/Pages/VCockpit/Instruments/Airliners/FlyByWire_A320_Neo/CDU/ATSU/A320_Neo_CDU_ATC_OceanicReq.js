@@ -180,7 +180,7 @@ class CDUAtcOceanicReq {
                 if (number < 10) {
                     number *= 10;
                 }
-                store.requestedMach = `.${number}`;
+                store.requestedMach = `M.${number}`;
                 CDUAtcOceanicReq.ShowPage1(mcdu, store);
             });
         const requestedFlightlevel = new CDU_SingleValueField(mcdu,
