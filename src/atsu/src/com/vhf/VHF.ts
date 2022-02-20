@@ -138,7 +138,7 @@ export class Vhf {
 
     private frequencyOverlapArinc: number = 0;
 
-    private airportsInRange: Airport[] = [];
+    public relevantAirports: Airport[] = [];
 
     private updatePresentPosition() {
         this.presentPosition.Latitude = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
@@ -190,7 +190,7 @@ export class Vhf {
 
     private async updateRelevantAirports(): Promise<void> {
         this.stationsUpperAirspace = 0;
-        this.airportsInRange = [];
+        this.relevantAirports = [];
 
         // prepare the request with the information
         const requestBatch = new SimVar.SimVarBatch('C:fs9gps:NearestAirportItemsNumber', 'C:fs9gps:NearestAirportCurrentLine');
@@ -226,7 +226,7 @@ export class Vhf {
                         airport.SitaReachable = this.estimateDatarate(true, distance, airport);
 
                         if (airport.ArincReachable || airport.SitaReachable) {
-                            this.airportsInRange.push(airport);
+                            this.relevantAirports.push(airport);
                         }
                     }
 
@@ -302,7 +302,7 @@ export class Vhf {
 
             let arincCount = 0;
             let sitaCount = 0;
-            this.airportsInRange.forEach((airport) => {
+            this.relevantAirports.forEach((airport) => {
                 if (airport.SitaReachable) {
                     this.sitaDatarate += airport.SimulatedDatarateSita;
                     sitaCount += 1;
