@@ -22,10 +22,10 @@ class A32NX_Boarding {
         const inDeveloperState = SimVar.GetSimVarValue("L:A32NX_DEVELOPER_STATE", "Bool");
         if (!inDeveloperState) {
             // Set default pax (0)
-            this.setPax(0);
-            this.loadPaxPayload();
-            this.loadCargoZero();
-            this.loadCargoPayload();
+            await this.setPax(0);
+            await this.loadPaxPayload();
+            await this.loadCargoZero();
+            await this.loadCargoPayload();
         }
     }
 
