@@ -281,10 +281,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         super.onUpdate(_deltaTime);
 
         if (this.minPageUpdateThrottler.canUpdate(_deltaTime) !== -1 && this.updateRequest) {
-            console.log("Main: onUpdate: " + _deltaTime);
             this.updateRequest = false;
             if (this.pageRedrawCallback) {
-                console.log("Main: pageRedrawCallback: " + pageRedrawCallback.toString());
                 this.pageRedrawCallback();
             }
         }
@@ -1395,10 +1393,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (this.socket && this.socket.readyState) {
             this.socket.close();
             this.socket = undefined;
-        }
-
-        if (this.socketTimeout) {
-            clearTimeout(this.socketTimeout);
         }
 
         this.socket = new WebSocket(`ws://127.0.0.1:${port}`);
