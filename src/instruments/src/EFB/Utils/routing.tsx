@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Route, Redirect } from 'react-router-dom';
+import React, { memo, useEffect, useRef, useState } from 'react';
+import { Route, Redirect, useHistory } from 'react-router-dom';
 
 export interface PageLink {
     name: string;
@@ -25,8 +25,20 @@ export const TabRoutes = ({ basePath, tabs }: PageRouteProps) => {
     );
 };
 
-export const PageRedirect = ({ basePath, tabs }: PageRouteProps) => (
-    <Route exact path={basePath}>
-        <Redirect to={`${basePath}/${pathify(tabs[0].name)}`} />
-    </Route>
-);
+export const PageRedirect = ({ basePath, tabs }: PageRouteProps) => {
+    const history = useHistory();
+    const redirectPathname = useRef((() => {
+        // @ts-ignore
+        const historyEntries: {pathname: string, search: string, hash: string, state: any, key: string}[] = history.entries;
+
+        const lastSeenPathname = [...historyEntries].reverse().find(({ pathname }) => pathname.includes(`${basePath}/`))?.pathname;
+
+        return lastSeenPathname ?? `${basePath}/${pathify(tabs[0].name)}`;
+    })());
+
+    return (
+        <Route exact path={basePath}>
+            <Redirect to={redirectPathname.current} />
+        </Route>
+    );
+};
