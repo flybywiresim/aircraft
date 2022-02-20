@@ -195,21 +195,20 @@ export class Vhf {
         // get all airports
         SimVar.GetSimVarArrayValues(requestBatch, (airports) => {
             airports.forEach((fetched) => {
+                // format: 'TYPE(one char) ICAO '
+                const icao = fetched[2].substr(2).trim();
+
                 // found an international airport
-                if (Vhf.VhfDatalinkAirports.findIndex((elem) => elem === fetched[2])) {
-                    // use a simple line of sight algorithm to calculate the maximum distance
-                    // it ignores the topolography, but simulates the earth curvature
-                    // reference: https://audio.vatsim.net/storage/AFV%20User%20Guide.pdf
-                    const maxDistance = 1.23 * Math.sqrt(Math.abs(this.presentPosition.PressureAltitude - fetched[3]));
+                if (Vhf.VhfDatalinkAirports.findIndex((elem) => elem === icao) !== -1) {
+                    const maxDistance = this.maximumDistanceLoS(fetched[3]);
                     const distance = MathUtils.computeDistance3D(fetched[0], fetched[1], fetched[3],
                         this.presentPosition.Latitude, this.presentPosition.Longitude, this.presentPosition.PressureAltitude);
 
-                    if (maxDistance >= distance) {
+                    if (distance <= maxDistance) {
                         const airport = new Airport();
                         airport.Latitude = fetched[0];
                         airport.Longitude = fetched[1];
-                        airport.Icao = fetched[2];
-
+                        airport.Icao = icao;
                         this.airportsInRange.push(airport);
                     }
                 }
