@@ -13,7 +13,7 @@ function canInitiateDes(distanceToDestination: number): boolean {
 }
 
 export class FlightPhaseManager {
-    private activePhase = SimVar.GetSimVarValue('L:A32NX_INITIAL_FLIGHT_PHASE', 'number') || FmgcFlightPhase.Preflight;
+    private activePhase: FmgcFlightPhase = SimVar.GetSimVarValue('L:A32NX_INITIAL_FLIGHT_PHASE', 'number') || FmgcFlightPhase.Preflight;
 
     private phases: { [key in FmgcFlightPhase]: Phase } = {
         [FmgcFlightPhase.Preflight]: new PreFlightPhase(),
