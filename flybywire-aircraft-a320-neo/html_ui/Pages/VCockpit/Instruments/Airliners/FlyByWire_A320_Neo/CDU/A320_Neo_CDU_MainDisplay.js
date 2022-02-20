@@ -96,10 +96,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             ATCConnection: 62,
             ATCNotification: 63,
             ATCConnectionStatus: 64,
-            ClimbWind: 65,
-            CruiseWind: 66,
-            DescentWind: 67,
-            FixInfoPage: 68,
+            ATSUMenu: 65,
+            ATSUDatalinkStatus: 66,
+            ClimbWind: 67,
+            CruiseWind: 68,
+            DescentWind: 69,
+            FixInfoPage: 70,
         };
     }
 

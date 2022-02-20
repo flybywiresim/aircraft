@@ -8,6 +8,7 @@ export enum AltitudeConstraintType {
     range,
 }
 
+// TODO at and atOrAbove do not exist in the airbus (former interpreted as atOrBelow, latter discarded)
 export enum SpeedConstraintType {
     at,
     atOrAbove,
