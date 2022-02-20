@@ -122,8 +122,8 @@ class Airport {
 
 /*
  * Simulates the physical effects of the VHF communication
- * - Aircrafts and stations in the area are taken into acount
- * - Altitude and therefore a simulated multi-path reflection is simulated
+ * - All international airports in a LoS range are taken into account
+ * - The SNR is simulated and the resulting datarate is defined per airport
  */
 export class Vhf {
     private recListener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_MAPS', () => {
