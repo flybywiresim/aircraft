@@ -49,8 +49,6 @@ export class Vdl {
 
     private perPacketDelay: number[] = Array(DatalinkProviders.ProviderCount).fill(500);
 
-    private a32nxDatarates: number[] = Array(DatalinkProviders.ProviderCount).fill(20.0);
-
     private updatePresentPosition() {
         this.presentPosition.Latitude = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         this.presentPosition.Longitude = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
@@ -97,7 +95,6 @@ export class Vdl {
             }
             if (!connectionAvailable) {
                 this.perPacketDelay = Array(DatalinkProviders.ProviderCount).fill(500);
-                this.a32nxDatarates = Array(DatalinkProviders.ProviderCount).fill(5.0);
                 return;
             }
 
@@ -126,7 +123,7 @@ export class Vdl {
             // add the A32NX and the ground stations into the list of relevant aircrafts
             relevantAircrafts += 1 + this.vhf3.relevantAirports.length;
 
-            this.a32nxDatarates = Array(DatalinkProviders.ProviderCount).fill(0.0);
+            this.perPacketDelay = Array(DatalinkProviders.ProviderCount).fill(0);
             for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {
                 // calculate the number of available slots based on data rate and floor due to broken slots
                 let messageCount = Math.floor(DataslotsPerSecond * Math.min(1.0, this.vhf3.datarates[i] / BitsOfChunksPerSecond));
@@ -138,11 +135,10 @@ export class Vdl {
                 const messageCountPerAircraft = messageCount / relevantAircrafts;
 
                 // calculate the data rates and the time between two own packets
-                this.perPacketDelay[i] = Math.round(1000 / messageCount + 0.5);
-                this.a32nxDatarates[i] = messageCountPerAircraft * BytesPerSlot;
+                this.perPacketDelay[i] = Math.round(1000 / messageCountPerAircraft + 0.5);
             }
 
-            console.log(`Per aircraft (staitons: ${relevantAircrafts}) datarates: ${this.a32nxDatarates}, packet delay: ${this.perPacketDelay}`);
+            console.log(`Per aircraft (staitons: ${relevantAircrafts}) packet delay: ${this.perPacketDelay}`);
         }));
     }
 
