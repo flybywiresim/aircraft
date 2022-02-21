@@ -96,6 +96,7 @@ export const PFD: React.FC = () => {
 
     const heading = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`);
     const groundTrack = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_TRACK`);
+    const groundSpeed = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_GROUND_SPEED`);
 
     const radioAlt = getSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet');
     const decisionHeight = getSimVar('L:AIRLINER_DECISION_HEIGHT', 'feet');
@@ -173,6 +174,17 @@ export const PFD: React.FC = () => {
                     decisionHeight={decisionHeight}
                     isAttExcessive={isAttExcessive}
                 />
+                <AttitudeIndicatorFixedCenter
+                    pitch={pitch}
+                    roll={roll}
+                    vs={inertialVerticalSpeed}
+                    gs={groundSpeed}
+                    heading={heading}
+                    track={groundTrack}
+                    isOnGround={isOnGround}
+                    FDActive={FDActive}
+                    isAttExcessive={isAttExcessive}
+                />
                 <path
                     id="Mask1"
                     className="BackgroundFill"
@@ -198,7 +210,6 @@ export const PFD: React.FC = () => {
                 />
                 <LandingSystem LSButtonPressed={lsButtonPressed} />
                 <AttitudeIndicatorFixedUpper pitch={pitch} roll={roll} />
-                <AttitudeIndicatorFixedCenter pitch={pitch} roll={roll} isOnGround={isOnGround} FDActive={FDActive} isAttExcessive={isAttExcessive} />
                 <VerticalSpeedIndicator radioAlt={radioAlt} verticalSpeed={verticalSpeed} />
                 <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
                 <AltitudeIndicatorOfftape altitude={altitude} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
