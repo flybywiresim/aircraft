@@ -302,10 +302,6 @@ export class Vhf {
             for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {
                 if (stationCount[i] !== 0) this.datarates[i] /= stationCount[i];
             }
-
-            for (let i = 0; i < this.frequencyOverlap.length; ++i) {
-                console.log(`Datarate for ${i}: ${this.datarates[i]}`);
-            }
         }));
     }
 }
