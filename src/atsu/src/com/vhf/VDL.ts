@@ -1,6 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { FmgcFlightPhase } from '@shared/flightphase';
 import { MathUtils } from '@shared/MathUtils';
 import { AtsuMessage, AtsuMessageSerializationFormat } from '../../messages/AtsuMessage';
 import { DatalinkProviders, OwnAircraft, MaxSearchRange } from './Common';
@@ -78,9 +79,9 @@ export class Vdl {
         }).catch(console.error);
     }
 
-    public calculateA32NXDatarate() {
+    public calculateA32NXDatarate(flightPhase: FmgcFlightPhase) {
         this.updatePresentPosition();
-        this.vhf3.calculateDatarates().then(() => this.updateRemoteAircrafts().then(() => {
+        this.vhf3.calculateDatarates(flightPhase).then(() => this.updateRemoteAircrafts().then(() => {
             // check if now VHF connection is available
             let connectionAvailable = false;
             for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {

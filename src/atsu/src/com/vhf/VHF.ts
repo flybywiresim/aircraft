@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { ATC } from '@flybywiresim/api-client';
+import { FmgcFlightPhase } from '@shared/flightphase';
 import { NXDataStore } from '@shared/persistence';
 import { DatalinkConfiguration, DatalinkProviders, MaxSearchRange, OwnAircraft, VdlMaxDatarate } from './Common';
 
@@ -139,9 +140,18 @@ export class Vhf {
         return 10.0 * Math.log10((4.0 * Math.PI * meters * (frequency * 1000000) / 299792458) ** 2.0);
     }
 
-    private estimateDatarate(type: DatalinkProviders, distance: number, airport: Airport): void {
+    private estimateDatarate(type: DatalinkProviders, distance: number, flightPhase: FmgcFlightPhase, airport: Airport): void {
         const maximumFreespaceLoss = SignalStrengthDBW + ReceiverAntennaGainDBI - AdditiveNoiseOverlapDB * (this.frequencyOverlap[type]) - MaximumDampingDB;
-        const freespaceLoss = this.freespacePathLoss(DatalinkConfiguration[type], distance);
+        let freespaceLoss = this.freespacePathLoss(DatalinkConfiguration[type], distance);
+
+        // simulate the influence of buildings
+        if (flightPhase === FmgcFlightPhase.Preflight || flightPhase === FmgcFlightPhase.Done) {
+            // assume that buildings are close the aircraft -> add a loss of 30 dB to simulate the influence of buildings
+            freespaceLoss += 30;
+        } else if (flightPhase === FmgcFlightPhase.Takeoff || flightPhase === FmgcFlightPhase.GoAround || flightPhase === FmgcFlightPhase.Approach) {
+            // assume that high buildings are in the vicinity of the aircraft -> add a loss of 15 dB to simulate the influence of buildings
+            freespaceLoss += 15;
+        }
 
         if (maximumFreespaceLoss >= freespaceLoss) {
             const lossDelta = maximumFreespaceLoss - freespaceLoss;
@@ -160,7 +170,7 @@ export class Vhf {
         }
     }
 
-    private async updateRelevantAirports(): Promise<void> {
+    private async updateRelevantAirports(flightPhase: FmgcFlightPhase): Promise<void> {
         // use a simple line of sight algorithm to calculate the maximum distance
         // it ignores the topolography, but simulates the earth curvature
         // reference: https://audio.vatsim.net/storage/AFV%20User%20Guide.pdf
@@ -202,7 +212,7 @@ export class Vhf {
 
                             let validAirport = false;
                             for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {
-                                this.estimateDatarate(i as DatalinkProviders, distanceNM, airport);
+                                this.estimateDatarate(i as DatalinkProviders, distanceNM, flightPhase, airport);
                                 validAirport = validAirport || airport.Datarates[i as DatalinkProviders][0];
                             }
 
@@ -270,10 +280,10 @@ export class Vhf {
 
     // calculates the data rates on the frequencies of the datalink providers
     // based on current distances and interferences
-    public async calculateDatarates(): Promise<void> {
+    public async calculateDatarates(flightPhase: FmgcFlightPhase): Promise<void> {
         this.updatePresentPosition();
 
-        return this.updateUsedVoiceFrequencies().then(() => this.updateRelevantAirports().then(() => {
+        return this.updateUsedVoiceFrequencies().then(() => this.updateRelevantAirports(flightPhase).then(() => {
             console.log(`Relevant airports: ${JSON.stringify(this.relevantAirports)}`);
 
             // use the average over all reachable stations to estimate the datarate
