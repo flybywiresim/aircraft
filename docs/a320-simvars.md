@@ -1696,6 +1696,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates the selected heading on the FCU, instantly updated
     - In case of managed heading mode, the value is -1
 
+- A32NX_AUTOPILOT_H_DOT_RADIO
+    - Number (Feet per minute)
+    - Indicates the current estimated vertical speed relative to the runway
+    - Important: the signal is only usable above the runway and is not to be used elsewhere
+
 - A32NX_FCU_SPD_MANAGED_DASHES
   - Boolean
   - Indicates if managed speed/mach mode is active and a numerical value is not displayed
