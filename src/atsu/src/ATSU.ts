@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { FmgcFlightPhase } from '@shared/flightphase';
 import { Datalink } from './com/Datalink';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { Atc } from './ATC';
@@ -59,6 +60,13 @@ export class Atsu {
             return retvalAoc;
         }
         return retvalAtc;
+    }
+
+    public flightPhase(): FmgcFlightPhase {
+        if (this.mcdu !== undefined && this.mcdu.flightPhaseManager) {
+            return this.mcdu.flightPhaseManager.phase;
+        }
+        return FmgcFlightPhase.Preflight;
     }
 
     public async disconnectFromNetworks(): Promise<AtsuStatusCodes> {
