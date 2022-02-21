@@ -6,13 +6,13 @@ import { DecelPathBuilder, DecelPathCharacteristics } from '@fmgc/guidance/vnav/
 import { DescentBuilder } from '@fmgc/guidance/vnav/descent/DescentBuilder';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { RequestedVerticalMode, TargetAltitude, TargetVerticalSpeed } from '@fmgc/guidance/ControlLaws';
+import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
+import { VerticalMode } from '@shared/autopilot';
 import { Geometry } from '../Geometry';
 import { GuidanceComponent } from '../GuidanceComponent';
 import { ClimbPathBuilder } from './climb/ClimbPathBuilder';
 import { ClimbProfileBuilderResult } from './climb/ClimbProfileBuilderResult';
-import { RequestedVerticalMode, TargetAltitude, TargetVerticalSpeed } from '@fmgc/guidance/ControlLaws';
-import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
-import { VerticalMode } from '@shared/autopilot';
 
 export class VnavDriver implements GuidanceComponent {
     atmosphericConditions: AtmosphericConditions = new AtmosphericConditions();

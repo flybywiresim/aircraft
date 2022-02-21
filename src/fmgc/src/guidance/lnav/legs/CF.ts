@@ -14,8 +14,6 @@ import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { Geo } from '@fmgc/utils/Geo';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
-import { bearingTo, distanceTo } from 'msfs-geo';
-import { MathUtils } from '@shared/MathUtils';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
 

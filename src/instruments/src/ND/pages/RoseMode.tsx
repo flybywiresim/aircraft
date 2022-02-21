@@ -7,7 +7,7 @@ import { TuningMode } from '@fmgc/radionav';
 import { Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
-import { FlightPlan, FlightPlanType } from '../elements/FlightPlan';
+import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ApproachMessage } from '../elements/ApproachMessage';
@@ -36,6 +36,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
     const [lsCourse] = useSimVar('L:A32NX_FM_LS_COURSE', 'number');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);

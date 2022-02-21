@@ -18,11 +18,11 @@ import { DirectToFixTransitionGuidanceState, DirectToFixTransition } from '@fmgc
 import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { isCourseReversalLeg, isHold } from '@fmgc/guidance/lnav/legs';
-import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
 import { maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
+import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
 
 function isGuidableCapturingPath(guidable: Guidable): boolean {
     return !(

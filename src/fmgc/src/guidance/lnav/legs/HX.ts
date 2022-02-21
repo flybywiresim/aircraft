@@ -557,17 +557,9 @@ export class HALeg extends HXLeg {
 export class HFLeg extends HXLeg {
     private entryTransition: HoldEntryTransition;
 
-    constructor(
-        fix: WayPoint,
-        metadata: LegMetadata,
-        segment: SegmentType,
-    ) {
-        super(fix, metadata, segment);
-    }
-
     getGuidanceParameters(ppos: LatLongAlt, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters {
         if (this.entryTransition) {
-            this.termConditionMet = this.entryTransition.isNull ||  this.entryTransition.state === EntryState.Capture || this.entryTransition.state === EntryState.Done;
+            this.termConditionMet = this.entryTransition.isNull || this.entryTransition.state === EntryState.Capture || this.entryTransition.state === EntryState.Done;
         }
 
         return super.getGuidanceParameters(ppos, trueTrack, tas, gs);
@@ -576,7 +568,7 @@ export class HFLeg extends HXLeg {
     recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable): void {
         if (previousGuidable instanceof HoldEntryTransition) {
             this.entryTransition = previousGuidable;
-            this.termConditionMet = this.entryTransition.isNull ||  this.entryTransition.state === EntryState.Capture || this.entryTransition.state === EntryState.Done;
+            this.termConditionMet = this.entryTransition.isNull || this.entryTransition.state === EntryState.Capture || this.entryTransition.state === EntryState.Done;
         }
         this.setPredictedTas(tas);
         super.recomputeWithParameters(isActive, tas, gs, ppos, trueTrack, previousGuidable, nextGuidable);

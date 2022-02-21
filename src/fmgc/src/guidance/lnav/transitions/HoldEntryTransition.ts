@@ -86,15 +86,6 @@ export class HoldEntryTransition extends Transition {
             return 0;
         }
 
-        const dtg = 0;
-
-        /* switch (this.entry) {
-            case EntryType.DirectTurn:
-                if (this.state !== EntryState.Turn1) {
-                    dtg +=
-                }
-        } */
-
         // TODO
         return 1;
     }
