@@ -3,7 +3,7 @@
 
 import { ATC } from '@flybywiresim/api-client';
 import { NXDataStore } from '@shared/persistence';
-import { MaxSearchRange, OwnAircraft, VdlMaxDatarate } from './Common';
+import { DatalinkConfiguration, DatalinkProviders, MaxSearchRange, OwnAircraft, VdlMaxDatarate } from './Common';
 
 // worldwide international airports
 // assumptions: international airports provide VHDL communication (i.e. USA)
@@ -90,10 +90,6 @@ const VhfDatalinkAirports: string[] = [
 // filter parameters to find preselect conditional relevant stations
 const MaxAirportsInRange = 50;
 
-// VDL frequencies and specifications
-const SitaFrequency = 137.975;
-const ArincFrequency = 137.275;
-
 // physical parameters to simulate the signal quality
 const AdditiveNoiseOverlapDB = 1.4;
 const MaximumDampingDB = -75.0;
@@ -108,13 +104,7 @@ class Airport {
 
     public Distance = 0.0;
 
-    public SitaReachable = false;
-
-    public ArincReachable = false;
-
-    public SimulatedDatarateSita = 0.0;
-
-    public SimulatedDatarateArinc = 0.0;
+    public Datarates: [ boolean, number ][] = Array(DatalinkProviders.ProviderCount).fill([false, 0]);
 }
 
 /*
@@ -125,15 +115,11 @@ class Airport {
 export class Vhf {
     public stationsUpperAirspace: number = 0;
 
-    public sitaDatarate: number = 0.0;
-
-    public arincDatarate: number = 0.0;
+    public datarates: number[] = [];
 
     private presentPosition: OwnAircraft = new OwnAircraft();
 
-    private frequencyOverlapSita: number = 0;
-
-    private frequencyOverlapArinc: number = 0;
+    private frequencyOverlap: number[] = [];
 
     public relevantAirports: Airport[] = [];
 
@@ -153,9 +139,9 @@ export class Vhf {
         return 10.0 * Math.log10((4.0 * Math.PI * meters * (frequency * 1000000) / 299792458) ** 2.0);
     }
 
-    private estimateDatarate(sita: boolean, distance: number, airport: Airport): boolean {
-        const maximumFreespaceLoss = SignalStrengthDBW + ReceiverAntennaGainDBI - AdditiveNoiseOverlapDB * (sita ? this.frequencyOverlapSita : this.frequencyOverlapArinc) - MaximumDampingDB;
-        const freespaceLoss = this.freespacePathLoss(sita ? SitaFrequency : ArincFrequency, distance);
+    private estimateDatarate(type: DatalinkProviders, distance: number, airport: Airport): void {
+        const maximumFreespaceLoss = SignalStrengthDBW + ReceiverAntennaGainDBI - AdditiveNoiseOverlapDB * (this.frequencyOverlap[type]) - MaximumDampingDB;
+        const freespaceLoss = this.freespacePathLoss(DatalinkConfiguration[type], distance);
 
         if (maximumFreespaceLoss >= freespaceLoss) {
             const lossDelta = maximumFreespaceLoss - freespaceLoss;
@@ -169,16 +155,9 @@ export class Vhf {
             // inverse of quality ratio is needed to estimate the quality loss
             const scaling = Math.max(0.1, 1.0 / (Math.exp(9.0 * (1.0 - qualityRatio) - 5.0) + 1.0));
 
-            if (sita) {
-                airport.SimulatedDatarateSita = VdlMaxDatarate * scaling;
-            } else {
-                airport.SimulatedDatarateArinc = VdlMaxDatarate * scaling;
-            }
-
-            return true;
+            airport.Datarates[type][0] = true;
+            airport.Datarates[type][1] = VdlMaxDatarate * scaling;
         }
-
-        return false;
     }
 
     private async updateRelevantAirports(): Promise<void> {
@@ -221,10 +200,13 @@ export class Vhf {
                             airport.Elevation = fetched[3];
                             airport.Distance = distanceNM;
 
-                            airport.ArincReachable = this.estimateDatarate(false, distanceNM, airport);
-                            airport.SitaReachable = this.estimateDatarate(true, distanceNM, airport);
+                            let validAirport = false;
+                            for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {
+                                this.estimateDatarate(i as DatalinkProviders, distanceNM, airport);
+                                validAirport = validAirport || airport.Datarates[i as DatalinkProviders][0];
+                            }
 
-                            if (airport.ArincReachable || airport.SitaReachable) {
+                            if (validAirport) {
                                 this.relevantAirports.push(airport);
                             }
                         }
@@ -258,8 +240,7 @@ export class Vhf {
 
     private async updateUsedVoiceFrequencies(): Promise<void> {
         const storedAtisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA').toLowerCase();
-        this.frequencyOverlapArinc = 0;
-        this.frequencyOverlapSita = 0;
+        this.frequencyOverlap = Array(DatalinkProviders.ProviderCount).fill(0);
 
         if (storedAtisSrc === 'vatsim' || storedAtisSrc === 'ivao') {
             await ATC.get(storedAtisSrc).then((res) => {
@@ -269,18 +250,18 @@ export class Vhf {
                 res.forEach((controller) => {
                     const frequency = parseFloat(controller.frequency);
 
-                    if (frequency >= SitaFrequency - 0.009 && frequency <= SitaFrequency + 0.009) {
-                        // check 8.33 kHz spacing for SITA
-                        this.frequencyOverlapSita += 1;
-                    } else if (frequency >= ArincFrequency - 0.009 && frequency <= ArincFrequency + 0.009) {
-                        // check 8.33 kHz spacing for ARINC
-                        this.frequencyOverlapArinc += 1;
-                    } else if (frequency >= SitaFrequency - 0.025 && frequency <= SitaFrequency + 0.025) {
-                        // check the direct 25 kHz neighbors for SITA
-                        this.frequencyOverlapSita += 1;
-                    } else if (frequency >= ArincFrequency - 0.025 && frequency <= ArincFrequency + 0.025) {
-                        // check the direct 25 kHz neighbors for ARINC
-                        this.frequencyOverlapArinc += 1;
+                    for (const key in DatalinkConfiguration) {
+                        if ({}.hasOwnProperty.call(DatalinkConfiguration, key)) {
+                            const datalinkFrequency = DatalinkConfiguration[key];
+
+                            if (frequency >= datalinkFrequency - 0.009 && frequency <= datalinkFrequency + 0.009) {
+                            // check 8.33 kHz spacing
+                                this.frequencyOverlap[key] += 1;
+                            } else if (frequency >= datalinkFrequency - 0.025 && frequency <= datalinkFrequency + 0.025) {
+                            // check the direct 25 kHz neighbors for SITA
+                                this.frequencyOverlap[key] += 1;
+                            }
+                        }
                     }
                 });
             });
@@ -295,36 +276,30 @@ export class Vhf {
         return this.updateUsedVoiceFrequencies().then(() => this.updateRelevantAirports().then(() => {
             console.log(`Relevant airports: ${JSON.stringify(this.relevantAirports)}`);
             console.log(`Upper sector airports: ${this.stationsUpperAirspace}`);
-            console.log(`Overlapping frequencies for SITA: ${this.frequencyOverlapSita}`);
-            console.log(`Overlapping frequencies for ARINC: ${this.frequencyOverlapArinc}`);
+            for (let i = 0; i < this.frequencyOverlap.length; ++i) {
+                console.log(`Overlapping frequencies for ${i}: ${this.frequencyOverlap[i]}`);
+            }
 
             // use the average over all reachable stations to estimate the datarate
-            this.arincDatarate = 0.0;
-            this.sitaDatarate = 0.0;
+            this.datarates = Array(DatalinkProviders.ProviderCount).fill(0.0);
+            const stationCount = Array(DatalinkProviders.ProviderCount).fill(0);
 
-            let arincCount = 0;
-            let sitaCount = 0;
             this.relevantAirports.forEach((airport) => {
-                if (airport.SitaReachable) {
-                    this.sitaDatarate += airport.SimulatedDatarateSita;
-                    sitaCount += 1;
-                }
-
-                if (airport.ArincReachable) {
-                    this.arincDatarate += airport.SimulatedDatarateArinc;
-                    arincCount += 1;
+                for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {
+                    if (airport.Datarates[0]) {
+                        this.datarates[i] += airport.Datarates[i][1];
+                        stationCount[i] += 1;
+                    }
                 }
             });
 
-            if (sitaCount !== 0) {
-                this.sitaDatarate /= sitaCount;
-            }
-            if (arincCount !== 0) {
-                this.arincDatarate /= arincCount;
+            for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {
+                if (stationCount[i] !== 0) this.datarates[i] /= stationCount[i];
             }
 
-            console.log(`ARINC datarate: ${this.arincDatarate} bits per second`);
-            console.log(`SITA datarate: ${this.sitaDatarate}  bits per second`);
+            for (let i = 0; i < this.frequencyOverlap.length; ++i) {
+                console.log(`Datarate for ${i}: ${this.datarates[i]}`);
+            }
         }));
     }
 }

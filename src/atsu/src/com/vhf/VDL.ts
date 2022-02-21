@@ -3,7 +3,7 @@
 
 import { MathUtils } from '@shared/MathUtils';
 import { AtsuMessage, AtsuMessageSerializationFormat } from '../../messages/AtsuMessage';
-import { OwnAircraft, MaxSearchRange } from './Common';
+import { DatalinkProviders, OwnAircraft, MaxSearchRange } from './Common';
 import { Vhf } from './VHF';
 
 interface NPCPlane {
@@ -43,9 +43,7 @@ export class Vdl {
 
     private lowerAirspaceTraffic: number = 0;
 
-    public ownDatarateArinc: number = 0.0;
-
-    public ownDatarateSita: number = 0.0;
+    private a32nxDatarates: number[] = [];
 
     private updatePresentPosition() {
         this.presentPosition.Latitude = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
@@ -83,10 +81,16 @@ export class Vdl {
     public calculateOwnDatarate() {
         this.updatePresentPosition();
         this.vhf3.calculateDatarates().then(() => this.updateRemoteAircrafts().then(() => {
-            // no VHF station available -> use default value
-            if (this.vhf3.arincDatarate === 0.0 && this.vhf3.sitaDatarate === 0.0) {
-                this.ownDatarateArinc = 500.0;
-                this.ownDatarateSita = 500.0;
+            // check if now VHF connection is available
+            let connectionAvailable = false;
+            for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {
+                if (this.vhf3.datarates[0] !== 0.0) {
+                    connectionAvailable = true;
+                    break;
+                }
+            }
+            if (!connectionAvailable) {
+                this.a32nxDatarates = Array(DatalinkProviders.ProviderCount).fill(5.0);
                 return;
             }
 
@@ -110,29 +114,24 @@ export class Vdl {
             // add the A32NX into the list of relevant aircrafts
             relevantAircrafts += 1;
 
-            // calculate the number of available slots based on data rate and floor due to broken slots
-            let arincMessageCount = Math.floor(DataslotsPerSecond * Math.min(1.0, this.vhf3.arincDatarate / BitsOfChunksPerSecond));
-            let sitaMessageCount = Math.floor(DataslotsPerSecond * Math.min(1.0, this.vhf3.arincDatarate / BitsOfChunksPerSecond));
-            console.log(`Available data slots per station for ARINC: ${arincMessageCount}`);
-            console.log(`Available data slots per station for SITA: ${sitaMessageCount}`);
+            this.a32nxDatarates = Array(DatalinkProviders.ProviderCount).fill(0.0);
+            for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {
+                // calculate the number of available slots based on data rate and floor due to broken slots
+                let messageCount = Math.floor(DataslotsPerSecond * Math.min(1.0, this.vhf3.datarates[i] / BitsOfChunksPerSecond));
+                console.log(`Available data slots per station for ${i}: ${messageCount}`);
 
-            // get all available message slots
-            arincMessageCount *= this.vhf3.relevantAirports.length;
-            sitaMessageCount *= this.vhf3.relevantAirports.length;
-            console.log(`Available data slots for ARINC: ${arincMessageCount}`);
-            console.log(`Available data slots for SITA: ${sitaMessageCount}`);
+                // get all available message slots
+                messageCount *= this.vhf3.relevantAirports.length;
+                console.log(`Available data slots for ${i}: ${messageCount}`);
 
-            // calculate the number of slots for the remote traffic based on non-rounded messages
-            const messageCountPerAircraftArinc = arincMessageCount / relevantAircrafts;
-            const messageCountPerAircraftSite = sitaMessageCount / relevantAircrafts;
-            console.log(`Data slots per aircraft and second for ARINC: ${messageCountPerAircraftArinc}`);
-            console.log(`Data slots per aircraft and second for SITA: ${messageCountPerAircraftSite}`);
+                // calculate the number of slots for the remote traffic based on non-rounded messages
+                const messageCountPerAircraft = messageCount / relevantAircrafts;
+                console.log(`Data slots per aircraft and second for ${i}: ${messageCountPerAircraft}`);
 
-            // calculate the data rates
-            this.ownDatarateArinc = messageCountPerAircraftArinc * BitsPerSlot / 8;
-            this.ownDatarateSita = messageCountPerAircraftSite * BitsPerSlot / 8;
-            console.log(`Own datarate ARINC: ${this.ownDatarateArinc} bytes per second`);
-            console.log(`Own datarate SITA: ${this.ownDatarateSita} bytes per second`);
+                // calculate the data rates
+                this.a32nxDatarates[i] = messageCountPerAircraft * BitsPerSlot / 8;
+                console.log(`Own datarate ${i}: ${this.a32nxDatarates[i]} bytes per second`);
+            }
         }));
     }
 
@@ -145,18 +144,15 @@ export class Vdl {
         // calculate the sent bytes based on the datablocks
         const datablockBytes = occupiedDatablock * BitsPerSlot / 8;
 
-        // calculate the transmission times based on the data rates
-        let transmissionTimeArinc = 10000000;
-        let transmissionTimeSita = 10000000;
-        if (this.ownDatarateArinc > 0.0) {
-            transmissionTimeArinc = datablockBytes / this.ownDatarateArinc;
-        }
-        if (this.ownDatarateSita > 0.0) {
-            transmissionTimeSita = datablockBytes / this.ownDatarateSita;
-        }
+        // calculate the transmission times based on the data rates and choose the fastest
+        let transmissionTime = 10000000.0;
+        this.a32nxDatarates.forEach((datarate) => {
+            if (datarate > 0.0) {
+                transmissionTime = Math.min(transmissionTime, datablockBytes / datarate);
+            }
+        });
 
         // use the fastest transmission time
-        const transmissionTime = Math.min(transmissionTimeArinc, transmissionTimeSita);
         return Math.round(transmissionTime * 1000 + 0.5);
     }
 }
