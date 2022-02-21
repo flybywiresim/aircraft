@@ -21,7 +21,8 @@ const UpperSectorAltitude = 24000;
 const MessageChunksPerSecond = 32;
 const DataslotsPerSecond = 24;
 const BitsOfChunksPerSecond = MessageChunksPerSecond * 496;
-const BitsPerSlot = 496;
+// standard size per data block
+const BytesPerSlot = 62;
 
 /*
  * Vdl simulates VDL3 to calculate the datarate for messages
@@ -32,6 +33,8 @@ const BitsPerSlot = 496;
  * - own datarate is simulated by VDL3 specification and sharing between relevant traffic
  */
 export class Vdl {
+    public static TransmissionTimePerPacket = 40;
+
     private recListener: ViewListener.ViewListener = RegisterViewListener('JS_LISTENER_MAPS', () => {
         this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', true);
     });
@@ -44,7 +47,9 @@ export class Vdl {
 
     private lowerAirspaceTraffic: number = 0;
 
-    private a32nxDatarates: number[] = [];
+    private perPacketDelay: number[] = Array(DatalinkProviders.ProviderCount).fill(500);
+
+    private a32nxDatarates: number[] = Array(DatalinkProviders.ProviderCount).fill(20.0);
 
     private updatePresentPosition() {
         this.presentPosition.Latitude = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
@@ -91,6 +96,7 @@ export class Vdl {
                 }
             }
             if (!connectionAvailable) {
+                this.perPacketDelay = Array(DatalinkProviders.ProviderCount).fill(500);
                 this.a32nxDatarates = Array(DatalinkProviders.ProviderCount).fill(5.0);
                 return;
             }
@@ -131,11 +137,12 @@ export class Vdl {
                 // calculate the number of slots for the remote traffic based on non-rounded messages
                 const messageCountPerAircraft = messageCount / relevantAircrafts;
 
-                // calculate the data rates
-                this.a32nxDatarates[i] = messageCountPerAircraft * BitsPerSlot / 8;
+                // calculate the data rates and the time between two own packets
+                this.perPacketDelay[i] = Math.round(1000 / messageCount + 0.5);
+                this.a32nxDatarates[i] = messageCountPerAircraft * BytesPerSlot;
             }
 
-            console.log(`Per aircraft (staitons: ${relevantAircrafts}) datarates: ${this.a32nxDatarates}`);
+            console.log(`Per aircraft (staitons: ${relevantAircrafts}) datarates: ${this.a32nxDatarates}, packet delay: ${this.perPacketDelay}`);
         }));
     }
 
@@ -143,17 +150,13 @@ export class Vdl {
     public calculateTransmissionTime(message: AtsuMessage): number {
         // calculate the number of occupied datablocks
         const messageLength = message.serialize(AtsuMessageSerializationFormat.Network).length;
-        const occupiedDatablock = Math.round(messageLength / (BitsPerSlot / 8) + 0.5);
-
-        // calculate the sent bytes based on the datablocks
-        const datablockBytes = occupiedDatablock * BitsPerSlot / 8;
+        const occupiedDatablocks = Math.round(messageLength / BytesPerSlot + 0.5);
+        const blocksTransmissionTime = occupiedDatablocks * Vdl.TransmissionTimePerPacket;
 
         // calculate the transmission times based on the data rates and choose the fastest
         let transmissionTime = 10000000.0;
-        this.a32nxDatarates.forEach((datarate) => {
-            if (datarate > 0.0) {
-                transmissionTime = Math.min(transmissionTime, datablockBytes / datarate);
-            }
+        this.perPacketDelay.forEach((delay) => {
+            transmissionTime = Math.min(transmissionTime, blocksTransmissionTime + (occupiedDatablocks - 1) * delay);
         });
 
         // use the fastest transmission time
