@@ -3,7 +3,7 @@
 
 import { ATC } from '@flybywiresim/api-client';
 import { NXDataStore } from '@shared/persistence';
-import { MaxSearchRange, OwnAircraft, VdlMaxDatarate, maximumDistanceLoS } from './Common';
+import { MaxSearchRange, OwnAircraft, VdlMaxDatarate } from './Common';
 
 // worldwide international airports
 // assumptions: international airports provide VHDL communication (i.e. USA)
@@ -182,6 +182,11 @@ export class Vhf {
     }
 
     private async updateRelevantAirports(): Promise<void> {
+        // use a simple line of sight algorithm to calculate the maximum distance
+        // it ignores the topolography, but simulates the earth curvature
+        // reference: https://audio.vatsim.net/storage/AFV%20User%20Guide.pdf
+        const maximumDistanceLoS = (altitude0: number, altitude1: number): number => 1.23 * Math.sqrt(Math.abs(altitude0 - altitude1));
+
         this.stationsUpperAirspace = 0;
         this.relevantAirports = [];
 

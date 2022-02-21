@@ -19,8 +19,3 @@ export class OwnAircraft extends Aircraft {
 export const MaxSearchRange = 400;
 // maximum datarate under optimal conditions: 31.5 kb/s
 export const VdlMaxDatarate = 31500;
-
-// use a simple line of sight algorithm to calculate the maximum distance
-// it ignores the topolography, but simulates the earth curvature
-// reference: https://audio.vatsim.net/storage/AFV%20User%20Guide.pdf
-export const maximumDistanceLoS = (altitude0: number, altitude1: number): number => 1.23 * Math.sqrt(Math.abs(altitude0 - altitude1));
