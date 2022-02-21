@@ -11,7 +11,7 @@ import { AtisMessage, AtisType } from '../messages/AtisMessage';
 import { MetarMessage } from '../messages/MetarMessage';
 import { TafMessage } from '../messages/TafMessage';
 import { WeatherMessage } from '../messages/WeatherMessage';
-import { HoppieConnector } from './HoppieConnector';
+import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './NXApiConnector';
 
 export class Datalink {

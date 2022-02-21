@@ -3,11 +3,11 @@
 
 import { NXDataStore } from '@shared/persistence';
 import { Hoppie } from '@flybywiresim/api-client';
-import { AtsuStatusCodes } from '../AtsuStatusCodes';
-import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from '../messages/AtsuMessage';
-import { CpdlcMessage } from '../messages/CpdlcMessage';
-import { FreetextMessage } from '../messages/FreetextMessage';
-import { stringToCpdlc } from '../Common';
+import { AtsuStatusCodes } from '../../AtsuStatusCodes';
+import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from '../../messages/AtsuMessage';
+import { CpdlcMessage } from '../../messages/CpdlcMessage';
+import { FreetextMessage } from '../../messages/FreetextMessage';
+import { stringToCpdlc } from '../../Common';
 
 /**
  * Defines the connector to the hoppies network

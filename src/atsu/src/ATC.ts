@@ -1,7 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { HoppieConnector } from './com/HoppieConnector';
+import { HoppieConnector } from './com/webinterfaces/HoppieConnector';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
