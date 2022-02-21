@@ -280,7 +280,7 @@ export class Vhf {
 
     // calculates the data rates on the frequencies of the datalink providers
     // based on current distances and interferences
-    public async calculateDatarates(flightPhase: FmgcFlightPhase): Promise<void> {
+    public async simulateDatarates(flightPhase: FmgcFlightPhase): Promise<void> {
         this.updatePresentPosition();
 
         return this.updateUsedVoiceFrequencies().then(() => this.updateRelevantAirports(flightPhase).then(() => {

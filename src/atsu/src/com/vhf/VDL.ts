@@ -82,9 +82,9 @@ export class Vdl {
         }).catch(console.error);
     }
 
-    public calculateA32NXDatarate(flightPhase: FmgcFlightPhase) {
+    public simulateTransmissionTimes(flightPhase: FmgcFlightPhase) {
         this.updatePresentPosition();
-        this.vhf3.calculateDatarates(flightPhase).then(() => this.updateRemoteAircrafts().then(() => {
+        this.vhf3.simulateDatarates(flightPhase).then(() => this.updateRemoteAircrafts().then(() => {
             // check if now VHF connection is available
             let connectionAvailable = false;
             for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {
