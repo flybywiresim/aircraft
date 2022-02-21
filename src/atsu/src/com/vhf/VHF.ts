@@ -282,6 +282,8 @@ export class Vhf {
         }
     }
 
+    // calculates the data rates on the frequencies of the datalink providers
+    // based on current distances and interferences
     public async calculateDatarates(): Promise<void> {
         this.updatePresentPosition();
 
