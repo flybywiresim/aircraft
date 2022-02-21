@@ -2,7 +2,6 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { ATC } from '@flybywiresim/api-client';
-import { MathUtils } from '@shared/MathUtils';
 import { NXDataStore } from '@shared/persistence';
 import { MaxSearchRange, OwnAircraft, VdlMaxDatarate, maximumDistanceLoS } from './Common';
 
