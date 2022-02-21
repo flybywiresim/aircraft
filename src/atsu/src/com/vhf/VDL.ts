@@ -112,8 +112,8 @@ export class Vdl {
             } else {
                 relevantAircrafts += this.upperAirspaceTraffic;
             }
-            // add the A32NX into the list of relevant aircrafts
-            relevantAircrafts += 1;
+            // add the A32NX and the ground station into the list of relevant aircrafts
+            relevantAircrafts += 2;
 
             this.a32nxDatarates = Array(DatalinkProviders.ProviderCount).fill(0.0);
             for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {
