@@ -316,8 +316,8 @@ export class Vhf {
                 this.arincDatarate /= arincCount;
             }
 
-            console.log(`ARINC datarate: ${this.arincDatarate}`);
-            console.log(`SITA datarate: ${this.sitaDatarate}`);
+            console.log(`ARINC datarate: ${this.arincDatarate} bits per second`);
+            console.log(`SITA datarate: ${this.sitaDatarate}  bits per second`);
         }));
     }
 }
