@@ -835,7 +835,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         });
         window.document.addEventListener('keydown', (e) => {
-            if (this.inFocus) {
+            // MCDU should not accept input while unpowered
+            if (this.inFocus && SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Number")) {
                 let keycode = e.keyCode;
                 this.lastInput = new Date();
                 if (keycode >= KeyCode.KEY_NUMPAD0 && keycode <= KeyCode.KEY_NUMPAD9) {
@@ -1090,7 +1091,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     onEvent(_event) {
         super.onEvent(_event);
 
-        // MCDU was accepting input while unpowered
+        // MCDU should not accept input while unpowered
         if (!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Number")) {
             return;
         }
