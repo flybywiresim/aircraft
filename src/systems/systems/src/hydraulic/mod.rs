@@ -1624,10 +1624,10 @@ pub struct ElectricPump {
 }
 impl ElectricPump {
     const NOMINAL_SPEED: f64 = 7600.0;
-    const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2175.0, 2850.0, 3080.0, 3100.0, 3500.0,
-    ];
-    const DISPLACEMENT_MAP: [f64; 9] = [0.263, 0.263, 0.263, 0.263, 0.263, 0.2, 0.0, 0.0, 0.0];
+
+    const DISPLACEMENT_BREAKPTS: [f64; 9] =
+        [0., 500., 800., 1000., 1500., 2570., 2250., 2900., 3050.];
+    const DISPLACEMENT_MAP: [f64; 9] = [0.26, 0.26, 0.26, 0.26, 0.26, 0.26, 0.26, 0.19, 0.];
 
     pub fn new(
         context: &mut InitContext,
