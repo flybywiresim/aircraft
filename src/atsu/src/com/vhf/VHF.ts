@@ -152,12 +152,7 @@ export class Vhf {
     private freespacePathLoss(frequency: number, distance: number): number {
         // convert to meters
         const meters = distance * 1852;
-        return (4.0 * Math.PI * meters * (frequency * 1000000) / 299792458) ** 2.0;
-    }
-
-    // calculates the simulated received signal strength
-    private receivedSignalPower(overlappingFrequencies: number): number {
-        return SignalStrengthDBW + ReceiverAntennaGainDBI - AdditiveNoiseOverlapDB * overlappingFrequencies;
+        return 10.0 * Math.log10((4.0 * Math.PI * meters * (frequency * 1000000) / 299792458) ** 2.0);
     }
 
     private estimateDatarate(sita: boolean, distance: number, airport: Airport): boolean {
