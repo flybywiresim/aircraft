@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { MathUtils } from '@shared/MathUtils';
+import { AtsuMessage, AtsuMessageSerializationFormat } from '../../messages/AtsuMessage';
 import { OwnAircraft, MaxSearchRange } from './Common';
 import { Vhf } from './VHF';
 
@@ -133,5 +134,29 @@ export class Vdl {
             console.log(`Own datarate ARINC: ${this.ownDatarateArinc} bytes per second`);
             console.log(`Own datarate SITA: ${this.ownDatarateSita} bytes per second`);
         }));
+    }
+
+    // calculates the required transmission time in milliseconds
+    public calculateTransmissionTime(message: AtsuMessage): number {
+        // calculate the number of occupied datablocks
+        const messageLength = message.serialize(AtsuMessageSerializationFormat.Network).length;
+        const occupiedDatablock = Math.round(messageLength / (BitsPerSlot / 8) + 0.5);
+
+        // calculate the sent bytes based on the datablocks
+        const datablockBytes = occupiedDatablock * BitsPerSlot / 8;
+
+        // calculate the transmission times based on the data rates
+        let transmissionTimeArinc = 10000000;
+        let transmissionTimeSita = 10000000;
+        if (this.ownDatarateArinc > 0.0) {
+            transmissionTimeArinc = datablockBytes / this.ownDatarateArinc;
+        }
+        if (this.ownDatarateSita > 0.0) {
+            transmissionTimeSita = datablockBytes / this.ownDatarateSita;
+        }
+
+        // use the fastest transmission time
+        const transmissionTime = Math.min(transmissionTimeArinc, transmissionTimeSita);
+        return Math.round(transmissionTime * 1000 + 0.5);
     }
 }
