@@ -12,7 +12,7 @@ class CDUAocMessagesReceived {
         mcdu.page.SelfPtr = setTimeout(() => {
             if (mcdu.page.Current === mcdu.page.AOCRcvdMsgs) {
                 if (page === -1 && messages.length > 0) {
-                    page++;
+                    page = 0;
                 }
                 CDUAocMessagesReceived.ShowPage(mcdu, null, page);
             }
