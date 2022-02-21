@@ -104,11 +104,11 @@ const ReceiverAntennaGainDBI = 25.0;
 const SignalStrengthDBW = 39.1202;
 
 class Airport {
-    public Latitude = 0.0;
-
-    public Longitude = 0.0;
-
     public Icao = '';
+
+    public Elevation = 0.0;
+
+    public Distance = 0.0;
 
     public SitaReachable = false;
 
