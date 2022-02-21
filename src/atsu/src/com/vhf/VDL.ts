@@ -78,7 +78,7 @@ export class Vdl {
         }).catch(console.error);
     }
 
-    public calculateOwnDatarate() {
+    public calculateA32NXDatarate() {
         this.updatePresentPosition();
         this.vhf3.calculateDatarates().then(() => this.updateRemoteAircrafts().then(() => {
             // check if now VHF connection is available
