@@ -1473,7 +1473,8 @@ impl Pump {
 
         let theoretical_displacement = self.calculate_displacement(section, controller);
 
-        self.current_max_displacement = self.cavitation_efficiency * theoretical_displacement;
+        self.current_max_displacement = 0.6 * self.current_max_displacement
+            + 0.4 * self.cavitation_efficiency * theoretical_displacement;
 
         let max_flow = Self::calculate_flow(speed, self.current_max_displacement)
             .max(VolumeRate::new::<gallon_per_second>(0.));
