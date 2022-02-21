@@ -275,10 +275,6 @@ export class Vhf {
 
         return this.updateUsedVoiceFrequencies().then(() => this.updateRelevantAirports().then(() => {
             console.log(`Relevant airports: ${JSON.stringify(this.relevantAirports)}`);
-            console.log(`Upper sector airports: ${this.stationsUpperAirspace}`);
-            for (let i = 0; i < this.frequencyOverlap.length; ++i) {
-                console.log(`Overlapping frequencies for ${i}: ${this.frequencyOverlap[i]}`);
-            }
 
             // use the average over all reachable stations to estimate the datarate
             this.datarates = Array(DatalinkProviders.ProviderCount).fill(0.0);
