@@ -284,17 +284,14 @@ export class Vhf {
         }
     }
 
-    private async updateRemoteData(): Promise<void> {
-        return this.updateUsedVoiceFrequencies().then(() => this.updateRelevantAirports());
-    }
-
     public async calculateDatarates(): Promise<void> {
         this.updatePresentPosition();
-        return this.updateRemoteData().then(() => {
-            console.log(`Relevant airports: ${this.relevantAirports}`);
+
+        return this.updateUsedVoiceFrequencies().then(() => this.updateRelevantAirports().then(() => {
+            console.log(`Relevant airports: ${JSON.stringify(this.relevantAirports)}`);
             console.log(`Upper sector airports: ${this.stationsUpperAirspace}`);
-            console.log(`Relevant frequencies SITA: ${this.frequencyOverlapSita}`);
-            console.log(`Relevant frequencies ARINC: ${this.frequencyOverlapArinc}`);
+            console.log(`Overlapping frequencies for SITA: ${this.frequencyOverlapSita}`);
+            console.log(`Overlapping frequencies for ARINC: ${this.frequencyOverlapArinc}`);
 
             // use the average over all reachable stations to estimate the datarate
             this.arincDatarate = 0.0;
@@ -323,6 +320,6 @@ export class Vhf {
 
             console.log(`ARINC datarate: ${this.arincDatarate}`);
             console.log(`SITA datarate: ${this.sitaDatarate}`);
-        });
+        }));
     }
 }
