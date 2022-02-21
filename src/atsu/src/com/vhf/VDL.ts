@@ -95,10 +95,7 @@ export class Vdl {
                 return;
             }
 
-            console.log(`Upper airspace traffic: ${this.upperAirspaceTraffic}`);
-            console.log(`Lower airspace traffic: ${this.lowerAirspaceTraffic}`);
-
-            let relevantAircrafts = this.lowerAirspaceTraffic;
+            let relevantAircrafts = 0;
 
             // calculate the relevant aircrafts based on the own level
             if (this.presentPosition.PressureAltitude < UpperSectorAltitude) {
@@ -108,9 +105,17 @@ export class Vdl {
                 if (this.vhf3.stationsUpperAirspace !== 0) {
                     ratio = this.vhf3.relevantAirports.length / this.vhf3.stationsUpperAirspace;
                 }
-                relevantAircrafts += ratio * this.upperAirspaceTraffic;
+
+                relevantAircrafts = this.lowerAirspaceTraffic + ratio * this.upperAirspaceTraffic;
             } else {
-                relevantAircrafts += this.upperAirspaceTraffic;
+                // calculate the ratio between relevant stations and lower stations
+                // it is assumed that one station is responsible for the lower sectors
+                let ratio = 1.0;
+                if (this.vhf3.stationsUpperAirspace !== 0) {
+                    ratio = 1 / this.vhf3.relevantAirports.length;
+                }
+
+                relevantAircrafts = this.upperAirspaceTraffic + ratio * this.lowerAirspaceTraffic;
             }
             // add the A32NX and the ground stations into the list of relevant aircrafts
             relevantAircrafts += 1 + this.vhf3.relevantAirports.length;
