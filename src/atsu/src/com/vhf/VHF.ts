@@ -278,8 +278,11 @@ export class Vhf {
         }
     }
 
-    // calculates the data rates on the frequencies of the datalink providers
-    // based on current distances and interferences
+    /**
+     * Simulates the data rates for the different datalink providers
+     * @param flightPhase Actual flight phase to simulate the building based interferences
+     * @returns A promise to provide the possibilty to run it in sequence
+     */
     public async simulateDatarates(flightPhase: FmgcFlightPhase): Promise<void> {
         this.updatePresentPosition();
 
