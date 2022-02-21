@@ -1,7 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { NXApiConnector } from '@atsu/com/NXApiConnector';
+import { NXApiConnector } from '@atsu/com/webinterfaces/NXApiConnector';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuMessageDirection, AtsuMessage, AtsuMessageType } from './messages/AtsuMessage';
 import { WeatherMessage } from './messages/WeatherMessage';

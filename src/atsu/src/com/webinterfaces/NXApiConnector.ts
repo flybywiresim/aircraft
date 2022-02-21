@@ -3,11 +3,11 @@
 
 import { Atis, Metar, Taf, Telex, AircraftStatus } from '@flybywiresim/api-client';
 import { NXDataStore } from '@shared/persistence';
-import { AtsuStatusCodes } from '../AtsuStatusCodes';
-import { AtsuMessage, AtsuMessageComStatus, AtsuMessageNetwork, AtsuMessageDirection } from '../messages/AtsuMessage';
-import { FreetextMessage } from '../messages/FreetextMessage';
-import { WeatherMessage } from '../messages/WeatherMessage';
-import { AtisMessage, AtisType } from '../messages/AtisMessage';
+import { AtsuStatusCodes } from '../../AtsuStatusCodes';
+import { AtsuMessage, AtsuMessageComStatus, AtsuMessageNetwork, AtsuMessageDirection } from '../../messages/AtsuMessage';
+import { FreetextMessage } from '../../messages/FreetextMessage';
+import { WeatherMessage } from '../../messages/WeatherMessage';
+import { AtisMessage, AtisType } from '../../messages/AtisMessage';
 
 const WeatherMap = {
     FAA: 'faa',

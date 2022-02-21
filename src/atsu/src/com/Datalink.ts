@@ -12,7 +12,7 @@ import { MetarMessage } from '../messages/MetarMessage';
 import { TafMessage } from '../messages/TafMessage';
 import { WeatherMessage } from '../messages/WeatherMessage';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
-import { NXApiConnector } from './NXApiConnector';
+import { NXApiConnector } from './webinterfaces/NXApiConnector';
 
 export class Datalink {
     private overallDelay = 0;
