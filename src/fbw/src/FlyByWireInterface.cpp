@@ -151,8 +151,7 @@ void FlyByWireInterface::loadConfiguration() {
   idMaximumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4));
   limitSimulationRateByPerformance = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "LIMIT_SIMULATION_RATE_BY_PERFORMANCE", true);
   simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
-  useCalculatedLocalizerAndGlideSlope =
-      INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CALCULATED_LOCALIZER_AND_GLIDESLOPE_ENABLED", false);
+  idRadioReceiverUsage->set(INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CALCULATED_LOCALIZER_AND_GLIDESLOPE_ENABLED", false));
 
   // print configuration into console
   cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED              = " << customFlightGuidanceEnabled << endl;
@@ -161,7 +160,7 @@ void FlyByWireInterface::loadConfiguration() {
   cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE                     = " << idMaximumSimulationRate->get() << endl;
   cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE        = " << limitSimulationRateByPerformance << endl;
   cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED           = " << simulationRateReductionEnabled << endl;
-  cout << "WASM: AUTOPILOT : CALCULATED_LOCALIZER_AND_GLIDESLOPE_ENABLED = " << useCalculatedLocalizerAndGlideSlope << endl;
+  cout << "WASM: AUTOPILOT : CALCULATED_LOCALIZER_AND_GLIDESLOPE_ENABLED = " << idRadioReceiverUsage->get() << endl;
 
   // --------------------------------------------------------------------------
   // load values - autothrust
@@ -228,7 +227,6 @@ void FlyByWireInterface::setupLocalVariables() {
 
   // register L variables for Autoland
   idDevelopmentAutoland_condition_Flare = make_unique<LocalVariable>("A32NX_DEV_FLARE_CONDITION");
-  idDevelopmentAutoland_H_dot_radio_fpm = make_unique<LocalVariable>("A32NX_DEV_FLARE_H_DOT_RADIO");
   idDevelopmentAutoland_H_dot_c_fpm = make_unique<LocalVariable>("A32NX_DEV_FLARE_H_DOT_C");
   idDevelopmentAutoland_delta_Theta_H_dot_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_H_DOT");
   idDevelopmentAutoland_delta_Theta_bz_deg = make_unique<LocalVariable>("A32NX_DEV_FLARE_DELTA_THETA_BZ");
@@ -282,6 +280,9 @@ void FlyByWireInterface::setupLocalVariables() {
 
   // register L variables for autoland warning
   idAutopilotAutolandWarning = make_unique<LocalVariable>("A32NX_AUTOPILOT_AUTOLAND_WARNING");
+
+  // register L variables for relative speed to ground
+  idAutopilot_H_dot_radio = make_unique<LocalVariable>("A32NX_AUTOPILOT_H_DOT_RADIO");
 
   // register L variables for autopilot
   idAutopilotActiveAny = make_unique<LocalVariable>("A32NX_AUTOPILOT_ACTIVE");
@@ -433,11 +434,12 @@ void FlyByWireInterface::setupLocalVariables() {
   idAileronPositionLeft = make_unique<LocalVariable>("A32NX_AILERON_LEFT_DEFLECTION_DEMAND");
   idAileronPositionRight = make_unique<LocalVariable>("A32NX_AILERON_RIGHT_DEFLECTION_DEMAND");
 
-  idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_LOC_IS_VALID");
-  idRadioReceiverLocalizerDeviation = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_LOC_DEVIATION");
-  idRadioReceiverLocalizerDistance = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_LOC_DISTANCE");
-  idRadioReceiverGlideSlopeValid = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_GS_IS_VALID");
-  idRadioReceiverGlideSlopeDeviation = make_unique<LocalVariable>("A32NX_DEV_RADIO_RECEIVER_GS_DEVIATION");
+  idRadioReceiverUsage = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE");
+  idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
+  idRadioReceiverLocalizerDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DEVIATION");
+  idRadioReceiverLocalizerDistance = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
+  idRadioReceiverGlideSlopeValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_IS_VALID");
+  idRadioReceiverGlideSlopeDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_DEVIATION");
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
@@ -766,7 +768,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.nav_valid = (simData.nav_valid != 0);
     autopilotStateMachineInput.in.data.nav_loc_deg = simData.nav_loc_deg;
     autopilotStateMachineInput.in.data.nav_gs_deg = simData.nav_gs_deg;
-    autopilotStateMachineInput.in.data.nav_dme_valid = useCalculatedLocalizerAndGlideSlope ? 0 : (simData.nav_dme_valid != 0);
+    autopilotStateMachineInput.in.data.nav_dme_valid = idRadioReceiverUsage->get() ? 0 : (simData.nav_dme_valid != 0);
     autopilotStateMachineInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
     autopilotStateMachineInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
     autopilotStateMachineInput.in.data.nav_loc_magvar_deg = simData.nav_loc_magvar_deg;
@@ -860,11 +862,19 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput = autopilotStateMachine.getExternalOutputs().out.output;
 
     // update radio
-    idRadioReceiverLocalizerValid->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_valid);
-    idRadioReceiverLocalizerDeviation->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_error_deg);
-    idRadioReceiverLocalizerDistance->set(autopilotStateMachine.getExternalOutputs().out.data.nav_dme_nmi);
-    idRadioReceiverGlideSlopeValid->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_valid);
-    idRadioReceiverGlideSlopeDeviation->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_error_deg);
+    if (idRadioReceiverUsage->get()) {
+      idRadioReceiverLocalizerValid->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_valid);
+      idRadioReceiverLocalizerDeviation->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_error_deg);
+      idRadioReceiverLocalizerDistance->set(autopilotStateMachine.getExternalOutputs().out.data.nav_dme_nmi);
+      idRadioReceiverGlideSlopeValid->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_valid);
+      idRadioReceiverGlideSlopeDeviation->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_error_deg);
+    } else {
+      idRadioReceiverLocalizerValid->set(simData.nav_loc_valid);
+      idRadioReceiverLocalizerDeviation->set(simData.nav_loc_error_deg);
+      idRadioReceiverLocalizerDistance->set(simData.nav_dme_nmi);
+      idRadioReceiverGlideSlopeValid->set(simData.nav_gs_valid);
+      idRadioReceiverGlideSlopeDeviation->set(simData.nav_gs_error_deg);
+    }
   } else {
     // read client data written by simulink
     ClientDataAutopilotStateMachine clientData = simConnectInterface.getClientDataAutopilotStateMachine();
@@ -1121,7 +1131,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.nav_valid = (simData.nav_valid != 0);
     autopilotLawsInput.in.data.nav_loc_deg = simData.nav_loc_deg;
     autopilotLawsInput.in.data.nav_gs_deg = simData.nav_gs_deg;
-    if (useCalculatedLocalizerAndGlideSlope) {
+    if (idRadioReceiverUsage->get()) {
       autopilotLawsInput.in.data.nav_dme_valid = 0;  // this forces the usage of the calculated dme
       autopilotLawsInput.in.data.nav_dme_nmi = autopilotStateMachine.getExternalOutputs().out.data.nav_dme_nmi;
       autopilotLawsInput.in.data.nav_loc_valid = autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_valid;
@@ -1243,7 +1253,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
 
   // update development variables -------------------------------------------------------------------------------------
   idDevelopmentAutoland_condition_Flare->set(autopilotLawsOutput.flare_law.condition_Flare);
-  idDevelopmentAutoland_H_dot_radio_fpm->set(autopilotLawsOutput.flare_law.H_dot_radio_fpm);
+  idAutopilot_H_dot_radio->set(autopilotLawsOutput.flare_law.H_dot_radio_fpm);
   idDevelopmentAutoland_H_dot_c_fpm->set(autopilotLawsOutput.flare_law.H_dot_c_fpm);
   idDevelopmentAutoland_delta_Theta_H_dot_deg->set(autopilotLawsOutput.flare_law.delta_Theta_H_dot_deg);
   idDevelopmentAutoland_delta_Theta_bx_deg->set(autopilotLawsOutput.flare_law.delta_Theta_bx_deg);
