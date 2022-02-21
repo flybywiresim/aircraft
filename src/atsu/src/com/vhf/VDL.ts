@@ -147,17 +147,14 @@ export class Vdl {
     }
 
     // calculates the required transmission time in milliseconds
-    public calculateTransmissionTime(message: AtsuMessage): number {
+    private calculateTransmissionTime(message: AtsuMessage): number {
         // calculate the number of occupied datablocks
         const messageLength = message.serialize(AtsuMessageSerializationFormat.Network).length;
         const occupiedDatablocks = Math.round(messageLength / BytesPerSlot + 0.5);
         const blocksTransmissionTime = occupiedDatablocks * Vdl.TransmissionTimePerPacket;
 
         // calculate the transmission times based on the data rates and choose the fastest
-        let transmissionTime = 10000000.0;
-        this.perPacketDelay.forEach((delay) => {
-            transmissionTime = Math.min(transmissionTime, blocksTransmissionTime + (occupiedDatablocks - 1) * delay);
-        });
+        const transmissionTime = blocksTransmissionTime + (occupiedDatablocks - 1) * Math.min(...this.perPacketDelay);
 
         // use the fastest transmission time
         return Math.round(transmissionTime * 1000 + 0.5);
