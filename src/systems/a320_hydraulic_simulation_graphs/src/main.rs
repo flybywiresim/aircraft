@@ -278,7 +278,10 @@ fn blue_circuit_epump(path: &str) {
 
     let step_duration = Duration::from_millis(33);
 
-    for _ in 0..500 {
+    for step_idx in 0..1000 {
+        if step_idx > 500 {
+            test_bed.command(|a| a.epump_controller.command_depressurise());
+        }
         test_bed.run_with_delta(step_duration);
 
         hyd_circuit_history.update(
@@ -317,28 +320,6 @@ fn hydraulic_loop(context: &mut InitContext, loop_color: HydraulicColor) -> Hydr
     }
 }
 
-fn reservoir(
-    context: &mut InitContext,
-    hyd_loop_id: HydraulicColor,
-    max_capacity: Volume,
-    max_gaugeable: Volume,
-    current_level: Volume,
-) -> Reservoir {
-    Reservoir::new(
-        context,
-        hyd_loop_id,
-        max_capacity,
-        max_gaugeable,
-        current_level,
-        vec![PressureSwitch::new(
-            Pressure::new::<psi>(23.45),
-            Pressure::new::<psi>(20.55),
-            PressureSwitchType::Relative,
-        )],
-        max_capacity * 0.1,
-    )
-}
-
 fn electric_pump(context: &mut InitContext) -> ElectricPump {
     ElectricPump::new(
         context,
@@ -350,24 +331,6 @@ fn electric_pump(context: &mut InitContext) -> ElectricPump {
 
 fn _engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
     EngineDrivenPump::new(context, "DEFAULT")
-}
-
-fn context(context: &mut InitContext, delta_time: Duration) -> UpdateContext {
-    UpdateContext::new(
-        context,
-        delta_time,
-        Velocity::new::<knot>(250.),
-        Velocity::new::<knot>(250.),
-        Length::new::<foot>(5000.),
-        ThermodynamicTemperature::new::<degree_celsius>(25.0),
-        true,
-        Acceleration::new::<foot_per_second_squared>(0.),
-        Acceleration::new::<foot_per_second_squared>(0.),
-        Acceleration::new::<foot_per_second_squared>(0.),
-        Angle::new::<radian>(0.),
-        Angle::new::<radian>(0.),
-        MachNumber(0.),
-    )
 }
 
 struct A320TestPneumatics {
