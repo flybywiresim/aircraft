@@ -22,6 +22,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.allSelected = false;
         this.updateRequest = false;
         this.initB = false;
+        this.lastPowerState = 0;
         this.PageTimeout = {
             Fast: 500,
             Medium: 1000,
@@ -271,6 +272,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
             }
         }, 5000);
+
+        setInterval(() => {
+            if (!this.socket || !this.socket.readyState) {
+                return;
+            }
+            // There is no event when power is turned on or off (e.g. Ext Pwr) and remote clients
+            // would not be updated (cleared or updated). Therefore monitoring power is necessary.
+            const isPoweredL = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Number");
+            if (this.lastPowerState !== isPoweredL) {
+                this.lastPowerState = isPoweredL;
+                this.sendUpdate();
+            }
+        }, 500);
     }
 
     requestUpdate() {
