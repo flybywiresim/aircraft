@@ -1,6 +1,11 @@
 class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     constructor() {
         super(...arguments);
+
+        this.minPageUpdateThrottler = new UpdateThrottler(100);
+        this.mcduServerConnectUpdateThrottler = new UpdateThrottler(2500);
+        this.powerCheckUpdateThrottler = new UpdateThrottler(500);
+
         this._registered = false;
         this._title = undefined;
         this._titleLeft = '';
@@ -152,8 +157,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             console.error(e);
         }
 
-        this.minPageUpdateThrottler = new UpdateThrottler(100);
-
         this.generateHTMLLayout(this.getChildById("Mainframe") || this);
         this.initKeyboardScratchpad();
         this._titleLeftElement = this.getChildById("title-left");
@@ -266,25 +269,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         NXDataStore.subscribe('*', () => {
             this.requestUpdate();
         });
-
-        setInterval(() => {
-            if (!this.socket || this.socket.readyState !== 1) {
-                this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
-            }
-        }, 5000);
-
-        setInterval(() => {
-            if (!this.socket || !this.socket.readyState) {
-                return;
-            }
-            // There is no event when power is turned on or off (e.g. Ext Pwr) and remote clients
-            // would not be updated (cleared or updated). Therefore monitoring power is necessary.
-            const isPoweredL = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Number");
-            if (this.lastPowerState !== isPoweredL) {
-                this.lastPowerState = isPoweredL;
-                this.sendUpdate();
-            }
-        }, 500);
     }
 
     requestUpdate() {
@@ -294,10 +278,32 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
 
+        // every 100ms
         if (this.minPageUpdateThrottler.canUpdate(_deltaTime) !== -1 && this.updateRequest) {
             this.updateRequest = false;
             if (this.pageRedrawCallback) {
                 this.pageRedrawCallback();
+            }
+        }
+
+        // The MCDU is a client to the MCDU Server and tries to connect in regular intervals.
+        // every 2500ms
+        if (this.mcduServerConnectUpdateThrottler.canUpdate(_deltaTime) !== -1
+            && (!this.socket || this.socket.readyState !== 1)) {
+
+            this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
+        }
+
+        // There is no (known) event when power is turned on or off (e.g. Ext Pwr) and remote clients
+        // would not be updated (cleared or updated). Therefore monitoring power is necessary.
+        // every 500ms
+        if (this.powerCheckUpdateThrottler.canUpdate(_deltaTime) !== -1
+            && this.socket && this.socket.readyState) {
+
+            const isPoweredL = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Number");
+            if (this.lastPowerState !== isPoweredL) {
+                this.lastPowerState = isPoweredL;
+                this.sendUpdate();
             }
         }
 
