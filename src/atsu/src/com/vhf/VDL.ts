@@ -39,6 +39,10 @@ export class Vdl {
         this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', true);
     });
 
+    private inboundDelay = { messages: 0, delay: 0 };
+
+    private outboundDelay = { messages: 0, delay: 0 };
+
     private vhf3: Vhf = new Vhf();
 
     private presentPosition: OwnAircraft = new OwnAircraft();
@@ -157,5 +161,91 @@ export class Vdl {
 
         // use the fastest transmission time
         return Math.round(transmissionTime * 1000 + 0.5);
+    }
+
+    /**
+     * enqueues an inbound message and returns the required transmission time
+     * @param message The enqueued message
+     * @returns The overall transmission time
+     */
+    public enqueueInboundMessage(message: AtsuMessage): number {
+        let transmissionTime = this.calculateTransmissionTime(message);
+        if (this.inboundDelay.messages !== 0) {
+            transmissionTime += Math.min(...this.perPacketDelay);
+        }
+
+        this.inboundDelay.messages += 1;
+        this.inboundDelay.delay = transmissionTime;
+
+        return transmissionTime;
+    }
+
+    /**
+     * Decreases the inbound system delay and resets the system if no message is enqueued
+     * @param delay The passed delay
+     */
+    public dequeueInboundMessage(delay: number): void {
+        this.inboundDelay.delay = Math.max(this.inboundDelay.delay - delay, 0);
+        this.inboundDelay.messages -= 1;
+
+        // reset the timer
+        if (this.inboundDelay.messages <= 0) {
+            this.inboundDelay.messages = 0;
+            this.inboundDelay.delay = 0;
+        }
+    }
+
+    /**
+     * Enqueues a message into the outbound queue. It is simulated that all ground stations communicate first, followed by the A32NX
+     * @param message The enqueued outbound message
+     * @returns The overall transmission time
+     */
+    public enqueueOutboundMessage(message: AtsuMessage): number {
+        let transmissionTime = this.calculateTransmissionTime(message);
+        if (this.outboundDelay.messages !== 0) {
+            transmissionTime += Math.min(...this.perPacketDelay);
+        } else {
+            // simulate that first packets are the ground stations, thereafter the A32NX packet for an initial offset
+            transmissionTime += Vdl.TransmissionTimePerPacket * this.vhf3.relevantAirports.length;
+        }
+
+        this.outboundDelay.messages += 1;
+        this.outboundDelay.delay = transmissionTime;
+
+        return transmissionTime;
+    }
+
+    /**
+     * Enqueues a message of one packet length into the queue. It is simulated that all ground stations communicate first, followed by the A32NX
+     * @returns The overall transmission time
+     */
+    public enqueueOutboundPacket(): number {
+        let transmissionTime = Vdl.TransmissionTimePerPacket;
+        if (this.outboundDelay.messages !== 0) {
+            transmissionTime += Math.min(...this.perPacketDelay);
+        } else {
+            // simulate that first packets are the ground stations, thereafter the A32NX packet for an initial offset
+            transmissionTime += Vdl.TransmissionTimePerPacket * this.vhf3.relevantAirports.length;
+        }
+
+        this.outboundDelay.messages += 1;
+        this.outboundDelay.delay = transmissionTime;
+
+        return transmissionTime;
+    }
+
+    /**
+     * Dequeues an outbound message from the queue and decreases the overall delay
+     * @param delay The passed delay
+     */
+    public dequeueOutboundMessage(delay: number): void {
+        this.outboundDelay.delay = Math.max(this.outboundDelay.delay - delay, 0);
+        this.outboundDelay.messages -= 1;
+
+        // reset the timer
+        if (this.outboundDelay.messages <= 0) {
+            this.outboundDelay.messages = 0;
+            this.outboundDelay.delay = 0;
+        }
     }
 }
