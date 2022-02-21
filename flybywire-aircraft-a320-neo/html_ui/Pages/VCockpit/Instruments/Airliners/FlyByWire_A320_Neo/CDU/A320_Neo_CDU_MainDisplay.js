@@ -1090,6 +1090,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     onEvent(_event) {
         super.onEvent(_event);
 
+        // MCDU was accepting input while unpowered
+        if (!SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "Number")) {
+            return;
+        }
+
         if (_event.indexOf("1_BTN_") !== -1 || _event.indexOf("2_BTN_") !== -1 || _event.indexOf("BTN_") !== -1) {
             const input = _event.replace("1_BTN_", "").replace("2_BTN_", "").replace("BTN_", "");
             if (this.onInputAircraftSpecific(input)) {
