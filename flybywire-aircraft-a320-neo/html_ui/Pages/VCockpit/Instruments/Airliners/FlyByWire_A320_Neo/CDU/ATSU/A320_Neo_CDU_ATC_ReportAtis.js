@@ -99,7 +99,7 @@ class CDUAtcReportAtis {
 
         mcdu.setTemplate([
             [`${title} ATIS`, `${pageCount !== 1 ? currentPage : ""}`, `${pageCount !== 1 ? pageCount : ""}`],
-            [`[b-text]${title.replace("/", " ")}[color]white`, `[b-text]${CDUAtcReportAtis.ConvertAtisInformation(messages[messageIndex].Information)} ${messages[messageIndex].Timestamp.dcduTimestamp()}`],
+            [`[b-text]${title.replace("/", " ")}`, `[b-text]${CDUAtcReportAtis.ConvertAtisInformation(messages[messageIndex].Information)} ${messages[messageIndex].Timestamp.dcduTimestamp()}`],
             [`[s-text]${lines[offset] ? lines[offset] : ""}`],
             [`[b-text]${lines[offset + 1] ? lines[offset + 1] : ""}`],
             [`[s-text]${lines[offset + 2] ? lines[offset + 2] : ""}`],
@@ -110,7 +110,7 @@ class CDUAtcReportAtis {
             [`[b-text]${lines[offset + 7] ? lines[offset + 7] : ""}`],
             [prevAtis],
             ["\xa0ATIS MENU"],
-            ["<RETURN", "PRINT*[color]cyan"]
+            ["<RETURN", "{cyan}PRINT*{end}"]
         ]);
 
         mcdu.leftInputDelay[4] = () => {

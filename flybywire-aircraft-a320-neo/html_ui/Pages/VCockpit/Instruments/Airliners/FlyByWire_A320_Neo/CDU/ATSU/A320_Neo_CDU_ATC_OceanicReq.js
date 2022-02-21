@@ -43,7 +43,7 @@ class CDUAtcOceanicReq {
         let i = 0;
 
         while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount) {
-            const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, NaN, true);
+            const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, undefined, true);
 
             if (waypoint && !waypoint.isVectors && waypoint.ident === ident) {
                 return true;
@@ -62,8 +62,8 @@ class CDUAtcOceanicReq {
             lat: ADIRS.getLatitude().value,
             long: ADIRS.getLongitude().value,
         } : {
-            lat: NaN,
-            long: NaN
+            lat: undefined,
+            long: undefined
         };
 
         let retval = "";
@@ -84,15 +84,15 @@ class CDUAtcOceanicReq {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCOceanicReq;
 
-        let flightNo = "-------[color]white";
-        let atcStation = "----[color]white";
+        let flightNo = "{white}-------{end}";
+        let atcStation = "{white}----{end}";
 
         const entryTime = new CDU_SingleValueField(mcdu,
             "string",
             store.entryTime,
             {
                 clearable: true,
-                emptyValue: "_____[color]amber",
+                emptyValue: "{amber}_____{end}",
                 suffix: "[color]cyan",
                 maxLength: 5,
                 isValid: ((value) => {
@@ -128,7 +128,7 @@ class CDUAtcOceanicReq {
             store.entryPoint,
             {
                 clearable: true,
-                emptyValue: "_______[color]amber",
+                emptyValue: "{amber}_______{end}",
                 suffix: "[color]cyan"
             },
             (value) => {
@@ -161,7 +161,7 @@ class CDUAtcOceanicReq {
             store.requestedMach,
             {
                 clearable: true,
-                emptyValue: "___[color]amber",
+                emptyValue: "{amber}___{end}",
                 suffix: "[color]cyan",
                 maxLength: 3,
                 isValid: ((value) => {
@@ -188,7 +188,7 @@ class CDUAtcOceanicReq {
             store.requestedFlightlevel,
             {
                 clearable: true,
-                emptyValue: "_____[color]amber",
+                emptyValue: "{amber}_____{end}",
                 suffix: "[color]cyan",
                 maxLength: 5,
                 isValid: ((value) => {
@@ -218,7 +218,7 @@ class CDUAtcOceanicReq {
             store.freetext[0],
             {
                 clearable: store.freetext[0].length !== 0,
-                emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
+                emptyValue: "{cyan}[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0]{end}",
                 suffix: "[color]white",
                 maxLength: 22
             },
@@ -229,17 +229,17 @@ class CDUAtcOceanicReq {
         );
 
         if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length !== 0 && mcdu.flightPlanManager.getOrigin() !== null) {
-            flightNo = `${SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")}[color]green`;
+            flightNo = `{green}${SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")}{end}`;
         }
 
         if (mcdu.atsuManager.atc.currentStation() !== "") {
-            atcStation = `${mcdu.atsuManager.atc.currentStation()}[color]cyan`;
+            atcStation = `{cyan}${mcdu.atsuManager.atc.currentStation()}{end}`;
         }
 
         // check if all required information are available to prepare the PDC message
-        let reqDisplButton = "REQ DISPL\xa0[color]cyan";
+        let reqDisplButton = "{cyan}REQ DISPL\xa0{end}";
         if (CDUAtcOceanicReq.CanSendData(mcdu, store)) {
-            reqDisplButton = "REQ DISPL*[color]cyan";
+            reqDisplButton = "{cyan}REQ DISPL*{end}";
         }
 
         mcdu.setTemplate([
@@ -253,8 +253,8 @@ class CDUAtcOceanicReq {
             ["---------FREE TEXT---------"],
             [freetext],
             ["", "MORE\xa0"],
-            ["", "FREE TEXT>[color]white"],
-            ["\xa0ATC MENU", "ATC OCEAN\xa0[color]cyan"],
+            ["", "FREE TEXT>"],
+            ["\xa0ATC MENU", "{cyan}ATC OCEAN\xa0{end}"],
             ["<RETURN", reqDisplButton]
         ]);
 
@@ -293,7 +293,7 @@ class CDUAtcOceanicReq {
                 store.freetext[i + 1],
                 {
                     clearable: store.freetext[i + 1].length !== 0,
-                    emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
+                    emptyValue: "{cyan}[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0]{end}",
                     suffix: "[color]white",
                     maxLength: 22
                 },

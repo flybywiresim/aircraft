@@ -11,30 +11,30 @@ class CDUAtcAtisAutoUpdate {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCAtisAutoUpdate;
 
-        let arrAtis = "\xa0[  ]/[ ][color]cyan";
+        let arrAtis = "{cyan}\xa0[  ]/[ ]{end}";
         let arrAtisState = "";
-        let arrAtisButton = "ON\xa0[color]cyan";
-        let altAtis = "\xa0[  ]/[ ][color]cyan";
+        let arrAtisButton = "{cyan}ON\xa0{end}";
+        let altAtis = "{cyan}\xa0[  ]/[ ]{end}";
         let altAtisState = "";
-        let altAtisButton = "ON\xa0[color]cyan";
+        let altAtisButton = "{cyan}ON\xa0{end}";
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            arrAtis = `\xa0${mcdu.flightPlanManager.getDestination().ident}/ARR[color]cyan`;
+            arrAtis = `{cyan}\xa0${mcdu.flightPlanManager.getDestination().ident}/ARR{end}`;
             if (mcdu.atsuManager.atc.atisAutoUpdateActive(mcdu.flightPlanManager.getDestination().ident)) {
                 arrAtisState = "\x3a ON";
-                arrAtisButton = "OFF*[color]cyan";
+                arrAtisButton = "{cyan}OFF*{end}";
             } else {
                 arrAtisState = "\x3a OFF";
-                arrAtisButton = "ON*[color]cyan";
+                arrAtisButton = "{cyan}ON*{end}";
             }
         }
         if (mcdu.altDestination && mcdu.altDestination.ident) {
-            altAtis = `\xa0${mcdu.altDestination.ident}/ARR[color]cyan`;
+            altAtis = `{cyan}\xa0${mcdu.altDestination.ident}/ARR{end}`;
             if (mcdu.atsuManager.atc.atisAutoUpdateActive(mcdu.altDestination.ident)) {
                 altAtisState = "\x3a ON";
-                altAtisButton = "OFF*[color]cyan";
+                altAtisButton = "{cyan}OFF*{end}";
             } else {
                 altAtisState = "\x3a OFF";
-                altAtisButton = "ON*[color]cyan";
+                altAtisButton = "{cyan}ON*{end}";
             }
         }
 
@@ -42,9 +42,9 @@ class CDUAtcAtisAutoUpdate {
             ["ATIS AUTO UPDATE"],
             [""],
             [""],
-            ["", "SET\xa0[color]cyan"],
+            ["", "{cyan}SET\xa0{end}"],
             [arrAtis, arrAtisButton, arrAtisState],
-            ["", "SET\xa0[color]cyan"],
+            ["", "{cyan}SET\xa0{end}"],
             [altAtis, altAtisButton, altAtisState],
             [""],
             [""],

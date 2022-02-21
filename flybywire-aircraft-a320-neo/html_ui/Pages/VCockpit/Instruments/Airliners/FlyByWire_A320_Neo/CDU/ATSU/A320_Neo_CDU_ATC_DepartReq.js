@@ -58,14 +58,14 @@ class CDUAtcDepartReq {
         }
         store.firstCall = false;
 
-        let flightNo = "--------[color]white";
-        let fromTo = "____/____[color]amber";
+        let flightNo = "--------";
+        let fromTo = "{amber}____/____{end}";
         const atis = new CDU_SingleValueField(mcdu,
             "string",
             store.atis,
             {
                 clearable: true,
-                emptyValue: "_[color]amber",
+                emptyValue: "{amber}_{end}",
                 suffix: "[color]cyan",
                 maxLength: 1,
                 isValid: ((value) => {
@@ -82,7 +82,7 @@ class CDUAtcDepartReq {
             store.gate,
             {
                 clearable: true,
-                emptyValue: "[\xa0\xa0\xa0\xa0][color]cyan",
+                emptyValue: "{cyan}[\xa0\xa0\xa0\xa0]{end}",
                 suffix: "[color]cyan",
                 maxLength: 4
             },
@@ -96,7 +96,7 @@ class CDUAtcDepartReq {
             store.freetext[0],
             {
                 clearable: store.freetext[0].length !== 0,
-                emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
+                emptyValue: "{cyan}[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0]{end}",
                 suffix: "[color]white",
                 maxLength: 22
             },
@@ -107,10 +107,10 @@ class CDUAtcDepartReq {
         );
 
         if (store.callsign) {
-            flightNo = `${store.callsign}[color]green`;
+            flightNo = `{green}${store.callsign}{end}`;
         }
         if (store.from !== "" && store.to !== "") {
-            fromTo = `${store.from}/${store.to}[color]cyan`;
+            fromTo = `{cyan}${store.from}/${store.to}{end}`;
 
             const atisReports = mcdu.atsuManager.atc.atisReports(store.from);
             if (atisReports.length !== 0 && atisReports[0].Information !== "") {
@@ -119,7 +119,7 @@ class CDUAtcDepartReq {
             }
         }
 
-        let station = "____[color]amber";
+        let station = "{amber}____{end}";
         if (store.station !== "") {
             station = `{cyan}${store.station}{end}`;
             if (!store.stationManual) {
@@ -128,15 +128,15 @@ class CDUAtcDepartReq {
         }
 
         // check if all required information are available to prepare the PDC message
-        let reqDisplButton = "REQ DISPL\xa0[color]cyan";
+        let reqDisplButton = "{cyan}REQ DISPL\xa0{end}";
         if (CDUAtcDepartReq.CanSendData(store)) {
-            reqDisplButton = "REQ DISPL*[color]cyan";
+            reqDisplButton = "{cyan}REQ DISPL*{end}";
         }
 
         mcdu.setTemplate([
             ["DEPART REQ"],
             ["\xa0ATC FLT NBR", "A/C TYPE\xa0"],
-            [flightNo, "A20N[color]cyan"],
+            [flightNo, "{cyan}A20N{end}"],
             ["\xa0FROM/TO", "STATION\xa0"],
             [fromTo, station],
             ["\xa0GATE", "ATIS CODE\xa0"],
@@ -144,8 +144,8 @@ class CDUAtcDepartReq {
             ["-------FREE TEXT--------"],
             [freetext],
             ["", "MORE\xa0"],
-            ["", "FREE TEXT>[color]white"],
-            ["\xa0ATC MENU", "ATC DEPART\xa0[color]cyan"],
+            ["", "FREE TEXT>"],
+            ["\xa0ATC MENU", "{cyan}ATC DEPART\xa0{end}"],
             ["<RETURN", reqDisplButton]
         ]);
 
@@ -234,7 +234,7 @@ class CDUAtcDepartReq {
                 store.freetext[i + 1],
                 {
                     clearable: store.freetext[i + 1].length !== 0,
-                    emptyValue: "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan",
+                    emptyValue: "{cyan}[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0]{end}",
                     suffix: "[color]white",
                     maxLength: 22
                 },

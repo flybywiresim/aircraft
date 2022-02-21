@@ -7,8 +7,8 @@ class CDUAtcAtisMenu {
             { icao: "", type: Atsu.AtisType.Arrival, requested: false, autoupdate: false }
         ];
 
-        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
-            airports[0].icao = mcdu.flightPlanManager.getOrigin().ident;
+        if (mcdu.flightPlanManager.getPersistantOrigin() && mcdu.flightPlanManager.getPersistantOrigin().ident) {
+            airports[0].icao = mcdu.flightPlanManager.getPersistantOrigin().ident;
             airports[0].autoupdate = mcdu.atsuManager.atc.atisAutoUpdateActive(airports[0].icao);
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
@@ -128,7 +128,7 @@ class CDUAtcAtisMenu {
 
             return [left, middle, rightTitle, right];
         } else {
-            return ["\xa0[  ]/[ ][color]cyan", "", "REQ\xa0", "SEND\xa0"];
+            return ["{cyan}\xa0[  ]/[ ]{end}", "", "REQ\xa0", "SEND\xa0"];
         }
     }
 
@@ -171,14 +171,14 @@ class CDUAtcAtisMenu {
 
         mcdu.setTemplate([
             ["ATIS MENU"],
-            ["\xa0ARPT/TYPE[color]white", `${lines[0][2]}[color]cyan`],
-            [lines[0][0], `${lines[0][3]}[color]cyan`, `{small}${lines[0][1]}{end}[color]white`],
-            ["", `${lines[1][2]}[color]cyan`],
-            [lines[1][0], `${lines[1][3]}[color]cyan`, `{small}${lines[1][1]}{end}[color]white`],
-            ["", `${lines[2][2]}[color]cyan`],
-            [lines[2][0], `${lines[2][3]}[color]cyan`, `{small}${lines[2][1]}{end}[color]white`],
-            ["", `${lines[3][2]}[color]cyan`],
-            [lines[3][0], `${lines[3][3]}[color]cyan`, `{small}${lines[3][1]}{end}[color]white`],
+            ["\xa0ARPT/TYPE", `{cyan}${lines[0][2]}{end}`],
+            [lines[0][0], `{cyan}${lines[0][3]}{end}`, `{small}${lines[0][1]}{end}`],
+            ["", `{cyan}${lines[1][2]}{end}`],
+            [lines[1][0], `{cyan}${lines[1][3]}{end}`, `{small}${lines[1][1]}{end}`],
+            ["", `{cyan}${lines[2][2]}{end}`],
+            [lines[2][0], `{cyan}${lines[2][3]}{end}`, `{small}${lines[2][1]}{end}`],
+            ["", `{cyan}${lines[3][2]}{end}`],
+            [lines[3][0], `{cyan}${lines[3][3]}{end}`, `{small}${lines[3][1]}{end}`],
             ["", "AUTO\xa0"],
             ["", "UPDATE>"],
             ["\xa0ATC MENU", printTitle],
