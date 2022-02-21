@@ -189,47 +189,51 @@ export class Vhf {
 
         // prepare the request with the information
         const requestBatch = new SimVar.SimVarBatch('C:fs9gps:NearestAirportItemsNumber', 'C:fs9gps:NearestAirportCurrentLine');
+        requestBatch.add('C:fs9gps:NearestAirportCurrentICAO', 'string', 'string');
         requestBatch.add('C:fs9gps:NearestAirportSelectedLatitude', 'degree latitude');
         requestBatch.add('C:fs9gps:NearestAirportSelectedLongitude', 'degree longitude');
-        requestBatch.add('C:fs9gps:NearestAirportCurrentICAO', 'string', 'string');
         requestBatch.add('C:fs9gps:WaypointAirportElevation', 'feet');
+        requestBatch.add('C:fs9gps:NearestAirportCurrentDistance', 'meters');
 
-        await SimVar.SetSimVarValue('C:fs9gps:NearestAirportCurrentLatitude', 'degree latitude', this.presentPosition.Latitude);
-        await SimVar.SetSimVarValue('C:fs9gps:NearestAirportCurrentLongitude', 'degree longitude', this.presentPosition.Longitude);
-        await SimVar.SetSimVarValue('C:fs9gps:NearestAirportMaximumItems', 'number', MaxAirportsInRange);
-        await SimVar.SetSimVarValue('C:fs9gps:NearestAirportMaximumDistance', 'nautical miles', MaxSearchRange);
+        SimVar.SetSimVarValue('C:fs9gps:NearestAirportCurrentLatitude', 'degree latitude', this.presentPosition.Latitude);
+        SimVar.SetSimVarValue('C:fs9gps:NearestAirportCurrentLongitude', 'degree longitude', this.presentPosition.Longitude);
+        SimVar.SetSimVarValue('C:fs9gps:NearestAirportMaximumItems', 'number', MaxAirportsInRange);
+        SimVar.SetSimVarValue('C:fs9gps:NearestAirportMaximumDistance', 'nautical miles', 100000);
 
         // get all airports
-        SimVar.GetSimVarArrayValues(requestBatch, (airports) => {
-            airports.forEach((fetched) => {
-                // format: 'TYPE(one char) ICAO '
-                const icao = fetched[2].substr(2).trim();
+        return new Promise((resolve) => {
+            SimVar.GetSimVarArrayValues(requestBatch, (airports) => {
+                airports.forEach((fetched) => {
+                    // format: 'TYPE(one char) ICAO '
+                    const icao = fetched[0].substr(2).trim();
 
-                // found an international airport
-                if (VhfDatalinkAirports.findIndex((elem) => elem === icao) !== -1) {
-                    const maxDistance = maximumDistanceLoS(this.presentPosition.PressureAltitude, fetched[3]);
-                    const distance = MathUtils.computeDistance3D(fetched[0], fetched[1], fetched[3],
-                        this.presentPosition.Latitude, this.presentPosition.Longitude, this.presentPosition.PressureAltitude);
+                    // found an international airport
+                    if (VhfDatalinkAirports.findIndex((elem) => elem === icao) !== -1) {
+                        const maxDistance = maximumDistanceLoS(this.presentPosition.PressureAltitude, fetched[3]);
+                        const distanceNM = fetched[4] * 0.000539957;
 
-                    if (distance <= maxDistance) {
-                        const airport = new Airport();
-                        airport.Latitude = fetched[0];
-                        airport.Longitude = fetched[1];
-                        airport.Icao = icao;
+                        if (distanceNM <= maxDistance) {
+                            const airport = new Airport();
+                            airport.Icao = icao;
+                            airport.Elevation = fetched[3];
+                            airport.Distance = distanceNM;
 
-                        airport.ArincReachable = this.estimateDatarate(false, distance, airport);
-                        airport.SitaReachable = this.estimateDatarate(true, distance, airport);
+                            airport.ArincReachable = this.estimateDatarate(false, distanceNM, airport);
+                            airport.SitaReachable = this.estimateDatarate(true, distanceNM, airport);
 
-                        if (airport.ArincReachable || airport.SitaReachable) {
-                            this.relevantAirports.push(airport);
+                            if (airport.ArincReachable || airport.SitaReachable) {
+                                this.relevantAirports.push(airport);
+                            }
+                        }
+
+                        // assume that all upper stations are reachable within the maximum range
+                        if (distanceNM <= MaxSearchRange) {
+                            this.stationsUpperAirspace += 1;
                         }
                     }
+                });
 
-                    // assume that all upper stations are reachable within the maximum range
-                    if (distance <= MaxSearchRange) {
-                        this.stationsUpperAirspace += 1;
-                    }
-                }
+                resolve();
             });
         });
     }
