@@ -259,7 +259,7 @@ export class Vhf {
         this.frequencyOverlapSita = 0;
 
         if (storedAtisSrc === 'vatsim' || storedAtisSrc === 'ivao') {
-            ATC.get(storedAtisSrc).then((res) => {
+            await ATC.get(storedAtisSrc).then((res) => {
                 if (!res) return;
 
                 res = res.filter((a) => a.callsign.indexOf('_OBS') === -1 && parseFloat(a.frequency) <= 136.975 && this.greatCircleDistance(a.latitude, a.longitude) <= MaxSearchRange);
