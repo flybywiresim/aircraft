@@ -97,8 +97,8 @@ const ArincFrequency = 137.275;
 
 // physical parameters to simulate the signal quality
 const AdditiveNoiseOverlapDB = 1.4;
-const MinimumSignalDB = 35.0;
-const OptimalSignalDB = 75.0;
+const MinimumSignalDB = -75.0;
+const OptimalSignalDB = -115.0;
 const ReceiverAntennaGainDBI = 25.0;
 // is equal to 50W emitter power
 const SignalStrengthDBW = 39.1202;
@@ -161,13 +161,14 @@ export class Vhf {
     }
 
     private estimateDatarate(sita: boolean, distance: number, airport: Airport): boolean {
-        const signalPower = this.receivedSignalPower(sita ? this.frequencyOverlapSita : this.frequencyOverlapArinc);
+        const maximumFreespaceLoss = SignalStrengthDBW + ReceiverAntennaGainDBI - AdditiveNoiseOverlapDB * (sita ? this.frequencyOverlapSita : this.frequencyOverlapArinc) - MinimumSignalDB;
         const freespaceLoss = this.freespacePathLoss(sita ? SitaFrequency : ArincFrequency, distance);
-        const snr = signalPower - freespaceLoss;
 
-        if (snr >= MinimumSignalDB) {
+        if (maximumFreespaceLoss >= freespaceLoss) {
+            const lossDelta = maximumFreespaceLoss - freespaceLoss;
+
             // get the quality ratio normalized by the simulated signal power range
-            const qualityRatio = Math.min(1.0, (snr - MinimumSignalDB) / (OptimalSignalDB - MinimumSignalDB));
+            const qualityRatio = Math.min(1.0, Math.abs(lossDelta + MinimumSignalDB) / Math.abs(OptimalSignalDB + MinimumSignalDB));
 
             // use a sigmoid function to estimate the scaling of the datarate
             // parametrized to jump from 1.0 to 0.02 (y) between 0.0 and 1.0 (x)
