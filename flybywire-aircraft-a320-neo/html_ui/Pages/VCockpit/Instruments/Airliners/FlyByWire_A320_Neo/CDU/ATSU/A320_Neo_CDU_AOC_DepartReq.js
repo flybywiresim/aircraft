@@ -155,7 +155,9 @@ class CDUAocDepartReq {
                 if (code === Atsu.AtsuStatusCodes.Ok) {
                     mcdu.pdcMessage = undefined;
                     store["sendStatus"] = "SENT";
-                    CDUAocDepartReq.ShowPage1(mcdu, store);
+                    if (mcdu.page.Current === mcdu.page.AOCDepartRequest) {
+                        CDUAocDepartReq.ShowPage1(mcdu, store);
+                    }
 
                     setTimeout(() => {
                         store["sendStatus"] = "";
