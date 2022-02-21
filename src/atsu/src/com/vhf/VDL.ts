@@ -124,20 +124,18 @@ export class Vdl {
             for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {
                 // calculate the number of available slots based on data rate and floor due to broken slots
                 let messageCount = Math.floor(DataslotsPerSecond * Math.min(1.0, this.vhf3.datarates[i] / BitsOfChunksPerSecond));
-                console.log(`Available data slots per station for ${i}: ${messageCount}`);
 
                 // get all available message slots
                 messageCount *= this.vhf3.relevantAirports.length;
-                console.log(`Available data slots for ${i}: ${messageCount}`);
 
                 // calculate the number of slots for the remote traffic based on non-rounded messages
                 const messageCountPerAircraft = messageCount / relevantAircrafts;
-                console.log(`Data slots per aircraft and second for ${i}: ${messageCountPerAircraft}`);
 
                 // calculate the data rates
                 this.a32nxDatarates[i] = messageCountPerAircraft * BitsPerSlot / 8;
-                console.log(`Own datarate ${i}: ${this.a32nxDatarates[i]} bytes per second`);
             }
+
+            console.log(`Per aircraft (staitons: ${relevantAircrafts}) datarates: ${this.a32nxDatarates}`);
         }));
     }
 
