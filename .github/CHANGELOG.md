@@ -162,6 +162,7 @@
 1. [SOUNDS] Use estimated landing rate for touchdown sound selection - @aguther (Andreas Guther)
 1. [ATHR] Increase spool up/down speed for THR IDLE and THR CLB to better match real plane - @aguther (Andreas Guther)
 1. [FLIGHTMODEL] Flight model improvements - @donstim (donbikes#4084)
+1. [SPEEDS] Fix GS mini not being limited by VFE-5 in CONF FULL -  @donstim (donbikes#4084)
 
 ## 0.7.0
 
