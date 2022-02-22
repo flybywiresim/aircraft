@@ -1,6 +1,8 @@
 class CDUAtcOceanicReq {
     static CreateDataBlock() {
         return {
+            firstCall: true,
+            callsign: null,
             entryPoint: null,
             entryTime: null,
             requestedMach: null,
@@ -10,7 +12,7 @@ class CDUAtcOceanicReq {
     }
 
     static CanSendData(mcdu, data) {
-        if (!SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") || SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length === 0) {
+        if (!data.callsign) {
             return false;
         }
         if (!mcdu.flightPlanManager.getDestination() || mcdu.flightPlanManager.getDestination().ident === "") {
@@ -25,7 +27,7 @@ class CDUAtcOceanicReq {
     static CreateMessage(mcdu, data) {
         const retval = new Atsu.OclMessage();
 
-        retval.Callsign = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
+        retval.Callsign = data.callsign;
         retval.Destination = mcdu.flightPlanManager.getDestination().ident;
         retval.EntryPoint = data.entryPoint;
         retval.EntryTime = data.entryTime;
@@ -228,10 +230,16 @@ class CDUAtcOceanicReq {
             }
         );
 
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC").length !== 0 && mcdu.flightPlanManager.getOrigin() !== null) {
-            flightNo = `{green}${SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")}{end}`;
+        if (store.firstCall && !store.callsign) {
+            if (mcdu.atsuManager.flightNumber().length !== 0) {
+                store.callsign = mcdu.atsuManager.flightNumber();
+            }
         }
+        store.firstCall = false;
 
+        if (store.callsign) {
+            flightNo = `{green}${store.callsign}{end}`;
+        }
         if (mcdu.atsuManager.atc.currentStation() !== "") {
             atcStation = `{cyan}${mcdu.atsuManager.atc.currentStation()}{end}`;
         }
