@@ -64,7 +64,6 @@ export const AttitudeIndicatorFixedCenter = ({ pitch, roll, vs, gs, heading, tra
 
     return (
         <g id="AttitudeSymbolsGroup">
-            <path className="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
             <SidestickIndicator isOnGround={isOnGround} />
             <path className="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
             {!isAttExcessive && (
