@@ -78,20 +78,199 @@ const PseudoFWC: React.FC = () => {
     const [memoMessageLeft, setMemoMessageLeft] = useState<string[]>([]);
     const [memoMessageRight, setMemoMessageRight] = useState<string[]>([]);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
-    const [fuel] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'percent', 500);
-    const [usrStartRefueling] = useSimVar('L:A32NX_REFUEL_STARTED_BY_USR', 'bool', 500);
+
+    /* SETTINGS */
+    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+    const configPortableDevices = parseInt(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '0'));
+
+    /* ANTI-ICE */
+    const [eng1AntiIce] = useSimVar('ENG ANTI ICE:1', 'bool', 500);
+    const [eng2AntiIce] = useSimVar('ENG ANTI ICE:2', 'bool', 500);
+    const [wingAntiIce] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_WING_Pressed', 'bool', 500);
+
+    /* ELECTRICAL */
+    const [engine1Generator] = useSimVar('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool', 500);
+    const [engine2Generator] = useSimVar('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool', 500);
+    const [emergencyElectricGeneratorPotential] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number', 500);
+    const emergencyGeneratorOn = emergencyElectricGeneratorPotential > 0 ? 1 : 0;
+
+    /* ENGINE AND THROTTLE SIMVARS */
+
     const [engine1State] = useSimVar('L:A32NX_ENGINE_STATE:1', 'enum', 500);
     const [engine2State] = useSimVar('L:A32NX_ENGINE_STATE:2', 'enum', 500);
+    const [throttle1PositionActual] = useSimVar('L:XMLVAR_Throttle1Position', 'number', 100);
+    const [throttle2PositionActual] = useSimVar('L:XMLVAR_Throttle2Position', 'number', 100);
+    const throttle1Position = Math.floor(throttle1PositionActual);
+    const throttle2Position = Math.floor(throttle2PositionActual);
+    const [engine1ValueSwitch] = useSimVar('FUELSYSTEM VALVE SWITCH:1', 'bool', 500);
+    const [engine2ValueSwitch] = useSimVar('FUELSYSTEM VALVE SWITCH:2', 'bool', 500);
+    const [N1Eng1] = useSimVar('L:A32NX_ENGINE_N1:1', 'number', 500);
+    const [N1Eng2] = useSimVar('L:A32NX_ENGINE_N1:2', 'number', 500);
+    const [N1IdleEng1] = useSimVar('L:A32NX_ENGINE_IDLE_N1:1', 'number', 500);
+    const [N1IdleEng2] = useSimVar('L:A32NX_ENGINE_IDEL_N1:2', 'number', 500);
+    const N1AboveIdle = Math.floor(N1Eng1) > N1IdleEng1 ? 1 : 0;
+    const N2AboveIdle = Math.floor(N1Eng2) > N1IdleEng2 ? 1 : 0;
+    const [autothrustLeverWarningFlex] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool', 500);
+    const [autothrustLeverWarningTOGA] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool', 500);
+    const thrustLeverNotSet = autothrustLeverWarningFlex === 1 || autothrustLeverWarningTOGA === 1;
+    const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'enum', 1000);
+
+    /* FIRE */
+
+    const [fireButton1] = useSimVar('L:A32NX_FIRE_BUTTON_ENG1', 'bool', 500);
+    const [fireButton2] = useSimVar('L:A32NX_FIRE_BUTTON_ENG2', 'bool', 500);
+    const [fireButtonAPU] = useSimVar('L:A32NX_FIRE_BUTTON_APU', 'bool', 500);
+    const [eng1FireTest] = useSimVar('L:A32NX_FIRE_TEST_ENG1', 'bool', 500);
+    const [eng2FireTest] = useSimVar('L:A32NX_FIRE_TEST_ENG2', 'bool', 500);
+    const [apuFireTest] = useSimVar('L:A32NX_FIRE_TEST_APU', 'bool', 500);
+    const [eng1Agent1PB] = useSimVar('L:A32NX_FIRE_ENG1_AGENT1_Discharge', 'bool', 500);
+    const [eng1Agent2PB] = useSimVar('L:A32NX_FIRE_ENG1_AGENT2_Discharge', 'bool', 500);
+    const [eng2Agent1PB] = useSimVar('L:A32NX_FIRE_ENG2_AGENT1_Discharge', 'bool', 500);
+    const [eng2Agent2PB] = useSimVar('L:A32NX_FIRE_ENG2_AGENT2_Discharge', 'bool', 500);
+    const [apuAgentPB] = useSimVar('L:A32NX_FIRE_APU_AGENT1_Discharge', 'bool', 500);
+
+    const [timerEng1Agent1Timer, setTimerEng1Agent1Timer] = useState<number>(-1);
+    const [timerEng1Agent2Timer, setTimerEng1Agent2Timer] = useState<number>(-1);
+    const [agent1Eng1Discharge, setAgent1Eng1Discharge] = useState(false);
+    const [agent2Eng1Discharge, setAgent2Eng1Discharge] = useState(false);
+
+    const [timerEng2Agent1Timer, setTimerEng2Agent1Timer] = useState<number>(-1);
+    const [timerEng2Agent2Timer, setTimerEng2Agent2Timer] = useState<number>(-1);
+    const [agent1Eng2Discharge, setAgent1Eng2Discharge] = useState(false);
+    const [agent2Eng2Discharge, setAgent2Eng2Discharge] = useState(false);
+
+    const [agentApuAgentTimer, setApuAgentTimer] = useState<number>(-1);
+    const [agentAPUDischarge, setAgentAPUDischarge] = useState(false);
+
+    // Remember all these run once so need to include fireButton1 === 1 && !eng1FireTest
+    useEffect(() => {
+        if (!eng1FireTest) {
+            setTimerEng1Agent1Timer(10);
+        }
+    }, [fireButton1]);
+
+    useEffect(() => {
+        if (!eng1FireTest) {
+            setTimerEng1Agent2Timer(30);
+        }
+    }, [eng1Agent1PB]);
+
+    useEffect(() => {
+        if (!eng2FireTest) {
+            console.log('Setting timer for Eng2 Agent 1');
+            setTimerEng2Agent1Timer(10);
+        }
+    }, [fireButton2]);
+
+    useEffect(() => {
+        if (!eng2FireTest) {
+            setTimerEng2Agent2Timer(30);
+        }
+    }, [eng2Agent1PB]);
+
+    useEffect(() => {
+        if (!apuFireTest) {
+            setApuAgentTimer(10);
+        }
+    }, [fireButtonAPU]);
+
+    useEffect(() => {
+        console.log('FireTest');
+        if (eng1FireTest === 0 && eng2FireTest === 0 && apuFireTest === 0) {
+            masterWarning(0);
+        }
+    }, [eng1FireTest, eng2FireTest, apuFireTest]);
+
+    useUpdate((deltaTime) => {
+        if (fireButton1 === 1 && timerEng1Agent1Timer !== -1) {
+            if (timerEng1Agent1Timer > 0) {
+                if (deltaTime < 1000) {
+                    setTimerEng1Agent1Timer(timerEng1Agent1Timer - (deltaTime / 1000));
+                }
+            } else {
+                setTimerEng1Agent1Timer(-1);
+                setAgent1Eng1Discharge(true);
+            }
+        }
+        if (agent1Eng1Discharge && timerEng1Agent2Timer !== -1) {
+            if (timerEng1Agent2Timer > 0) {
+                if (deltaTime < 1000) {
+                    setTimerEng1Agent2Timer(timerEng1Agent2Timer - (deltaTime / 1000));
+                }
+            } else {
+                setTimerEng1Agent2Timer(-1);
+                setAgent2Eng1Discharge(true);
+            }
+        }
+        // console.log(`TimeEng2Agent1 is ${timerEng2Agent1Timer}`);
+        if (fireButton2 === 1 && timerEng2Agent1Timer !== -1) {
+            if (timerEng2Agent1Timer > 0) {
+                if (deltaTime < 1000) {
+                    setTimerEng2Agent1Timer(timerEng2Agent1Timer - (deltaTime / 1000));
+                }
+            } else {
+                setTimerEng2Agent1Timer(-1);
+                setAgent1Eng2Discharge(true);
+            }
+        }
+        if (agent1Eng2Discharge && timerEng2Agent2Timer !== -1) {
+            if (timerEng2Agent2Timer > 0) {
+                if (deltaTime < 1000) {
+                    setTimerEng2Agent2Timer(timerEng2Agent2Timer - (deltaTime / 1000));
+                }
+            } else {
+                setTimerEng2Agent2Timer(-1);
+                setAgent2Eng2Discharge(true);
+            }
+        }
+        if (fireButtonAPU === 1 && agentApuAgentTimer !== -1) {
+            if (agentApuAgentTimer > 0) {
+                if (deltaTime < 1000) {
+                    setApuAgentTimer(agentApuAgentTimer - (deltaTime / 1000));
+                }
+            } else {
+                setApuAgentTimer(-1);
+                setAgentAPUDischarge(true);
+            }
+        }
+    });
+
+    /* FUEL */
+    const [fuel] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'percent', 500);
+    const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 500);
+    const fobRounded = Math.round(fob / 10) * 10;
+    const [usrStartRefueling] = useSimVar('L:A32NX_REFUEL_STARTED_BY_USR', 'bool', 500);
+    const [leftOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'bool', 500);
+    const [rightOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:5', 'bool', 500);
+    const [fuelXFeedPBOn] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_XFEED_Pressed', 'bool', 500);
+
+    /* HYDRAULICS */
+    const [greenLP] = useSimVar('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'bool', 500);
+    const [blueLP] = useSimVar('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool', 500);
+    const [yellowLP] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'bool', 500);
+    const [eng1pumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool', 500);
+    const [eng2pumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'bool', 500);
+    const [hydPTU] = useSimVar('L:A32NX_HYD_PTU_ON_ECAM_MEMO', 'bool', 500);
+    const [ratDeployed] = useSimVar('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100', 500);
+
+    /* LANDING GEAR AND LIGHTS */
+    const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 500);
+    const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 500);
+    const onGround = left1LandingGear === 1 && right1LandingGear === 1;
+    const [landingGearDown] = useSimVar('GEAR HANDLE POSITION', 'bool', 500);
+    const [landingLight2Retracted] = useSimVar('L:LANDING_2_Retracted', 'bool', 500);
+    const [landingLight3Retracted] = useSimVar('L:LANDING_3_Retracted', 'bool', 500);
+    const [autoBrakesArmedMode] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum', 500);
+    const [antiskidActive] = useSimVar('ANTISKID BRAKES ACTIVE', 'bool', 500);
+
+    /* OTHER STUFF */
+
     const [spoilersArmed] = useSimVar('L:A32NX_SPOILERS_ARMED', 'bool', 500);
     const [seatBelt] = useSimVar('A:CABIN SEATBELTS ALERT SWITCH', 'bool', 500);
     const [noSmoking] = useSimVar('L:A32NX_NO_SMOKING_MEMO', 'bool', 500);
-    const configPortableDevices = parseInt(NXDataStore.get('CONFIG_USING_PORTABLE_DEVICES', '0'));
+
     const [strobeLightsOn] = useSimVar('L:LIGHTING_STROBE_0', 'bool', 500);
-    const [leftOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:4', 'bool', 500);
-    const [rightOuterInnerValve] = useSimVar('FUELSYSTEM VALVE OPEN:5', 'bool', 500);
-    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
-    const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 500);
-    const fobRounded = Math.round(fob / 10) * 10;
+
     const [gpwsFlapMode] = useSimVar('L:A32NX_GPWS_FLAP_OFF', 'bool', 500);
     const [tomemo] = useSimVar('L:A32NX_FWC_TOMEMO', 'bool', 500);
     const [ldgmemo] = useSimVar('L:A32NX_FWC_LDGMEMO', 'bool', 500);
@@ -110,14 +289,6 @@ const PseudoFWC: React.FC = () => {
     const [callPushAft] = useSimVar('L:PUSH_OVHD_CALLS_AFT', 'bool', 100);
     const [cabinReady] = useSimVar('L:A32NX_CABIN_READY', 'bool');
 
-    const [engine1Generator] = useSimVar('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool', 500);
-    const [engine2Generator] = useSimVar('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool', 500);
-    const [greenLP] = useSimVar('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'bool', 500);
-    const [blueLP] = useSimVar('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool', 500);
-    const [yellowLP] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'bool', 500);
-    const [eng1pumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool', 500);
-    const [eng2pumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'bool', 500);
-
     const [toconfigBtn] = useSimVar('L:A32NX_BTN_TOCONFIG', 'bool', 100);
     const [flapsMcdu] = useSimVar('L:A32NX_TO_CONFIG_FLAPS', 'number', 500);
     const [flapsMcduEntered] = useSimVar('L:A32NX_TO_CONFIG_FLAPS_ENTERED', 'bool', 500);
@@ -132,82 +303,32 @@ const PseudoFWC: React.FC = () => {
     const [cargofwdLocked] = useSimVar('L:A32NX_FWD_DOOR_CARGO_LOCKED', 'bool', 1000);
     const [cargoaftLocked] = useSimVar('L:A32NX_AFT_DOOR_CARGO_LOCKED', 'bool', 1000);
 
-    const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 500);
-    const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 500);
-    const onGround = left1LandingGear === 1 && right1LandingGear === 1;
-    const [landingGearDown] = useSimVar('GEAR HANDLE POSITION', 'bool', 500);
-
-    const [eng1FireTest] = useSimVar('L:A32NX_FIRE_TEST_ENG1', 'bool', 500);
-    const [eng2FireTest] = useSimVar('L:A32NX_FIRE_TEST_ENG2', 'bool', 500);
-    const [apuFireTest] = useSimVar('L:A32NX_FIRE_TEST_APU', 'bool', 500);
-    const [throttle1PositionActual] = useSimVar('L:XMLVAR_Throttle1Position', 'number', 100);
-    const [throttle2PositionActual] = useSimVar('L:XMLVAR_Throttle2Position', 'number', 100);
-    const throttle1Position = Math.floor(throttle1PositionActual);
-    const throttle2Position = Math.floor(throttle2PositionActual);
-    const [engine1ValueSwitch] = useSimVar('FUELSYSTEM VALVE SWITCH:1', 'bool', 500);
-    const [engine2ValueSwitch] = useSimVar('FUELSYSTEM VALVE SWITCH:2', 'bool', 500);
     const [parkingBrake] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'bool', 500);
 
-    const [fireButton1] = useSimVar('L:A32NX_FIRE_BUTTON_ENG1', 'bool', 500);
-    const [fireButton2] = useSimVar('L:A32NX_FIRE_BUTTON_ENG2', 'bool', 500);
-    const [fireButtonAPU] = useSimVar('L:A32NX_FIRE_BUTTON_APU', 'bool', 500);
-
-    const [eng1Agent1PB] = useSimVar('L:A32NX_FIRE_ENG1_AGENT1_Discharge', 'bool', 500);
-    const [eng1Agent2PB] = useSimVar('L:A32NX_FIRE_ENG1_AGENT2_Discharge', 'bool', 500);
-    const [eng2Agent1PB] = useSimVar('L:A32NX_FIRE_ENG2_AGENT1_Discharge', 'bool', 500);
-    const [eng2Agent2PB] = useSimVar('L:A32NX_FIRE_ENG2_AGENT2_Discharge', 'bool', 500);
-    const [apuAgentPB] = useSimVar('L:A32NX_FIRE_APU_AGENT1_Discharge', 'bool', 500);
     const [apuMasterSwitch] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool', 500);
-    const [timerEng1Agent1Timer, setTimerEng1Agent1Timer] = useState<number>(-1);
-    const [timerEng1Agent2Timer, setTimerEng1Agent2Timer] = useState<number>(-1);
-    const [agent1Eng1Discharge, setAgent1Eng1Discharge] = useState(false);
-    const [agent2Eng1Discharge, setAgent2Eng1Discharge] = useState(false);
-
-    const [timerEng2Agent1Timer, setTimerEng2Agent1Timer] = useState<number>(-1);
-    const [timerEng2Agent2Timer, setTimerEng2Agent2Timer] = useState<number>(-1);
-    const [agent1Eng2Discharge, setAgent1Eng2Discharge] = useState(false);
-    const [agent2Eng2Discharge, setAgent2Eng2Discharge] = useState(false);
-
-    const [agentApuAgentTimer, setApuAgentTimer] = useState<number>(-1);
-    const [agentAPUDischarge, setAgentAPUDischarge] = useState(false);
-
     const [flightPhaseInhibitOverride] = useSimVar('L:A32NX_FWC_INHIBOVRD', 'bool', 500);
     const [nwSteeringDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'bool', 500);
-    const [hydPTU] = useSimVar('L:A32NX_HYD_PTU_ON_ECAM_MEMO', 'bool', 500);
-    const [ratDeployed] = useSimVar('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100', 500);
-    const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'enum', 1000);
     const [predWSOn] = useSimVar('L:A32NX_SWITCH_RADAR_PWS_Position', 'bool', 1000);
     const [gpwsOff] = useSimVar('L:A32NX_GPWS_TERR_OFF', 'bool', 500);
     const [tcasMode] = useSimVar('L:A32NX_TCAS_MODE', 'enum', 500);
     const [compMesgCount] = useSimVar('L:A32NX_COMPANY_MSG_COUNT', 'number', 500);
-    const [eng1AntiIce] = useSimVar('ENG ANTI ICE:1', 'bool', 500);
-    const [eng2AntiIce] = useSimVar('ENG ANTI ICE:2', 'bool', 500);
-    const [wingAntiIce] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_WING_Pressed', 'bool', 500);
+
     const [apuBleedValveOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool', 500);
     const [apuAvail] = useSimVar('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool', 500);
-    const [landingLight2Retracted] = useSimVar('L:LANDING_2_Retracted', 'bool', 500);
-    const [landingLight3Retracted] = useSimVar('L:LANDING_3_Retracted', 'bool', 500);
+
     const [brakeFan] = useSimVar('L:A32NX_BRAKE_FAN', 'bool', 500);
     const [dmcSwitchingKnob] = useSimVar('L:A32NX_EIS_DMC_SWITCHING_KNOB', 'enum', 500);
     const [ndXfrKnob] = useSimVar('L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB', 'bool', 500);
     const [gpwsFlaps3] = useSimVar('L:A32NX_GPWS_FLAPS3', 'bool', 500);
-    const [autoBrakesArmedMode] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum', 500);
     const [manLandingElevation] = useSimVar('L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV', 'number', 500);
-    const [fuelXFeedPBOn] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_XFEED_Pressed', 'bool', 500);
     const [ATTKnob] = useSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'enum', 500);
     const [AIRKnob] = useSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'enum', 500);
 
-    const [emergencyElectricGeneratorPotential] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number', 500);
-    const [N1Eng1] = useSimVar('L:A32NX_ENGINE_N1:1', 'number', 500);
-    const [N1Eng2] = useSimVar('L:A32NX_ENGINE_N1:2', 'number', 500);
-    const [N1IdleEng1] = useSimVar('L:A32NX_ENGINE_IDLE_N1:1', 'number', 500);
-    const [N1IdleEng2] = useSimVar('L:A32NX_ENGINE_IDEL_N1:2', 'number', 500);
-    const N1AboveIdle = Math.floor(N1Eng1) > N1IdleEng1 ? 1 : 0;
-    const N2AboveIdle = Math.floor(N1Eng2) > N1IdleEng2 ? 1 : 0;
     const [radioAlt] = useSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'Feet', 500);
     const [fac1Failed] = useSimVar('L:A32NX_FBW_FAC_FAILED:1', 'bool', 500);
+    const [tcasFault] = useSimVar('L:A32NX_TCAS_FAULT', 'bool', 500);
 
-    const emergencyGeneratorOn = emergencyElectricGeneratorPotential > 0 ? 1 : 0;
+    /* WARNINGS AND FAILURES */
     const landASAPRed: boolean = !!(!onGround
     && (
         fireButton1 === 1
@@ -241,12 +362,6 @@ const PseudoFWC: React.FC = () => {
     const [recallReset, setRecallReset] = useState(1);
     const [toconfigFailed, setToConfigFailed] = useState(false);
 
-    const [autothrustLeverWarningFlex] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool', 500);
-    const [autothrustLeverWarningTOGA] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool', 500);
-    const thrustLeverNotSet = autothrustLeverWarningFlex === 1 || autothrustLeverWarningTOGA === 1;
-    const [antiskidActive] = useSimVar('ANTISKID BRAKES ACTIVE', 'bool', 500);
-    const [tcasFault] = useSimVar('L:A32NX_TCAS_FAULT', 'bool', 500);
-
     const masterWarning = (toggle: number) => {
         console.log(`Master warning and toggle is ${toggle}`);
         SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', toggle);
@@ -259,40 +374,41 @@ const PseudoFWC: React.FC = () => {
     };
 
     useEffect(() => {
-        if (masterWarningButtonLeft === 1 || masterWarningButtonRight === 1) {
-            console.log(`Master caution${masterWarningButtonLeft}`);
-            masterWarning(0);
-        }
-        if (masterCautionButtonLeft === 1 || masterCautionButtonRight === 1) {
-            console.log(`Master warning ${masterCautionButtonLeft}`);
-            masterCaution(0);
-        }
-    }, [masterCautionButtonLeft, masterCautionButtonRight, masterWarningButtonLeft, masterWarningButtonRight]);
+        console.log(`Master warning${masterWarningButtonLeft}`);
+        masterWarning(0);
+    }, [masterWarningButtonLeft, masterWarningButtonRight]);
+
+    useEffect(() => {
+        console.log(`Master caution ${masterCautionButtonLeft}`);
+        masterCaution(0);
+    }, [masterCautionButtonLeft, masterCautionButtonRight]);
 
     useEffect(() => {
         console.log('Clear buttons pressed');
-        if (clearButtonLeft === 1 || clearButtonRight === 1) {
-            if (typeof failures !== 'undefined' && failures.length > 0) {
-                console.log('We have failures to remove');
-                const updatedFailures = failures.slice(1);
-                // console.log('Failures are currently');
-                // console.log(failures);
-                // console.log('All current failures');
-                // console.log(allCurrentFailures);
-                const updatedRecallFailures = allCurrentFailures.filter((item) => !updatedFailures.includes(item));
-                // console.log('Recall failures updated to ');
-                // console.log(updatedRecallFailures);
-                setRecallFailures(updatedRecallFailures);
-                setFailures(updatedFailures);
-                setActiveFailure(updatedFailures.length === 0 ? 0 : 1);
-                setRecallReset(1);
-            } else {
-                setRecallFailures([]);
-            }
-
-            SimVar.SetSimVarValue('L:A32NX_BTN_CLR', 'Bool', 0);
-            SimVar.SetSimVarValue('L:A32NX_BTN_CLR2', 'Bool', 0);
+        if (typeof failures !== 'undefined' && failures.length > 0) {
+            console.log('We have failures to remove');
+            const updatedFailures = failures.slice(1);
+            // console.log('Failures are currently');
+            // console.log(failures);
+            // console.log('All current failures');
+            // console.log(allCurrentFailures);
+            const updatedRecallFailures = allCurrentFailures.filter((item) => !updatedFailures.includes(item));
+            // console.log('Recall failures updated to ');
+            // console.log(updatedRecallFailures);
+            setRecallFailures(updatedRecallFailures);
+            setFailures(updatedFailures);
+            setActiveFailure(updatedFailures.length === 0 ? 0 : 1);
+            setRecallReset(1);
+        } else {
+            setRecallFailures([]);
         }
+
+        SimVar.SetSimVarValue('L:A32NX_BTN_CLR', 'Bool', 0);
+        SimVar.SetSimVarValue('L:A32NX_BTN_CLR2', 'Bool', 0);
+    }, [clearButtonLeft, clearButtonRight]);
+
+    useEffect(() => {
+        console.log('Clear buttons pressed');
         console.log(`Recall button is ${recallButton}`);
         if (recallButton) {
             console.log(`You pressed recall and recallFailures is ${JSON.stringify(recallFailures)}`);
@@ -310,7 +426,7 @@ const PseudoFWC: React.FC = () => {
                 setRecallReset(0);
             }
         }
-    }, [clearButtonLeft, clearButtonRight, recallButton]);
+    }, [recallButton]);
 
     useEffect(() => {
         // console.log('Change in failure state');
@@ -324,6 +440,8 @@ const PseudoFWC: React.FC = () => {
             setRecallFailures([]);
         }
     }, [failures]);
+
+    /* FAILURES, MEMOS AND SPECIAL LINES */
 
     interface EWDItem {
         flightPhaseInhib: number[],
@@ -972,99 +1090,6 @@ const PseudoFWC: React.FC = () => {
             side: 'RIGHT',
         },
     };
-
-    // Remember all these run once so need to include fireButton1 === 1 && !eng1FireTest
-    useEffect(() => {
-        if (!eng1FireTest) {
-            setTimerEng1Agent1Timer(10);
-        }
-    }, [fireButton1]);
-
-    useEffect(() => {
-        if (!eng1FireTest) {
-            setTimerEng1Agent2Timer(30);
-        }
-    }, [eng1Agent1PB]);
-
-    useEffect(() => {
-        if (!eng2FireTest) {
-            console.log('Setting timer for Eng2 Agent 1');
-            setTimerEng2Agent1Timer(10);
-        }
-    }, [fireButton2]);
-
-    useEffect(() => {
-        if (!eng2FireTest) {
-            setTimerEng2Agent2Timer(30);
-        }
-    }, [eng2Agent1PB]);
-
-    useEffect(() => {
-        if (!apuFireTest) {
-            setApuAgentTimer(10);
-        }
-    }, [fireButtonAPU]);
-
-    useEffect(() => {
-        console.log('FireTest');
-        if (eng1FireTest === 0 && eng2FireTest === 0 && apuFireTest === 0) {
-            masterWarning(false);
-        }
-    }, [eng1FireTest, eng2FireTest, apuFireTest]);
-
-    useUpdate((deltaTime) => {
-        if (fireButton1 === 1 && timerEng1Agent1Timer !== -1) {
-            if (timerEng1Agent1Timer > 0) {
-                if (deltaTime < 1000) {
-                    setTimerEng1Agent1Timer(timerEng1Agent1Timer - (deltaTime / 1000));
-                }
-            } else {
-                setTimerEng1Agent1Timer(-1);
-                setAgent1Eng1Discharge(true);
-            }
-        }
-        if (agent1Eng1Discharge && timerEng1Agent2Timer !== -1) {
-            if (timerEng1Agent2Timer > 0) {
-                if (deltaTime < 1000) {
-                    setTimerEng1Agent2Timer(timerEng1Agent2Timer - (deltaTime / 1000));
-                }
-            } else {
-                setTimerEng1Agent2Timer(-1);
-                setAgent2Eng1Discharge(true);
-            }
-        }
-        // console.log(`TimeEng2Agent1 is ${timerEng2Agent1Timer}`);
-        if (fireButton2 === 1 && timerEng2Agent1Timer !== -1) {
-            if (timerEng2Agent1Timer > 0) {
-                if (deltaTime < 1000) {
-                    setTimerEng2Agent1Timer(timerEng2Agent1Timer - (deltaTime / 1000));
-                }
-            } else {
-                setTimerEng2Agent1Timer(-1);
-                setAgent1Eng2Discharge(true);
-            }
-        }
-        if (agent1Eng2Discharge && timerEng2Agent2Timer !== -1) {
-            if (timerEng2Agent2Timer > 0) {
-                if (deltaTime < 1000) {
-                    setTimerEng2Agent2Timer(timerEng2Agent2Timer - (deltaTime / 1000));
-                }
-            } else {
-                setTimerEng2Agent2Timer(-1);
-                setAgent2Eng2Discharge(true);
-            }
-        }
-        if (fireButtonAPU === 1 && agentApuAgentTimer !== -1) {
-            if (agentApuAgentTimer > 0) {
-                if (deltaTime < 1000) {
-                    setApuAgentTimer(agentApuAgentTimer - (deltaTime / 1000));
-                }
-            } else {
-                setApuAgentTimer(-1);
-                setAgentAPUDischarge(true);
-            }
-        }
-    });
 
     useEffect(() => {
         console.log('TO Config check');
