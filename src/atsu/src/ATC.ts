@@ -1,7 +1,6 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { HoppieConnector } from './com/webinterfaces/HoppieConnector';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
@@ -18,8 +17,6 @@ export class Atc {
     private datalink: Datalink | undefined = undefined;
 
     private dcduLink: DcduLink | undefined = undefined;
-
-    private cdplcResetRequired = false;
 
     private currentAtc = '';
 
@@ -39,33 +36,13 @@ export class Atc {
         this.dcduLink = new DcduLink(parent, this);
     }
 
-    public resetAtc() {
-        if (this.cdplcResetRequired) {
-            if (this.currentAtc !== '') {
-                this.logoff();
-            }
-            if (this.nextAtc !== '') {
-                this.resetLogon();
-            }
-
-            this.cdplcResetRequired = false;
-        }
-    }
-
-    public async connect(flightNo: string): Promise<AtsuStatusCodes> {
+    public async disconnect(): Promise<void> {
         if (this.currentAtc !== '') {
             await this.logoff();
         }
-        return HoppieConnector.connect(flightNo).then((code) => {
-            if (code === AtsuStatusCodes.Ok) {
-                this.cdplcResetRequired = true;
-            }
-            return code;
-        });
-    }
-
-    public async disconnect(): Promise<AtsuStatusCodes> {
-        return HoppieConnector.disconnect();
+        if (this.nextAtc !== '') {
+            this.resetLogon();
+        }
     }
 
     public currentStation(): string {
