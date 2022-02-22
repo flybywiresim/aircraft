@@ -154,10 +154,7 @@ export class Vdl {
         const blocksTransmissionTime = occupiedDatablocks * Vdl.TransmissionTimePerPacket;
 
         // calculate the transmission times based on the data rates and choose the fastest
-        const transmissionTime = blocksTransmissionTime + (occupiedDatablocks - 1) * Math.min(...this.perPacketDelay);
-
-        // use the fastest transmission time
-        return Math.round(transmissionTime * 1000 + 0.5);
+        return blocksTransmissionTime + (occupiedDatablocks - 1) * Math.min(...this.perPacketDelay);
     }
 
     /**
