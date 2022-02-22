@@ -101,7 +101,7 @@ export class HoppieConnector {
     }
 
     public static async isStationAvailable(station: string): Promise<AtsuStatusCodes> {
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || HoppieConnector.flightNumber === '') {
             return AtsuStatusCodes.NoHoppieConnection;
         }
 
@@ -132,6 +132,10 @@ export class HoppieConnector {
     }
 
     private static async sendMessage(message: AtsuMessage, type: string): Promise<AtsuStatusCodes> {
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || HoppieConnector.flightNumber === '') {
+            return AtsuStatusCodes.NoHoppieConnection;
+        }
+
         const body = {
             logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
             from: HoppieConnector.flightNumber,
@@ -153,14 +157,14 @@ export class HoppieConnector {
     }
 
     public static async sendTelexMessage(message: FreetextMessage, force: boolean): Promise<AtsuStatusCodes> {
-        if (force || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+        if (HoppieConnector.flightNumber !== '' && (force || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1)) {
             return HoppieConnector.sendMessage(message, 'telex');
         }
         return AtsuStatusCodes.NoHoppieConnection;
     }
 
     public static async sendCpdlcMessage(message: CpdlcMessage, force: boolean): Promise<AtsuStatusCodes> {
-        if (force || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1) {
+        if (HoppieConnector.flightNumber !== '' && (force || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1)) {
             return HoppieConnector.sendMessage(message, 'cpdlc');
         }
         return AtsuStatusCodes.NoHoppieConnection;
