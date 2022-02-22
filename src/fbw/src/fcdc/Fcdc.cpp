@@ -145,31 +145,43 @@ void Fcdc::consolidatePositionData() {
     rollSidestickPosCaptValid = busInputs.elac1.leftSidestickRollCommand.isNo();
     rollSidestickPosFo = busInputs.elac1.rightSidestickRollCommand.value();
     rollSidestickPosFoValid = busInputs.elac1.rightSidestickRollCommand.isNo();
+    rudderPedalPos = busInputs.elac1.rudderPedalPosition.value();
+    rudderPedalPosValid = busInputs.elac1.rudderPedalPosition.isNo();
   } else if (elac2EngagedInRoll) {
     rollSidestickPosCapt = busInputs.elac2.leftSidestickRollCommand.value();
     rollSidestickPosCaptValid = busInputs.elac2.leftSidestickRollCommand.isNo();
     rollSidestickPosFo = busInputs.elac2.rightSidestickRollCommand.value();
     rollSidestickPosFoValid = busInputs.elac2.rightSidestickRollCommand.isNo();
+    rudderPedalPos = busInputs.elac2.rudderPedalPosition.value();
+    rudderPedalPosValid = busInputs.elac2.rudderPedalPosition.isNo();
   } else if (sec1EngagedInRoll && (busInputs.sec1.leftSidestickRollCommand.isNo() || busInputs.sec1.rightSidestickRollCommand.isNo())) {
     rollSidestickPosCapt = busInputs.sec1.leftSidestickRollCommand.value();
     rollSidestickPosCaptValid = busInputs.sec1.leftSidestickRollCommand.isNo();
     rollSidestickPosFo = busInputs.sec1.rightSidestickRollCommand.value();
     rollSidestickPosFoValid = busInputs.sec1.rightSidestickRollCommand.isNo();
+    rudderPedalPos = 0;
+    rudderPedalPosValid = false;
   } else if (sec2EngagedInRoll && (busInputs.sec2.leftSidestickRollCommand.isNo() || busInputs.sec2.rightSidestickRollCommand.isNo())) {
     rollSidestickPosCapt = busInputs.sec2.leftSidestickRollCommand.value();
     rollSidestickPosCaptValid = busInputs.sec2.leftSidestickRollCommand.isNo();
     rollSidestickPosFo = busInputs.sec2.rightSidestickRollCommand.value();
     rollSidestickPosFoValid = busInputs.sec2.rightSidestickRollCommand.isNo();
+    rudderPedalPos = 0;
+    rudderPedalPosValid = false;
   } else if (sec3EngagedInRoll && (busInputs.sec3.leftSidestickRollCommand.isNo() || busInputs.sec3.rightSidestickRollCommand.isNo())) {
     rollSidestickPosCapt = busInputs.sec3.leftSidestickRollCommand.value();
     rollSidestickPosCaptValid = busInputs.sec3.leftSidestickRollCommand.isNo();
     rollSidestickPosFo = busInputs.sec3.rightSidestickRollCommand.value();
     rollSidestickPosFoValid = busInputs.sec3.rightSidestickRollCommand.isNo();
+    rudderPedalPos = 0;
+    rudderPedalPosValid = false;
   } else {
     rollSidestickPosCapt = 0;
     rollSidestickPosCaptValid = false;
     rollSidestickPosFo = 0;
     rollSidestickPosFoValid = false;
+    rudderPedalPos = 0;
+    rudderPedalPosValid = false;
   }
 
   // Compute Elevator/THS data. Look at each surface individually: if the data from the computer that is
@@ -239,6 +251,36 @@ void Fcdc::consolidatePositionData() {
   } else {
     thsPos = 0;
     thsPosValid = false;
+  }
+
+  // Compute the sidestick positions in pitch. Always take the sidestick data
+  // from the computer that is engaged in pitch axis.
+  // If none are valid, set as invalid.
+  if (elac2EngagedInPitch) {
+    pitchSidestickPosCapt = busInputs.elac2.leftSidestickPitchCommand.value();
+    pitchSidestickPosCaptValid = busInputs.elac2.leftSidestickPitchCommand.isNo();
+    pitchSidestickPosFo = busInputs.elac2.rightSidestickPitchCommand.value();
+    pitchSidestickPosFoValid = busInputs.elac2.rightSidestickPitchCommand.isNo();
+  } else if (elac1EngagedInPitch) {
+    pitchSidestickPosCapt = busInputs.elac1.leftSidestickPitchCommand.value();
+    pitchSidestickPosCaptValid = busInputs.elac1.leftSidestickPitchCommand.isNo();
+    pitchSidestickPosFo = busInputs.elac1.rightSidestickPitchCommand.value();
+    pitchSidestickPosFoValid = busInputs.elac1.rightSidestickPitchCommand.isNo();
+  } else if (sec2EngagedInPitch) {
+    pitchSidestickPosCapt = busInputs.sec2.leftSidestickPitchCommand.value();
+    pitchSidestickPosCaptValid = busInputs.sec2.leftSidestickPitchCommand.isNo();
+    pitchSidestickPosFo = busInputs.sec2.rightSidestickPitchCommand.value();
+    pitchSidestickPosFoValid = busInputs.sec2.rightSidestickPitchCommand.isNo();
+  } else if (sec1EngagedInPitch) {
+    pitchSidestickPosCapt = busInputs.sec1.leftSidestickPitchCommand.value();
+    pitchSidestickPosCaptValid = busInputs.sec1.leftSidestickPitchCommand.isNo();
+    pitchSidestickPosFo = busInputs.sec1.rightSidestickPitchCommand.value();
+    pitchSidestickPosFoValid = busInputs.sec1.rightSidestickPitchCommand.isNo();
+  } else {
+    pitchSidestickPosCapt = 0;
+    pitchSidestickPosCaptValid = false;
+    pitchSidestickPosFo = 0;
+    pitchSidestickPosFoValid = false;
   }
 }
 
