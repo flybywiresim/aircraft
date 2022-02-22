@@ -142,7 +142,7 @@ export class Vdl {
                 this.perPacketDelay[i] = Math.round(1000 / messageCountPerAircraft + 0.5);
             }
 
-            console.log(`Per aircraft (staitons: ${relevantAircrafts}) packet delay: ${this.perPacketDelay}`);
+            console.log(`Per aircraft (stations: ${relevantAircrafts}) packet delay: ${this.perPacketDelay}`);
         }));
     }
 
