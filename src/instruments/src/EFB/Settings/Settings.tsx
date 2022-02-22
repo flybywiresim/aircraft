@@ -337,8 +337,7 @@ const SimOptionsPage = () => {
 
                     <div className="py-4 flex flex-row justify-between items-center">
                         <span>
-                            <span className="text-lg text-gray-300">Use calculated ILS</span>
-                            <span className="text-lg text-gray-500 ml-2">(testing)</span>
+                            <span className="text-lg text-gray-300">Use calculated ILS signals</span>
                         </span>
                         <Toggle
                             value={radioReceiverUsage === '1'}
