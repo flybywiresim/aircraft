@@ -39,9 +39,9 @@ export class Vdl {
         this.recListener.trigger('JS_BIND_BINGMAP', 'nxMap', true);
     });
 
-    private inboundDelay = { messages: 0, delay: 0 };
+    private inboundDelay = { updateTime: 0, messages: 0, delay: 0 };
 
-    private outboundDelay = { messages: 0, delay: 0 };
+    private outboundDelay = { updateTime: 0, messages: 0, delay: 0 };
 
     private vhf3: Vhf = new Vhf();
 
@@ -166,15 +166,19 @@ export class Vdl {
      * @returns The overall transmission time
      */
     public enqueueInboundMessage(message: AtsuMessage): number {
+        const currentTime = Date.now();
+
         let transmissionTime = this.calculateTransmissionTime(message);
         if (this.inboundDelay.messages !== 0) {
             transmissionTime += Math.min(...this.perPacketDelay);
+        } else {
+            this.inboundDelay.updateTime = currentTime;
         }
 
         this.inboundDelay.messages += 1;
         this.inboundDelay.delay = transmissionTime;
 
-        return transmissionTime;
+        return transmissionTime - (currentTime - this.inboundDelay.updateTime);
     }
 
     /**
@@ -183,6 +187,7 @@ export class Vdl {
      */
     public dequeueInboundMessage(delay: number): void {
         this.inboundDelay.delay = Math.max(this.inboundDelay.delay - delay, 0);
+        this.inboundDelay.updateTime = Date.now();
         this.inboundDelay.messages -= 1;
 
         // reset the timer
@@ -198,18 +203,21 @@ export class Vdl {
      * @returns The overall transmission time
      */
     public enqueueOutboundMessage(message: AtsuMessage): number {
+        const currentTime = Date.now();
+
         let transmissionTime = this.calculateTransmissionTime(message);
         if (this.outboundDelay.messages !== 0) {
             transmissionTime += Math.min(...this.perPacketDelay);
         } else {
             // simulate that first packets are the ground stations, thereafter the A32NX packet for an initial offset
             transmissionTime += Vdl.TransmissionTimePerPacket * this.vhf3.relevantAirports.length;
+            this.outboundDelay.updateTime = currentTime;
         }
 
         this.outboundDelay.messages += 1;
         this.outboundDelay.delay = transmissionTime;
 
-        return transmissionTime;
+        return transmissionTime - (currentTime - this.outboundDelay.updateTime);
     }
 
     /**
@@ -217,18 +225,21 @@ export class Vdl {
      * @returns The overall transmission time
      */
     public enqueueOutboundPacket(): number {
+        const currentTime = Date.now();
+
         let transmissionTime = Vdl.TransmissionTimePerPacket;
         if (this.outboundDelay.messages !== 0) {
             transmissionTime += Math.min(...this.perPacketDelay);
         } else {
             // simulate that first packets are the ground stations, thereafter the A32NX packet for an initial offset
             transmissionTime += Vdl.TransmissionTimePerPacket * this.vhf3.relevantAirports.length;
+            this.outboundDelay.updateTime = currentTime;
         }
 
         this.outboundDelay.messages += 1;
         this.outboundDelay.delay = transmissionTime;
 
-        return transmissionTime;
+        return transmissionTime - (currentTime - this.outboundDelay.updateTime);
     }
 
     /**
@@ -237,6 +248,7 @@ export class Vdl {
      */
     public dequeueOutboundMessage(delay: number): void {
         this.outboundDelay.delay = Math.max(this.outboundDelay.delay - delay, 0);
+        this.outboundDelay.updateTime = Date.now();
         this.outboundDelay.messages -= 1;
 
         // reset the timer
