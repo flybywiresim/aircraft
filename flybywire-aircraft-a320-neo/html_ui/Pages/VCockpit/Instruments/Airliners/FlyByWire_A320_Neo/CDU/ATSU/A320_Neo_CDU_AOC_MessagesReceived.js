@@ -6,14 +6,11 @@ class CDUAocMessagesReceived {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCRcvdMsgs;
 
-        page = Math.min(Math.floor((messages.length - 1) / 5), page);
+        page = Math.max(0, Math.min(Math.floor((messages.length - 1) / 5), page));
 
         // regular update due to showing dynamic data on this page
         mcdu.page.SelfPtr = setTimeout(() => {
             if (mcdu.page.Current === mcdu.page.AOCRcvdMsgs) {
-                if (page === -1 && messages.length > 0) {
-                    page = 0;
-                }
                 CDUAocMessagesReceived.ShowPage(mcdu, null, page);
             }
         }, mcdu.PageTimeout.Slow);
