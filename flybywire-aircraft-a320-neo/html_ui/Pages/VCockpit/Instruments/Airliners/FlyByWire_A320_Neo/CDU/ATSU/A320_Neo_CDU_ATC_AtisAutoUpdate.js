@@ -11,10 +11,10 @@ class CDUAtcAtisAutoUpdate {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCAtisAutoUpdate;
 
-        let arrAtis = "{cyan}\xa0[  ]/[ ]{end}";
+        let arrAtis = "{inop}\xa0[  ]/[ ]{end}";
         let arrAtisState = "";
         let arrAtisButton = "{cyan}ON\xa0{end}";
-        let altAtis = "{cyan}\xa0[  ]/[ ]{end}";
+        let altAtis = "{inop}\xa0[  ]/[ ]{end}";
         let altAtisState = "";
         let altAtisButton = "{cyan}ON\xa0{end}";
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
