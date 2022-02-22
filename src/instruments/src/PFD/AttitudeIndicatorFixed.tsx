@@ -297,10 +297,10 @@ const SidestickIndicator = ({ isOnGround, captSidestickPosX, captSidestickPosY, 
                         && !foSidestickPosX.isFailureWarning()
                         && !foSidestickPosY.isFailureWarning();
 
-    const foStickDisabledFcdc1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_3').getBitValueOr(15, false);
-    const foStickDisabledFcdc2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_3').getBitValueOr(15, false);
-    const captStickDisabledFcdc1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_3').getBitValueOr(14, false);
-    const captStickDisabledFcdc2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_3').getBitValueOr(14, false);
+    const foStickDisabledFcdc1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_3').getBitValueOr(29, false);
+    const foStickDisabledFcdc2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_3').getBitValueOr(29, false);
+    const captStickDisabledFcdc1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_3').getBitValueOr(28, false);
+    const captStickDisabledFcdc2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_3').getBitValueOr(28, false);
     const foStickDisabled = foStickDisabledFcdc1 || foStickDisabledFcdc2;
     const captStickDisabled = captStickDisabledFcdc1 || captStickDisabledFcdc2;
 
