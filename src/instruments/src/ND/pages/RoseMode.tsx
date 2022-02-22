@@ -13,7 +13,6 @@ import { MapParameters } from '../utils/MapParameters';
 import { RadioNeedle } from '../elements/RadioNeedles';
 import { ApproachMessage } from '../elements/ApproachMessage';
 import { CrossTrack } from '../elements/CrossTrack';
-import { TrackLine } from '../elements/TrackLine';
 import { Traffic } from '../elements/Traffic';
 
 export interface RoseModeProps {
@@ -130,7 +129,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
 
                 <ApproachMessage info={flightPlanManager.getAirportApproach()} flightPhase={fmgcFlightPhase} />
                 <TrackBug rotation={trackRotationOffset} showLine={selectedMode} />
-                { mode === Mode.ROSE_NAV && lsDisplayed && ilsCourse >= 0 && <LsCourseBug mapUpTrue={mapUpTrue} lsCourse={lsCourse - magVar} /> }
+                { mode === Mode.ROSE_NAV && lsDisplayed && lsCourse >= 0 && <LsCourseBug mapUpTrue={mapUpTrue} lsCourse={lsCourse - magVar} /> }
                 <SelectedHeadingBug heading={mapUpTrue - magVar} selected={selectedHeading} />
                 { mode === Mode.ROSE_ILS && <GlideSlope /> }
                 <Plane rotation={headingRotationOffset} />
@@ -754,12 +753,12 @@ const TrackBug: React.FC<{ rotation: Degrees, showLine: boolean }> = memo(({ rot
     </g>
 ));
 
-const LsCourseBug: React.FC<{ mapUpTrue: Degrees, heading: number, lsCourse: number }> = ({ mapUpTrue, heading, lsCourse }) => {
+const LsCourseBug: React.FC<{ mapUpTrue: Degrees, lsCourse: number }> = ({ mapUpTrue, lsCourse }) => {
     if (lsCourse < 0) {
         return null;
     }
 
-    const rotation = getSmallestAngle(ilsCourse, mapUpTrue);
+    const rotation = getSmallestAngle(lsCourse, mapUpTrue);
 
     return (
         <>
