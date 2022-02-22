@@ -109,7 +109,7 @@ class CDUAocRequestsWeather {
             updateView();
 
             const sentRequest = () => {
-                store.sendStatus = "SENT";
+                data.sendStatus = "SENT";
                 if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
                     updateView();
                 }
