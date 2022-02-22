@@ -959,17 +959,6 @@
                 </Component>
             </Component>
 
-            <Component ID="Dummies">
-                <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                    <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
-                    <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                </UseTemplate>
-                <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                    <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
-                    <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                </UseTemplate>
-            </Component>
-
             <Component ID="EICAS_Screens">
 
                 <!-- UPPER ECAM SCREEN -->
@@ -3606,6 +3595,18 @@
                 <BUS_BOTTOM>AC_2</BUS_BOTTOM>
             </UseTemplate>
 
+            <!-- SIDESTICK PRIORITY LEFT-->
+            <UseTemplate Name="FBW_Push_Toggle">
+                <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                <SEQ1_CODE>(L:A32NX_FCDC_1_PRIORITY_LIGHT_CAPT_GREEN_ON, Bool) (L:A32NX_FCDC_2_PRIORITY_LIGHT_CAPT_GREEN_ON, Bool) or</SEQ1_CODE>
+                <SEQ2_CODE>(L:A32NX_FCDC_1_PRIORITY_LIGHT_CAPT_RED_ON, Bool) (L:A32NX_FCDC_2_PRIORITY_LIGHT_CAPT_RED_ON, Bool) or</SEQ2_CODE>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <DUMMY_BUTTON/>
+            </UseTemplate>
+
             <!-- AUTO LAND R -->
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>KORRY_HELD</ANIM_TYPE>
@@ -3613,6 +3614,17 @@
                 <SIDE>R</SIDE>
                 <BUS_TOP>AC_2</BUS_TOP>
                 <BUS_BOTTOM>AC_ESS_SHED</BUS_BOTTOM>
+            </UseTemplate>
+
+            <!-- SIDESTICK PRIORITY RIGHT-->
+            <UseTemplate Name="FBW_Push_Toggle">
+                <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
+                <SEQ_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                <SEQ1_CODE>(L:A32NX_FCDC_1_PRIORITY_LIGHT_FO_GREEN_ON, Bool) (L:A32NX_FCDC_2_PRIORITY_LIGHT_FO_GREEN_ON, Bool) or</SEQ1_CODE>
+                <SEQ2_CODE>(L:A32NX_FCDC_1_PRIORITY_LIGHT_FO_RED_ON, Bool) (L:A32NX_FCDC_2_PRIORITY_LIGHT_FO_RED_ON, Bool) or</SEQ2_CODE>
+                <SEQ1_EMISSIVE_DRIVES_VISIBILITY>True</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                <SEQ2_EMISSIVE_DRIVES_VISIBILITY>True</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                <DUMMY_BUTTON/>
             </UseTemplate>
 
             <!-- FCU SPD MACH -->
@@ -4722,12 +4734,6 @@
                 <NODE_ID>PUSH_AUTOPILOT_LL</NODE_ID>
                 <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
             </UseTemplate>-->
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_L</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUTOPILOT_SIDESTICK_R</NODE_ID>
-            </UseTemplate>
             <!-- ATC MSG F/O -->
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>KORRY_HELD</ANIM_TYPE>

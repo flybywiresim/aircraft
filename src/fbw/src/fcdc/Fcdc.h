@@ -2,6 +2,8 @@
 
 #include "FcdcIO.h"
 
+const double LIGHT_FLASHING_PERIOD = 0.25;
+
 class Fcdc {
  public:
   Fcdc(bool isUnit1);
@@ -32,6 +34,29 @@ class Fcdc {
   PitchLaw getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3);
 
   LateralLaw getLateralLawStatusFromBits(bool bit1, bool bit2, bool bit3);
+
+  void computeComputerEngagements();
+
+  void computeSidestickPriorityLights(double deltaTime);
+
+  // Computer axis engagement vars
+  bool elac1EngagedInRoll;
+
+  bool elac2EngagedInRoll;
+
+  bool sec1EngagedInRoll;
+
+  bool sec2EngagedInRoll;
+
+  bool sec3EngagedInRoll;
+
+  bool elac1EngagedInPitch;
+
+  bool elac2EngagedInPitch;
+
+  bool sec1EngagedInPitch;
+
+  bool sec2EngagedInPitch;
 
   // Data concentration and computation vars
 
@@ -78,6 +103,25 @@ class Fcdc {
   double rudderPedalPos;
 
   bool rudderPedalPosValid;
+
+  // Sidestick priority vars
+  bool leftSidestickDisabled;
+
+  bool rightSidestickDisabled;
+
+  bool leftSidestickPriorityLocked;
+
+  bool rightSidestickPriorityLocked;
+
+  bool leftRedPriorityLightOn;
+
+  bool rightRedPriorityLightOn;
+
+  bool leftGreenPriorityLightOn;
+
+  bool rightGreenPriorityLightOn;
+
+  double priorityLightFlashingClock;
 
   // Computer monitoring and self-test vars
 

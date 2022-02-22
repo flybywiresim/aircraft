@@ -25,8 +25,10 @@ void Fcdc::update(double deltaTime, bool faultActive, bool isPowered) {
   monitorSelf(faultActive);
 
   if (monitoringHealthy) {
+    computeComputerEngagements();
     computeActiveSystemLaws();
     consolidatePositionData();
+    computeSidestickPriorityLights(deltaTime);
   }
 }
 
@@ -92,18 +94,20 @@ PitchLaw Fcdc::getPitchLawStatusFromBits(bool bit1, bool bit2, bool bit3) {
   }
 }
 
+void Fcdc::computeComputerEngagements() {
+  elac1EngagedInRoll = busInputs.elac1.discreteStatusWord1.bitFromValueOr(20, false);
+  elac2EngagedInRoll = busInputs.elac2.discreteStatusWord1.bitFromValueOr(20, false);
+  sec1EngagedInRoll = busInputs.sec1.discreteStatusWord1.bitFromValueOr(22, false);
+  sec2EngagedInRoll = busInputs.sec2.discreteStatusWord1.bitFromValueOr(22, false);
+  sec3EngagedInRoll = busInputs.sec3.discreteStatusWord1.bitFromValueOr(22, false);
+
+  elac1EngagedInPitch = busInputs.elac1.discreteStatusWord1.bitFromValueOr(19, false);
+  elac2EngagedInPitch = busInputs.elac2.discreteStatusWord1.bitFromValueOr(19, false);
+  sec1EngagedInPitch = busInputs.sec1.discreteStatusWord1.bitFromValueOr(23, false);
+  sec2EngagedInPitch = busInputs.sec2.discreteStatusWord1.bitFromValueOr(23, false);
+}
+
 void Fcdc::consolidatePositionData() {
-  bool elac1EngagedInRoll = busInputs.elac1.discreteStatusWord1.bitFromValueOr(20, false);
-  bool elac2EngagedInRoll = busInputs.elac2.discreteStatusWord1.bitFromValueOr(20, false);
-  bool sec1EngagedInRoll = busInputs.sec1.discreteStatusWord1.bitFromValueOr(22, false);
-  bool sec2EngagedInRoll = busInputs.sec2.discreteStatusWord1.bitFromValueOr(22, false);
-  bool sec3EngagedInRoll = busInputs.sec3.discreteStatusWord1.bitFromValueOr(22, false);
-
-  bool elac1EngagedInPitch = busInputs.elac1.discreteStatusWord1.bitFromValueOr(19, false);
-  bool elac2EngagedInPitch = busInputs.elac2.discreteStatusWord1.bitFromValueOr(19, false);
-  bool sec1EngagedInPitch = busInputs.sec1.discreteStatusWord1.bitFromValueOr(23, false);
-  bool sec2EngagedInPitch = busInputs.sec2.discreteStatusWord1.bitFromValueOr(23, false);
-
   // Compute Aileron Data. Look at each side individually: if the data from the ELAC that is
   // engaged in roll is valid, use that data. If not, take the data from the other ELAC.
   // If neither are valid, set the respective aileron position as invalid.
@@ -288,17 +292,6 @@ void Fcdc::consolidatePositionData() {
 // the overall active system law from the law status of the computers that are engaged in the
 // respective axes.
 void Fcdc::computeActiveSystemLaws() {
-  bool elac1EngagedInRoll = busInputs.elac1.discreteStatusWord1.bitFromValueOr(20, false);
-  bool elac2EngagedInRoll = busInputs.elac2.discreteStatusWord1.bitFromValueOr(20, false);
-  bool sec1EngagedInRoll = busInputs.sec1.discreteStatusWord1.bitFromValueOr(22, false);
-  bool sec2EngagedInRoll = busInputs.sec2.discreteStatusWord1.bitFromValueOr(22, false);
-  bool sec3EngagedInRoll = busInputs.sec3.discreteStatusWord1.bitFromValueOr(22, false);
-
-  bool elac1EngagedInPitch = busInputs.elac1.discreteStatusWord1.bitFromValueOr(19, false);
-  bool elac2EngagedInPitch = busInputs.elac2.discreteStatusWord1.bitFromValueOr(19, false);
-  bool sec1EngagedInPitch = busInputs.sec1.discreteStatusWord1.bitFromValueOr(23, false);
-  bool sec2EngagedInPitch = busInputs.sec2.discreteStatusWord1.bitFromValueOr(23, false);
-
   if (elac1EngagedInRoll) {
     systemLateralLaw = getLateralLawStatusFromBits(busInputs.elac1.discreteStatusWord1.bitFromValue(26),
                                                    busInputs.elac1.discreteStatusWord1.bitFromValue(27),
@@ -331,6 +324,113 @@ void Fcdc::computeActiveSystemLaws() {
                                   busInputs.sec2.discreteStatusWord1.bitFromValue(21));
   } else {
     systemPitchLaw = PitchLaw::None;
+  }
+}
+
+void Fcdc::computeSidestickPriorityLights(double deltaTime) {
+  bool leftSidestickDisabledRoll;
+  bool rightSidestickDisabledRoll;
+  bool leftSidestickDisabledPitch;
+  bool rightSidestickDisabledPitch;
+  bool leftSidestickPriorityLockedRoll;
+  bool rightSidestickPriorityLockedRoll;
+  bool leftSidestickPriorityLockedPitch;
+  bool rightSidestickPriorityLockedPitch;
+
+  // Compute if a sidestick has lost priority (per computer). Use the computer that is engaged in the respective axis.
+  if (elac1EngagedInRoll) {
+    leftSidestickDisabledRoll = busInputs.elac1.discreteStatusWord2.bitFromValue(17);
+    rightSidestickDisabledRoll = busInputs.elac1.discreteStatusWord2.bitFromValue(18);
+    leftSidestickPriorityLockedRoll = busInputs.elac1.discreteStatusWord2.bitFromValue(19);
+    rightSidestickPriorityLockedRoll = busInputs.elac1.discreteStatusWord2.bitFromValue(20);
+  } else if (elac2EngagedInRoll) {
+    leftSidestickDisabledRoll = busInputs.elac2.discreteStatusWord2.bitFromValue(17);
+    rightSidestickDisabledRoll = busInputs.elac2.discreteStatusWord2.bitFromValue(18);
+    leftSidestickPriorityLockedRoll = busInputs.elac2.discreteStatusWord2.bitFromValue(19);
+    rightSidestickPriorityLockedRoll = busInputs.elac2.discreteStatusWord2.bitFromValue(20);
+  } else if (sec1EngagedInRoll || sec2EngagedInRoll || sec3EngagedInRoll) {
+    leftSidestickDisabledRoll = busInputs.sec1.discreteStatusWord2.bitFromValue(13) ||
+                                busInputs.sec2.discreteStatusWord2.bitFromValue(13) || busInputs.sec3.discreteStatusWord2.bitFromValue(13);
+    rightSidestickDisabledRoll = busInputs.sec1.discreteStatusWord2.bitFromValue(14) ||
+                                 busInputs.sec2.discreteStatusWord2.bitFromValue(14) || busInputs.sec3.discreteStatusWord2.bitFromValue(14);
+    leftSidestickPriorityLockedRoll = busInputs.sec1.discreteStatusWord2.bitFromValue(15) ||
+                                      busInputs.sec2.discreteStatusWord2.bitFromValue(15) ||
+                                      busInputs.sec3.discreteStatusWord2.bitFromValue(15);
+    rightSidestickPriorityLockedRoll = busInputs.sec1.discreteStatusWord2.bitFromValue(16) ||
+                                       busInputs.sec2.discreteStatusWord2.bitFromValue(16) ||
+                                       busInputs.sec3.discreteStatusWord2.bitFromValue(16);
+  }
+
+  if (elac2EngagedInPitch) {
+    leftSidestickDisabledPitch = busInputs.elac2.discreteStatusWord2.bitFromValue(17);
+    rightSidestickDisabledPitch = busInputs.elac2.discreteStatusWord2.bitFromValue(18);
+    leftSidestickPriorityLockedPitch = busInputs.elac2.discreteStatusWord2.bitFromValue(19);
+    rightSidestickPriorityLockedPitch = busInputs.elac2.discreteStatusWord2.bitFromValue(20);
+  } else if (elac1EngagedInPitch) {
+    leftSidestickDisabledPitch = busInputs.elac1.discreteStatusWord2.bitFromValue(17);
+    rightSidestickDisabledPitch = busInputs.elac1.discreteStatusWord2.bitFromValue(18);
+    leftSidestickPriorityLockedPitch = busInputs.elac1.discreteStatusWord2.bitFromValue(19);
+    rightSidestickPriorityLockedPitch = busInputs.elac1.discreteStatusWord2.bitFromValue(20);
+  } else if (sec2EngagedInPitch) {
+    leftSidestickDisabledPitch = busInputs.sec2.discreteStatusWord2.bitFromValue(13);
+    rightSidestickDisabledPitch = busInputs.sec2.discreteStatusWord2.bitFromValue(14);
+    leftSidestickPriorityLockedPitch = busInputs.sec2.discreteStatusWord2.bitFromValue(15);
+    rightSidestickPriorityLockedPitch = busInputs.sec2.discreteStatusWord2.bitFromValue(16);
+  } else if (sec1EngagedInPitch) {
+    leftSidestickDisabledPitch = busInputs.sec1.discreteStatusWord2.bitFromValue(13);
+    rightSidestickDisabledPitch = busInputs.sec1.discreteStatusWord2.bitFromValue(14);
+    leftSidestickPriorityLockedPitch = busInputs.sec1.discreteStatusWord2.bitFromValue(15);
+    rightSidestickPriorityLockedPitch = busInputs.sec1.discreteStatusWord2.bitFromValue(16);
+  }
+
+  // Compute the overall sidestick priority status. A sidestick has lost priority,
+  // if at least one of the computers that is engaged in one axis has computed it as disabled.
+  leftSidestickDisabled = leftSidestickDisabledPitch || leftSidestickDisabledRoll;
+  rightSidestickDisabled = rightSidestickDisabledPitch || rightSidestickDisabledRoll;
+  leftSidestickPriorityLocked = leftSidestickPriorityLockedPitch || leftSidestickPriorityLockedRoll;
+  rightSidestickPriorityLocked = rightSidestickPriorityLockedPitch || rightSidestickPriorityLockedRoll;
+
+  // Update light flashing clock
+  if (priorityLightFlashingClock > 2 * LIGHT_FLASHING_PERIOD) {
+    priorityLightFlashingClock = 0;
+  } else {
+    priorityLightFlashingClock += deltaTime;
+  }
+  bool flashingLightActive = priorityLightFlashingClock < LIGHT_FLASHING_PERIOD;
+
+  // The red arrow light comes on in front of the pilot who has lost priority.
+  leftRedPriorityLightOn = leftSidestickDisabled;
+  rightRedPriorityLightOn = rightSidestickDisabled;
+
+  bool leftSidestickPitchDeflected = std::abs(pitchSidestickPosCapt) >= 2 && pitchSidestickPosCaptValid;
+  bool leftSidestickRollDeflected = std::abs(rollSidestickPosCapt) >= 2 && rollSidestickPosCaptValid;
+  bool rightSidestickPitchDeflected = std::abs(pitchSidestickPosFo) >= 2 && pitchSidestickPosFoValid;
+  bool rightSidestickRollDeflected = std::abs(rollSidestickPosFo) >= 2 && rollSidestickPosFoValid;
+  // The green light comes on, in case of dual input, in which case it flashes,
+  // or, if the other sidestick, which has lost priority, is deflected.
+  if (!leftRedPriorityLightOn && !rightRedPriorityLightOn) {
+    // This is the case where no side has taken priority, so check for dual input
+
+    if ((leftSidestickPitchDeflected || leftSidestickRollDeflected) && (rightSidestickPitchDeflected || rightSidestickRollDeflected)) {
+      leftGreenPriorityLightOn = flashingLightActive;
+      rightGreenPriorityLightOn = flashingLightActive;
+    } else {
+      leftGreenPriorityLightOn = false;
+      rightGreenPriorityLightOn = false;
+    }
+  } else {
+    // This is the case where one sidestick has lost priority, so check if this sidestick is deflected.
+    // If it is, illuminate the other light.
+    if (leftSidestickDisabled && (leftSidestickPitchDeflected || leftSidestickRollDeflected)) {
+      leftGreenPriorityLightOn = false;
+      rightGreenPriorityLightOn = true;
+    } else if (rightSidestickDisabled && (rightSidestickPitchDeflected || rightSidestickRollDeflected)) {
+      leftGreenPriorityLightOn = true;
+      rightGreenPriorityLightOn = false;
+    } else {
+      leftGreenPriorityLightOn = false;
+      rightGreenPriorityLightOn = false;
+    }
   }
 }
 
@@ -410,8 +510,8 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus2.setBit(16, leftElev2Fault);
   output.efcsStatus2.setBit(17, rightElev1Fault);
   output.efcsStatus2.setBit(18, rightElev2Fault);
-  output.efcsStatus2.setBit(19, false);
-  output.efcsStatus2.setBit(20, false);
+  output.efcsStatus2.setBit(19, rightSidestickPriorityLocked);
+  output.efcsStatus2.setBit(20, leftSidestickPriorityLocked);
   output.efcsStatus2.setBit(21, false);
   output.efcsStatus2.setBit(22, false);
   output.efcsStatus2.setBit(23, false);
@@ -419,8 +519,8 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus2.setBit(25, false);
   output.efcsStatus2.setBit(26, false);
   output.efcsStatus2.setBit(27, false);
-  output.efcsStatus2.setBit(28, false);
-  output.efcsStatus2.setBit(29, false);
+  output.efcsStatus2.setBit(28, leftSidestickDisabled);
+  output.efcsStatus2.setBit(29, rightSidestickDisabled);
 
   output.efcsStatus3.setSsm(Arinc429SignStatus::NormalOperation);
   output.efcsStatus3.setBit(11, busInputs.elac1.discreteStatusWord1.bitFromValueOr(15, false));
@@ -576,11 +676,11 @@ FcdcDiscreteOutputs Fcdc::getDiscreteOutputs() {
     output.foRedPriorityLightOn = false;
     output.foGreenPriorityLightOn = false;
   } else {
-    output.captRedPriorityLightOn = false;
-    output.captGreenPriorityLightOn = false;
+    output.captRedPriorityLightOn = leftRedPriorityLightOn;
+    output.captGreenPriorityLightOn = leftGreenPriorityLightOn;
     output.fcdcValid = true;
-    output.foRedPriorityLightOn = false;
-    output.foGreenPriorityLightOn = false;
+    output.foRedPriorityLightOn = rightRedPriorityLightOn;
+    output.foGreenPriorityLightOn = rightGreenPriorityLightOn;
   }
 
   return output;
