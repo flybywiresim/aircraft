@@ -40,10 +40,6 @@ export class Datalink {
 
     constructor(parent: Atsu) {
         setInterval(() => {
-            if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
-                parent.atc.resetAtc();
-            }
-
             if (this.waitedComUpdate <= 30000) {
                 this.vdl.simulateTransmissionTimes(parent.flightPhase());
                 this.waitedComUpdate = 0;
