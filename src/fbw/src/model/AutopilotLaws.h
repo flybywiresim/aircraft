@@ -216,7 +216,6 @@ class AutopilotLawsModelClass
     real_T WashoutFilter_C1_m;
     real_T LagFilterH_C1;
     real_T LeadLagFilter_C1;
-    real_T LagFilter1_C1_d;
     real_T LeadLagFilter_C1_a;
     real_T LagFilterH1_C1;
     real_T WashoutFilter_C1_cn;
@@ -226,6 +225,7 @@ class AutopilotLawsModelClass
     real_T LagFilter_C1_g;
     real_T WashoutFilter1_C1_h;
     real_T LagFilter_C1_i;
+    real_T LagFilter1_C1_d;
     real_T HighPassFilter_C2;
     real_T LowPassFilter_C2;
     real_T HighPassFilter_C2_c;
@@ -815,7 +815,7 @@ class AutopilotLawsModelClass
     real_T Gain5_Gain_c;
     real_T kntofpm_Gain;
     real_T maxslope_Gain;
-    real_T Gain7_Gain_l;
+    real_T Gain1_Gain_oa;
     real_T ftmintoms_Gain_k;
     real_T kntoms_Gain_av;
     real_T Saturation_UpperSat_i0;
@@ -897,6 +897,7 @@ class AutopilotLawsModelClass
     real_T Saturation_UpperSat_ix;
     real_T Saturation_LowerSat_eq;
     real_T Constant_Value_i4;
+    real_T Gain7_Gain_l;
     boolean_T Delay_InitialCondition;
     boolean_T Delay_InitialCondition_b;
     uint8_T ManualSwitch_CurrentSetting;

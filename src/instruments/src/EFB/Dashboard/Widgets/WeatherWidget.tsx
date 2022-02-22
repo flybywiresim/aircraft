@@ -1,70 +1,57 @@
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
-import metarParser from 'aewx-metar-parser';
 import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
-import { MetarParserType, Wind } from '../../../Common/metarTypes';
+import { parseMetar } from '../../Utils/parseMetar';
+import { MetarParserType } from '../../../Common/metarTypes';
 import { usePersistentProperty } from '../../../Common/persistence';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
-
-const MetarParserTypeWindState: Wind = {
-    degrees: 0,
-    speed_kts: 0,
-    speed_mps: 0,
-    gust_kts: 0,
-    gust_mps: 0,
-};
-
-const VisibilityType = {
-    miles: '',
-    miles_float: 0.0,
-    meters: '',
-    meters_float: 0.0,
-};
-
-const conditionCode = { code: '' };
-
-const cloud = {
-    code: '',
-    base_feet_agl: 0,
-    base_meters_agl: 0,
-};
-
-const ceiling = {
-    code: '',
-    feet_agl: 0,
-    meters_agl: 0,
-};
-
-const temperature = {
-    celsius: 0,
-    fahrenheit: 0,
-};
-
-const dewpoint = {
-    celsius: 0,
-    fahrenheit: 0,
-};
-
-const barometer = {
-    hg: 0,
-    kpa: 0,
-    mb: 0,
-};
+import { ColoredMetar } from './ColorMetar';
 
 const MetarParserTypeProp: MetarParserType = {
     raw_text: '',
-    raw_parts: [''],
+    raw_parts: [],
+    color_codes: [],
     icao: '',
     observed: new Date(0),
-    wind: MetarParserTypeWindState,
-    visibility: VisibilityType,
-    conditions: [conditionCode],
-    clouds: [cloud],
-    ceiling,
-    temperature,
-    dewpoint,
+    wind: {
+        degrees: 0,
+        degrees_from: 0,
+        degrees_to: 0,
+        speed_kts: 0,
+        speed_mps: 0,
+        gust_kts: 0,
+        gust_mps: 0,
+    },
+    visibility: {
+        miles: '',
+        miles_float: 0.0,
+        meters: '',
+        meters_float: 0.0,
+    },
+    conditions: [],
+    clouds: [],
+    ceiling: {
+        code: '',
+        feet_agl: 0,
+        meters_agl: 0,
+    },
+    temperature: {
+        celsius: 0,
+        fahrenheit: 0,
+    },
+    dewpoint: {
+        celsius: 0,
+        fahrenheit: 0,
+    },
     humidity_percent: 0,
-    barometer,
+    barometer: {
+        hg: 0,
+        kpa: 0,
+        mb: 0,
+    },
     flight_category: '',
 };
 
@@ -73,13 +60,33 @@ type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
     const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${props.name}`, 'DISABLED');
-    let [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+    const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
+    const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+    const source = metarSource === 'MSFS' ? 'MS' : metarSource;
+    const [metarError, setErrorMetar] = useState('NO VALID ICAO CHOSEN');
 
-    if (metarSource === 'MSFS') {
-        metarSource = 'MS';
-    }
+    const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
+        .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
 
-    const source = metarSource;
+    const BaroValue = () => {
+        const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
+        if (displayedBaroType === 'IN HG') {
+            return (
+                <>
+                    {metar.barometer.hg.toFixed(2)}
+                    {' '}
+                    inHg
+                </>
+            );
+        }
+        return (
+            <>
+                {metar.barometer.mb.toFixed(0)}
+                {' '}
+                mb
+            </>
+        );
+    };
 
     const handleIcao = (icao: string) => {
         if (icao.length === 4) {
@@ -97,10 +104,16 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
         }
         return Metar.get(icao, source)
             .then((result) => {
-                const metarParse = metarParser(result.metar);
+                const metarParse = parseMetar(result.metar);
                 setMetar(metarParse);
             })
-            .catch(() => {
+            .catch((err) => {
+                console.log(`Error while parsing Metar: ${err}`);
+                if (err.toString().match(/^Error$/)) {
+                    setErrorMetar('NO VALID ICAO CHOSEN');
+                } else {
+                    setErrorMetar(`${err.toString().replace(/^Error: /, '')}`);
+                }
                 setMetar(MetarParserTypeProp);
             });
     }
@@ -121,7 +134,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                             </div>
                             <SimpleInput
                                 noLabel
-                                className="text-center w-24 ml-4 text-2xl font-medium uppercase"
+                                className="text-center w-32 ml-4 text-2xl font-medium uppercase"
                                 placeholder={props.icao}
                                 value={props.icao === '----' ? '' : props.icao}
                                 onChange={(value) => handleIcao(value)}
@@ -133,7 +146,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                     className="mr-1 w-24 bg-gray-600 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg"
                                     onClick={() => setShowMetar(showMetar === 'ENABLED' ? 'DISABLED' : 'ENABLED')}
                                 >
-                                    {showMetar === 'ENABLED' ? 'TEXT' : 'ICONS'}
+                                    {showMetar === 'ENABLED' ? 'Metar' : 'Summary'}
                                 </button>
                             </div>
                         </div>
@@ -147,9 +160,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                             </div>
                                             {metar.raw_text ? (
                                                 <>
-                                                    {metar.barometer.mb.toFixed(0)}
-                                                    {' '}
-                                                    mb
+                                                    {metar.barometer ? <BaroValue /> : 'N/A'}
                                                 </>
                                             ) : (
                                                 <>
@@ -228,15 +239,15 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                             )
                             : (
                                 <>
-                                    <div className="scrollbar text-left ml-8 mr-4 h-40 text-xl font-medium">
+                                    <div className="font-mono scrollbar text-left ml-8 mr-4 h-40 text-xl">
                                         {metar.raw_text
                                             ? (
                                                 <>
-                                                    {metar.raw_text}
+                                                    <ColoredMetar metar={metar} />
                                                 </>
                                             ) : (
                                                 <>
-                                                    NO VALID ICAO CHOSEN
+                                                    {metarError}
                                                     {' '}
                                                     {' '}
                                                 </>

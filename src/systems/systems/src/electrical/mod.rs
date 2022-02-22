@@ -377,7 +377,7 @@ impl Electricity {
     /// # }
     /// # let mut registry = SomeVariableRegistry {};
     /// # let mut electricity = Electricity::new();
-    /// # let mut context = InitContext::new(&mut electricity, &mut registry);
+    /// # let mut context = InitContext::new(Default::default(), &mut electricity, &mut registry);
     /// let contactor = Contactor::new(&mut context, "TEST");
     /// let bus = ElectricalBus::new(&mut context, ElectricalBusType::DirectCurrentBattery);
     ///
@@ -407,7 +407,7 @@ impl Electricity {
     /// # }
     /// # let mut registry = SomeVariableRegistry {};
     /// # let mut electricity = Electricity::new();
-    /// # let mut context = InitContext::new(&mut electricity, &mut registry);
+    /// # let mut context = InitContext::new(Default::default(), &mut electricity, &mut registry);
     /// let generator = EngineGenerator::new(&mut context, 1);
     /// let contactor = Contactor::new(&mut context, "TEST");
     ///
@@ -435,7 +435,7 @@ impl Electricity {
     /// # }
     /// # let mut registry = SomeVariableRegistry {};
     /// # let mut electricity = Electricity::new();
-    /// # let mut context = InitContext::new(&mut electricity, &mut registry);
+    /// # let mut context = InitContext::new(Default::default(), &mut electricity, &mut registry);
     /// let ac_bus = ElectricalBus::new(&mut context, ElectricalBusType::AlternatingCurrent(1));
     /// let tr = TransformerRectifier::new(&mut context, 1);
     /// let dc_bus = ElectricalBus::new(&mut context, ElectricalBusType::DirectCurrent(1));

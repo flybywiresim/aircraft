@@ -1580,42 +1580,42 @@
 
         <Sound WwiseEvent="smoothtouch" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="PEDALS_LEFT" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
+            <Requires LocalVar="A32NX_AUTOPILOT_H_DOT_RADIO" Units="number" Index="0">
                 <Range LowerBound="-150" UpperBound="-50" />
             </Requires>
         </Sound>
 
         <Sound WwiseEvent="medtouch" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="PEDALS_LEFT" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
+            <Requires LocalVar="A32NX_AUTOPILOT_H_DOT_RADIO" Units="number" Index="0">
                 <Range LowerBound="-350" UpperBound="-151" />
             </Requires>
         </Sound>
 
         <Sound WwiseEvent="firmtouch" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="PEDALS_LEFT" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
+            <Requires LocalVar="A32NX_AUTOPILOT_H_DOT_RADIO" Units="number" Index="0">
                 <Range UpperBound="-351" />
             </Requires>
         </Sound>
 
         <Sound WwiseEvent="cabtouchsmooth" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="HublotIn002" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
+            <Requires LocalVar="A32NX_AUTOPILOT_H_DOT_RADIO" Units="number" Index="0">
                 <Range LowerBound="-150" UpperBound="-50" />
             </Requires>
         </Sound>
 
         <Sound WwiseEvent="cabtouchmed" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="HublotIn002" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
+            <Requires LocalVar="A32NX_AUTOPILOT_H_DOT_RADIO" Units="number" Index="0">
                 <Range LowerBound="-350" UpperBound="-151" />
             </Requires>
         </Sound>
 
         <Sound WwiseEvent="cabtouchhard" FadeOutType="2" FadeOutTime="0.5" WwiseData="true" Continuous="false" ViewPoint="Inside" NodeName="HublotIn002" SimVar="SIM ON GROUND" Units="BOOLEAN" Index="0">
             <Range LowerBound="1.0" />
-            <Requires SimVar="VERTICAL SPEED" Units="FEET PER MINUTE" Index="0">
+            <Requires LocalVar="A32NX_AUTOPILOT_H_DOT_RADIO" Units="number" Index="0">
                 <Range UpperBound="-351" />
             </Requires>
         </Sound>

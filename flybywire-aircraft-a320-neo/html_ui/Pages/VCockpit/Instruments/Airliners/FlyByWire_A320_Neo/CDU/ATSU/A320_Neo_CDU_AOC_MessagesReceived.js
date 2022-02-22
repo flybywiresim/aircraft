@@ -60,7 +60,7 @@ class CDUAocMessagesReceived {
             [`${messages[offset - 2] ? "<" + translateAtsuMessageType(messages[offset - 2].Type) : ""}`],
             [msgTimeHeaders[1][0], msgTimeHeaders[1][1]],
             [`${messages[offset - 1] ? "<" + translateAtsuMessageType(messages[offset - 1].Type) : ""}`],
-            [""],
+            ["\xa0AOC MENU"],
             ["<RETURN"]
         ]);
 
