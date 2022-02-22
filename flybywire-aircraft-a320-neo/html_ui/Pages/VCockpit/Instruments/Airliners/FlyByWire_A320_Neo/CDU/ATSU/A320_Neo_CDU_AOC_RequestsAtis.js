@@ -161,16 +161,20 @@ class CDUAocRequestsAtis {
             store.sendStatus = "SENDING";
             updateView();
 
-            setTimeout(() => {
+            const sentRequest = () => {
                 store.sendStatus = "SENT";
-                updateView();
-            }, 1000);
+                if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
+                    updateView();
+                }
+            };
 
-            mcdu.atsu.aoc.receiveAtis(store.selected, store.requestId).then((retval) => {
+            mcdu.atsu.aoc.receiveAtis(store.selected, store.requestId, sentRequest).then((retval) => {
                 if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
                     mcdu.atsu.registerMessage(retval[1]);
                     store.sendStatus = "";
-                    updateView();
+                    if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
+                        updateView();
+                    }
 
                     // print the message
                     if (store.formatID === 0) {
@@ -178,8 +182,12 @@ class CDUAocRequestsAtis {
                         mcdu.atsu.printMessage(retval[1]);
                     }
                 } else {
-                    store.sendStatus = "FAILED";
                     mcdu.addNewAtsuMessage(retval[0]);
+
+                    if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
+                        store.sendStatus = "FAILED";
+                        updateView();
+                    }
                 }
             });
         };

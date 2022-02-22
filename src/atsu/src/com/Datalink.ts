@@ -1,7 +1,6 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { NXDataStore } from '@shared/persistence';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { Atsu } from '../ATSU';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
@@ -10,12 +9,15 @@ import { AtsuMessage, AtsuMessageNetwork, AtsuMessageType } from '../messages/At
 import { AtisMessage, AtisType } from '../messages/AtisMessage';
 import { MetarMessage } from '../messages/MetarMessage';
 import { TafMessage } from '../messages/TafMessage';
+import { Vdl } from './vhf/VDL';
 import { WeatherMessage } from '../messages/WeatherMessage';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
 
 export class Datalink {
-    private overallDelay = 0;
+    private vdl: Vdl = new Vdl();
+
+    private waitedComUpdate = 0;
 
     private waitedTimeHoppie = 0;
 
@@ -27,36 +29,26 @@ export class Datalink {
         messages.forEach((message) => {
             // ignore empty messages (happens sometimes in CPDLC with buggy ATC software)
             if (message.Message.length !== 0) {
-                this.estimateTransmissionTime();
-                setTimeout(() => parent.registerMessage(message), this.overallDelay);
+                const transmissionTime = this.vdl.enqueueInboundMessage(message);
+                setTimeout(() => {
+                    this.vdl.dequeueInboundMessage(transmissionTime);
+                    parent.registerMessage(message);
+                }, transmissionTime);
             }
         });
     }
 
     constructor(parent: Atsu) {
-        // copy the datalink transmission time data
-        switch (NXDataStore.get('CONFIG_DATALINK_TRANSMISSION_TIME', 'FAST')) {
-        case 'REAL':
-            SimVar.SetSimVarValue('L:A32NX_CONFIG_DATALINK_TIME', 'number', 0);
-            break;
-        case 'FAST':
-            SimVar.SetSimVarValue('L:A32NX_CONFIG_DATALINK_TIME', 'number', 2);
-            break;
-        default:
-            SimVar.SetSimVarValue('L:A32NX_CONFIG_DATALINK_TIME', 'number', 1);
-            break;
-        }
-
         setInterval(() => {
             if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
                 parent.atc.resetAtc();
             }
 
-            // update the internal timer
-            if (this.overallDelay <= 200) {
-                this.overallDelay = 0;
+            if (this.waitedComUpdate <= 30000) {
+                this.vdl.simulateTransmissionTimes(parent.flightPhase());
+                this.waitedComUpdate = 0;
             } else {
-                this.overallDelay -= 200;
+                this.waitedComUpdate += 5000;
             }
 
             if (HoppieConnector.pollInterval() <= this.waitedTimeHoppie) {
@@ -87,30 +79,6 @@ export class Datalink {
         }, 5000);
     }
 
-    private estimateTransmissionTime(): void {
-        let timeout = 0;
-
-        switch (SimVar.GetSimVarValue('L:A32NX_CONFIG_DATALINK_TIME', 'number')) {
-        // realistic transmission
-        case 0:
-            timeout = 30;
-            break;
-        // fast transmission
-        case 2:
-            timeout = 10;
-            break;
-        // instant transmission
-        default:
-            timeout = 2;
-            break;
-        }
-
-        // update the timeout and overall delay
-        timeout += Math.floor(Math.random() * timeout * 0.5);
-        timeout *= 1000;
-        this.overallDelay += timeout;
-    }
-
     private async receiveWeatherData(requestMetar: boolean, icaos: string[], index: number, message: WeatherMessage): Promise<AtsuStatusCodes> {
         let retval = AtsuStatusCodes.Ok;
 
@@ -125,41 +93,45 @@ export class Datalink {
         return retval;
     }
 
-    public async receiveWeather(requestMetar: boolean, icaos: string[]): Promise<[AtsuStatusCodes, WeatherMessage | undefined]> {
-        this.estimateTransmissionTime();
-
+    private async simulateWeatherRequestResponse(data: [AtsuStatusCodes, WeatherMessage], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         return new Promise((resolve, _reject) => {
+            // simulate the request transmission
+            const requestTimeout = this.vdl.enqueueOutboundPacket();
             setTimeout(() => {
-                let message = undefined;
-                if (requestMetar === true) {
-                    message = new MetarMessage();
-                } else {
-                    message = new TafMessage();
-                }
+                this.vdl.dequeueOutboundMessage(requestTimeout);
+                sentCallback();
 
-                this.receiveWeatherData(requestMetar, icaos, 0, message).then((code) => {
-                    if (code !== AtsuStatusCodes.Ok) {
-                        resolve([AtsuStatusCodes.ComFailed, undefined]);
-                    }
-                    resolve([AtsuStatusCodes.Ok, message]);
-                });
-            }, this.overallDelay);
+                // simulate some remote processing time
+                setTimeout(() => {
+                    // simulate the response transmission
+                    const responseTimeout = this.vdl.enqueueInboundMessage(data[1]);
+                    setTimeout(() => {
+                        this.vdl.dequeueInboundMessage(responseTimeout);
+                        resolve(data);
+                    }, responseTimeout);
+                }, 500);
+            }, requestTimeout);
         });
+    }
+
+    public async receiveWeather(requestMetar: boolean, icaos: string[], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+        let message = undefined;
+        if (requestMetar === true) {
+            message = new MetarMessage();
+        } else {
+            message = new TafMessage();
+        }
+
+        return this.receiveWeatherData(requestMetar, icaos, 0, message).then((code) => this.simulateWeatherRequestResponse([code, message], sentCallback));
     }
 
     public async isStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
         return HoppieConnector.isStationAvailable(callsign);
     }
 
-    public async receiveAtis(icao: string, type: AtisType): Promise<[AtsuStatusCodes, WeatherMessage | undefined]> {
-        this.estimateTransmissionTime();
-
-        return new Promise((resolve, _reject) => {
-            setTimeout(() => {
-                const message = new AtisMessage();
-                NXApiConnector.receiveAtis(icao, type, message).then(() => resolve([AtsuStatusCodes.Ok, message]));
-            }, this.overallDelay);
-        });
+    public async receiveAtis(icao: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+        const message = new AtisMessage();
+        return NXApiConnector.receiveAtis(icao, type, message).then(() => this.simulateWeatherRequestResponse([AtsuStatusCodes.Ok, message], sentCallback));
     }
 
     public async sendMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
