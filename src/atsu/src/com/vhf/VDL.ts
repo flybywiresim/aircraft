@@ -98,7 +98,7 @@ export class Vdl {
                 }
             }
             if (!connectionAvailable) {
-                this.perPacketDelay = Array(DatalinkProviders.ProviderCount).fill(800);
+                this.perPacketDelay = Array(DatalinkProviders.ProviderCount).fill(10000);
                 return;
             }
 
