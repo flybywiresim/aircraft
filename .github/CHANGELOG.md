@@ -161,6 +161,8 @@
 1. [AP] Furhter improved FLARE law for various conditions - @aguther (Andreas Guther)
 1. [SOUNDS] Use estimated landing rate for touchdown sound selection - @aguther (Andreas Guther)
 1. [ATHR] Increase spool up/down speed for THR IDLE and THR CLB to better match real plane - @aguther (Andreas Guther)
+1. [FLIGHTMODEL] Flight model improvements - @donstim (donbikes#4084)
+1. [SPEEDS] Fix GS mini not being limited by VFE-5 in CONF FULL -  @donstim (donbikes#4084)
 1. [MCDU] Improved Remote MCDU with CLR hold and light-dark mode - @frankkopp (Frank Kopp)
 
 ## 0.7.0
