@@ -79,6 +79,32 @@ export class Datalink {
         }, 5000);
     }
 
+    public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
+        return NXApiConnector.connect(flightNo).then((code) => {
+            if (code === AtsuStatusCodes.TelexDisabled) code = AtsuStatusCodes.Ok;
+
+            if (code === AtsuStatusCodes.Ok) {
+                return HoppieConnector.connect(flightNo).then((code) => {
+                    if (code === AtsuStatusCodes.NoHoppieConnection) code = AtsuStatusCodes.Ok;
+                    return code;
+                });
+            }
+
+            return code;
+        });
+    }
+
+    public static async disconnect(): Promise<AtsuStatusCodes> {
+        let retvalNXApi = await NXApiConnector.disconnect();
+        if (retvalNXApi === AtsuStatusCodes.TelexDisabled) retvalNXApi = AtsuStatusCodes.Ok;
+
+        let retvalHoppie = HoppieConnector.disconnect();
+        if (retvalHoppie === AtsuStatusCodes.NoHoppieConnection) retvalHoppie = AtsuStatusCodes.Ok;
+
+        if (retvalNXApi !== AtsuStatusCodes.Ok) return retvalNXApi;
+        return retvalHoppie;
+    }
+
     private async receiveWeatherData(requestMetar: boolean, icaos: string[], index: number, message: WeatherMessage): Promise<AtsuStatusCodes> {
         let retval = AtsuStatusCodes.Ok;
 
