@@ -274,7 +274,7 @@ export class LegsProcedure {
       const origin = this._facilities.get(leg.type === LegType.FD ? leg.originIcao : leg.fixIcao);
       const originIdent = origin.icao.substring(7, 12).trim();
 
-      const course = leg.course + GeoMath.getMagvar(origin.lat, origin.lon);
+      const course = (leg.type === LegType.FC ? leg.course : leg.theta) + GeoMath.getMagvar(origin.lat, origin.lon);
       const coordinates = Avionics.Utils.bearingDistanceToCoordinates(course, leg.distance / 1852, origin.lat, origin.lon);
 
       return this.buildWaypoint(`${originIdent.substring(0, 3)}/${Math.trunc(leg.distance / 1852).toString().padStart(2, '0')}`, coordinates);
