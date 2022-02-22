@@ -13,7 +13,6 @@ import { RadioNeedle } from '../elements/RadioNeedles';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { ApproachMessage } from '../elements/ApproachMessage';
 import { CrossTrack } from '../elements/CrossTrack';
-import { TrackLine } from '../elements/TrackLine';
 import { Traffic } from '../elements/Traffic';
 
 export interface ArcModeProps {

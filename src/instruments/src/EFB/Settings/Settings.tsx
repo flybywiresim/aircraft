@@ -236,11 +236,11 @@ const AircraftConfigurationPage = () => {
             </div>
 
             <div className="py-4 flex flex-row justify-between items-center">
-            <span className="text-lg text-gray-300">ND Track Up Mode</span>
-            <Toggle
-                value={ndTrackUp === '1'}
-                onToggle={() => setNdTrackUp(ndTrackUp === '1' ? '0' : '1')}
-            />
+                <span className="text-lg text-gray-300">ND Track Up Mode</span>
+                <Toggle
+                    value={ndTrackUp === '1'}
+                    onToggle={() => setNdTrackUp(ndTrackUp === '1' ? '0' : '1')}
+                />
             </div>
         </div>
     );
