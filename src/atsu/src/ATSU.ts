@@ -41,6 +41,7 @@ export class Atsu {
         const code = await Datalink.connect(flightNo);
         if (code === AtsuStatusCodes.Ok) {
             console.log(`ATSU: Callsign switch from ${this.fltNo} to ${flightNo}`);
+            this.fltNo = flightNo;
         }
 
         return code;
