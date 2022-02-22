@@ -7,8 +7,8 @@ class CDUAtcAtisMenu {
             { icao: "", type: Atsu.AtisType.Arrival, requested: false, autoupdate: false }
         ];
 
-        if (mcdu.flightPlanManager.getPersistantOrigin() && mcdu.flightPlanManager.getPersistantOrigin().ident) {
-            airports[0].icao = mcdu.flightPlanManager.getPersistantOrigin().ident;
+        if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
+            airports[0].icao = mcdu.flightPlanManager.getPersistentOrigin().ident;
             airports[0].autoupdate = mcdu.atsuManager.atc.atisAutoUpdateActive(airports[0].icao);
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
