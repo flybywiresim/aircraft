@@ -226,7 +226,11 @@ SecOutBus Sec::getBusOutputs() {
     output.rightSpoiler2Position.setFromData(analogInputs.rightSpoiler2Pos, Arinc429SignStatus::NormalOperation);
   }
 
-  output.speedBrakeLeverCommand.setFromData(0, Arinc429SignStatus::NormalOperation);
+  output.leftSidestickPitchCommand.setFromData(analogInputs.capPitchStickPos, Arinc429SignStatus::NormalOperation);
+  output.rightSidestickPitchCommand.setFromData(analogInputs.foPitchStickPos, Arinc429SignStatus::NormalOperation);
+  output.leftSidestickRollCommand.setFromData(analogInputs.capRollStickPos, Arinc429SignStatus::NormalOperation);
+  output.rightSidestickRollCommand.setFromData(analogInputs.foRollStickPos, Arinc429SignStatus::NormalOperation);
+  output.speedBrakeLeverCommand.setFromData(analogInputs.spdBrkLeverPos, Arinc429SignStatus::NormalOperation);
 
   output.discreteStatusWord1.setSsm(Arinc429SignStatus::NormalOperation);
   output.discreteStatusWord1.setBit(11, discreteInputs.lSpoiler1ServoFailed || discreteInputs.rSpoiler1ServoFailed);

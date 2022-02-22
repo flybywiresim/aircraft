@@ -304,6 +304,11 @@ ElacOutBus Elac::getBusOutputs() {
     output.leftElevatorPosition.setSsm(Arinc429SignStatus::FailureWarning);
     output.rightElevatorPosition.setSsm(Arinc429SignStatus::FailureWarning);
     output.thsPosition.setSsm(Arinc429SignStatus::FailureWarning);
+    output.leftSidestickPitchCommand.setSsm(Arinc429SignStatus::FailureWarning);
+    output.rightSidestickPitchCommand.setSsm(Arinc429SignStatus::FailureWarning);
+    output.leftSidestickRollCommand.setSsm(Arinc429SignStatus::FailureWarning);
+    output.rightSidestickRollCommand.setSsm(Arinc429SignStatus::FailureWarning);
+    output.rudderPedalPosition.setSsm(Arinc429SignStatus::FailureWarning);
     output.aileronCommand.setSsm(Arinc429SignStatus::FailureWarning);
     output.rollSpoilerCommand.setSsm(Arinc429SignStatus::FailureWarning);
     output.yawDamperCommand.setSsm(Arinc429SignStatus::FailureWarning);
@@ -312,6 +317,12 @@ ElacOutBus Elac::getBusOutputs() {
 
     return output;
   }
+
+  output.leftSidestickPitchCommand.setFromData(analogInputs.capPitchStickPos, Arinc429SignStatus::NormalOperation);
+  output.rightSidestickPitchCommand.setFromData(analogInputs.foPitchStickPos, Arinc429SignStatus::NormalOperation);
+  output.leftSidestickRollCommand.setFromData(analogInputs.capRollStickPos, Arinc429SignStatus::NormalOperation);
+  output.rightSidestickRollCommand.setFromData(analogInputs.foRollStickPos, Arinc429SignStatus::NormalOperation);
+  output.rudderPedalPosition.setFromData(analogInputs.rudderPedalPos, Arinc429SignStatus::NormalOperation);
 
   if (discreteInputs.lAilServoFailed) {
     output.leftAileronPosition.setFromData(0, Arinc429SignStatus::NoComputedData);
