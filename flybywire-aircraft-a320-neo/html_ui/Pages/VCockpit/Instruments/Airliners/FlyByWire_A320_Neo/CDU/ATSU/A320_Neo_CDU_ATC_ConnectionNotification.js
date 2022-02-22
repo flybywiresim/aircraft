@@ -3,6 +3,12 @@ class CDUAtcConnectionNotification {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCNotification;
 
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.ATCNotification) {
+                CDUAtcConnectionNotification.ShowPage(mcdu, store);
+            }
+        }, mcdu.PageTimeout.Default);
+
         let flightNo = "-------[color]white";
         let atcStation = "____[color]amber";
         let atcStationAvail = false;
