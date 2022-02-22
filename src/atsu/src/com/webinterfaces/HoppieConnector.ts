@@ -15,6 +15,44 @@ import { stringToCpdlc } from '../../Common';
 export class HoppieConnector {
     private static flightNumber: string = '';
 
+    public static async activateHoppie() {
+        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
+
+        if (NXDataStore.get('CONFIG_HOPPIE_USERID', '') === '') {
+            console.log('No Hoppie-ID set');
+            return;
+        }
+
+        const metarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
+        if (metarSrc !== 'VATSIM' && metarSrc !== 'IVAO') {
+            console.log('Invalid METAR source');
+            return;
+        }
+
+        const atisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA');
+        if (atisSrc !== 'VATSIM' && atisSrc !== 'IVAO') {
+            console.log('Invalid ATIS source');
+            return;
+        }
+
+        const body = {
+            logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
+            from: 'FBWA32NX',
+            to: 'ALL-CALLSIGNS',
+            type: 'ping',
+            packet: '',
+        };
+
+        Hoppie.sendRequest(body).then((resp) => {
+            if (resp.response !== 'error {illegal logon code}') {
+                SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
+                console.log('Activated Hoppie ID');
+            } else {
+                console.log('Invalid Hoppie-ID set');
+            }
+        });
+    }
+
     public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
             HoppieConnector.flightNumber = flightNo;

@@ -39,6 +39,8 @@ export class Datalink {
     }
 
     constructor(parent: Atsu) {
+        HoppieConnector.activateHoppie();
+
         setInterval(() => {
             if (this.waitedComUpdate <= 30000) {
                 this.vdl.simulateTransmissionTimes(parent.flightPhase());
