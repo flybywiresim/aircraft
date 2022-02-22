@@ -236,7 +236,7 @@ export class PathCaptureTransition extends Transition {
                 return;
             }
 
-            if (!Number.isNaN(intercept.lat)) {
+            if (intercept && !Number.isNaN(intercept.lat)) {
                 const bearingTcFtp = bearingTo(turnCenter, intercept);
 
                 const angleToLeg = MathUtils.diffAngle(
