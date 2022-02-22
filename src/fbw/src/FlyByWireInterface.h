@@ -8,6 +8,7 @@
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
+#include "CalculatedRadioReceiver.h"
 #include "ElevatorTrimHandler.h"
 #include "EngineData.h"
 #include "FlightDataRecorder.h"
@@ -103,6 +104,8 @@ class FlyByWireInterface {
   athr_output autoThrustOutput;
 
   InterpolatingLookupTable throttleLookupTable;
+
+  RadioReceiver radioReceiver;
 
   bool developmentLocalVariablesEnabled = false;
   bool useCalculatedLocalizerAndGlideSlope = false;
@@ -314,7 +317,7 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAileronPositionRight;
   std::shared_ptr<AnimationAileronHandler> animationAileronHandler;
 
-  std::unique_ptr<LocalVariable> idRadioReceiverUsage;
+  std::unique_ptr<LocalVariable> idRadioReceiverUsageEnabled;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerValid;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerDeviation;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerDistance;
@@ -328,6 +331,8 @@ class FlyByWireInterface {
 
   bool updatePerformanceMonitoring(double sampleTime);
   bool handleSimulationRate(double sampleTime);
+
+  bool updateRadioReceiver(double sampleTime);
 
   bool updateEngineData(double sampleTime);
   bool updateAdditionalData(double sampleTime);
