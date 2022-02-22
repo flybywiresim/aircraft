@@ -15,7 +15,7 @@ export const SimOptionsPage = () => {
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', 'DISABLED');
     const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
-    const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8080');
+    const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8380');
 
     const defaultBaroButtons: ButtonType[] = [
         { name: 'Auto', setting: 'AUTO' },
