@@ -135,10 +135,11 @@ export class Datalink {
     }
 
     public async sendMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
-        this.estimateTransmissionTime();
-
         return new Promise((resolve, _reject) => {
+            const timeout = this.vdl.enqueueOutboundMessage(message);
             setTimeout(() => {
+                this.vdl.dequeueOutboundMessage(timeout);
+
                 if (message.Type < AtsuMessageType.AOC) {
                     if (message.Network === AtsuMessageNetwork.FBW) {
                         NXApiConnector.sendTelexMessage(message as FreetextMessage).then((code) => resolve(code));
@@ -150,7 +151,7 @@ export class Datalink {
                 } else {
                     resolve(AtsuStatusCodes.UnknownMessage);
                 }
-            }, this.overallDelay);
+            }, timeout);
         });
     }
 }
