@@ -102,7 +102,7 @@ export class Vdl {
                 return;
             }
 
-            let relevantAircrafts = 0;
+            let relevantStations = 0;
 
             // calculate the relevant aircrafts based on the own level
             if (this.presentPosition.PressureAltitude < UpperSectorAltitude) {
@@ -113,7 +113,7 @@ export class Vdl {
                     ratio = this.vhf3.relevantAirports.length / this.vhf3.stationsUpperAirspace;
                 }
 
-                relevantAircrafts = this.lowerAirspaceTraffic + ratio * this.upperAirspaceTraffic;
+                relevantStations = this.lowerAirspaceTraffic + ratio * this.upperAirspaceTraffic;
             } else {
                 // calculate the ratio between relevant stations and lower stations
                 // it is assumed that one station is responsible for the lower sectors
@@ -122,10 +122,10 @@ export class Vdl {
                     ratio = 1 / this.vhf3.relevantAirports.length;
                 }
 
-                relevantAircrafts = this.upperAirspaceTraffic + ratio * this.lowerAirspaceTraffic;
+                relevantStations = this.upperAirspaceTraffic + ratio * this.lowerAirspaceTraffic;
             }
             // add the A32NX and the ground stations into the list of relevant aircrafts
-            relevantAircrafts += 1 + this.vhf3.relevantAirports.length;
+            relevantStations += 1 + this.vhf3.relevantAirports.length;
 
             this.perPacketDelay = Array(DatalinkProviders.ProviderCount).fill(0);
             for (let i = 0; i < DatalinkProviders.ProviderCount; ++i) {
@@ -136,13 +136,13 @@ export class Vdl {
                 messageCount *= this.vhf3.relevantAirports.length;
 
                 // calculate the number of slots for the remote traffic based on non-rounded messages
-                const messageCountPerAircraft = messageCount / relevantAircrafts;
+                const messageCountPerStation = messageCount / relevantStations;
 
                 // calculate the data rates and the time between two own packets
-                this.perPacketDelay[i] = Math.round(1000 / messageCountPerAircraft + 0.5);
+                this.perPacketDelay[i] = Math.round(1000 / messageCountPerStation + 0.5);
             }
 
-            console.log(`Per aircraft (stations: ${relevantAircrafts}) packet delay: ${this.perPacketDelay}`);
+            console.log(`Per aircraft (stations: ${relevantStations}) packet delay: ${this.perPacketDelay}`);
         }));
     }
 
