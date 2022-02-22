@@ -3,7 +3,6 @@ import classNames from 'classnames';
 import * as apiClient from '@flybywiresim/api-client';
 import { IconBuildingLighthouse, IconChartRadar, IconCircleCheck, IconPlaneArrival, IconPlaneDeparture, IconRadio, IconTrafficLights } from '@tabler/icons';
 import { useInterval } from '@flybywiresim/react-components';
-import { PopUp } from '@shared/popup';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import Button from '../Components/Button/Button';
 import { usePersistentProperty } from '../../Common/persistence';
@@ -20,8 +19,6 @@ export const ATC = () => {
     const [currentLatitude] = useSimVar('GPS POSITION LAT', 'Degrees', 5000);
     const [currentLongitude] = useSimVar('GPS POSITION LON', 'Degrees', 5000);
     const [atisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
-    const [hoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
-    const [hoppieEnabled, setHoppieEnabled] = useState(SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1 ? 'ENABLED' : 'DISABLED');
 
     const loadAtc = useCallback(() => {
         if (atisSource.toLowerCase() !== 'vatsim' && atisSource.toLowerCase() !== 'ivao') return;
@@ -76,80 +73,6 @@ export const ATC = () => {
             return parseFloat(converted).toFixed(3);
         }
         return '';
-    };
-
-    const handleHoppieToggle = async () : Promise<void> => {
-        if (hoppieEnabled === 'DISABLED') {
-            if (hoppieUserId === '' || hoppieUserId === undefined) {
-                new PopUp().showInformation(
-                    'ERROR',
-                    'Hoppie system requires a user ID which needs to be set in Settings.',
-                    'small',
-                    () => {
-                        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
-                        setHoppieEnabled('DISABLED');
-                    },
-                );
-            } else {
-                const body = {
-                    logon: hoppieUserId,
-                    from: 'FBWA32NX',
-                    to: 'ALL-CALLSIGNS',
-                    type: 'ping',
-                    packet: '',
-                };
-                let retval = await apiClient.Hoppie.sendRequest(body).then((resp) => resp.response);
-
-                // check if the logon code is valid
-                if (retval === 'error {illegal logon code}') {
-                    new PopUp().showInformation(
-                        'ERROR',
-                        'Invalid logon code used.',
-                        'small',
-                        () => {
-                            SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
-                            setHoppieEnabled('DISABLED');
-                        },
-                    );
-                } else {
-                    const mcduFlightNoSet = SimVar.GetSimVarValue('L:A32NX_MCDU_FLT_NO_SET', 'boolean') === 1;
-                    const callsign = SimVar.GetSimVarValue('ATC FLIGHT NUMBER', 'string');
-
-                    if (mcduFlightNoSet && callsign && callsign.length !== 0) {
-                        const body = {
-                            logon: hoppieUserId,
-                            from: callsign,
-                            to: 'ALL-CALLSIGNS',
-                            type: 'ping',
-                            packet: '',
-                        };
-                        retval = await apiClient.Hoppie.sendRequest(body).then((resp) => resp.response);
-
-                        // check if the callsign is already in use
-                        if (retval === 'error {callsign already in use}') {
-                            new PopUp().showInformation(
-                                'ERROR',
-                                'Flightnumber is already in use.',
-                                'small',
-                                () => {
-                                    SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
-                                    setHoppieEnabled('DISABLED');
-                                },
-                            );
-                        } else {
-                            SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
-                            setHoppieEnabled('ENABLED');
-                        }
-                    } else {
-                        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 1);
-                        setHoppieEnabled('ENABLED');
-                    }
-                }
-            }
-        } else {
-            SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
-            setHoppieEnabled('DISABLED');
-        }
     };
 
     useEffect(() => {
@@ -242,26 +165,6 @@ export const ATC = () => {
                         </div>
                     </div>
 
-                </div>
-            )}
-
-            { (atisSource === 'IVAO' || atisSource === 'VATSIM') && (
-                <div className="right-10 absolute bottom-5">
-                    <h1 className="text-white font-medium mb-4 text-2xl">Hoppie ACARS</h1>
-                    <div className="bg-gray-800 rounded-xl p-6 text-white shadow-lg">
-                        <Button
-                            className={classNames({ 'w-60 m-1 flex': true })}
-                            onClick={handleHoppieToggle}
-                        >
-                            <div className="flex w-full justify-start text-lg">
-                                <div className="flex flex-col flex-grow text-center justify-center items-center">
-                                    <div>
-                                        {hoppieEnabled !== 'ENABLED' ? 'Connect' : 'Disconnect'}
-                                    </div>
-                                </div>
-                            </div>
-                        </Button>
-                    </div>
                 </div>
             )}
         </div>
