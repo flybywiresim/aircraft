@@ -169,7 +169,7 @@ export class HoppieConnector {
     public static async poll(): Promise<[AtsuStatusCodes, AtsuMessage[]]> {
         const retval: AtsuMessage[] = [];
 
-        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+        if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1 || HoppieConnector.flightNumber === '') {
             return [AtsuStatusCodes.NoHoppieConnection, retval];
         }
 
