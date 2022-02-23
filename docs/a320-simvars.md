@@ -2416,7 +2416,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       Transponder 1 | 0
       Transponder 2 | 1
 
-- A32NX_TRANSPONDER_ALT_RPTG
+- A32NX_SWITCH_ATC_ALT
     - The transponder altitude reporting switch position
     - Bool
 
