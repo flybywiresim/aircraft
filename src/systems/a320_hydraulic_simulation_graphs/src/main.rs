@@ -465,41 +465,15 @@ impl Aircraft for A320SimpleMainElecHydraulicsTestAircraft {
             .power_with_potential(ElectricPotential::new::<volt>(115.));
         electricity.supplied_by(&self.powered_source_ac);
 
-
-            electricity.flow(&self.powered_source_ac, &self.ac_1_bus);
-
-
-
-            electricity.flow(&self.powered_source_ac, &self.ac_2_bus);
-
-
-
-            electricity.flow(&self.powered_source_ac, &self.ac_ground_service_bus);
-
-
-
-            electricity.flow(&self.powered_source_ac, &self.dc_ground_service_bus);
-
-
-
-            electricity.flow(&self.powered_source_ac, &self.dc_1_bus);
-
-
-
-            electricity.flow(&self.powered_source_ac, &self.dc_2_bus);
-
-
-
-            electricity.flow(&self.powered_source_ac, &self.dc_ess_bus);
-
-
-
-            electricity.flow(&self.powered_source_ac, &self.dc_hot_1_bus);
-
-
-
-            electricity.flow(&self.powered_source_ac, &self.dc_hot_2_bus);
-
+        electricity.flow(&self.powered_source_ac, &self.ac_1_bus);
+        electricity.flow(&self.powered_source_ac, &self.ac_2_bus);
+        electricity.flow(&self.powered_source_ac, &self.ac_ground_service_bus);
+        electricity.flow(&self.powered_source_ac, &self.dc_ground_service_bus);
+        electricity.flow(&self.powered_source_ac, &self.dc_1_bus);
+        electricity.flow(&self.powered_source_ac, &self.dc_2_bus);
+        electricity.flow(&self.powered_source_ac, &self.dc_ess_bus);
+        electricity.flow(&self.powered_source_ac, &self.dc_hot_1_bus);
+        electricity.flow(&self.powered_source_ac, &self.dc_hot_2_bus);
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {

@@ -50,6 +50,8 @@ impl ElectricalPumpPhysics {
     const DEFAULT_RESISTANT_TORQUE_WHEN_OFF_NEWTON_METER: f64 = 2.8;
     const BACKPRESSURE_PRELOAD_PSI: f64 = 200.;
 
+    const SPEED_DISPLACEMENT_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(50);
+
     // Efficiency gives generated mechanical torque ratio vs electrical power used.
     // 0.95 will convert 95% of electrical consumption in mechanical torque
     const ELECTRICAL_EFFICIENCY: f64 = 0.95;
@@ -74,7 +76,9 @@ impl ElectricalPumpPhysics {
 
             acceleration: AngularAcceleration::new::<radian_per_second_squared>(0.),
             speed_raw: AngularVelocity::new::<radian_per_second>(0.),
-            speed_filtered: LowPassFilter::<AngularVelocity>::new(Duration::from_millis(50)),
+            speed_filtered: LowPassFilter::<AngularVelocity>::new(
+                Self::SPEED_DISPLACEMENT_FILTER_TIME_CONSTANT,
+            ),
             inertia: Self::DEFAULT_INERTIA,
             is_active: false,
             output_current: ElectricCurrent::new::<ampere>(0.),
@@ -89,7 +93,9 @@ impl ElectricalPumpPhysics {
                 regulated_speed.get::<revolution_per_minute>(),
                 1.,
             ),
-            displacement_filtered: LowPassFilter::<Volume>::new(Duration::from_millis(50)),
+            displacement_filtered: LowPassFilter::<Volume>::new(
+                Self::SPEED_DISPLACEMENT_FILTER_TIME_CONSTANT,
+            ),
         }
     }
 
