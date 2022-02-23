@@ -96,6 +96,7 @@ export const PFD: React.FC = () => {
 
     const heading = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`);
     const groundTrack = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_TRACK`);
+    const groundSpeed = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_GROUND_SPEED`);
 
     const radioAlt = getSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet');
     const decisionHeight = getSimVar('L:AIRLINER_DECISION_HEIGHT', 'feet');
@@ -173,6 +174,17 @@ export const PFD: React.FC = () => {
                     decisionHeight={decisionHeight}
                     isAttExcessive={isAttExcessive}
                 />
+                <AttitudeIndicatorFixedCenter
+                    pitch={pitch}
+                    roll={roll}
+                    vs={inertialVerticalSpeed}
+                    gs={groundSpeed}
+                    heading={heading}
+                    track={groundTrack}
+                    isOnGround={isOnGround}
+                    FDActive={FDActive}
+                    isAttExcessive={isAttExcessive}
+                />
                 <path
                     id="Mask1"
                     className="BackgroundFill"
@@ -196,9 +208,8 @@ export const PFD: React.FC = () => {
                     // eslint-disable-next-line max-len
                     d="m32.138 145.34h73.536v10.382h-73.536zm0-44.092c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66zm115.14-35.191v-85.473h20.344v85.473zm-113.33 0v-85.473h27.548v85.473z"
                 />
-                <LandingSystem LSButtonPressed={lsButtonPressed} />
+                <LandingSystem LSButtonPressed={lsButtonPressed} pitch={pitch} roll={roll} />
                 <AttitudeIndicatorFixedUpper pitch={pitch} roll={roll} />
-                <AttitudeIndicatorFixedCenter pitch={pitch} roll={roll} isOnGround={isOnGround} FDActive={FDActive} isAttExcessive={isAttExcessive} />
                 <VerticalSpeedIndicator radioAlt={radioAlt} verticalSpeed={verticalSpeed} />
                 <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
                 <AltitudeIndicatorOfftape altitude={altitude} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
