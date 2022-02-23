@@ -9,6 +9,7 @@ export const ElapsedTime = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'bool', 250);
     const [dcEssIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool', 250);
     const [elapsedKnobPos] = useInteractionSimVar('L:A32NX_CHRONO_ET_SWITCH_POS', 'number', 'A32NX_CHRONO_ET_POS_CHANGED');
+    const [elapsedSimvarTime, setElapsedSimvarTime] = useSimVar('L:A32NX_CHRONO_ET_ELAPSED_TIME', 'number');
     const [absTime] = useSimVar('E:ABSOLUTE TIME', 'Seconds', 1000);
     const [prevTime, setPrevTime] = useState(absTime);
 
@@ -17,9 +18,12 @@ export const ElapsedTime = () => {
     useEffect(() => {
         if (dcEssIsPowered) {
             if (elapsedKnobPos === 0) {
-                setElapsedTime(elapsedTime + debouncedTimeDelta(absTime, prevTime));
+                const newElapsedTime = (elapsedTime || 0) + debouncedTimeDelta(absTime, prevTime);
+                setElapsedTime(newElapsedTime);
+                setElapsedSimvarTime(newElapsedTime);
             } else if (elapsedKnobPos === 2) {
                 setElapsedTime(0);
+                setElapsedSimvarTime(-1); // Simvar is not nullable, so a -1 placeholder is used
             }
             setPrevTime(absTime);
         }
