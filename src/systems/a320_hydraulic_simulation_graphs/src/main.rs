@@ -7,35 +7,23 @@ use std::time::Duration;
 pub use systems::hydraulic::*;
 
 use systems::{
-    electrical::{
-        test::TestElectricitySource, ElectricalBus, Electricity, ElectricitySource,
-        ExternalPowerSource,
-    },
-    engine::leap_engine::LeapEngine,
+    electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
     shared::{
-        update_iterator::FixedStepLoop, ElectricalBusType, HydraulicColor, MachNumber,
-        PotentialOrigin, ReservoirAirPressure,
+        update_iterator::FixedStepLoop, ElectricalBusType, HydraulicColor, PotentialOrigin,
+        ReservoirAirPressure,
     },
     simulation::{
         test::{SimulationTestBed, TestBed},
-        Aircraft, InitContext, Read, Reader, SimulationElement, SimulationElementVisitor,
-        SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
     },
 };
 use uom::si::{
-    acceleration::foot_per_second_squared,
-    angle::radian,
     angular_velocity::revolution_per_minute,
     electric_current::ampere,
     electric_potential::volt,
     f64::*,
-    length::foot,
     pressure::psi,
-    ratio::percent,
-    thermodynamic_temperature::degree_celsius,
-    velocity::knot,
     volume::{cubic_inch, gallon},
-    volume_rate::cubic_inch_per_second,
 };
 
 use a320_systems::hydraulic::A320HydraulicCircuitFactory;
@@ -69,13 +57,13 @@ impl TestPumpController {
         }
     }
 
-    fn commanding_depressurise() -> Self {
+    fn _commanding_depressurise() -> Self {
         Self {
             should_pressurise: false,
         }
     }
 
-    fn command_pressurise(&mut self) {
+    fn _command_pressurise(&mut self) {
         self.should_pressurise = true;
     }
 
@@ -381,11 +369,11 @@ impl A320TestPneumatics {
         }
     }
 
-    fn set_nominal_air_pressure(&mut self) {
+    fn _set_nominal_air_pressure(&mut self) {
         self.pressure = Pressure::new::<psi>(50.);
     }
 
-    fn set_low_air_pressure(&mut self) {
+    fn _set_low_air_pressure(&mut self) {
         self.pressure = Pressure::new::<psi>(1.);
     }
 
@@ -428,17 +416,6 @@ struct A320SimpleMainElecHydraulicsTestAircraft {
     dc_ess_bus: ElectricalBus,
     dc_hot_1_bus: ElectricalBus,
     dc_hot_2_bus: ElectricalBus,
-
-    // Electric buses states to be able to kill them dynamically
-    is_ac_ground_service_powered: bool,
-    is_dc_ground_service_powered: bool,
-    is_ac_1_powered: bool,
-    is_ac_2_powered: bool,
-    is_dc_1_powered: bool,
-    is_dc_2_powered: bool,
-    is_dc_ess_powered: bool,
-    is_dc_hot_1_powered: bool,
-    is_dc_hot_2_powered: bool,
 }
 impl A320SimpleMainElecHydraulicsTestAircraft {
     fn new(
@@ -474,39 +451,7 @@ impl A320SimpleMainElecHydraulicsTestAircraft {
             dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
             dc_hot_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentHot(1)),
             dc_hot_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentHot(2)),
-            is_ac_ground_service_powered: true,
-            is_dc_ground_service_powered: true,
-            is_ac_1_powered: true,
-            is_ac_2_powered: true,
-            is_dc_1_powered: true,
-            is_dc_2_powered: true,
-            is_dc_ess_powered: true,
-            is_dc_hot_1_powered: true,
-            is_dc_hot_2_powered: true,
         }
-    }
-
-    fn set_ac_bus_1_is_powered(&mut self, bus_is_alive: bool) {
-        self.is_ac_1_powered = bus_is_alive;
-    }
-
-    fn set_ac_bus_2_is_powered(&mut self, bus_is_alive: bool) {
-        self.is_ac_2_powered = bus_is_alive;
-    }
-
-    fn set_dc_ground_service_is_powered(&mut self, bus_is_alive: bool) {
-        self.is_dc_ground_service_powered = bus_is_alive;
-    }
-
-    fn set_ac_ground_service_is_powered(&mut self, bus_is_alive: bool) {
-        self.is_ac_ground_service_powered = bus_is_alive;
-    }
-
-    fn set_dc_bus_2_is_powered(&mut self, bus_is_alive: bool) {
-        self.is_dc_2_powered = bus_is_alive;
-    }
-    fn set_dc_ess_is_powered(&mut self, bus_is_alive: bool) {
-        self.is_dc_ess_powered = bus_is_alive;
     }
 }
 
@@ -520,41 +465,41 @@ impl Aircraft for A320SimpleMainElecHydraulicsTestAircraft {
             .power_with_potential(ElectricPotential::new::<volt>(115.));
         electricity.supplied_by(&self.powered_source_ac);
 
-        if self.is_ac_1_powered {
+
             electricity.flow(&self.powered_source_ac, &self.ac_1_bus);
-        }
 
-        if self.is_ac_2_powered {
+
+
             electricity.flow(&self.powered_source_ac, &self.ac_2_bus);
-        }
 
-        if self.is_ac_ground_service_powered {
+
+
             electricity.flow(&self.powered_source_ac, &self.ac_ground_service_bus);
-        }
 
-        if self.is_dc_ground_service_powered {
+
+
             electricity.flow(&self.powered_source_ac, &self.dc_ground_service_bus);
-        }
 
-        if self.is_dc_1_powered {
+
+
             electricity.flow(&self.powered_source_ac, &self.dc_1_bus);
-        }
 
-        if self.is_dc_2_powered {
+
+
             electricity.flow(&self.powered_source_ac, &self.dc_2_bus);
-        }
 
-        if self.is_dc_ess_powered {
+
+
             electricity.flow(&self.powered_source_ac, &self.dc_ess_bus);
-        }
 
-        if self.is_dc_hot_1_powered {
+
+
             electricity.flow(&self.powered_source_ac, &self.dc_hot_1_bus);
-        }
 
-        if self.is_dc_hot_2_powered {
+
+
             electricity.flow(&self.powered_source_ac, &self.dc_hot_2_bus);
-        }
+
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
