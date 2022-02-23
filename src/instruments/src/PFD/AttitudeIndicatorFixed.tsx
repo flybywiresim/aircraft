@@ -297,15 +297,15 @@ const SidestickIndicator = ({ isOnGround, captSidestickPosX, captSidestickPosY, 
                         && !foSidestickPosX.isFailureWarning()
                         && !foSidestickPosY.isFailureWarning();
 
-    const foStickDisabledFcdc1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_3').getBitValueOr(29, false);
-    const foStickDisabledFcdc2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_3').getBitValueOr(29, false);
-    const captStickDisabledFcdc1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_3').getBitValueOr(28, false);
-    const captStickDisabledFcdc2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_3').getBitValueOr(28, false);
+    const foStickDisabledFcdc1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_2').getBitValueOr(29, false);
+    const foStickDisabledFcdc2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_2').getBitValueOr(29, false);
+    const captStickDisabledFcdc1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_2').getBitValueOr(28, false);
+    const captStickDisabledFcdc2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_2').getBitValueOr(28, false);
     const foStickDisabled = foStickDisabledFcdc1 || foStickDisabledFcdc2;
     const captStickDisabled = captStickDisabledFcdc1 || captStickDisabledFcdc2;
 
-    const totalSidestickPosX = (foStickDisabled ? 0 : foSidestickPosX.value) + (captStickDisabled ? 0 : captSidestickPosX.value);
-    const totalSidestickPosY = (foStickDisabled ? 0 : foSidestickPosY.value) + (captStickDisabled ? 0 : captSidestickPosY.value);
+    const totalSidestickPosX = Math.max(Math.min(((foStickDisabled ? 0 : foSidestickPosX.value) + (captStickDisabled ? 0 : captSidestickPosX.value)), 19), -19) * 1.5558;
+    const totalSidestickPosY = Math.max(Math.min((foStickDisabled ? 0 : foSidestickPosY.value) + (captStickDisabled ? 0 : captSidestickPosY.value), 15), -15) * 1.5347;
 
     if (!showIndicator) {
         return null;
