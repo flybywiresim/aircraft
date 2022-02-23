@@ -223,8 +223,6 @@
                     <ANIM_TYPE>KNOB</ANIM_TYPE>
                     <ANIM_TEMPLATE>ASOBO_GT_Switch_2States</ANIM_TEMPLATE>
                     <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
-                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                    <SWITCH_POSITION_VAR>A32NX_SWITCH_ATC_ALT</SWITCH_POSITION_VAR>
                     <LEFTARROW>TurnLeft</LEFTARROW>
                     <RIGHTARROW>TurnRight</RIGHTARROW>
                     <WWISE_EVENT>smallknob</WWISE_EVENT>
@@ -270,8 +268,8 @@
                     <CODE_POS_1>#TRANSPONDER_SYSTEM_2# (&gt;L:A32NX_TRANSPONDER_SYSTEM, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_1>
                     <ANIM_CODE>(L:A32NX_TRANSPONDER_SYSTEM) 100 *</ANIM_CODE>
                     <ANIM_NAME>#KNOB_XPNDR_SYSTEM_ANIM_NAME#</ANIM_NAME>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ATC_SYSTEM_1</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ATC_SYSTEM_2</ANIMTIP_1>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.XPDR_XPDR</ANIMTIP_0>
+                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.XPDR_XPDR</ANIMTIP_1>
                 </UseTemplate>
             </Component>
         </Component>
