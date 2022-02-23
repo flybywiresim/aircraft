@@ -1117,6 +1117,7 @@
       --- | ---
       0 or greater | Seconds elapsed
       -1 | Empty value
+
 ## EIS Display System
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
