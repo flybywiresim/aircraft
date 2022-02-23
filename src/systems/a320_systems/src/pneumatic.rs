@@ -104,6 +104,22 @@ valve_signal_implementation!(EngineStarterValveSignal);
 valve_signal_implementation!(FanAirValveSignal);
 valve_signal_implementation!(PackFlowValveSignal);
 
+fn hydraulic_reservoir_init_pressure_from_sim_state(context: &InitContext) -> Pressure {
+    // When starting with engine off we set pressure value close to nominal so that low pressure
+    // faults do not trigger
+    const COLD_INIT_PRESS_PSI: f64 = 45.;
+
+    // When starting with engine running we set lower pressure so we let bleed system converge to
+    // nominal value
+    const HOT_INIT_PRESS_PSI: f64 = 25.;
+
+    if context.has_engines_running() {
+        Pressure::new::<psi>(HOT_INIT_PRESS_PSI)
+    } else {
+        Pressure::new::<psi>(COLD_INIT_PRESS_PSI)
+    }
+}
+
 pub struct A320Pneumatic {
     physics_updater: MaxStepLoop,
 
@@ -164,7 +180,7 @@ impl A320Pneumatic {
                 HydraulicColor::Green,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(2.5),
-                    Pressure::new::<psi>(50.),
+                    hydraulic_reservoir_init_pressure_from_sim_state(context),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
                 Pressure::new::<psi>(70.),
@@ -175,7 +191,7 @@ impl A320Pneumatic {
                 HydraulicColor::Blue,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.1),
-                    Pressure::new::<psi>(50.),
+                    hydraulic_reservoir_init_pressure_from_sim_state(context),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
                 Pressure::new::<psi>(70.),
@@ -186,7 +202,7 @@ impl A320Pneumatic {
                 HydraulicColor::Yellow,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.7),
-                    Pressure::new::<psi>(50.),
+                    hydraulic_reservoir_init_pressure_from_sim_state(context),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
                 Pressure::new::<psi>(70.),
