@@ -30,7 +30,7 @@ pub(super) struct ElectricalPumpPhysics {
     consumed_power: Power,
 
     acceleration: AngularAcceleration,
-    speed: AngularVelocity,
+    speed_raw: AngularVelocity,
     speed_filtered: LowPassFilter<AngularVelocity>,
     inertia: f64,
     is_active: bool,
@@ -42,7 +42,7 @@ pub(super) struct ElectricalPumpPhysics {
 
     current_controller: PidController,
 
-    displacement: LowPassFilter<Volume>,
+    displacement_filtered: LowPassFilter<Volume>,
 }
 impl ElectricalPumpPhysics {
     const DEFAULT_INERTIA: f64 = 0.011;
@@ -73,7 +73,7 @@ impl ElectricalPumpPhysics {
             consumed_power: Power::new::<watt>(0.),
 
             acceleration: AngularAcceleration::new::<radian_per_second_squared>(0.),
-            speed: AngularVelocity::new::<radian_per_second>(0.),
+            speed_raw: AngularVelocity::new::<radian_per_second>(0.),
             speed_filtered: LowPassFilter::<AngularVelocity>::new(Duration::from_millis(50)),
             inertia: Self::DEFAULT_INERTIA,
             is_active: false,
@@ -89,7 +89,7 @@ impl ElectricalPumpPhysics {
                 regulated_speed.get::<revolution_per_minute>(),
                 1.,
             ),
-            displacement: LowPassFilter::<Volume>::new(Duration::from_millis(50)),
+            displacement_filtered: LowPassFilter::<Volume>::new(Duration::from_millis(50)),
         }
     }
 
@@ -99,10 +99,10 @@ impl ElectricalPumpPhysics {
         section: &impl SectionPressure,
         current_displacement: Volume,
     ) {
-        self.displacement
+        self.displacement_filtered
             .update(context.delta(), current_displacement);
 
-        self.update_pump_resistant_torque(section, self.displacement.output());
+        self.update_pump_resistant_torque(section);
 
         self.update_pump_generated_torque(context);
 
@@ -115,21 +115,17 @@ impl ElectricalPumpPhysics {
         self.acceleration = AngularAcceleration::new::<radian_per_second_squared>(
             final_torque.get::<newton_meter>() / self.inertia,
         );
-        self.speed += AngularVelocity::new::<radian_per_second>(
+        self.speed_raw += AngularVelocity::new::<radian_per_second>(
             self.acceleration.get::<radian_per_second_squared>() * context.delta_as_secs_f64(),
         );
-        self.speed = self
-            .speed
+        self.speed_raw = self
+            .speed_raw
             .max(AngularVelocity::new::<radian_per_second>(0.));
 
-        self.speed_filtered.update(context.delta(), self.speed);
+        self.speed_filtered.update(context.delta(), self.speed_raw);
     }
 
-    fn update_pump_resistant_torque(
-        &mut self,
-        section: &impl SectionPressure,
-        current_displacement: Volume,
-    ) {
+    fn update_pump_resistant_torque(&mut self, section: &impl SectionPressure) {
         let dynamic_friction_torque = Torque::new::<newton_meter>(
             Self::DEFAULT_DYNAMIC_FRICTION_CONSTANT
                 * self.speed_filtered.output().get::<revolution_per_minute>(),
@@ -141,7 +137,7 @@ impl ElectricalPumpPhysics {
                     .pressure()
                     .get::<psi>()
                     .max(Self::BACKPRESSURE_PRELOAD_PSI)
-                    * current_displacement.get::<cubic_inch>()
+                    * self.displacement_filtered.output().get::<cubic_inch>()
                     / (2. * std::f64::consts::PI),
             )
         } else {
@@ -181,7 +177,7 @@ impl ElectricalPumpPhysics {
         self.update_electrical_power_consumption();
 
         if self.pump_should_run() {
-            if self.speed.get::<revolution_per_minute>() < 5.
+            if self.speed_raw.get::<revolution_per_minute>() < 5.
                 && self.output_current.get::<ampere>() > 0.
             {
                 self.generated_torque =
@@ -189,7 +185,7 @@ impl ElectricalPumpPhysics {
             } else {
                 self.generated_torque = Torque::new::<newton_meter>(
                     Self::ELECTRICAL_EFFICIENCY * self.consumed_power.get::<watt>()
-                        / self.speed.get::<radian_per_second>(),
+                        / self.speed_raw.get::<radian_per_second>(),
                 );
             }
         } else {
