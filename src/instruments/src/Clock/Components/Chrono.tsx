@@ -25,6 +25,10 @@ export const Chrono = () => {
         setPrevTime(absTime);
     }, [absTime]);
 
+    useEffect(() => {
+        setElapsedSimvarTime(-1);
+    }, []);
+
     useInteractionEvent('A32NX_CHRONO_TOGGLE', () => {
         if (dcEssIsPowered) {
             if (running) {

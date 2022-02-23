@@ -29,6 +29,10 @@ export const ElapsedTime = () => {
         }
     }, [absTime, elapsedKnobPos, dcEssIsPowered]);
 
+    useEffect(() => {
+        setElapsedSimvarTime(-1);
+    }, []);
+
     return (
         <text x="47" y="247" className="fontBig">{ltsTest === 0 ? '88:88' : getDisplayString(elapsedTime, elapsedKnobPos === 0)}</text>
     );
