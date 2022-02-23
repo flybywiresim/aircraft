@@ -125,6 +125,8 @@ export class Datalink {
                 this.vdl.dequeueOutboundMessage(requestTimeout);
                 sentCallback();
 
+                const processingTimeout = 300 + Math.floor(Math.random() * 500);
+
                 // simulate some remote processing time
                 setTimeout(() => {
                     // simulate the response transmission
@@ -133,7 +135,7 @@ export class Datalink {
                         this.vdl.dequeueInboundMessage(responseTimeout);
                         resolve(data);
                     }, responseTimeout);
-                }, 500);
+                }, processingTimeout);
             }, requestTimeout);
         });
     }
