@@ -181,7 +181,7 @@ pub struct PowerTransferUnit {
 }
 impl PowerTransferUnit {
     const ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
-    const DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+    const DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 35.;
 
     const MIN_SPEED_SIMULATION_RPM: f64 = 50.;
     const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.85;
@@ -191,7 +191,7 @@ impl PowerTransferUnit {
     const MIN_RIGHT_DISPLACEMENT_CUBIC_INCH: f64 = 0.65;
     const MAX_RIGHT_DISPLACEMENT_CUBIC_INCH: f64 = 1.21;
 
-    const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(80);
+    const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(45);
 
     const PRESSURE_BREAKPOINTS_PSI: [f64; 10] =
         [-500., -250., -100., -50., -10., 0., 100., 220., 250., 500.];
@@ -210,7 +210,7 @@ impl PowerTransferUnit {
 
     const SHAFT_FRICTION: f64 = 0.12;
     const BREAKOUT_TORQUE_NM: f64 = 2.;
-    const SHAFT_INERTIA: f64 = 0.008;
+    const SHAFT_INERTIA: f64 = 0.0055;
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
