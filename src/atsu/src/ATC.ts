@@ -18,6 +18,8 @@ export class Atc {
 
     private dcduLink: DcduLink | undefined = undefined;
 
+    private handoverOngoing = false;
+
     private currentAtc = '';
 
     private nextAtc = '';
@@ -73,12 +75,13 @@ export class Atc {
             return AtsuStatusCodes.SystemBusy;
         }
 
-        if (this.currentAtc !== '') {
+        if (!this.handoverOngoing && this.currentAtc !== '') {
             const retval = await this.logoff();
             if (retval !== AtsuStatusCodes.Ok) {
                 return retval;
             }
         }
+        this.handoverOngoing = false;
 
         const message = new CpdlcMessage();
         message.Station = station;
