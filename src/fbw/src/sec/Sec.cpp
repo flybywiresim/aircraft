@@ -39,11 +39,46 @@ void Sec::update(double deltaTime, double simulationTime, bool faultActive, bool
   monitorSelf(faultActive);
 
   if (monitoringHealthy) {
+    computeSidestickPriorityLogic(deltaTime);
     computeComputerEngagementRoll();
     computeComputerEngagementPitch();
     computePitchLawCapability();
     computeActiveLawsAndFunctionStatus();
   }
+}
+
+// Compute the priority logic. The last pilot to press the takeover button,
+// gets priority. Holding the button for more than 30s locks in the priority.
+// A locked sidestick can be reactivated by pressing it's takeover button again.
+// If the AP is currently engaged, the takeover button will act as the instinctive
+// disconnect button, so it's function as the takeover button is disabled as long as
+// at least one AP is engaged. An already locked priority will remain locked however.
+// TODO:
+// Also, if a different computer is engaged in an axis, synchronize with this
+// computer, in order to prevent one computer having a sidestick locked while the other doesn't.
+void Sec::computeSidestickPriorityLogic(double deltaTime) {
+  bool leftButtonPulsed = leftTakeoverPulseNode.update(discreteInputs.captPriorityTakeoverPressed);
+  bool rightButtonPulsed = rightTakeoverPulseNode.update(discreteInputs.foPriorityTakeoverPressed);
+
+  if (leftButtonPulsed) {
+    rightSidestickDisabled = true;
+    leftSidestickDisabled = false;
+  } else if (rightButtonPulsed) {
+    leftSidestickDisabled = true;
+    rightSidestickDisabled = false;
+  }
+
+  if (rightSidestickDisabled && !(discreteInputs.captPriorityTakeoverPressed || rightSidestickPriorityLocked)) {
+    rightSidestickDisabled = false;
+  }
+  if (leftSidestickDisabled && !(discreteInputs.foPriorityTakeoverPressed || leftSidestickPriorityLocked)) {
+    leftSidestickDisabled = false;
+  }
+
+  leftSidestickPriorityLocked = leftPriorityLockConfirmNode.update(
+      leftSidestickDisabled && (discreteInputs.foPriorityTakeoverPressed || leftSidestickPriorityLocked), deltaTime);
+  rightSidestickPriorityLocked = rightPriorityLockConfirmNode.update(
+      rightSidestickDisabled && (discreteInputs.captPriorityTakeoverPressed || rightSidestickPriorityLocked), deltaTime);
 }
 
 // Compute the laws that are actually active.
@@ -256,8 +291,10 @@ SecOutBus Sec::getBusOutputs() {
   output.discreteStatusWord2.setSsm(Arinc429SignStatus::NormalOperation);
   output.discreteStatusWord2.setBit(11, false);
   output.discreteStatusWord2.setBit(12, false);
-  output.discreteStatusWord2.setBit(13, false);
-  output.discreteStatusWord2.setBit(14, false);
+  output.discreteStatusWord2.setBit(13, leftSidestickDisabled);
+  output.discreteStatusWord2.setBit(14, rightSidestickDisabled);
+  output.discreteStatusWord2.setBit(15, leftSidestickPriorityLocked);
+  output.discreteStatusWord2.setBit(16, rightSidestickPriorityLocked);
 
   return output;
 }

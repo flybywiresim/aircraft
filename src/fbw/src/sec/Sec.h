@@ -3,6 +3,7 @@
 #include "SecIO.h"
 
 #include "../Arinc429.h"
+#include "../utils/ConfirmNode.h"
 #include "../utils/PulseNode.h"
 #include "../utils/SRFlipFlop.h"
 
@@ -43,6 +44,8 @@ class Sec {
 
   void computeActiveLawsAndFunctionStatus();
 
+  void computeSidestickPriorityLogic(double deltaTime);
+
   // Axis engagement vars
   bool isEngagedInPitch;
 
@@ -66,6 +69,23 @@ class Sec {
   PitchLaw pitchLawCapability;
 
   PitchLaw activePitchLaw;
+
+  // Sidestick priority
+  bool leftSidestickDisabled;
+
+  bool rightSidestickDisabled;
+
+  bool leftSidestickPriorityLocked;
+
+  bool rightSidestickPriorityLocked;
+
+  PulseNode leftTakeoverPulseNode = PulseNode(true);
+
+  PulseNode rightTakeoverPulseNode = PulseNode(true);
+
+  ConfirmNode leftPriorityLockConfirmNode = ConfirmNode(true, 30);
+
+  ConfirmNode rightPriorityLockConfirmNode = ConfirmNode(true, 30);
 
   // Computer Self-monitoring vars
   bool monitoringHealthy;

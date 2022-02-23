@@ -42,6 +42,14 @@ void Elac::clearMemory() {
   activeLateralLaw = LateralLaw::None;
   pitchLawCapability = PitchLaw::None;
   activePitchLaw = PitchLaw::None;
+  leftSidestickDisabled = false;
+  rightSidestickDisabled = false;
+  leftSidestickPriorityLocked = false;
+  rightSidestickPriorityLocked = false;
+  leftTakeoverPulseNode.update(false);
+  rightTakeoverPulseNode.update(false);
+  leftPriorityLockConfirmNode.update(false, 0);
+  rightPriorityLockConfirmNode.update(false, 0);
 }
 
 // Main update cycle
@@ -53,6 +61,7 @@ void Elac::update(double deltaTime, double simulationTime, bool faultActive, boo
   monitorSelf(faultActive);
 
   if (monitoringHealthy) {
+    computeSidestickPriorityLogic(deltaTime);
     monitorHydraulicData();
     computeComputerEngagementPitch();
     computeComputerEngagementRoll();
@@ -60,6 +69,42 @@ void Elac::update(double deltaTime, double simulationTime, bool faultActive, boo
     computePitchLawCapability();
     computeActiveLawsAndFunctionStatus();
   }
+}
+
+// Compute the priority logic. The last pilot to press the takeover button,
+// gets priority. Holding the button for more than 30s locks in the priority.
+// A locked sidestick can be reactivated by pressing it's takeover button again.
+// If the AP is currently engaged, the takeover button will act as the instinctive
+// disconnect button, so it's function as the takeover button is disabled as long as
+// at least one AP is engaged. An already locked priority will remain locked however.
+// TODO:
+// Also, if a different computer (ELAC or SEC) is engaged in an axis, synchronize with this
+// computer, in order to prevent one computer having a sidestick locked while the other doesn't.
+void Elac::computeSidestickPriorityLogic(double deltaTime) {
+  bool leftButtonPulsed = leftTakeoverPulseNode.update(discreteInputs.captPriorityTakeoverPressed) && discreteInputs.ap1Disengaged &&
+                          discreteInputs.ap2Disengaged;
+  bool rightButtonPulsed = rightTakeoverPulseNode.update(discreteInputs.foPriorityTakeoverPressed) && discreteInputs.ap1Disengaged &&
+                           discreteInputs.ap2Disengaged;
+
+  if (leftButtonPulsed) {
+    rightSidestickDisabled = true;
+    leftSidestickDisabled = false;
+  } else if (rightButtonPulsed) {
+    leftSidestickDisabled = true;
+    rightSidestickDisabled = false;
+  }
+
+  if (rightSidestickDisabled && !(discreteInputs.captPriorityTakeoverPressed || rightSidestickPriorityLocked)) {
+    rightSidestickDisabled = false;
+  }
+  if (leftSidestickDisabled && !(discreteInputs.foPriorityTakeoverPressed || leftSidestickPriorityLocked)) {
+    leftSidestickDisabled = false;
+  }
+
+  leftSidestickPriorityLocked = leftPriorityLockConfirmNode.update(
+      leftSidestickDisabled && (discreteInputs.foPriorityTakeoverPressed || leftSidestickPriorityLocked), deltaTime);
+  rightSidestickPriorityLocked = rightPriorityLockConfirmNode.update(
+      rightSidestickDisabled && (discreteInputs.captPriorityTakeoverPressed || rightSidestickPriorityLocked), deltaTime);
 }
 
 // Compute this computer's pitch law capability, i.e.
@@ -384,10 +429,10 @@ ElacOutBus Elac::getBusOutputs() {
   output.discreteStatusWord2.setBit(14, lateralLawCapability == LateralLaw::DirectLaw);
   output.discreteStatusWord2.setBit(15, false);
   output.discreteStatusWord2.setBit(16, false);
-  output.discreteStatusWord2.setBit(17, false);
-  output.discreteStatusWord2.setBit(18, false);
-  output.discreteStatusWord2.setBit(19, false);
-  output.discreteStatusWord2.setBit(20, false);
+  output.discreteStatusWord2.setBit(17, leftSidestickDisabled);
+  output.discreteStatusWord2.setBit(18, rightSidestickDisabled);
+  output.discreteStatusWord2.setBit(19, leftSidestickPriorityLocked);
+  output.discreteStatusWord2.setBit(20, leftSidestickPriorityLocked);
 
   return output;
 }

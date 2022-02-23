@@ -3,6 +3,8 @@
 #include "ElacIO.h"
 
 #include "../Arinc429.h"
+#include "../utils/ConfirmNode.h"
+#include "../utils/PulseNode.h"
 
 class Elac {
  public:
@@ -47,6 +49,8 @@ class Elac {
 
   void computeActiveLawsAndFunctionStatus();
 
+  void computeSidestickPriorityLogic(double deltaTime);
+
   // Axis engagement vars
   bool isEngagedInPitch;
 
@@ -87,6 +91,23 @@ class Elac {
   bool isBlueHydraulicPowerAvail;
 
   bool isGreenHydraulicPowerAvail;
+
+  // Sidestick priority
+  bool leftSidestickDisabled;
+
+  bool rightSidestickDisabled;
+
+  bool leftSidestickPriorityLocked;
+
+  bool rightSidestickPriorityLocked;
+
+  PulseNode leftTakeoverPulseNode = PulseNode(true);
+
+  PulseNode rightTakeoverPulseNode = PulseNode(true);
+
+  ConfirmNode leftPriorityLockConfirmNode = ConfirmNode(true, 30);
+
+  ConfirmNode rightPriorityLockConfirmNode = ConfirmNode(true, 30);
 
   // Computer Self-monitoring vars
   bool monitoringHealthy;

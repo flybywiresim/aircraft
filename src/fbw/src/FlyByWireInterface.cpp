@@ -594,6 +594,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idHydYellowSystemPressure = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
   idHydGreenSystemPressure = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
   idHydBlueSystemPressure = make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
+
+  idCaptPriorityButtonPressed = make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:1");
+  idFoPriorityButtonPressed = make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:2");
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
@@ -893,6 +896,7 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
 bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   const int oppElacIndex = elacIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
+  SimInput simInput = simConnectInterface.getSimInput();
 
   elacs[elacIndex].discreteInputs.groundSpoilersActive1 = secsDiscreteOutputs[0].groundSpoilerOut;
   elacs[elacIndex].discreteInputs.groundSpoilersActive2 =
@@ -919,23 +923,23 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].discreteInputs.rElevServoFailed = idElevFaultRight[elacIndex]->get();
   elacs[elacIndex].discreteInputs.thsOverrideActive = false;
   elacs[elacIndex].discreteInputs.yellowLowPressure = idHydYellowSystemPressure->get() < 1450;
-  elacs[elacIndex].discreteInputs.captPriorityTakeoverPressed = false;
-  elacs[elacIndex].discreteInputs.foPriorityTakeoverPressed = false;
+  elacs[elacIndex].discreteInputs.captPriorityTakeoverPressed = idCaptPriorityButtonPressed->get();
+  elacs[elacIndex].discreteInputs.foPriorityTakeoverPressed = idFoPriorityButtonPressed->get();
   elacs[elacIndex].discreteInputs.blueLowPressure = idHydBlueSystemPressure->get() < 1450;
   elacs[elacIndex].discreteInputs.greenLowPressure = idHydGreenSystemPressure->get() < 1450;
   elacs[elacIndex].discreteInputs.elacEngagedFromSwitch = idElacPushbuttonStatus[elacIndex]->get();
   elacs[elacIndex].discreteInputs.normalPowersupplyLost = false;
 
-  elacs[elacIndex].analogInputs.capPitchStickPos = 0;
-  elacs[elacIndex].analogInputs.foPitchStickPos = 0;
-  elacs[elacIndex].analogInputs.capRollStickPos = 0;
-  elacs[elacIndex].analogInputs.foRollStickPos = 0;
+  elacs[elacIndex].analogInputs.capPitchStickPos = simInput.inputs[0] * 15;
+  elacs[elacIndex].analogInputs.foPitchStickPos = simInput.inputs[0] * 15;
+  elacs[elacIndex].analogInputs.capRollStickPos = simInput.inputs[1] * 19;
+  elacs[elacIndex].analogInputs.foRollStickPos = simInput.inputs[1] * 19;
   elacs[elacIndex].analogInputs.leftElevatorPos = 0;
   elacs[elacIndex].analogInputs.rightElevatorPos = 0;
   elacs[elacIndex].analogInputs.thsPos = 0;
   elacs[elacIndex].analogInputs.leftAileronPos = 0;
   elacs[elacIndex].analogInputs.rightAileronPos = 0;
-  elacs[elacIndex].analogInputs.rudderPedalPos = 0;
+  elacs[elacIndex].analogInputs.rudderPedalPos = simInput.inputs[2] * 30;
   elacs[elacIndex].analogInputs.loadFactorAcc1 = 0;
   elacs[elacIndex].analogInputs.loadFactorAcc2 = 0;
   elacs[elacIndex].analogInputs.blueHydPressure = idHydBlueSystemPressure->get();
@@ -970,6 +974,7 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
 bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   const int oppSecIndex = secIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
+  SimInput simInput = simConnectInterface.getSimInput();
 
   secs[secIndex].discreteInputs.secEngagedFromSwitch = idSecPushbuttonStatus[secIndex]->get();
   secs[secIndex].discreteInputs.secInemergencyPwrSply = false;
@@ -1019,8 +1024,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].discreteInputs.foPriorityTakeoverPressed = false;
 
   if (secIndex < 2) {
-    secs[secIndex].analogInputs.capPitchStickPos = 0;
-    secs[secIndex].analogInputs.foPitchStickPos = 0;
+    secs[secIndex].analogInputs.capPitchStickPos = simInput.inputs[0] * 15;
+    secs[secIndex].analogInputs.foPitchStickPos = simInput.inputs[0] * 15;
     secs[secIndex].analogInputs.leftElevatorPos = 0;
     secs[secIndex].analogInputs.rightElevatorPos = 0;
     secs[secIndex].analogInputs.thsPos = 0;
@@ -1035,8 +1040,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].analogInputs.loadFactorAcc1 = 0;
     secs[secIndex].analogInputs.loadFactorAcc2 = 0;
   }
-  secs[secIndex].analogInputs.capRollStickPos = 0;
-  secs[secIndex].analogInputs.foRollStickPos = 0;
+  secs[secIndex].analogInputs.capRollStickPos = simInput.inputs[1] * 19;
+  secs[secIndex].analogInputs.foRollStickPos = simInput.inputs[1] * 19;
   secs[secIndex].analogInputs.spdBrkLeverPos = 0;
   secs[secIndex].analogInputs.thrLever1Pos = 0;
   secs[secIndex].analogInputs.thrLever2Pos = 0;
