@@ -23,9 +23,19 @@ use systems::{
     },
 };
 use uom::si::{
-    acceleration::foot_per_second_squared, angle::radian, angular_velocity::revolution_per_minute,
-    electric_current::ampere, electric_potential::volt, f64::*, length::foot, pressure::psi,
-    ratio::percent, thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
+    acceleration::foot_per_second_squared,
+    angle::radian,
+    angular_velocity::revolution_per_minute,
+    electric_current::ampere,
+    electric_potential::volt,
+    f64::*,
+    length::foot,
+    pressure::psi,
+    ratio::percent,
+    thermodynamic_temperature::degree_celsius,
+    velocity::knot,
+    volume::{cubic_inch, gallon},
+    volume_rate::cubic_inch_per_second,
 };
 
 use a320_systems::hydraulic::A320HydraulicCircuitFactory;
@@ -227,9 +237,12 @@ impl History {
 }
 
 fn blue_circuit_epump(path: &str) {
+    let epump_names = vec!["Pump rpm".to_string(), "Pump displacement".to_string()];
+
     let hyd_circuit_names = vec![
         "Pump section Pressure".to_string(),
         "System section Pressure".to_string(),
+        "Sections delta Pressure".to_string(),
         "Pump section switch".to_string(),
         "System section switch".to_string(),
         "Accumulator fluid vol".to_string(),
@@ -243,6 +256,7 @@ fn blue_circuit_epump(path: &str) {
 
     let mut hyd_circuit_history = History::new(hyd_circuit_names);
     let mut reservoir_history = History::new(reservoir_names);
+    let mut pump_history = History::new(epump_names);
 
     let mut test_bed = SimulationTestBed::new(|context| {
         let hyd_loop = hydraulic_loop(context, HydraulicColor::Blue);
@@ -257,6 +271,10 @@ fn blue_circuit_epump(path: &str) {
                 .query(|a| a.hydraulic_circuit.pump_pressure(0))
                 .get::<psi>(),
             test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>()),
+            test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>())
+                - test_bed
+                    .query(|a| a.hydraulic_circuit.pump_pressure(0))
+                    .get::<psi>(),
             test_bed.query(|a| a.hydraulic_circuit.pump_section_pressure_switch(0) as u8 as f64),
             test_bed.query(|a| a.hydraulic_circuit.system_section_pressure_switch() as u8 as f64),
             test_bed.query(|a| {
@@ -275,6 +293,13 @@ fn blue_circuit_epump(path: &str) {
             test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>()),
         ],
     );
+    pump_history.init(
+        0.0,
+        vec![
+            test_bed.query(|a| a.elec_pump.speed().get::<revolution_per_minute>()),
+            test_bed.query(|a| a.elec_pump.displacement().get::<cubic_inch>()),
+        ],
+    );
 
     let step_duration = Duration::from_millis(33);
 
@@ -289,6 +314,10 @@ fn blue_circuit_epump(path: &str) {
             vec![
                 test_bed.query(|a| a.hydraulic_circuit.pump_pressure(0).get::<psi>()),
                 test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>()),
+                test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>())
+                    - test_bed
+                        .query(|a| a.hydraulic_circuit.pump_pressure(0))
+                        .get::<psi>(),
                 test_bed
                     .query(|a| a.hydraulic_circuit.pump_section_pressure_switch(0) as u8 as f64),
                 test_bed
@@ -306,10 +335,19 @@ fn blue_circuit_epump(path: &str) {
                 test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>()),
             ],
         );
+
+        pump_history.update(
+            step_duration.as_secs_f64(),
+            vec![
+                test_bed.query(|a| a.elec_pump.speed().get::<revolution_per_minute>()),
+                test_bed.query(|a| a.elec_pump.displacement().get::<cubic_inch>()),
+            ],
+        );
     }
 
     hyd_circuit_history.show_matplotlib("hyd_circuit_blue_tests", path);
     reservoir_history.show_matplotlib("hyd_circuit_blue_reservoir_tests", path);
+    pump_history.show_matplotlib("hyd_circuit_blue_pump_tests", path);
 }
 
 fn hydraulic_loop(context: &mut InitContext, loop_color: HydraulicColor) -> HydraulicCircuit {
