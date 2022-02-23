@@ -9,7 +9,7 @@ export const ElapsedTime = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'bool', 250);
     const [dcEssIsPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool', 250);
     const [elapsedKnobPos] = useInteractionSimVar('L:A32NX_CHRONO_ET_SWITCH_POS', 'number', 'A32NX_CHRONO_ET_POS_CHANGED');
-    const [, setElapsedSimvarTime] = useSimVar('L:A32NX_CHRONO_ET_ELAPSED_TIME', 'number');
+    const [, setElapsedSimvarTime] = useSimVar('L:A32NX_CHRONO_ET_ELAPSED_TIME', 'number', 250);
     const [absTime] = useSimVar('E:ABSOLUTE TIME', 'Seconds', 1000);
     const [prevTime, setPrevTime] = useState(absTime);
 
