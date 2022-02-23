@@ -111,12 +111,35 @@ fn hydraulic_reservoir_init_pressure_from_sim_state(context: &InitContext) -> Pr
 
     // When starting with engine running we set lower pressure so we let bleed system converge to
     // nominal value
-    const HOT_INIT_PRESS_PSI: f64 = 25.;
+    const HOT_INIT_PRESS_PSI: f64 = 50.;
 
     if context.has_engines_running() {
+        println!("HOT INIT 5");
         Pressure::new::<psi>(HOT_INIT_PRESS_PSI)
     } else {
+        println!("COLD INIT 45");
         Pressure::new::<psi>(COLD_INIT_PRESS_PSI)
+    }
+}
+
+fn hydraulic_reservoir_init_level_from_sim_state(
+    context: &InitContext,
+    circuit_id: HydraulicColor,
+) -> Volume {
+    const HOT_INIT_LEVEL_OFFSET_GAL: f64 = 0.5;
+
+    let init_level_cold = match circuit_id {
+        HydraulicColor::Green => Volume::new::<gallon>(2.475960068),
+        HydraulicColor::Blue => Volume::new::<gallon>(1.081721769),
+        HydraulicColor::Yellow => Volume::new::<gallon>(1.683443537),
+    };
+
+    if context.has_engines_running() {
+        println!("HOT INIT LEVEL XX");
+        init_level_cold - Volume::new::<gallon>(HOT_INIT_LEVEL_OFFSET_GAL)
+    } else {
+        println!("COLD INIT LEVEL STD");
+        init_level_cold
     }
 }
 
@@ -179,7 +202,7 @@ impl A320Pneumatic {
                 context,
                 HydraulicColor::Green,
                 VariableVolumeContainer::new(
-                    Volume::new::<gallon>(2.5),
+                    hydraulic_reservoir_init_level_from_sim_state(context, HydraulicColor::Green),
                     hydraulic_reservoir_init_pressure_from_sim_state(context),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
@@ -190,7 +213,7 @@ impl A320Pneumatic {
                 context,
                 HydraulicColor::Blue,
                 VariableVolumeContainer::new(
-                    Volume::new::<gallon>(1.1),
+                    hydraulic_reservoir_init_level_from_sim_state(context, HydraulicColor::Blue),
                     hydraulic_reservoir_init_pressure_from_sim_state(context),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
@@ -201,7 +224,7 @@ impl A320Pneumatic {
                 context,
                 HydraulicColor::Yellow,
                 VariableVolumeContainer::new(
-                    Volume::new::<gallon>(1.7),
+                    hydraulic_reservoir_init_level_from_sim_state(context, HydraulicColor::Yellow),
                     hydraulic_reservoir_init_pressure_from_sim_state(context),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
