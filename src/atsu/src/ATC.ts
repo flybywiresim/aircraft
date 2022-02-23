@@ -18,6 +18,8 @@ export class Atc {
 
     private dcduLink: DcduLink | undefined = undefined;
 
+    private handoverInterval: number | undefined = 0;
+
     private handoverOngoing = false;
 
     private currentAtc = '';
@@ -120,9 +122,10 @@ export class Atc {
 
         return new Promise((resolve, _reject) => {
             // add an interval to check if all messages are answered or sent to ATC
-            const interval = setInterval(() => {
+            this.handoverInterval = setInterval(() => {
                 if (!this.dcduLink.openMessagesForStation(this.currentAtc)) {
-                    clearInterval(interval);
+                    clearInterval(this.handoverInterval);
+                    this.handoverInterval = undefined;
 
                     // add a timer to ensure that the last transmission is already received to avoid ATC software warnings
                     setTimeout(() => {
@@ -165,6 +168,12 @@ export class Atc {
     }
 
     public async logoff(): Promise<AtsuStatusCodes> {
+        // abort a handover run
+        if (this.handoverInterval !== undefined) {
+            clearInterval(this.handoverInterval);
+            this.handoverInterval = undefined;
+        }
+
         return this.logoffWithoutReset().then((error) => {
             this.dcduLink.setAtcLogonMessage('');
             this.currentAtc = '';
