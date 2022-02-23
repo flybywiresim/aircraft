@@ -13,7 +13,7 @@ export const Chrono = () => {
     const [prevTime, setPrevTime] = useState(absTime);
 
     const [elapsedTime, setElapsedTime] = useState<null | number>(null);
-    const [elapsedSimvarTime, setElapsedSimvarTime] = useSimVar('L:A32NX_CHRONO_ELAPSED_TIME', 'number');
+    const [, setElapsedSimvarTime] = useSimVar('L:A32NX_CHRONO_ELAPSED_TIME', 'number');
     const [running, setRunning] = useState(false);
 
     useEffect(() => {
