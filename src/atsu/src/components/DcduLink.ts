@@ -225,4 +225,20 @@ export class DcduLink {
             this.messages.splice(idx, 1);
         }
     }
+
+    public openMessagesForStation(station: string): boolean {
+        let retval = false;
+
+        this.messages.forEach((message) => {
+            if (!message.MessageSent && message.Station === station) retval = true;
+        });
+
+        if (!retval) {
+            this.bufferedMessages.forEach((message) => {
+                if (!message.MessageSent && message.Station === station) retval = true;
+            });
+        }
+
+        return retval;
+    }
 }
