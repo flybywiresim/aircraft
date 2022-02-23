@@ -8,7 +8,7 @@ class CDUAtcConnectionNotification {
         let atcStationAvail = false;
         let flightNoAvail = false;
         let fromToAvail = false;
-        let centerTitleLeft = "\xa0ACT CENTER[color]white";
+        let centerTitleLeft = "\xa0ATC CENTER[color]white";
         let centerTitleRight = "";
         let notificationStatus = "";
 
