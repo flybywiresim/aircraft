@@ -118,14 +118,31 @@ export class Atc {
             return AtsuStatusCodes.SystemBusy;
         }
 
-        if (this.currentAtc !== '') {
-            const retval = await this.logoffWithoutReset();
-            if (retval !== AtsuStatusCodes.Ok) {
-                return retval;
-            }
-        }
+        return new Promise((resolve, _reject) => {
+            // add an interval to check if all messages are answered or sent to ATC
+            const interval = setInterval(() => {
+                if (!this.dcduLink.openMessagesForStation(this.currentAtc)) {
+                    clearInterval(interval);
 
-        return this.logon(station);
+                    // add a timer to ensure that the last transmission is already received to avoid ATC software warnings
+                    setTimeout(() => {
+                        if (this.currentAtc !== '') {
+                            this.logoffWithoutReset().then((code) => {
+                                if (code !== AtsuStatusCodes.Ok) {
+                                    resolve(code);
+                                }
+
+                                this.handoverOngoing = true;
+                                this.logon(station).then((code) => resolve(code));
+                            });
+                        }
+
+                        this.handoverOngoing = true;
+                        this.logon(station).then((code) => resolve(code));
+                    }, 15000);
+                }
+            }, 1000);
+        });
     }
 
     private async logoffWithoutReset(): Promise<AtsuStatusCodes> {
