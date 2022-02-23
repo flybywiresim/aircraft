@@ -176,6 +176,8 @@ export class TcasComputer implements TcasComponent {
 
     private tcasSwitchPos: number; // TCAS Switch position STBY/TA/TARA
 
+    private altRptgSwitchPos: number; // ATC Alt Reporting Switch Position
+
     private tcasMode: LocalSimVar<TcasMode>; // TCAS S/MODE TODO FIXME: ARINC429
 
     private tcasThreat: number; // TCAS Threat Setting
@@ -261,6 +263,7 @@ export class TcasComputer implements TcasComponent {
 
         this.tcasPower = !!SimVar.GetSimVarValue('A32NX_ELEC_DC_1_BUS_IS_POWERED', 'boolean');
         this.tcasSwitchPos = SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Position', 'number');
+        this.altRptgSwitchPos = SimVar.GetSimVarValue('L:A32NX_TRANSPONDER_ALT_RPTG', 'number');
         this.tcasThreat = SimVar.GetSimVarValue('L:A32NX_SWITCH_TCAS_Traffic_Position', 'number');
         this.xpdrStatus = SimVar.GetSimVarValue('TRANSPONDER STATE:1', 'number');
         this.activeXpdr = SimVar.GetSimVarValue('L:A32NX_TRANSPONDER_SYSTEM', 'number');
@@ -275,11 +278,14 @@ export class TcasComputer implements TcasComponent {
         this.simRate = SimVar.GetGlobalVarValue('SIMULATION RATE', 'number');
         this.gpwsWarning = !!SimVar.GetSimVarValue('L:A32NX_GPWS_Warning_Active', 'boolean');
 
-        this.tcasMode.setVar((this.xpdrStatus === XpdrMode.STBY || !this.tcasPower) ? TcasMode.STBY : this.tcasSwitchPos);
+        this.tcasMode.setVar((this.xpdrStatus === XpdrMode.STBY || !this.tcasPower || !this.altRptgSwitchPos) ? TcasMode.STBY : this.tcasSwitchPos);
     }
 
     /**
      * TODO: Documentation & complete missing inhibitions
+     */
+    /**
+     * Set inhibition level
      */
     private updateInhibitions(): void {
         // TODO: Add more TA only conditions here (i.e GPWS active, Windshear warning active, stall)
@@ -299,6 +305,9 @@ export class TcasComputer implements TcasComponent {
         }
     }
 
+    /**
+     * Set TCAS status
+     */
     private updateStatus(): void {
         if (this.tcasMode.getVar() === TcasMode.STBY) {
             this.taOnly.setVar(false);
@@ -322,6 +331,9 @@ export class TcasComputer implements TcasComponent {
         }
     }
 
+    /**
+     * Set sensitivity level
+     */
     private updateSensitivity(): void {
         if (this.activeRa.info === null) {
             if (this.inhibitions === Inhibit.ALL_RA || this.inhibitions === Inhibit.ALL_RA_AURAL_TA) {
@@ -342,6 +354,10 @@ export class TcasComputer implements TcasComponent {
         }
     }
 
+    /**
+     * Fetch traffic from MSFS traffic API
+     * @param _deltaTime Deltatime of this frame
+     */
     private fetchRawTraffic(_deltaTime): void {
         Coherent.call('GET_AIR_TRAFFIC').then((obj: JS_NPCPlane[]) => {
             this.airTraffic.forEach((traffic) => {
@@ -525,10 +541,13 @@ export class TcasComputer implements TcasComponent {
         });
     }
 
+    /**
+     * Get RA and update advisory state
+     * @param _deltaTime delta time of this frame
+     */
     private updateRa(_deltaTime: number): void {
-        const raTime = _deltaTime;
-        this.getRa(raTime);
-        this.updateAdvisoryState(raTime);
+        this.getRa(_deltaTime);
+        this.updateAdvisoryState(_deltaTime);
     }
 
     /**
@@ -607,6 +626,10 @@ export class TcasComputer implements TcasComponent {
         return [minSeparation, isCrossing];
     }
 
+    /**
+     * Get resolution advisory
+     * @param _deltaTime deltaTime of this frame
+     */
     private getRa(_deltaTime: number): void {
         // TODO: Store 10 most recent RA and 60 most recent TA - 34-43-00
         // TODO: Refactor, remove unneeeded if else
@@ -937,6 +960,10 @@ export class TcasComputer implements TcasComponent {
         }
     }
 
+    /**
+     * Update TA/RA state
+     * @param _deltaTime time of this frame
+     */
     private updateAdvisoryState(_deltaTime) {
         const taThreatCount = this.airTraffic.reduce((acc, aircraft) => acc + (aircraft.alive && aircraft.intrusionLevel === TaRaIntrusion.TA ? 1 : 0), 0);
         const raThreatCount = this.raTraffic.length;
@@ -1036,6 +1063,9 @@ export class TcasComputer implements TcasComponent {
         }
     }
 
+    /**
+     * Send intruder array to ND display
+     */
     private emitDisplay(): void {
         this.sendAirTraffic.length = 0;
         const sentAirTraffic = this.airTraffic
@@ -1064,6 +1094,10 @@ export class TcasComputer implements TcasComponent {
         this.sendListener.triggerToAllSubscribers('A32NX_TCAS_TRAFFIC', stringify(this.sendAirTraffic));
     }
 
+    /**
+     * Main update loop
+     * @param _deltaTime delta time of this frame
+     */
     update(_deltaTime: number): void {
         this.soundManager.update(_deltaTime);
 
