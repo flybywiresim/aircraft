@@ -782,6 +782,8 @@ const AudioPage = () => {
     const [exteriorVolume, setExteriorVolume] = usePersistentNumberProperty('SOUND_EXTERIOR_MASTER', 0);
     const [engineVolume, setEngineVolume] = usePersistentNumberProperty('SOUND_INTERIOR_ENGINE', 0);
     const [windVolume, setWindVolume] = usePersistentNumberProperty('SOUND_INTERIOR_WIND', 0);
+    const [passengerAmbienceEnabled, setPassengerAmbienceEnabled] = usePersistentNumberProperty('SOUND_PASSENGER_AMBIENCE_ENABLED', 1);
+    const [announcementsEnabled, setAnnouncementsEnabled] = usePersistentNumberProperty('SOUND_ANNOUNCEMENTS_ENABLED', 1);
 
     return (
         <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-xl px-6 ">
@@ -811,6 +813,18 @@ const AudioPage = () => {
                 <div className="flex flex-row items-center py-1.5">
                     <span className="text-base pr-3">{windVolume}</span>
                     <Slider className="w-60" value={windVolume + 50} onInput={(value) => setWindVolume(value - 50)} />
+                </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Passenger Ambience</span>
+                <div className="flex flex-row items-center py-1.5">
+                    <Toggle value={!!passengerAmbienceEnabled} onToggle={(value) => setPassengerAmbienceEnabled(value ? 1 : 0)} />
+                </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Announcements</span>
+                <div className="flex flex-row items-center py-1.5">
+                    <Toggle value={!!announcementsEnabled} onToggle={(value) => setAnnouncementsEnabled(value ? 1 : 0)} />
                 </div>
             </div>
         </div>
