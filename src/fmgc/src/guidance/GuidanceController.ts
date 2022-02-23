@@ -13,6 +13,10 @@ import { EfisSide, Mode, rangeSettings } from '@shared/NavigationDisplay';
 import { TaskCategory, TaskQueue } from '@fmgc/guidance/TaskQueue';
 import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
+import { SimVarString } from '@shared/simvar';
+import { getFlightPhaseManager } from '@fmgc/flightphase';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { normaliseApproachName } from '@shared/flightplan';
 import { LnavDriver } from './lnav/LnavDriver';
 import { FlightPlanManager, FlightPlans } from '../flightplanning/FlightPlanManager';
 import { GuidanceManager } from './GuidanceManager';
@@ -60,6 +64,8 @@ export class GuidanceController {
 
     efisStateForSide: { L: EfisState, R: EfisState }
 
+    private approachMessage: string = ''
+
     taskQueue = new TaskQueue();
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
@@ -80,6 +86,8 @@ export class GuidanceController {
 
         state.mode = ndMode;
         state.range = ndRange;
+
+        this.updateEfisApproachMessage();
     }
 
     private lastFocusedWpIndex = -1;
@@ -122,10 +130,35 @@ export class GuidanceController {
     private updateEfisIdent() {
         // Update EFIS ident
 
-        const efisIdent = this.activeGeometry.legs.get(this.activeLegIndex)?.ident;
+        const efisIdent = this.activeGeometry.legs.get(this.activeLegIndex)?.ident ?? 'PPOS';
 
-        this.listener.triggerToAllSubscribers('A32NX_EFIS_L_TO_WPT_IDENT', efisIdent ?? '');
-        this.listener.triggerToAllSubscribers('A32NX_EFIS_R_TO_WPT_IDENT', efisIdent ?? '');
+        const efisVars = SimVarString.pack(efisIdent, 9);
+        // setting the simvar as a number greater than about 16 million causes precision error > 1... but this works..
+        SimVar.SetSimVarValue('L:A32NX_EFIS_L_TO_WPT_IDENT_0', 'string', efisVars[0].toString());
+        SimVar.SetSimVarValue('L:A32NX_EFIS_L_TO_WPT_IDENT_1', 'string', efisVars[1].toString());
+        SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_IDENT_0', 'string', efisVars[0].toString());
+        SimVar.SetSimVarValue('L:A32NX_EFIS_R_TO_WPT_IDENT_1', 'string', efisVars[1].toString());
+    }
+
+    private updateEfisApproachMessage() {
+        let apprMsg = '';
+        const appr = this.flightPlanManager.getApproach(FlightPlans.Active);
+        if (appr) {
+            const phase = getFlightPhaseManager().phase;
+            if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250)) {
+                apprMsg = normaliseApproachName(appr.name);
+            }
+        }
+
+        if (apprMsg !== this.approachMessage) {
+            this.approachMessage = apprMsg;
+            const apprMsgVars = SimVarString.pack(apprMsg, 9);
+            // setting the simvar as a number greater than about 16 million causes precision error > 1... but this works..
+            SimVar.SetSimVarValue('L:A32NX_EFIS_L_APPR_MSG_0', 'string', apprMsgVars[0].toString());
+            SimVar.SetSimVarValue('L:A32NX_EFIS_L_APPR_MSG_1', 'string', apprMsgVars[1].toString());
+            SimVar.SetSimVarValue('L:A32NX_EFIS_R_APPR_MSG_0', 'string', apprMsgVars[0].toString());
+            SimVar.SetSimVarValue('L:A32NX_EFIS_R_APPR_MSG_1', 'string', apprMsgVars[1].toString());
+        }
     }
 
     constructor(flightPlanManager: FlightPlanManager, guidanceManager: GuidanceManager) {

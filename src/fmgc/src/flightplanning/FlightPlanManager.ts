@@ -31,7 +31,7 @@ import { FlightPlanSegment } from './FlightPlanSegment';
 import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
 import { FixInfo } from './FixInfo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { HoldData } from '@fmgc/flightplanning/data/flightplan';
+import { ApproachStats, HoldData } from '@fmgc/flightplanning/data/flightplan';
 
 export enum WaypointConstraintType {
     CLB = 1,
@@ -493,6 +493,20 @@ export class FlightPlanManager {
         const stats = fpln.computeWaypointStatistics(fmPos);
 
         return stats.get(destIndex)?.distanceFromPpos ?? -1;
+    }
+
+    public getApproachStats(): ApproachStats | undefined {
+        const name = this.getApproach(FlightPlans.Active)?.name;
+        if (!name) {
+            return undefined;
+        }
+
+        const distanceFromPpos = this.getDistanceToDestination(FlightPlans.Active);
+
+        return {
+            name,
+            distanceFromPpos,
+        }
     }
 
     /**
@@ -1532,8 +1546,8 @@ export class FlightPlanManager {
     /**
      * Gets the approach procedure from the current flight plan destination airport procedure information.
      */
-    public getApproach(): RawApproach {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+    public getApproach(flightPlanIndex = this._currentFlightPlanIndex): RawApproach {
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
         if (currentFlightPlan.hasDestination && currentFlightPlan.procedureDetails.approachIndex !== -1) {
             return (currentFlightPlan.destinationAirfield.infos as AirportInfo).approaches[currentFlightPlan.procedureDetails.approachIndex];
         }

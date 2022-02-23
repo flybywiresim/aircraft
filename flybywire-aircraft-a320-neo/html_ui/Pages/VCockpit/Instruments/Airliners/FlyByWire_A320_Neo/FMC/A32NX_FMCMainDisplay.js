@@ -536,6 +536,8 @@ class FMCMainDisplay extends BaseAirliners {
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
 
+        this.flightPlanManager.update(_deltaTime);
+
         Fmgc.updateFmgcLoop(_deltaTime);
 
         if (this._debug++ > 180) {
