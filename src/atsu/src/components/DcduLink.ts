@@ -8,7 +8,11 @@ import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
 
 class DcduMessage {
-    public MessageId: number;
+    public MessageId: number = 0;
+
+    public Station: string = '';
+
+    public MessageSent = false;
 
     public MessageRead = false;
 
@@ -42,6 +46,10 @@ export class DcduLink {
 
         Coherent.on('A32NX_ATSU_SEND_RESPONSE', (uid: number, response: CpdlcMessageResponse) => {
             this.atc.sendResponse(uid, response);
+
+            this.messages.forEach((message) => {
+                if (message.MessageId === uid) message.MessageSent = true;
+            });
         });
 
         Coherent.on('A32NX_ATSU_SEND_MESSAGE', (uid: number) => {
@@ -51,6 +59,10 @@ export class DcduLink {
                     this.atc.sendMessage(message).then((code) => {
                         if (code !== AtsuStatusCodes.Ok) {
                             this.atsu.publishAtsuStatusCode(code);
+                        } else {
+                            this.messages.forEach((message) => {
+                                if (message.MessageId === uid) message.MessageSent = true;
+                            });
                         }
                     });
                 }
@@ -180,6 +192,7 @@ export class DcduLink {
     public enqueue(message: CpdlcMessage) {
         const block = new DcduMessage();
         block.MessageId = message.UniqueMessageID;
+        block.Station = message.Station;
         block.MessageRead = message.Direction === AtsuMessageDirection.Output;
 
         if (this.messages.length < DcduLink.MaxDcduFileSize) {
