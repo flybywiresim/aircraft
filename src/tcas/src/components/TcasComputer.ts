@@ -531,6 +531,14 @@ export class TcasComputer implements TcasComponent {
         this.updateAdvisoryState(raTime);
     }
 
+    /**
+     * Calculate closing trajectory with given intruder
+     * @param targetVS Target vertical speed
+     * @param traffic intruder object
+     * @param delay delay in seconds
+     * @param accel acceleration in f/s^2
+     * @returns Predicted alt after given delay
+     */
     private calculateTrajectory(targetVS: number, traffic: TcasTraffic, delay: number, accel: number): number {
         // accel must be in f/s^2
         accel = targetVS < this.verticalSpeed ? -1 * accel : accel;
@@ -545,8 +553,8 @@ export class TcasComputer implements TcasComponent {
     }
 
     /**
-     * TODO: Documentation
-     * @returns
+     * Calculated predicted seperation for ALIM
+     * @returns seperation distance
      */
     private getPredictedSep(): number {
         let minSeparation = TCAS.REALLY_BIG_NUMBER;
@@ -562,12 +570,12 @@ export class TcasComputer implements TcasComponent {
     }
 
     /**
-     * TODO: Documentation
+     * Calculate minimum vertical seperation
      * @param {*} sense Direction up/down
      * @param {*} targetVS Target Vertical Speed
-     * @param {*} delay
-     * @param {*} accel
-     * @returns
+     * @param {*} delay Delay in seconds
+     * @param {*} accel Acceleration in in f/s^2
+     * @returns Array where [vertical seperation, is aircraft crossing]
      */
     private getVerticalSep(sense: RaSense, targetVS: number, delay: number, accel: number): [number, boolean] {
         let isCrossing = false;
@@ -640,11 +648,13 @@ export class TcasComputer implements TcasComponent {
             // Select sense
             let sense: RaSense = RaSense.UP;
 
-            console.log('TCAS: INITIAL RA: SELECTING SENSE');
-            console.log('---------------------------------');
-            console.log(`UP VERTICAL SEPARATION at 1500: ${upVerticalSep}; upIsCrssing: ${upIsCrossing}`);
-            console.log(`DOWN VERTICAL SEPARATION at -1500: ${downVerticalSep}; downIsCrossing: ${downIsCrossing}`);
-            console.log('ALIM IS ', ALIM);
+            if (this.debug) {
+                console.log('TCAS: INITIAL RA: SELECTING SENSE');
+                console.log('---------------------------------');
+                console.log(`UP VERTICAL SEPARATION at 1500: ${upVerticalSep}; upIsCrssing: ${upIsCrossing}`);
+                console.log(`DOWN VERTICAL SEPARATION at -1500: ${downVerticalSep}; downIsCrossing: ${downIsCrossing}`);
+                console.log('ALIM IS ', ALIM);
+            }
 
             // Override if climb/desc RAs are inhibited.
             if (this.inhibitions === Inhibit.ALL_DESC_RA) {
@@ -654,7 +664,9 @@ export class TcasComputer implements TcasComponent {
             } else {
                 // If both achieve ALIM, prefer non-crossing
                 if (upVerticalSep >= ALIM && downVerticalSep >= ALIM) {
-                    console.log('BOTH ACHIEVE ALIM');
+                    if (this.debug) {
+                        console.log('BOTH ACHIEVE ALIM');
+                    }
                     if (upIsCrossing && !downIsCrossing) {
                         sense = RaSense.DOWN;
                     } else if (!upIsCrossing && downIsCrossing) {
@@ -672,10 +684,14 @@ export class TcasComputer implements TcasComponent {
 
                 // If only one achieves ALIM, pick it
                 if (upVerticalSep >= ALIM && downVerticalSep < ALIM) {
-                    console.log('UP ACHIEVES ALIM');
+                    if (this.debug) {
+                        console.log('UP ACHIEVES ALIM');
+                    }
                     sense = RaSense.UP;
                 } else {
-                    console.log('DOWN ACHIEVES ALIM');
+                    if (this.debug) {
+                        console.log('DOWN ACHIEVES ALIM');
+                    }
                     sense = RaSense.DOWN;
                 }
             }
@@ -687,7 +703,9 @@ export class TcasComputer implements TcasComponent {
                 TCAS.INITIAL_DELAY,
                 TCAS.INITIAL_ACCEL,
             );
-            console.log(`levelSep is: ${levelSep}`);
+            if (this.debug) {
+                console.log(`levelSep is: ${levelSep}`);
+            }
             if (Math.abs(this.verticalSpeed) < 1500 || (this.verticalSpeed <= -1500 && sense === RaSense.UP) || (this.verticalSpeed >= 1500 && sense === RaSense.DOWN)) {
                 // Choose preventive or corrective
                 const predictedSep = this.getPredictedSep();
@@ -813,7 +831,9 @@ export class TcasComputer implements TcasComponent {
                         } else {
                             strengthenRaInfo = (sense === RaSense.UP) ? TCAS.RA_VARIANTS.climb : TCAS.RA_VARIANTS.descend;
                         }
-                        console.log('StrengthenRAInfo: level 0 to 1: ', strengthenRaInfo);
+                        if (this.debug) {
+                            console.log('StrengthenRAInfo: level 0 to 1: ', strengthenRaInfo);
+                        }
                         break;
                     case TCAS.CALLOUTS.climb.id:
                     case TCAS.CALLOUTS.climb_cross.id:
@@ -833,13 +853,17 @@ export class TcasComputer implements TcasComponent {
                             if (this.inhibitions !== Inhibit.ALL_INCR_DESC_RA) {
                                 strengthenRaInfo = (sense === RaSense.UP) ? TCAS.RA_VARIANTS.climb_increase : TCAS.RA_VARIANTS.descend_increase;
                             }
-                            console.log('StrengthenRAInfo: level 1 to 2 ', strengthenRaInfo);
-                        } else {
+                            if (this.debug) {
+                                console.log('StrengthenRAInfo: level 1 to 2 ', strengthenRaInfo);
+                            }
+                        } else if (this.debug) {
                             console.log('StrengthenRAInfo: condition not met. Callout: ', previousRa.info.callout);
                         }
                         break;
                     default:
-                        console.log('StrengthenRAInfo: condition not met. Callout: ', previousRa.info.callout);
+                        if (this.debug) {
+                            console.log('StrengthenRAInfo: condition not met. Callout: ', previousRa.info.callout);
+                        }
                         break;
                     }
 
@@ -922,7 +946,9 @@ export class TcasComputer implements TcasComponent {
             if (raThreatCount > 0 && (this.inhibitions !== Inhibit.ALL_RA && this.inhibitions !== Inhibit.ALL_RA_AURAL_TA)) {
                 this.advisoryState = TcasState.RA;
                 this.tcasState.setVar(TcasState.RA);
-                console.log('TCAS: TA UPGRADED TO RA');
+                if (this.debug) {
+                    console.log('TCAS: TA UPGRADED TO RA');
+                }
             } else if (taThreatCount === 0) {
                 this.advisoryState = TcasState.NONE;
                 this.tcasState.setVar(TcasState.NONE);
@@ -937,7 +963,9 @@ export class TcasComputer implements TcasComponent {
                     this.advisoryState = TcasState.NONE;
                     this.tcasState.setVar(TcasState.NONE);
                 }
-                console.log('TCAS: CLEAR OF CONFLICT');
+                if (this.debug) {
+                    console.log('TCAS: CLEAR OF CONFLICT');
+                }
                 this.soundManager.tryPlaySound(TCAS.SOUNDS.clear_of_conflict, true);
                 this.activeRa.info = null;
             }
@@ -964,23 +992,29 @@ export class TcasComputer implements TcasComponent {
             this.activeRa.hasBeenAnnounced = this._newRa.hasBeenAnnounced;
             this.activeRa.secondsSinceStart += _deltaTime / 1000;
             if (!this.activeRa.hasBeenAnnounced) {
-                console.log('RA Intruders: ');
-                console.log(' ================================ ');
-                this.raTraffic.forEach((traffic) => {
-                    console.log(` id | ${traffic.ID}`);
-                    console.log(` alt | ${traffic.alt}`);
-                    console.log(` rAlt | ${traffic.relativeAlt}`);
-                    console.log(` sDist | ${traffic.slantDistance}`);
-                    console.log(` bearing | ${MathUtils.computeGreatCircleHeading(this.ppos.lat, this.ppos.long, traffic.lat, traffic.lon)}`);
-                    console.log(` hDist | ${MathUtils.computeGreatCircleDistance(this.ppos.lat, this.ppos.long, traffic.lat, traffic.lon)}`);
-                    console.log(` closureRate | ${traffic.closureRate}`);
-                    console.log(` closureAccel | ${traffic.closureAccel}`);
-                    console.log(` RA TAU | ${traffic.raTau} <<< : ${TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.RA]}`);
-                    console.log(` V TAU | ${traffic.vTau} <<< : ${TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.TA]}`);
-                    console.log(` TA TAU | ${traffic.taTau} <<< : ${TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.RA]}`);
+                if (this.debug) {
+                    console.log('RA Intruders: ');
                     console.log(' ================================ ');
+                }
+                this.raTraffic.forEach((traffic) => {
+                    if (this.debug) {
+                        console.log(` id | ${traffic.ID}`);
+                        console.log(` alt | ${traffic.alt}`);
+                        console.log(` rAlt | ${traffic.relativeAlt}`);
+                        console.log(` sDist | ${traffic.slantDistance}`);
+                        console.log(` bearing | ${MathUtils.computeGreatCircleHeading(this.ppos.lat, this.ppos.long, traffic.lat, traffic.lon)}`);
+                        console.log(` hDist | ${MathUtils.computeGreatCircleDistance(this.ppos.lat, this.ppos.long, traffic.lat, traffic.lon)}`);
+                        console.log(` closureRate | ${traffic.closureRate}`);
+                        console.log(` closureAccel | ${traffic.closureAccel}`);
+                        console.log(` RA TAU | ${traffic.raTau} <<< : ${TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.RA]}`);
+                        console.log(` V TAU | ${traffic.vTau} <<< : ${TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.TA]}`);
+                        console.log(` TA TAU | ${traffic.taTau} <<< : ${TCAS.TAU[this.sensitivity.getVar()][TaRaIndex.RA]}`);
+                        console.log(' ================================ ');
+                    }
                 });
-                console.log('TCAS: RA GENERATED: ', this.activeRa.info.callout);
+                if (this.debug) {
+                    console.log('TCAS: RA GENERATED: ', this.activeRa.info.callout);
+                }
 
                 if (this.activeRa.info.callout.repeat) {
                     this.soundManager.tryPlaySound(this.activeRa.info.callout.sound, true, true);
@@ -1022,7 +1056,7 @@ export class TcasComputer implements TcasComponent {
         });
         this.raTraffic.forEach((tf) => {
             const traffic: TcasTraffic | undefined = sentAirTraffic.find((p) => p && p.ID === tf.ID);
-            if (!traffic) {
+            if (!traffic && this.debug) {
                 console.log(`ERROR: RA ${tf.ID} NOT SENT`);
             }
         });
