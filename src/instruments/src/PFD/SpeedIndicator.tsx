@@ -74,12 +74,6 @@ const VProtBug = (offset: number) => (
     </g>
 );
 
-const VProtAltLawBug = (offset: number) => (
-    <g id="SpeedProtSymbol" transform={`translate(0 ${offset})`}>
-        <path className="NormalStroke Amber" d="m14.615 79.915 1.7808 1.7818m-1.7808 0 1.7808-1.7818" />
-    </g>
-);
-
 interface AirspeedIndicatorProps {
     airspeed: Arinc429Word;
     airspeedAcc: number;
@@ -124,11 +118,8 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
     }
     bugs.push(...BarberpoleIndicator(airspeedValue, VMax, true, DisplayRange, VMaxBar, 5.040));
 
-    const showVProt = VMax > 240;
-    if (showVProt && normalLawActive) {
+    if (VMax > 240 && normalLawActive) {
         bugs.push([VProtBug, VMax + 6]);
-    } else if (showVProt && !normalLawActive) {
-        bugs.push([VProtAltLawBug, VMax + 6]);
     }
 
     const clampedSpeed = Math.max(Math.min(airspeedValue, 660), 30);
