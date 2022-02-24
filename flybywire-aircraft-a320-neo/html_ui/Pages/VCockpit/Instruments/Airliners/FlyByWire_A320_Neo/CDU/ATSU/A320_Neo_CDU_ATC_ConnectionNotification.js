@@ -8,7 +8,7 @@ class CDUAtcConnectionNotification {
         let atcStationAvail = false;
         let flightNoAvail = false;
         let fromToAvail = false;
-        let centerTitleLeft = "\xa0ACT CENTER[color]white";
+        let centerTitleLeft = "\xa0ATC CENTER[color]white";
         let centerTitleRight = "";
         let notificationStatus = "";
 
@@ -22,7 +22,7 @@ class CDUAtcConnectionNotification {
             atcStation = `${store["atcCenter"]}[color]cyan`;
             atcStationAvail = true;
         }
-        if (mcdu.flightPlanManager.getOrigin() !== null && mcdu.atsuManager.flightNumber().length !== 0) {
+        if (mcdu.atsuManager.flightNumber().length !== 0) {
             flightNo = mcdu.atsuManager.flightNumber() + "[color]green";
             flightNoAvail = true;
         }
@@ -92,7 +92,7 @@ class CDUAtcConnectionNotification {
             }
 
             store["loginState"] = 0;
-            if (value.length !== 4 || /^[A-Z()]*$/.test(value) === false) {
+            if (/^[A-Z0-9]{4}$/.test(value) === false) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
             } else if (mcdu.atsuManager.flightNumber().length === 0) {
                 mcdu.addNewMessage(NXFictionalMessages.fltNbrMissing);
@@ -143,10 +143,10 @@ class CDUAtcConnectionNotification {
 
                                 store["atcCenter"] = "";
                                 clearInterval(interval);
-                            }
 
-                            if (mcdu.page.Current === mcdu.page.ATCNotification) {
-                                CDUAtcConnectionNotification.ShowPage(mcdu, store);
+                                if (mcdu.page.Current === mcdu.page.ATCNotification) {
+                                    CDUAtcConnectionNotification.ShowPage(mcdu, store);
+                                }
                             }
                         }, 5000);
                     } else {

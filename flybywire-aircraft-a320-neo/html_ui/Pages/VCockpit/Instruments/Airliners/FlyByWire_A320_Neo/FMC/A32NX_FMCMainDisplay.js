@@ -177,7 +177,6 @@ class FMCMainDisplay extends BaseAirliners {
 
         // ATSU data
         this.atsuManager = undefined;
-        this.pdcMessage = undefined;
         this.holdSpeedTarget = undefined;
         this.holdIndex = undefined;
         this.holdDecelReached = undefined;
@@ -501,7 +500,6 @@ class FMCMainDisplay extends BaseAirliners {
 
         // ATSU data
         this.atsuManager = new Atsu.AtsuManager(this);
-        this.pdcMessage = undefined;
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
@@ -1647,6 +1645,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (airportFrom) {
                 this.dataManager.GetAirportByIdent(to).then((airportTo) => {
                     if (airportTo) {
+                        this.atsuManager.atc.resetAtisAutoUpdate();
                         this.eraseTemporaryFlightPlan(() => {
                             this.flightPlanManager.clearFlightPlan(() => {
                                 this.tempFpPendingAutoTune = true;
@@ -1744,12 +1743,14 @@ class FMCMainDisplay extends BaseAirliners {
 
     async tryUpdateAltDestination(altDestIdent) {
         if (altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
+            this.atsuManager.atc.resetAtisAutoUpdate();
             this.altDestination = undefined;
             this._DistanceToAlt = 0;
             return true;
         }
         const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent).catch(console.error);
         if (airportAltDest) {
+            this.atsuManager.atc.resetAtisAutoUpdate();
             this.altDestination = airportAltDest;
             this.tryUpdateDistanceToAlt();
             return true;
@@ -2436,6 +2437,38 @@ class FMCMainDisplay extends BaseAirliners {
                 });
             }).catch(console.error);
         }
+    }
+
+    /*
+     * validates the waypoint type
+     * return values:
+     *    0 = lat-lon coordinate
+     *    1 = time
+     *    2 = place definition
+     *   -1 = unknown
+     */
+    async waypointType(mcdu, waypoint) {
+        if (mcdu.isLatLonFormat(waypoint)) {
+            return [0, null];
+        }
+
+        // time formatted
+        if (/([0-2][0-4][0-5][0-9]Z?)/.test(waypoint) && waypoint.length <= 5) {
+            return [1, null];
+        }
+
+        // place formatted
+        if (/^[A-Z0-9]{2,7}/.test(waypoint)) {
+            return mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(waypoint).then((waypoints) => {
+                if (waypoints.length !== 0) {
+                    return [2, null];
+                } else {
+                    return [-1, NXSystemMessages.notInDatabase];
+                }
+            });
+        }
+
+        return [-1, NXSystemMessages.formatError];
     }
 
     vSpeedsValid() {
