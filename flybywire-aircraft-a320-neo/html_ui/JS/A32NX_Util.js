@@ -127,6 +127,30 @@ A32NX_Util.greatCircleIntersection = (latlon1, brg1, latlon2, brg2) => {
     return delta1 < delta2 ? s1 : s2;
 };
 
+A32NX_Util.bothGreatCircleIntersections = (latlon1, brg1, latlon2, brg2) => {
+    // c.f. https://blog.mbedded.ninja/mathematics/geometry/spherical-geometry/finding-the-intersection-of-two-arcs-that-lie-on-a-sphere/
+    const Pa11 = A32NX_Util.latLonToSpherical(latlon1);
+    const latlon12 = Avionics.Utils.bearingDistanceToCoordinates(brg1 % 360, 100, latlon1.lat, latlon1.long);
+    const Pa12 = A32NX_Util.latLonToSpherical(latlon12);
+    const Pa21 = A32NX_Util.latLonToSpherical(latlon2);
+    const latlon22 = Avionics.Utils.bearingDistanceToCoordinates(brg2 % 360, 100, latlon2.lat, latlon2.long);
+    const Pa22 = A32NX_Util.latLonToSpherical(latlon22);
+
+    const N1 = math.cross(Pa11, Pa12);
+    const N2 = math.cross(Pa21, Pa22);
+
+    const L = math.cross(N1, N2);
+    const l = math.norm(L);
+
+    const I1 = math.divide(L, l);
+    const I2 = math.multiply(I1, -1);
+
+    const s1 = A32NX_Util.sphericalToLatLon(I1);
+    const s2 = A32NX_Util.sphericalToLatLon(I2);
+
+    return [s1, s2];
+};
+
 /**
  * Returns the ISA temperature for a given altitude
  * @param alt {number} altitude in ft

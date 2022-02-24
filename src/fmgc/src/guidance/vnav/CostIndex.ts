@@ -50,8 +50,7 @@ export class CostIndex {
      * @returns Mmrc
      */
     static naiveFindMmrc(altitude: number, weight: number, isaDev: number): number {
-        const theta = Common.getTheta(altitude, isaDev);
-        const delta = Common.getDelta(theta);
+        const delta = Common.getDelta(altitude);
         const m1 = Math.min(CostIndex.initialMachEstimate(weight, delta), 0.78);
         const mRound = Math.round((m1 + Number.EPSILON) * 100) / 100;
 
