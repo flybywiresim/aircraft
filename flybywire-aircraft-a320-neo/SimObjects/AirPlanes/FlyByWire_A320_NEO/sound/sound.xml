@@ -2031,7 +2031,7 @@
         <Sound WwiseEvent="boardingmusic" WwiseData="true" NodeName="SOUND_FWD_GALLEY" ConeHeading="180" CancelConeHeadingWhenInside="false" Continuous="true" LocalVar="A32NX_SOUND_PAX_BOARDING">
             <Range LowerBound="1" />
             <WwiseRTPC LocalVar="A32NX_COCKPIT_DOOR_LOCKED" RTPCAttackTime="0.5" RTPCReleaseTime="0.5" Units="bool" Index="1" RTPCName="LOCALVAR_A32NX_COCKPIT_DOOR_LOCKED" />
-            <WwiseRTPC LocalVar="A32NX_BOARDING_MUSIC_ENABLED" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_BOARDING_MUSIC_TOGGLE" />
+            <WwiseRTPC LocalVar="A32NX_SOUND_BOARDING_MUSIC_ENABLED" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_BOARDING_MUSIC_TOGGLE" />
         </Sound>
         
         <Sound WwiseEvent="boarding" WwiseData="true" NodeName="SOUND_FWD_GALLEY" ConeHeading="180" CancelConeHeadingWhenInside="false" Continuous="true" FadeOutType="1" FadeOutTime="1" LocalVar="A32NX_SOUND_PAX_BOARDING">
