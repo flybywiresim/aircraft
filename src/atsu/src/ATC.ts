@@ -257,6 +257,10 @@ export class Atc {
     }
 
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
+        if (message.ComStatus === AtsuMessageComStatus.Sending || message.ComStatus === AtsuMessageComStatus.Sent) {
+            return AtsuStatusCodes.Ok;
+        }
+
         if (message.Station === '') {
             if (this.currentAtc === '') {
                 return AtsuStatusCodes.NoAtc;
