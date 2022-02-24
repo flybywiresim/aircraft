@@ -170,7 +170,7 @@ const DCDU: React.FC = () => {
         resetStatus('');
     });
 
-    // resynchronization with AtsuManager
+    // resynchronization with ATSU
     useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
         let cpdlcMessage : CpdlcMessage | undefined = undefined;
         if (serialized.Type === AtsuMessageType.CPDLC) {
