@@ -1,6 +1,8 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+
 export interface WaypointStats {
     /**
      * Waypoint ident
@@ -45,4 +47,22 @@ export interface ApproachStats {
      * Distance from PPOS in nautical miles
      */
      distanceFromPpos: number;
+}
+
+export interface HoldData {
+    inboundMagneticCourse?: number,
+
+    turnDirection?: TurnDirection,
+
+    distance?: number,
+
+    time?: number,
+
+    type: HoldType,
+}
+
+export enum HoldType {
+    Computed = 0,
+    Database = 1,
+    Pilot = 2,
 }

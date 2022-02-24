@@ -94,12 +94,17 @@ class CDULateralRevisionPage {
 
         let holdCell = "";
         if (isWaypoint) {
-            holdCell = "<HOLD[color]inop";
+            holdCell = "<HOLD";
             mcdu.leftInputDelay[2] = () => {
                 return mcdu.getDelaySwitchPage();
             };
             mcdu.onLeftInput[2] = () => {
-                mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+                const nextLeg = mcdu.flightPlanManager.getWaypoint(waypointIndexFP + 1);
+                if (nextLeg && nextLeg.additionalData.legType >= 12 && nextLeg.additionalData.legType <= 14 /* HA, HF, HM */) {
+                    CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP + 1);
+                } else {
+                    CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP);
+                }
             };
         }
 

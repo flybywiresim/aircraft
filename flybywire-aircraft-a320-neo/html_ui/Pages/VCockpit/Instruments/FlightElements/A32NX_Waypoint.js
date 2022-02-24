@@ -518,8 +518,10 @@ class AirportInfo extends WayPointInfo {
                     waypoint.originIcao = approachData.finalLegs[i].originIcao;
                     waypoint.ident = waypoint.icao.substr(7, 5);
                     waypoint.bearingInFP = approachData.finalLegs[i].course;
-                    waypoint.distanceInFP = approachData.finalLegs[i].distance / 1852;
+                    waypoint.distanceInMinutes = approachData.finalLegs[i].distanceMinutes ? approachData.finalLegs[i].distance : 0;
+                    waypoint.distanceInFP = waypoint.distanceInMinutes ? 0 : approachData.finalLegs[i].distance / 1852;
                     waypoint.fixTypeFlags = approachData.finalLegs[i].fixTypeFlags;
+                    waypoint.turnDirection = approachData.finalLegs[i].turnDirection;
                     approach.wayPoints.push(waypoint);
                     if (loadApproachesData) {
                         this.instrument.facilityLoader.getFacilityDataCB(waypoint.icao, (data) => {
@@ -529,6 +531,28 @@ class AirportInfo extends WayPointInfo {
                         });
                     }
                 }
+
+                approach.missedWayPoints = [];
+                for (let i = 0; i < approachData.missedLegs.length; i++) {
+                    const waypoint = new ApproachWayPoint(this.instrument);
+                    waypoint.icao = approachData.missedLegs[i].fixIcao;
+                    waypoint.originIcao = approachData.missedLegs[i].originIcao;
+                    waypoint.ident = waypoint.icao.substr(7, 5);
+                    waypoint.bearingInFP = approachData.missedLegs[i].course;
+                    waypoint.distanceInMinutes = approachData.missedLegs[i].distanceMinutes ? approachData.missedLegs[i].distance : 0;
+                    waypoint.distanceInFP = waypoint.distanceInMinutes ? 0 : approachData.missedLegs[i].distance / 1852;
+                    waypoint.fixTypeFlags = approachData.missedLegs[i].fixTypeFlags;
+                    waypoint.turnDirection = approachData.missedLegs[i].turnDirection;
+                    approach.missedWayPoints.push(waypoint);
+                    if (loadApproachesData) {
+                        this.instrument.facilityLoader.getFacilityDataCB(waypoint.icao, (data) => {
+                            if (data) {
+                                waypoint.SetFromIFacility(data, () => { }, loadApproachesData);
+                            }
+                        });
+                    }
+                }
+
                 this.approaches.push(approach);
             }
         }
