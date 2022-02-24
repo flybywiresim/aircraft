@@ -123,11 +123,13 @@ class CDUAtcMessagesRecord {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            if (!confirmErase) {
-                CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset, true);
-            } else {
-                mcdu.atsuManager.atc.cleanupMessages();
-                CDUAtcMessagesRecord.ShowPage(mcdu, null, 0, false);
+            if (messages.length !== 0) {
+                if (!confirmErase) {
+                    CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset, true);
+                } else {
+                    mcdu.atsuManager.atc.cleanupMessages();
+                    CDUAtcMessagesRecord.ShowPage(mcdu, null, 0, false);
+                }
             }
         };
         mcdu.leftInputDelay[5] = () => {
