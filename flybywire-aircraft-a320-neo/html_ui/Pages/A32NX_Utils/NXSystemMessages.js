@@ -57,7 +57,12 @@ const NXSystemMessages = {
     waitForSystemResponse:  new McduMessage("WAIT FOR SYSTEM RESPONSE", false, false),
     comUnavailable:         new McduMessage("COM UNAVAILABLE", false, false),
     dcduFileFull:           new McduMessage("DCDU FILE FULL", false, false),
-    systemBusy:             new McduMessage("SYSTEM BUSY-TRY LATER", false, false)
+    systemBusy:             new McduMessage("SYSTEM BUSY-TRY LATER", false, false),
+    newAtisReceived:        new McduMessage("NEW ATIS: READ AGAIN", false, false),
+    noAtisReceived:         new McduMessage("NO ATIS REPORT RECEIVED", false, false),
+    noPreviousAtis:         new McduMessage("NO PREVIOUS ATIS STORED", false, false),
+    arptTypeAlreadyInUse:   new McduMessage("ARPT/TYPE ALREADY USED", false, false),
+    cancelAtisUpdate:       new McduMessage("CANCEL UPDATE BEFORE", false, false)
 };
 
 const NXFictionalMessages = {

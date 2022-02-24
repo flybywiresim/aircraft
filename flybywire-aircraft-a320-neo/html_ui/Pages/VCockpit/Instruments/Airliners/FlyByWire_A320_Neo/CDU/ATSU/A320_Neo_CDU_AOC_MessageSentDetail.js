@@ -41,8 +41,8 @@ class CDUAocMessageSentDetail {
             [`[s-text]${lines[offset + 6] ? lines[offset + 6] : ""}`],
             [`[b-text]${lines[offset + 7] ? lines[offset + 7] : ""}`],
             [`[s-text]${lines[offset + 8] ? lines[offset + 8] : ""}`],
-            ["\xa0RETURN TO"],
-            ["<SENT MSGS", "PRINT*[color]cyan"]
+            ["\xa0SENT MSGS"],
+            ["<RETURN", "PRINT*[color]cyan"]
         ]);
 
         mcdu.onNextPage = () => {
@@ -65,6 +65,10 @@ class CDUAocMessageSentDetail {
 
         mcdu.onLeftInput[5] = () => {
             CDUAocMessagesSent.ShowPage(mcdu);
+        };
+
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
         };
 
         mcdu.onRightInput[5] = () => {
