@@ -168,7 +168,6 @@
 1. [SOUNDS] Add rain sounds in cockpit - @Mico975 (Mico)
 1. [SOUNDS] Add passenger announcements and ambience - @hotshotp (Boris)
 
-
 ## 0.7.0
 
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
