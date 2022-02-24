@@ -164,6 +164,8 @@
 1. [FLIGHTMODEL] Flight model improvements - @donstim (donbikes#4084)
 1. [SPEEDS] Fix GS mini not being limited by VFE-5 in CONF FULL -  @donstim (donbikes#4084)
 1. [MCDU] Fix crash when clearing DIR TO waypoint - @tracernz (Mike)
+1. [SOUNDS] Add rain sounds in cockpit - @Mico975 (Mico)
+1. [SOUNDS] Add passenger announcements and ambience - @hotshotp (Boris)
 
 ## 0.7.0
 
