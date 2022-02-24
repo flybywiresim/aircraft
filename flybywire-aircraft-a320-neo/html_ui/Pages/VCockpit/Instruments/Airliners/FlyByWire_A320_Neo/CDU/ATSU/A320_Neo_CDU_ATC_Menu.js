@@ -73,10 +73,10 @@ class CDUAtcMenu {
         mcdu.page.Current = mcdu.page.ATCMenu;
         mcdu.setTemplate([
             ["ATC MENU", "2", "2"],
-            ["--------ATS623 PAGE--------"],
-            ["<DEPART REQ[color]inop", "ATIS>"],
+            ["------ATS623 PAGE--------"],
+            ["<DEPART REQ", "ATIS>"],
             ["", ""],
-            ["<OCEANIC REQ[color]inop", ""],
+            ["<OCEANIC REQ", ""],
             [""],
             [""],
             [""],
@@ -91,7 +91,14 @@ class CDUAtcMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            //CDUAtcDepartReq.ShowPage1(mcdu);
+            CDUAtcDepartReq.ShowPage1(mcdu);
+        };
+
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[1] = () => {
+            CDUAtcOceanicReq.ShowPage1(mcdu);
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -105,7 +112,7 @@ class CDUAtcMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[0] = () => {
-            CDUAocRequestsAtis.ShowPage(mcdu);
+            CDUAtcAtisMenu.ShowPage(mcdu);
         };
 
         mcdu.onPrevPage = () => {

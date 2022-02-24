@@ -70,6 +70,6 @@ export class FixNamingScheme {
    * @returns The generated fix name.
    */
   public static courseToIntercept(course: number): string {
-      return `I${course.toFixed(0).padStart(3, '0')}`;
+      return 'INTCPT';
   }
 }

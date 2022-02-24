@@ -542,7 +542,6 @@ class A320_Neo_FCU_Heading extends A320_Neo_FCU_Component {
 
     onRotate() {
         const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
-        const lateralArmed = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_ARMED", "Number");
         const isTRKMode = SimVar.GetSimVarValue("L:A32NX_TRK_FPA_MODE_ACTIVE", "Bool");
         const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "feet");
 
