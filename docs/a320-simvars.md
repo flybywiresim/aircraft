@@ -1200,6 +1200,31 @@
         - L
         - R
 
+- A32NX_EFIS_{side}_TO_WPT_BEARING
+    - Degrees
+    - Provides the bearing to the active leg termination
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_TO_WPT_DISTANCE
+    - Nautical miles & > 0
+    - Provides the straight distance to the active leg termination
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_TO_WPT_ETA
+    - Seconds
+    - Provides the number of seconds to the active leg termination (to be converted to UTC by DMC)
+    - {side}
+        - L
+        - R
+
+- A32NX_PFD_MSG_SET_HOLD_SPEED
+    - Bool
+    - Indicates if the SET HOLD SPEED message is shown on the PFD
+
 - A32NX_ISIS_LS_ACTIVE
 	- Bool
 	- Indicates whether LS scales are shown on the ISIS
@@ -1575,6 +1600,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       ROLL_OUT | 34
       SRS | 40
       SRS_GA | 41
+      TCAS | 50
 
 - A32NX_FMA_VERTICAL_ARMED
     - Bitmask
@@ -1587,6 +1613,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       DES | 3
       GS | 4
       FINAL | 5
+      TCAS | 6
 
 - A32NX_FMA_EXPEDITE_MODE
     - Boolean
@@ -1818,15 +1845,20 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number
     - Used as data transport for event `H:A320_Neo_FCU_VS_SET`
 
+- A32NX_FG_PHI_LIMIT
+    - Number in Degrees
+    - Indicates the current bank limit requested by the FM
+    - Always positive
+
 - A32NX_FG_CROSS_TRACK_ERROR
     - Number in nm
     - Used for laternal guidance in mode NAV
-    - Error from desired path
+    - Error from desired path, -ve to the right of track
 
 - A32NX_FG_TRACK_ANGLE_ERROR
     - Number in degrees
     - Used for laternal guidance in mode NAV
-    - Error from desired heading or track
+    - Error from desired heading or track, -ve when clockwise of desired track
 
 - A32NX_FG_PHI_COMMAND
     - Number in degrees
@@ -2432,7 +2464,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       Transponder 1 | 0
       Transponder 2 | 1
 
-- A32NX_TRANSPONDER_ALT_RPTG
+- A32NX_SWITCH_ATC_ALT
     - The transponder altitude reporting switch position
     - Bool
 
