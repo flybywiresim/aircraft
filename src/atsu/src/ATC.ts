@@ -406,7 +406,10 @@ export class Atc {
             if (cpdlcMessage.Direction === AtsuMessageDirection.Output && cpdlcMessage.Station === '') {
                 cpdlcMessage.Station = this.currentAtc;
             }
-            this.dcduLink.enqueue(cpdlcMessage);
+
+            if (cpdlcMessage.DcduRelevantMessage) {
+                this.dcduLink.enqueue(cpdlcMessage);
+            }
         }
     }
 
