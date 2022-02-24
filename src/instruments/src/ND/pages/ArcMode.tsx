@@ -2,7 +2,6 @@ import React, { memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
-import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { RangeSetting, Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
@@ -25,8 +24,6 @@ export interface ArcModeProps {
 }
 
 export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSetting, side, ppos, mapHidden }) => {
-    const flightPlanManager = useFlightPlanManager();
-
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
     const [magTrack] = useSimVar('GPS GROUND MAGNETIC TRACK', 'degrees');
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
