@@ -823,7 +823,7 @@ const IlsInfo: FC = memo(() => {
     const [ilsFrequency] = useSimVar('NAV ACTIVE FREQUENCY:3', 'megahertz');
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_3_TUNING_MODE', 'enum');
-    const [locAvailable] = useSimVar('NAV HAS LOCALIZER:3', 'boolean');
+    const [locAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number');
 
     const [freqInt, freqDecimal] = ilsFrequency.toFixed(2).split('.', 2);
 
