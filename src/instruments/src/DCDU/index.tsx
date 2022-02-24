@@ -84,6 +84,8 @@ const DCDU: React.FC = () => {
         setMessages(updateMap);
     };
 
+    const deleteMessage = (uid: number) => events.triggerToAllSubscribers('A32NX_ATSU_DELETE_MESSAGE', uid);
+    const sendMessage = (uid: number) => events.triggerToAllSubscribers('A32NX_ATSU_SEND_MESSAGE', uid);
     const sendResponse = (uid: number, response: CpdlcMessageResponse) => events.triggerToAllSubscribers('A32NX_ATSU_SEND_RESPONSE', uid, response);
 
     // functions to handle the internal queue
@@ -365,6 +367,8 @@ const DCDU: React.FC = () => {
                             message={message}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
+                            sendMessage={sendMessage}
+                            deleteMessage={deleteMessage}
                             closeMessage={closeMessage}
                         />
                     ))}
