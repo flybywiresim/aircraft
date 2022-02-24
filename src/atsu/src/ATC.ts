@@ -118,6 +118,7 @@ export class Atc {
         message.RequestedResponses = CpdlcMessageRequestedResponseType.Yes;
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'REQUEST LOGON';
+        message.DcduRelevantMessage = false;
 
         this.nextAtc = station;
         this.parent.registerMessage(message);
@@ -168,6 +169,7 @@ export class Atc {
         message.RequestedResponses = CpdlcMessageRequestedResponseType.No;
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'LOGOFF';
+        message.DcduRelevantMessage = false;
 
         this.maxUplinkDelay = -1;
         this.parent.registerMessage(message);
@@ -263,7 +265,9 @@ export class Atc {
         }
 
         message.ComStatus = AtsuMessageComStatus.Sending;
-        this.dcduLink.update(message as CpdlcMessage);
+        if ((message as CpdlcMessage).DcduRelevantMessage) {
+            this.dcduLink.update(message as CpdlcMessage);
+        }
 
         return this.datalink.sendMessage(message, false).then((code) => {
             if (code === AtsuStatusCodes.Ok) {
@@ -271,7 +275,11 @@ export class Atc {
             } else {
                 message.ComStatus = AtsuMessageComStatus.Failed;
             }
-            this.dcduLink.update(message as CpdlcMessage);
+
+            if ((message as CpdlcMessage).DcduRelevantMessage) {
+                this.dcduLink.update(message as CpdlcMessage);
+            }
+
             return code;
         });
     }
