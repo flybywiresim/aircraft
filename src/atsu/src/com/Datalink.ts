@@ -5,7 +5,6 @@ import { NXDataStore } from '@shared/persistence';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { AtsuManager } from '../AtsuManager';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
-import { FreetextMessage } from '../messages/FreetextMessage';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageType } from '../messages/AtsuMessage';
 import { AtisMessage, AtisType } from '../messages/AtisMessage';
 import { MetarMessage } from '../messages/MetarMessage';
@@ -165,10 +164,12 @@ export class Datalink {
             setTimeout(() => {
                 if (message.Type < AtsuMessageType.AOC) {
                     if (message.Network === AtsuMessageNetwork.FBW) {
-                        NXApiConnector.sendTelexMessage(message as FreetextMessage).then((code) => resolve(code));
+                        NXApiConnector.sendTelexMessage(message).then((code) => resolve(code));
                     } else {
-                        HoppieConnector.sendTelexMessage(message as FreetextMessage, force).then((code) => resolve(code));
+                        HoppieConnector.sendTelexMessage(message, force).then((code) => resolve(code));
                     }
+                } else if (message.Type === AtsuMessageType.DCL) {
+                    HoppieConnector.sendTelexMessage(message, force).then((code) => resolve(code));
                 } else if (message.Type < AtsuMessageType.ATC) {
                     HoppieConnector.sendCpdlcMessage(message as CpdlcMessage, force).then((code) => resolve(code));
                 } else {
