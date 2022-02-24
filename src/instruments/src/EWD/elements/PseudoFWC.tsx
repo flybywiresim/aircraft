@@ -345,9 +345,9 @@ const PseudoFWC: React.FC = () => {
         || (!N1AboveIdle && !N2AboveIdle)
     );
 
-    const [masterWarningButtonLeft] = useSimVar('L:PUSH_AUTOPILOT_MASTERWARN_L', 'bool', 100);
+    const [masterWarningButtonLeft] = useSimVar('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool', 100);
     const [masterCautionButtonLeft] = useSimVar('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool', 100);
-    const [masterWarningButtonRight] = useSimVar('L:PUSH_AUTOPILOT_MASTERWARN_R', 'bool', 100);
+    const [masterWarningButtonRight] = useSimVar('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool', 100);
     const [masterCautionButtonRight] = useSimVar('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool', 100);
     const [clearButtonLeft] = useSimVar('L:A32NX_BTN_CLR', 'bool', 100);
     const [clearButtonRight] = useSimVar('L:A32NX_BTN_CLR2', 'bool', 100);

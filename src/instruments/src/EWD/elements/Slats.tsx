@@ -44,16 +44,16 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
             if (handleIndex) {
                 switch (true) {
                 case (handleIndex === 2):
-                    setSlatPos([476, 440]);
+                    setSlatPos([x - 49, y + 12]);
                     break;
                 case (handleIndex === 3):
-                    setSlatPos([442, 452]);
+                    setSlatPos([x - 83, y + 24]);
                     break;
                 case (handleIndex === 4):
-                    setSlatPos([442, 452]);
+                    setSlatPos([x - 83, y + 24]);
                     break;
                 case (handleIndex === 5):
-                    setSlatPos([408, 464]);
+                    setSlatPos([x - 117, y + 36]);
                     break;
                 default:
                     break;
@@ -86,6 +86,7 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
                 );
             }
         }
+
         setDeltaSlatsAngle(slatsAngle);
     }, [slatsAngle]);
 
@@ -101,16 +102,16 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
             if (handleIndex) {
                 switch (true) {
                 case (handleIndex === 2):
-                    setFlapsPos([568, 437]);
+                    setFlapsPos([x + 43, y + 9]);
                     break;
                 case (handleIndex === 3):
-                    setFlapsPos([611, 446]);
+                    setFlapsPos([x + 86, y + 18]);
                     break;
                 case (handleIndex === 4):
-                    setFlapsPos([654, 455]);
+                    setFlapsPos([x + 129, y + 27]);
                     break;
                 case (handleIndex === 5):
-                    setFlapsPos([697, 464]);
+                    setFlapsPos([x + 172, y + 36]);
                     break;
                 default:
                     break;
@@ -143,6 +144,7 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
                 );
             }
         }
+
         setDeltaFlapsAngle(flapsAngle);
     }, [flapsAngle]);
 
