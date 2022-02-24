@@ -242,7 +242,7 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
   -3.0,
 
 
-  { 10.0, 10.0, 1.5, 1.5, 0.8, 0.5, 0.5 },
+  { 10.0, 10.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
 
 
   { 0.0, 20.0, 30.0, 45.0, 60.0, 80.0, 100.0 },
@@ -254,7 +254,7 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
   -10.0,
 
 
-  { 10.0, 10.0, 1.25, 1.25, 0.8, 0.5, 0.5 },
+  { 10.0, 10.0, 1.0, 1.0, 1.0, 1.0, 1.0 },
 
 
   { 0.0, 20.0, 30.0, 40.0, 60.0, 80.0, 100.0 },

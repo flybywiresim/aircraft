@@ -1220,7 +1220,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         if (_event === "VS") {
             const dist = this.flightPlanManager.getDistanceToDestination();
-            this.flightPhaseManager.handleFcuVSKnob(dist, this._onStepClimbDescent);
+            this.flightPhaseManager.handleFcuVSKnob(dist, this._onStepClimbDescent.bind(this));
         }
     }
 

@@ -28,10 +28,10 @@ class CDUAtcMessagesRecord {
         }
         mcdu.clearDisplay();
 
-        let eraseRecordTitle = "MSG RECORD";
+        let eraseRecordTitle = "\xa0MSG RECORD";
         let eraseRecordButton = "*ERASE";
         if (confirmErase) {
-            eraseRecordTitle = "ERASE MSG RECORD";
+            eraseRecordTitle = "\xa0ERASE MSG RECORD";
             eraseRecordButton = "*CONFIRM";
         }
 
@@ -98,7 +98,7 @@ class CDUAtcMessagesRecord {
             [msgStart[3]],
             [eraseRecordTitle],
             [eraseRecordButton],
-            ["ATC MENU", "MSG RECORD[color]inop"],
+            ["\xa0ATC MENU", "MSG RECORD\xa0[color]inop"],
             ["<RETURN", "PRINT*[color]inop"]
         ]);
 

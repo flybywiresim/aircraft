@@ -50,7 +50,7 @@ class NavSystem extends BaseInstrument {
         this.menuSliderCursor = this.getChildById("SliderMenuCursor");
         this.currFlightPlanManager = new Fmgc.FlightPlanManager(this);
         this.currFlightPlan = new Fmgc.ManagedFlightPlan();
-        this.currFlightPhaseManager = new Fmgc.FlightPhaseManager();
+        this.currFlightPhaseManager = Fmgc.getFlightPhaseManager();
     }
     get flightPhaseManager() {
         return this.currFlightPhaseManager;
@@ -2279,6 +2279,7 @@ class Cabin_Annunciations extends Annunciations {
             }
             this.warningTone = warningOn > 0;
             if (this.gps.isPrimary) {
+                console.log('Warning On is ' + warningOn);
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", warningOn);
                 SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", cautionOn);
             }

@@ -232,7 +232,7 @@ fn hyd_circuit_basic(path: &str) {
 
     let mut electricity = Electricity::new();
     let mut registry: TestVariableRegistry = Default::default();
-    let mut init_context = InitContext::new(&mut electricity, &mut registry);
+    let mut init_context = InitContext::new(Default::default(), &mut electricity, &mut registry);
 
     let mut edp = EngineDrivenPump::new(&mut init_context, "EDP");
     let mut edp_controller = TestPumpController::commanding_depressurise();
