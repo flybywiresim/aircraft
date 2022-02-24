@@ -152,7 +152,7 @@ class CDUInitPage {
         };
 
         if (mcdu.tropo) {
-            tropo = mcdu.tropo + "[color]cyan";
+            tropo = `{cyan}${mcdu.tropo.toFixed(0).padStart(5, "\xa0")}`;
         }
         mcdu.onRightInput[4] = (value, scratchpadCallback) => {
             if (mcdu.tryUpdateTropo(value)) {
