@@ -51,13 +51,14 @@ impl ElectricalPumpPhysics {
     const BACKPRESSURE_PRELOAD_PSI: f64 = 200.;
 
     const SPEED_DISPLACEMENT_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(50);
+    const MIN_FILTERING_RPM: f64 = 100.;
 
     // Efficiency gives generated mechanical torque ratio vs electrical power used.
     // 0.95 will convert 95% of electrical consumption in mechanical torque
     const ELECTRICAL_EFFICIENCY: f64 = 0.95;
 
-    const DEFAULT_P_GAIN: f64 = 0.2;
-    const DEFAULT_I_GAIN: f64 = 0.5;
+    const DEFAULT_P_GAIN: f64 = 0.1;
+    const DEFAULT_I_GAIN: f64 = 0.45;
 
     pub fn new(
         context: &mut InitContext,
@@ -128,7 +129,11 @@ impl ElectricalPumpPhysics {
             .speed_raw
             .max(AngularVelocity::new::<radian_per_second>(0.));
 
-        self.speed_filtered.update(context.delta(), self.speed_raw);
+        if self.speed_raw.get::<revolution_per_minute>() > Self::MIN_FILTERING_RPM {
+            self.speed_filtered.update(context.delta(), self.speed_raw);
+        } else {
+            self.speed_filtered.reset(AngularVelocity::default());
+        }
     }
 
     fn update_pump_resistant_torque(&mut self, section: &impl SectionPressure) {
@@ -156,7 +161,7 @@ impl ElectricalPumpPhysics {
     fn update_current_control(&mut self, context: &UpdateContext) {
         self.output_current = if self.pump_should_run() {
             ElectricCurrent::new::<ampere>(self.current_controller.next_control_output(
-                self.speed_filtered.output().get::<revolution_per_minute>(),
+                self.speed_raw.get::<revolution_per_minute>(),
                 Some(context.delta()),
             ))
         } else {
@@ -363,7 +368,7 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.pump.speed())
-                >= AngularVelocity::new::<revolution_per_minute>(7000.)
+                >= AngularVelocity::new::<revolution_per_minute>(6500.)
         );
     }
 
