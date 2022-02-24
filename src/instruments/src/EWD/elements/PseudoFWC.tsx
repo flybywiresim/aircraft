@@ -142,6 +142,9 @@ const PseudoFWC: React.FC = () => {
     const [agentApuAgentTimer, setApuAgentTimer] = useState<number>(-1);
     const [agentAPUDischarge, setAgentAPUDischarge] = useState(false);
 
+    const [cargoFireTest] = useSimVar('L:A32NX_FIRE_TEST_CARGO', 'bool', 500);
+    const [cargoFireAgentDisch] = useSimVar('L:A32NX_CARGOSMOKE_FWD_DISCHARGED', 'bool', 500);
+
     // Remember all these run once so need to include fireButton1 === 1 && !eng1FireTest
     useEffect(() => {
         if (!eng1FireTest) {
@@ -176,10 +179,10 @@ const PseudoFWC: React.FC = () => {
 
     useEffect(() => {
         console.log('FireTest');
-        if (eng1FireTest === 0 && eng2FireTest === 0 && apuFireTest === 0) {
+        if (eng1FireTest === 0 && eng2FireTest === 0 && apuFireTest === 0 && cargoFireTest === 0) {
             masterWarning(0);
         }
-    }, [eng1FireTest, eng2FireTest, apuFireTest]);
+    }, [eng1FireTest, eng2FireTest, apuFireTest, cargoFireTest]);
 
     useUpdate((deltaTime) => {
         if (fireButton1 === 1 && timerEng1Agent1Timer !== -1) {
@@ -325,6 +328,8 @@ const PseudoFWC: React.FC = () => {
     const [fac1Failed] = useSimVar('L:A32NX_FBW_FAC_FAILED:1', 'bool', 500);
     const [tcasFault] = useSimVar('L:A32NX_TCAS_FAULT', 'bool', 500);
 
+    const [cabinRecircBtnOn] = useSimVar('L:A32NX_VENTILATION_CABFANS_TOGGLE', 'bool', 500);
+
     /* WARNINGS AND FAILURES */
     const landASAPRed: boolean = !!(!onGround
     && (
@@ -349,9 +354,9 @@ const PseudoFWC: React.FC = () => {
     const [masterCautionButtonLeft] = useSimVar('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool', 100);
     const [masterWarningButtonRight] = useSimVar('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool', 100);
     const [masterCautionButtonRight] = useSimVar('L:PUSH_AUTOPILOT_MASTERCAUT_R', 'bool', 100);
-    const [clearButtonLeft] = useSimVar('L:A32NX_BTN_CLR', 'bool', 100);
-    const [clearButtonRight] = useSimVar('L:A32NX_BTN_CLR2', 'bool', 100);
-    const [recallButton] = useSimVar('L:A32NX_BTN_RCL', 'bool', 100);
+    const [clearButtonLeft] = useSimVar('L:A32NX_BTN_CLR', 'bool');
+    const [clearButtonRight] = useSimVar('L:A32NX_BTN_CLR2', 'bool');
+    const [recallButton] = useSimVar('L:A32NX_BTN_RCL', 'bool');
     const [failuresLeft, setFailuresLeft] = useState<string[]>([]);
     const [failuresRight, setFailuresRight] = useState<string[]>([]);
     const [allCurrentFailures, setAllCurrentFailures] = useState<string[]>([]);
@@ -542,6 +547,48 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'LEFT',
         },
+        2700090: { // FLAPS NOT IN TO CONFIG
+            flightPhaseInhib: [5, 6, 7, 8],
+            simVarIsActive: !!((!flapsMcduEntered || flapsHandle !== flapsMcdu) && (([1, 2, 9].includes(flightPhase) && toconfigFailed) || [3, 4, 5].includes(flightPhase))),
+            // TODO no separate slats indication
+            whichCodeToReturn: [0, 1],
+            codesToReturn: ['270009001', '270009002'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3200050: { // PK BRK ON
+            flightPhaseInhib: [1, 4, 5, 6, 7, 8, 9, 10],
+            simVarIsActive: !!(flightPhase === 3 && parkBrake === 1),
+            // TODO no separate slats indication
+            whichCodeToReturn: [0],
+            codesToReturn: ['320005001'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2600150: { // SMOKE FWD CARGO SMOKE
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: !!([1, 2, 3, 6, 9, 10].includes(flightPhase) && cargoFireTest === 1),
+            // TODO no separate slats indication
+            whichCodeToReturn: [
+                0,
+                cabinRecircBtnOn === 1 ? 2 : null,
+                [1, 10].includes(flightPhase) && !cargoFireAgentDisch ? 3 : null,
+                !cargoFireAgentDisch ? 4 : null,
+                !onGround ? 5 : null,
+                !onGround ? 6 : null,
+                onGround ? 7 : null,
+                onGround ? 8 : null,
+            ],
+            codesToReturn: ['260015001', '260015002', '260015003', '260015004', '260015005', '260015006', '260015007', '260015008', '260015009'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
         7700647: { // THR LEVERS NOT SET  (on ground)
             flightPhaseInhib: [1, 4, 5, 6, 7, 8, 10],
             simVarIsActive: [2, 3, 4, 8, 9].includes(flightPhase) && (
@@ -556,16 +603,6 @@ const PseudoFWC: React.FC = () => {
             memoInhibit: false,
             failure: 2,
             sysPage: 9, // Should be -1
-            side: 'LEFT',
-        },
-        7700642: { // THR LEVERS NOT SET  (in flight)
-            flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
-            simVarIsActive: !!(throttle1Position === 4 || throttle2Position === 4),
-            whichCodeToReturn: [0, 1],
-            codesToReturn: ['770064201', '770064202'],
-            memoInhibit: false,
-            failure: 2,
-            sysPage: 9,
             side: 'LEFT',
         },
         3200060: { // NW ANTI SKID INACTIVE
@@ -1140,9 +1177,15 @@ const PseudoFWC: React.FC = () => {
                     }
                 } else {
                     console.log('Already have that failure');
+                    if (![eng1FireTest, eng2FireTest, apuFireTest, cargoFireTest].every((e) => e === 0)) {
+                        masterWarning(1);
+                    }
                 }
 
                 const newCode: string[] = [];
+                console.log('Value if fire test logic is');
+                console.log(`Cargo fire test is ${cargoFireTest}`);
+                console.log(![eng1FireTest, eng2FireTest, apuFireTest, cargoFireTest].some((e) => e === 1));
                 if (!recallFailures.includes(key)) {
                     const codeIndex = value.whichCodeToReturn.filter((e) => e !== null);
                     codeIndex.forEach((e: number) => {
@@ -1246,6 +1289,9 @@ const PseudoFWC: React.FC = () => {
         autoBrakesArmedMode,
         brakeFan,
         cabinReady,
+        cabinRecircBtnOn,
+        cargoFireAgentDisch,
+        cargoFireTest,
         compMesgCount,
         configPortableDevices,
         dmcSwitchingKnob,
