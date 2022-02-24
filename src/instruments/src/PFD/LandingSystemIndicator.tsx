@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { getSimVar } from '../util.js';
 import { LagFilter } from './PFDUtils';
 
-export function LandingSystem({ LSButtonPressed }) {
+export function LandingSystem({ LSButtonPressed, pitch, roll }) {
     let showVDev = false;
 
     if (!LSButtonPressed) {
@@ -27,6 +27,8 @@ export function LandingSystem({ LSButtonPressed }) {
                     <LDevIndicator />
                 </g>
             )}
+            { (LSButtonPressed || (pitch.isNormalOperation() && roll.isNormalOperation()))
+                && <path className="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />}
         </g>
     );
 }

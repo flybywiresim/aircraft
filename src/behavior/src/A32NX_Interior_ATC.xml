@@ -190,7 +190,7 @@
                     alias xpdrSelected = (L:A32NX_TRANSPONDER_SYSTEM, number);
                     alias leftGearCompressed = (L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED, bool);
                     alias rightGearCompressed = (L:A32NX_LGCIU_2_RIGHT_GEAR_COMPRESSED, bool);
-                    alias altReporting = (L:A32NX_TRANSPONDER_ALT_RPTG, bool);
+                    alias altReporting = (L:A32NX_SWITCH_ATC_ALT, bool);
                     alias xpdrState = (A:TRANSPONDER STATE:1, number);
 
                     if (xpdrSelected == #TRANSPONDER_SYSTEM_1, number# and !#TRANSPONDER_BUS_1, bool#) or (xpdrSelected == #TRANSPONDER_SYSTEM_2, number# and !#TRANSPONDER_BUS_2, bool#) {
@@ -223,14 +223,15 @@
                     <ANIM_TYPE>KNOB</ANIM_TYPE>
                     <ANIM_TEMPLATE>ASOBO_GT_Switch_2States</ANIM_TEMPLATE>
                     <SWITCH_DIRECTION>Horizontal</SWITCH_DIRECTION>
-                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
-                    <SWITCH_POSITION_VAR>A32NX_SWITCH_ATC_ALT</SWITCH_POSITION_VAR>
                     <LEFTARROW>TurnLeft</LEFTARROW>
                     <RIGHTARROW>TurnRight</RIGHTARROW>
                     <WWISE_EVENT>smallknob</WWISE_EVENT>
-                    <CODE_POS_0>0 (&gt;L:A32NX_TRANSPONDER_ALT_RPTG, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_0>
-                    <CODE_POS_1>1 (&gt;L:A32NX_TRANSPONDER_ALT_RPTG, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_1>
-                    <ANIM_CODE>(L:A32NX_TRANSPONDER_ALT_RPTG) 100 *</ANIM_CODE>
+                    <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+                    <SWITCH_POSITION_VAR>A32NX_SWITCH_ATC_ALT</SWITCH_POSITION_VAR>
+                    <CODE_POS_0>0 (&gt;L:A32NX_SWITCH_ATC_ALT, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_0>
+                    <CODE_POS_1>1 (&gt;L:A32NX_SWITCH_ATC_ALT, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_1>
+                    <STATE0_TEST>(L:A32NX_SWITCH_ATC_ALT)!</STATE0_TEST>
+                    <STATE1_TEST>(L:A32NX_SWITCH_ATC_ALT)</STATE1_TEST>
                     <ANIM_NAME>#KNOB_XPNDR_ALT_RPTG_ANIM_NAME#</ANIM_NAME>
                     <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ATC_ALT_RPTG_TURN_ON</ANIMTIP_0>
                     <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ATC_ALT_RPTG_TURN_OFF</ANIMTIP_1>
@@ -270,8 +271,8 @@
                     <CODE_POS_1>#TRANSPONDER_SYSTEM_2# (&gt;L:A32NX_TRANSPONDER_SYSTEM, number) #UPDATE_TRANSPONDER_STATE#</CODE_POS_1>
                     <ANIM_CODE>(L:A32NX_TRANSPONDER_SYSTEM) 100 *</ANIM_CODE>
                     <ANIM_NAME>#KNOB_XPNDR_SYSTEM_ANIM_NAME#</ANIM_NAME>
-                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.ATC_SYSTEM_1</ANIMTIP_0>
-                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.ATC_SYSTEM_2</ANIMTIP_1>
+                    <ANIMTIP_0>TT:COCKPIT.TOOLTIPS.XPDR_XPDR</ANIMTIP_0>
+                    <ANIMTIP_1>TT:COCKPIT.TOOLTIPS.XPDR_XPDR</ANIMTIP_1>
                 </UseTemplate>
             </Component>
         </Component>

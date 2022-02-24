@@ -51,6 +51,7 @@ const NXSystemMessages = {
     notInDatabase:          new McduMessage("NOT IN DATABASE", false, false),
     rwyLsMismatch:          new McduMessage("RWY/LS MISMATCH", true, true),
     selectDesiredSystem:    new McduMessage("SELECT DESIRED SYSTEM", false, false),
+    setHoldSpeed:           new McduMessage("SET HOLD SPEED", false, true),
     uplinkInsertInProg:     new McduMessage("UPLINK INSERT IN PROG", false, true),
     vToDisagree:            new McduMessage("V1/VR/V2 DISAGREE", true, true),
     waitForSystemResponse:  new McduMessage("WAIT FOR SYSTEM RESPONSE", false, false),

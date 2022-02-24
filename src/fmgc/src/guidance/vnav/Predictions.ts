@@ -59,7 +59,7 @@ export class Predictions {
     ): StepResults {
         const midStepAltitude = initialAltitude + (stepSize / 2);
         const theta = Common.getTheta(midStepAltitude, isaDev);
-        const delta = Common.getDelta(theta);
+        const delta = Common.getDelta(midStepAltitude);
         let mach = Common.CAStoMach(econCAS, delta);
 
         let eas;
@@ -124,7 +124,7 @@ export class Predictions {
         } while (iterations < 4 && Math.abs(previousMidStepWeight - midStepWeight) < 100);
 
         return {
-            pathAngle: pathAngle * MathUtils.Rad2Deg,
+            pathAngle: pathAngle * MathUtils.RADIANS_TO_DEGREES,
             verticalSpeed,
             timeElapsed: stepTime,
             distanceTraveled,
@@ -155,7 +155,7 @@ export class Predictions {
         isaDev: number,
     ): StepResults {
         const theta = Common.getTheta(altitude, isaDev);
-        const delta = Common.getDelta(theta);
+        const delta = Common.getDelta(altitude);
         let mach = Common.CAStoMach(econCAS, delta);
 
         let tas;
@@ -228,7 +228,7 @@ export class Predictions {
         minimumAbsoluteAcceleration?: number,
     ): StepResults {
         const theta = Common.getTheta(initialAltitude, isaDev);
-        const delta = Common.getDelta(theta);
+        const delta = Common.getDelta(initialAltitude);
 
         let actualInitialMach = Common.CAStoMach(initialCAS, delta);
         let actualFinalMach = Common.CAStoMach(finalCAS, delta);
@@ -276,7 +276,7 @@ export class Predictions {
 
         const weightEstimate = zeroFuelWeight + initialFuelWeight;
 
-        const pathAngleRadians = flightPahAngle * MathUtils.DEEGREES_TO_RADIANS;
+        const pathAngleRadians = flightPahAngle * MathUtils.DEGREES_TO_RADIANS;
 
         let error;
         let verticalSpeed;
@@ -350,7 +350,7 @@ export class Predictions {
         } while (iterations < 4 && Math.abs(previousMidStepWeight - midStepWeight) < 100);
 
         return {
-            pathAngle: pathAngleRadians * MathUtils.Rad2Deg,
+            pathAngle: pathAngleRadians * MathUtils.RADIANS_TO_DEGREES,
             verticalSpeed,
             timeElapsed: stepTime,
             distanceTraveled,
@@ -403,7 +403,7 @@ export class Predictions {
 
         // If converted FPA is less than the FPA from altitudeStep, then this path is too steep :(
         const distanceInFeet = distance * 6076.12;
-        const stepFPA = Math.atan((finalAltitude - initialAltitude) / distanceInFeet) * MathUtils.Rad2Deg;
+        const stepFPA = Math.atan((finalAltitude - initialAltitude) / distanceInFeet) * MathUtils.RADIANS_TO_DEGREES;
         return idleStepResults.pathAngle <= stepFPA;
     }
 
@@ -432,11 +432,11 @@ export class Predictions {
     ): StepResults {
         const distanceInFeet = distance * 6076.12;
         const fpaRadians = Math.atan((finalAltitude - initialAltitude) / distanceInFeet);
-        const fpaDegrees = fpaRadians * MathUtils.Rad2Deg;
+        const fpaDegrees = fpaRadians * MathUtils.RADIANS_TO_DEGREES;
         const midStepAltitude = (initialAltitude + finalAltitude) / 2;
 
         const theta = Common.getTheta(midStepAltitude, isaDev);
-        const delta = Common.getDelta(theta);
+        const delta = Common.getDelta(midStepAltitude);
         let mach = Common.CAStoMach(econCAS, delta);
 
         let eas;
@@ -540,11 +540,11 @@ export class Predictions {
     ): number {
         const distanceInFeet = distance * 6076.12;
         const fpaRadians = Math.atan((finalAltitude - initialAltitude) / distanceInFeet);
-        const fpaDegrees = fpaRadians * MathUtils.Rad2Deg;
+        const fpaDegrees = fpaRadians * MathUtils.RADIANS_TO_DEGREES;
         const midStepAltitude = (initialAltitude + finalAltitude) / 2;
 
         const theta = Common.getTheta(midStepAltitude, isaDev);
-        const delta = Common.getDelta(theta);
+        const delta = Common.getDelta(midStepAltitude);
         let mach = Common.CAStoMach(econCAS, delta);
 
         let eas;

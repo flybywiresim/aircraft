@@ -1425,7 +1425,7 @@ var A320_Neo_UpperECAM;
                         style: () => (
                             this.isInFlightPhase(6)
                         ) ? "InfoCaution" : "InfoIndication",
-                        isActive: () => SimVar.GetSimVarValue("L:A32NX_SWITCH_TCAS_Position", "Enum") === 0,
+                        isActive: () => SimVar.GetSimVarValue("L:A32NX_TCAS_SENSITIVITY", "Number") === 1,
                     },
                     {
                         message: "COMPANY MSG",
