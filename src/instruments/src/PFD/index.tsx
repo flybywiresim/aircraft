@@ -4,6 +4,7 @@ import { useArinc429Var } from '@instruments/common/arinc429';
 import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
 import { getSupplier, isCaptainSide } from '@instruments/common/utils';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { ArmedLateralMode, ArmedVerticalMode, isArmed, VerticalMode } from '@shared/autopilot';
 import { Horizon } from './AttitudeIndicatorHorizon';
 import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed';
 import { LandingSystem } from './LandingSystemIndicator';
@@ -123,10 +124,10 @@ export const PFD: React.FC = () => {
     const armedLateralBitmask = getSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number');
     const fmgcFlightPhase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
     const cstnAlt = getSimVar('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet');
-    const altArmed = (armedVerticalBitmask >> 1) & 1;
-    const clbArmed = (armedVerticalBitmask >> 2) & 1;
-    const navArmed = (armedLateralBitmask >> 0) & 1;
-    const isManaged = !!(altArmed || activeVerticalMode === 21 || activeVerticalMode === 20
+    const altCstArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.ALT_CST);
+    const clbArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.CLB);
+    const navArmed = isArmed(armedLateralBitmask, ArmedLateralMode.NAV);
+    const isManaged = !!(altCstArmed || activeVerticalMode === VerticalMode.ALT_CST_CPT || activeVerticalMode === VerticalMode.ALT_CST
          || (!!cstnAlt && [FmgcFlightPhase.Preflight, FmgcFlightPhase.Takeoff].includes(fmgcFlightPhase) && clbArmed && navArmed));
     const targetAlt = isManaged ? cstnAlt : Simplane.getAutoPilotDisplayedAltitudeLockValue();
 
