@@ -1,7 +1,7 @@
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GeometricPath } from '@fmgc/guidance/vnav/descent/TheoreticalDescentPath';
-import { Leg } from '@fmgc/guidance/lnav/legs';
 import { Predictions, StepResults } from '@fmgc/guidance/vnav/Predictions';
+import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 
 export class GeomtricPathBuilder {
     static buildGeometricPath(
