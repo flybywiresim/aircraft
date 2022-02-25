@@ -113,8 +113,6 @@ for (const arg of args) {
             pressAnyKey(1);
         }
         continue;
-    } else {
-        margin = paperSize === 'A4' ? 30 : 10;
     }
     if (arg === '--debug') {
         debug = true;
@@ -127,6 +125,10 @@ for (const arg of args) {
     console.error(`Unknown argument: ${arg}`);
     printUsage();
     pressAnyKey(1);
+}
+
+if (margin === undefined) {
+    margin = paperSize === 'A4' ? 30 : 10;
 }
 
 if (httpPort === websocketPort) {
@@ -306,6 +308,7 @@ function start() {
                             console.log(`Printer: ${selectedPrinter.name}`);
                             console.log(`Font size: ${fontSize}`);
                             console.log(`Paper size: ${paperSize}`);
+                            console.log(`Margin: ${margin}`);
                         }
 
                         isMcdu = true;
