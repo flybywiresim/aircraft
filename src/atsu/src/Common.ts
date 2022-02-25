@@ -1,3 +1,6 @@
+//  Copyright (c) 2022 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
 import { CpdlcMessageRequestedResponseType } from './messages/CpdlcMessage';
 
 export function wordWrap(text: string, maxLength: number) {
