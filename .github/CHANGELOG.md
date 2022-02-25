@@ -166,6 +166,8 @@
 1. [MCDU] Fix crash when clearing DIR TO waypoint - @tracernz (Mike)
 1. [BLEED] Fix reservoir air pressure above max valve pressure - @Crocket63
 1. [ATHR] Fix Speed/Mach Idle transition in strong headwind - @IbrahimK42 (IbrahimK42)
+1. [SOUNDS] Add rain sounds in cockpit - @Mico975 (Mico)
+1. [SOUNDS] Add passenger announcements and ambience - @hotshotp (Boris)
 
 ## 0.7.0
 
