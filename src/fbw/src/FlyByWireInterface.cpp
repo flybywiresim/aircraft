@@ -23,6 +23,9 @@ bool FlyByWireInterface::connect() {
   rudderTrimHandler = make_shared<RudderTrimHandler>();
   animationAileronHandler = make_shared<AnimationAileronHandler>();
 
+  // initialize failures handler
+  failuresConsumer.initialize();
+
   // initialize model
   autopilotStateMachine.initialize();
   autopilotLaws.initialize();
@@ -61,6 +64,9 @@ void FlyByWireInterface::disconnect() {
 
 bool FlyByWireInterface::update(double sampleTime) {
   bool result = true;
+
+  // update failures handler
+  failuresConsumer.update();
 
   // get data & inputs
   result &= readDataAndLocalVariables(sampleTime);
@@ -491,8 +497,6 @@ void FlyByWireInterface::setupLocalVariables() {
     idFcdcPriorityCaptRed[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_CAPT_RED_ON");
     idFcdcPriorityFoGreen[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_GREEN_ON");
     idFcdcPriorityFoRed[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_PRIORITY_LIGHT_FO_RED_ON");
-
-    idFcdcFault[i] = make_unique<LocalVariable>("A32NX_FCDC_" + idString + "_FAULT");
   }
 
   for (int i = 0; i < 2; i++) {
@@ -500,7 +504,6 @@ void FlyByWireInterface::setupLocalVariables() {
 
     idElacPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_PUSHBUTTON_STATUS");
     idElacFaultLightOn[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_FAULT_LIGHT_ON");
-    idElacFault[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_FAULT");
   }
 
   for (int i = 0; i < 3; i++) {
@@ -508,7 +511,6 @@ void FlyByWireInterface::setupLocalVariables() {
 
     idSecPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_PUSHBUTTON_STATUS");
     idSecFaultLightOn[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_FAULT_LIGHT_ON");
-    idSecFault[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_FAULT");
   }
 
   for (int i = 0; i < 2; i++) {
@@ -516,7 +518,6 @@ void FlyByWireInterface::setupLocalVariables() {
 
     idFacPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_PUSHBUTTON_STATUS");
     idFacFaultLightOn[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_FAULT_LIGHT_ON");
-    idFacFault[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_FAULT");
 
     idFacDiscreteWord1[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_DISCRETE_WORD_1");
     idFacGammaA[i] = make_unique<LocalVariable>("A32NX_FAC_" + idString + "_GAMMA_A");
@@ -959,7 +960,7 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].busInputs.sec2 = secsBusOutputs[1];
   elacs[elacIndex].busInputs.elacOpp = elacsBusOutputs[oppElacIndex];
 
-  elacs[elacIndex].update(sampleTime, simData.simulationTime, idElacFault[elacIndex]->get(),
+  elacs[elacIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(elacIndex == 0 ? Failures::Elac1 : Failures::Elac2),
                           elacIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get());
 
   elacsDiscreteOutputs[elacIndex] = elacs[elacIndex].getDiscreteOutputs();
@@ -1059,7 +1060,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].busInputs.elac1 = elacsBusOutputs[0];
   secs[secIndex].busInputs.elac2 = elacsBusOutputs[1];
 
-  secs[secIndex].update(sampleTime, simData.simulationTime, idSecFault[secIndex]->get(),
+  Failures failureIndex = secIndex == 0 ? Failures::Sec1 : (secIndex == 1 ? Failures::Sec2 : Failures::Sec3);
+  secs[secIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex),
                         secIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get());
 
   secsDiscreteOutputs[secIndex] = secs[secIndex].getDiscreteOutputs();
@@ -1096,7 +1098,7 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   fcdcs[fcdcIndex].busInputs.sec2 = secsBusOutputs[1];
   fcdcs[fcdcIndex].busInputs.sec3 = secsBusOutputs[2];
 
-  fcdcs[fcdcIndex].update(sampleTime, idFcdcFault[fcdcIndex]->get(),
+  fcdcs[fcdcIndex].update(sampleTime, failuresConsumer.isActive(fcdcIndex == 0 ? Failures::Fcdc1 : Failures::Fcdc2),
                           fcdcIndex == 0 ? idElecDcEssShedBusPowered->get() : idElecDcBus2Powered->get());
 
   fcdcsDiscreteOutputs[fcdcIndex] = fcdcs[fcdcIndex].getDiscreteOutputs();
@@ -1174,7 +1176,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].busInputs.elac1 = elacsBusOutputs[0];
   facs[facIndex].busInputs.elac2 = elacsBusOutputs[1];
 
-  facs[facIndex].update(sampleTime, simData.simulationTime, idFacFault[facIndex]->get(),
+  facs[facIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(facIndex == 0 ? Failures::Fac1 : Failures::Fac2),
                         facIndex == 0 ? idElecDcEssShedBusPowered->get() : idElecDcBus2Powered->get());
 
   facsDiscreteOutputs[facIndex] = facs[facIndex].getDiscreteOutputs();

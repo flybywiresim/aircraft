@@ -22,6 +22,7 @@
 #include "ThrottleAxisMapping.h"
 #include "elac/Elac.h"
 #include "fac/Fac.h"
+#include "failures/FailuresConsumer.h"
 #include "fcdc/Fcdc.h"
 #include "sec/Sec.h"
 
@@ -84,6 +85,8 @@ class FlyByWireInterface {
   FlightDataRecorder flightDataRecorder;
 
   SimConnectInterface simConnectInterface;
+
+  FailuresConsumer failuresConsumer;
 
   FlyByWireModelClass flyByWire;
   FlyByWireModelClass::ExternalInputs_FlyByWire_T flyByWireInput = {};
@@ -383,10 +386,6 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idAilFaultRight[2];
   std::unique_ptr<LocalVariable> idSplrFaultLeft[5];
   std::unique_ptr<LocalVariable> idSplrFaultRight[5];
-  std::unique_ptr<LocalVariable> idFcdcFault[2];
-  std::unique_ptr<LocalVariable> idElacFault[2];
-  std::unique_ptr<LocalVariable> idSecFault[3];
-  std::unique_ptr<LocalVariable> idFacFault[2];
 
   // ELAC discrete input Lvars
   std::unique_ptr<LocalVariable> idElacPushbuttonStatus[2];
