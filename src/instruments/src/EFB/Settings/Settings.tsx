@@ -775,6 +775,7 @@ const AudioPage = () => {
     const [windVolume, setWindVolume] = usePersistentNumberProperty('SOUND_INTERIOR_WIND', 0);
     const [passengerAmbienceEnabled, setPassengerAmbienceEnabled] = usePersistentNumberProperty('SOUND_PASSENGER_AMBIENCE_ENABLED', 1);
     const [announcementsEnabled, setAnnouncementsEnabled] = usePersistentNumberProperty('SOUND_ANNOUNCEMENTS_ENABLED', 1);
+    const [boardingMusicEnabled, setBoardingMusicEnabled] = usePersistentNumberProperty('SOUND_BOARDING_MUSIC_ENABLED', 1);
 
     return (
         <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-xl px-6 ">
@@ -816,6 +817,12 @@ const AudioPage = () => {
                 <span className="text-lg text-gray-300">Announcements</span>
                 <div className="flex flex-row items-center py-1.5">
                     <Toggle value={!!announcementsEnabled} onToggle={(value) => setAnnouncementsEnabled(value ? 1 : 0)} />
+                </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Boarding Music</span>
+                <div className="flex flex-row items-center py-1.5">
+                    <Toggle value={!!boardingMusicEnabled} onToggle={(value) => setBoardingMusicEnabled(value ? 1 : 0)} />
                 </div>
             </div>
         </div>
