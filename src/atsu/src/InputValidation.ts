@@ -1,0 +1,323 @@
+//  Copyright (c) 2022 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
+
+import { AtsuStatusCodes } from './AtsuStatusCodes';
+import { FansMode } from './com/FutureAirNavigationSystem';
+import { InputValidationFansA } from './components/InputValidationFansA';
+import { InputValidationFansB } from './components/InputValidationFansB';
+
+export enum InputWaypointType {
+    Invalid,
+    GeoCoordinate,
+    Timepoint,
+    Place
+}
+
+export class InputValidation {
+    public static FANS: FansMode = FansMode.FansNone;
+
+    /**
+     * Classifies a possible waypoint type of the scratchpad
+     * Types:
+     *   -  0 = lat-lon coordinate
+     *   -  1 = time
+     *   -  2 = place
+     *   - -1 = unknonw
+     * @param {FMCMainDisplay} mcdu The current MCDU instance
+     * @param {string} waypoint The entered waypoint
+     * @param {boolean} allowTime Indicates if time entries are allowed
+     * @returns A tuple with the type and null or a NXSystemMessage-entry in case of a failure
+     */
+    public static async classifyScratchpadWaypointType(mcdu: any, waypoint: string, allowTime: boolean): Promise<[InputWaypointType, AtsuStatusCodes]> {
+        if (mcdu.isLatLonFormat(waypoint)) {
+            return [InputWaypointType.GeoCoordinate, AtsuStatusCodes.Ok];
+        }
+
+        // time formatted
+        if (allowTime && /^([0-2][0-4][0-5][0-9]Z?)$/.test(waypoint)) {
+            return [InputWaypointType.Timepoint, AtsuStatusCodes.Ok];
+        }
+
+        // place formatted
+        if (/^[A-Z0-9]{2,7}/.test(waypoint)) {
+            return mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(waypoint).then((waypoints) => {
+                if (waypoints.length !== 0) {
+                    return [InputWaypointType.Place, AtsuStatusCodes.Ok];
+                }
+                return [InputWaypointType.Invalid, AtsuStatusCodes.NotInDatabase];
+            });
+        }
+
+        return [InputWaypointType.Invalid, AtsuStatusCodes.FormatError];
+    }
+
+    /**
+     * Validate a given VHF frequency that it fits to the 8.33 kHz-spacing
+     * @param {string} value Frequency candidate
+     * @returns null or a NXSystemMessages-entry in case of a failure
+     */
+    public static validateVhfFrequency(value: string): AtsuStatusCodes {
+        // valid frequency range: 118.000 - 136.975
+        if (!/^1[1-3][0-9].[0-9]{2}[0|5]$/.test(value)) {
+            return AtsuStatusCodes.FormatError;
+        }
+
+        const elements = value.split('.');
+        const before = parseInt(elements[0]);
+        if (before < 118 || before > 136) {
+            return AtsuStatusCodes.EntryOutOfRange;
+        }
+
+        // valid 8.33 kHz spacings
+        const frequencySpacingOther = ['00', '05', '10', '15', '25', '30', '35', '40', '50', '55', '60', '65', '75', '80', '85', '90'];
+        const frequencySpacingEnd = ['00', '05', '10', '15', '25', '30', '35', '40', '50', '55', '60', '65', '75'];
+
+        // validate the correct frequency fraction
+        const twoDigitFraction = elements[1].substring(1, elements[1].length);
+        if (before === 136) {
+            if (frequencySpacingEnd.findIndex((entry) => entry === twoDigitFraction) === -1) {
+                return AtsuStatusCodes.EntryOutOfRange;
+            }
+        } else if (frequencySpacingOther.findIndex((entry) => entry === twoDigitFraction) === -1) {
+            return AtsuStatusCodes.EntryOutOfRange;
+        }
+
+        return AtsuStatusCodes.Ok;
+    }
+
+    /**
+     * Validates a value that it is compatible with the FCOM format for altitudes and flight levels
+     * @param {string} value The entered scratchpad altitude
+     * @returns An AtsuStatusCodes-value
+     */
+    public static validateScratchpadAltitude(value: string): AtsuStatusCodes {
+        if (/^((FL)*[0-9]{1,3})$/.test(value)) {
+            let flightlevelStr = '';
+
+            if (value.startsWith('FL')) {
+                flightlevelStr = value.substring(2, value.length);
+            } else {
+                flightlevelStr = value;
+            }
+
+            // contains not only digits
+            if (/(?!^\d+$)^.+$/.test(flightlevelStr)) {
+                return AtsuStatusCodes.FormatError;
+            }
+            const flightlevel = parseInt(flightlevelStr);
+
+            if (flightlevel >= 30 && flightlevel <= 410) {
+                return AtsuStatusCodes.Ok;
+            }
+            return AtsuStatusCodes.EntryOutOfRange;
+        }
+
+        if (InputValidation.FANS === FansMode.FansB) {
+            return InputValidationFansB.validateScratchpadAltitude(value);
+        }
+        return InputValidationFansA.validateScratchpadAltitude(value);
+    }
+
+    /**
+     * Validates a value that it is compatible with the FCOM format for lateral offsets
+     * @param {string} value The entered scratchpad offset
+     * @returns An AtsuStatusCodes-value
+     */
+    public static validateScratchpadOffset(offset: string): AtsuStatusCodes {
+        let nmUnit = true;
+        let distance = 0;
+
+        if (/^[LR][0-9]{1,3}(NM|KM)$/.test(offset) || /^[LR][0-9]{1,3}$/.test(offset)) {
+            // format: DNNNKM, DNNNNM, DNNN
+            distance = parseInt(offset.substring(1, 4));
+            nmUnit = !offset.endsWith('KM');
+        } else if (/^[0-9]{1,3}(NM|KM)[LR]$/.test(offset) || /^[0-9]{1,3}[LR]$/.test(offset)) {
+            // format: NNNKMD, NNNNMD, NNND
+            distance = parseInt(offset.substring(0, 3));
+            nmUnit = !(offset.endsWith('KML') || offset.endsWith('KMR'));
+        } else {
+            return AtsuStatusCodes.FormatError;
+        }
+
+        // validate the ranges
+        if (nmUnit) {
+            if (distance >= 1 && distance <= 128) {
+                return AtsuStatusCodes.Ok;
+            }
+        } else if (distance >= 1 && distance <= 256) {
+            return AtsuStatusCodes.Ok;
+        }
+
+        return AtsuStatusCodes.EntryOutOfRange;
+    }
+
+    /**
+     * Validates a value that it is compatible with the FCOM format for speeds
+     * @param {string} value The entered scratchpad speed
+     * @returns An AtsuStatusCodes-value
+     */
+    public static validateScratchpadSpeed(value: string): AtsuStatusCodes {
+        if (InputValidation.FANS === FansMode.FansB) {
+            return InputValidationFansB.validateScratchpadSpeed(value);
+        }
+        return InputValidationFansA.validateScratchpadSpeed(value);
+    }
+
+    /**
+     * Validates that two speed entries describe the same (knots or mach)
+     * @param {string} lower Lower speed value
+     * @param {string} higher Higher speed value
+     * @returns True if both are same type else false
+     */
+    private static sameSpeedType(lower: string, higher: string): boolean {
+        if (lower[0] === 'M' && higher[0] === 'M') {
+            return true;
+        }
+        if (lower[0] === 'M' || higher[0] === 'M') {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Validates that lower is smaller than higher
+     * @param {string} lower Lower speed value
+     * @param {string} higher Higher speed value
+     * @returns True if lower is smaller than higher, else false
+     */
+    private static validSpeedRange(lower: string, higher: string): boolean {
+        if (lower[0] === 'M') {
+            return parseInt(lower.substring(2, lower.length)) < parseInt(higher.substring(2, higher.length));
+        }
+        return parseInt(lower) < parseInt(higher);
+    }
+
+    /**
+     * Validates that a scratchpad entry follows the FCOM definition for speed ranges
+     * @param {string} Given speed range candidate
+     * @returns An array of AtsuStatusCodes-value and the speed ranges
+     */
+    public static validateScratchpadSpeedRanges(value: string): [AtsuStatusCodes, string[]] {
+        const entries = value.split('/');
+        if (entries.length !== 2) {
+            return [AtsuStatusCodes.FormatError, []];
+        }
+        if (InputValidation.validateScratchpadSpeed(entries[0]) || InputValidation.validateScratchpadSpeed(entries[1])) {
+            let error = InputValidation.validateScratchpadSpeed(entries[0]);
+            if (error) {
+                return [error, []];
+            }
+            error = this.validateScratchpadSpeed(entries[1]);
+            return [error, []];
+        }
+
+        const lower = InputValidation.formatScratchpadSpeed(entries[0]);
+        const higher = InputValidation.formatScratchpadSpeed(entries[1]);
+
+        if (!InputValidation.sameSpeedType(lower, higher)) {
+            return [AtsuStatusCodes.FormatError, []];
+        }
+        if (!InputValidation.validSpeedRange(lower, higher)) {
+            return [AtsuStatusCodes.EntryOutOfRange, []];
+        }
+        return [AtsuStatusCodes.Ok, [lower, higher]];
+    }
+
+    /**
+     * Formats a scratchpad to a standard altitude string
+     * @param {string} value The entered valid altitude
+     * @returns Formatted string or empty string in case of a failure
+     */
+    public static formatScratchpadAltitude(value: string): string {
+        if (/^((FL)*[0-9]{1,3})$/.test(value)) {
+            if (value.startsWith('FL')) {
+                return value;
+            }
+            return `FL${value}`;
+        } if (/^([0-9]{1,3}(FT|M)|[0-9]{1,5}M|[0-9]{4,5})$/.test(value)) {
+            const feet = value[value.length - 1] !== 'M';
+
+            let altitude = value.replace('FT', '').replace('M', '');
+            if (!feet) {
+                altitude = `${altitude}M`;
+            }
+
+            return altitude;
+        }
+
+        return '';
+    }
+
+    /**
+     * Formats a scratchpad entry to the standard speed description
+     * @param {string} value Valid speed entry
+     * @returns The formatted speed string
+     */
+    public static formatScratchpadSpeed(value: string): string {
+        if (value[0] === 'M') {
+            return value;
+        } if (value[0] === '.') {
+            return `M${value}`;
+        }
+        return value.replace('KT', '');
+    }
+
+    /**
+     * Converts an FCOM valid encoded offset string to a list of offset entries
+     * @param {string} offset Valid encoded offset
+     * @returns The decoded offset entries
+     */
+    private static decodeOffsetString(offset: string): string[] | null {
+        let nmUnit = true;
+        let left = false;
+        let distance;
+
+        if (/^[LR][0-9]{1,3}(NM|KM)$/.test(offset) || /^[LR][0-9]{1,3}$/.test(offset)) {
+            // format: DNNNKM, DNNNNM, DNNN
+
+            // contains not only numbers
+            distance = offset.replace(/NM|KM/, '').replace(/L|R/, '');
+            if (/(?!^\d+$)^.+$/.test(distance)) {
+                return [];
+            }
+
+            distance = parseInt(distance);
+            nmUnit = !offset.endsWith('KM');
+            left = offset[0] === 'L';
+        } else if (/[0-9]{1,3}(NM|KM)[LR]/.test(offset) || /[0-9]{1,3}[LR]/.test(offset)) {
+            // format: NNNKMD, NNNNMD, NNND
+
+            // contains not only numbers
+            distance = offset.replace(/NM|KM/, '').replace(/L|R/, '');
+            if (/(?!^\d+$)^.+$/.test(distance)) {
+                return null;
+            }
+
+            distance = parseInt(distance);
+            nmUnit = !(offset.endsWith('KML') || offset.endsWith('KMR'));
+            left = offset[offset.length - 1] === 'L';
+        }
+
+        return [left ? 'L' : 'R', distance.toString(), nmUnit ? 'NM' : 'KM'];
+    }
+
+    /**
+     * Formats a valid scratchpad offset to a normalized offset entry
+     * @param {string} value The scratchpad entry
+     * @returns The normalized offset entry
+     */
+    public static formatScratchpadOffset(value: string): string {
+        const entries = InputValidation.decodeOffsetString(value);
+        return `${entries[0]}${entries[1]}${entries[2]}`;
+    }
+
+    /**
+     * Expands a lateral offset encoded string into an expanded version
+     * @param {string} offset The valid offset value
+     * @returns The expanded lateral offset
+     */
+    public static expandLateralOffset(offset: string): string {
+        const entries = InputValidation.decodeOffsetString(offset);
+        return `${entries[1]} ${entries[2]} ${entries[0] === 'L' ? 'LEFT' : 'RIGHT'}`;
+    }
+}

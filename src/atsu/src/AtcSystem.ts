@@ -1,6 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { InputValidation } from './InputValidation';
 import { HoppieConnector } from './com/HoppieConnector';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
@@ -388,6 +389,7 @@ export class AtcSystem {
                 if (response.Message.includes('LOGON ACCEPTED')) {
                     this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `CURRENT ATC UNIT @${this.nextAtc}@`);
                     this.currentFansMode = FutureAirNavigationSystem.currentFansMode(this.nextAtc);
+                    InputValidation.FANS = this.currentFansMode;
                     this.currentAtc = this.nextAtc;
                     this.nextAtc = '';
                     return true;
