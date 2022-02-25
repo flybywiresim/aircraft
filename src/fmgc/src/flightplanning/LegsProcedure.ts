@@ -500,7 +500,7 @@ export class LegsProcedure {
       (waypoint.additionalData.defaultHold as HoldData) = {
           inboundMagneticCourse: leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course,
           turnDirection: leg.turnDirection,
-          distance: leg.distanceMinutes ? undefined : leg.distance,
+          distance: leg.distanceMinutes ? undefined : leg.distance / 1852,
           time: leg.distanceMinutes ? leg.distance : undefined,
           type: HoldType.Database,
       };
