@@ -47,15 +47,22 @@ const NXSystemMessages = {
     newCrzAlt:              new McduMessage("NEW CRZ ALT - HHHHH", false, true, "HHHHH"),
     noIntersectionFound:    new McduMessage("NO INTERSECTION FOUND", false, false),
     notAllowed:             new McduMessage("NOT ALLOWED", false, false),
+    notAllowedInNav:        new McduMessage("NOT ALLOWED IN NAV", false, false),
     notInDatabase:          new McduMessage("NOT IN DATABASE", false, false),
     rwyLsMismatch:          new McduMessage("RWY/LS MISMATCH", true, true),
     selectDesiredSystem:    new McduMessage("SELECT DESIRED SYSTEM", false, false),
+    setHoldSpeed:           new McduMessage("SET HOLD SPEED", false, true),
     uplinkInsertInProg:     new McduMessage("UPLINK INSERT IN PROG", false, true),
     vToDisagree:            new McduMessage("V1/VR/V2 DISAGREE", true, true),
     waitForSystemResponse:  new McduMessage("WAIT FOR SYSTEM RESPONSE", false, false),
     comUnavailable:         new McduMessage("COM UNAVAILABLE", false, false),
     dcduFileFull:           new McduMessage("DCDU FILE FULL", false, false),
-    systemBusy:             new McduMessage("SYSTEM BUSY-TRY LATER", false, false)
+    systemBusy:             new McduMessage("SYSTEM BUSY-TRY LATER", false, false),
+    newAtisReceived:        new McduMessage("NEW ATIS: READ AGAIN", false, false),
+    noAtisReceived:         new McduMessage("NO ATIS REPORT RECEIVED", false, false),
+    noPreviousAtis:         new McduMessage("NO PREVIOUS ATIS STORED", false, false),
+    arptTypeAlreadyInUse:   new McduMessage("ARPT/TYPE ALREADY USED", false, false),
+    cancelAtisUpdate:       new McduMessage("CANCEL UPDATE BEFORE", false, false)
 };
 
 const NXFictionalMessages = {

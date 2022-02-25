@@ -7,9 +7,9 @@
 #include "Autothrust_types.h"
 #include "CommandLine.hpp"
 #include "EngineData.h"
-#include "FlightDataRecorder.h"
 #include "FlightDataRecorderConverter.h"
 #include "FlyByWire_types.h"
+#include "fmt/core.h"
 #include "zfstream.h"
 
 using namespace std;
@@ -17,7 +17,7 @@ using namespace std;
 // IMPORTANT: this constant needs to increased with every interface change
 const uint64_t INTERFACE_VERSION = 19;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   // variables for command line parameters
   string inFilePath;
   string outFilePath;
@@ -34,14 +34,16 @@ int main(int argc, char* argv[]) {
   args.addArgument({"-d", "--delimiter"}, &delimiter, "Delimiter");
   args.addArgument({"-n", "--no-compression"}, &noCompression, "Input file is not compressed");
   args.addArgument({"-p", "--print-struct-size"}, &printStructSize, "Print struct size");
-  args.addArgument({"-g", "--get-input-file-version"}, &printGetFileInterfaceVersion, "Print interface version of input file");
+  args.addArgument({"-g", "--get-input-file-version"},
+                   &printGetFileInterfaceVersion,
+                   "Print interface version of input file");
   args.addArgument({"-h", "--help"}, &oPrintHelp, "Print help message");
 
   // parse command line
   try {
     args.parse(argc, argv);
-  } catch (runtime_error const& e) {
-    cout << e.what() << endl;
+  } catch (runtime_error const &e) {
+    fmt::print("{}\n", e.what());
     return -1;
   }
 
@@ -54,25 +56,25 @@ int main(int argc, char* argv[]) {
 
   // print size of struct
   if (printStructSize) {
-    cout << "Size of struct for reading is '" << sizeof(fbw_output) << "' bytes" << endl;
+    fmt::print("Size of struct for reading is '{}' bytes\n", sizeof(fbw_output));
   }
 
   // check parameters
   if (inFilePath.empty()) {
-    cout << "Input file parameter missing!" << endl;
+    fmt::print("Input file parameter missing!\n");
     return 1;
   }
   if (!filesystem::exists(inFilePath)) {
-    cout << "Input file does not exist!" << endl;
+    fmt::print("Input file does not exist!\n");
     return 1;
   }
   if (outFilePath.empty() && !printGetFileInterfaceVersion) {
-    cout << "Output file parameter missing!" << endl;
+    fmt::print("Output file parameter missing!\n");
     return 1;
   }
 
   // create input stream
-  istream* in;
+  istream *in;
   if (!noCompression) {
     in = new gzifstream(inFilePath.c_str());
   } else {
@@ -81,30 +83,35 @@ int main(int argc, char* argv[]) {
 
   // check if stream is ok
   if (!in->good()) {
-    cout << "Failed to open input file!" << endl;
+    fmt::print("Failed to open input file!\n");
     return 1;
   }
 
   // read file version
   uint64_t fileFormatVersion = {};
-  in->read(reinterpret_cast<char*>(&fileFormatVersion), sizeof(INTERFACE_VERSION));
+  in->read(reinterpret_cast<char *>(&fileFormatVersion), sizeof(INTERFACE_VERSION));
 
   // print file version if requested and return
   if (printGetFileInterfaceVersion) {
     cout << fileFormatVersion << endl;
     return 0;
   } else if (INTERFACE_VERSION != fileFormatVersion) {
-    cout << "ERROR: mismatch between converter and file version ( ";
-    cout << INTERFACE_VERSION;
-    cout << " <> " << fileFormatVersion << " )" << endl;
+    fmt::print(
+        "ERROR: mismatch between converter and file version (expected {}, got {})\n",
+        INTERFACE_VERSION,
+        fileFormatVersion
+    );
     return 1;
   }
 
   // print information on convert
-  cout << "Convert from '" << inFilePath;
-  cout << "' to '" << outFilePath;
-  cout << "' using interface version '" << fileFormatVersion << "'";
-  cout << " and delimiter '" << delimiter << "'" << endl;
+  fmt::print(
+      "Converting from '{}' to '{}' with interface version '{}' and delimiter '{}'\n",
+      inFilePath,
+      outFilePath,
+      fileFormatVersion,
+      delimiter
+  );
 
   // output stream
   ofstream out;
@@ -112,7 +119,7 @@ int main(int argc, char* argv[]) {
   out.open(outFilePath, ios::out | ios::trunc);
   // check if file is open
   if (!out.is_open()) {
-    cout << "Failed to create output file!" << endl;
+    fmt::print("Failed to create output file!\n");
     return 1;
   }
 
@@ -134,24 +141,31 @@ int main(int argc, char* argv[]) {
   // read one struct from the file
   while (!in->eof()) {
     // read data into structs
-    in->read(reinterpret_cast<char*>(&data_ap_sm), sizeof(ap_sm_output));
-    in->read(reinterpret_cast<char*>(&data_ap_laws), sizeof(ap_raw_output));
-    in->read(reinterpret_cast<char*>(&data_athr), sizeof(athr_out));
-    in->read(reinterpret_cast<char*>(&data_fbw), sizeof(fbw_output));
-    in->read(reinterpret_cast<char*>(&data_engine), sizeof(EngineData));
-    in->read(reinterpret_cast<char*>(&data_additional), sizeof(AdditionalData));
+    in->read(reinterpret_cast<char *>(&data_ap_sm), sizeof(ap_sm_output));
+    in->read(reinterpret_cast<char *>(&data_ap_laws), sizeof(ap_raw_output));
+    in->read(reinterpret_cast<char *>(&data_athr), sizeof(athr_out));
+    in->read(reinterpret_cast<char *>(&data_fbw), sizeof(fbw_output));
+    in->read(reinterpret_cast<char *>(&data_engine), sizeof(EngineData));
+    in->read(reinterpret_cast<char *>(&data_additional), sizeof(AdditionalData));
     // write struct to csv file
-    FlightDataRecorderConverter::writeStruct(out, delimiter, data_ap_sm, data_ap_laws, data_athr, data_fbw, data_engine, data_additional);
+    FlightDataRecorderConverter::writeStruct(
+        out,
+        delimiter,
+        data_ap_sm,
+        data_ap_laws,
+        data_athr,
+        data_fbw,
+        data_engine,
+        data_additional
+    );
     // print progress
-    if (++counter % 500 == 0) {
-      cout << "Processed " << counter << " entries...";
-      // return to line start
-      cout << "\r";
+    if (++counter % 1000 == 0) {
+      fmt::print("Processed {} entries...\r", counter);
     }
   }
 
   // print final value
-  cout << "Processed " << counter << " entries." << endl;
+  fmt::print("Processed {} entries...\n", counter);
 
   // success
   return 0;

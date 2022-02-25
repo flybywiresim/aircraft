@@ -176,6 +176,7 @@ class AutopilotLawsModelClass
     real_T ScheduledGain_BreakpointsForDimension1_o[7];
     real_T ScheduledGain2_BreakpointsForDimension1[7];
     real_T ScheduledGain_BreakpointsForDimension1_e[5];
+    real_T ScheduledGain2_BreakpointsForDimension1_h[5];
     real_T ScheduledGain_BreakpointsForDimension1_ec[7];
     real_T ScheduledGain1_BreakpointsForDimension1[7];
     real_T LagFilter_C1;
@@ -215,7 +216,6 @@ class AutopilotLawsModelClass
     real_T WashoutFilter_C1_m;
     real_T LagFilterH_C1;
     real_T LeadLagFilter_C1;
-    real_T LagFilter1_C1_d;
     real_T LeadLagFilter_C1_a;
     real_T LagFilterH1_C1;
     real_T WashoutFilter_C1_cn;
@@ -225,6 +225,7 @@ class AutopilotLawsModelClass
     real_T LagFilter_C1_g;
     real_T WashoutFilter1_C1_h;
     real_T LagFilter_C1_i;
+    real_T LagFilter1_C1_d;
     real_T HighPassFilter_C2;
     real_T LowPassFilter_C2;
     real_T HighPassFilter_C2_c;
@@ -307,6 +308,7 @@ class AutopilotLawsModelClass
     real_T ScheduledGain_Table_e[7];
     real_T ScheduledGain2_Table[7];
     real_T ScheduledGain_Table_p[5];
+    real_T ScheduledGain2_Table_f[5];
     real_T ScheduledGain_Table_l[7];
     real_T ScheduledGain1_Table[7];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
@@ -795,7 +797,6 @@ class AutopilotLawsModelClass
     real_T Constant_Value_fov;
     real_T Gain2_Gain_m;
     real_T Gain4_Gain_g;
-    real_T Gain3_Gain_n;
     real_T Gain3_Gain_c;
     real_T Saturation_UpperSat_e0;
     real_T Saturation_LowerSat_ph;
@@ -814,7 +815,7 @@ class AutopilotLawsModelClass
     real_T Gain5_Gain_c;
     real_T kntofpm_Gain;
     real_T maxslope_Gain;
-    real_T Gain7_Gain_l;
+    real_T Gain1_Gain_oa;
     real_T ftmintoms_Gain_k;
     real_T kntoms_Gain_av;
     real_T Saturation_UpperSat_i0;
@@ -896,6 +897,7 @@ class AutopilotLawsModelClass
     real_T Saturation_UpperSat_ix;
     real_T Saturation_LowerSat_eq;
     real_T Constant_Value_i4;
+    real_T Gain7_Gain_l;
     boolean_T Delay_InitialCondition;
     boolean_T Delay_InitialCondition_b;
     uint8_T ManualSwitch_CurrentSetting;

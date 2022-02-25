@@ -7,14 +7,14 @@ class CDUAocMenu {
             [""],
             ["<INIT/PRES", "FREE TEXT>"],
             ["", ""],
-            ["<WX REQUEST", "DEPART REQ>"],
-            ["", "RECEIVED"],
+            ["<WX REQUEST"],
+            ["", "RECEIVED\xa0"],
             ["<ATIS", "MESSAGES>"],
-            ["", "SENT"],
+            ["", "SENT\xa0"],
             ["<W/B[color]white", "MESSAGES>"],
             [""],
             ["", "DIVERSION>[color]inop"],
-            ["ATSU DLK"],
+            ["\xa0ATSU DLK"],
             ["<RETURN", "MISC>[color]inop"]
         ]);
 
@@ -47,12 +47,6 @@ class CDUAocMenu {
         };
         mcdu.onRightInput[0] = () => {
             CDUAocFreeText.ShowPage(mcdu);
-        };
-        mcdu.rightInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[1] = () => {
-            CDUAocDepartReq.ShowPage1(mcdu);
         };
         mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();

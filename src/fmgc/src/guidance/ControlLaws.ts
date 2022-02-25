@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /**
  * This enum represents a Control Law selected by the guidance system.
  */
@@ -22,11 +27,17 @@ export enum ControlLaw {
 export type HeadingGuidance = {
     law: ControlLaw.HEADING,
     heading: Degrees;
+
+    /** Only for RAD */
+    phiCommand?: Degrees;
 }
 
 export type TrackGuidance = {
-    law: ControlLaw.HEADING,
+    law: ControlLaw.TRACK,
     course: Degrees;
+
+    /** Only for RAD */
+    phiCommand?: Degrees;
 }
 
 export type LateralPathGuidance = {
@@ -37,3 +48,20 @@ export type LateralPathGuidance = {
 }
 
 export type GuidanceParameters = HeadingGuidance | TrackGuidance | LateralPathGuidance;
+
+export type CompletedGuidanceParameters = GuidanceParameters & {
+    phiLimit: Degrees;
+};
+
+export enum RequestedVerticalMode {
+    None = 0,
+    SpeedThrust = 1,
+    VpathThrust = 2,
+    VpathSpeed = 3,
+    FpaSpeed = 4,
+    VsSpeed = 5,
+}
+
+export type TargetAltitude = Feet;
+
+export type TargetVerticalSpeed = FeetPerMinute | Degrees

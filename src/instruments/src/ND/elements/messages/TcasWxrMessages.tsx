@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { Layer } from '@instruments/common/utils';
-import { Mode } from '@shared/NavigationDisplay';
 import { useSimVar } from '@instruments/common/simVars';
+import { Mode } from '@shared/NavigationDisplay';
 
 /*
 Messages in priority order, from 1-12 (full set with ATSAW and nice weather radar)
@@ -18,27 +18,23 @@ Messages in priority order, from 1-12 (full set with ATSAW and nice weather rada
 [                 |     ADS-B (amber)     ]
 */
 
-enum TcasPosition {
-    Standby = 0,
-    Ta = 1,
-    TaRa = 2,
-}
-
 interface TcasWxrMessage {
     text: string;
     color: 'White' | 'Amber';
 }
 
-export const TcasWxrMessages: FC<{ modeIndex: Mode }> = ({ modeIndex }) => {
+export const TcasWxrMessages: FC<{ modeIndex: Mode}> = ({ modeIndex }) => {
     // TODO get data and decide what to display
 
     let leftMessage: TcasWxrMessage | undefined;
     let rightMessage: TcasWxrMessage | undefined;
 
-    // TODO use logic in TCAS when it's implemented
-    const [tcasPosition] = useSimVar('L:A32NX_SWITCH_TCAS_Position', 'enum', 500);
-    const [radioAlt] = useSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet', 500);
-    if (tcasPosition === TcasPosition.Ta || (tcasPosition === TcasPosition.TaRa && radioAlt < 1000)) {
+    const [tcasOnly] = useSimVar('L:A32NX_TCAS_TA_ONLY', 'boolean', 200);
+    const [tcasFault] = useSimVar('L:A32NX_TCAS_FAULT', 'boolean', 200);
+
+    if (tcasFault) {
+        leftMessage = { text: 'TCAS', color: 'Amber' };
+    } else if (tcasOnly) {
         leftMessage = { text: 'TA ONLY', color: 'White' };
     }
 

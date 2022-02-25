@@ -18,7 +18,7 @@ class CDUAocFreeText {
 
             mcdu.setTemplate([
                 ["AOC FREE TEXT"],
-                ["TO", "NETWORK"],
+                ["\xa0TO", "NETWORK\xa0"],
                 [`${store["msg_to"] !== "" ? store["msg_to"] + "[color]cyan" : "________[color]amber"}`, `↓${networkTypes[store["reqID"]]}[color]cyan`],
                 [""],
                 [`${store["msg_line1"] !== "" ? store["msg_line1"] : "["}[color]cyan`, `${store["msg_line1"] != "" ? "" : "]"}[color]cyan`],
@@ -28,7 +28,7 @@ class CDUAocFreeText {
                 [`${store["msg_line3"] !== "" ? store["msg_line3"] : "["}[color]cyan`, `${store["msg_line3"] != "" ? "" : "]"}[color]cyan`],
                 [""],
                 [`${store["msg_line4"] !== "" ? store["msg_line4"] : "["}[color]cyan`, `${store["msg_line4"] != "" ? "" : "]"}[color]cyan`],
-                ["RETURN TO", `${store["sendStatus"]}`],
+                ["\xa0RETURN TO", `${store["sendStatus"]}\xa0`],
                 ["<AOC MENU", (sendValid === true ? "SEND*" : "SEND") + "[color]cyan"]
             ]);
         };
