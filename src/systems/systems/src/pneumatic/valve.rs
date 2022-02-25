@@ -329,7 +329,7 @@ pub struct PneumaticExhaust {
 
     pressure_preload: Pressure,
     nominal_preload: Pressure,
-    fluid_volume_filtered: LowPassFilter<Volume>,
+    fluid_to_move: LowPassFilter<Volume>,
 }
 impl PneumaticExhaust {
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
@@ -346,7 +346,7 @@ impl PneumaticExhaust {
             fluid_flow: VolumeRate::new::<cubic_meter_per_second>(0.),
             pressure_preload,
             nominal_preload: pressure_preload,
-            fluid_volume_filtered: LowPassFilter::<Volume>::new(Duration::from_millis(100)),
+            fluid_to_move: LowPassFilter::<Volume>::new(Duration::from_millis(300)),
         }
     }
 
@@ -355,22 +355,23 @@ impl PneumaticExhaust {
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
     ) {
-        let equalization_volume = if from.pressure() > self.pressure_preload {
-            self.calculate_required_volume_for_target_pressure(from, context.ambient_pressure())
-                .max(-from.volume())
+        if from.pressure() > self.pressure_preload {
+            let equalization_volume = self
+                .calculate_required_volume_for_target_pressure(from, context.ambient_pressure())
+                .max(-from.volume());
+
+            self.fluid_to_move.update(
+                context.delta(),
+                equalization_volume
+                    * (1. - (-self.exhaust_speed * context.delta_as_secs_f64()).exp()),
+            );
         } else {
-            self.fluid_volume_filtered.reset(Volume::new::<gallon>(0.));
-            Volume::new::<gallon>(0.)
+            self.fluid_to_move.reset(Volume::new::<gallon>(0.));
         };
 
-        let fluid_to_move = self.fluid_volume_filtered.update(
-            context.delta(),
-            equalization_volume * (1. - (-self.exhaust_speed * context.delta_as_secs_f64()).exp()),
-        );
+        from.change_fluid_amount(self.fluid_to_move.output());
 
-        from.change_fluid_amount(fluid_to_move);
-
-        self.fluid_flow = -fluid_to_move / context.delta_as_time();
+        self.fluid_flow = -self.fluid_to_move.output() / context.delta_as_time();
     }
 
     fn calculate_required_volume_for_target_pressure(
