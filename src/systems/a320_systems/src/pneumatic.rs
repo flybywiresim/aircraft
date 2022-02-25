@@ -104,45 +104,6 @@ valve_signal_implementation!(EngineStarterValveSignal);
 valve_signal_implementation!(FanAirValveSignal);
 valve_signal_implementation!(PackFlowValveSignal);
 
-fn hydraulic_reservoir_init_pressure_from_sim_state(context: &InitContext) -> Pressure {
-    // When starting with engine off we set pressure value close to nominal so that low pressure
-    // faults do not trigger
-    const COLD_INIT_PRESS_PSI: f64 = 45.;
-
-    // When starting with engine running we set lower pressure so we let bleed system converge to
-    // nominal value
-    const HOT_INIT_PRESS_PSI: f64 = 50.;
-
-    if context.has_engines_running() {
-        println!("HOT INIT 5");
-        Pressure::new::<psi>(HOT_INIT_PRESS_PSI)
-    } else {
-        println!("COLD INIT 45");
-        Pressure::new::<psi>(COLD_INIT_PRESS_PSI)
-    }
-}
-
-fn hydraulic_reservoir_init_level_from_sim_state(
-    context: &InitContext,
-    circuit_id: HydraulicColor,
-) -> Volume {
-    const HOT_INIT_LEVEL_OFFSET_GAL: f64 = 0.5;
-
-    let init_level_cold = match circuit_id {
-        HydraulicColor::Green => Volume::new::<gallon>(2.475960068),
-        HydraulicColor::Blue => Volume::new::<gallon>(1.081721769),
-        HydraulicColor::Yellow => Volume::new::<gallon>(1.683443537),
-    };
-
-    if context.has_engines_running() {
-        println!("HOT INIT LEVEL XX");
-        init_level_cold - Volume::new::<gallon>(HOT_INIT_LEVEL_OFFSET_GAL)
-    } else {
-        println!("COLD INIT LEVEL STD");
-        init_level_cold
-    }
-}
-
 pub struct A320Pneumatic {
     physics_updater: MaxStepLoop,
 
@@ -202,34 +163,34 @@ impl A320Pneumatic {
                 context,
                 HydraulicColor::Green,
                 VariableVolumeContainer::new(
-                    hydraulic_reservoir_init_level_from_sim_state(context, HydraulicColor::Green),
-                    hydraulic_reservoir_init_pressure_from_sim_state(context),
+                    Volume::new::<gallon>(2.5),
+                    Pressure::new::<psi>(40.),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
                 Pressure::new::<psi>(70.),
-                6e-2,
+                10.,
             ),
             blue_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
                 context,
                 HydraulicColor::Blue,
                 VariableVolumeContainer::new(
-                    hydraulic_reservoir_init_level_from_sim_state(context, HydraulicColor::Blue),
-                    hydraulic_reservoir_init_pressure_from_sim_state(context),
+                    Volume::new::<gallon>(1.1),
+                    Pressure::new::<psi>(40.),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
                 Pressure::new::<psi>(70.),
-                6e-2,
+                10.,
             ),
             yellow_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
                 context,
                 HydraulicColor::Yellow,
                 VariableVolumeContainer::new(
-                    hydraulic_reservoir_init_level_from_sim_state(context, HydraulicColor::Yellow),
-                    hydraulic_reservoir_init_pressure_from_sim_state(context),
+                    Volume::new::<gallon>(1.7),
+                    Pressure::new::<psi>(40.),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
                 Pressure::new::<psi>(70.),
-                6e-2,
+                10.,
             ),
             packs: [PackComplex::new(context, 1), PackComplex::new(context, 2)],
         }
