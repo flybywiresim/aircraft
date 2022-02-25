@@ -735,9 +735,11 @@ mod tests {
             println!("Press {:.1}", container.pressure().get::<psi>());
         }
 
+        // Atmospheric pressure comparison doesn't need more than 0.1 comparison epsilon
         assert_about_eq!(
             container.pressure().get::<psi>(),
-            context.ambient_pressure().get::<psi>()
+            context.ambient_pressure().get::<psi>(),
+            0.1
         );
     }
 
