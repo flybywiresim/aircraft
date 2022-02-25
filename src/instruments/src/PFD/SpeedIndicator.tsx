@@ -285,7 +285,7 @@ export const MachNumber = ({ mach, onGround }: MachNumberProps) => {
         }
     }, [showMach, machPermille]);
 
-    if (mach.isFailureWarning() && !onGround) {
+    if (!mach.isNormalOperation() && !onGround) {
         return (
             <text id="MachFailText" className="Blink9Seconds FontLargest StartAlign Red" x="5.4257932" y="136.88908">MACH</text>
         );
