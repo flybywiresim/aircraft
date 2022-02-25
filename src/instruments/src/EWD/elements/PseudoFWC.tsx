@@ -3,6 +3,15 @@ import { useSimVar } from '@instruments/common/simVars';
 import { NXDataStore } from '@shared/persistence';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useUpdate } from '@instruments/common/hooks';
+import { NXLogicConfirmNode, NXLogicClockNode } from '@instruments/common/NXLogic';
+
+const toInhibitTimer = new NXLogicConfirmNode(3);
+const ldgInhibitTimer = new NXLogicConfirmNode(3);
+const agent1Eng1DischargeTimer = new NXLogicClockNode(10, 0);
+const agent2Eng1DischargeTimer = new NXLogicClockNode(30, 0);
+const agent1Eng2DischargeTimer = new NXLogicClockNode(10, 0);
+const agent2Eng2DischargeTimer = new NXLogicClockNode(30, 0);
+const agentAPUDischargeTimer = new NXLogicClockNode(10, 0);
 
 const mapOrder = (array, order) => {
     array.sort((a, b) => {
@@ -129,53 +138,53 @@ const PseudoFWC: React.FC = () => {
     const [eng2Agent2PB] = useSimVar('L:A32NX_FIRE_ENG2_AGENT2_Discharge', 'bool', 500);
     const [apuAgentPB] = useSimVar('L:A32NX_FIRE_APU_AGENT1_Discharge', 'bool', 500);
 
-    const [timerEng1Agent1Timer, setTimerEng1Agent1Timer] = useState<number>(-1);
-    const [timerEng1Agent2Timer, setTimerEng1Agent2Timer] = useState<number>(-1);
-    const [agent1Eng1Discharge, setAgent1Eng1Discharge] = useState(false);
-    const [agent2Eng1Discharge, setAgent2Eng1Discharge] = useState(false);
+    // const [timerEng1Agent1Timer, setTimerEng1Agent1Timer] = useState<number>(-1);
+    // const [timerEng1Agent2Timer, setTimerEng1Agent2Timer] = useState<number>(-1);
+    // const [agent1Eng1Discharge, setAgent1Eng1Discharge] = useState(false);
+    // const [agent2Eng1Discharge, setAgent2Eng1Discharge] = useState(false);
 
-    const [timerEng2Agent1Timer, setTimerEng2Agent1Timer] = useState<number>(-1);
-    const [timerEng2Agent2Timer, setTimerEng2Agent2Timer] = useState<number>(-1);
-    const [agent1Eng2Discharge, setAgent1Eng2Discharge] = useState(false);
-    const [agent2Eng2Discharge, setAgent2Eng2Discharge] = useState(false);
+    // const [timerEng2Agent1Timer, setTimerEng2Agent1Timer] = useState<number>(-1);
+    // const [timerEng2Agent2Timer, setTimerEng2Agent2Timer] = useState<number>(-1);
+    // const [agent1Eng2Discharge, setAgent1Eng2Discharge] = useState(false);
+    // const [agent2Eng2Discharge, setAgent2Eng2Discharge] = useState(false);
 
-    const [agentApuAgentTimer, setApuAgentTimer] = useState<number>(-1);
-    const [agentAPUDischarge, setAgentAPUDischarge] = useState(false);
+    // const [agentApuAgentTimer, setApuAgentTimer] = useState<number>(-1);
+    // const [agentAPUDischarge, setAgentAPUDischarge] = useState(false);
 
     const [cargoFireTest] = useSimVar('L:A32NX_FIRE_TEST_CARGO', 'bool', 500);
     const [cargoFireAgentDisch] = useSimVar('L:A32NX_CARGOSMOKE_FWD_DISCHARGED', 'bool', 500);
 
     // Remember all these run once so need to include fireButton1 === 1 && !eng1FireTest
-    useEffect(() => {
-        if (!eng1FireTest) {
-            setTimerEng1Agent1Timer(10);
-        }
-    }, [fireButton1]);
+    // useEffect(() => {
+    //     if (!eng1FireTest) {
+    //         setTimerEng1Agent1Timer(10);
+    //     }
+    // }, [fireButton1]);
 
-    useEffect(() => {
-        if (!eng1FireTest) {
-            setTimerEng1Agent2Timer(30);
-        }
-    }, [eng1Agent1PB]);
+    // useEffect(() => {
+    //     if (!eng1FireTest) {
+    //         setTimerEng1Agent2Timer(30);
+    //     }
+    // }, [eng1Agent1PB]);
 
-    useEffect(() => {
-        if (!eng2FireTest) {
-            console.log('Setting timer for Eng2 Agent 1');
-            setTimerEng2Agent1Timer(10);
-        }
-    }, [fireButton2]);
+    // useEffect(() => {
+    //     if (!eng2FireTest) {
+    //         console.log('Setting timer for Eng2 Agent 1');
+    //         setTimerEng2Agent1Timer(10);
+    //     }
+    // }, [fireButton2]);
 
-    useEffect(() => {
-        if (!eng2FireTest) {
-            setTimerEng2Agent2Timer(30);
-        }
-    }, [eng2Agent1PB]);
+    // useEffect(() => {
+    //     if (!eng2FireTest) {
+    //         setTimerEng2Agent2Timer(30);
+    //     }
+    // }, [eng2Agent1PB]);
 
-    useEffect(() => {
-        if (!apuFireTest) {
-            setApuAgentTimer(10);
-        }
-    }, [fireButtonAPU]);
+    // useEffect(() => {
+    //     if (!apuFireTest) {
+    //         setApuAgentTimer(10);
+    //     }
+    // }, [fireButtonAPU]);
 
     useEffect(() => {
         console.log('FireTest');
@@ -184,59 +193,59 @@ const PseudoFWC: React.FC = () => {
         }
     }, [eng1FireTest, eng2FireTest, apuFireTest, cargoFireTest]);
 
-    useUpdate((deltaTime) => {
-        if (fireButton1 === 1 && timerEng1Agent1Timer !== -1) {
-            if (timerEng1Agent1Timer > 0) {
-                if (deltaTime < 1000) {
-                    setTimerEng1Agent1Timer(timerEng1Agent1Timer - (deltaTime / 1000));
-                }
-            } else {
-                setTimerEng1Agent1Timer(-1);
-                setAgent1Eng1Discharge(true);
-            }
-        }
-        if (agent1Eng1Discharge && timerEng1Agent2Timer !== -1) {
-            if (timerEng1Agent2Timer > 0) {
-                if (deltaTime < 1000) {
-                    setTimerEng1Agent2Timer(timerEng1Agent2Timer - (deltaTime / 1000));
-                }
-            } else {
-                setTimerEng1Agent2Timer(-1);
-                setAgent2Eng1Discharge(true);
-            }
-        }
-        // console.log(`TimeEng2Agent1 is ${timerEng2Agent1Timer}`);
-        if (fireButton2 === 1 && timerEng2Agent1Timer !== -1) {
-            if (timerEng2Agent1Timer > 0) {
-                if (deltaTime < 1000) {
-                    setTimerEng2Agent1Timer(timerEng2Agent1Timer - (deltaTime / 1000));
-                }
-            } else {
-                setTimerEng2Agent1Timer(-1);
-                setAgent1Eng2Discharge(true);
-            }
-        }
-        if (agent1Eng2Discharge && timerEng2Agent2Timer !== -1) {
-            if (timerEng2Agent2Timer > 0) {
-                if (deltaTime < 1000) {
-                    setTimerEng2Agent2Timer(timerEng2Agent2Timer - (deltaTime / 1000));
-                }
-            } else {
-                setTimerEng2Agent2Timer(-1);
-                setAgent2Eng2Discharge(true);
-            }
-        }
-        if (fireButtonAPU === 1 && agentApuAgentTimer !== -1) {
-            if (agentApuAgentTimer > 0) {
-                if (deltaTime < 1000) {
-                    setApuAgentTimer(agentApuAgentTimer - (deltaTime / 1000));
-                }
-            } else {
-                setApuAgentTimer(-1);
-                setAgentAPUDischarge(true);
-            }
-        }
-    });
+    // useUpdate((deltaTime) => {
+    //     if (fireButton1 === 1 && timerEng1Agent1Timer !== -1) {
+    //         if (timerEng1Agent1Timer > 0) {
+    //             if (deltaTime < 1000) {
+    //                 setTimerEng1Agent1Timer(timerEng1Agent1Timer - (deltaTime / 1000));
+    //             }
+    //         } else {
+    //             setTimerEng1Agent1Timer(-1);
+    //             setAgent1Eng1Discharge(true);
+    //         }
+    //     }
+    //     if (agent1Eng1Discharge && timerEng1Agent2Timer !== -1) {
+    //         if (timerEng1Agent2Timer > 0) {
+    //             if (deltaTime < 1000) {
+    //                 setTimerEng1Agent2Timer(timerEng1Agent2Timer - (deltaTime / 1000));
+    //             }
+    //         } else {
+    //             setTimerEng1Agent2Timer(-1);
+    //             setAgent2Eng1Discharge(true);
+    //         }
+    //     }
+    //     // console.log(`TimeEng2Agent1 is ${timerEng2Agent1Timer}`);
+    //     if (fireButton2 === 1 && timerEng2Agent1Timer !== -1) {
+    //         if (timerEng2Agent1Timer > 0) {
+    //             if (deltaTime < 1000) {
+    //                 setTimerEng2Agent1Timer(timerEng2Agent1Timer - (deltaTime / 1000));
+    //             }
+    //         } else {
+    //             setTimerEng2Agent1Timer(-1);
+    //             setAgent1Eng2Discharge(true);
+    //         }
+    //     }
+    //     if (agent1Eng2Discharge && timerEng2Agent2Timer !== -1) {
+    //         if (timerEng2Agent2Timer > 0) {
+    //             if (deltaTime < 1000) {
+    //                 setTimerEng2Agent2Timer(timerEng2Agent2Timer - (deltaTime / 1000));
+    //             }
+    //         } else {
+    //             setTimerEng2Agent2Timer(-1);
+    //             setAgent2Eng2Discharge(true);
+    //         }
+    //     }
+    //     if (fireButtonAPU === 1 && agentApuAgentTimer !== -1) {
+    //         if (agentApuAgentTimer > 0) {
+    //             if (deltaTime < 1000) {
+    //                 setApuAgentTimer(agentApuAgentTimer - (deltaTime / 1000));
+    //             }
+    //         } else {
+    //             setApuAgentTimer(-1);
+    //             setAgentAPUDischarge(true);
+    //         }
+    //     }
+    // });
 
     /* FUEL */
     const [fuel] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'percent', 500);
@@ -425,6 +434,45 @@ const PseudoFWC: React.FC = () => {
         }
     }, [recallButton]);
 
+    /* TICK CHECK */
+    let showTakeoffInhibit = false;
+    let showLandingInhibit = false;
+    // let agent1Eng1Discharge = 0;
+    const [agent1Eng1Discharge, setAgent1Eng1Discharge] = useState(0);
+    const [agent2Eng1Discharge, setAgent2Eng1Discharge] = useState(0);
+    const [agent1Eng2Discharge, setAgent1Eng2Discharge] = useState(0);
+    const [agent2Eng2Discharge, setAgent2Eng2Discharge] = useState(0);
+    const [agentAPUDischarge, setAgentAPUDischarge] = useState(0);
+
+    useUpdate((deltaTime) => {
+        // tick
+        // tock
+        showTakeoffInhibit = toInhibitTimer.write([3, 4, 5].includes(flightPhase) && !flightPhaseInhibitOverride, deltaTime);
+        showLandingInhibit = ldgInhibitTimer.write([7, 8].includes(flightPhase) && !flightPhaseInhibitOverride, deltaTime);
+        const agent1Eng1DischargeNode = agent1Eng1DischargeTimer.write(fireButton1 === 1, deltaTime);
+        if (agent1Eng1Discharge !== agent1Eng1DischargeNode) {
+            // console.log(`Change in value of agent 1 to ${agent1Eng1DischargeNode}`);
+            setAgent1Eng1Discharge(agent1Eng1DischargeNode);
+        }
+        const agent2Eng1DischargeNode = agent2Eng1DischargeTimer.write(fireButton1 === 1 && eng1Agent1PB === 1 && !onGround, deltaTime);
+        if (agent2Eng1Discharge !== agent2Eng1DischargeNode) {
+            // console.log(`Change in value of agent 2 to ${agent2Eng1DischargeNode}`);
+            setAgent2Eng1Discharge(agent2Eng1DischargeNode);
+        }
+        const agent1Eng2DischargeNode = agent1Eng2DischargeTimer.write(fireButton2 === 1 && !eng1Agent1PB, deltaTime);
+        if (agent1Eng2Discharge !== agent1Eng2DischargeNode) {
+            setAgent1Eng2Discharge(agent1Eng2DischargeNode);
+        }
+        const agent2Eng2DischargeNode = agent2Eng2DischargeTimer.write(fireButton2 === 1 && eng1Agent1PB === 1, deltaTime);
+        if (agent2Eng2Discharge !== agent2Eng2DischargeNode) {
+            setAgent2Eng2Discharge(agent2Eng2DischargeNode);
+        }
+        const agentAPUDischargeNode = agentAPUDischargeTimer.write(fireButton2 === 1 && eng1Agent1PB === 1, deltaTime);
+        if (agentAPUDischarge !== agentAPUDischargeNode) {
+            setAgentAPUDischarge(agentAPUDischargeNode);
+        }
+    });
+
     /* FAILURES, MEMOS AND SPECIAL LINES */
 
     interface EWDItem {
@@ -461,7 +509,7 @@ const PseudoFWC: React.FC = () => {
             sysPage: 0,
             side: 'LEFT',
         },
-        2600010: { // ENG 1 FIRE
+        2600010: { // ENG 1 FIRE //
             flightPhaseInhib: [],
             simVarIsActive: !!(eng1FireTest === 1 || fireButton1 === 1),
             whichCodeToReturn: [
@@ -474,18 +522,18 @@ const PseudoFWC: React.FC = () => {
                 onGround ? 6 : null,
                 !engine1ValueSwitch ? null : 7,
                 !fireButton1 ? 8 : null,
-                !onGround && fireButton1 && !agent1Eng1Discharge && !eng1Agent1PB ? 9 : null,
-                agent1Eng1Discharge && !onGround && !eng1Agent1PB ? 10 : null,
-                eng1Agent1PB === 1 && onGround ? 11 : null,
-                onGround ? 12 : null,
-                !onGround ? 13 : null,
-                // Fix this logic
-                !onGround && eng1Agent1PB === 1 && !agent2Eng1Discharge ? 14 : null,
-                (agent2Eng1Discharge && eng1Agent1PB === 0) || (!onGround && eng1Agent1PB === 1 && !agent2Eng1Discharge) ? 15 : null,
+                !onGround && agent1Eng1Discharge === 1 && !eng1Agent1PB ? 9 : null,
+                agent1Eng1Discharge === 2 && !onGround && !eng1Agent1PB ? 10 : null,
+                !eng1Agent1PB && onGround ? 11 : null,
+                !eng1Agent2PB && onGround ? 12 : null,
+                onGround ? 13 : null,
+                !onGround ? 14 : null,
+                agent2Eng1Discharge === 1 && !eng1Agent2PB ? 15 : null,
+                (agent2Eng1Discharge === 1 && !eng1Agent2PB) || (agent2Eng1Discharge === 2 && !eng1Agent2PB) ? 16 : null,
             ],
             codesToReturn: ['260001001', '260001002', '260001003', '260001004', '260001005',
                 '260001006', '260001007', '260001008', '260001009', '260001010', '260001011',
-                '260001012', '260001013', '260001014', '260001015', '260001016'],
+                '260001012', '260001013', '260001014', '260001015', '260001016', '260001017'],
             memoInhibit: false,
             failure: 3,
             sysPage: 0,
@@ -799,7 +847,7 @@ const PseudoFWC: React.FC = () => {
         '0000140': // T.O. INHIBIT
             {
                 flightPhaseInhib: [1, 2, 6, 7, 8, 9, 10],
-                simVarIsActive: !!([3, 4, 5].includes(flightPhase) && !flightPhaseInhibitOverride),
+                simVarIsActive: showTakeoffInhibit,
                 whichCodeToReturn: [0],
                 codesToReturn: ['000014001'],
                 memoInhibit: false,
@@ -810,7 +858,7 @@ const PseudoFWC: React.FC = () => {
         '0000150': // LDG INHIBIT
             {
                 flightPhaseInhib: [1, 2, 3, 4, 5, 6, 9, 10],
-                simVarIsActive: !!([7, 8].includes(flightPhase) && !flightPhaseInhibitOverride),
+                simVarIsActive: showLandingInhibit,
                 whichCodeToReturn: [0],
                 codesToReturn: ['000015001'],
                 memoInhibit: false,
@@ -1110,6 +1158,8 @@ const PseudoFWC: React.FC = () => {
         },
     };
 
+    /* TO CONFIG */
+
     useEffect(() => {
         console.log('TO Config check');
         if (tomemo) {
@@ -1277,6 +1327,11 @@ const PseudoFWC: React.FC = () => {
         adiru1State,
         adiru2State,
         adiru3State,
+        agent1Eng1Discharge,
+        agent1Eng2Discharge,
+        agent2Eng1Discharge,
+        agent2Eng2Discharge,
+        agentAPUDischarge,
         AIRKnob,
         antiskidActive,
         apuAgentPB,
@@ -1296,6 +1351,8 @@ const PseudoFWC: React.FC = () => {
         configPortableDevices,
         dmcSwitchingKnob,
         emergencyGeneratorOn,
+        engine1ValueSwitch,
+        engine2ValueSwitch,
         eng1Agent1PB,
         eng1Agent2PB,
         eng1AntiIce,
@@ -1337,6 +1394,8 @@ const PseudoFWC: React.FC = () => {
         recallReset,
         rightOuterInnerValve,
         seatBelt,
+        showTakeoffInhibit,
+        showLandingInhibit,
         spoilersArmed,
         strobeLightsOn,
         tcasFault,
