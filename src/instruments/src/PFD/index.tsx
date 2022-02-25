@@ -3,6 +3,8 @@ import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
 import { getSupplier, isCaptainSide } from '@instruments/common/utils';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { ArmedLateralMode, ArmedVerticalMode, isArmed, VerticalMode } from '@shared/autopilot';
 import { Horizon } from './AttitudeIndicatorHorizon';
 import { AttitudeIndicatorFixedUpper, AttitudeIndicatorFixedCenter } from './AttitudeIndicatorFixed';
 import { LandingSystem } from './LandingSystemIndicator';
@@ -95,6 +97,7 @@ export const PFD: React.FC = () => {
 
     const heading = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`);
     const groundTrack = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_TRACK`);
+    const groundSpeed = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_GROUND_SPEED`);
 
     const radioAlt = getSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet');
     const decisionHeight = getSimVar('L:AIRLINER_DECISION_HEIGHT', 'feet');
@@ -121,10 +124,11 @@ export const PFD: React.FC = () => {
     const armedLateralBitmask = getSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number');
     const fmgcFlightPhase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
     const cstnAlt = getSimVar('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet');
-    const altArmed = (armedVerticalBitmask >> 1) & 1;
-    const clbArmed = (armedVerticalBitmask >> 2) & 1;
-    const navArmed = (armedLateralBitmask >> 0) & 1;
-    const isManaged = !!(altArmed || activeVerticalMode === 21 || activeVerticalMode === 20 || (!!cstnAlt && fmgcFlightPhase < 2 && clbArmed && navArmed));
+    const altCstArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.ALT_CST);
+    const clbArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.CLB);
+    const navArmed = isArmed(armedLateralBitmask, ArmedLateralMode.NAV);
+    const isManaged = !!(altCstArmed || activeVerticalMode === VerticalMode.ALT_CST_CPT || activeVerticalMode === VerticalMode.ALT_CST
+         || (!!cstnAlt && [FmgcFlightPhase.Preflight, FmgcFlightPhase.Takeoff].includes(fmgcFlightPhase) && clbArmed && navArmed));
     const targetAlt = isManaged ? cstnAlt : Simplane.getAutoPilotDisplayedAltitudeLockValue();
 
     let targetSpeed: number | null;
@@ -171,6 +175,17 @@ export const PFD: React.FC = () => {
                     decisionHeight={decisionHeight}
                     isAttExcessive={isAttExcessive}
                 />
+                <AttitudeIndicatorFixedCenter
+                    pitch={pitch}
+                    roll={roll}
+                    vs={inertialVerticalSpeed}
+                    gs={groundSpeed}
+                    heading={heading}
+                    track={groundTrack}
+                    isOnGround={isOnGround}
+                    FDActive={FDActive}
+                    isAttExcessive={isAttExcessive}
+                />
                 <path
                     id="Mask1"
                     className="BackgroundFill"
@@ -194,9 +209,8 @@ export const PFD: React.FC = () => {
                     // eslint-disable-next-line max-len
                     d="m32.138 145.34h73.536v10.382h-73.536zm0-44.092c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66zm115.14-35.191v-85.473h20.344v85.473zm-113.33 0v-85.473h27.548v85.473z"
                 />
-                <LandingSystem LSButtonPressed={lsButtonPressed} />
+                <LandingSystem LSButtonPressed={lsButtonPressed} pitch={pitch} roll={roll} />
                 <AttitudeIndicatorFixedUpper pitch={pitch} roll={roll} />
-                <AttitudeIndicatorFixedCenter pitch={pitch} roll={roll} isOnGround={isOnGround} FDActive={FDActive} isAttExcessive={isAttExcessive} />
                 <VerticalSpeedIndicator radioAlt={radioAlt} verticalSpeed={verticalSpeed} />
                 <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
                 <AltitudeIndicatorOfftape altitude={altitude} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />

@@ -1,180 +1,113 @@
-import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { MathUtils } from '@shared/MathUtils';
-import { EARTH_RADIUS_NM } from '@fmgc/guidance/Geometry';
-import {
-    AltitudeConstraint,
-    getAltitudeConstraintFromWaypoint,
-    getSpeedConstraintFromWaypoint,
-    Leg,
-    SpeedConstraint,
-    waypointToLocation,
-} from '@fmgc/guidance/lnav/legs';
-import { SegmentType } from '@fmgc/wtsdk';
-import { GeoMath } from '@fmgc/flightplanning/GeoMath';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 
-export class TFLeg extends Leg {
+import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
+import { MathUtils } from '@shared/MathUtils';
+import { SegmentType } from '@fmgc/wtsdk';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { Guidable } from '@fmgc/guidance/Guidable';
+import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
+import { courseToFixDistanceToGo, fixToFixGuidance, getIntermediatePoint } from '@fmgc/guidance/lnav/CommonGeometry';
+import { LnavConfig } from '@fmgc/guidance/LnavConfig';
+import { bearingTo } from 'msfs-geo';
+import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { PathVector, PathVectorType } from '../PathVector';
+
+export class TFLeg extends XFLeg {
     from: WayPoint;
 
     to: WayPoint;
 
     constraintType: WaypointConstraintType;
 
-    private mDistance: NauticalMiles;
+    private readonly course: Degrees;
 
-    constructor(from: WayPoint, to: WayPoint, segment: SegmentType, indexInFullPath: number) {
-        super();
+    private computedPath: PathVector[] = [];
+
+    constructor(
+        from: WayPoint,
+        to: WayPoint,
+        public readonly metadata: Readonly<LegMetadata>,
+        segment: SegmentType,
+    ) {
+        super(to);
+
         this.from = from;
         this.to = to;
-        this.mDistance = Avionics.Utils.computeGreatCircleDistance(this.from.infos.coordinates, this.to.infos.coordinates);
         this.segment = segment;
-        this.indexInFullPath = indexInFullPath;
         this.constraintType = to.constraintType;
-    }
-
-    get isCircularArc(): boolean {
-        return false;
-    }
-
-    get bearing(): Degrees {
-        return Avionics.Utils.computeGreatCircleHeading(
+        this.course = Avionics.Utils.computeGreatCircleHeading(
             this.from.infos.coordinates,
             this.to.infos.coordinates,
         );
     }
 
-    get distance(): NauticalMiles {
-        return this.mDistance;
+    get inboundCourse(): DegreesTrue {
+        return bearingTo(this.from.infos.coordinates, this.to.infos.coordinates);
     }
 
-    get speedConstraint(): SpeedConstraint | undefined {
-        return getSpeedConstraintFromWaypoint(this.to);
+    get outboundCourse(): DegreesTrue {
+        return bearingTo(this.from.infos.coordinates, this.to.infos.coordinates);
     }
 
-    get altitudeConstraint(): AltitudeConstraint | undefined {
-        return getAltitudeConstraintFromWaypoint(this.to);
+    get predictedPath(): PathVector[] {
+        return this.computedPath;
     }
 
-    // TODO: refactor
-    get initialSpeedConstraint(): SpeedConstraint | undefined {
-        return getSpeedConstraintFromWaypoint(this.from);
+    getPathStartPoint(): Coordinates | undefined {
+        return this.inboundGuidable?.isComputed ? this.inboundGuidable.getPathEndPoint() : this.from.infos.coordinates;
     }
 
-    // TODO: refactor
-    get initialAltitudeConstraint(): AltitudeConstraint | undefined {
-        return getAltitudeConstraintFromWaypoint(this.from);
+    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
+        this.inboundGuidable = previousGuidable;
+        this.outboundGuidable = nextGuidable;
+
+        const startPoint = this.getPathStartPoint();
+        const endPoint = this.getPathEndPoint();
+
+        this.computedPath.length = 0;
+
+        if (this.overshot) {
+            this.computedPath.push({
+                type: PathVectorType.Line,
+                startPoint: endPoint,
+                endPoint,
+            });
+        } else {
+            this.computedPath.push({
+                type: PathVectorType.Line,
+                startPoint,
+                endPoint,
+            });
+        }
+
+        if (LnavConfig.DEBUG_PREDICTED_PATH) {
+            this.computedPath.push({
+                type: PathVectorType.DebugPoint,
+                startPoint: endPoint,
+                annotation: 'TF END',
+            });
+        }
+
+        this.isComputed = true;
     }
 
-    get initialLocation(): LatLongData {
-        return waypointToLocation(this.from);
-    }
-
-    get terminatorLocation(): LatLongData {
-        return waypointToLocation(this.to);
-    }
-
-    getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): LatLongData {
-        const inverseBearing = Avionics.Utils.computeGreatCircleHeading(
-            this.to.infos.coordinates,
-            this.from.infos.coordinates,
+    getPseudoWaypointLocation(distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
+        return getIntermediatePoint(
+            this.getPathStartPoint(),
+            this.getPathEndPoint(),
+            (this.distance - distanceBeforeTerminator) / this.distance,
         );
-
-        return Avionics.Utils.bearingDistanceToCoordinates(
-            inverseBearing,
-            distanceBeforeTerminator,
-            this.terminatorLocation.lat,
-            this.terminatorLocation.long,
-        );
     }
 
-    getIntermediatePoint(start: LatLongData, end: LatLongData, fraction: number): LatLongData {
-        const Phi1 = start.lat * Avionics.Utils.DEG2RAD;
-        const Gamma1 = start.long * Avionics.Utils.DEG2RAD;
-        const Phi2 = end.lat * Avionics.Utils.DEG2RAD;
-        const Gamma2 = end.long * Avionics.Utils.DEG2RAD;
-
-        const deltaPhi = Phi2 - Phi1;
-        const deltaGamma = Gamma2 - Gamma1;
-
-        const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) + Math.cos(Phi1) * Math.cos(Phi2) * Math.sin(deltaGamma / 2) * Math.sin(deltaGamma / 2);
-        const delta = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        const A = Math.sin((1 - fraction) * delta) / Math.sin(delta);
-        const B = Math.sin(fraction * delta) / Math.sin(delta);
-
-        const x = A * Math.cos(Phi1) * Math.cos(Gamma1) + B * Math.cos(Phi2) * Math.cos(Gamma2);
-        const y = A * Math.cos(Phi1) * Math.sin(Gamma1) + B * Math.cos(Phi2) * Math.sin(Gamma2);
-        const z = A * Math.sin(Phi1) + B * Math.sin(Phi2);
-
-        const Phi3 = Math.atan2(z, Math.sqrt(x * x + y * y));
-        const Gamma3 = Math.atan2(y, x);
-
-        const point: LatLongData = {
-            lat: Phi3 * Avionics.Utils.RAD2DEG,
-            long: Gamma3 * Avionics.Utils.RAD2DEG,
-        };
-        return point;
+    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees): GuidanceParameters | null {
+        return fixToFixGuidance(ppos, trueTrack, this.from.infos.coordinates, this.to.infos.coordinates);
     }
 
-    getAlongTrackDistanceTo(start: LatLongData, end: LatLongData, ppos: LatLongData): number {
-        const R = EARTH_RADIUS_NM;
-
-        const d13 = Avionics.Utils.computeGreatCircleDistance(start, ppos) / R;
-        const Theta13 = Avionics.Utils.DEG2RAD * Avionics.Utils.computeGreatCircleHeading(start, ppos);
-        const Theta12 = Avionics.Utils.DEG2RAD * Avionics.Utils.computeGreatCircleHeading(start, end);
-
-        const deltaXt = Math.asin(Math.sin(d13) * Math.sin(Theta13 - Theta12));
-
-        const deltaAt = Math.acos(Math.cos(d13) / Math.abs(Math.cos(deltaXt)));
-
-        return deltaAt * Math.sign(Math.cos(Theta12 - Theta13)) * R;
-    }
-
-    getGuidanceParameters(ppos: LatLongData, trueTrack: Degrees): GuidanceParameters | null {
-        const fromLatLongAlt = this.from.infos.coordinates;
-        const toLatLongAlt = this.to.infos.coordinates;
-
-        // track angle error
-        const totalTrackDistance = Avionics.Utils.computeGreatCircleDistance(
-            fromLatLongAlt,
-            toLatLongAlt,
-        );
-        const alongTrackDistance = this.getAlongTrackDistanceTo(
-            fromLatLongAlt,
-            toLatLongAlt,
-            ppos,
-        );
-        const intermediatePoint = this.getIntermediatePoint(
-            fromLatLongAlt,
-            toLatLongAlt,
-            Math.min(Math.max(alongTrackDistance / totalTrackDistance, 0.05), 0.95),
-        );
-        const desiredTrack = Avionics.Utils.computeGreatCircleHeading(intermediatePoint, toLatLongAlt);
-        const trackAngleError = MathUtils.mod(desiredTrack - trueTrack + 180, 360) - 180;
-
-        // crosstrack error
-        const bearingAC = Avionics.Utils.computeGreatCircleHeading(fromLatLongAlt, ppos);
-        const bearingAB = Avionics.Utils.computeGreatCircleHeading(fromLatLongAlt, toLatLongAlt);
-        const distanceAC = Avionics.Utils.computeDistance(fromLatLongAlt, ppos);
-
-        const desiredOffset = 0;
-        const actualOffset = (
-            Math.asin(
-                Math.sin(Avionics.Utils.DEG2RAD * (distanceAC / EARTH_RADIUS_NM))
-                * Math.sin(Avionics.Utils.DEG2RAD * (bearingAC - bearingAB)),
-            ) * Avionics.Utils.RAD2DEG
-        ) * EARTH_RADIUS_NM;
-        const crossTrackError = desiredOffset - actualOffset;
-
-        return {
-            law: ControlLaw.LATERAL_PATH,
-            trackAngleError,
-            crossTrackError,
-            phiCommand: 0,
-        };
-    }
-
-    getNominalRollAngle(_gs): Degrees {
+    getNominalRollAngle(_gs: Knots): Degrees {
         return 0;
     }
 
@@ -201,18 +134,18 @@ export class TFLeg extends Leg {
      */
     getAircraftToLegBearing(ppos: LatLongData): number {
         const aircraftToTerminationBearing = Avionics.Utils.computeGreatCircleHeading(ppos, this.to.infos.coordinates);
-        const aircraftLegBearing = MathUtils.smallCrossingAngle(this.bearing, aircraftToTerminationBearing);
+        const aircraftLegBearing = MathUtils.smallCrossingAngle(this.outboundCourse, aircraftToTerminationBearing);
 
         return aircraftLegBearing;
     }
 
     getDistanceToGo(ppos: LatLongData): NauticalMiles {
-        return GeoMath.directedDistanceToGo(ppos, this.to.infos.coordinates, this.getAircraftToLegBearing(ppos));
+        return courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
     }
 
     isAbeam(ppos: LatLongAlt): boolean {
         const bearingAC = Avionics.Utils.computeGreatCircleHeading(this.from.infos.coordinates, ppos);
-        const headingAC = Math.abs(MathUtils.diffAngle(this.bearing, bearingAC));
+        const headingAC = Math.abs(MathUtils.diffAngle(this.inboundCourse, bearingAC));
         if (headingAC > 90) {
             // if we're even not abeam of the starting point
             return false;
@@ -223,7 +156,7 @@ export class TFLeg extends Leg {
         return distanceAX <= this.distance;
     }
 
-    toString(): string {
-        return `<TFLeg from=${this.from} to=${this.to}>`;
+    get repr(): string {
+        return `TF FROM ${this.from.ident} TO ${this.to.ident}`;
     }
 }

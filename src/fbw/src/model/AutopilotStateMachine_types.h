@@ -92,6 +92,7 @@ struct ap_raw_data
   boolean_T is_engine_operative_2;
   real_T altimeter_setting_left_mbar;
   real_T altimeter_setting_right_mbar;
+  real_T total_weight_kg;
 };
 
 #endif
@@ -154,6 +155,7 @@ struct ap_raw_sm_input
   real_T TCAS_advisory_state;
   real_T TCAS_advisory_target_min_fpm;
   real_T TCAS_advisory_target_max_fpm;
+  boolean_T condition_Flare;
 };
 
 #endif
@@ -269,6 +271,7 @@ struct ap_data
   boolean_T is_engine_operative_1;
   boolean_T is_engine_operative_2;
   boolean_T altimeter_setting_changed;
+  real_T total_weight_kg;
 };
 
 #endif
@@ -285,7 +288,6 @@ struct ap_sm_data_computed
   boolean_T H_constraint_valid;
   boolean_T Psi_fcu_in_selection;
   boolean_T gs_convergent_towards_beam;
-  real_T H_dot_radio_fpm;
   boolean_T V_fcu_in_selection;
   boolean_T ALT_soft_mode;
 };

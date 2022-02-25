@@ -1,10 +1,12 @@
+import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot.js';
 import React, { Component } from 'react';
 import { createDeltaTimeCalculator, getSimVar, renderTarget } from '../util.js';
 
 export const FMA = ({ isAttExcessive }) => {
     const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
     const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
-    const sharedModeActive = activeLateralMode === 32 || activeLateralMode === 33 || activeLateralMode === 34 || (activeLateralMode === 20 && activeVerticalMode === 24);
+    const sharedModeActive = activeLateralMode === LateralMode.LAND || activeLateralMode === LateralMode.FLARE || activeLateralMode === LateralMode.ROLL_OUT
+        || (activeLateralMode === LateralMode.NAV && activeVerticalMode === VerticalMode.FINAL);
     const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
     const BC3Message = getBC3Message(isAttExcessive)[0] !== null;
     const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
@@ -252,68 +254,65 @@ const B1Cell = () => {
     let inProtection = false;
 
     switch (activeVerticalMode) {
-    case 31:
+    case VerticalMode.GS_TRACK:
         text = 'G/S';
         break;
     // case 2:
     //     text = 'F-G/S';
     //     break;
-    case 30:
+    case VerticalMode.GS_CPT:
         text = 'G/S*';
         break;
     // case 4:
     //     text = 'F-G/S*';
     //     break;
-    case 40:
-    case 41:
+    case VerticalMode.SRS:
+    case VerticalMode.SRS_GA:
         text = 'SRS';
         break;
-    case 50:
+    case VerticalMode.TCAS:
         text = 'TCAS';
         break;
     // case 9:
     //     text = 'FINAL';
     //     break;
-    case 23:
+    case VerticalMode.DES:
         text = 'DES';
         break;
-    case 13:
+    case VerticalMode.OP_DES:
         if (getSimVar('L:A32NX_FMA_EXPEDITE_MODE', 'bool')) {
             text = 'EXP DES';
         } else {
             text = 'OP DES';
         }
         break;
-    case 22:
+    case VerticalMode.CLB:
         text = 'CLB';
         break;
-    case 12:
+    case VerticalMode.OP_CLB:
         if (getSimVar('L:A32NX_FMA_EXPEDITE_MODE', 'bool')) {
             text = 'EXP CLB';
         } else {
             text = 'OP CLB';
         }
         break;
-    case 10:
+    case VerticalMode.ALT:
         if (getSimVar('L:A32NX_FMA_CRUISE_ALT_MODE', 'Bool')) {
             text = 'ALT CRZ';
         } else {
             text = 'ALT';
         }
         break;
-    case 11:
+    case VerticalMode.ALT_CPT:
         text = 'ALT*';
         break;
-    case 21:
-        text = 'ALT CST*';
-        break;
-    case 20:
+    case VerticalMode.ALT_CST:
         text = 'ALT CST';
         break;
-    // case 18:
-    //     text = 'ALT CRZ';
-    //     break;
-    case 15: {
+    case VerticalMode.ALT_CST_CPT:
+        text = 'ALT CST*';
+        break;
+    case VerticalMode.FPA: {
         const FPA = getSimVar('L:A32NX_AUTOPILOT_FPA_SELECTED', 'Degree');
         inProtection = getSimVar('L:A32NX_FMA_SPEED_PROTECTION_MODE', 'bool');
         const FPAText = `${(FPA >= 0 ? '+' : '')}${(Math.round(FPA * 10) / 10).toFixed(1)}°`;
@@ -326,7 +325,7 @@ const B1Cell = () => {
         );
         break;
     }
-    case 14: {
+    case VerticalMode.VS: {
         const VS = getSimVar('L:A32NX_AUTOPILOT_VS_SELECTED', 'feet per minute');
         inProtection = getSimVar('L:A32NX_FMA_SPEED_PROTECTION_MODE', 'bool');
         const VSText = `${(VS >= 0 ? '+' : '')}${Math.round(VS).toString()}`.padStart(5, ' ');
@@ -343,13 +342,13 @@ const B1Cell = () => {
         return null;
     }
 
-    const inSpeedProtection = inProtection && (activeVerticalMode === 14 || activeVerticalMode === 15);
+    const inSpeedProtection = inProtection && (activeVerticalMode === VerticalMode.VS || activeVerticalMode === VerticalMode.FPA);
     const inModeReversion = getSimVar('L:A32NX_FMA_MODE_REVERSION', 'bool');
 
     const tcasModeDisarmedMessage = getSimVar('L:A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM', 'bool');
 
     const boxClassName = (inSpeedProtection || inModeReversion) ? 'NormalStroke None' : 'NormalStroke White';
-    const boxPathString = activeVerticalMode === 50 && tcasModeDisarmedMessage ? 'm34.656 1.8143h29.918v13.506h-29.918z' : 'm34.656 1.8143h29.918v6.0476h-29.918z';
+    const boxPathString = activeVerticalMode === VerticalMode.TCAS && tcasModeDisarmedMessage ? 'm34.656 1.8143h29.918v13.506h-29.918z' : 'm34.656 1.8143h29.918v6.0476h-29.918z';
 
     return (
         <g>
@@ -366,12 +365,12 @@ const B1Cell = () => {
 const B2Cell = () => {
     const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
 
-    const altArmed = (armedVerticalBitmask >> 0) & 1;
-    const altCstArmed = (armedVerticalBitmask >> 1) & 1;
-    const clbArmed = (armedVerticalBitmask >> 2) & 1;
-    const desArmed = (armedVerticalBitmask >> 3) & 1;
-    const gsArmed = (armedVerticalBitmask >> 4) & 1;
-    const finalArmed = (armedVerticalBitmask >> 5) & 1;
+    const altArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.ALT);
+    const altCstArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.ALT_CST);
+    const clbArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.CLB);
+    const desArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.DES);
+    const gsArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.GS);
+    const finalArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.FINAL);
 
     let text1: string | null;
     let color1 = 'Cyan';
@@ -414,37 +413,37 @@ const C1Cell = () => {
     const activeLateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
 
     const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
-    const finalArmed = (armedVerticalBitmask >> 5) & 1;
+    const finalArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.FINAL);
 
     const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
 
     let text: string;
     let id = 0;
-    if (activeLateralMode === 50) {
+    if (activeLateralMode === LateralMode.GA_TRACK) {
         text = 'GA TRK';
         id = 1;
-    } else if (activeLateralMode === 30) {
+    } else if (activeLateralMode === LateralMode.LOC_CPT) {
         text = 'LOC *';
         id = 3;
-    } else if (activeLateralMode === 10) {
+    } else if (activeLateralMode === LateralMode.HDG) {
         text = 'HDG';
         id = 5;
-    } else if (activeLateralMode === 40) {
+    } else if (activeLateralMode === LateralMode.RWY) {
         text = 'RWY';
         id = 6;
-    } else if (activeLateralMode === 41) {
+    } else if (activeLateralMode === LateralMode.RWY_TRACK) {
         text = 'RWY TRK';
         id = 7;
-    } else if (activeLateralMode === 11) {
+    } else if (activeLateralMode === LateralMode.TRACK) {
         text = 'TRACK';
         id = 8;
-    } else if (activeLateralMode === 31) {
+    } else if (activeLateralMode === LateralMode.LOC_TRACK) {
         text = 'LOC';
         id = 10;
-    } else if (activeLateralMode === 20 && !finalArmed && activeVerticalMode !== 24) {
+    } else if (activeLateralMode === LateralMode.NAV && !finalArmed && activeVerticalMode !== VerticalMode.FINAL) {
         text = 'NAV';
         id = 13;
-    } else if (activeLateralMode === 20 && finalArmed && activeVerticalMode !== 24) {
+    } else if (activeLateralMode === LateralMode.NAV && finalArmed && activeVerticalMode !== VerticalMode.FINAL) {
         text = 'APP NAV';
         id = 12;
     } else {
@@ -466,10 +465,6 @@ const C1Cell = () => {
     //     text = 'F-LOC';
     //     id = 11;
     //     break;
-    // case 12:
-    //     text = 'APP NAV';
-    //     id = 12;
-    //     break;
 
     return (
         <g>
@@ -484,11 +479,11 @@ const C1Cell = () => {
 const C2Cell = () => {
     const armedLateralBitmask = getSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number');
 
-    const navArmed = (armedLateralBitmask >> 0) & 1;
-    const locArmed = (armedLateralBitmask >> 1) & 1;
+    const navArmed = isArmed(armedLateralBitmask, ArmedLateralMode.NAV);
+    const locArmed = isArmed(armedLateralBitmask, ArmedLateralMode.LOC);
 
     const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
-    const finalArmed = (armedVerticalBitmask >> 5) & 1;
+    const finalArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.FINAL);
 
     const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
 
@@ -501,7 +496,7 @@ const C2Cell = () => {
         // case 3:
         //     text = 'F-LOC';
         //     break;
-    } else if (navArmed && (finalArmed || activeVerticalMode === 24)) {
+    } else if (navArmed && (finalArmed || activeVerticalMode === VerticalMode.FINAL)) {
         text = 'APP NAV';
     } else if (navArmed) {
         text = 'NAV';
@@ -520,16 +515,16 @@ const BC1Cell = () => {
 
     let text: string;
     let id = 0;
-    if (activeVerticalMode === 34) {
+    if (activeVerticalMode === VerticalMode.ROLL_OUT) {
         text = 'ROLL OUT';
         id = 1;
-    } else if (activeVerticalMode === 33) {
+    } else if (activeVerticalMode === VerticalMode.FLARE) {
         text = 'FLARE';
         id = 2;
-    } else if (activeVerticalMode === 32) {
+    } else if (activeVerticalMode === VerticalMode.LAND) {
         text = 'LAND';
         id = 3;
-    } else if (activeVerticalMode === 24 && activeLateralMode === 20) {
+    } else if (activeVerticalMode === VerticalMode.FINAL && activeLateralMode === LateralMode.NAV) {
         text = 'FINAL APP';
         id = 4;
     } else {
@@ -548,10 +543,12 @@ const BC1Cell = () => {
 
 const getBC3Message = (isAttExcessive: boolean) => {
     const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
-    const TCASArmed = (armedVerticalBitmask >> 6) & 1;
+    const TCASArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.TCAS);
 
     const trkFpaDeselectedTCAS = getSimVar('L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION', 'bool');
     const tcasRaInhibited = getSimVar('L:A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED', 'bool');
+
+    const setHoldSpeed = getSimVar('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool');
 
     let text: string;
     let className: string;
@@ -595,7 +592,7 @@ const getBC3Message = (isAttExcessive: boolean) => {
     } else if (false) {
         text = 'TURN AREA EXCEEDANCE';
         className = 'White';
-    } else if (false) {
+    } else if (setHoldSpeed) {
         text = 'SET HOLD SPEED';
         className = 'White';
     } else if (false) {

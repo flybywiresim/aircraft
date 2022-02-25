@@ -21,6 +21,10 @@ const settingsToSync: Map<string, SimVar> = new Map([
     ['EFB_USING_AUTOBRIGHTNESS', ['L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', '0']],
     ['ISIS_BARO_UNIT_INHG', ['L:A32NX_ISIS_BARO_UNIT_INHG', 'number', '0']],
     ['REALISTIC_TILLER_ENABLED', ['L:A32NX_REALISTIC_TILLER_ENABLED', 'number', '0']],
+    ['HOME_COCKPIT_ENABLED', ['L:A32NX_HOME_COCKPIT_ENABLED', 'number', '0']],
+    ['SOUND_PASSENGER_AMBIENCE_ENABLED', ['L:A32NX_SOUND_PASSENGER_AMBIENCE_ENABLED', 'number', '1']],
+    ['SOUND_ANNOUNCEMENTS_ENABLED', ['L:A32NX_SOUND_ANNOUNCEMENTS_ENABLED', 'number', '1']],
+    ['SOUND_BOARDING_MUSIC_ENABLED', ['L:A32NX_SOUND_BOARDING_MUSIC_ENABLED', 'number', '1']],
 ]);
 
 export function readSettingsFromPersistentStorage() {

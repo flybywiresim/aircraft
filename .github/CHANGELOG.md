@@ -107,10 +107,12 @@
 1. [FDR] Added additional values to help debug in some cases - @aguther (Andreas Guther)
 1. [ATHR] Added switch to use externally defined thrust limits and separated thrust limits into own model - @aguther (Andreas Guther)
 1. [FBW] Improved sideslip controller - @IbrahimK42 (IbrahimK42)
+1. [API] DOME light switch did not move when set to "dim" via SimConnect - @pre-martin (Martin)
 1. [AP] Further improved ALT CST* and ALT CST conditions - @aguther (Andreas Guther)
 1. [MCDU] Added support for connecting MCDU to external devices - @tyler58546 (tyler58546)
 1. [ATHR] Improvement of ATHR laws - @IbrahimK42(IbrahimK42), @aguther (Andreas Guther)
 1. [MISC] Fixed flap configuration in final.flt and runway.flt files -  @donstim (donbikes#4084)
+1. [MISC] Added Home Cockpit mode to remove backlight bleed and reflections in displays - @ssewell (Shane Sewell)
 1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
 1. [HYD] Added more accurate simulation model of PTU - @Gurgel100 (Pascal)
 1. [BLEED] Fix potential NaN calculations for fast flows - @Crocket63
@@ -127,9 +129,44 @@
 1. [AP] Do not disengage SRS on RTO, engage it only in FLX detent when FLX is configured - @aguther (Andreas Guther)
 1. [ATHR] Improved thrust limits, FLX limits now CLB when entered into FMGC - @aguther (Andreas Guther)
 1. [AP] Improved LOC ALGIN and ROLL OUT during Autoland - @aguther (Andreas Guther)
+1. [HYD] Simple hydraulic model placeholder for flaps and slats - @Crocket63
 1. [FBW] Fix: do not compensate ground spoilers in C* law - @aguther (Andreas Guther)
+1. [ATSU] Add PDC/CPDLC communication via Hoppie - @svengcz (Sven Czarnian)
 1. [AP] Fix: adjustment of vertical speed limitation in SPD/MACH law - @IbrahimK42 (IbrahimK42)
+1. [HYD] Ailerons hydraulic control (only visual and hydraulics) - @Crocket63
 1. [MISC] Animation speed/behaviors for button, switches and knobs - @bouveng (Johan Bouveng)
+1. [AP] Added Autoland capability for special terrain profiles, i.e. KSEA 16R - @aguther (Andreas Guther)
+1. [ATHR] Adjustment of ATHR SPD/MACH gains - @IbrahimK42 (IbrahimK42)
+1. [ATHR] Fix ATHR Alt Soft Mode - @IbrahimK42 (IbrahimK42)
+1. [HYD] Simplified max step loop updater - @Crocket63
+1. [MISC] Fix for bleed/hyd system failure in some conditions - @Crocket63
+1. [ECAM] Add pack abnormally off warnings - @tracernz (Mike)
+1. [ELEC] Fix emergency elec on init in flight wrongly triggering the RAT - @Crocket63
+1. [ATHR] Fix ATHR Speed Undershoot - @IbrahimK42 (IbrahimK42)
+1. [FLIGHTMODEL] Improved pitch stability in turbulence - @aguther (Andreas Guther)
+1. [AP] Fix DES not being armed in ALT CST and altitude constraint changing to FCU altitude - @aguther (Andreas Guther)
+1. [COND] Add cabin temperature simulation and control - @mjuhe (Miquel Juhe)
+1. [COND] Improve air conditioning pack flow model - @mjuhe (Miquel Juhe)
+1. [FBW] Fix Rudder Trim Signal - @IbrahimK42 (IbrahimK42)
+1. [TCAS] Implemented traffic advisories, resolution advisories, and collision avoidance logic - @wpine215 (Iceman) @2hwk (2Cas#1022)
+1. [PFD] Implemented TCAS guidance on vertical speed tape - @wpine215 (Iceman)
+1. [SOUNDS] Connected TCAS TA/RA logic to TCAS Wwise events - @wpine215 (Iceman)  @2hwk (2Cas#1022)
+1. [ENGINE] Overall improvement of thrust limits - @Taz5150 (TazX [Z+2]#0405)
+1. [ATC] Implement ident button and fix auto mode - @tracernz (Mike)
+1. [FLIGHTMODEL] Prevent default stall warning bool from being activated - @donstim (donbikes#4084)
+1. [EFB] Colored raw Metar in EFB weather widget - @frankkopp (Frank Kopp)
+1. [AP] Fix Target Altitude to be set in all FM requested modes - @IbrahimK42 (IbrahimK42)
+1. [AP] Fix G/S condition - @aguther (Andreas Guther)
+1. [DUs] Override MSFS menu animation setting for display units - @tracernz (Mike)
+1. [AP] Furhter improved FLARE law for various conditions - @aguther (Andreas Guther)
+1. [SOUNDS] Use estimated landing rate for touchdown sound selection - @aguther (Andreas Guther)
+1. [ATHR] Increase spool up/down speed for THR IDLE and THR CLB to better match real plane - @aguther (Andreas Guther)
+1. [FLIGHTMODEL] Flight model improvements - @donstim (donbikes#4084)
+1. [SPEEDS] Fix GS mini not being limited by VFE-5 in CONF FULL -  @donstim (donbikes#4084)
+1. [MCDU] Fix crash when clearing DIR TO waypoint - @tracernz (Mike)
+1. [ATHR] Fix Speed/Mach Idle transition in strong headwind - @IbrahimK42 (IbrahimK42)
+1. [SOUNDS] Add rain sounds in cockpit - @Mico975 (Mico)
+1. [SOUNDS] Add passenger announcements and ambience - @hotshotp (Boris)
 
 ## 0.7.0
 

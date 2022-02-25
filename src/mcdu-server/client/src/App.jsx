@@ -7,6 +7,7 @@ import { WebsocketContext } from './WebsocketContext';
 
 function App() {
     const [fullscreen, setFullscreen] = useState(window.location.href.endsWith('fullscreen'));
+    const [sound] = useState(window.location.href.endsWith('sound'));
     const socketUrl = `ws://${window.location.hostname}:__WEBSOCKET_PORT__`;
 
     const [content, setContent] = useState(
@@ -65,7 +66,7 @@ function App() {
                     {!fullscreen && (
                         <>
                             <McduScreen content={content} />
-                            <McduButtons />
+                            <McduButtons sound={sound} />
                             <div className="button-grid" style={{ left: `${184 / 10.61}%`, top: `${158 / 16.50}%`, width: `${706 / 10.61}%`, height: `${60 / 16.50}%` }}>
                                 <div className="button-row">
                                     <div className="button" title="Fullscreen" onClick={() => setFullscreen(!fullscreen)} />

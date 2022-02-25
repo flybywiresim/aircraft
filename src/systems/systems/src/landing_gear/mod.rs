@@ -4,7 +4,7 @@ use crate::{
         ElectricalBusType, ElectricalBuses, LandingGearRealPosition, LgciuGearExtension,
         LgciuSensors, LgciuWeightOnWheels,
     },
-    simulation::{Read, SimulationElement, SimulatorReader},
+    simulation::{Read, SimulationElement, SimulatorReader, SimulatorWriter, Write},
 };
 use uom::si::{
     f64::*,
@@ -138,9 +138,13 @@ pub struct LandingGearControlInterfaceUnit {
     right_gear_down_and_locked: bool,
     left_gear_down_and_locked: bool,
     nose_gear_down_and_locked: bool,
+
+    nose_gear_compressed_id: VariableIdentifier,
+    left_gear_compressed_id: VariableIdentifier,
+    right_gear_compressed_id: VariableIdentifier,
 }
 impl LandingGearControlInterfaceUnit {
-    pub fn new(powered_by: ElectricalBusType) -> Self {
+    pub fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             is_powered: false,
             powered_by,
@@ -154,6 +158,12 @@ impl LandingGearControlInterfaceUnit {
             right_gear_down_and_locked: false,
             left_gear_down_and_locked: false,
             nose_gear_down_and_locked: false,
+            nose_gear_compressed_id: context
+                .get_identifier(format!("LGCIU_{}_NOSE_GEAR_COMPRESSED", number)),
+            left_gear_compressed_id: context
+                .get_identifier(format!("LGCIU_{}_LEFT_GEAR_COMPRESSED", number)),
+            right_gear_compressed_id: context
+                .get_identifier(format!("LGCIU_{}_RIGHT_GEAR_COMPRESSED", number)),
         }
     }
 
@@ -178,6 +188,22 @@ impl LandingGearControlInterfaceUnit {
 impl SimulationElement for LandingGearControlInterfaceUnit {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        // ref FBW-32-01
+        writer.write(
+            &self.nose_gear_compressed_id,
+            self.nose_gear_compressed(false),
+        );
+        writer.write(
+            &self.left_gear_compressed_id,
+            self.left_gear_compressed(false),
+        );
+        writer.write(
+            &self.right_gear_compressed_id,
+            self.right_gear_compressed(false),
+        );
     }
 }
 
