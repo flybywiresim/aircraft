@@ -98,9 +98,9 @@ class CDUAtcRequest {
                 store.dirTo = null;
                 CDUAtcRequest.ShowPage(mcdu, store);
             } else if (value) {
-                classifyScratchpadWaypointType(mcdu, value, false).then((retval) => {
-                    if (retval[1]) {
-                        mcdu.addNewMessage(retval[1]);
+                Atsu.InputValidation.classifyScratchpadWaypointType(mcdu, value, false).then((retval) => {
+                    if (retval[1] !== Atsu.AtsuStatusCodes.Ok) {
+                        mcdu.addNewAtsuMessage(retval[1]);
                     } else {
                         store = CDUAtcRequest.CreateDataBlock(store);
                         store.dirTo = value;
@@ -118,12 +118,12 @@ class CDUAtcRequest {
                 store.altitude = null;
                 CDUAtcRequest.ShowPage(mcdu, store);
             } else if (value) {
-                const error = validateScratchpadAltitude(value);
-                if (error) {
-                    mcdu.addNewMessage(error);
+                const error = Atsu.InputValidation.validateScratchpadAltitude(value);
+                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(error);
                 } else {
                     store = CDUAtcRequest.CreateDataBlock(store);
-                    store.altitude = formatScratchpadAltitude(value);
+                    store.altitude = Atsu.InputValidation.formatScratchpadAltitude(value);
                     CDUAtcRequest.ShowPage(mcdu, store);
                 }
             }
@@ -134,12 +134,12 @@ class CDUAtcRequest {
                 store.speed = null;
                 CDUAtcRequest.ShowPage(mcdu, store);
             } else if (value) {
-                const error = validateScratchpadSpeed(value);
-                if (error) {
-                    mcdu.addNewMessage(error);
+                const error = Atsu.InputValidation.validateScratchpadSpeed(value);
+                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(error);
                 } else {
                     store = CDUAtcRequest.CreateDataBlock(store);
-                    store.speed = formatScratchpadSpeed(value);
+                    store.speed = Atsu.InputValidation.formatScratchpadSpeed(value);
                     CDUAtcRequest.ShowPage(mcdu, store);
                 }
             }
