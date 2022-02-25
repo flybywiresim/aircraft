@@ -989,6 +989,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             case Atsu.AtsuStatusCodes.FormatError:
                 this.addNewMessage(NXSystemMessages.formatError);
                 break;
+            case Atsu.AtsuStatusCodes.NotInDatabase:
+                this.addNewMessage(NXSystemMessages.notInDatabase);
+                break;
             default:
                 break;
         }

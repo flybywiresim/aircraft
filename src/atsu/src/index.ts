@@ -12,6 +12,7 @@ import { AtisMessage, AtisType } from './messages/AtisMessage';
 import { RequestMessage } from './messages/RequestMessage';
 import { AocSystem } from './AocSystem';
 import { AtcSystem } from './AtcSystem';
+import { InputValidation } from './InputValidation';
 import { FansMode } from './com/FutureAirNavigationSystem';
 
 export {
@@ -37,4 +38,5 @@ export {
     AtcSystem,
     FansMode,
     RequestMessage,
+    InputValidation,
 };
