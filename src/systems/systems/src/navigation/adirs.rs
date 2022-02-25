@@ -1905,18 +1905,17 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn computed_airspeed_is_supplied_by_adr(#[case] adiru_number: usize) {
+        fn computed_airspeed_is_supplied_by_adr_when_greater_than_or_equal_to_30_knots(
+            #[case] adiru_number: usize,
+        ) {
+            let velocity = Velocity::new::<knot>(AirDataReference::MINIMUM_CAS);
             let mut test_bed = all_adirus_aligned_test_bed();
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(250.));
-
+            test_bed.set_indicated_airspeed(velocity);
             test_bed.run();
 
             assert_eq!(
-                test_bed
-                    .computed_airspeed(adiru_number)
-                    .normal_value()
-                    .unwrap(),
-                Velocity::new::<knot>(250.)
+                test_bed.computed_airspeed(adiru_number).normal_value().unwrap(),
+                velocity
             );
         }
 
@@ -1924,14 +1923,55 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn mach_is_supplied_by_adr(#[case] adiru_number: usize) {
-            let mach = MachNumber(0.7844);
+        fn computed_airspeed_is_ncd_and_zero_when_less_than_30_knots(#[case] adiru_number: usize) {
+            let velocity = Velocity::new::<knot>(AirDataReference::MINIMUM_CAS - 0.01);
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_indicated_airspeed(velocity);
+            test_bed.run();
+
+            assert_about_eq!(
+                test_bed.computed_airspeed(adiru_number).value().get::<knot>(),
+                0.
+            );
+            assert_eq!(
+                test_bed.computed_airspeed(adiru_number).ssm(),
+                SignStatus::NoComputedData
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn mach_is_supplied_by_adr_when_greater_than_or_equal_to_zero_point_1(
+            #[case] adiru_number: usize,
+        ) {
+            let mach = MachNumber::from(AirDataReference::MINIMUM_MACH);
             let mut test_bed = all_adirus_aligned_test_bed_with().mach_of(mach);
             test_bed.run();
 
             assert_about_eq!(
-                test_bed.mach(adiru_number).normal_value().unwrap().0,
-                mach.0
+                f64::from(test_bed.mach(adiru_number).normal_value().unwrap()),
+                f64::from(mach)
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn mach_is_ncd_and_zero_when_less_than_zero_point_1(#[case] adiru_number: usize) {
+            let mach = MachNumber::from(AirDataReference::MINIMUM_MACH - 0.01);
+            let mut test_bed = all_adirus_aligned_test_bed_with().mach_of(mach);
+            test_bed.run();
+
+            assert_about_eq!(
+                f64::from(test_bed.mach(adiru_number).value()),
+                0.
+            );
+            assert_eq!(
+                test_bed.mach(adiru_number).ssm(),
+                SignStatus::NoComputedData
             );
         }
 
@@ -1962,7 +2002,6 @@ mod tests {
         ) {
             let velocity = Velocity::new::<knot>(AirDataReference::MINIMUM_TAS);
             let mut test_bed = all_adirus_aligned_test_bed_with().true_airspeed_of(velocity);
-            test_bed.set_indicated_airspeed(velocity);
             test_bed.run();
 
             assert_eq!(
@@ -1975,15 +2014,18 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn true_airspeed_is_zero_when_less_than_60_knots(#[case] adiru_number: usize) {
+        fn true_airspeed_is_ncd_and_zero_when_less_than_60_knots(#[case] adiru_number: usize) {
             let velocity = Velocity::new::<knot>(AirDataReference::MINIMUM_TAS - 0.01);
             let mut test_bed = all_adirus_aligned_test_bed_with().true_airspeed_of(velocity);
-            test_bed.set_indicated_airspeed(velocity);
             test_bed.run();
 
             assert_about_eq!(
                 test_bed.true_airspeed(adiru_number).value().get::<knot>(),
                 0.
+            );
+            assert_eq!(
+                test_bed.true_airspeed(adiru_number).ssm(),
+                SignStatus::NoComputedData
             );
         }
 
