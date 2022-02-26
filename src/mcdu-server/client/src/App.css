@@ -9,13 +9,12 @@
 }
 
 .normal {
-  --aspect-ratio: calc(1061/1650);
+  --aspect-ratio: calc(1290/2000);
   --top-padding: .146;
   --screen-scale: .69;
 }
 
 .normal .App {
-  background-image: url("mcdu-r2-c.png");
   background-size: contain;
   background-repeat: no-repeat;
 }

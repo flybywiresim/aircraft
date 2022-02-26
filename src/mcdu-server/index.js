@@ -22,6 +22,8 @@ path.join(__dirname, 'client/build/HoneywellMCDU.ttf');
 path.join(__dirname, 'client/build/HoneywellMCDUSmall.ttf');
 path.join(__dirname, 'client/build/index.html');
 path.join(__dirname, 'client/build/mcdu-r2-c.png');
+path.join(__dirname, 'client/build/mcdu-a32nx.png');
+path.join(__dirname, 'client/build/mcdu-a32nx-dark.png');
 path.join(__dirname, 'client/build/button-click.mp3');
 path.join(__dirname, '../../node_modules/pdf-to-printer/dist/SumatraPDF.exe');
 path.join(__dirname, '../../node_modules/linebreak/src/classes.trie');
