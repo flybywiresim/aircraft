@@ -6,7 +6,7 @@ import { Metar } from '@flybywiresim/api-client';
 import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
 import { parseMetar } from '../../Utils/parseMetar';
 import { MetarParserType } from '../../../Common/metarTypes';
-import { usePersistentProperty } from '../../../Common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '../../../Common/persistence';
 import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
 import { ColoredMetar } from './ColorMetar';
 
@@ -64,6 +64,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const source = metarSource === 'MSFS' ? 'MS' : metarSource;
     const [metarError, setErrorMetar] = useState('NO VALID ICAO CHOSEN');
+    const [usingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
 
     const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
         .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
@@ -243,13 +244,20 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                         {metar.raw_text
                                             ? (
                                                 <>
-                                                    <ColoredMetar metar={metar} />
+                                                    {usingColoredMetar
+                                                        ? (
+                                                            <>
+                                                                <ColoredMetar metar={metar} />
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                {metar.raw_text}
+                                                            </>
+                                                        )}
                                                 </>
                                             ) : (
                                                 <>
                                                     {metarError}
-                                                    {' '}
-                                                    {' '}
                                                 </>
                                             )}
                                     </div>
