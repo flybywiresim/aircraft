@@ -2,8 +2,8 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuMessageType, AtsuMessageSerializationFormat, AtsuMessageDirection } from './AtsuMessage';
-import { CpdlcMessage, CpdlcMessageResponse } from './CpdlcMessage';
-import { cpdlcToString, wordWrap } from '../Common';
+import { CpdlcMessage } from './CpdlcMessage';
+import { wordWrap } from '../Common';
 
 /**
  * Defines the general CPDLC request message
@@ -39,7 +39,7 @@ export class RequestMessage extends CpdlcMessage {
         const lines = wordWrap(content, 25);
 
         if (format === AtsuMessageSerializationFormat.Network) {
-            message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${cpdlcToString(this.RequestedResponses)}`;
+            // message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${cpdlcToString(this.RequestedResponses)}`;
             message += `/${content}`;
         } else if (format === AtsuMessageSerializationFormat.DCDU) {
             message = lines.join('\n');
@@ -48,17 +48,17 @@ export class RequestMessage extends CpdlcMessage {
             message += lines.join('\n');
             message += '{white}------------------------{end}\n';
 
-            if (this.ResponseType === CpdlcMessageResponse.Other && this.Response !== undefined) {
-                message += this.Response.serialize(format);
-            }
+            // if (this.ResponseType === CpdlcMessageResponse.Other && this.Response !== undefined) {
+            //    message += this.Response.serialize(format);
+            // }
         } else if (format === AtsuMessageSerializationFormat.Printer) {
             message += `${this.Timestamp.dcduTimestamp()} TO ${this.Station}}\n`;
             message += lines.join('\n');
             message += '------------------------\n';
 
-            if (this.ResponseType === CpdlcMessageResponse.Other && this.Response !== undefined) {
-                message += this.Response.serialize(format);
-            }
+            // if (this.ResponseType === CpdlcMessageResponse.Other && this.Response !== undefined) {
+            //    message += this.Response.serialize(format);
+            // }
         } else {
             message = content;
         }

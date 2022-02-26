@@ -1,13 +1,13 @@
 import React from 'react';
 import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
+import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { useUpdate } from '@instruments/common/hooks.js';
 import { Button } from './Button';
 
 type AffirmNegativeButtonsProps = {
     message: CpdlcMessage,
-    selectedResponse: CpdlcMessageResponse | undefined,
-    setMessageStatus(message: number, response: CpdlcMessageResponse | undefined),
+    selectedResponse: number,
+    setMessageStatus(message: number, response: number),
     setStatus: (sender: string, message: string) => void,
     isStatusAvailable: (sender: string) => boolean,
     closeMessage: (message: number) => void
@@ -28,7 +28,7 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
     let showAnswers = false;
     let showSend = false;
 
-    if (selectedResponse === undefined && message.Response === undefined) {
+    if (selectedResponse === -1 && message.Response === undefined) {
         showAnswers = true;
     } else if (message.Response === undefined) {
         showSend = true;
@@ -41,19 +41,19 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
 
         if (showAnswers) {
             if (index === 'L1') {
-                setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Negative);
+                setMessageStatus(message.UniqueMessageID, 5);
             } else if (index === 'R2') {
-                setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Affirm);
+                setMessageStatus(message.UniqueMessageID, 4);
             }
         } else if (showSend) {
             if (index === 'L1') {
-                setMessageStatus(message.UniqueMessageID, undefined);
+                setMessageStatus(message.UniqueMessageID, -1);
             } else if (index === 'R2') {
                 let systemBusy = SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number') !== -1;
                 systemBusy = systemBusy || SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number') !== -1;
 
                 if (!systemBusy) {
-                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', selectedResponse as number);
+                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', selectedResponse);
                     SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
                 } else {
                     setStatus('Buttons', 'SYSTEM BUSY');

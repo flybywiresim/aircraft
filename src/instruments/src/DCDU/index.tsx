@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage, CpdlcMessageRequestedResponseType, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
+import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
+import { CpdlcMessageExpectedResponseType } from '@atsu/messages/CpdlcMessageElements';
 import { RequestMessage } from '@atsu/messages/RequestMessage';
 import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';
 import { WilcoUnableButtons } from './elements/WilcoUnableButtons';
@@ -33,7 +34,7 @@ function powerAvailable() {
     return getSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool') || getSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool');
 }
 
-const sortedMessageArray = (messages: Map<number, [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined]>): [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined][] => {
+const sortedMessageArray = (messages: Map<number, [CpdlcMessage, number, boolean, number]>): [CpdlcMessage, number, boolean, number][] => {
     const arrMessages = Array.from(messages.values());
     arrMessages.sort((a, b) => a[1] - b[1]);
     return arrMessages;
@@ -42,7 +43,7 @@ const sortedMessageArray = (messages: Map<number, [CpdlcMessage, number, boolean
 const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
-    const [messages, setMessages] = useState(new Map<number, [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined]>());
+    const [messages, setMessages] = useState(new Map<number, [CpdlcMessage, number, boolean, number]>());
     const [statusMessage, setStatusMessage] = useState({ sender: '', message: '', remainingMilliseconds: 0 });
     const [messageUid, setMessageUid] = useState(-1);
     const [atcMessage, setAtcMessage] = useState('');
@@ -68,7 +69,7 @@ const DCDU: React.FC = () => {
         setStatusMessage(state);
     };
 
-    const setMessageStatus = (uid: number, response: CpdlcMessageResponse | undefined) => {
+    const setMessageStatus = (uid: number, response: number) => {
         const updateMap = messages;
 
         const entry = updateMap.get(uid);
@@ -167,7 +168,7 @@ const DCDU: React.FC = () => {
 
     useCoherentEvent('A32NX_DCDU_RESET', () => {
         setMessageUid(-1);
-        setMessages(new Map<number, [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined]>());
+        setMessages(new Map<number, [CpdlcMessage, number, boolean, number]>());
         setAtcMessage('');
         resetStatus('');
     });
@@ -219,10 +220,10 @@ const DCDU: React.FC = () => {
                     }
                 }
             } else {
-                readMessage = cpdlcMessage.Response !== undefined || cpdlcMessage.ResponseType !== undefined;
+                readMessage = cpdlcMessage.Response !== undefined || cpdlcMessage.Response !== undefined;
             }
 
-            setMessages(messages.set(cpdlcMessage.UniqueMessageID, [cpdlcMessage, dcduTimestamp, readMessage, undefined]));
+            setMessages(messages.set(cpdlcMessage.UniqueMessageID, [cpdlcMessage, dcduTimestamp, readMessage, -1]));
 
             if (messageUid === -1) {
                 setMessageUid(cpdlcMessage.UniqueMessageID);
@@ -270,7 +271,7 @@ const DCDU: React.FC = () => {
     // prepare the data
     let messageIndex = -1;
     let message: CpdlcMessage | undefined = undefined;
-    let response: CpdlcMessageResponse | undefined = undefined;
+    let response: number = -1;
     if (state === DcduState.Active && messages.size !== 0) {
         const arrMessages = sortedMessageArray(messages);
 
@@ -285,7 +286,7 @@ const DCDU: React.FC = () => {
 
     let answerRequired = false;
     if (message !== undefined) {
-        answerRequired = message.RequestedResponses !== CpdlcMessageRequestedResponseType.NotRequired && message.RequestedResponses !== CpdlcMessageRequestedResponseType.No;
+        answerRequired = message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
     }
 
     switch (state) {
@@ -340,7 +341,7 @@ const DCDU: React.FC = () => {
                             />
                         </>
                     ))}
-                    {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.WilcoUnable && (
+                    {(message !== undefined && answerRequired && message.Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.WilcoUnable && (
                         <WilcoUnableButtons
                             message={message}
                             selectedResponse={response}
@@ -350,7 +351,7 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.AffirmNegative && (
+                    {(message !== undefined && answerRequired && message.Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.AffirmNegative && (
                         <AffirmNegativeButtons
                             message={message}
                             selectedResponse={response}
@@ -360,7 +361,7 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.Roger && (
+                    {(message !== undefined && answerRequired && message.Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.Roger && (
                         <RogerButtons
                             message={message}
                             selectedResponse={response}
