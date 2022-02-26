@@ -173,8 +173,8 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
             {showBars
                 && (
                     <>
-                        <VLsBar airspeed={airspeed} VLs={VLs} VAlphaProt={ValphaProtection} />
-                        <VAlphaLimBar airspeed={airspeed} VAlphalim={ValphaMax} />
+                        <VLsBar airspeed={airspeedValue} VLs={VLs} VAlphaProt={ValphaProtection} />
+                        <VAlphaLimBar airspeed={airspeedValue} VAlphalim={ValphaMax} />
                     </>
                 )}
         </g>
