@@ -84,6 +84,7 @@ export class EfisSymbols {
         this.lastNearbyFacilitiesVersion = this.nearby.version;
         const fpChanged = this.lastFpVersion !== this.flightPlanManager.currentFlightPlanVersion;
         this.lastFpVersion = this.flightPlanManager.currentFlightPlanVersion;
+        // FIXME map reference point should be per side
         const planCentreIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT', 'number');
         const planCentre = this.flightPlanManager.getWaypoint(planCentreIndex)?.infos.coordinates;
         const planCentreChanged = planCentre?.lat !== this.lastPlanCentre?.lat || planCentre?.long !== this.lastPlanCentre?.long;
@@ -125,6 +126,11 @@ export class EfisSymbols {
 
             if (!pposChanged && !trueHeadingChanged && !rangeChange && !modeChange && !efisOptionChange && !nearbyOverlayChanged && !fpChanged && !planCentreChanged) {
                 continue;
+            }
+
+            if (mode === Mode.PLAN && !planCentre) {
+                this.listener.triggerToAllSubscribers(`A32NX_EFIS_${side}_SYMBOLS`, []);
+                return;
             }
 
             const [editAhead, editBehind, editBeside] = this.calculateEditArea(range, mode);
