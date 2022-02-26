@@ -151,7 +151,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
             getMetar(simbriefIcao, source);
             setSimbriefIcaoAtLoading(simbriefIcao);
         } else {
-            getMetar(userIcao ?? simbriefIcao, source);
+            getMetar(userIcao || simbriefIcao, source);
         }
     }, [simbriefIcao, userIcao, source]);
 
