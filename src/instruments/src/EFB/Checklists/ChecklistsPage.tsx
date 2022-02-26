@@ -127,7 +127,12 @@ const CompletionButton = () => {
     const dispatch = useAppDispatch();
 
     useEffect(() => {
+        setCompleteItemVar(false);
+    }, []);
+
+    useEffect(() => {
         if (completeItemVar) {
+            setCompleteItemVar(false);
             if (checklists[selectedChecklistIndex].markedCompleted && selectedChecklistIndex < checklists.length - 1) {
                 dispatch(setSelectedChecklistIndex(selectedChecklistIndex + 1));
             } else if (firstIncompleteIdx !== -1) {
@@ -139,7 +144,6 @@ const CompletionButton = () => {
             } else if (areAllChecklistItemsCompleted(selectedChecklistIndex)) {
                 dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: true }));
             }
-            // completeItemVar will be reset in EFB.tsx
         }
     }, [completeItemVar]);
 
@@ -205,7 +209,7 @@ export const ChecklistPage = () => {
     const { selectedChecklistIndex } = useAppSelector((state) => state.trackingChecklists);
 
     return (
-        <div className="flex overflow-visible flex-col justify-between p-8 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="flex overflow-visible flex-col justify-between p-8 w-full rounded-lg border-2 border-theme-accent">
             <ScrollableContainer height={46}>
                 <div className="space-y-4">
                     {CHECKLISTS[selectedChecklistIndex].items.map((it, index) => (
