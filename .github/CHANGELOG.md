@@ -167,6 +167,7 @@
 1. [ATHR] Fix Speed/Mach Idle transition in strong headwind - @IbrahimK42 (IbrahimK42)
 1. [SOUNDS] Add rain sounds in cockpit - @Mico975 (Mico)
 1. [SOUNDS] Add passenger announcements and ambience - @hotshotp (Boris)
+1. [EFB] Added setting for colored METAR in EFB weather widget - @frankkopp (Frank Kopp)
 
 ## 0.7.0
 

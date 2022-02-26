@@ -34,7 +34,7 @@ export const ColoredMetar = ({ metar }: { metar: MetarParserType }) => {
             );
         case ColorCode.Warning:
             return (
-                <span className="text-red-600">
+                <span className="text-red-400">
                     {metarPart}
                     {' '}
                 </span>
