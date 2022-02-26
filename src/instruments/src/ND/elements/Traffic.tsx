@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { useSimVar } from '@instruments/common/simVars';
-import React, { FC, useState, memo } from 'react';
+import React, { FC, useState, memo, useEffect } from 'react';
 import { Layer } from '@instruments/common/utils';
 import { TCAS_CONST as TCAS, TaRaIntrusion, TaRaIndex } from '@tcas/lib/TcasConstants';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -35,66 +35,52 @@ const TCAS_MASK_ROSE: TcasMask = [
     [-210, 383], [-210, 300], [-264, 241], [-340, 241], [-340, -227],
 ];
 
+const useAirTraffic = (mapParams, mode) : NdTraffic[] => {
+    const [airTraffic, setAirTraffic] = useState<NdTraffic[]>([]);
+    const tcasMask = (mode === Mode.ARC ? TCAS_MASK_ARC : TCAS_MASK_ROSE);
+    useCoherentEvent('A32NX_TCAS_TRAFFIC', (airTrafficString: string) => {
+        const newTraffic = JSON.parse(airTrafficString);
+        setAirTraffic(trafficToDisplay(newTraffic, mapParams, tcasMask));
+    });
+    useEffect(() => {
+        setAirTraffic(trafficToDisplay(airTraffic, mapParams, tcasMask));
+    }, [mapParams?.nmRadius, mode]);
+    return airTraffic;
+};
+
+const trafficToDisplay = (airTraffic, mapParams, tcasMask) => (
+    airTraffic.map((traffic: NdTraffic) => {
+        const latLong: Coordinates = { lat: traffic.lat, long: traffic.lon };
+        let [x, y] = mapParams.coordinatesToXYy(latLong);
+
+        const bitfield = traffic.bitfield;
+        const vertSpeed = Math.round(bitfield / 10);
+        const intrusionLevel = Math.abs(bitfield % 10);
+
+        // TODO FIXME: Full time option installed: For all ranges except in ZOOM ranges, NDRange > 9NM
+        if (!MathUtils.pointInPolygon(x, y, tcasMask)) {
+            if (intrusionLevel < TaRaIntrusion.TA) {
+                traffic.alive = false;
+                return traffic;
+            }
+            const ret: [number, number] | null = MathUtils.intersectWithPolygon(x, y, 0, 0, tcasMask);
+            if (ret) [x, y] = ret;
+        }
+        traffic.alive = true;
+        traffic.vertSpeed = vertSpeed;
+        traffic.posX = x;
+        traffic.posY = y;
+        traffic.intrusionLevel = intrusionLevel as TaRaIntrusion;
+        return traffic;
+    })
+);
+
 export const Traffic: FC<TcasProps> = ({ mapParams, mode }) => {
-    const [displayTraffic] = useState([]);
+    const airTraffic = useAirTraffic(mapParams, mode);
     const [debug] = usePersistentProperty('TCAS_DEBUG', '0');
     const [sensitivity] = useSimVar('L:A32NX_TCAS_SENSITIVITY', 'number', 200);
-    const tcasMask: TcasMask = (mode === Mode.ARC ? TCAS_MASK_ARC : TCAS_MASK_ROSE);
     const x: number = 361.5;
     const y: number = (mode === Mode.ARC) ? 606.5 : 368;
-
-    useCoherentEvent('A32NX_TCAS_TRAFFIC', (airTrafficString: string) => {
-        const airTraffic: NdTraffic[] = JSON.parse(airTrafficString);
-        displayTraffic.forEach((traffic: NdTraffic) => traffic.alive = false);
-        if (airTraffic) {
-            airTraffic.forEach((tf: NdTraffic) => {
-                const latLong: Coordinates = { lat: tf.lat, long: tf.lon };
-                let [x, y] = mapParams.coordinatesToXYy(latLong);
-
-                const bitfield = tf.bitfield;
-                const vertSpeed = Math.round(bitfield / 10);
-                const intrusionLevel = Math.abs(bitfield % 10);
-
-                // TODO FIXME: Full time option installed: For all ranges except in ZOOM ranges, NDRange > 9NM
-                if (!MathUtils.pointInPolygon(x, y, tcasMask)) {
-                    if (intrusionLevel < TaRaIntrusion.TA) {
-                        return;
-                    }
-                    const ret: [number, number] | null = MathUtils.intersectWithPolygon(x, y, 0, 0, tcasMask);
-                    if (ret) [x, y] = ret;
-                }
-
-                const traffic: NdTraffic | undefined = displayTraffic.find((p) => p && p.ID === tf.ID);
-                if (traffic) {
-                    traffic.alive = true;
-                    traffic.intrusionLevel = intrusionLevel as TaRaIntrusion;
-                    traffic.lat = tf.lat;
-                    traffic.lon = tf.lon;
-                    traffic.relativeAlt = tf.relativeAlt;
-                    traffic.vertSpeed = vertSpeed;
-                    traffic.posX = x;
-                    traffic.posY = y;
-                    if (debug !== '0') {
-                        traffic.hidden = tf.hidden;
-                        traffic.seen = tf.seen;
-                        traffic.raTau = tf.raTau;
-                        traffic.taTau = tf.taTau;
-                        traffic.vTau = tf.vTau;
-                        traffic.closureAccel = tf.closureAccel;
-                        traffic.closureRate = tf.closureRate;
-                    }
-                } else {
-                    tf.alive = true;
-                    displayTraffic.push(tf);
-                }
-            });
-        }
-        displayTraffic.forEach((traffic: NdTraffic, index: number) => {
-            if (!traffic.alive) {
-                displayTraffic.splice(index, 1);
-            }
-        });
-    });
 
     if (debug !== '0') {
         const dmodRa: number = mapParams.nmToPx * (TCAS.DMOD[sensitivity || 1][TaRaIndex.RA]);
@@ -168,39 +154,43 @@ export const Traffic: FC<TcasProps> = ({ mapParams, mode }) => {
                         {TCAS.ALIM[sensitivity]}
                     </tspan>
                 </text>
-                {displayTraffic.map((tf) => (
-                    <TrafficIndicatorDebug
-                        key={tf.ID}
-                        x={tf.posX}
-                        y={tf.posY}
-                        relativeAlt={tf.relativeAlt}
-                        vertSpeed={tf.vertSpeed}
-                        intrusionLevel={tf.intrusionLevel}
-                        ID={tf.ID}
-                        hidden={tf.hidden}
-                        seen={tf.seen}
-                        raTau={tf.raTau && tf.raTau < 200 ? tf.raTau?.toFixed(0) : undefined}
-                        taTau={tf.taTau && tf.taTau < 200 ? tf.taTau?.toFixed(0) : undefined}
-                        vTau={tf.vTau && tf.vTau < 200 ? tf.vTau?.toFixed(0) : undefined}
-                        closureAccel={tf.closureAccel?.toFixed(1)}
-                        closureRate={tf.closureRate?.toFixed(1)}
+                {airTraffic.map((tf) => (
+                    tf.alive ? (
+                        <TrafficIndicatorDebug
+                            key={tf.ID}
+                            x={tf.posX}
+                            y={tf.posY}
+                            relativeAlt={tf.relativeAlt}
+                            vertSpeed={tf.vertSpeed}
+                            intrusionLevel={tf.intrusionLevel}
+                            ID={tf.ID}
+                            hidden={tf.hidden}
+                            seen={tf.seen}
+                            raTau={tf.raTau && tf.raTau < 200 ? tf.raTau?.toFixed(0) : undefined}
+                            taTau={tf.taTau && tf.taTau < 200 ? tf.taTau?.toFixed(0) : undefined}
+                            vTau={tf.vTau && tf.vTau < 200 ? tf.vTau?.toFixed(0) : undefined}
+                            closureAccel={tf.closureAccel?.toFixed(1)}
+                            closureRate={tf.closureRate?.toFixed(1)}
 
-                    />
+                        />
+                    ) : null
                 ))}
             </Layer>
         );
     }
     return (
         <Layer x={x} y={y}>
-            {displayTraffic.map((tf) => (
-                <TrafficIndicator
-                    key={tf.ID}
-                    x={tf.posX}
-                    y={tf.posY}
-                    relativeAlt={tf.relativeAlt}
-                    vertSpeed={tf.vertSpeed}
-                    intrusionLevel={tf.intrusionLevel}
-                />
+            {airTraffic.map((tf) => (
+                tf.alive ? (
+                    <TrafficIndicator
+                        key={tf.ID}
+                        x={tf.posX}
+                        y={tf.posY}
+                        relativeAlt={tf.relativeAlt}
+                        vertSpeed={tf.vertSpeed}
+                        intrusionLevel={tf.intrusionLevel}
+                    />
+                ) : null
             ))}
         </Layer>
 
