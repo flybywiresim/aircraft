@@ -33,7 +33,12 @@ import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
-import { setChecklistItems } from './Store/features/checklists';
+import {
+    areAllChecklistItemsCompleted, setChecklistCompletion,
+    setChecklistItemCompletion,
+    setChecklistItems,
+    setSelectedChecklistIndex,
+} from './Store/features/checklists';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 240;
@@ -106,6 +111,8 @@ const Efb = () => {
     const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
 
     const modals = useModals();
+
+    const [completeItemVar, setCompleteItemVar] = useSimVar('L:A32NX_EFB_CHECKLIST_COMPLETE_ITEM', 'bool', 200);
 
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`);
@@ -197,6 +204,16 @@ const Efb = () => {
             }
         }
     }, [powerState]);
+
+    // This catches the LVAR activation for L:A32NX_EFB_CHECKLIST_COMPLETE_ITEM to
+    // reset it even when not on the checklist page.
+    useEffect(() => {
+        if (completeItemVar) {
+            setTimeout(() => {
+                setCompleteItemVar(false);
+            }, 200);
+        }
+    }, [completeItemVar]);
 
     useInterval(() => {
         if (!autoFillChecklists) return;
