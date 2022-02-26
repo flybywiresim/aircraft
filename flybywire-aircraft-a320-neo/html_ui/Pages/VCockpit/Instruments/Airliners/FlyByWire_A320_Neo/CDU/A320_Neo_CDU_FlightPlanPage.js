@@ -80,7 +80,7 @@ class CDUFlightPlanPage {
 
         // If we're still on the ground, force the active leg to be the first one even if we're close enough that the
         // FPM is trying to advance to the next one.
-        const first = (mcdu.currentFlightPhase <= FmgcFlightPhases.TAKEOFF) ? 0 : activeFirst;
+        const first = (mcdu.flightPhaseManager.phase <= FmgcFlightPhases.TAKEOFF) ? 0 : activeFirst;
 
         // PWPs
         const fmsPseudoWaypoints = mcdu.guidanceController.currentPseudoWaypoints;
@@ -504,8 +504,14 @@ class CDUFlightPlanPage {
                 }
 
                 addRskAt(rowI, () => mcdu.getDelaySwitchPage(),
-                    async (_value) => {
-                        CDUVerticalRevisionPage.ShowPage(mcdu, wp);
+                    (value, scratchpadCallback) => {
+                        if (value === "") {
+                            CDUVerticalRevisionPage.ShowPage(mcdu, wp);
+                        } else if (value === FMCMainDisplay.clrValue) {
+                            mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                        } else {
+                            CDUVerticalRevisionPage.setConstraints(mcdu, wp, value, scratchpadCallback, offset);
+                        }
                     });
 
             } else if (pwp) {

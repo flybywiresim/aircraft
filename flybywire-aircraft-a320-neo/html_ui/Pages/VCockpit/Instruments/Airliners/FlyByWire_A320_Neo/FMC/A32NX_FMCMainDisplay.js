@@ -13,6 +13,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._rcl1Frequency = 0;
         this._pre2Frequency = 0;
         this._atc1Frequency = 0;
+        this.lastFlightPlanVersion = 0;
 
         /** Declaration of every variable used (NOT initialization) */
         this.currentFlightPlanWaypointIndex = undefined;
@@ -123,7 +124,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._cruiseEntered = undefined;
         this._blockFuelEntered = undefined;
         this.constraintAlt = undefined;
-        this.constraintAltCached = undefined;
         this.fcuSelAlt = undefined;
         this._forceNextAltitudeUpdate = undefined;
         this._lastUpdateAPTime = undefined;
@@ -140,8 +140,12 @@ class FMCMainDisplay extends BaseAirliners {
         this.preSelectedDesSpeed = undefined;
         this.managedSpeedTarget = undefined;
         this.managedSpeedTargetIsMach = undefined;
-        this.managedSpeedLimit = undefined;
-        this.managedSpeedLimitAlt = undefined;
+        this.climbSpeedLimit = undefined;
+        this.climbSpeedLimitAlt = undefined;
+        this.climbSpeedLimitPilot = undefined;
+        this.descentSpeedLimit = undefined;
+        this.descentSpeedLimitAlt = undefined;
+        this.descentSpeedLimitPilot = undefined;
         this.managedSpeedClimb = undefined;
         this.managedSpeedClimbIsPilotEntered = undefined;
         this.managedSpeedClimbMach = undefined;
@@ -181,6 +185,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.holdIndex = undefined;
         this.holdDecelReached = undefined;
         this.setHoldSpeedMessageActive = undefined;
+        this.managedProfile = undefined;
     }
 
     Init() {
@@ -441,7 +446,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._cruiseEntered = false;
         this._blockFuelEntered = false;
         this.constraintAlt = 0;
-        this.constraintAltCached = 0;
         this.fcuSelAlt = 0;
         this._forceNextAltitudeUpdate = false;
         this._lastUpdateAPTime = NaN;
@@ -461,8 +465,12 @@ class FMCMainDisplay extends BaseAirliners {
         this.preSelectedDesSpeed = undefined;
         this.managedSpeedTarget = NaN;
         this.managedSpeedTargetIsMach = false;
-        this.managedSpeedLimit = 250;
-        this.managedSpeedLimitAlt = 10000;
+        this.climbSpeedLimit = 250;
+        this.climbSpeedLimitAlt = 10000;
+        this.climbSpeedLimitPilot = false;
+        this.descentSpeedLimit = 250;
+        this.descentSpeedLimitAlt = 10000;
+        this.descentSpeedLimitPilot = false;
         this.managedSpeedClimb = 290;
         this.managedSpeedClimbIsPilotEntered = false;
         this.managedSpeedClimbMach = .78;
@@ -497,6 +505,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.holdIndex = 0;
         this.holdDecelReached = false;
         this.setHoldSpeedMessageActive = false;
+        this.managedProfile = new Map();
 
         // ATSU data
         this.atsuManager = new Atsu.AtsuManager(this);
@@ -535,6 +544,10 @@ class FMCMainDisplay extends BaseAirliners {
         super.onUpdate(_deltaTime);
 
         this.flightPlanManager.update(_deltaTime);
+        const flightPlanChanged = this.flightPlanManager.currentFlightPlanVersion !== this.lastFlightPlanVersion;
+        if (flightPlanChanged) {
+            this.lastFlightPlanVersion = this.flightPlanManager.currentFlightPlanVersion;
+        }
 
         Fmgc.updateFmgcLoop(_deltaTime);
 
@@ -554,10 +567,13 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (this.fmsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
             this.updateRadioNavState();
-            this.updateDisplayedConstraints();
         }
 
         this.A32NXCore.update();
+
+        if (flightPlanChanged) {
+            this.updateManagedProfile();
+        }
 
         this.updateAutopilot();
 
@@ -809,7 +825,7 @@ class FMCMainDisplay extends BaseAirliners {
         const alt = Math.max(fcuAltitude, altitude ? altitude : 0);
 
         let kcas = SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number');
-        if (this.currentFlightPhase === FmgcFlightPhases.APPROACH) {
+        if (this.flightPhaseManager.phase === FmgcFlightPhases.APPROACH) {
             kcas = this.getAppManagedSpeed();
         }
 
@@ -835,8 +851,14 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         // apply speed limit/alt
-        if (alt <= this.managedSpeedLimitAlt) {
-            kcas = Math.min(this.managedSpeedLimit, kcas);
+        if (this.flightPhaseManager.phase <= FmgcFlightPhases.CRUISE) {
+            if (this.climbSpeedLimit !== undefined && alt <= this.climbSpeedLimitAlt) {
+                kcas = Math.min(this.climbSpeedLimit, kcas);
+            }
+        } else if (this.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND) {
+            if (this.descentSpeedLimit !== undefined && alt <= this.descentSpeedLimitAlt) {
+                kcas = Math.min(this.descentSpeedLimit, kcas);
+            }
         }
 
         kcas = Math.max(kcas, this.computedVls);
@@ -990,8 +1012,8 @@ class FMCMainDisplay extends BaseAirliners {
                 case FmgcFlightPhases.CLIMB: {
                     let speed = this.managedSpeedClimb;
 
-                    if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
-                        speed = Math.min(speed, this.managedSpeedLimit);
+                    if (this.climbSpeedLimit !== undefined && SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.climbSpeedLimitAlt) {
+                        speed = Math.min(speed, this.climbSpeedLimit);
                     }
 
                     speed = Math.min(speed, this.getSpeedConstraint());
@@ -1003,8 +1025,8 @@ class FMCMainDisplay extends BaseAirliners {
                 case FmgcFlightPhases.CRUISE: {
                     let speed = this.managedSpeedCruise;
 
-                    if (SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.managedSpeedLimitAlt) {
-                        speed = Math.min(speed, this.managedSpeedLimit);
+                    if (this.climbSpeedLimit !== undefined && SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < this.climbSpeedLimitAlt) {
+                        speed = Math.min(speed, this.climbSpeedLimit);
                     }
 
                     [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedCruiseMach);
@@ -1014,8 +1036,8 @@ class FMCMainDisplay extends BaseAirliners {
                 case FmgcFlightPhases.DESCENT: {
                     let speed = this.managedSpeedDescend;
 
-                    if (Math.round(SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") / 10) * 10 < 20 * (speed - this.managedSpeedLimit) + 300 + this.managedSpeedLimitAlt) {
-                        speed = Math.min(speed, this.managedSpeedLimit);
+                    if (this.descentSpeedLimit !== undefined && Math.round(SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") / 10) * 10 < 20 * (speed - this.descentSpeedLimit) + 300 + this.descentSpeedLimitAlt) {
+                        speed = Math.min(speed, this.descentSpeedLimit);
                     }
 
                     // TODO we really need VNAV to predict where along the leg we should slow to the constraint
@@ -1169,6 +1191,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (this.updateAutopilotCooldown < 0) {
             this.updatePerfSpeeds();
+            this.updateConstraints();
             this.updateManagedSpeed();
             const currentApMasterStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "boolean");
             if (currentApMasterStatus !== this._apMasterStatus) {
@@ -1204,7 +1227,6 @@ class FMCMainDisplay extends BaseAirliners {
 
                     if (activeWpIdx !== this.activeWpIdx) {
                         this.activeWpIdx = activeWpIdx;
-                        this.updateConstraints();
                     }
                     if (this.constraintAlt) {
                         Coherent.call("AP_ALT_VAR_SET_ENGLISH", 2, this.constraintAlt, this._forceNextAltitudeUpdate).catch(console.error);
@@ -1275,40 +1297,109 @@ class FMCMainDisplay extends BaseAirliners {
         this.approachSpeeds.valid = this.flightPlanManager.phase >= FmgcFlightPhases.APPROACH || isFinite(weight);
     }
 
-    updateDisplayedConstraints(force = false) {
-        const fcuSelAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet");
-        if (!force && fcuSelAlt === this.fcuSelAlt) {
-            return;
-        }
-        this.fcuSelAlt = fcuSelAlt;
-        this.constraintAlt = A32NX_ConstraintManager.getDisplayedConstraintAltitude(
-            this.flightPhaseManager.phase,
-            this.fcuSelAlt,
-            this.constraintAltCached
-        );
-        SimVar.SetSimVarValue("L:A32NX_FG_ALTITUDE_CONSTRAINT", "feet", this.constraintAlt);
-    }
-
     updateConstraints() {
-        this.constraintAltCached = A32NX_ConstraintManager.getConstraintAltitude(
-            this.flightPhaseManager.phase,
-            this.flightPlanManager,
-            this.constraintAltCached,
-            this._cruiseFlightLevel * 100
-        );
-        this.updateDisplayedConstraints(true);
+        const activeFpIndex = this.flightPlanManager.getActiveWaypointIndex();
+        const constraints = this.managedProfile.get(activeFpIndex);
+        const fcuSelAlt = Simplane.getAutoPilotDisplayedAltitudeLockValue("feet");
+
+        let constraintAlt = 0;
+        if (constraints) {
+            if ((this.flightPhaseManager.phase < FmgcFlightPhases.CRUISE || this.flightPhaseManager.phase === FmgcFlightPhases.GOAROUND) && isFinite(constraints.climbAltitude) && constraints.climbAltitude < fcuSelAlt) {
+                constraintAlt = constraints.climbAltitude;
+            }
+
+            if ((this.flightPhaseManager.phase > FmgcFlightPhases.CRUISE && this.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND) && isFinite(constraints.descentAltitude) && constraints.descentAltitude > fcuSelAlt) {
+                constraintAlt = constraints.descentAltitude;
+            }
+        }
+
+        if (constraintAlt !== this.constraintAlt) {
+            this.constraintAlt = constraintAlt;
+            SimVar.SetSimVarValue("L:A32NX_FG_ALTITUDE_CONSTRAINT", "feet", this.constraintAlt);
+        }
     }
 
     // TODO/VNAV: Speed constraint
     getSpeedConstraint() {
-        if (this.flightPlanManager.getIsDirectTo()) {
-            return Infinity;
+        const activeFpIndex = this.flightPlanManager.getActiveWaypointIndex();
+        const constraints = this.managedProfile.get(activeFpIndex);
+        // TODO consider decel distance for des constraints
+        if (constraints) {
+            if (this.flightPhaseManager.phase < FmgcFlightPhases.CRUISE || this.flightPhaseManager.phase === FmgcFlightPhases.GOAROUND) {
+                return constraints.climbSpeed;
+            }
+
+            if (this.flightPhaseManager.phase > FmgcFlightPhases.CRUISE && this.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND) {
+                // FIXME proper decel calc
+                if (this.guidanceController.activeLegIndex === activeFpIndex && this.guidanceController.activeLegDtg < 5) {
+                    return constraints.descentSpeed;
+                }
+            }
         }
-        const wpt = this.flightPlanManager.getActiveWaypoint();
-        if (typeof wpt === 'undefined' || !isFinite(wpt.speedConstraint) || wpt.speedConstraint < 100) {
-            return Infinity;
+
+        return Infinity;
+    }
+
+    updateManagedProfile() {
+        this.managedProfile.clear();
+
+        // TODO should we save a constraint already propagated to the current leg?
+
+        // propagate descent speed constraints forward
+        let currentSpeedConstraint = Infinity;
+        for (let index = 0; index < this.flightPlanManager.getWaypointsCount(0); index++) {
+            const wp = this.flightPlanManager.getWaypoint(index, 0);
+            if (wp.additionalData.constraintType === 2 /* DES */) {
+                if (wp.speedConstraint > 0) {
+                    currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(wp.speedConstraint));
+                }
+            }
+            this.managedProfile.set(index, {
+                descentSpeed: currentSpeedConstraint,
+                climbSpeed: Infinity,
+                climbAltitude: Infinity,
+                descentAltitude: -Infinity,
+            });
         }
-        return wpt.speedConstraint;
+
+        // propagate climb speed constraints backward
+        // propagate alt constraints backward
+        currentSpeedConstraint = Infinity;
+        let currentDesConstraint = -Infinity;
+        let currentClbConstraint = Infinity;
+        for (let index = this.flightPlanManager.getWaypointsCount(0) - 1; index >= 0; index--) {
+            const wp = this.flightPlanManager.getWaypoint(index, 0);
+            if (wp.additionalData.constraintType === 1 /* CLB */) {
+                if (wp.speedConstraint > 0) {
+                    currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(wp.speedConstraint));
+                }
+                switch (wp.legAltitudeDescription) {
+                    case 1: // at alt 1
+                    case 3: // at or below alt 1
+                    case 4: // between alt 1 and alt 2
+                        currentClbConstraint = Math.min(currentClbConstraint, Math.round(wp.legAltitude1));
+                        break;
+                    default:
+                        // not constraining
+                }
+            } else if (wp.additionalData.constraintType === 2 /* DES */) {
+                switch (wp.legAltitudeDescription) {
+                    case 1: // at alt 1
+                    case 2: // at or above alt 1
+                        currentDesConstraint = Math.max(currentDesConstraint, Math.round(wp.legAltitude1));
+                        break;
+                    case 4: // between alt 1 and alt 2
+                        currentDesConstraint = Math.max(currentDesConstraint, Math.round(wp.legAltitude2));
+                        break;
+                    default:
+                        // not constraining
+                }
+            }
+            const profilePoint = this.managedProfile.get(index);
+            profilePoint.climbSpeed = currentSpeedConstraint;
+            profilePoint.climbAltitude = currentClbConstraint;
+            profilePoint.descentAltitude = currentDesConstraint;
+        }
     }
 
     getClbManagedSpeedFromCostIndex() {

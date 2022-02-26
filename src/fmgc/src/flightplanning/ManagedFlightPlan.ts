@@ -32,6 +32,7 @@ import { ProcedureDetails } from './ProcedureDetails';
 import { DirectTo } from './DirectTo';
 import { GeoMath } from './GeoMath';
 import { WaypointBuilder } from './WaypointBuilder';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 
 /**
  * A flight plan managed by the FlightPlanManager.
@@ -903,9 +904,11 @@ export class ManagedFlightPlan {
 
             let waypointIndex = segment.offset;
             while (procedure.hasNext()) {
-                const waypoint = await procedure.getNext().catch(console.error);
+                const waypoint = await procedure.getNext();
 
                 if (waypoint !== undefined) {
+                    waypoint.additionalData.constraintType = WaypointConstraintType.CLB;
+
                     this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment);
                 }
             }
@@ -977,9 +980,11 @@ export class ManagedFlightPlan {
             let waypointIndex = segment.offset;
             // console.log('MFP: buildArrival - ADDING WAYPOINTS ------------------------');
             while (procedure.hasNext()) {
-                const waypoint = await procedure.getNext().catch(console.error);
+                const waypoint = await procedure.getNext();
 
                 if (waypoint) {
+                    waypoint.additionalData.constraintType = WaypointConstraintType.DES;
+
                     // console.log('  ---- MFP: buildArrival: added waypoint ', waypoint.ident, ' to segment ', segment);
                     this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment);
                 }
@@ -1066,9 +1071,11 @@ export class ManagedFlightPlan {
             let waypointIndex = _startIndex;
             // console.log('MFP: buildApproach - ADDING WAYPOINTS ------------------------');
             while (procedure.hasNext()) {
-                const waypoint = await procedure.getNext().catch(console.error);
+                const waypoint = await procedure.getNext();
 
                 if (waypoint !== undefined) {
+                    waypoint.additionalData.constraintType = WaypointConstraintType.DES;
+
                     // console.log('  ---- MFP: buildApproach: added waypoint', waypoint.ident, ' to segment ', segment);
                     this.addWaypointAvoidingDuplicates(waypoint, ++waypointIndex, segment);
                 }
