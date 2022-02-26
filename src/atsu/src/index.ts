@@ -4,7 +4,8 @@ import { FreetextMessage } from './messages/FreetextMessage';
 import { PdcMessage } from './messages/PdcMessage';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessageNetwork, AtsuMessageType } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
-import { CpdlcMessage, CpdlcMessageResponse } from './messages/CpdlcMessage';
+import { CpdlcMessageExpectedResponseType, CpdlcMessagesDownlink } from './messages/CpdlcMessageElements';
+import { CpdlcMessage } from './messages/CpdlcMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
 import { MetarMessage } from './messages/MetarMessage';
 import { TafMessage } from './messages/TafMessage';
@@ -26,7 +27,8 @@ export {
     AtsuManager,
     AtsuTimestamp,
     CpdlcMessage,
-    CpdlcMessageResponse,
+    CpdlcMessageExpectedResponseType,
+    CpdlcMessagesDownlink,
     FreetextMessage,
     PdcMessage,
     WeatherMessage,
