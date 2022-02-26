@@ -11,7 +11,7 @@ export const cockpitPreparationChecklist: ChecklistDefinition = {
         },
         {
             item: 'FUEL QUANTITY',
-            result: '_____KG/LB',
+            result: '_____ KG/LB',
         },
         {
             item: 'SEAT BELTS',

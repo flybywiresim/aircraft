@@ -4,7 +4,7 @@ export const lineUpChecklist: ChecklistDefinition = {
     name: 'LINE-UP',
     items: [
         {
-            item: 'T.O RWY',
+            item: 'T.O. RWY',
             result: '_____(BOTH)',
         },
         {
@@ -14,10 +14,6 @@ export const lineUpChecklist: ChecklistDefinition = {
         {
             item: 'PACKS 1 & 2',
             result: '_____',
-        },
-        {
-            item: 'ECAM MEMO',
-            result: 'TO NO BLUE',
         },
     ],
 };
