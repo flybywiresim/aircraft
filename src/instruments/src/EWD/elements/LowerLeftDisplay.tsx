@@ -32,45 +32,7 @@ export const LowerLeftDisplay: React.FC<LowerLeftDisplayProps> = ({ x, y }) => {
         <g id="LowerLeftDisplay">
 
             <EWDMessageParser x={x} y={y} message={message} />
-            {/*
-            <text
-                x={x + 473}
-                y={y - 22}
-                fill="White"
-                textAnchor="middle"
-                className="EWDWarn White"
-            >
-                ADV
-            </text>
-            */}
-            {/* Border for ADV
-            <path
-                className="WhiteLine"
-                d={`M ${x + 446} ${y - 19} h 55 v -24 h -55 v 24`}
-                strokeLinecap="round"
-            />
-            */}
-            {/*
-            <text x={x + 473} y={y + 185} className="White EWDWarn" textAnchor="middle">
-                STS
-            </text>
-            */}
-            {/* Border for STS
-            <path
-                className="WhiteLine"
-                d={`M ${x + 446} ${y + 188} h 55 v -24 h -55 v 24`}
-                strokeLinecap="round"
-            />
-            */}
-            {/* Down arrow */}
-            {/* <path
-                d={`m ${x + 471} ${y + 164} h 5 v 18 h 5 l -7.5,11 l -7.5,-11 h 5 v -18`}
-                style={{
-                    fill: '#00ff00',
-                    stroke: 'none',
-                    // strokeWidth: 0.2,
-                }}
-            /> */}
+
         </g>
     );
 };

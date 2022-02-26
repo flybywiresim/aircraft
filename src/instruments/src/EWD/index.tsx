@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { DisplayUnit } from '@instruments/common/displayUnit';
-import { useSimVar } from '@instruments/common/simVars';
 import { render } from '../Common';
 import UpperDisplay from './elements/UpperDisplay';
 import LowerLeftDisplay from './elements/LowerLeftDisplay';
 import LowerRightDisplay from './elements/LowerRightDisplay';
+import STS from './elements/STS';
+import ADV from './elements/ADV';
+import DownArrow from './elements/DownArrow';
 import PseudoFWC from './elements/PseudoFWC';
 
 import './style.scss';
+
+
 
 export const EWD: React.FC = () => {
     const [displayIndex] = useState(() => {
@@ -27,8 +31,11 @@ export const EWD: React.FC = () => {
                 <line className="Separator" x1="484" y1="552" x2="484" y2="724" strokeLinecap="round" />
                 <LowerLeftDisplay x={10} y={565} />
                 <LowerRightDisplay x={520} y={565} />
-                {/*  */}
+                <STS x={484} y={753} active={false} />
+                <ADV x={483} y={543} active={false} />
+                <DownArrow x = {481} y={729} active={false} />
                 <PseudoFWC />
+                {/* sd */}
             </svg>
         </DisplayUnit>
     );

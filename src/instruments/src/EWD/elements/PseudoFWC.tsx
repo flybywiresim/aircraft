@@ -1109,9 +1109,9 @@ const PseudoFWC: React.FC = () => {
         let tempMemoArrayRight:string[] = [];
         const allFailureKeys: string[] = [];
         let tempFailureArrayLeft:string[] = [];
-        const failureKeysLeft: string[] = failuresLeft;
+        let failureKeysLeft: string[] = failuresLeft;
         let tempFailureArrayRight:string[] = [];
-        const failureKeysRight: string[] = failuresRight;
+        let failureKeysRight: string[] = failuresRight;
         let leftFailureSystemCount = 0;
         let rightFailureSystemCount = 0;
 
@@ -1124,9 +1124,9 @@ const PseudoFWC: React.FC = () => {
 
                 if ((!failuresLeft.includes(key) && !recallFailures.includes(key)) || !failuresRight.includes(key)) {
                     if (value.side === 'LEFT') {
-                        failuresLeft.push(key);
+                        failureKeysLeft.push(key);
                     } else {
-                        failuresRight.push(key);
+                        failureKeysRight.push(key);
                     }
 
                     if (value.failure === 3) {
@@ -1166,7 +1166,7 @@ const PseudoFWC: React.FC = () => {
         }
 
         const failLeft = tempFailureArrayLeft.length > 0;
-        const failRight = tempFailureArrayRight.length > 0;
+        //const failRight = tempFailureArrayRight.length > 0;
 
         const mesgFailOrderLeft: string[] = [];
         const mesgFailOrderRight: string[] = [];
