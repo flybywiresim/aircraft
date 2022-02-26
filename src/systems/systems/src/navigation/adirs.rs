@@ -218,6 +218,9 @@ struct AdirsSimulatorData {
 
     total_air_temperature_id: VariableIdentifier,
     total_air_temperature: ThermodynamicTemperature,
+
+    angle_of_attack_id: VariableIdentifier,
+    angle_of_attack: Angle,
 }
 impl AdirsSimulatorData {
     const MACH: &'static str = "AIRSPEED MACH";
@@ -233,6 +236,7 @@ impl AdirsSimulatorData {
     const WIND_DIRECTION: &'static str = "AMBIENT WIND DIRECTION";
     const WIND_VELOCITY: &'static str = "AMBIENT WIND VELOCITY";
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL AIR TEMPERATURE";
+    const ANGLE_OF_ATTACK: &'static str = "INCIDENCE ALPHA";
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -275,6 +279,9 @@ impl AdirsSimulatorData {
             total_air_temperature_id: context
                 .get_identifier(Self::TOTAL_AIR_TEMPERATURE.to_owned()),
             total_air_temperature: Default::default(),
+
+            angle_of_attack_id: context.get_identifier(Self::ANGLE_OF_ATTACK.to_owned()),
+            angle_of_attack: Default::default(),
         }
     }
 }
@@ -295,6 +302,7 @@ impl SimulationElement for AdirsSimulatorData {
         self.wind_direction = reader.read(&self.wind_direction_id);
         self.wind_velocity = reader.read(&self.wind_velocity_id);
         self.total_air_temperature = reader.read(&self.total_air_temperature_id);
+        self.angle_of_attack = reader.read(&self.angle_of_attack_id);
     }
 }
 
@@ -548,6 +556,7 @@ struct AirDataReference {
     static_air_temperature: AdirsData<ThermodynamicTemperature>,
     total_air_temperature: AdirsData<ThermodynamicTemperature>,
     international_standard_atmosphere_delta: AdirsData<ThermodynamicTemperature>,
+    angle_of_attack: AdirsData<Angle>,
 
     remaining_initialisation_duration: Option<Duration>,
 }
@@ -562,9 +571,11 @@ impl AirDataReference {
     const TOTAL_AIR_TEMPERATURE: &'static str = "TOTAL_AIR_TEMPERATURE";
     const INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA: &'static str =
         "INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA";
+    const ANGLE_OF_ATTACK: &'static str = "ANGLE_OF_ATTACK";
     const MINIMUM_TAS: f64 = 60.;
     const MINIMUM_CAS: f64 = 30.;
     const MINIMUM_MACH: f64 = 0.1;
+    const MINIMUM_CAS_FOR_AOA: f64 = 60.;
 
     fn new(context: &mut InitContext, number: usize) -> Self {
         Self {
@@ -591,6 +602,7 @@ impl AirDataReference {
                 number,
                 Self::INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA,
             ),
+            angle_of_attack: AdirsData::new_adr(context, number, Self::ANGLE_OF_ATTACK),
 
             // Start fully initialised.
             remaining_initialisation_duration: Some(Duration::from_secs(0)),
@@ -646,6 +658,7 @@ impl AirDataReference {
 
             self.international_standard_atmosphere_delta
                 .set_value(ThermodynamicTemperature::new::<degree_celsius>(0.0), ssm);
+            self.angle_of_attack.set_value(Angle::new::<degree>(0.), ssm);
         } else {
             // If it is on and initialized, output normal values.
 
@@ -684,6 +697,13 @@ impl AirDataReference {
                 self.true_airspeed
                     .set_value(true_airspeed, SignStatus::NormalOperation);
             }
+
+            self.angle_of_attack.set_value(simulator_data.angle_of_attack,
+                if computed_airspeed < Velocity::new::<knot>(Self::MINIMUM_CAS_FOR_AOA) {
+                    SignStatus::NoComputedData
+            } else {
+                SignStatus::NormalOperation
+            });
 
             self.total_air_temperature.set_value(
                 simulator_data.total_air_temperature,
@@ -734,6 +754,7 @@ impl SimulationElement for AirDataReference {
         self.total_air_temperature.write_to(writer);
         self.international_standard_atmosphere_delta
             .write_to(writer);
+        self.angle_of_attack.write_to(writer);
     }
 }
 
@@ -1166,6 +1187,11 @@ mod tests {
             self
         }
 
+        fn angle_of_attack_of(mut self, angle: Angle) -> Self {
+            self.write_by_name(AdirsSimulatorData::ANGLE_OF_ATTACK, angle);
+            self
+        }
+
         fn pitch_of(mut self, angle: Angle) -> Self {
             self.write_by_name(AdirsSimulatorData::PITCH, angle);
             self
@@ -1351,6 +1377,17 @@ mod tests {
             ))
         }
 
+        fn angle_of_attack(
+            &mut self,
+            adiru_number: usize,
+        ) -> Arinc429Word<Angle> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Adr,
+                adiru_number,
+                AirDataReference::ANGLE_OF_ATTACK,
+            ))
+        }
+
         fn pitch(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Ir,
@@ -1471,6 +1508,12 @@ mod tests {
             assert_eq!(
                 !self
                     .international_standard_atmosphere_delta(adiru_number)
+                    .is_failure_warning(),
+                valid
+            );
+            assert_eq!(
+                !self
+                    .angle_of_attack(adiru_number)
                     .is_failure_warning(),
                 valid
             );
@@ -2086,6 +2129,44 @@ mod tests {
                     .normal_value()
                     .unwrap(),
                 ThermodynamicTemperature::new::<degree_celsius>(deviation)
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn angle_of_attack_is_supplied_by_adr_when_greater_than_or_equal_to_60_knots(
+            #[case] adiru_number: usize,
+        ) {
+            let angle = Angle::new::<degree>(1.);
+            let mut test_bed = all_adirus_aligned_test_bed_with().angle_of_attack_of(angle);
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(AirDataReference::MINIMUM_CAS_FOR_AOA));
+            test_bed.run();
+
+            assert_eq!(
+                test_bed.angle_of_attack(adiru_number).normal_value().unwrap(),
+                angle
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn angle_of_attack_is_ncd_when_less_than_60_knots(#[case] adiru_number: usize) {
+            let angle = Angle::new::<degree>(1.);
+            let mut test_bed = all_adirus_aligned_test_bed_with().angle_of_attack_of(angle);
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(AirDataReference::MINIMUM_CAS_FOR_AOA - 0.01));
+            test_bed.run();
+
+            assert_eq!(
+                test_bed.angle_of_attack(adiru_number).value(),
+                angle
+            );
+            assert_eq!(
+                test_bed.angle_of_attack(adiru_number).ssm(),
+                SignStatus::NoComputedData
             );
         }
     }
