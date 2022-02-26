@@ -5,7 +5,8 @@ import { InputValidation } from './InputValidation';
 import { HoppieConnector } from './com/HoppieConnector';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
-import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
+import { CpdlcMessagesDownlink, CpdlcMessageExpectedResponseType } from './messages/CpdlcMessageElements';
+import { CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
 import { AtsuManager } from './AtsuManager';
 import { FansMode, FutureAirNavigationSystem } from './com/FutureAirNavigationSystem';
@@ -86,7 +87,7 @@ export class AtcSystem {
             SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE_UID', 'number', -1);
         }
         if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number') !== -1 && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number') !== -1) {
-            this.sendResponse(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number'), SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number') as CpdlcMessageResponse);
+            this.sendResponse(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number'), SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number'));
             SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', -1);
             SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', -1);
         }
@@ -203,9 +204,8 @@ export class AtcSystem {
         message.Station = station;
         message.CurrentTransmissionId = ++this.cpdlcMessageId;
         message.Direction = AtsuMessageDirection.Output;
-        message.RequestedResponses = CpdlcMessageRequestedResponseType.Yes;
+        message.Content = CpdlcMessagesDownlink.DM9998[1];
         message.ComStatus = AtsuMessageComStatus.Sending;
-        message.Message = 'REQUEST LOGON';
 
         this.nextAtc = station;
         this.parent.registerMessage(message);
@@ -239,9 +239,8 @@ export class AtcSystem {
         message.Station = this.currentAtc;
         message.CurrentTransmissionId = ++this.cpdlcMessageId;
         message.Direction = AtsuMessageDirection.Output;
-        message.RequestedResponses = CpdlcMessageRequestedResponseType.No;
+        message.Content = CpdlcMessagesDownlink.DM9999[1];
         message.ComStatus = AtsuMessageComStatus.Sending;
-        message.Message = 'LOGOFF';
 
         this.maxUplinkDelay = -1;
         this.parent.registerMessage(message);
@@ -259,53 +258,27 @@ export class AtcSystem {
         });
     }
 
-    private createCpdlcResponse(request: CpdlcMessage) {
-        // create the meta information of the response
-        const response = new CpdlcMessage();
-        response.Direction = AtsuMessageDirection.Output;
-        response.CurrentTransmissionId = ++this.cpdlcMessageId;
-        response.PreviousTransmissionId = request.CurrentTransmissionId;
-        response.RequestedResponses = CpdlcMessageRequestedResponseType.No;
-        response.Station = request.Station;
-
-        // create the answer text
-        switch (request.ResponseType) {
-        case CpdlcMessageResponse.Acknowledge:
-            response.Message = 'ACKNOWLEDGE';
-            break;
-        case CpdlcMessageResponse.Affirm:
-            response.Message = 'AFFIRM';
-            break;
-        case CpdlcMessageResponse.Negative:
-            response.Message = 'NEGATIVE';
-            break;
-        case CpdlcMessageResponse.Refuse:
-            response.Message = 'REFUSE';
-            break;
-        case CpdlcMessageResponse.Roger:
-            response.Message = 'ROGER';
-            break;
-        case CpdlcMessageResponse.Standby:
-            response.Message = 'STANDBY';
-            break;
-        case CpdlcMessageResponse.Unable:
-            response.Message = 'UNABLE';
-            break;
-        case CpdlcMessageResponse.Wilco:
-            response.Message = 'WILCO';
-            break;
-        default:
+    private createCpdlcResponse(request: CpdlcMessage, response: number): CpdlcMessage | undefined {
+        const downlinkId = `DM${response}`;
+        if (!(downlinkId in CpdlcMessagesDownlink)) {
             return undefined;
         }
 
-        return response;
+        // create the meta information of the response
+        const responseMessage = new CpdlcMessage();
+        responseMessage.Direction = AtsuMessageDirection.Output;
+        responseMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
+        responseMessage.PreviousTransmissionId = request.CurrentTransmissionId;
+        responseMessage.Station = request.Station;
+        responseMessage.Content = CpdlcMessagesDownlink[downlinkId][1];
+
+        return responseMessage;
     }
 
-    private sendResponse(uid: number, response: CpdlcMessageResponse): void {
+    private sendResponse(uid: number, response: number): void {
         const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
         if (message !== undefined) {
-            message.ResponseType = response;
-            message.Response = this.createCpdlcResponse(message);
+            message.Response = this.createCpdlcResponse(message, response);
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
 
@@ -350,29 +323,22 @@ export class AtcSystem {
             return true;
         }
 
-        if (request.RequestedResponses === CpdlcMessageRequestedResponseType.NotRequired && response === undefined) {
+        if (request.Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.NotRequired && response === undefined) {
             // received the station message for the DCDU
-            if (request.Message.includes('CURRENT ATC')) {
+            if (request.Content?.TypeId === 'UM9999') {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', request.Message);
                 return true;
             }
 
             // received a logoff message
-            if (request.Message.includes('LOGOFF')) {
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
-                this.currentAtc = '';
-                return true;
-            }
-
-            // received a service terminated message
-            if (request.Message.includes('TERMINATED')) {
+            if (request.Content?.TypeId === 'UM9995') {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
                 this.currentAtc = '';
                 return true;
             }
 
             // process the handover message
-            if (request.Message.includes('HANDOVER')) {
+            if (request.Content?.TypeId === 'UM9998') {
                 const entries = request.Message.split(' ');
                 if (entries.length >= 2) {
                     const station = entries[1].replace(/@/gi, '');
@@ -384,9 +350,9 @@ export class AtcSystem {
 
         // expecting a LOGON or denied message
         if (this.nextAtc !== '' && request !== undefined && response !== undefined) {
-            if (request.Message.startsWith('REQUEST')) {
+            if (request.Content?.TypeId === 'DM9998') {
                 // logon accepted by ATC
-                if (response.Message.includes('LOGON ACCEPTED')) {
+                if (response.Content?.TypeId === 'UM9997') {
                     this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `CURRENT ATC UNIT @${this.nextAtc}@`);
                     this.currentFansMode = FutureAirNavigationSystem.currentFansMode(this.nextAtc);
                     InputValidation.FANS = this.currentFansMode;
@@ -396,7 +362,7 @@ export class AtcSystem {
                 }
 
                 // logon rejected
-                if (response.Message.includes('UNABLE')) {
+                if (response.Content?.TypeId === 'UM9996') {
                     this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
                     this.currentAtc = '';
                     this.nextAtc = '';
@@ -420,9 +386,6 @@ export class AtcSystem {
                 if (element.Station === cpdlcMessage.Station) {
                     while (element !== undefined) {
                         if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
-                            if (element.ResponseType === undefined) {
-                                element.ResponseType = CpdlcMessageResponse.Other;
-                            }
                             element.Response = cpdlcMessage;
                             analyzed = this.analyzeMessage(element, cpdlcMessage);
                             break;
