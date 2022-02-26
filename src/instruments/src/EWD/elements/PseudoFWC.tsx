@@ -580,14 +580,14 @@ const PseudoFWC: React.FC = () => {
             sysPage: 4,
             side: 'RIGHT',
         },
-        2900312: // *HYD  - Green Engine 1
+        2900312: // *HYD  - Green Engine 1 //
         {
             flightPhaseInhib: [],
-            simVarIsActive: ![1, 10, 2, 9].includes(flightPhase
+            simVarIsActive: ![1, 10, 2, 9].includes(flightPhase)
             // && ENG 1 OUT - not implemented
             && greenLP === 1
             && !greenHydEng1PBAuto
-            && !emergencyGeneratorOn),
+            && !emergencyGeneratorOn,
             whichCodeToReturn: [0],
             codesToReturn: ['290031201'],
             memoInhibit: false,
