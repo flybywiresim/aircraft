@@ -209,8 +209,8 @@ const RunwayMarkerFar: FC<Omit<RunwayMarkerProps, 'lengthPx'>> = memo(({ ident, 
 
     return (
         <g transform={`rotate(${rotation})`} className="White">
-            <rect x={-5} y={-25} width={10} height={25} className="shadow" strokeWidth={2.5} />
-            <rect x={-5} y={-25} width={10} height={25} strokeWidth={2} />
+            <rect x={-5} y={-12.5} width={10} height={25} className="shadow" strokeWidth={2.5} />
+            <rect x={-5} y={-12.5} width={10} height={25} strokeWidth={2} />
             <RunwayIdent ident={ident} rotation={rotation} />
         </g>
     );
