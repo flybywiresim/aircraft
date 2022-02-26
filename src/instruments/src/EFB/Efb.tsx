@@ -207,7 +207,7 @@ const Efb = () => {
         if (!autoFillChecklists) return;
 
         setAutomaticItemStates();
-    }, 3000);
+    }, 1000);
 
     const offToLoaded = () => {
         const shouldWait = powerState === PowerStates.SHUTOFF;
