@@ -107,10 +107,8 @@ const PseudoFWC: React.FC = () => {
 
     const [engine1State] = useSimVar('L:A32NX_ENGINE_STATE:1', 'enum', 500);
     const [engine2State] = useSimVar('L:A32NX_ENGINE_STATE:2', 'enum', 500);
-    const [throttle1PositionActual] = useSimVar('L:XMLVAR_Throttle1Position', 'number', 100);
-    const [throttle2PositionActual] = useSimVar('L:XMLVAR_Throttle2Position', 'number', 100);
-    const throttle1Position = Math.floor(throttle1PositionActual);
-    const throttle2Position = Math.floor(throttle2PositionActual);
+    const [throttle1Position] = useSimVar('L:A32NX_AUTOTHRUST_TLA:1', 'number', 100);
+    const [throttle2Position] = useSimVar('L:A32NX_AUTOTHRUST_TLA:2', 'number', 100);
     const [engine1ValueSwitch] = useSimVar('FUELSYSTEM VALVE SWITCH:1', 'bool', 500);
     const [engine2ValueSwitch] = useSimVar('FUELSYSTEM VALVE SWITCH:2', 'bool', 500);
     const [N1Eng1] = useSimVar('L:A32NX_ENGINE_N1:1', 'number', 500);
@@ -514,8 +512,8 @@ const PseudoFWC: React.FC = () => {
             simVarIsActive: !!(eng1FireTest === 1 || fireButton1 === 1),
             whichCodeToReturn: [
                 0,
-                throttle1Position !== 1 && !onGround ? 1 : null,
-                (throttle1Position !== 1 || throttle2Position !== 1) && onGround ? 2 : null,
+                throttle1Position !== 0 && !onGround ? 1 : null,
+                (throttle1Position !== 0 || throttle2Position !== 0) && onGround ? 2 : null,
                 !parkBrake && onGround ? 3 : null,
                 !parkBrake && onGround ? 4 : null,
                 onGround ? 5 : null,
@@ -544,21 +542,22 @@ const PseudoFWC: React.FC = () => {
             simVarIsActive: !!(eng2FireTest === 1 || fireButton2 === 1),
             whichCodeToReturn: [
                 0,
-                throttle2Position !== 1 && !onGround ? 1 : null,
-                (throttle1Position !== 1 || throttle2Position !== 1) && onGround ? 2 : null,
+                throttle2Position !== 0 && !onGround ? 1 : null,
+                (throttle1Position !== 0 || throttle2Position !== 0) && onGround ? 2 : null,
                 !parkBrake && onGround ? 3 : null,
                 !parkBrake && onGround ? 4 : null,
                 onGround ? 5 : null,
                 onGround ? 6 : null,
                 !engine2ValueSwitch ? null : 7,
                 !fireButton2 ? 8 : null,
-                !onGround && fireButton1 && !agent1Eng2Discharge && !eng1Agent1PB ? 9 : null,
-                agent1Eng2Discharge && !onGround && !eng2Agent1PB ? 10 : null,
-                eng2Agent1PB === 1 && onGround ? 11 : null,
-                onGround ? 12 : null,
-                !onGround ? 13 : null,
-                !onGround && eng2Agent1PB === 1 && !agent2Eng2Discharge ? 14 : null,
-                (agent2Eng2Discharge && eng2Agent1PB === 1) || (!onGround && eng2Agent1PB === 1 && !agent2Eng2Discharge) ? 15 : null,
+                !onGround && agent1Eng2Discharge === 1 && !eng2Agent1PB ? 9 : null,
+                agent1Eng2Discharge === 2 && !onGround && !eng2Agent1PB ? 10 : null,
+                !eng2Agent1PB && onGround ? 11 : null,
+                !eng2Agent2PB && onGround ? 12 : null,
+                onGround ? 13 : null,
+                !onGround ? 14 : null,
+                agent2Eng2Discharge === 1 && !eng2Agent2PB ? 15 : null,
+                (agent2Eng2Discharge === 1 && !eng2Agent2PB) || (agent2Eng2Discharge === 2 && !eng2Agent2PB) ? 16 : null,
             ],
             codesToReturn: ['260002001', '260002002', '260002003', '260002004', '260002005',
                 '260002006', '260002007', '260002008', '260002009', '260002010', '260002011',
@@ -574,8 +573,8 @@ const PseudoFWC: React.FC = () => {
             whichCodeToReturn: [
                 0,
                 !fireButtonAPU ? 1 : null,
-                !agentAPUDischarge && !apuAgentPB ? 2 : null,
-                agentAPUDischarge && !apuAgentPB ? 3 : null,
+                agentAPUDischarge === 1 && !apuAgentPB ? 2 : null,
+                agentAPUDischarge === 2 && !apuAgentPB ? 3 : null,
                 apuMasterSwitch === 1 ? 4 : null,
             ],
             codesToReturn: ['260003001', '260003002', '260003003', '260003004', '260003005'],
@@ -640,7 +639,7 @@ const PseudoFWC: React.FC = () => {
         7700647: { // THR LEVERS NOT SET  (on ground)
             flightPhaseInhib: [1, 4, 5, 6, 7, 8, 10],
             simVarIsActive: [2, 3, 4, 8, 9].includes(flightPhase) && (
-                !!((throttle1Position !== 3 && thrustLeverNotSet) || (throttle2Position !== 3 && thrustLeverNotSet))
+                !!((throttle1Position !== 35 && thrustLeverNotSet) || (throttle2Position !== 35 && thrustLeverNotSet))
             ),
             whichCodeToReturn: [
                 0,
