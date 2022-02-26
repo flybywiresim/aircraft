@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CheckLg, LockFill } from 'react-bootstrap-icons';
+import { CheckLg, Link45deg } from 'react-bootstrap-icons';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
@@ -13,12 +13,12 @@ import { useAppDispatch, useAppSelector } from '../Store/store';
 import { CHECKLISTS } from './Lists';
 import { ChecklistItem } from './Checklists';
 
-interface ChecklistItemProps {
+interface ChecklistItemComponentProps {
     item: ChecklistItem;
     index: number;
 }
 
-const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
+const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentProps) => {
     const dispatch = useAppDispatch();
     const [checklistShake, setChecklistShake] = useState(false);
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
@@ -35,7 +35,7 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
 
     const itemCheckedAfterIncomplete = checklists[selectedChecklistIndex].items
         .slice(firstIncompleteIdx)
-        .some((item) => item.completed && !item.divider && (autoFillChecklists ? !item.hasCondition : true));
+        .some((item) => item.completed && (autoFillChecklists ? !item.hasCondition : true));
 
     const itemImproperlyUnchecked = index === firstIncompleteIdx && itemCheckedAfterIncomplete;
 
@@ -71,16 +71,14 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
                     return;
                 }
 
-                if (!item.divider) {
-                    dispatch(setChecklistItemCompletion({
-                        checklistIndex: selectedChecklistIndex,
-                        itemIndex: index,
-                        completionValue: !isItemCompleted,
-                    }));
+                dispatch(setChecklistItemCompletion({
+                    checklistIndex: selectedChecklistIndex,
+                    itemIndex: index,
+                    completionValue: !isItemCompleted,
+                }));
 
-                    if (isItemCompleted) {
-                        dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: false }));
-                    }
+                if (isItemCompleted) {
+                    dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: false }));
                 }
             }}
         >
@@ -89,18 +87,19 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemProps) => {
                     className="flex flex-shrink-0 justify-center items-center w-8 h-8 text-current border-4 border-current"
                 >
                     {(!!autoFillChecklists && item.condition) && (
-                        <LockFill size={40} className={`${checklistShake && 'shake text-red-500'}`} />
+                        <Link45deg size={40} className={`${checklistShake && 'shake text-red-500'}`} />
                     )}
                     {(isItemCompleted && (!autoFillChecklists || (autoFillChecklists && !item.condition))) && (
                         <CheckLg size={40} />
                     )}
                 </div>
             )}
-            <div className="flex flex-row items-center w-full text-current">
+            <div className="flex flex-row items-end w-full text-current">
                 <div className="text-current whitespace-nowrap">
                     {item.item}
+                    {isItemCompleted && ':'}
                 </div>
-                <div className={`w-full h-1 text-current ${item.item && 'mx-4'} ${(item.divider) ? 'bg-theme-text' : 'bg-current'}`} />
+                <div className={`h-0.5 mb-1.5 text-current bg-current ${isItemCompleted ? 'w-0 mx-2' : 'w-full mx-4'}`} />
                 <div className="text-current whitespace-nowrap">
                     {item.result}
                 </div>

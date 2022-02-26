@@ -1,19 +1,21 @@
 import { afterLandingChecklist } from './AfterLanding';
 import { afterStartChecklist } from './AfterStart';
-import { afterTakeoffClimbChecklist } from './AfterTakeOffClimb';
 import { approachChecklist } from './Approach';
 import { beforeStartChecklist } from './BeforeStart';
-import { beforeTakeoffChecklist } from './BeforeTakeoff';
 import { landingChecklist } from './Landing';
 import { parkingChecklist } from './Parking';
 import { securingAircraftChecklist } from './SecuringAircraft';
 import { ChecklistDefinition } from '../Checklists';
+import { cockpitPreparationChecklist } from './CockpitPreparation';
+import { taxiChecklist } from './Taxi';
+import { lineUpChecklist } from './LineUp';
 
 export const CHECKLISTS: ChecklistDefinition[] = [
+    cockpitPreparationChecklist,
     beforeStartChecklist,
     afterStartChecklist,
-    beforeTakeoffChecklist,
-    afterTakeoffClimbChecklist,
+    taxiChecklist,
+    lineUpChecklist,
     approachChecklist,
     landingChecklist,
     afterLandingChecklist,

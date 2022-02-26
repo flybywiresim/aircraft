@@ -4,14 +4,8 @@ export const approachChecklist: ChecklistDefinition = {
     name: 'APPROACH',
     items: [
         {
-            item: 'BRIEFING',
-            result: 'CONFIRMED',
-            condition: undefined,
-        },
-        {
-            item: 'ECAM STATUS',
-            result: 'CHECKED',
-            condition: undefined,
+            item: 'BARO REF',
+            result: '_____SET (BOTH)',
         },
         {
             item: 'SEAT BELTS',
@@ -19,19 +13,16 @@ export const approachChecklist: ChecklistDefinition = {
             condition: () => !!SimVar.GetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'Number'),
         },
         {
-            item: 'BARO REF',
-            result: '___ SET (BOTH)',
-            condition: undefined,
+            item: 'MINIMUM',
+            result: '_____',
         },
         {
-            item: 'MINIMUM',
-            result: '___ SET (BOTH)',
-            condition: undefined,
+            item: 'AUTO BRAKE',
+            result: '_____',
         },
         {
             item: 'ENG MODE SEL',
-            result: 'AS RQRD',
-            condition: undefined,
+            result: '_____',
         },
     ],
 };

@@ -14,7 +14,6 @@ export interface ChecklistItem {
     item: string;
     result: string;
     condition?: () => boolean;
-    divider?: boolean;
 }
 
 export interface ChecklistDefinition {

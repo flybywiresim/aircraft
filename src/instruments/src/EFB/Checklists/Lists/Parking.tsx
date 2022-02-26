@@ -4,29 +4,23 @@ export const parkingChecklist: ChecklistDefinition = {
     name: 'PARKING',
     items: [
         {
-            item: 'APU BLEED',
-            result: 'ON',
-            condition: () => !!SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', 'Bool'),
+            item: 'PARK BRK or CHOCKS',
+            result: 'SET',
         },
         {
             item: 'ENGINES',
             result: 'OFF',
             condition: () => {
-                const engOneN2 = SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'Number');
-                const engTwoN2 = SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'Number');
+                const engOneN2 = SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'Number');
+                const engTwoN2 = SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'Number');
 
                 return engOneN2 === 0 && engTwoN2 === 0;
             },
         },
         {
-            item: 'SEAT BELTS',
+            item: 'WING LIGHTS',
             result: 'OFF',
-            condition: () => !SimVar.GetSimVarValue('A:CABIN SEATBELTS ALERT SWITCH', 'Bool'),
-        },
-        {
-            item: 'EXT LT',
-            result: 'AS RQRD',
-            condition: undefined,
+            condition: () => SimVar.GetSimVarValue('LIGHT WING', 'Bool') === 0,
         },
         {
             item: 'FUEL PUMPS',
@@ -48,11 +42,6 @@ export const parkingChecklist: ChecklistDefinition = {
                     && pumpSixOff
                 );
             },
-        },
-        {
-            item: 'PARK BREAK and CHOCKS',
-            result: 'AS RQRD',
-            condition: undefined,
         },
     ],
 };

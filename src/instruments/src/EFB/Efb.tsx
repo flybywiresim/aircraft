@@ -183,13 +183,7 @@ const Efb = () => {
                 CHECKLISTS.forEach((checklist, index) => {
                     dispatch(setChecklistItems({
                         checklistIndex: index,
-                        itemArr: checklist.items.map((item) => {
-                            if (item.divider) {
-                                return { completed: true, divider: true, hasCondition: item.condition !== undefined };
-                            }
-
-                            return { completed: false, divider: false, hasCondition: item.condition !== undefined };
-                        }),
+                        itemArr: checklist.items.map((item) => ({ completed: false, hasCondition: item.condition !== undefined })),
                     }));
                 });
             }
