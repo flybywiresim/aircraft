@@ -9,8 +9,8 @@ export enum AtsuMessageNetwork {
 }
 
 export enum AtsuMessageDirection {
-    Input,
-    Output
+    Uplink,
+    Downlink
 }
 
 export enum AtsuMessageType {

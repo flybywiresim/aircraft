@@ -13,7 +13,7 @@ const translateResponseId = (response: number, message: CpdlcMessage): string =>
     const answerExpected = message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
 
     if (response === -1) {
-        if (message.Direction === AtsuMessageDirection.Input && answerExpected) {
+        if (message.Direction === AtsuMessageDirection.Uplink && answerExpected) {
             return 'OPEN';
         }
         if (message.ComStatus === AtsuMessageComStatus.Sent) {
@@ -30,7 +30,7 @@ const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage 
     const answerExpected = message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
 
     if (response === undefined) {
-        if (message.Direction === AtsuMessageDirection.Input && answerExpected) {
+        if (message.Direction === AtsuMessageDirection.Uplink && answerExpected) {
             return 'OPEN';
         }
         if (message.ComStatus === AtsuMessageComStatus.Sent) {
@@ -61,7 +61,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
 
     const backgroundRequired = text !== 'OPEN' && text !== 'SENT';
     let backgroundColor = 'rgba(0,0,0,0)';
-    if (message.Direction === AtsuMessageDirection.Input) {
+    if (message.Direction === AtsuMessageDirection.Uplink) {
         if (selectedResponse === -1 || message.Response?.Content?.TypeId === `DM${selectedResponse}`) {
             backgroundColor = 'rgb(0,255,0)';
         } else {
@@ -84,7 +84,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
             <text className="station" x="168" y="280">
                 {message.Timestamp?.dcduTimestamp()}
                 {' '}
-                {message.Direction === AtsuMessageDirection.Output ? ' TO ' : ' FROM '}
+                {message.Direction === AtsuMessageDirection.Downlink ? ' TO ' : ' FROM '}
                 {message.Station}
             </text>
             <>

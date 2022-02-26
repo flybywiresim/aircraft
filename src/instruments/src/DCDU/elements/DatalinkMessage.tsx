@@ -18,7 +18,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
 
     // define the correct background color
     let backgroundClass = 'message-background';
-    if (message.Direction === AtsuMessageDirection.Output) {
+    if (message.Direction === AtsuMessageDirection.Downlink) {
         if (message.ComStatus === AtsuMessageComStatus.Sent || message.ComStatus === AtsuMessageComStatus.Sending) {
             backgroundClass += ' message-sent';
         } else {
@@ -30,7 +30,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
 
     // check if highlight is needed
     let ignoreHighlight = false;
-    if (message.Direction === AtsuMessageDirection.Output) {
+    if (message.Direction === AtsuMessageDirection.Downlink) {
         ignoreHighlight = true;
     } else if (message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending) {
         ignoreHighlight = true;
@@ -40,7 +40,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ message, isSta
 
     // define the text color
     let messageClass = 'message-content';
-    if (message.Direction === AtsuMessageDirection.Output) {
+    if (message.Direction === AtsuMessageDirection.Downlink) {
         messageClass += ' message-content-other message-content-out';
     } else if (ignoreHighlight) {
         messageClass += ' message-content-sent';

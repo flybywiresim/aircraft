@@ -203,7 +203,7 @@ export class AtcSystem {
         const message = new CpdlcMessage();
         message.Station = station;
         message.CurrentTransmissionId = ++this.cpdlcMessageId;
-        message.Direction = AtsuMessageDirection.Output;
+        message.Direction = AtsuMessageDirection.Downlink;
         message.Content = CpdlcMessagesDownlink.DM9998[1];
         message.ComStatus = AtsuMessageComStatus.Sending;
 
@@ -238,7 +238,7 @@ export class AtcSystem {
         const message = new CpdlcMessage();
         message.Station = this.currentAtc;
         message.CurrentTransmissionId = ++this.cpdlcMessageId;
-        message.Direction = AtsuMessageDirection.Output;
+        message.Direction = AtsuMessageDirection.Downlink;
         message.Content = CpdlcMessagesDownlink.DM9999[1];
         message.ComStatus = AtsuMessageComStatus.Sending;
 
@@ -266,7 +266,7 @@ export class AtcSystem {
 
         // create the meta information of the response
         const responseMessage = new CpdlcMessage();
-        responseMessage.Direction = AtsuMessageDirection.Output;
+        responseMessage.Direction = AtsuMessageDirection.Downlink;
         responseMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
         responseMessage.PreviousTransmissionId = request.CurrentTransmissionId;
         responseMessage.Station = request.Station;
@@ -319,7 +319,7 @@ export class AtcSystem {
 
     private analyzeMessage(request: CpdlcMessage, response: CpdlcMessage): boolean {
         // inserted a sent message for a new thread
-        if (request.Direction === AtsuMessageDirection.Output && response === undefined) {
+        if (request.Direction === AtsuMessageDirection.Downlink && response === undefined) {
             return true;
         }
 
@@ -411,7 +411,7 @@ export class AtcSystem {
 
     public messageRead(uid: number): boolean {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
-        if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Input) {
+        if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Uplink) {
             this.messageQueue[index].Confirmed = true;
         }
 

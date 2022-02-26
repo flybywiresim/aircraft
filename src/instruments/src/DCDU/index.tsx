@@ -195,7 +195,7 @@ const DCDU: React.FC = () => {
                 readMessage = oldMessage[2];
 
                 // check if we have to show the status of an output message
-                if (oldMessage[0].Direction === AtsuMessageDirection.Output) {
+                if (oldMessage[0].Direction === AtsuMessageDirection.Downlink) {
                     if (oldMessage[0].ComStatus !== cpdlcMessage.ComStatus) {
                         if (cpdlcMessage.ComStatus === AtsuMessageComStatus.Failed) {
                             setStatus('Mainpage', 'COM FAILED');
@@ -258,7 +258,7 @@ const DCDU: React.FC = () => {
         // check the number of unread messages
         let unreadMessages = 0;
         messages.forEach((message) => {
-            if (message[0].Direction === AtsuMessageDirection.Input && !message[2]) {
+            if (message[0].Direction === AtsuMessageDirection.Uplink && !message[2]) {
                 unreadMessages += 1;
             }
         });

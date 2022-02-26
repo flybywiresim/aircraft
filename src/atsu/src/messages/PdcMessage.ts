@@ -32,7 +32,7 @@ export class PdcMessage extends AtsuMessage {
     constructor() {
         super();
         this.Type = AtsuMessageType.PDC;
-        this.Direction = AtsuMessageDirection.Output;
+        this.Direction = AtsuMessageDirection.Downlink;
         this.Network = AtsuMessageNetwork.Hoppie;
     }
 

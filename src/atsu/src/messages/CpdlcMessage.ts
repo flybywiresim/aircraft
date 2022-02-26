@@ -21,7 +21,7 @@ export class CpdlcMessage extends AtsuMessage {
         super();
         this.Type = AtsuMessageType.CPDLC;
         this.Network = AtsuMessageNetwork.Hoppie;
-        this.Direction = AtsuMessageDirection.Output;
+        this.Direction = AtsuMessageDirection.Downlink;
     }
 
     public deserialize(jsonData: any): void {
@@ -44,7 +44,7 @@ export class CpdlcMessage extends AtsuMessage {
         let message: string = '';
         let content: string = '';
 
-        if (this.Direction === AtsuMessageDirection.Input) {
+        if (this.Direction === AtsuMessageDirection.Uplink) {
             if (this.Content === undefined) {
                 content = this.Message;
             } else {
@@ -73,7 +73,7 @@ export class CpdlcMessage extends AtsuMessage {
             });
             message = lines.join('\n');
         } else if (format === AtsuMessageSerializationFormat.MCDU) {
-            if (this.Direction === AtsuMessageDirection.Input) {
+            if (this.Direction === AtsuMessageDirection.Uplink) {
                 message += `{cyan}${this.Timestamp.dcduTimestamp()} FROM ${this.Station}{end}\n`;
             } else {
                 message += `{cyan}${this.Timestamp.dcduTimestamp()} TO ${this.Station}{end}\n`;
@@ -104,7 +104,7 @@ export class CpdlcMessage extends AtsuMessage {
                 }
             }
         } else if (format === AtsuMessageSerializationFormat.Printer) {
-            message += `${this.Timestamp.dcduTimestamp()} ${this.Direction === AtsuMessageDirection.Input ? 'FROM' : 'TO'} ${this.Station}}\n`;
+            message += `${this.Timestamp.dcduTimestamp()} ${this.Direction === AtsuMessageDirection.Uplink ? 'FROM' : 'TO'} ${this.Station}}\n`;
 
             content.split('_').forEach((entry) => {
                 const newLines = wordWrap(entry, 25);

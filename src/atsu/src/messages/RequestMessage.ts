@@ -18,7 +18,7 @@ export class RequestMessage extends CpdlcMessage {
     constructor() {
         super();
         this.Type = AtsuMessageType.Request;
-        this.Direction = AtsuMessageDirection.Output;
+        this.Direction = AtsuMessageDirection.Downlink;
     }
 
     public deserialize(jsonData: any): void {
