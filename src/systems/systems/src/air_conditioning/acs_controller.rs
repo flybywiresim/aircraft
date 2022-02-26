@@ -1,5 +1,5 @@
 use crate::{
-    pneumatic::EngineState,
+    pneumatic::{EngineModeSelector, EngineState},
     pressurization::PressurizationOverheadPanel,
     shared::{
         pid::PidController, Cabin, ControllerSignal, EngineBleedPushbutton, EngineCorrectedN1,
@@ -695,14 +695,16 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
                     || (engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
                         && pneumatic_overhead.right_engine_bleed_pushbutton_is_auto()
                         && pneumatic.engine_crossbleed_is_on()))
-                    || pneumatic.apu_bleed_is_on()),
+                    || (pneumatic.apu_bleed_is_on()
+                        && pneumatic.engine_mode_selector() != EngineModeSelector::Ignition)),
             self.fcv_2_open_allowed
                 && (((engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
                     && pneumatic_overhead.right_engine_bleed_pushbutton_is_auto())
                     || (engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
                         && pneumatic_overhead.left_engine_bleed_pushbutton_is_auto()
                         && pneumatic.engine_crossbleed_is_on()))
-                    || pneumatic.apu_bleed_is_on()),
+                    || (pneumatic.apu_bleed_is_on()
+                        && pneumatic.engine_mode_selector() != EngineModeSelector::Ignition)),
         ]
     }
 
@@ -939,6 +941,9 @@ mod acs_controller_tests {
 
         engine_1_state: EngineState,
         engine_2_state: EngineState,
+
+        engine_mode_selector_id: VariableIdentifier,
+        engine_mode_selector_position: EngineModeSelector,
     }
     impl TestFadec {
         fn new(context: &mut InitContext) -> Self {
@@ -947,6 +952,9 @@ mod acs_controller_tests {
                 engine_2_state_id: context.get_identifier("ENGINE_STATE:2".to_owned()),
                 engine_1_state: EngineState::Off,
                 engine_2_state: EngineState::Off,
+                engine_mode_selector_id: context
+                    .get_identifier("TURB ENG IGNITION SWITCH EX1:1".to_owned()),
+                engine_mode_selector_position: EngineModeSelector::Norm,
             }
         }
 
@@ -957,11 +965,16 @@ mod acs_controller_tests {
                 _ => panic!("Invalid engine number"),
             }
         }
+
+        fn engine_mode_selector(&self) -> EngineModeSelector {
+            self.engine_mode_selector_position
+        }
     }
     impl SimulationElement for TestFadec {
         fn read(&mut self, reader: &mut SimulatorReader) {
             self.engine_1_state = reader.read(&self.engine_1_state_id);
             self.engine_2_state = reader.read(&self.engine_2_state_id);
+            self.engine_mode_selector_position = reader.read(&self.engine_mode_selector_id);
         }
     }
 
@@ -1003,6 +1016,9 @@ mod acs_controller_tests {
         }
         fn right_engine_state(&self) -> EngineState {
             self.fadec.engine_state(2)
+        }
+        fn engine_mode_selector(&self) -> EngineModeSelector {
+            self.fadec.engine_mode_selector()
         }
     }
     impl SimulationElement for TestPneumatic {

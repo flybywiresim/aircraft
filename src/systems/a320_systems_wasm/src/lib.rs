@@ -116,6 +116,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 2)?
     .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 1)?
     .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 2)?
+    .provides_aircraft_variable("TURB ENG IGNITION SWITCH EX1", "Enum", 1)?
     .provides_aircraft_variable("UNLIMITED FUEL", "Bool", 0)?
     .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
     .with_aspect(|builder| {
