@@ -790,6 +790,7 @@ struct InertialReference {
     roll: AdirsData<Angle>,
     heading: AdirsData<Angle>,
     track: AdirsData<Angle>,
+    drift_angle: AdirsData<Angle>,
     vertical_speed: AdirsData<f64>,
     ground_speed: AdirsData<Velocity>,
     wind_direction: AdirsData<Angle>,
@@ -805,6 +806,7 @@ impl InertialReference {
     const ROLL: &'static str = "ROLL";
     const HEADING: &'static str = "HEADING";
     const TRACK: &'static str = "TRACK";
+    const DRIFT_ANGLE: &'static str = "DRIFT_ANGLE";
     const VERTICAL_SPEED: &'static str = "VERTICAL_SPEED";
     const GROUND_SPEED: &'static str = "GROUND_SPEED";
     const WIND_DIRECTION: &'static str = "WIND_DIRECTION";
@@ -828,6 +830,7 @@ impl InertialReference {
             roll: AdirsData::new_ir(context, number, Self::ROLL),
             heading: AdirsData::new_ir(context, number, Self::HEADING),
             track: AdirsData::new_ir(context, number, Self::TRACK),
+            drift_angle: AdirsData::new_ir(context, number, Self::DRIFT_ANGLE),
             vertical_speed: AdirsData::new_ir(context, number, Self::VERTICAL_SPEED),
             ground_speed: AdirsData::new_ir(context, number, Self::GROUND_SPEED),
             wind_direction: AdirsData::new_ir(context, number, Self::WIND_DIRECTION),
@@ -960,6 +963,18 @@ impl InertialReference {
             },
             ssm,
         );
+        self.drift_angle.set_value(if ground_speed_above_minimum_threshold {
+            let diff = simulator_data.track - simulator_data.heading;
+            if diff > Angle::new::<degree>(180.) {
+                diff - Angle::new::<degree>(360.)
+            } else if diff < Angle::new::<degree>(-180.) {
+                diff + Angle::new::<degree>(360.)
+            } else {
+                diff
+            }
+        } else {
+            Angle::new::<degree>(0.)
+        }, ssm);
 
         self.vertical_speed
             .set_value(simulator_data.vertical_speed.get::<foot_per_minute>(), ssm);
@@ -1040,6 +1055,7 @@ impl SimulationElement for InertialReference {
 
         self.heading.write_to(writer);
         self.track.write_to(writer);
+        self.drift_angle.write_to(writer);
         self.vertical_speed.write_to(writer);
         self.ground_speed.write_to(writer);
         self.wind_direction.write_to(writer);
@@ -1417,6 +1433,14 @@ mod tests {
                 OutputDataType::Ir,
                 adiru_number,
                 InertialReference::TRACK,
+            ))
+        }
+
+        fn drift_angle(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::DRIFT_ANGLE,
             ))
         }
 
@@ -2354,6 +2378,48 @@ mod tests {
             test_bed.run();
 
             assert_eq!(test_bed.track(adiru_number).normal_value().unwrap(), angle);
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn drift_angle_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots(
+            #[case] adiru_number: usize,
+        ) {
+            let heading = Angle::new::<degree>(160.);
+            let track = Angle::new::<degree>(180.);
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .track_of(track)
+                .and()
+                .heading_of(heading)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
+                ));
+            test_bed.run();
+
+            assert_about_eq!(test_bed.drift_angle(adiru_number).normal_value().unwrap().get::<degree>(), (track - heading).get::<degree>());
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn drift_angle_is_zero_when_ground_speed_less_than_50_knots(#[case] adiru_number: usize) {
+            let heading = Angle::new::<degree>(160.);
+            let track = Angle::new::<degree>(180.);
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .track_of(track)
+                .and()
+                .heading_of(heading)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
+                ));
+            test_bed.run();
+
+            assert_eq!(test_bed.drift_angle(adiru_number).normal_value().unwrap(), Angle::new::<degree>(0.));
         }
 
         #[rstest]
