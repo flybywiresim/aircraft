@@ -17,6 +17,61 @@ export class InputValidation {
     public static FANS: FansMode = FansMode.FansNone;
 
     /**
+     * Checks if the value fits to a waypoint format
+     * @param value The entered waypoint candidate
+     * @returns AtsuStatusCodes.Ok if the format is valid
+     */
+    public static validateScratchpadWaypoint(value: string): AtsuStatusCodes {
+        if (value.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/) !== null) {
+            return AtsuStatusCodes.Ok;
+        }
+        if (/^[A-Z0-9]{1,5}$/.test(value)) {
+            return AtsuStatusCodes.Ok;
+        }
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
+     * Checks if the value fits to a procedure format
+     * @param value The entered procedure candidate
+     * @returns AtsuStatusCodes.Ok if the format is valid
+     */
+    public static validateScratchpadProcedure(value: string): AtsuStatusCodes {
+        if (/^[A-Z0-9]{1,7}$/.test(value)) {
+            return AtsuStatusCodes.Ok;
+        }
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
+     * Checks if the value fits to the time format
+     * @param value The entered time candidate
+     * @returns AtsuStatusCodes.Ok if the format is valid
+     */
+    public static validateScratchpadTime(value: string): AtsuStatusCodes {
+        if (/^[0-9]{4}Z$/.test(value)) {
+            return AtsuStatusCodes.Ok;
+        }
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
+     * Checks if the value fits to the degree format
+     * @param value The entered degree candidate
+     * @returns AtsuStatusCodes.Ok if the format is valid
+     */
+    public static validateScratchpadDegree(value: string): AtsuStatusCodes {
+        if (/^[0-9]{1,3}$/.test(value)) {
+            const heading = parseInt(value);
+            if (heading >= 0 && heading <= 360) {
+                return AtsuStatusCodes.Ok;
+            }
+            return AtsuStatusCodes.EntryOutOfRange;
+        }
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
      * Classifies a possible waypoint type of the scratchpad
      * Types:
      *   -  0 = lat-lon coordinate
@@ -116,6 +171,18 @@ export class InputValidation {
             return InputValidationFansB.validateScratchpadAltitude(value);
         }
         return InputValidationFansA.validateScratchpadAltitude(value);
+    }
+
+    /**
+     * Checks if a string fits to the distance definition
+     * @param distance The distance candidate
+     * @returns AtsuStatusCodes.Ok if the format is valid
+     */
+    public static validateScratchpadDistance(distance: string): AtsuStatusCodes {
+        if (/^[0-9]{1,3}(NM|KM)$/.test(distance) || /^[0-9]{1,3}$/.test(distance)) {
+            return AtsuStatusCodes.Ok;
+        }
+        return AtsuStatusCodes.FormatError;
     }
 
     /**
