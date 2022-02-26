@@ -29,7 +29,7 @@ module.exports = {
         enabled: false,
         content: [
         // './Efb.tsx',
-        // './index.tsx',
+        // './ServicesPage.tsx',
         // './failures-orchestrator-provider.tsx',
         // './node_modules/@flybywiresim/react-components/build/usedCSSClasses.json',
         // ...watchFolders.map((folder) => `./EFB/${folder}/**/*.tsx`),

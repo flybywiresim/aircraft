@@ -147,19 +147,19 @@ export const FlightWidget = () => {
                         </div>
                         <div>
                             <div className="flex flex-row mb-4">
-                                <InformationEntry title="ALTN" info={altIcao} />
+                                <InformationEntry title="Alternate" info={altIcao} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title="CO RTE" info={departingIata + arrivingIata} />
+                                <InformationEntry title="Company Route" info={departingIata + arrivingIata} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
                                 <InformationEntry title="ZFW" info={estimatedZfw} />
                             </div>
                             <div className="my-auto w-full h-0.5 bg-theme-accent" />
                             <div className="flex flex-row mt-4">
-                                <InformationEntry title="CI" info={costInd} />
+                                <InformationEntry title="Cost Index" info={costInd} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title="AVG WIND" info={avgWind} />
+                                <InformationEntry title="Average Wind" info={avgWind} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title="CRZ" info={crzAlt} />
+                                <InformationEntry title="Cruise Temp" info={crzAlt} />
                             </div>
                         </div>
                         <div>

@@ -3,7 +3,7 @@ $handle-size: calc(#{$slider-height} * 3);
 
 .rc-slider {
   position: relative;
-  height: 14px;
+  height: calc(#{$slider-height} * 2);
   padding: 5px 0;
   width: 100%;
   border-radius: 6px;
@@ -72,33 +72,32 @@ $handle-size: calc(#{$slider-height} * 3);
   position: absolute;
   width: 100%;
   height: 4px;
-  background: transparent;
+  background: transparent !important;
 }
 .rc-slider-dot {
   @apply bg-theme-highlight;
   position: absolute;
-  bottom: -2px;
+  bottom: calc(#{$slider-height} / -2);
   margin-left: -4px;
-  width: 8px;
-  height: 8px;
+  width: $slider-height;
+  height: $slider-height;
   cursor: pointer;
-  border-radius: 50%;
   vertical-align: middle;
 }
 .rc-slider-dot-reverse {
   margin-right: -4px;
 }
-.rc-slider-disabled {
+.rc-slider-disabled > * {
   @apply bg-theme-unselected;
 }
 .rc-slider-disabled .rc-slider-track {
-  background-color: #ccc;
+  @apply bg-theme-unselected;
 }
 .rc-slider-disabled .rc-slider-handle,
 .rc-slider-disabled .rc-slider-dot {
+  @apply bg-theme-unselected;
   border-color: #ccc;
   box-shadow: none;
-  background-color: #fff;
   cursor: not-allowed;
 }
 .rc-slider-disabled .rc-slider-mark-text,

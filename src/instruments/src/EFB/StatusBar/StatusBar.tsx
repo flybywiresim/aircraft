@@ -3,6 +3,7 @@ import { Wifi2, Power } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty, usePersistentNumberProperty } from '@instruments/common/persistence';
 import { useLongPress } from 'use-long-press';
+import { useHistory } from 'react-router-dom';
 import { usePower, PowerStates } from '../Efb';
 
 import { BatteryStatus } from './BatteryStatus';
@@ -21,6 +22,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number');
     const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number');
     const [showStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
+    const history = useHistory();
 
     const [timeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
     const [timeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
@@ -69,6 +71,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
             if (shutoffTimerRef.current) {
                 clearInterval(shutoffTimerRef.current);
             }
+            history.push('/');
             power.setPowerState(PowerStates.STANDBY);
         },
         onStart: () => {
@@ -80,6 +83,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
 
     useEffect(() => {
         if (shutoffBarPercent >= 120) {
+            history.push('/');
             power.setPowerState(PowerStates.SHUTOFF);
         }
     }, [shutoffBarPercent]);
@@ -147,7 +151,6 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
 
                 <BatteryStatus batteryLevel={batteryLevel} isCharging={isCharging} />
 
-                {/* Show overlay to either power down or restart when this is held down, set to standby mode otherwise */}
                 <Power size={26} {...bind} />
             </div>
         </div>
