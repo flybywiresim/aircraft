@@ -482,7 +482,7 @@ struct AdirsData<T> {
     value: T,
     ssm: SignStatus,
 }
-impl<T: Copy + Default> AdirsData<T> {
+impl<T: Copy + Default + PartialOrd> AdirsData<T> {
     fn new_adr(context: &mut InitContext, number: usize, name: &str) -> Self {
         Self::new(context, OutputDataType::Adr, number, name)
     }
@@ -515,6 +515,34 @@ impl<T: Copy + Default> AdirsData<T> {
     fn set_value(&mut self, value: T, ssm: SignStatus) {
         self.value = value;
         self.ssm = ssm;
+    }
+
+    /// Sets failure warning with the default (0.0) value.
+    fn set_failure_warning(&mut self) {
+        self.value = Default::default();
+        self.ssm = SignStatus::FailureWarning;
+    }
+
+    /// Sets no computed data with the default (0.0) value.
+    fn set_no_computed_data(&mut self) {
+        self.value = Default::default();
+        self.ssm = SignStatus::NoComputedData;
+    }
+
+    /// Sets normal operation with the given value.
+    fn set_normal_operation_value(&mut self, value: T) {
+        self.value = value;
+        self.ssm = SignStatus::NormalOperation;
+    }
+
+    /// Sets normal operation with the given value when above the threshold,
+    /// no computed data otherwise.
+    fn normal_above_threshold_ncd_otherwise(&mut self, threshold: T, value: T) {
+        if value < threshold {
+            self.set_no_computed_data();
+        } else {
+            self.set_normal_operation_value(value);
+        }
     }
 
     fn write_to<U: Write<T> + Writer>(&self, writer: &mut U) {
@@ -641,85 +669,60 @@ impl AirDataReference {
 
         // If the ADR is off or not initialized, output all labels as FW with value 0.
         if !is_valid {
-            let ssm = SignStatus::FailureWarning;
-
-            self.altitude.set_value(Length::new::<foot>(0.0), ssm);
-            self.barometric_vertical_speed.set_value(0.0, ssm);
-            self.computed_airspeed
-                .set_value(Velocity::new::<knot>(0.0), ssm);
-            self.true_airspeed.set_value(Velocity::new::<knot>(0.), ssm);
-            self.mach.set_value(MachNumber::from(0.0), ssm);
-
-            self.total_air_temperature
-                .set_value(ThermodynamicTemperature::new::<degree_celsius>(0.0), ssm);
-
-            self.static_air_temperature
-                .set_value(ThermodynamicTemperature::new::<degree_celsius>(0.0), ssm);
-
+            self.altitude.set_failure_warning();
+            self.barometric_vertical_speed.set_failure_warning();
+            self.computed_airspeed.set_failure_warning();
+            self.true_airspeed.set_failure_warning();
+            self.mach.set_failure_warning();
+            self.total_air_temperature.set_failure_warning();
+            self.static_air_temperature.set_failure_warning();
             self.international_standard_atmosphere_delta
-                .set_value(ThermodynamicTemperature::new::<degree_celsius>(0.0), ssm);
-            self.angle_of_attack.set_value(Angle::new::<degree>(0.), ssm);
+                .set_failure_warning();
+            self.angle_of_attack.set_failure_warning();
         } else {
             // If it is on and initialized, output normal values.
-
             self.altitude
-                .set_value(context.indicated_altitude(), SignStatus::NormalOperation);
-            self.barometric_vertical_speed.set_value(
-                simulator_data.vertical_speed.get::<foot_per_minute>(),
-                SignStatus::NormalOperation,
-            );
+                .set_normal_operation_value(context.indicated_altitude());
+            self.barometric_vertical_speed
+                .set_normal_operation_value(simulator_data.vertical_speed.get::<foot_per_minute>());
 
             // If CAS is below 30kn, output as 0 with SSM = NCD
             let computed_airspeed = context.indicated_airspeed();
-            if computed_airspeed < Velocity::new::<knot>(Self::MINIMUM_CAS) {
-                self.computed_airspeed
-                    .set_value(Velocity::new::<knot>(0.0), SignStatus::NoComputedData);
-            } else {
-                self.computed_airspeed
-                    .set_value(computed_airspeed, SignStatus::NormalOperation);
-            }
+            self.computed_airspeed.normal_above_threshold_ncd_otherwise(
+                Velocity::new::<knot>(Self::MINIMUM_CAS),
+                computed_airspeed,
+            );
 
             // If mach is below 0.1, output as 0 with SSM = NCD
-            let mach = simulator_data.mach;
-            if mach < MachNumber::from(Self::MINIMUM_MACH) {
-                self.mach
-                    .set_value(MachNumber::from(0.0), SignStatus::NoComputedData);
-            } else {
-                self.mach.set_value(mach, SignStatus::NormalOperation);
-            }
+            self.mach.normal_above_threshold_ncd_otherwise(
+                MachNumber::from(Self::MINIMUM_MACH),
+                simulator_data.mach,
+            );
 
             // If TAS is below 60 kts, output as 0 kt with SSM = NCD.
-            let true_airspeed = simulator_data.true_airspeed;
-            if true_airspeed < Velocity::new::<knot>(Self::MINIMUM_TAS) {
-                self.true_airspeed
-                    .set_value(Velocity::new::<knot>(0.0), SignStatus::NoComputedData);
-            } else {
-                self.true_airspeed
-                    .set_value(true_airspeed, SignStatus::NormalOperation);
-            }
+            self.true_airspeed.normal_above_threshold_ncd_otherwise(
+                Velocity::new::<knot>(Self::MINIMUM_TAS),
+                simulator_data.true_airspeed,
+            );
 
-            self.angle_of_attack.set_value(simulator_data.angle_of_attack,
+            self.angle_of_attack.set_value(
+                simulator_data.angle_of_attack,
                 if computed_airspeed < Velocity::new::<knot>(Self::MINIMUM_CAS_FOR_AOA) {
                     SignStatus::NoComputedData
-            } else {
-                SignStatus::NormalOperation
-            });
-
-            self.total_air_temperature.set_value(
-                simulator_data.total_air_temperature,
-                SignStatus::NormalOperation,
+                } else {
+                    SignStatus::NormalOperation
+                },
             );
 
+            self.total_air_temperature
+                .set_normal_operation_value(simulator_data.total_air_temperature);
             self.static_air_temperature
-                .set_value(context.ambient_temperature(), SignStatus::NormalOperation);
-
-            self.international_standard_atmosphere_delta.set_value(
-                self.international_standard_atmosphere_delta(
+                .set_normal_operation_value(context.ambient_temperature());
+            self.international_standard_atmosphere_delta
+                .set_normal_operation_value(self.international_standard_atmosphere_delta(
                     context.indicated_altitude(),
                     context.ambient_temperature(),
-                ),
-                SignStatus::NormalOperation,
-            );
+                ));
         }
     }
 
@@ -963,18 +966,21 @@ impl InertialReference {
             },
             ssm,
         );
-        self.drift_angle.set_value(if ground_speed_above_minimum_threshold {
-            let diff = simulator_data.track - simulator_data.heading;
-            if diff > Angle::new::<degree>(180.) {
-                diff - Angle::new::<degree>(360.)
-            } else if diff < Angle::new::<degree>(-180.) {
-                diff + Angle::new::<degree>(360.)
+        self.drift_angle.set_value(
+            if ground_speed_above_minimum_threshold {
+                let diff = simulator_data.track - simulator_data.heading;
+                if diff > Angle::new::<degree>(180.) {
+                    diff - Angle::new::<degree>(360.)
+                } else if diff < Angle::new::<degree>(-180.) {
+                    diff + Angle::new::<degree>(360.)
+                } else {
+                    diff
+                }
             } else {
-                diff
-            }
-        } else {
-            Angle::new::<degree>(0.)
-        }, ssm);
+                Angle::new::<degree>(0.)
+            },
+            ssm,
+        );
 
         self.vertical_speed
             .set_value(simulator_data.vertical_speed.get::<foot_per_minute>(), ssm);
@@ -1393,10 +1399,7 @@ mod tests {
             ))
         }
 
-        fn angle_of_attack(
-            &mut self,
-            adiru_number: usize,
-        ) -> Arinc429Word<Angle> {
+        fn angle_of_attack(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Adr,
                 adiru_number,
@@ -1536,9 +1539,7 @@ mod tests {
                 valid
             );
             assert_eq!(
-                !self
-                    .angle_of_attack(adiru_number)
-                    .is_failure_warning(),
+                !self.angle_of_attack(adiru_number).is_failure_warning(),
                 valid
             );
         }
@@ -1981,7 +1982,10 @@ mod tests {
             test_bed.run();
 
             assert_eq!(
-                test_bed.computed_airspeed(adiru_number).normal_value().unwrap(),
+                test_bed
+                    .computed_airspeed(adiru_number)
+                    .normal_value()
+                    .unwrap(),
                 velocity
             );
         }
@@ -1997,7 +2001,10 @@ mod tests {
             test_bed.run();
 
             assert_about_eq!(
-                test_bed.computed_airspeed(adiru_number).value().get::<knot>(),
+                test_bed
+                    .computed_airspeed(adiru_number)
+                    .value()
+                    .get::<knot>(),
                 0.
             );
             assert_eq!(
@@ -2032,10 +2039,7 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().mach_of(mach);
             test_bed.run();
 
-            assert_about_eq!(
-                f64::from(test_bed.mach(adiru_number).value()),
-                0.
-            );
+            assert_about_eq!(f64::from(test_bed.mach(adiru_number).value()), 0.);
             assert_eq!(
                 test_bed.mach(adiru_number).ssm(),
                 SignStatus::NoComputedData
@@ -2165,11 +2169,16 @@ mod tests {
         ) {
             let angle = Angle::new::<degree>(1.);
             let mut test_bed = all_adirus_aligned_test_bed_with().angle_of_attack_of(angle);
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(AirDataReference::MINIMUM_CAS_FOR_AOA));
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(
+                AirDataReference::MINIMUM_CAS_FOR_AOA,
+            ));
             test_bed.run();
 
             assert_eq!(
-                test_bed.angle_of_attack(adiru_number).normal_value().unwrap(),
+                test_bed
+                    .angle_of_attack(adiru_number)
+                    .normal_value()
+                    .unwrap(),
                 angle
             );
         }
@@ -2181,13 +2190,12 @@ mod tests {
         fn angle_of_attack_is_ncd_when_less_than_60_knots(#[case] adiru_number: usize) {
             let angle = Angle::new::<degree>(1.);
             let mut test_bed = all_adirus_aligned_test_bed_with().angle_of_attack_of(angle);
-            test_bed.set_indicated_airspeed(Velocity::new::<knot>(AirDataReference::MINIMUM_CAS_FOR_AOA - 0.01));
+            test_bed.set_indicated_airspeed(Velocity::new::<knot>(
+                AirDataReference::MINIMUM_CAS_FOR_AOA - 0.01,
+            ));
             test_bed.run();
 
-            assert_eq!(
-                test_bed.angle_of_attack(adiru_number).value(),
-                angle
-            );
+            assert_eq!(test_bed.angle_of_attack(adiru_number).value(), angle);
             assert_eq!(
                 test_bed.angle_of_attack(adiru_number).ssm(),
                 SignStatus::NoComputedData
@@ -2399,7 +2407,14 @@ mod tests {
                 ));
             test_bed.run();
 
-            assert_about_eq!(test_bed.drift_angle(adiru_number).normal_value().unwrap().get::<degree>(), (track - heading).get::<degree>());
+            assert_about_eq!(
+                test_bed
+                    .drift_angle(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree>(),
+                (track - heading).get::<degree>()
+            );
         }
 
         #[rstest]
@@ -2419,7 +2434,10 @@ mod tests {
                 ));
             test_bed.run();
 
-            assert_eq!(test_bed.drift_angle(adiru_number).normal_value().unwrap(), Angle::new::<degree>(0.));
+            assert_eq!(
+                test_bed.drift_angle(adiru_number).normal_value().unwrap(),
+                Angle::new::<degree>(0.)
+            );
         }
 
         #[rstest]
