@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
@@ -112,8 +112,6 @@ const Efb = () => {
 
     const modals = useModals();
 
-    const [completeItemVar, setCompleteItemVar] = useSimVar('L:A32NX_EFB_CHECKLIST_COMPLETE_ITEM', 'bool', 200);
-
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`);
     }, []);
@@ -204,16 +202,6 @@ const Efb = () => {
             }
         }
     }, [powerState]);
-
-    // This catches the LVAR activation for L:A32NX_EFB_CHECKLIST_COMPLETE_ITEM to
-    // reset it even when not on the checklist page.
-    useEffect(() => {
-        if (completeItemVar) {
-            setTimeout(() => {
-                setCompleteItemVar(false);
-            }, 200);
-        }
-    }, [completeItemVar]);
 
     useInterval(() => {
         if (!autoFillChecklists) return;
