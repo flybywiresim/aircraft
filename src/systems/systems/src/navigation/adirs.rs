@@ -2399,7 +2399,6 @@ mod tests {
             let track = Angle::new::<degree>(180.);
             let mut test_bed = all_adirus_aligned_test_bed_with()
                 .track_of(track)
-                .and()
                 .heading_of(heading)
                 .and()
                 .ground_speed_of(Velocity::new::<knot>(
