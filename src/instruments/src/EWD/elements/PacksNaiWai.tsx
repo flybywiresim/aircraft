@@ -9,8 +9,8 @@ type PacksNaiWaiProps = {
 
 const PacksNaiWai: React.FC<PacksNaiWaiProps> = ({ x, y, flightPhase }) => {
     const [autoThrustMode] = useSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum', 500);
-    const [packs1Supplying] = useSimVar('L:A32NX_PACKS_1_IS_SUPPLYING', 'bool', 500);
-    const [packs2Supplying] = useSimVar('L:A32NX_PACKS_2_IS_SUPPLYING', 'bool', 500);
+    const [packs1Supplying] = useSimVar('L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN', 'bool', 500);
+    const [packs2Supplying] = useSimVar('L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN', 'bool', 500);
     const [engine1AntiIce] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG1_Pressed', 'number', 500);
     const [engine2AntiIce] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG2_Pressed', 'number', 500);
     const [wingAntiIce] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_WING_Pressed', 'bool', 500);
