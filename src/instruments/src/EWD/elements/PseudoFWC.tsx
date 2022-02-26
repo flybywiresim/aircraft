@@ -101,6 +101,8 @@ const PseudoFWC: React.FC = () => {
     const [engine1Generator] = useSimVar('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool', 500);
     const [engine2Generator] = useSimVar('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool', 500);
     const [emergencyElectricGeneratorPotential] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number', 500);
+    const [dcESSBusPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool', 500);
+    const [ac1BusPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool', 500);
     const emergencyGeneratorOn = emergencyElectricGeneratorPotential > 0 ? 1 : 0;
 
     /* ENGINE AND THROTTLE */
@@ -135,115 +137,14 @@ const PseudoFWC: React.FC = () => {
     const [eng2Agent1PB] = useSimVar('L:A32NX_FIRE_ENG2_AGENT1_Discharge', 'bool', 500);
     const [eng2Agent2PB] = useSimVar('L:A32NX_FIRE_ENG2_AGENT2_Discharge', 'bool', 500);
     const [apuAgentPB] = useSimVar('L:A32NX_FIRE_APU_AGENT1_Discharge', 'bool', 500);
-
-    // const [timerEng1Agent1Timer, setTimerEng1Agent1Timer] = useState<number>(-1);
-    // const [timerEng1Agent2Timer, setTimerEng1Agent2Timer] = useState<number>(-1);
-    // const [agent1Eng1Discharge, setAgent1Eng1Discharge] = useState(false);
-    // const [agent2Eng1Discharge, setAgent2Eng1Discharge] = useState(false);
-
-    // const [timerEng2Agent1Timer, setTimerEng2Agent1Timer] = useState<number>(-1);
-    // const [timerEng2Agent2Timer, setTimerEng2Agent2Timer] = useState<number>(-1);
-    // const [agent1Eng2Discharge, setAgent1Eng2Discharge] = useState(false);
-    // const [agent2Eng2Discharge, setAgent2Eng2Discharge] = useState(false);
-
-    // const [agentApuAgentTimer, setApuAgentTimer] = useState<number>(-1);
-    // const [agentAPUDischarge, setAgentAPUDischarge] = useState(false);
-
     const [cargoFireTest] = useSimVar('L:A32NX_FIRE_TEST_CARGO', 'bool', 500);
     const [cargoFireAgentDisch] = useSimVar('L:A32NX_CARGOSMOKE_FWD_DISCHARGED', 'bool', 500);
 
-    // Remember all these run once so need to include fireButton1 === 1 && !eng1FireTest
-    // useEffect(() => {
-    //     if (!eng1FireTest) {
-    //         setTimerEng1Agent1Timer(10);
-    //     }
-    // }, [fireButton1]);
-
-    // useEffect(() => {
-    //     if (!eng1FireTest) {
-    //         setTimerEng1Agent2Timer(30);
-    //     }
-    // }, [eng1Agent1PB]);
-
-    // useEffect(() => {
-    //     if (!eng2FireTest) {
-    //         console.log('Setting timer for Eng2 Agent 1');
-    //         setTimerEng2Agent1Timer(10);
-    //     }
-    // }, [fireButton2]);
-
-    // useEffect(() => {
-    //     if (!eng2FireTest) {
-    //         setTimerEng2Agent2Timer(30);
-    //     }
-    // }, [eng2Agent1PB]);
-
-    // useEffect(() => {
-    //     if (!apuFireTest) {
-    //         setApuAgentTimer(10);
-    //     }
-    // }, [fireButtonAPU]);
-
     useEffect(() => {
-        console.log('FireTest');
         if (eng1FireTest === 0 && eng2FireTest === 0 && apuFireTest === 0 && cargoFireTest === 0) {
             masterWarning(0);
         }
     }, [eng1FireTest, eng2FireTest, apuFireTest, cargoFireTest]);
-
-    // useUpdate((deltaTime) => {
-    //     if (fireButton1 === 1 && timerEng1Agent1Timer !== -1) {
-    //         if (timerEng1Agent1Timer > 0) {
-    //             if (deltaTime < 1000) {
-    //                 setTimerEng1Agent1Timer(timerEng1Agent1Timer - (deltaTime / 1000));
-    //             }
-    //         } else {
-    //             setTimerEng1Agent1Timer(-1);
-    //             setAgent1Eng1Discharge(true);
-    //         }
-    //     }
-    //     if (agent1Eng1Discharge && timerEng1Agent2Timer !== -1) {
-    //         if (timerEng1Agent2Timer > 0) {
-    //             if (deltaTime < 1000) {
-    //                 setTimerEng1Agent2Timer(timerEng1Agent2Timer - (deltaTime / 1000));
-    //             }
-    //         } else {
-    //             setTimerEng1Agent2Timer(-1);
-    //             setAgent2Eng1Discharge(true);
-    //         }
-    //     }
-    //     // console.log(`TimeEng2Agent1 is ${timerEng2Agent1Timer}`);
-    //     if (fireButton2 === 1 && timerEng2Agent1Timer !== -1) {
-    //         if (timerEng2Agent1Timer > 0) {
-    //             if (deltaTime < 1000) {
-    //                 setTimerEng2Agent1Timer(timerEng2Agent1Timer - (deltaTime / 1000));
-    //             }
-    //         } else {
-    //             setTimerEng2Agent1Timer(-1);
-    //             setAgent1Eng2Discharge(true);
-    //         }
-    //     }
-    //     if (agent1Eng2Discharge && timerEng2Agent2Timer !== -1) {
-    //         if (timerEng2Agent2Timer > 0) {
-    //             if (deltaTime < 1000) {
-    //                 setTimerEng2Agent2Timer(timerEng2Agent2Timer - (deltaTime / 1000));
-    //             }
-    //         } else {
-    //             setTimerEng2Agent2Timer(-1);
-    //             setAgent2Eng2Discharge(true);
-    //         }
-    //     }
-    //     if (fireButtonAPU === 1 && agentApuAgentTimer !== -1) {
-    //         if (agentApuAgentTimer > 0) {
-    //             if (deltaTime < 1000) {
-    //                 setApuAgentTimer(agentApuAgentTimer - (deltaTime / 1000));
-    //             }
-    //         } else {
-    //             setApuAgentTimer(-1);
-    //             setAgentAPUDischarge(true);
-    //         }
-    //     }
-    // });
 
     /* FUEL */
     const [fuel] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'percent', 500);
@@ -256,7 +157,10 @@ const PseudoFWC: React.FC = () => {
 
     /* HYDRAULICS */
     const [greenLP] = useSimVar('L:A32NX_HYD_GREEN_EDPUMP_LOW_PRESS', 'bool', 500);
+    const [greenHydEng1PBAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool', 500);
     const [blueLP] = useSimVar('L:A32NX_HYD_BLUE_EDPUMP_LOW_PRESS', 'bool', 500);
+    const [blueRvrLow] = useSimVar('L:A32NX_HYD_BLUE_RESERVOIR_LEVEL_IS_LOW', 'bool', 500);
+    const [blueElecPumpPBAuto] = useSimVar('L:A32NX_OVHD_HYD_EPUMPB_PB_IS_AUTO', 'bool', 500);
     const [yellowLP] = useSimVar('L:A32NX_HYD_YELLOW_EDPUMP_LOW_PRESS', 'bool', 500);
     const [eng1pumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_1_PUMP_PB_IS_AUTO', 'bool', 500);
     const [eng2pumpPBisAuto] = useSimVar('L:A32NX_OVHD_HYD_ENG_2_PUMP_PB_IS_AUTO', 'bool', 500);
@@ -372,7 +276,6 @@ const PseudoFWC: React.FC = () => {
     const [toconfigFailed, setToConfigFailed] = useState(false);
 
     const masterWarning = (toggle: number) => {
-        console.log(`Master warning and toggle is ${toggle}`);
         SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', toggle);
         SimVar.SetSimVarValue('L:Generic_Master_Warning_Active', 'Bool', toggle);
     };
@@ -383,25 +286,18 @@ const PseudoFWC: React.FC = () => {
     };
 
     useEffect(() => {
-        console.log(`Master warning${masterWarningButtonLeft}`);
         masterWarning(0);
     }, [masterWarningButtonLeft, masterWarningButtonRight]);
 
     useEffect(() => {
-        console.log(`Master caution ${masterCautionButtonLeft}`);
         masterCaution(0);
     }, [masterCautionButtonLeft, masterCautionButtonRight]);
 
     useEffect(() => {
-        console.log('Clear buttons pressed');
-        console.log(failuresLeft);
         if (clearButtonLeft === 1 || clearButtonRight === 1) {
             if (typeof failuresLeft !== 'undefined' && failuresLeft.length > 0) {
-                console.log('We have failures to remove');
                 const updatedFailures = failuresLeft.slice(1);
                 const updatedRecallFailures = allCurrentFailures.filter((item) => !updatedFailures.includes(item));
-                console.log(`Failures are now ${JSON.stringify(updatedFailures)}`);
-                console.log(`Recall failures are now ${JSON.stringify(updatedRecallFailures)}`);
                 setRecallFailures(updatedRecallFailures);
                 setFailuresLeft(updatedFailures);
             }
@@ -412,19 +308,11 @@ const PseudoFWC: React.FC = () => {
     }, [clearButtonLeft, clearButtonRight]);
 
     useEffect(() => {
-        console.log('Recall button pressed');
-        console.log(`Recall button is ${recallButton}`);
         if (recallButton === 1) {
-            console.log(`You pressed recall and recallFailures is ${JSON.stringify(recallFailures)}`);
             if (recallFailures.length > 0) {
-                console.log('Inside recall');
                 const recall = recallFailures[0];
                 const updatedRecallFailures = recallFailures.slice(1);
-                // console.log('Updated recall is ');
-                // console.log(updatedRecallFailures);
                 const updatedFailures: string[] = failuresLeft.concat([recall]);
-                // console.log('Updated failures is');
-                // console.log(updatedFailures);
                 setRecallFailures(updatedRecallFailures);
                 setFailuresLeft(updatedFailures);
             }
@@ -435,7 +323,6 @@ const PseudoFWC: React.FC = () => {
     /* TICK CHECK */
     let showTakeoffInhibit = false;
     let showLandingInhibit = false;
-    // let agent1Eng1Discharge = 0;
     const [agent1Eng1Discharge, setAgent1Eng1Discharge] = useState(0);
     const [agent2Eng1Discharge, setAgent2Eng1Discharge] = useState(0);
     const [agent1Eng2Discharge, setAgent1Eng2Discharge] = useState(0);
@@ -443,18 +330,14 @@ const PseudoFWC: React.FC = () => {
     const [agentAPUDischarge, setAgentAPUDischarge] = useState(0);
 
     useUpdate((deltaTime) => {
-        // tick
-        // tock
         showTakeoffInhibit = toInhibitTimer.write([3, 4, 5].includes(flightPhase) && !flightPhaseInhibitOverride, deltaTime);
         showLandingInhibit = ldgInhibitTimer.write([7, 8].includes(flightPhase) && !flightPhaseInhibitOverride, deltaTime);
         const agent1Eng1DischargeNode = agent1Eng1DischargeTimer.write(fireButton1 === 1, deltaTime);
         if (agent1Eng1Discharge !== agent1Eng1DischargeNode) {
-            // console.log(`Change in value of agent 1 to ${agent1Eng1DischargeNode}`);
             setAgent1Eng1Discharge(agent1Eng1DischargeNode);
         }
         const agent2Eng1DischargeNode = agent2Eng1DischargeTimer.write(fireButton1 === 1 && eng1Agent1PB === 1 && !onGround, deltaTime);
         if (agent2Eng1Discharge !== agent2Eng1DischargeNode) {
-            // console.log(`Change in value of agent 2 to ${agent2Eng1DischargeNode}`);
             setAgent2Eng1Discharge(agent2Eng1DischargeNode);
         }
         const agent1Eng2DischargeNode = agent1Eng2DischargeTimer.write(fireButton2 === 1 && !eng1Agent1PB, deltaTime);
@@ -681,6 +564,36 @@ const PseudoFWC: React.FC = () => {
             failure: 2,
             sysPage: -1,
             side: 'LEFT',
+        },
+        2900310: // *HYD  - Blue
+        {
+            flightPhaseInhib: [4, 5],
+            simVarIsActive: !!(!(blueRvrLow === 1 || !blueElecPumpPBAuto)
+            && (!dcESSBusPowered || !ac1BusPowered)
+            && blueLP === 1
+            && ![1, 10].includes(flightPhase)
+            && !emergencyGeneratorOn),
+            whichCodeToReturn: [0],
+            codesToReturn: ['290031001'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 4,
+            side: 'RIGHT',
+        },
+        2900312: // *HYD  - Green Engine 1
+        {
+            flightPhaseInhib: [],
+            simVarIsActive: ![1, 10, 2, 9].includes(flightPhase
+            // && ENG 1 OUT - not implemented
+            && greenLP === 1
+            && !greenHydEng1PBAuto
+            && !emergencyGeneratorOn),
+            whichCodeToReturn: [0],
+            codesToReturn: ['290031201'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 4,
+            side: 'RIGHT',
         },
     };
 
@@ -1160,7 +1073,6 @@ const PseudoFWC: React.FC = () => {
     /* TO CONFIG */
 
     useEffect(() => {
-        console.log('TO Config check');
         if (tomemo) {
             // TODO Note that fuel tank low pressure and gravity feed warnings are not included
             let systemStatus = false;
@@ -1173,12 +1085,9 @@ const PseudoFWC: React.FC = () => {
             const sb = speedBrake === 0;
 
             if (systemStatus && speeds && !brakesHot && doors && flapsAgree && sb) {
-                // console.log('Config normal');
                 SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', 1);
                 setToConfigFailed(false);
             } else {
-                console.log('Config not normal');
-                console.log(`System status ${systemStatus} and speeds ${speeds} and brakes ${brakesHot}, and doors ${doors} and flaps ${flapsAgree} and speed brakes ${sb}`);
                 SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'bool', 0);
                 setToConfigFailed(true);
             }
@@ -1190,7 +1099,6 @@ const PseudoFWC: React.FC = () => {
     ]);
 
     useEffect(() => {
-        console.log('Bing Bong ');
         if (callPushAft || callPushAll || callPushForward) {
             SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'bool', 1);
         }
@@ -1201,51 +1109,54 @@ const PseudoFWC: React.FC = () => {
         let tempMemoArrayRight:string[] = [];
         const allFailureKeys: string[] = [];
         let tempFailureArrayLeft:string[] = [];
-        let tempFailureArrayRight: string[] = [];
         const failureKeysLeft: string[] = failuresLeft;
-        let orderedFailureArrayRight: string[] = [];
-        console.log('Rewrite triggered');
+        let tempFailureArrayRight:string[] = [];
+        const failureKeysRight: string[] = failuresRight;
+        let leftFailureSystemCount = 0;
+        let rightFailureSystemCount = 0;
 
         // Failures first
-        console.log('Failures check');
         for (const [key, value] of Object.entries(EWDMessageFailures)) {
-            // console.log(`Key is ${key}`);
             if (value.simVarIsActive && !value.flightPhaseInhib.some((e) => e === flightPhase)) {
-                allFailureKeys.push(key);
-                console.log('Recall failures is currently');
-                console.log(recallFailures);
+                if (value.side === 'LEFT') {
+                    allFailureKeys.push(key);
+                }
 
-                if (!failuresLeft.includes(key) && !recallFailures.includes(key)) {
-                    console.log('New failure');
-                    failuresLeft.push(key);
+                if ((!failuresLeft.includes(key) && !recallFailures.includes(key)) || !failuresRight.includes(key)) {
+                    if (value.side === 'LEFT') {
+                        failuresLeft.push(key);
+                    } else {
+                        failuresRight.push(key);
+                    }
+
                     if (value.failure === 3) {
                         masterWarning(1);
                     }
                     if (value.failure === 2) {
                         masterCaution(1);
                     }
-                } else {
-                    console.log('Already have that failure');
-                    if (![eng1FireTest, eng2FireTest, apuFireTest, cargoFireTest].every((e) => e === 0)) {
-                        masterWarning(1);
-                    }
+                } else if (![eng1FireTest, eng2FireTest, apuFireTest, cargoFireTest].every((e) => e === 0)) {
+                    masterWarning(1);
                 }
 
                 const newCode: string[] = [];
-                console.log('Value if fire test logic is');
-                console.log(`Cargo fire test is ${cargoFireTest}`);
-                console.log(![eng1FireTest, eng2FireTest, apuFireTest, cargoFireTest].some((e) => e === 1));
                 if (!recallFailures.includes(key)) {
                     const codeIndex = value.whichCodeToReturn.filter((e) => e !== null);
                     codeIndex.forEach((e: number) => {
                         newCode.push(value.codesToReturn[e]);
                     });
+                    if (value.sysPage > -1) {
+                        if (value.side === 'LEFT') {
+                            leftFailureSystemCount++;
+                        } else {
+                            rightFailureSystemCount++;
+                        }
+                    }
                 }
                 if (value.side === 'LEFT') {
                     tempFailureArrayLeft = tempFailureArrayLeft.concat(newCode);
                 } else {
-                    const tempArrayRight = tempFailureArrayRight.filter((e) => !value.codesToReturn.includes(e));
-                    tempFailureArrayRight = tempArrayRight.concat(newCode);
+                    tempFailureArrayRight = tempFailureArrayRight.concat(newCode);
                 }
 
                 if (value.sysPage > -1) {
@@ -1267,18 +1178,17 @@ const PseudoFWC: React.FC = () => {
             }
         }
         const orderedFailureArrayLeft = mapOrder(tempFailureArrayLeft, mesgFailOrderLeft);
-        orderedFailureArrayRight = mapOrder(tempFailureArrayRight, mesgFailOrderRight);
+        const orderedFailureArrayRight = mapOrder(tempFailureArrayRight, mesgFailOrderRight);
 
         setAllCurrentFailures(allFailureKeys);
         setFailuresLeft(failureKeysLeft);
+        setFailuresRight(failureKeysRight);
 
         if (failLeft) {
-            console.log('Sending memo left message from failures');
             setMemoMessageLeft(orderedFailureArrayLeft);
         }
 
         for (const [key, value] of Object.entries(EWDMessageMemos)) {
-            // console.log(`Key is ${key}`);
             if (value.simVarIsActive && !(value.memoInhibit) && !value.flightPhaseInhib.some((e) => e === flightPhase)) {
                 const newCode: string[] = [];
 
@@ -1313,15 +1223,30 @@ const PseudoFWC: React.FC = () => {
         let orderedMemoArrayRight = mapOrder(tempMemoArrayRight, mesgOrderRight);
 
         if (!failLeft) {
-            console.log('Sending memo left message from memo');
             setMemoMessageLeft(orderedMemoArrayLeft);
         }
-        if (failRight) {
-            orderedMemoArrayRight = [...orderedFailureArrayRight, ...orderedMemoArrayRight];
+
+        if (leftFailureSystemCount + rightFailureSystemCount === 0) {
+            SimVar.SetSimVarValue('L:A32NX_ECAM_SFAIL', 'number', -1);
+        }
+
+        if (orderedFailureArrayRight.length > 0) {
+            // Right side failures need to be inserted between special lines
+            // and the rest of the memo
+            const specialLines = ['000014001', '000015001', '000035001', '000036001', '220001501', '220002101'];
+            const filteredMemo = orderedMemoArrayRight.filter((e) => !specialLines.includes(e));
+            const specLinesInMemo = orderedMemoArrayRight.filter((e) => specialLines.includes(e));
+            if (specLinesInMemo.length > 0) {
+                orderedMemoArrayRight = [...specLinesInMemo, ...orderedFailureArrayRight, ...filteredMemo];
+            } else {
+                orderedMemoArrayRight = [...orderedFailureArrayRight, ...orderedMemoArrayRight];
+            }
         }
         setMemoMessageRight(orderedMemoArrayRight);
+
         //
-    }, [adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
+    }, [ac1BusPowered,
+        adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
         adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
         adiru1State,
         adiru2State,
@@ -1341,6 +1266,8 @@ const PseudoFWC: React.FC = () => {
         ATTKnob,
         autoBrake,
         autoBrakesArmedMode,
+        blueElecPumpPBAuto,
+        blueRvrLow,
         brakeFan,
         cabinReady,
         cabinRecircBtnOn,
@@ -1348,6 +1275,7 @@ const PseudoFWC: React.FC = () => {
         cargoFireTest,
         compMesgCount,
         configPortableDevices,
+        dcESSBusPowered,
         dmcSwitchingKnob,
         emergencyGeneratorOn,
         engine1ValueSwitch,
@@ -1377,6 +1305,7 @@ const PseudoFWC: React.FC = () => {
         gpwsFlapMode,
         gpwsFlaps3,
         gpwsOff,
+        greenHydEng1PBAuto,
         hydPTU,
         landASAPRed,
         landingLight2Retracted,
