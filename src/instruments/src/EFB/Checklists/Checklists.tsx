@@ -10,6 +10,7 @@ import {
     setSelectedChecklistIndex,
 } from '../Store/features/checklists';
 import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store';
+import { PromptModal, useModals } from '../UtilComponents/Modals/Modals';
 
 export interface ChecklistItem {
     item: string;
@@ -82,6 +83,8 @@ export const Checklists = () => {
         setAutomaticItemStates();
     }, [selectedChecklistIndex]);
 
+    const modals = useModals();
+
     return (
         <>
             <h1 className="mb-4 font-bold">Checklists</h1>
@@ -103,15 +106,23 @@ export const Checklists = () => {
                     <div
                         className="flex justify-center items-center h-12 text-red-500 hover:text-theme-body bg-theme-body hover:bg-red-500 rounded-md border-2 border-red-500 transition duration-100"
                         onClick={() => {
-                            checklists.forEach((cl, clIndex) => {
-                                cl.items.forEach((_, itemIdx) => {
-                                    if (autoFillChecklists && CHECKLISTS[clIndex].items[itemIdx].condition) {
-                                        return;
-                                    }
-                                    dispatch(setChecklistItemCompletion({ checklistIndex: clIndex, itemIndex: itemIdx, completionValue: false }));
-                                });
-                                dispatch(setChecklistCompletion({ checklistIndex: clIndex, completion: false }));
-                            });
+                            modals.showModal(
+                                <PromptModal
+                                    title="Checklist Reset Warning"
+                                    bodyText="Are you sure to reset all checklists?"
+                                    onConfirm={() => {
+                                        checklists.forEach((cl, clIndex) => {
+                                            cl.items.forEach((_, itemIdx) => {
+                                                if (autoFillChecklists && CHECKLISTS[clIndex].items[itemIdx].condition) {
+                                                    return;
+                                                }
+                                                dispatch(setChecklistItemCompletion({ checklistIndex: clIndex, itemIndex: itemIdx, completionValue: false }));
+                                            });
+                                            dispatch(setChecklistCompletion({ checklistIndex: clIndex, completion: false }));
+                                        });
+                                    }}
+                                />,
+                            );
                         }}
                     >
                         Reset All
