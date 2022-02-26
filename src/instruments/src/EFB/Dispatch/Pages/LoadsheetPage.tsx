@@ -81,7 +81,7 @@ export const LoadSheetWidget = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
-        <div className="overflow-hidden relative p-6 mt-4 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="overflow-hidden relative p-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <>
                 <div className="overflow-hidden absolute top-6 right-16 bg-theme-secondary rounded-md">
                     <button

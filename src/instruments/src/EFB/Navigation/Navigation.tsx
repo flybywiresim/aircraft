@@ -578,7 +578,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
         return (
             <div
                 className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
-                style={{ height: '42.25rem' }}
+                style={{ height: '42.75rem' }}
             >
                 <CloudArrowDown className="animate-bounce" size={40} />
             </div>
@@ -589,7 +589,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
         return (
             <div
                 className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
-                style={{ height: '42.25rem' }}
+                style={{ height: '42.75rem' }}
             >
                 <p>There are no charts to display.</p>
             </div>
@@ -735,7 +735,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
         return (
             <div
                 className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
-                style={{ height: '42.25rem' }}
+                style={{ height: '42.75rem' }}
             >
                 <CloudArrowDown className="animate-bounce" size={40} />
             </div>
@@ -746,7 +746,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
         return (
             <div
                 className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
-                style={{ height: '42.25rem' }}
+                style={{ height: '42.75rem' }}
             >
                 <p>There are no charts to display.</p>
             </div>
@@ -1040,7 +1040,7 @@ const NavigraphChartsUI = () => {
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
-                            <ScrollableContainer className="mt-5" height={42.25}>
+                            <ScrollableContainer className="mt-5" height={42.75}>
                                 <NavigraphChartSelector
                                     selectedTab={organizedCharts[tabIndex]}
                                     loading={loading}
@@ -1245,7 +1245,7 @@ const LocalFileChartUI = () => {
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
-                            <ScrollableContainer className="mt-5" height={42.25}>
+                            <ScrollableContainer className="mt-5" height={42.75}>
                                 <LocalFileChartSelector
                                     selectedTab={organizedCharts[Math.min(tabIndex, 2)]}
                                     loading={loading}

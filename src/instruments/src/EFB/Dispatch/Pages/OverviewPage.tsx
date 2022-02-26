@@ -48,7 +48,7 @@ export const OverviewPage = () => {
     };
 
     return (
-        <div className="overflow-hidden p-6 mt-4 mr-3 w-1/2 h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="overflow-hidden p-6 mr-3 w-1/2 h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <h1 className="font-bold">Airbus A320neo</h1>
             <p>{airline}</p>
 
