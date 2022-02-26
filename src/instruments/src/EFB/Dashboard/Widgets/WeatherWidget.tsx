@@ -74,6 +74,8 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     const dispatch = useAppDispatch();
     const [simbriefIcaoAtLoading, setSimbriefIcaoAtLoading] = useState(simbriefIcao);
     const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
+    const [metarError, setErrorMetar] = useState('NO VALID ICAO CHOSEN');
+    const [usingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
     const source = metarSource === 'MSFS' ? 'MS' : metarSource;
 
     const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
@@ -128,8 +130,14 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                 const metarParse = parseMetar(result.metar);
                 dispatch(setMetar(metarParse));
             })
-            .catch(() => {
-                dispatch(setMetar(undefined));
+            .catch((err) => {
+                console.log(`Error while parsing Metar: ${err}`);
+                if (err.toString().match(/^Error$/)) {
+                    setErrorMetar('NO VALID ICAO CHOSEN');
+                } else {
+                    setErrorMetar(`${err.toString().replace(/^Error: /, '')}`);
+                }
+                dispatch(setMetar(MetarParserTypeProp));
             });
     }
 
@@ -237,13 +245,20 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                             {metar.raw_text
                                                 ? (
                                                     <>
-                                                        <ColoredMetar metar={metar} />
+                                                        {usingColoredMetar
+                                                            ? (
+                                                                <>
+                                                                    <ColoredMetar metar={metar} />
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    {metar.raw_text}
+                                                                </>
+                                                            )}
                                                     </>
                                                 ) : (
                                                     <>
-                                                        NO VALID ICAO CHOSEN
-                                                        {' '}
-                                                        {' '}
+                                                        {metarError}
                                                     </>
                                                 )}
                                         </div>

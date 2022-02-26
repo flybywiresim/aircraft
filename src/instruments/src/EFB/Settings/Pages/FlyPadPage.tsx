@@ -18,6 +18,7 @@ export const FlyPadPage = () => {
     const [timeDisplayed, setTimeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
     const [timeFormat, setTimeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
     const [showStatusBarFlightProgress, setShowStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
+    const [usingColoredMetar, setUsingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
 
     const themeButtons: ButtonType[] = [
         { name: 'Blue', setting: 'blue' },
@@ -116,6 +117,10 @@ export const FlyPadPage = () => {
 
             <SettingItem name="Show Status Bar Flight Progress">
                 <Toggle value={!!showStatusBarFlightProgress} onToggle={(value) => setShowStatusBarFlightProgress(value ? 1 : 0)} />
+            </SettingItem>
+
+            <SettingItem name="Show Colored Raw Metar">
+                <Toggle value={!!usingColoredMetar} onToggle={(value) => setUsingColoredMetar(value ? 1 : 0)} />
             </SettingItem>
         </SettingsPage>
     );
