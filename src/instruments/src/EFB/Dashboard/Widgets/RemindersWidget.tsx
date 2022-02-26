@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { IconArrowRight } from '@tabler/icons';
 import { A320Failure } from '@flybywiresim/failures';
 import { Link } from 'react-router-dom';
@@ -245,6 +245,17 @@ export const RemindersWidget = () => {
         'Weather,Pinned Charts,Maintenance,Checklists',
     );
     const reminderKeyArr = orderedReminderKeys.split(',') as ReminderKey[];
+
+    /**
+     * Let's check for any missing keys in the saved list in case more widgets get added in the future.
+     */
+    useEffect(() => {
+        Array.from(REMINDERS.keys()).forEach((key) => {
+            if (!reminderKeyArr.includes(key)) {
+                setOrderedReminderKeys(`${orderedReminderKeys},${key}`);
+            }
+        });
+    }, []);
 
     const [reorderMode, setReorderMode] = useState(false);
 

@@ -142,7 +142,7 @@ const Efb = () => {
                 modals.showModal(
                     <AlertModal
                         title="Battery Low"
-                        bodyText="The battery is low. Please charge the battery."
+                        bodyText="The battery is getting very low. Please charge the battery soon."
                     />,
                 );
             }

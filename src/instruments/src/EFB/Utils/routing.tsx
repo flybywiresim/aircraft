@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Route, Redirect, useHistory } from 'react-router-dom';
 
 export interface PageLink {
