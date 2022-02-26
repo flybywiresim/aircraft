@@ -3,7 +3,6 @@ import { RootState, store } from '../store';
 
 interface ChecklistTrackingItem {
     completed: boolean;
-    divider?: boolean;
     hasCondition: boolean;
 }
 
@@ -22,6 +21,11 @@ const initialState: ChecklistState = {
     selectedChecklistIndex: 0,
     checklists: [
         {
+            name: 'Cockpit Preparation',
+            items: [],
+            markedCompleted: false,
+        },
+        {
             name: 'Before Start',
             items: [],
             markedCompleted: false,
@@ -32,12 +36,12 @@ const initialState: ChecklistState = {
             markedCompleted: false,
         },
         {
-            name: 'Before Takeoff',
+            name: 'Taxi',
             items: [],
             markedCompleted: false,
         },
         {
-            name: 'After Takeoff / Climb',
+            name: 'Line-Up',
             items: [],
             markedCompleted: false,
         },
@@ -93,8 +97,8 @@ export const checklistsSlice = createSlice({
  */
 export const getChecklistCompletion = (checklistIndex: number): number => {
     const checklists = (store.getState() as RootState).trackingChecklists.checklists[checklistIndex];
-    const numCompletedItems = checklists.items.filter((item) => item.completed && !item.divider).length;
-    return numCompletedItems / checklists.items.filter((item) => !item.divider).length;
+    const numCompletedItems = checklists.items.filter((item) => item.completed).length;
+    return numCompletedItems / checklists.items.length;
 };
 
 /**
