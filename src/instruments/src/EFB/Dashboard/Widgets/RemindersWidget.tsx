@@ -87,7 +87,7 @@ const PinnedChartsReminder = () => {
                 }, index) => (
                     <Link
                         to="/navigation/navigraph"
-                        className={`relative flex flex-col flex-wrap p-2 mt-4 bg-theme-accent rounded-md overflow-hidden ${index && index % 2 !== 0 && 'ml-4'}`}
+                        className={`relative flex flex-col flex-wrap px-2 pt-3 pb-2 mt-4 bg-theme-accent rounded-md overflow-hidden ${index && index % 2 !== 0 && 'ml-4'}`}
                         onClick={() => {
                             setChartSource('NAVIGRAPH');
                             dispatch(setChartDimensions({ width: undefined, height: undefined }));
@@ -103,7 +103,7 @@ const PinnedChartsReminder = () => {
                             }));
                         }}
                     >
-                        <div className={`${getTagColor(tag ?? '')} bg-current h-1 w-full inset-x-0 absolute top-0`} />
+                        <div className={`${getTagColor(tag ?? '')} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
                         <h2 className="font-bold">
                             {icao}
                             {' '}
@@ -173,7 +173,7 @@ const ChecklistReminderWidget = ({ checklist, checklistIndex }: ChecklistReminde
                 dispatch(setSelectedChecklistIndex(checklistIndex));
             }}
         >
-            <div className="absolute top-0 left-0 flex-row w-full h-2 text-current bg-theme-secondary">
+            <div className="absolute top-0 left-0 flex-row w-full h-1.5 text-current bg-theme-secondary">
                 <div
                     className="h-full text-current bg-current"
                     style={{
