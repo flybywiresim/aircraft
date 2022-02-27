@@ -393,6 +393,8 @@ export const CpdlcMessagesUplink: { [identification: string]: [string[], CpdlcMe
     UM118: [['AT %s CONTACT %s'], new CpdlcMessageElement('UM117', [FansMode.FansA], [new CpdlcMessageContentPosition(1), new CpdlcMessageContentFreetext(3, -1)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM120: [['MONITOR %s'], new CpdlcMessageElement('UM120', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentFreetext(1, -1)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM121: [['AT %s MONITOR %s'], new CpdlcMessageElement('UM121', [FansMode.FansA], [new CpdlcMessageContentPosition(1), new CpdlcMessageContentFreetext(3, -1)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+    UM169: [['%s'], new CpdlcMessageElement('UM169', [FansMode.FansA], [new CpdlcMessageContentFreetext(0, -1)], CpdlcMessageExpectedResponseType.Roger)],
+    UM183: [['%s'], new CpdlcMessageElement('UM183', [FansMode.FansB], [new CpdlcMessageContentFreetext(0, -1)], CpdlcMessageExpectedResponseType.Roger)],
     UM190: [['FLY HEADING %s'], new CpdlcMessageElement('UM190', [FansMode.FansB], [new CpdlcMessageContentDegree(2)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM215: [['TURN %s %s DEGREES'], new CpdlcMessageElement('UM215', [FansMode.FansB], [new CpdlcMessageContentDirection(1), new CpdlcMessageContentDegree(2)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM222: [['NO SPEED RESTRICTION'], new CpdlcMessageElement('UM222', [FansMode.FansA, FansMode.FansB], CpdlcMessageExpectedResponseType.Roger)],
