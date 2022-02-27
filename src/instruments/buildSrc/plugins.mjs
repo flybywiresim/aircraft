@@ -16,6 +16,8 @@ const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
 
 dotenv.config();
 
+console.log(process.env);
+
 function babel() {
     return babelPlugin({
         presets: [
@@ -68,11 +70,13 @@ export function baseCompile(instrumentName, instrumentFolder) {
             preserveExtensions: true,
         }),
         replace({
+            'DEBUG': 'false',
             'preventAssignment': true,
             'process.env.NODE_ENV': JSON.stringify('production'),
             'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
             'process.env.CLIENT_SECRET': JSON.stringify(process.env.CLIENT_SECRET),
             'process.env.CHARTFOX_SECRET': JSON.stringify(process.env.CHARTFOX_SECRET),
+            'process.env.SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN),
             'process.env.SIMVAR_DISABLE': 'false',
         }),
         postCss(instrumentName, instrumentFolder),

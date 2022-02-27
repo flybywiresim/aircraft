@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+import { LegType, TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+import { Minutes } from 'msfs-geo';
 import { FlightPlanManager } from './FlightPlanManager';
 import { GeoMath } from './GeoMath';
 
@@ -96,5 +98,32 @@ export class WaypointBuilder {
         const coordinates = fpm.getCoordinatesAtNMFromDestinationAlongFlightPlan(distanceFromDestination);
 
         return WaypointBuilder.fromCoordinates(ident, coordinates, instrument);
+    }
+
+    public static fromWaypointManualHold(
+        waypoint: WayPoint,
+        holdDirection: TurnDirection,
+        inboundCourse: Degrees,
+        holdLength: NauticalMiles | undefined,
+        holdTime: Minutes | undefined,
+        instrument: BaseInstrument,
+    ): WayPoint {
+        const newWaypoint = WaypointBuilder.fromCoordinates(waypoint.ident, waypoint.infos.coordinates, instrument);
+
+        newWaypoint.icao = waypoint.icao;
+        newWaypoint.infos = waypoint.infos;
+
+        newWaypoint.additionalData.legType = LegType.HM;
+        newWaypoint.turnDirection = holdDirection;
+        newWaypoint.additionalData.course = inboundCourse;
+        newWaypoint.additionalData.distance = holdLength;
+        newWaypoint.additionalData.distanceInMinutes = holdTime;
+
+        newWaypoint.speedConstraint = waypoint.speedConstraint;
+        newWaypoint.legAltitudeDescription = waypoint.legAltitudeDescription;
+        newWaypoint.legAltitude1 = waypoint.legAltitude1;
+        newWaypoint.legAltitude2 = waypoint.legAltitude2;
+
+        return newWaypoint;
     }
 }

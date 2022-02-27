@@ -19,11 +19,14 @@ class A32NX_Boarding {
     }
 
     async init() {
-        // Set default pax (0)
-        await this.setPax(0);
-        await this.loadPaxPayload();
-        await this.loadCargoZero();
-        await this.loadCargoPayload();
+        const inDeveloperState = SimVar.GetSimVarValue("L:A32NX_DEVELOPER_STATE", "Bool");
+        if (!inDeveloperState) {
+            // Set default pax (0)
+            await this.setPax(0);
+            await this.loadPaxPayload();
+            await this.loadCargoZero();
+            await this.loadCargoPayload();
+        }
     }
 
     async fillPaxStation(station, paxToFill) {

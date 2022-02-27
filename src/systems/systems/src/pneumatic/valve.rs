@@ -455,11 +455,13 @@ mod tests {
     fn context(delta_time: Duration, altitude: Length) -> UpdateContext {
         let mut electricity = Electricity::new();
         let mut registry: TestVariableRegistry = Default::default();
-        let mut init_context = InitContext::new(&mut electricity, &mut registry);
+        let mut init_context =
+            InitContext::new(Default::default(), &mut electricity, &mut registry);
 
         UpdateContext::new(
             &mut init_context,
             delta_time,
+            Velocity::new::<knot>(0.),
             Velocity::new::<knot>(0.),
             altitude,
             InternationalStandardAtmosphere::temperature_at_altitude(altitude),

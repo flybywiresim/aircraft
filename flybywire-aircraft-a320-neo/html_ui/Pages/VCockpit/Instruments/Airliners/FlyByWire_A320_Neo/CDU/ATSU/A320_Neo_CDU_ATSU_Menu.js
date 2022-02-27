@@ -1,7 +1,9 @@
 class CDUAtsuMenu {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
-        mcdu.activeSystem = 'ATSU';
+        mcdu.page.Current = mcdu.page.ATSUMenu;
+        mcdu.activeSystem = "ATSU";
+
         const display = [
             ["ATSU DATALINK"],
             [""],
@@ -37,7 +39,7 @@ class CDUAtsuMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[4] = () => {
-            CDUDatalinkStatus.ShowPage(mcdu);
+            CDUAtsuDatalinkStatus.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {

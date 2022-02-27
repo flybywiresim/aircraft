@@ -24,7 +24,9 @@ use super::{
 use crate::landing_gear::LandingGear;
 use crate::shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus};
 use crate::simulation::update_context::Delta;
-use crate::simulation::{DeltaContext, InitContext, VariableIdentifier, VariableRegistry};
+use crate::simulation::{
+    DeltaContext, InitContext, StartState, VariableIdentifier, VariableRegistry,
+};
 
 pub trait TestBed {
     type Aircraft: Aircraft;
@@ -84,6 +86,10 @@ pub trait TestBed {
     fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
         self.test_bed_mut()
             .set_ambient_temperature(ambient_temperature);
+    }
+
+    fn ambient_temperature(&mut self) -> ThermodynamicTemperature {
+        self.test_bed_mut().ambient_temperature()
     }
 
     fn set_on_ground(&mut self, on_ground: bool) {
@@ -197,10 +203,17 @@ pub struct SimulationTestBed<T: Aircraft> {
 }
 impl<T: Aircraft> SimulationTestBed<T> {
     pub fn new<U: FnOnce(&mut InitContext) -> T>(aircraft_ctor_fn: U) -> Self {
+        Self::new_with_start_state(Default::default(), aircraft_ctor_fn)
+    }
+
+    pub fn new_with_start_state<U: FnOnce(&mut InitContext) -> T>(
+        start_state: StartState,
+        aircraft_ctor_fn: U,
+    ) -> Self {
         let mut variable_registry = TestVariableRegistry::default();
         let mut test_bed = Self {
             reader_writer: TestReaderWriter::new(),
-            simulation: Simulation::new(aircraft_ctor_fn, &mut variable_registry),
+            simulation: Simulation::new(start_state, aircraft_ctor_fn, &mut variable_registry),
             variable_registry,
         };
 
@@ -310,6 +323,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
 
     fn set_ambient_temperature(&mut self, ambient_temperature: ThermodynamicTemperature) {
         self.write_by_name(UpdateContext::AMBIENT_TEMPERATURE_KEY, ambient_temperature);
+    }
+
+    fn ambient_temperature(&mut self) -> ThermodynamicTemperature {
+        self.read_by_name(UpdateContext::AMBIENT_TEMPERATURE_KEY)
     }
 
     fn set_on_ground(&mut self, on_ground: bool) {

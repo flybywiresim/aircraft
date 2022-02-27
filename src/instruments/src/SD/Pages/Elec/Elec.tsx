@@ -1,8 +1,8 @@
 import classNames from 'classnames';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { render } from '@instruments/common/index';
 import { PageTitle } from '../../Common/PageTitle';
-import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
+import { setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
@@ -518,4 +518,4 @@ const Wire = ({ d, amber }: WireProps) => {
     return <path className={classes} d={d} />;
 };
 
-ReactDOM.render(<SimVarProvider><ElecPage /></SimVarProvider>, getRenderTarget());
+render(<SimVarProvider><ElecPage /></SimVarProvider>);

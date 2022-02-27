@@ -1,5 +1,6 @@
 extern crate systems;
 
+mod air_conditioning;
 mod electrical;
 mod fuel;
 mod hydraulic;
@@ -7,6 +8,7 @@ mod pneumatic;
 mod power_consumption;
 
 use self::{
+    air_conditioning::A320AirConditioning,
     fuel::A320Fuel,
     pneumatic::{A320Pneumatic, A320PneumaticOverheadPanel},
 };
@@ -38,6 +40,7 @@ use systems::{
 pub struct A320 {
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
+    air_conditioning: A320AirConditioning,
     apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
@@ -66,6 +69,7 @@ impl A320 {
         A320 {
             adirs: AirDataInertialReferenceSystem::new(context),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
+            air_conditioning: A320AirConditioning::new(context),
             apu: AuxiliaryPowerUnitFactory::new_aps3200(
                 context,
                 1,
@@ -85,8 +89,16 @@ impl A320 {
             electrical: A320Electrical::new(context),
             power_consumption: A320PowerConsumption::new(context),
             ext_pwr: ExternalPowerSource::new(context),
-            lgciu1: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrentEssential),
-            lgciu2: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrent(2)),
+            lgciu1: LandingGearControlInterfaceUnit::new(
+                context,
+                1,
+                ElectricalBusType::DirectCurrentEssential,
+            ),
+            lgciu2: LandingGearControlInterfaceUnit::new(
+                context,
+                2,
+                ElectricalBusType::DirectCurrent(2),
+            ),
             hydraulic: A320Hydraulic::new(context),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(context),
             autobrake_panel: AutobrakePanel::new(context),
@@ -191,12 +203,24 @@ impl Aircraft for A320 {
             &self.engine_fire_overhead,
             &self.apu,
         );
+        self.air_conditioning.update(
+            context,
+            &self.adirs,
+            [&self.engine_1, &self.engine_2],
+            &self.engine_fire_overhead,
+            &self.pneumatic,
+            &self.pneumatic_overhead,
+            &self.pressurization,
+            &self.pressurization_overhead,
+            [&self.lgciu1, &self.lgciu2],
+        );
     }
 }
 impl SimulationElement for A320 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.adirs.accept(visitor);
         self.adirs_overhead.accept(visitor);
+        self.air_conditioning.accept(visitor);
         self.apu.accept(visitor);
         self.apu_fire_overhead.accept(visitor);
         self.apu_overhead.accept(visitor);
