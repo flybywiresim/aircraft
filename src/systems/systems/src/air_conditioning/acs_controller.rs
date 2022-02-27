@@ -671,9 +671,9 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition)
             && !engine_fire_push_buttons.is_released(1)
             && !pressurization_overhead.ditching_is_on();
-            // && ! pack 1 overheat
-            // Flow Control Valve 2
-            self.fcv_2_open_allowed = acs_overhead.pack_pushbuttons_state()[1]
+        // && ! pack 1 overheat
+        // Flow Control Valve 2
+        self.fcv_2_open_allowed = acs_overhead.pack_pushbuttons_state()[1]
             && !(pneumatic.right_engine_state() == EngineState::Starting)
             && (!(pneumatic.left_engine_state() == EngineState::Starting)
                 || !pneumatic.engine_crossbleed_is_on())
@@ -697,14 +697,14 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
                     || (engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
                         && pneumatic_overhead.right_engine_bleed_pushbutton_is_auto()
                         && pneumatic.engine_crossbleed_is_on()))
-                    || pneumatic.apu_bleed_is_on(),
+                    || pneumatic.apu_bleed_is_on()),
             self.fcv_2_open_allowed
                 && (((engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
                     && pneumatic_overhead.right_engine_bleed_pushbutton_is_auto())
                     || (engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
                         && pneumatic_overhead.left_engine_bleed_pushbutton_is_auto()
                         && pneumatic.engine_crossbleed_is_on()))
-                    || pneumatic.apu_bleed_is_on(),
+                    || pneumatic.apu_bleed_is_on()),
         ]
     }
 
