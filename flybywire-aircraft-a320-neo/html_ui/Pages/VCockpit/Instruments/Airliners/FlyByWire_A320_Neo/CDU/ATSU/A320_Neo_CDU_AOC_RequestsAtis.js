@@ -1,7 +1,7 @@
 class CDUAocRequestsAtis {
     static CreateDataBlock(mcdu) {
         const retval = {
-            requestId: mcdu.currentFlightPhase === FmgcFlightPhases.PREFLIGHT ? Atsu.AtisType.Departure : Atsu.AtisType.Arrival,
+            requestId: mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT ? Atsu.AtisType.Departure : Atsu.AtisType.Arrival,
             departure: "",
             arrival: "",
             selected: "",
@@ -12,13 +12,13 @@ class CDUAocRequestsAtis {
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             retval.departure = mcdu.flightPlanManager.getOrigin().ident;
-            if (mcdu.currentFlightPhase === FmgcFlightPhases.PREFLIGHT) {
+            if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT) {
                 retval.selected = retval.departure;
             }
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
             retval.arrival = mcdu.flightPlanManager.getDestination().ident;
-            if (mcdu.currentFlightPhase !== FmgcFlightPhases.PREFLIGHT) {
+            if (mcdu.flightPhaseManager.phase !== FmgcFlightPhases.PREFLIGHT) {
                 retval.selected = retval.arrival;
             }
         }
