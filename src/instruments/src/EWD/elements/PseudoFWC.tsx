@@ -296,10 +296,10 @@ const PseudoFWC: React.FC = () => {
     useEffect(() => {
         if (clearButtonLeft === 1 || clearButtonRight === 1) {
             if (typeof failuresLeft !== 'undefined' && failuresLeft.length > 0) {
-                const updatedFailures = failuresLeft.slice(1);
-                const updatedRecallFailures = allCurrentFailures.filter((item) => !updatedFailures.includes(item));
+                const updatedLeftFailures = failuresLeft.slice(1);
+                const updatedRecallFailures = allCurrentFailures.filter((item) => !updatedLeftFailures.includes(item));
                 setRecallFailures(updatedRecallFailures);
-                setFailuresLeft(updatedFailures);
+                setFailuresLeft(updatedLeftFailures);
             }
         }
         setRecallReset(!recallReset);
@@ -312,9 +312,9 @@ const PseudoFWC: React.FC = () => {
             if (recallFailures.length > 0) {
                 const recall = recallFailures[0];
                 const updatedRecallFailures = recallFailures.slice(1);
-                const updatedFailures: string[] = failuresLeft.concat([recall]);
+                const updatedLeftFailures: string[] = failuresLeft.concat([recall]);
                 setRecallFailures(updatedRecallFailures);
-                setFailuresLeft(updatedFailures);
+                setFailuresLeft(updatedLeftFailures);
             }
             setRecallReset(!recallReset);
         }
@@ -1109,9 +1109,9 @@ const PseudoFWC: React.FC = () => {
         let tempMemoArrayRight:string[] = [];
         const allFailureKeys: string[] = [];
         let tempFailureArrayLeft:string[] = [];
-        let failureKeysLeft: string[] = failuresLeft;
+        const failureKeysLeft: string[] = failuresLeft;
         let tempFailureArrayRight:string[] = [];
-        let failureKeysRight: string[] = failuresRight;
+        const failureKeysRight: string[] = failuresRight;
         let leftFailureSystemCount = 0;
         let rightFailureSystemCount = 0;
 
@@ -1122,7 +1122,7 @@ const PseudoFWC: React.FC = () => {
                     allFailureKeys.push(key);
                 }
 
-                if ((!failuresLeft.includes(key) && !recallFailures.includes(key)) || !failuresRight.includes(key)) {
+                if ((value.side === 'LEFT' && !failuresLeft.includes(key) && !recallFailures.includes(key)) || (value.side === 'RIGHT' && !failuresRight.includes(key))) {
                     if (value.side === 'LEFT') {
                         failureKeysLeft.push(key);
                     } else {
@@ -1166,11 +1166,11 @@ const PseudoFWC: React.FC = () => {
         }
 
         const failLeft = tempFailureArrayLeft.length > 0;
-        //const failRight = tempFailureArrayRight.length > 0;
+        // const failRight = tempFailureArrayRight.length > 0;
 
         const mesgFailOrderLeft: string[] = [];
         const mesgFailOrderRight: string[] = [];
-        for (const [key, value] of Object.entries(EWDMessageFailures)) {
+        for (const [, value] of Object.entries(EWDMessageFailures)) {
             if (value.side === 'LEFT') {
                 mesgFailOrderLeft.push(...value.codesToReturn);
             } else {
@@ -1188,7 +1188,7 @@ const PseudoFWC: React.FC = () => {
             setMemoMessageLeft(orderedFailureArrayLeft);
         }
 
-        for (const [key, value] of Object.entries(EWDMessageMemos)) {
+        for (const [, value] of Object.entries(EWDMessageMemos)) {
             if (value.simVarIsActive && !(value.memoInhibit) && !value.flightPhaseInhib.some((e) => e === flightPhase)) {
                 const newCode: string[] = [];
 
@@ -1212,7 +1212,7 @@ const PseudoFWC: React.FC = () => {
         }
         const mesgOrderLeft: string[] = [];
         const mesgOrderRight: string[] = [];
-        for (const [key, value] of Object.entries(EWDMessageMemos)) {
+        for (const [, value] of Object.entries(EWDMessageMemos)) {
             if (value.side === 'LEFT') {
                 mesgOrderLeft.push(...value.codesToReturn);
             } else {
