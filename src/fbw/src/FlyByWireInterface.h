@@ -335,8 +335,6 @@ class FlyByWireInterface {
 
   bool updateAltimeterSetting(double sampleTime);
 
-  double getHeadingAngleError(double u1, double u2);
-
   double getTcasModeAvailable();
 
   double getTcasAdvisoryState();
