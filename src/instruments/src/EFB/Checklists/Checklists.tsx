@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { useEffect } from 'react';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { ChecklistPage } from './ChecklistsPage';
@@ -9,6 +10,7 @@ import {
     setSelectedChecklistIndex,
 } from '../Store/features/checklists';
 import { RootState, store, useAppDispatch, useAppSelector } from '../Store/store';
+import { PromptModal, useModals } from '../UtilComponents/Modals/Modals';
 
 export interface ChecklistItem {
     item: string;
@@ -81,12 +83,14 @@ export const Checklists = () => {
         setAutomaticItemStates();
     }, [selectedChecklistIndex]);
 
+    const modals = useModals();
+
     return (
         <>
             <h1 className="mb-4 font-bold">Checklists</h1>
-            <div className="flex flex-row space-x-6">
-                <div className="flex-shrink-0 w-1/4">
-                    <ScrollableContainer height={51}>
+            <div className="flex flex-row space-x-6 h-content-section-reduced">
+                <div className="flex flex-col flex-shrink-0 justify-between w-1/4">
+                    <ScrollableContainer height={46}>
                         <div className="space-y-4">
                             {CHECKLISTS.map((cl, index) => (
                                 <div
@@ -102,11 +106,35 @@ export const Checklists = () => {
                     <div
                         className="flex justify-center items-center h-12 text-red-500 hover:text-theme-body bg-theme-body hover:bg-red-500 rounded-md border-2 border-red-500 transition duration-100"
                         onClick={() => {
+                            modals.showModal(
+                                <PromptModal
+                                    title="Checklist Reset Warning"
+                                    bodyText="Are you sure to reset all checklists?"
+                                    onConfirm={() => {
+                                        checklists.forEach((cl, clIndex) => {
+                                            cl.items.forEach((_, itemIdx) => {
+                                                if (autoFillChecklists && CHECKLISTS[clIndex].items[itemIdx].condition) {
+                                                    return;
+                                                }
+                                                dispatch(setChecklistItemCompletion({ checklistIndex: clIndex, itemIndex: itemIdx, completionValue: false }));
+                                            });
+                                            dispatch(setChecklistCompletion({ checklistIndex: clIndex, completion: false }));
+                                        });
+                                    }}
+                                />,
+                            );
+                        }}
+                    >
+                        Reset All
+                    </div>
+
+                    <div
+                        className="flex justify-center items-center h-12 text-red-500 hover:text-theme-body bg-theme-body hover:bg-red-500 rounded-md border-2 border-red-500 transition duration-100"
+                        onClick={() => {
                             checklists[selectedChecklistIndex].items.forEach((_, itemIdx) => {
                                 if (autoFillChecklists && CHECKLISTS[selectedChecklistIndex].items[itemIdx].condition) {
                                     return;
                                 }
-
                                 dispatch(setChecklistItemCompletion({ checklistIndex: selectedChecklistIndex, itemIndex: itemIdx, completionValue: false }));
                             });
                             dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: false }));

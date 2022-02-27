@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
@@ -33,7 +33,12 @@ import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
-import { setChecklistItems } from './Store/features/checklists';
+import {
+    areAllChecklistItemsCompleted, setChecklistCompletion,
+    setChecklistItemCompletion,
+    setChecklistItems,
+    setSelectedChecklistIndex,
+} from './Store/features/checklists';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 240;
@@ -202,7 +207,7 @@ const Efb = () => {
         if (!autoFillChecklists) return;
 
         setAutomaticItemStates();
-    }, 3000);
+    }, 1000);
 
     const offToLoaded = () => {
         const shouldWait = powerState === PowerStates.SHUTOFF;

@@ -1,7 +1,9 @@
+/* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
 import { CheckLg, Link45deg } from 'react-bootstrap-icons';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
+import { useSimVar } from '@instruments/common/simVars';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import {
     areAllChecklistItemsCompleted,
@@ -111,6 +113,7 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentProps) =>
 const CompletionButton = () => {
     const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
+    const [completeItemVar, setCompleteItemVar] = useSimVar('L:A32NX_EFB_CHECKLIST_COMPLETE_ITEM', 'bool', 200);
 
     const firstIncompleteIdx = checklists[selectedChecklistIndex].items.findIndex((item, index) => {
         // Let's go ahead and skip checklist items that have a completion-determination function as those can't be manually checked.
@@ -122,6 +125,27 @@ const CompletionButton = () => {
     });
 
     const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        setCompleteItemVar(false);
+    }, []);
+
+    useEffect(() => {
+        if (completeItemVar) {
+            setCompleteItemVar(false);
+            if (checklists[selectedChecklistIndex].markedCompleted && selectedChecklistIndex < checklists.length - 1) {
+                dispatch(setSelectedChecklistIndex(selectedChecklistIndex + 1));
+            } else if (firstIncompleteIdx !== -1) {
+                dispatch(setChecklistItemCompletion({
+                    checklistIndex: selectedChecklistIndex,
+                    itemIndex: firstIncompleteIdx,
+                    completionValue: true,
+                }));
+            } else if (areAllChecklistItemsCompleted(selectedChecklistIndex)) {
+                dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: true }));
+            }
+        }
+    }, [completeItemVar]);
 
     if (checklists[selectedChecklistIndex].markedCompleted) {
         if (selectedChecklistIndex < checklists.length - 1) {
@@ -185,7 +209,7 @@ export const ChecklistPage = () => {
     const { selectedChecklistIndex } = useAppSelector((state) => state.trackingChecklists);
 
     return (
-        <div className="flex overflow-visible flex-col justify-between p-8 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="flex overflow-visible flex-col justify-between p-8 w-full rounded-lg border-2 border-theme-accent">
             <ScrollableContainer height={46}>
                 <div className="space-y-4">
                     {CHECKLISTS[selectedChecklistIndex].items.map((it, index) => (
