@@ -1321,9 +1321,12 @@ class FMCMainDisplay extends BaseAirliners {
 
     // TODO/VNAV: Speed constraint
     getSpeedConstraint() {
-        const activeFpIndex = this.flightPlanManager.getActiveWaypointIndex();
-        const constraints = this.managedProfile.get(activeFpIndex);
-        // TODO consider decel distance for des constraints
+        if (!this.navModeEngaged()) {
+            return Infinity;
+        }
+
+        const activeLegIndex = this.guidanceController.activeLegIndex;
+        const constraints = this.managedProfile.get(activeLegIndex);
         if (constraints) {
             if (this.flightPhaseManager.phase < FmgcFlightPhases.CRUISE || this.flightPhaseManager.phase === FmgcFlightPhases.GOAROUND) {
                 return constraints.climbSpeed;
@@ -1331,7 +1334,7 @@ class FMCMainDisplay extends BaseAirliners {
 
             if (this.flightPhaseManager.phase > FmgcFlightPhases.CRUISE && this.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND) {
                 // FIXME proper decel calc
-                if (this.guidanceController.activeLegIndex === activeFpIndex && this.guidanceController.activeLegDtg < 5) {
+                if (this.guidanceController.activeLegDtg < 5) {
                     return constraints.descentSpeed;
                 }
             }
@@ -4465,6 +4468,20 @@ class FMCMainDisplay extends BaseAirliners {
         // TODO check tuned navaids
         if (this._progBrgDist && this._progBrgDist.icao === icao) {
             return true;
+        }
+        return false;
+    }
+
+    navModeEngaged() {
+        const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
+        switch (lateralMode) {
+            case 20: // NAV
+            case 30: // LOC*
+            case 31: // LOC
+            case 32: // LAND
+            case 33: // FLARE
+            case 34: // ROLL OUT
+                return true;
         }
         return false;
     }

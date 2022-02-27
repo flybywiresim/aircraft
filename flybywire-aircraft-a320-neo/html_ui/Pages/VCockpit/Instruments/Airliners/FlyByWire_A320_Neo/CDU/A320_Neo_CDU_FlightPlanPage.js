@@ -758,18 +758,10 @@ class CDUFlightPlanPage {
         if (fpIndex <= mcdu.flightPlanManager.getActiveWaypointIndex()) {
             // 22-72-00:67
             // Stop clearing TO or FROM waypoints when NAV is engaged
-            const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
-            switch (lateralMode) {
-                case 20:
-                case 30:
-                case 31:
-                case 32:
-                case 33:
-                case 34:
-                case 50:
-                    mcdu.addNewMessage(NXSystemMessages.notAllowedInNav);
-                    scratchpadCallback();
-                    return;
+            if (mcdu.navModeEngaged()) {
+                mcdu.addNewMessage(NXSystemMessages.notAllowedInNav);
+                scratchpadCallback();
+                return;
             }
         }
         // TODO if clear leg before a hold, delete hold too? some other legs like this too..
