@@ -40,6 +40,8 @@ import {
     setSelectedChecklistIndex,
 } from './Store/features/checklists';
 
+import { Presets } from './Presets/Presets';
+
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 240;
 
@@ -295,6 +297,7 @@ const Efb = () => {
                                     <Route path="/failures" component={Failures} />
                                     <Route path="/settings" component={Settings} />
                                     <Route path="/checklists" component={Checklists} />
+                                    <Route path="/presets" component={Presets} />
                                 </Switch>
                             </div>
                         </div>
