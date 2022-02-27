@@ -87,7 +87,7 @@ const PinnedChartsReminder = () => {
                 }, index) => (
                     <Link
                         to="/navigation/navigraph"
-                        className={`flex flex-col flex-wrap p-2 mt-4 bg-theme-accent rounded-md ${index && index % 2 !== 0 && 'ml-4'}`}
+                        className={`relative flex flex-col flex-wrap p-2 mt-4 bg-theme-accent rounded-md overflow-hidden ${index && index % 2 !== 0 && 'ml-4'}`}
                         onClick={() => {
                             setChartSource('NAVIGRAPH');
                             dispatch(setChartDimensions({ width: undefined, height: undefined }));
@@ -103,10 +103,11 @@ const PinnedChartsReminder = () => {
                             }));
                         }}
                     >
+                        <div className={`${getTagColor(tag ?? '')} bg-current h-1 w-full inset-x-0 absolute top-0`} />
                         <h2 className="font-bold">
                             {icao}
                             {' '}
-                            <span className={getTagColor(tag ?? '')}>{tag}</span>
+                            <span>{tag}</span>
                         </h2>
                         <span className="mt-2 font-inter">{title}</span>
                         <IconArrowRight className="mt-auto ml-auto text-theme-highlight" />
