@@ -27,13 +27,12 @@ const PacksNaiWai: React.FC<PacksNaiWaiProps> = ({ x, y, flightPhase }) => {
     || (autoThrustMode >= 1 && autoThrustMode <= 4)
     || (flightPhase >= 5 && flightPhase <= 7 && autoThrustMode === 5));
 
+    if (!showMessage) {
+        return null;
+    }
     return (
-        <>
-            {showMessage
-        && (
-            <text className="Green Large End" x={x} y={y}>{finalMessageString}</text>
-        )}
-        </>
+
+        <text className="Green Large End" x={x} y={y}>{finalMessageString}</text>
 
     );
 };

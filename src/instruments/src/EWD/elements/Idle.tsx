@@ -40,11 +40,11 @@ const Idle: React.FC<IdleProps> = ({ x, y }) => {
     }, [showIdle]);
 
     return (
-        <>
-            <g className={showIdle ? 'Show' : 'Hide'}>
-                <text className={`Large Center ${flash ? 'GreenPulse' : 'Green'}`} x={x} y={y}>IDLE</text>
-            </g>
-        </>
+
+        <g className={showIdle ? 'Show' : 'Hide'}>
+            <text className={`Large Center ${flash ? 'GreenPulse' : 'Green'}`} x={x} y={y}>IDLE</text>
+        </g>
+
     );
 };
 

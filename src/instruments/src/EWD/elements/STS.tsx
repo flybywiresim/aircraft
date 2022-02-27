@@ -15,7 +15,7 @@ const STS: React.FC<STSProps> = ({ x, y, active }) => (
                 </text>
                 <path
                     className="WhiteLine"
-                    d={`M ${x-28} ${y+3} h 55 v -24 h -55 v 24`}
+                    d={`M ${x - 28} ${y + 3} h 55 v -24 h -55 v 24`}
                     strokeLinecap="round"
                 />
             </g>

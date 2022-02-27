@@ -1,4 +1,4 @@
-import EWDMessageParser from '@instruments/common/EWDMessageParser';
+import FormattedFwcText from '@instruments/common/EWDMessageParser';
 import EWDMessages from '@instruments/common/EWDMessages';
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
@@ -31,7 +31,7 @@ export const LowerLeftDisplay: React.FC<LowerLeftDisplayProps> = ({ x, y }) => {
     return (
         <g id="LowerLeftDisplay">
 
-            <EWDMessageParser x={x} y={y} message={message} />
+            <FormattedFwcText x={x} y={y} message={message} />
 
         </g>
     );

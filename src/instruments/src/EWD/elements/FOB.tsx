@@ -1,5 +1,5 @@
 import { useSimVar } from '@instruments/common/simVars';
-import { fuelForDisplay } from '@instruments/common/FuelFunctions';
+import { fuelForDisplay } from '@instruments/common/fuel';
 import React from 'react';
 
 type FOBProps = {

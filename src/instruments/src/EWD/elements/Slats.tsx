@@ -56,6 +56,7 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
                     setSlatPos([x - 117, y + 36]);
                     break;
                 default:
+                    setSlatPos([x - 15, y]);
                     break;
                 }
             }
@@ -114,6 +115,7 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
                     setFlapsPos([x + 172, y + 36]);
                     break;
                 default:
+                    setFlapsPos([x, y]);
                     break;
                 }
             }
