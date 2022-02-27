@@ -49,6 +49,35 @@ export abstract class CpdlcMessageContent {
 
     abstract validateAndReplaceContent(value: string[]): boolean;
 
+    public static createInstance(type: CpdlcMessageContentType): CpdlcMessageContent {
+        switch (type) {
+        case CpdlcMessageContentType.Level:
+            return new CpdlcMessageContentLevel(0);
+        case CpdlcMessageContentType.Position:
+            return new CpdlcMessageContentPosition(0);
+        case CpdlcMessageContentType.Time:
+            return new CpdlcMessageContentTime(0);
+        case CpdlcMessageContentType.Direction:
+            return new CpdlcMessageContentDirection(0);
+        case CpdlcMessageContentType.Distance:
+            return new CpdlcMessageContentDistance(0);
+        case CpdlcMessageContentType.Speed:
+            return new CpdlcMessageContentSpeed(0);
+        case CpdlcMessageContentType.Frequency:
+            return new CpdlcMessageContentFrequency(0);
+        case CpdlcMessageContentType.Procedure:
+            return new CpdlcMessageContentProcedure(0);
+        case CpdlcMessageContentType.Degree:
+            return new CpdlcMessageContentDegree(0);
+        case CpdlcMessageContentType.AtcUnit:
+            return new CpdlcMessageContentAtcUnit(0);
+        case CpdlcMessageContentType.Freetext:
+            return new CpdlcMessageContentFreetext(0, 0);
+        default:
+            return null;
+        }
+    }
+
     public deserialize(jsonData: any): void {
         this.Type = jsonData.Type;
         this.IndexStart = jsonData.IndexStart;
@@ -281,43 +310,7 @@ export class CpdlcMessageElement {
         this.Urgent = jsonData.Urgent;
 
         jsonData.Content.forEach((entry) => {
-            switch (entry.Type) {
-            case CpdlcMessageContentType.Level:
-                this.Content.push(new CpdlcMessageContentLevel(0));
-                break;
-            case CpdlcMessageContentType.Position:
-                this.Content.push(new CpdlcMessageContentPosition(0));
-                break;
-            case CpdlcMessageContentType.Time:
-                this.Content.push(new CpdlcMessageContentTime(0));
-                break;
-            case CpdlcMessageContentType.Direction:
-                this.Content.push(new CpdlcMessageContentDirection(0));
-                break;
-            case CpdlcMessageContentType.Distance:
-                this.Content.push(new CpdlcMessageContentDistance(0));
-                break;
-            case CpdlcMessageContentType.Speed:
-                this.Content.push(new CpdlcMessageContentSpeed(0));
-                break;
-            case CpdlcMessageContentType.Frequency:
-                this.Content.push(new CpdlcMessageContentFrequency(0));
-                break;
-            case CpdlcMessageContentType.Procedure:
-                this.Content.push(new CpdlcMessageContentProcedure(0));
-                break;
-            case CpdlcMessageContentType.Degree:
-                this.Content.push(new CpdlcMessageContentDegree(0));
-                break;
-            case CpdlcMessageContentType.AtcUnit:
-                this.Content.push(new CpdlcMessageContentAtcUnit(0));
-                break;
-            case CpdlcMessageContentType.Freetext:
-                this.Content.push(new CpdlcMessageContentFreetext(0, 0));
-                break;
-            default:
-                break;
-            }
+            this.Content.push(CpdlcMessageContent.createInstance(entry.Type));
             this.Content[this.Content.length - 1].deserialize(entry);
         });
 
