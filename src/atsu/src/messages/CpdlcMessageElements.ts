@@ -359,6 +359,7 @@ export const CpdlcMessagesDownlink: { [identification: string]: [string[], Cpdlc
     DM54: [['WHEN CAN WE EXPECT CRUISE CLIMB TO %s'], new CpdlcMessageElement('DM54', [FansMode.FansA], [new CpdlcMessageContentLevel(7)], CpdlcMessageExpectedResponseType.Yes)],
     DM65: [['DUE TO WEATHER'], new CpdlcMessageElement('DM65', [FansMode.FansA, FansMode.FansB], CpdlcMessageExpectedResponseType.No)],
     DM66: [['DUE TO AIRCRAFT PERFORMANCE'], new CpdlcMessageElement('DM66', [FansMode.FansA, FansMode.FansB], CpdlcMessageExpectedResponseType.No)],
+    DM67: [['%s'], new CpdlcMessageElement('DM67', [FansMode.FansA], CpdlcMessageExpectedResponseType.No)],
     DM69: [['REQUEST VMC DESCEND'], new CpdlcMessageElement('DM69', [FansMode.FansA], CpdlcMessageExpectedResponseType.Yes)],
     DM70: [['REQUEST HEADING %s'], new CpdlcMessageElement('DM70', [FansMode.FansA], [new CpdlcMessageContentDegree(2)], CpdlcMessageExpectedResponseType.Yes)],
     DM71: [['REQUEST GROUND TRACK %s'], new CpdlcMessageElement('DM71', [FansMode.FansA], [new CpdlcMessageContentDegree(3)], CpdlcMessageExpectedResponseType.Yes)],
@@ -366,6 +367,7 @@ export const CpdlcMessagesDownlink: { [identification: string]: [string[], Cpdlc
     DM75: [['AT PILOTS DISCRETION'], new CpdlcMessageElement('DM75', [FansMode.FansA], CpdlcMessageExpectedResponseType.Yes)],
     DM87: [['WHEN CAN WE EXPECT CLIMB TO %s'], new CpdlcMessageElement('DM87', [FansMode.FansA], [new CpdlcMessageContentLevel(6)], CpdlcMessageExpectedResponseType.Yes)],
     DM88: [['WHEN CAN WE EXPECT DESCEND TO %s'], new CpdlcMessageElement('DM88', [FansMode.FansA], [new CpdlcMessageContentLevel(6)], CpdlcMessageExpectedResponseType.Yes)],
+    DM98: [['%s'], new CpdlcMessageElement('DM98', [FansMode.FansB], CpdlcMessageExpectedResponseType.No)],
     DM9998: [['REQUEST LOGON'], new CpdlcMessageElement('DM9998', [FansMode.FansA, FansMode.FansB], CpdlcMessageExpectedResponseType.Yes)],
     DM9999: [['LOGOFF'], new CpdlcMessageElement('DM9999', [FansMode.FansA, FansMode.FansB], CpdlcMessageExpectedResponseType.No)],
 };
