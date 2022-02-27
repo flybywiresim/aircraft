@@ -7,7 +7,7 @@ import {
     ExclamationDiamond,
     Gear,
     Calculator,
-    JournalCheck, HouseDoor,
+    JournalCheck, HouseDoor, FileEarmarkCode, Sliders,
 } from 'react-bootstrap-icons';
 import { NavLink } from 'react-router-dom';
 
@@ -37,6 +37,9 @@ export const ToolBar = () => (
             </ToolBarButton>
             <ToolBarButton to="/checklists">
                 <JournalCheck size={35} />
+            </ToolBarButton>
+            <ToolBarButton to="/presets">
+                <Sliders size={35} />
             </ToolBarButton>
         </div>
 
