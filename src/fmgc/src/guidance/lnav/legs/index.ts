@@ -125,7 +125,6 @@ export interface LegMetadata {
      * This also applies if this is the first or last leg considered "offset" in the FMS, even if the transition onto the offset path skips the leg.
      */
     offset?: NauticalMiles,
-
 }
 
 export function legMetadataFromMsfsWaypoint(waypoint: WayPoint): LegMetadata {

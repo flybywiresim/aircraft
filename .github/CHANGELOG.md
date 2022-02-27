@@ -225,6 +225,7 @@
 1. [EWD] Rewritten logic for FWC into React - @RichardPilbery (tricky_dicky#3571) & @beheh (Benedict Etzel)
 1. [MODEL] Add new decal mesh next to fwd doors - @bouveng (Johan Bouveng)
 1. [MODEL] Add bandit/window mask + ext door decals & tail details - @bouveng (Johan Bouveng)
+1. [FMGC] Implement "coarse" prediction system for turn speeds - @tracernz (Mike)
 
 ## 0.7.0
 
