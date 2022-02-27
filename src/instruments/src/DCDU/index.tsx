@@ -5,6 +5,9 @@ import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@at
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { CpdlcMessageExpectedResponseType } from '@atsu/messages/CpdlcMessageElements';
 import { RequestMessage } from '@atsu/messages/RequestMessage';
+import { DclMessage } from '@atsu/messages/DclMessage';
+import { OclMessage } from '@atsu/messages/OclMessage';
+import { OutputButtons } from './elements/OutputButtons';
 import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';
 import { WilcoUnableButtons } from './elements/WilcoUnableButtons';
 import { RogerButtons } from './elements/RogerButtons';
@@ -180,12 +183,18 @@ const DCDU: React.FC = () => {
             cpdlcMessage = new CpdlcMessage();
         } else if (serialized.Type === AtsuMessageType.Request) {
             cpdlcMessage = new RequestMessage();
+        } else if (serialized.Type === AtsuMessageType.DCL) {
+            cpdlcMessage = new DclMessage();
+        } else if (serialized.Type === AtsuMessageType.OCL) {
+            cpdlcMessage = new OclMessage();
         } else {
             return;
         }
         cpdlcMessage.deserialize(serialized);
 
-        if (cpdlcMessage !== undefined && cpdlcMessage.UniqueMessageID !== undefined) {
+        if (cpdlcMessage !== undefined && serialized.UniqueMessageID !== undefined) {
+            cpdlcMessage.deserialize(serialized);
+
             const oldMessage = messages.get(cpdlcMessage.UniqueMessageID);
             let dcduTimestamp = new Date().getTime();
             let readMessage = false;
@@ -285,7 +294,7 @@ const DCDU: React.FC = () => {
     }
 
     let answerRequired = false;
-    if (message !== undefined) {
+    if (message !== undefined && message.Direction === AtsuMessageDirection.Uplink) {
         answerRequired = message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
     }
 
@@ -371,7 +380,15 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(message !== undefined && !answerRequired && (
+                    {(message !== undefined && !answerRequired && message.Direction === AtsuMessageDirection.Downlink && (
+                        <OutputButtons
+                            message={message}
+                            setStatus={setStatus}
+                            isStatusAvailable={isStatusAvailable}
+                            closeMessage={closeMessage}
+                        />
+                    ))}
+                    {(message !== undefined && !answerRequired && message.Direction === AtsuMessageDirection.Downlink && (
                         <CloseButtons
                             message={message}
                             closeMessage={closeMessage}

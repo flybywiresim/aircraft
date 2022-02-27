@@ -45,10 +45,16 @@ const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage 
 
 export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedResponse }) => {
     let statusClass = 'status-message ';
-    if (message.Response === undefined && selectedResponse === -1) {
-        statusClass += 'status-open';
-    } else {
+    if (message.Direction === AtsuMessageDirection.Uplink) {
+        if (message.Response === undefined && selectedResponse === -1) {
+            statusClass += 'status-open';
+        } else {
+            statusClass += 'status-other';
+        }
+    } else if (message.ComStatus === AtsuMessageComStatus.Sent) {
         statusClass += 'status-other';
+    } else {
+        statusClass += 'status-open';
     }
 
     // calculate the position of the background rectangle

@@ -1,7 +1,6 @@
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtsuManager } from './AtsuManager';
 import { FreetextMessage } from './messages/FreetextMessage';
-import { PdcMessage } from './messages/PdcMessage';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessageNetwork, AtsuMessageType } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
 import { CpdlcMessageExpectedResponseType, CpdlcMessagesDownlink } from './messages/CpdlcMessageElements';
@@ -13,6 +12,8 @@ import { AtisMessage, AtisType } from './messages/AtisMessage';
 import { RequestMessage } from './messages/RequestMessage';
 import { AocSystem } from './AocSystem';
 import { AtcSystem } from './AtcSystem';
+import { DclMessage } from './messages/DclMessage';
+import { OclMessage } from './messages/OclMessage';
 import { InputValidation } from './InputValidation';
 import { FansMode } from './com/FutureAirNavigationSystem';
 
@@ -30,7 +31,6 @@ export {
     CpdlcMessageExpectedResponseType,
     CpdlcMessagesDownlink,
     FreetextMessage,
-    PdcMessage,
     WeatherMessage,
     MetarMessage,
     TafMessage,
@@ -38,6 +38,8 @@ export {
     AtisType,
     AocSystem,
     AtcSystem,
+    DclMessage,
+    OclMessage,
     FansMode,
     RequestMessage,
     InputValidation,

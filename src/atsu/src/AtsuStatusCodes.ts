@@ -13,6 +13,8 @@ export enum AtsuStatusCodes {
     DcduFull,
     UnknownMessage,
     ProxyError,
+    NewAtisReceived,
+    NoAtisReceived,
     SystemBusy,
     EntryOutOfRange,
     FormatError,

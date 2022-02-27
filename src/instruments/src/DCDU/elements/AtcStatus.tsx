@@ -17,6 +17,8 @@ export const AtcStatus: React.FC<AtcStatusProps> = memo(({ message }) => {
         <>
             <MessageVisualization
                 message={message}
+                backgroundColor={[0, 0, 0]}
+                keepNewlines={false}
                 ignoreHighlight={false}
                 cssClass={cssClass}
                 yStart={800}
@@ -24,7 +26,6 @@ export const AtcStatus: React.FC<AtcStatusProps> = memo(({ message }) => {
                 isStatusAvailable={undefined}
                 setStatus={undefined}
                 resetStatus={undefined}
-                setRef={undefined}
             />
         </>
     );
