@@ -174,20 +174,23 @@ export class HoppieConnector {
         for (const ident in CpdlcMessagesUplink) {
             if ({}.hasOwnProperty.call(CpdlcMessagesUplink, ident)) {
                 const data = CpdlcMessagesUplink[ident];
-                let minDistance = 100000;
 
-                data[0].forEach((template) => {
-                    const distance = HoppieConnector.levenshteinDistance(template, clearedMessage, data[1].Content);
-                    if (minDistance > distance) minDistance = distance;
-                });
+                if (HoppieConnector.fansMode === FansMode.FansNone || data[1].FansModes.includes(HoppieConnector.fansMode)) {
+                    let minDistance = 100000;
 
-                scores.push([minDistance, ident]);
-                if (minScore > minDistance) minScore = minDistance;
+                    data[0].forEach((template) => {
+                        const distance = HoppieConnector.levenshteinDistance(template, clearedMessage, data[1].Content);
+                        if (minDistance > distance) minDistance = distance;
+                    });
+
+                    scores.push([minDistance, ident]);
+                    if (minScore > minDistance) minScore = minDistance;
+                }
             }
         }
 
         // get all entries with the minimal score
-        const matches: string[] = [];
+        let matches: string[] = [];
         scores.forEach((elem) => {
             if (elem[0] === minScore) matches.push(elem[1]);
         });
