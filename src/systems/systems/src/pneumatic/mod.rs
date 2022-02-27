@@ -191,8 +191,16 @@ impl PneumaticPipe {
     }
 
     fn change_volume(&mut self, new_volume: Volume) {
-        // TODO: calculate new pressure and temperature
+        let new_pressure = self.calculate_pressure_for_new_volume(new_volume);
+        self.update_temperature_for_pressure_change(new_pressure - self.pressure);
+        self.pressure = new_pressure;
         self.volume = new_volume;
+    }
+
+    fn calculate_pressure_for_new_volume(&mut self, new_volume: Volume) -> Pressure {
+        self.pressure
+            * (self.volume.get::<cubic_meter>() / new_volume.get::<cubic_meter>())
+                .powf(Self::HEAT_CAPACITY_RATIO)
     }
 }
 
