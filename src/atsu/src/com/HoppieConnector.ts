@@ -198,7 +198,15 @@ export class HoppieConnector {
         console.log(`Found matches: ${matches}`);
         if (matches.length === 0) return undefined;
 
-        // TODO write a heuristic to match the function
+        // check if more than the freetext-entry is valid
+        if (matches.length > 1) {
+            const nonFreetext = matches.filter((match) => match !== 'UM169' && match !== 'UM183');
+            if (nonFreetext.length !== 0 && matches.length !== nonFreetext.length) {
+                console.log(`Ignoring ${matches.length - nonFreetext.length} freetext messages`);
+                matches = nonFreetext;
+            }
+        }
+
         console.log(`Selected UM-ID: ${matches[0]}`);
 
         // create a deep-copy of the message
