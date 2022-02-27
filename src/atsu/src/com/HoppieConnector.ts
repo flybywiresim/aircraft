@@ -252,7 +252,7 @@ export class HoppieConnector {
                 const freetext = new FreetextMessage();
                 freetext.Network = AtsuMessageNetwork.Hoppie;
                 freetext.Station = sender;
-                freetext.Direction = AtsuMessageDirection.Input;
+                freetext.Direction = AtsuMessageDirection.Uplink;
                 freetext.ComStatus = AtsuMessageComStatus.Received;
                 freetext.Message = content.replace(/\n/i, ' ');
                 retval.push(freetext);
@@ -260,7 +260,7 @@ export class HoppieConnector {
             case 'cpdlc':
                 const cpdlc = new CpdlcMessage();
                 cpdlc.Station = sender;
-                cpdlc.Direction = AtsuMessageDirection.Input;
+                cpdlc.Direction = AtsuMessageDirection.Uplink;
                 cpdlc.ComStatus = AtsuMessageComStatus.Received;
 
                 // split up the data
