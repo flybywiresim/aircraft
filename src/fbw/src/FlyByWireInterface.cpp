@@ -145,8 +145,6 @@ void FlyByWireInterface::loadConfiguration() {
 
   // --------------------------------------------------------------------------
   // load values - autopilot
-  customFlightGuidanceEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CUSTOM_FLIGHT_GUIDANCE_ENABLED", true);
-  gpsCourseToSteerEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "GPS_COURSE_TO_STEER_ENABLED", true);
   idMinimumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MINIMUM_SIMULATION_RATE", 1));
   idMaximumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4));
   limitSimulationRateByPerformance = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "LIMIT_SIMULATION_RATE_BY_PERFORMANCE", true);
@@ -154,8 +152,6 @@ void FlyByWireInterface::loadConfiguration() {
   idRadioReceiverUsage->set(INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CALCULATED_LOCALIZER_AND_GLIDESLOPE_ENABLED", false));
 
   // print configuration into console
-  cout << "WASM: AUTOPILOT : CUSTOM_FLIGHT_GUIDANCE_ENABLED              = " << customFlightGuidanceEnabled << endl;
-  cout << "WASM: AUTOPILOT : GPS_COURSE_TO_STEER_ENABLED                 = " << gpsCourseToSteerEnabled << endl;
   cout << "WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE                     = " << idMinimumSimulationRate->get() << endl;
   cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE                     = " << idMaximumSimulationRate->get() << endl;
   cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE        = " << limitSimulationRateByPerformance << endl;
@@ -474,23 +470,6 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // update simulation rate limits
   simConnectInterface.updateSimulationRateLimits(idMinimumSimulationRate->get(), idMaximumSimulationRate->get());
 
-  // get or calculate XTK and TAE
-  if (customFlightGuidanceEnabled) {
-    flightGuidanceCrossTrackError = idFlightGuidanceCrossTrackError->get();
-    flightGuidanceTrackAngleError = idFlightGuidanceTrackAngleError->get();
-    flightGuidancePhiPreCommand = idFlightGuidancePhiCommand->get();
-  } else {
-    if (gpsCourseToSteerEnabled) {
-      flightGuidanceCrossTrackError = 0;
-      flightGuidanceTrackAngleError = getHeadingAngleError(simData.Psi_magnetic_deg, simData.gpsCourseToSteer);
-      flightGuidancePhiPreCommand = 0;
-    } else {
-      flightGuidanceCrossTrackError = simData.gpsWpCrossTrack;
-      flightGuidanceTrackAngleError = simData.gpsWpTrackAngleError;
-      flightGuidancePhiPreCommand = 0;
-    }
-  }
-
   // read local variables and update client data
   // update client data for flight guidance
   if (!autopilotStateMachineEnabled || !autopilotLawsEnabled) {
@@ -499,7 +478,7 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          idFmgcV_APP->get(),
                                                          idFmgcV_LS->get(),
                                                          idFmgcV_MAX->get(),
-                                                         customFlightGuidanceEnabled ? 1.0 : simData.gpsIsFlightPlanActive,
+                                                         idFlightGuidanceAvailable->get(),
                                                          idFmgcAltitudeConstraint->get(),
                                                          idFmgcThrustReductionAltitude->get(),
                                                          idFmgcThrustReductionAltitudeGoAround->get(),
@@ -513,9 +492,9 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
                                                          idFcuSelectedVs->get(),
                                                          idFcuSelectedFpa->get(),
                                                          idFcuSelectedHeading->get(),
-                                                         flightGuidanceCrossTrackError,
-                                                         flightGuidanceTrackAngleError,
-                                                         flightGuidancePhiPreCommand,
+                                                         idFlightGuidanceCrossTrackError->get(),
+                                                         idFlightGuidanceTrackAngleError->get(),
+                                                         idFlightGuidancePhiCommand->get(),
                                                          idFlightGuidancePhiLimit->get(),
                                                          static_cast<unsigned long long>(idFlightGuidanceRequestedVerticalMode->get()),
                                                          idFlightGuidanceTargetAltitude->get(),
@@ -781,17 +760,16 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.nav_gs_position.lat = simData.nav_gs_pos.Latitude;
     autopilotStateMachineInput.in.data.nav_gs_position.lon = simData.nav_gs_pos.Longitude;
     autopilotStateMachineInput.in.data.nav_gs_position.alt = simData.nav_gs_pos.Altitude;
-    autopilotStateMachineInput.in.data.flight_guidance_xtk_nmi = flightGuidanceCrossTrackError;
-    autopilotStateMachineInput.in.data.flight_guidance_tae_deg = flightGuidanceTrackAngleError;
-    autopilotStateMachineInput.in.data.flight_guidance_phi_deg = flightGuidancePhiPreCommand;
+    autopilotStateMachineInput.in.data.flight_guidance_xtk_nmi = idFlightGuidanceCrossTrackError->get();
+    autopilotStateMachineInput.in.data.flight_guidance_tae_deg = idFlightGuidanceTrackAngleError->get();
+    autopilotStateMachineInput.in.data.flight_guidance_phi_deg = idFlightGuidancePhiCommand->get();
     autopilotStateMachineInput.in.data.flight_guidance_phi_limit_deg = idFlightGuidancePhiLimit->get();
     autopilotStateMachineInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotStateMachineInput.in.data.V2_kn = idFmgcV2->get();
     autopilotStateMachineInput.in.data.VAPP_kn = idFmgcV_APP->get();
     autopilotStateMachineInput.in.data.VLS_kn = idFmgcV_LS->get();
     autopilotStateMachineInput.in.data.VMAX_kn = idFmgcV_MAX->get();
-    autopilotStateMachineInput.in.data.is_flight_plan_available =
-        customFlightGuidanceEnabled ? idFlightGuidanceAvailable->get() : simData.gpsIsFlightPlanActive;
+    autopilotStateMachineInput.in.data.is_flight_plan_available = idFlightGuidanceAvailable->get();
     autopilotStateMachineInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
     autopilotStateMachineInput.in.data.thrust_reduction_altitude = idFmgcThrustReductionAltitude->get();
     autopilotStateMachineInput.in.data.thrust_reduction_altitude_go_around = idFmgcThrustReductionAltitudeGoAround->get();
@@ -1153,17 +1131,16 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.nav_gs_position.lat = simData.nav_gs_pos.Latitude;
     autopilotLawsInput.in.data.nav_gs_position.lon = simData.nav_gs_pos.Longitude;
     autopilotLawsInput.in.data.nav_gs_position.alt = simData.nav_gs_pos.Altitude;
-    autopilotLawsInput.in.data.flight_guidance_xtk_nmi = flightGuidanceCrossTrackError;
-    autopilotLawsInput.in.data.flight_guidance_tae_deg = flightGuidanceTrackAngleError;
-    autopilotLawsInput.in.data.flight_guidance_phi_deg = flightGuidancePhiPreCommand;
+    autopilotLawsInput.in.data.flight_guidance_xtk_nmi = idFlightGuidanceCrossTrackError->get();
+    autopilotLawsInput.in.data.flight_guidance_tae_deg = idFlightGuidanceTrackAngleError->get();
+    autopilotLawsInput.in.data.flight_guidance_phi_deg = idFlightGuidancePhiCommand->get();
     autopilotLawsInput.in.data.flight_guidance_phi_limit_deg = idFlightGuidancePhiLimit->get();
     autopilotLawsInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotLawsInput.in.data.V2_kn = idFmgcV2->get();
     autopilotLawsInput.in.data.VAPP_kn = idFmgcV_APP->get();
     autopilotLawsInput.in.data.VLS_kn = idFmgcV_LS->get();
     autopilotLawsInput.in.data.VMAX_kn = idFmgcV_MAX->get();
-    autopilotLawsInput.in.data.is_flight_plan_available =
-        customFlightGuidanceEnabled ? idFlightGuidanceAvailable->get() : simData.gpsIsFlightPlanActive;
+    autopilotLawsInput.in.data.is_flight_plan_available = idFlightGuidanceAvailable->get();
     autopilotLawsInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
     autopilotLawsInput.in.data.thrust_reduction_altitude = idFmgcThrustReductionAltitude->get();
     autopilotLawsInput.in.data.thrust_reduction_altitude_go_around = idFmgcThrustReductionAltitudeGoAround->get();
@@ -1727,16 +1704,6 @@ bool FlyByWireInterface::updateAltimeterSetting(double sampleTime) {
 
   // result
   return true;
-}
-
-double FlyByWireInterface::getHeadingAngleError(double u1, double u2) {
-  double dPsi_1 = fmod(u1 - u2 + 360.0, 360.0);
-  double dPsi_2 = fmod(360.0 - dPsi_1, 360.0);
-  if (dPsi_1 < dPsi_2) {
-    return -dPsi_1;
-  } else {
-    return dPsi_2;
-  }
 }
 
 double FlyByWireInterface::getTcasModeAvailable() {
