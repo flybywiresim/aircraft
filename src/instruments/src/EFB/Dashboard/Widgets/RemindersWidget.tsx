@@ -62,6 +62,17 @@ const PinnedChartsReminder = () => {
 
     // if (!navigraph.hasToken) return null;
 
+    const getTagColor = (tagName: string) => {
+        switch (tagName) {
+        case 'STAR': return 'text-colors-lime-500';
+        case 'APP': return 'text-colors-orange-500';
+        case 'TAXI': return 'text-colors-blue-500';
+        case 'SID': return 'text-colors-pink-500';
+        case 'REF': return 'text-colors-purple-500';
+        default: return 'text-theme-highlight';
+        }
+    };
+
     return (
         <RemindersSection title="Pinned Charts" pageLinkPath="/navigation">
             <div className="grid grid-cols-2">
@@ -72,6 +83,7 @@ const PinnedChartsReminder = () => {
                     icao,
                     tabIndex,
                     title,
+                    tag,
                 }, index) => (
                     <Link
                         to="/navigation/navigraph"
@@ -87,11 +99,15 @@ const PinnedChartsReminder = () => {
                             dispatch(setChartRotation(0));
                             dispatch(editPinnedChart({
                                 chartId,
-                                timeAccessed: new Date().getTime(),
+                                timeAccessed: Date.now(),
                             }));
                         }}
                     >
-                        <h2 className="font-bold">{icao}</h2>
+                        <h2 className="font-bold">
+                            {icao}
+                            {' '}
+                            <span className={getTagColor(tag ?? '')}>{tag}</span>
+                        </h2>
                         <span className="mt-2 font-inter">{title}</span>
                         <IconArrowRight className="mt-auto ml-auto text-theme-highlight" />
                     </Link>

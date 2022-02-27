@@ -376,13 +376,11 @@ const ChartComponent = () => {
 
     return (
         <div
-            className={`relative flex flex-row overflow-x-hidden overflow-y-scroll mx-auto grabbable no-scrollbar bg-theme-accent rounded-lg ${!isFullScreen && 'rounded-l-none ml-6'}`}
-            ref={ref}
+            className={`relative ${!isFullScreen && 'rounded-l-none ml-6'}`}
             style={{ width: `${isFullScreen ? '1278px' : '804px'}` }}
-            onMouseDown={handleMouseDown}
         >
             {pagesViewable > 1 && (
-                <div className="flex overflow-hidden fixed top-32 right-32 z-40 flex-row items-center rounded-md">
+                <div className="flex overflow-hidden absolute top-6 left-6 z-40 flex-row items-center rounded-md">
                     <div
                         className={`flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight ${currentPage === 1 && 'opacity-50 pointer-events-none'}`}
                         onClick={() => dispatch(setCurrentPage(currentPage - 1))}
@@ -415,7 +413,7 @@ const ChartComponent = () => {
                 </div>
             )}
 
-            <div className="flex overflow-hidden fixed top-32 right-12 bottom-12 z-30 flex-col justify-between rounded-md cursor-pointer">
+            <div className="flex overflow-hidden absolute top-6 right-6 bottom-6 z-30 flex-col justify-between rounded-md cursor-pointer">
                 <div className="flex overflow-hidden flex-col rounded-md">
                     <button
                         type="button"
@@ -503,49 +501,55 @@ const ChartComponent = () => {
             </div>
 
             <div
-                className="relative m-auto transition duration-100"
-                style={{ transform: `rotate(${chartRotation}deg)` }}
+                className="flex overflow-x-hidden overflow-y-scroll relative flex-row mx-auto h-full bg-theme-accent rounded-lg grabbable no-scrollbar"
+                ref={ref}
+                onMouseDown={handleMouseDown}
             >
-                {chartLinks && (
-                    <p
-                        className="absolute top-0 left-0 font-bold text-theme-highlight whitespace-nowrap transition duration-100 transform -translate-y-full"
-                    >
-                        This chart is linked to
-                        {' '}
-                        {userName}
-                    </p>
-                )}
-
-                { (aircraftIconVisible && boundingBox) && (
-                    <svg viewBox={`0 0 ${boundingBox.width} ${boundingBox.height}`} className="absolute top-0 left-0 z-30">
-                        <g
-                            className="transition duration-100"
-                            transform={`translate(${aircraftIconPosition.x} ${aircraftIconPosition.y}) rotate(${aircraftIconPosition.r})`}
-                            strokeLinecap="square"
+                <div
+                    className="relative m-auto transition duration-100"
+                    style={{ transform: `rotate(${chartRotation}deg)` }}
+                >
+                    {chartLinks && (
+                        <p
+                            className="absolute top-0 left-0 font-bold text-theme-highlight whitespace-nowrap transition duration-100 transform -translate-y-full"
                         >
-                            <path d="M-20,0 L20,0" stroke="black" strokeWidth="7" />
-                            <path d="M-10,20 L10,20" stroke="black" strokeWidth="7" />
-                            <path d="M0,-10 L0,30" stroke="black" strokeWidth="7" />
-                            <path d="M-20,0 L20,0" stroke="yellow" strokeWidth="5" />
-                            <path d="M-10,20 L10,20" stroke="yellow" strokeWidth="5" />
-                            <path d="M0,-10 L0,30" stroke="yellow" strokeWidth="5" />
-                        </g>
-                    </svg>
-                )}
+                            This chart is linked to
+                            {' '}
+                            {userName}
+                        </p>
+                    )}
 
-                <div ref={chartRef}>
-                    <img
-                        className="absolute left-0 w-full transition duration-100 select-none"
-                        draggable={false}
-                        src={chartLinks.dark}
-                        alt="chart"
-                    />
-                    <img
-                        className={`absolute left-0 w-full transition duration-100 select-none ${usingDarkTheme && 'opacity-0'}`}
-                        draggable={false}
-                        src={chartLinks.light}
-                        alt="chart"
-                    />
+                    { (aircraftIconVisible && boundingBox) && (
+                        <svg viewBox={`0 0 ${boundingBox.width} ${boundingBox.height}`} className="absolute top-0 left-0 z-30">
+                            <g
+                                className="transition duration-100"
+                                transform={`translate(${aircraftIconPosition.x} ${aircraftIconPosition.y}) rotate(${aircraftIconPosition.r})`}
+                                strokeLinecap="square"
+                            >
+                                <path d="M-20,0 L20,0" stroke="black" strokeWidth="7" />
+                                <path d="M-10,20 L10,20" stroke="black" strokeWidth="7" />
+                                <path d="M0,-10 L0,30" stroke="black" strokeWidth="7" />
+                                <path d="M-20,0 L20,0" stroke="yellow" strokeWidth="5" />
+                                <path d="M-10,20 L10,20" stroke="yellow" strokeWidth="5" />
+                                <path d="M0,-10 L0,30" stroke="yellow" strokeWidth="5" />
+                            </g>
+                        </svg>
+                    )}
+
+                    <div ref={chartRef}>
+                        <img
+                            className="absolute left-0 w-full transition duration-100 select-none"
+                            draggable={false}
+                            src={chartLinks.dark}
+                            alt="chart"
+                        />
+                        <img
+                            className={`absolute left-0 w-full transition duration-100 select-none ${usingDarkTheme && 'opacity-0'}`}
+                            draggable={false}
+                            src={chartLinks.light}
+                            alt="chart"
+                        />
+                    </div>
                 </div>
             </div>
         </div>
@@ -778,14 +782,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                     event.stopPropagation();
 
                                                     if (isChartPinned((chart as NavigraphChart).id)) {
-                                                        dispatch(removedPinnedChart({
-                                                            chartId: (chart as NavigraphChart).id,
-                                                            chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
-                                                            icao,
-                                                            title: (chart as NavigraphChart).procedureIdentifier,
-                                                            tabIndex,
-                                                            timeAccessed: 0,
-                                                        }));
+                                                        dispatch(removedPinnedChart({ chartId: (chart as NavigraphChart).id }));
                                                     } else {
                                                         dispatch(addPinnedChart({
                                                             chartId: (chart as NavigraphChart).id,
@@ -794,6 +791,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                             title: (chart as NavigraphChart).procedureIdentifier,
                                                             tabIndex,
                                                             timeAccessed: 0,
+                                                            tag: selectedTab.name,
                                                         }));
                                                     }
                                                 }}
@@ -836,14 +834,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                             event.stopPropagation();
 
                                             if (isChartPinned((chart as NavigraphChart).id)) {
-                                                dispatch(removedPinnedChart({
-                                                    chartId: (chart as NavigraphChart).id,
-                                                    chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
-                                                    icao,
-                                                    title: (chart as NavigraphChart).procedureIdentifier,
-                                                    tabIndex,
-                                                    timeAccessed: 0,
-                                                }));
+                                                dispatch(removedPinnedChart({ chartId: (chart as NavigraphChart).id }));
                                             } else {
                                                 dispatch(addPinnedChart({
                                                     chartId: (chart as NavigraphChart).id,
@@ -852,6 +843,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                     title: (chart as NavigraphChart).procedureIdentifier,
                                                     tabIndex,
                                                     timeAccessed: 0,
+                                                    tag: selectedTab.name,
                                                 }));
                                             }
                                         }}
