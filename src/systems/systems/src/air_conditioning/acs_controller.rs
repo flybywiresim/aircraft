@@ -668,7 +668,9 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             && !(pneumatic.left_engine_state() == EngineState::Starting)
             && (!(pneumatic.right_engine_state() == EngineState::Starting)
                 || !pneumatic.engine_crossbleed_is_on())
-            && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition)
+            && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
+                || (pneumatic.left_engine_state() != EngineState::Off
+                    && pneumatic.left_engine_state() != EngineState::Shutting))
             && !engine_fire_push_buttons.is_released(1)
             && !pressurization_overhead.ditching_is_on();
         // && ! pack 1 overheat
@@ -677,7 +679,10 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             && !(pneumatic.right_engine_state() == EngineState::Starting)
             && (!(pneumatic.left_engine_state() == EngineState::Starting)
                 || !pneumatic.engine_crossbleed_is_on())
-            && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition || !pneumatic.engine_crossbleed_is_on())
+            && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
+                || !pneumatic.engine_crossbleed_is_on()
+                || (pneumatic.right_engine_state() != EngineState::Off
+                    && pneumatic.right_engine_state() != EngineState::Shutting))
             && !engine_fire_push_buttons.is_released(2)
             && !pressurization_overhead.ditching_is_on();
         // && ! pack 2 overheat
