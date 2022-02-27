@@ -3,11 +3,11 @@ use std::{f64::consts::PI, time::Duration};
 
 use uom::si::{
     f64::*,
+    mass_rate::kilogram_per_second,
     pressure::psi,
     ratio::ratio,
     thermodynamic_temperature::degree_celsius,
     volume::{cubic_meter, gallon},
-    volume_rate::cubic_meter_per_second,
 };
 
 use systems::{
@@ -19,7 +19,8 @@ use systems::{
         CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
         EngineCompressionChamberController, EngineState, PneumaticContainer, PneumaticPipe,
         PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
-        PressurizeableReservoir, TargetPressureSignal, VariableVolumeContainer,
+        PressurizeableReservoir, TargetPressureTemperatureSignal,
+        VariableVolumeContainer,
     },
     shared::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
@@ -202,7 +203,7 @@ impl A320Pneumatic {
         engines: [&(impl EngineCorrectedN1 + EngineCorrectedN2); 2],
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        apu: &impl ControllerSignal<TargetPressureSignal>,
+        apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
     ) {
         self.physics_updater.update(context);
 
@@ -223,7 +224,7 @@ impl A320Pneumatic {
         engines: [&(impl EngineCorrectedN1 + EngineCorrectedN2); 2],
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        apu: &impl ControllerSignal<TargetPressureSignal>,
+        apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
     ) {
         self.apu_compression_chamber.update(apu);
 
@@ -1005,8 +1006,17 @@ impl PneumaticContainer for EngineBleedAirSystem {
         self.precooler_outlet_pipe.temperature()
     }
 
-    fn change_fluid_amount(&mut self, volume: Volume) {
-        self.precooler_outlet_pipe.change_fluid_amount(volume)
+    fn mass(&self) -> Mass {
+        self.precooler_outlet_pipe.mass()
+    }
+
+    fn change_fluid_amount(
+        &mut self,
+        fluid_amount: Mass,
+        fluid_temperature: ThermodynamicTemperature,
+    ) {
+        self.precooler_outlet_pipe
+            .change_fluid_amount(fluid_amount, fluid_temperature)
     }
 
     fn update_temperature(&mut self, temperature: TemperatureInterval) {
@@ -1154,8 +1164,17 @@ impl PneumaticContainer for PackComplex {
         self.pack_container.temperature()
     }
 
-    fn change_fluid_amount(&mut self, volume: Volume) {
-        self.pack_container.change_fluid_amount(volume);
+    fn mass(&self) -> Mass {
+        self.pack_container.mass()
+    }
+
+    fn change_fluid_amount(
+        &mut self,
+        fluid_amount: Mass,
+        fluid_temperature: ThermodynamicTemperature,
+    ) {
+        self.pack_container
+            .change_fluid_amount(fluid_amount, fluid_temperature);
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
@@ -1193,9 +1212,9 @@ impl PackFlowValveController {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, pack_flow_valve_flow_rate: VolumeRate) {
+    fn update(&mut self, context: &UpdateContext, pack_flow_valve_flow_rate: MassRate) {
         self.pid.next_control_output(
-            pack_flow_valve_flow_rate.get::<cubic_meter_per_second>(),
+            pack_flow_valve_flow_rate.get::<kilogram_per_second>(),
             Some(context.delta()),
         );
     }

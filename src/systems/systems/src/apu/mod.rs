@@ -8,7 +8,7 @@ use crate::{
         ProvideFrequency, ProvidePotential,
     },
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
-    pneumatic::{ControllablePneumaticValve, TargetPressureSignal},
+    pneumatic::{ControllablePneumaticValve, TargetPressureTemperatureSignal},
     shared::{
         ApuAvailable, ApuBleedAirValveSignal, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical,
         ContactorSignal, ControllerSignal, ElectricalBusType,
@@ -17,6 +17,7 @@ use crate::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
 };
+use uom::si::thermodynamic_temperature::degree_celsius;
 #[cfg(test)]
 use std::time::Duration;
 use uom::si::f64::*;
@@ -228,13 +229,13 @@ impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<ApuBleedAirValveSignal>
         self.ecb.signal()
     }
 }
-impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<TargetPressureSignal>
+impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<TargetPressureTemperatureSignal>
     for AuxiliaryPowerUnit<T, U>
 {
-    fn signal(&self) -> Option<TargetPressureSignal> {
+    fn signal(&self) -> Option<TargetPressureTemperatureSignal> {
         self.turbine
             .as_ref()
-            .map(|s| TargetPressureSignal::new(s.bleed_air_pressure()))
+            .map(|s| TargetPressureTemperatureSignal::new(s.bleed_air_pressure(), ThermodynamicTemperature::new::<degree_celsius>(250.)))
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit<T, U> {

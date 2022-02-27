@@ -1,22 +1,15 @@
 use std::f64::consts::PI;
-use std::time::Duration;
 
 use crate::{
-    shared::{
-        low_pass_filter::LowPassFilter, ControllerSignal, ElectricalBusType, ElectricalBuses,
-        PneumaticValve,
-    },
+    shared::{ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve},
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
 use uom::si::{
     f64::*,
-    pressure::{pascal, psi},
+    mass::kilogram,
+    pressure::psi,
     ratio::{percent, ratio},
-    temperature_interval,
-    thermodynamic_temperature::kelvin,
-    volume::gallon,
-    volume_rate::cubic_meter_per_second,
 };
 
 use super::{ControllablePneumaticValve, PneumaticContainer, PneumaticValveSignal};
@@ -60,7 +53,7 @@ impl PurelyPneumaticValve {
         );
     }
 
-    pub fn fluid_flow(&self) -> VolumeRate {
+    pub fn fluid_flow(&self) -> MassRate {
         self.connector.fluid_flow()
     }
 
@@ -123,7 +116,7 @@ impl ElectroPneumaticValve {
         );
     }
 
-    pub fn fluid_flow(&self) -> VolumeRate {
+    pub fn fluid_flow(&self) -> MassRate {
         self.connector.fluid_flow()
     }
 
@@ -203,7 +196,7 @@ impl DefaultValve {
             .update_move_fluid(context, container_one, container_two);
     }
 
-    pub fn fluid_flow(&self) -> VolumeRate {
+    pub fn fluid_flow(&self) -> MassRate {
         self.connector.fluid_flow()
     }
 }
@@ -224,17 +217,15 @@ impl SimulationElement for DefaultValve {
 }
 
 pub struct PneumaticContainerConnector {
-    fluid_flow: VolumeRate,
+    fluid_flow: MassRate,
     transfer_speed_factor: Ratio,
 }
 impl PneumaticContainerConnector {
-    const HEAT_CAPACITY_RATIO: f64 = 1.4;
     const TRANSFER_SPEED: f64 = 5.;
-    const HEAT_TRANSFER_SPEED: f64 = 3.;
 
     pub fn new() -> Self {
         Self {
-            fluid_flow: VolumeRate::new::<cubic_meter_per_second>(0.),
+            fluid_flow: MassRate::default(),
             transfer_speed_factor: Ratio::new::<ratio>(1.),
         }
     }
@@ -246,63 +237,31 @@ impl PneumaticContainerConnector {
         container_one: &mut impl PneumaticContainer,
         container_two: &mut impl PneumaticContainer,
     ) {
-        self.heat_conduction(context, container_one, container_two);
-
-        let container_one_pressure_with_power = container_one
-            .pressure()
-            .get::<pascal>()
-            .powf(1. / Self::HEAT_CAPACITY_RATIO);
-
-        let container_two_pressure_with_power = container_two
-            .pressure()
-            .get::<pascal>()
-            .powf(1. / Self::HEAT_CAPACITY_RATIO);
-
-        let equalization_volume = (container_one_pressure_with_power
-            - container_two_pressure_with_power)
-            * container_one.volume()
-            * container_two.volume()
-            / (container_two_pressure_with_power * container_one.volume()
-                + container_one_pressure_with_power * container_two.volume());
-
-        let fluid_to_move = (self.transfer_speed_factor * equalization_volume)
-            .min(container_one.volume())
-            .max(-container_two.volume())
+        let air_mass = container_one.get_mass_flow_for_target_pressure(container_two.pressure())
+            * self.transfer_speed_factor
             * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
+        let air_temp = if air_mass.get::<kilogram>() > 0. {
+            container_two.temperature()
+        } else {
+            container_one.temperature()
+        };
 
-        self.move_volume(container_one, container_two, fluid_to_move);
+        self.move_mass(container_one, container_two, air_mass, air_temp);
 
-        self.fluid_flow = fluid_to_move / context.delta_as_time();
+        container_one.heat_conduction(context, container_two);
+
+        self.fluid_flow = air_mass / context.delta_as_time();
     }
 
-    /// Transfer heat between two containers depending on the temperature difference
-    fn heat_conduction(
-        &self,
-        context: &UpdateContext,
-        container_one: &mut impl PneumaticContainer,
-        container_two: &mut impl PneumaticContainer,
-    ) {
-        let temperature_gradient = TemperatureInterval::new::<temperature_interval::kelvin>(
-            container_one.temperature().get::<kelvin>()
-                - container_two.temperature().get::<kelvin>(),
-        );
-
-        let heat_transfer_coefficient = 1e-1;
-        let temperature_change = heat_transfer_coefficient
-            * temperature_gradient
-            * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
-        container_one.update_temperature(-temperature_change);
-        container_two.update_temperature(temperature_change);
-    }
-
-    fn move_volume(
+    fn move_mass(
         &self,
         from: &mut impl PneumaticContainer,
         to: &mut impl PneumaticContainer,
-        volume: Volume,
+        air_mass: Mass,
+        air_temp: ThermodynamicTemperature,
     ) {
-        from.change_fluid_amount(-volume);
-        to.change_fluid_amount(volume);
+        from.change_fluid_amount(air_mass, air_temp);
+        to.change_fluid_amount(-air_mass, air_temp);
     }
 
     pub fn with_transfer_speed_factor(&mut self, new_transfer_speed_factor: Ratio) -> &mut Self {
@@ -311,7 +270,7 @@ impl PneumaticContainerConnector {
         self
     }
 
-    pub fn fluid_flow(&self) -> VolumeRate {
+    pub fn fluid_flow(&self) -> MassRate {
         self.fluid_flow
     }
 }
@@ -325,15 +284,12 @@ pub struct PneumaticExhaust {
     exhaust_speed: f64,
     leaking_exhaust_speed: f64,
     nominal_exhaust_speed: f64,
-    fluid_flow: VolumeRate,
+    fluid_flow: MassRate,
 
     pressure_preload: Pressure,
     nominal_preload: Pressure,
-    fluid_volume_filtered: LowPassFilter<Volume>,
 }
 impl PneumaticExhaust {
-    const HEAT_CAPACITY_RATIO: f64 = 1.4;
-
     pub fn new(
         nominal_exhaust_speed: f64,
         leaking_exhaust_speed: f64,
@@ -343,10 +299,9 @@ impl PneumaticExhaust {
             exhaust_speed: nominal_exhaust_speed,
             leaking_exhaust_speed,
             nominal_exhaust_speed,
-            fluid_flow: VolumeRate::new::<cubic_meter_per_second>(0.),
+            fluid_flow: MassRate::default(),
             pressure_preload,
             nominal_preload: pressure_preload,
-            fluid_volume_filtered: LowPassFilter::<Volume>::new(Duration::from_millis(100)),
         }
     }
 
@@ -355,36 +310,20 @@ impl PneumaticExhaust {
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
     ) {
-        let equalization_volume = if from.pressure() > self.pressure_preload {
-            self.calculate_required_volume_for_target_pressure(from, context.ambient_pressure())
-                .max(-from.volume())
+        let mass_flow = if from.pressure() > self.pressure_preload {
+            from.get_mass_flow_for_target_pressure(context.ambient_pressure())
+                * (1. - (-self.exhaust_speed * context.delta_as_secs_f64()).exp())
         } else {
-            self.fluid_volume_filtered.reset(Volume::new::<gallon>(0.));
-            Volume::new::<gallon>(0.)
+            Mass::default()
         };
 
-        let fluid_to_move = self.fluid_volume_filtered.update(
-            context.delta(),
-            equalization_volume * (1. - (-self.exhaust_speed * context.delta_as_secs_f64()).exp()),
-        );
+        from.change_fluid_amount(mass_flow, context.ambient_temperature());
+        from.heat_conduction_single(context, context.ambient_temperature());
 
-        from.change_fluid_amount(fluid_to_move);
-
-        self.fluid_flow = -fluid_to_move / context.delta_as_time();
+        self.fluid_flow = -mass_flow / context.delta_as_time();
     }
 
-    fn calculate_required_volume_for_target_pressure(
-        &self,
-        from: &impl PneumaticContainer,
-        target_pressure: Pressure,
-    ) -> Volume {
-        from.volume()
-            * ((target_pressure.get::<psi>() / (from.pressure().get::<psi>()))
-                .powf(1. / Self::HEAT_CAPACITY_RATIO)
-                - 1.)
-    }
-
-    pub fn fluid_flow(&self) -> VolumeRate {
+    pub fn fluid_flow(&self) -> MassRate {
         self.fluid_flow
     }
 
@@ -394,7 +333,7 @@ impl PneumaticExhaust {
             self.pressure_preload = self.nominal_preload;
         } else {
             self.exhaust_speed = self.leaking_exhaust_speed;
-            self.pressure_preload = Pressure::new::<psi>(0.);
+            self.pressure_preload = Pressure::default();
         }
     }
 }
@@ -412,8 +351,8 @@ mod tests {
     use std::time::Duration;
     use uom::si::{
         acceleration::foot_per_second_squared, angle::radian, length::foot,
-        thermodynamic_temperature::degree_celsius, velocity::knot, volume::cubic_meter,
-        volume_rate::cubic_meter_per_second,
+        mass_rate::kilogram_per_second, thermodynamic_temperature::degree_celsius, velocity::knot,
+        volume::cubic_meter,
     };
 
     use ntest::assert_about_eq;
@@ -534,7 +473,7 @@ mod tests {
 
         assert_eq!(
             connector.fluid_flow(),
-            VolumeRate::new::<cubic_meter_per_second>(0.)
+            MassRate::new::<kilogram_per_second>(0.)
         );
     }
 
@@ -562,7 +501,7 @@ mod tests {
         assert!(to.pressure() > Pressure::new::<psi>(14.));
         assert!(to.temperature() > ThermodynamicTemperature::new::<degree_celsius>(15.));
 
-        assert!(connector.fluid_flow() > VolumeRate::new::<cubic_meter_per_second>(0.));
+        assert!(connector.fluid_flow() > MassRate::new::<kilogram_per_second>(0.));
     }
 
     #[test]
@@ -664,10 +603,7 @@ mod tests {
         valve.update_move_fluid(&context, &mut container_one, &mut container_two);
 
         // Sanity check
-        assert_eq!(
-            valve.fluid_flow(),
-            VolumeRate::new::<cubic_meter_per_second>(0.)
-        );
+        assert_eq!(valve.fluid_flow(), MassRate::new::<kilogram_per_second>(0.));
         assert_eq!(valve.open_amount(), Ratio::new::<ratio>(0.));
     }
 
@@ -690,10 +626,7 @@ mod tests {
         valve.update_move_fluid(&context, &mut container_one, &mut container_two);
 
         // Sanity check
-        assert_eq!(
-            valve.fluid_flow(),
-            VolumeRate::new::<cubic_meter_per_second>(0.)
-        );
+        assert_eq!(valve.fluid_flow(), MassRate::new::<kilogram_per_second>(0.));
         assert!(!valve.is_powered());
         assert_eq!(valve.open_amount(), Ratio::new::<ratio>(0.));
     }
@@ -703,10 +636,10 @@ mod tests {
         let mut container = quick_container(1., 20., 15.);
         let mut exhaust = PneumaticExhaust::new(1., 1., Pressure::new::<psi>(0.));
 
-        let context = context(Duration::from_millis(16), Length::new::<foot>(0.));
+        let context = context(Duration::from_millis(50), Length::new::<foot>(0.));
 
         exhaust.update_move_fluid(&context, &mut container);
-        assert!(exhaust.fluid_flow().get::<cubic_meter_per_second>() > 0.);
+        assert!(exhaust.fluid_flow().get::<kilogram_per_second>() > 0.);
 
         for _ in 1..1000 {
             exhaust.update_move_fluid(&context, &mut container);
@@ -727,7 +660,7 @@ mod tests {
         let context = context(Duration::from_millis(150), Length::new::<foot>(0.));
 
         exhaust.update_move_fluid(&context, &mut container);
-        assert!(exhaust.fluid_flow().get::<cubic_meter_per_second>() > 0.);
+        assert!(exhaust.fluid_flow().get::<kilogram_per_second>() > 0.);
 
         for _ in 1..50 {
             exhaust.update_move_fluid(&context, &mut container);
@@ -748,11 +681,11 @@ mod tests {
         let context = context(Duration::from_millis(16), Length::new::<foot>(0.));
 
         exhaust.update_move_fluid(&context, &mut container);
-        assert!(exhaust.fluid_flow().get::<cubic_meter_per_second>() == 0.);
+        assert!(exhaust.fluid_flow().get::<kilogram_per_second>() == 0.);
 
         for _ in 1..100 {
             exhaust.update_move_fluid(&context, &mut container);
-            assert!(exhaust.fluid_flow().get::<cubic_meter_per_second>() == 0.);
+            assert!(exhaust.fluid_flow().get::<kilogram_per_second>() == 0.);
         }
 
         container.pressure = Pressure::new::<psi>(90.);
