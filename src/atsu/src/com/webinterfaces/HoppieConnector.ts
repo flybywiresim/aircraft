@@ -156,7 +156,7 @@ export class HoppieConnector {
         return AtsuStatusCodes.Ok;
     }
 
-    public static async sendTelexMessage(message: FreetextMessage, force: boolean): Promise<AtsuStatusCodes> {
+    public static async sendTelexMessage(message: AtsuMessage, force: boolean): Promise<AtsuStatusCodes> {
         if (HoppieConnector.flightNumber !== '' && (force || SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1)) {
             return HoppieConnector.sendMessage(message, 'telex');
         }
@@ -209,7 +209,7 @@ export class HoppieConnector {
             const metadata = entries[0].split(' ');
             const sender = metadata[0].toUpperCase();
             const type = metadata[1].toLowerCase();
-            const content = entries[1].replace(/{/, '').replace(/}/, '');
+            const content = entries[1].replace(/{/, '').replace(/}/, '').toUpperCase();
 
             switch (type) {
             case 'telex':

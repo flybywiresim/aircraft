@@ -2,6 +2,8 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuStatusCodes } from './AtsuStatusCodes';
+import { AtisMessage, AtisType } from './messages/AtisMessage';
+import { AtsuTimestamp } from './messages/AtsuTimestamp';
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
 import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
@@ -31,6 +33,12 @@ export class Atc {
     private cpdlcMessageId = 0;
 
     private messageQueue: CpdlcMessage[] = [];
+
+    private printAtisReport = false;
+
+    private atisAutoUpdateIcaos: [string, AtisType, number][] = [];
+
+    private atisMessages: Map<string, [number, AtisMessage[]]> = new Map();
 
     public maxUplinkDelay: number = -1;
 
@@ -252,6 +260,28 @@ export class Atc {
         }
     }
 
+    public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
+        if (message.Station === '') {
+            if (this.currentAtc === '') {
+                return AtsuStatusCodes.NoAtc;
+            }
+            message.Station = this.currentAtc;
+        }
+
+        message.ComStatus = AtsuMessageComStatus.Sending;
+        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+
+        return this.datalink.sendMessage(message, false).then((code) => {
+            if (code === AtsuStatusCodes.Ok) {
+                message.ComStatus = AtsuMessageComStatus.Sent;
+            } else {
+                message.ComStatus = AtsuMessageComStatus.Failed;
+            }
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+            return code;
+        });
+    }
+
     public messages(): AtsuMessage[] {
         return this.messageQueue;
     }
@@ -272,14 +302,10 @@ export class Atc {
     public cleanupMessages(): void {
         this.messageQueue = [];
         this.dcduLink.reset();
+        this.atisMessages = new Map();
     }
 
     private analyzeMessage(request: CpdlcMessage, response: CpdlcMessage): boolean {
-        // inserted a sent message for a new thread
-        if (request.Direction === AtsuMessageDirection.Output && response === undefined) {
-            return true;
-        }
-
         if (request.RequestedResponses === CpdlcMessageRequestedResponseType.NotRequired && response === undefined) {
             // received the station message for the DCDU
             if (request.Message.includes('CURRENT ATC')) {
@@ -343,6 +369,10 @@ export class Atc {
         const cpdlcMessage = message as CpdlcMessage;
         let analyzed = false;
 
+        if (cpdlcMessage.Direction === AtsuMessageDirection.Output && cpdlcMessage.CurrentTransmissionId === -1) {
+            cpdlcMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
+        }
+
         // search corresponding request, if previous ID is set
         if (cpdlcMessage.PreviousTransmissionId !== -1) {
             this.messageQueue.forEach((element) => {
@@ -383,27 +413,105 @@ export class Atc {
         return index !== -1;
     }
 
-    public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
-        // double check that no message is sent twice
-        if (message.ComStatus === AtsuMessageComStatus.Sending || message.ComStatus === AtsuMessageComStatus.Sent) {
-            return AtsuStatusCodes.Ok;
-        }
+    private async updateAtis(icao: string, type: AtisType, overwrite: boolean): Promise<AtsuStatusCodes> {
+        return this.datalink.receiveAtis(icao, type).then((retval) => {
+            if (retval[0] === AtsuStatusCodes.Ok) {
+                let code = AtsuStatusCodes.Ok;
+                const atis = retval[1] as AtisMessage;
+                atis.Timestamp = new AtsuTimestamp();
+                atis.parseInformation();
+                let printable = false;
 
-        if (message.Station === '') {
-            if (this.currentAtc === '') {
-                return AtsuStatusCodes.NoAtc;
-            }
-            message.Station = this.currentAtc;
-        }
+                if (atis.Information === '') {
+                    return AtsuStatusCodes.NoAtisReceived;
+                }
 
-        message.ComStatus = AtsuMessageComStatus.Sending;
-        return this.datalink.sendMessage(message, false).then((retval) => {
-            if (retval === AtsuStatusCodes.Ok) {
-                message.ComStatus = AtsuMessageComStatus.Sent;
-            } else {
-                message.ComStatus = AtsuMessageComStatus.Failed;
+                if (this.atisMessages.get(icao) !== undefined) {
+                    if (this.atisMessages.get(icao)[1][0].Information !== atis.Information) {
+                        this.atisMessages.get(icao)[1].unshift(atis);
+                        code = AtsuStatusCodes.NewAtisReceived;
+                        printable = true;
+                    } else if (overwrite) {
+                        this.atisMessages.get(icao)[1][0] = atis;
+                        code = AtsuStatusCodes.NewAtisReceived;
+                    }
+                } else {
+                    this.atisMessages.set(icao, [atis.Timestamp.Seconds, [atis]]);
+                    code = AtsuStatusCodes.NewAtisReceived;
+                    printable = true;
+                }
+
+                this.atisMessages.get(icao)[0] = atis.Timestamp.Seconds;
+
+                if (this.printAtisReport && printable) {
+                    this.parent.printMessage(atis);
+                }
+
+                return code;
             }
-            return retval;
+
+            return retval[0];
         });
+    }
+
+    public togglePrintAtisReports() {
+        this.printAtisReport = !this.printAtisReport;
+    }
+
+    public printAtisReportsPrint(): boolean {
+        return this.printAtisReport;
+    }
+
+    public async receiveAtis(icao: string, type: AtisType): Promise<AtsuStatusCodes> {
+        return this.updateAtis(icao, type, true);
+    }
+
+    public atisReports(icao: string): AtisMessage[] {
+        if (this.atisMessages.has(icao)) {
+            return this.atisMessages.get(icao)[1];
+        }
+        return [];
+    }
+
+    public resetAtisAutoUpdate() {
+        this.atisAutoUpdateIcaos.forEach((elem) => clearInterval(elem[2]));
+        this.atisAutoUpdateIcaos = [];
+    }
+
+    public atisAutoUpdateActive(icao: string): boolean {
+        return this.atisAutoUpdateIcaos.findIndex((elem) => icao === elem[0]) !== -1;
+    }
+
+    private automaticAtisUpdater(icao: string, type: AtisType) {
+        if (this.atisMessages.has(icao)) {
+            this.updateAtis(icao, type, false).then((code) => {
+                if (code === AtsuStatusCodes.Ok) {
+                    this.atisMessages.get(icao)[0] = new AtsuTimestamp().Seconds;
+                } else {
+                    this.parent.publishAtsuStatusCode(code);
+                }
+            });
+        } else {
+            this.updateAtis(icao, type, false).then((code) => {
+                if (code !== AtsuStatusCodes.Ok) {
+                    this.parent.publishAtsuStatusCode(code);
+                }
+            });
+        }
+    }
+
+    public activateAtisAutoUpdate(icao: string, type: AtisType): void {
+        if (this.atisAutoUpdateIcaos.find((elem) => elem[0] === icao) === undefined) {
+            const updater = setInterval(() => this.automaticAtisUpdater(icao, type), 60000);
+            this.atisAutoUpdateIcaos.push([icao, type, updater]);
+        }
+    }
+
+    public deactivateAtisAutoUpdate(icao: string): void {
+        const idx = this.atisAutoUpdateIcaos.findIndex((elem) => icao === elem[0]);
+        if (idx >= 0) {
+            clearInterval(this.atisAutoUpdateIcaos[idx][2]);
+            this.atisAutoUpdateIcaos.splice(idx, 1);
+        }
     }
 }

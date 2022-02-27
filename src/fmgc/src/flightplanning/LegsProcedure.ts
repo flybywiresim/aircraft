@@ -23,6 +23,7 @@
  */
 
 import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
+import { firstSmallCircleIntersection } from 'msfs-geo';
 import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
 import { FixNamingScheme } from './FixNamingScheme';
 import { GeoMath } from './GeoMath';
@@ -266,18 +267,45 @@ export class LegsProcedure {
   }
 
   /**
-   * Maps a bearing/distance fix in the procedure.
+   * Maps an FC or FD leg in the procedure.
+   * @note FC and FD legs are mapped to CF legs in the real FMS
+   * @todo move the code into the CF leg (maybe static functions fromFc and fromFd to construct the leg)
+   * @todo FD should overfly the termination... needs a messy refactor to do that
    * @param leg The procedure leg to map.
    * @returns The mapped leg.
    */
   public mapBearingAndDistanceFromOrigin(leg: RawProcedureLeg): WayPoint {
-      const origin = this._facilities.get(leg.type === LegType.FD ? leg.originIcao : leg.fixIcao);
-      const originIdent = origin.icao.substring(7, 12).trim();
+    const origin = this._facilities.get(leg.fixIcao);
+    const originIdent = origin.icao.substring(7, 12).trim();
+    const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, Facilities.getMagVar(origin.lat, origin.lon));
+    // this is the leg length for FC, and the DME distance for FD
+    const refDistance = leg.distance / 1852;
 
-      const course = (leg.type === LegType.FC ? leg.course : leg.theta) + GeoMath.getMagvar(origin.lat, origin.lon);
-      const coordinates = Avionics.Utils.bearingDistanceToCoordinates(course, leg.distance / 1852, origin.lat, origin.lon);
+    let termPoint;
+    let legLength;
+    if (leg.type === LegType.FD) {
+        const recNavaid = this._facilities.get(leg.originIcao);
+        termPoint = firstSmallCircleIntersection(
+            { lat: recNavaid.lat, long: recNavaid.lon },
+            refDistance,
+            { lat: origin.lat, long: origin.lon },
+            course,
+        );
+        legLength = Avionics.Utils.computeGreatCircleDistance(
+            { lat: origin.lat, long: origin.lon },
+            termPoint,
+        );
+    } else { // FC
+        termPoint = Avionics.Utils.bearingDistanceToCoordinates(
+            course,
+            refDistance,
+            origin.lat,
+            origin.lon,
+        );
+        legLength = refDistance;
+    }
 
-      return this.buildWaypoint(`${originIdent.substring(0, 3)}/${Math.trunc(leg.distance / 1852).toString().padStart(2, '0')}`, coordinates);
+    return this.buildWaypoint(`${originIdent.substring(0, 3)}/${Math.round(legLength).toString().padStart(2, '0')}`, termPoint);
   }
 
   /**
@@ -472,7 +500,7 @@ export class LegsProcedure {
       (waypoint.additionalData.defaultHold as HoldData) = {
           inboundMagneticCourse: leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course,
           turnDirection: leg.turnDirection,
-          distance: leg.distanceMinutes ? undefined : leg.distance,
+          distance: leg.distanceMinutes ? undefined : leg.distance / 1852,
           time: leg.distanceMinutes ? leg.distance : undefined,
           type: HoldType.Database,
       };
