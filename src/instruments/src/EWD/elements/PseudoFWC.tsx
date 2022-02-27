@@ -4,6 +4,8 @@ import { NXDataStore } from '@shared/persistence';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useUpdate } from '@instruments/common/hooks';
 import { NXLogicConfirmNode, NXLogicClockNode } from '@instruments/common/NXLogic';
+import { useArinc429Var } from '@instruments/common/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 
 const mapOrder = (array, order) => {
     array.sort((a, b) => {
@@ -191,6 +193,7 @@ const PseudoFWC: React.FC = () => {
 
     const [autoBrake] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum', 500);
     const [flapsHandle] = useSimVar('L:A32NX_FLAPS_HANDLE_INDEX', 'enum', 500);
+    const [flapsIndex] = useSimVar('L:A32NX_FLAPS_CONF_INDEX', 'number', 100);
     const [toconfig] = useSimVar('L:A32NX_TO_CONFIG_NORMAL', 'bool', 500);
 
     const [adirsRemainingAlignTime] = useSimVar('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'seconds', 1000);
@@ -240,6 +243,9 @@ const PseudoFWC: React.FC = () => {
     const [tcasFault] = useSimVar('L:A32NX_TCAS_FAULT', 'bool', 500);
 
     const [cabinRecircBtnOn] = useSimVar('L:A32NX_VENTILATION_CABFANS_TOGGLE', 'bool', 500);
+    const computedAirSpeed: Arinc429Word = useArinc429Var('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED', 1000);
+    // Reduce number of rewrites triggered by this value
+    const computedAirSpeedToNearest2 = Math.round(computedAirSpeed.value / 2) * 2;
 
     /* WARNINGS AND FAILURES */
     const landASAPRed: boolean = !!(!onGround
@@ -372,6 +378,56 @@ const PseudoFWC: React.FC = () => {
     }
 
     const EWDMessageFailures: EWDMessageDict = {
+        3400210: { // OVERSPEED FLAPS FULL
+            flightPhaseInhib: [2, 3, 4, 8, 9, 10],
+            simVarIsActive: flapsIndex === 5 && computedAirSpeedToNearest2 > 181,
+            whichCodeToReturn: [0, 1],
+            codesToReturn: ['340021001', '340021002'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3400220: { // OVERSPEED FLAPS 3
+            flightPhaseInhib: [2, 3, 4, 8, 9, 10],
+            simVarIsActive: flapsIndex === 4 && computedAirSpeedToNearest2 > 189,
+            whichCodeToReturn: [0, 1],
+            codesToReturn: ['340022001', '340022002'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3400230: { // OVERSPEED FLAPS 2
+            flightPhaseInhib: [2, 3, 4, 8, 9, 10],
+            simVarIsActive: flapsIndex === 3 && computedAirSpeedToNearest2 > 203,
+            whichCodeToReturn: [0, 1],
+            codesToReturn: ['340023001', '340023002'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3400235: { // OVERSPEED FLAPS 1+F
+            flightPhaseInhib: [2, 3, 4, 8, 9, 10],
+            simVarIsActive: flapsIndex === 2 && computedAirSpeedToNearest2 > 219,
+            whichCodeToReturn: [0, 1],
+            codesToReturn: ['340023501', '340023502'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3400240: { // OVERSPEED FLAPS 1
+            flightPhaseInhib: [2, 3, 4, 8, 9, 10],
+            simVarIsActive: flapsIndex === 1 && computedAirSpeedToNearest2 > 233,
+            whichCodeToReturn: [0, 1],
+            codesToReturn: ['340024001', '340024002'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+        },
         7700027: { // DUAL ENGINE FAILURE
             flightPhaseInhib: [],
             simVarIsActive: engDualFault === 1,
@@ -1274,6 +1330,7 @@ const PseudoFWC: React.FC = () => {
         cargoFireAgentDisch,
         cargoFireTest,
         compMesgCount,
+        computedAirSpeedToNearest2,
         configPortableDevices,
         dcESSBusPowered,
         dmcSwitchingKnob,
@@ -1297,6 +1354,7 @@ const PseudoFWC: React.FC = () => {
         fireButton2,
         fireButtonAPU,
         flapsHandle,
+        flapsIndex,
         flightPhase,
         flightPhaseInhibitOverride,
         fobRounded,
