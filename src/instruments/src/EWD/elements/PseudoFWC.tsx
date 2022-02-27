@@ -5,14 +5,6 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { useUpdate } from '@instruments/common/hooks';
 import { NXLogicConfirmNode, NXLogicClockNode } from '@instruments/common/NXLogic';
 
-const toInhibitTimer = new NXLogicConfirmNode(3);
-const ldgInhibitTimer = new NXLogicConfirmNode(3);
-const agent1Eng1DischargeTimer = new NXLogicClockNode(10, 0);
-const agent2Eng1DischargeTimer = new NXLogicClockNode(30, 0);
-const agent1Eng2DischargeTimer = new NXLogicClockNode(10, 0);
-const agent2Eng2DischargeTimer = new NXLogicClockNode(30, 0);
-const agentAPUDischargeTimer = new NXLogicClockNode(10, 0);
-
 const mapOrder = (array, order) => {
     array.sort((a, b) => {
         if (order.indexOf(a) > order.indexOf(b)) {
@@ -84,6 +76,14 @@ const adirsMessage2 = (adirs, engineRunning) => {
 };
 
 const PseudoFWC: React.FC = () => {
+    const [toInhibitTimer] = useState(() => new NXLogicConfirmNode(3));
+    const [ldgInhibitTimer] = useState(() => new NXLogicConfirmNode(3));
+    const [agent1Eng1DischargeTimer] = useState(() => new NXLogicClockNode(10, 0));
+    const [agent2Eng1DischargeTimer] = useState(() => new NXLogicClockNode(30, 0));
+    const [agent1Eng2DischargeTimer] = useState(() => new NXLogicClockNode(10, 0));
+    const [agent2Eng2DischargeTimer] = useState(() => new NXLogicClockNode(30, 0));
+    const [agentAPUDischargeTimer] = useState(() => new NXLogicClockNode(10, 0));
+
     const [memoMessageLeft, setMemoMessageLeft] = useState<string[]>([]);
     const [memoMessageRight, setMemoMessageRight] = useState<string[]>([]);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);

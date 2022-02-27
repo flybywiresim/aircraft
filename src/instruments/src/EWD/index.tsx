@@ -11,8 +11,6 @@ import PseudoFWC from './elements/PseudoFWC';
 
 import './style.scss';
 
-
-
 export const EWD: React.FC = () => {
     const [displayIndex] = useState(() => {
         const url = document.getElementsByTagName('a32nx-ewd')[0].getAttribute('url');
@@ -33,7 +31,7 @@ export const EWD: React.FC = () => {
                 <LowerRightDisplay x={520} y={565} />
                 <STS x={484} y={753} active={false} />
                 <ADV x={483} y={543} active={false} />
-                <DownArrow x = {481} y={729} active={false} />
+                <DownArrow x={481} y={729} active={false} />
                 <PseudoFWC />
                 {/* sd */}
             </svg>
