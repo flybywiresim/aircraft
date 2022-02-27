@@ -19,7 +19,7 @@ export const RealismPage = () => {
     const [mcduInput, setMcduInput] = usePersistentProperty('MCDU_KB_INPUT', 'DISABLED');
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
-    const [realisticTiller, setRealisticTiller] = usePersistentProperty('REALISTIC_TILLER_ENABLED', '0');
+    const [realisticTiller, setRealisticTiller] = usePersistentNumberProperty('REALISTIC_TILLER_ENABLED', 0);
     const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
     const [datalinkTransmissionTime, setDatalinkTransmissionTime] = usePersistentProperty('CONFIG_DATALINK_TRANSMISSION_TIME', 'FAST');
     const [, setDatalinkTransmissionTimeSimVar] = useSimVar('L:A32NX_CONFIG_DATALINK_TIME', 'number', 0);
@@ -41,11 +41,6 @@ export const RealismPage = () => {
         { name: 'Instant', setting: 'INSTANT' },
         { name: 'Fast', setting: 'FAST' },
         { name: 'Real', setting: 'REAL' },
-    ];
-
-    const steeringSeparationButtons: (ButtonType & SimVarButton)[] = [
-        { name: 'Disabled', setting: '0', simVarValue: 0 },
-        { name: 'Enabled', setting: '1', simVarValue: 1 },
     ];
 
     const datalinkTransmissionTimeButtons: (ButtonType & SimVarButton)[] = [
@@ -119,16 +114,7 @@ export const RealismPage = () => {
             </SettingItem>
 
             <SettingItem name="Separate Tiller from Rudder Inputs">
-                <SelectGroup>
-                    {steeringSeparationButtons.map((button) => (
-                        <SelectItem
-                            onSelect={() => setRealisticTiller(button.setting)}
-                            selected={realisticTiller === button.setting}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
+                <Toggle value={!!realisticTiller} onToggle={(value) => setRealisticTiller(value ? 1 : 0)} />
             </SettingItem>
 
             <SettingItem name="Cockpit Mode">
