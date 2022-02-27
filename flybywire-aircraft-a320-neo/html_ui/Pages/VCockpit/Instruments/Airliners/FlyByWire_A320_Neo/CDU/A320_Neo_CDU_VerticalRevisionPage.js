@@ -35,7 +35,7 @@ class CDUVerticalRevisionPage {
             } else if (mcdu.flightPhaseManager.phase > FmgcFlightPhases.CRUISE && mcdu.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND) {
                 speedLimitTitle = "\xa0DES SPD LIM";
                 if (mcdu.descentSpeedLimit !== undefined) {
-                    speedLimitCell = `{magenta}{${mcdu.climbSpeedLimitPilot ? 'big' : 'small'}}${mcdu.climbSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.descentSpeedLimitAlt, mcdu.flightPlanManager.destinationTransitionLevel)}{end}{end}`;
+                    speedLimitCell = `{magenta}{${mcdu.climbSpeedLimitPilot ? 'big' : 'small'}}${mcdu.climbSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.descentSpeedLimitAlt, mcdu.flightPlanManager.destinationTransitionLevel * 100)}{end}{end}`;
                 } else {
                     speedLimitCell = "{cyan}*[ ]/[   ]{end}";
                 }
@@ -46,7 +46,7 @@ class CDUVerticalRevisionPage {
                 speedConstraint = waypoint.speedConstraint.toFixed(0);
             }
 
-            const transAltLevel = constraintType === WaypointConstraintType.DES ? mcdu.flightPlanManager.destinationTransitionLevel : mcdu.flightPlanManager.originTransitionAltitude;
+            const transAltLevel = constraintType === WaypointConstraintType.DES ? mcdu.flightPlanManager.destinationTransitionLevel * 100 : mcdu.flightPlanManager.originTransitionAltitude;
             let altitudeConstraint = "";
             switch (waypoint.legAltitudeDescription) {
                 case 1: {
