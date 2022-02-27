@@ -170,7 +170,9 @@
 1. [SOUNDS] Add rain sounds in cockpit - @Mico975 (Mico)
 1. [SOUNDS] Add passenger announcements and ambience - @hotshotp (Boris)
 1. [EFB] Added setting for colored METAR in EFB weather widget - @frankkopp (Frank Kopp)
+1. [MCDU] Added button press sound to remote mcdu  - @frankkopp (Cdr_Maverick#6475)
 1. [MCDU] Improved Remote MCDU with CLR hold and light-dark mode - @frankkopp (Frank Kopp)
+1. [MCDU] Improved mcdu server command line handling  - @frankkopp (Cdr_Maverick#6475)
 1. [MCDU] Improved Remote MCDU communication by reducing update frequency - @frankkopp (Frank Kopp)
 
 ## 0.7.0
