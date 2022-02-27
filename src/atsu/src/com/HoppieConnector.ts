@@ -198,9 +198,8 @@ export class HoppieConnector {
         // TODO write a heuristic to match the function
         console.log(`Selected UM-ID: ${matches[0]}`);
 
-        // create a deep-copy
-        const retval: CpdlcMessageElement = new CpdlcMessageElement('');
-        retval.deserialize(JSON.parse(JSON.stringify(CpdlcMessagesUplink[matches[0]][1])));
+        // create a deep-copy of the message
+        const retval: CpdlcMessageElement = CpdlcMessagesUplink[matches[0]][1].deepCopy();
         const elements = message.split(' ');
 
         // parse the content and store it in the deep copy
