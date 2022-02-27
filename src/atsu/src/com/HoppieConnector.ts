@@ -8,12 +8,15 @@ import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComSt
 import { CpdlcMessage } from '../messages/CpdlcMessage';
 import { CpdlcMessagesUplink, CpdlcMessageElement, CpdlcMessageContent } from '../messages/CpdlcMessageElements';
 import { FreetextMessage } from '../messages/FreetextMessage';
+import { FansMode } from './FutureAirNavigationSystem';
 
 /**
  * Defines the connector to the hoppies network
  */
 export class HoppieConnector {
     private static flightNumber: string = '';
+
+    public static fansMode: FansMode = FansMode.FansNone;
 
     public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
