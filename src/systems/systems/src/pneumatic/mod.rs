@@ -624,6 +624,11 @@ impl<T: PneumaticContainer> PneumaticContainerWithConnector<T> {
     pub fn temperature(&self) -> ThermodynamicTemperature {
         self.container.temperature()
     }
+
+    #[cfg(test)]
+    pub fn mass(&self) -> Mass {
+        self.container.mass()
+    }
 }
 impl PneumaticContainerWithConnector<VariableVolumeContainer> {
     pub fn change_spatial_volume(&mut self, new_volume: Volume) {
@@ -1026,7 +1031,7 @@ mod tests {
     }
 
     #[test]
-    fn variable_volume_container_increases_pressure_for_volume_decrease() {
+    fn variable_volume_container_increases_pressure_and_temperature_for_volume_decrease() {
         let mut container = VariableVolumeContainer::new(
             Volume::new::<gallon>(10.),
             Pressure::new::<psi>(14.7),
@@ -1035,11 +1040,18 @@ mod tests {
 
         assert_eq!(container.volume(), Volume::new::<gallon>(10.));
         assert_eq!(container.pressure(), Pressure::new::<psi>(14.7));
+        assert_eq!(
+            container.temperature(),
+            ThermodynamicTemperature::new::<degree_celsius>(15.)
+        );
+        let container_mass = container.mass();
 
         container.change_spatial_volume(Volume::new::<gallon>(8.));
 
         assert_eq!(container.volume(), Volume::new::<gallon>(8.));
         assert!(container.pressure() > Pressure::new::<psi>(14.7));
+        assert!(container.temperature() > ThermodynamicTemperature::new::<degree_celsius>(15.));
+        assert_eq!(container.mass(), container_mass);
     }
 
     #[test]
@@ -1106,5 +1118,7 @@ mod tests {
             .temperature()
             .get::<degree_celsius>()
             .is_nan());
+        assert!(!source.mass().get::<kilogram>().is_nan());
+        assert!(!container_with_valve.mass().get::<kilogram>().is_nan());
     }
 }
