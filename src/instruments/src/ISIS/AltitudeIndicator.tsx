@@ -1,4 +1,4 @@
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import React from 'react';
 import { Bug } from './Bug';
 import { DigitalAltitudeIndicator } from './DigitalAltitudeIndicator';
@@ -43,7 +43,7 @@ type AltitudeIndicatorProps = {
 }
 
 export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ altitude, mda, bugs }) => {
-    const [metricAltitude] = usePersistentProperty('ISIS_METRIC_ALTITUDE', '0');
+    const [metricAltitude] = usePersistentNumberProperty('ISIS_METRIC_ALTITUDE', 0);
 
     return (
         <g id="AltitudeIndicator">
@@ -61,7 +61,7 @@ export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ altitude, 
                 />
             </svg>
             <DigitalAltitudeIndicator altitude={altitude} mda={mda} bugs={bugs} />
-            { metricAltitude === '1' && <MetricAltitudeIndicator altitude={altitude} /> }
+            { !!metricAltitude && <MetricAltitudeIndicator altitude={altitude} /> }
         </g>
     );
 };

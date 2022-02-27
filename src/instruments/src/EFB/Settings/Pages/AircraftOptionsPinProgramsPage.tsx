@@ -1,8 +1,9 @@
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import React, { useState } from 'react';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
+import { Toggle } from '../../UtilComponents/Form/Toggle';
 
 export const AircraftOptionsPinProgramsPage = () => {
     const [thrustReductionHeight, setThrustReductionHeight] = usePersistentProperty('CONFIG_THR_RED_ALT', '1500');
@@ -15,7 +16,7 @@ export const AircraftOptionsPinProgramsPage = () => {
     const [usingMetric, setUsingMetric] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
     const [paxSigns, setPaxSigns] = usePersistentProperty('CONFIG_USING_PORTABLE_DEVICES', '0');
     const [isisBaro, setIsisBaro] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
-    const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentProperty('ISIS_METRIC_ALTITUDE', '0');
+    const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentNumberProperty('ISIS_METRIC_ALTITUDE', 0);
     const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
 
     const handleSetThrustReductionAlt = (value: string) => {
@@ -61,11 +62,6 @@ export const AircraftOptionsPinProgramsPage = () => {
     const isisBaroButtons: ButtonType[] = [
         { name: 'hPa', setting: '0' },
         { name: 'hPa/inHg', setting: '1' },
-    ];
-
-    const isisMetricAltitudeButtons: ButtonType[] = [
-        { name: 'Disabled', setting: '0' },
-        { name: 'Enabled', setting: '1' },
     ];
 
     const vhfSpacingButtons: ButtonType[] = [
@@ -148,16 +144,7 @@ export const AircraftOptionsPinProgramsPage = () => {
             </SettingItem>
 
             <SettingItem name="ISIS Metric Altitude">
-                <SelectGroup>
-                    {isisMetricAltitudeButtons.map((button) => (
-                        <SelectItem
-                            onSelect={() => setIsisMetricAltitude(button.setting)}
-                            selected={isisMetricAltitude === button.setting}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
+                <Toggle value={!!isisMetricAltitude} onToggle={(value) => setIsisMetricAltitude(value ? 1 : 0)} />
             </SettingItem>
 
             <SettingItem name="RMP VHF Spacing">
