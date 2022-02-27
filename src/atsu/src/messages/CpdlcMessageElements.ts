@@ -304,6 +304,19 @@ export class CpdlcMessageElement {
         });
     }
 
+    public deepCopy(): CpdlcMessageElement {
+        const instance = new CpdlcMessageElement(this.TypeId, this.FansModes, this.Urgent, this.ExpectedResponse);
+
+        this.Content.forEach((entry) => {
+            instance.Content.push(CpdlcMessageContent.createInstance(entry.Type));
+            instance.Content[instance.Content.length - 1].IndexStart = entry.IndexStart;
+            instance.Content[instance.Content.length - 1].IndexEnd = entry.IndexEnd;
+            instance.Content[instance.Content.length - 1].Value = entry.Value;
+        });
+
+        return instance;
+    }
+
     public deserialize(jsonData: any): void {
         this.TypeId = jsonData.TypeId;
         this.FansModes = jsonData.FansModes;
