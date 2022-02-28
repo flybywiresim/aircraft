@@ -50,6 +50,24 @@ export const PFD: React.FC = () => {
     const airDataReferenceSource = getSupplier(displayIndex, getSimVar('L:A32NX_AIR_DATA_SWITCHING_KNOB', 'Enum'));
     const computedAirspeed = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_COMPUTED_AIRSPEED`);
 
+    const [radioAltitudeFilter] = useState(() => new LagFilter(5));
+    const [filteredRadioAltitude, setFilteredRadioAltitude] = useState(0);
+    const radioAltitude1 = useArinc429Var('L:A32NX_RA_1_RADIO_ALTITUDE');
+    const radioAltitude2 = useArinc429Var('L:A32NX_RA_2_RADIO_ALTITUDE');
+    const [ownRadioAltitude, oppRadioAltitude] = isCaptainSide(displayIndex) ? [
+        radioAltitude1, radioAltitude2,
+    ] : [
+        radioAltitude2, radioAltitude1,
+    ];
+    const ownRadioAltitudeHasData = !ownRadioAltitude.isFailureWarning() && !ownRadioAltitude.isNoComputedData();
+    const oppRadioAltitudeHasData = !oppRadioAltitude.isFailureWarning() && !oppRadioAltitude.isNoComputedData();
+    const chosenRadioAltitude = (
+        // the own RA has no data and the opposite one has data
+        (!ownRadioAltitudeHasData && oppRadioAltitudeHasData)
+        // the own RA has FW and the opposite has NCD
+        || ownRadioAltitude.isFailureWarning() && oppRadioAltitude.isNoComputedData()
+    ) ? oppRadioAltitude : ownRadioAltitude;
+
     const isOnGround = getSimVar('SIM ON GROUND', 'Bool');
 
     const [vls, setVls] = useState(0);
@@ -78,6 +96,8 @@ export const PFD: React.FC = () => {
 
         setVls(smoothSpeeds(deltaTime, vls, getSimVar('L:A32NX_SPEEDS_VLS', 'number')));
 
+        setFilteredRadioAltitude(radioAltitudeFilter.step(chosenRadioAltitude.value, deltaTime / 1000));
+
         forceUpdate();
     });
 
@@ -99,7 +119,6 @@ export const PFD: React.FC = () => {
     const groundTrack = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_TRACK`);
     const groundSpeed = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_GROUND_SPEED`);
 
-    const radioAlt = getSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet');
     const decisionHeight = getSimVar('L:AIRLINER_DECISION_HEIGHT', 'feet');
 
     const altitude = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_ALTITUDE`);
@@ -111,9 +130,12 @@ export const PFD: React.FC = () => {
 
     const mda = getSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
 
-    const FlightPhase = getSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
+    const fwcFlightPhase = getSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
+    const fmgcFlightPhase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
 
     const pressureMode = Simplane.getPressureSelectedMode(Aircraft.A320_NEO);
+    const transAlt = getSimVar(fmgcFlightPhase <= 3 ? 'L:AIRLINER_TRANS_ALT' : 'L:AIRLINER_APPR_TRANS_ALT', 'number');
+    const belowTransitionAltitude = transAlt !== 0 && (!altitude.isNoComputedData() && !altitude.isNoComputedData()) && altitude.value < transAlt;
 
     const mach = useArinc429Var(`L:A32NX_ADIRS_ADR_${airDataReferenceSource}_MACH`);
 
@@ -122,7 +144,6 @@ export const PFD: React.FC = () => {
     const armedVerticalBitmask = getSimVar('L:A32NX_FMA_VERTICAL_ARMED', 'number');
     const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
     const armedLateralBitmask = getSimVar('L:A32NX_FMA_LATERAL_ARMED', 'number');
-    const fmgcFlightPhase = getSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum');
     const cstnAlt = getSimVar('L:A32NX_FG_ALTITUDE_CONSTRAINT', 'feet');
     const altCstArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.ALT_CST);
     const clbArmed = isArmed(armedVerticalBitmask, ArmedVerticalMode.CLB);
@@ -171,7 +192,9 @@ export const PFD: React.FC = () => {
                     FDActive={FDActive}
                     selectedHeading={selectedHeading}
                     isOnGround={isOnGround}
-                    radioAlt={radioAlt}
+                    radioAltitude={chosenRadioAltitude}
+                    filteredRadioAltitude={filteredRadioAltitude}
+                    belowTransitionAltitude={belowTransitionAltitude}
                     decisionHeight={decisionHeight}
                     isAttExcessive={isAttExcessive}
                 />
@@ -193,11 +216,11 @@ export const PFD: React.FC = () => {
                     d="m32.138 101.25c7.4164 13.363 21.492 21.652 36.768 21.652 15.277 0 29.352-8.2886 36.768-21.652v-40.859c-7.4164-13.363-21.492-21.652-36.768-21.652-15.277 0-29.352 8.2886-36.768 21.652zm-32.046 57.498h158.66v-158.75h-158.66z"
                 />
                 <HeadingTape heading={heading} />
-                <AltitudeIndicator altitude={altitude} FWCFlightPhase={FlightPhase} />
+                <AltitudeIndicator altitude={altitude} FWCFlightPhase={fwcFlightPhase} />
                 <AirspeedIndicator
                     airspeed={clampedAirspeed}
                     airspeedAcc={filteredAirspeedAcc}
-                    FWCFlightPhase={FlightPhase}
+                    FWCFlightPhase={fwcFlightPhase}
                     altitude={altitude}
                     VLs={vls}
                     VMax={VMax}
@@ -211,9 +234,17 @@ export const PFD: React.FC = () => {
                 />
                 <LandingSystem LSButtonPressed={lsButtonPressed} pitch={pitch} roll={roll} />
                 <AttitudeIndicatorFixedUpper pitch={pitch} roll={roll} />
-                <VerticalSpeedIndicator radioAlt={radioAlt} verticalSpeed={verticalSpeed} />
+                <VerticalSpeedIndicator verticalSpeed={verticalSpeed} radioAltitude={chosenRadioAltitude} filteredRadioAltitude={filteredRadioAltitude} />
                 <HeadingOfftape ILSCourse={ILSCourse} groundTrack={groundTrack} heading={heading} selectedHeading={selectedHeading} />
-                <AltitudeIndicatorOfftape altitude={altitude} radioAlt={radioAlt} MDA={mda} targetAlt={targetAlt} altIsManaged={isManaged} mode={pressureMode} />
+                <AltitudeIndicatorOfftape
+                    altitude={altitude}
+                    radioAltitude={chosenRadioAltitude}
+                    filteredRadioAltitude={filteredRadioAltitude}
+                    MDA={mda}
+                    targetAlt={targetAlt}
+                    altIsManaged={isManaged}
+                    mode={pressureMode}
+                />
                 <AirspeedIndicatorOfftape airspeed={clampedAirspeed} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
                 <MachNumber mach={mach} />
                 <FMA isAttExcessive={isAttExcessive} />
