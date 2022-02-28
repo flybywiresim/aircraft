@@ -96,19 +96,8 @@ export class CpdlcMessage extends AtsuMessage {
 
             message += '{white}------------------------{end}\n';
 
-            // check if the answer is not a standard answer
-            if (this.Response !== undefined) {
-                const addResponse = this.Response.Content.TypeId !== 'DM0'
-                && this.Response.Content.TypeId !== 'DM1'
-                && this.Response.Content.TypeId !== 'DM2'
-                && this.Response.Content.TypeId !== 'DM3'
-                && this.Response.Content.TypeId !== 'DM4'
-                && this.Response.Content.TypeId !== 'DM5'
-                && this.Response.Content.TypeId !== 'DM6';
-
-                if (addResponse) {
-                    message += this.Response.serialize(format);
-                }
+            if (this.extendSerializationWithResponse()) {
+                message += this.Response.serialize(format);
             }
         } else if (format === AtsuMessageSerializationFormat.Printer) {
             message += `${this.Timestamp.dcduTimestamp()} ${this.Direction === AtsuMessageDirection.Uplink ? 'FROM' : 'TO'} ${this.Station}}\n`;
@@ -123,19 +112,8 @@ export class CpdlcMessage extends AtsuMessage {
 
             message += '------------------------\n';
 
-            // check if the answer is not a standard answer
-            if (this.Response !== undefined) {
-                const addResponse = this.Response.Content.TypeId !== 'DM0'
-                && this.Response.Content.TypeId !== 'DM1'
-                && this.Response.Content.TypeId !== 'DM2'
-                && this.Response.Content.TypeId !== 'DM3'
-                && this.Response.Content.TypeId !== 'DM4'
-                && this.Response.Content.TypeId !== 'DM5'
-                && this.Response.Content.TypeId !== 'DM6';
-
-                if (addResponse) {
-                    message += this.Response.serialize(format);
-                }
+            if (this.extendSerializationWithResponse()) {
+                message += this.Response.serialize(format);
             }
         } else {
             message = this.Message;
