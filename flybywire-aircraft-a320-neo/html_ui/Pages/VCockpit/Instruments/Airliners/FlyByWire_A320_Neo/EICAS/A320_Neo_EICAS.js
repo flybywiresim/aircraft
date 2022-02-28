@@ -31,7 +31,13 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
 
     changePage(_pageName) {
         let pageName = _pageName.toUpperCase();
+        const isOnGround = SimVar.GetSimVarValue("GEAR IS ON GROUND","Bool");
         for (let i = 0; i < this.lowerScreenPages.length; i++) {
+            //skip CRZ and go back to ENG Page
+            if (this.lowerScreenPages[i].name == "CRZ" && isOnGround) {
+                pageName = "ENG";
+                i = 0;
+            }
             if (this.lowerScreenPages[i].name == pageName) {
                 let pageIndex = i;
                 if (pageIndex == this.currentPage) {
