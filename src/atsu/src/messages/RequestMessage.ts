@@ -45,7 +45,7 @@ export class RequestMessage extends CpdlcMessage {
             message = lines.join('\n');
         } else if (format === AtsuMessageSerializationFormat.MCDU) {
             message += `{cyan}${this.Timestamp.dcduTimestamp()} TO ${this.Station}{end}\n`;
-            message += lines.join('\n');
+            lines.forEach((line) => message += `{green}${line}{end}\n`);
             message += '{white}------------------------{end}\n';
 
             if (this.extendSerializationWithResponse()) {
