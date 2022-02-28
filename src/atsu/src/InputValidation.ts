@@ -321,10 +321,10 @@ export class InputValidation {
      * @returns The formatted speed string
      */
     public static formatScratchpadSpeed(value: string): string {
-        if (value[0] === 'M') {
-            return value;
-        } if (value[0] === '.') {
-            return `M${value}`;
+        if (value[0] === 'M' || value[0] === '.') {
+            let machNumber = parseInt(value.split('.')[1]);
+            if (machNumber < 10) machNumber *= 10;
+            return `M.${machNumber}`;
         }
         return value.replace('KT', '');
     }
