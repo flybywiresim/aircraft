@@ -621,6 +621,27 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'LEFT',
         },
+        3200010: { // L/G-BRAKES OVHT
+            flightPhaseInhib: [4, 8, 9, 10],
+            simVarIsActive: (toconfig === 1 || flightPhase === 3)
+            && brakesHot === 1,
+            whichCodeToReturn: [
+                0,
+                !onGround ? 1 : null,
+                [1, 10].includes(flightPhase) ? 2 : null,
+                !onGround ? 3 : null,
+                [1, 2].includes(flightPhase) && !brakeFan ? 4 : null,
+                onGround ? 5 : null,
+                !onGround ? 6 : null,
+                !onGround ? 7 : null,
+                !onGround ? 8 : null,
+            ],
+            codesToReturn: ['320001001', '320001002', '320001003', '320001004', '320001005', '320001006', '320001007', '320001008', '320001009'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 9,
+            side: 'LEFT',
+        },
         2900310: // *HYD  - Blue
         {
             flightPhaseInhib: [4, 5],
