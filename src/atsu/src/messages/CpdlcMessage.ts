@@ -39,22 +39,29 @@ export class CpdlcMessage extends AtsuMessage {
         this.PreviousTransmissionId = jsonData.PreviousTransmissionId;
     }
 
-    public serialize(format: AtsuMessageSerializationFormat) {
-        let insertContent = false;
-        let message: string = '';
+    protected serializeContent(template: string, element: CpdlcMessageElement): string {
         let content: string = '';
 
-        if (this.Direction === AtsuMessageDirection.Uplink) {
-            if (this.Content === undefined) {
-                content = this.Message;
-            } else {
-                content = CpdlcMessagesUplink[this.Content.TypeId][0][0];
-                insertContent = true;
-            }
-        } else {
-            content = CpdlcMessagesDownlink[this.Content.TypeId][0][0];
-            insertContent = true;
+        content = template;
+        element.Content.forEach((entry) => {
+            const idx = content.indexOf('%s');
+            content = `${content.substring(0, idx)}${entry.Value}${content.substring(idx + 2)}`;
+        });
+
+        return content;
+    }
+
+    protected extendSerializationWithResponse(): boolean {
+        if (this.Response === undefined || this.Response.Content !== undefined) {
+            return false;
         }
+
+        // ignore the standard responses
+        return this.Response.Content.TypeId !== 'DM0' && this.Response.Content.TypeId !== 'DM1' && this.Response.Content.TypeId !== 'DM2'
+            && this.Response.Content.TypeId !== 'DM3' && this.Response.Content.TypeId !== 'DM4' && this.Response.Content.TypeId !== 'DM5'
+            && this.Response.Content.TypeId !== 'UM0' && this.Response.Content.TypeId !== 'UM1' && this.Response.Content.TypeId !== 'UM3'
+            && this.Response.Content.TypeId !== 'UM4' && this.Response.Content.TypeId !== 'UM5';
+    }
 
         if (insertContent) {
             this.Content.Content.forEach((entry) => {
