@@ -102,7 +102,6 @@ class CDUAtcRequest {
                     if (retval[1] !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(retval[1]);
                     } else {
-                        store = CDUAtcRequest.CreateDataBlock(store);
                         store.dirTo = value;
                         CDUAtcRequest.ShowPage(mcdu, store);
                     }
@@ -122,7 +121,6 @@ class CDUAtcRequest {
                 if (error !== Atsu.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
-                    store = CDUAtcRequest.CreateDataBlock(store);
                     store.altitude = Atsu.InputValidation.formatScratchpadAltitude(value);
                     CDUAtcRequest.ShowPage(mcdu, store);
                 }
@@ -138,7 +136,6 @@ class CDUAtcRequest {
                 if (error !== Atsu.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
-                    store = CDUAtcRequest.CreateDataBlock(store);
                     store.speed = Atsu.InputValidation.formatScratchpadSpeed(value);
                     CDUAtcRequest.ShowPage(mcdu, store);
                 }
