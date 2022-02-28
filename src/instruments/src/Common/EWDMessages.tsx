@@ -163,7 +163,7 @@ const EWDMessages = {
     '320001006': '\x1b<5m -DELAY T.O FOR COOL',
     '320001007': '\x1b<5m -L/G........DN FOR COOL',
     '320001008': '\x1b<7m   .FOR L/G RETRACTION:',
-    '320001009': '\x1b<5m MAX SPEED.........220/.54',
+    '320001009': '\x1b<5m MAX SPEED.......220/.54',
     '320005001': '\x1b<2m\x1b4mCONFIG\x1bm PARK BRK ON',
     '320006001': '\x1b<4m\x1b4mBRAKES\x1bm A/SKID N/WS FAULT',
     '320006002': '\x1b<5mMAX BRK PR......1000 PSI',
