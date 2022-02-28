@@ -14,7 +14,7 @@ import { AocSystem } from './AocSystem';
 import { AtcSystem } from './AtcSystem';
 import { DclMessage } from './messages/DclMessage';
 import { OclMessage } from './messages/OclMessage';
-import { InputValidation } from './InputValidation';
+import { InputValidation, InputWaypointType } from './InputValidation';
 import { FansMode } from './com/FutureAirNavigationSystem';
 
 export {
@@ -45,4 +45,5 @@ export {
     FansMode,
     RequestMessage,
     InputValidation,
+    InputWaypointType,
 };
