@@ -204,7 +204,7 @@ class CDUAtcRequest {
         mcdu.onRightInput[5] = () => {
             if (CDUAtcRequest.CanBeSent(store)) {
                 if (mcdu.atsuManager.atc.currentStation() === "") {
-                    mcdu.addNewMessage(NXFictionalMessages.noAtc);
+                    mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
                     const requests = CDUAtcRequest.CreateRequests(store);
                     if (requests) {

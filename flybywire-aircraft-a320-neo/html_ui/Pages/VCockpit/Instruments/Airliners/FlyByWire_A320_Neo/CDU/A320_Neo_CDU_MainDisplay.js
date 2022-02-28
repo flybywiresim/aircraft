@@ -965,7 +965,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.addNewMessage(NXSystemMessages.comUnavailable);
                 break;
             case Atsu.AtsuStatusCodes.NoAtc:
-                this.addNewMessage(NXFictionalMessages.noAtc);
+                this.addNewMessage(NXSystemMessages.noAtc);
                 break;
             case Atsu.AtsuStatusCodes.DcduFull:
                 this.addNewMessage(NXSystemMessages.dcduFileFull);
@@ -980,7 +980,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.addNewMessage(NXFictionalMessages.telexNotEnabled);
                 break;
             case Atsu.AtsuStatusCodes.OwnCallsign:
-                this.addNewMessage(NXFictionalMessages.noAtc);
+                this.addNewMessage(NXSystemMessages.noAtc);
                 break;
             case Atsu.AtsuStatusCodes.SystemBusy:
                 this.addNewMessage(NXSystemMessages.systemBusy);
