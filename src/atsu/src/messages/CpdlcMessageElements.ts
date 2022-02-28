@@ -297,7 +297,7 @@ export class CpdlcMessageElement {
         this.TypeId = typeId;
         args.forEach((arg) => {
             if (arg instanceof Array && arg[0] instanceof CpdlcMessageContent) this.Content = arg as CpdlcMessageContent[];
-            else if (arg instanceof Boolean) this.Urgent = arg as boolean;
+            else if (typeof arg === 'boolean') this.Urgent = arg as boolean;
             else if (arg instanceof Array) this.FansModes = arg as FansMode[];
             else if (typeof arg === 'string') this.ExpectedResponse = arg as CpdlcMessageExpectedResponseType;
             else console.log(`Unknown arg: ${arg}, type: ${typeof arg}`);
