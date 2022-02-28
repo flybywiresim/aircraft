@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import React, { useEffect } from 'react';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
+import { Link45deg } from 'react-bootstrap-icons';
 import { ChecklistPage } from './ChecklistsPage';
 import { CHECKLISTS } from './Lists';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
@@ -20,22 +21,52 @@ export interface ChecklistItem {
 
 export interface ChecklistDefinition {
     name: string;
-    items: ChecklistItem[]
+    items: ChecklistItem[];
 }
+
+export const getRelevantChecklistIndices = () => {
+    const relevantChecklistIndices: number[] = [];
+    const flightPhase = SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
+
+    switch (flightPhase) {
+    case 0:
+    case 1:
+        // Preflight and Takeoff -> Cockpit Preparation, Before Start, After Start, Taxi, Line-Up
+        relevantChecklistIndices.push(0, 1, 2, 3, 4);
+        break;
+    case 4:
+        // Descent -> Approach
+        relevantChecklistIndices.push(5);
+        break;
+    case 5:
+    case 6:
+        // Approach and Go-Around -> Approach, Landing, After Landing
+        relevantChecklistIndices.push(5, 6, 7);
+        break;
+    case 7:
+        // Done -> Parking, Securing Aircraft
+        relevantChecklistIndices.push(8, 9);
+        break;
+    default:
+    }
+
+    return relevantChecklistIndices;
+};
 
 export const setAutomaticItemStates = () => {
     const checklists = (store.getState() as RootState).trackingChecklists.checklists;
-    const firstUnmarkedIdx = checklists.findIndex((cl) => !cl.markedCompleted);
+    const relevantChecklistIndices = getRelevantChecklistIndices();
+    const firstRelevantUnmarkedIdx = checklists.findIndex((cl, clIndex) => relevantChecklistIndices.includes(clIndex) && !cl.markedCompleted);
 
-    if (firstUnmarkedIdx === -1) return;
+    if (firstRelevantUnmarkedIdx === -1) return;
 
-    CHECKLISTS[firstUnmarkedIdx].items.forEach((clItem, itemIdx) => {
-        const associatedTrackingItem = checklists[firstUnmarkedIdx].items[itemIdx];
+    CHECKLISTS[firstRelevantUnmarkedIdx].items.forEach((clItem, itemIdx) => {
+        const associatedTrackingItem = checklists[firstRelevantUnmarkedIdx].items[itemIdx];
 
         if (!clItem.condition || !associatedTrackingItem) return;
 
         store.dispatch(setChecklistItemCompletion({
-            checklistIndex: firstUnmarkedIdx,
+            checklistIndex: firstRelevantUnmarkedIdx,
             itemIndex: itemIdx,
             completionValue: clItem.condition(),
         }));
@@ -52,6 +83,9 @@ export const Checklists = () => {
     const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
 
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
+
+    const relevantChecklistIndices = getRelevantChecklistIndices();
+    const firstRelevantUnmarkedIdx = checklists.findIndex((cl, clIndex) => relevantChecklistIndices.includes(clIndex) && !cl.markedCompleted);
 
     const getTabClassName = (index: number) => {
         if (index === selectedChecklistIndex) {
@@ -97,6 +131,9 @@ export const Checklists = () => {
                                     className={`flex justify-center items-center w-full h-12 rounded-md transition duration-100 ${getTabClassName(index)}`}
                                     onClick={() => handleClick(index)}
                                 >
+                                    {!!(autoFillChecklists && firstRelevantUnmarkedIdx === index) && (
+                                        <Link45deg size={24} />
+                                    )}
                                     {cl.name}
                                 </div>
                             ))}

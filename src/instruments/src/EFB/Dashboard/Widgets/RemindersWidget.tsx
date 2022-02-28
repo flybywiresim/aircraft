@@ -4,6 +4,7 @@ import { A320Failure } from '@flybywiresim/failures';
 import { Link } from 'react-router-dom';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { ArrowDown, ArrowUp, Check, PencilFill } from 'react-bootstrap-icons';
+import { useSimVar } from '@instruments/common/simVars';
 import {
     setChartId,
     setChartLinks,
@@ -26,6 +27,17 @@ import {
     setSelectedChecklistIndex,
 } from '../../Store/features/checklists';
 import { pathify } from '../../Utils/routing';
+import { cockpitPreparationChecklist } from '../../Checklists/Lists/CockpitPreparation';
+import { beforeStartChecklist } from '../../Checklists/Lists/BeforeStart';
+import { afterStartChecklist } from '../../Checklists/Lists/AfterStart';
+import { taxiChecklist } from '../../Checklists/Lists/Taxi';
+import { lineUpChecklist } from '../../Checklists/Lists/LineUp';
+import { approachChecklist } from '../../Checklists/Lists/Approach';
+import { landingChecklist } from '../../Checklists/Lists/Landing';
+import { afterLandingChecklist } from '../../Checklists/Lists/AfterLanding';
+import { parkingChecklist } from '../../Checklists/Lists/Parking';
+import { securingAircraftChecklist } from '../../Checklists/Lists/SecuringAircraft';
+import { getRelevantChecklistIndices } from '../../Checklists/Checklists';
 
 interface ActiveFailureReminderProps {
     name: string,
@@ -59,6 +71,7 @@ const WeatherReminder = () => {
 const PinnedChartsReminder = () => {
     const dispatch = useAppDispatch();
     const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
+
     const navigraph = useNavigraph();
 
     // if (!navigraph.hasToken) return null;
@@ -203,13 +216,26 @@ const ChecklistReminderWidget = ({ checklist, checklistIndex }: ChecklistReminde
 const ChecklistsReminder = () => {
     const { checklists } = useAppSelector((state) => state.trackingChecklists);
 
+    const relevantChecklistIndices = getRelevantChecklistIndices();
+    const [relevantChecklists, setRelevantChecklists] = useState([...checklists].filter((_, clIndex) => relevantChecklistIndices.includes(clIndex)));
+
+    const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum', 1000);
+
+    useEffect(() => {
+        setRelevantChecklists([...checklists].filter((_, clIndex) => relevantChecklistIndices.includes(clIndex)));
+    }, [flightPhase]);
+
     return (
         <RemindersSection title="Checklists" pageLinkPath="/checklists">
-            <div className="grid grid-cols-2">
-                {checklists.map((checklist, clIndex) => (
-                    <ChecklistReminderWidget checklist={checklist} checklistIndex={clIndex} />
-                ))}
-            </div>
+            {relevantChecklists.length ? (
+                <div className="grid grid-cols-2">
+                    {relevantChecklists.map((checklist, clIndex) => (
+                        <ChecklistReminderWidget checklist={checklist} checklistIndex={clIndex} />
+                    ))}
+                </div>
+            ) : (
+                <h1 className="m-auto my-4 font-bold opacity-60">No Relevant Checklists</h1>
+            )}
         </RemindersSection>
     );
 };
