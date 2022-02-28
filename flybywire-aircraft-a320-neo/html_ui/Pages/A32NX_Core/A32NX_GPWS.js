@@ -411,11 +411,11 @@ class A32NX_GPWS {
             return;
         }
         const localizer = this.radnav.getBestILSBeacon();
-        if (localizer.id <= 0 || !SimVar.GetSimVarValue("NAV HAS GLIDE SLOPE:" + localizer.id, "Bool")) {
+        if (localizer.id <= 0 || !SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number')) {
             mode.current = 0;
             return;
         }
-        const error = SimVar.GetSimVarValue("NAV GLIDE SLOPE ERROR:" + localizer.id, "Degrees");
+        const error = SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_GS_DEVIATION', 'number');
         const dots = -error * 2.5; //According to the FCOM, one dot is approx. 0.4 degrees. 1/0.4 = 2.5
 
         const minAltForWarning = dots < 2.9 ? -75 * dots + 247.5 : 30;
