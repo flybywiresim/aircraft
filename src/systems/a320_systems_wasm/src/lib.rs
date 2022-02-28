@@ -69,6 +69,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             29_008,
             FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
         ),
+        (34_000, FailureType::RadioAltimeter(1)),
+        (34_001, FailureType::RadioAltimeter(2)),
     ])
     .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
     .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?
@@ -97,6 +99,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:3", "Percent", 0)?
+    .provides_aircraft_variable("PLANE ALT ABOVE GROUND", "Feet", 0)?
     .provides_aircraft_variable("PLANE PITCH DEGREES", "Degrees", 0)?
     .provides_aircraft_variable("PLANE BANK DEGREES", "Degrees", 0)?
     .provides_aircraft_variable("PLANE HEADING DEGREES MAGNETIC", "Degrees", 0)?
