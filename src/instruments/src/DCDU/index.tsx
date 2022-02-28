@@ -386,7 +386,7 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(message !== undefined && !answerRequired && message.Direction === AtsuMessageDirection.Downlink && (
+                    {(message !== undefined && !answerRequired && message.Direction === AtsuMessageDirection.Uplink && (
                         <CloseButtons
                             message={message}
                             closeMessage={closeMessage}
