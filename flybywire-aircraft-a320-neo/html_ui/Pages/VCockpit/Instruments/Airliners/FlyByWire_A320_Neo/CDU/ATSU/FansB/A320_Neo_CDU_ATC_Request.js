@@ -13,30 +13,54 @@ class CDUAtcRequest {
         return data.dirTo || data.altitude || data.speed;
     }
 
-    static CreateMessage(data) {
+    static AddExtension(data, request) {
+        if (data.dueToWeather) {
+            request.Extensions.push(Atsu.CpdlcMessagesDownlink["DM65"][1]);
+        } else if (data.dueToPerformance) {
+            request.Extensions.push(Atsu.CpdlcMessagesDownlink["DM66"][1]);
+        }
+    }
+
+    static CreateRequest(type, value) {
         const retval = new Atsu.RequestMessage();
+        retval.Content = Atsu.CpdlcMessagesDownlink[type][1].deepCopy();
+        retval.Content.Content[0].Value = value;
+        return retval;
+    }
+
+    static CreateDirectToRequest(data) {
+        const retval = CDUAtcRequest.CreateRequest("DM22", data.dirTo);
+        CDUAtcRequest.AddExtension(data, retval);
+        return retval;
+    }
+
+    static CreateAltitudeRequest(data) {
+        const retval = CDUAtcRequest.CreateRequest("DM6", data.altitude);
+        retval.Content.Content[0].Value = data.altitude;
+        CDUAtcRequest.AddExtension(data, retval);
+        return retval;
+    }
+
+    static CreateSpeedRequest(data) {
+        const retval = CDUAtcRequest.CreateRequest("DM18", data.speed);
+        CDUAtcRequest.AddExtension(data, retval);
+        return retval;
+    }
+
+    static CreateRequests(data) {
+        const requests = [];
 
         if (data.dirTo) {
-            retval.Request = `REQUEST DIRECT TO ${data.dirTo}`;
-        } else if (data.altitude) {
-            if (data.altitude.startsWith("FL")) {
-                retval.Request = `REQUEST ${data.altitude}`;
-            } else {
-                retval.Request = `REQUEST ALTITUDE ${data.altitude}`;
-            }
-        } else if (data.speed) {
-            retval.Request = `REQUEST SPEED ${data.speed}`;
-        } else {
-            return null;
+            requests.push(CDUAtcRequest.CreateDirectToRequest(data));
+        }
+        if (data.altitude) {
+            requests.push(CDUAtcRequest.CreateAltitudeRequest(data));
+        }
+        if (data.speed) {
+            requests.push(CDUAtcRequest.CreateSpeedRequest(data));
         }
 
-        if (data.dueToWeather) {
-            retval.Reason = "DUE TO WEATHER";
-        } else if (data.dueToPerformance) {
-            retval.Reason = "DUE TO A/C PERFORMANCE";
-        }
-
-        return retval;
+        return requests;
     }
 
     static ShowPage(mcdu, store = CDUAtcRequest.CreateDataBlock()) {
@@ -182,9 +206,9 @@ class CDUAtcRequest {
                 if (mcdu.atsuManager.atc.currentStation() === "") {
                     mcdu.addNewMessage(NXFictionalMessages.noAtc);
                 } else {
-                    const message = CDUAtcRequest.CreateMessage(store);
-                    if (message) {
-                        mcdu.atsuManager.registerMessage(message);
+                    const requests = CDUAtcRequest.CreateRequests(store);
+                    if (requests) {
+                        mcdu.atsuManager.registerMessages(requests);
                     }
                     CDUAtcRequest.ShowPage(mcdu);
                 }
