@@ -15,6 +15,7 @@
 1. [Pneumatic](#pneumatic)
 1. [Landing Gear (ATA 32)](#landing-gear-ata-32)
 1. [ATC (ATA 34)](#atc-ata-34)
+1. [Radio Altimeter (ATA 34)](#ra-ata-34)
 
 ## Uncategorized
 
@@ -2518,3 +2519,12 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
+
+## Radio Altimeter (ATA 34)
+
+- A32NX_RA_{number}_RADIO_ALTITUDE
+    - `Arinc429Word<Feet>`
+    - The height over ground as measured by the corresponding radio altimeter towards the aft of the aircraft
+    - {number}
+      - 0
+      - 1
