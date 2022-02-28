@@ -24,6 +24,7 @@ import {
     getChecklistCompletion,
     setSelectedChecklistIndex,
 } from '../../Store/features/checklists';
+import { pathify } from '../../Utils/routing';
 
 interface ActiveFailureReminderProps {
     name: string,
@@ -56,45 +57,43 @@ const WeatherReminder = () => {
 
 const PinnedChartsReminder = () => {
     const dispatch = useAppDispatch();
-    const [, setChartSource] = usePersistentProperty('EFB_CHART_SOURCE');
     const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
     const navigraph = useNavigraph();
 
     // if (!navigraph.hasToken) return null;
 
-    const getTagColor = (tagName: string) => {
+    const getTagColor = (tagName?: string) => {
         switch (tagName) {
         case 'STAR': return 'text-colors-lime-500';
         case 'APP': return 'text-colors-orange-500';
         case 'TAXI': return 'text-colors-blue-500';
         case 'SID': return 'text-colors-pink-500';
         case 'REF': return 'text-colors-purple-500';
-        default: return 'text-theme-highlight';
+        default: return 'text-theme-text';
         }
     };
 
     return (
         <RemindersSection title="Pinned Charts" pageLinkPath="/navigation">
             <div className="grid grid-cols-2">
-                {/* A spread here is necessary to make Redux not kill itself */}
                 {[...pinnedCharts].sort((a, b) => b.timeAccessed - a.timeAccessed).map(({
                     chartId,
                     chartName,
-                    icao,
-                    tabIndex,
                     title,
+                    subTitle,
+                    tabIndex,
                     tag,
+                    provider,
                 }, index) => (
                     <Link
-                        to="/navigation/navigraph"
+                        to={`/navigation/${pathify(provider)}`}
                         className={`relative flex flex-col flex-wrap px-2 pt-3 pb-2 mt-4 bg-theme-accent rounded-md overflow-hidden ${index && index % 2 !== 0 && 'ml-4'}`}
                         onClick={() => {
-                            setChartSource('NAVIGRAPH');
                             dispatch(setChartDimensions({ width: undefined, height: undefined }));
                             dispatch(setChartLinks({ light: '', dark: '' }));
                             dispatch(setChartName(chartName));
                             dispatch(setChartId(chartId));
-                            dispatch(setIcao(icao));
+                            dispatch(setIcao(title));
                             dispatch(setTabIndex(tabIndex));
                             dispatch(setChartRotation(0));
                             dispatch(editPinnedChart({
@@ -103,14 +102,14 @@ const PinnedChartsReminder = () => {
                             }));
                         }}
                     >
-                        <div className={`${getTagColor(tag ?? '')} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
-                        <h2 className="font-bold">
-                            {icao}
+                        <div className={`${getTagColor(tag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
+                        <h2 className="font-bold break-all">
+                            {title}
                             {' '}
-                            <span>{tag}</span>
+                            <div className="inline-block text-theme-unselected">{tag}</div>
                         </h2>
-                        <span className="mt-2 font-inter">{title}</span>
-                        <IconArrowRight className="mt-auto ml-auto text-theme-highlight" />
+                        <p className="mt-2 font-inter">{subTitle}</p>
+                        <IconArrowRight className={`mt-auto ml-auto ${getTagColor(tag)}`} />
                     </Link>
                 ))}
             </div>
