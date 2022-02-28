@@ -165,7 +165,8 @@ export class HoldEntryTransition extends Transition {
         case EntryState.Capture:
             params = courseToFixGuidance(ppos, trueTrack, this.outboundCourse, this.nextLeg.fix.infos.coordinates);
             // TODO for HF get the following leg bank
-            bankNext = maxBank(tas, true);
+            const { sweepAngle } = this.nextLeg.geometry;
+            bankNext = sweepAngle > 0 ? maxBank(tas, true) : -maxBank(tas, true);
             break;
         case EntryState.Done:
             params = this.nextLeg.getGuidanceParameters(ppos, trueTrack, tas, gs);
@@ -222,7 +223,7 @@ export class HoldEntryTransition extends Transition {
             break;
         case EntryState.Straight1:
             params = courseToFixGuidance(ppos, trueTrack, this.straightCourse, this.turn2.itp);
-            bankNext = maxBank(tas, true);
+            bankNext = this.turn2.sweepAngle > 0 ? maxBank(tas, true) : -maxBank(tas, true);
             break;
         case EntryState.Turn2:
             params = arcGuidance(ppos, trueTrack, this.turn2.itp, this.turn2.arcCentre, this.turn2.sweepAngle);

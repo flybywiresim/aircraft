@@ -94,17 +94,23 @@ class A32NX_GPWS {
         this.gpws(deltaTime);
     }
     gpws(deltaTime) {
-        const radioAlt = SimVar.GetSimVarValue("PLANE ALT ABOVE GROUND MINUS CG", "Feet");
+        const radioAlt1 = Arinc429Word.fromSimVarValue(`L:A32NX_RA_1_RADIO_ALTITUDE`);
+        const radioAlt2 = Arinc429Word.fromSimVarValue(`L:A32NX_RA_2_RADIO_ALTITUDE`);
+        const radioAlt = radioAlt1.isFailureWarning() || radioAlt1.isNoComputedData() ? radioAlt2 : radioAlt1;
+        const radioAltValid = radioAlt.isNormalOperation();
         const onGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
 
-        this.UpdateAltState(radioAlt);
-        this.differentiate_radioalt(radioAlt, deltaTime);
+        this.UpdateAltState(radioAltValid ? radioAlt.value : NaN);
+        this.differentiate_radioalt(radioAltValid ? radioAlt.value : NaN, deltaTime);
 
         const mda = SimVar.GetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet");
         const dh = SimVar.GetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet");
         const phase = SimVar.GetSimVarValue("L:A32NX_FMGC_FLIGHT_PHASE", "Enum");
 
-        if (radioAlt >= 10 && radioAlt <= 2450 && !SimVar.GetSimVarValue("L:A32NX_GPWS_SYS_OFF", "Bool")) { //Activate between 10 - 2450 radio alt unless SYS is off
+        if (
+            radioAltValid && radioAlt.value >= 10 && radioAlt.value <= 2450 &&
+            !SimVar.GetSimVarValue("L:A32NX_GPWS_SYS_OFF", "Bool")
+        ) { //Activate between 10 - 2450 radio alt unless SYS is off
             const FlapPushButton = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAPS3", "Bool");
             const FlapPosition = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number");
             const FlapsInLandingConfig = FlapPushButton ? (FlapPosition === 3) : (FlapPosition === 4);
@@ -112,14 +118,14 @@ class A32NX_GPWS {
             const Airspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "Knots");
             const gearExtended = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "Percent") > 0.9;
 
-            this.update_maxRA(radioAlt, onGround, phase);
+            this.update_maxRA(radioAlt.value, onGround, phase);
 
-            this.GPWSMode1(this.modes[0], radioAlt, vSpeed);
+            this.GPWSMode1(this.modes[0], radioAlt.value, vSpeed);
             //Mode 2 is disabled because of an issue with the terrain height simvar which causes false warnings very frequently. See PR#1742 for more info
             //this.GPWSMode2(this.modes[1], radioAlt, Airspeed, FlapsInLandingConfig, gearExtended);
-            this.GPWSMode3(this.modes[2], radioAlt, phase);
-            this.GPWSMode4(this.modes[3], radioAlt, Airspeed, FlapsInLandingConfig, gearExtended, phase);
-            this.GPWSMode5(this.modes[4], radioAlt);
+            this.GPWSMode3(this.modes[2], radioAlt.value, phase);
+            this.GPWSMode4(this.modes[3], radioAlt.value, Airspeed, FlapsInLandingConfig, gearExtended, phase);
+            this.GPWSMode5(this.modes[4], radioAlt.value);
 
         } else {
             this.modes.forEach((mode) => {
@@ -127,7 +133,7 @@ class A32NX_GPWS {
             });
 
             this.Mode3MaxBaroAlt = NaN;
-            if (onGround || radioAlt < 10) {
+            if (onGround || (radioAltValid && radioAlt < 10)) {
                 this.Mode4MaxRAAlt = NaN;
             }
 
@@ -143,12 +149,14 @@ class A32NX_GPWS {
             const baroAlt = SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet");
             if (dh >= 0) {
                 minimumsDA = dh;
-                minimumsIA = radioAlt;
+                minimumsIA = radioAlt.isNormalOperation() || radioAlt.isFunctionalTest() ? radioAlt.value : NaN;
             } else {
                 minimumsDA = mda;
                 minimumsIA = baroAlt;
             }
-            this.gpws_minimums(minimumsDA, minimumsIA);
+            if (isFinite(minimumsDA) && isFinite(minimumsIA)) {
+                this.gpws_minimums(minimumsDA, minimumsIA);
+            }
         }
     }
 
@@ -158,11 +166,11 @@ class A32NX_GPWS {
      * @param deltaTime - in milliseconds
      */
     differentiate_radioalt(radioAlt, deltaTime) {
-        if (!isNaN(this.prevRadioAlt2)) {
+        if (!isNaN(this.prevRadioAlt2) && !isNaN(radioAlt)) {
             this.RadioAltRate = (radioAlt - this.prevRadioAlt2) / (deltaTime / 1000 / 60) / 2;
             this.prevRadioAlt2 = this.prevRadioAlt;
             this.prevRadioAlt = radioAlt;
-        } else if (!isNaN(this.prevRadioAlt)) {
+        } else if (!isNaN(this.prevRadioAlt) && !isNaN(radioAlt)) {
             this.prevRadioAlt2 = this.prevRadioAlt;
             this.prevRadioAlt = radioAlt;
         } else {
@@ -423,6 +431,9 @@ class A32NX_GPWS {
     }
 
     UpdateAltState(radioAlt) {
+        if (isNaN(radioAlt)) {
+            return;
+        }
         switch (this.AltCallState.value) {
             case "ground":
                 if (radioAlt > 5) {
