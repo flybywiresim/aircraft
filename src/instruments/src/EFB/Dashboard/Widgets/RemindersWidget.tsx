@@ -13,7 +13,7 @@ import {
     setChartRotation,
     setChartDimensions,
     editPinnedChart,
-    setPagesViewable, setCurrentPage,
+    setPagesViewable, setCurrentPage, setBoundingBox,
 } from '../../Store/features/navigationPage';
 import { useNavigraph } from '../../ChartsApi/Navigraph';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
@@ -86,6 +86,7 @@ const PinnedChartsReminder = () => {
                     tag,
                     provider,
                     pagesViewable,
+                    boundingBox,
                 }, index) => (
                     <Link
                         to={`/navigation/${pathify(provider)}`}
@@ -99,11 +100,13 @@ const PinnedChartsReminder = () => {
                             dispatch(setTabIndex(tabIndex));
                             dispatch(setChartRotation(0));
                             dispatch(setCurrentPage(1));
+                            dispatch(setBoundingBox(undefined));
                             dispatch(editPinnedChart({
                                 chartId,
                                 timeAccessed: Date.now(),
                             }));
                             dispatch(setPagesViewable(pagesViewable));
+                            dispatch(setBoundingBox(boundingBox));
                         }}
                     >
                         <div className={`${getTagColor(tag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />

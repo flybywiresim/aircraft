@@ -847,6 +847,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                             tag: selectedTab.name,
                                                             provider: 'NAVIGRAPH',
                                                             pagesViewable: 1,
+                                                            boundingBox: (chart as NavigraphChart).boundingBox,
                                                         }));
                                                     }
                                                 }}
@@ -901,6 +902,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                     tag: selectedTab.name,
                                                     provider: 'NAVIGRAPH',
                                                     pagesViewable: 1,
+                                                    boundingBox: (chart as NavigraphChart).boundingBox,
                                                 }));
                                             }
                                         }}
@@ -1361,6 +1363,7 @@ export const Navigation = () => {
                     onSelected={() => {
                         dispatch(setChartLinks({ light: '', dark: '' }));
                         dispatch(setChartName({ light: '', dark: '' }));
+                        dispatch(setBoundingBox(undefined));
                         dispatch(setTabIndex(0));
                         dispatch(setPagesViewable(1));
                         dispatch(setCurrentPage(1));

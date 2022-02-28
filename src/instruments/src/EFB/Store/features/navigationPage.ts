@@ -19,6 +19,7 @@ type PinnedChart = {
     tag?: string;
     provider: ChartProvider;
     pagesViewable: number;
+    boundingBox?: NavigraphBoundingBox;
 }
 
 interface InitialChartState {
