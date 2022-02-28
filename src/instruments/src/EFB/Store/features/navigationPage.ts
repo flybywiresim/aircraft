@@ -18,6 +18,7 @@ type PinnedChart = {
     timeAccessed: number;
     tag?: string;
     provider: ChartProvider;
+    pagesViewable: number;
 }
 
 interface InitialChartState {

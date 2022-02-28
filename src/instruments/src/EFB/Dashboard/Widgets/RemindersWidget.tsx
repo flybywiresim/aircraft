@@ -13,6 +13,7 @@ import {
     setChartRotation,
     setChartDimensions,
     editPinnedChart,
+    setPagesViewable,
 } from '../../Store/features/navigationPage';
 import { useNavigraph } from '../../ChartsApi/Navigraph';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
@@ -84,6 +85,7 @@ const PinnedChartsReminder = () => {
                     tabIndex,
                     tag,
                     provider,
+                    pagesViewable,
                 }, index) => (
                     <Link
                         to={`/navigation/${pathify(provider)}`}
@@ -100,6 +102,7 @@ const PinnedChartsReminder = () => {
                                 chartId,
                                 timeAccessed: Date.now(),
                             }));
+                            dispatch(setPagesViewable(pagesViewable));
                         }}
                     >
                         <div className={`${getTagColor(tag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
