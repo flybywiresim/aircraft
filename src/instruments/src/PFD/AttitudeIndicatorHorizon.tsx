@@ -29,14 +29,28 @@ interface HorizonProps {
     roll: Arinc429Word;
     heading: Arinc429Word;
     isOnGround: boolean;
-    radioAlt: number;
+    radioAltitude: Arinc429Word,
+    filteredRadioAltitude: number;
+    belowTransitionAltitude: boolean;
     decisionHeight: number;
     selectedHeading: number;
     FDActive: boolean;
     isAttExcessive: boolean;
 }
 
-export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive }: HorizonProps) => {
+export const Horizon = ({
+    pitch,
+    roll,
+    heading,
+    isOnGround,
+    radioAltitude,
+    filteredRadioAltitude,
+    belowTransitionAltitude,
+    decisionHeight,
+    selectedHeading,
+    FDActive,
+    isAttExcessive,
+}: HorizonProps) => {
     if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
         return null;
     }
@@ -138,7 +152,7 @@ export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHe
             <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalOutline SkyFill" />
             <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalStroke White" />
             <SideslipIndicator isOnGround={isOnGround} roll={roll} />
-            <RisingGround radioAlt={radioAlt} pitch={pitch} />
+            <RisingGround radioAltitude={radioAltitude} filteredRadioAltitude={filteredRadioAltitude} pitch={pitch} />
             {heading.isNormalOperation()
             && (
                 <HorizontalTape
@@ -152,7 +166,15 @@ export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHe
                 />
             )}
             {!isAttExcessive
-            && <RadioAltAndDH radioAlt={radioAlt} decisionHeight={decisionHeight} roll={roll} />}
+                && (
+                    <RadioAltAndDH
+                        radioAltitude={radioAltitude}
+                        filteredRadioAltitude={filteredRadioAltitude}
+                        belowTransitionAltitude={belowTransitionAltitude}
+                        decisionHeight={decisionHeight}
+                        roll={roll}
+                    />
+                )}
         </g>
     );
 };
@@ -173,36 +195,59 @@ const TailstrikeIndicator = () => {
 };
 
 interface RadioAltAndDHProps {
-    radioAlt: number;
+    filteredRadioAltitude: number;
+    radioAltitude: Arinc429Word;
+    belowTransitionAltitude: boolean;
     decisionHeight: number;
     roll: Arinc429Word;
 }
 
-const RadioAltAndDH = ({ radioAlt, decisionHeight, roll }: RadioAltAndDHProps) => {
-    if (radioAlt <= 2500) {
-        const verticalOffset = calculateVerticalOffsetFromRoll(roll.value);
-        const size = (radioAlt > 400 ? 'FontLarge' : 'FontLargest');
-        const DHValid = decisionHeight >= 0;
-        const color = (radioAlt > 400 || (radioAlt > decisionHeight + 100 && DHValid) ? 'Green' : 'Amber');
+const RadioAltAndDH = ({ filteredRadioAltitude, radioAltitude, belowTransitionAltitude, decisionHeight, roll }: RadioAltAndDHProps) => {
+    const raValid = !radioAltitude.isFailureWarning();
+    const raValue = filteredRadioAltitude;
+    const verticalOffset = calculateVerticalOffsetFromRoll(roll.value);
+    let size = 'FontLarge';
+    const DHValid = decisionHeight >= 0;
 
-        let text = '';
-
-        if (radioAlt < 5) {
-            text = Math.round(radioAlt).toString();
-        } else if (radioAlt <= 50) {
-            text = (Math.round(radioAlt / 5) * 5).toString();
-        } else if (radioAlt > 50 || (radioAlt > decisionHeight + 100 && DHValid)) {
-            text = (Math.round(radioAlt / 10) * 10).toString();
+    let text = '';
+    let color = 'Amber';
+    if (raValid) {
+        if (raValue < 2500) {
+            if (raValue > 400 || (raValue > decisionHeight + 100 && DHValid)) {
+                color = 'Green';
+            }
+            if (raValue < 400) {
+                size = 'FontLargest';
+            }
+            if (raValue < 5) {
+                text = Math.round(raValue).toString();
+            } else if (raValue <= 50) {
+                text = (Math.round(raValue / 5) * 5).toString();
+            } else if (raValue > 50 || (raValue > decisionHeight + 100 && DHValid)) {
+                text = (Math.round(raValue / 10) * 10).toString();
+            }
         }
-
-        return (
-            <g id="DHAndRAGroup" transform={`translate(0 ${-verticalOffset})`}>
-                {radioAlt <= decisionHeight ? <text id="AttDHText" x="73.511879" y="113.19068" className="FontLargest Amber EndAlign Blink9Seconds TextOutline">DH</text> : null}
-                <text id="RadioAlt" x="69.202454" y="119.76205" className={`${size} ${color} MiddleAlign TextOutline`}>{text}</text>
-            </g>
-        );
+    } else {
+        color = belowTransitionAltitude ? 'Red Blink9Seconds' : 'Red';
+        text = 'RA';
     }
-    return null;
+
+    return (
+        <g id="DHAndRAGroup" transform={`translate(0 ${-verticalOffset})`}>
+            {raValid && DHValid && raValue <= decisionHeight ? (
+                <text
+                    id="AttDHText"
+                    x="73.511879"
+                    y="113.19068"
+                    className="FontLargest Amber EndAlign Blink9Seconds TextOutline"
+                >
+                    DH
+                </text>
+            )
+                : null}
+            <text id="RadioAlt" x="69.202454" y="119.76205" className={`${size} ${color} MiddleAlign TextOutline`}>{text}</text>
+        </g>
+    );
 };
 
 interface SideslipIndicatorProps {
@@ -248,12 +293,13 @@ const SideslipIndicator = ({ isOnGround, roll }: SideslipIndicatorProps) => {
 };
 
 interface RisingGroundProps {
-    radioAlt: number;
+    radioAltitude: Arinc429Word;
+    filteredRadioAltitude: number;
     pitch: Arinc429Word;
 }
 
-const RisingGround = ({ radioAlt, pitch }: RisingGroundProps) => {
-    const targetPitch = -0.1 * radioAlt;
+const RisingGround = ({ radioAltitude, filteredRadioAltitude, pitch }: RisingGroundProps) => {
+    const targetPitch = (radioAltitude.isNoComputedData() || radioAltitude.isFailureWarning()) ? -200 : -0.1 * filteredRadioAltitude;
 
     const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch((-pitch.value) - targetPitch) - 31.563, 0), -63.093);
 
