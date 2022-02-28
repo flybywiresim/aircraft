@@ -214,7 +214,6 @@ export class NXLogicClockNode {
         } else if (this.flag) {
             this.timer = this.dir === 'DN' ? Math.max(this.timer - deltaTime / 1000, 0) : Math.max(this.timer + deltaTime / 1000, 0);
             this.output = this.timer === this.to ? 2 : 1;
-            // console.log(this.output);
         }
         return this.output;
     }
