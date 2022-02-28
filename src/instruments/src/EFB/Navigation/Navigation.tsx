@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode.react';
 import useInterval from '@instruments/common/useInterval';
 import { usePersistentProperty } from '@instruments/common/persistence';
@@ -33,24 +33,25 @@ import NavigraphClient, {
 import { ChartFoxAirportCharts, ChartFoxChart } from '../ChartsApi/ChartFox';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { isSimbriefDataLoaded } from '../Store/features/simbrief';
-import { useAppSelector, useAppDispatch } from '../Store/store';
+import { useAppDispatch, useAppSelector } from '../Store/store';
 import {
-    setIsFullScreen,
-    setPlaneInFocus,
+    addPinnedChart, editPinnedChart,
+    isChartPinned,
+    removedPinnedChart,
+    setBoundingBox,
+    setChartDimensions,
     setChartId,
     setChartLinks,
+    setChartName,
     setChartRotation,
+    setCurrentPage,
+    setIcao,
+    setIsFullScreen,
+    setPagesViewable,
+    setPlaneInFocus,
+    setProvider,
     setTabIndex,
     setUsingDarkTheme,
-    setChartDimensions,
-    setIcao,
-    setChartName,
-    setBoundingBox,
-    setPagesViewable,
-    setCurrentPage,
-    removedPinnedChart,
-    addPinnedChart,
-    isChartPinned, setProvider,
 } from '../Store/features/navigationPage';
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
@@ -617,17 +618,19 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
         return URL.createObjectURL(blob);
     };
 
+    const getPagesViewable = async (chart: LocalFileChart): Promise<number> => {
+        if (chart.type === 'PDF') {
+            const pageNumResp = await fetch(`http://localhost:3838/utility/v1/pdf/numpages?filename=${chart.fileName}`);
+            return pageNumResp.json();
+        }
+
+        return 1;
+    };
+
     const handleChartClick = async (chart: LocalFileChart) => {
         try {
-            if (chart.type === 'PDF') {
-                const pageNumResp = await fetch(`http://localhost:3838/utility/v1/pdf/numpages?filename=${chart.fileName}`);
-                const numberOfPages = await pageNumResp.json();
-
-                // TODO Implement several pages
-                dispatch(setPagesViewable(numberOfPages));
-            } else {
-                dispatch(setPagesViewable(1));
-            }
+            const pagesViewable = await getPagesViewable(chart);
+            dispatch(setPagesViewable(pagesViewable));
 
             const url = await getChartResourceUrl(chart);
 
@@ -669,16 +672,27 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
                                 if (isChartPinned(chart.fileName)) {
                                     dispatch(removedPinnedChart({ chartId: chart.fileName }));
                                 } else {
-                                    getChartResourceUrl(chart).then((chartResourceUrl) => {
-                                        dispatch(addPinnedChart({
+                                    /**
+                                     * Pinning the chart with temporary values for chartName and pagesViewable
+                                     * and editing them later to give a snappier experience as these values take time to be resolved.
+                                     */
+                                    dispatch(addPinnedChart({
+                                        chartId: chart.fileName,
+                                        chartName: { light: '', dark: '' },
+                                        title: chart.fileName,
+                                        subTitle: '',
+                                        tabIndex,
+                                        timeAccessed: 0,
+                                        tag: chart.type,
+                                        provider: 'LOCAL_FILES',
+                                        pagesViewable: 1,
+                                    }));
+
+                                    Promise.all([getChartResourceUrl(chart), getPagesViewable(chart)]).then(([url, numPages]) => {
+                                        dispatch(editPinnedChart({
                                             chartId: chart.fileName,
-                                            chartName: { light: chartResourceUrl, dark: chartResourceUrl },
-                                            title: chart.fileName,
-                                            subTitle: '',
-                                            tabIndex,
-                                            timeAccessed: 0,
-                                            tag: chart.type,
-                                            provider: 'LOCAL_FILES',
+                                            chartName: { light: url, dark: url },
+                                            pagesViewable: numPages,
                                         }));
                                     }).catch(() => {
                                         toast.error('Unable to generate necessary resource to pin this item.');
@@ -831,6 +845,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                             timeAccessed: 0,
                                                             tag: selectedTab.name,
                                                             provider: 'NAVIGRAPH',
+                                                            pagesViewable: 1,
                                                         }));
                                                     }
                                                 }}
@@ -884,6 +899,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                     timeAccessed: 0,
                                                     tag: selectedTab.name,
                                                     provider: 'NAVIGRAPH',
+                                                    pagesViewable: 1,
                                                 }));
                                             }
                                         }}
@@ -1345,6 +1361,7 @@ export const Navigation = () => {
                         dispatch(setChartLinks({ light: '', dark: '' }));
                         dispatch(setChartName({ light: '', dark: '' }));
                         dispatch(setTabIndex(0));
+                        setPagesViewable(1);
                         dispatch(setIcao(''));
                     }}
                 />
