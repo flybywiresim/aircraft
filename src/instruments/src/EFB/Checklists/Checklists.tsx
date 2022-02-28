@@ -26,26 +26,27 @@ export interface ChecklistDefinition {
 
 export const getRelevantChecklistIndices = () => {
     const relevantChecklistIndices: number[] = [];
-    const flightPhase = SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
+    const flightPhase = SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
 
     switch (flightPhase) {
-    case 0:
     case 1:
-        // Preflight and Takeoff -> Cockpit Preparation, Before Start, After Start, Taxi, Line-Up
+    case 2:
+        // Cockpit Preparation, Before Start, After Start, Taxi, Line-Up
         relevantChecklistIndices.push(0, 1, 2, 3, 4);
         break;
-    case 4:
-        // Descent -> Approach
-        relevantChecklistIndices.push(5);
-        break;
-    case 5:
     case 6:
-        // Approach and Go-Around -> Approach, Landing, After Landing
-        relevantChecklistIndices.push(5, 6, 7);
-        break;
     case 7:
-        // Done -> Parking, Securing Aircraft
-        relevantChecklistIndices.push(8, 9);
+        // Approach, Landing
+        relevantChecklistIndices.push(5, 6);
+        break;
+    case 8:
+        // After Landing
+        relevantChecklistIndices.push(7);
+        break;
+    case 9:
+    case 10:
+        // After Landing, Parking, Securing Aircraft
+        relevantChecklistIndices.push(7, 8, 9);
         break;
     default:
     }

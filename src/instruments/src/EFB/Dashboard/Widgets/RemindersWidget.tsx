@@ -27,16 +27,6 @@ import {
     setSelectedChecklistIndex,
 } from '../../Store/features/checklists';
 import { pathify } from '../../Utils/routing';
-import { cockpitPreparationChecklist } from '../../Checklists/Lists/CockpitPreparation';
-import { beforeStartChecklist } from '../../Checklists/Lists/BeforeStart';
-import { afterStartChecklist } from '../../Checklists/Lists/AfterStart';
-import { taxiChecklist } from '../../Checklists/Lists/Taxi';
-import { lineUpChecklist } from '../../Checklists/Lists/LineUp';
-import { approachChecklist } from '../../Checklists/Lists/Approach';
-import { landingChecklist } from '../../Checklists/Lists/Landing';
-import { afterLandingChecklist } from '../../Checklists/Lists/AfterLanding';
-import { parkingChecklist } from '../../Checklists/Lists/Parking';
-import { securingAircraftChecklist } from '../../Checklists/Lists/SecuringAircraft';
 import { getRelevantChecklistIndices } from '../../Checklists/Checklists';
 
 interface ActiveFailureReminderProps {
