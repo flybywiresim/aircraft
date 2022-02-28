@@ -383,7 +383,7 @@ export const LandingWidget = () => {
                                         disabled={!isAutoFillIcaoValid()}
                                     >
                                         <CloudArrowDown size={26} />
-                                        <p className="text-theme-body">Fill from</p>
+                                        <p className="text-current">Fill from</p>
                                     </button>
                                     <SelectInput
                                         value={autoFillSource}
