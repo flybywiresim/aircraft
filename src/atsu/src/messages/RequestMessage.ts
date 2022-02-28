@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuMessageType, AtsuMessageSerializationFormat, AtsuMessageDirection } from './AtsuMessage';
+import { CpdlcMessagesDownlink, CpdlcMessageElement } from './CpdlcMessageElements';
 import { CpdlcMessage } from './CpdlcMessage';
 import { wordWrap } from '../Common';
 
@@ -9,11 +10,7 @@ import { wordWrap } from '../Common';
  * Defines the general CPDLC request message
  */
 export class RequestMessage extends CpdlcMessage {
-    public Request: string = '';
-
-    public Reason: string = '';
-
-    public Freetext: string[] = [];
+    public Extensions: CpdlcMessageElement[] = [];
 
     constructor() {
         super();
@@ -24,23 +21,26 @@ export class RequestMessage extends CpdlcMessage {
     public deserialize(jsonData: any): void {
         super.deserialize(jsonData);
 
-        this.Request = jsonData.Request;
-        this.Reason = jsonData.Reason;
-        this.Freetext = jsonData.Freetext;
+        jsonData.Extensions.forEach((element) => {
+            const entry = new CpdlcMessageElement('');
+            entry.deserialize(element);
+            this.Extensions.push(entry);
+        });
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {
-        let content = this.Request;
-        if (this.Reason !== '') {
-            content += ` ${this.Reason}`;
-        }
+        const contentEntries: string[] = [];
         let message = '';
-        content += ` ${this.Freetext.join(' ')}`;
+
+        contentEntries.push(this.serializeContent(CpdlcMessagesDownlink[this.Content.TypeId][0][0], this.Content));
+        this.Extensions.forEach((element) => {
+            contentEntries.push(this.serializeContent(CpdlcMessagesDownlink[element.TypeId][0][0], element));
+        });
+        const content = contentEntries.join(' ');
         const lines = wordWrap(content, 25);
 
         if (format === AtsuMessageSerializationFormat.Network) {
-            // message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${cpdlcToString(this.RequestedResponses)}`;
-            message += `/${content}`;
+            message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${this.Content.ExpectedResponse}/${content}`;
         } else if (format === AtsuMessageSerializationFormat.DCDU) {
             message = lines.join('\n');
         } else if (format === AtsuMessageSerializationFormat.MCDU) {
@@ -48,17 +48,17 @@ export class RequestMessage extends CpdlcMessage {
             message += lines.join('\n');
             message += '{white}------------------------{end}\n';
 
-            // if (this.ResponseType === CpdlcMessageResponse.Other && this.Response !== undefined) {
-            //    message += this.Response.serialize(format);
-            // }
+            if (this.extendSerializationWithResponse()) {
+                message += this.Response.serialize(format);
+            }
         } else if (format === AtsuMessageSerializationFormat.Printer) {
             message += `${this.Timestamp.dcduTimestamp()} TO ${this.Station}}\n`;
             message += lines.join('\n');
             message += '------------------------\n';
 
-            // if (this.ResponseType === CpdlcMessageResponse.Other && this.Response !== undefined) {
-            //    message += this.Response.serialize(format);
-            // }
+            if (this.extendSerializationWithResponse()) {
+                message += this.Response.serialize(format);
+            }
         } else {
             message = content;
         }
