@@ -237,7 +237,14 @@ impl PneumaticContainerConnector {
         container_one: &mut impl PneumaticContainer,
         container_two: &mut impl PneumaticContainer,
     ) {
-        let air_mass = container_one.get_mass_flow_for_target_pressure(container_two.pressure())
+        // SAFETY: as the iterator is always non-empty reduce never returns None.
+        let air_mass = *[
+            container_one.get_mass_flow_for_target_pressure(container_two.pressure()),
+            -container_two.get_mass_flow_for_target_pressure(container_one.pressure()),
+        ]
+        .iter()
+        .reduce(|accum, m| if accum.abs() < m.abs() { accum } else { m })
+        .unwrap()
             * self.transfer_speed_factor
             * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
         let air_temp = if air_mass.get::<kilogram>() > 0. {
