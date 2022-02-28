@@ -7,14 +7,17 @@ type ThemedChart = {
     dark: string;
 }
 
+type ChartProvider = 'NAVIGRAPH' | 'LOCAL_FILES';
+
 type PinnedChart = {
     chartId: string;
     chartName: ThemedChart;
-    icao: string;
+    subTitle: string;
     title: string;
     tabIndex: number;
     timeAccessed: number;
     tag?: string;
+    provider: ChartProvider;
 }
 
 interface InitialChartState {
@@ -35,6 +38,7 @@ interface InitialChartState {
     pagesViewable: number;
     currentPage: number;
     pinnedCharts: PinnedChart[];
+    provider: ChartProvider;
 }
 
 const initialState: InitialChartState = {
@@ -61,6 +65,7 @@ const initialState: InitialChartState = {
     pagesViewable: 1,
     currentPage: 1,
     pinnedCharts: [],
+    provider: undefined as any,
 };
 
 export const navigationTabSlice = createSlice({
@@ -110,6 +115,9 @@ export const navigationTabSlice = createSlice({
         setCurrentPage: (state, action: PayloadAction<number>) => {
             state.currentPage = action.payload;
         },
+        setProvider: (state, action: PayloadAction<ChartProvider>) => {
+            state.provider = action.payload;
+        },
         addPinnedChart: (state, action: PayloadAction<PinnedChart>) => {
             state.pinnedCharts.push(action.payload);
         },
@@ -149,6 +157,7 @@ export const {
     setBoundingBox,
     setPagesViewable,
     setCurrentPage,
+    setProvider,
     addPinnedChart,
     removedPinnedChart,
     editPinnedChart,

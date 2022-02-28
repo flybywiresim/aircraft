@@ -11,7 +11,7 @@ interface PageRouteProps {
     tabs: PageLink[];
 }
 
-export const pathify = (alias: string): string => alias.toLowerCase().replace(/\s/g, '-');
+export const pathify = (alias: string): string => alias.toLowerCase().replace(/[^a-z0-9]/gi, '-');
 
 export const TabRoutes = ({ basePath, tabs }: PageRouteProps) => {
     const [routes] = useState(() => tabs.map((tab) => (

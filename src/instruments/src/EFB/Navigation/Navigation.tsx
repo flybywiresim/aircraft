@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode.react';
 import useInterval from '@instruments/common/useInterval';
@@ -49,7 +50,7 @@ import {
     setCurrentPage,
     removedPinnedChart,
     addPinnedChart,
-    isChartPinned,
+    isChartPinned, setProvider,
 } from '../Store/features/navigationPage';
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
@@ -195,6 +196,7 @@ const ChartComponent = () => {
         pagesViewable,
         chartId,
         currentPage,
+        provider,
     } = useAppSelector((state) => state.navigationTab);
 
     const { userName } = useNavigraph();
@@ -289,7 +291,6 @@ const ChartComponent = () => {
         const currentWidth = chartRef.current.clientWidth;
         if (currentHeight >= 2500) return;
 
-        // TODO: maybe use width here eventually?
         dispatch(setChartDimensions({ height: currentHeight * 1.1, width: currentWidth * 1.1 }));
     };
 
@@ -491,12 +492,15 @@ const ChartComponent = () => {
                             ? <FullscreenExit size={40} />
                             : <ArrowsFullscreen size={40} />}
                     </div>
-                    <div
-                        className="p-2 mt-3 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100 cursor-pointer"
-                        onClick={() => dispatch(setUsingDarkTheme(!usingDarkTheme))}
-                    >
-                        {!usingDarkTheme ? <MoonFill size={40} /> : <SunFill size={40} />}
-                    </div>
+
+                    {provider === 'NAVIGRAPH' && (
+                        <div
+                            className="p-2 mt-3 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100 cursor-pointer"
+                            onClick={() => dispatch(setUsingDarkTheme(!usingDarkTheme))}
+                        >
+                            {!usingDarkTheme ? <MoonFill size={40} /> : <SunFill size={40} />}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -509,7 +513,7 @@ const ChartComponent = () => {
                     className="relative m-auto transition duration-100"
                     style={{ transform: `rotate(${chartRotation}deg)` }}
                 >
-                    {chartLinks && (
+                    {(chartLinks && provider === 'NAVIGRAPH') && (
                         <p
                             className="absolute top-0 left-0 font-bold text-theme-highlight whitespace-nowrap transition duration-100 transform -translate-y-full"
                         >
@@ -576,7 +580,7 @@ const getPdfUrl = async (fileName: string, pageNumber: number): Promise<string> 
 const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
     const dispatch = useAppDispatch();
 
-    const { chartId } = useAppSelector((state) => state.navigationTab);
+    const { chartId, tabIndex } = useAppSelector((state) => state.navigationTab);
 
     if (loading) {
         return (
@@ -600,6 +604,19 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
         );
     }
 
+    const getChartResourceUrl = async (chart: LocalFileChart) => {
+        const resp = await fetch(chart.type === 'PDF'
+            ? `http://localhost:3838/utility/v1/pdf?filename=${chart.fileName}&pagenumber=1`
+            : `http://localhost:3838/utility/v1/image?filename=${chart.fileName}`);
+
+        if (!resp.ok) {
+            return Promise.reject();
+        }
+
+        const blob = await resp.blob();
+        return URL.createObjectURL(blob);
+    };
+
     const handleChartClick = async (chart: LocalFileChart) => {
         try {
             if (chart.type === 'PDF') {
@@ -612,25 +629,10 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
                 dispatch(setPagesViewable(1));
             }
 
-            const resp = await fetch(chart.type === 'PDF'
-                ? `http://localhost:3838/utility/v1/pdf?filename=${chart.fileName}&pagenumber=1`
-                : `http://localhost:3838/utility/v1/image?filename=${chart.fileName}`);
-
-            if (!resp.ok) {
-                if (chart.type === 'PDF') {
-                    toast.error('Failed to retrieve requested PDF Document.');
-                } else {
-                    toast.error('Failed to retrieve requested image.');
-                }
-                return;
-            }
-
-            const blob = await resp.blob();
-            const url = URL.createObjectURL(blob);
+            const url = await getChartResourceUrl(chart);
 
             dispatch(setChartDimensions({ width: undefined, height: undefined }));
             dispatch(setChartName({ light: url, dark: url }));
-
             dispatch(setBoundingBox(undefined));
         } catch (_) {
             if (chart.type === 'PDF') {
@@ -641,6 +643,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
 
             return;
         }
+        dispatch(setProvider('LOCAL_FILES'));
         dispatch(setCurrentPage(1));
         dispatch(setChartId(chart.fileName));
     };
@@ -653,10 +656,43 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
                     onClick={() => handleChartClick(chart)}
                     key={chart.fileName}
                 >
-                    <span className={`w-2 transition flex-shrink-0 duration-100 group-hover:bg-theme-highlight ${chart.fileName === chartId
-                        ? 'bg-theme-highlight'
-                        : 'bg-theme-secondary'}`}
-                    />
+                    <div className="flex flex-row items-center">
+                        <div className={`w-2 h-full transition flex-shrink-0 duration-100 group-hover:bg-theme-highlight ${chart.fileName === chartId
+                            ? 'bg-theme-highlight'
+                            : 'bg-theme-secondary'}`}
+                        />
+                        <div
+                            className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
+                            onClick={(event) => {
+                                event.stopPropagation();
+
+                                if (isChartPinned(chart.fileName)) {
+                                    dispatch(removedPinnedChart({ chartId: chart.fileName }));
+                                } else {
+                                    getChartResourceUrl(chart).then((chartResourceUrl) => {
+                                        dispatch(addPinnedChart({
+                                            chartId: chart.fileName,
+                                            chartName: { light: chartResourceUrl, dark: chartResourceUrl },
+                                            title: chart.fileName,
+                                            subTitle: '',
+                                            tabIndex,
+                                            timeAccessed: 0,
+                                            tag: chart.type,
+                                            provider: 'LOCAL_FILES',
+                                        }));
+                                    }).catch(() => {
+                                        toast.error('Unable to generate necessary resource to pin this item.');
+                                    });
+                                }
+                            }}
+                        >
+                            {
+                                isChartPinned(chart.fileName)
+                                    ? <PinFill size={40} />
+                                    : <Pin size={40} />
+                            }
+                        </div>
+                    </div>
                     <div className="flex flex-col m-2">
                         <span>{chart.fileName}</span>
                         <span
@@ -733,6 +769,8 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
         dispatch(setChartName({ light: chart.fileDay, dark: chart.fileNight }));
 
         dispatch(setBoundingBox(chart.boundingBox));
+
+        dispatch(setProvider('NAVIGRAPH'));
     };
 
     if (loading) {
@@ -787,11 +825,12 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                         dispatch(addPinnedChart({
                                                             chartId: (chart as NavigraphChart).id,
                                                             chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
-                                                            icao,
-                                                            title: (chart as NavigraphChart).procedureIdentifier,
+                                                            title: icao,
+                                                            subTitle: (chart as NavigraphChart).procedureIdentifier,
                                                             tabIndex,
                                                             timeAccessed: 0,
                                                             tag: selectedTab.name,
+                                                            provider: 'NAVIGRAPH',
                                                         }));
                                                     }
                                                 }}
@@ -839,11 +878,12 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                 dispatch(addPinnedChart({
                                                     chartId: (chart as NavigraphChart).id,
                                                     chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
-                                                    icao,
-                                                    title: (chart as NavigraphChart).procedureIdentifier,
+                                                    title: icao,
+                                                    subTitle: (chart as NavigraphChart).procedureIdentifier,
                                                     tabIndex,
                                                     timeAccessed: 0,
                                                     tag: selectedTab.name,
+                                                    provider: 'NAVIGRAPH',
                                                 }));
                                             }
                                         }}
@@ -1069,22 +1109,17 @@ const LocalFileChartUI = () => {
     const updateSearchStatus = async () => {
         setIcaoAndNameDisagree(true);
 
-        const searchedCharts: string[] = [];
+        const searchableCharts: string[] = [];
 
         if (tabIndex === 0 || tabIndex === 2) {
-            searchedCharts.push(...charts.images.map((image) => image.fileName));
+            searchableCharts.push(...charts.images.map((image) => image.fileName));
         }
 
         if (tabIndex === 1 || tabIndex === 2) {
-            searchedCharts.push(...charts.pdfs.map((pdf) => pdf.fileName));
+            searchableCharts.push(...charts.pdfs.map((pdf) => pdf.fileName));
         }
 
-        const numItemsFound = searchedCharts.filter((chartName) => {
-            if (chartName.toUpperCase().includes(icao)) {
-                return true;
-            }
-            return false;
-        }).length;
+        const numItemsFound = searchableCharts.filter((chartName) => chartName.toUpperCase().includes(icao)).length;
 
         setStatusBarInfo(`${numItemsFound} ${numItemsFound === 1 ? 'Item' : 'Items'} Found`);
 
@@ -1310,6 +1345,7 @@ export const Navigation = () => {
                         dispatch(setChartLinks({ light: '', dark: '' }));
                         dispatch(setChartName({ light: '', dark: '' }));
                         dispatch(setTabIndex(0));
+                        dispatch(setIcao(''));
                     }}
                 />
             </div>
