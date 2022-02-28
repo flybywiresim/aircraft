@@ -5,6 +5,7 @@
 #include "../Arinc429.h"
 #include "../utils/ConfirmNode.h"
 #include "../utils/PulseNode.h"
+#include "../utils/SRFlipFlop.h"
 
 class Elac {
  public:
@@ -39,6 +40,8 @@ class Elac {
 
   void monitorHydraulicData();
 
+  void monitorRa(double deltaTime);
+
   void computeComputerEngagementPitch();
 
   void computeComputerEngagementRoll();
@@ -50,6 +53,25 @@ class Elac {
   void computeActiveLawsAndFunctionStatus();
 
   void computeSidestickPriorityLogic(double deltaTime);
+
+  // RA monitoring vars
+  bool ra1Invalid;
+
+  bool ra2Invalid;
+
+  ConfirmNode ra1CoherenceConfirmNode = ConfirmNode(true, 1);
+
+  ConfirmNode ra2CoherenceConfirmNode = ConfirmNode(true, 1);
+
+  bool ra1CoherenceRejected;
+
+  bool ra2CoherenceRejected;
+
+  const double raMaxDifference = 50;
+
+  ConfirmNode raDifferenceConfirmNode = ConfirmNode(true, 1);
+
+  double raValueForComputation;
 
   // Axis engagement vars
   bool isEngagedInPitch;

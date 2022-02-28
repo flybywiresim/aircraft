@@ -50,6 +50,10 @@ void Elac::clearMemory() {
   rightTakeoverPulseNode.update(false);
   leftPriorityLockConfirmNode.update(false, 0);
   rightPriorityLockConfirmNode.update(false, 0);
+  ra1Invalid = false;
+  ra2Invalid = false;
+  ra1CoherenceRejected = false;
+  ra2CoherenceRejected = false;
 }
 
 // Main update cycle
@@ -61,6 +65,7 @@ void Elac::update(double deltaTime, double simulationTime, bool faultActive, boo
   monitorSelf(faultActive);
 
   if (monitoringHealthy) {
+    monitorRa(deltaTime);
     computeSidestickPriorityLogic(deltaTime);
     monitorHydraulicData();
     computeComputerEngagementPitch();
@@ -263,6 +268,53 @@ void Elac::computeComputerEngagementRoll() {
   }
 
   isEngagedInRoll = canEngageInRoll && hasPriorityInRoll;
+}
+
+// Monitor the RA inputs. Monitoring is performed in 3 different ways: SSM and refresh monitoring of the bus,
+// Coherence monitoring, and Data validation through comparison.
+// If an RA reports Failure Warning, it is no longer used for computation and declared as invalid.
+// If the Coherence test fails (RA < 50ft while V_c > 200kts), the RA is also no longer used for computation.
+// This Failure type is latched (meaning the result of the test is remembered and the ELAC must be reset for
+// the RA to be able to be used again).
+// The Data validation method depends on the validity through SSM and Coherence monitoring:
+// * If both RAs are declared valid, comparison of the two values is performed:
+//   If the difference between the two values is above a threshold during a confirmation time,
+//   the value used for computation is set above 200ft except if flaps/slats are fully extended for at least 10s,
+//   in which case the lower of the two values is used. (Not sure if this behaviour for flaps full is correct)
+//   Else the arithmetic mean of the two values is used for computation.
+// * If only one RA is declared valid, set the value used for computation to a value above 200ft if V_c is greater
+//   than 180kts, else use the value. (not sure if the else condition is correct)
+// * If no RA is valid, set the value used for computation to a value above 200ft. (This is so that flight law is kept
+//   active normally, since in this case, when the gear is extended, direct law will be activated as the flare law)
+void Elac::monitorRa(double deltaTime) {
+  bool ra1SsmInvalid = busInputs.ra1.radioHeight.isFw();
+  bool ra2SsmInvalid = busInputs.ra2.radioHeight.isFw();
+  double ra1Value = busInputs.ra1.radioHeight.value();
+  double ra2Value = busInputs.ra2.radioHeight.value();
+
+  if (ra1CoherenceConfirmNode.update(busInputs.ra1.radioHeight.isNo() && busInputs.ra1.radioHeight.value() < 50 && false, deltaTime)) {
+    ra1CoherenceRejected = true;
+  }
+  if (ra2CoherenceConfirmNode.update(busInputs.ra2.radioHeight.isNo() && busInputs.ra2.radioHeight.value() < 50 && false, deltaTime)) {
+    ra2CoherenceRejected = true;
+  }
+
+  ra1Invalid = ra1SsmInvalid || ra1CoherenceRejected;
+  ra2Invalid = ra2SsmInvalid || ra2CoherenceRejected;
+
+  if (!ra1Invalid && !ra2Invalid) {
+    if (raDifferenceConfirmNode.update(std::abs(ra1Value - ra2Value) > raMaxDifference, deltaTime)) {
+      // TODO implement flaps/slats full condition
+      raValueForComputation = std::min(ra1Value, ra2Value);
+    } else {
+      raValueForComputation = (ra1Value + ra2Value) / 2;
+    }
+  } else if ((ra1Invalid && !ra2Invalid) || (!ra1Invalid && ra2Invalid)) {
+    // TODO implement the 180kts condition
+    raValueForComputation = 250;
+  } else {
+    raValueForComputation = 250;
+  }
 }
 
 // Compute hydraulic loop availabilities from different sensor sources
