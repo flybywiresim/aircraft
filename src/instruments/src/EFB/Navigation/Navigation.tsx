@@ -652,12 +652,12 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
         <div className="space-y-4">
             {selectedTab.charts.map((chart) => (
                 <div
-                    className="group flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
+                    className="flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
                     onClick={() => handleChartClick(chart)}
                     key={chart.fileName}
                 >
                     <div className="flex flex-row items-center">
-                        <div className={`w-2 h-full transition flex-shrink-0 duration-100 group-hover:bg-theme-highlight ${chart.fileName === chartId
+                        <div className={`w-2 h-full transition flex-shrink-0 duration-100 ${chart.fileName === chartId
                             ? 'bg-theme-highlight'
                             : 'bg-theme-secondary'}`}
                         />
@@ -805,12 +805,12 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                 <span className="p-1 text-center bg-theme-secondary rounded-t-lg">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
-                                        className="group flex flex-row bg-theme-accent"
+                                        className="flex flex-row bg-theme-accent"
                                         onClick={() => handleChartClick(chart as NavigraphChart)}
                                         key={(chart as NavigraphChart).id}
                                     >
                                         <div className="flex flex-row items-center">
-                                            <div className={`w-2 h-full transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
+                                            <div className={`w-2 h-full transition duration-100 ${(chart as NavigraphChart).id === chartId
                                                 ? 'bg-theme-highlight'
                                                 : 'bg-theme-secondary'}`}
                                             />
@@ -858,12 +858,12 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                     <>
                         {selectedTab.charts.map((chart) => (
                             <div
-                                className="group flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
+                                className="flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
                                 onClick={() => handleChartClick(chart as NavigraphChart)}
                                 key={(chart as NavigraphChart).id}
                             >
                                 <div className="flex flex-row items-center">
-                                    <div className={`w-2 h-full transition duration-100 group-hover:bg-theme-highlight ${(chart as NavigraphChart).id === chartId
+                                    <div className={`w-2 h-full transition duration-100 ${(chart as NavigraphChart).id === chartId
                                         ? 'bg-theme-highlight'
                                         : 'bg-theme-secondary'}`}
                                     />
