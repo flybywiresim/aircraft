@@ -695,6 +695,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
                                             pagesViewable: numPages,
                                         }));
                                     }).catch(() => {
+                                        dispatch(removedPinnedChart({ chartId: chart.fileName }));
                                         toast.error('Unable to generate necessary resource to pin this item.');
                                     });
                                 }
@@ -1361,7 +1362,8 @@ export const Navigation = () => {
                         dispatch(setChartLinks({ light: '', dark: '' }));
                         dispatch(setChartName({ light: '', dark: '' }));
                         dispatch(setTabIndex(0));
-                        setPagesViewable(1);
+                        dispatch(setPagesViewable(1));
+                        dispatch(setCurrentPage(1));
                         dispatch(setIcao(''));
                     }}
                 />
