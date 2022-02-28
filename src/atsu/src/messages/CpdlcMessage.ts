@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
-import { CpdlcMessageElement, CpdlcMessagesDownlink } from './CpdlcMessageElements';
+import { CpdlcMessageElement, CpdlcMessagesDownlink, CpdlcMessagesUplink } from './CpdlcMessageElements';
 import { wordWrap } from '../Common';
 
 /**
@@ -68,7 +68,11 @@ export class CpdlcMessage extends AtsuMessage {
         let message: string = '';
 
         if (this.Content !== undefined) {
-            content = this.serializeContent(CpdlcMessagesDownlink[this.Content.TypeId][0][0], this.Content);
+            if (this.Direction === AtsuMessageDirection.Downlink) {
+                content = this.serializeContent(CpdlcMessagesDownlink[this.Content.TypeId][0][0], this.Content);
+            } else {
+                content = this.serializeContent(CpdlcMessagesUplink[this.Content.TypeId][0][0], this.Content);
+            }
         } else {
             content = this.Message;
         }
