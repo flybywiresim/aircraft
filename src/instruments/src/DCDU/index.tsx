@@ -193,8 +193,6 @@ const DCDU: React.FC = () => {
         cpdlcMessage.deserialize(serialized);
 
         if (cpdlcMessage !== undefined && serialized.UniqueMessageID !== undefined) {
-            cpdlcMessage.deserialize(serialized);
-
             const oldMessage = messages.get(cpdlcMessage.UniqueMessageID);
             let dcduTimestamp = new Date().getTime();
             let readMessage = false;
