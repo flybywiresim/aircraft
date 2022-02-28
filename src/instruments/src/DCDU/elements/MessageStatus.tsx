@@ -59,10 +59,12 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
 
     // calculate the position of the background rectangle
     let text = '';
-    if (selectedResponse !== -1) {
-        text = translateResponseId(selectedResponse, message);
-    } else {
-        text = translateResponseMessage(message, message.Response);
+    if (message.Direction === AtsuMessageDirection.Uplink) {
+        if (selectedResponse !== -1) {
+            text = translateResponseId(selectedResponse, message);
+        } else {
+            text = translateResponseMessage(message, message.Response);
+        }
     }
 
     const backgroundRequired = text !== 'OPEN' && text !== 'SENT';
