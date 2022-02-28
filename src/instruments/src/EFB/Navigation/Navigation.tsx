@@ -1145,9 +1145,21 @@ const LocalFileChartUI = () => {
         setIcaoAndNameDisagree(false);
     };
 
+    const handleIcaoChange = (value: string) => {
+        const newValue = value.toUpperCase();
+
+        dispatch(setIcao(newValue));
+
+        getLocalFileChartList(newValue).then((r) => setCharts(r));
+    };
+
+    useEffect(() => {
+        handleIcaoChange(icao);
+    }, [tabIndex]);
+
     useEffect(() => {
         updateSearchStatus();
-    }, [icao, tabIndex]);
+    }, [charts]);
 
     useEffect(() => {
         setOrganizedCharts([
@@ -1205,18 +1217,6 @@ const LocalFileChartUI = () => {
             pdfs,
         };
     };
-
-    const handleIcaoChange = (value: string) => {
-        const newValue = value.toUpperCase();
-
-        dispatch(setIcao(newValue));
-
-        getLocalFileChartList(newValue).then((r) => setCharts(r));
-    };
-
-    useEffect(() => {
-        handleIcaoChange(icao);
-    }, [tabIndex]);
 
     const loading = icaoAndNameDisagree;
 
