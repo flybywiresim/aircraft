@@ -104,6 +104,8 @@ class FlyByWireInterface {
   AutothrustModelClass::ExternalInputs_Autothrust_T autoThrustInput = {};
   athr_output autoThrustOutput;
 
+  RaBus raBusOutputs[2] = {};
+
   Elac elacs[2] = {Elac(true), Elac(false)};
   ElacDiscreteOutputs elacsDiscreteOutputs[2] = {};
   ElacAnalogOutputs elacsAnalogOutputs[2] = {};
@@ -346,6 +348,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeValid;
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeDeviation;
 
+  // RA bus inputs
+  std::unique_ptr<LocalVariable> idRadioAltimeterHeight[2];
+
   // FCDC bus label Lvars
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord1[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord2[2];
@@ -471,6 +476,8 @@ class FlyByWireInterface {
   bool updateAutopilotLaws(double sampleTime);
   bool updateFlyByWire(double sampleTime);
   bool updateAutothrust(double sampleTime);
+
+  bool updateRa(int raIndex);
 
   bool updateElac(double sampleTime, int elacIndex);
 

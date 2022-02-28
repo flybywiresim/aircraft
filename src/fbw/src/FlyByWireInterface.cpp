@@ -104,6 +104,10 @@ bool FlyByWireInterface::update(double sampleTime) {
   result &= updateAutothrust(calculatedSampleTime);
 
   for (int i = 0; i < 2; i++) {
+    result &= updateRa(i);
+  }
+
+  for (int i = 0; i < 2; i++) {
     result &= updateElac(calculatedSampleTime, i);
   }
 
@@ -463,6 +467,11 @@ void FlyByWireInterface::setupLocalVariables() {
   idRadioReceiverLocalizerDistance = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
   idRadioReceiverGlideSlopeValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_IS_VALID");
   idRadioReceiverGlideSlopeDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_DEVIATION");
+
+  for (int i = 0; i < 2; i++) {
+    string idString = std::to_string(i + 1);
+    idRadioAltimeterHeight[i] = make_unique<LocalVariable>("A32NX_RA_" + idString + "_RADIO_ALTITUDE");
+  }
 
   for (int i = 0; i < 2; i++) {
     string idString = std::to_string(i + 1);
@@ -894,6 +903,12 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
   return true;
 }
 
+bool FlyByWireInterface::updateRa(int raIndex) {
+  raBusOutputs[raIndex].radioHeight.setFromSimVar(idRadioAltimeterHeight[raIndex]->get());
+
+  return true;
+}
+
 bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   const int oppElacIndex = elacIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
@@ -952,8 +967,10 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].busInputs.adirs3 = {};
   elacs[elacIndex].busInputs.fmgc1 = {};
   elacs[elacIndex].busInputs.fmgc2 = {};
-  elacs[elacIndex].busInputs.ra1 = {};
-  elacs[elacIndex].busInputs.ra2 = {};
+  elacs[elacIndex].busInputs.ra1 = raBusOutputs[0];
+  elacs[elacIndex].busInputs.ra2 = raBusOutputs[1];
+  elacs[elacIndex].busInputs.sfcc1 = {};
+  elacs[elacIndex].busInputs.sfcc2 = {};
   elacs[elacIndex].busInputs.fcdc1 = fcdcsBusOutputs[0];
   elacs[elacIndex].busInputs.fcdc2 = fcdcsBusOutputs[1];
   elacs[elacIndex].busInputs.sec1 = secsBusOutputs[0];
