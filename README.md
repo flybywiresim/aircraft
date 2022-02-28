@@ -24,6 +24,7 @@ The following aircraft configuration is currently simulated or targeted:
  APU         APS3200
  FMS         Honeywell Release H3
  FWC Std.    H2F9C
+ RA          Honeywell ALA-52B
  TAWS        Honeywell EGPWS
  ACAS        Honeywell TPA-100B
  ATC         Honeywell TRA-100B
