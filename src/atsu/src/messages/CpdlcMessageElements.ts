@@ -379,6 +379,11 @@ export const CpdlcMessagesDownlink: { [identification: string]: [string[], Cpdlc
 };
 
 export const CpdlcMessagesUplink: { [identification: string]: [string[], CpdlcMessageElement] } = {
+    UM0: [['UNABLE'], new CpdlcMessageElement('UM0', [FansMode.FansA, FansMode.FansB])],
+    UM1: [['STANDBY'], new CpdlcMessageElement('UM1', [FansMode.FansA, FansMode.FansB])],
+    UM3: [['ROGER'], new CpdlcMessageElement('UM3', [FansMode.FansA, FansMode.FansB])],
+    UM4: [['AFFIRM'], new CpdlcMessageElement('UM4', [FansMode.FansA, FansMode.FansB])],
+    UM5: [['NEGATIVE'], new CpdlcMessageElement('UM5', [FansMode.FansA, FansMode.FansB])],
     UM20: [['CLIMB TO %s', 'CLIMB TO AND MAINTAIN %s'], new CpdlcMessageElement('UM20', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(2, 4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM23: [['DESCEND TO %s', 'DESCEND TO AND MAINTAIN %s'], new CpdlcMessageElement('UM23', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(2, 4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM29: [['DESCEND TO REACH %s BY %s'], new CpdlcMessageElement('UM29', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(3), new CpdlcMessageContentPosition(5)], CpdlcMessageExpectedResponseType.WilcoUnable)],
