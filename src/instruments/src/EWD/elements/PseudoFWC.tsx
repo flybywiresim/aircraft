@@ -1440,7 +1440,7 @@ const PseudoFWC: React.FC = () => {
         }
     }, [memoMessageRight]);
 
-    return (<></>);
+    return null;
 };
 
 export default PseudoFWC;
