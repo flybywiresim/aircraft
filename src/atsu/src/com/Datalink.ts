@@ -27,7 +27,7 @@ export class Datalink {
             // ignore empty messages (happens sometimes in CPDLC with buggy ATC software)
             if (message.Message.length !== 0) {
                 this.estimateTransmissionTime();
-                setTimeout(() => parent.registerMessage(message), this.overallDelay);
+                setTimeout(() => parent.registerMessages([message]), this.overallDelay);
             }
         });
     }
