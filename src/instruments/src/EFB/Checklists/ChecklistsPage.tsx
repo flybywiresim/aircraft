@@ -13,7 +13,7 @@ import {
 } from '../Store/features/checklists';
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import { CHECKLISTS } from './Lists';
-import { ChecklistItem } from './Checklists';
+import { ChecklistItem, getRelevantChecklistIndices } from './Checklists';
 
 interface ChecklistItemComponentProps {
     item: ChecklistItem;
