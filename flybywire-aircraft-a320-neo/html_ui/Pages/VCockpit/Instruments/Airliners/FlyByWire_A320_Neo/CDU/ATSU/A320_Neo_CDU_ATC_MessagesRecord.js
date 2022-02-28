@@ -1,25 +1,27 @@
 class CDUAtcMessagesRecord {
     static TranslateCpdlcResponse(response) {
-        switch (response) {
-            case Atsu.CpdlcMessageResponse.Standby:
-                return "STBY";
-            case Atsu.CpdlcMessageResponse.Wilco:
+        if (response !== undefined && response.Content !== undefined) {
+            if (response.Content.TypeId === "DM0") {
                 return "WILC";
-            case Atsu.CpdlcMessageResponse.Roger:
-                return "ROGR";
-            case Atsu.CpdlcMessageResponse.Negative:
-                return "NEG";
-            case Atsu.CpdlcMessageResponse.Unable:
+            }
+            if (response.Content.TypeId === "UM0" || response.Content.TypeId === "DM1") {
                 return "UNBL";
-            case Atsu.CpdlcMessageResponse.Acknowledge:
-                return "ACK";
-            case Atsu.CpdlcMessageResponse.Affirm:
+            }
+            if (response.Content.TypeId === "UM1" || response.Content.TypeId === "DM2") {
+                return "STBY";
+            }
+            if (response.Content.TypeId === "UM3" || response.Content.TypeId === "DM3") {
+                return "ROGR";
+            }
+            if (response.Content.TypeId === "UM4" || response.Content.TypeId === "DM4") {
                 return "AFRM";
-            case Atsu.CpdlcMessageResponse.Refuse:
-                return "REF";
-            default:
-                return "";
+            }
+            if (response.Content.TypeId === "UM5" || response.Content.TypeId === "DM5") {
+                return "NEG";
+            }
         }
+
+        return "";
     }
 
     static ShowPage(mcdu, messages = null, offset = 0, confirmErase = false) {
@@ -47,7 +49,7 @@ class CDUAtcMessagesRecord {
             if (messages.length > (offset + i) && messages[offset + i]) {
                 headerLeft = `${messages[offset + i].Timestamp.dcduTimestamp()} ${messages[offset + i].Direction === Atsu.AtsuMessageDirection.Input ? "FROM" : "TO"} `;
                 headerLeft += messages[offset + i].Station;
-                headerRight = CDUAtcMessagesRecord.TranslateCpdlcResponse(messages[offset + i].ResponseType);
+                headerRight = CDUAtcMessagesRecord.TranslateCpdlcResponse(messages[offset + i].Response);
 
                 // ignore the headline with the station and the timestamp
                 const lines = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split("\n");
