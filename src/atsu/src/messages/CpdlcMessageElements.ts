@@ -366,6 +366,7 @@ export const CpdlcMessagesDownlink: { [identification: string]: [string[], Cpdlc
     DM65: [['DUE TO WEATHER'], new CpdlcMessageElement('DM65', [FansMode.FansA, FansMode.FansB], CpdlcMessageExpectedResponseType.No)],
     DM66: [['DUE TO AIRCRAFT PERFORMANCE'], new CpdlcMessageElement('DM66', [FansMode.FansA, FansMode.FansB], CpdlcMessageExpectedResponseType.No)],
     DM67: [['%s'], new CpdlcMessageElement('DM67', [FansMode.FansA], [new CpdlcMessageContentFreetext(0, -1)], CpdlcMessageExpectedResponseType.No)],
+    DM68: [['%s'], new CpdlcMessageElement('DM68', [FansMode.FansA], true, [new CpdlcMessageContentFreetext(0, -1)], CpdlcMessageExpectedResponseType.Yes)],
     DM69: [['REQUEST VMC DESCEND'], new CpdlcMessageElement('DM69', [FansMode.FansA], CpdlcMessageExpectedResponseType.Yes)],
     DM70: [['REQUEST HEADING %s'], new CpdlcMessageElement('DM70', [FansMode.FansA], [new CpdlcMessageContentDegree(2)], CpdlcMessageExpectedResponseType.Yes)],
     DM71: [['REQUEST GROUND TRACK %s'], new CpdlcMessageElement('DM71', [FansMode.FansA], [new CpdlcMessageContentDegree(3)], CpdlcMessageExpectedResponseType.Yes)],
