@@ -85,13 +85,15 @@ export class AocSystem {
         return this.messageQueue.findIndex((element) => uid === element.UniqueMessageID) !== -1;
     }
 
-    public insertMessage(message: AtsuMessage): void {
-        this.messageQueue.unshift(message);
+    public insertMessages(messages: AtsuMessage[]): void {
+        messages.forEach((message) => {
+            this.messageQueue.unshift(message);
 
-        if (message.Direction === AtsuMessageDirection.Uplink) {
+            if (message.Direction === AtsuMessageDirection.Uplink) {
             // increase the company message counter
-            const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
-            SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt + 1);
-        }
+                const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
+                SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt + 1);
+            }
+        });
     }
 }

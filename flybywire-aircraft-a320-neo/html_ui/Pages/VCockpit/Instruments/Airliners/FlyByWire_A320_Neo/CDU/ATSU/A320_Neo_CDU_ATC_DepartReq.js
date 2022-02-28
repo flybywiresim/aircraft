@@ -218,7 +218,7 @@ class CDUAtcDepartReq {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcDepartReq.CanSendData(store)) {
-                mcdu.atsuManager.registerMessage(CDUAtcDepartReq.CreateMessage(store));
+                mcdu.atsuManager.registerMessages([CDUAtcDepartReq.CreateMessage(store)]);
                 CDUAtcDepartReq.ShowPage1(mcdu);
             }
         };

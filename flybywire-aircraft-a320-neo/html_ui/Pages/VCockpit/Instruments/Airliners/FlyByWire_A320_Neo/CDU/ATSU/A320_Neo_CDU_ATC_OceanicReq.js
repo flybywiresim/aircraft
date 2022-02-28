@@ -285,7 +285,7 @@ class CDUAtcOceanicReq {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcOceanicReq.CanSendData(mcdu, store)) {
-                mcdu.atsuManager.registerMessage(CDUAtcOceanicReq.CreateMessage(mcdu, store));
+                mcdu.atsuManager.registerMessages([CDUAtcOceanicReq.CreateMessage(mcdu, store)]);
                 CDUAtcOceanicReq.ShowPage1(mcdu);
             }
         };

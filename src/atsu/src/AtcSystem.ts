@@ -234,7 +234,7 @@ export class AtcSystem {
         message.ComStatus = AtsuMessageComStatus.Sending;
 
         this.nextAtc = station;
-        this.parent.registerMessage(message);
+        this.parent.registerMessages([message]);
         this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `NEXT ATC: ${station}`);
         this.notificationTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
@@ -269,7 +269,7 @@ export class AtcSystem {
         message.ComStatus = AtsuMessageComStatus.Sending;
 
         this.maxUplinkDelay = -1;
-        this.parent.registerMessage(message);
+        this.parent.registerMessages([message]);
 
         return this.datalink.sendMessage(message, true).then((error) => error);
     }
@@ -419,47 +419,49 @@ export class AtcSystem {
         return false;
     }
 
-    public insertMessage(message: AtsuMessage): void {
-        const cpdlcMessage = message as CpdlcMessage;
-        let analyzed = false;
+    public insertMessages(messages: AtsuMessage[]): void {
+        messages.forEach((message) => {
+            const cpdlcMessage = message as CpdlcMessage;
+            let analyzed = false;
 
-        if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.CurrentTransmissionId === -1) {
-            cpdlcMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
-        }
+            if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.CurrentTransmissionId === -1) {
+                cpdlcMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
+            }
 
-        // search corresponding request, if previous ID is set
-        if (cpdlcMessage.PreviousTransmissionId !== -1) {
-            this.messageQueue.forEach((element) => {
+            // search corresponding request, if previous ID is set
+            if (cpdlcMessage.PreviousTransmissionId !== -1) {
+                this.messageQueue.forEach((element) => {
                 // ensure that the sending and receiving stations are the same to avoid CPDLC ID overlaps
-                if (element.Station === cpdlcMessage.Station) {
-                    while (element !== undefined) {
-                        if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
-                            element.Response = cpdlcMessage;
-                            analyzed = this.analyzeMessage(element, cpdlcMessage);
-                            break;
+                    if (element.Station === cpdlcMessage.Station) {
+                        while (element !== undefined) {
+                            if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
+                                element.Response = cpdlcMessage;
+                                analyzed = this.analyzeMessage(element, cpdlcMessage);
+                                break;
+                            }
+                            element = element.Response;
                         }
-                        element = element.Response;
                     }
+                });
+            } else {
+                this.messageQueue.unshift(cpdlcMessage);
+                analyzed = this.analyzeMessage(cpdlcMessage, undefined);
+            }
+
+            if (!analyzed) {
+                if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.Station === '') {
+                    cpdlcMessage.Station = this.currentAtc;
                 }
-            });
-        } else {
-            this.messageQueue.unshift(cpdlcMessage);
-            analyzed = this.analyzeMessage(cpdlcMessage, undefined);
-        }
 
-        if (!analyzed) {
-            if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.Station === '') {
-                cpdlcMessage.Station = this.currentAtc;
+                const dcduRelevant = cpdlcMessage.ComStatus === AtsuMessageComStatus.Open || cpdlcMessage.ComStatus === AtsuMessageComStatus.Received;
+                if (dcduRelevant && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
+                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message as CpdlcMessage);
+                } else if (dcduRelevant) {
+                    this.parent.publishAtsuStatusCode(AtsuStatusCodes.DcduFull);
+                    this.dcduBufferedMessages.push(message.UniqueMessageID);
+                }
             }
-
-            const dcduRelevant = cpdlcMessage.ComStatus === AtsuMessageComStatus.Open || cpdlcMessage.ComStatus === AtsuMessageComStatus.Received;
-            if (dcduRelevant && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message as CpdlcMessage);
-            } else if (dcduRelevant) {
-                this.parent.publishAtsuStatusCode(AtsuStatusCodes.DcduFull);
-                this.dcduBufferedMessages.push(message.UniqueMessageID);
-            }
-        }
+        });
     }
 
     public messageRead(uid: number): boolean {
