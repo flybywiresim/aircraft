@@ -13,7 +13,7 @@ import {
     setChartRotation,
     setChartDimensions,
     editPinnedChart,
-    setPagesViewable,
+    setPagesViewable, setCurrentPage,
 } from '../../Store/features/navigationPage';
 import { useNavigraph } from '../../ChartsApi/Navigraph';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
@@ -98,6 +98,7 @@ const PinnedChartsReminder = () => {
                             dispatch(setIcao(title));
                             dispatch(setTabIndex(tabIndex));
                             dispatch(setChartRotation(0));
+                            dispatch(setCurrentPage(1));
                             dispatch(editPinnedChart({
                                 chartId,
                                 timeAccessed: Date.now(),
