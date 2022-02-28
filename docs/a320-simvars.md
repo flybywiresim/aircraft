@@ -1526,6 +1526,35 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Whether or not the GPS is used as the primary means of navigation/position determination.
 
+## Radio Receivers
+
+- A32NX_RADIO_RECEIVER_USAGE_ENABLED
+    - Bool
+    - Whether or not the calculated ILS signals shall be used
+
+- A32NX_RADIO_RECEIVER_LOC_IS_VALID
+    - Bool
+    - Indicates if the localizer signal is valid
+
+- A32NX_RADIO_RECEIVER_LOC_DISTANCE
+    - Number in nautical miles
+    - Indicates the distance from the localizer
+
+- A32NX_RADIO_RECEIVER_LOC_DEVIATION
+    - Number in degrees
+    - If A32NX_RADIO_RECEIVER_USAGE_ENABLED == 0 it contains the deviation from the sim
+    - If A32NX_RADIO_RECEIVER_USAGE_ENABLED == 1 it contains calculated LOC deviation
+
+- A32NX_RADIO_RECEIVER_GS_IS_VALID
+    - Bool
+    - Indicates if the glide slope signal is valid
+
+- A32NX_RADIO_RECEIVER_GS_DEVIATION
+    - Number in degrees
+    - Deviation from glide slope
+    - If A32NX_RADIO_RECEIVER_USAGE_ENABLED == 0 it contains the deviation from the sim
+    - If A32NX_RADIO_RECEIVER_USAGE_ENABLED == 1 it contains calculated LOC deviation
+
 ## Flight Management System
 
 - A32NX_FM_ENABLE_APPROACH_PHASE
