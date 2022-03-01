@@ -330,6 +330,57 @@ export class InputValidation {
     }
 
     /**
+     * Validates that two altitude entries describe the same (FL, feet or meters)
+     * @param {string} lower Lower altitude value
+     * @param {string} higher Higher altitude value
+     * @returns True if both are same type else false
+     */
+    private static sameAltitudeType(lower: string, higher: string): boolean {
+        if (lower.startsWith('FL') && higher.startsWith('FL')) {
+            return true;
+        }
+        if (lower.startsWith('FL') || higher.startsWith('FL')) {
+            return false;
+        }
+        if ((lower[lower.length - 1] === 'M' && higher[higher.length - 1] === 'M') || (lower[lower.length - 1] !== 'M' && higher[higher.length - 1] !== 'M')) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Converts a given altitude into foot
+     * @param value The altitude that needs to be converted
+     * @returns The altitude in feet
+     */
+    private static convertToFeet(value: string): number {
+        if (value.startsWith('FL')) {
+            return parseInt(value.substring(2, value.length)) * 100;
+        }
+        if (value[value.length - 1] === 'M') {
+            return parseInt(value.substring(0, value.length - 1)) * 3.28;
+        }
+        return parseInt(value);
+    }
+
+    /**
+     * Validates that lower is smaller than higher
+     * @param {string} lower Lower altitude value
+     * @param {string} higher Higher altitude value
+     * @returns True if lower is smaller than higher, else false
+     */
+    public static validateAltitudeRange(lower: string, higher: string): boolean {
+        if (!InputValidation.sameAltitudeType(lower, higher)) {
+            return false;
+        }
+
+        const lowerFt = InputValidation.convertToFeet(lower);
+        const higherFt = InputValidation.convertToFeet(higher);
+
+        return lowerFt < higherFt;
+    }
+
+    /**
      * Converts an FCOM valid encoded offset string to a list of offset entries
      * @param {string} offset Valid encoded offset
      * @returns The decoded offset entries
