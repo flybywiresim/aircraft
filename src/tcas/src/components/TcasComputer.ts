@@ -204,7 +204,7 @@ export class TcasComputer implements TcasComponent {
 
     private planeAlt: number | null; // Plane Altitude
 
-    private radioAlt: number | null; // Radio Altitude
+    private radioAlt: Arinc429Word | null; // Radio Altitude
 
     private verticalSpeed: number | null; // Vertical Speed
 
@@ -277,7 +277,13 @@ export class TcasComputer implements TcasComponent {
         // workaround for altitude issues due to MSFS bug, needs to be changed to PRESSURE ALTITUDE again when solved
         this.pressureAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet');
         this.planeAlt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
-        this.radioAlt = SimVar.GetSimVarValue('PLANE ALT ABOVE GROUND', 'feet');
+        const radioAlt1 = Arinc429Word.fromSimVarValue('L:A32NX_RA_1_RADIO_ALTITUDE');
+        const radioAlt2 = Arinc429Word.fromSimVarValue('L:A32NX_RA_2_RADIO_ALTITUDE');
+        this.radioAlt = (
+            radioAlt1.isFailureWarning() || radioAlt1.isNoComputedData()
+        ) && !(
+            !radioAlt1.isNoComputedData() && radioAlt2.isFailureWarning()
+        ) ? radioAlt2 : radioAlt1;
         this.altitude = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${this.activeXpdr + 1}_ALTITUDE`);
         this.altitudeStandby = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
         this.trueHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
@@ -297,13 +303,20 @@ export class TcasComputer implements TcasComponent {
     private updateInhibitions(): void {
         // TODO: Add more TA only conditions here (i.e GPWS active, Windshear warning active, stall)
         // TODO FIXME: Less magic numbers, Use constants defined in TcasConstants
-        if (this.radioAlt < 500 || this.gpwsWarning || this.tcasMode.getVar() === TcasMode.STBY) {
+        const raValue = this.radioAlt.value;
+        const raNCD = this.radioAlt.isNoComputedData();
+        if (
+            this.radioAlt.isFailureWarning()
+            || !raNCD && this.radioAlt.value < 500
+            || this.gpwsWarning
+            || this.tcasMode.getVar() === TcasMode.STBY
+        ) {
             this.inhibitions = Inhibit.ALL_RA_AURAL_TA;
-        } else if (this.radioAlt < 1000 || this.tcasMode.getVar() === TcasMode.TA) {
+        } else if ((!raNCD && raValue < 1000) || this.tcasMode.getVar() === TcasMode.TA) {
             this.inhibitions = Inhibit.ALL_RA;
-        } else if (this.radioAlt < 1100) {
+        } else if (!raNCD && raValue < 1100) {
             this.inhibitions = Inhibit.ALL_DESC_RA;
-        } else if (this.radioAlt < 1550) {
+        } else if (!raNCD && raValue < 1550) {
             this.inhibitions = Inhibit.ALL_INCR_DESC_RA;
         } else if (this.pressureAlt > 39000) {
             this.inhibitions = Inhibit.ALL_CLIMB_RA;
@@ -334,6 +347,7 @@ export class TcasComputer implements TcasComponent {
         // Amber TCAS warning on fault (and on PFD) - 34-43-00:A24/34-43-010
         if (!this.altitude || !this.altitudeStandby
                 || !this.altitude.isNormalOperation() || !this.altitudeStandby.isNormalOperation()
+                || this.radioAlt.isFailureWarning()
                 || this.altitude.value - this.altitudeStandby.value > 300 || !this.tcasPower) {
             this.tcasFault.setVar(true);
         } else {
@@ -342,9 +356,10 @@ export class TcasComputer implements TcasComponent {
 
         // Update sensitivity
         if (this.activeRa.info === null) {
+            const raValid = !this.radioAlt.isFailureWarning() && !this.radioAlt.isNoComputedData();
             if (this.inhibitions === Inhibit.ALL_RA || this.inhibitions === Inhibit.ALL_RA_AURAL_TA) {
                 this.sensitivity.setVar(2);
-            } else if (this.radioAlt > TCAS.SENSE[3][Limits.MIN] && this.radioAlt <= TCAS.SENSE[3][Limits.MAX]) {
+            } else if (raValid && this.radioAlt.value > TCAS.SENSE[3][Limits.MIN] && this.radioAlt.value <= TCAS.SENSE[3][Limits.MAX]) {
                 this.sensitivity.setVar(3);
             } else if (this.pressureAlt > TCAS.SENSE[4][Limits.MIN] && this.pressureAlt <= TCAS.SENSE[4][Limits.MAX]) {
                 this.sensitivity.setVar(4);

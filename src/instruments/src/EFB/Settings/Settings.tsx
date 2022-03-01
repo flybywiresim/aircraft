@@ -244,6 +244,8 @@ const SimOptionsPage = () => {
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
     const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8380');
+    const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
+    const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
 
     const fpSyncButtons: ButtonType[] = [
         { name: 'None', setting: 'NONE' },
@@ -333,6 +335,18 @@ const SimOptionsPage = () => {
                         />
                     </div>
 
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">Use calculated ILS signals</span>
+                        </span>
+                        <Toggle
+                            value={radioReceiverUsage === '1'}
+                            onToggle={(value) => {
+                                setRadioReceiverUsage(value ? '1' : '0');
+                                setRadioReceiverUsageSimVar(value ? 1 : 0);
+                            }}
+                        />
+                    </div>
                 </div>
                 <ControlSettings setShowSettings={setShowThrottleSettings} />
             </>
@@ -775,6 +789,7 @@ const AudioPage = () => {
     const [windVolume, setWindVolume] = usePersistentNumberProperty('SOUND_INTERIOR_WIND', 0);
     const [passengerAmbienceEnabled, setPassengerAmbienceEnabled] = usePersistentNumberProperty('SOUND_PASSENGER_AMBIENCE_ENABLED', 1);
     const [announcementsEnabled, setAnnouncementsEnabled] = usePersistentNumberProperty('SOUND_ANNOUNCEMENTS_ENABLED', 1);
+    const [boardingMusicEnabled, setBoardingMusicEnabled] = usePersistentNumberProperty('SOUND_BOARDING_MUSIC_ENABLED', 1);
 
     return (
         <div className="bg-navy-lighter divide-y divide-gray-700 flex flex-col rounded-xl px-6 ">
@@ -818,6 +833,12 @@ const AudioPage = () => {
                     <Toggle value={!!announcementsEnabled} onToggle={(value) => setAnnouncementsEnabled(value ? 1 : 0)} />
                 </div>
             </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Boarding Music</span>
+                <div className="flex flex-row items-center py-1.5">
+                    <Toggle value={!!boardingMusicEnabled} onToggle={(value) => setBoardingMusicEnabled(value ? 1 : 0)} />
+                </div>
+            </div>
         </div>
     );
 };
@@ -826,6 +847,7 @@ const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
     const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
+    const [usingColoredMetar, setUsingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
 
     return (
         <div className="bg-navy-lighter rounded-xl px-6 shadow-lg divide-y divide-gray-700 flex flex-col">
@@ -839,6 +861,12 @@ const FlyPadPage = () => {
                 <span className="text-lg text-gray-300">Auto Brightness</span>
                 <div className="flex flex-row items-center py-1.5">
                     <Toggle value={!!usingAutobrightness} onToggle={(value) => setUsingAutobrightness(value ? 1 : 0)} />
+                </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Colored Metar</span>
+                <div className="flex flex-row items-center py-1.5">
+                    <Toggle value={!!usingColoredMetar} onToggle={(value) => setUsingColoredMetar(value ? 1 : 0)} />
                 </div>
             </div>
         </div>
