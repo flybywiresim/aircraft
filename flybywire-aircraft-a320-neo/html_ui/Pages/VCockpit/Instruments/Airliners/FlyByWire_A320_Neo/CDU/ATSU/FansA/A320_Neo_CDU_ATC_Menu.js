@@ -58,7 +58,7 @@ class CDUAtcMenuFansA {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[2] = () => {
-            CDUAtcText.ShowPage1(mcdu);
+            CDUAtcTextFansA.ShowPage1(mcdu);
         };
 
         mcdu.rightInputDelay[3] = () => {
