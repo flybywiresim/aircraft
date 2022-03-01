@@ -1334,6 +1334,21 @@ mod tests {
             self
         }
 
+        fn body_roll_rate_of(mut self, rate: AngularVelocity) -> Self {
+            self.write_by_name(AdirsSimulatorData::BODY_ROTATION_RATE_Z, rate);
+            self
+        }
+
+        fn body_pitch_rate_of(mut self, rate: AngularVelocity) -> Self {
+            self.write_by_name(AdirsSimulatorData::BODY_ROTATION_RATE_X, rate);
+            self
+        }
+
+        fn body_yaw_rate_of(mut self, rate: AngularVelocity) -> Self {
+            self.write_by_name(AdirsSimulatorData::BODY_ROTATION_RATE_Y, rate);
+            self
+        }
+
         fn heading_of(mut self, angle: Angle) -> Self {
             self.write_by_name(AdirsSimulatorData::HEADING, angle);
             self
@@ -1557,6 +1572,86 @@ mod tests {
             ))
         }
 
+        fn flight_path_angle(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::FLIGHT_PATH_ANGLE,
+            ))
+        }
+
+        fn body_pitch_rate(&mut self, adiru_number: usize) -> Arinc429Word<AngularVelocity> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::BODY_PITCH_RATE,
+            ))
+        }
+
+        fn body_roll_rate(&mut self, adiru_number: usize) -> Arinc429Word<AngularVelocity> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::BODY_ROLL_RATE,
+            ))
+        }
+
+        fn body_yaw_rate(&mut self, adiru_number: usize) -> Arinc429Word<AngularVelocity> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::BODY_YAW_RATE,
+            ))
+        }
+
+        fn body_long_acc(&mut self, adiru_number: usize) -> Arinc429Word<Ratio> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::BODY_LONGITUDINAL_ACC,
+            ))
+        }
+
+        fn body_lat_acc(&mut self, adiru_number: usize) -> Arinc429Word<Ratio> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::BODY_LATERAL_ACC,
+            ))
+        }
+
+        fn body_normal_acc(&mut self, adiru_number: usize) -> Arinc429Word<Ratio> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::BODY_NORMAL_ACC,
+            ))
+        }
+
+        fn pitch_att_rate(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::PITCH_ATT_RATE,
+            ))
+        }
+
+        fn roll_att_rate(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::ROLL_ATT_RATE,
+            ))
+        }
+
+        fn heading_rate(&mut self, adiru_number: usize) -> Arinc429Word<Angle> {
+            self.read_arinc429_by_name(&output_data_id(
+                OutputDataType::Ir,
+                adiru_number,
+                InertialReference::HEADING_RATE,
+            ))
+        }
+
         fn ground_speed(&mut self, adiru_number: usize) -> Arinc429Word<Velocity> {
             self.read_arinc429_by_name(&output_data_id(
                 OutputDataType::Ir,
@@ -1661,6 +1756,14 @@ mod tests {
         fn assert_ir_non_attitude_data_available(&mut self, available: bool, adiru_number: usize) {
             assert_eq!(self.track(adiru_number).is_normal_operation(), available);
             assert_eq!(
+                self.drift_angle(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.flight_path_angle(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
                 self.inertial_vertical_speed(adiru_number)
                     .is_normal_operation(),
                 available
@@ -1687,6 +1790,42 @@ mod tests {
         fn assert_ir_attitude_data_available(&mut self, available: bool, adiru_number: usize) {
             assert_eq!(self.pitch(adiru_number).is_normal_operation(), available);
             assert_eq!(self.roll(adiru_number).is_normal_operation(), available);
+            assert_eq!(
+                self.body_pitch_rate(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.body_roll_rate(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.body_yaw_rate(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.body_long_acc(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.body_lat_acc(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.body_normal_acc(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.pitch_att_rate(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.roll_att_rate(adiru_number).is_normal_operation(),
+                available
+            );
+            assert_eq!(
+                self.heading_rate(adiru_number).is_normal_operation(),
+                available
+            );
         }
 
         fn assert_all_ir_data_available(&mut self, available: bool, adiru_number: usize) {
@@ -2315,6 +2454,7 @@ mod tests {
 
     mod ir {
         use super::*;
+        use uom::si::angular_velocity::revolution_per_minute;
 
         #[rstest]
         #[case(1)]
@@ -2451,6 +2591,119 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
+        fn body_roll_rate_is_supplied_by_ir(#[case] adiru_number: usize) {
+            let rate = AngularVelocity::new::<revolution_per_minute>(5.);
+            let mut test_bed = all_adirus_aligned_test_bed_with().body_roll_rate_of(rate);
+            test_bed.run();
+
+            assert_about_eq!(
+                test_bed
+                    .body_roll_rate(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree_per_second>(),
+                rate.get::<revolution_per_minute>()
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn body_pitch_rate_is_supplied_by_ir(#[case] adiru_number: usize) {
+            let rate = AngularVelocity::new::<revolution_per_minute>(5.);
+            let mut test_bed = all_adirus_aligned_test_bed_with().body_pitch_rate_of(rate);
+            test_bed.run();
+
+            assert_about_eq!(
+                test_bed
+                    .body_pitch_rate(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree_per_second>(),
+                rate.get::<revolution_per_minute>()
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn body_yaw_rate_is_supplied_by_ir(#[case] adiru_number: usize) {
+            let rate = AngularVelocity::new::<revolution_per_minute>(5.);
+            let mut test_bed = all_adirus_aligned_test_bed_with().body_yaw_rate_of(rate);
+            test_bed.run();
+
+            assert_about_eq!(
+                test_bed
+                    .body_yaw_rate(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree_per_second>(),
+                rate.get::<revolution_per_minute>()
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn body_long_acc_is_supplied_by_ir(#[case] adiru_number: usize) {
+            let acc = Acceleration::new::<meter_per_second_squared>(1.);
+            let g = Acceleration::new::<meter_per_second_squared>(9.81);
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_long_acc(acc);
+            test_bed.run();
+
+            assert_about_eq!(
+                V::from(test_bed.body_long_acc(adiru_number).normal_value().unwrap()),
+                V::from(acc / g)
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn body_lat_acc_is_supplied_by_ir(#[case] adiru_number: usize) {
+            let acc = Acceleration::new::<meter_per_second_squared>(1.);
+            let g = Acceleration::new::<meter_per_second_squared>(9.81);
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_lat_acc(acc);
+            test_bed.run();
+
+            assert_about_eq!(
+                V::from(test_bed.body_lat_acc(adiru_number).normal_value().unwrap()),
+                V::from(acc / g)
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn body_norm_acc_is_supplied_by_ir(#[case] adiru_number: usize) {
+            let acc = Acceleration::new::<meter_per_second_squared>(1.);
+            let g = Acceleration::new::<meter_per_second_squared>(9.81);
+            let mut test_bed = all_adirus_aligned_test_bed();
+            test_bed.set_norm_acc(acc);
+            test_bed.run();
+
+            assert_about_eq!(
+                V::from(
+                    test_bed
+                        .body_normal_acc(adiru_number)
+                        .normal_value()
+                        .unwrap()
+                ),
+                V::from(acc / g)
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
         fn heading_is_supplied_by_ir(#[case] adiru_number: usize) {
             let angle = Angle::new::<degree>(160.);
             let mut test_bed = all_adirus_aligned_test_bed_with().heading_of(angle);
@@ -2537,6 +2790,57 @@ mod tests {
                 .track_of(track)
                 .and()
                 .heading_of(heading)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
+                ));
+            test_bed.run();
+
+            assert_eq!(
+                test_bed.drift_angle(adiru_number).normal_value().unwrap(),
+                Angle::new::<degree>(0.)
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn flight_path_angle_is_supplied_when_ground_speed_greater_than_or_equal_to_50_knots(
+            #[case] adiru_number: usize,
+        ) {
+            let vs = Velocity::new::<foot_per_minute>(500.);
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .vertical_speed_of(vs)
+                .and()
+                .ground_speed_of(Velocity::new::<knot>(
+                    InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
+                ));
+            test_bed.run();
+
+            assert_about_eq!(
+                test_bed
+                    .flight_path_angle(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree>(),
+                vs.atan2(Velocity::new::<knot>(
+                    InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS,
+                ))
+                .get::<degree>()
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn flight_path_angle_is_zero_when_ground_speed_less_than_50_knots(
+            #[case] adiru_number: usize,
+        ) {
+            let vs = Velocity::new::<foot_per_minute>(500.);
+            let mut test_bed = all_adirus_aligned_test_bed_with()
+                .vertical_speed_of(vs)
                 .and()
                 .ground_speed_of(Velocity::new::<knot>(
                     InertialReference::MINIMUM_GROUND_SPEED_FOR_TRACK_KNOTS - 0.01,
