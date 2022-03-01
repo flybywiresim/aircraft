@@ -1,7 +1,7 @@
 #pragma once
 
 /// <summary>
-/// SimConnect data types to send Sim Updated
+/// SimConnect data types to send to Sim Updated
 /// </summary>
 enum DataTypesID {
   PayloadStation1,
