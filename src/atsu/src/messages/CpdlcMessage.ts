@@ -9,6 +9,8 @@ import { wordWrap } from '../Common';
  * Defines the general freetext message format
  */
 export class CpdlcMessage extends AtsuMessage {
+    public ContentTemplateIndex: number = 0;
+
     public Content: CpdlcMessageElement | undefined = undefined;
 
     public Response: CpdlcMessage | undefined = undefined;
@@ -27,6 +29,7 @@ export class CpdlcMessage extends AtsuMessage {
     public deserialize(jsonData: any): void {
         super.deserialize(jsonData);
 
+        this.ContentTemplateIndex = jsonData.ContentTemplateIndex;
         if (jsonData.Content !== undefined) {
             this.Content = new CpdlcMessageElement('');
             this.Content.deserialize(jsonData.Content);
@@ -69,9 +72,9 @@ export class CpdlcMessage extends AtsuMessage {
 
         if (this.Content !== undefined) {
             if (this.Direction === AtsuMessageDirection.Downlink) {
-                content = this.serializeContent(CpdlcMessagesDownlink[this.Content.TypeId][0][0], this.Content);
+                content = this.serializeContent(CpdlcMessagesDownlink[this.Content.TypeId][0][this.ContentTemplateIndex], this.Content);
             } else {
-                content = this.serializeContent(CpdlcMessagesUplink[this.Content.TypeId][0][0], this.Content);
+                content = this.serializeContent(CpdlcMessagesUplink[this.Content.TypeId][0][this.ContentTemplateIndex], this.Content);
             }
         } else {
             content = this.Message;
