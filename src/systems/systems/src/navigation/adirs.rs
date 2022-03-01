@@ -11,8 +11,10 @@ use crate::{
     },
 };
 use std::{fmt::Display, time::Duration};
+use uom::si::acceleration::meter_per_second_squared;
 use uom::si::{
     angle::degree,
+    angular_velocity::degree_per_second,
     f64::*,
     length::foot,
     thermodynamic_temperature::degree_celsius,
@@ -201,6 +203,15 @@ struct AdirsSimulatorData {
     roll_id: VariableIdentifier,
     roll: Angle,
 
+    body_rotation_rate_x_id: VariableIdentifier,
+    body_rotation_rate_x: AngularVelocity,
+
+    body_rotation_rate_y_id: VariableIdentifier,
+    body_rotation_rate_y: AngularVelocity,
+
+    body_rotation_rate_z_id: VariableIdentifier,
+    body_rotation_rate_z: AngularVelocity,
+
     heading_id: VariableIdentifier,
     heading: Angle,
 
@@ -230,6 +241,9 @@ impl AdirsSimulatorData {
     const LONGITUDE: &'static str = "PLANE LONGITUDE";
     const PITCH: &'static str = "PLANE PITCH DEGREES";
     const ROLL: &'static str = "PLANE BANK DEGREES";
+    const BODY_ROTATION_RATE_X: &'static str = "ROTATION VELOCITY BODY X";
+    const BODY_ROTATION_RATE_Y: &'static str = "ROTATION VELOCITY BODY Y";
+    const BODY_ROTATION_RATE_Z: &'static str = "ROTATION VELOCITY BODY Z";
     const HEADING: &'static str = "PLANE HEADING DEGREES MAGNETIC";
     const TRACK: &'static str = "GPS GROUND MAGNETIC TRACK";
     const GROUND_SPEED: &'static str = "GPS GROUND SPEED";
@@ -260,6 +274,15 @@ impl AdirsSimulatorData {
 
             roll_id: context.get_identifier(Self::ROLL.to_owned()),
             roll: Default::default(),
+
+            body_rotation_rate_x_id: context.get_identifier(Self::BODY_ROTATION_RATE_X.to_owned()),
+            body_rotation_rate_x: Default::default(),
+
+            body_rotation_rate_y_id: context.get_identifier(Self::BODY_ROTATION_RATE_Y.to_owned()),
+            body_rotation_rate_y: Default::default(),
+
+            body_rotation_rate_z_id: context.get_identifier(Self::BODY_ROTATION_RATE_Z.to_owned()),
+            body_rotation_rate_z: Default::default(),
 
             heading_id: context.get_identifier(Self::HEADING.to_owned()),
             heading: Default::default(),
@@ -296,6 +319,12 @@ impl SimulationElement for AdirsSimulatorData {
         self.longitude = reader.read(&self.longitude_id);
         self.pitch = reader.read(&self.pitch_id);
         self.roll = reader.read(&self.roll_id);
+        let body_rotation_rate_x: f64 = reader.read(&self.body_rotation_rate_x_id);
+        let body_rotation_rate_y: f64 = reader.read(&self.body_rotation_rate_y_id);
+        let body_rotation_rate_z: f64 = reader.read(&self.body_rotation_rate_z_id);
+        self.body_rotation_rate_x = AngularVelocity::new::<degree_per_second>(body_rotation_rate_x);
+        self.body_rotation_rate_y = AngularVelocity::new::<degree_per_second>(body_rotation_rate_y);
+        self.body_rotation_rate_z = AngularVelocity::new::<degree_per_second>(body_rotation_rate_z);
         self.heading = reader.read(&self.heading_id);
         self.track = reader.read(&self.track_id);
         self.ground_speed = reader.read(&self.ground_speed_id);
@@ -794,6 +823,16 @@ struct InertialReference {
     heading: AdirsData<Angle>,
     track: AdirsData<Angle>,
     drift_angle: AdirsData<Angle>,
+    flight_path_angle: AdirsData<Angle>,
+    body_pitch_rate: AdirsData<AngularVelocity>,
+    body_roll_rate: AdirsData<AngularVelocity>,
+    body_yaw_rate: AdirsData<AngularVelocity>,
+    body_longitudinal_acc: AdirsData<Ratio>,
+    body_lateral_acc: AdirsData<Ratio>,
+    body_normal_acc: AdirsData<Ratio>,
+    heading_rate: AdirsData<AngularVelocity>,
+    pitch_att_rate: AdirsData<AngularVelocity>,
+    roll_att_rate: AdirsData<AngularVelocity>,
     vertical_speed: AdirsData<f64>,
     ground_speed: AdirsData<Velocity>,
     wind_direction: AdirsData<Angle>,
@@ -810,6 +849,16 @@ impl InertialReference {
     const HEADING: &'static str = "HEADING";
     const TRACK: &'static str = "TRACK";
     const DRIFT_ANGLE: &'static str = "DRIFT_ANGLE";
+    const FLIGHT_PATH_ANGLE: &'static str = "FLIGHT_PATH_ANGLE";
+    const BODY_PITCH_RATE: &'static str = "BODY_PITCH_RATE";
+    const BODY_ROLL_RATE: &'static str = "BODY_ROLL_RATE";
+    const BODY_YAW_RATE: &'static str = "BODY_YAW_RATE";
+    const BODY_LONGITUDINAL_ACC: &'static str = "BODY_LONGITUDINAL_ACC";
+    const BODY_LATERAL_ACC: &'static str = "BODY_LATERAL_ACC";
+    const BODY_NORMAL_ACC: &'static str = "BODY_NORMAL_ACC";
+    const HEADING_RATE: &'static str = "HEADING_RATE";
+    const PITCH_ATT_RATE: &'static str = "PITCH_ATT_RATE";
+    const ROLL_ATT_RATE: &'static str = "ROLL_ATT_RATE";
     const VERTICAL_SPEED: &'static str = "VERTICAL_SPEED";
     const GROUND_SPEED: &'static str = "GROUND_SPEED";
     const WIND_DIRECTION: &'static str = "WIND_DIRECTION";
@@ -834,6 +883,16 @@ impl InertialReference {
             heading: AdirsData::new_ir(context, number, Self::HEADING),
             track: AdirsData::new_ir(context, number, Self::TRACK),
             drift_angle: AdirsData::new_ir(context, number, Self::DRIFT_ANGLE),
+            flight_path_angle: AdirsData::new_ir(context, number, Self::FLIGHT_PATH_ANGLE),
+            body_pitch_rate: AdirsData::new_ir(context, number, Self::BODY_PITCH_RATE),
+            body_roll_rate: AdirsData::new_ir(context, number, Self::BODY_ROLL_RATE),
+            body_yaw_rate: AdirsData::new_ir(context, number, Self::BODY_YAW_RATE),
+            body_longitudinal_acc: AdirsData::new_ir(context, number, Self::BODY_LONGITUDINAL_ACC),
+            body_lateral_acc: AdirsData::new_ir(context, number, Self::BODY_LATERAL_ACC),
+            body_normal_acc: AdirsData::new_ir(context, number, Self::BODY_NORMAL_ACC),
+            heading_rate: AdirsData::new_ir(context, number, Self::HEADING_RATE),
+            pitch_att_rate: AdirsData::new_ir(context, number, Self::PITCH_ATT_RATE),
+            roll_att_rate: AdirsData::new_ir(context, number, Self::ROLL_ATT_RATE),
             vertical_speed: AdirsData::new_ir(context, number, Self::VERTICAL_SPEED),
             ground_speed: AdirsData::new_ir(context, number, Self::GROUND_SPEED),
             wind_direction: AdirsData::new_ir(context, number, Self::WIND_DIRECTION),
@@ -862,7 +921,7 @@ impl InertialReference {
             simulator_data,
         );
 
-        self.update_attitude_values(simulator_data);
+        self.update_attitude_values(context, simulator_data);
         self.update_heading_value(overhead, simulator_data);
         self.update_non_attitude_values(true_airspeed_source, simulator_data);
     }
@@ -916,14 +975,45 @@ impl InertialReference {
         };
     }
 
-    fn update_attitude_values(&mut self, simulator_data: AdirsSimulatorData) {
+    fn update_attitude_values(
+        &mut self,
+        context: &UpdateContext,
+        simulator_data: AdirsSimulatorData,
+    ) {
         let ssm = if self.is_on && self.is_attitude_aligned() {
             SignStatus::NormalOperation
         } else {
             SignStatus::NoComputedData
         };
-        self.pitch.set_value(simulator_data.pitch, ssm);
-        self.roll.set_value(simulator_data.roll, ssm);
+        let pitch = simulator_data.pitch;
+        let roll = simulator_data.roll;
+        self.pitch.set_value(pitch, ssm);
+        self.roll.set_value(roll, ssm);
+
+        let p = simulator_data.body_rotation_rate_z;
+        let q = simulator_data.body_rotation_rate_x;
+        let r = simulator_data.body_rotation_rate_y;
+        self.body_roll_rate.set_value(p, ssm);
+        self.body_pitch_rate.set_value(q, ssm);
+        self.body_yaw_rate.set_value(r, ssm);
+        self.heading_rate.set_value(
+            (r * V::from(roll.cos()) + q * V::from(roll.sin())) / V::from(pitch.cos()),
+            ssm,
+        );
+        self.pitch_att_rate
+            .set_value(q * V::from(roll.cos()) - r * V::from(roll.sin()), ssm);
+        self.roll_att_rate.set_value(
+            p + (q * V::from(roll.sin()) + r * V::from(roll.cos())) * V::from(pitch.tan()),
+            ssm,
+        );
+
+        let g = Acceleration::new::<meter_per_second_squared>(9.81);
+        self.body_longitudinal_acc
+            .set_value(context.long_accel() / g, ssm);
+        self.body_lateral_acc
+            .set_value(context.lat_accel() / g, ssm);
+        self.body_normal_acc
+            .set_value(context.vert_accel() / g, ssm);
     }
 
     fn update_heading_value(
@@ -976,6 +1066,16 @@ impl InertialReference {
                 } else {
                     diff
                 }
+            } else {
+                Angle::new::<degree>(0.)
+            },
+            ssm,
+        );
+        self.flight_path_angle.set_value(
+            if ground_speed_above_minimum_threshold {
+                simulator_data
+                    .vertical_speed
+                    .atan2(simulator_data.ground_speed)
             } else {
                 Angle::new::<degree>(0.)
             },
@@ -1062,6 +1162,16 @@ impl SimulationElement for InertialReference {
         self.heading.write_to(writer);
         self.track.write_to(writer);
         self.drift_angle.write_to(writer);
+        self.flight_path_angle.write_to(writer);
+        self.body_pitch_rate.write_to(writer);
+        self.body_roll_rate.write_to(writer);
+        self.body_yaw_rate.write_to(writer);
+        self.body_longitudinal_acc.write_to(writer);
+        self.body_lateral_acc.write_to(writer);
+        self.body_normal_acc.write_to(writer);
+        self.heading_rate.write_to(writer);
+        self.pitch_att_rate.write_to(writer);
+        self.roll_att_rate.write_to(writer);
         self.vertical_speed.write_to(writer);
         self.ground_speed.write_to(writer);
         self.wind_direction.write_to(writer);
