@@ -8,11 +8,12 @@ import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
 export const LightPresets = () => {
     const efbBrightness = SimVar.GetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number');
-    // const ovhdIntLt = SimVar.GetSimVarValue('LIGHT POTENTIOMETER:86', 'number');
-    const [ovhdIntLt, setOvhdIntLt] = useSimVar('LIGHT POTENTIOMETER:86', 'number', 200);
+    const ovhdIntLt = SimVar.GetSimVarValue('LIGHT POTENTIOMETER:86', 'number');
+    // const [ovhdIntLt, setOvhdIntLt] = useSimVar('LIGHT POTENTIOMETER:86', 'number', 200);
     const mytest = SimVar.GetSimVarValue('L:A32NX_MYTEST', 'number');
     const coffeeCup = SimVar.GetSimVarValue('L:XMLVAR_COCKPIT_COFFEE_L_HIDDEN', 'bool');
     const seatbelt = SimVar.GetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'bool');
+    const fd = SimVar.GetSimVarValue('AUTOPILOT FLIGHT DIRECTOR ACTIVE:1', 'bool');
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function handleClick(number: number) {
@@ -21,24 +22,29 @@ export const LightPresets = () => {
         console.log(`A32NX_EFB_BRIGHTNESS <== ${efbBrightness} (want 99)`);
 
         console.log(`LIGHT POTENTIOMETER:86 ==> ${ovhdIntLt}`);
-        // SimVar.SetSimVarValue('LIGHT POTENTIOMETER:86', 'percent', 33).then();
+        SimVar.SetSimVarValue('LIGHT POTENTIOMETER:86', 'percent', 33);
+        // SimVar.SetSimVarValue('K:LIGHT_POTENTIOMETER_86_SET', 'number', 33).then();
+        // setOvhdIntLt(33);
         console.log(`LIGHT POTENTIOMETER:86 <== ${ovhdIntLt} (want 0.33)`);
-        setOvhdIntLt(33);
+
         console.log(`A32NX_MYTEST ==> ${mytest}`);
-        // @ts-ignore
-        SimVar.SetSimVarValue('L:A32NX_MYTEST', 'number', mytest + 1).then();
+        SimVar.SetSimVarValue('L:A32NX_MYTEST', 'number', mytest === null ? 0 : mytest + 1).then();
         console.log(`A32NX_MYTEST <== ${mytest} + 1`);
 
         console.log(`XMLVAR_COCKPIT_COFFEE_L_HIDDEN ==> !${coffeeCup}`);
-        SimVar.SetSimVarValue('L:XMLVAR_COCKPIT_COFFEE_L_HIDDEN', 'bool', !coffeeCup);
+        SimVar.SetSimVarValue('L:XMLVAR_COCKPIT_COFFEE_L_HIDDEN', 'bool', !coffeeCup).then();
         console.log(`XMLVAR_COCKPIT_COFFEE_L_HIDDEN <== ${coffeeCup}`);
 
         console.log(`CABIN SEATBELTS ALERT SWITCH ==> ${seatbelt}`);
-        SimVar.SetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'bool', !seatbelt).then();
+        SimVar.SetSimVarValue('K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE', 'number', 1).then();
         console.log(`CABIN SEATBELTS ALERT SWITCH <== ${seatbelt}`);
 
+        console.log('K:TOGGLE_FLIGHT_DIRECTOR trigger');
+        SimVar.SetSimVarValue('H:A320_Neo_CDU_1_BTN_A', 'number', 0).then();
+        console.log('K:TOGGLE_FLIGHT_DIRECTOR triggered');
+
         console.log('H:A320_Neo_CDU_1_BTN_CLR trigger');
-        SimVar.SetSimVarValue('H:A320_Neo_CDU_1_BTN_CLR', 'number', 0).then();
+        SimVar.SetSimVarValue('K:TOGGLE_FLIGHT_DIRECTOR', 'number', 1);
         console.log('H:A320_Neo_CDU_1_BTN_CLR triggered');
 
         // SimVar.SetSimVarValue('H:A32NX_EFB_POWER', 'number', 1);
@@ -59,6 +65,9 @@ export const LightPresets = () => {
     useEffect(() => {
         console.log(`Effect: CABIN SEATBELTS ALERT SWITCH = ${seatbelt}`);
     }, [seatbelt]);
+    useEffect(() => {
+        console.log(`Effect: AUTOPILOT FLIGHT DIRECTOR ACTIVE:1 = ${fd}`);
+    }, [fd]);
 
     return (
         <div className="w-full">
@@ -78,7 +87,7 @@ export const LightPresets = () => {
                                 </div>
                             </div>
                             <br />
-                            efnBrightness =
+                            efbBrightness =
                             {' '}
                             {efbBrightness}
                             <br />
@@ -97,6 +106,10 @@ export const LightPresets = () => {
                             seatbelt =
                             {' '}
                             {seatbelt}
+                            <br />
+                            fd =
+                            {' '}
+                            {fd}
                         </ScrollableContainer>
                     </div>
                 </div>
