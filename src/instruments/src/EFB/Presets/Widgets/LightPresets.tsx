@@ -8,8 +8,8 @@ import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
 export const LightPresets = () => {
     const efbBrightness = SimVar.GetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number');
-    const ovhdIntLt = SimVar.GetSimVarValue('LIGHT POTENTIOMETER:86', 'number');
-    // const [ovhdIntLt, setOvhdIntLt] = useSimVar('LIGHT POTENTIOMETER:86', 'number', 200);
+    // const potentiometer = SimVar.GetSimVarValue('LIGHT POTENTIOMETER:96', 'number');
+    const [potentiometer, setPotentiometer] = useSimVar('LIGHT POTENTIOMETER:96', 'percent over 100', 200);
     const mytest = SimVar.GetSimVarValue('L:A32NX_MYTEST', 'number');
     const coffeeCup = SimVar.GetSimVarValue('L:XMLVAR_COCKPIT_COFFEE_L_HIDDEN', 'bool');
     const seatbelt = SimVar.GetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'bool');
@@ -21,11 +21,11 @@ export const LightPresets = () => {
         SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', 99).then();
         console.log(`A32NX_EFB_BRIGHTNESS <== ${efbBrightness} (want 99)`);
 
-        console.log(`LIGHT POTENTIOMETER:86 ==> ${ovhdIntLt}`);
-        SimVar.SetSimVarValue('LIGHT POTENTIOMETER:86', 'percent', 33);
-        // SimVar.SetSimVarValue('K:LIGHT_POTENTIOMETER_86_SET', 'number', 33).then();
-        // setOvhdIntLt(33);
-        console.log(`LIGHT POTENTIOMETER:86 <== ${ovhdIntLt} (want 0.33)`);
+        console.log(`LIGHT POTENTIOMETER:96 ==> ${potentiometer}`);
+        // SimVar.SetSimVarValue('LIGHT POTENTIOMETER:96', 'percent', 33);
+        // SimVar.SetSimVarValue('K:LIGHT_POTENTIOMETER_96_SET', 'percent', 0.33).then();
+        setPotentiometer(33);
+        console.log(`LIGHT POTENTIOMETER:96 <== ${potentiometer} (want 0.33)`);
 
         console.log(`A32NX_MYTEST ==> ${mytest}`);
         SimVar.SetSimVarValue('L:A32NX_MYTEST', 'number', mytest === null ? 0 : mytest + 1).then();
@@ -54,8 +54,8 @@ export const LightPresets = () => {
         console.log(`Effect: A32NX_EFB_BRIGHTNESS = ${efbBrightness}`);
     }, [efbBrightness]);
     useEffect(() => {
-        console.log(`Effect: LIGHT POTENTIOMETER:86 = ${ovhdIntLt}`);
-    }, [ovhdIntLt]);
+        console.log(`Effect: LIGHT POTENTIOMETER:96 = ${potentiometer}`);
+    }, [potentiometer]);
     useEffect(() => {
         console.log(`Effect: A32NX_MYTEST = ${mytest}`);
     }, [coffeeCup]);
@@ -91,9 +91,9 @@ export const LightPresets = () => {
                             {' '}
                             {efbBrightness}
                             <br />
-                            ovhdIntLt=
+                            potentiometer (96)=
                             {' '}
-                            {ovhdIntLt}
+                            {potentiometer}
                             <br />
                             myTest =
                             {' '}
