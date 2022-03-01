@@ -10,13 +10,11 @@ const getCoRoute = async (mcdu, coRoute, updateView) => {
         .then(response => {
             switch (response.status) {
                 case 422:
-                    mcdu.addNewMessage(NXFictionalMessages.authErr);
                     return false;
                 case 404:
                     mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                     return false;
                 case 500:
-                    mcdu.addNewMessage(NXFictionalMessages.unknownDownlinkErr);
                     return false;
                 case 200:
                     return response.json().then(data => {
@@ -36,7 +34,6 @@ const getCoRoute = async (mcdu, coRoute, updateView) => {
         })
         .catch(_err => {
             console.error(_err);
-            mcdu.addNewMessage(NXSystemMessages.fmDataLinkUnavail);
             updateView();
             return false;
         });

@@ -18,10 +18,10 @@ fi
 
 npm install
 npm run build:exec
-if [ ! -f "${DIR}/../flybywire-aircraft-a320-neo/resources/properties.yml" ]
+if [ ! -f "${DIR}/../flybywire-aircraft-a320-neo/resources/properties.json" ]
 then
     mkdir -p "${DIR}/../flybywire-aircraft-a320-neo/resources"
-    cp apps/server/src/config/properties.yml "${DIR}/../flybywire-aircraft-a320-neo/resources/properties.yml"
+    cp apps/server/src/config/properties.json "${DIR}/../flybywire-aircraft-a320-neo/resources/properties.json"
 fi
 cp node_modules/pdf-to-printer/dist/SumatraPDF.exe "${DIR}/../flybywire-aircraft-a320-neo/resources/SumatraPDF.exe"
 cp dist/local-server.exe "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe"

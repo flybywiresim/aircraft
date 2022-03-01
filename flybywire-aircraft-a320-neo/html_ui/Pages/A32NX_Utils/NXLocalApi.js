@@ -14,4 +14,4 @@ class NXLocalApi {
         return response;
     }
 }
-NXLocalApi.url = "http://localhost:3838";
+NXLocalApi.url = "http://localhost:8380";
