@@ -6,9 +6,9 @@ class CDUAtcMenuFansB {
         mcdu.setTemplate([
             ["ATC MENU", "1", "2"],
             [""],
-            ["<REQUEST[color]white", "EDIT>[color]inop"],
+            ["<REQUEST[color]white"],
             [""],
-            ["", "TEXT>[color]inop"],
+            [""],
             [""],
             ["", ""],
             [""],
