@@ -244,6 +244,8 @@ const SimOptionsPage = () => {
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
     const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8380');
+    const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
+    const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
 
     const fpSyncButtons: ButtonType[] = [
         { name: 'None', setting: 'NONE' },
@@ -333,6 +335,18 @@ const SimOptionsPage = () => {
                         />
                     </div>
 
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">Use calculated ILS signals</span>
+                        </span>
+                        <Toggle
+                            value={radioReceiverUsage === '1'}
+                            onToggle={(value) => {
+                                setRadioReceiverUsage(value ? '1' : '0');
+                                setRadioReceiverUsageSimVar(value ? 1 : 0);
+                            }}
+                        />
+                    </div>
                 </div>
                 <ControlSettings setShowSettings={setShowThrottleSettings} />
             </>
