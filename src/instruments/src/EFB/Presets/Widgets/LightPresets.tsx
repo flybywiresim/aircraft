@@ -3,41 +3,43 @@
 
 /* eslint-disable max-len */
 import React, { useEffect } from 'react';
+import { useSimVar } from '@instruments/common/simVars';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
 export const LightPresets = () => {
     const efbBrightness = SimVar.GetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number');
-    const ovhdIntLt = SimVar.GetSimVarValue('LIGHT POTENTIOMETER:86', 'number');
+    // const ovhdIntLt = SimVar.GetSimVarValue('LIGHT POTENTIOMETER:86', 'number');
+    const [ovhdIntLt, setOvhdIntLt] = useSimVar('LIGHT POTENTIOMETER:86', 'number', 200);
     const mytest = SimVar.GetSimVarValue('L:A32NX_MYTEST', 'number');
     const coffeeCup = SimVar.GetSimVarValue('L:XMLVAR_COCKPIT_COFFEE_L_HIDDEN', 'bool');
     const seatbelt = SimVar.GetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'bool');
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function handleClick(number: number) {
-        console.log(`A32NX_EFB_BRIGHTNESS = ${efbBrightness}`);
+        console.log(`A32NX_EFB_BRIGHTNESS ==> ${efbBrightness}`);
         SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', 99).then();
-        console.log(`A32NX_EFB_BRIGHTNESS = ${efbBrightness}`);
+        console.log(`A32NX_EFB_BRIGHTNESS <== ${efbBrightness} (want 99)`);
 
-        console.log(`LIGHT POTENTIOMETER:86 = ${ovhdIntLt}`);
-        SimVar.SetSimVarValue('LIGHT POTENTIOMETER:86', 'number', 33).then();
-        console.log(`LIGHT POTENTIOMETER:86 = ${ovhdIntLt}`);
-
-        console.log(`A32NX_MYTEST = ${mytest}`);
+        console.log(`LIGHT POTENTIOMETER:86 ==> ${ovhdIntLt}`);
+        // SimVar.SetSimVarValue('LIGHT POTENTIOMETER:86', 'percent', 33).then();
+        console.log(`LIGHT POTENTIOMETER:86 <== ${ovhdIntLt} (want 0.33)`);
+        setOvhdIntLt(33);
+        console.log(`A32NX_MYTEST ==> ${mytest}`);
         // @ts-ignore
         SimVar.SetSimVarValue('L:A32NX_MYTEST', 'number', mytest + 1).then();
-        console.log(`A32NX_MYTEST = ${mytest}`);
+        console.log(`A32NX_MYTEST <== ${mytest} + 1`);
 
-        console.log(`XMLVAR_COCKPIT_COFFEE_L_HIDDEN = ${coffeeCup}`);
+        console.log(`XMLVAR_COCKPIT_COFFEE_L_HIDDEN ==> !${coffeeCup}`);
         SimVar.SetSimVarValue('L:XMLVAR_COCKPIT_COFFEE_L_HIDDEN', 'bool', !coffeeCup);
-        console.log(`XMLVAR_COCKPIT_COFFEE_L_HIDDEN = ${coffeeCup}`);
+        console.log(`XMLVAR_COCKPIT_COFFEE_L_HIDDEN <== ${coffeeCup}`);
 
-        console.log(`CABIN SEATBELTS ALERT SWITCH = ${seatbelt}`);
+        console.log(`CABIN SEATBELTS ALERT SWITCH ==> ${seatbelt}`);
         SimVar.SetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'bool', !seatbelt).then();
-        console.log(`CABIN SEATBELTS ALERT SWITCH = ${seatbelt}`);
+        console.log(`CABIN SEATBELTS ALERT SWITCH <== ${seatbelt}`);
 
-        console.log('H:A320_Neo_CDU_1_BTN_CLR');
+        console.log('H:A320_Neo_CDU_1_BTN_CLR trigger');
         SimVar.SetSimVarValue('H:A320_Neo_CDU_1_BTN_CLR', 'number', 0).then();
-        console.log('H:A320_Neo_CDU_1_BTN_CLR');
+        console.log('H:A320_Neo_CDU_1_BTN_CLR triggered');
 
         // SimVar.SetSimVarValue('H:A32NX_EFB_POWER', 'number', 1);
     }
