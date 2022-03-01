@@ -8,13 +8,13 @@ class CDUAtcMenuFansB {
             [""],
             ["<REQUEST[color]white", "EDIT>[color]inop"],
             [""],
-            ["", "TEXT>[color]white"],
+            ["", "TEXT>[color]inop"],
             [""],
             ["", ""],
             [""],
             ["<MSG RECORD", ""],
-            ["", "FREQUENCY\xa0"],
-            ["<CONNECTION", "MONITORING>"],
+            ["", "FREQUENCY[color]inop\xa0"],
+            ["<CONNECTION", "MONITORING>[color]inop"],
             ["\xa0ATSU DLK"],
             ["<RETURN"]
         ]);
