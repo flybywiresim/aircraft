@@ -1,5 +1,4 @@
 import { Arinc429Word } from '@shared/arinc429';
-import { getSmallestAngle } from '@instruments/common/utils.js';
 import { LateralMode, VerticalMode } from '@shared/autopilot.js';
 import React from 'react';
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
