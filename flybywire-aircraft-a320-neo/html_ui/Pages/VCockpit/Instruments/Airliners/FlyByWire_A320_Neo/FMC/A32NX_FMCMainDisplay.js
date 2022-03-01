@@ -2091,7 +2091,7 @@ class FMCMainDisplay extends BaseAirliners {
             course = this.ilsCourse;
         } else if (this.ilsAutoTuned && (!this._ilsIdentPilotEntered || this._ilsIcao === this.ilsAutoIcao) && !this._ilsFrequencyPilotEntered) {
             course = this.ilsAutoCourse;
-        } else if (this.ilsFrequency > 0 && SimVar.GetSimVarValue('NAV HAS LOCALIZER:3', 'boolean') === 1) {
+        } else if (this.ilsFrequency > 0 && SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number') === 1) {
             course = SimVar.GetSimVarValue('NAV LOCALIZER:3', 'degrees');
         }
         return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);

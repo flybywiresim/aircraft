@@ -71,6 +71,9 @@ bool FlyByWireInterface::update(double sampleTime) {
   // handle simulation rate reduction
   result &= handleSimulationRate(sampleTime);
 
+  // update radio receivers
+  result &= updateRadioReceiver(sampleTime);
+
   // do not process laws in pause or slew
   if (simConnectInterface.getSimData().slew_on) {
     wasInSlew = true;
@@ -149,14 +152,12 @@ void FlyByWireInterface::loadConfiguration() {
   idMaximumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4));
   limitSimulationRateByPerformance = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "LIMIT_SIMULATION_RATE_BY_PERFORMANCE", true);
   simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
-  idRadioReceiverUsage->set(INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "CALCULATED_LOCALIZER_AND_GLIDESLOPE_ENABLED", false));
 
   // print configuration into console
   cout << "WASM: AUTOPILOT : MINIMUM_SIMULATION_RATE                     = " << idMinimumSimulationRate->get() << endl;
   cout << "WASM: AUTOPILOT : MAXIMUM_SIMULATION_RATE                     = " << idMaximumSimulationRate->get() << endl;
   cout << "WASM: AUTOPILOT : LIMIT_SIMULATION_RATE_BY_PERFORMANCE        = " << limitSimulationRateByPerformance << endl;
   cout << "WASM: AUTOPILOT : SIMULATION_RATE_REDUCTION_ENABLED           = " << simulationRateReductionEnabled << endl;
-  cout << "WASM: AUTOPILOT : CALCULATED_LOCALIZER_AND_GLIDESLOPE_ENABLED = " << idRadioReceiverUsage->get() << endl;
 
   // --------------------------------------------------------------------------
   // load values - autothrust
@@ -430,7 +431,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idAileronPositionLeft = make_unique<LocalVariable>("A32NX_AILERON_LEFT_DEFLECTION_DEMAND");
   idAileronPositionRight = make_unique<LocalVariable>("A32NX_AILERON_RIGHT_DEFLECTION_DEMAND");
 
-  idRadioReceiverUsage = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE");
+  idRadioReceiverUsageEnabled = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
   idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
   idRadioReceiverLocalizerDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DEVIATION");
   idRadioReceiverLocalizerDistance = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
@@ -614,6 +615,39 @@ bool FlyByWireInterface::handleSimulationRate(double sampleTime) {
   return true;
 }
 
+bool FlyByWireInterface::updateRadioReceiver(double sampleTime) {
+  // get sim data
+  auto simData = simConnectInterface.getSimData();
+
+  // get localizer data
+  auto localizer = radioReceiver.calculateLocalizerDeviation(
+      simData.nav_loc_valid, simData.nav_loc_deg, simData.nav_loc_magvar_deg, simData.nav_loc_pos.Latitude, simData.nav_loc_pos.Longitude,
+      simData.nav_loc_pos.Altitude, simData.latitude_deg, simData.longitude_deg, simData.altitude_m);
+
+  // get glideslope data
+  auto glideSlope = radioReceiver.calculateGlideSlopeDeviation(
+      simData.nav_gs_valid, simData.nav_loc_deg, simData.nav_gs_deg, simData.nav_gs_pos.Latitude, simData.nav_gs_pos.Longitude,
+      simData.nav_gs_pos.Altitude, simData.latitude_deg, simData.longitude_deg, simData.altitude_m);
+
+  // update local variables
+  if (idRadioReceiverUsageEnabled->get()) {
+    idRadioReceiverLocalizerValid->set(localizer.isValid);
+    idRadioReceiverLocalizerDeviation->set(localizer.deviation);
+    idRadioReceiverLocalizerDistance->set(localizer.distance);
+    idRadioReceiverGlideSlopeValid->set(glideSlope.isValid);
+    idRadioReceiverGlideSlopeDeviation->set(glideSlope.deviation);
+  } else {
+    idRadioReceiverLocalizerValid->set(simData.nav_loc_valid);
+    idRadioReceiverLocalizerDeviation->set(simData.nav_loc_error_deg);
+    idRadioReceiverLocalizerDistance->set(simData.nav_dme_valid ? simData.nav_dme_nmi : simData.nav_loc_valid ? localizer.distance : 0);
+    idRadioReceiverGlideSlopeValid->set(simData.nav_gs_valid);
+    idRadioReceiverGlideSlopeDeviation->set(simData.nav_gs_error_deg);
+  }
+
+  // success
+  return true;
+}
+
 bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   auto simData = simConnectInterface.getSimData();
   additionalData.master_warning_active = idMasterWarning->get();
@@ -747,16 +781,25 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.nav_valid = (simData.nav_valid != 0);
     autopilotStateMachineInput.in.data.nav_loc_deg = simData.nav_loc_deg;
     autopilotStateMachineInput.in.data.nav_gs_deg = simData.nav_gs_deg;
-    autopilotStateMachineInput.in.data.nav_dme_valid = idRadioReceiverUsage->get() ? 0 : (simData.nav_dme_valid != 0);
-    autopilotStateMachineInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
-    autopilotStateMachineInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
+    if (idRadioReceiverUsageEnabled->get()) {
+      autopilotStateMachineInput.in.data.nav_dme_valid = 0;  // this forces the usage of the calculated dme
+      autopilotStateMachineInput.in.data.nav_dme_nmi = idRadioReceiverLocalizerDistance->get();
+      autopilotStateMachineInput.in.data.nav_loc_valid = idRadioReceiverLocalizerValid->get() != 0;
+      autopilotStateMachineInput.in.data.nav_loc_error_deg = idRadioReceiverLocalizerDeviation->get();
+      autopilotStateMachineInput.in.data.nav_gs_valid = idRadioReceiverGlideSlopeValid->get() != 0;
+      autopilotStateMachineInput.in.data.nav_gs_error_deg = idRadioReceiverGlideSlopeDeviation->get();
+    } else {
+      autopilotStateMachineInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
+      autopilotStateMachineInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;
+      autopilotStateMachineInput.in.data.nav_loc_valid = (simData.nav_loc_valid != 0);
+      autopilotStateMachineInput.in.data.nav_loc_error_deg = simData.nav_loc_error_deg;
+      autopilotStateMachineInput.in.data.nav_gs_valid = (simData.nav_gs_valid != 0);
+      autopilotStateMachineInput.in.data.nav_gs_error_deg = simData.nav_gs_error_deg;
+    }
     autopilotStateMachineInput.in.data.nav_loc_magvar_deg = simData.nav_loc_magvar_deg;
-    autopilotStateMachineInput.in.data.nav_loc_error_deg = simData.nav_loc_error_deg;
     autopilotStateMachineInput.in.data.nav_loc_position.lat = simData.nav_loc_pos.Latitude;
     autopilotStateMachineInput.in.data.nav_loc_position.lon = simData.nav_loc_pos.Longitude;
     autopilotStateMachineInput.in.data.nav_loc_position.alt = simData.nav_loc_pos.Altitude;
-    autopilotStateMachineInput.in.data.nav_gs_valid = (simData.nav_gs_valid != 0);
-    autopilotStateMachineInput.in.data.nav_gs_error_deg = simData.nav_gs_error_deg;
     autopilotStateMachineInput.in.data.nav_gs_position.lat = simData.nav_gs_pos.Latitude;
     autopilotStateMachineInput.in.data.nav_gs_position.lon = simData.nav_gs_pos.Longitude;
     autopilotStateMachineInput.in.data.nav_gs_position.alt = simData.nav_gs_pos.Altitude;
@@ -838,21 +881,6 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
 
     // result
     autopilotStateMachineOutput = autopilotStateMachine.getExternalOutputs().out.output;
-
-    // update radio
-    if (idRadioReceiverUsage->get()) {
-      idRadioReceiverLocalizerValid->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_valid);
-      idRadioReceiverLocalizerDeviation->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_error_deg);
-      idRadioReceiverLocalizerDistance->set(autopilotStateMachine.getExternalOutputs().out.data.nav_dme_nmi);
-      idRadioReceiverGlideSlopeValid->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_valid);
-      idRadioReceiverGlideSlopeDeviation->set(autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_error_deg);
-    } else {
-      idRadioReceiverLocalizerValid->set(simData.nav_loc_valid);
-      idRadioReceiverLocalizerDeviation->set(simData.nav_loc_error_deg);
-      idRadioReceiverLocalizerDistance->set(simData.nav_dme_nmi);
-      idRadioReceiverGlideSlopeValid->set(simData.nav_gs_valid);
-      idRadioReceiverGlideSlopeDeviation->set(simData.nav_gs_error_deg);
-    }
   } else {
     // read client data written by simulink
     ClientDataAutopilotStateMachine clientData = simConnectInterface.getClientDataAutopilotStateMachine();
@@ -885,13 +913,6 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineOutput.TCAS_message_disarm = clientData.TCAS_message_disarm;
     autopilotStateMachineOutput.TCAS_message_RA_inhibit = clientData.TCAS_message_RA_inhibit;
     autopilotStateMachineOutput.TCAS_message_TRK_FPA_deselection = clientData.TCAS_message_TRK_FPA_deselection;
-
-    // update radio
-    idRadioReceiverLocalizerValid->set(clientData.nav_e_loc_valid);
-    idRadioReceiverLocalizerDeviation->set(clientData.nav_e_loc_error_deg);
-    idRadioReceiverLocalizerDistance->set(0);
-    idRadioReceiverGlideSlopeValid->set(clientData.nav_e_gs_valid);
-    idRadioReceiverGlideSlopeDeviation->set(clientData.nav_e_gs_error_deg);
   }
 
   // update autopilot state -------------------------------------------------------------------------------------------
@@ -1109,13 +1130,13 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.nav_valid = (simData.nav_valid != 0);
     autopilotLawsInput.in.data.nav_loc_deg = simData.nav_loc_deg;
     autopilotLawsInput.in.data.nav_gs_deg = simData.nav_gs_deg;
-    if (idRadioReceiverUsage->get()) {
+    if (idRadioReceiverUsageEnabled->get()) {
       autopilotLawsInput.in.data.nav_dme_valid = 0;  // this forces the usage of the calculated dme
-      autopilotLawsInput.in.data.nav_dme_nmi = autopilotStateMachine.getExternalOutputs().out.data.nav_dme_nmi;
-      autopilotLawsInput.in.data.nav_loc_valid = autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_valid;
-      autopilotLawsInput.in.data.nav_loc_error_deg = autopilotStateMachine.getExternalOutputs().out.data.nav_e_loc_error_deg;
-      autopilotLawsInput.in.data.nav_gs_valid = autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_valid;
-      autopilotLawsInput.in.data.nav_gs_error_deg = autopilotStateMachine.getExternalOutputs().out.data.nav_e_gs_error_deg;
+      autopilotLawsInput.in.data.nav_dme_nmi = idRadioReceiverLocalizerDistance->get();
+      autopilotLawsInput.in.data.nav_loc_valid = idRadioReceiverLocalizerValid->get() != 0;
+      autopilotLawsInput.in.data.nav_loc_error_deg = idRadioReceiverLocalizerDeviation->get();
+      autopilotLawsInput.in.data.nav_gs_valid = idRadioReceiverGlideSlopeValid->get() != 0;
+      autopilotLawsInput.in.data.nav_gs_error_deg = idRadioReceiverGlideSlopeDeviation->get();
     } else {
       autopilotLawsInput.in.data.nav_dme_valid = (simData.nav_dme_valid != 0);
       autopilotLawsInput.in.data.nav_dme_nmi = simData.nav_dme_nmi;

@@ -34,7 +34,7 @@ export function LandingSystem({ LSButtonPressed, pitch, roll }) {
 }
 
 const LandingSystemInfo = ({ displayed }) => {
-    if (!displayed || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {
+    if (!displayed || !getSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number')) {
         return null;
     }
 
@@ -82,8 +82,8 @@ const LandingSystemInfo = ({ displayed }) => {
 };
 
 const LocalizerIndicator = () => {
-    const [hasLoc] = useSimVar('NAV HAS LOCALIZER:3', 'Bool', 250);
-    const [radialError] = useSimVar('NAV RADIAL ERROR:3', 'degrees', 250);
+    const [hasLoc] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number', 250);
+    const [radialError] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_DEVIATION', 'number', 250);
     const [filterLocalizerIndicator] = useState(() => new LagFilter(1.5));
     const [diamond, setDiamond] = useState<JSX.Element | null>(null);
 
@@ -123,8 +123,8 @@ const LocalizerIndicator = () => {
 };
 
 const GlideslopeIndicator = () => {
-    const [hasGlideslope] = useSimVar('NAV HAS GLIDE SLOPE:3', 'Bool', 250);
-    const [glideSlopeError] = useSimVar('NAV GLIDE SLOPE ERROR:3', 'degrees', 250);
+    const [hasGlideslope] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number', 250);
+    const [glideSlopeError] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_DEVIATION', 'number', 250);
     const [filterGlideslopeIndicator] = useState(() => new LagFilter(1.5));
     const [diamond, setDiamond] = useState<JSX.Element | null>(null);
 

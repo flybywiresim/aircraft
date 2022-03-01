@@ -19,7 +19,7 @@ class CDUPerformancePage {
         CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
         mcdu.pageUpdate = () => {
             CDUPerformancePage._timer++;
-            if (CDUPerformancePage._timer >= 15) {
+            if (CDUPerformancePage._timer >= 50) {
                 if (mcdu.flightPhaseManager.phase === CDUPerformancePage._lastPhase) {
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
                 } else {

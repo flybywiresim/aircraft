@@ -20,13 +20,14 @@ class CDUNavRadioPage {
         let vor2CourseCell = "";
         let adf2FrequencyCell = "";
         let adf2BfoOption = "";
-        CDUNavRadioPage._timer = 0;
-        mcdu.pageUpdate = () => {
-            CDUNavRadioPage._timer++;
-            if (CDUNavRadioPage._timer >= 5) {
+
+        // regular update while boarding/de-boarding is running
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.NavRadioPage) {
                 CDUNavRadioPage.ShowPage(mcdu);
             }
-        };
+        }, mcdu.PageTimeout.Default);
+
         if (!radioOn) {
             vor1FrequencyCell = "[\xa0]/[\xa0\xa0.\xa0]";
             const vor1Beacon = mcdu.radioNav.getVORBeacon(1);
@@ -382,4 +383,3 @@ class CDUNavRadioPage {
         ]);
     }
 }
-CDUNavRadioPage._timer = 0;

@@ -67,9 +67,11 @@ class CDUIRSStatus {
             }
         };
 
-        mcdu.refreshPageCallback = () => {
-            CDUIRSStatus.ShowPage(mcdu, index, wind_dir);
-        };
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
+        // regular update due to showing dynamic data on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.IRSStatus) {
+                CDUIRSStatus.ShowPage(mcdu, index, wind_dir);
+            }
+        }, mcdu.PageTimeout.Default);
     }
 }

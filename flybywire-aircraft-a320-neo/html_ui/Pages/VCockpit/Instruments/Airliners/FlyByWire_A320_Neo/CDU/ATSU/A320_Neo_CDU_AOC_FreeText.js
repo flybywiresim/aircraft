@@ -1,6 +1,7 @@
 class CDUAocFreeText {
     static ShowPage(mcdu, store = { "msg_to": "", "reqID": 0, "msg_line1": "", "msg_line2": "", "msg_line3": "", "msg_line4": "", "sendStatus": ""}) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.AOCFreeText;
         const networkTypes = [
             'HOPPIE',
             'FBW'
@@ -108,7 +109,9 @@ class CDUAocFreeText {
             }
 
             store["sendStatus"] = "SENDING";
-            updateView();
+            if (mcdu.page.Current === mcdu.page.AOCFreeText) {
+                updateView();
+            }
 
             // create the message
             const message = new Atsu.FreetextMessage();
@@ -143,15 +146,17 @@ class CDUAocFreeText {
 
                     setTimeout(() => {
                         store["sendStatus"] = "";
-                        if (mcdu.page.Current === mcdu.page.AOCDepartRequest) {
-                            CDUAocDepartReq.ShowPage1(mcdu, store);
+                        if (mcdu.page.Current === mcdu.page.AOCFreeText) {
+                            CDUAocFreeText.ShowPage(mcdu, store);
                         }
                     }, 5000);
                 } else {
                     store["sendStatus"] = "FAILED";
                     mcdu.addNewAtsuMessage(code);
                 }
-                updateView();
+                if (mcdu.page.Current === mcdu.page.AOCFreeText) {
+                    updateView();
+                }
             });
         };
 
