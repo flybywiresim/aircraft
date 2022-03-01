@@ -123,7 +123,8 @@ export const PFD: React.FC = () => {
 
     const heading = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`);
     const groundTrack = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_TRACK`);
-    const groundSpeed = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_GROUND_SPEED`);
+    const fpa = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_FLIGHT_PATH_ANGLE`);
+    const da = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_DRIFT_ANGLE`);
 
     const decisionHeight = getSimVar('L:AIRLINER_DECISION_HEIGHT', 'feet');
 
@@ -207,10 +208,8 @@ export const PFD: React.FC = () => {
                 <AttitudeIndicatorFixedCenter
                     pitch={pitch}
                     roll={roll}
-                    vs={inertialVerticalSpeed}
-                    gs={groundSpeed}
-                    heading={heading}
-                    track={groundTrack}
+                    fpa={fpa}
+                    da={da}
                     isOnGround={isOnGround}
                     FDActive={FDActive}
                     isAttExcessive={isAttExcessive}
