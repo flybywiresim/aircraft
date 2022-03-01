@@ -6,14 +6,32 @@
 1. [EIS Display System](#eis-display-system)
 1. [Fly-By-Wire System](#fly-by-wire-system)
 1. [ADIRS](#adirs)
+1. [Flight Management System](#flight-management-system)
 1. [Autopilot System](#autopilot-system)
 1. [Autothrust System](#autothrust-system)
 1. [Throttle Mapping System](#throttle-mapping-system)
 1. [Engine and FADEC System](#engine-and-fadec-system)
 1. [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
 1. [Pneumatic](#pneumatic)
+1. [Landing Gear (ATA 32)](#landing-gear-ata-32)
+1. [ATC (ATA 34)](#atc-ata-34)
+1. [Radio Altimeter (ATA 34)](#ra-ata-34)
 
 ## Uncategorized
+
+- A32NX_START_STATE
+  - Enum
+  - Indicates the state in which MSFS started
+  - State | Value
+    --- | ---
+    Hangar | 1
+    Apron | 2
+    Taxi | 3
+    Runway | 4
+    Climb | 5
+    Cruise | 6
+    Approach | 7
+    Final | 8
 
 - A32NX_NO_SMOKING_MEMO
     - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM
@@ -41,14 +59,6 @@
     - boolean
     - whether one of the brakes are hot (>300°C)
 
-- XMLVAR_Auto
-    - Used in the `.flt` files to set a default value for the ATC 3 way switch on the TCAS panel
-    - Maps to the `I:XMLVAR_Auto` variable which is the actual backing var for the switch
-
-- XMLVAR_ALT_MODE_REQUESTED
-    - Used in the `.flt` files to set a default value for the ALT RPTG 2 way switch on the TCAS panel
-    - Maps to the `I:XMLVAR_ALT_MODE_REQUESTED` variable which is the actual backing var for the switch
-
 - A32NX_KNOB_OVHD_AIRCOND_XBLEED_Position
     - Position (0-2)
     - 0 is SHUT, 1 is AUTO, 2 is OPEN
@@ -61,17 +71,9 @@
     - Bool
     - True if fault in pack 1
 
-- A32NX_AIRCOND_PACK1_TOGGLE
-    - Bool
-    - True if pack 1 is on
-
 - A32NX_AIRCOND_PACK2_FAULT
     - Bool
     - True if fault in pack 2
-
-- A32NX_AIRCOND_PACK2_TOGGLE
-    - Bool
-    - True if pack 2 is on
 
 - A32NX_AIRCOND_HOTAIR_FAULT
     - Bool
@@ -252,47 +254,47 @@
     - Bool
     - True when the FWC decides that flight phase inhibits should be overridden (and ignored)
 
-- A32NX_VSPEEDS_VS
+- A32NX_SPEEDS_VS
     - Number
     - Current config stall speed
     - is mach corrected
 
-- A32NX_VSPEEDS_VLS
+- A32NX_SPEEDS_VLS
     - Number
     - Current config minimum selectable speed
     - is mach corrected
 
-- A32NX_VSPEEDS_F
+- A32NX_SPEEDS_F
     - Number
     - F-Speed (approach)
 
-- A32NX_VSPEEDS_S
+- A32NX_SPEEDS_S
     - Number
     - S-Speed (approach)
 
-- A32NX_VSPEEDS_GD
+- A32NX_SPEEDS_GD
     - Number
     - Green Dot speed (clean config or O)
     - is mach corrected
 
-- A32NX_VSPEEDS_LANDING_CONF3
+- A32NX_SPEEDS_LANDING_CONF3
     - Bool
     - True if FLAPS 3 is selected in perf page
 
-- A32NX_VSPEEDS_TO_CONF
+- A32NX_SPEEDS_TO_CONF
     - Number
     - Flaps config for TakeOff, 1, 2 or 3
 
-- A32NX_VSPEEDS_V2
+- A32NX_SPEEDS_V2
     - Number
     - TakeOff V2 Speed calculated based on A32NX_VSPEEDS_TO_CONF config
 
-- A32NX_VSPEEDS_VLS_APP
+- A32NX_SPEEDS_VLS_APP
     - Number
     - vls calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
     - is mach corrected
 
-- A32NX_VSPEEDS_VAPP
+- A32NX_SPEEDS_VAPP
     - Number
     - vapp calculated for config full  whether A32NX_VSPEEDS_LANDING_CONF3 or not
     - is mach corrected
@@ -1199,6 +1201,31 @@
         - L
         - R
 
+- A32NX_EFIS_{side}_TO_WPT_BEARING
+    - Degrees
+    - Provides the bearing to the active leg termination
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_TO_WPT_DISTANCE
+    - Nautical miles & > 0
+    - Provides the straight distance to the active leg termination
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_TO_WPT_ETA
+    - Seconds
+    - Provides the number of seconds to the active leg termination (to be converted to UTC by DMC)
+    - {side}
+        - L
+        - R
+
+- A32NX_PFD_MSG_SET_HOLD_SPEED
+    - Bool
+    - Indicates if the SET HOLD SPEED message is shown on the PFD
+
 - A32NX_ISIS_LS_ACTIVE
 	- Bool
 	- Indicates whether LS scales are shown on the ISIS
@@ -1334,18 +1361,36 @@
     - Degrees
     - Target beta (sideslip) in case of asymmetric thrust
 
-- A32NX_3D_AILERON_LEFT_DEFLECTION
+- A32NX_AILERON_LEFT_DEFLECTION_DEMAND
     - Number
-    - Provides the left aileron position
+    - Provides the left aileron position demand to hydraulics
       Value | Meaning
       --- | ---
       -1.0 | full up
        0.0 | neutral
       1.0 | full down
 
-- A32NX_3D_AILERON_RIGHT_DEFLECTION
+- A32NX_AILERON_RIGHT_DEFLECTION_DEMAND
     - Number
-    - Provides the right aileron position
+    - Provides the right aileron position demand to hydraulics
+      Value | Meaning
+      --- | ---
+      -1.0 | full down
+       0.0 | neutral
+      1.0 | full up
+
+- A32NX_HYD_AILERON_LEFT_DEFLECTION
+    - Number
+    - Provides the final left aileron physical position
+      Value | Meaning
+      --- | ---
+      -1.0 | full up
+       0.0 | neutral
+      1.0 | full down
+
+- A32NX_HYD_AILERON_RIGHT_DEFLECTION
+    - Number
+    - Provides the final right aileron physical position
       Value | Meaning
       --- | ---
       -1.0 | full down
@@ -1497,6 +1542,35 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
     - Whether or not the GPS is used as the primary means of navigation/position determination.
 
+## Radio Receivers
+
+- A32NX_RADIO_RECEIVER_USAGE_ENABLED
+    - Bool
+    - Whether or not the calculated ILS signals shall be used
+
+- A32NX_RADIO_RECEIVER_LOC_IS_VALID
+    - Bool
+    - Indicates if the localizer signal is valid
+
+- A32NX_RADIO_RECEIVER_LOC_DISTANCE
+    - Number in nautical miles
+    - Indicates the distance from the localizer
+
+- A32NX_RADIO_RECEIVER_LOC_DEVIATION
+    - Number in degrees
+    - If A32NX_RADIO_RECEIVER_USAGE_ENABLED == 0 it contains the deviation from the sim
+    - If A32NX_RADIO_RECEIVER_USAGE_ENABLED == 1 it contains calculated LOC deviation
+
+- A32NX_RADIO_RECEIVER_GS_IS_VALID
+    - Bool
+    - Indicates if the glide slope signal is valid
+
+- A32NX_RADIO_RECEIVER_GS_DEVIATION
+    - Number in degrees
+    - Deviation from glide slope
+    - If A32NX_RADIO_RECEIVER_USAGE_ENABLED == 0 it contains the deviation from the sim
+    - If A32NX_RADIO_RECEIVER_USAGE_ENABLED == 1 it contains calculated LOC deviation
+
 ## Flight Management System
 
 - A32NX_FM_ENABLE_APPROACH_PHASE
@@ -1556,6 +1630,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       ROLL_OUT | 34
       SRS | 40
       SRS_GA | 41
+      TCAS | 50
 
 - A32NX_FMA_VERTICAL_ARMED
     - Bitmask
@@ -1568,6 +1643,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       DES | 3
       GS | 4
       FINAL | 5
+      TCAS | 6
 
 - A32NX_FMA_EXPEDITE_MODE
     - Boolean
@@ -1693,6 +1769,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates the selected heading on the FCU, instantly updated
     - In case of managed heading mode, the value is -1
 
+- A32NX_AUTOPILOT_H_DOT_RADIO
+    - Number (Feet per minute)
+    - Indicates the current estimated vertical speed relative to the runway
+    - Important: the signal is only usable above the runway and is not to be used elsewhere
+
 - A32NX_FCU_SPD_MANAGED_DASHES
   - Boolean
   - Indicates if managed speed/mach mode is active and a numerical value is not displayed
@@ -1794,15 +1875,20 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number
     - Used as data transport for event `H:A320_Neo_FCU_VS_SET`
 
+- A32NX_FG_PHI_LIMIT
+    - Number in Degrees
+    - Indicates the current bank limit requested by the FM
+    - Always positive
+
 - A32NX_FG_CROSS_TRACK_ERROR
     - Number in nm
     - Used for laternal guidance in mode NAV
-    - Error from desired path
+    - Error from desired path, -ve to the right of track
 
 - A32NX_FG_TRACK_ANGLE_ERROR
     - Number in degrees
     - Used for laternal guidance in mode NAV
-    - Error from desired heading or track
+    - Error from desired heading or track, -ve when clockwise of desired track
 
 - A32NX_FG_PHI_COMMAND
     - Number in degrees
@@ -2130,6 +2216,47 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Air Conditioning / Pressurisation / Ventilation
 
+- A32NX_COND_{id}_TEMP
+    - Degree Celsius
+    - Temperature as measured in each of the cabin zones and cockpit
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_COND_{id}_DUCT_TEMP
+    - Degree Celsius
+    - Temperature of trim air coming out of the ducts in the cabin and cockpit
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_COND_PACK_FLOW_VALVE_{index}_IS_OPEN
+    - Bool
+    - True if the respective {1 or 2} pack flow valve is open
+
+- A32NX_COND_PACK_FLOW
+    - Percent
+    - Percentage flow coming out of the packs into the cabin (LO: 80%, NORM: 100%, HI: 120%)
+
+- A32NX_OVHD_COND_{id}_SELECTOR_KNOB
+    - Percentage
+    - Percent rotation of the overhead temperature selectors for each of the cabin zones
+    - To transform the value into degree celsius use this formula: this * 0.12 + 18
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_OVHD_COND_PACK_{index}_PB_IS_ON
+    - Bool
+    - True if pack {1 or 2} pushbutton is pressed in the on position (no white light)
+
+- A32NX_OVHD_COND_PACK_{index}_PB_HAS_FAULT
+    - Bool
+    - True if pack {1 or 2} has a fault
+
 - A32NX_PRESS_CABIN_ALTITUDE
     - Feet
     - The equivalent altitude from sea level of the interior of the cabin based on the internal pressure
@@ -2334,3 +2461,115 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_HAS_FAULT:
     - Indicates whether the fault light is on for the engine bleed push button
     - Bool
+
+## Landing Gear (ATA 32)
+
+- A32NX_LGCIU_{number}_{gear}_GEAR_COMPRESSED
+    - Indicates if the shock absorber is compressed (not fully extended)
+    - Bool
+    - {number}
+        - 1
+        - 2
+    - {gear}
+        - NOSE
+        - LEFT
+        - RIGHT
+
+## ATC (ATA 34)
+
+- A32NX_TRANSPONDER_MODE
+    - The transponder mode selector switch position
+    - Enum
+      Mode | Value
+      --- | ---
+      STBY | 0
+      AUTO | 1
+      ON | 2
+
+- A32NX_TRANSPONDER_SYSTEM
+    - The transponder system selector switch position
+    - Enum
+      System | Value
+      --- | ---
+      Transponder 1 | 0
+      Transponder 2 | 1
+
+- A32NX_SWITCH_ATC_ALT
+    - The transponder altitude reporting switch position
+    - Bool
+
+- A32NX_SWITCH_TCAS_Position
+  - Enum
+  - Read-Only
+  - Selected TCAS Mode
+      Description | Value
+      --- | ---
+      STBY | 0
+      TA | 1
+      TA/RA | 2
+
+- A32NX_SWITCH_TCAS_Traffic_Position
+  - Enum
+  - Read-Only
+  - Selected TCAS Display Mode
+      Description | Value
+      --- | ---
+      THREAT | 0
+      ALL | 1
+      ABV | 2
+      BELOW | 3
+
+- A32NX_TCAS_MODE
+  - Enum
+  - Read-Only
+  - Whether TCAS has been set to standby, TA Only or TA/RA Mode (see ATC panel)
+  Description | Value
+      --- | ---
+      STBY | 0
+      TA | 1
+      TA/RA | 2
+
+- A32NX_TCAS_SENSITIVITY
+  - Number
+  - Read-Only
+  - Current sensitivity level
+
+- A32NX_TCAS_STATE
+  - Enum
+  - Read-Only
+  - Currently active traffic/resolution advisory state
+      Description | Value
+      --- | ---
+      NONE | 0
+      TA | 1
+      RA | 2
+
+- A32NX_TCAS_RA_CORRECTIVE
+  - boolean
+  - Read-Only
+  - Active RA is corrective?
+
+- A32NX_TCAS_VSPEED_RED:{number}
+    - Feet per minute
+    - Read-Only
+	- Lower and upper red vertical speed range of current active RA
+    - {number}
+        - 0
+        - 1
+
+- A32NX_TCAS_VSPEED_GREEN:{number}
+    - Feet per minute
+    - Read-Only
+	- Lower and upper green vertical speed range of current active RA
+    - {number}
+        - 0
+        - 1
+
+## Radio Altimeter (ATA 34)
+
+- A32NX_RA_{number}_RADIO_ALTITUDE
+    - `Arinc429Word<Feet>`
+    - The height over ground as measured by the corresponding radio altimeter towards the aft of the aircraft
+    - {number}
+      - 0
+      - 1

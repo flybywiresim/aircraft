@@ -1,4 +1,5 @@
 import { FlightPlanManager } from './flightplanning/FlightPlanManager';
+import { getFlightPhaseManager } from './flightphase';
 import { FlightPlanAsoboSync } from './flightplanning/FlightPlanAsoboSync';
 import { GuidanceManager } from './guidance/GuidanceManager';
 import { ManagedFlightPlan } from './flightplanning/ManagedFlightPlan';
@@ -20,6 +21,7 @@ function updateFmgcLoop(deltaTime: number): void {
 }
 
 export {
+    getFlightPhaseManager,
     FlightPlanManager,
     ManagedFlightPlan,
     FlightPlanAsoboSync,

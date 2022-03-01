@@ -91,8 +91,6 @@ clang++ \
   "${DIR}/src/model/MultiWordIor.cpp" \
   "${DIR}/src/model/rt_modd.cpp" \
   "${DIR}/src/model/rt_remd.cpp" \
-  "${DIR}/src/model/ThrustLimits_data.cpp" \
-  "${DIR}/src/model/ThrustLimits.cpp" \
   "${DIR}/src/model/uMultiWord2Double.cpp" \
   -I "${DIR}/src/zlib" \
   "${DIR}/src/zlib/zfstream.cc" \
@@ -105,6 +103,7 @@ clang++ \
   "${DIR}/src/RudderTrimHandler.cpp" \
   "${DIR}/src/SpoilersHandler.cpp" \
   "${DIR}/src/ThrottleAxisMapping.cpp" \
+  "${DIR}/src/CalculatedRadioReceiver.cpp" \
   "${DIR}/src/main.cpp" \
 
 # restore directory

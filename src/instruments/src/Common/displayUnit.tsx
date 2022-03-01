@@ -40,6 +40,11 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
                 setTimer(null);
             }
         }
+
+        // override MSFS menu animations setting for this instrument
+        if (!document.documentElement.classList.contains('animationsEnabled')) {
+            document.documentElement.classList.add('animationsEnabled');
+        }
     });
 
     useEffect(() => {

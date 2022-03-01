@@ -1,5 +1,6 @@
 import React from 'react';
 import { Arinc429Word } from '@shared/arinc429';
+import { useSimVar } from '@instruments/common/simVars';
 import { VerticalTape } from './PFDUtils';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { getSimVar } from '../util.js';
@@ -48,11 +49,16 @@ const LandingElevationIndicator = ({ altitude, FWCFlightPhase }: LandingElevatio
     );
 };
 
-const RadioAltIndicator = ({ radioAlt }) => {
-    if (radioAlt > DisplayRange) {
+interface RadioAltitudeProps {
+    radioAltitude: Arinc429Word,
+    filteredRadioAltitude: number,
+}
+
+const RadioAltIndicator = ({ radioAltitude, filteredRadioAltitude }: RadioAltitudeProps) => {
+    if (filteredRadioAltitude > DisplayRange || radioAltitude.isFailureWarning() || radioAltitude.isNoComputedData()) {
         return null;
     }
-    const offset = (radioAlt - DisplayRange) * DistanceSpacing / ValueSpacing;
+    const offset = (filteredRadioAltitude - DisplayRange) * DistanceSpacing / ValueSpacing;
 
     return (
         <path id="AltTapeGroundReference" className="Fill Red" d={`m131.15 123.56h2.8709v${offset}h-2.8709z`} />
@@ -97,16 +103,35 @@ interface AltitudeIndicatorOfftapeProps {
     targetAlt: number;
     altIsManaged: boolean;
     mode: '' | 'STD' | 'QFE' | 'QNH';
-    radioAlt: number;
+    radioAltitude: Arinc429Word;
+    filteredRadioAltitude: number,
 }
 
-export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManaged, mode, radioAlt }: AltitudeIndicatorOfftapeProps) => {
+export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManaged, mode, radioAltitude, filteredRadioAltitude }: AltitudeIndicatorOfftapeProps) => {
+    const [tcasFail] = useSimVar('L:A32NX_TCAS_FAULT', 'boolean', 200);
+
+    const altFailBlock = (
+        <>
+            <path id="AltTapeOutline" className="NormalStroke Red" d="m117.75 123.56h13.096v-85.473h-13.096" />
+            <path id="AltReadoutBackground" className="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
+            <text id="AltFailText" className="Blink9Seconds FontLargest Red EndAlign" x="131.16769" y="83.433167">ALT</text>
+        </>
+    );
+
+    const tcasFailBlock = (
+        <>
+            <text className="Blink9Seconds FontLargest Amber EndAlign" visibility={tcasFail ? 'visible' : 'hidden'} x="141.5" y="96">T</text>
+            <text className="Blink9Seconds FontLargest Amber EndAlign" visibility={tcasFail ? 'visible' : 'hidden'} x="141.5" y="104">C</text>
+            <text className="Blink9Seconds FontLargest Amber EndAlign" visibility={tcasFail ? 'visible' : 'hidden'} x="141.5" y="112">A</text>
+            <text className="Blink9Seconds FontLargest Amber EndAlign" visibility={tcasFail ? 'visible' : 'hidden'} x="141.5" y="120">S</text>
+        </>
+    );
+
     if (!altitude.isNormalOperation()) {
         return (
             <>
-                <path id="AltTapeOutline" className="NormalStroke Red" d="m117.75 123.56h13.096v-85.473h-13.096" />
-                <path id="AltReadoutBackground" className="BlackFill" d="m131.35 85.308h-13.63v-8.9706h13.63z" />
-                <text id="AltFailText" className="Blink9Seconds FontLargest Red EndAlign" x="131.16769" y="83.433167">ALT</text>
+                {altFailBlock}
+                {tcasFailBlock}
             </>
         );
     }
@@ -119,8 +144,9 @@ export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManage
             <AltimeterIndicator mode={mode} altitude={altitude} />
             <MetricAltIndicator altitude={altitude} MDA={MDA} targetAlt={targetAlt} altIsManaged={altIsManaged} />
             <path id="AltReadoutBackground" className="BlackFill" d="m130.85 85.308h-13.13v-8.9706h13.13v-2.671h8.8647v14.313h-8.8647z" />
-            <RadioAltIndicator radioAlt={radioAlt} />
+            <RadioAltIndicator radioAltitude={radioAltitude} filteredRadioAltitude={filteredRadioAltitude} />
             <DigitalAltitudeReadout altitude={altitude} MDA={MDA} />
+            {tcasFail && tcasFailBlock}
         </g>
     );
 };

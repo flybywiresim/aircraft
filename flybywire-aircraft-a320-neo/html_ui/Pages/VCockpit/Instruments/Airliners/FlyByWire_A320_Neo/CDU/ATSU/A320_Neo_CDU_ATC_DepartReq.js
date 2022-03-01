@@ -1,69 +1,187 @@
 class CDUAtcDepartReq {
-    static ShowPage(mcdu, store = {"gate": "", "atis": "", "freeText": ""}) {
-        mcdu.clearDisplay();
+    static CreateDataBlock() {
+        return {
+            firstCall: true,
+            callsign: "",
+            station: "",
+            stationManual: false,
+            from: "",
+            to: "",
+            atis: "",
+            gate: "",
+            freetext: [ "", "", "", "", "", "" ]
+        };
+    }
 
-        let flightNo = "______[color]amber";
-        let fromTo = "____|____[color]amber";
-        if (store["gate"] == "") {
-            store["gate"] = "___[color]amber";
+    static CanSendData(store) {
+        return store.callsign !== "" && store.station !== "" && store.from !== "" && store.to !== "" && store.atis !== "";
+    }
+
+    static CreateMessage(store) {
+        const retval = new Atsu.DclMessage();
+
+        retval.Callsign = store.callsign;
+        retval.Origin = store.from;
+        retval.Destination = store.to;
+        retval.AcType = "A20N";
+        retval.Atis = store.atis;
+        retval.Gate = store.gate;
+        retval.Freetext = store.freetext.filter((n) => n);
+        retval.Station = store.station;
+
+        return retval;
+    }
+
+    static ShowPage1(mcdu, store = CDUAtcDepartReq.CreateDataBlock()) {
+        mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCDepartReq;
+
+        if (store.firstCall && store.callsign === "") {
+            if (mcdu.atsuManager.flightNumber().length !== 0) {
+                store.callsign = mcdu.atsuManager.flightNumber();
+            }
         }
-        if (store["atis"] == "") {
-            store["atis"] = "_[color]amber";
+        if (store.firstCall && store.from === "") {
+            if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
+                store.from = mcdu.flightPlanManager.getOrigin().ident;
+            }
         }
-        if (store["freeText"] == "") {
-            store["freeText"] = "[\xa0\xa0\xa0][color]cyan";
+        if (store.firstCall && store.to === "") {
+            if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
+                store.to = mcdu.flightPlanManager.getDestination().ident;
+            }
         }
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
-            flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
+        if (store.firstCall && store.station === "") {
+            if (mcdu.atsuManager.atc.currentStation() !== "") {
+                store.station = mcdu.atsuManager.atc.currentStation();
+            }
         }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident + "[color]cyan";
+        store.firstCall = false;
+
+        let flightNo = "--------";
+        let fromTo = "{amber}____/____{end}";
+        const atis = new CDU_SingleValueField(mcdu,
+            "string",
+            store.atis,
+            {
+                clearable: true,
+                emptyValue: "{amber}_{end}",
+                suffix: "[color]cyan",
+                maxLength: 1,
+                isValid: ((value) => {
+                    return /^[A-Z()]*$/.test(value) === true;
+                })
+            },
+            (value) => {
+                store.atis = value;
+                CDUAtcDepartReq.ShowPage1(mcdu, store);
+            }
+        );
+        const gate = new CDU_SingleValueField(mcdu,
+            "string",
+            store.gate,
+            {
+                clearable: true,
+                emptyValue: "{cyan}[\xa0\xa0\xa0\xa0]{end}",
+                suffix: "[color]cyan",
+                maxLength: 4
+            },
+            (value) => {
+                store.gate = value;
+                CDUAtcDepartReq.ShowPage1(mcdu, store);
+            }
+        );
+        const freetext = new CDU_SingleValueField(mcdu,
+            "string",
+            store.freetext[0],
+            {
+                clearable: store.freetext[0].length !== 0,
+                emptyValue: "{cyan}[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0]{end}",
+                suffix: "[color]white",
+                maxLength: 22
+            },
+            (value) => {
+                store.freetext[0] = value;
+                CDUAtcDepartReq.ShowPage1(mcdu, store);
+            }
+        );
+
+        if (store.callsign) {
+            flightNo = `{green}${store.callsign}{end}`;
+        }
+        if (store.from !== "" && store.to !== "") {
+            fromTo = `{cyan}${store.from}/${store.to}{end}`;
+
+            const atisReports = mcdu.atsuManager.atc.atisReports(store.from);
+            if (atisReports.length !== 0 && atisReports[0].Information !== "") {
+                store.atis = atisReports[0].Information;
+                atis.setValue(store.atis);
+            }
+        }
+
+        let station = "{amber}____{end}";
+        if (store.station !== "") {
+            station = `{cyan}${store.station}{end}`;
+            if (!store.stationManual) {
+                station = `{small}${station}{end}`;
+            }
+        }
+
+        // check if all required information are available to prepare the PDC message
+        let reqDisplButton = "{cyan}REQ DISPL\xa0{end}";
+        if (CDUAtcDepartReq.CanSendData(store)) {
+            reqDisplButton = "{cyan}REQ DISPL*{end}";
         }
 
         mcdu.setTemplate([
-            ["DEPART REQUEST"],
-            ["ATC FLT NBR", "A/C TYPE"],
-            [flightNo, "A20N[color]cyan"],
-            ["FROM/TO"],
-            [fromTo],
-            ["GATE", "ATIS"],
-            [store["gate"], store["atis"]],
-            ["---------FREE TEXT---------"],
-            [store["freeText"]],
-            [""],
-            [""],
-            ["\xa0ATC MENU", "ATC DEPART\xa0[color]inop"],
-            ["<RETURN", "REQ DISPL\xa0[color]inop"]
+            ["DEPART REQ"],
+            ["\xa0ATC FLT NBR", "A/C TYPE\xa0"],
+            [flightNo, "{cyan}A20N{end}"],
+            ["\xa0FROM/TO", "STATION\xa0"],
+            [fromTo, station],
+            ["\xa0GATE", "ATIS CODE\xa0"],
+            [gate, atis],
+            ["-------FREE TEXT--------"],
+            [freetext],
+            ["", "MORE\xa0"],
+            ["", "FREE TEXT>"],
+            ["\xa0ATC MENU", "{cyan}ATC DEPART\xa0{end}"],
+            ["<RETURN", reqDisplButton]
         ]);
 
-        mcdu.leftInputDelay[2] = () => {
+        mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[2] = (value) => {
-            if (value != "") {
-                store["gate"] = value + "[color]cyan";
+        mcdu.onLeftInput[1] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                store.from = "";
+                store.to = "";
+                CDUAtcDepartReq.ShowPage1(mcdu, store);
+            } else if (value) {
+                const airports = value.split("/");
+                if (airports.length !== 2 || !/^[A-Z0-9]{4}$/.test(airports[0]) || !/^[A-Z0-9]{4}$/.test(airports[1])) {
+                    mcdu.addNewMessage(NXSystemMessages.formatError);
+                } else {
+                    mcdu.dataManager.GetAirportByIdent(airports[0]).then((from) => {
+                        mcdu.dataManager.GetAirportByIdent(airports[1]).then((to) => {
+                            if (from && to) {
+                                store.from = from;
+                                store.to = to;
+                                CDUAtcDepartReq.ShowPage1(mcdu, store);
+                            } else {
+                                mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                            }
+                        });
+                    });
+                }
             }
-            CDUAtcDepartReq.ShowPage(mcdu, store);
         };
 
-        mcdu.rightInputDelay[2] = () => {
+        mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[2] = (value) => {
-            if (value != "") {
-                store["atis"] = value + "[color]cyan";
-            }
-            CDUAtcDepartReq.ShowPage(mcdu, store);
-        };
-
-        mcdu.leftInputDelay[3] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[3] = (value) => {
-            if (value != "") {
-                store["freeText"] = "[" + value + "][color]cyan";
-            }
-            CDUAtcDepartReq.ShowPage(mcdu, store);
+        mcdu.onRightInput[4] = () => {
+            CDUAtcDepartReq.ShowPage2(mcdu, store);
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -71,6 +189,87 @@ class CDUAtcDepartReq {
         };
         mcdu.onLeftInput[5] = () => {
             CDUAtcMenu.ShowPage2(mcdu);
+        };
+
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[1] = async (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                store.station = "";
+            } else if (/^[A-Z0-9]{4}$/.test(value)) {
+                mcdu.atsuManager.isRemoteStationAvailable(value).then((code) => {
+                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                        mcdu.addNewAtsuMessage(code);
+                    } else {
+                        store.station = value;
+                        store.stationManual = true;
+                    }
+
+                    if (mcdu.page.Current === mcdu.page.ATCDepartReq) {
+                        CDUAtcDepartReq.ShowPage1(mcdu, store);
+                    }
+                });
+            }
+        };
+
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[5] = () => {
+            if (CDUAtcDepartReq.CanSendData(store)) {
+                mcdu.atsuManager.registerMessage(CDUAtcDepartReq.CreateMessage(store));
+                CDUAtcDepartReq.ShowPage1(mcdu);
+            }
+        };
+    }
+
+    static ShowPage2(mcdu, store) {
+        mcdu.clearDisplay();
+
+        const freetextLines = [];
+        for (let i = 0; i < 5; ++i) {
+            freetextLines.push(new CDU_SingleValueField(mcdu,
+                "string",
+                store.freetext[i + 1],
+                {
+                    clearable: store.freetext[i + 1].length !== 0,
+                    emptyValue: "{cyan}[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0]{end}",
+                    suffix: "[color]white",
+                    maxLength: 22
+                },
+                (value) => {
+                    store.freetext[i + 1] = value;
+                    CDUAtcDepartReq.ShowPage2(mcdu, store);
+                }
+            ));
+        }
+
+        // define the template
+        mcdu.setTemplate([
+            ["FREE TEXT"],
+            [""],
+            [freetextLines[0]],
+            [""],
+            [freetextLines[1]],
+            [""],
+            [freetextLines[2]],
+            [""],
+            [freetextLines[3]],
+            [""],
+            [freetextLines[4]],
+            ["\xa0DEPART REQ"],
+            ["<RETURN"]
+        ]);
+
+        // define the template
+        mcdu.setTemplate(addionalLineTemplate);
+
+        mcdu.leftInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[5] = () => {
+            CDUAtcDepartReq.ShowPage1(mcdu);
         };
     }
 }

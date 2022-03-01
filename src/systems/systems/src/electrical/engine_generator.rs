@@ -165,7 +165,8 @@ impl IntegratedDriveGenerator {
             activated: true,
             number,
 
-            time_above_threshold_in_milliseconds: 0,
+            time_above_threshold_in_milliseconds:
+                INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME_IN_MILLISECONDS,
         }
     }
 
@@ -802,23 +803,32 @@ mod tests {
         }
 
         #[test]
-        fn starts_unstable() {
-            let test_bed = SimulationTestBed::from(ElementCtorFn(idg));
+        fn starts_unstable_with_engines_off() {
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
+                .with_update_after_power_distribution(engine_not_running);
+            test_bed.run_without_delta();
 
-            assert!(test_bed.query_element(|e| !e.provides_stable_power_output()));
+            assert!(!test_bed.query_element(|e| e.provides_stable_power_output()));
+        }
+
+        #[test]
+        fn starts_stable_with_engines_on() {
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
+                .with_update_after_power_distribution(engine_running_above_threshold(false));
+            test_bed.run_without_delta();
+
+            assert!(test_bed.query_element(|e| e.provides_stable_power_output()));
         }
 
         #[test]
         fn becomes_stable_once_engine_above_threshold_for_500_milliseconds() {
+            // First enforcing engine in off state
             let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
-                .with_update_after_power_distribution(|idg, context| {
-                    idg.update(
-                        context,
-                        &TestEngine::new(Ratio::new::<percent>(80.)),
-                        &TestOverhead::new(true, false),
-                        &TestFireOverhead::new(false),
-                    )
-                });
+                .with_update_after_power_distribution(engine_not_running);
+            test_bed.run_without_delta();
+
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
+                .with_update_after_power_distribution(engine_running_above_threshold(false));
 
             test_bed.run_with_delta(Duration::from_millis(500));
 
@@ -827,16 +837,12 @@ mod tests {
 
         #[test]
         fn does_not_become_stable_before_engine_above_threshold_for_500_milliseconds() {
+            // First enforcing engine in off state
             let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
-                .with_update_after_power_distribution(|idg, context| {
-                    idg.update(
-                        context,
-                        &TestEngine::new(Ratio::new::<percent>(80.)),
-                        &TestOverhead::new(true, false),
-                        &TestFireOverhead::new(false),
-                    )
-                });
+                .with_update_after_power_distribution(engine_not_running);
+            test_bed.run_without_delta();
 
+            test_bed.set_update_after_power_distribution(engine_running_above_threshold(false));
             test_bed.run_with_delta(Duration::from_millis(499));
 
             assert!(!test_bed.query_element(|e| e.provides_stable_power_output()));
@@ -845,26 +851,10 @@ mod tests {
         #[test]
         fn cannot_reconnect_once_disconnected() {
             let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
-                .with_update_after_power_distribution(|idg, context| {
-                    idg.update(
-                        context,
-                        &TestEngine::new(Ratio::new::<percent>(80.)),
-                        &TestOverhead::new(true, true),
-                        &TestFireOverhead::new(false),
-                    )
-                });
-
+                .with_update_after_power_distribution(engine_running_above_threshold(true));
             test_bed.run_with_delta(Duration::from_millis(500));
 
-            test_bed.set_update_after_power_distribution(|idg, context| {
-                idg.update(
-                    context,
-                    &TestEngine::new(Ratio::new::<percent>(80.)),
-                    &TestOverhead::new(true, false),
-                    &TestFireOverhead::new(false),
-                )
-            });
-
+            test_bed.set_update_after_power_distribution(engine_running_above_threshold(false));
             test_bed.run_with_delta(Duration::from_millis(500));
 
             assert!(!test_bed.query_element(|e| e.provides_stable_power_output()));
@@ -873,14 +863,7 @@ mod tests {
         #[test]
         fn running_engine_warms_up_idg() {
             let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
-                .with_update_after_power_distribution(|idg, context| {
-                    idg.update(
-                        context,
-                        &TestEngine::new(Ratio::new::<percent>(80.)),
-                        &TestOverhead::new(true, false),
-                        &TestFireOverhead::new(false),
-                    )
-                });
+                .with_update_after_power_distribution(engine_running_above_threshold(false));
 
             let starting_temperature = test_bed.query_element(|e| e.oil_outlet_temperature);
 
@@ -892,14 +875,7 @@ mod tests {
         #[test]
         fn running_engine_does_not_warm_up_idg_when_disconnected() {
             let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
-                .with_update_after_power_distribution(|idg, context| {
-                    idg.update(
-                        context,
-                        &TestEngine::new(Ratio::new::<percent>(80.)),
-                        &TestOverhead::new(true, true),
-                        &TestFireOverhead::new(false),
-                    )
-                });
+                .with_update_after_power_distribution(engine_running_above_threshold(true));
 
             let starting_temperature = test_bed.query_element(|e| e.oil_outlet_temperature);
 
@@ -914,31 +890,37 @@ mod tests {
         #[test]
         fn shutdown_engine_cools_down_idg() {
             let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
-                .with_update_after_power_distribution(|idg, context| {
-                    idg.update(
-                        context,
-                        &TestEngine::new(Ratio::new::<percent>(80.)),
-                        &TestOverhead::new(true, false),
-                        &TestFireOverhead::new(false),
-                    )
-                });
-
+                .with_update_after_power_distribution(engine_running_above_threshold(false));
             test_bed.run_with_delta(Duration::from_secs(10));
 
             let starting_temperature = test_bed.query_element(|e| e.oil_outlet_temperature);
 
-            test_bed.set_update_after_power_distribution(|idg, context| {
-                idg.update(
-                    context,
-                    &TestEngine::new(Ratio::new::<percent>(0.)),
-                    &TestOverhead::new(true, false),
-                    &TestFireOverhead::new(false),
-                )
-            });
-
+            test_bed.set_update_after_power_distribution(engine_not_running);
             test_bed.run_with_delta(Duration::from_secs(10));
 
             assert!(test_bed.query_element(|e| e.oil_outlet_temperature) < starting_temperature);
+        }
+
+        fn engine_not_running(idg: &mut IntegratedDriveGenerator, context: &UpdateContext) {
+            idg.update(
+                context,
+                &TestEngine::new(Ratio::new::<percent>(0.)),
+                &TestOverhead::new(false, false),
+                &TestFireOverhead::new(false),
+            )
+        }
+
+        fn engine_running_above_threshold(
+            idg_push_button_is_released: bool,
+        ) -> impl Fn(&mut IntegratedDriveGenerator, &UpdateContext) {
+            move |idg: &mut IntegratedDriveGenerator, context: &UpdateContext| {
+                idg.update(
+                    context,
+                    &TestEngine::new(Ratio::new::<percent>(80.)),
+                    &TestOverhead::new(true, idg_push_button_is_released),
+                    &TestFireOverhead::new(false),
+                )
+            }
         }
     }
 }

@@ -1,24 +1,46 @@
 class CDUAtcConnectionStatus {
-    static ShowPage(mcdu, store = {"atcCenter": "", "nextAtc": ""}) {
+    static ShowPage(mcdu, store = { "disconnectAvail": false }) {
         mcdu.clearDisplay();
-        let flightNo = "______[color]green";
+        mcdu.page.Current = mcdu.page.ATCConnectionStatus;
 
-        if (SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")) {
-            flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC") + "[color]green";
+        function updateView() {
+            if (mcdu.page.Current === mcdu.page.ATCConnectionStatus) {
+                CDUAtcConnectionStatus.ShowPage(mcdu);
+            }
+        }
+
+        mcdu.refreshPageCallback = () => {
+            updateView();
+        };
+        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
+
+        let currentStation = "-----------[color]white";
+        let atcDisconnect = "DISCONNECT\xa0[color]cyan";
+        if (mcdu.atsuManager.atc.currentStation() !== "") {
+            currentStation = `${mcdu.atsuManager.atc.currentStation()}[color]green`;
+            atcDisconnect = "DISCONNECT*[color]cyan";
+            store["disconnectAvail"] = true;
+        } else {
+            store["disconnectAvail"] = false;
+        }
+
+        let nextStation = "-----------";
+        if (mcdu.atsuManager.atc.nextStation() !== "") {
+            nextStation = `${mcdu.atsuManager.atc.nextStation()}[color]green`;
         }
 
         mcdu.setTemplate([
             ["CONNECTION STATUS"],
-            ["ACTIVE ATC"],
-            ["____[color]amber"],
-            ["NEXT ATC"],
-            ["----"],
-            ["", "MAX UPLINK DELAY\xa0"],
-            ["", "NONE[color]inop\xa0"],
-            ["--------ADS: ARMED---------"],
+            ["\xa0ACTIVE ATC"],
+            [currentStation],
+            ["\xa0NEXT ATC", "ALL ATC\xa0[color]cyan"],
+            [nextStation, atcDisconnect],
+            [""],
+            [""],
+            ["-------ADS-C: ARMED-------"],
             ["\xa0SET OFF[color]inop"],
             [""],
-            ["", "ADS DETAIL>[color]inop"],
+            ["", "ADS-C DETAIL>[color]inop"],
             ["\xa0ATC MENU", ""],
             ["<RETURN", "NOTIFICATION>"]
         ]);
@@ -30,6 +52,25 @@ class CDUAtcConnectionStatus {
             CDUAtcMenu.ShowPage1(mcdu);
         };
 
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[1] = () => {
+            if (!store["disconnectAvail"]) {
+                mcdu.addNewMessage(NXFictionalMessages.noAtc);
+            } else {
+                store["disconnectAvail"] = false;
+                mcdu.atsuManager.atc.logoff().then((code) => {
+                    if (code !== Atsu.AtsuStatusCodes.Ok) {
+                        store["disconnectAvail"] = true;
+                        mcdu.addNewAtsuMessage(code);
+                    } else {
+                        CDUAtcConnectionStatus.ShowPage(mcdu, store);
+                    }
+                });
+            }
+            CDUAtcConnectionStatus.ShowPage(mcdu, store);
+        };
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };

@@ -1,12 +1,15 @@
 extern crate systems;
 
+mod air_conditioning;
 mod electrical;
 mod fuel;
 mod hydraulic;
+mod navigation;
 mod pneumatic;
 mod power_consumption;
 
 use self::{
+    air_conditioning::A320AirConditioning,
     fuel::A320Fuel,
     pneumatic::{A320Pneumatic, A320PneumaticOverheadPanel},
 };
@@ -14,10 +17,11 @@ use electrical::{
     A320Electrical, A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
 };
-
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
+use navigation::A320RadioAltimeters;
 use power_consumption::A320PowerConsumption;
 use systems::simulation::InitContext;
+
 use systems::{
     apu::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
@@ -38,6 +42,7 @@ use systems::{
 pub struct A320 {
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
+    air_conditioning: A320AirConditioning,
     apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
@@ -60,12 +65,14 @@ pub struct A320 {
     pressurization: Pressurization,
     pressurization_overhead: PressurizationOverheadPanel,
     pneumatic: A320Pneumatic,
+    radio_altimeters: A320RadioAltimeters,
 }
 impl A320 {
     pub fn new(context: &mut InitContext) -> A320 {
         A320 {
             adirs: AirDataInertialReferenceSystem::new(context),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
+            air_conditioning: A320AirConditioning::new(context),
             apu: AuxiliaryPowerUnitFactory::new_aps3200(
                 context,
                 1,
@@ -85,8 +92,16 @@ impl A320 {
             electrical: A320Electrical::new(context),
             power_consumption: A320PowerConsumption::new(context),
             ext_pwr: ExternalPowerSource::new(context),
-            lgciu1: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrentEssential),
-            lgciu2: LandingGearControlInterfaceUnit::new(ElectricalBusType::DirectCurrent(2)),
+            lgciu1: LandingGearControlInterfaceUnit::new(
+                context,
+                1,
+                ElectricalBusType::DirectCurrentEssential,
+            ),
+            lgciu2: LandingGearControlInterfaceUnit::new(
+                context,
+                2,
+                ElectricalBusType::DirectCurrent(2),
+            ),
             hydraulic: A320Hydraulic::new(context),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(context),
             autobrake_panel: AutobrakePanel::new(context),
@@ -94,6 +109,7 @@ impl A320 {
             pressurization: Pressurization::new(context),
             pressurization_overhead: PressurizationOverheadPanel::new(context),
             pneumatic: A320Pneumatic::new(context),
+            radio_altimeters: A320RadioAltimeters::new(context),
         }
     }
 }
@@ -150,6 +166,9 @@ impl Aircraft for A320 {
             &self.landing_gear,
             self.ext_pwr.output_potential().is_powered(),
         );
+
+        self.radio_altimeters.update(context);
+
         self.pressurization.update(
             context,
             &self.pressurization_overhead,
@@ -191,12 +210,24 @@ impl Aircraft for A320 {
             &self.engine_fire_overhead,
             &self.apu,
         );
+        self.air_conditioning.update(
+            context,
+            &self.adirs,
+            [&self.engine_1, &self.engine_2],
+            &self.engine_fire_overhead,
+            &self.pneumatic,
+            &self.pneumatic_overhead,
+            &self.pressurization,
+            &self.pressurization_overhead,
+            [&self.lgciu1, &self.lgciu2],
+        );
     }
 }
 impl SimulationElement for A320 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.adirs.accept(visitor);
         self.adirs_overhead.accept(visitor);
+        self.air_conditioning.accept(visitor);
         self.apu.accept(visitor);
         self.apu_fire_overhead.accept(visitor);
         self.apu_overhead.accept(visitor);
@@ -212,6 +243,7 @@ impl SimulationElement for A320 {
         self.ext_pwr.accept(visitor);
         self.lgciu1.accept(visitor);
         self.lgciu2.accept(visitor);
+        self.radio_altimeters.accept(visitor);
         self.autobrake_panel.accept(visitor);
         self.hydraulic.accept(visitor);
         self.hydraulic_overhead.accept(visitor);

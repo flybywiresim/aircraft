@@ -1,19 +1,20 @@
 class CDUAocMenu {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.AOCMenu;
         mcdu.setTemplate([
             ["AOC MENU"],
             [""],
             ["<INIT/PRES", "FREE TEXT>"],
-            ["", "RECEIVED"],
-            ["<WX REQUEST", "MESSAGES>"],
-            ["", "SENT"],
+            ["", ""],
+            ["<WX REQUEST"],
+            ["", "RECEIVED\xa0"],
             ["<ATIS", "MESSAGES>"],
-            [""],
-            ["<W/B[color]white", ""],
+            ["", "SENT\xa0"],
+            ["<W/B[color]white", "MESSAGES>"],
             [""],
             ["", "DIVERSION>[color]inop"],
-            ["ATSU DLK"],
+            ["\xa0ATSU DLK"],
             ["<RETURN", "MISC>[color]inop"]
         ]);
 
@@ -47,16 +48,16 @@ class CDUAocMenu {
         mcdu.onRightInput[0] = () => {
             CDUAocFreeText.ShowPage(mcdu);
         };
-        mcdu.rightInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[1] = () => {
-            CDUAocMessagesReceived.ShowPage(mcdu);
-        };
         mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[2] = () => {
+            CDUAocMessagesReceived.ShowPage(mcdu);
+        };
+        mcdu.rightInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[3] = () => {
             CDUAocMessagesSent.ShowPage(mcdu);
         };
         mcdu.onLeftInput[0] = () => {

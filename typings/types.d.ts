@@ -1,3 +1,5 @@
+import { FlightPhaseManager as FlightPhaseManager_ } from "../src/fmgc/src";
+
 declare global {
     type NauticalMiles = number;
     type Heading = number;
@@ -7,8 +9,12 @@ declare global {
     type Feet = number;
     type Knots = number;
     type FeetPerMinute = number;
+    type Metres = number;
+    type MetresPerSecond = number;
     type Mach = number;
     type Degrees = number;
+    type DegreesMagnetic = number;
+    type DegreesTrue = number;
     type Seconds = number;
     type Percent = number;
     type Radians = number;
@@ -22,6 +28,10 @@ declare global {
     type InchesOfMercury = number;
     type Millibar = number;
     type PressurePerSquareInch = number;
+
+    namespace Fmgc {
+        const FlightPhaseManager: typeof FlightPhaseManager_
+    }
 }
 
 export {};

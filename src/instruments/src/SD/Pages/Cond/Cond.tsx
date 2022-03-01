@@ -1,8 +1,9 @@
-import './Cond.scss';
-import ReactDOM from 'react-dom';
 import React from 'react';
-import { getRenderTarget, setIsEcamPage } from '../../../Common/defaults';
+import { render } from '../../../Common';
+import { setIsEcamPage } from '../../../Common/defaults';
 import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+
+import './Cond.scss';
 
 setIsEcamPage('cond_page');
 
@@ -10,17 +11,17 @@ export const CondPage = () => {
     // Disaply trim valve position for each zone
     const gaugeOffset = -50; // Gauges range is from -50 degree to +50 degree
 
-    const [cockpitSelectedTemp] = useSimVar('L:A320_Neo_AIRCOND_LVL_1', 'number', 1000);
-    const [cockpitTrimTemp] = useSimVar('L:A32NX_CKPT_TRIM_TEMP', 'celsius', 1000);
-    const [cockpitCabinTemp] = useSimVar('L:A32NX_CKPT_TEMP', 'celsius', 1000);
+    const [cockpitSelectedTemp] = useSimVar('L:A32NX_OVHD_COND_CKPT_SELECTOR_KNOB', 'number', 1000);
+    const [cockpitTrimTemp] = useSimVar('L:A32NX_COND_CKPT_DUCT_TEMP', 'celsius', 1000);
+    const [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
 
-    const [fwdSelectedTemp] = useSimVar('L:A320_Neo_AIRCOND_LVL_2', 'number', 1000);
-    const [fwdTrimTemp] = useSimVar('L:A32NX_FWD_TRIM_TEMP', 'celsius', 1000);
-    const [fwdCabinTemp] = useSimVar('L:A32NX_FWD_TEMP', 'celsius', 1000);
+    const [fwdSelectedTemp] = useSimVar('L:A32NX_OVHD_COND_FWD_SELECTOR_KNOB', 'number', 1000);
+    const [fwdTrimTemp] = useSimVar('L:A32NX_COND_FWD_DUCT_TEMP', 'celsius', 1000);
+    const [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
 
-    const [aftSelectedTemp] = useSimVar('L:A320_Neo_AIRCOND_LVL_3', 'number', 1000);
-    const [aftTrimTemp] = useSimVar('L:A32NX_AFT_TRIM_TEMP', 'celsius', 1000);
-    const [aftCabinTemp] = useSimVar('L:A32NX_AFT_TEMP', 'celsius', 1000);
+    const [aftSelectedTemp] = useSimVar('L:A32NX_OVHD_COND_AFT_SELECTOR_KNOB', 'number', 1000);
+    const [aftTrimTemp] = useSimVar('L:A32NX_COND_AFT_DUCT_TEMP', 'celsius', 1000);
+    const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
 
     // Note: There is a state where the hot air valve can be closed and classed as normal
     // This is not modelled at present. Re-check when packs are done.
@@ -117,4 +118,4 @@ const CondUnit = ({ title, selectedTemp, cabinTemp, trimTemp, x, offset, hotAir 
     );
 };
 
-ReactDOM.render(<SimVarProvider><CondPage /></SimVarProvider>, getRenderTarget());
+render(<SimVarProvider><CondPage /></SimVarProvider>);

@@ -1,14 +1,15 @@
-import './Fuel.scss';
-import ReactDOM from 'react-dom';
 import React, { useEffect, useState } from 'react';
+import { render } from '@instruments/common/index';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
-import { getRenderTarget, setIsEcamPage } from '@instruments/common/defaults';
+import { setIsEcamPage } from '@instruments/common/defaults';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { fuelForDisplay, fuelInTanksForDisplay } from '../../Common/FuelFunctions';
 import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
+
+import './Fuel.scss';
 
 setIsEcamPage('fuel_page');
 
@@ -358,4 +359,4 @@ const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber, centreTank, tankQuantity }: 
     );
 };
 
-ReactDOM.render(<SimVarProvider><FuelPage /></SimVarProvider>, getRenderTarget());
+render(<SimVarProvider><FuelPage /></SimVarProvider>);
