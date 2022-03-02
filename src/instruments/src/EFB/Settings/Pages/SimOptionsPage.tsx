@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { useState } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
@@ -8,6 +9,7 @@ import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 
 import { ThrottleConfig } from '../ThrottleConfig/ThrottleConfig';
+import {useSimVar} from "@instruments/common/simVars";
 
 export const SimOptionsPage = () => {
     const [showThrottleSettings, setShowThrottleSettings] = useState(false);
