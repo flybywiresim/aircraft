@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { removeTodGroundSpeed, setTodGroundSpeed, setTodGroundSpeedMode } from '../../../Store/features/todCalculator';
-import Button, { BUTTON_TYPE } from '../../../UtilComponents/Button/Button';
 import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode';
 
 export const GroundSpeedAuto = () => {
@@ -46,7 +45,13 @@ export const GroundSpeedAuto = () => {
                 kt
             </span>
 
-            <Button text="Manual Input" onClick={() => dispatch(setTodGroundSpeedMode(TOD_INPUT_MODE.MANUAL))} type={BUTTON_TYPE.BLUE} />
+            <button
+                type="button"
+                className="flex justify-center p-3 text-theme-highlight hover:text-theme-body hover:bg-theme-highlight rounded-md border-2 border-theme-highlight transition duration-100"
+                onClick={() => dispatch(setTodGroundSpeedMode(TOD_INPUT_MODE.MANUAL))}
+            >
+                <p className="text-current">Manual Input</p>
+            </button>
         </div>
     );
 };
