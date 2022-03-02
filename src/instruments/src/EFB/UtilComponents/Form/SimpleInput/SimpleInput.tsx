@@ -3,9 +3,7 @@ import React, { useEffect, useRef, useState, PropsWithChildren } from 'react';
 import { KeyboardWrapper } from '../../KeyboardWrapper';
 
 interface SimpleInputProps {
-    label?: string;
     placeholder?: string;
-    labelPosition?: 'col' | 'row';
     value?: any;
     onChange?: (value: string) => void;
     onFocus?: (value: string) => void;
@@ -13,13 +11,11 @@ interface SimpleInputProps {
     min?: number;
     max?: number;
     number?: boolean;
-    noLeftMargin?: boolean;
     padding?: number;
     decimalPrecision?: number;
     reverse?: boolean; // Flip label/input order;
     className?: string;
     maxLength?: number;
-    noLabel?: boolean;
     disabled?: boolean;
 }
 
@@ -149,38 +145,23 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         }
     };
 
-    const Input = (
-        <input
-            className={`px-3 py-1.5 text-lg text-theme-text rounded-md bg-theme-accent
-            border-2 border-theme-accent focus-within:outline-none focus-within:border-theme-highlight placeholder-theme-unselected ${props.className}`}
-            value={displayValue}
-            placeholder={props.placeholder}
-            onChange={(e) => onChange(e.target.value)}
-            onFocus={onFocus}
-            onBlur={onFocusOut}
-            disabled={props.disabled}
-            ref={inputRef}
-        />
-    );
-
     return (
         <>
-            {props.noLabel
-                ? (
-                    <>
-                        {Input}
-                    </>
-                )
-                : (
-                    <>
-                        <div className={`flex ${props.reverse && props.labelPosition === 'row' ? 'flex-row-reverse' : `flex-${props.labelPosition ?? 'row'}`}`}>
-                            <div className={`text-lg flex flex-grow ${props.noLeftMargin ? '' : 'm-2.5'} items-center ${props.reverse ? 'justify-start' : 'justify-end'}`}>{props.label}</div>
-                            <div className="flex items-center">
-                                {Input}
-                            </div>
-                        </div>
-                    </>
-                )}
+            <input
+                className={`px-3 py-1.5 text-lg rounded-md border-2 transition duration-100
+                    focus-within:outline-none focus-within:border-theme-highlight 
+                    ${props.disabled
+            ? 'placeholder-theme-body bg-theme-unselected border-theme-unselected text-theme-body'
+            : 'placeholder-theme-unselected bg-theme-accent border-theme-accent text-theme-text'} 
+                    ${props.className}`}
+                value={displayValue}
+                placeholder={props.placeholder}
+                onChange={(e) => onChange(e.target.value)}
+                onFocus={onFocus}
+                onBlur={onFocusOut}
+                disabled={props.disabled}
+                ref={inputRef}
+            />
             {OSKOpen && (
                 <KeyboardWrapper
                     keyboardRef={keyboard}

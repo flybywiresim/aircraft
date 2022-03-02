@@ -198,7 +198,6 @@ export const AtsuAocPage = () => {
                 <SimpleInput
                     className="text-center w-30"
                     value={simbriefDisplay}
-                    noLabel
                     onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
                     onChange={(value) => setSimbriefDisplay(value)}
                 />
@@ -212,7 +211,6 @@ export const AtsuAocPage = () => {
                 <SimpleInput
                     className="w-30"
                     value={hoppieUserId}
-                    noLabel
                     onBlur={(value) => handleHoppieUsernameInput(value.replace(/\s/g, ''))}
                     onChange={(value) => setHoppieUserId(value)}
                 />

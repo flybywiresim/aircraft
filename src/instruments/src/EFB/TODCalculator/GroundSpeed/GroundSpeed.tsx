@@ -2,10 +2,10 @@ import React from 'react';
 import Card from '../../UtilComponents/Card/Card';
 import { TOD_INPUT_MODE } from '../../Enum/TODInputMode';
 import { useAppSelector } from '../../Store/store';
-import GroundSpeedAuto from './GroundSpeedAuto/GroundSpeedAuto';
-import GroundSpeedManual from './GroundSpeedManual/GroundSpeedManual';
+import { GroundSpeedAuto } from './GroundSpeedAuto/GroundSpeedAuto';
+import { GroundSpeedManual } from './GroundSpeedManual/GroundSpeedManual';
 
-const GroundSpeed = ({ className }: {className: string}) => {
+export const GroundSpeed = ({ className }: {className: string}) => {
     const groundSpeedMode = useAppSelector((state) => state.todCalculator.groundSpeedMode);
 
     const groundSpeedComponent = {
@@ -20,10 +20,8 @@ const GroundSpeed = ({ className }: {className: string}) => {
     }[groundSpeedMode];
 
     return (
-        <Card title="Ground Speed" childrenContainerClassName={groundSpeedComponent.childrenContainerClassName} className={className}>
+        <Card title="Ground Speed" childrenContainerClassName={`${groundSpeedComponent.childrenContainerClassName} relative`} className={className}>
             <groundSpeedComponent.component />
         </Card>
     );
 };
-
-export default GroundSpeed;

@@ -27,9 +27,9 @@ export interface SimbriefData {
         avgWindSpeed: string;
     }
     units: string;
-    altIcao: string;
-    altIata: string;
-    altBurn: number;
+    altIcao?: string;
+    altIata?: string;
+    altBurn?: number;
     tripTime: number;
     contFuelTime: number;
     resFuelTime: number;
@@ -121,8 +121,7 @@ SimbriefData>) => {
     },
 });
 
-export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<PayloadAction<
-SimbriefData>> {
+export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<PayloadAction<SimbriefData>> {
     const returnedSimbriefData = await getSimbriefData(simbriefUserId);
 
     if (simbriefUserId) {

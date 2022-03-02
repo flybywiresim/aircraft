@@ -50,7 +50,7 @@ export const FlyPadPage = () => {
     return (
         <SettingsPage name="flyPad">
             <SettingItem name="Brightness" disabled={!!usingAutobrightness}>
-                <div className="flex flex-row gap-x-4 items-center">
+                <div className="flex flex-row items-center space-x-4">
                     <Slider
                         style={{ width: '24rem' }}
                         value={usingAutobrightness ? brightness : brightnessSetting}

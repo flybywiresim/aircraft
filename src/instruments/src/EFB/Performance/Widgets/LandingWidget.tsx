@@ -374,7 +374,7 @@ export const LandingWidget = () => {
                         <div className="mt-4 mb-8">
                             <p>Airport ICAO</p>
                             <div className="flex flex-row justify-between mt-4">
-                                <SimpleInput className="w-64 uppercase" noLabel value={icao} placeholder="ICAO" onChange={handleICAOChange} maxLength={4} />
+                                <SimpleInput className="w-64 uppercase" value={icao} placeholder="ICAO" onChange={handleICAOChange} maxLength={4} />
                                 <div className="flex flex-row">
                                     <button
                                         onClick={handleAutoFill}
@@ -402,7 +402,6 @@ export const LandingWidget = () => {
                                 <Label text="Wind Direction">
                                     <SimpleInput
                                         className="w-64"
-                                        noLabel
                                         value={windDirection}
                                         placeholder="&deg;"
                                         min={0}
@@ -415,7 +414,6 @@ export const LandingWidget = () => {
                                 </Label>
                                 <Label text="Wind Magnitude">
                                     <SimpleInput
-                                        noLabel
                                         className="w-64"
                                         value={windMagnitude}
                                         placeholder="kts"
@@ -428,7 +426,6 @@ export const LandingWidget = () => {
                                 <Label text="Temperature">
                                     <div className="flex flex-row w-64">
                                         <SimpleInput
-                                            noLabel
                                             className="w-full rounded-r-none"
                                             value={getVariableUnitDisplayValue<'C' | 'F'>(temperature, temperatureUnit, 'F', Units.celsiusToFahrenheit)}
                                             placeholder={`°${temperatureUnit}`}
@@ -452,7 +449,6 @@ export const LandingWidget = () => {
                                 <Label text="QNH">
                                     <div className="flex flex-row w-64">
                                         <SimpleInput
-                                            noLabel
                                             className="w-full rounded-r-none"
                                             value={getVariableUnitDisplayValue<'hPa' | 'inHg'>(pressure, pressureUnit, 'inHg', Units.hectopascalToInchOfMercury)}
                                             placeholder={pressureUnit}
@@ -475,7 +471,6 @@ export const LandingWidget = () => {
                                 </Label>
                                 <Label text="Runway Altitude">
                                     <SimpleInput
-                                        noLabel
                                         className="w-64"
                                         value={altitude}
                                         placeholder="ft ASL"
@@ -488,7 +483,6 @@ export const LandingWidget = () => {
                                 </Label>
                                 <Label text="Runway Heading">
                                     <SimpleInput
-                                        noLabel
                                         className="w-64"
                                         value={runwayHeading}
                                         placeholder="&deg;"
@@ -529,13 +523,11 @@ export const LandingWidget = () => {
                                         onChange={handleRunwaySlopeChange}
                                         number
                                         reverse
-                                        noLabel
                                     />
                                 </Label>
                                 <Label text="Runway LDA">
                                     <div className="flex flex-row w-64">
                                         <SimpleInput
-                                            noLabel
                                             className="w-full rounded-r-none"
                                             value={getVariableUnitDisplayValue<'ft' | 'm'>(runwayLength, distanceUnit, 'ft', Units.metreToFoot)}
                                             placeholder={distanceUnit}
@@ -566,7 +558,6 @@ export const LandingWidget = () => {
                                         decimalPrecision={0}
                                         onChange={handleApproachSpeedChange}
                                         number
-                                        noLabel
                                     />
                                 </Label>
                                 <Label text="Weight">
@@ -580,7 +571,6 @@ export const LandingWidget = () => {
                                             decimalPrecision={0}
                                             onChange={handleWeightChange}
                                             number
-                                            noLabel
                                         />
                                         <SelectInput
                                             value={weightUnit}

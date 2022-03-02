@@ -1,16 +1,15 @@
+/* eslint-disable max-len */
 import React, { useEffect } from 'react';
 import { round } from 'lodash';
 import { useSimVar } from '@instruments/common/simVars';
-import Input from '../../UtilComponents/Form/Input/Input';
 import Card from '../../UtilComponents/Card/Card';
-import Divider from '../../UtilComponents/Divider/Divider';
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType';
-import Button, { BUTTON_TYPE } from '../../UtilComponents/Button/Button';
 import { TOD_INPUT_MODE } from '../../Enum/TODInputMode';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { setTodCurrentAltitudeSync, setTodData } from '../../Store/features/todCalculator';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 
-const Data = ({ className }: {className: string}) => {
+export const Data = ({ className }: {className: string}) => {
     let [altitude] = useSimVar('INDICATED ALTITUDE', 'feet', 1_000);
     let [distance] = useSimVar('L:A32NX_GPS_WP_DISTANCE', 'nautical miles', 1_000);
     let [verticalSpeed] = useSimVar('VERTICAL SPEED', 'feet per minute', 1_000);
@@ -47,7 +46,7 @@ const Data = ({ className }: {className: string}) => {
             return;
         }
 
-        setTodData({ currentAltitude: altitude });
+        dispatch(setTodData({ currentAltitude: altitude }));
     }, [currentAltitudeSyncEnabled, altitude]);
 
     useEffect(() => {
@@ -56,92 +55,92 @@ const Data = ({ className }: {className: string}) => {
         }
 
         if (!inputValid(calculationType!, syncedInput)) {
-            setTodData({ calculationInputMode: TOD_INPUT_MODE.MANUAL, calculation: { input: -1, type: undefined } });
+            dispatch(setTodData({ calculationInputMode: TOD_INPUT_MODE.MANUAL, calculation: { input: -1, type: undefined } }));
             return;
         }
 
-        setTodData({ calculation: { input: syncedInput, type: calculationType } });
+        dispatch(setTodData({ calculation: { input: syncedInput, type: calculationType } }));
     }, [calculationInputSyncEnabled, distance, verticalSpeed, pitchAngle]);
 
     const calculationTypes = [
-        { label: 'Distance', rightLabel: 'NM', type: TOD_CALCULATION_TYPE.DISTANCE, syncValue: distance, negativeValue: false },
-        { label: 'Vertical speed', rightLabel: 'ft/min', type: TOD_CALCULATION_TYPE.VERTICAL_SPEED, syncValue: verticalSpeed, negativeValue: true },
-        { label: 'Angle', rightLabel: 'degrees', type: TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE, syncValue: pitchAngle, negativeValue: true },
+        { label: 'Distance', placeholder: 'NM', type: TOD_CALCULATION_TYPE.DISTANCE, syncValue: distance, negativeValue: false },
+        { label: 'Vertical speed', placeholder: 'ft/min', type: TOD_CALCULATION_TYPE.VERTICAL_SPEED, syncValue: verticalSpeed, negativeValue: true },
+        { label: 'Angle', placeholder: 'degrees', type: TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE, syncValue: pitchAngle, negativeValue: true },
     ];
 
     return (
-        <Card title="Data" childrenContainerClassName="flex-1 flex flex-col justify-start" className={className}>
-            <Input
-                label="Current altitude"
-                type="number"
-                className="pr-1 mb-4 dark-option"
-                rightComponent={(
-                    <div className="flex justify-center items-center">
-                        <span className="mr-4 text-2xl">ft</span>
-                        <Button
-                            text="SYNC"
-                            type={currentAltitudeSyncEnabled ? BUTTON_TYPE.BLUE : BUTTON_TYPE.BLUE_OUTLINE}
-                            onClick={() => dispatch(setTodCurrentAltitudeSync(!currentAltitudeSyncEnabled))}
-                        />
-                    </div>
-                )}
-                value={currentAltitude}
-                onChange={(currentAltitude) => setTodData({ currentAltitude: parseFloat(currentAltitude) })}
-                disabled={currentAltitudeSyncEnabled}
-            />
+        <Card title="Data" childrenContainerClassName="flex-1 flex flex-col justify-start space-y-4" className={className}>
+            <div>
+                <p>Current Altitude</p>
 
-            <Input
-                label="Target altitude"
-                type="number"
-                className="mb-6 dark-option"
-                rightComponent={<span className="text-2xl">ft</span>}
-                value={targetAltitude}
-                onChange={(targetAltitude) => setTodData({ targetAltitude: parseFloat(targetAltitude) })}
-            />
-
-            <Divider className="mb-6" />
-
-            {calculationTypes.map(({ label, rightLabel, type, syncValue, negativeValue }) => (!calculationInput || calculationType === type) && (
-                <>
-                    <Input
-                        label={label}
-                        type="number"
-                        className="pr-1 mb-2 dark-option"
-                        leftInnerComponent={negativeValue ? <span className="text-2xl">-</span> : null}
-                        rightComponent={(
-                            <div className="flex justify-center items-center">
-                                <span className="pr-3 text-2xl">{rightLabel}</span>
-
-                                {inputValid(type, syncValue) && (
-                                    <Button
-                                        className="ml-1"
-                                        text="SYNC"
-                                        type={calculationInputSyncEnabled ? BUTTON_TYPE.BLUE : BUTTON_TYPE.BLUE_OUTLINE}
-                                        onClick={() => dispatch(setTodData({
-                                            calculationInputMode: !calculationInputSyncEnabled ? TOD_INPUT_MODE.AUTO : TOD_INPUT_MODE.MANUAL,
-                                            calculation: { type, input: syncedInput },
-                                        }))}
-                                    />
-                                )}
-
-                                {!!calculationInput && !calculationInputSyncEnabled && (
-                                    <Button
-                                        className="ml-1"
-                                        text="X"
-                                        type={BUTTON_TYPE.RED_OUTLINE}
-                                        onClick={() => setTodData({ calculation: { input: -1, type: undefined } })}
-                                    />
-                                )}
-                            </div>
-                        )}
-                        onChange={(input) => setTodData({ calculation: { input: parseFloat(input), type: input !== '' ? type : undefined } })}
-                        value={calculationInput ? Math.abs(calculationInput) : ''}
-                        disabled={calculationInputSyncEnabled}
+                <div className="flex flex-row">
+                    <SimpleInput
+                        className="w-full rounded-r-none"
+                        placeholder="feet"
+                        value={currentAltitude}
+                        onChange={(value) => dispatch(setTodData({ currentAltitude: parseFloat(value) }))}
+                        disabled={currentAltitudeSyncEnabled}
+                        number
                     />
-                </>
+                    <button
+                        onClick={() => dispatch(setTodCurrentAltitudeSync(!currentAltitudeSyncEnabled))}
+                        className={`flex items-center border-2 border-theme-highlight text-theme-highlight px-3 rounded-md rounded-l-none transition duration-100 ${currentAltitudeSyncEnabled && 'bg-theme-highlight text-theme-body'}`}
+                        type="button"
+                    >
+                        <p className="text-current">SYNC</p>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <p>Target Altitude</p>
+                <SimpleInput
+                    placeholder="feet"
+                    className="w-full"
+                    value={targetAltitude}
+                    onChange={(targetAltitude) => dispatch(setTodData({ targetAltitude: parseFloat(targetAltitude) }))}
+                    number
+                />
+            </div>
+
+            <div className="w-full h-1 bg-theme-accent rounded-full" />
+
+            {calculationTypes.map(({ label, placeholder, type, syncValue, negativeValue }) => (!calculationInput || calculationType === type) && (
+                <div>
+                    <p>{label}</p>
+                    <div className="flex flex-row">
+                        <SimpleInput
+                            placeholder={placeholder}
+                            number
+                            className="w-full"
+                            onChange={(input) => dispatch(setTodData({ calculation: { input: parseFloat(input), type: input !== '' ? type : undefined } }))}
+                            value={calculationInput ? Math.abs(calculationInput) : ''}
+                            disabled={calculationInputSyncEnabled}
+                        />
+                        {inputValid(type, syncValue) && (
+                            <button
+                                type="button"
+                                className={`flex items-center border-2 border-theme-highlight text-theme-highlight px-3 rounded-md rounded-l-none transition duration-100 ${calculationInputSyncEnabled && 'bg-theme-highlight text-theme-body'}`}
+                                onClick={() => dispatch(setTodData({
+                                    calculationInputMode: !calculationInputSyncEnabled ? TOD_INPUT_MODE.AUTO : TOD_INPUT_MODE.MANUAL,
+                                    calculation: { type, input: syncedInput },
+                                }))}
+                            >
+                                SYNC
+                            </button>
+                        )}
+                        {!!calculationInput && !calculationInputSyncEnabled && (
+                            <button
+                                type="button"
+                                className="flex items-center px-3 text-red-500 hover:text-theme-body hover:bg-red-500 rounded-md rounded-l-none border-2 border-red-500 transition duration-100"
+                                onClick={() => dispatch(setTodData({ calculation: { input: undefined, type: undefined } }))}
+                            >
+                                X
+                            </button>
+                        )}
+                    </div>
+                </div>
             ))}
         </Card>
     );
 };
-
-export default Data;

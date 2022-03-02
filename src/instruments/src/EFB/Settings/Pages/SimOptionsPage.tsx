@@ -65,7 +65,6 @@ export const SimOptionsPage = () => {
                         <SimpleInput
                             className="text-center w-30"
                             value={mcduServerPort}
-                            noLabel
                             onChange={(event) => {
                                 setMcduServerPort(event);
                             }}

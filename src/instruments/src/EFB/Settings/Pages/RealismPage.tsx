@@ -101,7 +101,6 @@ export const RealismPage = () => {
                 <SimpleInput
                     className="text-center w-30"
                     value={mcduTimeout}
-                    noLabel
                     min={5}
                     max={120}
                     disabled={(mcduInput !== 'ENABLED')}
