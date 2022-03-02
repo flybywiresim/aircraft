@@ -5,9 +5,7 @@ import { removeTodGroundSpeed, setTodGroundSpeed, setTodGroundSpeedMode } from '
 import Button, { BUTTON_TYPE } from '../../../UtilComponents/Button/Button';
 import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode';
 
-import './GroundSpeedAuto.scss';
-
-const GroundSpeedAuto = () => {
+export const GroundSpeedAuto = () => {
     const dispatch = useAppDispatch();
 
     const currentAltitude = useAppSelector((state) => state.todCalculator.currentAltitude);
@@ -18,16 +16,12 @@ const GroundSpeedAuto = () => {
     simGroundSpeed = Math.round(simGroundSpeed);
 
     const setCurrentGroundSpeed = () => {
-        // FIXME
-        if ((currentAltitude ?? 0) > 10000 && (groundSpeed ?? 0) >= 250) {
-            dispatch(setTodGroundSpeed({
-                index: 0,
-                value: { from: 0, groundSpeed: 250 },
-            }));
+        if ((currentAltitude ?? 0) > 10000 && groundSpeed >= 250) {
+            dispatch(setTodGroundSpeed({ index: 0, value: { from: 0, groundSpeed: 250 } }));
             dispatch(setTodGroundSpeed({ index: 1, value: { from: 10000, groundSpeed: simGroundSpeed } }));
         } else {
             dispatch(setTodGroundSpeed({ index: 0, value: { from: 0, groundSpeed: simGroundSpeed > 0 ? simGroundSpeed : '' } }));
-            removeTodGroundSpeed(1);
+            dispatch(removeTodGroundSpeed(1));
         }
     };
 
@@ -40,20 +34,19 @@ const GroundSpeedAuto = () => {
     }
 
     return (
-        <div>
-            <div className="flex flex-col justify-center items-center">
-                <span className="mb-4 text-xl font-medium">Fetching from sim</span>
-
-                <span className="mb-4 text-5xl font-medium">
-                    {groundSpeed || 0}
-                    {' '}
-                    kt
-                </span>
-
-                <Button text="Manual input" onClick={() => setTodGroundSpeedMode(TOD_INPUT_MODE.MANUAL)} type={BUTTON_TYPE.BLUE} />
+        <div className="flex flex-col justify-center items-center">
+            <div className="flex absolute top-0 flex-row items-center p-2 space-x-4 w-full bg-theme-accent">
+                <div className="w-6 h-6 bg-theme-highlight rounded-full animate-pulse" />
+                <p>Fetching speed from simulator</p>
             </div>
+
+            <span className="mb-4 text-5xl">
+                {groundSpeed || 0}
+                {' '}
+                kt
+            </span>
+
+            <Button text="Manual Input" onClick={() => dispatch(setTodGroundSpeedMode(TOD_INPUT_MODE.MANUAL))} type={BUTTON_TYPE.BLUE} />
         </div>
     );
 };
-
-export default GroundSpeedAuto;

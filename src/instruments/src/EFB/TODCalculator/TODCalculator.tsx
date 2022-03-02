@@ -1,7 +1,7 @@
 import React from 'react';
-import GroundSpeed from './GroundSpeed/GroundSpeed';
-import Data from './Data/Data';
-import Result from './Result/Result';
+import { GroundSpeed } from './GroundSpeed/GroundSpeed';
+import { Data } from './Data/Data';
+import { Result } from './Result/Result';
 
 export const TODCalculator = () => (
     <div className="flex mt-6 w-full">

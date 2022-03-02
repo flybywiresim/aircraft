@@ -19,7 +19,7 @@ export const AudioPage = () => {
             </SettingItem>
 
             <SettingItem name="Exterior Master Volume">
-                <div className="flex flex-row gap-x-4 items-center">
+                <div className="flex flex-row items-center space-x-4">
                     <Slider
                         style={{ width: '24rem' }}
                         value={exteriorVolume + 50}
@@ -37,7 +37,7 @@ export const AudioPage = () => {
             </SettingItem>
 
             <SettingItem name="Engine Interior Volume">
-                <div className="flex flex-row gap-x-4 items-center">
+                <div className="flex flex-row items-center space-x-4">
                     <Slider
                         style={{ width: '24rem' }}
                         value={engineVolume + 50}
@@ -55,7 +55,7 @@ export const AudioPage = () => {
             </SettingItem>
 
             <SettingItem name="Wind Interior Volume">
-                <div className="flex flex-row gap-x-4 items-center">
+                <div className="flex flex-row items-center space-x-4">
                     <Slider
                         style={{ width: '24rem' }}
                         value={windVolume + 50}

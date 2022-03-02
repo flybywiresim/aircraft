@@ -34,10 +34,11 @@ export const todCalculatorSlice = createSlice({
     name: 'todCalculator',
     initialState,
     reducers: {
-        setTodData: (state, action: PayloadAction<Partial<TodCalculatorState>>) => ({
-            ...state,
-            ...action.payload,
-        }),
+        setTodData: (state, action: PayloadAction<Partial<TodCalculatorState>>) => {
+            Object.keys(action.payload).forEach((key) => {
+                state[key] = action.payload[key];
+            });
+        },
         addTodGroundSpeed: (state, action: PayloadAction<groundSpeed>) => {
             state.groundSpeed.push(action.payload);
         },
@@ -48,25 +49,21 @@ export const todCalculatorSlice = createSlice({
             state.groundSpeed[action.payload.index] = action.payload.value;
         },
         setTodGroundSpeedMode: (state, action: PayloadAction<TOD_INPUT_MODE>) => {
-            if (action.payload === TOD_INPUT_MODE.AUTO) {
-                state.groundSpeed = initialState.groundSpeed;
-            }
-
-            return ({
-                ...state,
-                ...{ groundSpeedMode: action.payload },
-            });
+            state.groundSpeedMode = action.payload;
         },
-        setTodCurrentAltitudeSync: (state, action: PayloadAction<boolean>) => ({
-            ...state,
-            ...{ currentAltitudeMode: action.payload ? TOD_INPUT_MODE.AUTO : TOD_INPUT_MODE.MANUAL },
-        }),
-        clearTodGroundSpeed: (state) => {
-            state.groundSpeed = initialState.groundSpeed;
+        setTodCurrentAltitudeSync: (state, action: PayloadAction<boolean>) => {
+            state.currentAltitudeMode = action.payload ? TOD_INPUT_MODE.AUTO : TOD_INPUT_MODE.MANUAL;
         },
     },
 });
 
-export const { setTodData, addTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeed, setTodGroundSpeedMode, clearTodGroundSpeed, setTodCurrentAltitudeSync } = todCalculatorSlice.actions;
+export const {
+    setTodData,
+    addTodGroundSpeed,
+    removeTodGroundSpeed,
+    setTodGroundSpeed,
+    setTodGroundSpeedMode,
+    setTodCurrentAltitudeSync,
+} = todCalculatorSlice.actions;
 
 export default todCalculatorSlice.reducer;

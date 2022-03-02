@@ -63,13 +63,11 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                 {!props.expertMode
                     && (
                         <div className="flex flex-col w-full">
+                            <p>Deadband +/-</p>
                             <SimpleInput
-                                label="Deadband +/-"
                                 className="mb-4 w-52"
                                 value={deadZone.toFixed(2)}
-                                labelPosition="col"
                                 reverse
-                                noLeftMargin
                                 onChange={(deadZone) => {
                                     if (parseFloat(deadZone) >= 0.01) {
                                         if (previousMode === props.expertMode) {
@@ -95,13 +93,11 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                 {props.expertMode
                     && (
                         <div>
+                            <p>Configure End</p>
                             <SimpleInput
-                                label="Configure End"
-                                labelPosition="col"
                                 reverse
-                                className="mr-0 w-36 dark-option"
+                                className="mr-0 w-36"
                                 value={!props.expertMode ? deadZone : props.upperBoundDetentGetter.toFixed(2)}
-                                noLeftMargin
                                 onChange={(deadZone) => {
                                     if (previousMode === props.expertMode && deadZone.length > 1 && !Number.isNaN(Number(deadZone))) {
                                         props.upperBoundDetentSetter.forEach((f) => f(parseFloat(deadZone)));
@@ -109,13 +105,12 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                                     }
                                 }}
                             />
+
+                            <p>{props.expertMode ? 'Configure Start' : 'Configure Range'}</p>
                             <SimpleInput
-                                label={props.expertMode ? 'Configure Start' : 'Configure Range'}
-                                className="mt-2 w-36 dark-option"
-                                labelPosition="col"
+                                className="mt-2 w-36"
                                 reverse
                                 value={!props.expertMode ? deadZone : props.lowerBoundDetentGetter.toFixed(2)}
-                                noLeftMargin
                                 onChange={(deadZone) => {
                                     if (previousMode === props.expertMode && deadZone.length > 1 && !Number.isNaN(Number(deadZone))) {
                                         props.lowerBoundDetentSetter.forEach((f) => f(parseFloat(deadZone)));

@@ -75,7 +75,6 @@ export const AircraftOptionsPinProgramsPage = () => {
                 <SimpleInput
                     className="text-center w-30"
                     placeholder={thrustReductionHeight}
-                    noLabel
                     value={thrustReductionHeightSetting}
                     min={400}
                     max={5000}
@@ -86,7 +85,6 @@ export const AircraftOptionsPinProgramsPage = () => {
                 <SimpleInput
                     className="text-center w-30"
                     placeholder={accelerationHeight}
-                    noLabel
                     value={accelerationHeightSetting}
                     min={400}
                     max={10000}
@@ -97,7 +95,6 @@ export const AircraftOptionsPinProgramsPage = () => {
                 <SimpleInput
                     className="text-center w-30"
                     placeholder={accelerationOutHeight}
-                    noLabel
                     value={accelerationOutHeightSetting}
                     min={400}
                     max={10000}

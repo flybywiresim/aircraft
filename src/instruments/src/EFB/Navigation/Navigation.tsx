@@ -393,7 +393,6 @@ const ChartComponent = () => {
                         min={1}
                         max={pagesViewable}
                         value={currentPage}
-                        noLabel
                         number
                         onBlur={(value) => {
                             dispatch(setCurrentPage(Number.parseInt(value)));
@@ -1044,7 +1043,6 @@ const NavigraphChartsUI = () => {
                             <SimpleInput
                                 placeholder="ICAO"
                                 value={icao}
-                                noLabel
                                 maxLength={4}
                                 className={`w-full flex-shrink uppercase ${simbriefDataLoaded && 'rounded-r-none'}`}
                                 onChange={handleIcaoChange}
@@ -1063,12 +1061,14 @@ const NavigraphChartsUI = () => {
                                     >
                                         TO
                                     </SelectItem>
-                                    <SelectItem
-                                        selected={icao === altIcao}
-                                        onSelect={() => handleIcaoChange(altIcao)}
-                                    >
-                                        ALTN
-                                    </SelectItem>
+                                    {!!altIcao && (
+                                        <SelectItem
+                                            selected={icao === altIcao}
+                                            onSelect={() => handleIcaoChange(altIcao)}
+                                        >
+                                            ALTN
+                                        </SelectItem>
+                                    )}
                                 </SelectGroup>
                             )}
                         </div>
@@ -1245,7 +1245,6 @@ const LocalFileChartUI = () => {
                             <SimpleInput
                                 placeholder="File Name"
                                 value={icao}
-                                noLabel
                                 className={`w-full flex-shrink uppercase ${simbriefDataLoaded && 'rounded-r-none'}`}
                                 onChange={handleIcaoChange}
                             />
@@ -1263,12 +1262,14 @@ const LocalFileChartUI = () => {
                                     >
                                         TO
                                     </SelectItem>
-                                    <SelectItem
-                                        selected={icao === altIcao}
-                                        onSelect={() => handleIcaoChange(altIcao)}
-                                    >
-                                        ALTN
-                                    </SelectItem>
+                                    {!!altIcao && (
+                                        <SelectItem
+                                            selected={icao === altIcao}
+                                            onSelect={() => handleIcaoChange(altIcao)}
+                                        >
+                                            ALTN
+                                        </SelectItem>
+                                    )}
                                 </SelectGroup>
                             )}
                         </div>

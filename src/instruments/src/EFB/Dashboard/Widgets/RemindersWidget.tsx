@@ -219,8 +219,8 @@ const ChecklistsReminder = () => {
         <RemindersSection title="Checklists" pageLinkPath="/checklists">
             {relevantChecklists.length ? (
                 <div className="grid grid-cols-2">
-                    {relevantChecklists.map((checklist, clIndex) => (
-                        <ChecklistReminderWidget checklist={checklist} checklistIndex={clIndex} />
+                    {relevantChecklists.map((checklist) => (
+                        <ChecklistReminderWidget checklist={checklist} checklistIndex={checklists.findIndex((cl) => cl.name === checklist.name)} />
                     ))}
                 </div>
             ) : (

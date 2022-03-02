@@ -400,8 +400,6 @@ export const FuelPage = () => {
                                 <div className="relative">
                                     <SimpleInput
                                         className={`w-32 ${simbriefDataLoaded && 'rounded-r-none'}`}
-                                        noLeftMargin
-                                        noLabel
                                         placeholder={round(totalFuel()).toString()}
                                         number
                                         min={0}

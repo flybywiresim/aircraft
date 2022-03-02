@@ -1,19 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Wifi2, Power } from 'react-bootstrap-icons';
+import { Power, WifiOff, Wifi } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty, usePersistentNumberProperty } from '@instruments/common/persistence';
 import { useLongPress } from 'use-long-press';
 import { useHistory } from 'react-router-dom';
+import useInterval from '@instruments/common/useInterval';
 import { usePower, PowerStates } from '../Efb';
 
 import { BatteryStatus } from './BatteryStatus';
 import { useAppSelector } from '../Store/store';
 import { initialState } from '../Store/features/simbrief';
 
-type StatusBarProps = {
+interface StatusBarProps {
     batteryLevel: number;
     isCharging: boolean;
-};
+}
 
 export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds');
@@ -105,6 +106,24 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
         };
     }, []);
 
+    const [localApiConnected, setLocalApiConnected] = useState(false);
+
+    // TODO FIXME: This is going to need some readjustment when the user config changes
+    useInterval(async () => {
+        try {
+            const healthRes = await fetch('http://localhost:8380/health');
+            const healthJson = await healthRes.json();
+
+            if (healthJson.info.api.status === 'up') {
+                setLocalApiConnected(true);
+            } else {
+                setLocalApiConnected(false);
+            }
+        } catch (_) {
+            setLocalApiConnected(false);
+        }
+    }, 5_000);
+
     return (
         <div className="flex overflow-hidden fixed z-40 justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">
             <div
@@ -145,9 +164,11 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                     </div>
                 )}
 
-                <div className="mb-1.5">
-                    <Wifi2 size={32} />
-                </div>
+                {localApiConnected ? (
+                    <Wifi size={26} />
+                ) : (
+                    <WifiOff size={26} />
+                )}
 
                 <BatteryStatus batteryLevel={batteryLevel} isCharging={isCharging} />
 
