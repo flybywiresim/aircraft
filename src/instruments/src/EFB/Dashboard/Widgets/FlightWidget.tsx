@@ -128,7 +128,7 @@ export const FlightWidget = () => {
                                 <p className={`text-theme-highlight font-body ${flightPlanProgress > 1 ? 'text-theme-highlight' : 'text-theme-text'}`}>
                                     {schedOutParsed}
                                 </p>
-                                <div className="flex flex-row mx-4 w-full h-1">
+                                <div className="flex flex-row mx-6 w-full h-1">
                                     <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
                                         {!!flightPlanProgress && (
                                             <IconPlane
