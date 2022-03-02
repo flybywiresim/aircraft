@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
+import { useSimVar } from '@instruments/common/simVars';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
@@ -9,7 +10,6 @@ import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 
 import { ThrottleConfig } from '../ThrottleConfig/ThrottleConfig';
-import {useSimVar} from "@instruments/common/simVars";
 
 export const SimOptionsPage = () => {
     const [showThrottleSettings, setShowThrottleSettings] = useState(false);
