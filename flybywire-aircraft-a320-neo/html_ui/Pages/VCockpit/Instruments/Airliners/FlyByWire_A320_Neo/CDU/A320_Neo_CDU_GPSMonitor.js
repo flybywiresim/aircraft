@@ -32,12 +32,6 @@ class CDUGPSMonitor {
 
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.GPSMonitor;
-        // ideally, this would update with the same frequency (is it known?) as the A320 GPS
-        mcdu.refreshPageCallback = () => {
-            CDUGPSMonitor.ShowPage(mcdu, merit1, merit2, sat1, sat2);
-        };
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
-
         mcdu.setTemplate([
             ["GPS MONITOR"],
             ["GPS1 POSITION"],
@@ -53,5 +47,14 @@ class CDUGPSMonitor {
             ["MERIT", "MODE/SAT", "GPS ALT"],
             [`${merit2}FT[color]green`, `NAV/${sat2}[color]green`, `${Math.round(ALTITUDE)}[color]green`]
         ]);
+
+        // ideally, this would update with the same frequency (is it known?) as the A320 GPS
+        // updates fast as it shows seconds
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.GPSMonitor) {
+                CDUGPSMonitor.ShowPage(mcdu, merit1, merit2, sat1, sat2);
+            }
+        }, mcdu.PageTimeout.Fast);
+
     }
 }

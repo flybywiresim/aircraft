@@ -40,15 +40,15 @@ class CDUFlightPlanPage {
             CDUFlightPlanPage.ShowPage(mcdu, offset);
         };
         mcdu.activeSystem = 'FMGC';
-        CDUFlightPlanPage._timer = 0;
         const fpm = mcdu.flightPlanManager;
-        const renderedWaypointIndex = fpm.getActiveWaypointIndex();
-        mcdu.pageUpdate = () => {
-            CDUFlightPlanPage._timer++;
-            if (CDUFlightPlanPage._timer >= 100 || fpm.getActiveWaypointIndex() !== renderedWaypointIndex) {
+
+        // regular update due to showing dynamic data on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.FlightPlanPage) {
                 CDUFlightPlanPage.ShowPage(mcdu, offset);
             }
-        };
+        }, mcdu.PageTimeout.Medium);
+
         const flightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
         const isFlying = flightPhase >= 5 && flightPhase <= 7;
 
@@ -772,8 +772,6 @@ class CDUFlightPlanPage {
         }, !mcdu.flightPlanManager.isCurrentFlightPlanTemporary());
     }
 }
-
-CDUFlightPlanPage._timer = 0;
 
 function renderFixTableHeader(isFlying) {
     return [
