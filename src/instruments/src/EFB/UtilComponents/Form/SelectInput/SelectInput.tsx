@@ -24,7 +24,7 @@ interface SelectInputProps {
 
 const defaultOptionFallback: Option = { value: 0, displayValue: '' };
 
-const SelectInput = (props: SelectInputProps) => {
+export const SelectInput = (props: SelectInputProps) => {
     const defaultOption = props.options.find((option) => option.value === (props.defaultValue ?? 0)) ?? defaultOptionFallback;
 
     const [value, setValue] = useState<any>(defaultOption.displayValue);
@@ -71,7 +71,7 @@ const SelectInput = (props: SelectInputProps) => {
                         {props.options.map((option) => (
                             (value !== option.displayValue || props.forceShowAll) && (
                                 <div
-                                    className="py-1.5 px-3 hover:bg-opacity-5 transition duration-300 hover:bg-theme-highlight hover:text-theme-body"
+                                    className="py-1.5 px-3 hover:text-theme-body hover:bg-theme-highlight hover:bg-opacity-5 transition duration-300"
                                     onClick={() => onOptionClicked(option)}
                                 >
                                     {option.displayValue}
@@ -84,5 +84,3 @@ const SelectInput = (props: SelectInputProps) => {
         </div>
     );
 };
-
-export default SelectInput;
