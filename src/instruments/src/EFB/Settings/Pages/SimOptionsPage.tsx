@@ -1,6 +1,8 @@
+/* eslint-disable max-len */
 import React, { useState } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
+import { useSimVar } from '@instruments/common/simVars';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
@@ -16,6 +18,8 @@ export const SimOptionsPage = () => {
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', 'DISABLED');
     const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
     const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8380');
+    const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
+    const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
 
     const defaultBaroButtons: ButtonType[] = [
         { name: 'Auto', setting: 'AUTO' },
@@ -83,6 +87,16 @@ export const SimOptionsPage = () => {
                         >
                             Calibrate
                         </button>
+                    </SettingItem>
+
+                    <SettingItem name="Use Calculated ILS Signals">
+                        <Toggle
+                            value={radioReceiverUsage === '1'}
+                            onToggle={(value) => {
+                                setRadioReceiverUsage(value ? '1' : '0');
+                                setRadioReceiverUsageSimVar(value ? 1 : 0);
+                            }}
+                        />
                     </SettingItem>
 
                 </SettingsPage>
