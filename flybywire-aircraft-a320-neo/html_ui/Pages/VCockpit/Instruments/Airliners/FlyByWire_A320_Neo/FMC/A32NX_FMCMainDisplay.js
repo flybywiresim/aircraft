@@ -186,6 +186,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.holdDecelReached = undefined;
         this.setHoldSpeedMessageActive = undefined;
         this.managedProfile = undefined;
+        this.speedLimitExceeded = undefined;
     }
 
     Init() {
@@ -506,6 +507,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.holdDecelReached = false;
         this.setHoldSpeedMessageActive = false;
         this.managedProfile = new Map();
+        this.speedLimitExceeded = false;
 
         // ATSU data
         this.atsuManager = new Atsu.AtsuManager(this);
@@ -567,6 +569,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (this.fmsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
             this.updateRadioNavState();
+            this.checkSpeedLimit();
         }
 
         this.A32NXCore.update();
@@ -1126,6 +1129,48 @@ class FMCMainDisplay extends BaseAirliners {
                 SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
             }
         }, 200);
+    }
+
+    checkSpeedLimit() {
+        let speedLimit;
+        let speedLimitAlt;
+        switch (this.flightPhaseManager.phase) {
+            case FmgcFlightPhases.CLIMB:
+            case FmgcFlightPhases.CRUISE:
+                speedLimit = this.climbSpeedLimit;
+                speedLimitAlt = this.climbSpeedLimitAlt;
+                break;
+            case FmgcFlightPhases.DESCENT:
+                speedLimit = this.descentSpeedLimit;
+                speedLimitAlt = this.descentSpeedLimitAlt;
+                break;
+            default:
+                // no speed limit in other phases
+                this.speedLimitExceeded = false;
+                return;
+        }
+
+        if (speedLimit === undefined) {
+            this.speedLimitExceeded = false;
+            return;
+        }
+
+        const cas = ADIRS.getCalibratedAirspeed();
+        const alt = ADIRS.getBaroCorrectedAltitude();
+
+        if (this.speedLimitExceeded) {
+            const resetLimitExceeded = !cas.isNormalOperation() || !alt.isNormalOperation() || alt.value > speedLimitAlt || cas.value <= (speedLimit + 5);
+            if (resetLimitExceeded) {
+                this.speedLimitExceeded = false;
+                this.tryRemoveMessage(NXSystemMessages.spdLimExceeded.text);
+            }
+        } else if (cas.isNormalOperation() && alt.isNormalOperation()) {
+            const setLimitExceeded = alt.value < (speedLimitAlt - 150) && cas.value > (speedLimit + 10);
+            if (setLimitExceeded) {
+                this.speedLimitExceeded = true;
+                this.addNewMessage(NXSystemMessages.spdLimExceeded, () => !this.speedLimitExceeded);
+            }
+        }
     }
 
     updateRadioNavState() {
