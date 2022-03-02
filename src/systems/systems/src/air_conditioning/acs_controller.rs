@@ -773,7 +773,7 @@ mod acs_controller_tests {
     use crate::{
         air_conditioning::cabin_air::CabinZone,
         overhead::AutoOffFaultPushButton,
-        pneumatic::valve::DefaultValve,
+        pneumatic::{valve::DefaultValve, EngineModeSelector},
         shared::PneumaticValve,
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -1397,6 +1397,10 @@ mod acs_controller_tests {
             self.command(|a| a.set_apu_bleed_air_valve_open());
         }
 
+        fn command_eng_mode_selector(&mut self, mode: EngineModeSelector) {
+            self.write_by_name("TURB ENG IGNITION SWITCH EX1:1", mode);
+        }
+
         fn command_engine_in_start_mode(&mut self) {
             self.write_by_name("ENGINE_STATE:1", 2);
             self.write_by_name("ENGINE_STATE:2", 2);
@@ -2015,6 +2019,42 @@ mod acs_controller_tests {
             test_bed.run();
 
             assert!(test_bed.pack_flow() < initial_flow);
+        }
+
+        #[test]
+        fn pack_flow_stops_with_eng_mode_ign() {
+            let mut test_bed = test_bed().with().both_packs_on();
+
+            test_bed.command_crossbleed_on();
+            test_bed.command_apu_bleed_on();
+            test_bed = test_bed.iterate(2);
+
+            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+
+            test_bed.command_eng_mode_selector(EngineModeSelector::Ignition);
+            test_bed = test_bed.iterate(2);
+
+            assert_eq!(
+                test_bed.pack_flow(),
+                MassRate::new::<kilogram_per_second>(0.)
+            );
+        }
+
+        #[test]
+        fn pack_flow_reduces_with_eng_mode_ign_crossbleed_shut() {
+            let mut test_bed = test_bed().with().both_packs_on();
+
+            test_bed.command_apu_bleed_on();
+            test_bed = test_bed.iterate(2);
+
+            let initial_pack_flow = test_bed.pack_flow();
+
+            assert!(initial_pack_flow > MassRate::new::<kilogram_per_second>(0.));
+
+            test_bed.command_eng_mode_selector(EngineModeSelector::Ignition);
+            test_bed = test_bed.iterate(2);
+
+            assert!(test_bed.pack_flow() < initial_pack_flow);
         }
 
         #[test]
