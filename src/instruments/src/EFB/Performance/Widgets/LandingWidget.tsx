@@ -20,10 +20,11 @@
 import React, { useState } from 'react';
 import { Units } from '@shared/units';
 import { toast } from 'react-toastify';
+import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { LandingCalculator, LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
-import { SimpleInput } from '../../Components/Form/SimpleInput/SimpleInput';
-import SelectInput from '../../Components/Form/SelectInput/SelectInput';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { useSimVar } from '../../../Common/simVars';
 import { parseMetar } from '../../Utils/parseMetar';
 import { MetarParserType } from '../../../Common/metarTypes';
