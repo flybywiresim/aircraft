@@ -85,6 +85,15 @@ const PseudoFWC: React.FC = () => {
     const [agent1Eng2DischargeTimer] = useState(() => new NXLogicClockNode(10, 0));
     const [agent2Eng2DischargeTimer] = useState(() => new NXLogicClockNode(30, 0));
     const [agentAPUDischargeTimer] = useState(() => new NXLogicClockNode(10, 0));
+    const [iceSevereDetectedTimer] = useState(() => new NXLogicConfirmNode(40, false));
+    const [iceDetectedTimer1] = useState(() => new NXLogicConfirmNode(40, false));
+    const [iceDetectedTimer2] = useState(() => new NXLogicConfirmNode(5));
+    const [iceNotDetTimer1] = useState(() => new NXLogicConfirmNode(60));
+    const [iceNotDetTimer2] = useState(() => new NXLogicConfirmNode(130));
+    const [packOffNotFailed1] = useState(() => new NXLogicConfirmNode(60));
+    const [packOffNotFailed2] = useState(() => new NXLogicConfirmNode(60));
+    const [packOffBleedAvailable1] = useState(() => new NXLogicConfirmNode(5, false));
+    const [packOffBleedAvailable2] = useState(() => new NXLogicConfirmNode(5, false));
 
     const [memoMessageLeft, setMemoMessageLeft] = useState<string[]>([]);
     const [memoMessageRight, setMemoMessageRight] = useState<string[]>([]);
@@ -98,6 +107,9 @@ const PseudoFWC: React.FC = () => {
     const [eng1AntiIce] = useSimVar('ENG ANTI ICE:1', 'bool', 500);
     const [eng2AntiIce] = useSimVar('ENG ANTI ICE:2', 'bool', 500);
     const [wingAntiIce] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_WING_Pressed', 'bool', 500);
+    const [icePercentage] = useSimVar('STRUCTURAL ICE PCT', 'percent over 100', 500);
+    const [tat] = useSimVar('TOTAL AIR TEMPERATURE', 'celsius', 1000);
+    const [inCloud] = useSimVar('AMBIENT IN CLOUD', 'boolean', 1000);
 
     /* ELECTRICAL */
     const [engine1Generator] = useSimVar('L:A32NX_ELEC_ENG_GEN_1_POTENTIAL_NORMAL', 'bool', 500);
@@ -334,6 +346,11 @@ const PseudoFWC: React.FC = () => {
     const [agent1Eng2Discharge, setAgent1Eng2Discharge] = useState(0);
     const [agent2Eng2Discharge, setAgent2Eng2Discharge] = useState(0);
     const [agentAPUDischarge, setAgentAPUDischarge] = useState(0);
+    const [iceDetected1, setIceDetected1] = useState(0);
+    const [iceDetected2, setIceDetected2] = useState(0);
+    const [iceSevereDetected, setIceSevereDetected] = useState(0);
+    const [iceNotDetected1, setIceNotDetected1] = useState(0);
+    const [iceNotDetected2, setIceNotDetected2] = useState(0);
 
     useUpdate((deltaTime) => {
         showTakeoffInhibit = toInhibitTimer.write([3, 4, 5].includes(flightPhase) && !flightPhaseInhibitOverride, deltaTime);
@@ -357,6 +374,29 @@ const PseudoFWC: React.FC = () => {
         const agentAPUDischargeNode = agentAPUDischargeTimer.write(fireButton2 === 1 && eng1Agent1PB === 1, deltaTime);
         if (agentAPUDischarge !== agentAPUDischargeNode) {
             setAgentAPUDischarge(agentAPUDischargeNode);
+        }
+        const iceDetected1Node = iceDetectedTimer1.write(icePercentage >= 0.1 && tat < 10 && !onGround, deltaTime);
+        if (iceDetected1 !== iceDetected1Node) {
+            setIceDetected1(iceDetected1Node);
+        }
+        const iceDetected2Node = iceDetectedTimer2.write(iceDetected1Node && !(eng1AntiIce && eng2AntiIce), deltaTime);
+        if (iceDetected2 !== iceDetected2Node) {
+            setIceDetected2(iceDetected2Node);
+        }
+
+        const iceSevereDetectedNode = iceSevereDetectedTimer.write(icePercentage >= 0.5 && tat < 10 && !onGround, deltaTime);
+        if (iceSevereDetected !== iceSevereDetectedNode) {
+            setIceSevereDetected(iceSevereDetectedNode);
+        }
+
+        const iceNotDetected1Node = iceNotDetTimer1.write(eng1AntiIce === 1 || eng2AntiIce === 1 || wingAntiIce === 1, deltaTime);
+        if (iceNotDetected1 !== iceNotDetected1Node) {
+            setIceNotDetected1(iceNotDetected1Node);
+        }
+
+        const iceNotDetected2Node = iceNotDetTimer2.write(iceNotDetected1 && !(icePercentage >= 0.1 || (tat < 10 && inCloud === 1)), deltaTime);
+        if (iceNotDetected2 !== iceNotDetected2Node) {
+            setIceNotDetected2(iceNotDetected2Node);
         }
     });
 
@@ -640,6 +680,34 @@ const PseudoFWC: React.FC = () => {
             memoInhibit: false,
             failure: 2,
             sysPage: 9,
+            side: 'LEFT',
+        },
+        3081186: { // SEVERE ICE DETECTED
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: iceSevereDetectedTimer.read(),
+            whichCodeToReturn: [
+                0,
+                !wingAntiIce ? 1 : null,
+                engSelectorPosition !== 2 ? 2 : null,
+            ],
+            codesToReturn: ['308128001', '308128002', '308128003'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3081280: { // ICE DETECTED
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: iceDetectedTimer2.read(),
+            whichCodeToReturn: [
+                0,
+                !eng1AntiIce ? 1 : null,
+                !eng2AntiIce ? 2 : null,
+            ],
+            codesToReturn: ['308128001', '308128002', '308128003'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: -1,
             side: 'LEFT',
         },
         2900310: // *HYD  - Blue
@@ -1024,10 +1092,10 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'RIGHT',
         },
-        '0000275': // ICE NOT DETECTED   Engine AntiIce has a timer logic
+        '0000275': // ICE NOT DETECTED
         {
             flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
-            simVarIsActive: wingAntiIce === 1,
+            simVarIsActive: iceNotDetTimer2.read() && !onGround,
             whichCodeToReturn: [0],
             codesToReturn: ['000027501'],
             memoInhibit: false,
@@ -1386,6 +1454,11 @@ const PseudoFWC: React.FC = () => {
         gpwsOff,
         greenHydEng1PBAuto,
         hydPTU,
+        iceDetectedTimer1,
+        iceDetectedTimer2,
+        iceNotDetTimer1,
+        iceNotDetTimer2,
+        iceSevereDetectedTimer,
         landASAPRed,
         landingLight2Retracted,
         landingLight3Retracted,
@@ -1395,6 +1468,10 @@ const PseudoFWC: React.FC = () => {
         ndXfrKnob,
         noSmoking,
         nwSteeringDisc,
+        packOffBleedAvailable1,
+        packOffBleedAvailable2,
+        packOffNotFailed1,
+        packOffNotFailed2,
         parkBrake,
         predWSOn,
         ratDeployed,
