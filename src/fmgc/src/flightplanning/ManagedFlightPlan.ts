@@ -1212,9 +1212,9 @@ export class ManagedFlightPlan {
         if (legA.legAltitudeDescription === AltitudeDescriptor.At) {
             legAltitudeDescription = AltitudeDescriptor.At;
             if (legB.legAltitudeDescription === AltitudeDescriptor.At) {
-                legAltitude1 = Math.min(legA.altitude1, legB.altitude1);
+                legAltitude1 = Math.min(legA.legAltitude1, legB.legAltitude1);
             } else {
-                legAltitude1 = legA.altitude1;
+                legAltitude1 = legA.legAltitude1;
             }
         } else if (legB.legAltitudeDescription === AltitudeDescriptor.At) {
             legAltitudeDescription = AltitudeDescriptor.At;
