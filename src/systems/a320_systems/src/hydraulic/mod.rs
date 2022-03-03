@@ -3,7 +3,7 @@ use nalgebra::Vector3;
 use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angle::degree,
+    angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
@@ -2612,7 +2612,7 @@ impl SimulationElement for PushbackTug {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.state = reader.read(&self.state_id);
 
-        self.steering_angle = reader.read(&self.steer_angle_id);
+        self.steering_angle = Angle::new::<radian>(reader.read(&self.steer_angle_id));
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -7055,9 +7055,9 @@ mod tests {
 
             let current_position_unlocked = test_bed.cargo_fwd_door_position();
 
-            test_bed = test_bed
-                .open_fwd_cargo_door()
-                .run_waiting_for(A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL);
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(1),
+            );
 
             assert!(test_bed.cargo_fwd_door_position() > current_position_unlocked);
 
