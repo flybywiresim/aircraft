@@ -1287,6 +1287,19 @@ export class ManagedFlightPlan {
                 firstLegB.endsInDiscontinuity = false;
                 firstLegB.discontinuityCanBeCleared = undefined;
             }
+        } else if (segmentTypeA === SegmentType.Arrival && segmentTypeB === SegmentType.Approach) {
+            let toDeleteFromB = 0;
+            for (let i = 0; i < segmentB.waypoints.length; i++) {
+                if (ManagedFlightPlan.legsStartOrEndAtSameFix(lastLegA, segmentB.waypoints[i])) {
+                    const constraints = ManagedFlightPlan.mergeConstraints(lastLegA, firstLegB);
+                    Object.assign(lastLegA, constraints);
+                    toDeleteFromB = i + 1;
+                    break;
+                }
+            }
+            for (let i = 0; i < toDeleteFromB; i++) {
+                this.removeWaypoint(segmentB.offset, true);
+            }
         }
     }
 
