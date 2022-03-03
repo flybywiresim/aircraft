@@ -184,7 +184,8 @@ pub struct PowerTransferUnit {
 
     shaft_speed_filtered: LowPassFilter<AngularVelocity>,
 
-    is_in_continuous_mode: DelayedTrueLogicGate,
+    is_in_continuous_mode: bool,
+    is_rotating_after_delay: DelayedTrueLogicGate,
 }
 impl PowerTransferUnit {
     const ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
@@ -219,10 +220,10 @@ impl PowerTransferUnit {
     const BREAKOUT_TORQUE_NM: f64 = 2.;
     const SHAFT_INERTIA: f64 = 0.008;
 
-    const SHAFT_SPEED_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(100);
+    const SHAFT_SPEED_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(800);
 
-    const DELAY_TO_DECLARE_CONTINUOUS: Duration = Duration::from_millis(1500);
-    const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 300.;
+    const DELAY_TO_DECLARE_CONTINUOUS: Duration = Duration::from_millis(800);
+    const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 400.;
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
@@ -254,7 +255,8 @@ impl PowerTransferUnit {
                 Self::SHAFT_SPEED_FILTER_TIME_CONSTANT,
             ),
 
-            is_in_continuous_mode: DelayedTrueLogicGate::new(Self::DELAY_TO_DECLARE_CONTINUOUS),
+            is_in_continuous_mode: false,
+            is_rotating_after_delay: DelayedTrueLogicGate::new(Self::DELAY_TO_DECLARE_CONTINUOUS),
         }
     }
 
@@ -390,11 +392,28 @@ impl PowerTransferUnit {
             .get::<revolution_per_minute>()
             < Self::THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM;
 
-        self.is_in_continuous_mode.update(
+        self.is_rotating_after_delay.update(
             context,
-            (self.is_in_continuous_mode.output() || under_continuous_threshold)
-                && self.is_rotating(),
+            self.shaft_speed.get::<revolution_per_minute>()
+                > Self::THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM,
         );
+
+        self.is_in_continuous_mode = (self.is_in_continuous_mode
+            || self.is_rotating_after_delay.output())
+            && self.is_rotating();
+
+        println!(
+            "RPM {:.1}  is_rot_after_dely {} CONTINUOUS {}",
+            self.shaft_speed.get::<revolution_per_minute>(),
+            self.is_rotating_after_delay.output(),
+            self.is_in_continuous_mode,
+        );
+
+        // self.is_in_continuous_mode.update(
+        //     context,
+        //     (self.is_in_continuous_mode.output() || under_continuous_threshold)
+        //         && self.is_rotating(),
+        // );
 
         // println!(
         //     "RPM {:.1}  VARIATION {:.1} CONTINUOUS {}",
@@ -467,11 +486,8 @@ impl SimulationElement for PowerTransferUnit {
         writer.write(&self.active_r2l_id, self.is_active_right);
         writer.write(&self.motor_flow_id, self.flow());
         writer.write(&self.valve_opened_id, self.is_enabled());
-        writer.write(&self.shaft_rpm_id, self.shaft_speed);
-        writer.write(
-            &self.continuous_mode_id,
-            self.is_in_continuous_mode.output(),
-        );
+        writer.write(&self.shaft_rpm_id, self.shaft_speed_filtered.output());
+        writer.write(&self.continuous_mode_id, self.is_in_continuous_mode);
     }
 }
 
