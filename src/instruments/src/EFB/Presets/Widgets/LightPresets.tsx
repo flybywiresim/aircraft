@@ -4,12 +4,18 @@
 /* eslint-disable max-len */
 import React, { useEffect } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
+import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
 export const LightPresets = () => {
+    const [testMode, setTestMode] = useSimVar('L:A32NX_TEST_MODE', 'bool', 10);
+    const [testWASMVar] = useSimVar('L:A32NX_TEST_VAR', 'number', 10);
+
     const efbBrightness = SimVar.GetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number');
-    // const potentiometer = SimVar.GetSimVarValue('LIGHT POTENTIOMETER:96', 'number');
-    const [potentiometer, setPotentiometer] = useSimVar('LIGHT POTENTIOMETER:96', 'percent over 100', 200);
+
+    const potentiometer = SimVar.GetSimVarValue('LIGHT POTENTIOMETER:86', 'number');
+    // const [potentiometer, setPotentiometer] = useSimVar('LIGHT POTENTIOMETER:86', 'percent over 100', 200);
+
     const mytest = SimVar.GetSimVarValue('L:A32NX_MYTEST', 'number');
     const coffeeCup = SimVar.GetSimVarValue('L:XMLVAR_COCKPIT_COFFEE_L_HIDDEN', 'bool');
     const seatbelt = SimVar.GetSimVarValue('CABIN SEATBELTS ALERT SWITCH', 'bool');
@@ -21,11 +27,12 @@ export const LightPresets = () => {
         SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', 99).then();
         console.log(`A32NX_EFB_BRIGHTNESS <== ${efbBrightness} (want 99)`);
 
-        console.log(`LIGHT POTENTIOMETER:96 ==> ${potentiometer}`);
-        // SimVar.SetSimVarValue('LIGHT POTENTIOMETER:96', 'percent', 33);
-        // SimVar.SetSimVarValue('K:LIGHT_POTENTIOMETER_96_SET', 'percent', 0.33).then();
-        setPotentiometer(33);
-        console.log(`LIGHT POTENTIOMETER:96 <== ${potentiometer} (want 0.33)`);
+        // FSUIPC: 19 86 (>K:2:LIGHT_POTENTIOMETER_SET)
+        console.log(`LIGHT POTENTIOMETER:86 ==> ${potentiometer}`);
+        // SimVar.SetSimVarValue('LIGHT POTENTIOMETER:86', 'number', 0.33);
+        // SimVar.SetSimVarValue('K:LIGHT_POTENTIOMETER_SET', 'percent', 0.33, '86').then();
+        // setPotentiometer(33);
+        console.log(`LIGHT POTENTIOMETER:86 <== ${potentiometer} (want 0.33)`);
 
         console.log(`A32NX_MYTEST ==> ${mytest}`);
         SimVar.SetSimVarValue('L:A32NX_MYTEST', 'number', mytest === null ? 0 : mytest + 1).then();
@@ -48,13 +55,15 @@ export const LightPresets = () => {
         console.log('H:A320_Neo_CDU_1_BTN_CLR triggered');
 
         // SimVar.SetSimVarValue('H:A32NX_EFB_POWER', 'number', 1);
+        console.log('Test Mode Toggle');
+        setTestMode(!testMode);
     }
 
     useEffect(() => {
         console.log(`Effect: A32NX_EFB_BRIGHTNESS = ${efbBrightness}`);
     }, [efbBrightness]);
     useEffect(() => {
-        console.log(`Effect: LIGHT POTENTIOMETER:96 = ${potentiometer}`);
+        console.log(`Effect: LIGHT POTENTIOMETER:86 = ${potentiometer}`);
     }, [potentiometer]);
     useEffect(() => {
         console.log(`Effect: A32NX_MYTEST = ${mytest}`);
@@ -91,7 +100,7 @@ export const LightPresets = () => {
                             {' '}
                             {efbBrightness}
                             <br />
-                            potentiometer (96)=
+                            potentiometer (86)=
                             {' '}
                             {potentiometer}
                             <br />
@@ -110,6 +119,14 @@ export const LightPresets = () => {
                             fd =
                             {' '}
                             {fd}
+                            <br />
+                            testMode =
+                            {' '}
+                            {testMode}
+                            <br />
+                            testWASMVar =
+                            {' '}
+                            {testWASMVar}
                         </ScrollableContainer>
                     </div>
                 </div>

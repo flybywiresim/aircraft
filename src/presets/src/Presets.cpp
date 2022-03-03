@@ -5,9 +5,10 @@
 
 Presets PRESETS;
 
-__attribute__((export_name("Presets_gauge_callback"))) extern "C" bool Presets_gauge_callback(FsContext ctx,
-                                                                                  int service_id,
-                                                                                  void* pData) {
+__attribute__((export_name("Presets_gauge_callback")))
+    extern "C"
+    bool Presets_gauge_callback(FsContext ctx, int service_id, void* pData) {
+
   switch (service_id) {
     case PANEL_SERVICE_PRE_INSTALL: {
       return true;

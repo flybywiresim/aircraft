@@ -92,7 +92,6 @@ const Efb = () => {
     const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 3000);
     const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 3000);
     const [, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number');
-    const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
     const [dayOfYear] = useSimVar('E:ZULU DAY OF YEAR', 'number');
     const [latitude] = useSimVar('PLANE LATITUDE', 'degree latitude');
@@ -253,8 +252,6 @@ const Efb = () => {
         if (usingAutobrightness) {
             const localTime = currentLocalTime / 3600;
             setBrightness((calculateBrightness(latitude, dayOfYear, localTime)));
-        } else {
-            setBrightness(brightnessSetting);
         }
     }, [currentLocalTime, usingAutobrightness]);
 

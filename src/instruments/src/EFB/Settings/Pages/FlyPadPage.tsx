@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
@@ -11,7 +11,7 @@ import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 
 export const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
-    const [brightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
+    const [brightness, setBrightness] = useSimVar('L:A32NX_EFB_BRIGHTNESS', 'number', 500);
     const [usingAutobrightness, setUsingAutobrightness] = usePersistentNumberProperty('EFB_USING_AUTOBRIGHTNESS', 0);
     const [theme, setTheme] = usePersistentProperty('EFB_UI_THEME', 'blue');
     const [autoOSK, setAutoOSK] = usePersistentNumberProperty('EFB_AUTO_OSK', 0);
@@ -46,6 +46,10 @@ export const FlyPadPage = () => {
         });
         document.documentElement.classList.add(`theme-${theme}`);
     };
+
+    useEffect(() => {
+        setBrightness(brightnessSetting);
+    }, [brightnessSetting]);
 
     return (
         <SettingsPage name="flyPad">

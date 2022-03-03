@@ -28,18 +28,24 @@ class LightingPreset {
   /// </summary>
   void update(double deltaTime) {
 
-    if (simVars->getDeveloperState() == 1) {
+//    Timer timer;
+
+    if (simVars->getTestMode() == 1) {
       const int testVar = simVars->getTestVar();
       simVars->setTestVar(testVar + 1);
       std::cout << "PRESETS: DEBUG " << testVar << std::endl;
       std::cout << "PRESETS: DEBUG LightingOvhdIntLt " << simVars->getLightingOvhdIntLt() << std::endl;
+      std::cout << "PRESETS: DEBUG EFB Brightness " << simVars->getEfbBrightness() << std::endl;
+//      simVars->setEfbBrightness(testVar % 100);
+      execute_calculator_code("11 86 (>K:2:LIGHT_POTENTIOMETER_SET)", nullptr, nullptr, nullptr);
     }
 
     // If Development State is 1, UI Payload will be enabled
     //    if (simVars->getDeveloperState() == 0)
     //      checkPayload();
     //    updateFuel(deltaTime);
-    // timer.elapsed();
+
+//    std::cout << "PRESETS: TIMER: " << timer.elapsed() << std::endl;
   }
 
   void terminate() {}

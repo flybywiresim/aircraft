@@ -53,16 +53,21 @@ class SimVars {
   /// Collection of LVars for the A32NX
   /// </summary>
   ID DevVar;
+  ID TestMode;
   ID TestVar;
+  ID EfbBrightness;
 
   SimVars() { this->initializeVars(); }
 
   void initializeVars() {
     DevVar = register_named_variable("A32NX_DEVELOPER_STATE");
     TestVar = register_named_variable("A32NX_TEST_VAR");
+    TestMode = register_named_variable("A32NX_TEST_MODE");
+    EfbBrightness = register_named_variable("A32NX_EFB_BRIGHTNESS");
 
     this->setDeveloperState(0);
     this->setTestVar(0);
+    this->setTestMode(0);
 
     m_Units = new Units();
   }
@@ -70,10 +75,15 @@ class SimVars {
   // Collection of LVar 'set' Functions
   void setDeveloperState(FLOAT64 value) { set_named_variable_value(DevVar, value); }
   void setTestVar(FLOAT64 value) { set_named_variable_value(TestVar, value); }
+  void setTestMode(FLOAT64 value) { set_named_variable_value(TestMode, value); }
+  void setEfbBrightness(FLOAT64 value) { set_named_variable_value(EfbBrightness, value); }
 
   // Collection of LVar 'get' Functions
   FLOAT64 getDeveloperState() { return get_named_variable_value(DevVar); }
   FLOAT64 getTestVar() { return get_named_variable_value(TestVar); }
+  FLOAT64 getTestMode() { return get_named_variable_value(TestMode); }
+  FLOAT64 getEfbBrightness() { return get_named_variable_value(EfbBrightness); }
+
 
   // Collection of SimVar get functions
   FLOAT64 getLightingOvhdIntLt() { return aircraft_varget(lightingOvhdIntLt, m_Units->Percent, 86); }
