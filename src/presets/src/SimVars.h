@@ -47,6 +47,7 @@ class SimVars {
   /// </summary>
   //  ENUM AmbientTemp = get_aircraft_var_enum("AMBIENT TEMPERATURE");
   //  ENUM animDeltaTime = get_aircraft_var_enum("ANIMATION DELTA TIME");
+  ENUM lightingOvhdIntLt = get_aircraft_var_enum("LIGHT POTENTIOMETER");
 
   /// <summary>
   /// Collection of LVars for the A32NX
@@ -70,8 +71,11 @@ class SimVars {
   void setDeveloperState(FLOAT64 value) { set_named_variable_value(DevVar, value); }
   void setTestVar(FLOAT64 value) { set_named_variable_value(TestVar, value); }
 
-  // Collection of SimVar/LVar 'get' Functions
+  // Collection of LVar 'get' Functions
   FLOAT64 getDeveloperState() { return get_named_variable_value(DevVar); }
   FLOAT64 getTestVar() { return get_named_variable_value(TestVar); }
+
+  // Collection of SimVar get functions
+  FLOAT64 getLightingOvhdIntLt() { return aircraft_varget(lightingOvhdIntLt, m_Units->Percent, 86); }
 
 };

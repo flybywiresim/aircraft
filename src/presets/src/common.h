@@ -33,62 +33,6 @@ double expFBW(double x) {
 }
 
 /// <summary>
-/// Environmental corrected ratios
-/// </summary>
-class EngineRatios {
- public:
-  FLOAT64 theta(double ambientTemp) {
-    double t = (273.15 + ambientTemp) / 288.15;
-    return t;
-  }
-
-  FLOAT64 delta(double ambientPressure) {
-    double d = ambientPressure/1013;
-    return d;
-  }
-
-  FLOAT64 theta2(double mach, double ambientTemp) {
-    double t2 = this->theta(ambientTemp) * (1 + 0.2 * powFBW(mach, 2));
-    return t2;
-  }
-
-  FLOAT64 delta2(double mach, double ambientPressure) {
-    double d2 = this->delta(ambientPressure) * pow((1 + 0.2 * powFBW(mach, 2)), 3.5);
-    return d2;
-  }
-};
-
-/// <summary>
-/// Padding for the imbalance function
-/// </summary>
-template <typename T /*, typename = std::enable_if_t<std::is_integral_v<T>>*/>
-std::string to_string_with_zero_padding(const T& value, std::size_t total_length) {
-  auto str = std::to_string(value);
-  if (str.length() < total_length)
-    str.insert(str.front() == '-' ? 1 : 0, total_length - str.length(), '0');
-  return str;
-}
-
-/// <summary>
-/// Imbalance decoder function
-/// </summary>
-/// <param name="imbalanceCode">The imbalance coded word (2-bytes per parameter).</param>
-/// <param name="parameter">The engine parameter which is being imbalanced.</param>
-double imbalanceExtractor(double imbalanceCode, int parameter) {
-  double reg = 0;
-
-  parameter = 9 - parameter;
-
-  while (parameter > 0) {
-    reg = fmod(imbalanceCode, 100);
-    imbalanceCode /= 100;
-    parameter--;
-  }
-
-  return int(reg);
-}
-
-/// <summary>
 /// Timer Class for Performance Profiling purposes. TO BE DELETED!
 /// </summary>
 class Timer {
