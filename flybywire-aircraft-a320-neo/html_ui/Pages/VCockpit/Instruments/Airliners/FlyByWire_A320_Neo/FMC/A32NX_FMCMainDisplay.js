@@ -1381,6 +1381,8 @@ class FMCMainDisplay extends BaseAirliners {
                 // FIXME proper decel calc
                 if (this.guidanceController.activeLegDtg < 5) {
                     return constraints.descentSpeed;
+                } else {
+                    return constraints.previousDescentSpeed;
                 }
             }
         }
@@ -1395,6 +1397,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         // propagate descent speed constraints forward
         let currentSpeedConstraint = Infinity;
+        let previousSpeedConstraint = Infinity;
         for (let index = 0; index < this.flightPlanManager.getWaypointsCount(0); index++) {
             const wp = this.flightPlanManager.getWaypoint(index, 0);
             if (wp.additionalData.constraintType === 2 /* DES */) {
@@ -1404,15 +1407,19 @@ class FMCMainDisplay extends BaseAirliners {
             }
             this.managedProfile.set(index, {
                 descentSpeed: currentSpeedConstraint,
+                previousDescentSpeed: previousSpeedConstraint,
                 climbSpeed: Infinity,
+                previousClimbSpeed: Infinity,
                 climbAltitude: Infinity,
                 descentAltitude: -Infinity,
             });
+            previousSpeedConstraint = currentSpeedConstraint;
         }
 
         // propagate climb speed constraints backward
         // propagate alt constraints backward
         currentSpeedConstraint = Infinity;
+        previousSpeedConstraint = Infinity;
         let currentDesConstraint = -Infinity;
         let currentClbConstraint = Infinity;
         for (let index = this.flightPlanManager.getWaypointsCount(0) - 1; index >= 0; index--) {
@@ -1445,8 +1452,10 @@ class FMCMainDisplay extends BaseAirliners {
             }
             const profilePoint = this.managedProfile.get(index);
             profilePoint.climbSpeed = currentSpeedConstraint;
+            profilePoint.previousClimbSpeed = previousSpeedConstraint;
             profilePoint.climbAltitude = currentClbConstraint;
             profilePoint.descentAltitude = currentDesConstraint;
+            previousSpeedConstraint = currentSpeedConstraint;
         }
     }
 
