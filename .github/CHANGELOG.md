@@ -175,6 +175,7 @@
 1. [MCDU] Improved mcdu server command line handling  - @frankkopp (Cdr_Maverick#6475)
 1. [RA] Add dual Radio Altimeter simulation - @beheh (Benedict Etzel)
 1. [MCDU] Improved Remote MCDU communication by reducing update frequency - @frankkopp (Frank Kopp)
+1. [FLIGHTMODEL] Additional flight model improvements to better match real airplane performance data - @donstim (donbikes#4084)
 
 ## 0.7.0
 
