@@ -1,5 +1,5 @@
 use crate::{
-    pneumatic::EngineState,
+    pneumatic::{EngineModeSelector, EngineState},
     pressurization::PressurizationOverheadPanel,
     shared::{
         pid::PidController, Cabin, ControllerSignal, EngineBleedPushbutton, EngineCorrectedN1,
@@ -668,6 +668,9 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             && !(pneumatic.left_engine_state() == EngineState::Starting)
             && (!(pneumatic.right_engine_state() == EngineState::Starting)
                 || !pneumatic.engine_crossbleed_is_on())
+            && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
+                || (pneumatic.left_engine_state() != EngineState::Off
+                    && pneumatic.left_engine_state() != EngineState::Shutting))
             && !engine_fire_push_buttons.is_released(1)
             && !pressurization_overhead.ditching_is_on();
         // && ! pack 1 overheat
@@ -676,6 +679,10 @@ impl<const ZONES: usize> PackFlowController<ZONES> {
             && !(pneumatic.right_engine_state() == EngineState::Starting)
             && (!(pneumatic.left_engine_state() == EngineState::Starting)
                 || !pneumatic.engine_crossbleed_is_on())
+            && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
+                || !pneumatic.engine_crossbleed_is_on()
+                || (pneumatic.right_engine_state() != EngineState::Off
+                    && pneumatic.right_engine_state() != EngineState::Shutting))
             && !engine_fire_push_buttons.is_released(2)
             && !pressurization_overhead.ditching_is_on();
         // && ! pack 2 overheat
@@ -766,7 +773,7 @@ mod acs_controller_tests {
     use crate::{
         air_conditioning::cabin_air::CabinZone,
         overhead::AutoOffFaultPushButton,
-        pneumatic::valve::DefaultValve,
+        pneumatic::{valve::DefaultValve, EngineModeSelector},
         shared::PneumaticValve,
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -939,6 +946,9 @@ mod acs_controller_tests {
 
         engine_1_state: EngineState,
         engine_2_state: EngineState,
+
+        engine_mode_selector_id: VariableIdentifier,
+        engine_mode_selector_position: EngineModeSelector,
     }
     impl TestFadec {
         fn new(context: &mut InitContext) -> Self {
@@ -947,6 +957,9 @@ mod acs_controller_tests {
                 engine_2_state_id: context.get_identifier("ENGINE_STATE:2".to_owned()),
                 engine_1_state: EngineState::Off,
                 engine_2_state: EngineState::Off,
+                engine_mode_selector_id: context
+                    .get_identifier("TURB ENG IGNITION SWITCH EX1:1".to_owned()),
+                engine_mode_selector_position: EngineModeSelector::Norm,
             }
         }
 
@@ -957,11 +970,16 @@ mod acs_controller_tests {
                 _ => panic!("Invalid engine number"),
             }
         }
+
+        fn engine_mode_selector(&self) -> EngineModeSelector {
+            self.engine_mode_selector_position
+        }
     }
     impl SimulationElement for TestFadec {
         fn read(&mut self, reader: &mut SimulatorReader) {
             self.engine_1_state = reader.read(&self.engine_1_state_id);
             self.engine_2_state = reader.read(&self.engine_2_state_id);
+            self.engine_mode_selector_position = reader.read(&self.engine_mode_selector_id);
         }
     }
 
@@ -1003,6 +1021,9 @@ mod acs_controller_tests {
         }
         fn right_engine_state(&self) -> EngineState {
             self.fadec.engine_state(2)
+        }
+        fn engine_mode_selector(&self) -> EngineModeSelector {
+            self.fadec.engine_mode_selector()
         }
     }
     impl SimulationElement for TestPneumatic {
@@ -1374,6 +1395,10 @@ mod acs_controller_tests {
 
         fn command_apu_bleed_on(&mut self) {
             self.command(|a| a.set_apu_bleed_air_valve_open());
+        }
+
+        fn command_eng_mode_selector(&mut self, mode: EngineModeSelector) {
+            self.write_by_name("TURB ENG IGNITION SWITCH EX1:1", mode);
         }
 
         fn command_engine_in_start_mode(&mut self) {
@@ -1994,6 +2019,42 @@ mod acs_controller_tests {
             test_bed.run();
 
             assert!(test_bed.pack_flow() < initial_flow);
+        }
+
+        #[test]
+        fn pack_flow_stops_with_eng_mode_ign() {
+            let mut test_bed = test_bed().with().both_packs_on();
+
+            test_bed.command_crossbleed_on();
+            test_bed.command_apu_bleed_on();
+            test_bed = test_bed.iterate(2);
+
+            assert!(test_bed.pack_flow() > MassRate::new::<kilogram_per_second>(0.));
+
+            test_bed.command_eng_mode_selector(EngineModeSelector::Ignition);
+            test_bed = test_bed.iterate(2);
+
+            assert_eq!(
+                test_bed.pack_flow(),
+                MassRate::new::<kilogram_per_second>(0.)
+            );
+        }
+
+        #[test]
+        fn pack_flow_reduces_with_eng_mode_ign_crossbleed_shut() {
+            let mut test_bed = test_bed().with().both_packs_on();
+
+            test_bed.command_apu_bleed_on();
+            test_bed = test_bed.iterate(2);
+
+            let initial_pack_flow = test_bed.pack_flow();
+
+            assert!(initial_pack_flow > MassRate::new::<kilogram_per_second>(0.));
+
+            test_bed.command_eng_mode_selector(EngineModeSelector::Ignition);
+            test_bed = test_bed.iterate(2);
+
+            assert!(test_bed.pack_flow() < initial_pack_flow);
         }
 
         #[test]
