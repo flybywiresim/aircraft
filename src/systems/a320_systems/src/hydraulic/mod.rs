@@ -19,6 +19,7 @@ use uom::si::{
 use systems::{
     engine::Engine,
     hydraulic::{
+        aerodynamic_model::AerodynamicModel,
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
             BrakeCircuitController,
@@ -248,14 +249,29 @@ impl A320CargoDoorFactory {
 
     fn new_a320_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
         let assembly = A320CargoDoorFactory::a320_cargo_door_assembly();
-        CargoDoor::new(context, id, assembly)
+        CargoDoor::new(
+            context,
+            id,
+            assembly,
+            A320CargoDoorFactory::new_a320_cargo_door_aero_model(),
+        )
+    }
+
+    fn new_a320_cargo_door_aero_model() -> AerodynamicModel {
+        let body = A320CargoDoorFactory::a320_cargo_door_body(false);
+        AerodynamicModel::new(
+            &body,
+            Some(Vector3::new(1., 0., 0.)),
+            Some(Vector3::new(0., 0., 1.)),
+            Some(Vector3::new(1., 0., 0.)),
+        )
     }
 }
 
 struct A320AileronFactory {}
 impl A320AileronFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 1.5;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 3.;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.6;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 800000.;
@@ -266,12 +282,17 @@ impl A320AileronFactory {
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
         );
 
+        // Aileron actuator real data:
+        // Max force of 4700DaN @ 3000psi. Max flow 3.302 US gal/min thus 0.055033333 gal/s
+        // This gives a 0.00227225 squared meter of piston surface
+        // This gives piston diameter of 0.0537878 meters
+        // We use 0 as rod diameter as this is a symmetrical actuator so same surface each side
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.04),
+            Length::new::<meter>(0.0537878),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.02),
+            VolumeRate::new::<gallon_per_second>(0.055),
             80000.,
             1500.,
             5000.,
@@ -324,7 +345,22 @@ impl A320AileronFactory {
 
     fn new_aileron(context: &mut InitContext, id: AileronSide) -> AileronAssembly {
         let assembly = A320AileronFactory::a320_aileron_assembly();
-        AileronAssembly::new(context, id, assembly)
+        AileronAssembly::new(
+            context,
+            id,
+            assembly,
+            A320AileronFactory::new_a320_aileron_aero_model(),
+        )
+    }
+
+    fn new_a320_aileron_aero_model() -> AerodynamicModel {
+        let body = A320AileronFactory::a320_aileron_body();
+        AerodynamicModel::new(
+            &body,
+            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., 0., 1.)),
+            Some(Vector3::new(0., 1., 0.)),
+        )
     }
 }
 
@@ -2503,12 +2539,15 @@ struct CargoDoor {
     position: Ratio,
 
     is_locked: bool,
+
+    aerodynamic_model: AerodynamicModel,
 }
 impl CargoDoor {
     fn new(
         context: &mut InitContext,
         id: &str,
         hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
+        aerodynamic_model: AerodynamicModel,
     ) -> Self {
         Self {
             hydraulic_assembly,
@@ -2518,6 +2557,8 @@ impl CargoDoor {
             position: Ratio::new::<ratio>(0.),
 
             is_locked: true,
+
+            aerodynamic_model,
         }
     }
 
@@ -2539,13 +2580,16 @@ impl CargoDoor {
         cargo_door_controller: &impl HydraulicAssemblyController,
         current_pressure: Pressure,
     ) {
+        self.aerodynamic_model
+            .update_body(context, self.hydraulic_assembly.body());
         self.hydraulic_assembly.update(
             context,
             std::slice::from_ref(cargo_door_controller),
             [current_pressure],
         );
-        self.is_locked = self.hydraulic_assembly.is_locked();
+
         self.position = self.hydraulic_assembly.position_normalized();
+        self.is_locked = self.hydraulic_assembly.is_locked();
     }
 }
 impl SimulationElement for CargoDoor {
@@ -3051,9 +3095,15 @@ struct ElacComputer {
     left_controllers: [AileronController; 2],
     right_controllers: [AileronController; 2],
 
+    green_circuit_available: bool,
+    blue_circuit_available: bool,
+
     is_powered: bool,
 }
 impl ElacComputer {
+    const PRESSURE_AVAILABLE_HIGH_HYSTERESIS_PSI: f64 = 1450.;
+    const PRESSURE_AVAILABLE_LOW_HYSTERESIS_PSI: f64 = 800.;
+
     //TODO hot busses are in reality sub busses 703pp and 704pp
     const ALL_POWER_BUSES: [ElectricalBusType; 4] = [
         ElectricalBusType::DirectCurrentEssential,
@@ -3075,6 +3125,9 @@ impl ElacComputer {
             // Controllers are in outward->inward order, so for aileron [Blue circuit, Green circuit]
             left_controllers: [AileronController::new(), AileronController::new()],
             right_controllers: [AileronController::new(), AileronController::new()],
+
+            green_circuit_available: false,
+            blue_circuit_available: false,
 
             is_powered: false,
         }
@@ -3154,28 +3207,41 @@ impl ElacComputer {
         }
     }
 
-    fn update_aileron(&mut self, green_circuit_available: bool, blue_circuit_available: bool) {
+    fn update_aileron(&mut self) {
         if self.is_powered {
             self.set_right_aileron_position_control(AileronHydConfiguration::from_hyd_state(
-                green_circuit_available,
-                blue_circuit_available,
+                self.green_circuit_available,
+                self.blue_circuit_available,
             ));
             self.set_left_aileron_position_control(AileronHydConfiguration::from_hyd_state(
-                green_circuit_available,
-                blue_circuit_available,
+                self.green_circuit_available,
+                self.blue_circuit_available,
             ));
         } else {
             self.set_aileron_no_position_control();
         }
     }
 
+    fn update_pressure_hysteresis(&mut self, blue_pressure: Pressure, green_pressure: Pressure) {
+        if blue_pressure.get::<psi>() > Self::PRESSURE_AVAILABLE_HIGH_HYSTERESIS_PSI {
+            self.blue_circuit_available = true;
+        } else if blue_pressure.get::<psi>() < Self::PRESSURE_AVAILABLE_LOW_HYSTERESIS_PSI {
+            self.blue_circuit_available = false;
+        }
+
+        if green_pressure.get::<psi>() > Self::PRESSURE_AVAILABLE_HIGH_HYSTERESIS_PSI {
+            self.green_circuit_available = true;
+        } else if green_pressure.get::<psi>() < Self::PRESSURE_AVAILABLE_LOW_HYSTERESIS_PSI {
+            self.green_circuit_available = false;
+        }
+    }
+
     fn update(&mut self, blue_pressure: Pressure, green_pressure: Pressure) {
         self.update_aileron_requested_position();
 
-        let blue_circuit_available = blue_pressure.get::<psi>() > 1500.;
-        let green_circuit_available = green_pressure.get::<psi>() > 1500.;
+        self.update_pressure_hysteresis(blue_pressure, green_pressure);
 
-        self.update_aileron(green_circuit_available, blue_circuit_available);
+        self.update_aileron();
     }
 
     fn left_controllers(&self) -> &[impl HydraulicAssemblyController] {
@@ -3217,12 +3283,15 @@ struct AileronAssembly {
     position_id: VariableIdentifier,
 
     position: Ratio,
+
+    aerodynamic_model: AerodynamicModel,
 }
 impl AileronAssembly {
     fn new(
         context: &mut InitContext,
         id: AileronSide,
         hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
+        aerodynamic_model: AerodynamicModel,
     ) -> Self {
         Self {
             hydraulic_assembly,
@@ -3231,6 +3300,7 @@ impl AileronAssembly {
                 AileronSide::Right => context.get_identifier("HYD_AIL_RIGHT_DEFLECTION".to_owned()),
             },
             position: Ratio::new::<ratio>(0.),
+            aerodynamic_model,
         }
     }
 
@@ -3245,6 +3315,8 @@ impl AileronAssembly {
         current_pressure_blue: Pressure,
         current_pressure_green: Pressure,
     ) {
+        self.aerodynamic_model
+            .update_body(context, self.hydraulic_assembly.body());
         self.hydraulic_assembly.update(
             context,
             aileron_controllers,

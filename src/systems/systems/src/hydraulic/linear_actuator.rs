@@ -14,7 +14,7 @@ use uom::si::{
     torque::newton_meter,
     velocity::meter_per_second,
     volume::{cubic_meter, gallon},
-    volume_rate::{cubic_meter_per_second, gallon_per_second},
+    volume_rate::gallon_per_second,
 };
 
 use crate::{
@@ -22,6 +22,9 @@ use crate::{
     simulation::UpdateContext,
 };
 
+use super::aerodynamic_model::AerodynamicBody;
+
+use std::fmt::Display;
 use std::time::Duration;
 
 pub trait Actuator {
@@ -46,6 +49,16 @@ pub enum LinearActuatorMode {
     PositionControl,
     ActiveDamping,
     ClosedCircuitDamping,
+}
+impl Display for LinearActuatorMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            LinearActuatorMode::ClosedValves => write!(f, "ClosedValves"),
+            LinearActuatorMode::PositionControl => write!(f, "PositionControl"),
+            LinearActuatorMode::ActiveDamping => write!(f, "ActiveDamping"),
+            LinearActuatorMode::ClosedCircuitDamping => write!(f, "ClosedCircuitDamping"),
+        }
+    }
 }
 
 /// Represents an abstraction of the low level hydraulic actuator control system that would in real life consist of a lot of
@@ -95,7 +108,8 @@ struct CoreHydraulicForce {
     pid_controller: PidController,
 }
 impl CoreHydraulicForce {
-    const OPEN_LOOP_GAIN: f64 = 1.;
+    // Indicates the actuator positioning error from which max flow is applied
+    const OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW: f64 = 0.02;
 
     const MIN_PRESSURE_TO_EXIT_POSITION_CONTROL_PSI: f64 = 500.;
     const MIN_PRESSURE_TO_ALLOW_POSITION_CONTROL_PSI: f64 = 700.;
@@ -356,15 +370,26 @@ impl CoreHydraulicForce {
     }
 
     /// Computes a hydraulic flow request based on required actuator position and its current position
-    /// Flow is computed through the formula flow = position_error^3 * Gain
+    /// Flow is computed through the formula flow = position_error^2 * maxflow / OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW^2
+    /// This formula means max flow will be applied above OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW position error
+    /// Below OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW position error, a squared law defines flow vs positioning error
+    ///
     /// Then final flow request is corrected depending on actuator position, modeling dampening holes
     /// in the real actuator at start/end of course
     fn open_loop_flow(&self, required_position: Ratio, position_normalized: Ratio) -> VolumeRate {
         let position_error = required_position - position_normalized;
 
-        let open_loop_flow_target = VolumeRate::new::<cubic_meter_per_second>(
-            position_error.get::<ratio>().powi(3) * Self::OPEN_LOOP_GAIN,
-        );
+        let open_loop_flow_target = if position_error.get::<ratio>() >= 0. {
+            VolumeRate::new::<gallon_per_second>(
+                position_error.get::<ratio>().powi(2) * self.max_flow.get::<gallon_per_second>()
+                    / Self::OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW.powi(2),
+            )
+        } else {
+            VolumeRate::new::<gallon_per_second>(
+                position_error.get::<ratio>().powi(2) * -self.max_flow.get::<gallon_per_second>()
+                    / Self::OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW.powi(2),
+            )
+        };
 
         let open_loop_modifier_from_position = interpolation(
             &self.flow_open_loop_position_breakpoints,
@@ -695,6 +720,10 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
         &mut self.linear_actuators[index]
     }
 
+    pub fn body(&mut self) -> &mut impl AerodynamicBody {
+        &mut self.rigid_body
+    }
+
     pub fn update(
         &mut self,
         context: &UpdateContext,
@@ -724,6 +753,8 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
             for actuator in &mut self.linear_actuators {
                 actuator.update_after_rigid_body(context, &self.rigid_body);
             }
+        } else {
+            self.rigid_body.update(context);
         }
     }
 
@@ -795,6 +826,7 @@ pub struct LinearActuatedRigidBodyOnHingeAxis {
     is_locked: bool,
 
     axis_direction: Vector3<f64>,
+    rotation_transform: Rotation3<f64>,
 
     plane_acceleration_filtered: LowPassFilter<Vector3<f64>>,
 }
@@ -849,6 +881,10 @@ impl LinearActuatedRigidBodyOnHingeAxis {
             is_lock_requested: locked,
             is_locked: locked,
             axis_direction,
+            rotation_transform: Rotation3::from_axis_angle(
+                &Unit::new_normalize(axis_direction),
+                0.,
+            ),
             plane_acceleration_filtered: LowPassFilter::<Vector3<f64>>::new(
                 Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
             ),
@@ -873,6 +909,19 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         let torque = self
             .control_arm
             .cross(&(absolute_actuator_force.get::<newton>() * force_support_vector_normalized));
+
+        let torque_value = Torque::new::<newton_meter>(self.axis_direction.dot(&torque));
+
+        self.sum_of_torques += torque_value;
+    }
+
+    pub fn apply_aero_force(&mut self, aerodynamic_force: Vector3<Force>) {
+        // Aero force applied at CG for now, might change to a different point
+        let torque = self.center_of_gravity_actual.cross(&Vector3::<f64>::new(
+            aerodynamic_force[0].get::<newton>(),
+            aerodynamic_force[1].get::<newton>(),
+            aerodynamic_force[2].get::<newton>(),
+        ));
 
         let torque_value = Torque::new::<newton_meter>(self.axis_direction.dot(&torque));
 
@@ -927,12 +976,12 @@ impl LinearActuatedRigidBodyOnHingeAxis {
 
     // Rotates the static coordinates of the body according to its current angle to get the actual coordinates
     fn update_all_rotations(&mut self) {
-        let rotation_transform = Rotation3::from_axis_angle(
+        self.rotation_transform = Rotation3::from_axis_angle(
             &Unit::new_normalize(self.axis_direction),
             self.angular_position.get::<radian>(),
         );
-        self.control_arm_actual = rotation_transform * self.control_arm;
-        self.center_of_gravity_actual = rotation_transform * self.center_of_gravity_offset;
+        self.control_arm_actual = self.rotation_transform * self.control_arm;
+        self.center_of_gravity_actual = self.rotation_transform * self.center_of_gravity_offset;
     }
 
     // Computes local acceleration including world gravity and plane acceleration
@@ -1072,6 +1121,26 @@ impl BoundedLinearLength for LinearActuatedRigidBodyOnHingeAxis {
         self.linear_extension_to_anchor()
     }
 }
+impl AerodynamicBody for LinearActuatedRigidBodyOnHingeAxis {
+    fn size(&self) -> Vector3<Length> {
+        Vector3::new(
+            Length::new::<meter>(self.size[0]),
+            Length::new::<meter>(self.size[1]),
+            Length::new::<meter>(self.size[2]),
+        )
+    }
+
+    fn rotation_transform(&self) -> Rotation3<f64> {
+        Rotation3::from_axis_angle(
+            &Unit::new_normalize(self.axis_direction),
+            self.angular_position.get::<radian>(),
+        )
+    }
+
+    fn apply_aero_forces(&mut self, aero_forces: Vector3<Force>) {
+        self.apply_aero_force(aero_forces);
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -1138,6 +1207,25 @@ mod tests {
         }
     }
 
+    struct TestAerodynamicModel {
+        force: Vector3<Force>,
+    }
+    impl TestAerodynamicModel {
+        fn new() -> Self {
+            Self {
+                force: Vector3::<Force>::new(Force::default(), Force::default(), Force::default()),
+            }
+        }
+
+        fn apply_up_force(&mut self, force_up: Force) {
+            self.force[1] = force_up;
+        }
+
+        fn update_body(&self, body: &mut impl AerodynamicBody) {
+            body.apply_aero_forces(self.force);
+        }
+    }
+
     struct TestAircraft<const N: usize> {
         loop_updater: MaxStepLoop,
 
@@ -1146,6 +1234,8 @@ mod tests {
         controllers: [TestHydraulicAssemblyController; N],
 
         pressures: [Pressure; N],
+
+        aero_forces: TestAerodynamicModel,
     }
     impl<const N: usize> TestAircraft<N> {
         fn new(
@@ -1160,6 +1250,8 @@ mod tests {
                 controllers: [TestHydraulicAssemblyController::new(); N],
 
                 pressures: [Pressure::new::<psi>(0.); N],
+
+                aero_forces: TestAerodynamicModel::new(),
             }
         }
 
@@ -1204,6 +1296,10 @@ mod tests {
             self.hydraulic_assembly.position_normalized()
         }
 
+        fn apply_up_aero_forces(&mut self, force_up: Force) {
+            self.aero_forces.apply_up_force(force_up);
+        }
+
         fn actuator_position(&self, actuator_id: usize) -> Ratio {
             assert!(actuator_id < N);
             self.hydraulic_assembly
@@ -1215,6 +1311,8 @@ mod tests {
         }
 
         fn update_actuator_physics(&mut self, context: &UpdateContext) {
+            self.aero_forces.update_body(self.hydraulic_assembly.body());
+
             self.hydraulic_assembly
                 .update(context, &self.controllers[..], self.pressures);
 
@@ -1774,6 +1872,134 @@ mod tests {
         assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
     }
 
+    #[test]
+    fn aileron_position_control_resists_step_change_in_aero_force() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), aileron_assembly(false))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| {
+            a.set_pressures([Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)])
+        });
+
+        // Let aileron control at 0.5 position
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.5), 0));
+        test_bed.command(|a| a.command_active_damping_mode(1));
+        test_bed.run_with_delta(Duration::from_secs_f64(2.));
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.51));
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.49));
+
+        test_bed.command(|a| a.apply_up_aero_forces(Force::new::<newton>(5000.)));
+
+        println!("APPLYING UP FORCE");
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.51));
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.49));
+    }
+
+    #[test]
+    fn aileron_position_control_fails_when_aero_force_over_max_force() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), aileron_assembly(false))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| {
+            a.set_pressures([Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)])
+        });
+
+        // Let aileron control at 0.5 position
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.5), 0));
+        test_bed.command(|a| a.command_active_damping_mode(1));
+
+        let mut test_force = Force::new::<newton>(2000.);
+
+        for _ in 0..25 {
+            println!("APPLYING UP FORCE {:.0}", test_force.get::<newton>());
+            test_bed.command(|a| a.apply_up_aero_forces(test_force));
+            test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+
+            test_force += Force::new::<newton>(300.);
+
+            if test_force < Force::new::<newton>(8000.) {
+                assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.51));
+                assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.49));
+            }
+        }
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.6));
+        // test_bed.run_with_delta(Duration::from_secs_f64(1.));
+    }
+
+    #[test]
+    fn aileron_position_control_fails_when_lower_pressure_and_back_in_position_with_pressure_back()
+    {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), aileron_assembly(false))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| {
+            a.set_pressures([Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)])
+        });
+
+        // Let aileron control at 0.5 position
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.5), 0));
+        test_bed.command(|a| a.command_active_damping_mode(1));
+
+        let mut test_pressure = Pressure::new::<psi>(3000.);
+
+        for _ in 0..10 {
+            println!("Reducing pressure {:.0}", test_pressure.get::<psi>());
+            test_bed.command(|a| a.set_pressures([test_pressure, test_pressure]));
+            test_bed.command(|a| a.apply_up_aero_forces(Force::new::<newton>(5000.)));
+            test_bed.run_with_delta(Duration::from_secs_f64(0.3));
+
+            test_pressure -= Pressure::new::<psi>(300.);
+
+            test_pressure = test_pressure.max(Pressure::new::<psi>(0.));
+
+            if test_pressure > Pressure::new::<psi>(2500.) {
+                assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.51));
+                assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.49));
+            }
+        }
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.6));
+
+        println!("Pressure back to 3000");
+        test_bed.command(|a| {
+            a.set_pressures([Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)])
+        });
+        test_bed.run_with_delta(Duration::from_secs_f64(1.));
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.51));
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.49));
+    }
+
+    #[test]
+    fn aileron_position_control_from_down_to_up_less_0_5s_with_limited_pressure() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), aileron_assembly(false))
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| {
+            a.set_pressures([Pressure::new::<psi>(1700.), Pressure::new::<psi>(1700.)])
+        });
+
+        // Let aileron fall fully down first
+        test_bed.command(|a| a.command_active_damping_mode(0));
+        test_bed.command(|a| a.command_active_damping_mode(1));
+        test_bed.run_with_delta(Duration::from_secs_f64(2.));
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
+    }
+
     fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
@@ -1997,16 +2223,16 @@ mod tests {
     }
 
     fn aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        const DEFAULT_I_GAIN: f64 = 3.;
-        const DEFAULT_P_GAIN: f64 = 1.5;
-        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+        const DEFAULT_I_GAIN: f64 = 5.;
+        const DEFAULT_P_GAIN: f64 = 0.35;
+        const DEFAULT_FORCE_GAIN: f64 = 450000.;
 
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.04),
+            Length::new::<meter>(0.0537878),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.04),
+            VolumeRate::new::<gallon_per_second>(0.055),
             80000.,
             1500.,
             5000.,
