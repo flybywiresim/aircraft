@@ -817,6 +817,11 @@ class FMCMainDisplay extends BaseAirliners {
     }
     /** FIXME ^these functions are in the new VNAV but not in this branch, remove when able */
 
+    // TODO better decel distance calc
+    calculateDecelDist(fromSpeed, toSpeed) {
+        return Math.min(20, Math.max(3, (fromSpeed - toSpeed) * 0.15));
+    }
+
     /*
         When the aircraft is in the holding, predictions assume that the leg is flown at holding speed
         with a vertical speed equal to - 1000 ft/mn until reaching a restrictive altitude constraint, the
@@ -870,8 +875,13 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     updateHoldingSpeed() {
-        const currentLeg = this.flightPlanManager.getActiveWaypoint();
-        const nextLeg = this.flightPlanManager.getWaypoint(this.flightPlanManager.getActiveWaypointIndex() + 1);
+        const currentLegIndex = this.guidanceController.activeLegIndex;
+        const nextLegIndex = currentLegIndex + 1;
+        const currentLegConstraints = this.managedProfile.get(currentLegIndex) || {};
+        const nextLegConstraints = this.managedProfile.get(nextLegIndex) || {};
+
+        const currentLeg = this.flightPlanManager.getWaypoint(currentLegIndex);
+        const nextLeg = this.flightPlanManager.getWaypoint(nextLegIndex);
 
         const casWord = ADIRS.getCalibratedAirspeed();
         const cas = casWord.isNormalOperation() ? casWord.value : 0;
@@ -881,7 +891,7 @@ class FMCMainDisplay extends BaseAirliners {
         let holdDecelReached = this.holdDecelReached;
         // FIXME big hack until VNAV can do this
         if (currentLeg && currentLeg.additionalData.legType === 14 /* HM */) {
-            holdSpeedTarget = this.getHoldingSpeed(currentLeg.speedConstraint);
+            holdSpeedTarget = this.getHoldingSpeed(currentLegConstraints.descentSpeed, currentLegConstraints.descentAltitude);
             holdDecelReached = true;
             enableHoldSpeedWarning = !Simplane.getAutoPilotAirspeedManaged();
             this.holdIndex = this.flightPlanManager.getActiveWaypointIndex();
@@ -889,7 +899,7 @@ class FMCMainDisplay extends BaseAirliners {
             const adirLat = ADIRS.getLatitude();
             const adirLong = ADIRS.getLongitude();
             if (adirLat.isNormalOperation() && adirLong.isNormalOperation()) {
-                holdSpeedTarget = this.getHoldingSpeed(nextLeg.speedConstraint);
+                holdSpeedTarget = this.getHoldingSpeed(nextLegConstraints.descentSpeed, nextLegConstraints.descentAltitude);
 
                 const ppos = {
                     lat: adirLat.value,
@@ -898,8 +908,7 @@ class FMCMainDisplay extends BaseAirliners {
                 const stats = this.flightPlanManager.getCurrentFlightPlan().computeWaypointStatistics(ppos);
                 const dtg = stats.get(this.flightPlanManager.getActiveWaypointIndex()).distanceFromPpos;
                 // decel range limits are [3, 20] NM
-                // TODO better decel distance calc
-                const decelDist = Math.min(20, Math.max(3, (cas - holdSpeedTarget) * 0.3));
+                const decelDist = this.calculateDecelDist(cas, holdSpeedTarget);
                 if (dtg < decelDist) {
                     holdDecelReached = true;
                 }
@@ -1379,7 +1388,7 @@ class FMCMainDisplay extends BaseAirliners {
 
             if (this.flightPhaseManager.phase > FmgcFlightPhases.CRUISE && this.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND) {
                 // FIXME proper decel calc
-                if (this.guidanceController.activeLegDtg < 5) {
+                if (this.guidanceController.activeLegDtg < this.calculateDecelDist(Math.min(constraints.previousDescentSpeed, this.managedSpeedDescend), constraints.descentSpeed)) {
                     return constraints.descentSpeed;
                 } else {
                     return constraints.previousDescentSpeed;
