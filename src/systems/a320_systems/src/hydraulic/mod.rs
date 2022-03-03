@@ -7055,9 +7055,9 @@ mod tests {
 
             let current_position_unlocked = test_bed.cargo_fwd_door_position();
 
-            test_bed = test_bed
-                .open_fwd_cargo_door()
-                .run_waiting_for(A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL);
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(1),
+            );
 
             assert!(test_bed.cargo_fwd_door_position() > current_position_unlocked);
 
