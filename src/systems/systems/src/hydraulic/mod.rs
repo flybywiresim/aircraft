@@ -180,8 +180,6 @@ pub struct PowerTransferUnit {
 
     shaft_speed: AngularVelocity,
 
-    shaft_speed_variation: AngularVelocity,
-
     shaft_speed_filtered: LowPassFilter<AngularVelocity>,
 
     is_in_continuous_mode: bool,
@@ -220,9 +218,9 @@ impl PowerTransferUnit {
     const BREAKOUT_TORQUE_NM: f64 = 2.;
     const SHAFT_INERTIA: f64 = 0.008;
 
-    const SHAFT_SPEED_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(800);
+    const SHAFT_SPEED_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
 
-    const DELAY_TO_DECLARE_CONTINUOUS: Duration = Duration::from_millis(800);
+    const DELAY_TO_DECLARE_CONTINUOUS: Duration = Duration::from_millis(1000);
     const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 400.;
 
     pub fn new(context: &mut InitContext) -> Self {
@@ -248,8 +246,6 @@ impl PowerTransferUnit {
             control_valve_opened: false,
 
             shaft_speed: AngularVelocity::new::<radian_per_second>(0.),
-
-            shaft_speed_variation: AngularVelocity::default(),
 
             shaft_speed_filtered: LowPassFilter::<AngularVelocity>::new(
                 Self::SHAFT_SPEED_FILTER_TIME_CONSTANT,
@@ -288,7 +284,6 @@ impl PowerTransferUnit {
         self.update_displacement(context, loop_left_section, loop_right_section);
         self.update_active_state();
         self.update_shaft_physics(context, loop_left_section, loop_right_section);
-        self.update_shaft_speed_variation(context);
         self.update_continuous_state(context);
         self.update_flows();
     }
@@ -368,30 +363,15 @@ impl PowerTransferUnit {
             let acc = total_torque.get::<newton_meter>() / Self::SHAFT_INERTIA;
             self.shaft_speed +=
                 AngularVelocity::new::<radian_per_second>(acc * context.delta_as_secs_f64());
-        } else {
-            self.shaft_speed = AngularVelocity::new::<radian_per_second>(0.);
-        }
-    }
-
-    fn update_shaft_speed_variation(&mut self, context: &UpdateContext) {
-        if self.is_rotating() {
             self.shaft_speed_filtered
                 .update(context.delta(), self.shaft_speed);
-
-            self.shaft_speed_variation = self.shaft_speed - self.shaft_speed_filtered.output();
         } else {
+            self.shaft_speed = AngularVelocity::default();
             self.shaft_speed_filtered.reset(AngularVelocity::default());
-            self.shaft_speed_variation = AngularVelocity::default();
         }
     }
 
     fn update_continuous_state(&mut self, context: &UpdateContext) {
-        let under_continuous_threshold = self
-            .shaft_speed_variation
-            .abs()
-            .get::<revolution_per_minute>()
-            < Self::THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM;
-
         self.is_rotating_after_delay.update(
             context,
             self.shaft_speed.get::<revolution_per_minute>()
@@ -408,19 +388,6 @@ impl PowerTransferUnit {
             self.is_rotating_after_delay.output(),
             self.is_in_continuous_mode,
         );
-
-        // self.is_in_continuous_mode.update(
-        //     context,
-        //     (self.is_in_continuous_mode.output() || under_continuous_threshold)
-        //         && self.is_rotating(),
-        // );
-
-        // println!(
-        //     "RPM {:.1}  VARIATION {:.1} CONTINUOUS {}",
-        //     self.shaft_speed.get::<revolution_per_minute>(),
-        //     self.shaft_speed_variation.get::<revolution_per_minute>(),
-        //     self.is_in_continuous_mode.output(),
-        // );
     }
 
     fn calc_generated_torque(pressure: Pressure, displacement: Volume) -> Torque {
