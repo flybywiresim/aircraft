@@ -233,9 +233,11 @@ impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<TargetPressureTemperatu
     for AuxiliaryPowerUnit<T, U>
 {
     fn signal(&self) -> Option<TargetPressureTemperatureSignal> {
+        // TODO: Calculate the temperature depending on environmental conditions.
+        // Currently the temperature is precalculated for a bleed pressure of 42 psi.
         self.turbine
             .as_ref()
-            .map(|s| TargetPressureTemperatureSignal::new(s.bleed_air_pressure(), ThermodynamicTemperature::new::<degree_celsius>(250.)))
+            .map(|s| TargetPressureTemperatureSignal::new(s.bleed_air_pressure(), ThermodynamicTemperature::new::<degree_celsius>(390.)))
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit<T, U> {
