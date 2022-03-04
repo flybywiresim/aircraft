@@ -13,6 +13,10 @@ fi
 
 set -ex
 
+# create temporary folder for o files
+mkdir -p "${DIR}/obj"
+pushd "${DIR}/obj"
+
 # compile c++ code
 clang++ \
   -c \
@@ -36,7 +40,10 @@ clang++ \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I "${DIR}/src" \
   "${DIR}/src/Presets.cpp" \
-  -o presets.o
+  "${DIR}/src/LightPreset.cpp"
+
+# restore directory
+popd
 
 wasm-ld \
   --no-entry \
@@ -53,5 +60,5 @@ wasm-ld \
   --gc-sections \
   -O3 --lto-O3 \
   -lc++ -lc++abi \
-   presets.o \
+  ${DIR}/obj/*.o \
   -o $OUTPUT

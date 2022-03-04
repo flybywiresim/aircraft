@@ -24,12 +24,13 @@
 #include <string>
 
 #include "SimVars.h"
-#include "common.h"
 
 using namespace std;
 
 class Presets {
  private:
+  HANDLE hSimConnect;
+
   bool isConnected = false;
 
   SimulationData simulationData = {};

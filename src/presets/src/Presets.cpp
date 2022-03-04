@@ -1,7 +1,10 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+#include <memory>
+
 #include "Presets.h"
+#include "lightPreset.h"
 
 Presets PRESETS;
 
@@ -62,28 +65,71 @@ bool Presets::onUpdate(double deltaTime) {
 
       const int testVar = simVars->getTestVar();
       simVars->setTestVar(testVar + 1);
-      std::cout << "PRESETS: DEBUG " << testVar << std::endl;
+      std::cout << "PRESETS: TestVar: " << testVar << std::endl;
 
-      std::cout << "PRESETS: DEBUG EFB Brightness " << simVars->getEfbBrightness() << std::endl;
-      // simVars->setEfbBrightness(testVar % 100);
+      std::unique_ptr<LightPreset> lightPreset = make_unique<LightPreset>(simVars);
 
-      std::cout << "PRESETS: DEBUG LightingOvhdIntLt " << simVars->getLightPotentiometer(86) << std::endl;
-      simVars->setLightPotentiometer(86, 11);
+      lightPreset->readFromAircraft();
+      std::cout << "PRESETS: Light Settings 1: " << lightPreset->sprint() << std::endl;
 
-      ThreeWay lightCabin = simVars->getLightCabin();
-      std::cout << "PRESETS: DEBUG Cabin Light Switch POS" << lightCabin << std::endl;
-      switch (lightCabin) {
-        case POS3_0:
-          lightCabin = POS3_1;
-          break;
-        case POS3_1:
-          lightCabin = POS3_2;
-          break;
-        case POS3_2:
-          lightCabin = POS3_0;
-          break;
-      }
-      simVars->setLightCabin(lightCabin);
+      LightValues lv_100 = {
+        100.0
+        , POS3_2
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+        , 100.0
+      };
+
+      LightValues lv_0 = {
+        0.0
+        , POS3_0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+        , 0.0
+      };
+
+      lightPreset->set(testVar % 2 == 0 ? lv_0 : lv_100);
+      lightPreset->applyToAircraft();
+      lightPreset->readFromAircraft();
+      std::cout << "PRESETS: Light Settings: " << lightPreset->sprint() << std::endl;
 
       simVars->setTestMode(0);
     }

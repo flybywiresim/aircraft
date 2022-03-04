@@ -93,22 +93,53 @@ class SimVars {
 
   }
 
+  // ***************************
+  // Test getter and setters
   FLOAT64 getDeveloperState() { return get_named_variable_value(DevVar); }
   void setDeveloperState(FLOAT64 value) { set_named_variable_value(DevVar, value); }
   FLOAT64 getTestMode() { return get_named_variable_value(TestMode); }
   void setTestMode(FLOAT64 value) { set_named_variable_value(TestMode, value); }
   FLOAT64 getTestVar() { return get_named_variable_value(TestVar); }
   void setTestVar(FLOAT64 value) { set_named_variable_value(TestVar, value); }
+  // ***************************
+
+  // ***************************
+  // Lighting getter and setters
 
   FLOAT64 getEfbBrightness() { return get_named_variable_value(EfbBrightness); }
   void setEfbBrightness(FLOAT64 value) { set_named_variable_value(EfbBrightness, value); }
 
-//  FLOAT64 getEfbBrightness() { return get_named_variable_value(EfbBrightness); }
-//  void setEfbBrightness(FLOAT64 value) { set_named_variable_value(EfbBrightness, value); }
+  // DCDU
+  FLOAT64 getDcduLightLevel(Side s) {
+    switch (s) {
+      case Left: return get_named_variable_value(DcduLeftLightLevel);
+      case Right: return get_named_variable_value(DcduRightLightLevel);
+    }
+  }
+  void setDcduLightLevel(Side s, FLOAT64 value) {
+    switch (s) {
+      case Left: set_named_variable_value(DcduLeftLightLevel, value); break;
+      case Right: set_named_variable_value(DcduLeftLightLevel, value); break;
+    }
+  }
+
+  // MCDU
+  FLOAT64 getMcduLightLevel(Side s) {
+    switch (s) {
+      case Left: return get_named_variable_value(McduLeftLightLevel);
+      case Right: return get_named_variable_value(McduRightLightLevel);
+    }
+  }
+  void setMcduLightLevel(Side s, FLOAT64 value) {
+    switch (s) {
+      case Left: set_named_variable_value(McduLeftLightLevel, value); break;
+      case Right: set_named_variable_value(McduLeftLightLevel, value); break;
+    }
+  }
 
   // Collection of SimVar get functions
   FLOAT64 getLightPotentiometer(int index) { return aircraft_varget(lightPotentiometer, m_Units->Percent, index); }
-  void setLightPotentiometer(int index, int value) {
+  void setLightPotentiometer(int index, FLOAT64 value) {
     std::string calculator_code;
     calculator_code += std::to_string(value);
     calculator_code += " ";
@@ -141,4 +172,5 @@ class SimVars {
     execute_calculator_code(calculator_code.c_str(), nullptr, nullptr, nullptr);
   }
 
+  // *****************************
 };
