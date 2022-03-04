@@ -1,8 +1,8 @@
 #pragma once
 
-/// <summary>
-/// SimConnect data types to send Sim Updated
-/// </summary>
+#include <string>;
+
+// SimConnect data types to send Sim Updated
 enum DataTypesID {
   SimulationDataTypeId,
 };
@@ -42,50 +42,53 @@ class SimVars {
  public:
   Units* m_Units;
 
-  /// <summary>
-  /// Collection of SimVars for the A32NX
-  /// </summary>
+  // Collection of SimVars for the A32NX
   //  ENUM AmbientTemp = get_aircraft_var_enum("AMBIENT TEMPERATURE");
   //  ENUM animDeltaTime = get_aircraft_var_enum("ANIMATION DELTA TIME");
-  ENUM lightingOvhdIntLt = get_aircraft_var_enum("LIGHT POTENTIOMETER");
+  ENUM lightPotentiometer = get_aircraft_var_enum("LIGHT POTENTIOMETER");
 
-  /// <summary>
-  /// Collection of LVars for the A32NX
-  /// </summary>
+  // Collection of LVars for the A32NX
   ID DevVar;
   ID TestMode;
   ID TestVar;
   ID EfbBrightness;
 
-  SimVars() { this->initializeVars(); }
+  SimVars() {
+    this->initializeVars();
+  }
 
   void initializeVars() {
+    m_Units = new Units();
+
     DevVar = register_named_variable("A32NX_DEVELOPER_STATE");
     TestVar = register_named_variable("A32NX_TEST_VAR");
     TestMode = register_named_variable("A32NX_TEST_MODE");
-    EfbBrightness = register_named_variable("A32NX_EFB_BRIGHTNESS");
-
     this->setDeveloperState(0);
     this->setTestVar(0);
     this->setTestMode(0);
 
-    m_Units = new Units();
+    EfbBrightness = register_named_variable("A32NX_EFB_BRIGHTNESS");
+
   }
 
-  // Collection of LVar 'set' Functions
+  FLOAT64 getDeveloperState() { return get_named_variable_value(DevVar); }
   void setDeveloperState(FLOAT64 value) { set_named_variable_value(DevVar, value); }
-  void setTestVar(FLOAT64 value) { set_named_variable_value(TestVar, value); }
+  FLOAT64 getTestMode() { return get_named_variable_value(TestMode); }
   void setTestMode(FLOAT64 value) { set_named_variable_value(TestMode, value); }
+  FLOAT64 getTestVar() { return get_named_variable_value(TestVar); }
+  void setTestVar(FLOAT64 value) { set_named_variable_value(TestVar, value); }
+
+  FLOAT64 getEfbBrightness() { return get_named_variable_value(EfbBrightness); }
   void setEfbBrightness(FLOAT64 value) { set_named_variable_value(EfbBrightness, value); }
 
-  // Collection of LVar 'get' Functions
-  FLOAT64 getDeveloperState() { return get_named_variable_value(DevVar); }
-  FLOAT64 getTestVar() { return get_named_variable_value(TestVar); }
-  FLOAT64 getTestMode() { return get_named_variable_value(TestMode); }
-  FLOAT64 getEfbBrightness() { return get_named_variable_value(EfbBrightness); }
-
-
   // Collection of SimVar get functions
-  FLOAT64 getLightingOvhdIntLt() { return aircraft_varget(lightingOvhdIntLt, m_Units->Percent, 86); }
-
+  FLOAT64 getLightPotentiometer(int index) { return aircraft_varget(lightPotentiometer, m_Units->Percent, index); }
+  void setLightPotentiometer(int index, int value) {
+    std::string calculator_code;
+    calculator_code += std::to_string(value);
+    calculator_code += " ";
+    calculator_code += std::to_string(index);
+    calculator_code += " (>K:2:LIGHT_POTENTIOMETER_SET)";
+    execute_calculator_code(calculator_code.c_str(), nullptr, nullptr, nullptr);
+  }
 };
