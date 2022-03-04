@@ -191,7 +191,7 @@ FacBus Fac::getBusOutputs() {
   output.discreteWord2.setSsm(Arinc429SignStatus::NormalOperation);
   output.discreteWord2.setBit(11, yawDamperEngaged);
   output.discreteWord2.setBit(12, discreteInputs.yawDamperOppEngaged);
-  output.discreteWord2.setBit(13, rudderTravelLimEngaged);
+  output.discreteWord2.setBit(13, rudderTrimEngaged);
   output.discreteWord2.setBit(14, discreteInputs.rudderTrimOppEngaged);
   output.discreteWord2.setBit(15, rudderTravelLimEngaged);
   output.discreteWord2.setBit(16, discreteInputs.rudderTravelLimOppEngaged);
