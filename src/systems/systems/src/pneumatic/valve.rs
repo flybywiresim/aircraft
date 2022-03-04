@@ -243,9 +243,9 @@ impl PneumaticContainerConnector {
             -container_two.get_mass_flow_for_target_pressure(container_one.pressure()),
         ];
         let air_mass = *air_masses
-        .iter()
-        .reduce(|accum, m| if accum.abs() < m.abs() { accum } else { m })
-        .unwrap()
+            .iter()
+            .reduce(|accum, m| if accum.abs() < m.abs() { accum } else { m })
+            .unwrap()
             * self.transfer_speed_factor
             * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
         let air_temp = if air_mass.get::<kilogram>() > 0. {
