@@ -61,16 +61,13 @@ bool Presets::onUpdate(double deltaTime) {
     simConnectReadData();
 
     // This is pure test code for now
-    if (simVars->getTestMode() == 1) {
-
-      const int testVar = simVars->getTestVar();
-      simVars->setTestVar(testVar + 1);
-      std::cout << "PRESETS: TestVar: " << testVar << std::endl;
+    const int loadPresetRequest = simVars->getLoadPresetRequest();
+    if (loadPresetRequest) {
 
       std::unique_ptr<LightPreset> lightPreset = make_unique<LightPreset>(simVars);
 
       lightPreset->readFromAircraft();
-      std::cout << "PRESETS: Light Settings 1: " << lightPreset->sprint() << std::endl;
+      std::cout << "PRESETS: Light Settings Before: " << lightPreset->sprint() << std::endl;
 
       LightValues lv_100 = {
         100.0
@@ -126,12 +123,12 @@ bool Presets::onUpdate(double deltaTime) {
         , 0.0
       };
 
-      lightPreset->set(testVar % 2 == 0 ? lv_0 : lv_100);
+      lightPreset->set(loadPresetRequest == 1 ? lv_0 : lv_100);
       lightPreset->applyToAircraft();
       lightPreset->readFromAircraft();
-      std::cout << "PRESETS: Light Settings: " << lightPreset->sprint() << std::endl;
+      std::cout << "PRESETS: Light Settings After: " << lightPreset->sprint() << std::endl;
 
-      simVars->setTestMode(0);
+      simVars->setLoadPresetRequest(0);
     }
   }
   return true;

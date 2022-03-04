@@ -63,7 +63,7 @@ class SimVars {
   // Collection of LVars for the A32NX
   ID DevVar;
   ID TestMode;
-  ID TestVar;
+  ID LoadPresetRequest;
 
   ID EfbBrightness;
   ID DcduLeftLightLevel;
@@ -78,30 +78,21 @@ class SimVars {
   void initializeVars() {
     m_Units = new Units();
 
-    DevVar = register_named_variable("A32NX_DEVELOPER_STATE");
-    TestVar = register_named_variable("A32NX_TEST_VAR");
-    TestMode = register_named_variable("A32NX_TEST_MODE");
-    this->setDeveloperState(0);
-    this->setTestVar(0);
-    this->setTestMode(0);
+    LoadPresetRequest = register_named_variable("A32NX_LOAD_LIGHTING_PRESET");
+    this->setLoadPresetRequest(0);
 
     EfbBrightness = register_named_variable("A32NX_EFB_BRIGHTNESS");
     DcduLeftLightLevel = register_named_variable("A32NX_PANEL_DCDU_L_BRIGHTNESS");
     DcduRightLightLevel = register_named_variable("A32NX_PANEL_DCDU_R_BRIGHTNESS");
     McduLeftLightLevel = register_named_variable("A32NX_MCDU_L_BRIGHTNESS");
     McduRightLightLevel = register_named_variable("A32NX_MCDU_R_BRIGHTNESS");
-
   }
 
-  // ***************************
-  // Test getter and setters
-  FLOAT64 getDeveloperState() { return get_named_variable_value(DevVar); }
-  void setDeveloperState(FLOAT64 value) { set_named_variable_value(DevVar, value); }
-  FLOAT64 getTestMode() { return get_named_variable_value(TestMode); }
-  void setTestMode(FLOAT64 value) { set_named_variable_value(TestMode, value); }
-  FLOAT64 getTestVar() { return get_named_variable_value(TestVar); }
-  void setTestVar(FLOAT64 value) { set_named_variable_value(TestVar, value); }
-  // ***************************
+  // *********************************
+  // Preset Request getter and setters
+  INT64 getLoadPresetRequest() { return get_named_variable_value(LoadPresetRequest); }
+  void setLoadPresetRequest(INT64 value) { set_named_variable_value(LoadPresetRequest, value); }
+  // *********************************
 
   // ***************************
   // Lighting getter and setters
