@@ -238,10 +238,11 @@ impl PneumaticContainerConnector {
         container_two: &mut impl PneumaticContainer,
     ) {
         // SAFETY: as the iterator is always non-empty reduce never returns None.
-        let air_mass = *[
+        let air_masses = [
             container_one.get_mass_flow_for_target_pressure(container_two.pressure()),
             -container_two.get_mass_flow_for_target_pressure(container_one.pressure()),
-        ]
+        ];
+        let air_mass = *air_masses
         .iter()
         .reduce(|accum, m| if accum.abs() < m.abs() { accum } else { m })
         .unwrap()
@@ -257,7 +258,7 @@ impl PneumaticContainerConnector {
 
         container_one.heat_conduction(context, container_two);
 
-        self.fluid_flow = air_mass / context.delta_as_time();
+        self.fluid_flow = -air_mass / context.delta_as_time();
     }
 
     fn move_mass(
