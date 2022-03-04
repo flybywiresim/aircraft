@@ -1990,6 +1990,102 @@ mod tests {
         assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
     }
 
+    #[test]
+    fn elevator_position_control_is_stable_with_all_actuators_in_control() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), elevator_assembly())
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| {
+            a.set_pressures([Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)])
+        });
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.8), 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.8), 1));
+
+        // Step demand in 0.3s to position 0.8
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+
+        //Now check position is stable for 20s
+        for _ in 0..20 {
+            test_bed.run_with_delta(Duration::from_secs_f64(1.));
+            assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.75));
+            assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.85));
+        }
+
+        // Step demand in 0.3s to position 0.2
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.2), 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(0.2), 1));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+
+        // Now check position is stable for 20s
+        for _ in 0..20 {
+            test_bed.run_with_delta(Duration::from_secs_f64(1.));
+            assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.15));
+            assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.25));
+        }
+    }
+
+    #[test]
+    fn elevator_droop_control_is_stable_engaged_at_full_speed() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), elevator_assembly())
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| {
+            a.set_pressures([Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)])
+        });
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 1));
+
+        // Run until 0.8 position is reached
+        for _ in 0..20 {
+            test_bed.run_with_delta(Duration::from_secs_f64(0.1));
+            if test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8) {
+                break;
+            }
+        }
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8));
+
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
+
+        // Capture position at damping engagement
+        let damping_start_position = test_bed.query(|a| a.body_position());
+
+        // Wait for oscillations to settle
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+
+        // Now check position slowly decrease
+        for _ in 0..10 {
+            test_bed.run_with_delta(Duration::from_secs_f64(1.));
+            assert!(test_bed.query(|a| a.body_position()) < damping_start_position);
+        }
+    }
+
+    #[test]
+    fn spoiler_position_control_from_down_to_up_less_0_8s() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), spoiler_assembly())
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| {
+            a.set_pressures([Pressure::new::<psi>(3000.)])
+        });
+
+        assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.8));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.95));
+    }
+
     fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
@@ -2259,6 +2355,112 @@ mod tests {
             Angle::new::<degree>(50.),
             init_angle,
             1.,
+            false,
+            Vector3::new(1., 0., 0.),
+        )
+    }
+
+    fn elevator_assembly() -> HydraulicLinearActuatorAssembly<2> {
+        let rigid_body = elevator_body();
+        let actuator = elevator_actuator(&rigid_body);
+
+        HydraulicLinearActuatorAssembly::new([actuator, actuator], rigid_body)
+    }
+
+    fn elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 5.;
+        const DEFAULT_P_GAIN: f64 = 1.;
+        const DEFAULT_FORCE_GAIN: f64 = 450000.;
+
+        LinearActuator::new(
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.0407),
+            Length::new::<meter>(0.),
+            VolumeRate::new::<gallon_per_second>(0.029),
+            80000.,
+            1500.,
+            20000.,
+            10000000.,
+            Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
+            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
+        )
+    }
+
+    fn elevator_body() -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(6., 0.405, 1.125);
+        let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+
+        let control_arm = Vector3::new(0., -0.091, 0.);
+        let anchor = Vector3::new(0., -0.091, 0.41);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(58.6),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-17.),
+            Angle::new::<degree>(47.),
+            Angle::new::<degree>(-17.),
+            100.,
+            false,
+            Vector3::new(1., 0., 0.),
+        )
+    }
+
+    fn spoiler_assembly() -> HydraulicLinearActuatorAssembly<1> {
+        let rigid_body = spoiler_body();
+        let actuator = spoiler_actuator(&rigid_body);
+
+        HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
+    }
+
+    fn spoiler_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 1.;
+        const DEFAULT_P_GAIN: f64 = 0.15;
+        const DEFAULT_FORCE_GAIN: f64 = 450000.;
+
+        LinearActuator::new(
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.03),
+            Length::new::<meter>(0.),
+            VolumeRate::new::<gallon_per_second>(0.03),
+            80000.,
+            1500.,
+            5000.,
+            800000.,
+            Duration::from_millis(300),
+            [1., 1., 1., 1., 1., 1.],
+            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
+        )
+    }
+
+    fn spoiler_body() -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(1.785, 0.1, 0.685);
+        let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+
+        let control_arm = Vector3::new(0., -0.067 * size[2], -0.26 * size[2]);
+        let anchor = Vector3::new(0., -0.26 * size[2], 0.26 * size[2]);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(16.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-10.),
+            Angle::new::<degree>(40.),
+            Angle::new::<degree>(-10.),
+            50.,
             false,
             Vector3::new(1., 0., 0.),
         )
