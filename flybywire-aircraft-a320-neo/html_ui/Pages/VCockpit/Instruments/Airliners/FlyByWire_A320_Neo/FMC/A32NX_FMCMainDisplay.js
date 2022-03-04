@@ -1379,7 +1379,7 @@ class FMCMainDisplay extends BaseAirliners {
             return Infinity;
         }
 
-        const activeLegIndex = this.guidanceController.activeLegIndex;
+        const activeLegIndex = this.guidanceController.activeTransIndex >= 0 ? this.guidanceController.activeTransIndex : this.guidanceController.activeLegIndex;
         const constraints = this.managedProfile.get(activeLegIndex);
         if (constraints) {
             if (this.flightPhaseManager.phase < FmgcFlightPhases.CRUISE || this.flightPhaseManager.phase === FmgcFlightPhases.GOAROUND) {

@@ -127,6 +127,8 @@ export class LnavDriver implements GuidanceComponent {
                 this.guidanceController.activeTransIndex = activeLegIdx - 1;
             } else if (outboundTrans && outboundTrans.isAbeam(this.ppos)) {
                 this.guidanceController.activeTransIndex = activeLegIdx;
+            } else {
+                this.guidanceController.activeTransIndex = -1;
             }
 
             // Pseudo waypoint sequencing
