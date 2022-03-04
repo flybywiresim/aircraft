@@ -152,7 +152,7 @@ impl PneumaticContainer for PneumaticPipe {
             .powf(Self::HEAT_CAPACITY_RATIO)
             * self.pressure;
 
-        self.update_temperature_for_pressure_change(new_pressure - self.pressure);
+        self.update_temperature_for_target_pressure(new_pressure);
         self.pressure = new_pressure;
         if fluid_amount.get::<kilogram>() > 0. {
             self.temperature = ThermodynamicTemperature::new::<kelvin>(
@@ -192,10 +192,9 @@ impl PneumaticPipe {
         )
     }
 
-    fn update_temperature_for_pressure_change(&mut self, pressure_change: Pressure) {
-        self.temperature *= (self.pressure.get::<psi>()
-            / (self.pressure.get::<psi>() + pressure_change.get::<psi>()))
-        .powf((1. - Self::HEAT_CAPACITY_RATIO) / Self::HEAT_CAPACITY_RATIO);
+    fn update_temperature_for_target_pressure(&mut self, target_pressure: Pressure) {
+        self.temperature *= (self.pressure.get::<pascal>() / (target_pressure.get::<pascal>()))
+            .powf(1. / Self::HEAT_CAPACITY_RATIO - 1.);
     }
 
     fn update_pressure_for_temperature_change(&mut self, temperature_change: TemperatureInterval) {
@@ -206,7 +205,7 @@ impl PneumaticPipe {
 
     fn change_volume(&mut self, new_volume: Volume) {
         let new_pressure = self.calculate_pressure_for_new_volume(new_volume);
-        self.update_temperature_for_pressure_change(new_pressure - self.pressure);
+        self.update_temperature_for_target_pressure(new_pressure);
         self.pressure = new_pressure;
         self.volume = new_volume;
     }
