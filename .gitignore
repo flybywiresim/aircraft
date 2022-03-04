@@ -66,3 +66,4 @@ src/instruments/buildSrc/custom/*
 /**/.rollup.cache
 tsconfig.tsbuildinfo
 /**/package-lock.json
+msfs-avionics-mirror/src/sdk/build/**
