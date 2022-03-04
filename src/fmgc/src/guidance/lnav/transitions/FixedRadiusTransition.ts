@@ -127,14 +127,15 @@ export class FixedRadiusTransition extends Transition {
         const tooBigForNext = 'from' in this.nextLeg ? distanceTo(this.nextLeg.from.infos.coordinates, this.nextLeg.to.infos.coordinates) < this.tad + 0.1 : false;
         const notLinedUp = Math.abs(prevLegTermDistanceToNextLeg) >= 0.25; // "reasonable" distance
 
+        // in some circumstances we revert to a path capture transition where the fixed radius won't work well
+        const shouldRevert = Math.abs(this.sweepAngle) <= 3
+            || Math.abs(this.sweepAngle) > 175
+            || this.previousLeg.overflyTermFix || forcedTurn || tooBigForPrevious || tooBigForNext || notLinedUp;
+
         // We do not revert to a path capture if the previous leg was overshot anyway - draw the normal fixed radius turn
         const previousLegOvershot = 'overshot' in this.previousLeg && this.previousLeg.overshot;
 
-        // in some circumstances we revert to a path capture transition where the fixed radius won't work well
-        if (Math.abs(this.sweepAngle) <= 3
-            || Math.abs(this.sweepAngle) > 175
-            || this.previousLeg.overflyTermFix || forcedTurn || (tooBigForPrevious && !previousLegOvershot) || tooBigForNext || notLinedUp
-        ) {
+        if (shouldRevert && !previousLegOvershot) {
             const shouldHaveTad = !this.previousLeg.overflyTermFix && !notLinedUp && tooBigForPrevious;
 
             if (!this.revertTo) {

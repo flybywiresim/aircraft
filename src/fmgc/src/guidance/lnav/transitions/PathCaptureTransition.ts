@@ -124,8 +124,9 @@ export class PathCaptureTransition extends Transition {
             if ('from' in this.previousLeg) {
                 const start = this.previousLeg.from.infos.coordinates;
                 const end = this.previousLeg.to.infos.coordinates;
+                const length = distanceTo(start, end);
 
-                const ratio = this.tad / distanceTo(start, end);
+                const ratio = (length - this.tad) / length;
 
                 initialTurningPoint = getIntermediatePoint(start, end, ratio);
             } else {
