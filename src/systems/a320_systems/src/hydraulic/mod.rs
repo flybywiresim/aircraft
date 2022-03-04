@@ -3883,6 +3883,10 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("HYD_AIL_RIGHT_DEFLECTION"))
             }
 
+            fn get_nose_steering_ratio(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("NOSE_WHEEL_POSITION_RATIO"))
+            }
+
             fn rat_deploy_commanded(&self) -> bool {
                 self.query(|a| a.is_rat_commanded_to_deploy())
             }
@@ -4006,6 +4010,11 @@ mod tests {
                 } else {
                     self.write_by_name("PUSHBACK STATE", 3.);
                 }
+                self
+            }
+
+            fn set_pushback_angle(mut self, angle: Angle) -> Self {
+                self.write_by_name("PUSHBACK ANGLE", angle.get::<radian>());
                 self
             }
 
@@ -7541,6 +7550,44 @@ mod tests {
             assert!(!test_bed.is_green_pressurised());
             assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
             assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
+        }
+
+        #[test]
+        fn nose_wheel_steers_with_pushback_tug() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_pushback_state(true)
+                .set_pushback_angle(Angle::new::<degree>(80.))
+                .run_waiting_for(Duration::from_secs_f64(0.5));
+
+            // Do not turn instantly in 0.5s
+            assert!(
+                test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.)
+                    && test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(0.5)
+            );
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+
+            // Has turned fully after 5s
+            assert!(test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.9));
+
+            // Going left
+            test_bed = test_bed
+                .set_pushback_state(true)
+                .set_pushback_angle(Angle::new::<degree>(-80.))
+                .run_waiting_for(Duration::from_secs_f64(0.5));
+
+            assert!(test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.2));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+
+            // Has turned fully left after 5s
+            assert!(test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(-0.9));
         }
     }
 }
