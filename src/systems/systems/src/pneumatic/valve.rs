@@ -256,7 +256,7 @@ impl PneumaticContainerConnector {
 
         self.move_mass(container_one, container_two, air_mass, air_temp);
 
-        container_one.heat_conduction(context, container_two);
+        container_one.heat_conduction(context, container_two, self.transfer_speed_factor);
 
         self.fluid_flow = -air_mass / context.delta_as_time();
     }
@@ -318,15 +318,18 @@ impl PneumaticExhaust {
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
     ) {
-        let mass_flow = if from.pressure() > self.pressure_preload {
-            from.get_mass_flow_for_target_pressure(context.ambient_pressure())
-                * (1. - (-self.exhaust_speed * context.delta_as_secs_f64()).exp())
+        let (mass_flow, transfer_factor) = if from.pressure() > self.pressure_preload {
+            (
+                from.get_mass_flow_for_target_pressure(context.ambient_pressure())
+                    * (1. - (-self.exhaust_speed * context.delta_as_secs_f64()).exp()),
+                Ratio::new::<ratio>(1.),
+            )
         } else {
-            Mass::default()
+            (Mass::default(), Ratio::new::<ratio>(0.))
         };
 
         from.change_fluid_amount(mass_flow, context.ambient_temperature());
-        from.heat_conduction_single(context, context.ambient_temperature());
+        from.heat_conduction_single(context, context.ambient_temperature(), transfer_factor);
 
         self.fluid_flow = -mass_flow / context.delta_as_time();
     }

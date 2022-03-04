@@ -74,8 +74,17 @@ pub trait PneumaticContainer {
     }
 
     /// Transfer heat between two containers depending on the temperature difference
-    fn heat_conduction(&mut self, context: &UpdateContext, other: &mut impl PneumaticContainer) {
-        other.update_temperature(self.heat_conduction_single(context, other.temperature()));
+    fn heat_conduction(
+        &mut self,
+        context: &UpdateContext,
+        other: &mut impl PneumaticContainer,
+        transfer_factor: Ratio,
+    ) {
+        other.update_temperature(self.heat_conduction_single(
+            context,
+            other.temperature(),
+            transfer_factor,
+        ));
     }
 
     /**
@@ -86,6 +95,7 @@ pub trait PneumaticContainer {
         &mut self,
         context: &UpdateContext,
         temperature: ThermodynamicTemperature,
+        transfer_factor: Ratio,
     ) -> TemperatureInterval {
         let temperature_gradient = TemperatureInterval::new::<temperature_interval::kelvin>(
             self.temperature().get::<kelvin>() - temperature.get::<kelvin>(),
@@ -93,6 +103,7 @@ pub trait PneumaticContainer {
 
         let temperature_change = Self::HEAT_TRANSFER_COEFF
             * temperature_gradient
+            * transfer_factor
             * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
         self.update_temperature(-temperature_change);
         temperature_change
