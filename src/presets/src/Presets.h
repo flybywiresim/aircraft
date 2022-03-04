@@ -31,7 +31,7 @@ using namespace std;
 class Presets {
  private:
   bool isConnected = false;
-  double previousSimulationTime = 0;
+
   SimulationData simulationData = {};
   SimVars* simVars;
 

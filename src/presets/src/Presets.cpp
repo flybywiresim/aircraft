@@ -57,14 +57,35 @@ bool Presets::onUpdate(double deltaTime) {
     simConnectRequestData();
     simConnectReadData();
 
+    // This is pure test code for now
     if (simVars->getTestMode() == 1) {
+
       const int testVar = simVars->getTestVar();
       simVars->setTestVar(testVar + 1);
       std::cout << "PRESETS: DEBUG " << testVar << std::endl;
-      std::cout << "PRESETS: DEBUG LightingOvhdIntLt " << simVars->getLightPotentiometer(86) << std::endl;
+
       std::cout << "PRESETS: DEBUG EFB Brightness " << simVars->getEfbBrightness() << std::endl;
       // simVars->setEfbBrightness(testVar % 100);
+
+      std::cout << "PRESETS: DEBUG LightingOvhdIntLt " << simVars->getLightPotentiometer(86) << std::endl;
       simVars->setLightPotentiometer(86, 11);
+
+      ThreeWay lightCabin = simVars->getLightCabin();
+      std::cout << "PRESETS: DEBUG Cabin Light Switch POS" << lightCabin << std::endl;
+      switch (lightCabin) {
+        case POS3_0:
+          lightCabin = POS3_1;
+          break;
+        case POS3_1:
+          lightCabin = POS3_2;
+          break;
+        case POS3_2:
+          lightCabin = POS3_0;
+          break;
+      }
+      simVars->setLightCabin(lightCabin);
+
+      simVars->setTestMode(0);
     }
   }
   return true;
