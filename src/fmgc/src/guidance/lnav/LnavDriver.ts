@@ -379,6 +379,9 @@ export class LnavDriver implements GuidanceComponent {
                         this.sequenceLeg(currentLeg, outboundTransition);
                     }
                     geometry.onLegSequenced(currentLeg, nextLeg, followingLeg);
+                } else {
+                    this.sequenceDiscontinuity(currentLeg);
+                    geometry.onLegSequenced(currentLeg, nextLeg, followingLeg);
                 }
             }
         }
