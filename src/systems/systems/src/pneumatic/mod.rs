@@ -67,10 +67,10 @@ pub trait PneumaticContainer {
     fn update_temperature(&mut self, temperature_change: TemperatureInterval);
 
     fn get_mass_flow_for_target_pressure(&self, target_pressure: Pressure) -> Mass {
-        let mass = (target_pressure.get::<pascal>() / self.pressure().get::<pascal>())
+        ((target_pressure.get::<pascal>() / self.pressure().get::<pascal>())
             .powf(1. / Self::HEAT_CAPACITY_RATIO)
-            * self.mass();
-        mass - self.mass()
+            - 1.)
+            * self.mass()
     }
 
     /// Transfer heat between two containers depending on the temperature difference
@@ -104,7 +104,6 @@ pub struct PneumaticPipe {
     volume: Volume,
     pressure: Pressure,
     temperature: ThermodynamicTemperature,
-    mass: Mass,
 }
 impl PneumaticContainer for PneumaticPipe {
     fn pressure(&self) -> Pressure {
@@ -120,7 +119,14 @@ impl PneumaticContainer for PneumaticPipe {
     }
 
     fn mass(&self) -> Mass {
-        self.mass
+        /*
+        We calculate the mass instead of storing it because floating points are
+        not exact and after some time the true mass drifts from the calculated
+        mass which then results in some negative pressures and temperatures
+        when doing heat conduction. This later leads to NaNs.
+        Another possibility would be to calculate the volume instead.
+        */
+        Self::calculate_mass(self.volume, self.pressure, self.temperature)
     }
 
     // Adds or removes a certain amount of air
@@ -129,8 +135,9 @@ impl PneumaticContainer for PneumaticPipe {
         fluid_amount: Mass,
         fluid_temperature: ThermodynamicTemperature,
     ) {
-        let new_mass = self.mass + fluid_amount;
-        let new_pressure = (new_mass.get::<kilogram>() / self.mass.get::<kilogram>())
+        let mass = self.mass();
+        let new_mass = mass + fluid_amount;
+        let new_pressure = (new_mass.get::<kilogram>() / mass.get::<kilogram>())
             .powf(Self::HEAT_CAPACITY_RATIO)
             * self.pressure;
 
@@ -139,11 +146,10 @@ impl PneumaticContainer for PneumaticPipe {
         if fluid_amount.get::<kilogram>() > 0. {
             self.temperature = ThermodynamicTemperature::new::<kelvin>(
                 (fluid_amount.get::<kilogram>() * fluid_temperature.get::<kelvin>()
-                    + self.mass.get::<kilogram>() * self.temperature.get::<kelvin>())
+                    + mass.get::<kilogram>() * self.temperature.get::<kelvin>())
                     / new_mass.get::<kilogram>(),
             );
         }
-        self.mass = new_mass;
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
@@ -163,7 +169,6 @@ impl PneumaticPipe {
             volume,
             pressure,
             temperature,
-            mass: Self::calculate_mass(volume, pressure, temperature),
         }
     }
 
