@@ -301,9 +301,9 @@ impl EngineCompressionChamberController {
             + (self.compression_factor * Self::HEAT_CAPACITY_RATIO * corrected_mach.powi(2)) / 2.)
             * context.ambient_pressure();
 
-        self.target_temperature *= (self.target_pressure.get::<pascal>()
-            / total_pressure.get::<pascal>())
-        .powf(1. / Self::HEAT_CAPACITY_RATIO - 1.);
+        self.target_temperature = context.ambient_temperature()
+            * (context.ambient_pressure().get::<pascal>() / total_pressure.get::<pascal>())
+                .powf(1. / Self::HEAT_CAPACITY_RATIO - 1.);
         self.target_pressure = total_pressure;
     }
 }
