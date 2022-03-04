@@ -171,9 +171,7 @@ impl PneumaticContainer for PneumaticPipe {
 }
 impl PneumaticPipe {
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
-    const GAS_CONSTANT: f64 = 8.314; // J / (mol * K)
-    const MOL_MASS_DRY_AIR: f64 = 0.0289; // kg / mol
-    const GAS_CONSTANT_DRY_AIR: f64 = 287.05; // J / (kg * K) = GAS_CONSTANT / MOL_MASS_DRY_AIR
+    const GAS_CONSTANT_DRY_AIR: f64 = 287.057005; // J / (kg * K) = GAS_CONSTANT / MOL_MASS_DRY_AIR
 
     pub fn new(volume: Volume, pressure: Pressure, temperature: ThermodynamicTemperature) -> Self {
         PneumaticPipe {
