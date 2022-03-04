@@ -390,8 +390,6 @@ var A320_Neo_UpperECAM;
                                     "FCTL_PROT",
                                     "REVERSER_1",
                                     "REVERSER_2",
-                                    "RA_1",
-                                    "RA_2",
                                     "SEC_2",
                                     "SEC_3",
                                     "ACALL_OUT",
@@ -1098,6 +1096,22 @@ var A320_Neo_UpperECAM;
                         name: "NAV",
                         messages: [
                             {
+                                message: "RA 1 FAULT",
+                                level: 2,
+                                flightPhasesInhib: [3, 4, 5, 8],
+                                isActive: () => {
+                                    return this.hasRadioAltimeterFailed(1, true);
+                                },
+                            },
+                            {
+                                message: "RA 2 FAULT",
+                                level: 2,
+                                flightPhasesInhib: [3, 4, 5, 8],
+                                isActive: () => {
+                                    return this.hasRadioAltimeterFailed(2, true);
+                                },
+                            },
+                            {
                                 message: "TCAS FAULT",
                                 level: 2,
                                 inopSystems: [
@@ -1105,7 +1119,9 @@ var A320_Neo_UpperECAM;
                                 ],
                                 flightPhasesInhib: [3, 4, 5, 7, 8],
                                 isActive: () => {
-                                    return !this.isInFlightPhase(1, 10) && this.getCachedSimVar('L:A32NX_TCAS_FAULT', 'bool');
+                                    return !this.isInFlightPhase(1, 10) && this.getCachedSimVar('L:A32NX_TCAS_FAULT', 'bool') && !(
+                                        this.hasRadioAltimeterFailed(1) && this.hasRadioAltimeterFailed(2)
+                                    );
                                 },
                             },
                             {
@@ -1962,6 +1978,12 @@ var A320_Neo_UpperECAM;
             const knobValue = this.getCachedSimVar(`L:A32NX_OVHD_ADIRS_IR_${number}_MODE_SELECTOR_KNOB`, "Enum");
             const pitch = new Arinc429Word(this.getCachedSimVar(`L:A32NX_ADIRS_IR_${number}_PITCH`, "Degrees"));
             return knobValue === 2 && !pitch.isNormalOperation();
+        }
+
+        hasRadioAltimeterFailed(number, considerUnpoweredAsOk) {
+            const isUnpowered = !this.getCachedSimVar(`L:A32NX_ELEC_AC_${number}_BUS_IS_POWERED`, "bool");
+            const height = new Arinc429Word(this.getCachedSimVar(`L:A32NX_RA_${number}_RADIO_ALTITUDE`, 'feet'));
+            return height.isFailureWarning() && (!considerUnpoweredAsOk || !isUnpowered);
         }
     }
     A320_Neo_UpperECAM.Display = Display;

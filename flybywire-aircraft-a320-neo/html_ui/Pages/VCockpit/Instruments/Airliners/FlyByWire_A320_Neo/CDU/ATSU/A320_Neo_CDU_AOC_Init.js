@@ -30,10 +30,10 @@ class CDUAocInit {
             }
         }
 
-        mcdu.refreshPageCallback = () => {
-            CDUAocInit.ShowPage(mcdu);
-        };
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
+        // regular update due to showing time on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            updateView();
+        }, mcdu.PageTimeout.Default);
 
         if (mcdu.simbrief.sendStatus !== "READY" && mcdu.simbrief.sendStatus !== "DONE") {
             requestButton = "INIT DATA REQ [color]cyan";
@@ -56,7 +56,7 @@ class CDUAocInit {
             fob = `{small}${currentFob}{end}[color]green`;
         }
 
-        const display = [
+        mcdu.setTemplate([
             ["INIT/REVIEW", "1", "2", "AOC"],
             ["\xa0FMC FLT NO", "GMT\xa0"],
             [fltNbr, gmt],
@@ -70,8 +70,7 @@ class CDUAocInit {
             [ete, requestButton],
             ["", "ADVISORY\xa0"],
             ["<AOC MENU"]
-        ];
-        mcdu.setTemplate(display);
+        ]);
 
         mcdu.rightInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
@@ -105,11 +104,6 @@ class CDUAocInit {
         mcdu.activeSystem = 'ATSU';
 
         const currentFob = formatWeight(NXUnits.kgToUser(mcdu.getFOB()));
-
-        mcdu.refreshPageCallback = () => {
-            CDUAocInit.ShowPage2(mcdu);
-        };
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
 
         /**
             GMT: is the current zulu time
@@ -183,6 +177,11 @@ class CDUAocInit {
             ];
             mcdu.setTemplate(display);
         }
+
+        // regular update due to showing time on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            updateView();
+        }, mcdu.PageTimeout.Default);
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
