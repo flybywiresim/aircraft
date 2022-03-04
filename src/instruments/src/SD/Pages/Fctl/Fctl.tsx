@@ -138,16 +138,6 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
     const [rudderDeflectionState] = useSimVar('L:A32NX_HYD_RUDDER_DEFLECTION', 'Percent', 50);
     const rudderAngle = -rudderDeflectionState * 25 / 100;
 
-    // Rudder limits
-    const [indicatedAirspeedState] = useSimVar('AIRSPEED INDICATED', 'knots', 500);
-    let maxAngleNorm = 1;
-    if (indicatedAirspeedState > 380) {
-        maxAngleNorm = 3.4 / 25;
-    } else if (indicatedAirspeedState > 160) {
-        maxAngleNorm = (69.2667 - 0.351818 * indicatedAirspeedState
-            + 0.00047 * indicatedAirspeedState ** 2) / 25;
-    }
-
     // Rudder trim
     const [rudderTrimState] = useSimVar('RUDDER TRIM PCT', 'percent over 100', 500);
     const rudderTrimAngle = -rudderTrimState * 25;
@@ -163,18 +153,12 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
             <HydraulicIndicator x={41} y={17} type="B" />
             <HydraulicIndicator x={63} y={17} type="Y" />
 
+            <RudderTravelLimit />
+
             <path id="rudderPath" className="MainShape" d="M100 113 A 100 100 0 0 1 0 113" />
             <path id="rudderCenter" className="MainShape" d="m47 128 v 4 h 6 v-4" />
             <path id="rudderRightBorder" className="MainShape" d="m94 118 1 4 -7 3 -2 -4" />
             <path id="rudderLeftBorder" className="MainShape" d="m6 118 -1 4 7 3 2 -4" />
-
-            <g id="rudderLeftMaxAngle" transform={`rotate(${-26.4 * (1 - maxAngleNorm)} 50 29)`}>
-                <path className="GreenShape" d="m5 117 -6 13 4 2" />
-            </g>
-
-            <g id="rudderRightMaxAngle" transform={`rotate(${26.4 * (1 - maxAngleNorm)} 50 29)`}>
-                <path className="GreenShape" d="m95 117 6 13 -4 2" />
-            </g>
 
             <g id="rudderCursor" transform={`rotate(${rudderAngle} 50 24)`}>
                 <path id="rudderCircle" className={hydraulicAvailableClass} d="M 42 78 A 8 8 0 0 1 58 78" />
@@ -185,6 +169,36 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
                 <path className="RudderTrim" d="m50 134 v 8" />
             </g>
         </SvgGroup>
+    );
+};
+
+const RudderTravelLimit = () => {
+    const fac1DiscreteWord2 = useArinc429Var('L:A32NX_FAC_1_DISCRETE_WORD_2');
+    const fac2DiscreteWord2 = useArinc429Var('L:A32NX_FAC_2_DISCRETE_WORD_2');
+
+    const anyTluEngaged = fac1DiscreteWord2.getBitValueOr(15, false) || fac1DiscreteWord2.getBitValueOr(16, false)
+    || fac2DiscreteWord2.getBitValueOr(15, false) || fac2DiscreteWord2.getBitValueOr(16, false);
+
+    const facSourceForTlu = fac2DiscreteWord2.getBitValueOr(15, false) ? 2 : 1;
+    const rtluPosWord = useArinc429Var(`L:A32NX_FAC_${facSourceForTlu}_RUDDER_TRAVEL_LIMIT_COMMAND`);
+    const rtluDisplayAngle = rtluPosWord.value + 2;
+
+    return (
+        <>
+            <g visibility={rtluPosWord.isNormalOperation() ? 'visible' : 'hidden'}>
+                <g id="rudderLeftMaxAngle" transform={`rotate(${rtluDisplayAngle} 50 29)`}>
+                    <path className={anyTluEngaged ? 'GreenShape' : 'WarningShape'} d="m50 127 0 14 4.5 0" />
+                </g>
+
+                <g id="rudderRightMaxAngle" transform={`rotate(${-rtluDisplayAngle} 50 29)`}>
+                    <path className={anyTluEngaged ? 'GreenShape' : 'WarningShape'} d="m50 127 0 14 -4.5 0" />
+                </g>
+            </g>
+            <g visibility={rtluPosWord.isNormalOperation() ? 'hidden' : 'visible'} className="Warning Medium" textAnchor="middle">
+                <text x="-10" y="150">TLU</text>
+                <text x="110" y="150">TLU</text>
+            </g>
+        </>
     );
 };
 
