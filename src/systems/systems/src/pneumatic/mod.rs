@@ -434,14 +434,20 @@ impl From<f64> for EngineState {
 }
 
 pub struct Precooler {
-    coefficient: f64,
+    heat_transfer_coefficient: f64,
     internal_connector: PneumaticContainerConnector,
     exhaust: PneumaticExhaust,
 }
 impl Precooler {
-    pub fn new(coefficient: f64) -> Self {
+    const HEAT_CAPACITY_CONSTANT_PRESSURE: f64 = 1.005e3;
+
+    /**
+     * The `heat_transfer_coefficient` contains both the heat transfer coefficient and the area of exchange.
+     * Typical values of the heat transfer coefficient for air to air coolers are 60-180 W/(m^2*K).
+     */
+    pub fn new(heat_transfer_coefficient: f64) -> Self {
         Self {
-            coefficient,
+            heat_transfer_coefficient,
             internal_connector: PneumaticContainerConnector::new(),
             exhaust: PneumaticExhaust::new(3., 3., Pressure::new::<psi>(0.)),
         }
@@ -459,11 +465,12 @@ impl Precooler {
                 - container_one.temperature().get::<degree_celsius>(),
         );
 
-        let temperature_change =
-            temperature_gradient * (1. - (-self.coefficient * context.delta_as_secs_f64()).exp());
+        let temperature_change = temperature_gradient / Self::HEAT_CAPACITY_CONSTANT_PRESSURE
+            * (self.heat_transfer_coefficient * context.delta_as_secs_f64());
 
-        supply.update_temperature(-temperature_change);
-        container_one.update_temperature(temperature_change);
+        supply.update_temperature(-temperature_change / supply.mass().get::<kilogram>());
+        container_one
+            .update_temperature(temperature_change / container_one.mass().get::<kilogram>());
 
         self.exhaust.update_move_fluid(context, supply);
         self.internal_connector
@@ -806,7 +813,10 @@ mod tests {
         let mut compression_chamber = CompressionChamber::new(Volume::new::<cubic_meter>(1.));
 
         compression_chamber.update(&compression_chamber_controller);
-        assert_eq!(compression_chamber.pressure(), target_pressure);
+        assert_about_eq!(
+            compression_chamber.pressure().get::<psi>(),
+            target_pressure.get::<psi>()
+        );
     }
 
     #[test]
@@ -1016,7 +1026,7 @@ mod tests {
             ThermodynamicTemperature::new::<degree_celsius>(15.),
         );
 
-        let mut precooler = Precooler::new(5e-1);
+        let mut precooler = Precooler::new(100.);
 
         for _ in 1..1000 {
             precooler.update(&context, &mut from, &mut supply, &mut to);

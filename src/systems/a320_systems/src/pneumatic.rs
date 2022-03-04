@@ -811,7 +811,7 @@ impl EngineBleedAirSystem {
             ),
             engine_starter_exhaust: PneumaticExhaust::new(3e-2, 3e-2, Pressure::new::<psi>(0.)),
             engine_starter_valve: DefaultValve::new_closed(),
-            precooler: Precooler::new(5.),
+            precooler: Precooler::new(60.),
         }
     }
 
