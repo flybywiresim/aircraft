@@ -19,8 +19,7 @@ use systems::{
         CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
         EngineCompressionChamberController, EngineState, PneumaticContainer, PneumaticPipe,
         PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
-        PressurizeableReservoir, TargetPressureTemperatureSignal,
-        VariableVolumeContainer,
+        PressurizeableReservoir, TargetPressureTemperatureSignal, VariableVolumeContainer,
     },
     shared::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
@@ -1313,7 +1312,7 @@ mod tests {
         pneumatic::{
             BleedMonitoringComputerChannelOperationMode, ControllablePneumaticValve,
             CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
-            TargetPressureSignal,
+            TargetPressureTemperatureSignal,
         },
         shared::{
             ApuBleedAirValveSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
@@ -1329,9 +1328,8 @@ mod tests {
     use std::{fs, fs::File, time::Duration};
 
     use uom::si::{
-        f64::*, length::foot, pressure::psi, ratio::ratio,
+        f64::*, length::foot, mass_rate::kilogram_per_second, pressure::psi, ratio::ratio,
         thermodynamic_temperature::degree_celsius, velocity::knot,
-        volume_rate::cubic_meter_per_second,
     };
 
     use super::{A320Pneumatic, A320PneumaticOverheadPanel};
@@ -1339,12 +1337,14 @@ mod tests {
     struct TestApu {
         bleed_air_valve_signal: ApuBleedAirValveSignal,
         bleed_air_pressure: Pressure,
+        bleed_air_temperature: ThermodynamicTemperature,
     }
     impl TestApu {
         fn new() -> Self {
             Self {
                 bleed_air_valve_signal: ApuBleedAirValveSignal::new_closed(),
                 bleed_air_pressure: Pressure::new::<psi>(14.7),
+                bleed_air_temperature: ThermodynamicTemperature::new::<degree_celsius>(15.),
             }
         }
 
@@ -1356,6 +1356,10 @@ mod tests {
             self.bleed_air_pressure = pressure;
         }
 
+        fn set_bleed_air_temperature(&mut self, temperature: ThermodynamicTemperature) {
+            self.bleed_air_temperature = temperature;
+        }
+
         fn set_bleed_air_valve_signal(&mut self, signal: ApuBleedAirValveSignal) {
             self.bleed_air_valve_signal = signal;
         }
@@ -1365,9 +1369,12 @@ mod tests {
             Some(self.bleed_air_valve_signal)
         }
     }
-    impl ControllerSignal<TargetPressureSignal> for TestApu {
-        fn signal(&self) -> Option<TargetPressureSignal> {
-            Some(TargetPressureSignal::new(self.bleed_air_pressure))
+    impl ControllerSignal<TargetPressureTemperatureSignal> for TestApu {
+        fn signal(&self) -> Option<TargetPressureTemperatureSignal> {
+            Some(TargetPressureTemperatureSignal::new(
+                self.bleed_air_pressure,
+                self.bleed_air_temperature,
+            ))
         }
     }
 
@@ -1789,6 +1796,12 @@ mod tests {
 
         fn set_bleed_air_running(mut self) -> Self {
             self.command(|a| a.apu.set_bleed_air_pressure(Pressure::new::<psi>(42.)));
+            self.command(|a| {
+                a.apu
+                    .set_bleed_air_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        250.,
+                    ))
+            });
 
             self.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
                 .set_apu_bleed_air_pb(true)
@@ -1887,7 +1900,7 @@ mod tests {
             self.query(|a| a.pneumatic.fadec.is_single_vs_dual_bleed_config())
         }
 
-        fn pack_flow_valve_flow(&self, engine_number: usize) -> VolumeRate {
+        fn pack_flow_valve_flow(&self, engine_number: usize) -> MassRate {
             self.query(|a| {
                 a.pneumatic.packs[engine_number - 1]
                     .pack_flow_valve
@@ -1928,8 +1941,8 @@ mod tests {
         Pressure::new::<psi>(0.5)
     }
 
-    fn flow_rate_tolerance() -> VolumeRate {
-        VolumeRate::new::<cubic_meter_per_second>(0.1)
+    fn flow_rate_tolerance() -> MassRate {
+        MassRate::new::<kilogram_per_second>(0.1)
     }
 
     // Just a way for me to plot some graphs
