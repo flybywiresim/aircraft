@@ -8,32 +8,37 @@
 
 Presets PRESETS;
 
-__attribute__((export_name("Presets_gauge_callback"))) extern "C" bool Presets_gauge_callback(FsContext ctx, int service_id, void* pData) {
+/**
+ * Gauge Callback
+ * @see https://docs.flightsimulator.com/html/Content_Configuration/SimObjects/Aircraft_SimO/Instruments/C_C++_Gauges.htm?rhhlterm=_gauge_callback&rhsearch=_gauge_callback
+ */
+__attribute__((export_name("Presets_gauge_callback")))
+extern "C" bool Presets_gauge_callback(FsContext ctx, int service_id, void* pData) {
   switch (service_id) {
     case PANEL_SERVICE_PRE_INSTALL: {
       return true;
     } break;
     case PANEL_SERVICE_POST_INSTALL: {
-      return PRESETS.initializePRESETS();
+      return PRESETS.initialize();
     } break;
     case PANEL_SERVICE_PRE_DRAW: {
       sGaugeDrawData* drawData = static_cast<sGaugeDrawData*>(pData);
       return PRESETS.onUpdate(drawData->dt);
     } break;
     case PANEL_SERVICE_PRE_KILL: {
-      PRESETS.killPRESETS();
+      PRESETS.shutdown();
       return true;
     } break;
   }
   return false;
 }
 
-bool Presets::initializePRESETS() {
+bool Presets::initialize() {
   if (!this->initializeSimConnect()) {
     std::cout << "PRESETS: Init SimConnect failed." << std::endl;
     return false;
   }
-  simVars = new SimVars();
+  simVars = new LightingSimVars();
   isConnected = true;
   return true;
 }
@@ -44,6 +49,9 @@ bool Presets::initializeSimConnect() {
     std::cout << "PRESETS: SimConnect connected." << std::endl;
 
     // Simulation Data
+    // This concept is used when retrieving a "batch" of data from the sim instead of single entries.
+    // This batch must be prepared with SimConnect_AddToDataDefinition and backed by a matching data structure.
+    // https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_AddToDataDefinition.htm?rhhlterm=SimConnect_AddToDataDefinition&rhsearch=SimConnect_AddToDataDefinition
     // SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::SimulationDataTypeId, "SIMULATION TIME", "NUMBER");
     // SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::SimulationDataTypeId, "SIMULATION RATE", "NUMBER");
 
@@ -85,10 +93,10 @@ bool Presets::onUpdate(double deltaTime) {
         , 100.0
         , 100.0
         , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
+        , 1.0
+        , 1.0
+        , 1.0
+        , 1.0
         , 100.0
         , 100.0
         , 100.0
@@ -123,7 +131,7 @@ bool Presets::onUpdate(double deltaTime) {
         , 0.0
       };
 
-      lightPreset->set(loadPresetRequest == 1 ? lv_0 : lv_100);
+      lightPreset->loadFromData(loadPresetRequest == 1 ? lv_0 : lv_100);
       lightPreset->applyToAircraft();
       lightPreset->readFromAircraft();
       std::cout << "PRESETS: Light Settings After: " << lightPreset->sprint() << std::endl;
@@ -140,8 +148,8 @@ bool Presets::simConnectRequestData() {
     return false;
   }
 
-  // request data
-  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, DataTypesID::SimulationDataTypeId, SIMCONNECT_OBJECT_ID_USER,
+  // request data for defined data structure
+  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER,
                                                      SIMCONNECT_PERIOD_ONCE);
 
   // check result of data request
@@ -216,7 +224,7 @@ void Presets::simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DAT
   }
 }
 
-bool Presets::killPRESETS() {
+bool Presets::shutdown() {
   std::cout << "PRESETS: Disconnecting ..." << std::endl;
 
   // kill classes

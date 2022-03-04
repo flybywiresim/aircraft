@@ -7,6 +7,9 @@
 
 #include "Presets.h"
 
+/**
+ * Data structure for holding all relevant lighting levels and states.
+ */
 struct LightValues {
   // EFB
   double efbBrightness; // A32NX_EFB_BRIGHTNESS
@@ -27,11 +30,11 @@ struct LightValues {
   double ndBrtFoLevel;          // 91
   double wxTerrainBrtFoLevel;   // 95
   double consoleLightFoLevel;   // 9
-  // isis is auto
-  double dcduLeftLightLevel;   // A32NX_PANEL_DCDU_L_BRIGHTNESS
-  double dcduRightLightLevel;  // A32NX_PANEL_DCDU_R_BRIGHTNESS
-  double mcduLeftLightLevel;   // A32NX_MCDU_L_BRIGHTNESS
-  double mcduRightLightLevel;  // A32NX_MCDU_R_BRIGHTNESS
+  // ISIS display has automatic brightness adjustment.
+  double dcduLeftLightLevel;   // A32NX_PANEL_DCDU_L_BRIGHTNESS  0.0..1.0
+  double dcduRightLightLevel;  // A32NX_PANEL_DCDU_R_BRIGHTNESS  0.0..1.0
+  double mcduLeftLightLevel;   // A32NX_MCDU_L_BRIGHTNESS        0.0..1.0
+  double mcduRightLightLevel;  // A32NX_MCDU_R_BRIGHTNESS        0.0..1.0
   // Pedestal
   double ecamUpperLightLevel;         // 92
   double ecamLowerLightLevel;         // 93
@@ -40,19 +43,57 @@ struct LightValues {
   double floorFoLightLevel;           // 76
  };
 
+ /**
+  * Class for handling light presets.
+  */
 class LightPreset {
  private:
-  SimVars* simVars;
+  LightingSimVars* simVars;
 
  public:
+  /**
+   * Currently stored lighting values.
+   */
   LightValues lightValues{};
 
- public:
-  LightPreset(SimVars* simVars) : simVars(simVars) {};
+  /**
+   * Creates an instance of the LightPreset class.
+   * @param simVars pointer to the LightSimVars object for reading and writing
+   * the simulation variables.
+   */
+  LightPreset(LightingSimVars* simVars) : simVars(simVars) {};
+
+  /**
+   * Read the current lighting level from the aircraft.
+   */
   void readFromAircraft();
-  void set(LightValues lv);
+
+  /**
+   * Load lighting level based on a given LightValue data structure
+   * @param lv a loadFromData of LightValue data
+   */
+  void loadFromData(LightValues lv);
+
+  /**
+   * Applies the currently loaded preset to the aircraft
+   */
   void applyToAircraft();
-  bool readFromStore();
-  bool saveToStore();
+
+  /**
+   * Reads a stored preset from the persistence store.
+   * @return true if successful, false otherwise.
+   */
+  bool readFromStore(int presetNr);
+
+  /**
+   * Stores the current values into the persistent store.
+   * @return true if successful, false otherwise.
+   */
+  bool saveToStore(int presetNr);
+
+  /**
+   * Produces a string with the current settings and their values.
+   * @return string with the current settings and their values.
+   */
   std::string sprint();
 };

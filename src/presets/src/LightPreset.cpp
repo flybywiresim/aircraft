@@ -33,7 +33,7 @@ void LightPreset::readFromAircraft() {
   lightValues.floorFoLightLevel = simVars->getLightPotentiometer(76);
 }
 
-void LightPreset::set(LightValues lv) {
+void LightPreset::loadFromData(LightValues lv) {
   lightValues = lv;
 }
 
@@ -65,11 +65,11 @@ void LightPreset::applyToAircraft() {
   simVars->setLightPotentiometer(76, lightValues.floorFoLightLevel);
 }
 
-bool LightPreset::readFromStore() {
+bool LightPreset::readFromStore(int presetNr) {
   return false;
 }
 
-bool LightPreset::saveToStore() {
+bool LightPreset::saveToStore(int presetNr) {
   return false;
 }
 
