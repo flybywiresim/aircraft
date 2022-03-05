@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+#include "inih/ini.h"
 #include "Presets.h"
 
 /**
@@ -98,6 +99,22 @@ class LightPreset {
    * @return string with the current settings and their values.
    */
   std::string sprint();
+
+ private:
+  /**
+   * Convenience method to check for the existence of a key in a section and the option to
+   * provide a default value in case the key does not exist.
+   * Does not change the ini structure.
+   * @param ini mINI::INIStructure
+   * @param section section name as std::string
+   * @param key key name as std::string
+   * @param defaultValue a default value that is returned if the key does not exist
+   * @return the value of the key or the default value if the key does not exist
+   */
+  std::string iniGetOrDefault(const mINI::INIStructure& ini,
+                              const std::string& section,
+                              const std::string& key,
+                              const std::string& defaultValue);
 
 };
 
