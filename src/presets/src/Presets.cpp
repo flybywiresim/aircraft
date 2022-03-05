@@ -70,76 +70,42 @@ bool Presets::onUpdate(double deltaTime) {
 
     // This is pure test code for now
     const int loadPresetRequest = simVars->getLoadPresetRequest();
+    const int savePresetRequest = simVars->getSavePresetRequest();
+
+    // load becomes priority in case both vars are set.
     if (loadPresetRequest) {
-
-      std::unique_ptr<LightPreset> lightPreset = make_unique<LightPreset>(simVars);
-
-      lightPreset->readFromAircraft();
-      std::cout << "PRESETS: Light Settings Before: " << lightPreset->sprint() << std::endl;
-
-      LightValues lv_100 = {
-        100.0
-        , POS3_2
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 1.0
-        , 1.0
-        , 1.0
-        , 1.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-        , 100.0
-      };
-
-      LightValues lv_0 = {
-        0.0
-        , POS3_0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-        , 0.0
-      };
-
-      lightPreset->loadFromData(loadPresetRequest == 1 ? lv_0 : lv_100);
-      lightPreset->applyToAircraft();
-      lightPreset->readFromAircraft();
-      std::cout << "PRESETS: Light Settings After: " << lightPreset->sprint() << std::endl;
-
-      simVars->setLoadPresetRequest(0);
+      loadPreset(loadPresetRequest);
+    } else if (savePresetRequest) {
+      savePreset(savePresetRequest);
     }
+    simVars->setLoadPresetRequest(0);
+    simVars->setSavePresetRequest(0);
   }
   return true;
+}
+
+void Presets::loadPreset(const int loadPresetRequest) {
+  std::cout << "PRESETS: Loading preset: " << loadPresetRequest << std::endl;
+  std::unique_ptr<LightPreset> lightPreset = make_unique<LightPreset>(simVars);
+  // Temporary loading until file load is implemented.
+  switch (loadPresetRequest) {
+    case 1:
+      lightPreset->loadFromData(lv_0);
+      break;
+    case 2:
+      lightPreset->loadFromData(lv_50);
+      break;
+    case 3:
+      lightPreset->loadFromData(lv_100);
+      break;
+  }
+  lightPreset->applyToAircraft();
+  lightPreset->readFromAircraft();
+}
+
+void Presets::savePreset(const int savePresetRequest) {
+  std::cout << "PRESETS: Save to preset: " << savePresetRequest << std::endl;
+
 }
 
 bool Presets::simConnectRequestData() {

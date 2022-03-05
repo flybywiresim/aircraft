@@ -74,6 +74,7 @@ class LightingSimVars {
 
   // Signal to load a preset.
   ID LoadPresetRequest;
+  ID SavePresetRequest;
 
   // LVAR Light variables
   ID EfbBrightness;
@@ -98,6 +99,8 @@ class LightingSimVars {
     // Named Variables (LVARs)
     LoadPresetRequest = register_named_variable("A32NX_LOAD_LIGHTING_PRESET");
     this->setLoadPresetRequest(0);
+    SavePresetRequest = register_named_variable("A32NX_SAVE_LIGHTING_PRESET");
+    this->setSavePresetRequest(0);
 
     EfbBrightness = register_named_variable("A32NX_EFB_BRIGHTNESS");
 
@@ -108,7 +111,7 @@ class LightingSimVars {
   }
 
   /**
-   * Reads the request preset loading variable.
+   * Reads the  preset loading request variable.
    * @return INT64 signifying the preset to be loaded
    */
   INT64 getLoadPresetRequest() { return get_named_variable_value(LoadPresetRequest); }
@@ -118,6 +121,18 @@ class LightingSimVars {
    * @param value usually loadFromData to 0 to reset the request.
    */
   void setLoadPresetRequest(INT64 value) { set_named_variable_value(LoadPresetRequest, value); }
+
+  /**
+   * Reads the request preset save variable.
+   * @return INT64 signifying the preset to be loaded
+   */
+  INT64 getSavePresetRequest() { return get_named_variable_value(SavePresetRequest); }
+
+  /**
+   * Sets the save request value. Typically used to reset to 0 after the preset has been loaded.
+   * @param value usually loadFromData to 0 to reset the request.
+   */
+  void setSavePresetRequest(INT64 value) { set_named_variable_value(SavePresetRequest, value); }
 
   /**
    * Retrieves the EFB brightness setting from the simulator.
@@ -229,3 +244,4 @@ class LightingSimVars {
   }
 
 };
+

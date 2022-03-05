@@ -42,6 +42,18 @@ class Presets {
    */
   bool initializeSimConnect();
 
+  /**
+   * Loads a specified preset
+   * @param loadPresetRequest the number of the preset to be loaded
+   */
+  void loadPreset(const int loadPresetRequest);
+
+  /**
+   * Save a specified preset
+   * @param savePresetRequest the number of the preset to be saved
+   */
+  void savePreset(const int savePresetRequest);
+
  public:
 
   /**
@@ -102,4 +114,5 @@ class Presets {
    * @return string representation of exception.
    */
   std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception);
+
 };

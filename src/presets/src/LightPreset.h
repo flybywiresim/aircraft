@@ -12,7 +12,7 @@
  */
 struct LightValues {
   // EFB
-  double efbBrightness; // A32NX_EFB_BRIGHTNESS
+  double efbBrightness;  // A32NX_EFB_BRIGHTNESS
   // OVHD
   ThreeWay cabinLightLevel;       // 7 (0..2)
   double ovhdIntegralLightLevel;  // 86
@@ -41,11 +41,11 @@ struct LightValues {
   double floorCptLightLevel;          // 83
   double pedestalIntegralLightLevel;  // 85
   double floorFoLightLevel;           // 76
- };
+};
 
- /**
-  * Class for handling light presets.
-  */
+/**
+ * Class for handling light presets.
+ */
 class LightPreset {
  private:
   LightingSimVars* simVars;
@@ -61,7 +61,7 @@ class LightPreset {
    * @param simVars pointer to the LightSimVars object for reading and writing
    * the simulation variables.
    */
-  LightPreset(LightingSimVars* simVars) : simVars(simVars) {};
+  LightPreset(LightingSimVars* simVars) : simVars(simVars){};
 
   /**
    * Read the current lighting level from the aircraft.
@@ -97,3 +97,12 @@ class LightPreset {
    */
   std::string sprint();
 };
+
+static LightValues lv_100 = {100.0, POS3_2, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
+                             100.0, 100.0,  100.0, 1.0,   1.0,   1.0,   1.0,   100.0, 100.0, 100.0, 100.0, 100.0};
+
+static LightValues lv_50 = {50.0, POS3_1, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
+                            50.0, 50.0,   50.0, 0.5,  0.5,  0.5,  0.5,  50.0, 50.0, 50.0, 50.0, 50.0};
+
+static LightValues lv_0 = {0.0, POS3_0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                           0.0, 0.0,    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
