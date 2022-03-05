@@ -327,7 +327,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
 
         ['betaTarget', { name: PFDVars.betaTarget, type: SimVarValueType.Number }],
 
-        ['latAcc', { name: PFDVars.latAcc, type: SimVarValueType.GForce }],
+        ['latAcc', { name: PFDVars.latAcc, type: SimVarValueType.Number }],
 
     ])
 
