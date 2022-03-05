@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { createContext, FC, useContext, useState } from 'react';
 
 interface ModalContextInterface{
@@ -74,13 +75,13 @@ export const PromptModal: FC<PromptModalProps> = ({
 
             <div className="flex flex-row mt-8 space-x-4">
                 <div
-                    className="py-2 px-8 w-full text-center text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body rounded-md border-2 border-theme-accent hover:border-theme-highlight transition duration-100"
+                    className="flex justify-center items-center py-2 px-8 w-full text-center text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body rounded-md border-2 border-theme-accent hover:border-theme-highlight transition duration-100"
                     onClick={handleCancel}
                 >
                     {cancelText ?? 'Cancel'}
                 </div>
                 <div
-                    className="py-2 px-8 w-full text-center text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                    className="flex justify-center items-center py-2 px-8 w-full text-center text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
                     onClick={handleConfirm}
                 >
                     {confirmText ?? 'Confirm'}
@@ -108,7 +109,7 @@ export const AlertModal: FC<AlertModalProps> = ({
             <h1 className="font-bold">{title}</h1>
             <p className="mt-4">{bodyText}</p>
             <div
-                className="py-2 px-8 mt-8 text-center text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                className="flex items-center px-8 mt-8 text-center text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 justify-centerpy-2"
                 onClick={handleAcknowledge}
             >
                 {acknowledgeText ?? 'Okay'}

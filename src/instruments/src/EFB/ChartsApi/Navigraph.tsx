@@ -160,7 +160,7 @@ export default class NavigraphClient {
 
                     this.accessToken = json.access_token;
 
-                    this.assignUserName();
+                    await this.assignUserName();
                 } else {
                     const respText = await tokenResp.text();
 
@@ -182,7 +182,7 @@ export default class NavigraphClient {
                         throw new Error('Access Denied');
                     }
                     default: {
-                        this.authenticate();
+                        await this.authenticate();
                     }
                     }
                 }
@@ -214,9 +214,9 @@ export default class NavigraphClient {
             };
 
             if (!this.refreshToken) {
-                this.tokenCall(newTokenBody);
+                await this.tokenCall(newTokenBody);
             } else {
-                this.tokenCall(refreshTokenBody);
+                await this.tokenCall(refreshTokenBody);
             }
         }
     }
@@ -233,6 +233,12 @@ export default class NavigraphClient {
 
             if (callResp.ok) {
                 return callResp.text();
+            }
+
+            // Unauthorized
+            if (callResp.status === 401) {
+                await this.getToken();
+                return this.chartCall(icao, item);
             }
         }
         return Promise.reject();

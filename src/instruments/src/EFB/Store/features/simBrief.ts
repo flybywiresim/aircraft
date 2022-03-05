@@ -114,8 +114,7 @@ export const simbriefSlice = createSlice({
     name: 'simBrief',
     initialState,
     reducers: {
-        setSimbriefData: (state, action: PayloadAction<
-SimbriefData>) => {
+        setSimbriefData: (state, action: PayloadAction<SimbriefData>) => {
             state.data = action.payload;
         },
     },
@@ -197,9 +196,9 @@ export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<P
 }
 
 /**
- * @returns Whether or not the simbrief data has been altered from its original state
+ * @returns Whether or not the SimBrief data has been altered from its original state
  */
-export const isSimbriefDataLoaded = (): boolean => (store.getState() as RootState).simbrief !== initialState;
+export const isSimbriefDataLoaded = (): boolean => JSON.stringify((store.getState() as RootState).simbrief) !== JSON.stringify(initialState);
 
 export const { setSimbriefData } = simbriefSlice.actions;
 

@@ -1,21 +1,9 @@
 import React, { FC, useEffect, useState } from 'react';
 import { IconArrowRight } from '@tabler/icons';
-import { A320Failure } from '@flybywiresim/failures';
 import { Link } from 'react-router-dom';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { ArrowDown, ArrowUp, Check, PencilFill } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
-import {
-    setChartId,
-    setChartLinks,
-    setChartName,
-    setIcao,
-    setTabIndex,
-    setChartRotation,
-    setChartDimensions,
-    editPinnedChart,
-    setPagesViewable, setCurrentPage, setBoundingBox,
-} from '../../Store/features/navigationPage';
 import { useNavigraph } from '../../ChartsApi/Navigraph';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
@@ -26,8 +14,8 @@ import {
     getChecklistCompletion,
     setSelectedChecklistIndex,
 } from '../../Store/features/checklists';
-import { pathify } from '../../Utils/routing';
 import { getRelevantChecklistIndices } from '../../Checklists/Checklists';
+import { PinnedChartWidget } from '../../Navigation/Pages/PinnedCharts';
 
 interface ActiveFailureReminderProps {
     name: string,
@@ -59,70 +47,20 @@ const WeatherReminder = () => {
 };
 
 const PinnedChartsReminder = () => {
-    const dispatch = useAppDispatch();
     const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
 
     const navigraph = useNavigraph();
 
     // if (!navigraph.hasToken) return null;
 
-    const getTagColor = (tagName?: string) => {
-        switch (tagName) {
-        case 'STAR': return 'text-colors-lime-500';
-        case 'APP': return 'text-colors-orange-500';
-        case 'TAXI': return 'text-colors-blue-500';
-        case 'SID': return 'text-colors-pink-500';
-        case 'REF': return 'text-colors-purple-500';
-        default: return 'text-theme-text';
-        }
-    };
-
     return (
         <RemindersSection title="Pinned Charts" pageLinkPath="/navigation">
             <div className="grid grid-cols-2">
-                {[...pinnedCharts].sort((a, b) => b.timeAccessed - a.timeAccessed).map(({
-                    chartId,
-                    chartName,
-                    title,
-                    subTitle,
-                    tabIndex,
-                    tag,
-                    provider,
-                    pagesViewable,
-                    boundingBox,
-                }, index) => (
-                    <Link
-                        to={`/navigation/${pathify(provider)}`}
-                        className={`relative flex flex-col flex-wrap px-2 pt-3 pb-2 mt-4 bg-theme-accent rounded-md overflow-hidden ${index && index % 2 !== 0 && 'ml-4'}`}
-                        onClick={() => {
-                            dispatch(setChartDimensions({ width: undefined, height: undefined }));
-                            dispatch(setChartLinks({ light: '', dark: '' }));
-                            dispatch(setChartName(chartName));
-                            dispatch(setChartId(chartId));
-                            dispatch(setIcao(title));
-                            dispatch(setTabIndex(tabIndex));
-                            dispatch(setChartRotation(0));
-                            dispatch(setCurrentPage(1));
-                            dispatch(setBoundingBox(undefined));
-                            dispatch(editPinnedChart({
-                                chartId,
-                                timeAccessed: Date.now(),
-                            }));
-                            dispatch(setPagesViewable(pagesViewable));
-                            dispatch(setBoundingBox(boundingBox));
-                        }}
-                    >
-                        <div className={`${getTagColor(tag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
-                        <h2 className="font-bold break-all">
-                            {title}
-                            {' '}
-                            <div className="inline-block text-theme-unselected">{tag}</div>
-                        </h2>
-                        <p className="mt-2 font-inter">{subTitle}</p>
-                        <IconArrowRight className={`mt-auto ml-auto ${getTagColor(tag)}`} />
-                    </Link>
+                {[...pinnedCharts].sort((a, b) => b.timeAccessed - a.timeAccessed).map((pinnedChart, index) => (
+                    <PinnedChartWidget pinnedChart={pinnedChart} className={`${index && index % 2 !== 0 && 'ml-4'} mt-4`} />
                 ))}
             </div>
+
             {!pinnedCharts.length && (
                 <h1 className="m-auto my-4 font-bold opacity-60">No Pinned Charts</h1>
             )}

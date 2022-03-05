@@ -7,16 +7,19 @@ type ThemedChart = {
     dark: string;
 }
 
-type ChartProvider = 'NAVIGRAPH' | 'LOCAL_FILES';
+export enum ChartProvider {
+    NAVIGRAPH = 'NAVIGRAPH',
+    LOCAL_FILES = 'LOCAL_FILES'
+}
 
-type PinnedChart = {
+export type PinnedChart = {
     chartId: string;
     chartName: ThemedChart;
     subTitle: string;
     title: string;
     tabIndex: number;
     timeAccessed: number;
-    tag?: string;
+    tag: string;
     provider: ChartProvider;
     pagesViewable: number;
     boundingBox?: NavigraphBoundingBox;
@@ -34,7 +37,7 @@ interface InitialChartState {
     chartId: string;
     chartLinks: ThemedChart;
     planeInFocus: boolean;
-    icao: string;
+    searchQuery: string;
     chartName: ThemedChart;
     boundingBox?: NavigraphBoundingBox;
     pagesViewable: number;
@@ -58,7 +61,7 @@ const initialState: InitialChartState = {
         dark: '',
     },
     planeInFocus: false,
-    icao: '',
+    searchQuery: '',
     chartName: {
         light: '',
         dark: '',
@@ -102,8 +105,8 @@ export const navigationTabSlice = createSlice({
         setPlaneInFocus: (state, action: PayloadAction<boolean>) => {
             state.planeInFocus = action.payload;
         },
-        setIcao: (state, action: PayloadAction<string>) => {
-            state.icao = action.payload;
+        setSearchQuery: (state, action: PayloadAction<string>) => {
+            state.searchQuery = action.payload;
         },
         setChartName: (state, action: PayloadAction<{ light: string, dark: string }>) => {
             state.chartName = action.payload;
@@ -154,7 +157,7 @@ export const {
     setChartId,
     setChartLinks,
     setPlaneInFocus,
-    setIcao,
+    setSearchQuery,
     setChartName,
     setBoundingBox,
     setPagesViewable,
