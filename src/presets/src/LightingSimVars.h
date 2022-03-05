@@ -22,21 +22,12 @@ struct SimulationData {
 /**
  * For instruments with are specific to the left (Cpt) or right (FO) side of the cockpit.
  */
-enum Side {
-  Left,
-  Right
-};
+enum Side { Left, Right };
 
 /**
  * Positions for a 3 way switch.
  */
-enum ThreeWay {
-  POS3_0,
-  POS3_1,
-  POS3_2
-};
-
-
+enum ThreeWay { POS3_0, POS3_1, POS3_2 };
 
 /**
  * A collection of SimVar unit enums.
@@ -153,8 +144,10 @@ class LightingSimVars {
    */
   FLOAT64 getDcduLightLevel(Side s) {
     switch (s) {
-      case Left: return get_named_variable_value(DcduLeftLightLevel);
-      case Right: return get_named_variable_value(DcduRightLightLevel);
+      case Left:
+        return get_named_variable_value(DcduLeftLightLevel);
+      case Right:
+        return get_named_variable_value(DcduRightLightLevel);
     }
   }
 
@@ -165,8 +158,12 @@ class LightingSimVars {
    */
   void setDcduLightLevel(Side s, FLOAT64 value) {
     switch (s) {
-      case Left: set_named_variable_value(DcduLeftLightLevel, value); break;
-      case Right: set_named_variable_value(DcduRightLightLevel, value); break;
+      case Left:
+        set_named_variable_value(DcduLeftLightLevel, value);
+        break;
+      case Right:
+        set_named_variable_value(DcduRightLightLevel, value);
+        break;
     }
   }
 
@@ -177,8 +174,10 @@ class LightingSimVars {
    */
   FLOAT64 getMcduLightLevel(Side s) {
     switch (s) {
-      case Left: return get_named_variable_value(McduLeftLightLevel);
-      case Right: return get_named_variable_value(McduRightLightLevel);
+      case Left:
+        return get_named_variable_value(McduLeftLightLevel);
+      case Right:
+        return get_named_variable_value(McduRightLightLevel);
     }
   }
 
@@ -189,8 +188,12 @@ class LightingSimVars {
    */
   void setMcduLightLevel(Side s, FLOAT64 value) {
     switch (s) {
-      case Left: set_named_variable_value(McduLeftLightLevel, value); break;
-      case Right: set_named_variable_value(McduRightLightLevel, value); break;
+      case Left:
+        set_named_variable_value(McduLeftLightLevel, value);
+        break;
+      case Right:
+        set_named_variable_value(McduRightLightLevel, value);
+        break;
     }
   }
 
@@ -223,9 +226,12 @@ class LightingSimVars {
     if (aircraft_varget(lightCabin, m_Units->Bool, 0) == 1) {
       const INT64 potentiometer = getLightPotentiometer(7);
       switch (potentiometer) {
-        case 50: return POS3_1;
-        case 100: return POS3_2;
-        default: return POS3_0;
+        case 50:
+          return POS3_1;
+        case 100:
+          return POS3_2;
+        default:
+          return POS3_0;
       }
     }
     return POS3_0;
@@ -236,12 +242,10 @@ class LightingSimVars {
    */
   void setLightCabin(ThreeWay switchState) {
     std::string calculator_code;
-    calculator_code += std::to_string(switchState);
+    calculator_code += std::to_string(switchState ? 1 : 0);
     calculator_code += " (>K:2:CABIN_LIGHTS_SET) ";
-    calculator_code += std::to_string(switchState * 50); // 0, 50% and 100%
+    calculator_code += std::to_string(switchState * 50);  // 0, 50% and 100%
     calculator_code += " (>K:LIGHT_POTENTIOMETER_7_SET)";
     execute_calculator_code(calculator_code.c_str(), nullptr, nullptr, nullptr);
   }
-
 };
-
