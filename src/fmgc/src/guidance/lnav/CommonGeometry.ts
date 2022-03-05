@@ -175,11 +175,11 @@ export function maxTad(tas: Knots | undefined): NauticalMiles {
     }
 
     if (tas <= 100) {
-        return 5;
+        return 4;
     } if (tas >= 100 && tas <= 400) {
-        return (tas / 100) * 5;
+        return (tas / 100) * 4;
     }
-    return 20;
+    return 16;
 }
 
 export function courseToFixDistanceToGo(ppos: Coordinates, course: Degrees, fix: Coordinates): NauticalMiles {

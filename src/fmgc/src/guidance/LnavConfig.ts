@@ -15,7 +15,7 @@ export const LnavConfig = {
     /**
      * Coefficient applied to all transition turn radii
      */
-    TURN_RADIUS_FACTOR: 1.1,
+    TURN_RADIUS_FACTOR: 1.0,
 
     /**
      * The number of transitions to compute after the active leg (-1: no limit, compute all transitions)
@@ -67,6 +67,6 @@ export const LnavConfig = {
     /**
      * Whether to save the flight plan to local storage (keeps flight plan over instrument reload)
      */
-    DEBUG_SAVE_FPLN_LOCAL_STORAGE: false,
+    DEBUG_SAVE_FPLN_LOCAL_STORAGE: true,
 
 };

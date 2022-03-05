@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
@@ -13,9 +18,15 @@ export enum TransitionState {
 export abstract class Transition extends Guidable {
     abstract isAbeam(ppos: LatLongData): boolean;
 
-    public previousLeg: Leg;
+    protected constructor(
+        public previousLeg: Leg,
+        public nextLeg: Leg,
+    ) {
+        super();
 
-    public nextLeg: Leg;
+        this.inboundGuidable = previousLeg;
+        this.outboundGuidable = nextLeg;
+    }
 
     public isFrozen = false;
 
@@ -23,7 +34,13 @@ export abstract class Transition extends Guidable {
         this.isFrozen = true;
     }
 
-    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: MetresPerSecond, _ppos: Coordinates, _trueTrack: DegreesTrue, _previousGuidable: Guidable, _nextGuidable: Guidable) {
+    recomputeWithParameters(
+        _isActive: boolean,
+        _tas: Knots,
+        _gs: MetresPerSecond,
+        _ppos: Coordinates,
+        _trueTrack: DegreesTrue,
+    ) {
         // Default impl.
     }
 
@@ -36,8 +53,4 @@ export abstract class Transition extends Guidable {
     abstract get distance(): NauticalMiles;
 
     abstract get repr(): string;
-
-    get isNull(): boolean {
-        return false;
-    }
 }

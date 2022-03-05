@@ -5,7 +5,6 @@
 
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { distanceTo } from 'msfs-geo';
 import { sideOfPointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
@@ -17,10 +16,6 @@ export abstract class XFLeg extends Leg {
     ) {
         super();
     }
-
-    protected inboundGuidable: Guidable | undefined;
-
-    protected outboundGuidable: Guidable | undefined;
 
     getPathEndPoint(): Coordinates | undefined {
         if (this.outboundGuidable instanceof FixedRadiusTransition && this.outboundGuidable.isComputed) {

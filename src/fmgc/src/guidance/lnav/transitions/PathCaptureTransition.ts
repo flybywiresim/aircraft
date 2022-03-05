@@ -16,7 +16,6 @@ import { Geo } from '@fmgc/utils/Geo';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { CourseChange } from '@fmgc/guidance/lnav/transitions/utilss/CourseChange';
 import { Constants } from '@shared/Constants';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import {
@@ -61,7 +60,7 @@ export class PathCaptureTransition extends Transition {
         public previousLeg: PrevLeg | ReversionLeg,
         public nextLeg: NextLeg,
     ) {
-        super();
+        super(previousLeg, nextLeg);
     }
 
     startWithTad = false
@@ -90,19 +89,16 @@ export class PathCaptureTransition extends Transition {
 
     private forcedTurnComplete = false;
 
-    recomputeWithParameters(_isActive: boolean, tas: Knots, gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
+    recomputeWithParameters(_isActive: boolean, tas: Knots, gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
         if (this.isFrozen) {
             return;
         }
 
-        this.previousLeg = previousGuidable as PrevLeg | ReversionLeg;
-        this.nextLeg = nextGuidable as NextLeg;
-
-        if (!(previousGuidable instanceof Leg)) {
+        if (!(this.inboundGuidable instanceof Leg)) {
             throw new Error('[FMS/Geometry/PathCapture] previousGuidable must be a leg');
         }
 
-        const targetTrack = previousGuidable.outboundCourse;
+        const targetTrack = this.inboundGuidable.outboundCourse;
 
         const naturalTurnDirectionSign = Math.sign(MathUtils.diffAngle(targetTrack, this.nextLeg.inboundCourse));
 
@@ -158,12 +154,16 @@ export class PathCaptureTransition extends Transition {
                 endPoint: this.previousLeg.getPathEndPoint(),
             });
 
+            this.isNull = true;
+
             this.distance = 0;
 
             this.isComputed = true;
 
             return;
         }
+
+        this.isNull = false;
 
         // If track change is very similar to a 45 degree intercept, we do a direct intercept
         if (Math.abs(deltaTrack) > 42 && Math.abs(deltaTrack) < 48 && distanceFromItp > 0.01) {
@@ -213,7 +213,6 @@ export class PathCaptureTransition extends Transition {
             // If we are inbound of a TF leg, we use the TF leg ref fix for our small circle intersect in order to get
             // more accurate results
             if ('from' in this.nextLeg) {
-                // const intersects = smallCircleGreatCircleIntersection(turnCenter, radius, initialTurningPoint, this.nextLeg.outboundCourse);
                 const intersects = smallCircleGreatCircleIntersection(turnCenter, radius, this.nextLeg.from.infos.coordinates, this.nextLeg.outboundCourse);
 
                 if (intersects) {
@@ -352,12 +351,6 @@ export class PathCaptureTransition extends Transition {
                 startPoint: finalTurningPoint,
                 endPoint: intercept,
             });
-        } else {
-            this.predictedPath.push({
-                type: PathVectorType.Line,
-                startPoint: intercept,
-                endPoint: intercept,
-            });
         }
 
         this.distance = arcLength(radius, courseChange) + (overshot ? 0 : distanceTo(finalTurningPoint, intercept));
@@ -433,7 +426,7 @@ export class PathCaptureTransition extends Transition {
     }
 
     isAbeam(ppos: LatLongData): boolean {
-        return this.forcedTurnRequired && !this.forcedTurnComplete && this.previousLeg.getDistanceToGo(ppos) <= 0;
+        return !this.isNull && this.forcedTurnRequired && !this.forcedTurnComplete && this.previousLeg.getDistanceToGo(ppos) <= 0;
     }
 
     distance = 0;

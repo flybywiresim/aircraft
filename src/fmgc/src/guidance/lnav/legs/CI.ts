@@ -4,10 +4,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { courseToFixDistanceToGo } from '@fmgc/guidance/lnav/CommonGeometry';
+import { courseToFixDistanceToGo, sideOfPointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
 import { Geo } from '@fmgc/utils/Geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
@@ -46,10 +45,6 @@ export class CILeg extends Leg {
         return 'INTCPT';
     }
 
-    private inboundGuidable: Guidable | undefined;
-
-    private outboundGuidable: Guidable | undefined;
-
     getPathStartPoint(): Coordinates | undefined {
         if (this.inboundGuidable instanceof IFLeg) {
             return this.inboundGuidable.fix.infos.coordinates;
@@ -78,15 +73,29 @@ export class CILeg extends Leg {
 
     mustBeDeleted = false;
 
-    recomputeWithParameters(isActive: boolean, _tas: Knots, _gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
-        this.inboundGuidable = previousGuidable;
-        this.outboundGuidable = nextGuidable;
-
+    recomputeWithParameters(
+        _isActive: boolean,
+        _tas: Knots,
+        _gs: Knots,
+        _ppos: Coordinates,
+        _trueTrack: DegreesTrue,
+    ) {
         this.intercept = Geo.legIntercept(
             this.getPathStartPoint(),
             this.course,
             this.nextLeg,
         );
+
+        const side = sideOfPointOnCourseToFix(this.intercept, this.outboundCourse, this.getPathStartPoint());
+        const overshot = side === 1;
+
+        if (!this.intercept || overshot) {
+            this.isNull = true;
+            this.isComputed = true;
+            return;
+        }
+
+        this.isNull = false;
 
         this.computedPath = [{
             type: PathVectorType.Line,
