@@ -1,4 +1,3 @@
-import { CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
 import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, useState } from 'react';
 
