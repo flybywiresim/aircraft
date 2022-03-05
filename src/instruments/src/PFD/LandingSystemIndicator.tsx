@@ -41,6 +41,12 @@ const LandingSystemInfo = ({ displayed }) => {
     const identText = getSimVar('NAV IDENT:3', 'string');
 
     const freqTextSplit = (Math.round(getSimVar('NAV FREQUENCY:3', 'MHz') * 1000) / 1000).toString().split('.');
+
+    // temporary fix when NAV FREQUENCY:3 returns 0
+    if (freqTextSplit.length < 2) {
+        return null;
+    }
+
     const freqTextLeading = freqTextSplit[0];
     const freqTextTrailing = freqTextSplit[1].padEnd(2, '0');
 
