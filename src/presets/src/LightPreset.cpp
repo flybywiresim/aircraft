@@ -1,7 +1,9 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+#include <string>
 #include <sstream>
+#include <iostream>
 
 #include "LightPreset.h"
 
@@ -93,30 +95,30 @@ bool LightPreset::readFromStore(int presetNr) {
   }
 
   // reading data structure from ini
-  lightValues.efbBrightness = std::stof(iniGetOrDefault(ini, preset, "efb brightness", "50.0"));
-  lightValues.cabinLightLevel = std::stof(iniGetOrDefault(ini, preset, "cabin light", "50.0"));
-  lightValues.ovhdIntegralLightLevel = std::stof(iniGetOrDefault(ini, preset, "ovhd int lt", "50.0"));
-  lightValues.glareshieldIntegralLightLevel = std::stof(iniGetOrDefault(ini, preset, "glareshield int lt", "50.0"));
-  lightValues.glareshieldLcdLightLevel = std::stof(iniGetOrDefault(ini, preset, "glareshield lcd lt", "50.0"));
-  lightValues.tableLightCptLevel = std::stof(iniGetOrDefault(ini, preset, "table cpt lt", "50.0"));
-  lightValues.tableLightFoLevel = std::stof(iniGetOrDefault(ini, preset, "table fo lt", "50.0"));
-  lightValues.pfdBrtCptLevel = std::stof(iniGetOrDefault(ini, preset, "pfd cpt lvl", "50.0"));
-  lightValues.ndBrtCptLevel = std::stof(iniGetOrDefault(ini, preset, "nd cpt lvl", "50.0"));
-  lightValues.wxTerrainBrtCptLevel = std::stof(iniGetOrDefault(ini, preset, "wx cpt lvl", "50.0"));
-  lightValues.consoleLightCptLevel = std::stof(iniGetOrDefault(ini, preset, "console cpt lt", "50.0"));
-  lightValues.pfdBrtFoLevel = std::stof(iniGetOrDefault(ini, preset, "pfd fo lvl", "50.0"));
-  lightValues.ndBrtFoLevel = std::stof(iniGetOrDefault(ini, preset, "nd fo lvl", "50.0"));
-  lightValues.wxTerrainBrtFoLevel = std::stof(iniGetOrDefault(ini, preset, "wx fo lvl", "50.0"));
-  lightValues.consoleLightFoLevel = std::stof(iniGetOrDefault(ini, preset, "console fo lt", "50.0"));
-  lightValues.dcduLeftLightLevel = std::stof(iniGetOrDefault(ini, preset, "dcdu left lvl", "50.0")) / 100;
-  lightValues.dcduRightLightLevel = std::stof(iniGetOrDefault(ini, preset, "dcdu right lvl", "50.0")) / 100;
-  lightValues.mcduLeftLightLevel = std::stof(iniGetOrDefault(ini, preset, "mcdu left lvl", "50.0")) / 100;
-  lightValues.mcduRightLightLevel = std::stof(iniGetOrDefault(ini, preset, "mcdu right lvl", "50.0")) / 100;
-  lightValues.ecamUpperLightLevel = std::stof(iniGetOrDefault(ini, preset, "ecam upper lvl", "50.0"));
-  lightValues.ecamLowerLightLevel = std::stof(iniGetOrDefault(ini, preset, "ecam lower lvl", "50.0"));
-  lightValues.floorCptLightLevel = std::stof(iniGetOrDefault(ini, preset, "floor cpt lt", "50.0"));
-  lightValues.pedestalIntegralLightLevel = std::stof(iniGetOrDefault(ini, preset, "pedestal int lt", "50.0"));
-  lightValues.floorFoLightLevel = std::stof(iniGetOrDefault(ini, preset, "floor fo lvl", "50.0"));
+  lightValues.efbBrightness = iniGetOrDefault(ini, preset, "efb brightness", 50.0);
+  lightValues.cabinLightLevel = iniGetOrDefault(ini, preset, "cabin light", 50.0);
+  lightValues.ovhdIntegralLightLevel = iniGetOrDefault(ini, preset, "ovhd int lt", 50.0);
+  lightValues.glareshieldIntegralLightLevel = iniGetOrDefault(ini, preset, "glareshield int lt", 50.0);
+  lightValues.glareshieldLcdLightLevel = iniGetOrDefault(ini, preset, "glareshield lcd lt", 50.0);
+  lightValues.tableLightCptLevel = iniGetOrDefault(ini, preset, "table cpt lt", 50.0);
+  lightValues.tableLightFoLevel = iniGetOrDefault(ini, preset, "table fo lt", 50.0);
+  lightValues.pfdBrtCptLevel = iniGetOrDefault(ini, preset, "pfd cpt lvl", 50.0);
+  lightValues.ndBrtCptLevel = iniGetOrDefault(ini, preset, "nd cpt lvl", 50.0);
+  lightValues.wxTerrainBrtCptLevel = iniGetOrDefault(ini, preset, "wx cpt lvl", 50.0);
+  lightValues.consoleLightCptLevel = iniGetOrDefault(ini, preset, "console cpt lt", 50.0);
+  lightValues.pfdBrtFoLevel = iniGetOrDefault(ini, preset, "pfd fo lvl", 50.0);
+  lightValues.ndBrtFoLevel = iniGetOrDefault(ini, preset, "nd fo lvl", 50.0);
+  lightValues.wxTerrainBrtFoLevel = iniGetOrDefault(ini, preset, "wx fo lvl", 50.0);
+  lightValues.consoleLightFoLevel = iniGetOrDefault(ini, preset, "console fo lt", 50.0);
+  lightValues.dcduLeftLightLevel = iniGetOrDefault(ini, preset, "dcdu left lvl", 50.0) / 100;
+  lightValues.dcduRightLightLevel = iniGetOrDefault(ini, preset, "dcdu right lvl", 50.0) / 100;
+  lightValues.mcduLeftLightLevel = iniGetOrDefault(ini, preset, "mcdu left lvl", 50.0) / 100;
+  lightValues.mcduRightLightLevel = iniGetOrDefault(ini, preset, "mcdu right lvl", 50.0) / 100;
+  lightValues.ecamUpperLightLevel = iniGetOrDefault(ini, preset, "ecam upper lvl", 50.0);
+  lightValues.ecamLowerLightLevel = iniGetOrDefault(ini, preset, "ecam lower lvl", 50.0);
+  lightValues.floorCptLightLevel = iniGetOrDefault(ini, preset, "floor cpt lt", 50.0);
+  lightValues.pedestalIntegralLightLevel = iniGetOrDefault(ini, preset, "pedestal int lt", 50.0);
+  lightValues.floorFoLightLevel = iniGetOrDefault(ini, preset, "floor fo lvl", 50.0);
 
   return result;
 }
@@ -190,13 +192,23 @@ std::string LightPreset::sprint() {
   return os.str();
 }
 
-std::string LightPreset::iniGetOrDefault(const mINI::INIStructure& ini,
-                                         const std::string& section,
-                                         const std::string& key,
-                                         const std::string& defaultValue) {
+double LightPreset::iniGetOrDefault(const mINI::INIStructure& ini,
+                                    const std::string& section,
+                                    const std::string& key,
+                                    const double defaultValue) {
 
   if (ini.get(section).has(key)) {
-    return ini.get(section).get(key);
+    // As MSFS wasm does not support exceptions (try/catch) we can't use
+    // std::stof here. Workaround with stringstreams.
+    std::stringstream input(ini.get(section).get(key));
+    double value = defaultValue;
+    if (input >> value) {
+      return value;
+    } else {
+      std::cout << "PRESETS: reading ini value for \""
+                << "[" << section << "] " << key << " = " << ini.get(section).get(key)
+                << "\" failed." << std::endl;
+    }
   }
   return defaultValue;
 }

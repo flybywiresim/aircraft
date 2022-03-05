@@ -5,8 +5,8 @@
 
 #include <iostream>
 
-#include "inih/ini.h"
 #include "Presets.h"
+#include "inih/ini.h"
 
 /**
  * Data structure for holding all relevant lighting levels and states.
@@ -15,7 +15,7 @@ struct LightValues {
   // EFB
   double efbBrightness;  // A32NX_EFB_BRIGHTNESS
   // OVHD
-  double cabinLightLevel;       // 7 (0, 50, 100)
+  double cabinLightLevel;         // 7 (0, 50, 100)
   double ovhdIntegralLightLevel;  // 86
   // Glareshield
   double glareshieldIntegralLightLevel;  // 84
@@ -111,18 +111,17 @@ class LightPreset {
    * @param defaultValue a default value that is returned if the key does not exist
    * @return the value of the key or the default value if the key does not exist
    */
-  std::string iniGetOrDefault(const mINI::INIStructure& ini,
-                              const std::string& section,
-                              const std::string& key,
-                              const std::string& defaultValue);
-
+  double iniGetOrDefault(const mINI::INIStructure& ini,
+                         const std::string& section,
+                         const std::string& key,
+                         const double defaultValue);
 };
 
 static LightValues DEFAULT_100 = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
-                             100.0, 100.0,  100.0, 1.0,   1.0,   1.0,   1.0,   100.0, 100.0, 100.0, 100.0, 100.0};
+                                  100.0, 100.0, 100.0, 1.0,   1.0,   1.0,   1.0,   100.0, 100.0, 100.0, 100.0, 100.0};
 
 static LightValues DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
-                            50.0, 50.0,   50.0, 0.5,  0.5,  0.5,  0.5,  50.0, 50.0, 50.0, 50.0, 50.0};
+                                 50.0, 50.0, 50.0, 0.5,  0.5,  0.5,  0.5,  50.0, 50.0, 50.0, 50.0, 50.0};
 
-static LightValues DEFAULT_10 = {10.0, 0.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
-                           10.0, 10.0,    10.0, 0.1, 0.1, 0.1, 0.0, 10.0, 10.0, 10.0, 10.0, 10.0};
+static LightValues DEFAULT_10 = {10.0, 0.0,  10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+                                 10.0, 10.0, 10.0, 0.1,  0.1,  0.1,  0.0,  10.0, 10.0, 10.0, 10.0, 10.0};
