@@ -23,30 +23,30 @@ class Arinc429Word {
 
   void setFromData(T data, Arinc429SignStatus ssm);
 
-  double toSimVar();
+  double toSimVar() const;
 
-  Arinc429SignStatus ssm();
+  Arinc429SignStatus ssm() const;
 
   void setSsm(Arinc429SignStatus ssm);
 
   void setData(T data);
 
-  bool isFw();
+  bool isFw() const;
 
-  bool isNo();
+  bool isNo() const;
 
-  T value();
+  T value() const;
 
-  T valueOr(T defaultVal);
+  T valueOr(T defaultVal) const;
 };
 
 class Arinc429DiscreteWord : public Arinc429Word<float> {
  public:
   Arinc429DiscreteWord();
 
-  bool bitFromValue(int bit);
+  bool bitFromValue(int bit) const;
 
-  bool bitFromValueOr(int bit, bool defaultVal);
+  bool bitFromValueOr(int bit, bool defaultVal) const;
 
   void setBit(int bit, bool value);
 };

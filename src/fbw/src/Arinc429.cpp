@@ -21,18 +21,18 @@ template void Arinc429Word<uint32_t>::setFromData(uint32_t data, Arinc429SignSta
 template void Arinc429Word<float>::setFromData(float data, Arinc429SignStatus ssm);
 
 template <typename T>
-double Arinc429Word<T>::toSimVar() {
+double Arinc429Word<T>::toSimVar() const {
   return *reinterpret_cast<double*>(this);
 }
-template double Arinc429Word<uint32_t>::toSimVar();
-template double Arinc429Word<float>::toSimVar();
+template double Arinc429Word<uint32_t>::toSimVar() const;
+template double Arinc429Word<float>::toSimVar() const;
 
 template <typename T>
-Arinc429SignStatus Arinc429Word<T>::ssm() {
+Arinc429SignStatus Arinc429Word<T>::ssm() const {
   return static_cast<Arinc429SignStatus>(rawSsm);
 }
-template Arinc429SignStatus Arinc429Word<uint32_t>::ssm();
-template Arinc429SignStatus Arinc429Word<float>::ssm();
+template Arinc429SignStatus Arinc429Word<uint32_t>::ssm() const;
+template Arinc429SignStatus Arinc429Word<float>::ssm() const;
 
 template <typename T>
 void Arinc429Word<T>::setSsm(Arinc429SignStatus ssm) {
@@ -49,44 +49,44 @@ template void Arinc429Word<uint32_t>::setData(uint32_t data);
 template void Arinc429Word<float>::setData(float data);
 
 template <typename T>
-bool Arinc429Word<T>::isFw() {
+bool Arinc429Word<T>::isFw() const {
   return static_cast<Arinc429SignStatus>(rawSsm) == Arinc429SignStatus::FailureWarning;
 }
-template bool Arinc429Word<uint32_t>::isFw();
-template bool Arinc429Word<float>::isFw();
+template bool Arinc429Word<uint32_t>::isFw() const;
+template bool Arinc429Word<float>::isFw() const;
 
 template <typename T>
-bool Arinc429Word<T>::isNo() {
+bool Arinc429Word<T>::isNo() const {
   return static_cast<Arinc429SignStatus>(rawSsm) == Arinc429SignStatus::NormalOperation;
 }
-template bool Arinc429Word<uint32_t>::isNo();
-template bool Arinc429Word<float>::isNo();
+template bool Arinc429Word<uint32_t>::isNo() const;
+template bool Arinc429Word<float>::isNo() const;
 
 template <typename T>
-T Arinc429Word<T>::value() {
+T Arinc429Word<T>::value() const {
   return rawData;
 }
-template uint32_t Arinc429Word<uint32_t>::value();
-template float Arinc429Word<float>::value();
+template uint32_t Arinc429Word<uint32_t>::value() const;
+template float Arinc429Word<float>::value() const;
 
 template <typename T>
-T Arinc429Word<T>::valueOr(T defaultVal) {
+T Arinc429Word<T>::valueOr(T defaultVal) const {
   if (rawSsm == NormalOperation || rawSsm == FunctionalTest) {
     return rawData;
   } else {
     return defaultVal;
   }
 }
-template uint32_t Arinc429Word<uint32_t>::valueOr(uint32_t defaultVal);
-template float Arinc429Word<float>::valueOr(float defaultVal);
+template uint32_t Arinc429Word<uint32_t>::valueOr(uint32_t defaultVal) const;
+template float Arinc429Word<float>::valueOr(float defaultVal) const;
 
 Arinc429DiscreteWord::Arinc429DiscreteWord() {}
 
-bool Arinc429DiscreteWord::bitFromValue(int bit) {
+bool Arinc429DiscreteWord::bitFromValue(int bit) const {
   return (static_cast<uint32_t>(rawData) >> (bit - 1)) & 0x01;
 }
 
-bool Arinc429DiscreteWord::bitFromValueOr(int bit, bool defaultVal) {
+bool Arinc429DiscreteWord::bitFromValueOr(int bit, bool defaultVal) const {
   if (rawSsm == NormalOperation || rawSsm == FunctionalTest) {
     return (static_cast<uint32_t>(rawData) >> (bit - 1)) & 0x01;
   } else {
