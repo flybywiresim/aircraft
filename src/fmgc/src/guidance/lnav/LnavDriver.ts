@@ -85,7 +85,7 @@ export class LnavDriver implements GuidanceComponent {
         const activeLegIdx = this.guidanceController.activeLegIndex;
 
         if (geometry && geometry.legs.size > 0) {
-            const dtg = geometry.getDistanceToGo(this.ppos);
+            const dtg = geometry.getDistanceToGo(this.guidanceController.activeLegIndex, this.ppos);
 
             const inboundTrans = geometry.transitions.get(activeLegIdx - 1);
             const activeLeg = geometry.legs.get(activeLegIdx);
@@ -127,6 +127,8 @@ export class LnavDriver implements GuidanceComponent {
                 this.guidanceController.activeTransIndex = activeLegIdx - 1;
             } else if (outboundTrans && outboundTrans.isAbeam(this.ppos)) {
                 this.guidanceController.activeTransIndex = activeLegIdx;
+            } else {
+                this.guidanceController.activeTransIndex = -1;
             }
 
             // Pseudo waypoint sequencing
