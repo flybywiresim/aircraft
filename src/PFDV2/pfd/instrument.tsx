@@ -55,21 +55,21 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('elecFo');
 
         this.simVarPublisher.subscribe('coldDark');
-        this.simVarPublisher.subscribe('potentiometer_captain');
-        this.simVarPublisher.subscribe('potentiometer_fo');
+        this.simVarPublisher.subscribe('potentiometerCaptain');
+        this.simVarPublisher.subscribe('potentiometerFo');
         this.simVarPublisher.subscribe('pitch');
         this.simVarPublisher.subscribe('roll');
         this.simVarPublisher.subscribe('heading');
         this.simVarPublisher.subscribe('altitude');
         this.simVarPublisher.subscribe('speed');
-        this.simVarPublisher.subscribe('alpha_prot');
+        this.simVarPublisher.subscribe('alphaProt');
         this.simVarPublisher.subscribe('onGround');
         this.simVarPublisher.subscribe('activeLateralMode');
         this.simVarPublisher.subscribe('activeVerticalMode');
-        this.simVarPublisher.subscribe('fma_mode_reversion');
-        this.simVarPublisher.subscribe('fma_speed_protection');
+        this.simVarPublisher.subscribe('fmaModeReversion');
+        this.simVarPublisher.subscribe('fmaSpeedProtection');
         this.simVarPublisher.subscribe('AThrMode');
-        this.simVarPublisher.subscribe('ap_vs_selected');
+        this.simVarPublisher.subscribe('apVsSelected');
         this.simVarPublisher.subscribe('approachCapability');
         this.simVarPublisher.subscribe('ap1Active');
         this.simVarPublisher.subscribe('ap2Active');
@@ -85,8 +85,8 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('dh');
         this.simVarPublisher.subscribe('attHdgKnob');
         this.simVarPublisher.subscribe('airKnob');
-        this.simVarPublisher.subscribe('vs_baro');
-        this.simVarPublisher.subscribe('vs_inert');
+        this.simVarPublisher.subscribe('vsBaro');
+        this.simVarPublisher.subscribe('vsInert');
         this.simVarPublisher.subscribe('sideStickY');
         this.simVarPublisher.subscribe('sideStickX');
         this.simVarPublisher.subscribe('fdYawCommand');
@@ -157,6 +157,11 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('groundSpeed');
         this.simVarPublisher.subscribe('radioAltitude1');
         this.simVarPublisher.subscribe('radioAltitude2');
+
+        this.simVarPublisher.subscribe('beta');
+        this.simVarPublisher.subscribe('betaTargetActive');
+        this.simVarPublisher.subscribe('betaTarget');
+        this.simVarPublisher.subscribe('latAcc');
 
         this.simVarPublisher.startPublish();
         this.hEventPublisher.startPublish();

@@ -49,7 +49,7 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
 
         const isCaptainSide = getDisplayIndex() === 1;
 
-        this.simvarPublisher.on(isCaptainSide ? 'potentiometer_captain' : 'potentiometer_fo').whenChanged().handle((value) => {
+        this.simvarPublisher.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
             this.potentiometer = value;
             this.updateState();
         });

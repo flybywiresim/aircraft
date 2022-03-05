@@ -1,7 +1,8 @@
 import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
 import { LagFilter } from 'PFDV2/pfd/components/PFDUtils';
-import { Arinc429Word } from '../shared/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from '../shared/ArincValueProvider';
 import { DisplayUnit } from '../shared/displayUnit';
 import '../style.scss';
@@ -36,8 +37,6 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
     private roll = new Arinc429Word(0);
 
     private ownRadioAltitude = new Arinc429Word(0);
-
-    private oppRadioAltitude = new Arinc429Word(0);
 
     private filteredRadioAltitude = Subject.create(0);
 
@@ -125,13 +124,13 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
                     <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />
                     <AttitudeIndicatorFixedUpper bus={this.props.bus} />
-                    <AttitudeIndicatorFixedCenter bus={this.props.bus} />
+                    <AttitudeIndicatorFixedCenter bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
                     <VerticalSpeedIndicator bus={this.props.bus} instrument={this.props.instrument} filteredRadioAltitude={this.filteredRadioAltitude} />
                     <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
                     <AltitudeIndicatorOfftape bus={this.props.bus} filteredRadioAltitude={this.filteredRadioAltitude} />
 
                     <MachNumber bus={this.props.bus} />
-                    <FMA bus={this.props.bus} />
+                    <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
                 </svg>
             </DisplayUnit>
         );

@@ -1,6 +1,6 @@
 import { EventBus, Publisher } from 'msfssdk';
 import { getDisplayIndex } from 'PFDV2/pfd/components';
-import { Arinc429Word } from './arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import { PFDSimvars } from './PFDSimvarPublisher';
 
 export interface Arinc429Values {
@@ -50,71 +50,71 @@ export class ArincValueProvider {
         const subscriber = this.bus.getSubscriber<PFDSimvars>();
 
         subscriber.on('pitch').handle((p) => {
-            this.pitch.assign(p);
+            this.pitch = new Arinc429Word(p);
             publisher.pub('pitchAr', this.pitch);
         });
         subscriber.on('roll').handle((p) => {
-            this.roll.assign(p);
+            this.roll = new Arinc429Word(p);
             publisher.pub('rollAr', this.roll);
         });
-        subscriber.on('groundTrack').handle((p) => {
-            this.groundTrack.assign(p);
+        subscriber.on('groundTrack').handle((gt) => {
+            this.groundTrack = new Arinc429Word(gt);
             publisher.pub('groundTrackAr', this.groundTrack);
         });
-        subscriber.on('heading').handle((p) => {
-            this.heading.assign(p);
+        subscriber.on('heading').handle((h) => {
+            this.heading = new Arinc429Word(h);
             publisher.pub('headingAr', this.heading);
         });
 
-        subscriber.on('speed').handle((p) => {
-            this.speed.assign(p);
+        subscriber.on('speed').handle((s) => {
+            this.speed = new Arinc429Word(s);
             publisher.pub('speedAr', this.speed);
         });
 
-        subscriber.on('altitude').handle((p) => {
-            this.altitude.assign(p);
+        subscriber.on('altitude').handle((a) => {
+            this.altitude = new Arinc429Word(a);
             publisher.pub('altitudeAr', this.altitude);
         });
 
-        subscriber.on('mach').handle((p) => {
-            this.mach.assign(p);
+        subscriber.on('mach').handle((m) => {
+            this.mach = new Arinc429Word(m);
             publisher.pub('machAr', this.mach);
         });
 
-        subscriber.on('vs_inert').handle((ivs) => {
-            this.vsInert.assign(ivs);
+        subscriber.on('vsInert').handle((ivs) => {
+            this.vsInert = new Arinc429Word(ivs);
 
             if (this.vsInert.isNormalOperation()) {
                 publisher.pub('vs', this.vsInert);
             }
         });
 
-        subscriber.on('vs_baro').handle((vsb) => {
-            this.vsBaro.assign(vsb);
+        subscriber.on('vsBaro').handle((vsb) => {
+            this.vsBaro = new Arinc429Word(vsb);
             if (!this.vsInert.isNormalOperation()) {
                 publisher.pub('vs', this.vsBaro);
             }
         });
 
         subscriber.on('groundSpeed').handle((gs) => {
-            this.groundSpeed.assign(gs);
+            this.groundSpeed = new Arinc429Word(gs);
             publisher.pub('gs', this.groundSpeed);
         });
 
         subscriber.on('radioAltitude1').handle((ra) => {
             if (getDisplayIndex() === 1) {
-                this.ownRadioAltitude.assign(ra);
+                this.ownRadioAltitude = new Arinc429Word(ra);
             } else {
-                this.oppRadioAltitude.assign(ra);
+                this.oppRadioAltitude = new Arinc429Word(ra);
             }
             this.determineAndPublishChosenRadioAltitude(publisher);
         });
 
         subscriber.on('radioAltitude2').handle((ra) => {
             if (getDisplayIndex() === 2) {
-                this.ownRadioAltitude.assign(ra);
+                this.ownRadioAltitude = new Arinc429Word(ra);
             } else {
-                this.oppRadioAltitude.assign(ra);
+                this.oppRadioAltitude = new Arinc429Word(ra);
             }
             this.determineAndPublishChosenRadioAltitude(publisher);
         });

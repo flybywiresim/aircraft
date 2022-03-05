@@ -28,12 +28,6 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
     }
 
     render(): VNode {
-        const showVDev = false;
-
-        /*   if (!LSButtonPressed) {
-            showVDev = !!Simplane.getAutoPilotApproachLoaded() && Simplane.getAutoPilotApproachType() === 10;
-        } */
-
         return (
             <g id="LSAndDeviationGroup" ref={this.lsGroupRef} style="display: none">
                 <LandingSystemInfo bus={this.props.bus} />
@@ -135,9 +129,8 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
                 this.distLeading.set(Math.round(dist).toString());
                 this.distTrailing.set('');
             }
-            this.destRef.instance.innerHTML = `
-            <tspan id="ILSDistLeading" class="FontLarge StartAlign">${this.distLeading.get()}</tspan><tspan id="ILSDistTrailing" class="FontSmallest StartAlign">${this.distTrailing.get()}</tspan>
-            `;
+            // eslint-disable-next-line max-len
+            this.destRef.instance.innerHTML = `<tspan id="ILSDistLeading" class="FontLarge StartAlign">${this.distLeading.get()}</tspan><tspan id="ILSDistTrailing" class="FontSmallest StartAlign">${this.distTrailing.get()}</tspan>`;
         } else {
             this.dmeVisibilitySub.set('display: none');
         }

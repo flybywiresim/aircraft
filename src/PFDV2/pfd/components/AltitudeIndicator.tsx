@@ -1,6 +1,6 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+import { Arinc429Word } from '@shared/arinc429';
 import { PFDSimvars } from '../shared/PFDSimvarPublisher';
-import { Arinc429Word } from '../shared/arinc429';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { SimplaneValues } from '../shared/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
@@ -180,10 +180,10 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
             this.altitude.set(altitude);
 
             if (!altitude.isNormalOperation()) {
-                this.normal.instance.setAttribute('style', 'display: none');
+                this.normal.instance.style.display = 'none';
                 this.abnormal.instance.removeAttribute('style');
             } else {
-                this.abnormal.instance.setAttribute('style', 'display: none');
+                this.abnormal.instance.style.display = 'none';
                 this.normal.instance.removeAttribute('style');
             }
         });
@@ -327,27 +327,39 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
         const spsub = this.props.bus.getSubscriber<SimplaneValues>();
 
         sub.on('fmaVerticalArmed').whenChanged().handle((v) => {
             this.armedVerticalBitmask = v;
             this.handleAltManagedChange();
+            this.getOffset();
+            this.handleUpperGroup();
+            this.getText();
         });
 
         sub.on('activeVerticalMode').whenChanged().handle((v) => {
             this.activeVerticalMode = v;
             this.handleAltManagedChange();
+            this.getOffset();
+            this.handleUpperGroup();
+            this.getText();
         });
 
         sub.on('fmaLateralArmed').whenChanged().handle((l) => {
             this.armedLateralBitmask = l;
             this.handleAltManagedChange();
+            this.getOffset();
+            this.handleUpperGroup();
+            this.getText();
         });
 
         sub.on('fmgcFlightPhase').whenChanged().handle((f) => {
             this.fmgcFlightPhase = f;
             this.handleAltManagedChange();
+            this.getOffset();
+            this.handleUpperGroup();
+            this.getText();
         });
 
         spsub.on('selectedAltitude').whenChanged().handle((m) => {
@@ -359,7 +371,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.getText();
         });
 
-        sub.on('altConstraint').handle((m) => {
+        sub.on('altConstraint').whenChanged().handle((m) => {
             this.constraint = m;
             this.handleAltManagedChange();
 
@@ -368,10 +380,8 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.getText();
         });
 
-        sub.on('altitude').handle((m) => {
-            const altitude = new Arinc429Word(m);
-
-            this.altitude = altitude;
+        sub.on('altitudeAr').withArinc429Precision(2).handle((a) => {
+            this.altitude = a;
             this.handleUpperGroup();
             this.getOffset();
         });
@@ -380,11 +390,11 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.mode = m;
 
             if (this.mode === 'STD') {
-                this.SelectedAltLowerFLText.instance.setAttribute('visibility', 'visible');
-                this.SelectedAltUpperFLText.instance.setAttribute('visibility', 'visible');
+                this.SelectedAltLowerFLText.instance.style.visibility = 'visible';
+                this.SelectedAltUpperFLText.instance.style.visibility = 'visible';
             } else {
-                this.SelectedAltLowerFLText.instance.setAttribute('visibility', 'hidden');
-                this.SelectedAltUpperFLText.instance.setAttribute('visibility', 'hidden');
+                this.SelectedAltLowerFLText.instance.style.visibility = 'hidden';
+                this.SelectedAltUpperFLText.instance.style.visibility = 'hidden';
             }
             this.handleUpperGroup();
             this.getText();
@@ -397,18 +407,18 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
     private handleUpperGroup() {
         if (this.altitude.value - this.shownTargetAltitude > DisplayRange) {
-            this.lowerGroupRef.instance.setAttribute('style', 'display:block');
-            this.upperGroupRef.instance.setAttribute('style', 'display:none');
-            this.targetGroupRef.instance.setAttribute('visibility', 'hidden');
+            this.lowerGroupRef.instance.style.display = 'block';
+            this.upperGroupRef.instance.style.display = 'none';
+            this.targetGroupRef.instance.style.display = 'none';
         } else if (this.altitude.value - this.shownTargetAltitude < -DisplayRange) {
-            this.targetGroupRef.instance.setAttribute('visibility', 'hidden');
+            this.targetGroupRef.instance.style.display = 'none';
 
-            this.upperGroupRef.instance.setAttribute('style', 'display:block');
-            this.lowerGroupRef.instance.setAttribute('style', 'display:none');
+            this.upperGroupRef.instance.style.display = 'block';
+            this.lowerGroupRef.instance.style.display = 'none';
         } else {
-            this.upperGroupRef.instance.setAttribute('style', 'display:none');
-            this.lowerGroupRef.instance.setAttribute('style', 'display:none');
-            this.targetGroupRef.instance.setAttribute('visibility', 'visible');
+            this.upperGroupRef.instance.style.display = 'none';
+            this.lowerGroupRef.instance.style.display = 'none';
+            this.targetGroupRef.instance.style.display = 'inline';
         }
     }
 
@@ -565,7 +575,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
             this.getText();
         });
 
-        this.props.altitude.sub((a) => {
+        this.props.altitude.sub((_a) => {
             this.handleBlink();
         });
     }

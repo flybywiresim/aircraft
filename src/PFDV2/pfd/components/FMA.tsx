@@ -1,17 +1,25 @@
-import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+import { ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot.js';
-import { Arinc429Word } from '../shared/arinc429';
 
 import { Arinc429Values } from '../shared/ArincValueProvider';
 import { PFDSimvars } from '../shared/PFDSimvarPublisher';
 
-abstract class ShowForSecondsComponent<T> extends DisplayComponent<T> {
+abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
     private timeout: number = 0;
+
+    private displayTimeInSeconds;
 
     protected modeChangedPathRef = FSComponent.createRef<SVGPathElement>();
 
-    protected displayModeChangedPath = (timeout: number, cancel = false) => {
-        if (cancel) {
+    protected isShown = false;
+
+    protected constructor(props: T, displayTimeInSeconds: number) {
+        super(props);
+        this.displayTimeInSeconds = displayTimeInSeconds;
+    }
+
+    public displayModeChangedPath = (cancel = false) => {
+        if (cancel || !this.isShown) {
             clearTimeout(this.timeout);
             this.modeChangedPathRef.instance.classList.remove('ModeChangedPath');
         } else {
@@ -19,22 +27,12 @@ abstract class ShowForSecondsComponent<T> extends DisplayComponent<T> {
             clearTimeout(this.timeout);
             this.timeout = setTimeout(() => {
                 this.modeChangedPathRef.instance.classList.remove('ModeChangedPath');
-            }, timeout) as unknown as number;
+            }, this.displayTimeInSeconds * 1000) as unknown as number;
         }
     }
 }
 
-export class FMA extends DisplayComponent<{ bus: EventBus }> {
-    private isAttExcessive = false;
-
-    private isAttExcessiveSub = Subject.create(false);
-
-    private hiddenClassSub = Subject.create('');
-
-    private roll: Arinc429Word = new Arinc429Word(0);
-
-    private pitch: Arinc429Word = new Arinc429Word(0);;
-
+export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subscribable<boolean> }> {
     private activeLateralMode: number = 0;
 
     private activeVerticalMode: number = 0;
@@ -57,24 +55,10 @@ export class FMA extends DisplayComponent<{ bus: EventBus }> {
 
     private secondBorderRef = FSComponent.createRef<SVGPathElement>();
 
-    private attExcessive(pitch: Arinc429Word, roll: Arinc429Word): boolean {
-        if (!this.isAttExcessive && ((pitch.isNormalOperation() && (-pitch.value > 25 || -pitch.value < -13)) || (roll.isNormalOperation() && Math.abs(roll.value) > 45))) {
-            this.isAttExcessive = true;
-            return true;
-        } if (this.isAttExcessive && pitch.isNormalOperation() && -pitch.value < 22 && -pitch.value > -10 && roll.isNormalOperation() && Math.abs(roll.value) < 40) {
-            this.isAttExcessive = false;
-            return false;
-        }
-        return false;
-    }
-
     private handleFMABorders() {
-        const isAttExcessive = this.attExcessive(this.pitch, this.roll);
-
-        this.isAttExcessiveSub.set(isAttExcessive);
         const sharedModeActive = this.activeLateralMode === 32 || this.activeLateralMode === 33
-        || this.activeLateralMode === 34 || (this.activeLateralMode === 20 && this.activeVerticalMode === 24);
-        const BC3Message = getBC3Message(isAttExcessive, this.armedVerticalModeSub.get(),
+            || this.activeLateralMode === 34 || (this.activeLateralMode === 20 && this.activeVerticalMode === 24);
+        const BC3Message = getBC3Message(this.props.isAttExcessive.get(), this.armedVerticalModeSub.get(),
             this.setHoldSpeed, this.trkFpaDeselected.get(), this.tcasRaInhibited.get())[0] !== null;
 
         const engineMessage = this.athrModeMessage;
@@ -82,7 +66,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus }> {
             || this.speedPreselVal !== -1) && !BC3Message && engineMessage === 0;
 
         let secondBorder: string;
-        if (sharedModeActive && !isAttExcessive) {
+        if (sharedModeActive && !this.props.isAttExcessive.get()) {
             secondBorder = '';
         } else if (BC3Message) {
             secondBorder = 'm66.241 0.33732v15.766';
@@ -91,7 +75,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus }> {
         }
 
         let firstBorder: string;
-        if (AB3Message && !isAttExcessive) {
+        if (AB3Message && !this.props.isAttExcessive.get()) {
             firstBorder = 'm33.117 0.33732v15.766';
         } else {
             firstBorder = 'm33.117 0.33732v20.864';
@@ -106,12 +90,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('rollAr').handle((r) => {
-            this.roll = r;
-        });
-
-        sub.on('pitchAr').handle((p) => {
-            this.pitch = p;
+        this.props.isAttExcessive.sub((_a) => {
+            this.handleFMABorders();
         });
 
         sub.on('fmaVerticalArmed').whenChanged().handle((a) => {
@@ -164,42 +144,84 @@ export class FMA extends DisplayComponent<{ bus: EventBus }> {
                     <path d="m133.72 0.33732v20.864" />
                 </g>
 
-                <Row1 bus={this.props.bus} hiddenClassSub={this.hiddenClassSub} />
-                <Row2 bus={this.props.bus} hiddenClassSub={this.hiddenClassSub} />
+                <Row1 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
+                <Row2 bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
                 <Row3
                     bus={this.props.bus}
-                    hiddenClassSub={this.hiddenClassSub}
-                    isAttExcessiveSub={this.isAttExcessiveSub}
-                    verticalArmedModeSub={this.armedVerticalModeSub}
+                    isAttExcessive={this.props.isAttExcessive}
                 />
             </g>
         );
     }
 }
 
-class Row1 extends DisplayComponent<{ bus:EventBus, hiddenClassSub: Subscribable<string> }> {
+class Row1 extends DisplayComponent<{bus:EventBus, isAttExcessive: Subscribable<boolean>}> {
+    private b1Cell = FSComponent.createRef<B1Cell>();
+
+    private c1Cell = FSComponent.createRef<C1Cell>();
+
+    private D1D2Cell = FSComponent.createRef<D1D2Cell>();
+
+    private BC1Cell = FSComponent.createRef<BC1Cell>();
+
+    private cellsToHide = FSComponent.createRef<SVGGElement>();
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        this.props.isAttExcessive.sub((a) => {
+            if (a) {
+                this.cellsToHide.instance.style.visibility = 'hidden';
+                this.b1Cell.instance.displayModeChangedPath(true);
+                this.c1Cell.instance.displayModeChangedPath(true);
+                // this.D1D2Cell.instance.displayModeChangedPath(true);
+                this.BC1Cell.instance.displayModeChangedPath(true);
+            } else {
+                this.cellsToHide.instance.style.visibility = 'visible';
+                this.b1Cell.instance.displayModeChangedPath();
+                this.c1Cell.instance.displayModeChangedPath();
+                // this.D1D2Cell.instance.displayModeChangedPath();
+                this.BC1Cell.instance.displayModeChangedPath();
+            }
+        });
+    }
+
     render(): VNode {
         return (
             <g>
                 <A1A2Cell bus={this.props.bus} />
 
-                <>
-                    <B1Cell visibility={this.props.hiddenClassSub} bus={this.props.bus} />
-                    <C1Cell visibility={this.props.hiddenClassSub} bus={this.props.bus} />
-                    <D1D2Cell visibility={this.props.hiddenClassSub} bus={this.props.bus} />
-                    <BC1Cell visibility={this.props.hiddenClassSub} bus={this.props.bus} />
-                </>
+                <g ref={this.cellsToHide}>
+                    <B1Cell ref={this.b1Cell} bus={this.props.bus} />
+                    <C1Cell ref={this.c1Cell} bus={this.props.bus} />
+                    <D1D2Cell ref={this.D1D2Cell} bus={this.props.bus} />
+                    <BC1Cell ref={this.BC1Cell} bus={this.props.bus} />
+                </g>
                 <E1Cell bus={this.props.bus} />
             </g>
         );
     }
 }
 
-class Row2 extends DisplayComponent<{ bus:EventBus, hiddenClassSub: Subscribable<string> }> {
+class Row2 extends DisplayComponent<{bus:EventBus, isAttExcessive: Subscribable<boolean>}> {
+    private cellsToHide = FSComponent.createRef<SVGGElement>();
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        this.props.isAttExcessive.sub((a) => {
+            if (a) {
+                this.cellsToHide.instance.style.visibility = 'hidden';
+            } else {
+                this.cellsToHide.instance.style.visibility = 'visible';
+            }
+        });
+    }
+
     render(): VNode {
         return (
             <g>
-                <g visibility={this.props.hiddenClassSub}>
+                <g ref={this.cellsToHide}>
                     <B2Cell bus={this.props.bus} />
                     <C2Cell bus={this.props.bus} />
                 </g>
@@ -209,26 +231,48 @@ class Row2 extends DisplayComponent<{ bus:EventBus, hiddenClassSub: Subscribable
     }
 }
 
-class Row3 extends DisplayComponent<{ bus:EventBus, hiddenClassSub: Subscribable<string>, isAttExcessiveSub: Subscribable<boolean>, verticalArmedModeSub: Subscribable<number> }> {
+class Row3 extends DisplayComponent<{ bus:EventBus, isAttExcessive: Subscribable<boolean> }> {
+    private cellsToHide = FSComponent.createRef<SVGGElement>();
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        this.props.isAttExcessive.sub((a) => {
+            if (a) {
+                this.cellsToHide.instance.style.visibility = 'hidden';
+            } else {
+                this.cellsToHide.instance.style.visibility = 'visible';
+            }
+        });
+    }
+
     render(): VNode {
         return (
             <g>
                 <A3Cell bus={this.props.bus} />
-                <g visibility={this.props.hiddenClassSub}>
+                <g ref={this.cellsToHide}>
                     <AB3Cell bus={this.props.bus} />
                     <D3Cell bus={this.props.bus} />
                 </g>
-                <BC3Cell isAttExcessive={this.props.isAttExcessiveSub} bus={this.props.bus} />
+                <BC3Cell isAttExcessive={this.props.isAttExcessive} bus={this.props.bus} />
                 <E3Cell bus={this.props.bus} />
             </g>
         );
     }
 }
 
-class A1A2Cell extends ShowForSecondsComponent<{bus: EventBus}> {
+interface CellProps extends ComponentProps {
+    bus: EventBus;
+}
+
+class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     private athrModeSub = Subject.create(0);
 
     private cellRef = FSComponent.createRef<SVGGElement>();
+
+    constructor(props) {
+        super(props, 9);
+    }
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -239,8 +283,8 @@ class A1A2Cell extends ShowForSecondsComponent<{bus: EventBus}> {
             this.athrModeSub.set(athrMode);
 
             let text: string = '';
-            this.displayModeChangedPath(0, true);
-
+            this.displayModeChangedPath(true);
+            this.isShown = true;
             switch (athrMode) {
             case 1:
                 text = `
@@ -293,27 +337,27 @@ class A1A2Cell extends ShowForSecondsComponent<{bus: EventBus}> {
                 break;
             case 7:
                 text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
-                this.displayModeChangedPath(9000);
+                this.displayModeChangedPath();
                 break;
             case 8:
                 text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
-                this.displayModeChangedPath(9000);
+                this.displayModeChangedPath();
                 break;
             case 9:
                 text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
-                this.displayModeChangedPath(9000);
+                this.displayModeChangedPath();
                 break;
             case 10:
                 text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
-                this.displayModeChangedPath(9000);
+                this.displayModeChangedPath();
                 break;
             case 11:
                 text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
-                this.displayModeChangedPath(9000);
+                this.displayModeChangedPath();
                 break;
             case 12:
                 text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
-                this.displayModeChangedPath(9000);
+                this.displayModeChangedPath();
                 break;
             case 13:
                 text = `<g>
@@ -329,6 +373,7 @@ class A1A2Cell extends ShowForSecondsComponent<{bus: EventBus}> {
                 break;
             default:
                 text = '';
+                this.isShown = false;
             }
 
             this.cellRef.instance.innerHTML = text;
@@ -347,7 +392,7 @@ class A1A2Cell extends ShowForSecondsComponent<{bus: EventBus}> {
     }
 }
 
-class A3Cell extends DisplayComponent<{bus: EventBus}> {
+class A3Cell extends DisplayComponent<CellProps> {
     private classSub = Subject.create('');
 
     private textSub = Subject.create('');
@@ -376,7 +421,10 @@ class A3Cell extends DisplayComponent<{bus: EventBus}> {
             text = 'LVR ASYM';
             className = 'Amber';
             break;
+        default:
+            text = '';
         }
+
         this.textSub.set(text);
         this.classSub.set(`FontMedium MiddleAlign ${className}`);
     }
@@ -398,7 +446,7 @@ class A3Cell extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-class AB3Cell extends DisplayComponent<{bus: EventBus}> {
+class AB3Cell extends DisplayComponent<CellProps> {
     private speedPreselVal = -1;
 
     private machPreselVal = -1;
@@ -450,7 +498,7 @@ class AB3Cell extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-class B1Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subscribable<string>}> {
+class B1Cell extends ShowForSecondsComponent<CellProps> {
     private boxClassSub = Subject.create('');
 
     private boxPathStringSub = Subject.create('');
@@ -473,10 +521,15 @@ class B1Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subscri
 
     private FPA = 0;
 
+    constructor(props: CellProps) {
+        super(props, 10);
+    }
+
     private getText(): boolean {
         let text: string;
         let additionalText: string = '';
 
+        this.isShown = true;
         switch (this.activeVerticalModeSub.get()) {
         case 31:
             text = 'G/S';
@@ -556,6 +609,7 @@ class B1Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subscri
         }
         default:
             text = '';
+            this.isShown = false;
         }
 
         const inSpeedProtection = this.inSpeedProtection && (this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15);
@@ -591,9 +645,9 @@ class B1Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subscri
             this.activeVerticalModeSub.set(activeVerticalMode);
             const isShow = this.getText();
             if (isShow) {
-                this.displayModeChangedPath(10000);
+                this.displayModeChangedPath();
             } else {
-                this.displayModeChangedPath(0, true);
+                this.displayModeChangedPath(true);
             }
         });
 
@@ -602,30 +656,30 @@ class B1Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subscri
             this.getText();
         });
 
-        sub.on('ap_vs_selected').whenChanged().handle((svs) => {
+        sub.on('apVsSelected').whenChanged().handle((svs) => {
             this.selectedVS = svs;
             this.getText();
         });
 
-        sub.on('fma_mode_reversion').whenChanged().handle((r) => {
+        sub.on('fmaModeReversion').whenChanged().handle((r) => {
             if (r) {
                 this.inModeReversionPathRef.instance.setAttribute('visibility', 'visible');
                 this.boxClassSub.set('NormalStroke None');
-                this.displayModeChangedPath(10000);
+                this.displayModeChangedPath();
             } else {
                 this.inModeReversionPathRef.instance.setAttribute('visibility', 'hidden');
                 this.boxClassSub.set('NormalStroke White');
-                this.displayModeChangedPath(0, true);
+                this.displayModeChangedPath(true);
             }
         });
 
-        sub.on('fma_speed_protection').whenChanged().handle((protection) => {
+        sub.on('fmaSpeedProtection').whenChanged().handle((protection) => {
             this.inSpeedProtection = protection;
             if (!protection) {
-                this.displayModeChangedPath(0, true);
+                this.displayModeChangedPath(true);
                 this.speedProtectionPathRef.instance.setAttribute('visibility', 'hidden');
             } else {
-                this.displayModeChangedPath(10000);
+                this.displayModeChangedPath();
                 this.speedProtectionPathRef.instance.setAttribute('visibility', 'visible');
             }
             this.getText();
@@ -639,7 +693,7 @@ class B1Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subscri
 
     render(): VNode {
         return (
-            <g visibility={this.props.visibility}>
+            <g>
 
                 <path ref={this.modeChangedPathRef} class={this.boxClassSub} visibility="hidden" d={this.boxPathStringSub} />
 
@@ -656,7 +710,7 @@ class B1Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subscri
     }
 }
 
-class B2Cell extends DisplayComponent<{bus: EventBus}> {
+class B2Cell extends DisplayComponent<CellProps> {
     private text1Sub = Subject.create('');
 
     private text2Sub = Subject.create('');
@@ -719,7 +773,7 @@ class B2Cell extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-class C1Cell extends ShowForSecondsComponent<{visibility: Subscribable<string>, bus: EventBus}> {
+class C1Cell extends ShowForSecondsComponent<CellProps> {
     private textSub = Subject.create('');
 
     private activeLateralMode = 0;
@@ -727,6 +781,10 @@ class C1Cell extends ShowForSecondsComponent<{visibility: Subscribable<string>, 
     private activeVerticalMode = 0;
 
     private armedVerticalMode = 0;
+
+    constructor(props: CellProps) {
+        super(props, 10);
+    }
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -738,9 +796,9 @@ class C1Cell extends ShowForSecondsComponent<{visibility: Subscribable<string>, 
 
             const isShown = this.updateText();
             if (isShown) {
-                this.displayModeChangedPath(10000);
+                this.displayModeChangedPath();
             } else {
-                this.displayModeChangedPath(0, true);
+                this.displayModeChangedPath(true);
             }
         });
 
@@ -749,9 +807,9 @@ class C1Cell extends ShowForSecondsComponent<{visibility: Subscribable<string>, 
 
             const isShown = this.updateText();
             if (isShown) {
-                this.displayModeChangedPath(10000);
+                this.displayModeChangedPath();
             } else {
-                this.displayModeChangedPath(0, true);
+                this.displayModeChangedPath(true);
             }
         });
 
@@ -760,9 +818,9 @@ class C1Cell extends ShowForSecondsComponent<{visibility: Subscribable<string>, 
 
             const isShown = this.updateText();
             if (isShown) {
-                this.displayModeChangedPath(10000);
+                this.displayModeChangedPath();
             } else {
-                this.displayModeChangedPath(0, true);
+                this.displayModeChangedPath(true);
             }
         });
     }
@@ -771,6 +829,7 @@ class C1Cell extends ShowForSecondsComponent<{visibility: Subscribable<string>, 
         const finalArmed = (this.armedVerticalMode >> 5) & 1;
 
         let text: string;
+        this.isShown = true;
         if (this.activeLateralMode === LateralMode.GA_TRACK) {
             text = 'GA TRK';
         } else if (this.activeLateralMode === LateralMode.LOC_CPT) {
@@ -791,6 +850,7 @@ class C1Cell extends ShowForSecondsComponent<{visibility: Subscribable<string>, 
             text = 'APP NAV';
         } else {
             text = '';
+            this.isShown = false;
         }
 
         const hasChanged = text.length > 0 && text !== this.textSub.get();
@@ -824,7 +884,7 @@ class C1Cell extends ShowForSecondsComponent<{visibility: Subscribable<string>, 
         //     break;
 
         return (
-            <g visibility={this.props.visibility}>
+            <g>
                 <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" d="m100.87 1.8143v6.0476h-33.075l1e-6 -6.0476z" />
                 <text class="FontMedium MiddleAlign Green" x="84.856567" y="6.9873109">{this.textSub}</text>
             </g>
@@ -832,7 +892,7 @@ class C1Cell extends ShowForSecondsComponent<{visibility: Subscribable<string>, 
     }
 }
 
-class C2Cell extends DisplayComponent<{bus: EventBus}> {
+class C2Cell extends DisplayComponent<CellProps> {
     private fmaLateralArmed: number = 0;
 
     private fmaVerticalArmed: number = 0;
@@ -892,15 +952,20 @@ class C2Cell extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-class BC1Cell extends ShowForSecondsComponent<{bus:EventBus, visibility: Subscribable<string>}> {
+class BC1Cell extends ShowForSecondsComponent<CellProps> {
     private lastLateralMode = 0;
 
     private lastVerticalMode = 0;
 
     private textSub = Subject.create('');
 
+    constructor(props: CellProps) {
+        super(props, 9);
+    }
+
     private setText() {
         let text: string;
+        this.isShown = true;
         if (this.lastVerticalMode === VerticalMode.ROLL_OUT) {
             text = 'ROLL OUT';
         } else if (this.lastVerticalMode === VerticalMode.FLARE) {
@@ -913,9 +978,10 @@ class BC1Cell extends ShowForSecondsComponent<{bus:EventBus, visibility: Subscri
             text = '';
         }
         if (text !== '') {
-            this.displayModeChangedPath(9000);
+            this.displayModeChangedPath();
         } else {
-            this.displayModeChangedPath(0, true);
+            this.isShown = false;
+            this.displayModeChangedPath(true);
         }
         this.textSub.set(text);
     }
@@ -1069,7 +1135,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
     }
 }
 
-class D1D2Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subscribable<string>}> {
+class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     private text1Sub = Subject.create('');
 
     private text2Sub = Subject.create('');
@@ -1079,6 +1145,7 @@ class D1D2Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subsc
 
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
+        this.isShown = true;
         sub.on('approachCapability').whenChanged().handle((c) => {
             let text1: string;
             let text2: string | undefined;
@@ -1125,19 +1192,20 @@ class D1D2Cell extends ShowForSecondsComponent<{bus: EventBus, visibility: Subsc
                 this.modeChangedPathRef.instance.setAttribute('d', 'm104.1 1.8143h27.994v6.0476h-27.994z');
             }
             if (text1.length === 0 && !text2) {
-                this.displayModeChangedPath(0, true);
+                this.isShown = false;
+                this.displayModeChangedPath(true);
             } else {
-                this.displayModeChangedPath(9000);
+                this.displayModeChangedPath();
             }
         });
     }
 
     render(): VNode {
         return (
-            <g visibility={this.props.visibility}>
+            <g>
                 <text class="FontMedium MiddleAlign White" x="118.45866" y="7.125926">{this.text1Sub}</text>
                 <text class="FontMedium MiddleAlign White" x="118.39752" y="14.289783">{this.text2Sub}</text>
-                <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" />
+                <path ref={this.modeChangedPathRef} class="NormalStroke White" />
             </g>
         );
     }
@@ -1189,22 +1257,28 @@ class D3Cell extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-class E1Cell extends ShowForSecondsComponent<{bus: EventBus}> {
+class E1Cell extends ShowForSecondsComponent<CellProps> {
     private ap1Active = false;
 
     private ap2Active = false;
 
     private textSub = Subject.create('');
 
+    constructor(props: CellProps) {
+        super(props, 9);
+    }
+
     private setText() {
         let text: string;
+        this.isShown = true;
         if (this.ap1Active && !this.ap2Active) {
             text = 'AP1';
         } else if (this.ap2Active && !this.ap1Active) {
             text = 'AP2';
         } else if (!this.ap2Active && !this.ap1Active) {
             text = '';
-            this.displayModeChangedPath(0, true);
+            this.isShown = false;
+            this.displayModeChangedPath(true);
         } else {
             text = 'AP1+2';
         }
@@ -1218,13 +1292,13 @@ class E1Cell extends ShowForSecondsComponent<{bus: EventBus}> {
 
         sub.on('ap1Active').whenChanged().handle((ap) => {
             this.ap1Active = ap;
-            this.displayModeChangedPath(9000);
+            this.displayModeChangedPath();
             this.setText();
         });
 
         sub.on('ap2Active').whenChanged().handle((ap) => {
             this.ap2Active = ap;
-            this.displayModeChangedPath(9000);
+            this.displayModeChangedPath();
             this.setText();
         });
     }
@@ -1239,7 +1313,7 @@ class E1Cell extends ShowForSecondsComponent<{bus: EventBus}> {
     }
 }
 
-class E2Cell extends ShowForSecondsComponent<{bus: EventBus}> {
+class E2Cell extends ShowForSecondsComponent<CellProps> {
     private fd1Active = false;
 
     private fd2Active = false;
@@ -1250,8 +1324,14 @@ class E2Cell extends ShowForSecondsComponent<{bus: EventBus}> {
 
     private textSub = Subject.create('');
 
+    constructor(props: CellProps) {
+        super(props, 9);
+    }
+
     private getText() {
+        this.isShown = true;
         if (!this.ap1Active && !this.ap2Active && !this.fd1Active && !this.fd2Active) {
+            this.isShown = false;
             this.textSub.set('');
         } else {
             const text = `${this.fd1Active ? '1' : '-'} FD ${this.fd2Active ? '2' : '-'}`;
@@ -1267,9 +1347,9 @@ class E2Cell extends ShowForSecondsComponent<{bus: EventBus}> {
         sub.on('fd1Active').whenChanged().handle((fd) => {
             this.fd1Active = fd;
             if (fd || this.fd2Active) {
-                this.displayModeChangedPath(9000);
+                this.displayModeChangedPath();
             } else {
-                this.displayModeChangedPath(0, true);
+                this.displayModeChangedPath(true);
             }
             this.getText();
         });
@@ -1287,9 +1367,9 @@ class E2Cell extends ShowForSecondsComponent<{bus: EventBus}> {
         sub.on('fd2Active').whenChanged().handle((fd) => {
             this.fd2Active = fd;
             if (fd || this.fd1Active) {
-                this.displayModeChangedPath(9000);
+                this.displayModeChangedPath();
             } else {
-                this.displayModeChangedPath(0, true);
+                this.displayModeChangedPath(true);
             }
             this.getText();
         });
@@ -1306,11 +1386,16 @@ class E2Cell extends ShowForSecondsComponent<{bus: EventBus}> {
     }
 }
 
-class E3Cell extends ShowForSecondsComponent<{bus: EventBus}> {
+class E3Cell extends ShowForSecondsComponent<CellProps> {
     private classSub = Subject.create('');
+
+    constructor(props: CellProps) {
+        super(props, 9);
+    }
 
     private getClass(athrStatus: number): string {
         let color: string = '';
+        this.isShown = true;
         switch (athrStatus) {
         case 1:
             color = 'Cyan';
@@ -1318,6 +1403,9 @@ class E3Cell extends ShowForSecondsComponent<{bus: EventBus}> {
         case 2:
             color = 'White';
             break;
+        default:
+            this.isShown = false;
+            color = '';
         }
         return color;
     }
@@ -1331,9 +1419,9 @@ class E3Cell extends ShowForSecondsComponent<{bus: EventBus}> {
             const color = this.getClass(a);
             this.classSub.set(`FontMedium MiddleAlign ${color}`);
             if (color !== '') {
-                this.displayModeChangedPath(9000);
+                this.displayModeChangedPath();
             } else {
-                this.displayModeChangedPath(0, true);
+                this.displayModeChangedPath(true);
             }
         });
     }

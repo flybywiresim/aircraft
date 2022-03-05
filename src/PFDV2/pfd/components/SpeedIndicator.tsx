@@ -1,7 +1,7 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, NodeReference, Subject, Subscribable, VNode } from 'msfssdk';
+import { Arinc429Word } from '@shared/arinc429';
 import { LagFilter, RateLimiter, SmoothSin } from './PFDUtils';
 import { PFDSimvars } from '../shared/PFDSimvarPublisher';
-import { Arinc429Word } from '../shared/arinc429';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from '../shared/SimplaneValueProvider';
 import { Arinc429Values } from '../shared/ArincValueProvider';
@@ -111,39 +111,6 @@ class VRBugElement extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-/* const GreenDotBugElement = (offset: number) => (
-    <g id="GreenDotSpeedMarker" transform={`translate(0 ${offset})`}>
-        <path class="ThickOutline" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
-        <path class="ThickStroke Green" d="m20.29 80.85a1.2592 1.2599 0 1 0-2.5184 0 1.2592 1.2599 0 1 0 2.5184 0z" />
-    </g>
-);
-
-const FlapRetractBugElement = (offset: number) => (
-    <g id="FlapsSlatsBug" transform={`translate(0 ${offset})`}>
-        <path class="NormalStroke Green" d="m19.031 80.82h3.8279" />
-        <text class="FontLarge MiddleAlign Green" x="27.536509" y="83.327988">F</text>
-    </g>
-);
-
-const SlatRetractBugElement = (offset: number) => (
-    <g id="FlapsSlatsBug" transform={`translate(0 ${offset})`}>
-        <path class="NormalStroke Green" d="m19.031 80.82h3.8279" />
-        <text class="FontLarge MiddleAlign Green" x="27.536509" y="83.327988">S</text>
-    </g>
-);
-
-const VFENextBugElement = (offset: number) => (
-    <path id="VFeNextMarker" transform={`translate(0 ${offset})`} class="NormalStroke Amber" d="m19.031 81.34h-2.8709m0-1.0079h2.8709" />
-);
-
-const VProtBug = (offset: number) => (
-    <g id="SpeedProtSymbol" transform={`translate(0 ${offset})`}>
-        <path class="NormalOutline" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
-        <path class="NormalStroke Green" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
-        <path style={{ display: 'none' }} class="NormalStroke Amber" d="m14.615 79.915 1.7808 1.7818m-1.7808 0 1.7808-1.7818" />
-    </g>
-); */
-
 interface AirspeedIndicatorProps {
     airspeedAcc?: number;
     FWCFlightPhase?: number;
@@ -197,7 +164,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             }
         });
 
-        pf.on('altitudeAr').handle((a) => {
+        pf.on('altitudeAr').withArinc429Precision(2).handle((a) => {
             this.altitude = a;
             if (this.altitude.isNormalOperation() && this.altitude.value < 15000 && this.flapHandleIndex < 4) {
                 this.vfeNext.instance.classList.remove('HiddenElement');
@@ -215,7 +182,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             }
         });
 
-        pf.on('speedAr').handle((airSpeed) => {
+        pf.on('speedAr').withArinc429Precision(2).handle((airSpeed) => {
             this.speedSub.set(airSpeed.value);
 
             if (!airSpeed.isNormalOperation()) {
@@ -230,7 +197,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             this.speedTapeOutlineRef.instance.setAttribute('d', `m19.031 38.086v${length}`);
         });
 
-        pf.on('alpha_prot').handle((a) => {
+        pf.on('alphaProt').withPrecision(2).handle((a) => {
             this.alphaProtRef.forEach((el, index) => {
                 const elementValue = a + -1 * 2.923 * index;
                 const offset = -elementValue * DistanceSpacing / ValueSpacing;
@@ -240,7 +207,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             this.lastAlphaProtSub.set(a);
         });
 
-        pf.on('vMax').handle((vMax) => {
+        pf.on('vMax').withPrecision(2).handle((vMax) => {
             this.vMaxRef.forEach((el, index) => {
                 const elementValue = vMax + 5.040 * index;
                 const offset = -elementValue * DistanceSpacing / ValueSpacing;
@@ -251,13 +218,13 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         // showBars replacement
         pf.on('onGround').whenChanged().handle((g) => {
             if (g === 1) {
-                this.showBarsRef.instance.setAttribute('style', 'display: none');
-                this.barberPoleRef.instance.setAttribute('style', 'display: none');
+                this.showBarsRef.instance.style.display = 'none';
+                this.barberPoleRef.instance.style.display = 'none';
                 clearTimeout(this.barTimeout);
             } else {
                 this.barTimeout = setTimeout(() => {
-                    this.showBarsRef.instance.setAttribute('style', 'display:block');
-                    this.barberPoleRef.instance.setAttribute('style', 'display:block');
+                    this.showBarsRef.instance.style.display = 'block';
+                    this.barberPoleRef.instance.style.display = 'block';
                 }, 10000) as unknown as number;
             }
         });
@@ -582,12 +549,12 @@ class VLsBar extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars & ClockEvents>();
 
-        sub.on('alpha_prot').handle((a) => {
+        sub.on('alphaProt').handle((a) => {
             this.vlsState.alphaProtSpeed = a;
             this.setVlsPath(this.vlsState.vls);
         });
 
-        sub.on('speedAr').handle((s) => {
+        sub.on('speedAr').withArinc429Precision(2).handle((s) => {
             this.vlsState.airSpeed = s.value;
             this.setVlsPath(this.vlsState.vls);
         });
@@ -634,12 +601,12 @@ class VAlphaLimBar extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('speedAr').handle((s) => {
+        sub.on('speedAr').withArinc429Precision(2).handle((s) => {
             this.airSpeed = s;
             this.setAlphaLimBarPath();
         });
 
-        sub.on('alphaLim').handle((al) => {
+        sub.on('alphaLim').withPrecision(2).handle((al) => {
             this.vAlphaLim = al;
             this.setAlphaLimBarPath();
         });
@@ -736,15 +703,15 @@ class SpeedTarget extends DisplayComponent <{ bus: EventBus }> {
         super.onAfterRender(node);
         this.needsUpdate = true;
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & SimplaneValues & ClockEvents>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & SimplaneValues & ClockEvents & Arinc429Values>();
 
         sub.on('isSelectedSpeed').whenChanged().handle((s) => {
             this.speedState.isSpeedManaged = !s;
             this.needsUpdate = true;
         });
 
-        sub.on('speed').handle((s) => {
-            this.speedState.speed.assign(s);
+        sub.on('speedAr').handle((s) => {
+            this.speedState.speed = s;
 
             this.needsUpdate = true;
         });
@@ -776,7 +743,7 @@ class SpeedTarget extends DisplayComponent <{ bus: EventBus }> {
             this.handleManagedSpeed();
 
             if (inRange) {
-                const multiplier = Math.pow(10, 2);
+                const multiplier = 100;
                 const currentValueAtPrecision = Math.round(this.speedState.speed.value * multiplier) / multiplier;
                 const offset = (currentValueAtPrecision - (this.speedState.isSpeedManaged
                     ? this.speedState.managedTargetSpeed : this.speedState.targetSpeed)) * DistanceSpacing / ValueSpacing;
@@ -834,32 +801,6 @@ class SpeedTarget extends DisplayComponent <{ bus: EventBus }> {
         );
     }
 }
-
-/*  private createBugs(): [] {
-
-    const ValphaMax = getSimVar('L:A32NX_SPEEDS_ALPHA_MAX', 'number');
-
-    const bugs: [(offset: number) => JSX.Element, number][] = [];
-
-    //VMAX
-    bugs.push(...BarberpoleIndicator(airspeed, VMax, true, DisplayRange, VMaxBar, 5.040));
-
-    //VPROT
-    const showVProt = VMax > 240;
-    if (showVProt) {
-        bugs.push([VProtBug, VMax + 6]);
-    }
-
-    const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
-
-    // IDK maybe sub on altitude
-    if (altitude.isNormalOperation() && altitude.value < 15000 && flapsHandleIndex < 4) {
-        const VFENext = getSimVar('L:A32NX_SPEEDS_VFEN', 'number');
-        bugs.push([VFENextBugElement, VFENext]);
-    }
-    return bugs;
-
-} */
 
 export class MachNumber extends DisplayComponent<{bus: EventBus}> {
     private machTextSub = Subject.create('');

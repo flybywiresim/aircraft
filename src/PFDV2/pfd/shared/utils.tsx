@@ -1,11 +1,3 @@
-export type LayerProps = { x: number, y: number }
-
-/* export const Layer: React.FC<LayerProps> = ({ x = 0, y = 0, children }) => (
-    <g transform={`translate(${x}, ${y})`}>
-        {children}
-    </g>
-);
- */
 /**
  * Gets the smallest angle between two angles
  * @param angle1 First angle in degrees

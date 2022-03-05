@@ -6,6 +6,10 @@
   },
   "ignorePatterns": [
     "/flybywire-aircraft-a320-neo/html_ui/JS/fmgc/**",
+    "/flybywire-aircraft-a320-neo/html_ui/JS/atsu/**",
+    "/flybywire-aircraft-a320-neo/html_ui/JS/sentry-client/**",
+
+
     "/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/**",
     "typings/**",
     "/src/PFDV2/node_modules/**",

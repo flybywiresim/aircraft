@@ -1,7 +1,5 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
-import { FlightPathVector } from 'PFDV2/pfd/components/fpv/FlightPathVector';
-import { FlightPathDirector } from 'PFDV2/pfd/components/fpv/FlightPathDirector';
-import { Arinc429Word } from '../shared/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 
 import {
     calculateHorizonOffsetFromPitch,
@@ -109,8 +107,8 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
         const apfd = this.props.bus.getSubscriber<Arinc429Values>();
 
-        apfd.on('pitchAr').handle((pitch) => {
-            const multiplier = 100;
+        apfd.on('pitchAr').withArinc429Precision(3).handle((pitch) => {
+            const multiplier = 1000;
             const currentValueAtPrecision = Math.round(pitch.value * multiplier) / multiplier;
             if (pitch.isNormalOperation()) {
                 this.pitchGroupRef.instance.style.display = 'block';
@@ -123,7 +121,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             this.yOffset.set(yOffset);
         });
 
-        apfd.on('rollAr').handle((roll) => {
+        apfd.on('rollAr').withArinc429Precision(2).handle((roll) => {
             const multiplier = 100;
             const currentValueAtPrecision = Math.round(roll.value * multiplier) / multiplier;
             if (roll.isNormalOperation()) {
@@ -250,8 +248,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
                         heading={this.props.heading}
                     />
                 )} */}
-                {/*                 {!this.props.isAttExcessive&&  */}
-                <RadioAltAndDH bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAlt} />
+                <RadioAltAndDH bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAlt} attExcessive={this.props.isAttExcessive} />
             </g>
         );
     }
@@ -322,7 +319,7 @@ class TailstrikeIndicator extends DisplayComponent<{bus: EventBus}> {
     } */
 }
 
-class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltitude: Subscribable<number> }> {
+class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltitude: Subscribable<number>, attExcessive: Subscribable<boolean> }> {
     private daRaGroup = FSComponent.createRef<SVGGElement>();
 
     private roll = new Arinc429Word(0);
@@ -376,51 +373,63 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
             this.altitude = a;
         });
 
-        sub.on('chosenRa').handle((ra) => {
-            this.radioAltitude = ra;
-            const raValid = !this.radioAltitude.isFailureWarning();
-            const raValue = this.filteredRadioAltitude;
-            const verticalOffset = calculateVerticalOffsetFromRoll(this.roll.value);
-            const chosenTransalt = this.fmgcFlightPhase <= 3 ? this.transAlt : this.transAltAppr;
-            const belowTransitionAltitude = chosenTransalt !== 0 && (!this.altitude.isNoComputedData() && !this.altitude.isNoComputedData()) && this.altitude.value < chosenTransalt;
-            let size = 'FontLarge';
-            const DHValid = this.dh >= 0;
+        sub.on('chosenRa').withArinc429Precision(1).handle((ra) => {
+            if (!this.props.attExcessive.get()) {
+                this.radioAltitude = ra;
+                const raFailed = !this.radioAltitude.isFailureWarning();
+                const raHasData = !this.radioAltitude.isNoComputedData();
+                const raValue = this.filteredRadioAltitude;
+                const verticalOffset = calculateVerticalOffsetFromRoll(this.roll.value);
+                const chosenTransalt = this.fmgcFlightPhase <= 3 ? this.transAlt : this.transAltAppr;
+                const belowTransitionAltitude = chosenTransalt !== 0 && (!this.altitude.isNoComputedData() && !this.altitude.isNoComputedData()) && this.altitude.value < chosenTransalt;
+                let size = 'FontLarge';
+                const DHValid = this.dh >= 0;
 
-            let text = '';
-            let color = 'Amber';
-            if (raValid) {
-                if (raValue < 2500) {
-                    if (raValue > 400 || (raValue > this.dh + 100 && DHValid)) {
-                        color = 'Green';
-                    }
-                    if (raValue < 400) {
-                        size = 'FontLargest';
-                    }
-                    if (raValue < 5) {
-                        text = Math.round(raValue).toString();
-                    } else if (raValue <= 50) {
-                        text = (Math.round(raValue / 5) * 5).toString();
-                    } else if (raValue > 50 || (raValue > this.dh + 100 && DHValid)) {
-                        text = (Math.round(raValue / 10) * 10).toString();
+                let text = '';
+                let color = 'Amber';
+
+                if (raHasData) {
+                    if (raFailed) {
+                        if (raValue < 2500) {
+                            if (raValue > 400 || (raValue > this.dh + 100 && DHValid)) {
+                                color = 'Green';
+                            }
+                            if (raValue < 400) {
+                                size = 'FontLargest';
+                            }
+                            if (raValue < 5) {
+                                text = Math.round(raValue).toString();
+                            } else if (raValue <= 50) {
+                                text = (Math.round(raValue / 5) * 5).toString();
+                            } else if (raValue > 50 || (raValue > this.dh + 100 && DHValid)) {
+                                text = (Math.round(raValue / 10) * 10).toString();
+                            }
+                        }
+                    } else {
+                        color = belowTransitionAltitude ? 'Red Blink9Seconds' : 'Red';
+                        text = 'RA';
                     }
                 }
-            } else {
-                color = belowTransitionAltitude ? 'Red Blink9Seconds' : 'Red';
-                text = 'RA';
-            }
 
-            this.daRaGroup.instance.style.transform = `translate3d(0px, ${-verticalOffset}px, 0px)`;
-            if (raValid && DHValid && raValue <= this.dh) {
-                this.attDhText.instance.style.visibility = 'visible';
-            } else {
-                this.attDhText.instance.style.visibility = 'hidden';
+                this.daRaGroup.instance.style.transform = `translate3d(0px, ${-verticalOffset}px, 0px)`;
+                if (raFailed && DHValid && raValue <= this.dh) {
+                    this.attDhText.instance.style.visibility = 'visible';
+                } else {
+                    this.attDhText.instance.style.visibility = 'hidden';
+                }
+                this.radioAlt.instance.textContent = text;
+                this.classSub.set(`${size} ${color} MiddleAlign TextOutline`);
             }
-            this.radioAlt.instance.textContent = text;
-            this.classSub.set(`${size} ${color} MiddleAlign TextOutline`);
         });
 
         this.props.filteredRadioAltitude.sub((fra) => {
             this.filteredRadioAltitude = fra;
+        });
+
+        this.props.attExcessive.sub((ae) => {
+            if (ae) {
+                this.radioAlt.instance.textContent = '';
+            }
         });
     }
 
@@ -460,6 +469,14 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
     private roll = new Arinc429Word(0);
 
+    private betaTargetActive = 0;
+
+    private beta = 0;
+
+    private betaTarget = 0;
+
+    private latAcc = 0;
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -470,8 +487,28 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
             this.determineSlideSlip();
         });
 
-        sub.on('rollAr').handle((roll) => {
+        sub.on('rollAr').withArinc429Precision(2).handle((roll) => {
             this.roll = roll;
+            this.determineSlideSlip();
+        });
+
+        sub.on('beta').withPrecision(2).handle((beta) => {
+            this.beta = beta;
+            this.determineSlideSlip();
+        });
+
+        sub.on('betaTargetActive').whenChanged().handle((betaTargetActive) => {
+            this.betaTargetActive = betaTargetActive;
+            this.determineSlideSlip();
+        });
+
+        sub.on('betaTarget').withPrecision(2).handle((betaTarget) => {
+            this.betaTarget = betaTarget;
+            this.determineSlideSlip();
+        });
+
+        sub.on('latAcc').withPrecision(2).handle((latAcc) => {
+            this.latAcc = latAcc;
             this.determineSlideSlip();
         });
     }
@@ -484,21 +521,21 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
         if (this.onGround) {
             // on ground, lateral g is indicated. max 0.3g, max deflection is 15mm
-            const latAcc = SimVar.GetSimVarValue('ACCELERATION BODY X', 'G Force');
+            const latAcc = Math.round(this.latAcc * multiplier) / multiplier;// SimVar.GetSimVarValue('ACCELERATION BODY X', 'G Force');
             const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
             offset = -accInG * 15 / 0.3;
         } else {
-            const beta = SimVar.GetSimVarValue('INCIDENCE BETA', 'degrees');
-            const betaTarget = SimVar.GetSimVarValue('L:A32NX_BETA_TARGET', 'Number');
+            const beta = this.beta;// SimVar.GetSimVarValue('INCIDENCE BETA', 'degrees');
+            const betaTarget = this.betaTarget;// SimVar.GetSimVarValue('L:A32NX_BETA_TARGET', 'Number');
             offset = Math.max(Math.min(beta - betaTarget, 15), -15);
         }
 
-        const betaTargetActive = SimVar.GetSimVarValue('L:A32NX_BETA_TARGET_ACTIVE', 'Number') === 1;
+        const betaTargetActive = this.betaTargetActive === 1;
         const SIIndexOffset = this.sideslipIndicatorFilter.step(offset, this.props.instrument.deltaTime / 1000);
 
-        this.rollTriangle.instance.style.transform = `translate(0 ${verticalOffset})`;
+        this.rollTriangle.instance.style.transform = `translate3d(0px, ${verticalOffset.toFixed(2)}px, 0px)`;
         this.classNameSub.set(`${betaTargetActive ? 'Cyan' : 'Yellow'}`);
-        this.slideSlip.instance.style.transform = `translate3d(${SIIndexOffset}px, 0px, 0px)`;
+        this.slideSlip.instance.style.transform = `translate3d(${SIIndexOffset.toFixed(2)}px, 0px, 0px)`;
     }
 
     render(): VNode {
@@ -539,8 +576,8 @@ class RisingGround extends DisplayComponent<{ bus: EventBus, filteredRadioAltitu
             const targetPitch = (this.radioAlt.isNoComputedData() || this.radioAlt.isFailureWarning()) ? -200 : -0.1 * fra;
 
             const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch((-this.lastPitch.value) - targetPitch) - 31.563, 0), -63.093);
-            this.horizonGroundRectangle.instance.style.transform = `translate3d(0px, ${targetOffset}px, 0px)`;
-        });
+            this.horizonGroundRectangle.instance.style.transform = `translate3d(0px, ${targetOffset.toFixed(2)}px, 0px)`;
+        }, true);
     }
 
     render(): VNode {

@@ -1,6 +1,6 @@
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
-import { Arinc429Values, ArincValueProvider } from 'PFDV2/pfd/shared/ArincValueProvider';
-import { Arinc429Word } from '../shared/arinc429';
+import { Arinc429Values } from 'PFDV2/pfd/shared/ArincValueProvider';
+import { Arinc429Word } from '@shared/arinc429';
 import { PFDSimvars } from '../shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
 
@@ -22,7 +22,7 @@ interface TcasState {
 export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndicatorProps> {
     private yOffsetSub = Subject.create(0);
 
-    private isAmberSub = Subject.create(2);
+    private needleColour = Subject.create('Green');
 
     private radioAlt = new Arinc429Word(0);
 
@@ -81,13 +81,13 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
         sub.on('realTime').handle((_r) => {
             if (this.needsUpdate) {
                 if (this.tcasState.tcasState === 2) {
-                    this.isAmberSub.set(3);
+                    this.needleColour.set('White');
                 }
                 this.vspeedTcas.instance.update(this.tcasState);
             }
         });
 
-        sub.on('vs').handle((vs) => {
+        sub.on('vs').withArinc429Precision(2).handle((vs) => {
             const filteredVS = this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000);
 
             const absVSpeed = Math.abs(filteredVS);
@@ -107,9 +107,9 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
                     || (vs.value <= -2000 && radioAltitudeValid && this.filteredRadioAltitude <= 2500 && this.filteredRadioAltitude >= 1000)
                     || (vs.value <= -1200 && radioAltitudeValid && this.filteredRadioAltitude <= 1000)
                 ) {
-                    this.isAmberSub.set(1);
+                    this.needleColour.set('Amber');
                 } else {
-                    this.isAmberSub.set(2);
+                    this.needleColour.set('Green');
                 }
             }
 
@@ -174,16 +174,16 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
                         <text x="148.21367" y="35.195072">6</text>
                     </g>
                     <path class="Fill Yellow" d="m145.79 80.067h6.0476v1.5119h-6.0476z" />
-                    <VSpeedNeedle isAmber={this.isAmberSub} yOffset={this.yOffsetSub} />
+                    <VSpeedNeedle yOffset={this.yOffsetSub} needleColour={this.needleColour} />
 
-                    <VSpeedText bus={this.props.bus} yOffset={this.yOffsetSub} isAmber={this.isAmberSub} />
+                    <VSpeedText bus={this.props.bus} yOffset={this.yOffsetSub} textColour={this.needleColour.map((c) => (c === 'White' ? 'Green' : c))} />
                 </g>
             </g>
         );
     }
 }
 
-class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, isAmber: Subscribable<number> }> {
+class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, needleColour: Subscribable<string> }> {
     private outLineRef = FSComponent.createRef<SVGPathElement>();
 
     private indicatorRef = FSComponent.createRef<SVGPathElement>();
@@ -203,22 +203,13 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, isA
             this.indicatorRef.instance.setAttribute('d', path);
         });
 
-        this.props.isAmber.sub((isAmberi) => {
-            let className = '';
-            if (isAmberi === 1) {
-                className = 'HugeStroke Amber';
-            } else if (isAmberi === 2) {
-                className = 'HugeStroke Green';
-            } else if (isAmberi === 3) {
-                className = 'HugeStroke White';
-            }
-            this.indicatorRef.instance.setAttribute('class', className);
+        this.props.needleColour.sub((colour) => {
+            this.indicatorRef.instance.setAttribute('class', `HugeStroke ${colour}`);
         }, true);
     }
 
     render(): VNode | null {
         return (
-
             <>
                 <path ref={this.outLineRef} class="HugeOutline" />
                 <path ref={this.indicatorRef} id="VSpeedIndicator" />
@@ -227,7 +218,7 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, isA
     }
 }
 
-class VSpeedText extends DisplayComponent<{ bus: EventBus, yOffset: Subscribable<number>, isAmber: Subscribable<number> }> {
+class VSpeedText extends DisplayComponent<{ bus: EventBus, yOffset: Subscribable<number>, textColour: Subscribable<string> }> {
     private vsTextRef = FSComponent.createRef<SVGTextElement>();
 
     private groupRef = FSComponent.createRef<SVGGElement>();
@@ -255,8 +246,8 @@ class VSpeedText extends DisplayComponent<{ bus: EventBus, yOffset: Subscribable
             this.groupRef.instance.setAttribute('transform', `translate(0 ${textOffset})`);
         });
 
-        this.props.isAmber.sub((isAmber) => {
-            const className = `FontSmallest MiddleAlign ${isAmber === 1 ? 'Amber' : 'Green'}`;
+        this.props.textColour.sub((colour) => {
+            const className = `FontSmallest MiddleAlign ${colour}`;
             this.vsTextRef.instance.setAttribute('class', className);
         }, true);
     }
