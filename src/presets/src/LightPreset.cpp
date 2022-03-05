@@ -199,7 +199,7 @@ double LightPreset::iniGetOrDefault(const mINI::INIStructure& ini,
 
   if (ini.get(section).has(key)) {
     // As MSFS wasm does not support exceptions (try/catch) we can't use
-    // std::stof here. Workaround with stringstreams.
+    // std::stof here. Workaround with std::stringstreams.
     std::stringstream input(ini.get(section).get(key));
     double value = defaultValue;
     if (input >> value) {

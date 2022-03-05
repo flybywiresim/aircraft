@@ -9,42 +9,6 @@
 #include "inih/ini.h"
 
 /**
- * Data structure for holding all relevant lighting levels and states.
- */
-struct LightValues {
-  // EFB
-  double efbBrightness;  // A32NX_EFB_BRIGHTNESS
-  // OVHD
-  double cabinLightLevel;         // 7 (0, 50, 100)
-  double ovhdIntegralLightLevel;  // 86
-  // Glareshield
-  double glareshieldIntegralLightLevel;  // 84
-  double glareshieldLcdLightLevel;       // 87
-  double tableLightCptLevel;             // 10
-  double tableLightFoLevel;              // 11
-  // Instruments
-  double pfdBrtCptLevel;        // 88
-  double ndBrtCptLevel;         // 89
-  double wxTerrainBrtCptLevel;  // 94
-  double consoleLightCptLevel;  // 8
-  double pfdBrtFoLevel;         // 90
-  double ndBrtFoLevel;          // 91
-  double wxTerrainBrtFoLevel;   // 95
-  double consoleLightFoLevel;   // 9
-  // ISIS display has automatic brightness adjustment.
-  double dcduLeftLightLevel;   // A32NX_PANEL_DCDU_L_BRIGHTNESS  0.0..1.0
-  double dcduRightLightLevel;  // A32NX_PANEL_DCDU_R_BRIGHTNESS  0.0..1.0
-  double mcduLeftLightLevel;   // A32NX_MCDU_L_BRIGHTNESS        0.0..1.0
-  double mcduRightLightLevel;  // A32NX_MCDU_R_BRIGHTNESS        0.0..1.0
-  // Pedestal
-  double ecamUpperLightLevel;         // 92
-  double ecamLowerLightLevel;         // 93
-  double floorCptLightLevel;          // 83
-  double pedestalIntegralLightLevel;  // 85
-  double floorFoLightLevel;           // 76
-};
-
-/**
  * Class for handling light presets.
  */
 class LightPreset {
@@ -52,6 +16,42 @@ class LightPreset {
   const std::string CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini";
 
   LightingSimVars* simVars;
+
+  /**
+ * Data structure for holding all relevant lighting levels and states.
+ */
+  struct LightValues {
+    // EFB
+    double efbBrightness;  // A32NX_EFB_BRIGHTNESS
+    // OVHD
+    double cabinLightLevel;         // 7 (0, 50, 100)
+    double ovhdIntegralLightLevel;  // 86
+    // Glareshield
+    double glareshieldIntegralLightLevel;  // 84
+    double glareshieldLcdLightLevel;       // 87
+    double tableLightCptLevel;             // 10
+    double tableLightFoLevel;              // 11
+    // Instruments
+    double pfdBrtCptLevel;        // 88
+    double ndBrtCptLevel;         // 89
+    double wxTerrainBrtCptLevel;  // 94
+    double consoleLightCptLevel;  // 8 (0, 50, 100)
+    double pfdBrtFoLevel;         // 90
+    double ndBrtFoLevel;          // 91
+    double wxTerrainBrtFoLevel;   // 95
+    double consoleLightFoLevel;   // 9 (0, 50, 100)
+    // ISIS display has automatic brightness adjustment.
+    double dcduLeftLightLevel;   // A32NX_PANEL_DCDU_L_BRIGHTNESS  0.0..1.0
+    double dcduRightLightLevel;  // A32NX_PANEL_DCDU_R_BRIGHTNESS  0.0..1.0
+    double mcduLeftLightLevel;   // A32NX_MCDU_L_BRIGHTNESS        0.0..1.0
+    double mcduRightLightLevel;  // A32NX_MCDU_R_BRIGHTNESS        0.0..1.0
+    // Pedestal
+    double ecamUpperLightLevel;         // 92
+    double ecamLowerLightLevel;         // 93
+    double floorCptLightLevel;          // 83
+    double pedestalIntegralLightLevel;  // 85
+    double floorFoLightLevel;           // 76
+  };
 
  public:
   /**
@@ -111,17 +111,14 @@ class LightPreset {
    * @param defaultValue a default value that is returned if the key does not exist
    * @return the value of the key or the default value if the key does not exist
    */
-  double iniGetOrDefault(const mINI::INIStructure& ini,
-                         const std::string& section,
-                         const std::string& key,
-                         const double defaultValue);
+  double iniGetOrDefault(const mINI::INIStructure& ini, const std::string& section, const std::string& key, const double defaultValue);
+
+  const LightValues DEFAULT_100 = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
+                                    100.0, 100.0, 100.0, 1.0,   1.0,   1.0,   1.0,   100.0, 100.0, 100.0, 100.0, 100.0};
+
+  const LightValues DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
+                                   50.0, 50.0, 50.0, 0.5,  0.5,  0.5,  0.5,  50.0, 50.0, 50.0, 50.0, 50.0};
+
+  const LightValues DEFAULT_10 = {10.0, 0.0,  10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+                                   10.0, 10.0, 10.0, 0.1,  0.1,  0.1,  0.0,  10.0, 10.0, 10.0, 10.0, 10.0};
 };
-
-static LightValues DEFAULT_100 = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
-                                  100.0, 100.0, 100.0, 1.0,   1.0,   1.0,   1.0,   100.0, 100.0, 100.0, 100.0, 100.0};
-
-static LightValues DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
-                                 50.0, 50.0, 50.0, 0.5,  0.5,  0.5,  0.5,  50.0, 50.0, 50.0, 50.0, 50.0};
-
-static LightValues DEFAULT_10 = {10.0, 0.0,  10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
-                                 10.0, 10.0, 10.0, 0.1,  0.1,  0.1,  0.0,  10.0, 10.0, 10.0, 10.0, 10.0};
