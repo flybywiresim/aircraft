@@ -80,7 +80,7 @@ class CDUFlightPlanPage {
 
         // If we're still on the ground, force the active leg to be the first one even if we're close enough that the
         // FPM is trying to advance to the next one.
-        const first = (mcdu.currentFlightPhase <= FmgcFlightPhases.TAKEOFF) ? 0 : activeFirst;
+        const first = (mcdu.flightPhaseManager.phase <= FmgcFlightPhases.TAKEOFF) ? 0 : activeFirst;
 
         // PWPs
         const fmsPseudoWaypoints = mcdu.guidanceController.currentPseudoWaypoints;
@@ -504,8 +504,14 @@ class CDUFlightPlanPage {
                 }
 
                 addRskAt(rowI, () => mcdu.getDelaySwitchPage(),
-                    async (_value) => {
-                        CDUVerticalRevisionPage.ShowPage(mcdu, wp);
+                    (value, scratchpadCallback) => {
+                        if (value === "") {
+                            CDUVerticalRevisionPage.ShowPage(mcdu, wp);
+                        } else if (value === FMCMainDisplay.clrValue) {
+                            mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                        } else {
+                            CDUVerticalRevisionPage.setConstraints(mcdu, wp, value, scratchpadCallback, offset);
+                        }
                     });
 
             } else if (pwp) {
@@ -752,18 +758,10 @@ class CDUFlightPlanPage {
         if (fpIndex <= mcdu.flightPlanManager.getActiveWaypointIndex()) {
             // 22-72-00:67
             // Stop clearing TO or FROM waypoints when NAV is engaged
-            const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
-            switch (lateralMode) {
-                case 20:
-                case 30:
-                case 31:
-                case 32:
-                case 33:
-                case 34:
-                case 50:
-                    mcdu.addNewMessage(NXSystemMessages.notAllowedInNav);
-                    scratchpadCallback();
-                    return;
+            if (mcdu.navModeEngaged()) {
+                mcdu.addNewMessage(NXSystemMessages.notAllowedInNav);
+                scratchpadCallback();
+                return;
             }
         }
         // TODO if clear leg before a hold, delete hold too? some other legs like this too..
