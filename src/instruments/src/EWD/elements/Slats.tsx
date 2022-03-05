@@ -32,6 +32,8 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
     const [flapsPos, setFlapsPos] = useState([x, y]);
     const [deltaFlapsAngle, setDeltaFlapsAngle] = useState(flapsAngle);
 
+    const [alphaLockEngaged] = useSimVar('L:A32NX_SFCC_1_ALPHA_LOCK_ENGAGED', 'bool', 500); // TODO: this SimVar does not exist yet
+
     useEffect(() => {
         const xVal = 34;
         const yVal = 12;
@@ -177,8 +179,9 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
                 <path d={`M ${x - 92},${y + 46} l -7,2 l -1,4 l 7,-2 Z`} className={`SlatsSmallCyan ${targetSlatsAngle === 22 && slatsAngle !== 22 ? 'Show' : 'Hide'}`} />
                 <path d={`M ${x - 126},${y + 57} l -7,2 l -1,4 l 7,-2 Z`} className={`SlatsSmallCyan ${targetSlatsAngle === 27 && slatsAngle !== 27 ? 'Show' : 'Hide'}`} />
             </g>
-            <path className="Slats" d={`M ${slatPos[0]},${slatPos[1]} l -19,7 l -4,13 l 19,-7 Z`} />
-            <line className="GreenLine" x1={x - 16} y1={y} x2={slatPos[0]} y2={slatPos[1]} />
+            {alphaLockEngaged === 1 && <text className="Medium Center GreenPulseNoFill" x={x - 95} y={y - 10}>A LOCK</text>}
+            <path className={`Slats ${alphaLockEngaged === 1 ? 'GreenPulseNoFill' : ''}`} d={`M ${slatPos[0]},${slatPos[1]} l -19,7 l -4,13 l 19,-7 Z`} />
+            <line className={`GreenLine ${alphaLockEngaged === 1 ? 'GreenPulse' : ''}`} x1={x - 16} y1={y} x2={slatPos[0]} y2={slatPos[1]} />
             {/* Flaps */}
             <g id="Flaps" className={(flapsPowered || slatsPowered) && (flapsAngle > 0 || slatsAngle > 0) ? 'Show' : 'Hide'}>
                 <path d={`M ${x + 52},${y + 15} l 3,5 l 5,1 l 0,-4 Z`} className="FlapsSmallWhite" />

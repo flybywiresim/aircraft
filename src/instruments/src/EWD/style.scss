@@ -185,6 +185,19 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
     }
 
+    .GreenPulseNoFill {
+        animation: green-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+        @keyframes green-pulse {
+            0%, 100% {
+              stroke: $display-green;
+            }
+            50% {
+                stroke: hsl(120, 100%, 20%)
+            }
+        }
+    }
+
     .DarkGreyBox {
         stroke: $display-grey;
         fill: none;
