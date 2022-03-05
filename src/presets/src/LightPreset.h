@@ -48,6 +48,8 @@ struct LightValues {
  */
 class LightPreset {
  private:
+  const std::string CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini";
+
   LightingSimVars* simVars;
 
  public:
@@ -96,13 +98,14 @@ class LightPreset {
    * @return string with the current settings and their values.
    */
   std::string sprint();
+
 };
 
-static LightValues lv_100 = {100.0, POS3_2, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
+static LightValues DEFAULT_100 = {100.0, POS3_2, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
                              100.0, 100.0,  100.0, 1.0,   1.0,   1.0,   1.0,   100.0, 100.0, 100.0, 100.0, 100.0};
 
-static LightValues lv_50 = {50.0, POS3_1, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
+static LightValues DEFAULT_50 = {50.0, POS3_1, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
                             50.0, 50.0,   50.0, 0.5,  0.5,  0.5,  0.5,  50.0, 50.0, 50.0, 50.0, 50.0};
 
-static LightValues lv_0 = {10.0, POS3_0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+static LightValues DEFAULT_10 = {10.0, POS3_0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
                            10.0, 10.0,    10.0, 0.1, 0.1, 0.1, 0.0, 10.0, 10.0, 10.0, 10.0, 10.0};

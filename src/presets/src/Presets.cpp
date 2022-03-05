@@ -86,26 +86,24 @@ bool Presets::onUpdate(double deltaTime) {
 
 void Presets::loadPreset(const int loadPresetRequest) {
   std::cout << "PRESETS: Loading preset: " << loadPresetRequest << std::endl;
-  std::unique_ptr<LightPreset> lightPreset = make_unique<LightPreset>(simVars);
-  // Temporary loading until file load is implemented.
-  switch (loadPresetRequest) {
-    case 1:
-      lightPreset->loadFromData(lv_0);
-      break;
-    case 2:
-      lightPreset->loadFromData(lv_50);
-      break;
-    case 3:
-      lightPreset->loadFromData(lv_100);
-      break;
+  LightPreset lightPreset(simVars);
+  if (lightPreset.readFromStore(loadPresetRequest)) {
+    lightPreset.applyToAircraft();
+    std::cout << "PRESETS: Preset: " << loadPresetRequest << " successfully loaded." << std::endl;
+  } else {
+    std::cout << "PRESETS: Loading preset: " << loadPresetRequest << " failed." << std::endl;
   }
-  lightPreset->applyToAircraft();
-  lightPreset->readFromAircraft();
 }
 
 void Presets::savePreset(const int savePresetRequest) {
   std::cout << "PRESETS: Save to preset: " << savePresetRequest << std::endl;
-
+  LightPreset lightPreset(simVars);
+  lightPreset.readFromAircraft();
+  if (lightPreset.saveToStore(savePresetRequest)) {
+    std::cout << "PRESETS: Preset: " << savePresetRequest << " successfully saved." << std::endl;
+  } else {
+    std::cout << "PRESETS: Saving preset: " << savePresetRequest << " failed." << std::endl;
+  }
 }
 
 bool Presets::simConnectRequestData() {
@@ -114,10 +112,12 @@ bool Presets::simConnectRequestData() {
     return false;
   }
 
+  // not use in this use case
+  //
   // request data for defined data structure
   //  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER,
   //                                                     SIMCONNECT_PERIOD_ONCE);
-
+  //
   // check result of data request
   //  if (result != S_OK) {
   //    // request failed

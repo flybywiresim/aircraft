@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "LightPreset.h"
+#include "inih/ini.h"
 
 void LightPreset::readFromAircraft() {
   lightValues.efbBrightness = simVars->getEfbBrightness();
@@ -64,11 +65,101 @@ void LightPreset::applyToAircraft() {
 }
 
 bool LightPreset::readFromStore(int presetNr) {
-  return false;
+  // create ini file and data structure
+  mINI::INIStructure ini;
+  mINI::INIFile iniFile(CONFIGURATION_FILEPATH);
+
+  // load file
+  bool result = iniFile.read(ini);
+
+  const std::string preset = "preset " + std::to_string(presetNr);
+
+  // check if preset is available
+  if (!ini.has(preset)) {
+    switch (presetNr) {
+      case 1:
+        loadFromData(DEFAULT_10);
+        break;
+      case 2:
+        loadFromData(DEFAULT_50);
+        break;
+      case 3:
+        loadFromData(DEFAULT_100);
+        break;
+      default:
+        loadFromData(DEFAULT_50);
+        break;
+    }
+    return true;
+  }
+
+  // reading data structure from ini
+  lightValues.efbBrightness = std::stof(ini[preset]["efb brightness"]);
+  lightValues.cabinLightLevel = (ThreeWay)std::stoi(ini[preset]["cabin light"]);
+  lightValues.ovhdIntegralLightLevel = std::stof(ini[preset]["ovhd int lt"]);
+  lightValues.glareshieldIntegralLightLevel = std::stof(ini[preset]["glareshield int lt"]);
+  lightValues.glareshieldLcdLightLevel = std::stof(ini[preset]["glareshield lcd lt"]);
+  lightValues.tableLightCptLevel = std::stof(ini[preset]["table cpt lt"]);
+  lightValues.tableLightFoLevel = std::stof(ini[preset]["table fo lt"]);
+  lightValues.pfdBrtCptLevel = std::stof(ini[preset]["pfd cpt lvl"]);
+  lightValues.ndBrtCptLevel = std::stof(ini[preset]["nd cpt lvl"]);
+  lightValues.wxTerrainBrtCptLevel = std::stof(ini[preset]["wx cpt lvl"]);
+  lightValues.consoleLightCptLevel = std::stof(ini[preset]["console cpt lt"]);
+  lightValues.pfdBrtFoLevel = std::stof(ini[preset]["pfd fo lvl"]);
+  lightValues.ndBrtFoLevel = std::stof(ini[preset]["nd fo lvl"]);
+  lightValues.wxTerrainBrtFoLevel = std::stof(ini[preset]["wx fo lvl"]);
+  lightValues.consoleLightFoLevel = std::stof(ini[preset]["console fo lt"]);
+  lightValues.dcduLeftLightLevel = std::stof(ini[preset]["dcdu left lvl"]) / 100;
+  lightValues.dcduRightLightLevel = std::stof(ini[preset]["dcdu right lvl"]) / 100;
+  lightValues.mcduLeftLightLevel = std::stof(ini[preset]["mcdu left lvl"]) / 100;
+  lightValues.mcduRightLightLevel = std::stof(ini[preset]["mcdu right lvl"]) / 100;
+  lightValues.ecamUpperLightLevel = std::stof(ini[preset]["ecam upper lvl"]);
+  lightValues.ecamLowerLightLevel = std::stof(ini[preset]["ecam lower lvl"]);
+  lightValues.floorCptLightLevel = std::stof(ini[preset]["floor cpt lt"]);
+  lightValues.pedestalIntegralLightLevel = std::stof(ini[preset]["pedestal int lt"]);
+  lightValues.floorFoLightLevel = std::stof(ini[preset]["floor fo lvl"]);
+
+  return result;
 }
 
 bool LightPreset::saveToStore(int presetNr) {
-  return false;
+  // create ini file and data structure
+  mINI::INIStructure ini;
+  mINI::INIFile iniFile(CONFIGURATION_FILEPATH);
+
+  // load file
+  bool result = iniFile.read(ini);
+
+  // add/update preset
+  const std::string preset = "preset " + std::to_string(presetNr);
+  ini[preset]["efb brightness"] = std::to_string(lightValues.efbBrightness);
+  ini[preset]["cabin light"] = std::to_string(lightValues.cabinLightLevel);
+  ini[preset]["ovhd int lt"] = std::to_string(lightValues.ovhdIntegralLightLevel);
+  ini[preset]["glareshield int lt"] = std::to_string(lightValues.glareshieldIntegralLightLevel);
+  ini[preset]["glareshield lcd lt"] = std::to_string(lightValues.glareshieldLcdLightLevel);
+  ini[preset]["table cpt lt"] = std::to_string(lightValues.tableLightCptLevel);
+  ini[preset]["table fo lt"] = std::to_string(lightValues.tableLightFoLevel);
+  ini[preset]["pfd cpt lvl"] = std::to_string(lightValues.pfdBrtCptLevel);
+  ini[preset]["nd cpt lvl"] = std::to_string(lightValues.ndBrtCptLevel);
+  ini[preset]["wx cpt lvl"] = std::to_string(lightValues.wxTerrainBrtCptLevel);
+  ini[preset]["console cpt lt"] = std::to_string(lightValues.consoleLightCptLevel);
+  ini[preset]["pfd fo lvl"] = std::to_string(lightValues.pfdBrtFoLevel);
+  ini[preset]["nd fo lvl"] = std::to_string(lightValues.ndBrtFoLevel);
+  ini[preset]["wx fo lvl"] = std::to_string(lightValues.wxTerrainBrtFoLevel);
+  ini[preset]["console fo lt"] = std::to_string(lightValues.consoleLightFoLevel);
+  ini[preset]["dcdu left lvl"] = std::to_string(lightValues.dcduLeftLightLevel * 100);
+  ini[preset]["dcdu right lvl"] = std::to_string(lightValues.dcduRightLightLevel * 100);
+  ini[preset]["mcdu left lvl"] = std::to_string(lightValues.mcduLeftLightLevel * 100);
+  ini[preset]["mcdu right lvl"] = std::to_string(lightValues.mcduRightLightLevel * 100);
+  ini[preset]["ecam upper lvl"] = std::to_string(lightValues.ecamUpperLightLevel);
+  ini[preset]["ecam lower lvl"] = std::to_string(lightValues.ecamLowerLightLevel);
+  ini[preset]["floor cpt lt"] = std::to_string(lightValues.floorCptLightLevel);
+  ini[preset]["pedestal int lt"] = std::to_string(lightValues.pedestalIntegralLightLevel);
+  ini[preset]["floor fo lvl"] = std::to_string(lightValues.floorFoLightLevel);
+
+  result &= iniFile.write(ini, true);
+
+  return result;
 }
 
 std::string LightPreset::sprint() {
@@ -96,6 +187,6 @@ std::string LightPreset::sprint() {
   os << "ECAM Lower Lvl: " << lightValues.ecamLowerLightLevel << std::endl;
   os << "Floor Cpt Lt: " << lightValues.floorCptLightLevel << std::endl;
   os << "Pedestal Int Lt: " << lightValues.pedestalIntegralLightLevel << std::endl;
-  os << "Floor FoO Lvl: " << lightValues.floorFoLightLevel << std::endl;
+  os << "Floor FO Lvl: " << lightValues.floorFoLightLevel << std::endl;
   return os.str();
 }
