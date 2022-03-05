@@ -149,14 +149,14 @@ bool Presets::simConnectRequestData() {
   }
 
   // request data for defined data structure
-  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER,
-                                                     SIMCONNECT_PERIOD_ONCE);
+  //  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER,
+  //                                                     SIMCONNECT_PERIOD_ONCE);
 
   // check result of data request
-  if (result != S_OK) {
-    // request failed
-    return false;
-  }
+  //  if (result != S_OK) {
+  //    // request failed
+  //    return false;
+  //  }
 
   // success
   return true;

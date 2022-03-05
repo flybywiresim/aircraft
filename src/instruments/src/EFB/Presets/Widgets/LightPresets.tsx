@@ -44,10 +44,6 @@ export const LightPresets = () => {
                             efbBrightness =
                             {' '}
                             {efbBrightness}
-                            <br />
-                            testWASMVar =
-                            {' '}
-                            {testWASMVar}
                         </ScrollableContainer>
                     </div>
                 </div>
