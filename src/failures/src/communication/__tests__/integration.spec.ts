@@ -1,5 +1,5 @@
 import { QueuedSimVarReader, SimVarReaderWriter, TransactionReader, QueuedSimVarWriter, TransactionWriter } from '..';
-import { flushPromises } from '../../test-functions';
+import { flushPromises } from '../../test-values';
 
 test('read/write', async () => {
     const failureIdentifier = 1;

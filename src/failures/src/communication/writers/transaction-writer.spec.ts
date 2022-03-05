@@ -1,6 +1,6 @@
 import { TransactionWriter } from './transaction-writer';
 import { SimVarReaderWriter, Updatable, Writer, QueuedSimVarWriter } from '..';
-import { flushPromises } from '../../test-functions';
+import { flushPromises } from '../../test-values';
 
 describe('TransationWriter', () => {
     test('waits for receival confirmation', async () => {

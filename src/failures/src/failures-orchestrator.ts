@@ -1,7 +1,7 @@
 import { QueuedSimVarWriter, SimVarReaderWriter } from './communication';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 import { FailuresProvider } from './failures-provider';
-import { FailuresTriggers, PrefixedFailuresTriggers } from './communication/triggers';
+import { FailuresTriggers, PrefixedFailuresTriggers } from './triggers';
 
 export interface Failure {
     identifier: number,
@@ -71,6 +71,9 @@ export class FailuresOrchestrator implements FailuresProvider {
      */
     async activate(identifier: number): Promise<void> {
         this.changingFailures.add(identifier);
+
+        this.publishStateUpdate();
+
         await this.activateFailureQueue.write(identifier);
         this.changingFailures.delete(identifier);
         this.activeFailures.add(identifier);
@@ -83,6 +86,9 @@ export class FailuresOrchestrator implements FailuresProvider {
      */
     async deactivate(identifier: number): Promise<void> {
         this.changingFailures.add(identifier);
+
+        this.publishStateUpdate();
+
         await this.deactivateFailureQueue.write(identifier);
         this.changingFailures.delete(identifier);
         this.activeFailures.delete(identifier);

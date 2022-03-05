@@ -1,6 +1,6 @@
 import { Failure } from '@flybywiresim/failures';
 import { FailuresProvider } from './failures-provider';
-import { FailuresTriggers, PrefixedFailuresTriggers } from './communication/triggers';
+import { FailuresTriggers, PrefixedFailuresTriggers } from './triggers';
 
 /**
  * Mirrors data from a remote {@link FailuresOrchestrator} using `Coherent` events
@@ -37,12 +37,15 @@ export class RemoteFailuresProvider implements FailuresProvider {
 
     private processNewState(newActiveFailures: number[], newChangingFailures: number[]): void {
         for (const oldChanging of this.changingFailures) {
+            // FIXME this is prone to race conditions - if an update comes after the ACTIVATE trigger is fired but before the failure is active on the
+            // orchestrator's side, the callback will be wrongly called. Introduce CONFIRM_ACTIVATE and CONFIRM_DEACTIVATE triggers ?
             if (!newChangingFailures.includes(oldChanging)) {
                 this.changingFailuresCallbacks.get(oldChanging)?.(oldChanging);
             }
         }
 
         this.activeFailures = new Set(newActiveFailures);
+        this.changingFailures = new Set(newChangingFailures);
     }
 
     getAllFailures(): Readonly<Readonly<Failure>[]> {

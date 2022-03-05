@@ -1,6 +1,6 @@
 import { FailuresOrchestrator } from '.';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
-import { flushPromises } from './test-functions';
+import { flushPromises } from './test-values';
 
 describe('FailuresOrchestrator', () => {
     test('stores configured failures', () => {

@@ -1,4 +1,4 @@
-import { flushPromises } from '../../test-functions';
+import { flushPromises } from '../../test-values';
 import { QueuedSimVarWriter } from '.';
 import { SimVarReaderWriter } from '..';
 

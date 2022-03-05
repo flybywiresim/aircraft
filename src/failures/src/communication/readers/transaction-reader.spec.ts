@@ -1,6 +1,6 @@
 import { QueuedSimVarReader, TransactionReader } from '.';
 import { CallbackReader, SimVarReaderWriter, QueuedSimVarWriter } from '..';
-import { flushPromises } from '../../test-functions';
+import { flushPromises } from '../../test-values';
 
 describe('TransactionReader', () => {
     test('confirms receival', async () => {
