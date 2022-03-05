@@ -640,50 +640,6 @@ export class FlightPlanManager {
         return undefined;
     }
 
-    public async getApproachConstraints(): Promise<WayPoint[]> {
-        const approachWaypoints = [];
-        const destination = await this._parentInstrument.facilityLoader.getFacilityRaw(this.getDestination().icao);
-
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-
-        if (destination) {
-            const approach = destination.approaches[currentFlightPlan.procedureDetails.approachIndex];
-            if (approach) {
-                let approachTransition = approach.transitions[0];
-                if (approach.transitions.length > 0) {
-                    approachTransition = approach.transitions[currentFlightPlan.procedureDetails.approachTransitionIndex];
-                }
-                if (approach && approach.finalLegs) {
-                    for (let i = 0; i < approach.finalLegs.length; i++) {
-                        const wp = new WayPoint(this._parentInstrument);
-                        wp.icao = approach.finalLegs[i].fixIcao;
-                        wp.ident = wp.icao.substr(7);
-                        wp.legAltitudeDescription = approach.finalLegs[i].altDesc;
-                        wp.legAltitude1 = approach.finalLegs[i].altitude1 * 3.28084;
-                        wp.legAltitude2 = approach.finalLegs[i].altitude2 * 3.28084;
-                        wp.speedConstraint = approach.finalLegs[i].speedRestriction;
-                        wp.additionalData.overfly = approach.finalLegs[i].flyOver;
-                        approachWaypoints.push(wp);
-                    }
-                }
-                if (approachTransition && approachTransition.legs) {
-                    for (let i = 0; i < approachTransition.legs.length; i++) {
-                        const wp = new WayPoint(this._parentInstrument);
-                        wp.icao = approachTransition.legs[i].fixIcao;
-                        wp.ident = wp.icao.substr(7);
-                        wp.legAltitudeDescription = approachTransition.legs[i].altDesc;
-                        wp.legAltitude1 = approachTransition.legs[i].altitude1 * 3.28084;
-                        wp.legAltitude2 = approachTransition.legs[i].altitude2 * 3.28084;
-                        wp.speedConstraint = approach.finalLegs[i].speedRestriction;
-                        wp.additionalData.overfly = approachTransition.finalLegs[i].flyOver;
-                        approachWaypoints.push(wp);
-                    }
-                }
-            }
-        }
-        return approachWaypoints;
-    }
-
     /**
      * Gets the departure waypoints for the current flight plan.
      */
@@ -859,11 +815,14 @@ export class FlightPlanManager {
         const waypoint = currentFlightPlan.getWaypoint(index);
 
         if (waypoint) {
-            const altCoord = (altitude < 1000 ? altitude * 100 : altitude) / 3.28084;
-            waypoint.infos.coordinates.alt = altCoord;
             waypoint.legAltitude1 = altitude;
-            if (isDescentConstraint !== undefined && !waypoint.constraintType) {
-                waypoint.constraintType = isDescentConstraint ? WaypointConstraintType.DES : WaypointConstraintType.CLB;
+            if (isDescentConstraint !== undefined && !waypoint.additionalData.constraintType) {
+                // this propagates through intermediate waypoints
+                if (isDescentConstraint) {
+                    this.setFirstDesConstraintWaypoint(index);
+                } else {
+                    this.setLastClbConstraintWaypoint(index);
+                }
             }
             this.updateFlightPlanVersion().catch(console.error);
         }
@@ -883,12 +842,35 @@ export class FlightPlanManager {
         const waypoint = currentFlightPlan.getWaypoint(index);
         if (waypoint) {
             waypoint.speedConstraint = speed;
-            if (isDescentConstraint !== undefined && !waypoint.constraintType) {
-                waypoint.constraintType = isDescentConstraint ? WaypointConstraintType.DES : WaypointConstraintType.CLB;
+            // this propagates through intermediate waypoints
+            if (isDescentConstraint) {
+                this.setFirstDesConstraintWaypoint(index);
+            } else {
+                this.setLastClbConstraintWaypoint(index);
             }
             this.updateFlightPlanVersion();
         }
         callback();
+    }
+
+    private setLastClbConstraintWaypoint(index: number) {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        for (let i = index; i >= 0; i--) {
+            const waypoint = currentFlightPlan.getWaypoint(i);
+            if (waypoint) {
+                waypoint.additionalData.constraintType = WaypointConstraintType.CLB;
+            }
+        }
+    }
+
+    private setFirstDesConstraintWaypoint(index: number) {
+        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
+        for (let i = index; i < this.getWaypointsCount(); i++) {
+            const waypoint = currentFlightPlan.getWaypoint(i);
+            if (waypoint) {
+                waypoint.additionalData.constraintType = WaypointConstraintType.DES;
+            }
+        }
     }
 
     /**
