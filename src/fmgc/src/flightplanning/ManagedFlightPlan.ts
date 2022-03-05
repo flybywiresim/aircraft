@@ -23,7 +23,7 @@
  */
 
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
-import { AltitudeDescriptor, LegType, TurnDirection } from '../types/fstypes/FSEnums';
+import { AltitudeDescriptor, LegType, FixTypeFlags } from '../types/fstypes/FSEnums';
 import { FlightPlanSegment, SegmentType } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
 import { RawDataMapper } from './RawDataMapper';
@@ -1039,7 +1039,13 @@ export class ManagedFlightPlan {
         }
 
         if (approachIndex !== -1) {
-            legs.push(...destinationInfo.approaches[approachIndex].finalLegs);
+            const finalLegs = destinationInfo.approaches[approachIndex].finalLegs.slice();
+            for (let i = 0; i < finalLegs.length; i++) {
+                if (finalLegs[i].fixTypeFlags & FixTypeFlags.MAP) {
+                    finalLegs.splice(i + 1);
+                }
+            }
+            legs.push(...finalLegs);
             missedLegs.push(...destinationInfo.approaches[approachIndex].missedLegs);
         }
 
