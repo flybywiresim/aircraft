@@ -1,10 +1,37 @@
 import React from 'react';
+import { AtaChaptersDescription, AtaChaptersTitle, AtaChapterNumber } from '@shared/ata';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 import { FailureButton } from './FailureButton';
 
+interface ATAFailureCardProps {
+    ataNumber: AtaChapterNumber,
+    title: string,
+    description: string,
+}
+
+const ATAFailureCard = ({ ataNumber, description, title }: ATAFailureCardProps) => (
+    <div className="flex flex-row space-x-4">
+        <div className="flex justify-center items-center w-1/5 text-5xl font-bold rounded-md font-title bg-theme-accent">
+            ATA
+            {' '}
+            {ataNumber}
+        </div>
+
+        <div className="space-y-2 w-3/4">
+            <h1 className="font-bold">
+                {title}
+            </h1>
+            <p>
+                {description}
+            </p>
+        </div>
+    </div>
+);
+
 export const Failures = () => {
-    const orchestrator = useFailuresOrchestrator();
+    const { allFailures } = useFailuresOrchestrator();
+    const chapters = Array.from(new Set(allFailures.map((it) => it.ata))).sort((a, b) => a - b);
 
     return (
         <div className="w-full">
@@ -14,19 +41,12 @@ export const Failures = () => {
             </div>
             <div className="p-4 mt-4 rounded-lg border-2 border-theme-accent">
                 <ScrollableContainer height={52}>
-                    <div className="grid grid-cols-4 grid-rows-4 grid-flow-row gap-4">
-                        {orchestrator.allFailures.map((failure) => (
-                            <FailureButton
-                                name={failure.name}
-                                isActive={orchestrator.activeFailures.has(failure.identifier)}
-                                isChanging={orchestrator.changingFailures.has(failure.identifier)}
-                                onClick={() => {
-                                    if (!orchestrator.activeFailures.has(failure.identifier)) {
-                                        orchestrator.activate(failure.identifier);
-                                    } else {
-                                        orchestrator.deactivate(failure.identifier);
-                                    }
-                                }}
+                    <div className="space-y-4">
+                        {chapters.map((chapter) => (
+                            <ATAFailureCard
+                                ataNumber={chapter}
+                                title={AtaChaptersTitle[chapter]}
+                                description={AtaChaptersDescription[chapter]}
                             />
                         ))}
                     </div>

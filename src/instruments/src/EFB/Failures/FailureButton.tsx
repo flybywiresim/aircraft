@@ -11,13 +11,11 @@ export interface FailureButtonProps {
 
 export const FailureButton: FC<FailureButtonProps> = ({ name, isActive, isChanging, onClick }) => {
     let type: BUTTON_TYPE;
-
     if (isChanging) {
         type = BUTTON_TYPE.NONE;
     } else {
         type = isActive ? BUTTON_TYPE.RED : BUTTON_TYPE.GREEN;
     }
-
     return (
         <Button
             onClick={onClick}
