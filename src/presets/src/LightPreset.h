@@ -14,7 +14,7 @@ struct LightValues {
   // EFB
   double efbBrightness;  // A32NX_EFB_BRIGHTNESS
   // OVHD
-  ThreeWay cabinLightLevel;       // 7 (0..2)
+  double cabinLightLevel;       // 7 (0, 50, 100)
   double ovhdIntegralLightLevel;  // 86
   // Glareshield
   double glareshieldIntegralLightLevel;  // 84
@@ -101,11 +101,11 @@ class LightPreset {
 
 };
 
-static LightValues DEFAULT_100 = {100.0, POS3_2, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
+static LightValues DEFAULT_100 = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
                              100.0, 100.0,  100.0, 1.0,   1.0,   1.0,   1.0,   100.0, 100.0, 100.0, 100.0, 100.0};
 
-static LightValues DEFAULT_50 = {50.0, POS3_1, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
+static LightValues DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
                             50.0, 50.0,   50.0, 0.5,  0.5,  0.5,  0.5,  50.0, 50.0, 50.0, 50.0, 50.0};
 
-static LightValues DEFAULT_10 = {10.0, POS3_0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+static LightValues DEFAULT_10 = {10.0, 0.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
                            10.0, 10.0,    10.0, 0.1, 0.1, 0.1, 0.0, 10.0, 10.0, 10.0, 10.0, 10.0};

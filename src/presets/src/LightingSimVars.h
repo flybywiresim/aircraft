@@ -25,11 +25,6 @@ struct SimulationData {
 enum Side { Left, Right };
 
 /**
- * Positions for a 3 way switch.
- */
-enum ThreeWay { POS3_0, POS3_1, POS3_2 };
-
-/**
  * A collection of SimVar unit enums.
  */
 class Units {
@@ -202,14 +197,14 @@ class LightingSimVars {
    * @param index of the light potentiometer
    * @return value in percent over 100 (0..100)
    */
-  INT64 getLightPotentiometer(int index) { return aircraft_varget(lightPotentiometer, m_Units->Percent, index); }
+  FLOAT64 getLightPotentiometer(int index) { return aircraft_varget(lightPotentiometer, m_Units->Percent, index); }
 
   /**
    * Sets a light potentiometer setting to the simulator.
    * @param index the light potentiometer index
    * @param value in percent over 100 (0..100)
    */
-  void setLightPotentiometer(int index, INT64 value) {
+  void setLightPotentiometer(int index, FLOAT64 value) {
     std::string calculator_code;
     calculator_code += std::to_string(value);
     calculator_code += " ";
@@ -219,32 +214,28 @@ class LightingSimVars {
   }
 
   /**
-   * Retrieves the switch position of the dome light switch
-   * @return ThreeWay.POS3_0 .. ThreeWay.POS3_2
+   * Retrieves the switch position of the dome light switch.
+   * 0 = switch pos OFF, 50 = switch pos DIM, 100 = switch pos BRT
+   * @return value in percent over 100 (0..100)
    */
-  ThreeWay getLightCabin() {
-    if (aircraft_varget(lightCabin, m_Units->Bool, 0) == 1) {
-      const INT64 potentiometer = getLightPotentiometer(7);
-      switch (potentiometer) {
-        case 50:
-          return POS3_1;
-        case 100:
-          return POS3_2;
-        default:
-          return POS3_0;
-      }
-    }
-    return POS3_0;
+  FLOAT64 getLightCabin() {
+    return getLightPotentiometer(7);
   }
   /**
    * Sets the dome light switch in one of 3 positions.
-   * @param switchState POS3_0 = OFF, POS3_1 = DIM,, POS_2 = HIGH
+   * @param lvl 0 = OFF, 50 = DIM,, 100 = BRT
    */
-  void setLightCabin(ThreeWay switchState) {
+  void setLightCabin(FLOAT64 lvl) {
+    // cabin light level needs to either be 0, 50 or 100 for the switch position
+    // in the aircraft to work.
+    if (lvl <= 0.0) lvl = 0.0;
+    else if (lvl > 0.0 && lvl <=50.0) lvl = 50.0;
+    else if ((lvl > 0.0 && lvl > 50.0)) lvl = 100.0;
+    // set the switch position via calculator code
     std::string calculator_code;
-    calculator_code += std::to_string(switchState ? 1 : 0);
+    calculator_code += std::to_string(lvl > 0 ? 1 : 0);
     calculator_code += " (>K:2:CABIN_LIGHTS_SET) ";
-    calculator_code += std::to_string(switchState * 50);  // 0, 50% and 100%
+    calculator_code += std::to_string(lvl);  // 0, 50% and 100%
     calculator_code += " (>K:LIGHT_POTENTIOMETER_7_SET)";
     execute_calculator_code(calculator_code.c_str(), nullptr, nullptr, nullptr);
   }

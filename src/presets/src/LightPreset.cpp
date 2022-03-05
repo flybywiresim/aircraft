@@ -95,7 +95,7 @@ bool LightPreset::readFromStore(int presetNr) {
 
   // reading data structure from ini
   lightValues.efbBrightness = std::stof(ini[preset]["efb brightness"]);
-  lightValues.cabinLightLevel = (ThreeWay)std::stoi(ini[preset]["cabin light"]);
+  lightValues.cabinLightLevel = std::stoi(ini[preset]["cabin light"]);
   lightValues.ovhdIntegralLightLevel = std::stof(ini[preset]["ovhd int lt"]);
   lightValues.glareshieldIntegralLightLevel = std::stof(ini[preset]["glareshield int lt"]);
   lightValues.glareshieldLcdLightLevel = std::stof(ini[preset]["glareshield lcd lt"]);
