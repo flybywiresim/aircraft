@@ -6,7 +6,6 @@
 #include "LightPreset.h"
 
 void LightPreset::readFromAircraft() {
-  std::cout << "PRESETS: Reading Light Levels" << std::endl;
   lightValues.efbBrightness = simVars->getEfbBrightness();
   lightValues.cabinLightLevel = simVars->getLightCabin();
   lightValues.ovhdIntegralLightLevel = simVars->getLightPotentiometer(86);
@@ -38,7 +37,6 @@ void LightPreset::loadFromData(LightValues lv) {
 }
 
 void LightPreset::applyToAircraft() {
-  std::cout << "PRESETS: Reading Light Levels" << std::endl;
   simVars->setEfbBrightness(lightValues.efbBrightness);
   simVars->setLightCabin(lightValues.cabinLightLevel);
   simVars->setLightPotentiometer(86, lightValues.ovhdIntegralLightLevel);
