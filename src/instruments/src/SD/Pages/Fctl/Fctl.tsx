@@ -138,10 +138,6 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
     const [rudderDeflectionState] = useSimVar('L:A32NX_HYD_RUDDER_DEFLECTION', 'Percent', 50);
     const rudderAngle = -rudderDeflectionState * 25 / 100;
 
-    // Rudder trim
-    const [rudderTrimState] = useSimVar('RUDDER TRIM PCT', 'percent over 100', 500);
-    const rudderTrimAngle = -rudderTrimState * 25;
-
     const hydraulics = useHydraulics();
     const hydraulicAvailableClass = hydraulics.G.available || hydraulics.B.available || hydraulics.Y.available ? 'GreenShape' : 'WarningShape';
 
@@ -165,10 +161,39 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
                 <path id="rudderTail" className={hydraulicAvailableClass} d="M42,78 l8,48 l8,-48" />
             </g>
 
-            <g id="rudderTrimCursor" transform={`rotate(${rudderTrimAngle} 50 24)`}>
-                <path className="RudderTrim" d="m50 134 v 8" />
-            </g>
+            <RudderTrim />
         </SvgGroup>
+    );
+};
+
+const RudderTrim = () => {
+    // Should use data from FAC through FWC, but since that is not implemented yet it is read directly
+
+    const fac1DiscreteWord2 = useArinc429Var('L:A32NX_FAC_1_DISCRETE_WORD_2');
+    const fac2DiscreteWord2 = useArinc429Var('L:A32NX_FAC_2_DISCRETE_WORD_2');
+
+    const anyTrimEngaged = fac1DiscreteWord2.getBitValueOr(13, false) || fac1DiscreteWord2.getBitValueOr(14, false)
+    || fac2DiscreteWord2.getBitValueOr(13, false) || fac2DiscreteWord2.getBitValueOr(14, false);
+
+    const facSourceForTrim = fac2DiscreteWord2.getBitValueOr(13, false) ? 2 : 1;
+    const trimPosWord = useArinc429Var(`L:A32NX_FAC_${facSourceForTrim}_RUDDER_TRIM_POS`);
+
+    return (
+        <>
+            <g id="rudderTrimCursor" transform={`rotate(${trimPosWord.value} 50 24)`} visibility={trimPosWord.isNormalOperation() ? 'visible' : 'hidden'}>
+                <path className={anyTrimEngaged ? 'RudderTrim' : 'RudderTrimWarning'} d="m50 134 v 8" />
+            </g>
+            <text
+                id="rudderTrimFailedFlag"
+                className="Warning Medium"
+                textAnchor="middle"
+                visibility={trimPosWord.isNormalOperation() ? 'hidden' : 'visible'}
+                x="50"
+                y="150"
+            >
+                XX
+            </text>
+        </>
     );
 };
 

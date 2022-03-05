@@ -39,6 +39,12 @@
     stroke-width: 3;
   }
 
+  .RudderTrimWarning {
+    fill: transparent;
+    stroke: $display-amber;
+    stroke-width: 3;
+  }
+
   .GreenShape {
     fill: transparent;
     stroke: $display-green;
