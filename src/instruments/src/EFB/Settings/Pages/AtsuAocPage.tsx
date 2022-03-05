@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { useState } from 'react';
 
 import { usePersistentProperty } from '@instruments/common/persistence';
@@ -9,6 +10,10 @@ import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
+import {
+    SENTRY_CONSENT_KEY,
+    SentryConsentState,
+} from '../../../../../sentry-client/src/FbwAircraftSentryClient';
 
 export const AtsuAocPage = () => {
     const [atisSource, setAtisSource] = usePersistentProperty('CONFIG_ATIS_SRC', 'FAA');
@@ -22,6 +27,8 @@ export const AtsuAocPage = () => {
     const [autoSimbriefImport, setAutoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT', 'DISABLED');
 
     const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
+
+    const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
     const getSimbriefUserData = (value: string): Promise<any> => {
         const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -149,6 +156,22 @@ export const AtsuAocPage = () => {
         }
     };
 
+    const handleSentryToggle = (toggleValue: boolean) => {
+        if (toggleValue) {
+            modals.showModal(
+                <PromptModal
+                    title="Optional A32NX Error Reporting"
+                    bodyText="You are able to opt into anonymous error reporting that will allow us to diagnose, monitor, and take care of issues at a faster rate. This feature is completely optional and we will never collect your personal data, but may allow you to more easily get support and have the issues you encounter fixed at a faster rate."
+                    onConfirm={() => setSentryEnabled(SentryConsentState.Given)}
+                    onCancel={() => setSentryEnabled(SentryConsentState.Refused)}
+                    confirmText="Enable"
+                />,
+            );
+        } else {
+            setSentryEnabled(SentryConsentState.Refused);
+        }
+    };
+
     return (
         <SettingsPage name="ATSU / AOC">
             <SettingItem name="ATIS/ATC Source">
@@ -214,6 +237,10 @@ export const AtsuAocPage = () => {
                     onBlur={(value) => handleHoppieUsernameInput(value.replace(/\s/g, ''))}
                     onChange={(value) => setHoppieUserId(value)}
                 />
+            </SettingItem>
+
+            <SettingItem name="Error Reporting">
+                <Toggle value={sentryEnabled === SentryConsentState.Given} onToggle={(toggleValue) => handleSentryToggle(toggleValue)} />
             </SettingItem>
         </SettingsPage>
     );
