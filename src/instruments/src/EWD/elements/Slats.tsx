@@ -1,3 +1,4 @@
+import { CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
 import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, useState } from 'react';
 
@@ -32,7 +33,7 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
     const [flapsPos, setFlapsPos] = useState([x, y]);
     const [deltaFlapsAngle, setDeltaFlapsAngle] = useState(flapsAngle);
 
-    const [alphaLockEngaged] = useSimVar('L:A32NX_SFCC_1_ALPHA_LOCK_ENGAGED', 'bool', 500); // TODO: this SimVar does not exist yet
+    const [alphaLockEngaged] = useSimVar('L:A32NX_SFCC_1_ALPHA_LOCK_ENGAGED', 'bool', 500); // TODO: this SimVar is part of PR #6647
 
     useEffect(() => {
         const xVal = 34;
@@ -45,16 +46,13 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
             setSlatsInitial(false);
             if (handleIndex) {
                 switch (true) {
-                case (handleIndex === 2):
+                case (slatsAngle === 18):
                     setSlatPos([x - 49, y + 12]);
                     break;
-                case (handleIndex === 3):
+                case (slatsAngle === 22):
                     setSlatPos([x - 83, y + 24]);
                     break;
-                case (handleIndex === 4):
-                    setSlatPos([x - 83, y + 24]);
-                    break;
-                case (handleIndex === 5):
+                case (slatsAngle === 27):
                     setSlatPos([x - 117, y + 36]);
                     break;
                 default:
@@ -89,8 +87,12 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
                 );
             }
         }
-
-        setDeltaSlatsAngle(slatsAngle);
+        // Hack to cater for strange behaviour when loading in on approach
+        if (slatsAngle === 27) {
+            setSlatPos([x - 117, y + 36]);
+        } else {
+            setDeltaSlatsAngle(slatsAngle);
+        }
     }, [slatsAngle]);
 
     useEffect(() => {
@@ -104,16 +106,16 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
             setFlapsInitial(false);
             if (handleIndex) {
                 switch (true) {
-                case (handleIndex === 2):
+                case (flapsAngle === 10):
                     setFlapsPos([x + 43, y + 9]);
                     break;
-                case (handleIndex === 3):
+                case (flapsAngle === 15):
                     setFlapsPos([x + 86, y + 18]);
                     break;
-                case (handleIndex === 4):
+                case (flapsAngle === 20):
                     setFlapsPos([x + 129, y + 27]);
                     break;
-                case (handleIndex === 5):
+                case (flapsAngle === 40):
                     setFlapsPos([x + 172, y + 36]);
                     break;
                 default:
@@ -149,6 +151,9 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
             }
         }
 
+        if (flapsAngle === 40) {
+            setFlapsPos([x + 172, y + 36]);
+        }
         setDeltaFlapsAngle(flapsAngle);
     }, [flapsAngle]);
 
