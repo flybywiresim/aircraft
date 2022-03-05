@@ -66,6 +66,28 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [shutoffBarPercent, setShutoffBarPercent] = useState(0);
     const shutoffTimerRef = useRef<NodeJS.Timer | null>(null);
 
+    // TODO FIXME: This is going to need some readjustment when the user config changes
+    const setConnectedState = async () => {
+        try {
+            const healthRes = await fetch('http://localhost:8380/health');
+            const healthJson = await healthRes.json();
+
+            if (healthJson.info.api.status === 'up') {
+                setLocalApiConnected(true);
+            } else {
+                setLocalApiConnected(false);
+            }
+        } catch (_) {
+            setLocalApiConnected(false);
+        }
+    };
+
+    const [localApiConnected, setLocalApiConnected] = useState(false);
+
+    useInterval(() => {
+        setConnectedState();
+    }, 30_000);
+
     const bind = useLongPress(() => {}, {
         threshold: 100_000,
         onCancel: () => {
@@ -90,6 +112,8 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     }, [shutoffBarPercent]);
 
     useEffect(() => {
+        setConnectedState();
+
         const interval = setInterval(() => {
             setShowSchedTimes((old) => !old);
 
@@ -105,24 +129,6 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
             }
         };
     }, []);
-
-    const [localApiConnected, setLocalApiConnected] = useState(false);
-
-    // TODO FIXME: This is going to need some readjustment when the user config changes
-    useInterval(async () => {
-        try {
-            const healthRes = await fetch('http://localhost:8380/health');
-            const healthJson = await healthRes.json();
-
-            if (healthJson.info.api.status === 'up') {
-                setLocalApiConnected(true);
-            } else {
-                setLocalApiConnected(false);
-            }
-        } catch (_) {
-            setLocalApiConnected(false);
-        }
-    }, 5_000);
 
     return (
         <div className="flex overflow-hidden fixed z-40 justify-between items-center px-6 w-full h-10 text-lg font-medium leading-none text-theme-text bg-theme-statusbar">

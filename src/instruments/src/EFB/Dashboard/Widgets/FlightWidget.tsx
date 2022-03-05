@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { useState } from 'react';
 import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';

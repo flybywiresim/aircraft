@@ -1,0 +1,407 @@
+import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { ArrowReturnRight, CloudArrowDown, Pin, PinFill } from 'react-bootstrap-icons';
+import { useAppDispatch, useAppSelector } from '../../Store/store';
+import {
+    addPinnedChart,
+    ChartProvider,
+    editPinnedChart,
+    isChartPinned,
+    removedPinnedChart,
+    setBoundingBox,
+    setChartDimensions,
+    setChartId,
+    setChartLinks,
+    setChartName,
+    setCurrentPage,
+    setSearchQuery,
+    setPagesViewable,
+    setProvider,
+    setTabIndex,
+} from '../../Store/features/navigationPage';
+import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
+import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
+import { ChartComponent } from '../Navigation';
+
+type LocalFileChart = {
+    fileName: string;
+    type: 'IMAGE' | 'PDF';
+};
+
+interface LocalFileChartSelectorProps {
+    selectedTab: LocalFileOrganizedCharts;
+    loading?: boolean;
+}
+
+type LocalFileOrganizedCharts = {
+    name: string,
+    charts: LocalFileChart[],
+}
+
+interface LocalFileCharts {
+    images: LocalFileChart[];
+    pdfs: LocalFileChart[];
+}
+
+export const getPdfUrl = async (fileName: string, pageNumber: number): Promise<string> => {
+    try {
+        const resp = await fetch(`http://localhost:8380/api/v1/utility/pdf?filename=${fileName}&pagenumber=${pageNumber}`);
+
+        if (!resp.ok) {
+            toast.error('Failed to retrieve requested PDF Document.');
+            return Promise.reject();
+        }
+
+        const blob = await resp.blob();
+        return URL.createObjectURL(blob);
+    } catch (_) {
+        toast.error('Failed to retrieve requested PDF Document.');
+        return Promise.reject();
+    }
+};
+
+const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
+    const dispatch = useAppDispatch();
+
+    const { chartId, tabIndex } = useAppSelector((state) => state.navigationTab);
+
+    if (loading) {
+        return (
+            <div
+                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
+                style={{ height: '42.75rem' }}
+            >
+                <CloudArrowDown className="animate-bounce" size={40} />
+            </div>
+        );
+    }
+
+    if (!selectedTab.charts.length) {
+        return (
+            <div
+                className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
+                style={{ height: '42.75rem' }}
+            >
+                <p>There are no charts to display.</p>
+            </div>
+        );
+    }
+
+    const getChartResourceUrl = async (chart: LocalFileChart) => {
+        const resp = await fetch(chart.type === 'PDF'
+            ? `http://localhost:8380/api/v1/utility/pdf?filename=${chart.fileName}&pagenumber=1`
+            : `http://localhost:8380/api/v1/utility/image?filename=${chart.fileName}`);
+
+        if (!resp.ok) {
+            return Promise.reject();
+        }
+
+        const blob = await resp.blob();
+        return URL.createObjectURL(blob);
+    };
+
+    const getPagesViewable = async (chart: LocalFileChart): Promise<number> => {
+        if (chart.type === 'PDF') {
+            const pageNumResp = await fetch(`http://localhost:8380/api/v1/utility/pdf/numpages?filename=${chart.fileName}`);
+            return pageNumResp.json();
+        }
+
+        return 1;
+    };
+
+    const handleChartClick = async (chart: LocalFileChart) => {
+        try {
+            const pagesViewable = await getPagesViewable(chart);
+            dispatch(setPagesViewable(pagesViewable));
+
+            const url = await getChartResourceUrl(chart);
+
+            dispatch(setChartDimensions({ width: undefined, height: undefined }));
+            dispatch(setChartName({ light: url, dark: url }));
+            dispatch(setBoundingBox(undefined));
+        } catch (_) {
+            if (chart.type === 'PDF') {
+                toast.error('Failed to retrieve requested PDF Document.');
+            } else {
+                toast.error('Failed to retrieve requested image.');
+            }
+
+            return;
+        }
+        dispatch(setProvider(ChartProvider.LOCAL_FILES));
+        dispatch(setCurrentPage(1));
+        dispatch(setChartId(chart.fileName));
+    };
+
+    return (
+        <div className="space-y-4">
+            {selectedTab.charts.map((chart) => (
+                <div
+                    className="flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
+                    onClick={() => handleChartClick(chart)}
+                    key={chart.fileName}
+                >
+                    <div className="flex flex-row items-center">
+                        <div className={`w-2 h-full transition flex-shrink-0 duration-100 ${chart.fileName === chartId
+                            ? 'bg-theme-highlight'
+                            : 'bg-theme-secondary'}`}
+                        />
+                        <div
+                            className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
+                            onClick={(event) => {
+                                event.stopPropagation();
+
+                                if (isChartPinned(chart.fileName)) {
+                                    dispatch(removedPinnedChart({ chartId: chart.fileName }));
+                                } else {
+                                    /**
+                                     * Pinning the chart with temporary values for chartName and pagesViewable
+                                     * and editing them later to give a snappier experience as these values take time to be resolved.
+                                     */
+                                    dispatch(addPinnedChart({
+                                        chartId: chart.fileName,
+                                        chartName: { light: '', dark: '' },
+                                        title: chart.fileName,
+                                        subTitle: '',
+                                        tabIndex,
+                                        timeAccessed: 0,
+                                        tag: chart.type,
+                                        provider: ChartProvider.LOCAL_FILES,
+                                        pagesViewable: 1,
+                                    }));
+
+                                    Promise.all([getChartResourceUrl(chart), getPagesViewable(chart)]).then(([url, numPages]) => {
+                                        dispatch(editPinnedChart({
+                                            chartId: chart.fileName,
+                                            chartName: { light: url, dark: url },
+                                            pagesViewable: numPages,
+                                        }));
+                                    }).catch(() => {
+                                        dispatch(removedPinnedChart({ chartId: chart.fileName }));
+                                        toast.error('Unable to generate necessary resource to pin this item.');
+                                    });
+                                }
+                            }}
+                        >
+                            {
+                                isChartPinned(chart.fileName)
+                                    ? <PinFill size={40} />
+                                    : <Pin size={40} />
+                            }
+                        </div>
+                    </div>
+                    <div className="flex flex-col m-2">
+                        <span>{chart.fileName}</span>
+                        <span
+                            className="px-2 mr-auto text-sm text-theme-text bg-theme-secondary rounded-sm"
+                        >
+                            {chart.type}
+                        </span>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+export const LocalFileChartUI = () => {
+    const dispatch = useAppDispatch();
+
+    const [statusBarInfo, setStatusBarInfo] = useState('');
+
+    const [icaoAndNameDisagree, setIcaoAndNameDisagree] = useState(false);
+
+    const [charts, setCharts] = useState<LocalFileCharts>({
+        images: [],
+        pdfs: [],
+    });
+
+    const [organizedCharts, setOrganizedCharts] = useState<LocalFileOrganizedCharts[]>([
+        { name: 'IMAGE', charts: charts.images },
+        { name: 'PDF', charts: charts.pdfs },
+        { name: 'BOTH', charts: [...charts.images, ...charts.pdfs] },
+    ]);
+    const { tabIndex, searchQuery, chartName, isFullScreen } = useAppSelector((state) => state.navigationTab);
+
+    const updateSearchStatus = async () => {
+        setIcaoAndNameDisagree(true);
+
+        const searchableCharts: string[] = [];
+
+        if (tabIndex === 0 || tabIndex === 2) {
+            searchableCharts.push(...charts.images.map((image) => image.fileName));
+        }
+
+        if (tabIndex === 1 || tabIndex === 2) {
+            searchableCharts.push(...charts.pdfs.map((pdf) => pdf.fileName));
+        }
+
+        const numItemsFound = searchableCharts.filter((chartName) => chartName.toUpperCase().includes(searchQuery)).length;
+
+        setStatusBarInfo(`${numItemsFound} ${numItemsFound === 1 ? 'Item' : 'Items'} Found`);
+
+        setIcaoAndNameDisagree(false);
+    };
+
+    const handleIcaoChange = (value: string) => {
+        const newValue = value.toUpperCase();
+
+        dispatch(setSearchQuery(newValue));
+
+        getLocalFileChartList(newValue).then((r) => setCharts(r));
+    };
+
+    useEffect(() => {
+        handleIcaoChange(searchQuery);
+    }, [tabIndex]);
+
+    useEffect(() => {
+        updateSearchStatus();
+    }, [charts]);
+
+    useEffect(() => {
+        setOrganizedCharts([
+            { name: 'IMAGE', charts: charts.images },
+            { name: 'PDF', charts: charts.pdfs },
+            { name: 'BOTH', charts: [...charts.pdfs, ...charts.images] },
+        ]);
+    }, [charts]);
+
+    useEffect(() => {
+        dispatch(setChartLinks({ light: chartName.light, dark: chartName.dark }));
+    }, [chartName]);
+
+    const getLocalFileChartList = async (searchQuery: string): Promise<LocalFileCharts> => {
+        const pdfs: LocalFileChart[] = [];
+        const images: LocalFileChart[] = [];
+
+        try {
+            // IMAGE or BOTH
+            if (tabIndex === 0 || tabIndex === 2) {
+                const resp = await fetch('http://localhost:8380/api/v1/utility/image/list');
+
+                const imageNames: string[] = await resp.json();
+
+                imageNames.forEach((imageName) => {
+                    if (imageName.toUpperCase().includes(searchQuery)) {
+                        images.push({
+                            fileName: imageName,
+                            type: 'IMAGE',
+                        });
+                    }
+                });
+            }
+
+            // PDF or BOTH
+            if (tabIndex === 1 || tabIndex === 2) {
+                const resp = await fetch('http://localhost:8380/api/v1/utility/pdf/list');
+                const pdfNames: string[] = await resp.json();
+
+                pdfNames.forEach((pdfName) => {
+                    if (pdfName.toUpperCase().includes(searchQuery)) {
+                        pdfs.push({
+                            fileName: pdfName,
+                            type: 'PDF',
+                        });
+                    }
+                });
+            }
+        } catch (err) {
+            toast.error('Error encountered while fetching resources.');
+        }
+
+        return {
+            images,
+            pdfs,
+        };
+    };
+
+    const loading = icaoAndNameDisagree;
+
+    const getStatusBarText = () => {
+        if (!searchQuery.length) {
+            return 'Showing All Items';
+        }
+
+        if (loading) {
+            return 'Please Wait';
+        }
+
+        return statusBarInfo;
+    };
+
+    const { altIcao, departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
+    const simbriefDataLoaded = isSimbriefDataLoaded();
+
+    return (
+        <div className="flex overflow-x-hidden flex-row w-full h-content-section-reduced rounded-lg">
+            <>
+                {!isFullScreen && (
+                    <div className="overflow-hidden flex-shrink-0" style={{ width: '450px' }}>
+                        <div className="flex flex-row justify-center items-center">
+                            <SimpleInput
+                                placeholder="File Name"
+                                value={searchQuery}
+                                className={`w-full flex-shrink uppercase ${simbriefDataLoaded && 'rounded-r-none'}`}
+                                onChange={handleIcaoChange}
+                            />
+                            {simbriefDataLoaded && (
+                                <SelectGroup className="flex-shrink-0 rounded-l-none">
+                                    <SelectItem
+                                        selected={searchQuery === departingAirport}
+                                        onSelect={() => handleIcaoChange(departingAirport)}
+                                    >
+                                        FROM
+                                    </SelectItem>
+                                    <SelectItem
+                                        selected={searchQuery === arrivingAirport}
+                                        onSelect={() => handleIcaoChange(arrivingAirport)}
+                                    >
+                                        TO
+                                    </SelectItem>
+                                    {!!altIcao && (
+                                        <SelectItem
+                                            selected={searchQuery === altIcao}
+                                            onSelect={() => handleIcaoChange(altIcao)}
+                                        >
+                                            ALTN
+                                        </SelectItem>
+                                    )}
+                                </SelectGroup>
+                            )}
+                        </div>
+                        <div className="flex flex-row items-center w-full h-11">
+                            <ArrowReturnRight size={30} />
+                            <div className="block overflow-hidden px-4 w-full whitespace-nowrap" style={{ textOverflow: 'ellipsis' }}>
+                                {getStatusBarText()}
+                            </div>
+                        </div>
+                        <div className="mt-6">
+                            <SelectGroup>
+                                {organizedCharts.map((organizedChart, index) => (
+                                    <SelectItem
+                                        selected={index === tabIndex}
+                                        onSelect={() => dispatch(setTabIndex(index))}
+                                        key={organizedChart.name}
+                                        className="flex justify-center w-full"
+                                    >
+                                        {organizedChart.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                            <ScrollableContainer className="mt-5" height={42.75}>
+                                <LocalFileChartSelector
+                                    selectedTab={organizedCharts[Math.min(tabIndex, 2)]}
+                                    loading={loading}
+                                />
+                            </ScrollableContainer>
+                        </div>
+                    </div>
+                )}
+                <ChartComponent />
+            </>
+        </div>
+    );
+};
