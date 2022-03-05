@@ -179,6 +179,7 @@
 1. [FLIGHTMODEL] Additional flight model improvements to better match real airplane performance data - @donstim (donbikes#4084)
 1. [FMGC] Re-implement altitude and speed constraints - @tracernz (Mike)
 1. [FMGC] Workaround for Navigraph 2202 rev2/SU8 missed approach legs - @tracernz (Mike)
+1. [HYD] Smoothed nose wheel steering when pushing back - @Crocket63
 
 ## 0.7.0
 
