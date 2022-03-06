@@ -67,3 +67,4 @@ src/instruments/buildSrc/custom/*
 tsconfig.tsbuildinfo
 /**/package-lock.json
 msfs-avionics-mirror/src/sdk/build/**
+*.tgz
