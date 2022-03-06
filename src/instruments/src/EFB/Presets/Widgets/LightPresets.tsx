@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { toast } from 'react-toastify';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
@@ -16,19 +16,19 @@ export const LightPresets = () => {
     // To tell the presets.wasm module to save a preset the LVAR "L:A32NX_SAVE_LIGHTING_PRESET"
     // needs to be set with a number > 0 where the number is the corresponding preset ID to be saved..
     // After loading or saving the wasm module will reset the LVARs to 0
-    const [loadPresetVar, setLoadPresetVar] = useSimVar('L:A32NX_LOAD_LIGHTING_PRESET', 'number', 200);
-    const [savePresetVar, setSavePresetVar] = useSimVar('L:A32NX_SAVE_LIGHTING_PRESET', 'number', 200);
+    const [, setLoadPresetVar] = useSimVar('L:A32NX_LOAD_LIGHTING_PRESET', 'number', 200);
+    const [, setSavePresetVar] = useSimVar('L:A32NX_SAVE_LIGHTING_PRESET', 'number', 200);
 
     function loadPreset(number: number) {
-        toast.success(`Loading Preset: ${loadPresetVar}`,
-            { autoClose: 250, hideProgressBar: true, closeButton: false });
         setLoadPresetVar(number);
+        toast.success(`Loading Preset: ${number}`,
+            { autoClose: 250, hideProgressBar: true, closeButton: false });
     }
 
     function savePreset(number: number) {
-        toast.success(`Saving Preset: ${savePresetVar}`,
-            { autoClose: 250, hideProgressBar: true, closeButton: false });
         setSavePresetVar(number);
+        toast.success(`Saving Preset: ${number}`,
+            { autoClose: 250, hideProgressBar: true, closeButton: false });
     }
 
     return (
@@ -38,9 +38,9 @@ export const LightPresets = () => {
             </div>
             <div className="p-4 mt-4 rounded-lg border-2 border-theme-accent">
                 <ScrollableContainer height={52}>
-                    <div className="grid grid-cols-2 grid-rows-2 grid-flow-row gap-4">
+                    <div className="grid grid-cols-2 grid-rows-3 grid-flow-row gap-4">
                         <div
-                            className="flex justify-center items-center my-1 mx-1 h-24 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight rounded-md border-2 border-theme-accent transition duration-100"
+                            className="flex justify-center items-center my-1 mx-1 h-24 rounded-md border-2 transition duration-100 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight border-theme-accent"
                             onClick={() => loadPreset(1)}
                         >
                             Load Preset 1
@@ -52,7 +52,7 @@ export const LightPresets = () => {
                             Save Preset 1
                         </div>
                         <div
-                            className="flex justify-center items-center my-2 mx-1 h-24 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight rounded-md border-2 border-theme-accent transition duration-100 "
+                            className="flex justify-center items-center my-2 mx-1 h-24 rounded-md border-2 transition duration-100 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight border-theme-accent"
                             onClick={() => loadPreset(2)}
                         >
                             Load Preset 2
@@ -64,7 +64,7 @@ export const LightPresets = () => {
                             Save Preset 2
                         </div>
                         <div
-                            className="flex justify-center items-center my-3 mx-1 h-24 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight rounded-md border-2 border-theme-accent transition duration-100"
+                            className="flex justify-center items-center my-3 mx-1 h-24 rounded-md border-2 transition duration-100 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight border-theme-accent"
                             onClick={() => loadPreset(3)}
                         >
                             Load Preset 3
