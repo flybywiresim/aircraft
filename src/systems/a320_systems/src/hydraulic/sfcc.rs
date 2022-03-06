@@ -1,4 +1,4 @@
-use systems::shared::{PositionPickoffUnit, LgciuSensors, AirDataSource, SfccChannel, FlapsConf, HandlePositionMemory, ElectricalBusType, ElectricalBuses};
+use systems::shared::{interpolation, PositionPickoffUnit, LgciuSensors, AirDataSource, SfccChannel, FlapsConf, HandlePositionMemory, ElectricalBusType, ElectricalBuses, ChannelCommand, ChannelCommandMode};
 use systems::navigation::adirs;
 use systems::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -75,13 +75,24 @@ struct FlapsChannel {
     demanded_angle: Angle,
     calculated_conf: FlapsConf,
 
+    command: (Option<ChannelCommand>, Option<ChannelCommandMode>),
+
     sfcc_id: usize,
+
+
 }
 
 impl FlapsChannel {
     const HANDLE_ONE_CONF_AIRSPEED_THRESHOLD_KNOTS: f64 = 100.;
     const CONF1F_TO_CONF1_AIRSPEED_THRESHOLD_KNOTS: f64 = 210.;
     const EQUAL_ANGLE_DELTA_DEGREE: f64 = 0.01;
+
+    const FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
+    ];
+    const FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] = [
+        0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703, 40.,
+    ];
 
     fn new(context: &mut InitContext, powered_by: ElectricalBusType, sfcc_id: usize) -> Self {
         Self {
@@ -91,6 +102,8 @@ impl FlapsChannel {
             feedback_angle: Angle::new::<degree>(0.),
             demanded_angle: Angle::new::<degree>(0.),
             calculated_conf: FlapsConf::Conf0,
+
+            command: (None, None),
 
             sfcc_id,
         }
@@ -103,8 +116,12 @@ impl FlapsChannel {
         self.demanded_angle = demanded_flaps_angle_from_conf(self.calculated_conf);
     }
 
-    fn feedback_equals_demanded(&self) -> bool {
-        (self.demanded_angle - self.feedback_angle).get::<degree>().abs() < Self::EQUAL_ANGLE_DELTA_DEGREE
+    fn is_approaching_requested_position(&self) -> bool {
+        match self.command.0 {
+            Some(ChannelCommand::Extend) if self.demanded_angle - self.feedback_angle < Self::ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES> => True,
+            Some(ChannelCommand::Retract) if self.feedback_angle - self.demanded_angle < Self::ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES> => True,
+            _ => False,
+        }
     }
 }
 
@@ -113,10 +130,21 @@ impl SfccChannel for FlapsChannel {
 
     fn receive_signal_fppu(&mut self, feedback: &impl PositionPickoffUnit) {
         self.feedback_angle = feedback.angle();
-    }
+    } 
 
-    fn send_signal_to_motors(&self) -> bool {
-        !self.feedback_equals_demanded()
+    fn send_signal_to_motors(&mut self) -> (Option<ChannelCommand>, Option<ChannelCommandMode>) {
+
+        if self.feedback_angle - self.demanded_angle > Self::EQUAL_ANGLE_DELTA_DEGREE {
+            command.0 = Some(ChannelCommand::Extend);
+        } else if self.demanded_angle - self.feedback_angle > Self::EQUAL_ANGLE_DELTA_DEGREE {
+            command.0 = Some(ChannelCommand::Retract);
+        if self.is_approaching_requested_position() {
+            command.1 = Some(ChannelCommandMode::Slow);
+        } else {
+            command.1 = Some(ChannelCommandMode::Normal);
+        }
+
+        self.command
     }
 
     fn generate_configuration(
@@ -188,10 +216,17 @@ struct SlatsChannel {
 }
 impl SlatsChannel {
 
+    const SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 12.5985, 25.197, 37.7955, 50.394, 62.9925, 75.591, 88.1895, 100.788, 113.3865,
+        157.48125, 170.07975,
+    ];
+    const SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 2., 4., 6., 8., 10., 12., 14., 16., 18., 25., 27.];
+
     const EQUAL_ANGLE_DELTA_DEGREE: f64 = 0.01;
     const ALPHA_LOCK_ENGAGE_SPEED_KNOTS: f64 = 148.;
     const ALPHA_LOCK_DISENGAGE_SPEED_KNOTS: f64 = 154.;
-    const ALPHA_LOCK_ENGAGE_ALPHA_DEGREES: f64 = 8.6;
+    const ALPHA_LOCK_ENGAGE_ALPHA_DEGREES: f64 = 8.5;
     const ALPHA_LOCK_DISENGAGE_ALPHA_DEGREES: f64 = 7.6;
 
     fn new(context: &mut InitContext, powered_by: ElectricalBusType, sfcc_id: usize) -> Self {
@@ -217,14 +252,6 @@ impl SlatsChannel {
         self.calculated_conf = self.generate_configuration(context, flaps_handle, adiru);
         self.demanded_angle = demanded_slats_angle_from_conf(self.calculated_conf);
 
-    }
-
-    pub fn update_is_on_ground(&mut self, is_on_ground: bool) {
-        self.is_on_ground = is_on_ground;
-    }
-
-    fn feedback_equals_demanded(&self) -> bool {
-        (self.demanded_angle - self.feedback_angle).get::<degree>().abs() < Self::EQUAL_ANGLE_DELTA_DEGREE
     }
 
     fn alpha_lock_check(&mut self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, adiru: &impl AirDataSource) {
@@ -278,8 +305,14 @@ impl SfccChannel for SlatsChannel {
         self.feedback_angle = feedback.angle();
     }
 
-    fn send_signal_to_motors(&self) -> bool {
-        !self.feedback_equals_demanded()
+    fn send_signal_to_motors(&self) -> Option<ChannelCommand> {
+        if self.feedback_angle - self.demanded_angle > Self::EQUAL_ANGLE_DELTA_DEGREE {
+            Some(ChannelCommand::Retract)
+        } else if self.demanded_angle - self.feedback_angle > Self::EQUAL_ANGLE_DELTA_DEGREE {
+            Some(ChannelCommand::Extend)
+        } else {
+            None
+        }
     }
 
     fn generate_configuration(

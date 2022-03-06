@@ -1,5 +1,5 @@
 use super::linear_actuator::Actuator;
-use crate::shared::{interpolation, low_pass_filter::LowPassFilter, PositionPickoffUnit};
+use crate::shared::{interpolation, low_pass_filter::LowPassFilter, PositionPickoffUnit, ChannelCommand};
 use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
@@ -190,8 +190,8 @@ impl FlapSlatAssembly {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        sfcc1_surface_position_request: Option<Angle>,
-        sfcc2_surface_position_request: Option<Angle>,
+        sfcc1_channel_command: Option<ChannelCommand>,
+        sfcc2_channel_command: Option<ChannelCommand>,
         left_pressure: Pressure,
         right_pressure: Pressure,
     ) {
@@ -208,36 +208,32 @@ impl FlapSlatAssembly {
             context,
         );
 
-        self.update_speed_and_position(context);
+        self.update_speed_and_position(context, sfcc1_channel_command, sfcc2_channel_command);
 
         self.update_motors_speed(left_pressure, right_pressure, context);
 
         self.update_motors_flow(context);
     }
 
-    fn update_speed_and_position(&mut self, context: &UpdateContext) {
-        if self.final_requested_synchro_gear_position > self.position_feedback() {
-            self.surface_control_arm_position += Angle::new::<radian>(
-                self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
-            );
-            self.speed = self.max_speed();
-        } else if self.final_requested_synchro_gear_position < self.position_feedback() {
-            self.surface_control_arm_position -= Angle::new::<radian>(
-                self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
-            );
-            self.speed = -self.max_speed();
-        } else {
-            self.speed = AngularVelocity::new::<radian_per_second>(0.);
+    fn update_speed_and_position(&mut self, context: &UpdateContext, sfcc_channel_command: (Option<ChannelCommand>,Option<ChannelCommandMode>)) {
+
+
+
+        
+        self.surface_control_arm_position += Angle::new::<radian>(
+            self.max_speed().get::<radian_per_second>() * context.delta_as_secs_f64(),
+        );
+        self.speed = self.max_speed();
+
+        if let (Some(channel_command), _) = sfcc_channel_command {
+            if (channel_command == ChannelCommand::Extend  && self.final_requested_synchro_gear_position < self.surface_control_arm_position * self.surface_to_synchro_gear_ratio.get::<ratio>()) ||                
+                (channel_command == ChannelCommand::Retract && self.final_requested_synchro_gear_position > self.surface_control_arm_position * self.surface_to_synchro_gear_ratio.get::<ratio>()) {
+
+                self.surface_control_arm_position =
+                    self.synchro_angle_to_surface_angle(self.final_requested_synchro_gear_position);
+            }
         }
 
-        if self.speed > AngularVelocity::new::<radian_per_second>(0.)
-            && self.final_requested_synchro_gear_position < self.position_feedback()
-            || self.speed < AngularVelocity::new::<radian_per_second>(0.)
-                && self.final_requested_synchro_gear_position > self.position_feedback()
-        {
-            self.surface_control_arm_position =
-                self.synchro_angle_to_surface_angle(self.final_requested_synchro_gear_position);
-        }
 
         self.surface_control_arm_position = self
             .surface_control_arm_position
@@ -251,18 +247,16 @@ impl FlapSlatAssembly {
         sfcc2_angle_request: Option<Angle>,
     ) {
         if let Some(sfcc1_angle) = sfcc1_angle_request {
-            self.final_requested_synchro_gear_position =
-                self.feedback_angle_from_surface_angle(sfcc1_angle);
+            self.final_requested_synchro_gear_position = sfcc1_angle;
         } else if let Some(sfcc2_angle) = sfcc2_angle_request {
-            self.final_requested_synchro_gear_position =
-                self.feedback_angle_from_surface_angle(sfcc2_angle);
+            self.final_requested_synchro_gear_position = sfcc2_angle;
         }
     }
 
     fn update_current_max_speed(
         &mut self,
-        sfcc1_is_active: bool,
-        sfcc2_is_active: bool,
+        sfcc1_channel_command: (Option<ChannelCommand>,Option<ChannelCommandMode>),
+        sfcc2_channel_command: (Option<ChannelCommand>,Option<ChannelCommandMode>),
         left_pressure: Pressure,
         right_pressure: Pressure,
         context: &UpdateContext,
@@ -270,31 +264,50 @@ impl FlapSlatAssembly {
         // Final pressures are the current pressure or 0 if corresponding sfcc is offline
         // This simulates a motor not responding to a failed or offline sfcc
         let mut final_left_pressure = left_pressure;
-        if !sfcc1_is_active {
+        if !sfcc1_channel_command.0.is_some() {
             final_left_pressure = Pressure::new::<psi>(0.);
         }
 
         let mut final_right_pressure = right_pressure;
-        if !sfcc2_is_active {
+        if !sfcc2_channel_command.0.is_some() {
             final_right_pressure = Pressure::new::<psi>(0.);
         }
 
-        let new_theoretical_max_speed_left_side = AngularVelocity::new::<radian_per_second>(
+        let mut new_theoretical_max_speed_left_side = AngularVelocity::new::<radian_per_second>(
             0.5 * self.full_pressure_max_speed.get::<radian_per_second>()
                 * Self::max_speed_factor_from_pressure(final_left_pressure),
         );
 
-        let new_theoretical_max_speed_right_side = AngularVelocity::new::<radian_per_second>(
+        let mut new_theoretical_max_speed_right_side = AngularVelocity::new::<radian_per_second>(
             0.5 * self.full_pressure_max_speed.get::<radian_per_second>()
                 * Self::max_speed_factor_from_pressure(final_right_pressure),
         );
 
-        let mut new_theoretical_max_speed =
+        if let (Some(command), Some(mode)) = sfcc1_channel_command {
+            if command == ChannelCommand::Retract {
+                new_theoretical_max_speed_left_side *= -1;
+            }
+            if mode == ChannelCommandMode::Slow {
+                new_theoretical_max_speed_left_side *= Self::ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION;
+            }
+        }
+
+        if let (Some(command), Some(mode)) = sfcc2_channel_command {
+            if command == ChannelCommand::Retract {
+                new_theoretical_max_speed_right_side *= -1;
+            }
+            if mode == ChannelCommandMode::Slow {
+                new_theoretical_max_speed_right_side *= Self::ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION;
+            }
+        }
+
+
+        let new_theoretical_max_speed =
             new_theoretical_max_speed_left_side + new_theoretical_max_speed_right_side;
 
-        if self.is_approaching_requested_position(self.final_requested_synchro_gear_position) {
-            new_theoretical_max_speed *= Self::ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION;
-        }
+        // if self.is_approaching_requested_position(self.final_requested_synchro_gear_position) {
+        //     new_theoretical_max_speed *= Self::ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION;
+        // }
 
         // Final max speed filtered to simulate smooth movements
         self.current_max_speed
@@ -461,7 +474,7 @@ impl SimulationElement for FlapSlatAssembly {
 }
 impl PositionPickoffUnit for FlapSlatAssembly {
     fn angle(&self) -> Angle {
-        self.position_feedback()
+        self.surface_control_arm_position * self.surface_to_synchro_gear_ratio.get::<ratio>()
     }
 }
 

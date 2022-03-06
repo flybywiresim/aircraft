@@ -100,8 +100,20 @@ pub trait LgciuGearExtension {
 
 pub trait SfccChannel {
     fn receive_signal_fppu(&mut self, feedback: &impl PositionPickoffUnit);
-    fn send_signal_to_motors(&self) -> bool;
+    fn send_signal_to_motors(&self) -> (Option<ChannelCommand>,Option<ChannelCommand>);
     fn generate_configuration(&self, context: &UpdateContext, flaps_handle: &impl HandlePositionMemory, adiru: &impl AirDataSource) -> FlapsConf;
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum ChannelCommand {
+    Extend,
+    Retract,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum ChannelCommandMode {
+    Normal,
+    Slow,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
