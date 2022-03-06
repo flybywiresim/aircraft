@@ -9,7 +9,7 @@ import FF from './FF';
 import N1Limit from './N1Limit';
 import Idle from './Idle';
 import Slats from './Slats';
-import PacksNaiWai from './PacksNAIWAI';
+import PacksNaiWai from './PacksNaiWai';
 
 const UpperDisplay: React.FC = () => {
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
