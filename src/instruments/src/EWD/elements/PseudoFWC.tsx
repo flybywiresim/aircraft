@@ -206,6 +206,8 @@ const PseudoFWC: React.FC = () => {
     const [autoBrake] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum', 500);
     const [flapsHandle] = useSimVar('L:A32NX_FLAPS_HANDLE_INDEX', 'enum', 500);
     const [flapsIndex] = useSimVar('L:A32NX_FLAPS_CONF_INDEX', 'number', 100);
+    const [slatsAngle] = useSimVar('L:A32NX_LEFT_SLATS_ANGLE', 'degrees', 100);
+    const [flapsAngle] = useSimVar('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees', 100);
     const [toconfig] = useSimVar('L:A32NX_TO_CONFIG_NORMAL', 'bool', 100);
 
     const [adirsRemainingAlignTime] = useSimVar('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'seconds', 1000);
@@ -258,6 +260,17 @@ const PseudoFWC: React.FC = () => {
     const computedAirSpeed: Arinc429Word = useArinc429Var('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED', 1000);
     // Reduce number of rewrites triggered by this value
     const computedAirSpeedToNearest2 = Math.round(computedAirSpeed.value / 2) * 2;
+
+    /* PACKS */
+    const [crossfeed] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_OPEN', 'bool', 500);
+    const [eng1Bleed] = useSimVar('A:BLEED AIR ENGINE:1', 'bool');
+    const [eng1BleedPbFault] = useSimVar('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT', 'bool', 500);
+    const [eng2Bleed] = useSimVar('A:BLEED AIR ENGINE:2', 'bool', 100);
+    const [eng2BleedPbFault] = useSimVar('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT', 'bool', 500);
+    const [pack1Fault] = useSimVar('L:A32NX_AIRCOND_PACK1_FAULT', 'bool');
+    const [pack2Fault] = useSimVar('L:A32NX_AIRCOND_PACK2_FAULT', 'bool');
+    const [pack1On] = useSimVar('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool');
+    const [pack2On] = useSimVar('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool');
 
     /* WARNINGS AND FAILURES */
     const landASAPRed: boolean = !!(!onGround
@@ -351,6 +364,10 @@ const PseudoFWC: React.FC = () => {
     const [iceSevereDetected, setIceSevereDetected] = useState(0);
     const [iceNotDetected1, setIceNotDetected1] = useState(0);
     const [iceNotDetected2, setIceNotDetected2] = useState(0);
+    const [packOffBleedIsAvailable1, setPackOffBleedIsAvailable1] = useState(0);
+    const [packOffBleedIsAvailable2, setPackOffBleedIsAvailable2] = useState(0);
+    const [packOffNotFailure1, setPackOffNotFailure1] = useState(0);
+    const [packOffNotFailure2, setPackOffNotFailure2] = useState(0);
 
     useUpdate((deltaTime) => {
         showTakeoffInhibit = toInhibitTimer.write([3, 4, 5].includes(flightPhase) && !flightPhaseInhibitOverride, deltaTime);
@@ -397,6 +414,25 @@ const PseudoFWC: React.FC = () => {
         const iceNotDetected2Node = iceNotDetTimer2.write(iceNotDetected1 && !(icePercentage >= 0.1 || (tat < 10 && inCloud === 1)), deltaTime);
         if (iceNotDetected2 !== iceNotDetected2Node) {
             setIceNotDetected2(iceNotDetected2Node);
+        }
+
+        const packOffBleedIsAvailable1Node = packOffBleedAvailable1.write((eng1Bleed === 1 && !eng1BleedPbFault) || crossfeed === 1, deltaTime);
+        if (packOffBleedIsAvailable1 !== packOffBleedIsAvailable1Node) {
+            setPackOffBleedIsAvailable1(packOffBleedIsAvailable1Node);
+        }
+
+        const packOffBleedIsAvailable2Node = packOffBleedAvailable2.write((eng2Bleed === 1 && !eng2BleedPbFault) || crossfeed === 1, deltaTime);
+        if (packOffBleedIsAvailable2 !== packOffBleedIsAvailable2Node) {
+            setPackOffBleedIsAvailable2(packOffBleedIsAvailable2Node);
+        }
+
+        const packOffNotFailed1Node = packOffNotFailed1.write(!pack1On && !pack1Fault && packOffBleedAvailable1.read() && flightPhase === 6, deltaTime);
+        if (packOffNotFailure1 !== packOffNotFailed1Node) {
+            setPackOffNotFailure1(packOffNotFailed1Node);
+        }
+        const packOffNotFailed2Node = packOffNotFailed2.write(!pack2On && !pack2Fault && packOffBleedAvailable2.read() && flightPhase === 6, deltaTime);
+        if (packOffNotFailure2 !== packOffNotFailed2Node) {
+            setPackOffNotFailure2(packOffNotFailed2Node);
         }
     });
 
@@ -564,8 +600,15 @@ const PseudoFWC: React.FC = () => {
         },
         2700085: { // SLATS NOT IN TO CONFIG
             flightPhaseInhib: [5, 6, 7, 8],
-            simVarIsActive: !!((!flapsMcduEntered || flapsHandle !== flapsMcdu) && (([1, 2, 9].includes(flightPhase) && toconfigFailed) || [3, 4, 5].includes(flightPhase))),
-            // TODO no separate slats indication
+            simVarIsActive: (
+                flapsMcduEntered === 1
+                && flapsHandle !== flapsMcdu
+                && [1, 2, 9].includes(flightPhase)
+                && toconfigFailed
+            )
+            || (
+                [3, 4, 5].includes(flightPhase) && (slatsAngle < 18 || slatsAngle > 22)
+            ),
             whichCodeToReturn: [0, 1],
             codesToReturn: ['270008501', '270008502'],
             memoInhibit: false,
@@ -575,8 +618,15 @@ const PseudoFWC: React.FC = () => {
         },
         2700090: { // FLAPS NOT IN TO CONFIG
             flightPhaseInhib: [5, 6, 7, 8],
-            simVarIsActive: !!((!flapsMcduEntered || flapsHandle !== flapsMcdu) && (([1, 2, 9].includes(flightPhase) && toconfigFailed) || [3, 4, 5].includes(flightPhase))),
-            // TODO no separate slats indication
+            simVarIsActive: (
+                flapsMcduEntered === 1
+                && flapsHandle !== flapsMcdu
+                && [1, 2, 9].includes(flightPhase)
+                && toconfigFailed
+            )
+            || (
+                [3, 4, 5].includes(flightPhase) && (flapsAngle < 10 || flapsAngle > 20)
+            ),
             whichCodeToReturn: [0, 1],
             codesToReturn: ['270009001', '270009002'],
             memoInhibit: false,
@@ -629,6 +679,26 @@ const PseudoFWC: React.FC = () => {
             memoInhibit: false,
             failure: 2,
             sysPage: 9, // Should be -1
+            side: 'LEFT',
+        },
+        2161207: { // PACK 1 ABNORMALLY OFF
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: packOffNotFailed1.read(),
+            whichCodeToReturn: [0],
+            codesToReturn: ['216120701'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        2161208: { // PACK 2 ABNORMALLY OFF
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: packOffNotFailed2.read(),
+            whichCodeToReturn: [0],
+            codesToReturn: ['216120801'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 1,
             side: 'LEFT',
         },
         3200060: { // NW ANTI SKID INACTIVE
@@ -1218,7 +1288,7 @@ const PseudoFWC: React.FC = () => {
     /* TO CONFIG */
 
     useEffect(() => {
-        if (tomemo) {
+        if (tomemo === 1) {
             // TODO Note that fuel tank low pressure and gravity feed warnings are not included
             let systemStatus = false;
             if (engine1Generator && engine2Generator && !greenLP && !yellowLP && !blueLP && eng1pumpPBisAuto && eng2pumpPBisAuto) {
@@ -1472,10 +1542,10 @@ const PseudoFWC: React.FC = () => {
         ndXfrKnob,
         noSmoking,
         nwSteeringDisc,
-        packOffBleedAvailable1,
-        packOffBleedAvailable2,
-        packOffNotFailed1,
-        packOffNotFailed2,
+        packOffBleedIsAvailable1,
+        packOffBleedIsAvailable1,
+        packOffNotFailure1,
+        packOffNotFailure2,
         parkBrake,
         predWSOn,
         ratDeployed,

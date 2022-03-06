@@ -101,6 +101,8 @@ const EWDMessages = {
     '000055201': '\x1b<3mCOMPANY MSG',
     '000056001': '\x1b<3mHI ALT SET',
     '000068001': '\x1b<3mADIRS SWTG',
+    '216120701': '\x1b<4m\x1b4mAIR\x1bm PACK 1 OFF',
+    '216120801': '\x1b<4m\x1b4mAIR\x1bm PACK 2 OFF',
     '260001001': '\x1b<2m\x1b4mENG 1 FIRE\x1bm',
     '260001002': '\x1b<5m -THR LEVER 1.......IDLE',
     '260001003': '\x1b<5m -THR LEVERS........IDLE',
