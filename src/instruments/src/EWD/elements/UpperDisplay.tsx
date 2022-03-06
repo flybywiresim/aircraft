@@ -59,7 +59,7 @@ const UpperDisplay: React.FC = () => {
 
             <Slats x={536} y={453} />
 
-            <FOB unit={unit} x={12} y={500} />
+            <FOB unit={unit} x={16} y={500} />
 
             {debugFlag && <text className="Medium Center White" x={320} y={528}>{flightPhase}</text>}
         </>
