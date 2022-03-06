@@ -340,6 +340,8 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
 
     private attDhText = FSComponent.createRef<SVGTextElement>();
 
+    private radioAltText = Subject.create('0')
+
     private radioAlt = FSComponent.createRef<SVGTextElement>();
 
     private classSub = Subject.create('');
@@ -373,7 +375,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
             this.altitude = a;
         });
 
-        sub.on('chosenRa').withArinc429Precision(1).handle((ra) => {
+        sub.on('chosenRa').handle((ra) => {
             if (!this.props.attExcessive.get()) {
                 this.radioAltitude = ra;
                 const raFailed = !this.radioAltitude.isFailureWarning();
@@ -417,18 +419,20 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
                 } else {
                     this.attDhText.instance.style.visibility = 'hidden';
                 }
-                this.radioAlt.instance.textContent = text;
+                this.radioAltText.set(text);
                 this.classSub.set(`${size} ${color} MiddleAlign TextOutline`);
             }
         });
 
         this.props.filteredRadioAltitude.sub((fra) => {
             this.filteredRadioAltitude = fra;
-        });
+        }, true);
 
         this.props.attExcessive.sub((ae) => {
             if (ae) {
-                this.radioAlt.instance.textContent = '';
+                this.radioAlt.instance.style.visibility = 'hidden';
+            } else {
+                this.radioAlt.instance.style.visibility = 'visible';
             }
         });
     }
@@ -445,7 +449,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
                 >
                     DH
                 </text>
-                <text ref={this.radioAlt} id="RadioAlt" x="69.202454" y="119.76205" class={this.classSub} />
+                <text ref={this.radioAlt} id="RadioAlt" x="69.202454" y="119.76205" class={this.classSub}>{this.radioAltText}</text>
             </g>
         );
     }
@@ -577,7 +581,7 @@ class RisingGround extends DisplayComponent<{ bus: EventBus, filteredRadioAltitu
 
             const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch((-this.lastPitch.value) - targetPitch) - 31.563, 0), -63.093);
             this.horizonGroundRectangle.instance.style.transform = `translate3d(0px, ${targetOffset.toFixed(2)}px, 0px)`;
-        }, true);
+        });
     }
 
     render(): VNode {
