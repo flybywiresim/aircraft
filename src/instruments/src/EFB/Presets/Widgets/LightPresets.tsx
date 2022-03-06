@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { toast } from 'react-toastify';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 
 export const LightPresets = () => {
     // Light presets are handled in a wasm module as setting the indexed "LIGHT POTENTIOMETER"
@@ -31,6 +32,48 @@ export const LightPresets = () => {
             { autoClose: 250, hideProgressBar: true, closeButton: false });
     }
 
+    const [presetNames, setPresetNames] = useState(new Map());
+    function updatePresetNames(k, v) {
+        setPresetNames(new Map(presetNames.set(k, v)));
+    }
+
+    useEffect(() => {
+        presetNames.forEach((v, k) => {
+            console.log(`Preset ${k} = ${v}`);
+        });
+    }, [presetNames]);
+
+    function SinglePreset(presetID: number) {
+        return (
+            <div className="flex flex-row justify-between my-1">
+                <div className="flex justify-center items-center w-24">
+                    {presetID}
+                </div>
+                <div className="flex justify-center items-center mx-4 w-full h-28 rounded-md border-2 text-theme-text bg-theme-accent border-theme-accent">
+                    <SimpleInput
+                        className="w-80 text-2xl font-medium text-center"
+                        placeholder="No Name"
+                        value={presetNames.get(presetID) || 'No Name'}
+                        onChange={(value) => updatePresetNames(presetID, value)}
+                        maxLength={16}
+                    />
+                </div>
+                <div
+                    className="flex justify-center items-center mx-4 w-full h-28 rounded-md border-2 transition duration-100 items-centerh-24 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight border-theme-accent"
+                    onClick={() => loadPreset(presetID)}
+                >
+                    Load Preset
+                </div>
+                <div
+                    className="flex justify-center items-center mx-4 w-full h-28 text-white bg-red-500 hover:bg-red-600 rounded-md border-2 border-red-500 hover:border-red-600 transition duration-100"
+                    onClick={() => savePreset(presetID)}
+                >
+                    Save Preset
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full">
             <div className="flex flex-row items-end space-x-4">
@@ -38,43 +81,13 @@ export const LightPresets = () => {
             </div>
             <div className="p-4 mt-4 rounded-lg border-2 border-theme-accent">
                 <ScrollableContainer height={52}>
-                    <div className="grid grid-cols-2 grid-rows-3 grid-flow-row gap-4">
-                        <div
-                            className="flex justify-center items-center my-1 mx-1 h-24 rounded-md border-2 transition duration-100 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight border-theme-accent"
-                            onClick={() => loadPreset(1)}
-                        >
-                            Load Preset 1
-                        </div>
-                        <div
-                            className="flex justify-center items-center my-1 mx-2 h-24 text-white bg-red-500 hover:bg-red-600 rounded-md border-2 border-red-500 hover:border-red-600 transition duration-100"
-                            onClick={() => savePreset(1)}
-                        >
-                            Save Preset 1
-                        </div>
-                        <div
-                            className="flex justify-center items-center my-2 mx-1 h-24 rounded-md border-2 transition duration-100 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight border-theme-accent"
-                            onClick={() => loadPreset(2)}
-                        >
-                            Load Preset 2
-                        </div>
-                        <div
-                            className="flex justify-center items-center my-2 mx-2 h-24 text-white bg-red-500 hover:bg-red-600 rounded-md border-2 border-red-500 hover:border-red-600 transition duration-100"
-                            onClick={() => savePreset(2)}
-                        >
-                            Save Preset 2
-                        </div>
-                        <div
-                            className="flex justify-center items-center my-3 mx-1 h-24 rounded-md border-2 transition duration-100 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight border-theme-accent"
-                            onClick={() => loadPreset(3)}
-                        >
-                            Load Preset 3
-                        </div>
-                        <div
-                            className="flex justify-center items-center my-3 mx-2 h-24 text-white bg-red-500 hover:bg-red-600 rounded-md border-2 border-red-500 hover:border-red-600 transition duration-100"
-                            onClick={() => savePreset(3)}
-                        >
-                            Save Preset 3
-                        </div>
+                    <div className="grid grid-cols-1 grid-rows-5 grid-flow-row gap-4">
+                        {SinglePreset(1)}
+                        {SinglePreset(2)}
+                        {SinglePreset(3)}
+                        {SinglePreset(4)}
+                        {SinglePreset(5)}
+                        {SinglePreset(6)}
                     </div>
                 </ScrollableContainer>
             </div>
