@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { MemoryRouter as Router } from 'react-router-dom';
+import { customAlphabet } from 'nanoid';
+import * as Sentry from '@sentry/browser';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import Efb from './Efb';
 import { render } from '../Common/index';
@@ -76,5 +78,13 @@ const EFBLoad = () => {
 };
 
 readSettingsFromPersistentStorage();
+
+const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const SESSION_ID_LENGTH = 14;
+const nanoid = customAlphabet(ALPHABET, SESSION_ID_LENGTH);
+const generatedSessionID = nanoid();
+
+Sentry.setTag('session_id', generatedSessionID);
+SimVar.SetSimVarValue('L:A32NX_SENTRY_SESSION_ID', 'string', generatedSessionID);
 
 render(<FailuresOrchestratorProvider><EFBLoad /></FailuresOrchestratorProvider>, true, true);
