@@ -1094,7 +1094,10 @@ mod tests {
         assert_eq!(container.volume(), Volume::new::<gallon>(8.));
         assert!(container.pressure() > Pressure::new::<psi>(14.7));
         assert!(container.temperature() > ThermodynamicTemperature::new::<degree_celsius>(15.));
-        assert_eq!(container.mass(), container_mass);
+        assert_about_eq!(
+            container.mass().get::<kilogram>(),
+            container_mass.get::<kilogram>()
+        );
     }
 
     #[test]
