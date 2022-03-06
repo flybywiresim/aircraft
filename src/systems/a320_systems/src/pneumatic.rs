@@ -1219,7 +1219,7 @@ impl PackFlowValveController {
     fn new(context: &mut InitContext, engine_number: usize) -> Self {
         Self {
             pack_toggle_pb_id: context
-                .get_identifier(format!("AIRCOND_PACK{}_TOGGLE", engine_number)),
+                .get_identifier(format!("OVHD_COND_PACK_{}_PB_IS_ON", engine_number)),
             pack_pb_is_auto: true,
             pid: PidController::new(0., 0.05, 0., 0., 1., 0.75, 1.),
         }
