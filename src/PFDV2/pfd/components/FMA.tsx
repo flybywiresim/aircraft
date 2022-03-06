@@ -172,10 +172,10 @@ class Row1 extends DisplayComponent<{bus:EventBus, isAttExcessive: Subscribable<
         this.props.isAttExcessive.sub((a) => {
             if (a) {
                 this.cellsToHide.instance.style.visibility = 'hidden';
-                this.b1Cell.instance.displayModeChangedPath(true);
-                this.c1Cell.instance.displayModeChangedPath(true);
+                this.b1Cell.instance.displayModeChangedPath();
+                this.c1Cell.instance.displayModeChangedPath();
                 // this.D1D2Cell.instance.displayModeChangedPath(true);
-                this.BC1Cell.instance.displayModeChangedPath(true);
+                this.BC1Cell.instance.displayModeChangedPath();
             } else {
                 this.cellsToHide.instance.style.visibility = 'visible';
                 this.b1Cell.instance.displayModeChangedPath();
@@ -643,12 +643,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
         sub.on('activeVerticalMode').whenChanged().handle((activeVerticalMode) => {
             this.activeVerticalModeSub.set(activeVerticalMode);
-            const isShow = this.getText();
-            if (isShow) {
-                this.displayModeChangedPath();
-            } else {
-                this.displayModeChangedPath(true);
-            }
+            this.getText();
+
+            this.displayModeChangedPath();
         });
 
         sub.on('selectedFpa').whenChanged().handle((fpa) => {
@@ -795,6 +792,8 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
             this.activeLateralMode = lm;
 
             const isShown = this.updateText();
+            this.isShown = isShown;
+
             if (isShown) {
                 this.displayModeChangedPath();
             } else {
@@ -806,6 +805,8 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
             this.activeVerticalMode = lm;
 
             const isShown = this.updateText();
+            this.isShown = isShown;
+
             if (isShown) {
                 this.displayModeChangedPath();
             } else {
@@ -817,6 +818,8 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
             this.armedVerticalMode = va;
 
             const isShown = this.updateText();
+            this.isShown = isShown;
+
             if (isShown) {
                 this.displayModeChangedPath();
             } else {
@@ -829,7 +832,6 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
         const finalArmed = (this.armedVerticalMode >> 5) & 1;
 
         let text: string;
-        this.isShown = true;
         if (this.activeLateralMode === LateralMode.GA_TRACK) {
             text = 'GA TRK';
         } else if (this.activeLateralMode === LateralMode.LOC_CPT) {
@@ -850,7 +852,6 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
             text = 'APP NAV';
         } else {
             text = '';
-            this.isShown = false;
         }
 
         const hasChanged = text.length > 0 && text !== this.textSub.get();
@@ -1140,15 +1141,20 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
 
     private text2Sub = Subject.create('');
 
+    constructor(props: CellProps) {
+        super(props, 9);
+    }
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-        this.isShown = true;
         sub.on('approachCapability').whenChanged().handle((c) => {
             let text1: string;
             let text2: string | undefined;
+
+            this.isShown = true;
             switch (c) {
             case 1:
                 text1 = 'CAT1';
@@ -1184,6 +1190,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
             }
 
             this.text1Sub.set(text1);
+
             if (text2) {
                 this.text2Sub.set(text2);
                 this.modeChangedPathRef.instance.setAttribute('d', 'm104.1 1.8143h27.994v13.506h-27.994z');
@@ -1193,10 +1200,8 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
             }
             if (text1.length === 0 && !text2) {
                 this.isShown = false;
-                this.displayModeChangedPath(true);
-            } else {
-                this.displayModeChangedPath();
             }
+            this.displayModeChangedPath();
         });
     }
 
@@ -1205,7 +1210,7 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
             <g>
                 <text class="FontMedium MiddleAlign White" x="118.45866" y="7.125926">{this.text1Sub}</text>
                 <text class="FontMedium MiddleAlign White" x="118.39752" y="14.289783">{this.text2Sub}</text>
-                <path ref={this.modeChangedPathRef} class="NormalStroke White" />
+                <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" />
             </g>
         );
     }
@@ -1278,10 +1283,10 @@ class E1Cell extends ShowForSecondsComponent<CellProps> {
         } else if (!this.ap2Active && !this.ap1Active) {
             text = '';
             this.isShown = false;
-            this.displayModeChangedPath(true);
         } else {
             text = 'AP1+2';
         }
+        this.displayModeChangedPath();
         this.textSub.set(text);
     }
 
