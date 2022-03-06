@@ -73,6 +73,20 @@ pub trait PneumaticContainer {
             * self.mass()
     }
 
+    fn get_mass_flow_for_equilibrium(&self, other: &impl PneumaticContainer) -> Mass {
+        let p1 = self
+            .pressure()
+            .get::<pascal>()
+            .powf(1. / Self::HEAT_CAPACITY_RATIO);
+        let p2 = other
+            .pressure()
+            .get::<pascal>()
+            .powf(1. / Self::HEAT_CAPACITY_RATIO);
+        let m1 = self.mass().get::<kilogram>();
+        let m2 = other.mass().get::<kilogram>();
+        Mass::new::<kilogram>(m1 * m2 * (p2 - p1) / (m2 * p1 + m1 * p2))
+    }
+
     /// Transfer heat between two containers depending on the temperature difference
     fn heat_conduction(
         &mut self,
@@ -1166,5 +1180,25 @@ mod tests {
             .is_nan());
         assert!(!source.mass().get::<kilogram>().is_nan());
         assert!(!container_with_valve.mass().get::<kilogram>().is_nan());
+    }
+
+    #[test]
+    fn calculated_mass_flow_equalizes_pressure() {
+        let mut pipe1 = quick_container(1., 100., 15.);
+        let mut pipe2 = quick_container(1., 1., 15.);
+
+        let mass_flow = pipe1.get_mass_flow_for_equilibrium(&pipe2);
+
+        assert!(mass_flow.get::<kilogram>() < 0.);
+        assert!(mass_flow > pipe1.get_mass_flow_for_target_pressure(pipe2.pressure()));
+        assert!(mass_flow < pipe2.get_mass_flow_for_target_pressure(pipe1.pressure()));
+
+        pipe1.change_fluid_amount(mass_flow, pipe2.temperature());
+        pipe2.change_fluid_amount(-mass_flow, pipe1.temperature());
+
+        assert_about_eq!(
+            pipe1.pressure().get::<pascal>(),
+            pipe2.pressure().get::<pascal>()
+        );
     }
 }

@@ -7,7 +7,6 @@ use crate::{
 
 use uom::si::{
     f64::*,
-    mass::kilogram,
     pressure::psi,
     ratio::{percent, ratio},
 };
@@ -237,18 +236,10 @@ impl PneumaticContainerConnector {
         container_one: &mut impl PneumaticContainer,
         container_two: &mut impl PneumaticContainer,
     ) {
-        // SAFETY: as the iterator is always non-empty reduce never returns None.
-        let air_masses = [
-            container_one.get_mass_flow_for_target_pressure(container_two.pressure()),
-            -container_two.get_mass_flow_for_target_pressure(container_one.pressure()),
-        ];
-        let air_mass = *air_masses
-            .iter()
-            .reduce(|accum, m| if accum.abs() < m.abs() { accum } else { m })
-            .unwrap()
+        let air_mass = container_one.get_mass_flow_for_equilibrium(container_two)
             * self.transfer_speed_factor
             * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
-        let air_temp = if air_mass.get::<kilogram>() > 0. {
+        let air_temp = if air_mass.is_sign_positive() {
             container_two.temperature()
         } else {
             container_one.temperature()
