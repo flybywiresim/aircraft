@@ -33,7 +33,7 @@ class Presets {
 
   bool isConnected = false;
 
-  SimulationData simulationData = {};
+  // SimulationData simulationData = {};
   LightingSimVars* simVars;
 
   /**

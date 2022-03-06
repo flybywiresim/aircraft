@@ -112,7 +112,7 @@ bool Presets::simConnectRequestData() {
     return false;
   }
 
-  // not use in this use case
+  /* not use in this use case
   //
   // request data for defined data structure
   //  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER,
@@ -123,6 +123,7 @@ bool Presets::simConnectRequestData() {
   //    // request failed
   //    return false;
   //  }
+  */
 
   // success
   return true;
@@ -179,7 +180,9 @@ void Presets::simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DAT
   switch (data->dwRequestID) {
     case 0:
       // store aircraft data
+      /* not used in this use case
       simulationData = *((SimulationData*)&data->dwData);
+      */
       return;
 
     default:
