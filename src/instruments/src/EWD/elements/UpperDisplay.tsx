@@ -17,8 +17,8 @@ const UpperDisplay: React.FC = () => {
     const debugFlag = false; // TODO add relevant SimVar when it is created
     const [autothrustMode] = useSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum', 500);
 
-    const [fadecEng1Active] = useSimVar('L:A32NX_FADEC_POWERED_ENG:1', 'bool', 500);
-    const [fadecEng2Active] = useSimVar('L:A32NX_FADEC_POWERED_ENG:2', 'bool', 500);
+    const [fadecEng1Active] = useSimVar('L:A32NX_FADEC_POWERED_ENG1', 'bool', 500);
+    const [fadecEng2Active] = useSimVar('L:A32NX_FADEC_POWERED_ENG2', 'bool', 500);
     const isActive = fadecEng1Active === 1 || fadecEng2Active === 1;
 
     return (

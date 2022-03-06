@@ -1226,7 +1226,7 @@ const PseudoFWC: React.FC = () => {
             }
             const speeds = !!(v1Speed <= vrSpeed && vrSpeed <= v2Speed);
             const doors = !!(cabin === 0 && catering === 0 && cargoaftLocked && cargofwdLocked);
-            const flapsAgree = !!(flapsMcduEntered && flapsHandle === flapsMcdu);
+            const flapsAgree = !flapsMcduEntered || flapsHandle === flapsMcdu;
             const sb = speedBrake === 0;
 
             if (systemStatus && speeds && !brakesHot && doors && flapsAgree && sb) {
