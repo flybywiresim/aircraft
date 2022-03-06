@@ -5,6 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { toast } from 'react-toastify';
+import { usePersistentProperty } from '@instruments/common/persistence';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 
@@ -20,27 +21,57 @@ export const LightPresets = () => {
     const [, setLoadPresetVar] = useSimVar('L:A32NX_LOAD_LIGHTING_PRESET', 'number', 200);
     const [, setSavePresetVar] = useSimVar('L:A32NX_SAVE_LIGHTING_PRESET', 'number', 200);
 
-    function loadPreset(number: number) {
-        setLoadPresetVar(number);
-        toast.success(`Loading Preset: ${number}`,
+    // Sets the LVAR to tell the wasm to load the preset into the aircraft
+    function loadPreset(presetID: number) {
+        setLoadPresetVar(presetID);
+        toast.success(`Loading Preset: ${presetID}: ${presetNames.get(presetID)}`,
             { autoClose: 250, hideProgressBar: true, closeButton: false });
     }
 
-    function savePreset(number: number) {
-        setSavePresetVar(number);
-        toast.success(`Saving Preset: ${number}`,
+    // Sets the LVAR to tell the wasm to save the current lighting setting into the preset
+    function savePreset(presetID: number) {
+        setSavePresetVar(presetID);
+        toast.success(`Saving Preset: ${presetID}: ${presetNames.get(presetID)}`,
             { autoClose: 250, hideProgressBar: true, closeButton: false });
     }
 
+    // Manage name for presets in EFB only and always map them to the preset IDs used in the
+    // WASM implementation.
+    const [storedNames, setStoredNames] = usePersistentProperty('LIGHT_PRESET_NAMES');
     const [presetNames, setPresetNames] = useState(new Map());
-    function updatePresetNames(k, v) {
+
+    function updatePresetNames(k: number, v: string) {
         setPresetNames(new Map(presetNames.set(k, v)));
     }
 
+    // Read the persisted preset names once
+    // The data is stored as one string in a persistant property.
+    // Key Value pairs are separated by :
+    // Each pair has the form of key=pair
     useEffect(() => {
+        if (storedNames) {
+            console.log(`Load preset names: "${storedNames}"`);
+            const presetKeyValue = storedNames.split(':');
+            presetKeyValue.forEach((pair) => {
+                const [keyS, value] = pair.trim().split('=');
+                const key = Number.parseInt(keyS, 10);
+                if (key && value) {
+                    updatePresetNames(key, value);
+                }
+            });
+        }
+    }, []);
+
+    // Saves the current map of stored preset names to a persistent property string.
+    useEffect(() => {
+        let storedNamesTemp = '';
         presetNames.forEach((v, k) => {
-            console.log(`Preset ${k} = ${v}`);
+            if (v.length > 0) {
+                storedNamesTemp += `${k}=${v}:`;
+            }
         });
+        setStoredNames(storedNamesTemp);
+        console.log(`Saved preset names: "${storedNames}"`);
     }, [presetNames]);
 
     function SinglePreset(presetID: number) {
@@ -65,7 +96,7 @@ export const LightPresets = () => {
                     Load Preset
                 </div>
                 <div
-                    className="flex justify-center items-center mx-4 w-full h-28 text-white bg-red-500 hover:bg-red-600 rounded-md border-2 border-red-500 hover:border-red-600 transition duration-100"
+                    className="flex justify-center items-center mx-4 w-full h-28 text-white bg-green-500 hover:bg-green-600 rounded-md border-2 border-green-500 hover:border-green-600 transition duration-100"
                     onClick={() => savePreset(presetID)}
                 >
                     Save Preset
