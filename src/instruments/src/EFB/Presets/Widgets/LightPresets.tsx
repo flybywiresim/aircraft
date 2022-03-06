@@ -11,10 +11,10 @@ export const LightPresets = () => {
     // Light presets are handled in a wasm module as setting the indexed "LIGHT POTENTIOMETER"
     // variable didn't work in Javascript.
     // To tell the presets.wasm module to load a preset the LVAR "L:A32NX_LOAD_LIGHTING_PRESET"
-    // needs to be set with a number > 0 where the number is the corresponding preset to be loaded.
+    // needs to be set with a number > 0 where the number is the corresponding preset ID to be loaded.
     // If a preset is not defined for this number a default preset (all lights at 50%) will be loaded.
     // To tell the presets.wasm module to save a preset the LVAR "L:A32NX_SAVE_LIGHTING_PRESET"
-    // needs to be set with a number > 0 where the number is the corresponding preset to be loaded.
+    // needs to be set with a number > 0 where the number is the corresponding preset ID to be saved..
     // After loading or saving the wasm module will reset the LVARs to 0
     const [loadPresetVar, setLoadPresetVar] = useSimVar('L:A32NX_LOAD_LIGHTING_PRESET', 'number', 200);
     const [savePresetVar, setSavePresetVar] = useSimVar('L:A32NX_SAVE_LIGHTING_PRESET', 'number', 200);
