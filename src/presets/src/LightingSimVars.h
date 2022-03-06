@@ -6,18 +6,18 @@
  * SimConnect data types for retrieving SimConnect data into local data structures
  * Not used in this implementation.
  */
-enum DataTypesID {
-  //  SimulationDataTypeId,
-};
+// enum DataTypesID {
+//   SimulationDataTypeId,
+// };
 
 /**
  * SimConnect data structure for retrieving SimConnect data into local data structures
  * Not used in this implementation.
  */
-struct SimulationData {
-  //  double simulationTime;
-  //  double simulationRate;
-};
+// struct SimulationData {
+//   double simulationTime;
+//   double simulationRate;
+// };
 
 /**
  * For instruments with are specific to the left (Cpt) or right (FO) side of the cockpit.
