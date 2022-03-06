@@ -17,8 +17,8 @@ use systems::{
         valve::*, BleedMonitoringComputerChannelOperationMode,
         BleedMonitoringComputerIsAliveSignal, CompressionChamber, ControllablePneumaticValve,
         CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
-        EngineCompressionChamberController, EngineState, PneumaticContainer, PneumaticPipe,
-        PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
+        EngineCompressionChamberController, EngineModeSelector, EngineState, PneumaticContainer,
+        PneumaticPipe, PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
         PressurizeableReservoir, TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
@@ -332,6 +332,9 @@ impl EngineStartState for A320Pneumatic {
     }
     fn right_engine_state(&self) -> EngineState {
         self.fadec.engine_state(2)
+    }
+    fn engine_mode_selector(&self) -> EngineModeSelector {
+        self.fadec.engine_mode_selector()
     }
 }
 impl SimulationElement for A320Pneumatic {
@@ -1067,12 +1070,15 @@ impl SimulationElement for A320PneumaticOverheadPanel {
 }
 
 /// We use this simply as an interface to engine parameter simvars. It should probably not be part of the pneumatic system.
-struct FullAuthorityDigitalEngineControl {
+pub struct FullAuthorityDigitalEngineControl {
     engine_1_state_id: VariableIdentifier,
     engine_2_state_id: VariableIdentifier,
 
     engine_1_state: EngineState,
     engine_2_state: EngineState,
+
+    engine_mode_selector1_id: VariableIdentifier,
+    engine_mode_selector1_position: EngineModeSelector,
 }
 impl FullAuthorityDigitalEngineControl {
     fn new(context: &mut InitContext) -> Self {
@@ -1081,6 +1087,9 @@ impl FullAuthorityDigitalEngineControl {
             engine_2_state_id: context.get_identifier("ENGINE_STATE:2".to_owned()),
             engine_1_state: EngineState::Off,
             engine_2_state: EngineState::Off,
+            engine_mode_selector1_id: context
+                .get_identifier("TURB ENG IGNITION SWITCH EX1:1".to_owned()),
+            engine_mode_selector1_position: EngineModeSelector::Norm,
         }
     }
 
@@ -1095,11 +1104,16 @@ impl FullAuthorityDigitalEngineControl {
     fn is_single_vs_dual_bleed_config(&self) -> bool {
         (self.engine_1_state == EngineState::On) ^ (self.engine_2_state == EngineState::On)
     }
+
+    fn engine_mode_selector(&self) -> EngineModeSelector {
+        self.engine_mode_selector1_position
+    }
 }
 impl SimulationElement for FullAuthorityDigitalEngineControl {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.engine_1_state = reader.read(&self.engine_1_state_id);
         self.engine_2_state = reader.read(&self.engine_2_state_id);
+        self.engine_mode_selector1_position = reader.read(&self.engine_mode_selector1_id);
     }
 }
 
