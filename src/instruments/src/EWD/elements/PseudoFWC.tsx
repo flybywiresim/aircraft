@@ -206,7 +206,7 @@ const PseudoFWC: React.FC = () => {
     const [autoBrake] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum', 500);
     const [flapsHandle] = useSimVar('L:A32NX_FLAPS_HANDLE_INDEX', 'enum', 500);
     const [flapsIndex] = useSimVar('L:A32NX_FLAPS_CONF_INDEX', 'number', 100);
-    const [toconfig] = useSimVar('L:A32NX_TO_CONFIG_NORMAL', 'bool', 500);
+    const [toconfig] = useSimVar('L:A32NX_TO_CONFIG_NORMAL', 'bool', 100);
 
     const [adirsRemainingAlignTime] = useSimVar('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'seconds', 1000);
     const [adiru1State] = useSimVar('L:A32NX_ADIRS_ADIRU_1_STATE', 'enum', 500);
@@ -1369,6 +1369,10 @@ const PseudoFWC: React.FC = () => {
 
         if (!failLeft) {
             setMemoMessageLeft(orderedMemoArrayLeft);
+            if (orderedFailureArrayRight.length === 0) {
+                masterCaution(0);
+                masterWarning(0);
+            }
         }
 
         if (leftFailureSystemCount + rightFailureSystemCount === 0) {

@@ -13,12 +13,13 @@ import PacksNaiWai from './PacksNAIWAI';
 
 const UpperDisplay: React.FC = () => {
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
-    const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'enum', 1000);
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
     const debugFlag = false; // TODO add relevant SimVar when it is created
     const [autothrustMode] = useSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum', 500);
 
-    const isActive = (engSelectorPosition === 2 && flightPhase === 1) || flightPhase > 1;
+    const [fadecEng1Active] = useSimVar('L:A32NX_FADEC_POWERED_ENG:1', 'bool', 500);
+    const [fadecEng2Active] = useSimVar('L:A32NX_FADEC_POWERED_ENG:2', 'bool', 500);
+    const isActive = fadecEng1Active === 1 || fadecEng2Active === 1;
 
     return (
         <>
