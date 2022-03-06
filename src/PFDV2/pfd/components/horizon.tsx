@@ -563,6 +563,13 @@ class RisingGround extends DisplayComponent<{ bus: EventBus, filteredRadioAltitu
 
     private horizonGroundRectangle = FSComponent.createRef<SVGGElement>();
 
+    private setOffset() {
+        const targetPitch = (this.radioAlt.isNoComputedData() || this.radioAlt.isFailureWarning()) ? -200 : -0.1 * this.props.filteredRadioAltitude.get();
+
+        const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch((-this.lastPitch.value) - targetPitch) - 31.563, 0), -63.093);
+        this.horizonGroundRectangle.instance.style.transform = `translate3d(0px, ${targetOffset.toFixed(2)}px, 0px)`;
+    }
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -574,13 +581,11 @@ class RisingGround extends DisplayComponent<{ bus: EventBus, filteredRadioAltitu
 
         sub.on('chosenRa').handle((p) => {
             this.radioAlt = p;
+            this.setOffset();
         });
 
-        this.props.filteredRadioAltitude.sub((fra) => {
-            const targetPitch = (this.radioAlt.isNoComputedData() || this.radioAlt.isFailureWarning()) ? -200 : -0.1 * fra;
-
-            const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch((-this.lastPitch.value) - targetPitch) - 31.563, 0), -63.093);
-            this.horizonGroundRectangle.instance.style.transform = `translate3d(0px, ${targetOffset.toFixed(2)}px, 0px)`;
+        this.props.filteredRadioAltitude.sub((_fra) => {
+            this.setOffset();
         });
     }
 
