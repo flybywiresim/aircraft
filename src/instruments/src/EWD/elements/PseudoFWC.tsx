@@ -226,7 +226,7 @@ const PseudoFWC: React.FC = () => {
     const [speedBrake] = useSimVar('L:A32NX_SPOILERS_HANDLE_POSITION', 'number', 500);
     const [parkBrake] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'bool', 500);
     const [brakesHot] = useSimVar('L:A32NX_BRAKES_HOT', 'bool', 500);
-    const [v1Speed] = useSimVar('L:AIRLINER_V1_SPEED', 'kots', 500);
+    const [v1Speed] = useSimVar('L:AIRLINER_V1_SPEED', 'knots', 500);
     const [vrSpeed] = useSimVar('L:AIRLINER_VR_SPEED', 'knots', 500);
     const [v2Speed] = useSimVar('L:AIRLINER_V2_SPEED', 'knots');
     const [cabin] = useSimVar('INTERACTIVE POINT OPEN:0', 'percent', 1000);
