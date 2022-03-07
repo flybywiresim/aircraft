@@ -8,7 +8,7 @@ import {
     editPinnedChart,
     editTabProperty,
     NavigationTab,
-    PinnedChart,
+    PinnedChart, removedPinnedChart,
     setBoundingBox,
     setProvider,
     setSelectedNavigationTabIndex,
@@ -17,6 +17,7 @@ import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { pathify } from '../../Utils/routing';
+import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 
 const getTagColor = (tagName?: string) => {
     switch (tagName) {
