@@ -115,7 +115,7 @@ const EWDMessages = {
     '213122112': '\x1b<5m -EMER DES (PA).ANNOUNCE',
     '213122113': '\x1b<5m -XPDR 7700.....CONSIDER',
     '213122114': '\x1b<5m MAX FL.....100/MEA-MORA',
-    '213122115': '\x1b<7m  .IF CAN ALT>14000FT:',
+    '213122115': '\x1b<7m  .IF CAB ALT>14000FT:',
     '213122116': '\x1b<5m -PAX OXY MASKS...MAN ON',
     '216120701': '\x1b<4m\x1b4mAIR\x1bm PACK 1 OFF',
     '216120801': '\x1b<4m\x1b4mAIR\x1bm PACK 2 OFF',
