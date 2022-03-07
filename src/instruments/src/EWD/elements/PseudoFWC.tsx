@@ -1076,7 +1076,7 @@ const PseudoFWC: React.FC = () => {
         },
         '0000540': // PRED W/S OFF
         {
-            flightPhaseInhib: [1, 10],
+            flightPhaseInhib: [],
             simVarIsActive: !!(predWSOn === 0 && ![1, 10].includes(flightPhase)),
             whichCodeToReturn: [[3, 4, 5, 7, 8, 9].includes(flightPhase) || toconfig === 1 ? 1 : 0],
             codesToReturn: ['000054001', '000054002'],
