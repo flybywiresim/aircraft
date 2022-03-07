@@ -819,7 +819,7 @@ const PseudoFWC: React.FC = () => {
             simVarIsActive: !!tomemo,
             whichCodeToReturn: [
                 autoBrake === 3 ? 1 : 0,
-                noSmoking && configPortableDevices ? 3 : 2,
+                noSmoking === 1 && seatBelt === 1 ? 3 : 2,
                 cabinReady ? 5 : 4,
                 spoilersArmed ? 7 : 6,
                 flapsHandle >= 1 && flapsHandle <= 3 ? 9 : 8,
@@ -836,7 +836,7 @@ const PseudoFWC: React.FC = () => {
             simVarIsActive: !!ldgmemo,
             whichCodeToReturn: [
                 landingGearDown === 1 ? 1 : 0,
-                noSmoking && configPortableDevices ? 3 : 2,
+                noSmoking === 1 && seatBelt === 1 ? 3 : 2,
                 cabinReady ? 5 : 4,
                 spoilersArmed ? 7 : 6,
                 !gpwsFlaps3 && flapsHandle !== 4 ? 8 : null,
@@ -909,7 +909,7 @@ const PseudoFWC: React.FC = () => {
         '0000090': // NO SMOKING
             {
                 flightPhaseInhib: [],
-                simVarIsActive: !!(noSmoking && !configPortableDevices),
+                simVarIsActive: !!(noSmoking === 1 && !configPortableDevices),
                 whichCodeToReturn: [0],
                 codesToReturn: ['000009001'],
                 memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
@@ -920,7 +920,7 @@ const PseudoFWC: React.FC = () => {
         '0000095': // PORTABLE DEVICES
             {
                 flightPhaseInhib: [],
-                simVarIsActive: !!(noSmoking && configPortableDevices),
+                simVarIsActive: !!(noSmoking === 1 && configPortableDevices),
                 whichCodeToReturn: [0],
                 codesToReturn: ['000009501'],
                 memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
