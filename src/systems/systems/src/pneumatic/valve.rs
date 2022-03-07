@@ -644,14 +644,15 @@ mod tests {
         exhaust.update_move_fluid(&context, &mut container);
         assert!(exhaust.fluid_flow().get::<kilogram_per_second>() > 0.);
 
-        for _ in 1..1000 {
+        for _ in 1..1500 {
             exhaust.update_move_fluid(&context, &mut container);
             println!("Press {:.1}", container.pressure().get::<psi>());
         }
 
         assert_about_eq!(
             container.pressure().get::<psi>(),
-            context.ambient_pressure().get::<psi>()
+            context.ambient_pressure().get::<psi>(),
+            1.0e-2
         );
     }
 
@@ -672,7 +673,8 @@ mod tests {
 
         assert_about_eq!(
             container.pressure().get::<psi>(),
-            context.ambient_pressure().get::<psi>()
+            context.ambient_pressure().get::<psi>(),
+            1.0e-5
         );
     }
 
