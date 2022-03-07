@@ -522,7 +522,7 @@ const PseudoFWC: React.FC = () => {
             sysPage: 0,
             side: 'LEFT',
         },
-        2600010: { // ENG 1 FIRE //
+        2600010: { // ENG 1 FIRE
             flightPhaseInhib: [],
             simVarIsActive: !!(eng1FireTest === 1 || fireButton1 === 1),
             whichCodeToReturn: [
