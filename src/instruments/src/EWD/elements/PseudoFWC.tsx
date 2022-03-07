@@ -1129,7 +1129,7 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'RIGHT',
         },
-        '0000260': // ENGINE ANTIICE
+        '0000260': // ENG ANTI ICE
         {
             flightPhaseInhib: [3, 4, 5, 7, 8],
             simVarIsActive: !!(eng1AntiIce === 1 || eng2AntiIce === 1),
