@@ -1021,7 +1021,7 @@ const PseudoFWC: React.FC = () => {
         },
         '0000200': // PARK BRK
         {
-            flightPhaseInhib: [3, 4, 5, 6, 7, 8],
+            flightPhaseInhib: [],
             simVarIsActive: !!([1, 2, 9, 10].includes(flightPhase) && parkBrake === 1),
             whichCodeToReturn: [0],
             codesToReturn: ['000020001'],
