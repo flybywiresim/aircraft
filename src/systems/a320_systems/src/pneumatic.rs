@@ -1862,7 +1862,7 @@ mod tests {
         }
 
         fn set_pack_flow_pb_is_auto(mut self, number: usize, is_auto: bool) -> Self {
-            self.write_by_name(&format!("AIRCOND_PACK{}_TOGGLE", number), is_auto);
+            self.write_by_name(&format!("OVHD_COND_PACK_{}_PB_IS_ON", number), is_auto);
 
             self
         }
