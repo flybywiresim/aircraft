@@ -27,6 +27,7 @@ export const LightPresets = () => {
     // Sets the LVAR to tell the wasm to load the preset into the aircraft
     function loadPreset(presetID: number) {
         setLoadPresetVar(presetID);
+        // loading of presets only allowed when aircraft is powered (also the case in the wasm)
         if (isPowered) {
             toast.success(`Loading Preset: ${presetID}: ${presetNames.get(presetID)}`,
                 { autoClose: 250, hideProgressBar: true, closeButton: false });
@@ -39,6 +40,7 @@ export const LightPresets = () => {
     // Sets the LVAR to tell the wasm to save the current lighting setting into the preset
     function savePreset(presetID: number) {
         setSavePresetVar(presetID);
+        // Saving of presets only allowed when aircraft is powered (also the case in the wasm)
         if (isPowered) {
             toast.success(`Saving Preset: ${presetID}: ${presetNames.get(presetID)}`,
                 { autoClose: 250, hideProgressBar: true, closeButton: false });
@@ -53,8 +55,11 @@ export const LightPresets = () => {
     const [storedNames, setStoredNames] = usePersistentProperty('LIGHT_PRESET_NAMES');
     const [presetNames, setPresetNames] = useState(new Map());
 
-    function updatePresetNames(k: number, v: string) {
-        setPresetNames(new Map(presetNames.set(k, v)));
+    function updatePresetNames(presetID: number, presetName: string) {
+        // we use these characters to store the preset names
+        setPresetNames(new Map(presetNames.set(presetID, presetName)));
+        toast.success(`Renaming Preset: ${presetID} to ${presetNames.get(presetID)} successful.`,
+            { autoClose: 250, hideProgressBar: true, closeButton: false });
     }
 
     // Read the persisted preset names once
@@ -68,7 +73,7 @@ export const LightPresets = () => {
                 const [keyS, value] = pair.trim().split('=');
                 const key = Number.parseInt(keyS, 10);
                 if (key && value) {
-                    updatePresetNames(key, value);
+                    setPresetNames(new Map(presetNames.set(key, value)));
                 }
             });
         }
@@ -83,7 +88,7 @@ export const LightPresets = () => {
             }
         });
         setStoredNames(storedNamesTemp);
-        console.log(`Saved preset names: "${storedNames}"`);
+        console.log(`Saved preset names: "${storedNamesTemp}"`);
     }, [presetNames]);
 
     // One line of preset with ID, name, load and save
@@ -98,7 +103,7 @@ export const LightPresets = () => {
                         className="w-80 text-2xl font-medium text-center"
                         placeholder="No Name"
                         value={presetNames.get(presetID) || 'No Name'}
-                        onChange={(value) => updatePresetNames(presetID, value)}
+                        onBlur={(value) => updatePresetNames(presetID, value.replace(/[:|=]/g, ''))}
                         maxLength={16}
                     />
                 </div>
@@ -118,6 +123,7 @@ export const LightPresets = () => {
         );
     }
 
+    // Actual component output
     return (
         <div className="w-full">
             <div className="flex flex-row items-end space-x-4">
