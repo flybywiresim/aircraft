@@ -31,7 +31,15 @@ class Presets {
  private:
   HANDLE hSimConnect;
 
+  /**
+   * Flag if connection has been initialized.
+   */
   bool isConnected = false;
+
+#ifdef DEBUG
+  bool powerStateAC1 = false;
+  bool powerStateAC2 = false;
+#endif
 
   // SimulationData simulationData = {};
   LightingSimVars* simVars;
@@ -55,7 +63,6 @@ class Presets {
   void savePreset(const int savePresetRequest);
 
  public:
-
   /**
    * Initialize the gauge (instead of a constructor).
    * Sets up data for the gauge and also connect to SimConnect.
@@ -110,9 +117,9 @@ class Presets {
 
   /**
    * Returns human readable string representation of an exception.
-   * @param exception https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_EXCEPTION.htm?rhhlterm=SIMCONNECT_EXCEPTION&rhsearch=SIMCONNECT_EXCEPTION
+   * @param exception
+   * https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Structures_And_Enumerations/SIMCONNECT_EXCEPTION.htm?rhhlterm=SIMCONNECT_EXCEPTION&rhsearch=SIMCONNECT_EXCEPTION
    * @return string representation of exception.
    */
   std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception);
-
 };

@@ -21,18 +21,31 @@ export const LightPresets = () => {
     const [, setLoadPresetVar] = useSimVar('L:A32NX_LOAD_LIGHTING_PRESET', 'number', 200);
     const [, setSavePresetVar] = useSimVar('L:A32NX_SAVE_LIGHTING_PRESET', 'number', 200);
 
+    // Only allow loading and saving when aircraft is powered
+    const [isPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'number', 200);
+
     // Sets the LVAR to tell the wasm to load the preset into the aircraft
     function loadPreset(presetID: number) {
         setLoadPresetVar(presetID);
-        toast.success(`Loading Preset: ${presetID}: ${presetNames.get(presetID)}`,
-            { autoClose: 250, hideProgressBar: true, closeButton: false });
+        if (isPowered) {
+            toast.success(`Loading Preset: ${presetID}: ${presetNames.get(presetID)}`,
+                { autoClose: 250, hideProgressBar: true, closeButton: false });
+        } else {
+            toast.warning('Aircraft needs to be powered to load presets.',
+                { autoClose: 1000, hideProgressBar: true, closeButton: false });
+        }
     }
 
     // Sets the LVAR to tell the wasm to save the current lighting setting into the preset
     function savePreset(presetID: number) {
         setSavePresetVar(presetID);
-        toast.success(`Saving Preset: ${presetID}: ${presetNames.get(presetID)}`,
-            { autoClose: 250, hideProgressBar: true, closeButton: false });
+        if (isPowered) {
+            toast.success(`Saving Preset: ${presetID}: ${presetNames.get(presetID)}`,
+                { autoClose: 250, hideProgressBar: true, closeButton: false });
+        } else {
+            toast.warning('Aircraft needs to be powered to save presets.',
+                { autoClose: 1000, hideProgressBar: true, closeButton: false });
+        }
     }
 
     // Manage name for presets in EFB only and always map them to the preset IDs used in the

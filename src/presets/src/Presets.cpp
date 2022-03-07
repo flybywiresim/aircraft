@@ -10,10 +10,10 @@ Presets PRESETS;
 
 /**
  * Gauge Callback
- * @see https://docs.flightsimulator.com/html/Content_Configuration/SimObjects/Aircraft_SimO/Instruments/C_C++_Gauges.htm?rhhlterm=_gauge_callback&rhsearch=_gauge_callback
+ * @see
+ * https://docs.flightsimulator.com/html/Content_Configuration/SimObjects/Aircraft_SimO/Instruments/C_C++_Gauges.htm?rhhlterm=_gauge_callback&rhsearch=_gauge_callback
  */
-__attribute__((export_name("Presets_gauge_callback")))
-extern "C" bool Presets_gauge_callback(FsContext ctx, int service_id, void* pData) {
+__attribute__((export_name("Presets_gauge_callback"))) extern "C" bool Presets_gauge_callback(FsContext ctx, int service_id, void* pData) {
   switch (service_id) {
     case PANEL_SERVICE_PRE_INSTALL: {
       return true;
@@ -38,8 +38,8 @@ bool Presets::initialize() {
     std::cout << "PRESETS: Init SimConnect failed." << std::endl;
     return false;
   }
-  simVars = new LightingSimVars();
   isConnected = true;
+  simVars = new LightingSimVars();
   return true;
 }
 
@@ -68,18 +68,44 @@ bool Presets::onUpdate(double deltaTime) {
     simConnectRequestData();
     simConnectReadData();
 
-    // This is pure test code for now
-    const int loadPresetRequest = simVars->getLoadPresetRequest();
-    const int savePresetRequest = simVars->getSavePresetRequest();
+    // get aircraft AC power state
+    const int isAC1powered = simVars->getElecAC1State();
+    const int isAC2powered = simVars->getElecAC2State();
 
-    // load becomes priority in case both vars are set.
-    if (loadPresetRequest) {
-      loadPreset(loadPresetRequest);
-    } else if (savePresetRequest) {
-      savePreset(savePresetRequest);
+#ifdef DEBUG
+    // DEBUG only - not required otherwise
+    if (!powerStateAC1 && isAC1powered) {
+      std::cout << "PRESETS: AC1 Power On" << std::endl;
+      powerStateAC1 = true;
     }
-    simVars->setLoadPresetRequest(0);
-    simVars->setSavePresetRequest(0);
+    if (!powerStateAC2 && isAC2powered) {
+      std::cout << "PRESETS: AC2 Power On" << std::endl;
+      powerStateAC2 = true;
+    }
+    if (powerStateAC1 && !isAC1powered) {
+      std::cout << "PRESETS: AC1 Power Off" << std::endl;
+      powerStateAC1 = false;
+    }
+    if (powerStateAC2 && !isAC2powered) {
+      std::cout << "PRESETS: AC2 Power Off" << std::endl;
+      powerStateAC2 = false;
+    }
+#endif
+
+    if (isAC1powered) {
+      // check if requests for loading or saving has been sent
+      const int loadPresetRequest = simVars->getLoadPresetRequest();
+      const int savePresetRequest = simVars->getSavePresetRequest();
+
+      // load becomes priority in case both vars are set.
+      if (loadPresetRequest) {
+        loadPreset(loadPresetRequest);
+      } else if (savePresetRequest) {
+        savePreset(savePresetRequest);
+      }
+      simVars->setLoadPresetRequest(0);
+      simVars->setSavePresetRequest(0);
+    }
   }
   return true;
 }

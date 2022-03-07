@@ -6,7 +6,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 OUTPUT="${DIR}/../../flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/presets.wasm"
 
 if [ "$1" == "--debug" ]; then
-  CLANG_ARGS="-g"
+  CLANG_ARGS="-g -DDEBUG"
 else
   WASMLD_ARGS="--strip-debug"
 fi

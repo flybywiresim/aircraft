@@ -54,6 +54,10 @@ class LightingSimVars {
  public:
   Units* m_Units;
 
+  // Power state LVARs
+  ID ElecAC1;
+  ID ElecAC2;
+
   // Simvar light variables
   ENUM lightPotentiometer;
   ENUM lightCabin;
@@ -78,6 +82,10 @@ class LightingSimVars {
    * Initializes  variables by registering them in SimConnect
    */
   void initializeVars() {
+    // Power state LVars
+    ElecAC1 = register_named_variable("A32NX_ELEC_AC_1_BUS_IS_POWERED");
+    ElecAC2 = register_named_variable("A32NX_ELEC_AC_2_BUS_IS_POWERED");
+
     // Sim variables
     lightPotentiometer = get_aircraft_var_enum("LIGHT POTENTIOMETER");
     lightCabin = get_aircraft_var_enum("LIGHT CABIN");
@@ -95,6 +103,18 @@ class LightingSimVars {
     McduLeftLightLevel = register_named_variable("A32NX_MCDU_L_BRIGHTNESS");
     McduRightLightLevel = register_named_variable("A32NX_MCDU_R_BRIGHTNESS");
   }
+
+  /**
+   * @brief Get the ElecAC1 state
+   * @return INT64 0 if AC1 bus is unpowered, 1 otherwise
+   */
+  INT64 getElecAC1State() { return get_named_variable_value(ElecAC1); }
+
+  /**
+   * @brief Get the ElecAC2 state
+   * @return INT64 0 if AC2 bus is unpowered, 1 otherwise
+   */
+  INT64 getElecAC2State() { return get_named_variable_value(ElecAC2); }
 
   /**
    * Reads the  preset loading request variable.
