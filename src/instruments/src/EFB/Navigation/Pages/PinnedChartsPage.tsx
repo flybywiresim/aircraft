@@ -1,25 +1,26 @@
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import { IconArrowRight } from '@tabler/icons';
 import { Link } from 'react-router-dom';
+import { IconArrowRight } from '@tabler/icons';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
-    ChartProvider, editPinnedChart, PinnedChart,
-    setBoundingBox, setChartDimensions, setChartId,
-    setChartLinks, setChartName, setChartRotation,
-    setCurrentPage, setPagesViewable, removedPinnedChart,
-    NavigationTab, editTabProperty,
+    ChartProvider,
+    removedPinnedChart,
+    NavigationTab,
+    editTabProperty,
+    PinnedChart,
+    setChartRotation,
+    setCurrentPage,
+    setBoundingBox,
+    editPinnedChart,
+    setPagesViewable,
+    setSelectedPageIndex,
 } from '../../Store/features/navigationPage';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
-import { pathify } from '../../Utils/routing';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
-
-interface PinnedChartCardProps {
-    pinnedChart: PinnedChart;
-    className: string;
-}
+import { pathify } from '../../Utils/routing';
 
 const getTagColor = (tagName?: string) => {
     switch (tagName) {
@@ -32,22 +33,29 @@ const getTagColor = (tagName?: string) => {
     }
 };
 
+interface PinnedChartCardProps {
+    pinnedChart: PinnedChart;
+    className: string;
+}
+
 export const PinnedChartCard = ({ pinnedChart, className } : PinnedChartCardProps) => {
     const dispatch = useAppDispatch();
 
-    const { provider, chartName, chartId, title, tabIndex, pagesViewable, boundingBox, tag, subTitle } = pinnedChart;
+    const { provider, chartName, chartId, title, tabIndex, pagesViewable, boundingBox, tag, subTitle, pageIndex } = pinnedChart;
+
+    const tab = NavigationTab[provider];
 
     return (
         <Link
             to={`/navigation/${pathify(provider)}`}
             className={`relative flex flex-col flex-wrap px-2 pt-3 pb-2 bg-theme-accent rounded-md overflow-hidden ${className}`}
             onClick={() => {
-                dispatch(setChartDimensions({ width: undefined, height: undefined }));
-                dispatch(setChartLinks({ light: '', dark: '' }));
-                dispatch(setChartName(chartName));
-                dispatch(setChartId(chartId));
-                dispatch(editTabProperty({ tab: NavigationTab[provider], searchQuery: title }));
-                dispatch(editTabProperty({ tab: NavigationTab[provider], selectedTabIndex: tabIndex }));
+                dispatch(editTabProperty({ tab, chartDimensions: { width: undefined, height: undefined } }));
+                dispatch(editTabProperty({ tab, chartLinks: { light: '', dark: '' } }));
+                dispatch(editTabProperty({ tab, chartName }));
+                dispatch(editTabProperty({ tab, chartId }));
+                dispatch(editTabProperty({ tab, searchQuery: title }));
+                dispatch(editTabProperty({ tab, selectedTabIndex: tabIndex }));
                 dispatch(setChartRotation(0));
                 dispatch(setCurrentPage(1));
                 dispatch(setBoundingBox(undefined));
@@ -57,6 +65,7 @@ export const PinnedChartCard = ({ pinnedChart, className } : PinnedChartCardProp
                 }));
                 dispatch(setPagesViewable(pagesViewable));
                 dispatch(setBoundingBox(boundingBox));
+                dispatch(setSelectedPageIndex(pageIndex));
             }}
         >
             <div className={`${getTagColor(tag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />

@@ -4,7 +4,12 @@ import { ArrowReturnRight, CloudArrowDown, Pin, PinFill, ShieldLock } from 'reac
 import useInterval from '@instruments/common/useInterval';
 import { toast } from 'react-toastify';
 import QRCode from 'qrcode.react';
-import NavigraphClient, { emptyNavigraphCharts, NavigraphAirportCharts, NavigraphChart, useNavigraph } from '../../ChartsApi/Navigraph';
+import NavigraphClient, {
+    emptyNavigraphCharts,
+    NavigraphAirportCharts,
+    NavigraphChart,
+    useNavigraph,
+} from '../../ChartsApi/Navigraph';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
     addPinnedChart,
@@ -14,10 +19,6 @@ import {
     NavigationTab,
     removedPinnedChart,
     setBoundingBox,
-    setChartDimensions,
-    setChartId,
-    setChartLinks,
-    setChartName,
     setCurrentPage,
     setPagesViewable,
     setProvider,
@@ -27,7 +28,7 @@ import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { ChartFoxAirportCharts, ChartFoxChart } from '../../ChartsApi/ChartFox';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
-import { ChartComponent } from '../Navigation';
+import { ChartComponent, navigationTabs } from '../Navigation';
 
 type Chart = NavigraphChart | ChartFoxChart;
 type Charts = NavigraphAirportCharts | ChartFoxAirportCharts;
@@ -145,8 +146,9 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
 
     const dispatch = useAppDispatch();
 
-    const { chartId } = useAppSelector((state) => state.navigationTab);
-    const { searchQuery, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
+    const { selectedPageIndex } = useAppSelector((state) => state.navigationTab);
+
+    const { chartId, searchQuery } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
 
     useEffect(() => {
         if (selectedTab.bundleRunways) {
@@ -195,10 +197,10 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
 
         dispatch(setCurrentPage(1));
 
-        dispatch(setChartId(chart.id));
+        dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartId: chart.id }));
 
-        dispatch(setChartDimensions({ width: undefined, height: undefined }));
-        dispatch(setChartName({ light: chart.fileDay, dark: chart.fileNight }));
+        dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartDimensions: { width: undefined, height: undefined } }));
+        dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartName: { light: chart.fileDay, dark: chart.fileNight } }));
 
         dispatch(setBoundingBox(chart.boundingBox));
 
@@ -259,12 +261,13 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                             chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
                                                             title: searchQuery,
                                                             subTitle: (chart as NavigraphChart).procedureIdentifier,
-                                                            tabIndex: selectedTabIndex,
+                                                            tabIndex: selectedPageIndex,
                                                             timeAccessed: 0,
                                                             tag: selectedTab.name,
                                                             provider: ChartProvider.NAVIGRAPH,
                                                             pagesViewable: 1,
                                                             boundingBox: (chart as NavigraphChart).boundingBox,
+                                                            pageIndex: navigationTabs.findIndex((tab) => tab.associatedTab === NavigationTab.NAVIGRAPH),
                                                         }));
                                                     }
                                                 }}
@@ -314,12 +317,13 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                     chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
                                                     title: searchQuery,
                                                     subTitle: (chart as NavigraphChart).procedureIdentifier,
-                                                    tabIndex: selectedTabIndex,
+                                                    tabIndex: selectedPageIndex,
                                                     timeAccessed: 0,
                                                     tag: selectedTab.name,
                                                     provider: ChartProvider.NAVIGRAPH,
                                                     pagesViewable: 1,
                                                     boundingBox: (chart as NavigraphChart).boundingBox,
+                                                    pageIndex: navigationTabs.findIndex((tab) => tab.associatedTab === NavigationTab.NAVIGRAPH),
                                                 }));
                                             }
                                         }}
@@ -373,8 +377,7 @@ const NavigraphChartsUI = () => {
         { name: 'REF', charts: charts.reference },
     ]);
 
-    const { chartName, isFullScreen } = useAppSelector((state) => state.navigationTab);
-    const { searchQuery, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
+    const { isFullScreen, searchQuery, chartName, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
 
     const assignAirportInfo = async () => {
         setIcaoAndNameDisagree(true);
@@ -410,7 +413,7 @@ const NavigraphChartsUI = () => {
 
             const dark = await navigraph.chartCall(searchQuery, chartName.dark);
 
-            dispatch(setChartLinks({ light, dark }));
+            dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartLinks: { light, dark } }));
         };
 
         fetchCharts();

@@ -19,6 +19,8 @@ export enum NavigationTab {
     PINNED_CHARTS = 'PINNED_CHARTS'
 }
 
+export type ProviderTab = Exclude<NavigationTab, NavigationTab.PINNED_CHARTS>
+
 export type PinnedChart = {
     chartId: string;
     chartName: ThemedChart;
@@ -30,25 +32,36 @@ export type PinnedChart = {
     provider: ChartProvider;
     pagesViewable: number;
     boundingBox?: NavigraphBoundingBox;
+    pageIndex: number;
 }
 
 interface InitialChartState {
+    selectedPageIndex: number;
     chartRotation: number;
-    chartDimensions: {
-        width?: number;
-        height?: number;
-    };
     usingDarkTheme: boolean;
-    isFullScreen: boolean;
-    chartId: string;
-    chartLinks: ThemedChart;
     [NavigationTab.NAVIGRAPH]: {
         searchQuery: string;
         selectedTabIndex: number;
+        isFullScreen: boolean;
+        chartDimensions: {
+            width?: number;
+            height?: number;
+        };
+        chartName: ThemedChart;
+        chartId: string;
+        chartLinks: ThemedChart;
     };
     [NavigationTab.LOCAL_FILES]: {
         searchQuery: string;
         selectedTabIndex: number;
+        isFullScreen: boolean;
+        chartDimensions: {
+            width?: number;
+            height?: number;
+        };
+        chartName: ThemedChart;
+        chartId: string;
+        chartLinks: ThemedChart;
     };
     [NavigationTab.PINNED_CHARTS]: {
         searchQuery: string;
@@ -57,7 +70,6 @@ interface InitialChartState {
         sortTypeIndex: PinSort;
     };
     planeInFocus: boolean;
-    chartName: ThemedChart;
     boundingBox?: NavigraphBoundingBox;
     pagesViewable: number;
     currentPage: number;
@@ -66,25 +78,44 @@ interface InitialChartState {
 }
 
 const initialState: InitialChartState = {
+    selectedPageIndex: 0,
     chartRotation: 0,
-    chartDimensions: {
-        width: 0,
-        height: 0,
-    },
     usingDarkTheme: true,
-    isFullScreen: false,
-    chartId: '',
-    chartLinks: {
-        light: '',
-        dark: '',
-    },
     [NavigationTab.NAVIGRAPH]: {
         searchQuery: '',
         selectedTabIndex: 0,
+        isFullScreen: false,
+        chartDimensions: {
+            width: 0,
+            height: 0,
+        },
+        chartName: {
+            light: '',
+            dark: '',
+        },
+        chartId: '',
+        chartLinks: {
+            light: '',
+            dark: '',
+        },
     },
     [NavigationTab.LOCAL_FILES]: {
         searchQuery: '',
         selectedTabIndex: 0,
+        isFullScreen: false,
+        chartDimensions: {
+            width: 0,
+            height: 0,
+        },
+        chartName: {
+            light: '',
+            dark: '',
+        },
+        chartId: '',
+        chartLinks: {
+            light: '',
+            dark: '',
+        },
     },
     [NavigationTab.PINNED_CHARTS]: {
         searchQuery: '',
@@ -93,10 +124,6 @@ const initialState: InitialChartState = {
         sortTypeIndex: PinSort.NONE,
     },
     planeInFocus: false,
-    chartName: {
-        light: '',
-        dark: '',
-    },
     boundingBox: undefined,
     pagesViewable: 1,
     currentPage: 1,
@@ -108,33 +135,17 @@ export const navigationTabSlice = createSlice({
     name: 'chart',
     initialState,
     reducers: {
+        setSelectedPageIndex: (state, action: PayloadAction<number>) => {
+            state.selectedPageIndex = action.payload;
+        },
         setChartRotation: (state, action: PayloadAction<number>) => {
             state.chartRotation = action.payload;
         },
-        setChartDimensions: (state, action: PayloadAction<Partial<{ width: number, height: number }>>) => ({
-            ...state,
-            chartDimensions: {
-                ...state.chartDimensions,
-                ...action.payload,
-            },
-        }),
         setUsingDarkTheme: (state, action: PayloadAction<boolean>) => {
             state.usingDarkTheme = action.payload;
         },
-        setIsFullScreen: (state, action: PayloadAction<boolean>) => {
-            state.isFullScreen = action.payload;
-        },
-        setChartId: (state, action: PayloadAction<string>) => {
-            state.chartId = action.payload;
-        },
-        setChartLinks: (state, action: PayloadAction<{ light: string, dark: string }>) => {
-            state.chartLinks = action.payload;
-        },
         setPlaneInFocus: (state, action: PayloadAction<boolean>) => {
             state.planeInFocus = action.payload;
-        },
-        setChartName: (state, action: PayloadAction<{ light: string, dark: string }>) => {
-            state.chartName = action.payload;
         },
         setBoundingBox: (state, action: PayloadAction<NavigraphBoundingBox | undefined>) => {
             state.boundingBox = action.payload;
@@ -170,6 +181,10 @@ export const navigationTabSlice = createSlice({
 
             const editedProperties = {};
 
+            Object.entries(action.payload)
+                .filter((([key]) => key !== 'chartId'))
+                .forEach(([key, value]) => editedProperties[key] = value);
+
             state.pinnedCharts[editIndex] = { ...state.pinnedCharts[editIndex], ...editedProperties };
         },
     },
@@ -182,13 +197,8 @@ export const isChartPinned = (chartId: string): boolean => (store.getState() as 
 
 export const {
     setChartRotation,
-    setChartDimensions,
     setUsingDarkTheme,
-    setIsFullScreen,
-    setChartId,
-    setChartLinks,
     setPlaneInFocus,
-    setChartName,
     setBoundingBox,
     setPagesViewable,
     setCurrentPage,
@@ -197,5 +207,6 @@ export const {
     removedPinnedChart,
     editPinnedChart,
     editTabProperty,
+    setSelectedPageIndex,
 } = navigationTabSlice.actions;
 export default navigationTabSlice.reducer;
