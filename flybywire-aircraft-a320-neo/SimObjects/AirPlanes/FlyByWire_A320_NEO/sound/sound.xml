@@ -527,7 +527,6 @@
             <WwiseRTPC SimVar="AMBIENT TEMPERATURE" Units="celcius" Index="0" RTPCName="SIMVAR_AMBIENT_TEMPERATURE"/>
             <WwiseRTPC SimVar="AIRSPEED INDICATED" Units="knots" Index="1" RTPCName="SIMVAR_AIRSPEED_INDICATED" />
         </Sound>
-        
         <Sound WwiseData="true" WwiseEvent="cabinpack2" FadeOutType="2" FadeOutTime="3" NodeName="LIGHT_ASOBO_NAVIGATIONTAILRIGHT" LocalVar="A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN" Units="BOOL" Index="0">
             <Range LowerBound="1.0" />
             <WwiseRTPC SimVar="TURB ENG N1" Units="percent" Index="2" RTPCName="SIMVAR_TURB_ENG_N1" />
