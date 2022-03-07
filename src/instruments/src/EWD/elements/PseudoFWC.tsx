@@ -1099,7 +1099,7 @@ const PseudoFWC: React.FC = () => {
         '0000320': // TCAS STBY
         {
             flightPhaseInhib: [],
-            simVarIsActive: !!(tcasMode === 0 && flightPhase !== 6),
+            simVarIsActive: !!(tcasSensitity == 1 && flightPhase !== 6),
             whichCodeToReturn: [0],
             codesToReturn: ['000032001'],
             memoInhibit: false,
