@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { NavigraphBoundingBox } from '../../ChartsApi/Navigraph';
 import { store, RootState } from '../store';
+import { PinSort } from '../../Navigation/Pages/PinnedChartsPage';
 
 type ThemedChart = {
     light: string;
@@ -10,6 +11,12 @@ type ThemedChart = {
 export enum ChartProvider {
     NAVIGRAPH = 'NAVIGRAPH',
     LOCAL_FILES = 'LOCAL_FILES'
+}
+
+export enum NavigationTab {
+    NAVIGRAPH = 'NAVIGRAPH',
+    LOCAL_FILES = 'LOCAL_FILES',
+    PINNED_CHARTS = 'PINNED_CHARTS'
 }
 
 export type PinnedChart = {
@@ -33,11 +40,23 @@ interface InitialChartState {
     };
     usingDarkTheme: boolean;
     isFullScreen: boolean;
-    tabIndex: number;
     chartId: string;
     chartLinks: ThemedChart;
+    [NavigationTab.NAVIGRAPH]: {
+        searchQuery: string;
+        selectedTabIndex: number;
+    };
+    [NavigationTab.LOCAL_FILES]: {
+        searchQuery: string;
+        selectedTabIndex: number;
+    };
+    [NavigationTab.PINNED_CHARTS]: {
+        searchQuery: string;
+        selectedProviderIndex: number;
+        chartTypeIndex: number;
+        sortTypeIndex: PinSort;
+    };
     planeInFocus: boolean;
-    searchQuery: string;
     chartName: ThemedChart;
     boundingBox?: NavigraphBoundingBox;
     pagesViewable: number;
@@ -54,14 +73,26 @@ const initialState: InitialChartState = {
     },
     usingDarkTheme: true,
     isFullScreen: false,
-    tabIndex: 0,
     chartId: '',
     chartLinks: {
         light: '',
         dark: '',
     },
+    [NavigationTab.NAVIGRAPH]: {
+        searchQuery: '',
+        selectedTabIndex: 0,
+    },
+    [NavigationTab.LOCAL_FILES]: {
+        searchQuery: '',
+        selectedTabIndex: 0,
+    },
+    [NavigationTab.PINNED_CHARTS]: {
+        searchQuery: '',
+        selectedProviderIndex: 0,
+        chartTypeIndex: 0,
+        sortTypeIndex: PinSort.NONE,
+    },
     planeInFocus: false,
-    searchQuery: '',
     chartName: {
         light: '',
         dark: '',
@@ -93,9 +124,6 @@ export const navigationTabSlice = createSlice({
         setIsFullScreen: (state, action: PayloadAction<boolean>) => {
             state.isFullScreen = action.payload;
         },
-        setTabIndex: (state, action: PayloadAction<number>) => {
-            state.tabIndex = action.payload;
-        },
         setChartId: (state, action: PayloadAction<string>) => {
             state.chartId = action.payload;
         },
@@ -104,9 +132,6 @@ export const navigationTabSlice = createSlice({
         },
         setPlaneInFocus: (state, action: PayloadAction<boolean>) => {
             state.planeInFocus = action.payload;
-        },
-        setSearchQuery: (state, action: PayloadAction<string>) => {
-            state.searchQuery = action.payload;
         },
         setChartName: (state, action: PayloadAction<{ light: string, dark: string }>) => {
             state.chartName = action.payload;
@@ -129,14 +154,21 @@ export const navigationTabSlice = createSlice({
         removedPinnedChart: (state, action: PayloadAction<{chartId: string}>) => {
             state.pinnedCharts = state.pinnedCharts.filter((pinnedChart) => pinnedChart.chartId !== action.payload.chartId);
         },
+        // This is the best quasi-type-safe path I could think of
+        editTabProperty: (state, action: PayloadAction<{tab: NavigationTab} & Partial<typeof initialState[NavigationTab]>>) => {
+            const editedProperties = {};
+
+            Object.entries(action.payload)
+                .filter((([key]) => key !== 'tab'))
+                .forEach(([key, value]) => editedProperties[key] = value);
+
+            // @ts-ignore
+            state[action.payload.tab] = { ...state[action.payload.tab], ...editedProperties };
+        },
         editPinnedChart: (state, action: PayloadAction<{chartId: string} & Partial<PinnedChart>>) => {
             const editIndex = state.pinnedCharts.findIndex((chart) => chart.chartId === action.payload.chartId);
 
             const editedProperties = {};
-
-            Object.entries(action.payload)
-                .filter((([key]) => key !== 'chartId'))
-                .forEach(([key, value]) => editedProperties[key] = value);
 
             state.pinnedCharts[editIndex] = { ...state.pinnedCharts[editIndex], ...editedProperties };
         },
@@ -153,11 +185,9 @@ export const {
     setChartDimensions,
     setUsingDarkTheme,
     setIsFullScreen,
-    setTabIndex,
     setChartId,
     setChartLinks,
     setPlaneInFocus,
-    setSearchQuery,
     setChartName,
     setBoundingBox,
     setPagesViewable,
@@ -166,5 +196,6 @@ export const {
     addPinnedChart,
     removedPinnedChart,
     editPinnedChart,
+    editTabProperty,
 } = navigationTabSlice.actions;
 export default navigationTabSlice.reducer;
