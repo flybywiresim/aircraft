@@ -23,18 +23,16 @@ import {
     setChartName,
     setChartRotation,
     setCurrentPage,
-    setSearchQuery,
     setIsFullScreen,
     setPagesViewable,
     setPlaneInFocus,
-    setTabIndex,
     setUsingDarkTheme,
 } from '../Store/features/navigationPage';
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { NavigraphNav } from './Pages/NavigraphPage';
 import { getPdfUrl, LocalFileChartUI } from './Pages/LocalFilesPage';
-import { PinnedChartUI } from './Pages/PinnedCharts';
+import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const ChartComponent = () => {
     const dispatch = useAppDispatch();
@@ -433,10 +431,8 @@ export const Navigation = () => {
                         dispatch(setChartLinks({ light: '', dark: '' }));
                         dispatch(setChartName({ light: '', dark: '' }));
                         dispatch(setBoundingBox(undefined));
-                        dispatch(setTabIndex(0));
                         dispatch(setPagesViewable(1));
                         dispatch(setCurrentPage(1));
-                        dispatch(setSearchQuery(''));
                     }}
                 />
             </div>

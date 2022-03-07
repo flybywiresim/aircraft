@@ -4,17 +4,14 @@ import { ArrowReturnRight, CloudArrowDown, Pin, PinFill, ShieldLock } from 'reac
 import useInterval from '@instruments/common/useInterval';
 import { toast } from 'react-toastify';
 import QRCode from 'qrcode.react';
-import NavigraphClient, {
-    emptyNavigraphCharts,
-    NavigraphAirportCharts,
-    NavigraphChart,
-    useNavigraph,
-} from '../../ChartsApi/Navigraph';
+import NavigraphClient, { emptyNavigraphCharts, NavigraphAirportCharts, NavigraphChart, useNavigraph } from '../../ChartsApi/Navigraph';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
     addPinnedChart,
     ChartProvider,
+    editTabProperty,
     isChartPinned,
+    NavigationTab,
     removedPinnedChart,
     setBoundingBox,
     setChartDimensions,
@@ -22,17 +19,15 @@ import {
     setChartLinks,
     setChartName,
     setCurrentPage,
-    setSearchQuery,
     setPagesViewable,
     setProvider,
-    setTabIndex,
 } from '../../Store/features/navigationPage';
 import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
+import { ChartFoxAirportCharts, ChartFoxChart } from '../../ChartsApi/ChartFox';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { ChartComponent } from '../Navigation';
-import { ChartFoxAirportCharts, ChartFoxChart } from '../../ChartsApi/ChartFox';
 
 type Chart = NavigraphChart | ChartFoxChart;
 type Charts = NavigraphAirportCharts | ChartFoxAirportCharts;
@@ -150,7 +145,8 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
 
     const dispatch = useAppDispatch();
 
-    const { chartId, searchQuery, tabIndex } = useAppSelector((state) => state.navigationTab);
+    const { chartId } = useAppSelector((state) => state.navigationTab);
+    const { searchQuery, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
 
     useEffect(() => {
         if (selectedTab.bundleRunways) {
@@ -263,7 +259,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                             chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
                                                             title: searchQuery,
                                                             subTitle: (chart as NavigraphChart).procedureIdentifier,
-                                                            tabIndex,
+                                                            tabIndex: selectedTabIndex,
                                                             timeAccessed: 0,
                                                             tag: selectedTab.name,
                                                             provider: ChartProvider.NAVIGRAPH,
@@ -318,7 +314,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                     chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
                                                     title: searchQuery,
                                                     subTitle: (chart as NavigraphChart).procedureIdentifier,
-                                                    tabIndex,
+                                                    tabIndex: selectedTabIndex,
                                                     timeAccessed: 0,
                                                     tag: selectedTab.name,
                                                     provider: ChartProvider.NAVIGRAPH,
@@ -376,7 +372,9 @@ const NavigraphChartsUI = () => {
         { name: 'SID', charts: charts.departure },
         { name: 'REF', charts: charts.reference },
     ]);
-    const { tabIndex, searchQuery, chartName, isFullScreen } = useAppSelector((state) => state.navigationTab);
+
+    const { chartName, isFullScreen } = useAppSelector((state) => state.navigationTab);
+    const { searchQuery, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
 
     const assignAirportInfo = async () => {
         setIcaoAndNameDisagree(true);
@@ -423,7 +421,7 @@ const NavigraphChartsUI = () => {
 
         const newValue = value.toUpperCase();
 
-        dispatch(setSearchQuery(newValue));
+        dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, searchQuery: newValue }));
 
         setChartListDisagrees(true);
         const chartList = await navigraph.getChartList(newValue);
@@ -503,8 +501,8 @@ const NavigraphChartsUI = () => {
                             <SelectGroup>
                                 {organizedCharts.map((organizedChart, index) => (
                                     <SelectItem
-                                        selected={index === tabIndex}
-                                        onSelect={() => dispatch(setTabIndex(index))}
+                                        selected={index === selectedTabIndex}
+                                        onSelect={() => dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, selectedTabIndex: index }))}
                                         key={organizedChart.name}
                                         className="flex justify-center w-full"
                                     >
@@ -514,7 +512,7 @@ const NavigraphChartsUI = () => {
                             </SelectGroup>
                             <ScrollableContainer className="mt-5" height={42.75}>
                                 <NavigraphChartSelector
-                                    selectedTab={organizedCharts[tabIndex]}
+                                    selectedTab={organizedCharts[selectedTabIndex]}
                                     loading={loading}
                                 />
                             </ScrollableContainer>

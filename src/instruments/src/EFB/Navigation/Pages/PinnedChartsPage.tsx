@@ -7,8 +7,8 @@ import {
     ChartProvider, editPinnedChart, PinnedChart,
     setBoundingBox, setChartDimensions, setChartId,
     setChartLinks, setChartName, setChartRotation,
-    setCurrentPage, setSearchQuery, setPagesViewable,
-    setTabIndex, removedPinnedChart,
+    setCurrentPage, setPagesViewable, removedPinnedChart,
+    NavigationTab, editTabProperty,
 } from '../../Store/features/navigationPage';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
@@ -16,7 +16,7 @@ import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { pathify } from '../../Utils/routing';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 
-interface PinnedChartWidgetProps {
+interface PinnedChartCardProps {
     pinnedChart: PinnedChart;
     className: string;
 }
@@ -32,7 +32,7 @@ const getTagColor = (tagName?: string) => {
     }
 };
 
-export const PinnedChartWidget = ({ pinnedChart, className } : PinnedChartWidgetProps) => {
+export const PinnedChartCard = ({ pinnedChart, className } : PinnedChartCardProps) => {
     const dispatch = useAppDispatch();
 
     const { provider, chartName, chartId, title, tabIndex, pagesViewable, boundingBox, tag, subTitle } = pinnedChart;
@@ -46,8 +46,8 @@ export const PinnedChartWidget = ({ pinnedChart, className } : PinnedChartWidget
                 dispatch(setChartLinks({ light: '', dark: '' }));
                 dispatch(setChartName(chartName));
                 dispatch(setChartId(chartId));
-                dispatch(setSearchQuery(title));
-                dispatch(setTabIndex(tabIndex));
+                dispatch(editTabProperty({ tab: NavigationTab[provider], searchQuery: title }));
+                dispatch(editTabProperty({ tab: NavigationTab[provider], selectedTabIndex: tabIndex }));
                 dispatch(setChartRotation(0));
                 dispatch(setCurrentPage(1));
                 dispatch(setBoundingBox(undefined));
@@ -71,13 +71,21 @@ export const PinnedChartWidget = ({ pinnedChart, className } : PinnedChartWidget
     );
 };
 
+export enum PinSort {
+    NONE,
+    LAST_ACCESSED,
+    FIRST_ACCESSED,
+    ALPHABETICAL_FIRST_LAST,
+    ALPHABETICAL_LAST_FIRST
+}
+
 export const PinnedChartUI = () => {
     const dispatch = useAppDispatch();
 
     const [editMode, setEditMode] = useState(false);
-    const [subTabIndex, setSubTabIndex] = useState(0);
 
-    const { pinnedCharts, tabIndex, searchQuery } = useAppSelector((state) => state.navigationTab);
+    const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
+    const { searchQuery, chartTypeIndex, selectedProviderIndex, sortTypeIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.PINNED_CHARTS]);
 
     const providerTabs: {name: string, provider: ChartProvider | 'ALL'}[] = [
         { name: 'Local Files', provider: ChartProvider.LOCAL_FILES },
@@ -88,10 +96,10 @@ export const PinnedChartUI = () => {
     const filterTabs = {
         0: ['IMAGE', 'PDF', 'BOTH'],
         1: ['STAR', 'APP', 'TAXI', 'SID', 'REF', 'ALL'],
-    }[tabIndex] ?? [];
+    }[selectedProviderIndex] ?? [];
 
     const providerCharts = pinnedCharts.filter((pinnedChart) => {
-        const selectedProvider = providerTabs[tabIndex].provider;
+        const selectedProvider = providerTabs[selectedProviderIndex].provider;
 
         if (selectedProvider === 'ALL') {
             return true;
@@ -101,9 +109,9 @@ export const PinnedChartUI = () => {
     });
 
     const filteredCharts = providerCharts.filter((pinnedChart) => {
-        const filterItem = filterTabs[subTabIndex];
+        const filterItem = filterTabs[chartTypeIndex];
 
-        const selectedProvider = providerTabs[tabIndex].provider;
+        const selectedProvider = providerTabs[selectedProviderIndex].provider;
 
         if (selectedProvider === 'LOCAL_FILES') {
             if (filterItem === 'BOTH') {
@@ -131,6 +139,22 @@ export const PinnedChartUI = () => {
         return title.toUpperCase().includes(searchQuery) || subTitle.toUpperCase().includes(searchQuery);
     });
 
+    const sortedCharts = searchedCharts.sort((a, b) => {
+        switch (sortTypeIndex) {
+        case PinSort.NONE:
+            return 0;
+        case PinSort.FIRST_ACCESSED:
+            return a.timeAccessed - b.timeAccessed;
+        case PinSort.LAST_ACCESSED:
+            return b.timeAccessed - a.timeAccessed;
+        case PinSort.ALPHABETICAL_FIRST_LAST:
+            return a.title.localeCompare(b.title);
+        case PinSort.ALPHABETICAL_LAST_FIRST:
+            return b.title.localeCompare(a.title);
+        default: return 0;
+        }
+    });
+
     return (
         <div className="p-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <div className="space-y-4">
@@ -138,15 +162,16 @@ export const PinnedChartUI = () => {
                 <div className="flex flex-row items-center space-x-4">
                     <SimpleInput
                         placeholder="SEARCH"
-                        className="flex-grow"
+                        className="flex-grow uppercase"
                         value={searchQuery}
-                        onChange={(value) => dispatch(setSearchQuery(value.toUpperCase()))}
+                        onChange={(value) => dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, searchQuery: value.toUpperCase() }))}
                     />
 
                     <SelectInput
                         className="w-48"
                         options={providerTabs.map(({ name }, index) => ({ displayValue: name, value: index }))}
-                        onChange={(value) => dispatch(setTabIndex(value as number))}
+                        value={selectedProviderIndex}
+                        onChange={(value) => dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, selectedProviderIndex: value as number }))}
                     />
 
                     <SelectGroup>
@@ -159,24 +184,45 @@ export const PinnedChartUI = () => {
                     </SelectGroup>
                 </div>
 
-                <SelectGroup>
-                    {filterTabs.map((tabName, index) => (
-                        <SelectItem
-                            className="w-full"
-                            selected={subTabIndex === index}
-                            onSelect={() => {
-                                setSubTabIndex(index);
-                            }}
-                        >
-                            {tabName}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
+                <div className="flex flex-row space-x-4 w-full">
+                    {filterTabs.length ? (
+                        <SelectGroup className="flex-grow">
+                            {filterTabs.map((tabName, index) => (
+                                <SelectItem
+                                    className="w-full"
+                                    selected={chartTypeIndex === index}
+                                    onSelect={() => {
+                                        dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, chartTypeIndex: index }));
+                                    }}
+                                >
+                                    {tabName}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    ) : (
+                        <div className="flex flex-grow justify-center items-center py-2 px-6 rounded-md border border-theme-accent">
+                            Showing Charts from All Providers
+                        </div>
+                    )}
+                    <SelectInput
+                        className="w-64"
+                        options={[
+                            { displayValue: 'None', value: PinSort.NONE },
+                            { displayValue: 'First Accessed', value: PinSort.FIRST_ACCESSED },
+                            { displayValue: 'Last Accessed', value: PinSort.LAST_ACCESSED },
+                            { displayValue: 'Alphabetical - A -> Z', value: PinSort.ALPHABETICAL_FIRST_LAST },
+                            { displayValue: 'Alphabetical - Z -> A', value: PinSort.ALPHABETICAL_LAST_FIRST },
+                        ]}
+                        value={sortTypeIndex}
+                        onChange={(value) => dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, sortTypeIndex: value as PinSort }))}
+                    />
+                </div>
+
             </div>
             {searchedCharts.length > 0 ? (
                 <ScrollableContainer height={44}>
                     <div className="grid grid-cols-4 auto-rows-auto">
-                        {searchedCharts.map((pinnedChart, index) => (
+                        {sortedCharts.map((pinnedChart, index) => (
                             <div className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} flex flex-col`}>
                                 {editMode && (
                                     <div
@@ -188,7 +234,7 @@ export const PinnedChartUI = () => {
                                         Delete
                                     </div>
                                 )}
-                                <PinnedChartWidget
+                                <PinnedChartCard
                                     pinnedChart={pinnedChart}
                                     className={`${editMode && 'rounded-t-none'} h-full`}
                                 />

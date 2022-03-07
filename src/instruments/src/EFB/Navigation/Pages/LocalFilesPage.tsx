@@ -6,7 +6,9 @@ import {
     addPinnedChart,
     ChartProvider,
     editPinnedChart,
+    editTabProperty,
     isChartPinned,
+    NavigationTab,
     removedPinnedChart,
     setBoundingBox,
     setChartDimensions,
@@ -14,10 +16,8 @@ import {
     setChartLinks,
     setChartName,
     setCurrentPage,
-    setSearchQuery,
     setPagesViewable,
     setProvider,
-    setTabIndex,
 } from '../../Store/features/navigationPage';
 import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -65,7 +65,8 @@ export const getPdfUrl = async (fileName: string, pageNumber: number): Promise<s
 const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
     const dispatch = useAppDispatch();
 
-    const { chartId, tabIndex } = useAppSelector((state) => state.navigationTab);
+    const { chartId } = useAppSelector((state) => state.navigationTab);
+    const { selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
 
     if (loading) {
         return (
@@ -165,7 +166,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
                                         chartName: { light: '', dark: '' },
                                         title: chart.fileName,
                                         subTitle: '',
-                                        tabIndex,
+                                        tabIndex: selectedTabIndex,
                                         timeAccessed: 0,
                                         tag: chart.type,
                                         provider: ChartProvider.LOCAL_FILES,
@@ -223,18 +224,20 @@ export const LocalFileChartUI = () => {
         { name: 'PDF', charts: charts.pdfs },
         { name: 'BOTH', charts: [...charts.images, ...charts.pdfs] },
     ]);
-    const { tabIndex, searchQuery, chartName, isFullScreen } = useAppSelector((state) => state.navigationTab);
+
+    const { chartName, isFullScreen } = useAppSelector((state) => state.navigationTab);
+    const { searchQuery, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
 
     const updateSearchStatus = async () => {
         setIcaoAndNameDisagree(true);
 
         const searchableCharts: string[] = [];
 
-        if (tabIndex === 0 || tabIndex === 2) {
+        if (selectedTabIndex === 0 || selectedTabIndex === 2) {
             searchableCharts.push(...charts.images.map((image) => image.fileName));
         }
 
-        if (tabIndex === 1 || tabIndex === 2) {
+        if (selectedTabIndex === 1 || selectedTabIndex === 2) {
             searchableCharts.push(...charts.pdfs.map((pdf) => pdf.fileName));
         }
 
@@ -248,14 +251,14 @@ export const LocalFileChartUI = () => {
     const handleIcaoChange = (value: string) => {
         const newValue = value.toUpperCase();
 
-        dispatch(setSearchQuery(newValue));
+        dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, searchQuery: newValue }));
 
         getLocalFileChartList(newValue).then((r) => setCharts(r));
     };
 
     useEffect(() => {
         handleIcaoChange(searchQuery);
-    }, [tabIndex]);
+    }, [selectedTabIndex]);
 
     useEffect(() => {
         updateSearchStatus();
@@ -279,7 +282,7 @@ export const LocalFileChartUI = () => {
 
         try {
             // IMAGE or BOTH
-            if (tabIndex === 0 || tabIndex === 2) {
+            if (selectedTabIndex === 0 || selectedTabIndex === 2) {
                 const resp = await fetch('http://localhost:8380/api/v1/utility/image/list');
 
                 const imageNames: string[] = await resp.json();
@@ -295,7 +298,7 @@ export const LocalFileChartUI = () => {
             }
 
             // PDF or BOTH
-            if (tabIndex === 1 || tabIndex === 2) {
+            if (selectedTabIndex === 1 || selectedTabIndex === 2) {
                 const resp = await fetch('http://localhost:8380/api/v1/utility/pdf/list');
                 const pdfNames: string[] = await resp.json();
 
@@ -382,8 +385,8 @@ export const LocalFileChartUI = () => {
                             <SelectGroup>
                                 {organizedCharts.map((organizedChart, index) => (
                                     <SelectItem
-                                        selected={index === tabIndex}
-                                        onSelect={() => dispatch(setTabIndex(index))}
+                                        selected={index === selectedTabIndex}
+                                        onSelect={() => dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, selectedTabIndex: index }))}
                                         key={organizedChart.name}
                                         className="flex justify-center w-full"
                                     >
@@ -393,7 +396,7 @@ export const LocalFileChartUI = () => {
                             </SelectGroup>
                             <ScrollableContainer className="mt-5" height={42.75}>
                                 <LocalFileChartSelector
-                                    selectedTab={organizedCharts[Math.min(tabIndex, 2)]}
+                                    selectedTab={organizedCharts[selectedTabIndex]}
                                     loading={loading}
                                 />
                             </ScrollableContainer>

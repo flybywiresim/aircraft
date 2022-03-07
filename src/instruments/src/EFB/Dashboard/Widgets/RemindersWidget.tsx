@@ -15,7 +15,7 @@ import {
     setSelectedChecklistIndex,
 } from '../../Store/features/checklists';
 import { getRelevantChecklistIndices } from '../../Checklists/Checklists';
-import { PinnedChartWidget } from '../../Navigation/Pages/PinnedCharts';
+import { PinnedChartCard } from '../../Navigation/Pages/PinnedChartsPage';
 
 interface ActiveFailureReminderProps {
     name: string,
@@ -57,7 +57,7 @@ const PinnedChartsReminder = () => {
         <RemindersSection title="Pinned Charts" pageLinkPath="/navigation">
             <div className="grid grid-cols-2">
                 {[...pinnedCharts].sort((a, b) => b.timeAccessed - a.timeAccessed).map((pinnedChart, index) => (
-                    <PinnedChartWidget pinnedChart={pinnedChart} className={`${index && index % 2 !== 0 && 'ml-4'} mt-4`} />
+                    <PinnedChartCard pinnedChart={pinnedChart} className={`${index && index % 2 !== 0 && 'ml-4'} mt-4`} />
                 ))}
             </div>
 
