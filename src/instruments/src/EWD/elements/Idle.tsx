@@ -2,7 +2,7 @@ import { useUpdate } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, useState } from 'react';
 
-type IdleProps = {
+interface IdleProps {
     x: number,
     y: number,
 };
