@@ -48,9 +48,9 @@ class LightPreset {
     // Pedestal
     double ecamUpperLightLevel;         // 92
     double ecamLowerLightLevel;         // 93
-    double floorCptLightLevel;          // 83
+    double floodPnlLightLevel;          // 83
     double pedestalIntegralLightLevel;  // 85
-    double floorFoLightLevel;           // 76
+    double floodPedLightLevel;           // 76
   };
 
  public:
