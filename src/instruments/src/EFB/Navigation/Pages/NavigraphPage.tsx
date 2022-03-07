@@ -19,8 +19,6 @@ import {
     NavigationTab,
     removedPinnedChart,
     setBoundingBox,
-    setCurrentPage,
-    setPagesViewable,
     setProvider,
 } from '../../Store/features/navigationPage';
 import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
@@ -146,7 +144,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
 
     const dispatch = useAppDispatch();
 
-    const { selectedPageIndex } = useAppSelector((state) => state.navigationTab);
+    const { selectedNavigationTabIndex } = useAppSelector((state) => state.navigationTab);
 
     const { chartId, searchQuery } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
 
@@ -193,9 +191,9 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
     }, [runwaySet]);
 
     const handleChartClick = (chart: NavigraphChart) => {
-        dispatch(setPagesViewable(1));
+        dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, pagesViewable: 1 }));
 
-        dispatch(setCurrentPage(1));
+        dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, currentPage: 1 }));
 
         dispatch(editTabProperty({ tab: NavigationTab.NAVIGRAPH, chartId: chart.id }));
 
@@ -261,7 +259,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                             chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
                                                             title: searchQuery,
                                                             subTitle: (chart as NavigraphChart).procedureIdentifier,
-                                                            tabIndex: selectedPageIndex,
+                                                            tabIndex: selectedNavigationTabIndex,
                                                             timeAccessed: 0,
                                                             tag: selectedTab.name,
                                                             provider: ChartProvider.NAVIGRAPH,
@@ -317,7 +315,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                     chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
                                                     title: searchQuery,
                                                     subTitle: (chart as NavigraphChart).procedureIdentifier,
-                                                    tabIndex: selectedPageIndex,
+                                                    tabIndex: selectedNavigationTabIndex,
                                                     timeAccessed: 0,
                                                     tag: selectedTab.name,
                                                     provider: ChartProvider.NAVIGRAPH,
