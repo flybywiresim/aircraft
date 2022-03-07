@@ -13,42 +13,78 @@ import {
     SunFill,
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
+import { Link } from 'react-router-dom';
+import { IconArrowRight } from '@tabler/icons';
 import { useNavigraph } from '../ChartsApi/Navigraph';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import {
+    NavigationTab,
     setBoundingBox,
-    setChartDimensions,
-    setChartLinks,
-    setChartName,
     setChartRotation,
     setCurrentPage,
-    setIsFullScreen,
     setPagesViewable,
     setPlaneInFocus,
     setUsingDarkTheme,
+    setSelectedPageIndex,
+    editTabProperty,
+    ProviderTab, editPinnedChart, PinnedChart,
 } from '../Store/features/navigationPage';
-import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
+import { PageLink, PageRedirect, pathify, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { NavigraphNav } from './Pages/NavigraphPage';
 import { getPdfUrl, LocalFileChartUI } from './Pages/LocalFilesPage';
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
+export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
+    { name: 'Local Files', component: <LocalFileChartUI />, associatedTab: NavigationTab.LOCAL_FILES },
+    { name: 'Navigraph', component: <NavigraphNav />, associatedTab: NavigationTab.NAVIGRAPH },
+    { name: 'Pinned Charts', component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
+];
+
+export const Navigation = () => {
+    const dispatch = useAppDispatch();
+
+    return (
+        <div className="w-full h-full">
+            <div className="relative">
+                <h1 className="font-bold">Navigation & Charts</h1>
+                <Navbar
+                    className="absolute top-0 right-0"
+                    tabs={navigationTabs}
+                    basePath="/navigation"
+                    onSelected={(index) => {
+                        dispatch(setSelectedPageIndex(index));
+                        dispatch(setBoundingBox(undefined));
+                        dispatch(setPagesViewable(1));
+                        dispatch(setCurrentPage(1));
+                    }}
+                />
+            </div>
+
+            <div className="mt-4">
+                <PageRedirect basePath="/navigation" tabs={navigationTabs} />
+                <TabRoutes basePath="/navigation" tabs={navigationTabs} />
+            </div>
+        </div>
+    );
+};
+
 export const ChartComponent = () => {
     const dispatch = useAppDispatch();
     const {
-        chartDimensions,
-        chartLinks,
+        selectedPageIndex,
         chartRotation,
-        isFullScreen,
         usingDarkTheme,
         planeInFocus,
         boundingBox,
         pagesViewable,
-        chartId,
         currentPage,
         provider,
     } = useAppSelector((state) => state.navigationTab);
+
+    const currentTab = navigationTabs[selectedPageIndex].associatedTab as ProviderTab;
+    const { isFullScreen, chartDimensions, chartLinks, chartId } = useAppSelector((state) => state.navigationTab[currentTab]);
 
     const { userName } = useNavigraph();
     const position = useRef({ top: 0, y: 0, left: 0, x: 0 });
@@ -142,7 +178,13 @@ export const ChartComponent = () => {
         const currentWidth = chartRef.current.clientWidth;
         if (currentHeight >= 2500) return;
 
-        dispatch(setChartDimensions({ height: currentHeight * 1.1, width: currentWidth * 1.1 }));
+        dispatch(editTabProperty({
+            tab: currentTab,
+            chartDimensions: {
+                height: currentHeight * 1.1,
+                width: currentWidth * 1.1,
+            },
+        }));
     };
 
     const handleZoomOut = () => {
@@ -152,7 +194,13 @@ export const ChartComponent = () => {
         const currenWidth = chartRef.current!.clientWidth;
         if (currentHeight <= 775) return;
 
-        dispatch(setChartDimensions({ height: currentHeight * 0.9, width: currenWidth * 0.9 }));
+        dispatch(editTabProperty({
+            tab: currentTab,
+            chartDimensions: {
+                height: currentHeight * 0.9,
+                width: currenWidth * 0.9,
+            },
+        }));
     };
 
     const expandToHeight = () => {
@@ -160,7 +208,13 @@ export const ChartComponent = () => {
 
         const scale = ref.current.clientHeight / chartRef.current.clientHeight;
 
-        dispatch(setChartDimensions({ width: (chartDimensions.width ?? 0) * scale, height: ref.current!.clientHeight }));
+        dispatch(editTabProperty({
+            tab: currentTab,
+            chartDimensions: {
+                width: (chartDimensions.width ?? 0) * scale,
+                height: ref.current!.clientHeight,
+            },
+        }));
     };
 
     const expandToWidth = () => {
@@ -168,7 +222,10 @@ export const ChartComponent = () => {
 
         const scale = ref.current.clientWidth / chartRef.current.clientWidth;
 
-        dispatch(setChartDimensions({ width: ref.current!.clientWidth, height: (chartDimensions.height ?? 0) * scale }));
+        dispatch(editTabProperty({
+            tab: currentTab,
+            chartDimensions: { width: ref.current!.clientWidth, height: (chartDimensions.height ?? 0) * scale },
+        }));
     };
 
     // The functions that handle rotation get the closest 45 degree angle increment to the current angle
@@ -185,9 +242,15 @@ export const ChartComponent = () => {
             const img = new Image();
             img.onload = function () {
                 if (ref.current) {
-                    // @ts-ignore
-                    // eslint-disable-next-line react/no-this-in-sfc
-                    dispatch(setChartDimensions({ width: this.width * (ref.current.clientHeight / this.height), height: ref.current.clientHeight }));
+                    dispatch(editTabProperty({
+                        tab: currentTab,
+                        chartDimensions: {
+                            // @ts-ignore
+                            // eslint-disable-next-line react/no-this-in-sfc
+                            width: this.width * (ref.current.clientHeight / this.height),
+                            height: ref.current.clientHeight,
+                        },
+                    }));
                 }
             };
             img.src = chartLinks.light;
@@ -201,7 +264,7 @@ export const ChartComponent = () => {
     useEffect(() => {
         if (pagesViewable > 1) {
             getPdfUrl(chartId, currentPage).then((url) => {
-                dispatch(setChartName({ light: url, dark: url }));
+                dispatch(editTabProperty({ tab: currentTab, chartName: { light: url, dark: url } }));
             });
         }
     }, [currentPage]);
@@ -215,7 +278,7 @@ export const ChartComponent = () => {
                 {isFullScreen && (
                     <div
                         className="flex absolute top-6 right-6 flex-row items-center p-4 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100"
-                        onClick={() => dispatch(setIsFullScreen(false))}
+                        onClick={() => dispatch(editTabProperty({ tab: currentTab, isFullScreen: false }))}
                     >
                         <FullscreenExit size={40} />
                         <p className="ml-4 text-current">Exit Fullscreen Mode</p>
@@ -332,10 +395,10 @@ export const ChartComponent = () => {
                                     const scale = width / (chartDimensions.width ?? 0);
                                     const height = (chartDimensions.height ?? 0) * scale;
 
-                                    dispatch(setChartDimensions({ width, height }));
+                                    dispatch(editTabProperty({ tab: currentTab, chartDimensions: { width, height } }));
                                 }
                             }
-                            dispatch(setIsFullScreen(!isFullScreen));
+                            dispatch(editTabProperty({ tab: currentTab, isFullScreen: !isFullScreen }));
                         }}
                     >
                         {isFullScreen
@@ -405,41 +468,6 @@ export const ChartComponent = () => {
                         />
                     </div>
                 </div>
-            </div>
-        </div>
-    );
-};
-
-const tabs: PageLink[] = [
-    { name: 'Local Files', component: <LocalFileChartUI /> },
-    { name: 'Navigraph', component: <NavigraphNav /> },
-    { name: 'Pinned Charts', component: <PinnedChartUI /> },
-];
-
-export const Navigation = () => {
-    const dispatch = useAppDispatch();
-
-    return (
-        <div className="w-full h-full">
-            <div className="relative">
-                <h1 className="font-bold">Navigation & Charts</h1>
-                <Navbar
-                    className="absolute top-0 right-0"
-                    tabs={tabs}
-                    basePath="/navigation"
-                    onSelected={() => {
-                        dispatch(setChartLinks({ light: '', dark: '' }));
-                        dispatch(setChartName({ light: '', dark: '' }));
-                        dispatch(setBoundingBox(undefined));
-                        dispatch(setPagesViewable(1));
-                        dispatch(setCurrentPage(1));
-                    }}
-                />
-            </div>
-
-            <div className="mt-4">
-                <PageRedirect basePath="/navigation" tabs={tabs} />
-                <TabRoutes basePath="/navigation" tabs={tabs} />
             </div>
         </div>
     );

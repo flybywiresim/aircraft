@@ -11,10 +11,6 @@ import {
     NavigationTab,
     removedPinnedChart,
     setBoundingBox,
-    setChartDimensions,
-    setChartId,
-    setChartLinks,
-    setChartName,
     setCurrentPage,
     setPagesViewable,
     setProvider,
@@ -23,7 +19,7 @@ import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
-import { ChartComponent } from '../Navigation';
+import { ChartComponent, navigationTabs } from '../Navigation';
 
 type LocalFileChart = {
     fileName: string;
@@ -65,8 +61,8 @@ export const getPdfUrl = async (fileName: string, pageNumber: number): Promise<s
 const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
     const dispatch = useAppDispatch();
 
-    const { chartId } = useAppSelector((state) => state.navigationTab);
-    const { selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
+    const { chartId, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
+    const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
 
     if (loading) {
         return (
@@ -119,8 +115,8 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
 
             const url = await getChartResourceUrl(chart);
 
-            dispatch(setChartDimensions({ width: undefined, height: undefined }));
-            dispatch(setChartName({ light: url, dark: url }));
+            dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartDimensions: { width: undefined, height: undefined } }));
+            dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartName: { light: url, dark: url } }));
             dispatch(setBoundingBox(undefined));
         } catch (_) {
             if (chart.type === 'PDF') {
@@ -133,9 +129,9 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
         }
         dispatch(setProvider(ChartProvider.LOCAL_FILES));
         dispatch(setCurrentPage(1));
-        dispatch(setChartId(chart.fileName));
+        dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartId: chart.fileName }));
     };
-
+    console.log(pinnedCharts);
     return (
         <div className="space-y-4">
             {selectedTab.charts.map((chart) => (
@@ -171,6 +167,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
                                         tag: chart.type,
                                         provider: ChartProvider.LOCAL_FILES,
                                         pagesViewable: 1,
+                                        pageIndex: navigationTabs.findIndex((tab) => tab.associatedTab === NavigationTab.LOCAL_FILES),
                                     }));
 
                                     Promise.all([getChartResourceUrl(chart), getPagesViewable(chart)]).then(([url, numPages]) => {
@@ -187,7 +184,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
                             }}
                         >
                             {
-                                isChartPinned(chart.fileName)
+                                pinnedCharts.some((pinnedChart) => pinnedChart.chartId === chart.fileName)
                                     ? <PinFill size={40} />
                                     : <Pin size={40} />
                             }
@@ -225,8 +222,7 @@ export const LocalFileChartUI = () => {
         { name: 'BOTH', charts: [...charts.images, ...charts.pdfs] },
     ]);
 
-    const { chartName, isFullScreen } = useAppSelector((state) => state.navigationTab);
-    const { searchQuery, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
+    const { searchQuery, isFullScreen, chartName, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
 
     const updateSearchStatus = async () => {
         setIcaoAndNameDisagree(true);
@@ -273,7 +269,8 @@ export const LocalFileChartUI = () => {
     }, [charts]);
 
     useEffect(() => {
-        dispatch(setChartLinks({ light: chartName.light, dark: chartName.dark }));
+        console.log('setting', chartName);
+        dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartLinks: { light: chartName.light, dark: chartName.dark } }));
     }, [chartName]);
 
     const getLocalFileChartList = async (searchQuery: string): Promise<LocalFileCharts> => {
