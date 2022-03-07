@@ -282,8 +282,11 @@ const PseudoFWC: React.FC = () => {
     const landASAPRed: boolean = !!(!onGround
     && (
         fireButton1 === 1
+        || eng1FireTest === 1
         || fireButton2 === 1
+        || eng2FireTest === 1
         || fireButtonAPU === 1
+        || apuFireTest === 1
         || emergencyGeneratorOn
         || (engine1State === 0 && engine2State === 0)
         || (greenLP === 1 && yellowLP === 1)
