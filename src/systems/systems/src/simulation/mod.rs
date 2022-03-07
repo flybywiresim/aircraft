@@ -761,7 +761,7 @@ read_write_uom!(Pressure, psi);
 read_write_uom!(Volume, gallon);
 read_write_uom!(VolumeRate, gallon_per_second);
 read_write_uom!(Mass, pound);
-read_write_uom!(MassRate, kilogram_per_second);   // TODO: figure out which unit to use
+read_write_uom!(MassRate, kilogram_per_second);
 read_write_uom!(Angle, degree);
 read_write_uom!(AngularVelocity, revolution_per_minute);
 
