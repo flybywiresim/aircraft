@@ -1120,8 +1120,8 @@ const PseudoFWC: React.FC = () => {
         },
         '0000552': // COMPANY MESSAGE
         {
-            flightPhaseInhib: [3, 4, 5, 7, 8],
-            simVarIsActive: compMesgCount > 0,
+            flightPhaseInhib: [],
+            simVarIsActive: [1, 2, 6, 9, 10].includes(flightPhase) && compMesgCount > 0,
             whichCodeToReturn: [0],
             codesToReturn: ['000055201'],
             memoInhibit: false,
