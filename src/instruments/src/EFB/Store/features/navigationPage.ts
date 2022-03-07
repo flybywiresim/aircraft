@@ -73,6 +73,7 @@ interface InitialChartState {
         selectedProviderIndex: number;
         chartTypeIndex: number;
         sortTypeIndex: PinSort;
+        editMode: boolean;
     };
     planeInFocus: boolean;
     boundingBox?: NavigraphBoundingBox;
@@ -131,6 +132,7 @@ const initialState: InitialChartState = {
         selectedProviderIndex: 0,
         chartTypeIndex: 0,
         sortTypeIndex: PinSort.NONE,
+        editMode: false,
     },
     planeInFocus: false,
     boundingBox: undefined,

@@ -1,22 +1,20 @@
 /* eslint-disable max-len */
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { IconArrowRight } from '@tabler/icons';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
     ChartProvider,
-    removedPinnedChart,
-    NavigationTab,
+    editPinnedChart,
     editTabProperty,
+    NavigationTab,
     PinnedChart,
     setBoundingBox,
-    editPinnedChart,
-    setSelectedNavigationTabIndex,
     setProvider,
+    setSelectedNavigationTabIndex,
 } from '../../Store/features/navigationPage';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
-import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { pathify } from '../../Utils/routing';
 
@@ -101,10 +99,8 @@ export enum PinSort {
 export const PinnedChartUI = () => {
     const dispatch = useAppDispatch();
 
-    const [editMode, setEditMode] = useState(false);
-
     const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
-    const { searchQuery, chartTypeIndex, selectedProviderIndex, sortTypeIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.PINNED_CHARTS]);
+    const { searchQuery, chartTypeIndex, selectedProviderIndex, sortTypeIndex, editMode } = useAppSelector((state) => state.navigationTab[NavigationTab.PINNED_CHARTS]);
 
     const providerTabs: {name: string, provider: ChartProvider | 'ALL'}[] = [
         { name: 'Local Files', provider: ChartProvider.LOCAL_FILES },
@@ -194,10 +190,16 @@ export const PinnedChartUI = () => {
                     />
 
                     <SelectGroup>
-                        <SelectItem selected={!editMode} onSelect={() => setEditMode(false)}>
+                        <SelectItem
+                            selected={!editMode}
+                            onSelect={() => dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, editMode: false }))}
+                        >
                             View
                         </SelectItem>
-                        <SelectItem selected={editMode} onSelect={() => setEditMode(true)}>
+                        <SelectItem
+                            selected={editMode}
+                            onSelect={() => dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, editMode: true }))}
+                        >
                             Edit
                         </SelectItem>
                     </SelectGroup>
