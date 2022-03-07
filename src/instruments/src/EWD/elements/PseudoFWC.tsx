@@ -239,6 +239,7 @@ const PseudoFWC: React.FC = () => {
     const [predWSOn] = useSimVar('L:A32NX_SWITCH_RADAR_PWS_Position', 'bool', 1000);
     const [gpwsOff] = useSimVar('L:A32NX_GPWS_TERR_OFF', 'bool', 500);
     const [tcasMode] = useSimVar('L:A32NX_TCAS_MODE', 'enum', 500);
+    const [tcasSensitivity] = useSimVar('L:A32NX_TCAS_SENSITIVITY', 'enum', 500);
     const [compMesgCount] = useSimVar('L:A32NX_COMPANY_MSG_COUNT', 'number', 500);
 
     const [apuBleedValveOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool', 500);
@@ -723,7 +724,7 @@ const PseudoFWC: React.FC = () => {
         },
         3400507: { // NAV TCAS STBY (in flight)
             flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
-            simVarIsActive: !!(flightPhase === 6 && tcasMode === 0),
+            simVarIsActive: !!(flightPhase === 6 && tcasSensitivity === 1),
             whichCodeToReturn: [0],
             codesToReturn: ['340050701'],
             memoInhibit: false,
@@ -1110,7 +1111,7 @@ const PseudoFWC: React.FC = () => {
         '0000320': // TCAS STBY
         {
             flightPhaseInhib: [],
-            simVarIsActive: !!(tcasMode === 0 && flightPhase !== 6),
+            simVarIsActive: !!(tcasSensitivity === 1 && flightPhase !== 6),
             whichCodeToReturn: [0],
             codesToReturn: ['000032001'],
             memoInhibit: false,
@@ -1121,7 +1122,7 @@ const PseudoFWC: React.FC = () => {
         '0000325': // TCAS STBY in flight
         {
             flightPhaseInhib: [],
-            simVarIsActive: !!(tcasMode === 0 && flightPhase === 6),
+            simVarIsActive: !!(tcasSensitivity === 1 && flightPhase === 6),
             whichCodeToReturn: [0],
             codesToReturn: ['000032501'],
             memoInhibit: false,
@@ -1558,6 +1559,7 @@ const PseudoFWC: React.FC = () => {
         strobeLightsOn,
         tcasFault,
         tcasMode,
+        tcasSensitivity,
         toconfig,
         toconfigFailed,
         throttle1Position,
