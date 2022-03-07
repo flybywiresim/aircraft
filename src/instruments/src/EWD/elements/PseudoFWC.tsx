@@ -962,7 +962,7 @@ const PseudoFWC: React.FC = () => {
             },
         '0000140': // T.O. INHIBIT
             {
-                flightPhaseInhib: [1, 2, 6, 7, 8, 9, 10],
+                flightPhaseInhib: [],
                 simVarIsActive: showTakeoffInhibit,
                 whichCodeToReturn: [0],
                 codesToReturn: ['000014001'],
