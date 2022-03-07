@@ -164,9 +164,9 @@ export const PinnedChartUI = () => {
         case PinSort.LAST_ACCESSED:
             return b.timeAccessed - a.timeAccessed;
         case PinSort.ALPHABETICAL_FIRST_LAST:
-            return a.title.localeCompare(b.title);
+            return (a.title + a.subTitle).localeCompare(b.title + b.subTitle);
         case PinSort.ALPHABETICAL_LAST_FIRST:
-            return b.title.localeCompare(a.title);
+            return (b.title + b.subTitle).localeCompare(a.title + a.subTitle);
         default: return 0;
         }
     });
