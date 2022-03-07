@@ -64,8 +64,7 @@ export const LightPresets = () => {
     useEffect(() => {
         if (storedNames) {
             console.log(`Load preset names: "${storedNames}"`);
-            const presetKeyValue = storedNames.split(':');
-            presetKeyValue.forEach((pair) => {
+            storedNames.split(':').forEach((pair) => {
                 const [keyS, value] = pair.trim().split('=');
                 const key = Number.parseInt(keyS, 10);
                 if (key && value) {
@@ -87,6 +86,7 @@ export const LightPresets = () => {
         console.log(`Saved preset names: "${storedNames}"`);
     }, [presetNames]);
 
+    // One line of preset with ID, name, load and save
     function SinglePreset(presetID: number) {
         return (
             <div className="flex flex-row justify-between my-1">
