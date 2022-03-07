@@ -231,19 +231,6 @@ impl PneumaticPipe {
     }
 }
 
-pub struct TargetPressureSignal {
-    target_pressure: Pressure,
-}
-impl TargetPressureSignal {
-    pub fn new(target_pressure: Pressure) -> Self {
-        Self { target_pressure }
-    }
-
-    pub fn target_pressure(&self) -> Pressure {
-        self.target_pressure
-    }
-}
-
 pub struct TargetPressureTemperatureSignal {
     target_pressure: Pressure,
     target_temperature: ThermodynamicTemperature,
