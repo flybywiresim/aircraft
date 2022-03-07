@@ -11,8 +11,6 @@ import {
     NavigationTab,
     removedPinnedChart,
     setBoundingBox,
-    setCurrentPage,
-    setPagesViewable,
     setProvider,
 } from '../../Store/features/navigationPage';
 import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
@@ -111,7 +109,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
     const handleChartClick = async (chart: LocalFileChart) => {
         try {
             const pagesViewable = await getPagesViewable(chart);
-            dispatch(setPagesViewable(pagesViewable));
+            dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, pagesViewable }));
 
             const url = await getChartResourceUrl(chart);
 
@@ -128,10 +126,10 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
             return;
         }
         dispatch(setProvider(ChartProvider.LOCAL_FILES));
-        dispatch(setCurrentPage(1));
+        dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, currentPage: 1 }));
         dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartId: chart.fileName }));
     };
-    console.log(pinnedCharts);
+
     return (
         <div className="space-y-4">
             {selectedTab.charts.map((chart) => (
@@ -269,7 +267,6 @@ export const LocalFileChartUI = () => {
     }, [charts]);
 
     useEffect(() => {
-        console.log('setting', chartName);
         dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartLinks: { light: chartName.light, dark: chartName.dark } }));
     }, [chartName]);
 

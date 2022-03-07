@@ -13,24 +13,21 @@ import {
     SunFill,
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
-import { Link } from 'react-router-dom';
-import { IconArrowRight } from '@tabler/icons';
 import { useNavigraph } from '../ChartsApi/Navigraph';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import {
     NavigationTab,
     setBoundingBox,
-    setChartRotation,
-    setCurrentPage,
-    setPagesViewable,
     setPlaneInFocus,
     setUsingDarkTheme,
-    setSelectedPageIndex,
+    setSelectedNavigationTabIndex,
     editTabProperty,
-    ProviderTab, editPinnedChart, PinnedChart,
+    ProviderTab,
+    setProvider,
+    ChartProvider,
 } from '../Store/features/navigationPage';
-import { PageLink, PageRedirect, pathify, TabRoutes } from '../Utils/routing';
+import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { NavigraphNav } from './Pages/NavigraphPage';
 import { getPdfUrl, LocalFileChartUI } from './Pages/LocalFilesPage';
@@ -54,10 +51,11 @@ export const Navigation = () => {
                     tabs={navigationTabs}
                     basePath="/navigation"
                     onSelected={(index) => {
-                        dispatch(setSelectedPageIndex(index));
+                        const associatedTab = ChartProvider[navigationTabs[index].associatedTab];
+
+                        dispatch(setSelectedNavigationTabIndex(index));
                         dispatch(setBoundingBox(undefined));
-                        dispatch(setPagesViewable(1));
-                        dispatch(setCurrentPage(1));
+                        dispatch(setProvider(associatedTab));
                     }}
                 />
             </div>
@@ -73,18 +71,23 @@ export const Navigation = () => {
 export const ChartComponent = () => {
     const dispatch = useAppDispatch();
     const {
-        selectedPageIndex,
-        chartRotation,
+        selectedNavigationTabIndex,
         usingDarkTheme,
         planeInFocus,
         boundingBox,
-        pagesViewable,
-        currentPage,
         provider,
     } = useAppSelector((state) => state.navigationTab);
 
-    const currentTab = navigationTabs[selectedPageIndex].associatedTab as ProviderTab;
-    const { isFullScreen, chartDimensions, chartLinks, chartId } = useAppSelector((state) => state.navigationTab[currentTab]);
+    const currentTab = navigationTabs[selectedNavigationTabIndex].associatedTab as ProviderTab;
+    const {
+        isFullScreen,
+        chartDimensions,
+        chartLinks,
+        chartId,
+        chartRotation,
+        pagesViewable,
+        currentPage,
+    } = useAppSelector((state) => state.navigationTab[currentTab]);
 
     const { userName } = useNavigraph();
     const position = useRef({ top: 0, y: 0, left: 0, x: 0 });
@@ -138,7 +141,7 @@ export const ChartComponent = () => {
 
     useEffect(() => {
         if (planeInFocus) {
-            dispatch(setChartRotation(360 - aircraftIconPosition.r));
+            dispatch(editTabProperty({ tab: currentTab, chartRotation: 360 - aircraftIconPosition.r }));
             // TODO: implement the chart translation
             // if (ref.current) {
             //     ref.current.scrollTop = aircraftIconPosition.y + ((ref.current.clientHeight - aircraftIconPosition.y) / 2);
@@ -230,11 +233,11 @@ export const ChartComponent = () => {
 
     // The functions that handle rotation get the closest 45 degree angle increment to the current angle
     const handleRotateRight = () => {
-        dispatch(setChartRotation(chartRotation + (45 - chartRotation % 45)));
+        dispatch(editTabProperty({ tab: currentTab, chartRotation: chartRotation + (45 - chartRotation % 45) }));
     };
 
     const handleRotateLeft = () => {
-        dispatch(setChartRotation(chartRotation - (45 + chartRotation % 45)));
+        dispatch(editTabProperty({ tab: currentTab, chartRotation: chartRotation - (45 + chartRotation % 45) }));
     };
 
     useEffect(() => {
@@ -258,7 +261,7 @@ export const ChartComponent = () => {
     }, [chartLinks]);
 
     useEffect(() => {
-        setCurrentPage(1);
+        dispatch(editTabProperty({ tab: currentTab, currentPage: 1 }));
     }, [chartId]);
 
     useEffect(() => {
@@ -298,7 +301,7 @@ export const ChartComponent = () => {
                 <div className="flex overflow-hidden absolute top-6 left-6 z-40 flex-row items-center rounded-md">
                     <div
                         className={`flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight ${currentPage === 1 && 'opacity-50 pointer-events-none'}`}
-                        onClick={() => dispatch(setCurrentPage(currentPage - 1))}
+                        onClick={() => dispatch(editTabProperty({ tab: currentTab, currentPage: currentPage - 1 }))}
                     >
                         <Dash size={40} />
                     </div>
@@ -308,7 +311,7 @@ export const ChartComponent = () => {
                         value={currentPage}
                         number
                         onBlur={(value) => {
-                            dispatch(setCurrentPage(Number.parseInt(value)));
+                            dispatch(editTabProperty({ tab: currentTab, currentPage: Number.parseInt(value) }));
                         }}
                         className="w-16 h-14 rounded-r-none rounded-l-none border-transparent"
                     />
@@ -319,7 +322,7 @@ export const ChartComponent = () => {
                     </div>
                     <div
                         className={`flex flex-row justify-center items-center h-14 bg-opacity-40 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight ${currentPage === pagesViewable && 'opacity-50 pointer-events-none'}`}
-                        onClick={() => dispatch(setCurrentPage(currentPage + 1))}
+                        onClick={() => dispatch(editTabProperty({ tab: currentTab, currentPage: currentPage + 1 }))}
                     >
 
                         <Plus size={40} />

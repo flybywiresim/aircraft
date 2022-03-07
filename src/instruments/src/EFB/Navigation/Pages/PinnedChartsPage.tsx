@@ -9,12 +9,10 @@ import {
     NavigationTab,
     editTabProperty,
     PinnedChart,
-    setChartRotation,
-    setCurrentPage,
     setBoundingBox,
     editPinnedChart,
-    setPagesViewable,
-    setSelectedPageIndex,
+    setSelectedNavigationTabIndex,
+    setProvider,
 } from '../../Store/features/navigationPage';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
@@ -41,7 +39,18 @@ interface PinnedChartCardProps {
 export const PinnedChartCard = ({ pinnedChart, className } : PinnedChartCardProps) => {
     const dispatch = useAppDispatch();
 
-    const { provider, chartName, chartId, title, tabIndex, pagesViewable, boundingBox, tag, subTitle, pageIndex } = pinnedChart;
+    const {
+        provider,
+        chartName,
+        chartId,
+        title,
+        tabIndex,
+        pagesViewable,
+        boundingBox,
+        tag,
+        subTitle,
+        pageIndex,
+    } = pinnedChart;
 
     const tab = NavigationTab[provider];
 
@@ -56,16 +65,17 @@ export const PinnedChartCard = ({ pinnedChart, className } : PinnedChartCardProp
                 dispatch(editTabProperty({ tab, chartId }));
                 dispatch(editTabProperty({ tab, searchQuery: title }));
                 dispatch(editTabProperty({ tab, selectedTabIndex: tabIndex }));
-                dispatch(setChartRotation(0));
-                dispatch(setCurrentPage(1));
+                dispatch(editTabProperty({ tab, chartRotation: 0 }));
+                dispatch(editTabProperty({ tab, currentPage: 1 }));
                 dispatch(setBoundingBox(undefined));
                 dispatch(editPinnedChart({
                     chartId,
                     timeAccessed: Date.now(),
                 }));
-                dispatch(setPagesViewable(pagesViewable));
+                dispatch(editTabProperty({ tab, pagesViewable }));
                 dispatch(setBoundingBox(boundingBox));
-                dispatch(setSelectedPageIndex(pageIndex));
+                dispatch(setSelectedNavigationTabIndex(pageIndex));
+                dispatch(setProvider(provider));
             }}
         >
             <div className={`${getTagColor(tag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
