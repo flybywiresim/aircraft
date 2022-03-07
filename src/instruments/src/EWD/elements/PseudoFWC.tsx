@@ -973,7 +973,7 @@ const PseudoFWC: React.FC = () => {
             },
         '0000150': // LDG INHIBIT
             {
-                flightPhaseInhib: [1, 2, 3, 4, 5, 6, 9, 10],
+                flightPhaseInhib: [],
                 simVarIsActive: showLandingInhibit,
                 whichCodeToReturn: [0],
                 codesToReturn: ['000015001'],
