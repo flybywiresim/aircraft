@@ -3,7 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { NXDataStore } from '@shared/persistence';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useUpdate } from '@instruments/common/hooks';
-import { NXLogicConfirmNode, NXLogicClockNode } from '@instruments/common/NXLogic';
+import { NXLogicConfirmNode, NXLogicClockNode, NXLogicMemoryNode } from '@instruments/common/NXLogic';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { Arinc429Word } from '@shared/arinc429';
 
@@ -94,6 +94,8 @@ const PseudoFWC: React.FC = () => {
     const [packOffNotFailed2] = useState(() => new NXLogicConfirmNode(60));
     const [packOffBleedAvailable1] = useState(() => new NXLogicConfirmNode(5, false));
     const [packOffBleedAvailable2] = useState(() => new NXLogicConfirmNode(5, false));
+    const [cabAltSetReset1] = useState(() => new NXLogicMemoryNode());
+    const [cabAltSetReset2] = useState(() => new NXLogicMemoryNode());
 
     const [memoMessageLeft, setMemoMessageLeft] = useState<string[]>([]);
     const [memoMessageRight, setMemoMessageRight] = useState<string[]>([]);
@@ -137,6 +139,7 @@ const PseudoFWC: React.FC = () => {
     const [autothrustLeverWarningTOGA] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool', 500);
     const thrustLeverNotSet = autothrustLeverWarningFlex === 1 || autothrustLeverWarningTOGA === 1;
     const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'enum', 1000);
+    const [autoThrustStatus] = useSimVar('L:A32NX_AUTOTHRUST_STATUS', 'enum', 500);
 
     /* FIRE */
 
@@ -195,7 +198,7 @@ const PseudoFWC: React.FC = () => {
 
     const [spoilersArmed] = useSimVar('L:A32NX_SPOILERS_ARMED', 'bool', 500);
     const [seatBelt] = useSimVar('A:CABIN SEATBELTS ALERT SWITCH', 'bool', 500);
-    const [noSmoking] = useSimVar('L:A32NX_NO_SMOKING_MEMO', 'bool', 500);
+    const [noSmoking] = useSimVar('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'enum', 500);
 
     const [strobeLightsOn] = useSimVar('L:LIGHTING_STROBE_0', 'bool', 500);
 
@@ -261,6 +264,7 @@ const PseudoFWC: React.FC = () => {
     const computedAirSpeed: Arinc429Word = useArinc429Var('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED', 1000);
     // Reduce number of rewrites triggered by this value
     const computedAirSpeedToNearest2 = Math.round(computedAirSpeed.value / 2) * 2;
+    const adirsAlt: Arinc429Word = useArinc429Var('L:A32NX_ADIRS_ADR_1_ALTITUDE', 500);
 
     /* PACKS */
     const [crossfeed] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_OPEN', 'bool', 500);
@@ -272,6 +276,7 @@ const PseudoFWC: React.FC = () => {
     const [pack2Fault] = useSimVar('L:A32NX_AIRCOND_PACK2_FAULT', 'bool');
     const [pack1On] = useSimVar('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool');
     const [pack2On] = useSimVar('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool');
+    const [excessPressure] = useSimVar('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool', 500);
 
     /* WARNINGS AND FAILURES */
     const landASAPRed: boolean = !!(!onGround
@@ -369,6 +374,8 @@ const PseudoFWC: React.FC = () => {
     const [packOffBleedIsAvailable2, setPackOffBleedIsAvailable2] = useState(0);
     const [packOffNotFailure1, setPackOffNotFailure1] = useState(0);
     const [packOffNotFailure2, setPackOffNotFailure2] = useState(0);
+    const [cabAltSetResetState1, setCabAltSetResetState1] = useState(false);
+    const [cabAltSetResetState2, setCabAltSetResetState2] = useState(false);
 
     useUpdate((deltaTime) => {
         showTakeoffInhibit = toInhibitTimer.write([3, 4, 5].includes(flightPhase) && !flightPhaseInhibitOverride, deltaTime);
@@ -434,6 +441,15 @@ const PseudoFWC: React.FC = () => {
         const packOffNotFailed2Node = packOffNotFailed2.write(!pack2On && !pack2Fault && packOffBleedAvailable2.read() && flightPhase === 6, deltaTime);
         if (packOffNotFailure2 !== packOffNotFailed2Node) {
             setPackOffNotFailure2(packOffNotFailed2Node);
+        }
+        const cabAltSetReset1Node = cabAltSetReset1.write(adirsAlt.value > 10000 && excessPressure === 1, excessPressure === 1 && [3, 10].includes(flightPhase));
+        if (cabAltSetResetState1 !== cabAltSetReset1Node) {
+            setCabAltSetResetState1(cabAltSetReset1Node);
+        }
+
+        const cabAltSetReset2Node = cabAltSetReset2.write(adirsAlt.value > 16000 && excessPressure === 1, excessPressure === 1 && [3, 10].includes(flightPhase));
+        if (cabAltSetResetState2 !== cabAltSetReset2Node) {
+            setCabAltSetResetState2(cabAltSetReset2Node);
         }
     });
 
@@ -646,6 +662,36 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'LEFT',
         },
+        2131221: { // EXCESS CAB ALT
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: !!(!onGround && excessPressure === 1),
+            // TODO no separate slats indication
+            whichCodeToReturn: [
+                0,
+                cabAltSetResetState1 ? 1 : null,
+                cabAltSetResetState2 && seatBelt !== 1 ? 2 : null,
+                cabAltSetResetState2 ? 3 : null,
+                cabAltSetResetState1 ? 4 : null,
+                cabAltSetResetState2 && (throttle1Position !== 0 || throttle2Position !== 0) && autoThrustStatus !== 2 ? 5 : null,
+                cabAltSetResetState2 && speedBrake !== 1 ? 6 : null,
+                cabAltSetResetState2 ? 7 : null,
+                cabAltSetResetState2 && engSelectorPosition !== 2 ? 8 : null,
+                cabAltSetResetState2 ? 9 : null,
+                cabAltSetResetState1 && !cabAltSetResetState2 ? 10 : null,
+                cabAltSetResetState2 ? 11 : null,
+                cabAltSetResetState2 ? 12 : null,
+                cabAltSetResetState2 ? 13 : null,
+                14,
+                15,
+                16,
+            ],
+            codesToReturn: ['213122101', '213122102', '213122103', '213122104', '213122105',
+                '213122106', '213122107', '213122108', '213122109', '213122110', '213122111', '213122112', '213122113', '213122114', '213122115', '213122116'],
+            memoInhibit: false,
+            failure: 3,
+            sysPage: 2,
+            side: 'LEFT',
+        },
         2600150: { // SMOKE FWD CARGO SMOKE
             flightPhaseInhib: [4, 5, 7, 8],
             simVarIsActive: !!([1, 2, 3, 6, 9, 10].includes(flightPhase) && cargoFireTest === 1),
@@ -819,7 +865,7 @@ const PseudoFWC: React.FC = () => {
             simVarIsActive: !!tomemo,
             whichCodeToReturn: [
                 autoBrake === 3 ? 1 : 0,
-                noSmoking === 1 && seatBelt === 1 ? 3 : 2,
+                noSmoking !== 2 && seatBelt === 1 ? 3 : 2,
                 cabinReady ? 5 : 4,
                 spoilersArmed ? 7 : 6,
                 flapsHandle >= 1 && flapsHandle <= 3 ? 9 : 8,
@@ -836,7 +882,7 @@ const PseudoFWC: React.FC = () => {
             simVarIsActive: !!ldgmemo,
             whichCodeToReturn: [
                 landingGearDown === 1 ? 1 : 0,
-                noSmoking === 1 && seatBelt === 1 ? 3 : 2,
+                noSmoking !== 2 && seatBelt === 1 ? 3 : 2,
                 cabinReady ? 5 : 4,
                 spoilersArmed ? 7 : 6,
                 !gpwsFlaps3 && flapsHandle !== 4 ? 8 : null,
@@ -909,7 +955,7 @@ const PseudoFWC: React.FC = () => {
         '0000090': // NO SMOKING
             {
                 flightPhaseInhib: [],
-                simVarIsActive: !!(noSmoking === 1 && !configPortableDevices),
+                simVarIsActive: !!(noSmoking !== 2 && !configPortableDevices),
                 whichCodeToReturn: [0],
                 codesToReturn: ['000009001'],
                 memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
@@ -920,7 +966,7 @@ const PseudoFWC: React.FC = () => {
         '0000095': // PORTABLE DEVICES
             {
                 flightPhaseInhib: [],
-                simVarIsActive: !!(noSmoking === 1 && configPortableDevices),
+                simVarIsActive: !!(noSmoking !== 2 && configPortableDevices),
                 whichCodeToReturn: [0],
                 codesToReturn: ['000009501'],
                 memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
@@ -1475,9 +1521,12 @@ const PseudoFWC: React.FC = () => {
         ATTKnob,
         autoBrake,
         autoBrakesArmedMode,
+        autoThrustStatus,
         blueElecPumpPBAuto,
         blueRvrLow,
         brakeFan,
+        cabAltSetResetState1,
+        cabAltSetResetState2,
         cabinReady,
         cabinRecircBtnOn,
         cargoFireAgentDisch,
@@ -1502,6 +1551,7 @@ const PseudoFWC: React.FC = () => {
         engine2State,
         engDualFault,
         engSelectorPosition,
+        excessPressure,
         fac1Failed,
         fireButton1,
         fireButton2,
