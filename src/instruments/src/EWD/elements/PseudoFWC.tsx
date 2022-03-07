@@ -1010,9 +1010,9 @@ const PseudoFWC: React.FC = () => {
             },
         '0000060': // SPEED BRK
         {
-            flightPhaseInhib: [1, 8, 9, 10],
-            simVarIsActive: speedBrake > 0,
-            whichCodeToReturn: [[2, 3, 4, 5].includes(flightPhase) ? 1 : 0],
+            flightPhaseInhib: [],
+            simVarIsActive: speedBrake > 0 && ![1, 8, 9, 10].includes(flightPhase),
+            whichCodeToReturn: [![6, 7].includes(flightPhase) ? 1 : 0],
             codesToReturn: ['000006001', '000006002'],
             memoInhibit: false,
             failure: 0,
