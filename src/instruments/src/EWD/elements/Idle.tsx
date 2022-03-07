@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 interface IdleProps {
     x: number,
     y: number,
-};
+}
 
 const Idle: React.FC<IdleProps> = ({ x, y }) => {
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
