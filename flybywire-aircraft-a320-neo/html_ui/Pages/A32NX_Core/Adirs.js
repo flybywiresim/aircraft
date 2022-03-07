@@ -47,6 +47,11 @@ class ADIRS {
         return ADIRS.getFromAnyAdiru('IR', 'GROUND_SPEED');
     }
 
+    // FIXME there should be baro corrected altitude 1 (capt) and 2 (f/o)
+    static getBaroCorrectedAltitude() {
+        return ADIRS.getFromAnyAdiru('ADR', 'ALTITUDE');
+    }
+
     /**
      *
      * @param {'IR' | 'ADR'} type IR or ADR

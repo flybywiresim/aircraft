@@ -123,6 +123,7 @@ export class WaypointBuilder {
         newWaypoint.legAltitudeDescription = waypoint.legAltitudeDescription;
         newWaypoint.legAltitude1 = waypoint.legAltitude1;
         newWaypoint.legAltitude2 = waypoint.legAltitude2;
+        newWaypoint.additionalData.constraintType = waypoint.additionalData.constraintType;
 
         return newWaypoint;
     }
