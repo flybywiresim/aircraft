@@ -179,6 +179,7 @@
 1. [FLIGHTMODEL] Additional flight model improvements to better match real airplane performance data - @donstim (donbikes#4084)
 1. [FMGC] Re-implement altitude and speed constraints - @tracernz (Mike)
 1. [HYD] Smoothed nose wheel steering when pushing back - @Crocket63
+1. [BLEED] Converted bleed system to you mass flow instead of volume flow - @Gurgel100 (Pascal)
 
 ## 0.7.0
 
