@@ -930,7 +930,7 @@ const PseudoFWC: React.FC = () => {
         '0000100': // STROBE LIGHT OFF
             {
                 flightPhaseInhib: [],
-                simVarIsActive: !!(flightPhase >= 6 && flightPhase <= 8 && strobeLightsOn === 2),
+                simVarIsActive: !!(!onGround && strobeLightsOn === 2),
                 whichCodeToReturn: [0],
                 codesToReturn: ['000010001'],
                 memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
