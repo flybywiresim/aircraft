@@ -10,6 +10,77 @@ import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 
 export const LightPresets = () => {
+    // Manage names for presets in EFB only and always map them to the preset IDs used in the
+    // WASM implementation.
+    const [storedNames, setStoredNames] = usePersistentProperty('LIGHT_PRESET_NAMES', '');
+    const [namesMap, setNamesMap] = useState(new Map());
+
+    // called by the SinglePreset Component to get its assigned name
+    const getPresetName = (presetID: number) :string => {
+        console.log(`getStoredNames("${presetID}") = ${namesMap.get(presetID)}`);
+        return namesMap.get(presetID);
+    };
+
+    // Called by the SinglePreset Component to store its preset name after a name change
+    const storePresetName = (presetID: number, name: string) => {
+        namesMap.set(presetID, name);
+        const tmpJson = JSON.stringify(namesMap, replacer);
+        console.log(`setStoredNames("${presetID} = ${name}") ==> ${tmpJson}`);
+        setStoredNames(tmpJson);
+    };
+
+    // Used by JSON.stringify for converting a Map to a Json string
+    function replacer(key, value) {
+        if (value instanceof Map) {
+            return {
+                dataType: 'Map',
+                value: Array.from(value.entries()), // or with spread: value: [...value]
+            };
+        }
+        return value;
+    }
+
+    // Used by JSON.parse for converting a Json string to a Map
+    function reviver(key, value) {
+        if (typeof value === 'object' && value !== null) {
+            if (value.dataType === 'Map') {
+                return new Map(value.value);
+            }
+        }
+        return value;
+    }
+
+    // Called once to initially load the preset names map from the persistent store
+    useEffect(() => {
+        console.log(`Current STORE: ${storedNames}`);
+        try {
+            const newValue = JSON.parse(storedNames, reviver);
+            setNamesMap(newValue);
+        } catch {
+            setNamesMap(new Map());
+        }
+    }, []);
+
+    return (
+        <div className="w-full">
+            <div className="flex flex-row items-end space-x-4">
+                <h1 className="font-bold">Light Presets</h1>
+            </div>
+            <div className=" p-4 mt-4 mb-4 rounded-lg border-2 border-theme-accent">
+                <ScrollableContainer height={52}>
+                    <div className="grid grid-cols-1 grid-rows-5 grid-flow-row gap-4">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <SinglePreset presetID={i} getPresetName={getPresetName} storePresetName={storePresetName} namesMap={namesMap} />
+                        ))}
+                    </div>
+                </ScrollableContainer>
+            </div>
+        </div>
+    );
+};
+
+// One line of preset with ID, name, load and save
+const SinglePreset = (props: { presetID: number, getPresetName: (arg0: number) => string, storePresetName: (arg0: number, arg1: string) => void, namesMap }) => {
     // Light presets are handled in a wasm module as setting the indexed "LIGHT POTENTIOMETER"
     // variable didn't work in Javascript.
     // To tell the presets.wasm module to load a preset the LVAR "L:A32NX_LOAD_LIGHTING_PRESET"
@@ -29,11 +100,9 @@ export const LightPresets = () => {
         // loading of presets only allowed when aircraft is powered (also the case in the wasm)
         if (isPowered) {
             setLoadPresetVar(presetID);
-            toast.success(`Loading Preset: ${presetID}: ${presetNames.get(presetID)}`,
-                { autoClose: 250, hideProgressBar: true, closeButton: false });
+            toast.success(`Loading Preset: ${presetID}: ${presetName}`, { autoClose: 250, hideProgressBar: true, closeButton: false });
         } else {
-            toast.warning('Aircraft needs to be powered to load presets.',
-                { autoClose: 1000, hideProgressBar: true, closeButton: false });
+            toast.warning('Aircraft needs to be powered to load presets.', { autoClose: 1000, hideProgressBar: true, closeButton: false });
         }
     };
 
@@ -42,114 +111,53 @@ export const LightPresets = () => {
         // Saving of presets only allowed when aircraft is powered (also the case in the wasm)
         if (isPowered) {
             setSavePresetVar(presetID);
-            toast.success(`Saving Preset: ${presetID}: ${presetNames.get(presetID)}`,
-                { autoClose: 250, hideProgressBar: true, closeButton: false });
+            toast.success(`Saving Preset: ${presetID}: ${presetName}`, { autoClose: 250, hideProgressBar: true, closeButton: false });
         } else {
-            toast.warning('Aircraft needs to be powered to save presets.',
-                { autoClose: 1000, hideProgressBar: true, closeButton: false });
+            toast.warning('Aircraft needs to be powered to save presets.', { autoClose: 1000, hideProgressBar: true, closeButton: false });
         }
     };
 
-    // Manage name for presets in EFB only and always map them to the preset IDs used in the
-    // WASM implementation.
-    const [storedNames, setStoredNames] = usePersistentProperty('LIGHT_PRESET_NAMES');
-    const [presetNames, setPresetNames] = useState(new Map());
+    // User specified name for the current preset
+    const [presetName, setPresetName] = useState('');
 
-    const updatePresetNames = (presetID: number, presetName: string) => {
-        // we use these characters to store the preset names
-        setPresetNames((old) => new Map(old.set(presetID, presetName)));
-        toast.success(`Renaming Preset: ${presetID} to ${presetNames.get(presetID)} successful.`,
-            { autoClose: 250, hideProgressBar: true, closeButton: false });
+    // Sets the preset name locally and stores it into the parent persistent storage
+    const changePresetName = (newName: string): void => {
+        setPresetName(newName);
+        props.storePresetName(props.presetID, newName);
     };
 
-    // Read the persisted preset names once
-    // The data is stored as one string in a persistant property.
-    // Key Value pairs are separated by ::
-    // Each pair has the form of key==pair
+    // Get preset name from persistent store once
     useEffect(() => {
-        if (storedNames) {
-            console.log(`Load preset names: "${storedNames}"`);
-            storedNames.split('::').forEach((pair) => {
-                const [keyS, value] = pair.trim().split('==');
-                const key = Number.parseInt(keyS, 10);
-                if (key && value) {
-                    setPresetNames(new Map(presetNames.set(key, value)));
-                }
-            });
-        }
-    }, []);
+        const tmp: string = props.getPresetName(props.presetID);
+        setPresetName(tmp);
+    }, [props.namesMap]);
 
-    // Saves the current map of stored preset names to a persistent property string.
-    useEffect(() => {
-        let storedNamesTemp = '';
-        presetNames.forEach((v, k) => {
-            if (v.length > 0) {
-                storedNamesTemp += `${k}==${v}::`;
-            }
-        });
-        setStoredNames(storedNamesTemp);
-        console.log(`Saved preset names: "${storedNamesTemp}"`);
-    }, [presetNames]);
-
-    // Actual component output
     return (
-        <div className="w-full">
-            <div className="flex flex-row items-end space-x-4">
-                <h1 className="font-bold">Light Presets</h1>
+        <div className="flex flex-row justify-between my-1">
+            <div className="flex justify-center items-center w-24">
+                {props.presetID}
             </div>
-            <div className=" p-4 mt-4 mb-4 rounded-lg border-2 border-theme-accent">
-                <ScrollableContainer height={52}>
-                    <div className="grid grid-cols-1 grid-rows-5 grid-flow-row gap-4">
-                        {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <SinglePreset
-                                presetID={i}
-                                presetNames={presetNames}
-                                updatePresetNames={updatePresetNames}
-                                loadPreset={loadPreset}
-                                savePreset={savePreset}
-                            />
-                        ))}
-                    </div>
-                </ScrollableContainer>
+            <div className="flex justify-center items-center mx-4 w-full h-28 rounded-md border-2 text-theme-text bg-theme-accent border-theme-accent">
+                <SimpleInput
+                    className="w-80 text-2xl font-medium text-center"
+                    placeholder="No Name"
+                    value={presetName || 'No Name'}
+                    onBlur={(value) => changePresetName(value)}
+                    maxLength={16}
+                />
+            </div>
+            <div
+                className="flex justify-center items-center mx-4 w-full h-28 rounded-md border-2 transition duration-100 items-centerh-24 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight border-theme-accent"
+                onClick={() => loadPreset(props.presetID)}
+            >
+                Load Preset
+            </div>
+            <div
+                className="flex justify-center items-center mx-4 w-full h-28 text-white bg-green-500 hover:bg-green-600 rounded-md border-2 border-green-500 hover:border-green-600 transition duration-100"
+                onClick={() => savePreset(props.presetID)}
+            >
+                Save Preset
             </div>
         </div>
     );
 };
-
-// One line of preset with ID, name, load and save
-const SinglePreset = (props: { presetID: number, presetNames: { get: (arg0: number) => any; }, updatePresetNames: (arg0: number, arg1: string) => void, loadPreset: (arg0: number) => void, savePreset: (arg0: number) => void}) => (
-
-    <div className="flex flex-row justify-between my-1">
-        <div className="flex justify-center items-center w-24">
-            {props.presetID}
-        </div>
-        <div className="flex justify-center items-center mx-4 w-full h-28 rounded-md border-2 text-theme-text bg-theme-accent border-theme-accent">
-            <SimpleInput
-                className="w-80 text-2xl font-medium text-center"
-                placeholder="No Name"
-                value={props.presetNames.get(props.presetID) || 'No Name'}
-                onBlur={(value) => props.updatePresetNames(props.presetID, cleanUp(value))}
-                maxLength={16}
-            />
-        </div>
-        <div
-            className="flex justify-center items-center mx-4 w-full h-28 rounded-md border-2 transition duration-100 items-centerh-24 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight border-theme-accent"
-            onClick={() => props.loadPreset(props.presetID)}
-        >
-            Load Preset
-        </div>
-        <div
-            className="flex justify-center items-center mx-4 w-full h-28 text-white bg-green-500 hover:bg-green-600 rounded-md border-2 border-green-500 hover:border-green-600 transition duration-100"
-            onClick={() => props.savePreset(props.presetID)}
-        >
-            Save Preset
-        </div>
-    </div>
-);
-
-function cleanUp(value: string): string {
-    console.log(`Raw input    : ${value}`);
-    const tmp = value.replace(/::|==/g, '');
-    console.log(`Cleaned input: ${tmp}`);
-    return tmp;
-}
