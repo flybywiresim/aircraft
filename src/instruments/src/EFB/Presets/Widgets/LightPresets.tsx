@@ -26,9 +26,9 @@ export const LightPresets = () => {
 
     // Sets the LVAR to tell the wasm to load the preset into the aircraft
     const loadPreset = (presetID: number) => {
-        setLoadPresetVar(presetID);
         // loading of presets only allowed when aircraft is powered (also the case in the wasm)
         if (isPowered) {
+            setLoadPresetVar(presetID);
             toast.success(`Loading Preset: ${presetID}: ${presetNames.get(presetID)}`,
                 { autoClose: 250, hideProgressBar: true, closeButton: false });
         } else {
@@ -39,9 +39,9 @@ export const LightPresets = () => {
 
     // Sets the LVAR to tell the wasm to save the current lighting setting into the preset
     const savePreset = (presetID: number) => {
-        setSavePresetVar(presetID);
         // Saving of presets only allowed when aircraft is powered (also the case in the wasm)
         if (isPowered) {
+            setSavePresetVar(presetID);
             toast.success(`Saving Preset: ${presetID}: ${presetNames.get(presetID)}`,
                 { autoClose: 250, hideProgressBar: true, closeButton: false });
         } else {
@@ -64,13 +64,13 @@ export const LightPresets = () => {
 
     // Read the persisted preset names once
     // The data is stored as one string in a persistant property.
-    // Key Value pairs are separated by :
-    // Each pair has the form of key=pair
+    // Key Value pairs are separated by ::
+    // Each pair has the form of key==pair
     useEffect(() => {
         if (storedNames) {
             console.log(`Load preset names: "${storedNames}"`);
-            storedNames.split(':').forEach((pair) => {
-                const [keyS, value] = pair.trim().split('=');
+            storedNames.split('::').forEach((pair) => {
+                const [keyS, value] = pair.trim().split('==');
                 const key = Number.parseInt(keyS, 10);
                 if (key && value) {
                     setPresetNames(new Map(presetNames.set(key, value)));
@@ -84,7 +84,7 @@ export const LightPresets = () => {
         let storedNamesTemp = '';
         presetNames.forEach((v, k) => {
             if (v.length > 0) {
-                storedNamesTemp += `${k}=${v}:`;
+                storedNamesTemp += `${k}==${v}::`;
             }
         });
         setStoredNames(storedNamesTemp);
@@ -97,7 +97,7 @@ export const LightPresets = () => {
             <div className="flex flex-row items-end space-x-4">
                 <h1 className="font-bold">Light Presets</h1>
             </div>
-            <div className="p-4 mt-4 rounded-lg border-2 border-theme-accent">
+            <div className=" p-4 mt-4 mb-4 rounded-lg border-2 border-theme-accent">
                 <ScrollableContainer height={52}>
                     <div className="grid grid-cols-1 grid-rows-5 grid-flow-row gap-4">
                         {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -118,6 +118,7 @@ export const LightPresets = () => {
 
 // One line of preset with ID, name, load and save
 const SinglePreset = (props: { presetID: number, presetNames: { get: (arg0: number) => any; }, updatePresetNames: (arg0: number, arg1: string) => void, loadPreset: (arg0: number) => void, savePreset: (arg0: number) => void}) => (
+
     <div className="flex flex-row justify-between my-1">
         <div className="flex justify-center items-center w-24">
             {props.presetID}
@@ -127,7 +128,7 @@ const SinglePreset = (props: { presetID: number, presetNames: { get: (arg0: numb
                 className="w-80 text-2xl font-medium text-center"
                 placeholder="No Name"
                 value={props.presetNames.get(props.presetID) || 'No Name'}
-                onBlur={(value) => props.updatePresetNames(props.presetID, value.replace(/[:|=]/g, ''))}
+                onBlur={(value) => props.updatePresetNames(props.presetID, cleanUp(value))}
                 maxLength={16}
             />
         </div>
@@ -145,3 +146,10 @@ const SinglePreset = (props: { presetID: number, presetNames: { get: (arg0: numb
         </div>
     </div>
 );
+
+function cleanUp(value: string): string {
+    console.log(`Raw input    : ${value}`);
+    const tmp = value.replace(/::|==/g, '');
+    console.log(`Cleaned input: ${tmp}`);
+    return tmp;
+}
