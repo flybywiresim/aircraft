@@ -172,10 +172,10 @@ class Row1 extends DisplayComponent<{bus:EventBus, isAttExcessive: Subscribable<
         this.props.isAttExcessive.sub((a) => {
             if (a) {
                 this.cellsToHide.instance.style.visibility = 'hidden';
-                this.b1Cell.instance.displayModeChangedPath();
-                this.c1Cell.instance.displayModeChangedPath();
+                this.b1Cell.instance.displayModeChangedPath(true);
+                this.c1Cell.instance.displayModeChangedPath(true);
                 // this.D1D2Cell.instance.displayModeChangedPath(true);
-                this.BC1Cell.instance.displayModeChangedPath();
+                this.BC1Cell.instance.displayModeChangedPath(true);
             } else {
                 this.cellsToHide.instance.style.visibility = 'visible';
                 this.b1Cell.instance.displayModeChangedPath();

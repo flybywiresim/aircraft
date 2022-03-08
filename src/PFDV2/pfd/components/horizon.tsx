@@ -511,7 +511,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
             this.determineSlideSlip();
         });
 
-        sub.on('latAcc').withPrecision(2).handle((latAcc) => {
+        sub.on('latAcc').handle((latAcc) => {
             this.latAcc = latAcc;
             this.determineSlideSlip();
         });
@@ -539,7 +539,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
         this.rollTriangle.instance.style.transform = `translate3d(0px, ${verticalOffset.toFixed(2)}px, 0px)`;
         this.classNameSub.set(`${betaTargetActive ? 'Cyan' : 'Yellow'}`);
-        this.slideSlip.instance.style.transform = `translate3d(${SIIndexOffset.toFixed(2)}px, 0px, 0px)`;
+        this.slideSlip.instance.style.transform = `translate3d(${SIIndexOffset}px, 0px, 0px)`;
     }
 
     render(): VNode {

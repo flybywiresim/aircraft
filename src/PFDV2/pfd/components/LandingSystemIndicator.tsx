@@ -1,4 +1,6 @@
 import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from 'msfssdk';
+import { getDisplayIndex } from 'PFDV2/pfd/components';
+import { Arinc429Values } from 'PFDV2/pfd/shared/ArincValueProvider';
 import { PFDSimvars } from '../shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
 
@@ -7,20 +9,15 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
 
     private lsGroupRef = FSComponent.createRef<SVGGElement>();
 
-    private getDisplayIndex = () => {
-        const url = document.getElementsByTagName('a32nx-pfd')[0].getAttribute('url');
-        return url ? parseInt(url.substring(url.length - 1), 10) : 0;
-    }
-
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const hSub = this.props.bus.getSubscriber<HEvent>();
+        const sub = this.props.bus.getSubscriber<HEvent & Arinc429Values>();
 
-        hSub.on('hEvent').handle((eventName) => {
-            if (eventName === `A320_Neo_PFD_BTN_LS_${this.getDisplayIndex()}`) {
+        sub.on('hEvent').handle((eventName) => {
+            if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
                 this.lsButtonPressedVisibility = !this.lsButtonPressedVisibility;
-                SimVar.SetSimVarValue(`L:BTN_LS_${this.getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', this.lsButtonPressedVisibility);
+                SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', this.lsButtonPressedVisibility);
 
                 this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
             }
@@ -50,8 +47,6 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
 }
 
 class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
-    private hasLoc = false;
-
     private hasDme = false;
 
     private identText = Subject.create('');
@@ -66,20 +61,22 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
 
     private dmeVisibilitySub = Subject.create('hidden');
 
-    private distLeading = Subject.create('');
-
-    private distTrailing = Subject.create('');
-
     private destRef = FSComponent.createRef<SVGTextElement>();
+
+    private lsInfoGroup = FSComponent.createRef<SVGGElement>();
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
+        // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
         sub.on('hasLoc').whenChanged().handle((hasLoc) => {
-            this.hasLoc = hasLoc;
-            this.updateContents();
+            if (hasLoc) {
+                this.lsInfoGroup.instance.style.display = 'none';
+            } else {
+                this.lsInfoGroup.instance.style.display = 'inline';
+            }
         });
 
         sub.on('hasDme').whenChanged().handle((hasDme) => {
@@ -112,39 +109,31 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
             this.freqTextTrailing.set('');
         }
 
-        const hasDME = this.hasDme;
-
-        this.distLeading.set('');
-        this.distTrailing.set('');
-        if (hasDME) {
+        let distLeading = '';
+        let distTrailing = '';
+        if (this.hasDme) {
             this.dmeVisibilitySub.set('display: inline');
             const dist = Math.round(this.dme * 10) / 10;
 
             if (dist < 20) {
                 const distSplit = dist.toString().split('.');
 
-                this.distLeading.set(distSplit[0]);
-                this.distTrailing.set(`.${distSplit.length > 1 ? distSplit[1] : '0'}`);
+                distLeading = distSplit[0];
+                distTrailing = `.${distSplit.length > 1 ? distSplit[1] : '0'}`;
             } else {
-                this.distLeading.set(Math.round(dist).toString());
-                this.distTrailing.set('');
+                distLeading = Math.round(dist).toString();
+                distTrailing = '';
             }
             // eslint-disable-next-line max-len
-            this.destRef.instance.innerHTML = `<tspan id="ILSDistLeading" class="FontLarge StartAlign">${this.distLeading.get()}</tspan><tspan id="ILSDistTrailing" class="FontSmallest StartAlign">${this.distTrailing.get()}</tspan>`;
+            this.destRef.instance.innerHTML = `<tspan id="ILSDistLeading" class="FontLarge StartAlign">${distLeading}</tspan><tspan id="ILSDistTrailing" class="FontSmallest StartAlign">${distTrailing}</tspan>`;
         } else {
             this.dmeVisibilitySub.set('display: none');
         }
     }
 
     render(): VNode {
-        /*         if (!displayed || !getSimVar('NAV HAS LOCALIZER:3', 'Bool')) {
-            return null;
-        } */
-
-        // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
-
         return (
-            <g id="LSInfoGroup">
+            <g id="LSInfoGroup" ref={this.lsInfoGroup}>
                 <text id="ILSIdent" class="Magenta FontLarge AlignLeft" x="1.184" y="145.11522">{this.identText}</text>
                 <text id="ILSFreqLeading" class="Magenta FontLarge AlignLeft" x="1.3610243" y="151.11575">{this.freqTextLeading}</text>
                 <text id="ILSFreqTrailing" class="Magenta FontSmallest AlignLeft" x="12.964463" y="151.24084">{this.freqTextTrailing}</text>
@@ -205,8 +194,6 @@ class LocalizerIndicator extends DisplayComponent<{bus: EventBus, instrument: Ba
                 this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
             }
         });
-
-        // sub.on('navRadialError').handle(this.handleNavRadialError.bind(this));
     }
 
     render(): VNode {
@@ -304,7 +291,7 @@ class GlideSlopeIndicator extends DisplayComponent<{bus: EventBus, instrument: B
     }
 }
 
-/*
+/* TODO convert once available
 const VDevIndicator = () => {
     const deviation = getSimVar('GPS VERTICAL ERROR', 'feet');
     const dots = deviation / 100;

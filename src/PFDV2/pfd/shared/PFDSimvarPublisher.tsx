@@ -245,7 +245,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['attHdgKnob', { name: PFDVars.attHdgKnob, type: SimVarValueType.Enum }],
         ['airKnob', { name: PFDVars.airKnob, type: SimVarValueType.Enum }],
         ['vsBaro', { name: PFDVars.vsBaro, type: SimVarValueType.Number }],
-        ['vsInert', { name: PFDVars.vsBaro, type: SimVarValueType.Number }],
+        ['vsInert', { name: PFDVars.vsInert, type: SimVarValueType.Number }],
         ['sideStickX', { name: PFDVars.sideStickX, type: SimVarValueType.Number }],
         ['sideStickY', { name: PFDVars.sideStickY, type: SimVarValueType.Number }],
         ['fdYawCommand', { name: PFDVars.fdYawCommand, type: SimVarValueType.Number }],

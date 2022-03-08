@@ -1,5 +1,6 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
+import { VerticalMode } from '@shared/autopilot';
 import { PFDSimvars } from '../shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { SimplaneValues } from '../shared/SimplaneValueProvider';
@@ -266,26 +267,49 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
     private isManaged = false;
 
-    private armedVerticalBitmask =0;
-
-    private armedLateralBitmask = 0;
-
     private activeVerticalMode = 0;
 
-    private fmgcFlightPhase = 0;
-
     private handleAltManagedChange() {
-        const altArmed = (this.armedVerticalBitmask >> 1) & 1;
+        const clbActive = this.activeVerticalMode === VerticalMode.CLB;
+        const gsActive = this.activeVerticalMode === VerticalMode.GS_TRACK || this.activeVerticalMode === VerticalMode.GS_CPT;
+        const landingModesActive = this.activeVerticalMode === VerticalMode.LAND || this.activeVerticalMode === VerticalMode.FLARE;
+        const finalAppArmed = this.activeVerticalMode === VerticalMode.FINAL;
 
-        const clbArmed = (this.armedVerticalBitmask >> 2) & 1;
+        const isWhite = this.constraint > 0 && (gsActive || landingModesActive || finalAppArmed);
 
-        const navArmed = (this.armedLateralBitmask >> 0) & 1;
-
-        this.isManaged = !!(altArmed || this.activeVerticalMode === 21 || this.activeVerticalMode === 20 || (!!this.constraint && this.fmgcFlightPhase < 2 && clbArmed && navArmed));
+        this.isManaged = this.constraint > 0 && clbActive;
 
         this.shownTargetAltitude = this.updateTargetAltitude(this.targetAltitudeSelected, this.isManaged, this.constraint);
 
-        if (this.isManaged) {
+        if (isWhite) {
+            this.SelectedAltLowerFLText.instance.classList.remove('Cyan');
+            this.SelectedAltLowerFLText.instance.classList.remove('Magenta');
+
+            this.SelectedAltLowerFLText.instance.classList.add('White');
+
+            this.SelectedAltLowerText.instance.classList.remove('Cyan');
+            this.SelectedAltLowerText.instance.classList.remove('Magenta');
+
+            this.SelectedAltLowerText.instance.classList.add('White');
+
+            this.SelectedAltUpperFLText.instance.classList.remove('Cyan');
+            this.SelectedAltUpperFLText.instance.classList.remove('Magenta');
+
+            this.SelectedAltUpperFLText.instance.classList.add('White');
+
+            this.SelectedAltUpperText.instance.classList.remove('Cyan');
+            this.SelectedAltUpperText.instance.classList.remove('Magenta');
+
+            this.SelectedAltUpperText.instance.classList.add('White');
+
+            this.AltTapeTargetText.instance.classList.remove('Cyan');
+            this.AltTapeTargetText.instance.classList.add('White');
+
+            this.targetSymbolRef.instance.classList.remove('Cyan');
+            this.targetSymbolRef.instance.classList.remove('Magenta');
+
+            this.targetSymbolRef.instance.classList.add('White');
+        } else if (this.isManaged) {
             this.SelectedAltLowerFLText.instance.classList.remove('Cyan');
             this.SelectedAltLowerFLText.instance.classList.add('Magenta');
 
@@ -330,14 +354,14 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
         const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
         const spsub = this.props.bus.getSubscriber<SimplaneValues>();
 
-        sub.on('fmaVerticalArmed').whenChanged().handle((v) => {
+        /*         sub.on('fmaVerticalArmed').whenChanged().handle((v) => {
             this.armedVerticalBitmask = v;
             this.handleAltManagedChange();
             this.getOffset();
             this.handleUpperGroup();
             this.getText();
         });
-
+ */
         sub.on('activeVerticalMode').whenChanged().handle((v) => {
             this.activeVerticalMode = v;
             this.handleAltManagedChange();
@@ -346,7 +370,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.getText();
         });
 
-        sub.on('fmaLateralArmed').whenChanged().handle((l) => {
+        /*         sub.on('fmaLateralArmed').whenChanged().handle((l) => {
             this.armedLateralBitmask = l;
             this.handleAltManagedChange();
             this.getOffset();
@@ -360,7 +384,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.getOffset();
             this.handleUpperGroup();
             this.getText();
-        });
+        }); */
 
         spsub.on('selectedAltitude').whenChanged().handle((m) => {
             this.targetAltitudeSelected = m;

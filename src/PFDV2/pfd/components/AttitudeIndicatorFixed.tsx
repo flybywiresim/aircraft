@@ -83,7 +83,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
     private failureVis = Subject.create('hidden');
 
-    private attExcessiveVisibilitySub = Subject.create('hidden');
+    private fdVisibilitySub = Subject.create('hidden');
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -98,6 +98,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             } else {
                 this.visibilitySub.set('visible');
                 this.failureVis.set('display:none');
+                this.fdVisibilitySub.set('display:none');
             }
         });
 
@@ -110,14 +111,15 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             } else {
                 this.visibilitySub.set('visible');
                 this.failureVis.set('display:none');
+                this.fdVisibilitySub.set('display:none');
             }
         });
 
         this.props.isAttExcessive.sub((a) => {
             if (a) {
-                this.attExcessiveVisibilitySub.set('display:none');
-            } else {
-                this.attExcessiveVisibilitySub.set('display:inline');
+                this.fdVisibilitySub.set('display:none');
+            } else if (this.roll.isNormalOperation() && this.pitch.isNormalOperation()) {
+                this.fdVisibilitySub.set('display:inline');
             }
         });
     }
@@ -131,7 +133,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
                     <SidestickIndicator bus={this.props.bus} />
                     <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
 
-                    <g style={this.attExcessiveVisibilitySub}>
+                    <g style={this.fdVisibilitySub}>
                         <FDYawBar bus={this.props.bus} />
                         <FlightDirector bus={this.props.bus} />
                     </g>
