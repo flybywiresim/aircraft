@@ -51,11 +51,12 @@ bool Presets::initializeSimConnect() {
     // Simulation Data
     // This concept is used when retrieving a "batch" of data from the sim instead of single entries.
     // This batch must be prepared with SimConnect_AddToDataDefinition and backed by a matching data structure.
+    // Not use in this use case.
     // https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_AddToDataDefinition.htm?rhhlterm=SimConnect_AddToDataDefinition&rhsearch=SimConnect_AddToDataDefinition
     // SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::SimulationDataTypeId, "SIMULATION TIME", "NUMBER");
     // SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::SimulationDataTypeId, "SIMULATION RATE", "NUMBER");
+    // std::cout << "PRESETS: SimConnect registrations complete." << std::endl;
 
-    std::cout << "PRESETS: SimConnect registrations complete." << std::endl;
     return true;
   }
   std::cout << "PRESETS: SimConnect failed." << std::endl;
@@ -65,7 +66,7 @@ bool Presets::initializeSimConnect() {
 bool Presets::onUpdate(double deltaTime) {
   if (isConnected) {
     // read simulation data from simconnect
-    simConnectRequestData();
+    // simConnectRequestData(); // not used in this use case
     simConnectReadData();
 
     // get aircraft AC power state
@@ -100,11 +101,11 @@ bool Presets::onUpdate(double deltaTime) {
       // load becomes priority in case both vars are set.
       if (loadPresetRequest) {
         loadPreset(loadPresetRequest);
+        simVars->setLoadPresetRequest(0);
       } else if (savePresetRequest) {
         savePreset(savePresetRequest);
+        simVars->setSavePresetRequest(0);
       }
-      simVars->setLoadPresetRequest(0);
-      simVars->setSavePresetRequest(0);
     }
   }
   return true;
@@ -116,9 +117,9 @@ void Presets::loadPreset(const int loadPresetRequest) {
   if (lightPreset.readFromStore(loadPresetRequest)) {
     lightPreset.applyToAircraft();
     std::cout << "PRESETS: Preset: " << loadPresetRequest << " successfully loaded." << std::endl;
-  } else {
-    std::cout << "PRESETS: Loading preset: " << loadPresetRequest << " failed." << std::endl;
+    return;
   }
+  std::cout << "PRESETS: Loading preset: " << loadPresetRequest << " failed." << std::endl;
 }
 
 void Presets::savePreset(const int savePresetRequest) {
@@ -127,9 +128,9 @@ void Presets::savePreset(const int savePresetRequest) {
   lightPreset.readFromAircraft();
   if (lightPreset.saveToStore(savePresetRequest)) {
     std::cout << "PRESETS: Preset: " << savePresetRequest << " successfully saved." << std::endl;
-  } else {
-    std::cout << "PRESETS: Saving preset: " << savePresetRequest << " failed." << std::endl;
+    return;
   }
+  std::cout << "PRESETS: Saving preset: " << savePresetRequest << " failed." << std::endl;
 }
 
 bool Presets::simConnectRequestData() {

@@ -17,6 +17,7 @@ export const LightPresets = () => {
 
     // called by the SinglePreset Component to get its assigned name
     const getPresetName = (presetID: number) :string => {
+        // DEBUG: Remove this
         console.log(`getStoredNames("${presetID}") = ${namesMap.get(presetID)}`);
         return namesMap.get(presetID);
     };
@@ -25,6 +26,7 @@ export const LightPresets = () => {
     const storePresetName = (presetID: number, name: string) => {
         namesMap.set(presetID, name);
         const tmpJson = JSON.stringify(namesMap, replacer);
+        // DEBUG: Remove this
         console.log(`setStoredNames("${presetID} = ${name}") ==> ${tmpJson}`);
         setStoredNames(tmpJson);
     };
@@ -52,6 +54,7 @@ export const LightPresets = () => {
 
     // Called once to initially load the preset names map from the persistent store
     useEffect(() => {
+        // DEBUG: Remove this
         console.log(`Current STORE: ${storedNames}`);
         try {
             const newValue = JSON.parse(storedNames, reviver);
@@ -80,7 +83,7 @@ export const LightPresets = () => {
 };
 
 // One line of preset with ID, name, load and save
-const SinglePreset = (props: { presetID: number, getPresetName: (arg0: number) => string, storePresetName: (arg0: number, arg1: string) => void, namesMap }) => {
+const SinglePreset = (props: { presetID: number, getPresetName: (arg0: number) => string, storePresetName: (arg0: number, arg1: string) => void, namesMap: any }) => {
     // Light presets are handled in a wasm module as setting the indexed "LIGHT POTENTIOMETER"
     // variable didn't work in Javascript.
     // To tell the presets.wasm module to load a preset the LVAR "L:A32NX_LOAD_LIGHTING_PRESET"
@@ -141,7 +144,7 @@ const SinglePreset = (props: { presetID: number, getPresetName: (arg0: number) =
                 <SimpleInput
                     className="w-80 text-2xl font-medium text-center"
                     placeholder="No Name"
-                    value={presetName || 'No Name'}
+                    value={presetName}
                     onBlur={(value) => changePresetName(value)}
                     maxLength={16}
                 />
@@ -153,7 +156,7 @@ const SinglePreset = (props: { presetID: number, getPresetName: (arg0: number) =
                 Load Preset
             </div>
             <div
-                className="flex justify-center items-center mx-4 w-full h-28 text-white bg-green-500 hover:bg-green-600 rounded-md border-2 border-green-500 hover:border-green-600 transition duration-100"
+                className="flex justify-center items-center mx-4 w-full h-28 text-white bg-green-700 hover:bg-green-800 rounded-md border-2 border-green-700 hover:border-green-800 transition duration-100"
                 onClick={() => savePreset(props.presetID)}
             >
                 Save Preset

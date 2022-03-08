@@ -105,13 +105,13 @@ class LightingSimVars {
   }
 
   /**
-   * @brief Get the ElecAC1 state
+   * Get the ElecAC1 state
    * @return INT64 0 if AC1 bus is unpowered, 1 otherwise
    */
   INT64 getElecAC1State() { return get_named_variable_value(ElecAC1); }
 
   /**
-   * @brief Get the ElecAC2 state
+   * Get the ElecAC2 state
    * @return INT64 0 if AC2 bus is unpowered, 1 otherwise
    */
   INT64 getElecAC2State() { return get_named_variable_value(ElecAC2); }
@@ -169,7 +169,6 @@ class LightingSimVars {
   /**
    * Sets the DCDU brightness level to the simulator.
    * @param s Side.Left or Side.Right
-   * @return value in percent (0.0 .. 1.0)
    */
   void setDcduLightLevel(Side s, FLOAT64 value) {
     switch (s) {
@@ -199,7 +198,6 @@ class LightingSimVars {
   /**
    * Sets the MCDU brightness level to the simulator.
    * @param s Side.Left or Side.Right
-   * @return value in percent (0.0 .. 1.0)
    */
   void setMcduLightLevel(Side s, FLOAT64 value) {
     switch (s) {
@@ -238,19 +236,21 @@ class LightingSimVars {
    * 0 = switch pos OFF, 50 = switch pos DIM, 100 = switch pos BRT
    * @return value in percent over 100 (0..100)
    */
-  FLOAT64 getLightCabin() {
-    return getLightPotentiometer(7);
-  }
+  FLOAT64 getLightCabin() { return getLightPotentiometer(7); }
+
   /**
    * Sets the dome light switch in one of 3 positions.
-   * @param lvl 0 = OFF, 50 = DIM,, 100 = BRT
+   * @param lvl 0 = OFF, 50 = DIM, 100 = BRT
    */
   void setLightCabin(FLOAT64 lvl) {
     // cabin light level needs to either be 0, 50 or 100 for the switch position
     // in the aircraft to work.
-    if (lvl <= 0.0) lvl = 0.0;
-    else if (lvl > 0.0 && lvl <=50.0) lvl = 50.0;
-    else if ((lvl > 0.0 && lvl > 50.0)) lvl = 100.0;
+    if (lvl <= 0.0)
+      lvl = 0.0;
+    else if (lvl > 0.0 && lvl <= 50.0)
+      lvl = 50.0;
+    else if ((lvl > 0.0 && lvl > 50.0))
+      lvl = 100.0;
     // set the switch position via calculator code
     std::string calculator_code;
     calculator_code += std::to_string(lvl > 0 ? 1 : 0);

@@ -1,9 +1,9 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#include <string>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 #include "LightPreset.h"
 
@@ -74,6 +74,9 @@ bool LightPreset::readFromStore(int presetNr) {
   bool result = iniFile.read(ini);
 
   const std::string preset = "preset " + std::to_string(presetNr);
+
+  // REVIEW: what should be the default value for a preset?
+  //  should all empty presets the same defaults or a different ones?
 
   // check if preset is available
   if (!ini.has(preset)) {
@@ -196,7 +199,6 @@ double LightPreset::iniGetOrDefault(const mINI::INIStructure& ini,
                                     const std::string& section,
                                     const std::string& key,
                                     const double defaultValue) {
-
   if (ini.get(section).has(key)) {
     // As MSFS wasm does not support exceptions (try/catch) we can't use
     // std::stof here. Workaround with std::stringstreams.
@@ -206,8 +208,7 @@ double LightPreset::iniGetOrDefault(const mINI::INIStructure& ini,
       return value;
     } else {
       std::cout << "PRESETS: reading ini value for \""
-                << "[" << section << "] " << key << " = " << ini.get(section).get(key)
-                << "\" failed." << std::endl;
+                << "[" << section << "] " << key << " = " << ini.get(section).get(key) << "\" failed." << std::endl;
     }
   }
   return defaultValue;
