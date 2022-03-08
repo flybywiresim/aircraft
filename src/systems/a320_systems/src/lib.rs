@@ -3,7 +3,7 @@ extern crate systems;
 mod air_conditioning;
 mod electrical;
 mod fuel;
-mod hydraulic;
+pub mod hydraulic;
 mod navigation;
 mod pneumatic;
 mod power_consumption;
