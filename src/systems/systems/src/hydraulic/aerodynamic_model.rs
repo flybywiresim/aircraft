@@ -7,18 +7,6 @@ use uom::si::{
 
 use crate::{shared::interpolation, simulation::UpdateContext};
 
-/// Projects a 3D box with 3D size along a projection vector.
-/// Outputs the projected area on the plane normal to projection vector
-fn area_projected(size: Vector3<Length>, projection_vector: Vector3<f64>) -> Area {
-    let norm_projection_vector = projection_vector.normalize();
-
-    Area::new::<square_meter>(
-        size[0].get::<meter>() * size[2].get::<meter>() * norm_projection_vector[1]
-            + size[0].get::<meter>() * size[1].get::<meter>() * norm_projection_vector[2]
-            + size[1].get::<meter>() * size[2].get::<meter>() * norm_projection_vector[0],
-    )
-}
-
 pub struct AerodynamicModel {
     max_drag_normal: Vector3<f64>,
     lift_axis: Vector3<f64>,
@@ -187,6 +175,18 @@ pub trait AerodynamicBody {
     fn size(&self) -> Vector3<Length>;
     fn rotation_transform(&self) -> Rotation3<f64>;
     fn apply_aero_forces(&mut self, aero_forces: Vector3<Force>);
+}
+
+/// Projects a 3D box with 3D size along a projection vector.
+/// Outputs the projected area on the plane normal to projection vector
+fn area_projected(size: Vector3<Length>, projection_vector: Vector3<f64>) -> Area {
+    let norm_projection_vector = projection_vector.normalize();
+
+    Area::new::<square_meter>(
+        size[0].get::<meter>() * size[2].get::<meter>() * norm_projection_vector[1]
+            + size[0].get::<meter>() * size[1].get::<meter>() * norm_projection_vector[2]
+            + size[1].get::<meter>() * size[2].get::<meter>() * norm_projection_vector[0],
+    )
 }
 
 #[cfg(test)]

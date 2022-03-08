@@ -24,7 +24,7 @@ use crate::{
 
 use super::aerodynamic_model::AerodynamicBody;
 
-use std::fmt::Display;
+use std::fmt::Debug;
 use std::time::Duration;
 
 pub trait Actuator {
@@ -43,22 +43,12 @@ pub trait BoundedLinearLength {
     fn absolute_length_to_anchor(&self) -> Length;
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 pub enum LinearActuatorMode {
     ClosedValves,
     PositionControl,
     ActiveDamping,
     ClosedCircuitDamping,
-}
-impl Display for LinearActuatorMode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            LinearActuatorMode::ClosedValves => write!(f, "ClosedValves"),
-            LinearActuatorMode::PositionControl => write!(f, "PositionControl"),
-            LinearActuatorMode::ActiveDamping => write!(f, "ActiveDamping"),
-            LinearActuatorMode::ClosedCircuitDamping => write!(f, "ClosedCircuitDamping"),
-        }
-    }
 }
 
 /// Represents an abstraction of the low level hydraulic actuator control system that would in real life consist of a lot of
@@ -370,9 +360,9 @@ impl CoreHydraulicForce {
     }
 
     /// Computes a hydraulic flow request based on required actuator position and its current position
-    /// Flow is computed through the formula flow = position_error^2 * maxflow / OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW^2
-    /// This formula means max flow will be applied above OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW position error
-    /// Below OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW position error, a squared law defines flow vs positioning error
+    /// Flow is computed through the formula flow = position_error^2 * maxflow / [Self::OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW]^2.
+    /// This formula means max flow will be applied above [Self::OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW] position error.
+    /// Below [Self::OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW] position error, a squared law defines flow vs positioning error.
     ///
     /// Then final flow request is corrected depending on actuator position, modeling dampening holes
     /// in the real actuator at start/end of course

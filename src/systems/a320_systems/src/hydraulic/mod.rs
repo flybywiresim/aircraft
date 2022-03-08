@@ -242,23 +242,23 @@ impl A320CargoDoorFactory {
     /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     /// to it
     fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
-        let cargo_door_body = A320CargoDoorFactory::a320_cargo_door_body(true);
-        let cargo_door_actuator = A320CargoDoorFactory::a320_cargo_door_actuator(&cargo_door_body);
+        let cargo_door_body = Self::a320_cargo_door_body(true);
+        let cargo_door_actuator = Self::a320_cargo_door_actuator(&cargo_door_body);
         HydraulicLinearActuatorAssembly::new([cargo_door_actuator], cargo_door_body)
     }
 
     fn new_a320_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
-        let assembly = A320CargoDoorFactory::a320_cargo_door_assembly();
+        let assembly = Self::a320_cargo_door_assembly();
         CargoDoor::new(
             context,
             id,
             assembly,
-            A320CargoDoorFactory::new_a320_cargo_door_aero_model(),
+            Self::new_a320_cargo_door_aero_model(),
         )
     }
 
     fn new_a320_cargo_door_aero_model() -> AerodynamicModel {
-        let body = A320CargoDoorFactory::a320_cargo_door_body(false);
+        let body = Self::a320_cargo_door_body(false);
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(1., 0., 0.)),
@@ -332,10 +332,10 @@ impl A320AileronFactory {
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
     fn a320_aileron_assembly() -> HydraulicLinearActuatorAssembly<2> {
-        let aileron_body = A320AileronFactory::a320_aileron_body();
+        let aileron_body = Self::a320_aileron_body();
 
-        let aileron_actuator_outward = A320AileronFactory::a320_aileron_actuator(&aileron_body);
-        let aileron_actuator_inward = A320AileronFactory::a320_aileron_actuator(&aileron_body);
+        let aileron_actuator_outward = Self::a320_aileron_actuator(&aileron_body);
+        let aileron_actuator_inward = Self::a320_aileron_actuator(&aileron_body);
 
         HydraulicLinearActuatorAssembly::new(
             [aileron_actuator_outward, aileron_actuator_inward],
@@ -344,17 +344,12 @@ impl A320AileronFactory {
     }
 
     fn new_aileron(context: &mut InitContext, id: AileronSide) -> AileronAssembly {
-        let assembly = A320AileronFactory::a320_aileron_assembly();
-        AileronAssembly::new(
-            context,
-            id,
-            assembly,
-            A320AileronFactory::new_a320_aileron_aero_model(),
-        )
+        let assembly = Self::a320_aileron_assembly();
+        AileronAssembly::new(context, id, assembly, Self::new_a320_aileron_aero_model())
     }
 
     fn new_a320_aileron_aero_model() -> AerodynamicModel {
-        let body = A320AileronFactory::a320_aileron_body();
+        let body = Self::a320_aileron_body();
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(0., 1., 0.)),
@@ -3222,24 +3217,23 @@ impl ElacComputer {
         }
     }
 
-    fn update_pressure_hysteresis(&mut self, blue_pressure: Pressure, green_pressure: Pressure) {
-        if blue_pressure.get::<psi>() > Self::PRESSURE_AVAILABLE_HIGH_HYSTERESIS_PSI {
-            self.blue_circuit_available = true;
-        } else if blue_pressure.get::<psi>() < Self::PRESSURE_AVAILABLE_LOW_HYSTERESIS_PSI {
-            self.blue_circuit_available = false;
-        }
-
-        if green_pressure.get::<psi>() > Self::PRESSURE_AVAILABLE_HIGH_HYSTERESIS_PSI {
-            self.green_circuit_available = true;
-        } else if green_pressure.get::<psi>() < Self::PRESSURE_AVAILABLE_LOW_HYSTERESIS_PSI {
-            self.green_circuit_available = false;
+    fn circuit_is_available(pressure: Pressure, current_availability: bool) -> bool {
+        if pressure.get::<psi>() > Self::PRESSURE_AVAILABLE_HIGH_HYSTERESIS_PSI {
+            true
+        } else if pressure.get::<psi>() < Self::PRESSURE_AVAILABLE_LOW_HYSTERESIS_PSI {
+            false
+        } else {
+            current_availability
         }
     }
 
     fn update(&mut self, blue_pressure: Pressure, green_pressure: Pressure) {
         self.update_aileron_requested_position();
 
-        self.update_pressure_hysteresis(blue_pressure, green_pressure);
+        self.blue_circuit_available =
+            Self::circuit_is_available(blue_pressure, self.blue_circuit_available);
+        self.green_circuit_available =
+            Self::circuit_is_available(green_pressure, self.green_circuit_available);
 
         self.update_aileron();
     }

@@ -93,7 +93,7 @@ impl LocalAcceleration {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 pub struct Velocity3D {
     velocity: [Velocity; 3],
 }
@@ -130,6 +130,13 @@ impl Velocity3D {
             self.vert_velocity().get::<meter_per_second>(),
             self.long_velocity().get::<meter_per_second>(),
         )
+    }
+}
+impl Default for Velocity3D {
+    fn default() -> Self {
+        Self {
+            velocity: [Velocity::default(); 3],
+        }
     }
 }
 
@@ -551,5 +558,303 @@ impl From<Delta> for f64 {
 impl From<Delta> for Time {
     fn from(value: Delta) -> Self {
         Time::new::<second>(value.into())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::simulation::test::{SimulationTestBed, TestBed, WriteByName};
+    use crate::simulation::SimulationElement;
+    use ntest::assert_about_eq;
+
+    use uom::si::{f64::*, velocity::foot_per_second};
+
+    use super::*;
+
+    #[derive(Default)]
+    struct ElementUnderTest {
+        local_wind: Velocity3D,
+    }
+    impl ElementUnderTest {
+        fn update(&mut self, context: &UpdateContext) {
+            self.local_wind = context.local_relative_wind();
+        }
+
+        fn get_velocity_x(&self) -> Velocity {
+            self.local_wind.lat_velocity()
+        }
+
+        fn get_velocity_y(&self) -> Velocity {
+            self.local_wind.vert_velocity()
+        }
+
+        fn get_velocity_z(&self) -> Velocity {
+            self.local_wind.long_velocity()
+        }
+
+        fn get_velocity_norm(&self) -> Velocity {
+            Velocity::new::<meter_per_second>(self.local_wind.to_ms_vector().norm())
+        }
+    }
+    impl SimulationElement for ElementUnderTest {}
+
+    #[test]
+    fn relative_wind_zero_if_no_wind_and_no_plane_velocity() {
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
+
+        test_bed.write_by_name("VELOCITY BODY X", 0.);
+        test_bed.write_by_name("VELOCITY BODY Y", 0.);
+        test_bed.write_by_name("VELOCITY BODY Z", 0.);
+
+        test_bed.write_by_name("AMBIENT WIND X", 0.);
+        test_bed.write_by_name("AMBIENT WIND Y", 0.);
+        test_bed.write_by_name("AMBIENT WIND Z", 0.);
+
+        test_bed.run();
+
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_norm().get::<meter_per_second>()),
+            0.
+        );
+    }
+
+    #[test]
+    fn relative_wind_z_negative_if_no_wind_and_plane_going_straight_north() {
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
+
+        let plane_velocity = Velocity::new::<foot_per_second>(100.);
+
+        test_bed.write_by_name("PLANE HEADING DEGREES TRUE", 0.);
+
+        test_bed.write_by_name("VELOCITY BODY X", 0.);
+        test_bed.write_by_name("VELOCITY BODY Y", 0.);
+        test_bed.write_by_name("VELOCITY BODY Z", plane_velocity.get::<foot_per_second>());
+
+        test_bed.write_by_name("AMBIENT WIND X", 0.);
+        test_bed.write_by_name("AMBIENT WIND Y", 0.);
+        test_bed.write_by_name("AMBIENT WIND Z", 0.);
+
+        test_bed.run();
+
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
+            0.
+        );
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()),
+            0.
+        );
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()),
+            -plane_velocity.get::<meter_per_second>()
+        );
+    }
+
+    #[test]
+    fn relative_wind_z_negative_if_no_wind_and_plane_going_straight_south() {
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
+
+        let plane_velocity = Velocity::new::<foot_per_second>(100.);
+
+        test_bed.write_by_name("PLANE HEADING DEGREES TRUE", 0.);
+
+        test_bed.write_by_name("VELOCITY BODY X", 0.);
+        test_bed.write_by_name("VELOCITY BODY Y", 0.);
+        test_bed.write_by_name("VELOCITY BODY Z", plane_velocity.get::<foot_per_second>());
+
+        test_bed.write_by_name("AMBIENT WIND X", 0.);
+        test_bed.write_by_name("AMBIENT WIND Y", 0.);
+        test_bed.write_by_name("AMBIENT WIND Z", 0.);
+
+        test_bed.run();
+
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
+            0.
+        );
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()),
+            0.
+        );
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()),
+            -plane_velocity.get::<meter_per_second>()
+        );
+    }
+
+    #[test]
+    fn relative_wind_z_negative_if_wind_from_north_and_plane_oriented_north() {
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
+
+        let wind_velocity = Velocity::new::<foot_per_second>(100.);
+
+        test_bed.write_by_name("PLANE HEADING DEGREES TRUE", 0.);
+
+        test_bed.write_by_name("VELOCITY BODY X", 0.);
+        test_bed.write_by_name("VELOCITY BODY Y", 0.);
+        test_bed.write_by_name("VELOCITY BODY Z", 0.);
+
+        test_bed.write_by_name("AMBIENT WIND X", 0.);
+        test_bed.write_by_name("AMBIENT WIND Y", 0.);
+        test_bed.write_by_name("AMBIENT WIND Z", -wind_velocity.get::<meter_per_second>());
+
+        test_bed.run();
+
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
+            0.
+        );
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()),
+            0.
+        );
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()),
+            -wind_velocity.get::<meter_per_second>()
+        );
+    }
+
+    #[test]
+    fn relative_wind_z_positive_if_wind_from_north_and_plane_oriented_south() {
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
+
+        let wind_velocity = Velocity::new::<foot_per_second>(100.);
+
+        test_bed.write_by_name("PLANE HEADING DEGREES TRUE", 180.);
+
+        test_bed.write_by_name("VELOCITY BODY X", 0.);
+        test_bed.write_by_name("VELOCITY BODY Y", 0.);
+        test_bed.write_by_name("VELOCITY BODY Z", 0.);
+
+        test_bed.write_by_name("AMBIENT WIND X", 0.);
+        test_bed.write_by_name("AMBIENT WIND Y", 0.);
+        test_bed.write_by_name("AMBIENT WIND Z", -wind_velocity.get::<meter_per_second>());
+
+        test_bed.run();
+
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
+            0.
+        );
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()),
+            0.
+        );
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()),
+            wind_velocity.get::<meter_per_second>()
+        );
+    }
+
+    #[test]
+    fn relative_wind_x_positive_if_wind_from_north_and_plane_oriented_east() {
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
+
+        let wind_velocity = Velocity::new::<foot_per_second>(100.);
+
+        test_bed.write_by_name("PLANE HEADING DEGREES TRUE", 90.);
+
+        test_bed.write_by_name("VELOCITY BODY X", 0.);
+        test_bed.write_by_name("VELOCITY BODY Y", 0.);
+        test_bed.write_by_name("VELOCITY BODY Z", 0.);
+
+        test_bed.write_by_name("AMBIENT WIND X", 0.);
+        test_bed.write_by_name("AMBIENT WIND Y", 0.);
+        test_bed.write_by_name("AMBIENT WIND Z", -wind_velocity.get::<meter_per_second>());
+
+        test_bed.run();
+
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
+            wind_velocity.get::<meter_per_second>()
+        );
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()),
+            0.
+        );
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()),
+            0.
+        );
+    }
+
+    #[test]
+    fn relative_wind_y_positive_if_wind_from_north_and_plane_oriented_east_and_banking_right() {
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
+
+        let wind_velocity = Velocity::new::<foot_per_second>(100.);
+
+        test_bed.write_by_name("PLANE HEADING DEGREES TRUE", 90.);
+        // MSFS bank right is negative angle
+        test_bed.write_by_name("PLANE BANK DEGREES", -45.);
+
+        test_bed.write_by_name("VELOCITY BODY X", 0.);
+        test_bed.write_by_name("VELOCITY BODY Y", 0.);
+        test_bed.write_by_name("VELOCITY BODY Z", 0.);
+
+        test_bed.write_by_name("AMBIENT WIND X", 0.);
+        test_bed.write_by_name("AMBIENT WIND Y", 0.);
+        test_bed.write_by_name("AMBIENT WIND Z", -wind_velocity.get::<meter_per_second>());
+
+        test_bed.run();
+
+        assert!(test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()) > 0.);
+        assert!(test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()) > 0.);
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()),
+            0.
+        );
+    }
+
+    #[test]
+    fn relative_wind_y_negative_if_wind_from_north_and_plane_oriented_north_pitching_down() {
+        let mut test_bed = SimulationTestBed::from(ElementUnderTest::default())
+            .with_update_before_power_distribution(|el, context, _| {
+                el.update(context);
+            });
+
+        let wind_velocity = Velocity::new::<foot_per_second>(100.);
+
+        test_bed.write_by_name("PLANE HEADING DEGREES TRUE", 0.);
+        // MSFS pitch up is negative angle
+        test_bed.write_by_name("PLANE PITCH DEGREES", 45.);
+
+        test_bed.write_by_name("VELOCITY BODY X", 0.);
+        test_bed.write_by_name("VELOCITY BODY Y", 0.);
+        test_bed.write_by_name("VELOCITY BODY Z", 0.);
+
+        test_bed.write_by_name("AMBIENT WIND X", 0.);
+        test_bed.write_by_name("AMBIENT WIND Y", 0.);
+        test_bed.write_by_name("AMBIENT WIND Z", -wind_velocity.get::<meter_per_second>());
+
+        test_bed.run();
+
+        assert_about_eq!(
+            test_bed.query_element(|e| e.get_velocity_x().get::<meter_per_second>()),
+            0.
+        );
+        assert!(test_bed.query_element(|e| e.get_velocity_y().get::<meter_per_second>()) < 0.);
+        assert!(test_bed.query_element(|e| e.get_velocity_z().get::<meter_per_second>()) < 0.);
     }
 }
