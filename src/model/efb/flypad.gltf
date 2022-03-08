@@ -692,12 +692,12 @@
         }
     ],
     "nodes": [
-        { "mesh": 0, "name": "EFB_GLASS" },
-        { "mesh": 1, "name": "PUSH_EFB_SIDE" },
-        { "mesh": 2, "name": "PUSH_EFB_UPPER" },
-        { "mesh": 3, "name": "PUSH_EFB_VOLUME_DOWN" },
-        { "mesh": 4, "name": "PUSH_EFB_VOLUME_UP" },
-        { "mesh": 5, "name": "SCREEN_EFB" },
+        { "mesh": 0, "name": "EFB_GLASS_L" },
+        { "mesh": 1, "name": "PUSH_EFB_SIDE_L" },
+        { "mesh": 2, "name": "PUSH_EFB_UPPER_L" },
+        { "mesh": 3, "name": "PUSH_EFB_VOLUME_DOWN_L" },
+        { "mesh": 4, "name": "PUSH_EFB_VOLUME_UP_L" },
+        { "mesh": 5, "name": "SCREEN_EFB_L" },
         {
             "translation": [
                 1.0275403261184693,
@@ -711,12 +711,25 @@
                 0.5155572891235352
             ],
             "mesh": 6,
-            "name": "EFB",
+            "name": "EFB_L",
             "children": [0, 1, 2, 3, 4, 5]
+        },
+        { "mesh": 0, "name": "EFB_GLASS_R" },
+        { "mesh": 1, "name": "PUSH_EFB_SIDE_R" },
+        { "mesh": 2, "name": "PUSH_EFB_UPPER_R" },
+        { "mesh": 3, "name": "PUSH_EFB_VOLUME_DOWN_R" },
+        { "mesh": 4, "name": "PUSH_EFB_VOLUME_UP_R" },
+        { "mesh": 5, "name": "SCREEN_EFB_R" },
+        {
+        "translation": [-1.0278, 1.78712, 11.3004],
+        "rotation": [0.365031, -0.327998, -0.514771, 0.70298],
+        "mesh": 6,
+        "name": "EFB_R",
+        "children": [7, 8, 9, 10, 11, 12]
         }
     ],
     "scene": 0,
-    "scenes": [{ "nodes": [6], "name": "Scene" }],
+    "scenes": [{ "nodes": [6, 13], "name": "Scene" }],
     "textures": [
         { "extensions": { "MSFT_texture_dds": { "source": 0 } } },
         { "extensions": { "MSFT_texture_dds": { "source": 1 } } },

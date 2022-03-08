@@ -121,7 +121,7 @@ impl A320HydraulicReservoirFactory {
     }
 }
 
-struct A320HydraulicCircuitFactory {}
+pub struct A320HydraulicCircuitFactory {}
 impl A320HydraulicCircuitFactory {
     const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 1740.0;
     const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2200.0;
@@ -132,7 +132,7 @@ impl A320HydraulicCircuitFactory {
     const YELLOW_ENGINE_PUMP_INDEX: usize = 0;
     const BLUE_ELECTRIC_PUMP_INDEX: usize = 0;
 
-    fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
+    pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
             context,
@@ -150,7 +150,7 @@ impl A320HydraulicCircuitFactory {
         )
     }
 
-    fn new_blue_circuit(context: &mut InitContext) -> HydraulicCircuit {
+    pub fn new_blue_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_blue_reservoir(context);
         HydraulicCircuit::new(
             context,
@@ -168,7 +168,7 @@ impl A320HydraulicCircuitFactory {
         )
     }
 
-    fn new_yellow_circuit(context: &mut InitContext) -> HydraulicCircuit {
+    pub fn new_yellow_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(context);
         HydraulicCircuit::new(
             context,
