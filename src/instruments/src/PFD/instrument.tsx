@@ -1,5 +1,5 @@
 import { Clock, FSComponent, EventBus, HEventPublisher } from 'msfssdk';
-import { PFDComponent } from './components';
+import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';

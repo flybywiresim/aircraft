@@ -1,5 +1,5 @@
 import { EventBus, SimVarValueType } from 'msfssdk';
-import { getDisplayIndex } from 'PFDV2/pfd/components';
+import { getDisplayIndex } from '../PFD';
 import { PFDSimvarPublisher, PFDSimvars } from './PFDSimvarPublisher';
 
 export class AdirsValueProvider {

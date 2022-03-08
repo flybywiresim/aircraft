@@ -1,5 +1,5 @@
 import { EventBus, Publisher } from 'msfssdk';
-import { getDisplayIndex } from 'PFDV2/pfd/components';
+import { getDisplayIndex } from 'instruments/src/PFD/PFD';
 import { Arinc429Word } from '@shared/arinc429';
 import { PFDSimvars } from './PFDSimvarPublisher';
 

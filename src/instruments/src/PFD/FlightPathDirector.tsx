@@ -1,10 +1,10 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, VNode } from 'msfssdk';
-import { getDisplayIndex } from 'PFDV2/pfd/components';
-import { calculateHorizonOffsetFromPitch } from 'PFDV2/pfd/components/PFDUtils';
+import { getDisplayIndex } from './PFD';
+import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Word } from '@shared/arinc429';
-import { Arinc429Values } from 'PFDV2/pfd/shared/ArincValueProvider';
-import { PFDSimvars } from 'PFDV2/pfd/shared/PFDSimvarPublisher';
-import { getSmallestAngle } from 'PFDV2/pfd/shared/utils';
+import { Arinc429Values } from './shared/ArincValueProvider';
+import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { getSmallestAngle } from './shared/utils';
 
 const DistanceSpacing = 15;
 const ValueSpacing = 10;

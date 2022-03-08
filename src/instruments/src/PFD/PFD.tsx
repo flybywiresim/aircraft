@@ -1,16 +1,16 @@
 import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
-import { LagFilter } from 'PFDV2/pfd/components/PFDUtils';
+import { LagFilter } from './PFDUtils';
 import { Arinc429Word } from '@shared/arinc429';
-import { Arinc429Values } from '../shared/ArincValueProvider';
-import { DisplayUnit } from '../shared/displayUnit';
-import '../style.scss';
+import { Arinc429Values } from './shared/ArincValueProvider';
+import { DisplayUnit } from './shared/displayUnit';
+import './style.scss';
 import { AltitudeIndicator, AltitudeIndicatorOfftape } from './AltitudeIndicator';
 import { AttitudeIndicatorFixedCenter, AttitudeIndicatorFixedUpper } from './AttitudeIndicatorFixed';
 import { FMA } from './FMA';
 import { HeadingOfftape, HeadingTape } from './HeadingIndicator';
-import { Horizon } from './horizon';
+import { Horizon } from './AttitudeIndicatorHorizon';
 import { LandingSystem } from './LandingSystemIndicator';
 import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './SpeedIndicator';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';

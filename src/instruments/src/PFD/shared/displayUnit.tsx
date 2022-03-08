@@ -4,7 +4,7 @@ import './common.scss';
 
 import { NXDataStore } from '@shared/persistence';
 import { PFDSimvars } from './PFDSimvarPublisher';
-import { getDisplayIndex } from '../components';
+import { getDisplayIndex } from '../PFD';
 
 type DisplayUnitProps = {
     bus: EventBus,

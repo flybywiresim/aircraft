@@ -1,5 +1,5 @@
 import { EventBus, DisplayComponent, FSComponent, NodeReference, VNode, Subscribable } from 'msfssdk';
-import { Arinc429Values } from '../shared/ArincValueProvider';
+import { Arinc429Values } from './shared/ArincValueProvider';
 
 interface HorizontalTapeProps {
     displayRange: number;
