@@ -126,6 +126,7 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
             return;
         }
         dispatch(setProvider(ChartProvider.LOCAL_FILES));
+
         dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, currentPage: 1 }));
         dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartId: chart.fileName }));
     };
