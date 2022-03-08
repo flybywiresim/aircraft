@@ -179,6 +179,7 @@
 1. [FLIGHTMODEL] Additional flight model improvements to better match real airplane performance data - @donstim (donbikes#4084)
 1. [FMGC] Re-implement altitude and speed constraints - @tracernz (Mike)
 1. [HYD] Smoothed nose wheel steering when pushing back - @Crocket63
+1. [MISC] Fix Home Cockpit mode to honor backlight bleed configuration in PFD/ND test mode - @ssewell (Shane Sewell)
 
 ## 0.7.0
 
