@@ -1,8 +1,8 @@
 import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from 'msfssdk';
-import { LagFilter } from './PFDUtils';
 import { Arinc429Word } from '@shared/arinc429';
+import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { DisplayUnit } from './shared/displayUnit';
 import './style.scss';

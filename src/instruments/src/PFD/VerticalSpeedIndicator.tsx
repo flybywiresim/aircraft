@@ -1,6 +1,6 @@
 import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
-import { Arinc429Values } from './shared/ArincValueProvider';
 import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
 

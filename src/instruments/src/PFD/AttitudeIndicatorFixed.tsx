@@ -1,8 +1,8 @@
 import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
-import { FlightPathDirector } from './FlightPathDirector';
-import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Word } from '@shared/arinc429';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { FlightPathDirector } from './FlightPathDirector';
+import { FlightPathVector } from './FlightPathVector';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 
@@ -99,7 +99,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             } else {
                 this.visibilitySub.set('visible');
                 this.failureVis.set('display:none');
-                if(!this.props.isAttExcessive.get()) {
+                if (!this.props.isAttExcessive.get()) {
                     this.fdVisibilitySub.set('display:inline');
                 }
             }
@@ -115,7 +115,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             } else {
                 this.visibilitySub.set('visible');
                 this.failureVis.set('display:none');
-                if(!this.props.isAttExcessive.get()) {
+                if (!this.props.isAttExcessive.get()) {
                     this.fdVisibilitySub.set('display:inline');
                 }
             }
@@ -123,7 +123,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
         this.props.isAttExcessive.sub((a) => {
             if (a) {
-               this.fdVisibilitySub.set('display:none');
+                this.fdVisibilitySub.set('display:none');
             } else if (this.roll.isNormalOperation() && this.pitch.isNormalOperation()) {
                 this.fdVisibilitySub.set('display:inline');
             }

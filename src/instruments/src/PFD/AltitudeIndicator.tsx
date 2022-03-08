@@ -271,7 +271,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
     private handleAltManagedChange() {
         // TODO find proper logic for this (what happens when a constraint is sent by the fms but vertical mode is not managed)
-        const clbActive = this.activeVerticalMode !== VerticalMode.OP_CLB && this.activeVerticalMode !== VerticalMode.OP_DES && this.activeVerticalMode !== VerticalMode.VS ;
+        const clbActive = this.activeVerticalMode !== VerticalMode.OP_CLB && this.activeVerticalMode !== VerticalMode.OP_DES && this.activeVerticalMode !== VerticalMode.VS;
         const gsActive = this.activeVerticalMode === VerticalMode.GS_TRACK || this.activeVerticalMode === VerticalMode.GS_CPT;
         const landingModesActive = this.activeVerticalMode === VerticalMode.LAND || this.activeVerticalMode === VerticalMode.FLARE;
         const finalAppArmed = this.activeVerticalMode === VerticalMode.FINAL;
