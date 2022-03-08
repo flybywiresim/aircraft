@@ -90,34 +90,40 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
 
         const sub = this.props.bus.getSubscriber<Arinc429Values>();
 
-        sub.on('rollAr').whenChanged().handle((r) => {
+        sub.on('rollAr').handle((r) => {
             this.roll = r;
             if (!this.roll.isNormalOperation()) {
                 this.visibilitySub.set('hidden');
                 this.failureVis.set('display:block');
+                this.fdVisibilitySub.set('display:none');
             } else {
                 this.visibilitySub.set('visible');
                 this.failureVis.set('display:none');
-                this.fdVisibilitySub.set('display:none');
+                if(!this.props.isAttExcessive.get()) {
+                    this.fdVisibilitySub.set('display:inline');
+                }
             }
         });
 
-        sub.on('pitchAr').whenChanged().handle((p) => {
+        sub.on('pitchAr').handle((p) => {
             this.pitch = p;
 
             if (!this.pitch.isNormalOperation()) {
                 this.visibilitySub.set('hidden');
                 this.failureVis.set('display:block');
+                this.fdVisibilitySub.set('display:none');
             } else {
                 this.visibilitySub.set('visible');
                 this.failureVis.set('display:none');
-                this.fdVisibilitySub.set('display:none');
+                if(!this.props.isAttExcessive.get()) {
+                    this.fdVisibilitySub.set('display:inline');
+                }
             }
         });
 
         this.props.isAttExcessive.sub((a) => {
             if (a) {
-                this.fdVisibilitySub.set('display:none');
+               this.fdVisibilitySub.set('display:none');
             } else if (this.roll.isNormalOperation() && this.pitch.isNormalOperation()) {
                 this.fdVisibilitySub.set('display:inline');
             }
@@ -366,7 +372,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
             }
         });
 
-        sub.on('fdBank').handle((fd) => {
+        sub.on('fdBank').withPrecision(2).handle((fd) => {
             this.fdBank = fd;
 
             if (this.isActive()) {
@@ -376,7 +382,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
                 this.fdRef.instance.style.display = 'none';
             }
         });
-        sub.on('fdPitch').handle((fd) => {
+        sub.on('fdPitch').withPrecision(2).handle((fd) => {
             this.fdPitch = fd;
 
             if (this.isActive()) {
