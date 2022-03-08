@@ -303,9 +303,8 @@ export const ChartComponent = () => {
                                     type="button"
                                     onClick={() => {
                                         if (ref.current && chartRef.current) {
-                                            const newScale = ref.current.clientHeight / chartRef.current.clientHeight;
-                                            const chartWidthExceedsBoundary = chartRef.current.clientWidth > ref.current.clientWidth;
-                                            const offsetX = chartWidthExceedsBoundary ? 0 : (ref.current.clientWidth - (chartRef.current.clientWidth * newScale)) / 2;
+                                            const newScale = ref.current?.clientHeight / chartRef.current?.clientHeight;
+                                            const offsetX = (ref.current?.clientWidth - (chartRef.current?.clientWidth * newScale)) / 2;
 
                                             setTransform(offsetX, 0, newScale);
                                             dispatch(editTabProperty({
@@ -326,9 +325,8 @@ export const ChartComponent = () => {
                                     type="button"
                                     onClick={() => {
                                         if (ref.current && chartRef.current) {
-                                            const newScale = ref.current.clientWidth / chartRef.current.clientWidth;
-                                            const chartHeightExceedsBoundary = chartRef.current.clientHeight > ref.current.clientHeight;
-                                            const offsetY = chartHeightExceedsBoundary ? 0 : (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
+                                            const newScale = ref.current?.clientWidth / chartRef.current?.clientWidth;
+                                            const offsetY = (ref.current?.clientHeight - (chartRef.current?.clientHeight * newScale)) / 2;
 
                                             setTransform(0, offsetY, newScale);
                                             dispatch(editTabProperty({
@@ -376,29 +374,17 @@ export const ChartComponent = () => {
                                 <div
                                     className="p-2 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                                     onClick={() => {
-                                        // TODO: THIS NEEDS TO WORK BETTER
-                                        dispatch(editTabProperty({ tab: currentTab, isFullScreen: !isFullScreen }));
-
                                         if (chartRef.current && ref.current) {
-                                            const newScale = ref.current.clientWidth / chartRef.current.clientWidth;
+                                            if (chartRef.current.clientWidth === ref.current.clientWidth) {
+                                                const width = isFullScreen ? 804 : 1278;
 
-                                            const chartHeightExceedsBoundary = chartRef.current.clientHeight > ref.current.clientHeight;
+                                                const scale = width / (chartDimensions.width ?? 0);
+                                                const height = (chartDimensions.height ?? 0) * scale;
 
-                                            const offsetY = chartHeightExceedsBoundary ? 0 : (ref.current.clientHeight - (chartRef.current.clientHeight * newScale)) / 2;
-                                            console.log(state.scale, newScale);
-                                            if (state.scale === newScale) {
-                                                console.log('called');
-                                                setTransform(0, offsetY, newScale);
-                                                dispatch(editTabProperty({
-                                                    tab: currentTab,
-                                                    chartPosition: {
-                                                        positionX: 0,
-                                                        positionY: offsetY,
-                                                        scale: newScale,
-                                                    },
-                                                }));
+                                                dispatch(editTabProperty({ tab: currentTab, chartDimensions: { width, height } }));
                                             }
                                         }
+                                        dispatch(editTabProperty({ tab: currentTab, isFullScreen: !isFullScreen }));
                                     }}
                                 >
                                     {isFullScreen
@@ -421,7 +407,7 @@ export const ChartComponent = () => {
                             className="flex overflow-x-hidden overflow-y-scroll relative flex-row mx-auto h-full rounded-lg bg-theme-accent grabbable no-scrollbar"
                             ref={ref}
                         >
-                            <TransformComponent wrapperStyle={{ height: ref.current?.clientHeight, width: ref.current?.clientWidth }}>
+                            <TransformComponent wrapperStyle={{ height: ref.current?.clientHeight }}>
                                 <div
                                     className="relative m-auto transition duration-100"
                                     style={{ transform: `rotate(${chartRotation}deg)` }}
