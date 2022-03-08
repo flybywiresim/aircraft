@@ -1103,6 +1103,22 @@
       0 | inactive
       1 | active
 
+- A32NX_CHRONO_ELAPSED_TIME
+    - Number
+    - Clock instrument CHR display time elapsed
+      Value | Meaning
+      --- | ---
+      0 or greater | Seconds elapsed
+      -1 | Empty value
+
+- A32NX_CHRONO_ET_ELAPSED_TIME
+    - Number
+    - Clock instrument ET display time elapsed
+      Value | Meaning
+      --- | ---
+      0 or greater | Seconds elapsed
+      -1 | Empty value
+
 ## EIS Display System
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE

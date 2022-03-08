@@ -14,8 +14,9 @@ use uom::si::mass_rate::kilogram_per_second;
 use uom::si::{
     acceleration::foot_per_second_squared, angle::degree, angular_velocity::revolution_per_minute,
     electric_current::ampere, electric_potential::volt, f64::*, frequency::hertz, length::foot,
-    mass::pound, pressure::psi, ratio::percent, thermodynamic_temperature::degree_celsius,
-    velocity::knot, volume::gallon, volume_rate::gallon_per_second,
+    mass::pound, mass_density::slug_per_cubic_foot, pressure::psi, ratio::percent,
+    thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
+    volume_rate::gallon_per_second,
 };
 pub use update_context::*;
 
@@ -764,6 +765,7 @@ read_write_uom!(Mass, pound);
 read_write_uom!(MassRate, kilogram_per_second);
 read_write_uom!(Angle, degree);
 read_write_uom!(AngularVelocity, revolution_per_minute);
+read_write_uom!(MassDensity, slug_per_cubic_foot);
 
 read_write_into!(MachNumber);
 read_write_into!(StartState);
