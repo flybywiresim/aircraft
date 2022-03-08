@@ -374,16 +374,16 @@ impl A320ElevatorFactory {
 
     fn a320_elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let randomized_damping = random_from_range(
-            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 30.,
+            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 10.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
         );
 
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.0537878),
+            Length::new::<meter>(0.0407),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.055),
+            VolumeRate::new::<gallon_per_second>(0.029),
             80000.,
             1500.,
             20000.,
@@ -402,8 +402,8 @@ impl A320ElevatorFactory {
         let size = Vector3::new(6., 0.405, 1.125);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
 
-        let control_arm = Vector3::new(0., -0.0525, 0.);
-        let anchor = Vector3::new(0., -0.0525, 0.41);
+        let control_arm = Vector3::new(0., -0.091, 0.);
+        let anchor = Vector3::new(0., -0.091, 0.41);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(58.6),
@@ -497,10 +497,7 @@ impl A320RudderFactory {
         let control_arm = Vector3::new(-0.2, 0., 0.);
         let anchor = Vector3::new(-0.2, 0., 0.40);
 
-        let randomized_init_position_angle_degree = random_from_range(
-            -15.,
-            15.
-        );
+        let randomized_init_position_angle_degree = random_from_range(-15., 15.);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(95.),
@@ -4013,19 +4010,6 @@ impl RudderAssembly {
         );
 
         self.position = self.hydraulic_assembly.position_normalized();
-        // println!(
-        //     "RUDDER HYD POSITION {:.2} Actuators {} {} {}",
-        //     self.position.get::<ratio>(),
-        //     self.hydraulic_assembly
-        //         .actuator_position_normalized(0)
-        //         .get::<ratio>(),
-        //     self.hydraulic_assembly
-        //         .actuator_position_normalized(1)
-        //         .get::<ratio>(),
-        //     self.hydraulic_assembly
-        //         .actuator_position_normalized(2)
-        //         .get::<ratio>(),
-        // );
     }
 }
 impl SimulationElement for RudderAssembly {
@@ -4657,16 +4641,16 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("HYD_AIL_RIGHT_DEFLECTION"))
             }
 
-            fn get_nose_steering_ratio(&mut self) -> Ratio {
-                Ratio::new::<ratio>(self.read_by_name("NOSE_WHEEL_POSITION_RATIO"))
-            }
-
             fn get_left_elevator_position(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("HYD_ELEV_LEFT_DEFLECTION"))
             }
 
             fn get_right_elevator_position(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("HYD_ELEV_RIGHT_DEFLECTION"))
+            }
+
+            fn get_nose_steering_ratio(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("NOSE_WHEEL_POSITION_RATIO"))
             }
 
             fn rat_deploy_commanded(&self) -> bool {
@@ -8341,6 +8325,34 @@ mod tests {
         }
 
         #[test]
+        fn elevators_droop_down_after_pressure_is_off() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_ptu_state(true)
+                .set_yellow_e_pump(false)
+                .run_one_tick();
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_green_pressurised());
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.4);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.4);
+
+            test_bed = test_bed
+                .set_ptu_state(false)
+                .set_yellow_e_pump(true)
+                .run_waiting_for(Duration::from_secs_f64(50.));
+
+            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_green_pressurised());
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.35);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.35);
+        }
+
+        #[test]
         fn nose_wheel_steers_with_pushback_tug() {
             let mut test_bed = test_bed_with()
                 .engines_off()
@@ -8376,33 +8388,6 @@ mod tests {
 
             // Has turned fully left after 5s
             assert!(test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(-0.9));
-        }
-
-        fn elevators_droop_down_after_pressure_is_off() {
-            let mut test_bed = test_bed_with()
-                .engines_off()
-                .on_the_ground()
-                .set_cold_dark_inputs()
-                .set_ptu_state(true)
-                .set_yellow_e_pump(false)
-                .run_one_tick();
-
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
-
-            assert!(test_bed.is_yellow_pressurised());
-            assert!(test_bed.is_green_pressurised());
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.4);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.4);
-
-            test_bed = test_bed
-                .set_ptu_state(false)
-                .set_yellow_e_pump(true)
-                .run_waiting_for(Duration::from_secs_f64(60.));
-
-            assert!(!test_bed.is_yellow_pressurised());
-            assert!(!test_bed.is_green_pressurised());
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.1);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.1);
         }
     }
 }

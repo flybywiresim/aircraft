@@ -2027,6 +2027,46 @@ mod tests {
         }
     }
 
+    #[test]
+    fn elevator_droop_control_is_stable_engaged_at_full_speed() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), elevator_assembly())
+        });
+
+        test_bed.command(|a| a.command_unlock());
+        test_bed.command(|a| {
+            a.set_pressures([Pressure::new::<psi>(3000.), Pressure::new::<psi>(3000.)])
+        });
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.), 1));
+
+        // Run until 0.8 position is reached
+        for _ in 0..20 {
+            test_bed.run_with_delta(Duration::from_secs_f64(0.1));
+            if test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8) {
+                break;
+            }
+        }
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.8));
+
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(1));
+
+        // Capture position at damping engagement
+        let damping_start_position = test_bed.query(|a| a.body_position());
+
+        // Wait for oscillations to settle
+        test_bed.run_with_delta(Duration::from_secs_f64(0.5));
+
+        // Now check position slowly decrease
+        for _ in 0..10 {
+            test_bed.run_with_delta(Duration::from_secs_f64(1.));
+            assert!(test_bed.query(|a| a.body_position()) < damping_start_position);
+        }
+    }
+
     fn cargo_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
@@ -2309,20 +2349,20 @@ mod tests {
     }
 
     fn elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        const DEFAULT_I_GAIN: f64 = 10.;
-        const DEFAULT_P_GAIN: f64 = 5.;
-        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+        const DEFAULT_I_GAIN: f64 = 5.;
+        const DEFAULT_P_GAIN: f64 = 1.;
+        const DEFAULT_FORCE_GAIN: f64 = 450000.;
 
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.04),
+            Length::new::<meter>(0.0407),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.04),
+            VolumeRate::new::<gallon_per_second>(0.029),
             80000.,
             1500.,
-            5000.,
-            800000.,
+            20000.,
+            10000000.,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
@@ -2336,8 +2376,8 @@ mod tests {
         let size = Vector3::new(6., 0.405, 1.125);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
 
-        let control_arm = Vector3::new(0., -0.0525, 0.);
-        let anchor = Vector3::new(0., -0.0525, 0.41);
+        let control_arm = Vector3::new(0., -0.091, 0.);
+        let anchor = Vector3::new(0., -0.091, 0.41);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(58.6),
