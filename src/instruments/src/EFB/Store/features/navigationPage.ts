@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { ReactZoomPanPinchState } from 'react-zoom-pan-pinch';
 import { NavigraphBoundingBox } from '../../ChartsApi/Navigraph';
 import { store, RootState } from '../store';
 import { PinSort } from '../../Navigation/Pages/PinnedChartsPage';
@@ -35,39 +36,28 @@ export type PinnedChart = {
     pageIndex: number;
 }
 
+type ProviderTabInfo = {
+    chartRotation: number;
+    searchQuery: string;
+    selectedTabIndex: number;
+    isFullScreen: boolean;
+    chartDimensions: {
+        width?: number;
+        height?: number;
+    };
+    chartName: ThemedChart;
+    chartId: string;
+    chartLinks: ThemedChart;
+    pagesViewable: number;
+    currentPage: number;
+    chartPosition: {positionX: number, positionY: number, scale: number};
+};
+
 interface InitialChartState {
     selectedNavigationTabIndex: number;
     usingDarkTheme: boolean;
-    [NavigationTab.NAVIGRAPH]: {
-        chartRotation: number;
-        searchQuery: string;
-        selectedTabIndex: number;
-        isFullScreen: boolean;
-        chartDimensions: {
-            width?: number;
-            height?: number;
-        };
-        chartName: ThemedChart;
-        chartId: string;
-        chartLinks: ThemedChart;
-        pagesViewable: number;
-        currentPage: number;
-    };
-    [NavigationTab.LOCAL_FILES]: {
-        chartRotation: number;
-        searchQuery: string;
-        selectedTabIndex: number;
-        isFullScreen: boolean;
-        chartDimensions: {
-            width?: number;
-            height?: number;
-        };
-        chartName: ThemedChart;
-        chartId: string;
-        chartLinks: ThemedChart;
-        pagesViewable: number;
-        currentPage: number;
-    };
+    [NavigationTab.NAVIGRAPH]: ProviderTabInfo;
+    [NavigationTab.LOCAL_FILES]: ProviderTabInfo;
     [NavigationTab.PINNED_CHARTS]: {
         searchQuery: string;
         selectedProviderIndex: number;
@@ -105,6 +95,11 @@ const initialState: InitialChartState = {
         },
         pagesViewable: 1,
         currentPage: 1,
+        chartPosition: {
+            positionX: 0,
+            positionY: 0,
+            scale: 1,
+        },
     },
     [NavigationTab.LOCAL_FILES]: {
         chartRotation: 0,
@@ -126,6 +121,11 @@ const initialState: InitialChartState = {
         },
         pagesViewable: 1,
         currentPage: 1,
+        chartPosition: {
+            positionX: 0,
+            positionY: 0,
+            scale: 1,
+        },
     },
     [NavigationTab.PINNED_CHARTS]: {
         searchQuery: '',
