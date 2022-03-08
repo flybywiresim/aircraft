@@ -395,7 +395,7 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
         }
         SimVar.SetSimVarValue("K:SPEED_SLOT_INDEX_SET", "number", 1);
         this.inSelection = false;
-        this.isSelectedValueActive = false;
+        this.isSelectedValueActive = true;
         this.isTargetManaged = false;
     }
 

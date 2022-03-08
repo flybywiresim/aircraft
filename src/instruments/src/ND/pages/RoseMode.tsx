@@ -637,8 +637,8 @@ const IlsCaptureOverlay: React.FC<{
     _side: EfisSide,
 }> = memo(({ heading, _side }) => {
     const [course] = useSimVar('NAV LOCALIZER:3', 'degrees');
-    const [courseDeviation] = useSimVar('NAV RADIAL ERROR:3', 'degrees', 20);
-    const [available] = useSimVar('NAV HAS LOCALIZER:3', 'number');
+    const [courseDeviation] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_DEVIATION', 'number', 20);
+    const [available] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number');
     const [cdiPx, setCdiPx] = useState(12);
 
     useEffect(() => {
@@ -823,7 +823,7 @@ const IlsInfo: FC = memo(() => {
     const [ilsFrequency] = useSimVar('NAV ACTIVE FREQUENCY:3', 'megahertz');
     const [ilsCourse] = useSimVar('NAV LOCALIZER:3', 'degrees');
     const [tuningMode] = useSimVar('L:A32NX_FMGC_RADIONAV_3_TUNING_MODE', 'enum');
-    const [locAvailable] = useSimVar('NAV HAS LOCALIZER:3', 'boolean');
+    const [locAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number');
 
     const [freqInt, freqDecimal] = ilsFrequency.toFixed(2).split('.', 2);
 
@@ -857,8 +857,8 @@ const IlsInfo: FC = memo(() => {
 
 const GlideSlope: FC = () => {
     // TODO need some photo refs for this
-    const [gsDeviation] = useSimVar('NAV GLIDE SLOPE ERROR:3', 'degrees');
-    const [gsAvailable] = useSimVar('NAV HAS GLIDE SLOPE:3', 'number');
+    const [gsDeviation] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_DEVIATION', 'number');
+    const [gsAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number');
 
     const deviationPx = gsDeviation / 0.8 * 128;
 

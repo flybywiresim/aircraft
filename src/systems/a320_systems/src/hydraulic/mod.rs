@@ -3,7 +3,7 @@ use nalgebra::Vector3;
 use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angle::degree,
+    angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
@@ -42,7 +42,9 @@ use systems::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
-        interpolation, random_from_range,
+        interpolation,
+        low_pass_filter::LowPassFilter,
+        random_from_range,
         update_iterator::{FixedStepLoop, MaxStepLoop},
         DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
@@ -119,7 +121,7 @@ impl A320HydraulicReservoirFactory {
     }
 }
 
-struct A320HydraulicCircuitFactory {}
+pub struct A320HydraulicCircuitFactory {}
 impl A320HydraulicCircuitFactory {
     const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 1740.0;
     const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2200.0;
@@ -130,7 +132,7 @@ impl A320HydraulicCircuitFactory {
     const YELLOW_ENGINE_PUMP_INDEX: usize = 0;
     const BLUE_ELECTRIC_PUMP_INDEX: usize = 0;
 
-    fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
+    pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
             context,
@@ -148,7 +150,7 @@ impl A320HydraulicCircuitFactory {
         )
     }
 
-    fn new_blue_circuit(context: &mut InitContext) -> HydraulicCircuit {
+    pub fn new_blue_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_blue_reservoir(context);
         HydraulicCircuit::new(
             context,
@@ -166,7 +168,7 @@ impl A320HydraulicCircuitFactory {
         )
     }
 
-    fn new_yellow_circuit(context: &mut InitContext) -> HydraulicCircuit {
+    pub fn new_yellow_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(context);
         HydraulicCircuit::new(
             context,
@@ -2558,7 +2560,8 @@ struct PushbackTug {
     state_id: VariableIdentifier,
     steer_angle_id: VariableIdentifier,
 
-    steering_angle: Angle,
+    steering_angle_raw: Angle,
+    steering_angle: LowPassFilter<Angle>,
 
     // Type of pushback:
     // 0 = Straight
@@ -2575,13 +2578,16 @@ impl PushbackTug {
 
     const STATE_NO_PUSHBACK: f64 = 3.;
 
+    const STEERING_ANGLE_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             nw_strg_disc_memo_id: context.get_identifier("HYD_NW_STRG_DISC_ECAM_MEMO".to_owned()),
             state_id: context.get_identifier("PUSHBACK STATE".to_owned()),
             steer_angle_id: context.get_identifier("PUSHBACK ANGLE".to_owned()),
 
-            steering_angle: Angle::new::<degree>(0.),
+            steering_angle_raw: Angle::default(),
+            steering_angle: LowPassFilter::new(Self::STEERING_ANGLE_FILTER_TIME_CONSTANT),
 
             state: Self::STATE_NO_PUSHBACK,
             nose_wheel_steering_pin_inserted: DelayedFalseLogicGate::new(
@@ -2593,6 +2599,13 @@ impl PushbackTug {
     fn update(&mut self, context: &UpdateContext) {
         self.nose_wheel_steering_pin_inserted
             .update(context, self.is_pushing());
+
+        if self.is_pushing() {
+            self.steering_angle
+                .update(context.delta(), self.steering_angle_raw);
+        } else {
+            self.steering_angle.reset(Angle::default());
+        }
     }
 
     fn is_pushing(&self) -> bool {
@@ -2605,14 +2618,14 @@ impl Pushback for PushbackTug {
     }
 
     fn steering_angle(&self) -> Angle {
-        self.steering_angle
+        self.steering_angle.output()
     }
 }
 impl SimulationElement for PushbackTug {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.state = reader.read(&self.state_id);
 
-        self.steering_angle = reader.read(&self.steer_angle_id);
+        self.steering_angle_raw = Angle::new::<radian>(reader.read(&self.steer_angle_id));
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -3870,6 +3883,10 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("HYD_AIL_RIGHT_DEFLECTION"))
             }
 
+            fn get_nose_steering_ratio(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("NOSE_WHEEL_POSITION_RATIO"))
+            }
+
             fn rat_deploy_commanded(&self) -> bool {
                 self.query(|a| a.is_rat_commanded_to_deploy())
             }
@@ -3993,6 +4010,11 @@ mod tests {
                 } else {
                     self.write_by_name("PUSHBACK STATE", 3.);
                 }
+                self
+            }
+
+            fn set_pushback_angle(mut self, angle: Angle) -> Self {
+                self.write_by_name("PUSHBACK ANGLE", angle.get::<radian>());
                 self
             }
 
@@ -7055,9 +7077,9 @@ mod tests {
 
             let current_position_unlocked = test_bed.cargo_fwd_door_position();
 
-            test_bed = test_bed
-                .open_fwd_cargo_door()
-                .run_waiting_for(A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL);
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(1),
+            );
 
             assert!(test_bed.cargo_fwd_door_position() > current_position_unlocked);
 
@@ -7528,6 +7550,44 @@ mod tests {
             assert!(!test_bed.is_green_pressurised());
             assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
             assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
+        }
+
+        #[test]
+        fn nose_wheel_steers_with_pushback_tug() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_pushback_state(true)
+                .set_pushback_angle(Angle::new::<degree>(80.))
+                .run_waiting_for(Duration::from_secs_f64(0.5));
+
+            // Do not turn instantly in 0.5s
+            assert!(
+                test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.)
+                    && test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(0.5)
+            );
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+
+            // Has turned fully after 5s
+            assert!(test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.9));
+
+            // Going left
+            test_bed = test_bed
+                .set_pushback_state(true)
+                .set_pushback_angle(Angle::new::<degree>(-80.))
+                .run_waiting_for(Duration::from_secs_f64(0.5));
+
+            assert!(test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.2));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+
+            // Has turned fully left after 5s
+            assert!(test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(-0.9));
         }
     }
 }

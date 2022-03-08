@@ -23,6 +23,15 @@ var A320_Neo_LowerECAM_Status;
             return SimVar.GetSimVarValue("L:A32NX_ECAM_INOP_SYS_" + _system, "Bool");
         }
 
+        isRadioAltimeterInop(number) {
+            const height = new Arinc429Word(SimVar.GetSimVarValue(`L:A32NX_RA_${number}_RADIO_ALTITUDE`, 'feet'));
+            return height.isFailureWarning();
+        }
+
+        isTcasInop() {
+            return SimVar.GetSimVarValue('L:A32NX_TCAS_FAULT', 'bool');
+        }
+
         constructor() {
             super();
             this.isInitialised = false;
@@ -172,9 +181,21 @@ var A320_Neo_LowerECAM_Status;
                         }
                     },
                     {
+                        message: "RA 1",
+                        isActive: () => {
+                            return this.isRadioAltimeterInop(1) && !this.isRadioAltimeterInop(2);
+                        }
+                    },
+                    {
+                        message: "RA 2",
+                        isActive: () => {
+                            return this.isRadioAltimeterInop(2) && !this.isRadioAltimeterInop(1);
+                        }
+                    },
+                    {
                         message: "RA 1+2",
                         isActive: () => {
-                            return this.isInop("RA_1") && this.isInop("RA_2");
+                            return this.isRadioAltimeterInop(1) && this.isRadioAltimeterInop(2);
                         }
                     },
                     {
@@ -186,7 +207,9 @@ var A320_Neo_LowerECAM_Status;
                     {
                         message: "A/CALL OUT",
                         isActive: () => {
-                            return this.isInop("ACALL_OUT");
+                            return this.isInop("ACALL_OUT") || (
+                                this.isRadioAltimeterInop(1) && this.isRadioAltimeterInop(2)
+                            );
                         }
                     },
                     {
@@ -308,9 +331,15 @@ var A320_Neo_LowerECAM_Status;
                         }
                     },
                     {
+                        message: "GPWS",
+                        isActive: () => {
+                            return this.isRadioAltimeterInop(1) && this.isRadioAltimeterInop(2);
+                        }
+                    },
+                    {
                         message: "TCAS",
                         isActive: () => {
-                            return this.isInop("TCAS");
+                            return this.isTcasInop();
                         }
                     },
                     {

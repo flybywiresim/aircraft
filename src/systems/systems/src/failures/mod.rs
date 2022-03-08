@@ -7,6 +7,7 @@ pub enum FailureType {
     ReservoirLeak(HydraulicColor),
     ReservoirAirLeak(HydraulicColor),
     ReservoirReturnLeak(HydraulicColor),
+    RadioAltimeter(usize),
 }
 
 pub struct Failure {
