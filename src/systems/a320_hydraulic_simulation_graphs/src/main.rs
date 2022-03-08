@@ -7,15 +7,26 @@ use std::time::Duration;
 pub use systems::hydraulic::*;
 
 use systems::{
-    electrical::Electricity,
-    shared::{ElectricalBusType, HydraulicColor, MachNumber},
-    simulation::{test::TestVariableRegistry, InitContext, UpdateContext},
+    electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
+    shared::{
+        update_iterator::FixedStepLoop, ElectricalBusType, HydraulicColor, PotentialOrigin,
+        ReservoirAirPressure,
+    },
+    simulation::{
+        test::{SimulationTestBed, TestBed},
+        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
+    },
 };
 use uom::si::{
-    acceleration::foot_per_second_squared, angle::radian, angular_velocity::revolution_per_minute,
-    electric_current::ampere, f64::*, length::foot, pressure::psi, ratio::percent,
-    thermodynamic_temperature::degree_celsius, velocity::knot, volume::gallon,
+    angular_velocity::revolution_per_minute,
+    electric_current::ampere,
+    electric_potential::volt,
+    f64::*,
+    pressure::psi,
+    volume::{cubic_inch, gallon},
 };
+
+use a320_systems::hydraulic::A320HydraulicCircuitFactory;
 
 use rustplotlib::Figure;
 
@@ -31,7 +42,8 @@ impl TestHydraulicCircuitController {
 }
 impl HydraulicCircuitController for TestHydraulicCircuitController {
     fn should_open_fire_shutoff_valve(&self, pump_index: usize) -> bool {
-        self.should_open_fire_shutoff_valve[pump_index]
+        // Pump index is one based, so we do - 1
+        self.should_open_fire_shutoff_valve[pump_index - 1]
     }
 }
 
@@ -39,19 +51,19 @@ struct TestPumpController {
     should_pressurise: bool,
 }
 impl TestPumpController {
-    fn _commanding_pressurise() -> Self {
+    fn commanding_pressurise() -> Self {
         Self {
             should_pressurise: true,
         }
     }
 
-    fn commanding_depressurise() -> Self {
+    fn _commanding_depressurise() -> Self {
         Self {
             should_pressurise: false,
         }
     }
 
-    fn command_pressurise(&mut self) {
+    fn _command_pressurise(&mut self) {
         self.should_pressurise = true;
     }
 
@@ -95,7 +107,7 @@ fn main() {
     println!("Launching hyd simulation...");
     let path = "./src/systems/a320_hydraulic_simulation_graphs/";
 
-    hyd_circuit_basic(path);
+    blue_circuit_epump(path);
 }
 
 fn make_figure(h: &History) -> Figure {
@@ -212,10 +224,13 @@ impl History {
     }
 }
 
-fn hyd_circuit_basic(path: &str) {
+fn blue_circuit_epump(path: &str) {
+    let epump_names = vec!["Pump rpm".to_string(), "Pump displacement".to_string()];
+
     let hyd_circuit_names = vec![
         "Pump section Pressure".to_string(),
         "System section Pressure".to_string(),
+        "Sections delta Pressure".to_string(),
         "Pump section switch".to_string(),
         "System section switch".to_string(),
         "Accumulator fluid vol".to_string(),
@@ -229,166 +244,106 @@ fn hyd_circuit_basic(path: &str) {
 
     let mut hyd_circuit_history = History::new(hyd_circuit_names);
     let mut reservoir_history = History::new(reservoir_names);
+    let mut pump_history = History::new(epump_names);
 
-    let mut electricity = Electricity::new();
-    let mut registry: TestVariableRegistry = Default::default();
-    let mut init_context = InitContext::new(Default::default(), &mut electricity, &mut registry);
-
-    let mut edp = EngineDrivenPump::new(&mut init_context, "EDP");
-    let mut edp_controller = TestPumpController::commanding_depressurise();
-
-    let mut epump = electric_pump(&mut init_context);
-    let mut epump_controller = TestPumpController::commanding_depressurise();
-
-    let mut hydraulic_loop = hydraulic_loop(&mut init_context, HydraulicColor::Yellow, 1);
-
-    let context = context(&mut init_context, Duration::from_millis(50));
+    let mut test_bed = SimulationTestBed::new(|context| {
+        let hyd_loop = hydraulic_loop(context, HydraulicColor::Blue);
+        let pump = electric_pump(context);
+        A320SimpleMainElecHydraulicsTestAircraft::new(context, hyd_loop, pump)
+    });
 
     hyd_circuit_history.init(
         0.0,
         vec![
-            hydraulic_loop.pump_pressure(0).get::<psi>(),
-            hydraulic_loop.system_pressure().get::<psi>(),
-            hydraulic_loop.pump_section_pressure_switch(0) as u8 as f64,
-            hydraulic_loop.system_section_pressure_switch() as u8 as f64,
-            hydraulic_loop
-                .system_accumulator_fluid_volume()
-                .get::<gallon>(),
+            test_bed
+                .query(|a| a.hydraulic_circuit.pump_pressure(0))
+                .get::<psi>(),
+            test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>()),
+            test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>())
+                - test_bed
+                    .query(|a| a.hydraulic_circuit.pump_pressure(0))
+                    .get::<psi>(),
+            test_bed.query(|a| a.hydraulic_circuit.pump_section_pressure_switch(0) as u8 as f64),
+            test_bed.query(|a| a.hydraulic_circuit.system_section_pressure_switch() as u8 as f64),
+            test_bed.query(|a| {
+                a.hydraulic_circuit
+                    .system_accumulator_fluid_volume()
+                    .get::<gallon>()
+            }),
         ],
     );
 
     reservoir_history.init(
         0.0,
         vec![
-            hydraulic_loop.reservoir_level().get::<gallon>(),
-            hydraulic_loop.pump_pressure(0).get::<psi>(),
-            hydraulic_loop.system_pressure().get::<psi>(),
+            test_bed.query(|a| a.hydraulic_circuit.reservoir_level().get::<gallon>()),
+            test_bed.query(|a| a.hydraulic_circuit.pump_pressure(0).get::<psi>()),
+            test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>()),
+        ],
+    );
+    pump_history.init(
+        0.0,
+        vec![
+            test_bed.query(|a| a.elec_pump.speed().get::<revolution_per_minute>()),
+            test_bed.query(|a| a.elec_pump.displacement().get::<cubic_inch>()),
         ],
     );
 
-    let mut edp_rpm = 0.;
-    for x in 0..2000 {
-        if x >= 200 {
-            // After 10s pressurising edp
-            edp_controller.command_pressurise();
-            edp_rpm = 400.;
+    let step_duration = Duration::from_millis(33);
+
+    for step_idx in 0..1000 {
+        if step_idx > 500 {
+            test_bed.command(|a| a.epump_controller.command_depressurise());
         }
-
-        if x >= 1000 {
-            // After 50s depressurising edp
-            //edp_controller.command_depressurise();
-            edp_rpm = 0.;
-        }
-
-        if x >= 1100 {
-            // After 55s pressurising epump
-            epump_controller.command_pressurise();
-        }
-
-        if x >= 1400 {
-            // After 70s depressurising epump
-            epump_controller.command_depressurise();
-        }
-
-        edp.update(
-            &context,
-            hydraulic_loop.pump_section(0),
-            hydraulic_loop.reservoir(),
-            AngularVelocity::new::<revolution_per_minute>(edp_rpm),
-            &edp_controller,
-        );
-
-        epump.update(
-            &context,
-            hydraulic_loop.system_section(),
-            hydraulic_loop.reservoir(),
-            &epump_controller,
-        );
-
-        hydraulic_loop.update(
-            &context,
-            &mut vec![&mut edp],
-            Some(&mut epump),
-            None,
-            &TestHydraulicCircuitController::commanding_open_fire_shutoff_valve(1),
-            Pressure::new::<psi>(50.),
-        );
+        test_bed.run_with_delta(step_duration);
 
         hyd_circuit_history.update(
-            context.delta_as_secs_f64(),
+            step_duration.as_secs_f64(),
             vec![
-                hydraulic_loop.pump_pressure(0).get::<psi>(),
-                hydraulic_loop.system_pressure().get::<psi>(),
-                hydraulic_loop.pump_section_pressure_switch(0) as u8 as f64,
-                hydraulic_loop.system_section_pressure_switch() as u8 as f64,
-                hydraulic_loop
-                    .system_accumulator_fluid_volume()
+                test_bed.query(|a| a.hydraulic_circuit.pump_pressure(0).get::<psi>()),
+                test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>()),
+                test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>())
+                    - test_bed
+                        .query(|a| a.hydraulic_circuit.pump_pressure(0))
+                        .get::<psi>(),
+                test_bed
+                    .query(|a| a.hydraulic_circuit.pump_section_pressure_switch(0) as u8 as f64),
+                test_bed
+                    .query(|a| a.hydraulic_circuit.system_section_pressure_switch() as u8 as f64),
+                test_bed
+                    .query(|a| a.hydraulic_circuit.system_accumulator_fluid_volume())
                     .get::<gallon>(),
             ],
         );
         reservoir_history.update(
-            context.delta_as_secs_f64(),
+            step_duration.as_secs_f64(),
             vec![
-                hydraulic_loop.reservoir_level().get::<gallon>(),
-                hydraulic_loop.pump_pressure(0).get::<psi>(),
-                hydraulic_loop.system_pressure().get::<psi>(),
+                test_bed.query(|a| a.hydraulic_circuit.reservoir_level().get::<gallon>()),
+                test_bed.query(|a| a.hydraulic_circuit.pump_pressure(0).get::<psi>()),
+                test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>()),
+            ],
+        );
+
+        pump_history.update(
+            step_duration.as_secs_f64(),
+            vec![
+                test_bed.query(|a| a.elec_pump.speed().get::<revolution_per_minute>()),
+                test_bed.query(|a| a.elec_pump.displacement().get::<cubic_inch>()),
             ],
         );
     }
 
-    hyd_circuit_history.show_matplotlib("hyd_circuit_tests", path);
-    reservoir_history.show_matplotlib("hyd_circuit_reservoir_tests", path);
+    hyd_circuit_history.show_matplotlib("hyd_circuit_blue_tests", path);
+    reservoir_history.show_matplotlib("hyd_circuit_blue_reservoir_tests", path);
+    pump_history.show_matplotlib("hyd_circuit_blue_pump_tests", path);
 }
 
-fn hydraulic_loop(
-    context: &mut InitContext,
-    loop_color: HydraulicColor,
-    main_pump_number: usize,
-) -> HydraulicCircuit {
-    let reservoir = reservoir(
-        context,
-        loop_color,
-        Volume::new::<gallon>(5.),
-        Volume::new::<gallon>(4.),
-        Volume::new::<gallon>(3.),
-    );
-
-    HydraulicCircuit::new(
-        context,
-        loop_color,
-        main_pump_number,
-        Ratio::new::<percent>(100.),
-        Volume::new::<gallon>(10.),
-        reservoir,
-        Pressure::new::<psi>(1450.),
-        Pressure::new::<psi>(1750.),
-        Pressure::new::<psi>(1450.),
-        Pressure::new::<psi>(1750.),
-        false,
-        false,
-    )
-}
-
-fn reservoir(
-    context: &mut InitContext,
-    hyd_loop_id: HydraulicColor,
-    max_capacity: Volume,
-    max_gaugeable: Volume,
-    current_level: Volume,
-) -> Reservoir {
-    Reservoir::new(
-        context,
-        hyd_loop_id,
-        max_capacity,
-        max_gaugeable,
-        current_level,
-        vec![PressureSwitch::new(
-            Pressure::new::<psi>(23.45),
-            Pressure::new::<psi>(20.55),
-            PressureSwitchType::Relative,
-        )],
-        max_capacity * 0.1,
-    )
+fn hydraulic_loop(context: &mut InitContext, loop_color: HydraulicColor) -> HydraulicCircuit {
+    match loop_color {
+        HydraulicColor::Yellow => A320HydraulicCircuitFactory::new_yellow_circuit(context),
+        HydraulicColor::Blue => A320HydraulicCircuitFactory::new_blue_circuit(context),
+        HydraulicColor::Green => A320HydraulicCircuitFactory::new_green_circuit(context),
+    }
 }
 
 fn electric_pump(context: &mut InitContext) -> ElectricPump {
@@ -404,20 +359,150 @@ fn _engine_driven_pump(context: &mut InitContext) -> EngineDrivenPump {
     EngineDrivenPump::new(context, "DEFAULT")
 }
 
-fn context(context: &mut InitContext, delta_time: Duration) -> UpdateContext {
-    UpdateContext::new(
-        context,
-        delta_time,
-        Velocity::new::<knot>(250.),
-        Velocity::new::<knot>(250.),
-        Length::new::<foot>(5000.),
-        ThermodynamicTemperature::new::<degree_celsius>(25.0),
-        true,
-        Acceleration::new::<foot_per_second_squared>(0.),
-        Acceleration::new::<foot_per_second_squared>(0.),
-        Acceleration::new::<foot_per_second_squared>(0.),
-        Angle::new::<radian>(0.),
-        Angle::new::<radian>(0.),
-        MachNumber(0.),
-    )
+struct A320TestPneumatics {
+    pressure: Pressure,
+}
+impl A320TestPneumatics {
+    pub fn new() -> Self {
+        Self {
+            pressure: Pressure::new::<psi>(50.),
+        }
+    }
+
+    fn _set_nominal_air_pressure(&mut self) {
+        self.pressure = Pressure::new::<psi>(50.);
+    }
+
+    fn _set_low_air_pressure(&mut self) {
+        self.pressure = Pressure::new::<psi>(1.);
+    }
+
+    fn pressure(&self) -> Pressure {
+        self.pressure
+    }
+}
+impl ReservoirAirPressure for A320TestPneumatics {
+    fn green_reservoir_pressure(&self) -> Pressure {
+        self.pressure
+    }
+
+    fn blue_reservoir_pressure(&self) -> Pressure {
+        self.pressure
+    }
+
+    fn yellow_reservoir_pressure(&self) -> Pressure {
+        self.pressure
+    }
+}
+
+struct A320SimpleMainElecHydraulicsTestAircraft {
+    updater: FixedStepLoop,
+
+    pneumatics: A320TestPneumatics,
+
+    hydraulic_circuit: HydraulicCircuit,
+    circuit_controller: TestHydraulicCircuitController,
+
+    elec_pump: ElectricPump,
+    epump_controller: TestPumpController,
+
+    powered_source_ac: TestElectricitySource,
+    ac_ground_service_bus: ElectricalBus,
+    dc_ground_service_bus: ElectricalBus,
+    ac_1_bus: ElectricalBus,
+    ac_2_bus: ElectricalBus,
+    dc_1_bus: ElectricalBus,
+    dc_2_bus: ElectricalBus,
+    dc_ess_bus: ElectricalBus,
+    dc_hot_1_bus: ElectricalBus,
+    dc_hot_2_bus: ElectricalBus,
+}
+impl A320SimpleMainElecHydraulicsTestAircraft {
+    fn new(
+        context: &mut InitContext,
+        hydraulic_circuit: HydraulicCircuit,
+        elec_pump: ElectricPump,
+    ) -> Self {
+        Self {
+            updater: FixedStepLoop::new(Duration::from_millis(33)),
+            pneumatics: A320TestPneumatics::new(),
+            hydraulic_circuit,
+            circuit_controller: TestHydraulicCircuitController::commanding_open_fire_shutoff_valve(
+                1,
+            ),
+            elec_pump,
+            epump_controller: TestPumpController::commanding_pressurise(),
+            powered_source_ac: TestElectricitySource::powered(
+                context,
+                PotentialOrigin::EngineGenerator(1),
+            ),
+            ac_ground_service_bus: ElectricalBus::new(
+                context,
+                ElectricalBusType::AlternatingCurrentGndFltService,
+            ),
+            dc_ground_service_bus: ElectricalBus::new(
+                context,
+                ElectricalBusType::DirectCurrentGndFltService,
+            ),
+            ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
+            ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
+            dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
+            dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
+            dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
+            dc_hot_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentHot(1)),
+            dc_hot_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentHot(2)),
+        }
+    }
+}
+
+impl Aircraft for A320SimpleMainElecHydraulicsTestAircraft {
+    fn update_before_power_distribution(
+        &mut self,
+        _: &UpdateContext,
+        electricity: &mut Electricity,
+    ) {
+        self.powered_source_ac
+            .power_with_potential(ElectricPotential::new::<volt>(115.));
+        electricity.supplied_by(&self.powered_source_ac);
+
+        electricity.flow(&self.powered_source_ac, &self.ac_1_bus);
+        electricity.flow(&self.powered_source_ac, &self.ac_2_bus);
+        electricity.flow(&self.powered_source_ac, &self.ac_ground_service_bus);
+        electricity.flow(&self.powered_source_ac, &self.dc_ground_service_bus);
+        electricity.flow(&self.powered_source_ac, &self.dc_1_bus);
+        electricity.flow(&self.powered_source_ac, &self.dc_2_bus);
+        electricity.flow(&self.powered_source_ac, &self.dc_ess_bus);
+        electricity.flow(&self.powered_source_ac, &self.dc_hot_1_bus);
+        electricity.flow(&self.powered_source_ac, &self.dc_hot_2_bus);
+    }
+
+    fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+        self.updater.update(context);
+
+        for cur_time_step in self.updater {
+            self.elec_pump.update(
+                context,
+                self.hydraulic_circuit.pump_section(0),
+                self.hydraulic_circuit.reservoir(),
+                &self.epump_controller,
+            );
+
+            self.hydraulic_circuit.update(
+                &context.with_delta(cur_time_step),
+                &mut vec![&mut self.elec_pump],
+                None::<&mut ElectricPump>,
+                None,
+                &self.circuit_controller,
+                self.pneumatics.pressure(),
+            );
+        }
+    }
+}
+impl SimulationElement for A320SimpleMainElecHydraulicsTestAircraft {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.hydraulic_circuit.accept(visitor);
+        self.elec_pump.accept(visitor);
+
+        visitor.visit(self);
+    }
 }

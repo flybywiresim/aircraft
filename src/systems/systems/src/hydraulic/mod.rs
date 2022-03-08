@@ -181,7 +181,7 @@ pub struct PowerTransferUnit {
 }
 impl PowerTransferUnit {
     const ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
-    const DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+    const DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 35.;
 
     const MIN_SPEED_SIMULATION_RPM: f64 = 50.;
     const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.85;
@@ -191,7 +191,7 @@ impl PowerTransferUnit {
     const MIN_RIGHT_DISPLACEMENT_CUBIC_INCH: f64 = 0.65;
     const MAX_RIGHT_DISPLACEMENT_CUBIC_INCH: f64 = 1.21;
 
-    const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(80);
+    const DISPLACEMENT_TIME_CONSTANT: Duration = Duration::from_millis(45);
 
     const PRESSURE_BREAKPOINTS_PSI: [f64; 10] =
         [-500., -250., -100., -50., -10., 0., 100., 220., 250., 500.];
@@ -210,7 +210,7 @@ impl PowerTransferUnit {
 
     const SHAFT_FRICTION: f64 = 0.12;
     const BREAKOUT_TORQUE_NM: f64 = 2.;
-    const SHAFT_INERTIA: f64 = 0.008;
+    const SHAFT_INERTIA: f64 = 0.0055;
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
@@ -609,7 +609,7 @@ impl HydraulicCircuit {
                 false,
             ));
 
-            pump_to_system_check_valves.push(CheckValve::default());
+            pump_to_system_check_valves.push(CheckValve::new());
         }
 
         let system_section_volume = high_pressure_max_volume
@@ -676,7 +676,7 @@ impl HydraulicCircuit {
         self.update_maximum_pumping_capacities(main_section_pumps, &system_section_pump);
 
         // What flow can come through each valve considering what is consumed downstream
-        self.update_maximum_valve_flows();
+        self.update_maximum_valve_flows(context);
 
         // Update final flow that will go through each valve (spliting flow between multiple valves)
         self.update_final_valves_flows();
@@ -724,9 +724,10 @@ impl HydraulicCircuit {
             .update_final_delta_vol_and_pressure(context, &self.fluid);
     }
 
-    fn update_maximum_valve_flows(&mut self) {
+    fn update_maximum_valve_flows(&mut self, context: &UpdateContext) {
         for (pump_section_idx, valve) in self.pump_to_system_check_valves.iter_mut().enumerate() {
             valve.update_flow_forecast(
+                context,
                 &self.pump_sections[pump_section_idx],
                 &self.system_section,
                 &self.fluid,
@@ -1213,24 +1214,43 @@ impl SimulationElement for FireValve {
 /// - A physical flow, that is mandatory to pass through the valve, caused by pressure difference between
 /// upstream and downstream.
 
-#[derive(Default)]
 pub struct CheckValve {
     current_volume: Volume,
     max_virtual_volume: Volume,
+
+    delta_pressure: LowPassFilter<Pressure>,
 }
 impl CheckValve {
+    const AGRESSIVENESS_FACTOR: f64 = 5.;
+    const DELTA_PRESSURE_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(60);
+
+    fn new() -> Self {
+        Self {
+            current_volume: Volume::default(),
+            max_virtual_volume: Volume::default(),
+            delta_pressure: LowPassFilter::<Pressure>::new(
+                Self::DELTA_PRESSURE_FILTER_TIME_CONSTANT,
+            ),
+        }
+    }
+
     fn volume_to_equalize_pressures(
-        &self,
+        &mut self,
+        context: &UpdateContext,
         upstream_section: &Section,
         downstream_section: &Section,
         fluid: &Fluid,
     ) -> Volume {
-        let delta_pressure = upstream_section.pressure() - downstream_section.pressure();
+        let new_delta_pressure = upstream_section.pressure() - downstream_section.pressure();
 
-        if delta_pressure > Pressure::new::<psi>(0.) {
-            downstream_section.max_high_press_volume
+        self.delta_pressure
+            .update(context.delta(), new_delta_pressure);
+
+        if self.delta_pressure.output() > Pressure::new::<psi>(0.) {
+            Self::AGRESSIVENESS_FACTOR
+                * downstream_section.max_high_press_volume
                 * upstream_section.max_high_press_volume
-                * delta_pressure
+                * self.delta_pressure.output()
                 / (fluid.bulk_mod() * downstream_section.max_high_press_volume
                     + fluid.bulk_mod() * upstream_section.max_high_press_volume)
         } else {
@@ -1242,12 +1262,13 @@ impl CheckValve {
     /// the valve
     pub fn update_flow_forecast(
         &mut self,
+        context: &UpdateContext,
         upstream_section: &Section,
         downstream_section: &Section,
         fluid: &Fluid,
     ) {
         let physical_volume_transferred =
-            self.volume_to_equalize_pressures(upstream_section, downstream_section, fluid);
+            self.volume_to_equalize_pressures(context, upstream_section, downstream_section, fluid);
 
         let mut available_volume_from_upstream = (upstream_section.max_pumpable_volume
             - upstream_section.volume_target)
@@ -1430,7 +1451,7 @@ pub struct Pump {
     delta_vol_max: Volume,
     current_displacement: Volume,
     current_flow: VolumeRate,
-    current_max_displacement: Volume,
+    current_max_displacement: LowPassFilter<Volume>,
     press_breakpoints: [f64; 9],
     displacement_carac: [f64; 9],
 
@@ -1444,12 +1465,16 @@ impl Pump {
     const AIR_PRESSURE_BREAKPTS_PSI: [f64; 9] = [0., 5., 10., 15., 20., 30., 50., 70., 100.];
     const AIR_PRESSURE_CARAC_RATIO: [f64; 9] = [0.0, 0.1, 0.6, 0.8, 0.9, 1., 1., 1., 1.];
 
+    const MAX_DISPLACEMENT_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(150);
+
     fn new(press_breakpoints: [f64; 9], displacement_carac: [f64; 9]) -> Self {
         Self {
             delta_vol_max: Volume::new::<gallon>(0.),
             current_displacement: Volume::new::<gallon>(0.),
             current_flow: VolumeRate::new::<gallon_per_second>(0.),
-            current_max_displacement: Volume::new::<gallon>(0.),
+            current_max_displacement: LowPassFilter::<Volume>::new(
+                Self::MAX_DISPLACEMENT_FILTER_TIME_CONSTANT,
+            ),
             press_breakpoints,
             displacement_carac,
 
@@ -1473,9 +1498,12 @@ impl Pump {
 
         let theoretical_displacement = self.calculate_displacement(section, controller);
 
-        self.current_max_displacement = self.cavitation_efficiency * theoretical_displacement;
+        self.current_max_displacement.update(
+            context.delta(),
+            self.cavitation_efficiency * theoretical_displacement,
+        );
 
-        let max_flow = Self::calculate_flow(speed, self.current_max_displacement)
+        let max_flow = Self::calculate_flow(speed, self.current_max_displacement.output())
             .max(VolumeRate::new::<gallon_per_second>(0.));
 
         let max_flow_available_from_reservoir =
@@ -1521,10 +1549,11 @@ impl Pump {
                     / self.speed.get::<revolution_per_minute>(),
             );
             self.current_max_displacement
+                .output()
                 .min(displacement)
                 .max(Volume::new::<cubic_inch>(0.))
         } else {
-            self.current_max_displacement
+            self.current_max_displacement.output()
         }
     }
 
@@ -1595,6 +1624,7 @@ pub struct ElectricPump {
 }
 impl ElectricPump {
     const NOMINAL_SPEED: f64 = 7600.0;
+
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
         0.0, 500.0, 1000.0, 1500.0, 2175.0, 2850.0, 3080.0, 3100.0, 3500.0,
     ];
@@ -1645,6 +1675,10 @@ impl ElectricPump {
 
     pub fn flow(&self) -> VolumeRate {
         self.pump.flow()
+    }
+
+    pub fn speed(&self) -> AngularVelocity {
+        self.pump.speed
     }
 }
 impl PressureSource for ElectricPump {
