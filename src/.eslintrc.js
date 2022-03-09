@@ -11,12 +11,6 @@ module.exports = {
     plugins: ['@typescript-eslint'],
     parser: '@typescript-eslint/parser',
     ignorePatterns: [
-        '/flybywire-aircraft-a320-neo/html_ui/JS/fmgc/**',
-        '/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/**',
-        'typings/**',
-        'PFDV2/node_modules/**',
-        'PFDV2/types/**',
-        'msfs-avionics-mirror/**',
         'mcdu-server/client/build/**',
     ],
     parserOptions: {
