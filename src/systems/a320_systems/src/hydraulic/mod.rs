@@ -562,9 +562,9 @@ impl A320ElevatorFactory {
 
 struct A320RudderFactory {}
 impl A320RudderFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 1.;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.;
-    const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 1.5;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 2.;
+    const FLOW_CONTROL_FORCE_GAIN: f64 = 350000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1000000.;
 
@@ -577,12 +577,12 @@ impl A320RudderFactory {
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.04),
+            Length::new::<meter>(0.06),
             Length::new::<meter>(0.),
             VolumeRate::new::<gallon_per_second>(0.0792),
             80000.,
             1500.,
-            20000.,
+            10000.,
             randomized_damping,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
