@@ -577,9 +577,9 @@ impl A320RudderFactory {
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.0537878),
+            Length::new::<meter>(0.04),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.055),
+            VolumeRate::new::<gallon_per_second>(0.0792),
             80000.,
             1500.,
             20000.,
@@ -598,8 +598,8 @@ impl A320RudderFactory {
         let size = Vector3::new(0.42, 6.65, 1.8);
         let cg_offset = Vector3::new(0., 0.5 * size[1], -0.5 * size[2]);
 
-        let control_arm = Vector3::new(-0.2, 0., 0.);
-        let anchor = Vector3::new(-0.2, 0., 0.40);
+        let control_arm = Vector3::new(-0.144, 0., 0.);
+        let anchor = Vector3::new(-0.144, 0., 0.50);
 
         let randomized_init_position_angle_degree = random_from_range(-15., 15.);
 
