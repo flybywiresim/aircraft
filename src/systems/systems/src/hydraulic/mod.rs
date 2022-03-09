@@ -23,6 +23,7 @@ use uom::si::{
     volume_rate::{gallon_per_minute, gallon_per_second},
 };
 
+pub mod aerodynamic_model;
 pub mod brake_circuit;
 pub mod electrical_generator;
 pub mod electrical_pump_physics;
