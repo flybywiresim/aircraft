@@ -2074,9 +2074,7 @@ mod tests {
         });
 
         test_bed.command(|a| a.command_unlock());
-        test_bed.command(|a| {
-            a.set_pressures([Pressure::new::<psi>(3000.)])
-        });
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
 
         assert!(test_bed.query(|a| a.body_position()) < Ratio::new::<ratio>(0.01));
 
