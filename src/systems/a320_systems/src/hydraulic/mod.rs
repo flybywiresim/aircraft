@@ -264,6 +264,7 @@ impl A320CargoDoorFactory {
             Some(Vector3::new(1., 0., 0.)),
             Some(Vector3::new(0., 0., 1.)),
             Some(Vector3::new(1., 0., 0.)),
+            Ratio::new::<ratio>(1.),
         )
     }
 }
@@ -355,6 +356,7 @@ impl A320AileronFactory {
             Some(Vector3::new(0., 1., 0.)),
             Some(Vector3::new(0., 0., 1.)),
             Some(Vector3::new(0., 1., 0.)),
+            Ratio::new::<ratio>(1.),
         )
     }
 }
