@@ -41,6 +41,7 @@ export class FlightPathVector extends DisplayComponent<{bus: EventBus, isAttExce
         sub.on('trkFpaActive').whenChanged().handle((a) => {
             this.isTrkFpaActive = a;
             if (this.isTrkFpaActive && !this.props.isAttExcessive.get()) {
+                this.moveBird();
                 this.bird.instance.classList.remove('HiddenElement');
             } else {
                 this.bird.instance.classList.add('HiddenElement');

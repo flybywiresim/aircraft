@@ -85,9 +85,9 @@ class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
         // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
         sub.on('hasLoc').whenChanged().handle((hasLoc) => {
             if (hasLoc) {
-                this.lsInfoGroup.instance.style.display = 'none';
-            } else {
                 this.lsInfoGroup.instance.style.display = 'inline';
+            } else {
+                this.lsInfoGroup.instance.style.display = 'none';
             }
         });
 

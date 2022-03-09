@@ -93,11 +93,11 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
         sub.on('rollAr').handle((r) => {
             this.roll = r;
             if (!this.roll.isNormalOperation()) {
-                this.visibilitySub.set('hidden');
+                this.visibilitySub.set('display:none');
                 this.failureVis.set('display:block');
                 this.fdVisibilitySub.set('display:none');
             } else {
-                this.visibilitySub.set('visible');
+                this.visibilitySub.set('display:inline');
                 this.failureVis.set('display:none');
                 if (!this.props.isAttExcessive.get()) {
                     this.fdVisibilitySub.set('display:inline');
@@ -109,11 +109,11 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             this.pitch = p;
 
             if (!this.pitch.isNormalOperation()) {
-                this.visibilitySub.set('hidden');
+                this.visibilitySub.set('display:none');
                 this.failureVis.set('display:block');
                 this.fdVisibilitySub.set('display:none');
             } else {
-                this.visibilitySub.set('visible');
+                this.visibilitySub.set('display:inline');
                 this.failureVis.set('display:none');
                 if (!this.props.isAttExcessive.get()) {
                     this.fdVisibilitySub.set('display:inline');
@@ -134,7 +134,7 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
         return (
             <>
                 <text style={this.failureVis} id="AttFailText" class="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
-                <g id="AttitudeSymbolsGroup" visibility={this.visibilitySub}>
+                <g id="AttitudeSymbolsGroup" style={this.visibilitySub}>
                     <SidestickIndicator bus={this.props.bus} />
                     <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
 

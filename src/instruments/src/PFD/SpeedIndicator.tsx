@@ -182,7 +182,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             }
         });
 
-        pf.on('speedAr').withArinc429Precision(2).handle((airSpeed) => {
+        pf.on('speedAr').withArinc429Precision(3).handle((airSpeed) => {
             this.speedSub.set(airSpeed.value);
 
             if (!airSpeed.isNormalOperation()) {
