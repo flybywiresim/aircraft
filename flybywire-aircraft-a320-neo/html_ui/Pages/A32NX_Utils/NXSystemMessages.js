@@ -64,7 +64,8 @@ const NXSystemMessages = {
     noAtisReceived:         new McduMessage("NO ATIS REPORT RECEIVED", false, false),
     noPreviousAtis:         new McduMessage("NO PREVIOUS ATIS STORED", false, false),
     arptTypeAlreadyInUse:   new McduMessage("ARPT/TYPE ALREADY USED", false, false),
-    cancelAtisUpdate:       new McduMessage("CANCEL UPDATE BEFORE", false, false)
+    cancelAtisUpdate:       new McduMessage("CANCEL UPDATE BEFORE", false, false),
+    stepAboveMaxFl:         new McduMessage("STEP ABOVE MAX FL", false, false),
 };
 
 const NXFictionalMessages = {
