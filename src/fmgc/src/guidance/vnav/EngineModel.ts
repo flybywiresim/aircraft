@@ -5,6 +5,45 @@ export class EngineModel {
     static maxThrust = 27120;
 
     /**
+     * Maximum N1 in CLB thrust
+     * @param i row index (tat) in steps of 4°C
+     * @param j col index (pressure altitude)
+     * @returns Corrected N1 (CN1)
+     */
+    static maxClimbThrustTableLeap = [
+        [0, 2000, 5000, 8000, 12000, 15000, 17000, 20000, 24000, 27000, 31000, 35000, 39000, 41500],
+        [-54.0, 71.8, 73.6, 75.5, 76.8, 78.1, 78.9, 80.1, 81.5, 81.6, 83.0, 83.6, 83.7, 83.3],
+        [-50.0, 72.5, 74.3, 76.2, 77.5, 78.8, 79.6, 80.9, 82.2, 82.4, 83.8, 84.4, 84.5, 84.0],
+        [-46.0, 73.1, 75.0, 76.9, 78.2, 79.5, 80.3, 81.6, 83.0, 83.1, 84.5, 85.1, 85.3, 84.8],
+        [-42.0, 73.8, 75.6, 77.6, 78.9, 80.2, 81.0, 82.3, 83.7, 83.8, 85.3, 85.9, 86.0, 85.5],
+        [-38.0, 74.4, 76.3, 78.2, 79.6, 80.9, 81.7, 83.0, 84.4, 84.6, 86.0, 86.6, 86.7, 86.3],
+        [-34.0, 75.0, 76.9, 78.9, 80.3, 81.6, 82.4, 83.7, 85.1, 85.3, 86.7, 87.3, 87.5, 87.0],
+        [-30.0, 75.7, 77.6, 79.6, 80.9, 82.2, 83.1, 84.4, 85.8, 86.0, 87.5, 88.1, 88.2, 87.7],
+        [-26.0, 76.3, 78.2, 80.2, 81.6, 82.9, 83.8, 85.1, 86.5, 86.7, 88.2, 88.8, 88.9, 88.4],
+        [-22.0, 76.9, 78.8, 80.9, 82.2, 83.6, 84.4, 85.8, 87.2, 87.4, 88.9, 89.5, 89.6, 89.1],
+        [-18.0, 77.5, 79.5, 81.5, 82.9, 84.2, 85.1, 86.5, 87.9, 88.1, 89.6, 90.2, 90.0, 89.5],
+        [-14.0, 78.1, 80.1, 82.1, 83.5, 84.9, 85.8, 87.1, 88.6, 88.8, 90.3, 90.0, 89.2, 88.7],
+        [-10.0, 78.7, 80.7, 82.8, 84.2, 85.6, 86.4, 87.8, 89.3, 89.5, 91.0, 89.2, 88.4, 87.9],
+        [-6.0, 79.3, 81.3, 83.4, 84.8, 86.2, 87.1, 88.5, 90.0, 90.1, 91.1, 88.5, 87.7, 87.1],
+        [-2.0, 79.9, 81.9, 84.0, 85.5, 86.8, 87.7, 89.1, 90.6, 90.8, 90.2, 87.7, 86.9, 86.4],
+        [2.0, 80.5, 82.5, 84.6, 86.1, 87.5, 88.4, 89.8, 91.3, 90.3, 89.5, 87.0, 86.2, 85.6],
+        [6.0, 81.1, 83.1, 85.3, 86.7, 88.1, 89.0, 90.4, 90.5, 89.5, 88.8, 86.3, 85.5, 84.9],
+        [10.0, 81.6, 83.7, 85.9, 87.3, 88.7, 89.7, 90.0, 89.6, 88.7, 88.1, 85.6, 84.8, 84.2],
+        [14.0, 82.2, 84.3, 86.5, 87.9, 89.4, 89.3, 89.1, 88.7, 87.9, 87.5, 84.8, 83.9, 83.3],
+        [18.0, 82.8, 84.9, 87.1, 88.5, 88.6, 88.4, 88.3, 87.9, 87.2, 86.8],
+        [22.0, 83.4, 85.5, 86.9, 88.0, 87.8, 87.7, 87.5, 87.2, 86.5, 86.1],
+        [26.0, 83.9, 85.7, 86.2, 87.2, 87.1, 87.0, 86.8, 86.5, 85.8, 85.4],
+        [30.0, 84.5, 84.9, 85.4, 86.5, 86.4, 86.3, 86.1, 85.8, 85.1],
+        [34.0, 83.8, 84.2, 84.7, 85.8, 85.7, 85.6, 85.5, 85.1],
+        [38.0, 83.0, 83.4, 83.9, 85.1, 85.0, 84.9, 84.8],
+        [42.0, 82.2, 82.6, 83.1, 84.4, 84.4, 84.3],
+        [46.0, 81.4, 81.8, 82.4, 83.7, 83.7],
+        [50.0, 80.6, 81.1, 81.6, 83.0],
+        [54.0, 79.9, 80.4],
+        [58.0, 79.2],
+    ];
+
+    /**
      * Table 1502 - CN2 vs CN1 @ Mach 0, 0.2, 0.9
      * n2_to_n1_table
      * @param i row index (n2)
@@ -131,6 +170,10 @@ export class EngineModel {
         const interpolatedRowAtC1 = r1 === r2 ? table[r1][c1] : Common.interpolate(i, table[r1][0], table[r2][0], table[r1][c1], table[r2][c1]);
         const interpolatedRowAtC2 = r1 === r2 ? table[r1][c2] : Common.interpolate(i, table[r1][0], table[r2][0], table[r1][c2], table[r2][c2]);
 
+        if (c1 === c2) {
+            return interpolatedRowAtC1;
+        }
+
         return Common.interpolate(j, table[0][c1], table[0][c2], interpolatedRowAtC1, interpolatedRowAtC2);
     }
 
@@ -222,5 +265,22 @@ export class EngineModel {
 
     static getCorrectedThrust(uncorrectedThrust: number, delta2: number): number {
         return uncorrectedThrust / delta2;
+    }
+
+    static getIdleN1(altitude: Feet, mach: Mach) {
+        const delta = Common.getDelta(altitude);
+        const iap = 1 / delta;
+
+        const theta = Common.getTheta(altitude, 0);
+        const theta2 = Common.getTheta2(theta, mach);
+
+        const lowMachCn2 = EngineModel.tableInterpolation(EngineModel.table1503, 0, iap);
+        const highMachCn2 = EngineModel.tableInterpolation(EngineModel.table1504, 0, iap);
+
+        const cn2 = Common.interpolate(mach, 0, 0.9, lowMachCn2, highMachCn2);
+        const cn1 = EngineModel.tableInterpolation(EngineModel.table1502, cn2, mach);
+
+        const n1 = cn1 * Math.sqrt(theta2);
+        return n1;
     }
 }
