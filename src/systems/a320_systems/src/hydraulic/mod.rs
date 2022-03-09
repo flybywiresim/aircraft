@@ -463,11 +463,15 @@ impl A320SpoilerFactory {
 
     fn new_a320_spoiler_aero_model() -> AerodynamicModel {
         let body = Self::a320_spoiler_body();
+
+        // Lift vector and normal are rotated 10° to acount for air supposedly following
+        // wing profile that is 10° from horizontal
+        // It means that with headwind and spoiler retracted (-10°), spoiler generates no lift
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(0., 1., 0.)),
-            Some(Vector3::new(0., 0., 1.)),
-            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., -0.174, 0.985)),
+            Some(Vector3::new(0., 0.985, 0.174)),
             Ratio::new::<ratio>(1.),
         )
     }
