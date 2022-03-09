@@ -466,12 +466,12 @@ impl Precooler {
                 - container_one.temperature().get::<degree_celsius>(),
         );
 
-        let temperature_change = temperature_gradient / Self::HEAT_CAPACITY_CONSTANT_PRESSURE
+        let mass_energy_change = temperature_gradient / Self::HEAT_CAPACITY_CONSTANT_PRESSURE
             * (self.heat_transfer_coefficient * context.delta_as_secs_f64());
 
-        supply.update_temperature(-temperature_change / supply.mass().get::<kilogram>());
+        supply.update_temperature(-mass_energy_change / supply.mass().get::<kilogram>());
         container_one
-            .update_temperature(temperature_change / container_one.mass().get::<kilogram>());
+            .update_temperature(mass_energy_change / container_one.mass().get::<kilogram>());
 
         self.exhaust.update_move_fluid(context, supply);
         self.internal_connector
