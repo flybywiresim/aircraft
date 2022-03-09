@@ -92,11 +92,12 @@ const MaintenanceReminder = () => {
 };
 
 interface ChecklistReminderWidgetProps {
-    checklist: TrackingChecklist,
-    checklistIndex: number
+    checklist: TrackingChecklist;
+    checklistIndex: number;
+    className?: string;
 }
 
-const ChecklistReminderWidget = ({ checklist, checklistIndex }: ChecklistReminderWidgetProps) => {
+const ChecklistReminderWidget = ({ checklist, checklistIndex, className }: ChecklistReminderWidgetProps) => {
     const dispatch = useAppDispatch();
 
     let color = 'text-theme-highlight';
@@ -112,10 +113,7 @@ const ChecklistReminderWidget = ({ checklist, checklistIndex }: ChecklistReminde
     return (
         <Link
             to="/checklists"
-            className={`relative overflow-hidden flex flex-col flex-wrap px-2 pt-3 pb-2 mt-4 bg-theme-accent rounded-md 
-            ${checklistIndex && checklistIndex % 2 !== 0 && 'ml-4'}
-            ${color}
-            `}
+            className={`relative overflow-hidden flex flex-col flex-wrap px-2 pt-3 pb-2 mt-4 bg-theme-accent rounded-md ${color} ${className}`}
             onClick={() => {
                 dispatch(setSelectedChecklistIndex(checklistIndex));
             }}
@@ -147,7 +145,7 @@ const ChecklistsReminder = () => {
     const relevantChecklistIndices = getRelevantChecklistIndices();
     const [relevantChecklists, setRelevantChecklists] = useState([...checklists].filter((_, clIndex) => relevantChecklistIndices.includes(clIndex)));
 
-    const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum', 1000);
+    const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', 1000);
 
     useEffect(() => {
         setRelevantChecklists([...checklists].filter((_, clIndex) => relevantChecklistIndices.includes(clIndex)));
@@ -157,8 +155,12 @@ const ChecklistsReminder = () => {
         <RemindersSection title="Checklists" pageLinkPath="/checklists">
             {relevantChecklists.length ? (
                 <div className="grid grid-cols-2">
-                    {relevantChecklists.map((checklist) => (
-                        <ChecklistReminderWidget checklist={checklist} checklistIndex={checklists.findIndex((cl) => cl.name === checklist.name)} />
+                    {relevantChecklists.map((checklist, index) => (
+                        <ChecklistReminderWidget
+                            checklist={checklist}
+                            checklistIndex={checklists.findIndex((cl) => cl.name === checklist.name)}
+                            className={`${index && index % 2 !== 0 && 'ml-4'}`}
+                        />
                     ))}
                 </div>
             ) : (
