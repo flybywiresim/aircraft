@@ -193,10 +193,6 @@ export const ChartComponent = () => {
     }, [chartLinks]);
 
     useEffect(() => {
-        dispatch(editTabProperty({ tab: currentTab, currentPage: 1 }));
-    }, [chartId]);
-
-    useEffect(() => {
         if (pagesViewable > 1) {
             getPdfUrl(chartId, currentPage).then((url) => {
                 dispatch(editTabProperty({ tab: currentTab, chartName: { light: url, dark: url } }));
