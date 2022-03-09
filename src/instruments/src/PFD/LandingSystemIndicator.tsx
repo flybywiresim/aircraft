@@ -9,6 +9,8 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
 
     private lsGroupRef = FSComponent.createRef<SVGGElement>();
 
+    private gsReferenceLine = FSComponent.createRef<SVGPathElement>();
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -20,28 +22,38 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
                 SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', this.lsButtonPressedVisibility);
 
                 this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
+                this.gsReferenceLine.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
             }
         });
+
+        /*   sub.on('rollAr').handle((r) => {
+            if (this.lsButtonPressedVisibility && !r.isNormalOperation()) {
+                this.gsReferenceLine.instance.style.display = 'inline';
+            }
+        }); */
     }
 
     render(): VNode {
         return (
-            <g id="LSAndDeviationGroup" ref={this.lsGroupRef} style="display: none">
-                <LandingSystemInfo bus={this.props.bus} />
+            <>
+                <g id="LSAndDeviationGroup" ref={this.lsGroupRef} style="display: none">
+                    <LandingSystemInfo bus={this.props.bus} />
 
-                <g id="LSGroup">
-                    <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
-                    <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
-                    <MarkerBeaconIndicator bus={this.props.bus} />
-                </g>
+                    <g id="LSGroup">
+                        <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
+                        <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
+                        <MarkerBeaconIndicator bus={this.props.bus} />
+                    </g>
 
-                {/*  {showVDev && (
+                    {/*  {showVDev && (
                     <g id="DeviationGroup">
                         <VDevIndicator />
                         <LDevIndicator />
                     </g>
                 )} */}
-            </g>
+                    <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
+                </g>
+            </>
         );
     }
 }

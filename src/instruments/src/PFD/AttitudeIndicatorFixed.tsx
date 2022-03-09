@@ -135,7 +135,6 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
             <>
                 <text style={this.failureVis} id="AttFailText" class="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
                 <g id="AttitudeSymbolsGroup" visibility={this.visibilitySub}>
-                    <path class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
                     <SidestickIndicator bus={this.props.bus} />
                     <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
 

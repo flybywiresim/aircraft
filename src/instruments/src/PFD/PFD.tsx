@@ -102,6 +102,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
                         isAttExcessive={this.isAttExcessive}
                         filteredRadioAlt={this.filteredRadioAltitude}
                     />
+                    <AttitudeIndicatorFixedCenter bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
                     <path
                         id="Mask1"
                         class="BackgroundFill"
@@ -124,7 +125,6 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
                     <LandingSystem bus={this.props.bus} instrument={this.props.instrument} />
                     <AttitudeIndicatorFixedUpper bus={this.props.bus} />
-                    <AttitudeIndicatorFixedCenter bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
                     <VerticalSpeedIndicator bus={this.props.bus} instrument={this.props.instrument} filteredRadioAltitude={this.filteredRadioAltitude} />
                     <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
                     <AltitudeIndicatorOfftape bus={this.props.bus} filteredRadioAltitude={this.filteredRadioAltitude} />
