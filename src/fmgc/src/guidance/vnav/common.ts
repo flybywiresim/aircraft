@@ -1,11 +1,11 @@
 import { AltitudeConstraint, SpeedConstraint } from '../lnav/legs';
 
 export enum FlapConf {
-    CLEAN,
-    CONF_1,
-    CONF_2,
-    CONF_3,
-    CONF_FULL
+    CLEAN = 0,
+    CONF_1 = 1,
+    CONF_2 = 2,
+    CONF_3 = 3,
+    CONF_FULL = 4,
 }
 
 export enum AccelFactorMode {
@@ -81,7 +81,7 @@ export class Common {
     }
 
     /**
-     * Get pressure ratio for a particular theta
+     * Get pressure ratio for a particular altitude
      * @param alt pressure altitude
      * @param aboveTropo whether the aircraft is above the tropopause
      * @returns pressure ratio
@@ -126,7 +126,7 @@ export class Common {
 
     static machToCas(mach: number, delta: number): number {
         const term1 = (0.2 * mach ** 2 + 1) ** 3.5;
-        const term2 = (delta * term1 + 1) ** (1 / 3.5) - 1;
+        const term2 = (delta * (term1 - 1) + 1) ** (1 / 3.5) - 1;
         return 1479.1 * Math.sqrt(term2);
     }
 
@@ -182,14 +182,13 @@ export class Common {
         aboveTropo: boolean,
         accelFactorMode: AccelFactorMode,
     ): number {
-        const stdTemp = Common.getIsaTemp(altitude, aboveTropo);
-        const temp = Common.getTemp(altitude, isaDev, aboveTropo);
-        const tempRatio = stdTemp / temp;
+        const theta = this.getTheta(altitude, isaDev, aboveTropo);
+
         if (accelFactorMode === AccelFactorMode.CONSTANT_CAS) {
-            return Common.getAccelFactorCAS(mach, aboveTropo, tempRatio);
+            return Common.getAccelFactorCAS(mach, aboveTropo, theta);
         }
 
-        return Common.getAccelFactorMach(mach, aboveTropo, tempRatio);
+        return Common.getAccelFactorMach(mach, aboveTropo, theta);
     }
 
     static interpolate(x: number, x0: number, x1: number, y0: number, y1: number): number {

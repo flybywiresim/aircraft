@@ -85,7 +85,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                             { (((fmaLatMode === LateralMode.NONE || fmaLatMode === LateralMode.HDG || fmaLatMode === LateralMode.TRACK)
                                 && !isArmed(armedLateralBitmask, ArmedLateralMode.NAV))
                                 || !flightPlanManager.getCurrentFlightPlan().length) && (
-                                <TrackLine x={384} y={384} heading={heading} track={track} />
+                                <TrackLine x={384} y={384} heading={heading} track={track} mapParams={mapParams} groundSpeed={groundSpeed} symbols={symbols} />
                             )}
                         </g>
                     )}

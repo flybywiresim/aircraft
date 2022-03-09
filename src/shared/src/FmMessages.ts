@@ -180,4 +180,10 @@ export const FMMessageTypes: Readonly<Record<string, FMMessage>> = {
         color: 'Amber',
         ndPriority: 9,
     },
+    TdReached: {
+        id: 16,
+        text: 'T/D REACHED',
+        color: 'White',
+        clearable: true,
+    },
 };

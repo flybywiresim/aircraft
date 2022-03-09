@@ -150,10 +150,6 @@ export class CILeg extends Leg {
         return 0;
     }
 
-    getPseudoWaypointLocation(_distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
-        return undefined;
-    }
-
     isAbeam(ppos: Coordinates): boolean {
         const dtg = courseToFixDistanceToGo(ppos, this.course, this.getPathEndPoint());
 
