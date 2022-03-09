@@ -314,13 +314,11 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-        const url = document.getElementsByTagName('a32nx-pfd')[0].getAttribute('url');
-        const displayIndex = url ? parseInt(url.substring(url.length - 1), 10) : 0;
-
         sub.on('activeLateralMode').whenChanged().handle((vm) => {
             this.lateralMode = vm;
 
             if (this.isActive()) {
+                this.setOffset();
                 this.fdRef.instance.style.display = 'inline';
             } else {
                 this.fdRef.instance.style.display = 'none';
@@ -331,6 +329,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
             this.verticalMode = lm;
 
             if (this.isActive()) {
+                this.setOffset();
                 this.fdRef.instance.style.display = 'inline';
             } else {
                 this.fdRef.instance.style.display = 'none';
@@ -338,7 +337,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
         });
 
         sub.on('fd1Active').whenChanged().handle((fd) => {
-            if (displayIndex === 1) {
+            if (getDisplayIndex() === 1) {
                 this.fdActive = fd;
 
                 if (this.isActive()) {
@@ -350,7 +349,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
         });
 
         sub.on('fd2Active').whenChanged().handle((fd) => {
-            if (displayIndex === 2) {
+            if (getDisplayIndex() === 2) {
                 this.fdActive = fd;
 
                 if (this.isActive()) {
