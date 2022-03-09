@@ -592,24 +592,32 @@ mod tests {
 
     #[test]
     fn half_area_ratio_surface_generates_half_the_drag() {
-        let body = rudder_body();
-        let aero_model = vertical_surface_aero(&body, Ratio::new::<ratio>(1.));
+        let body1 = rudder_body();
+        let aero_model = vertical_surface_aero(&body1, Ratio::new::<ratio>(1.));
 
-        let mut test_bed = test_bed(TestAircraft::new(body, aero_model))
+        let mut test_bed_full_area = test_bed(TestAircraft::new(body1, aero_model))
             .with_headwind(Velocity::new::<meter_per_second>(0.))
             .with_left_wind(Velocity::new::<meter_per_second>(10.));
 
-        test_bed.run_without_delta();
+        test_bed_full_area.run_without_delta();
 
-        assert!(test_bed.query(|a| force_almost_equal_zero(a.body_aero_force_forward_value())));
-        assert!(test_bed.query(|a| force_almost_equal_zero(a.body_aero_force_up_value())));
-        assert!(test_bed.query(|a| a.body_aero_force_right_value() >= Force::new::<newton>(50.)));
+        let lateral_force_full_area = test_bed_full_area.query(|a| a.body_aero_force_right_value());
 
-        let aero_model_half = vertical_surface_aero(&body, Ratio::new::<ratio>(0.5));
+        let body2 = rudder_body();
+        let aero_model_half = vertical_surface_aero(&body2, Ratio::new::<ratio>(0.5));
 
-        let mut test_bed_half = test_bed(TestAircraft::new(body, aero_model_half))
+        let mut test_bed_half = test_bed(TestAircraft::new(body2, aero_model_half))
             .with_headwind(Velocity::new::<meter_per_second>(0.))
             .with_left_wind(Velocity::new::<meter_per_second>(10.));
+
+        test_bed_half.run_without_delta();
+
+        let lateral_force_half_area = test_bed_half.query(|a| a.body_aero_force_right_value());
+
+        assert!(forces_almost_equal(
+            lateral_force_full_area,
+            lateral_force_half_area * 2.
+        ));
     }
 
     #[test]
@@ -695,5 +703,9 @@ mod tests {
 
     fn force_almost_equal_zero(force: Force) -> bool {
         force.get::<newton>() < 1. && force.get::<newton>() > -1.
+    }
+
+    fn forces_almost_equal(force1: Force, force2: Force) -> bool {
+        (force1.get::<newton>() - force2.get::<newton>()).abs() < 1.
     }
 }
