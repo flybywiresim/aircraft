@@ -345,12 +345,7 @@ impl A320AileronFactory {
 
     fn new_aileron(context: &mut InitContext, id: ActuatorSide) -> AileronAssembly {
         let assembly = Self::a320_aileron_assembly();
-        AileronAssembly::new(
-            context,
-            id,
-            assembly,
-            Self::new_a320_aileron_aero_model(),
-        )
+        AileronAssembly::new(context, id, assembly, Self::new_a320_aileron_aero_model())
     }
 
     fn new_a320_aileron_aero_model() -> AerodynamicModel {
@@ -446,10 +441,7 @@ impl A320SpoilerFactory {
         let spoiler_4 = Self::new_a320_spoiler_element(context, id, 4);
         let spoiler_5 = Self::new_a320_spoiler_element(context, id, 5);
 
-        SpoilerGroup::new(
-            context,
-            [spoiler_1, spoiler_2, spoiler_3, spoiler_4, spoiler_5],
-        )
+        SpoilerGroup::new([spoiler_1, spoiler_2, spoiler_3, spoiler_4, spoiler_5])
     }
 
     fn new_a320_spoiler_element(
@@ -539,8 +531,7 @@ impl A320ElevatorFactory {
     fn a320_elevator_assembly() -> HydraulicLinearActuatorAssembly<2> {
         let elevator_body = Self::a320_elevator_body();
 
-        let elevator_actuator_outboard =
-            Self::a320_elevator_actuator(&elevator_body);
+        let elevator_actuator_outboard = Self::a320_elevator_actuator(&elevator_body);
         let elevator_actuator_inbord = Self::a320_elevator_actuator(&elevator_body);
 
         HydraulicLinearActuatorAssembly::new(
@@ -551,12 +542,7 @@ impl A320ElevatorFactory {
 
     fn new_elevator(context: &mut InitContext, id: ActuatorSide) -> ElevatorAssembly {
         let assembly = Self::a320_elevator_assembly();
-        ElevatorAssembly::new(
-            context,
-            id,
-            assembly,
-            Self::new_a320_elevator_aero_model(),
-        )
+        ElevatorAssembly::new(context, id, assembly, Self::new_a320_elevator_aero_model())
     }
 
     fn new_a320_elevator_aero_model() -> AerodynamicModel {
@@ -649,11 +635,7 @@ impl A320RudderFactory {
 
     fn new_rudder(context: &mut InitContext) -> RudderAssembly {
         let assembly = Self::a320_rudder_assembly();
-        RudderAssembly::new(
-            context,
-            assembly,
-            Self::new_a320_rudder_aero_model(),
-        )
+        RudderAssembly::new(context, assembly, Self::new_a320_rudder_aero_model())
     }
 
     fn new_a320_rudder_aero_model() -> AerodynamicModel {
@@ -1299,10 +1281,8 @@ impl A320Hydraulic {
         self.green_circuit
             .update_actuator_volumes(&mut self.braking_circuit_norm);
 
-        self.green_circuit.update_actuator_volumes(
-            self.left_aileron
-                .actuator(AileronActuatorPosition::Inboard),
-        );
+        self.green_circuit
+            .update_actuator_volumes(self.left_aileron.actuator(AileronActuatorPosition::Inboard));
         self.green_circuit.update_actuator_volumes(
             self.right_aileron
                 .actuator(AileronActuatorPosition::Inboard),
@@ -4085,9 +4065,7 @@ impl AileronAssembly {
         Self {
             hydraulic_assembly,
             position_id: match id {
-                ActuatorSide::Left => {
-                    context.get_identifier("HYD_AIL_LEFT_DEFLECTION".to_owned())
-                }
+                ActuatorSide::Left => context.get_identifier("HYD_AIL_LEFT_DEFLECTION".to_owned()),
                 ActuatorSide::Right => {
                     context.get_identifier("HYD_AIL_RIGHT_DEFLECTION".to_owned())
                 }
@@ -4097,10 +4075,7 @@ impl AileronAssembly {
         }
     }
 
-    fn actuator(
-        &mut self,
-        circuit_position: AileronActuatorPosition,
-    ) -> &mut impl Actuator {
+    fn actuator(&mut self, circuit_position: AileronActuatorPosition) -> &mut impl Actuator {
         self.hydraulic_assembly.actuator(circuit_position as usize)
     }
 
@@ -4147,9 +4122,7 @@ impl ElevatorAssembly {
         Self {
             hydraulic_assembly,
             position_id: match id {
-                ActuatorSide::Left => {
-                    context.get_identifier("HYD_ELEV_LEFT_DEFLECTION".to_owned())
-                }
+                ActuatorSide::Left => context.get_identifier("HYD_ELEV_LEFT_DEFLECTION".to_owned()),
                 ActuatorSide::Right => {
                     context.get_identifier("HYD_ELEV_RIGHT_DEFLECTION".to_owned())
                 }
@@ -4159,10 +4132,7 @@ impl ElevatorAssembly {
         }
     }
 
-    fn actuator(
-        &mut self,
-        circuit_position: ElevatorActuatorPosition,
-    ) -> &mut impl Actuator {
+    fn actuator(&mut self, circuit_position: ElevatorActuatorPosition) -> &mut impl Actuator {
         self.hydraulic_assembly.actuator(circuit_position as usize)
     }
 
@@ -4312,7 +4282,7 @@ struct SpoilerGroup {
     spoilers: [SpoilerElement; 5],
 }
 impl SpoilerGroup {
-    fn new(context: &mut InitContext, spoilers: [SpoilerElement; 5]) -> Self {
+    fn new(spoilers: [SpoilerElement; 5]) -> Self {
         Self { spoilers }
     }
 
@@ -8811,7 +8781,7 @@ mod tests {
             test_bed = test_bed
                 .set_ptu_state(false)
                 .set_yellow_e_pump(true)
-                .run_waiting_for(Duration::from_secs_f64(50.));
+                .run_waiting_for(Duration::from_secs_f64(75.));
 
             assert!(!test_bed.is_yellow_pressurised());
             assert!(!test_bed.is_green_pressurised());
