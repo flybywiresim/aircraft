@@ -5,7 +5,7 @@ import {
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 
-type N1Props = {
+interface N1Props {
     engine: 1 | 2,
     x: number,
     y: number,
