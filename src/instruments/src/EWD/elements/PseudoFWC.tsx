@@ -715,18 +715,6 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'LEFT',
         },
-        7700642: { // THR LEVERS NOT SET  (TOGA in flight)
-            flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
-            simVarIsActive: [5, 6, 7].includes(flightPhase) && (
-                !!(throttle1Position === 45 || throttle2Position === 45)
-            ),
-            whichCodeToReturn: [0, 1],
-            codesToReturn: ['770064201', '770064202'],
-            memoInhibit: false,
-            failure: 2,
-            sysPage: -1,
-            side: 'LEFT',
-        },
         7700647: { // THR LEVERS NOT SET  (on ground)
             flightPhaseInhib: [1, 4, 5, 6, 7, 8, 10],
             simVarIsActive: [2, 3, 4, 8, 9].includes(flightPhase) && (
