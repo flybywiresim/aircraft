@@ -89,7 +89,7 @@ const A1A2Cell = () => {
     const AThrMode = getSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum');
 
     let text: string | undefined;
-    let autobreakText: string | undefined;
+    let autobrakeText: string | undefined;
 
     switch (AThrMode) {
     case 1:
