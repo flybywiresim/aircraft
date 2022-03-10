@@ -5,7 +5,7 @@ import React from 'react';
 
 const padEWDCode = (code: number) => code.toString().padStart(9, '0');
 
-type LowerRightDisplayProps = {
+interface LowerRightDisplayProps {
     x: number,
     y: number,
 }
