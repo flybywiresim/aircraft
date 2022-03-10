@@ -184,6 +184,7 @@
 1. [EFB] Add first officer flypad - @tracernz (Mike)
 1. [CLK] Added simvars for Clock CHR and ET - @ssewell (Shane Sewell)
 1. [MODEL] Split master caution and warning lamps - @tracernz (Mike)
+1. [MCDU] Update init/fuel prediction pages to H3 - @tracernz (Mike)
 
 ## 0.7.0
 
