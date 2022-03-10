@@ -234,14 +234,14 @@ const AB3Cell = () => {
     if (machPresel !== -1) {
         const text = machPresel.toFixed(2);
         return (
-            <text className="FontMedium MiddleAlign Cyan" x="35.434673" y="21.656223">{`MACH SEL ${text}`}</text>
+            <text className="FontMedium Cyan" x="16.234673" y="21.656223">{`MACH SEL ${text}`}</text>
         );
     }
     const spdPresel = getSimVar('L:A32NX_SpeedPreselVal', 'knots');
     if (spdPresel !== -1) {
         const text = Math.round(spdPresel);
         return (
-            <text className="FontMedium MiddleAlign Cyan" x="35.434673" y="21.656223">{`SPEED SEL ${text}`}</text>
+            <text className="FontMedium Cyan" x="12.434673" y="21.656223">{`SPEED SEL ${text}`}</text>
         );
     }
     return null;
