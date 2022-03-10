@@ -7,21 +7,21 @@ interface N2Props {
     x: number,
     y: number,
     active:boolean,
-};
+}
 
 const N2: React.FC<N2Props> = ({ x, y, engine, active }) => {
     const [N2percent] = useSimVar(`L:A32NX_ENGINE_N2:${engine}`, 'percent', 100);
     const N2percentSplit = splitDecimals(N2percent < 0 ? 0.0 : N2percent);
     const [engineState] = useSimVar(`L:A32NX_ENGINE_STATE:${engine}`, 'bool', 500);
 
-    const starting = !!(N2percent < 58.5 && (engineState === 2 || engineState === 3)); // N1Percent sometimes does not reach N1Idle by .005 or so
-    // const starting = true;
+    const starting = !!(N2percent < 58.5 && (engineState === 2 || engineState === 3));
+    // N1Percent sometimes does not reach N1Idle by .005 or so
 
     return (
-            <g id={`N2-indicator-${engine}`}>
-                {!active
+        <g id={`N2-indicator-${engine}`}>
+            {!active
                     && <text className="Large End Amber" x={x + 60} y={y + 45}>XX</text>}
-                {active
+            {active
                     && (
                         <>
                             <rect x={x - 6} y={y + 22} width={80} height={25} className={`LightGreyBox ${starting ? 'Show' : 'Hide'}`} />
@@ -30,8 +30,7 @@ const N2: React.FC<N2Props> = ({ x, y, engine, active }) => {
                             <text className="Medium End Green" x={x + 70} y={y + 45}>{N2percentSplit[1]}</text>
                         </>
                     ) }
-            </g>
-        </>
+        </g>
     );
 };
 

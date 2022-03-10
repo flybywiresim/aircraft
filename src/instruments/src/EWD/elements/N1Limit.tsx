@@ -8,7 +8,7 @@ interface N1LimitProps {
     x: number,
     y: number,
     active: boolean,
-};
+}
 
 const N1Limit: React.FC<N1LimitProps> = ({ x, y, active }) => {
     const [N1LimitType] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE', 'enum', 500);
@@ -20,15 +20,15 @@ const N1Limit: React.FC<N1LimitProps> = ({ x, y, active }) => {
     const displayFlexTemp: boolean = flexTemp !== 0 && (flexTemp >= (sat.value - 10)) && N1LimitType === 3;
 
     return (
-            <g id="N1-Limit">
-                {!active
+        <g id="N1-Limit">
+            {!active
                 && (
                     <>
                         <text className="Large Center Amber" x={x} y={y}>XX</text>
                         <text className="Large Center Amber" x={x} y={y + 28}>XX</text>
                     </>
                 )}
-                {active
+            {active
                 && (
                     <>
                         <text className="Huge Center Cyan" x={x} y={y}>{thrustLimitTypeArray[N1LimitType]}</text>
@@ -38,7 +38,7 @@ const N1Limit: React.FC<N1LimitProps> = ({ x, y, active }) => {
                         <text className="Medium End Cyan" x={x + 53} y={y + 28}>%</text>
                     </>
                 )}
-                {active && displayFlexTemp
+            {active && displayFlexTemp
                 && (
                     <>
                         <text className="Medium Cyan" x={x - 20} y={y + 55}>
@@ -47,8 +47,7 @@ const N1Limit: React.FC<N1LimitProps> = ({ x, y, active }) => {
                         </text>
                     </>
                 )}
-            </g>
-        </>
+        </g>
     );
 };
 
