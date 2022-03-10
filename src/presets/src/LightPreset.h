@@ -18,8 +18,8 @@ class LightPreset {
   LightingSimVars* simVars;
 
   /**
- * Data structure for holding all relevant lighting levels and states.
- */
+   * Data structure for holding all relevant lighting levels and states.
+   */
   struct LightValues {
     // EFB
     double efbBrightness;  // A32NX_EFB_BRIGHTNESS
@@ -50,7 +50,7 @@ class LightPreset {
     double ecamLowerLightLevel;         // 93
     double floodPnlLightLevel;          // 83
     double pedestalIntegralLightLevel;  // 85
-    double floodPedLightLevel;           // 76
+    double floodPedLightLevel;          // 76
   };
 
  public:
@@ -72,12 +72,6 @@ class LightPreset {
   void readFromAircraft();
 
   /**
-   * Load lighting level based on a given LightValue data structure
-   * @param lv a loadFromData of LightValue data
-   */
-  void loadFromData(LightValues lv);
-
-  /**
    * Applies the currently loaded preset to the aircraft
    */
   void applyToAircraft();
@@ -93,6 +87,12 @@ class LightPreset {
    * @return true if successful, false otherwise.
    */
   bool saveToStore(int presetNr);
+
+  /**
+   * Load lighting level based on a given LightValue data structure
+   * @param lv a loadFromData of LightValue data
+   */
+  void loadFromData(LightValues lv);
 
   /**
    * Produces a string with the current settings and their values.
@@ -114,11 +114,11 @@ class LightPreset {
   double iniGetOrDefault(const mINI::INIStructure& ini, const std::string& section, const std::string& key, const double defaultValue);
 
   const LightValues DEFAULT_100 = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
-                                    100.0, 100.0, 100.0, 1.0,   1.0,   1.0,   1.0,   100.0, 100.0, 100.0, 100.0, 100.0};
+                                   100.0, 100.0, 100.0, 1.0,   1.0,   1.0,   1.0,   100.0, 100.0, 100.0, 100.0, 100.0};
 
   const LightValues DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
-                                   50.0, 50.0, 50.0, 0.5,  0.5,  0.5,  0.5,  50.0, 50.0, 50.0, 50.0, 50.0};
+                                  50.0, 50.0, 50.0, 0.5,  0.5,  0.5,  0.5,  50.0, 50.0, 50.0, 50.0, 50.0};
 
   const LightValues DEFAULT_10 = {10.0, 0.0,  10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
-                                   10.0, 10.0, 10.0, 0.1,  0.1,  0.1,  0.0,  10.0, 10.0, 10.0, 10.0, 10.0};
+                                  10.0, 10.0, 10.0, 0.1,  0.1,  0.1,  0.0,  10.0, 10.0, 10.0, 10.0, 10.0};
 };

@@ -129,7 +129,7 @@ const SinglePreset = (props: { presetID: number, getPresetName: (arg0: number) =
         props.storePresetName(props.presetID, newName);
     };
 
-    // Get preset name from persistent store once
+    // Get preset name from persistent store when the names map changes
     useEffect(() => {
         const tmp: string = props.getPresetName(props.presetID);
         setPresetName(tmp);

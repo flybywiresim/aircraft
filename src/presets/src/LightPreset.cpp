@@ -34,10 +34,6 @@ void LightPreset::readFromAircraft() {
   lightValues.floodPedLightLevel = simVars->getLightPotentiometer(76);
 }
 
-void LightPreset::loadFromData(LightValues lv) {
-  lightValues = lv;
-}
-
 void LightPreset::applyToAircraft() {
   simVars->setEfbBrightness(lightValues.efbBrightness);
   simVars->setLightCabin(lightValues.cabinLightLevel);
@@ -164,6 +160,10 @@ bool LightPreset::saveToStore(int presetNr) {
   result &= iniFile.write(ini, true);
 
   return result;
+}
+
+void LightPreset::loadFromData(LightValues lv) {
+  lightValues = lv;
 }
 
 std::string LightPreset::sprint() {
