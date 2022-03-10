@@ -2,12 +2,11 @@ import { splitDecimals } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 
-type N2Props = {
+interface N2Props {
     engine: 1 | 2,
     x: number,
     y: number,
     active:boolean,
-
 };
 
 const N2: React.FC<N2Props> = ({ x, y, engine, active }) => {
