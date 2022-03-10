@@ -4,7 +4,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Arinc429Word } from '@shared/arinc429';
 import React from 'react';
 
-type N1LimitProps = {
+interface N1LimitProps {
     x: number,
     y: number,
     active: boolean,
