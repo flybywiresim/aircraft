@@ -20,17 +20,35 @@
 
         <!-- EFB -->
 
-        <Component ID="EFB">
-            <Component ID="SCREEN_EFB" Node="SCREEN_EFB">
+        <Component ID="EFB_L">
+            <Component ID="SCREEN_EFB_L" Node="SCREEN_EFB_L">
                 <DefaultTemplateParameters>
-                    <NODE_ID>SCREEN_EFB</NODE_ID>
+                    <NODE_ID>SCREEN_EFB_L</NODE_ID>
                 </DefaultTemplateParameters>
 
                 <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
                     <EMISSIVE_CODE>(L:A32NX_EFB_BRIGHTNESS, number) 10 max 100 min 100 /</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
-            <Component ID="PUSH_EFB_SIDE" Node="PUSH_EFB_SIDE">
+            <Component ID="PUSH_EFB_SIDE_L" Node="PUSH_EFB_SIDE_L">
+                <UseTemplate Name="ASOBO_GT_Push_Button">
+                    <LEFT_SINGLE_CODE>(&gt;H:A32NX_EFB_POWER)</LEFT_SINGLE_CODE>
+                    <TOOLTIPID>EFB power</TOOLTIPID>
+                </UseTemplate>
+            </Component>
+        </Component>
+
+        <Component ID="EFB_R">
+            <Component ID="SCREEN_EFB_R" Node="SCREEN_EFB_R">
+                <DefaultTemplateParameters>
+                    <NODE_ID>SCREEN_EFB_R</NODE_ID>
+                </DefaultTemplateParameters>
+
+                <UseTemplate Name="ASOBO_GT_Material_Emissive_Code">
+                    <EMISSIVE_CODE>(L:A32NX_EFB_BRIGHTNESS, number) 10 max 100 min 100 /</EMISSIVE_CODE>
+                </UseTemplate>
+            </Component>
+            <Component ID="PUSH_EFB_SIDE_R" Node="PUSH_EFB_SIDE_R">
                 <UseTemplate Name="ASOBO_GT_Push_Button">
                     <LEFT_SINGLE_CODE>(&gt;H:A32NX_EFB_POWER)</LEFT_SINGLE_CODE>
                     <TOOLTIPID>EFB power</TOOLTIPID>

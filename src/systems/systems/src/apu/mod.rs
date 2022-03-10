@@ -1456,10 +1456,12 @@ pub mod tests {
 
         #[test]
         fn max_starting_egt_at_or_above_25000_feet_is_982_degrees() {
+            // We test using some decimals above 25000 because foot conversion of 25000 feet
+            // ends up being lower than 25000 feet in uom 0.32.0
             let mut test_bed = test_bed_with()
                 .starting_apu()
                 .and()
-                .indicated_altitude(Length::new::<foot>(25000.))
+                .indicated_altitude(Length::new::<foot>(25000.00001))
                 .run(Duration::from_secs(1));
 
             assert_about_eq!(

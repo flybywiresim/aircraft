@@ -3,7 +3,7 @@ use nalgebra::Vector3;
 use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
-    angle::degree,
+    angle::{degree, radian},
     angular_velocity::{radian_per_second, revolution_per_minute},
     electric_current::ampere,
     f64::*,
@@ -19,6 +19,7 @@ use uom::si::{
 use systems::{
     engine::Engine,
     hydraulic::{
+        aerodynamic_model::AerodynamicModel,
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
             BrakeCircuitController,
@@ -42,7 +43,9 @@ use systems::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
     shared::{
-        interpolation, random_from_range,
+        interpolation,
+        low_pass_filter::LowPassFilter,
+        random_from_range,
         update_iterator::{FixedStepLoop, MaxStepLoop},
         DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
@@ -119,7 +122,7 @@ impl A320HydraulicReservoirFactory {
     }
 }
 
-struct A320HydraulicCircuitFactory {}
+pub struct A320HydraulicCircuitFactory {}
 impl A320HydraulicCircuitFactory {
     const MIN_PRESS_EDP_SECTION_LO_HYST: f64 = 1740.0;
     const MIN_PRESS_EDP_SECTION_HI_HYST: f64 = 2200.0;
@@ -128,7 +131,7 @@ impl A320HydraulicCircuitFactory {
 
     const YELLOW_GREEN_BLUE_PUMPS_INDEXES: usize = 0;
 
-    fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
+    pub fn new_green_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_green_reservoir(context);
         HydraulicCircuit::new(
             context,
@@ -146,7 +149,7 @@ impl A320HydraulicCircuitFactory {
         )
     }
 
-    fn new_blue_circuit(context: &mut InitContext) -> HydraulicCircuit {
+    pub fn new_blue_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_blue_reservoir(context);
         HydraulicCircuit::new(
             context,
@@ -164,7 +167,7 @@ impl A320HydraulicCircuitFactory {
         )
     }
 
-    fn new_yellow_circuit(context: &mut InitContext) -> HydraulicCircuit {
+    pub fn new_yellow_circuit(context: &mut InitContext) -> HydraulicCircuit {
         let reservoir = A320HydraulicReservoirFactory::new_yellow_reservoir(context);
         HydraulicCircuit::new(
             context,
@@ -237,21 +240,36 @@ impl A320CargoDoorFactory {
     /// Builds a cargo door assembly consisting of the door physical rigid body and the hydraulic actuator connected
     /// to it
     fn a320_cargo_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
-        let cargo_door_body = A320CargoDoorFactory::a320_cargo_door_body(true);
-        let cargo_door_actuator = A320CargoDoorFactory::a320_cargo_door_actuator(&cargo_door_body);
+        let cargo_door_body = Self::a320_cargo_door_body(true);
+        let cargo_door_actuator = Self::a320_cargo_door_actuator(&cargo_door_body);
         HydraulicLinearActuatorAssembly::new([cargo_door_actuator], cargo_door_body)
     }
 
     fn new_a320_cargo_door(context: &mut InitContext, id: &str) -> CargoDoor {
-        let assembly = A320CargoDoorFactory::a320_cargo_door_assembly();
-        CargoDoor::new(context, id, assembly)
+        let assembly = Self::a320_cargo_door_assembly();
+        CargoDoor::new(
+            context,
+            id,
+            assembly,
+            Self::new_a320_cargo_door_aero_model(),
+        )
+    }
+
+    fn new_a320_cargo_door_aero_model() -> AerodynamicModel {
+        let body = Self::a320_cargo_door_body(false);
+        AerodynamicModel::new(
+            &body,
+            Some(Vector3::new(1., 0., 0.)),
+            Some(Vector3::new(0., 0., 1.)),
+            Some(Vector3::new(1., 0., 0.)),
+        )
     }
 }
 
 struct A320AileronFactory {}
 impl A320AileronFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 1.5;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 3.;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.6;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 800000.;
@@ -262,12 +280,17 @@ impl A320AileronFactory {
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
         );
 
+        // Aileron actuator real data:
+        // Max force of 4700DaN @ 3000psi. Max flow 3.302 US gal/min thus 0.055033333 gal/s
+        // This gives a 0.00227225 squared meter of piston surface
+        // This gives piston diameter of 0.0537878 meters
+        // We use 0 as rod diameter as this is a symmetrical actuator so same surface each side
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.04),
+            Length::new::<meter>(0.0537878),
             Length::new::<meter>(0.),
-            VolumeRate::new::<gallon_per_second>(0.02),
+            VolumeRate::new::<gallon_per_second>(0.055),
             80000.,
             1500.,
             5000.,
@@ -307,10 +330,10 @@ impl A320AileronFactory {
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
     fn a320_aileron_assembly() -> HydraulicLinearActuatorAssembly<2> {
-        let aileron_body = A320AileronFactory::a320_aileron_body();
+        let aileron_body = Self::a320_aileron_body();
 
-        let aileron_actuator_outward = A320AileronFactory::a320_aileron_actuator(&aileron_body);
-        let aileron_actuator_inward = A320AileronFactory::a320_aileron_actuator(&aileron_body);
+        let aileron_actuator_outward = Self::a320_aileron_actuator(&aileron_body);
+        let aileron_actuator_inward = Self::a320_aileron_actuator(&aileron_body);
 
         HydraulicLinearActuatorAssembly::new(
             [aileron_actuator_outward, aileron_actuator_inward],
@@ -319,8 +342,18 @@ impl A320AileronFactory {
     }
 
     fn new_aileron(context: &mut InitContext, id: AileronSide) -> AileronAssembly {
-        let assembly = A320AileronFactory::a320_aileron_assembly();
-        AileronAssembly::new(context, id, assembly)
+        let assembly = Self::a320_aileron_assembly();
+        AileronAssembly::new(context, id, assembly, Self::new_a320_aileron_aero_model())
+    }
+
+    fn new_a320_aileron_aero_model() -> AerodynamicModel {
+        let body = Self::a320_aileron_body();
+        AerodynamicModel::new(
+            &body,
+            Some(Vector3::new(0., 1., 0.)),
+            Some(Vector3::new(0., 0., 1.)),
+            Some(Vector3::new(0., 1., 0.)),
+        )
     }
 }
 
@@ -2592,12 +2625,15 @@ struct CargoDoor {
     position: Ratio,
 
     is_locked: bool,
+
+    aerodynamic_model: AerodynamicModel,
 }
 impl CargoDoor {
     fn new(
         context: &mut InitContext,
         id: &str,
         hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
+        aerodynamic_model: AerodynamicModel,
     ) -> Self {
         Self {
             hydraulic_assembly,
@@ -2607,6 +2643,8 @@ impl CargoDoor {
             position: Ratio::new::<ratio>(0.),
 
             is_locked: true,
+
+            aerodynamic_model,
         }
     }
 
@@ -2628,13 +2666,16 @@ impl CargoDoor {
         cargo_door_controller: &impl HydraulicAssemblyController,
         current_pressure: Pressure,
     ) {
+        self.aerodynamic_model
+            .update_body(context, self.hydraulic_assembly.body());
         self.hydraulic_assembly.update(
             context,
             std::slice::from_ref(cargo_door_controller),
             [current_pressure],
         );
-        self.is_locked = self.hydraulic_assembly.is_locked();
+
         self.position = self.hydraulic_assembly.position_normalized();
+        self.is_locked = self.hydraulic_assembly.is_locked();
     }
 }
 impl SimulationElement for CargoDoor {
@@ -2649,7 +2690,8 @@ struct PushbackTug {
     state_id: VariableIdentifier,
     steer_angle_id: VariableIdentifier,
 
-    steering_angle: Angle,
+    steering_angle_raw: Angle,
+    steering_angle: LowPassFilter<Angle>,
 
     // Type of pushback:
     // 0 = Straight
@@ -2666,13 +2708,16 @@ impl PushbackTug {
 
     const STATE_NO_PUSHBACK: f64 = 3.;
 
+    const STEERING_ANGLE_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             nw_strg_disc_memo_id: context.get_identifier("HYD_NW_STRG_DISC_ECAM_MEMO".to_owned()),
             state_id: context.get_identifier("PUSHBACK STATE".to_owned()),
             steer_angle_id: context.get_identifier("PUSHBACK ANGLE".to_owned()),
 
-            steering_angle: Angle::new::<degree>(0.),
+            steering_angle_raw: Angle::default(),
+            steering_angle: LowPassFilter::new(Self::STEERING_ANGLE_FILTER_TIME_CONSTANT),
 
             state: Self::STATE_NO_PUSHBACK,
             nose_wheel_steering_pin_inserted: DelayedFalseLogicGate::new(
@@ -2684,6 +2729,13 @@ impl PushbackTug {
     fn update(&mut self, context: &UpdateContext) {
         self.nose_wheel_steering_pin_inserted
             .update(context, self.is_pushing());
+
+        if self.is_pushing() {
+            self.steering_angle
+                .update(context.delta(), self.steering_angle_raw);
+        } else {
+            self.steering_angle.reset(Angle::default());
+        }
     }
 
     fn is_pushing(&self) -> bool {
@@ -2696,14 +2748,14 @@ impl Pushback for PushbackTug {
     }
 
     fn steering_angle(&self) -> Angle {
-        self.steering_angle
+        self.steering_angle.output()
     }
 }
 impl SimulationElement for PushbackTug {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.state = reader.read(&self.state_id);
 
-        self.steering_angle = reader.read(&self.steer_angle_id);
+        self.steering_angle_raw = Angle::new::<radian>(reader.read(&self.steer_angle_id));
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -3162,9 +3214,15 @@ struct ElacComputer {
     left_controllers: [AileronController; 2],
     right_controllers: [AileronController; 2],
 
+    green_circuit_available: bool,
+    blue_circuit_available: bool,
+
     is_powered: bool,
 }
 impl ElacComputer {
+    const PRESSURE_AVAILABLE_HIGH_HYSTERESIS_PSI: f64 = 1450.;
+    const PRESSURE_AVAILABLE_LOW_HYSTERESIS_PSI: f64 = 800.;
+
     //TODO hot busses are in reality sub busses 703pp and 704pp
     const ALL_POWER_BUSES: [ElectricalBusType; 4] = [
         ElectricalBusType::DirectCurrentEssential,
@@ -3186,6 +3244,9 @@ impl ElacComputer {
             // Controllers are in outward->inward order, so for aileron [Blue circuit, Green circuit]
             left_controllers: [AileronController::new(), AileronController::new()],
             right_controllers: [AileronController::new(), AileronController::new()],
+
+            green_circuit_available: false,
+            blue_circuit_available: false,
 
             is_powered: false,
         }
@@ -3265,28 +3326,40 @@ impl ElacComputer {
         }
     }
 
-    fn update_aileron(&mut self, green_circuit_available: bool, blue_circuit_available: bool) {
+    fn update_aileron(&mut self) {
         if self.is_powered {
             self.set_right_aileron_position_control(AileronHydConfiguration::from_hyd_state(
-                green_circuit_available,
-                blue_circuit_available,
+                self.green_circuit_available,
+                self.blue_circuit_available,
             ));
             self.set_left_aileron_position_control(AileronHydConfiguration::from_hyd_state(
-                green_circuit_available,
-                blue_circuit_available,
+                self.green_circuit_available,
+                self.blue_circuit_available,
             ));
         } else {
             self.set_aileron_no_position_control();
         }
     }
 
+    fn circuit_is_available(pressure: Pressure, current_availability: bool) -> bool {
+        if pressure.get::<psi>() > Self::PRESSURE_AVAILABLE_HIGH_HYSTERESIS_PSI {
+            true
+        } else if pressure.get::<psi>() < Self::PRESSURE_AVAILABLE_LOW_HYSTERESIS_PSI {
+            false
+        } else {
+            current_availability
+        }
+    }
+
     fn update(&mut self, blue_pressure: Pressure, green_pressure: Pressure) {
         self.update_aileron_requested_position();
 
-        let blue_circuit_available = blue_pressure.get::<psi>() > 1500.;
-        let green_circuit_available = green_pressure.get::<psi>() > 1500.;
+        self.blue_circuit_available =
+            Self::circuit_is_available(blue_pressure, self.blue_circuit_available);
+        self.green_circuit_available =
+            Self::circuit_is_available(green_pressure, self.green_circuit_available);
 
-        self.update_aileron(green_circuit_available, blue_circuit_available);
+        self.update_aileron();
     }
 
     fn left_controllers(&self) -> &[impl HydraulicAssemblyController] {
@@ -3328,12 +3401,15 @@ struct AileronAssembly {
     position_id: VariableIdentifier,
 
     position: Ratio,
+
+    aerodynamic_model: AerodynamicModel,
 }
 impl AileronAssembly {
     fn new(
         context: &mut InitContext,
         id: AileronSide,
         hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
+        aerodynamic_model: AerodynamicModel,
     ) -> Self {
         Self {
             hydraulic_assembly,
@@ -3342,6 +3418,7 @@ impl AileronAssembly {
                 AileronSide::Right => context.get_identifier("HYD_AIL_RIGHT_DEFLECTION".to_owned()),
             },
             position: Ratio::new::<ratio>(0.),
+            aerodynamic_model,
         }
     }
 
@@ -3356,6 +3433,8 @@ impl AileronAssembly {
         current_pressure_blue: Pressure,
         current_pressure_green: Pressure,
     ) {
+        self.aerodynamic_model
+            .update_body(context, self.hydraulic_assembly.body());
         self.hydraulic_assembly.update(
             context,
             aileron_controllers,
@@ -4012,6 +4091,10 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("HYD_AIL_RIGHT_DEFLECTION"))
             }
 
+            fn get_nose_steering_ratio(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("NOSE_WHEEL_POSITION_RATIO"))
+            }
+
             fn rat_deploy_commanded(&self) -> bool {
                 self.query(|a| a.is_rat_commanded_to_deploy())
             }
@@ -4162,6 +4245,11 @@ mod tests {
                 } else {
                     self.write_by_name("PUSHBACK STATE", 3.);
                 }
+                self
+            }
+
+            fn set_pushback_angle(mut self, angle: Angle) -> Self {
+                self.write_by_name("PUSHBACK ANGLE", angle.get::<radian>());
                 self
             }
 
@@ -7224,9 +7312,9 @@ mod tests {
 
             let current_position_unlocked = test_bed.cargo_fwd_door_position();
 
-            test_bed = test_bed
-                .open_fwd_cargo_door()
-                .run_waiting_for(A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL);
+            test_bed = test_bed.open_fwd_cargo_door().run_waiting_for(
+                A320DoorController::DELAY_UNLOCK_TO_HYDRAULIC_CONTROL + Duration::from_secs(1),
+            );
 
             assert!(test_bed.cargo_fwd_door_position() > current_position_unlocked);
 
@@ -7771,6 +7859,44 @@ mod tests {
             assert!(!test_bed.is_yellow_leak_meas_valve_commanded_open());
             assert!(!test_bed.is_blue_leak_meas_valve_commanded_open());
             assert!(!test_bed.is_green_leak_meas_valve_commanded_open());
+        }
+
+        #[test]
+        fn nose_wheel_steers_with_pushback_tug() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_pushback_state(true)
+                .set_pushback_angle(Angle::new::<degree>(80.))
+                .run_waiting_for(Duration::from_secs_f64(0.5));
+
+            // Do not turn instantly in 0.5s
+            assert!(
+                test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.)
+                    && test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(0.5)
+            );
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+
+            // Has turned fully after 5s
+            assert!(test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.9));
+
+            // Going left
+            test_bed = test_bed
+                .set_pushback_state(true)
+                .set_pushback_angle(Angle::new::<degree>(-80.))
+                .run_waiting_for(Duration::from_secs_f64(0.5));
+
+            assert!(test_bed.get_nose_steering_ratio() > Ratio::new::<ratio>(0.2));
+
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+
+            // Has turned fully left after 5s
+            assert!(test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(-0.9));
         }
     }
 }
