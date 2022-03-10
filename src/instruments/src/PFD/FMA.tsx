@@ -89,6 +89,7 @@ const A1A2Cell = () => {
     const AThrMode = getSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum');
 
     let text: string | undefined;
+    let autobreakText: string | undefined;
 
     switch (AThrMode) {
     case 1:
@@ -178,7 +179,23 @@ const A1A2Cell = () => {
             </g>
         );
     default:
-        return null;
+        break;
+    }
+
+    // Autobrakes displays in PFD when active and no warning from AUTOTHROTTLE
+    const autobreakMessage = getSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum');
+    switch (autobreakMessage) {
+    case 1:
+        autobreakText = 'BRK LO';
+        break;
+    case 2:
+        autobreakText = 'BRK MED';
+        break;
+    case 3:
+        autobreakText = 'BRK MAX';
+        break;
+    default:
+        break;
     }
 
     return (
@@ -187,6 +204,7 @@ const A1A2Cell = () => {
                 <path className="NormalStroke White" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
             </ShowForSeconds>
             <text className="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">{text}</text>
+            <text className="FontMedium MiddleAlign Cyan" x="16.989958" y="14.382949">{autobreakText}</text>
         </g>
     );
 };
@@ -243,24 +261,6 @@ const AB3Cell = () => {
         return (
             <text className="FontMedium MiddleAlign Cyan" x="35.434673" y="21.656223">{`SPEED SEL ${text}`}</text>
         );
-    }
-
-    // Autobrakes displays in PFD when active
-    const autobreakMessage = getSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum');
-    switch (autobreakMessage) {
-    case 1:
-        return (
-            <text className="FontMedium MiddleAlign Cyan" x="16.989958" y="21.641243">BRK LO</text>
-        );
-    case 2:
-        return (
-            <text className="FontMedium MiddleAlign Cyan" x="16.989958" y="21.641243">BRK MED</text>
-        );
-    case 3:
-        return (
-            <text className="FontMedium MiddleAlign Cyan" x="16.989958" y="21.641243">BRK MAX</text>
-        );
-    default:
     }
     return null;
 };
