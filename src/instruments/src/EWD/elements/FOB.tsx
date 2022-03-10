@@ -2,7 +2,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { fuelForDisplay } from '@instruments/common/fuel';
 import React from 'react';
 
-type FOBProps = {
+interface FOBProps {
     unit: string,
     x: number,
     y: number,
