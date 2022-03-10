@@ -183,8 +183,8 @@ const A1A2Cell = () => {
     }
 
     // Autobrakes displays in PFD when active and no warning from AUTOTHROTTLE
-    const autobreakMessage = getSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum');
-    switch (autobreakMessage) {
+    const autobrakeMessage = getSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum');
+    switch (autobrakeMessage) {
     case 1:
         autobrakeText = 'BRK LO';
         break;
