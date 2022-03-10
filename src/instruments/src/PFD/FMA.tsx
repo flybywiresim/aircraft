@@ -186,13 +186,13 @@ const A1A2Cell = () => {
     const autobreakMessage = getSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum');
     switch (autobreakMessage) {
     case 1:
-        autobreakText = 'BRK LO';
+        autobrakeText = 'BRK LO';
         break;
     case 2:
-        autobreakText = 'BRK MED';
+        autobrakeText = 'BRK MED';
         break;
     case 3:
-        autobreakText = 'BRK MAX';
+        autobrakeText = 'BRK MAX';
         break;
     default:
         break;
@@ -204,7 +204,7 @@ const A1A2Cell = () => {
                 <path className="NormalStroke White" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
             </ShowForSeconds>
             <text className="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">{text}</text>
-            <text className="FontMedium MiddleAlign Cyan" x="16.989958" y="14.382949">{autobreakText}</text>
+            <text className="FontMedium MiddleAlign Cyan" x="16.989958" y="14.382949">{autobrakeText}</text>
         </g>
     );
 };
