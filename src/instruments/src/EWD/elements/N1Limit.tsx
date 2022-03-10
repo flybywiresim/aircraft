@@ -20,7 +20,6 @@ const N1Limit: React.FC<N1LimitProps> = ({ x, y, active }) => {
     const displayFlexTemp: boolean = flexTemp !== 0 && (flexTemp >= (sat.value - 10)) && N1LimitType === 3;
 
     return (
-        <>
             <g id="N1-Limit">
                 {!active
                 && (
