@@ -6,6 +6,7 @@
 
 ## 0.8.0
 
+1. [PFD] Included Auto BRK messages in PFD as latest real life update - @brainshot (brainshot)
 1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
 1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
 1. [HYD] Hydraulic system updated. Multiple sections. Better regulation - @Crocket63 (crocket)

@@ -244,6 +244,24 @@ const AB3Cell = () => {
             <text className="FontMedium MiddleAlign Cyan" x="35.434673" y="21.656223">{`SPEED SEL ${text}`}</text>
         );
     }
+
+    // Autobrakes displays in PFD when active
+    const autobreakMessage = getSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum');
+    switch (autobreakMessage) {
+    case 1:
+        return (
+            <text className="FontMedium MiddleAlign Cyan" x="16.989958" y="21.641243">BRK LO</text>
+        );
+    case 2:
+        return (
+            <text className="FontMedium MiddleAlign Cyan" x="16.989958" y="21.641243">BRK MED</text>
+        );
+    case 3:
+        return (
+            <text className="FontMedium MiddleAlign Cyan" x="16.989958" y="21.641243">BRK MAX</text>
+        );
+    default:
+    }
     return null;
 };
 
