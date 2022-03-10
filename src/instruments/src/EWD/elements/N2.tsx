@@ -19,7 +19,6 @@ const N2: React.FC<N2Props> = ({ x, y, engine, active }) => {
     // const starting = true;
 
     return (
-        <>
             <g id={`N2-indicator-${engine}`}>
                 {!active
                     && <text className="Large End Amber" x={x + 60} y={y + 45}>XX</text>}
