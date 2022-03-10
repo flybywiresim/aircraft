@@ -20,6 +20,9 @@ import { ColorCode, MetarParserType, Visibility, Wind } from '../../Common/metar
  * @license   Original library: MIT License, Extensions: https://github.com/flybywiresim/a32nx/blob/master/LICENSE
  */
 export function parseMetar(metarString: string): MetarParserType {
+    if (metarString === undefined) {
+        throw new Error('METAR NOT AVAILABLE');
+    }
     const metarArray = metarString
         .trim()
         .replace(/^METAR\S*?\s/, '')
