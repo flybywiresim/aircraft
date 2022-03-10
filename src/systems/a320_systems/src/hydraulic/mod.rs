@@ -4385,11 +4385,15 @@ struct SpoilerComputer {
     requested_position_right_4_id: VariableIdentifier,
     requested_position_right_5_id: VariableIdentifier,
 
+    spoilers_ground_spoilers_active_id: VariableIdentifier,
+
     left_positions_requested: [Ratio; 5],
     right_positions_requested: [Ratio; 5],
 
     left_controllers: [SpoilerController; 5],
     right_controllers: [SpoilerController; 5],
+
+    ground_spoilers_are_deployed: bool,
 }
 impl SpoilerComputer {
     fn new(context: &mut InitContext) -> Self {
@@ -4416,12 +4420,17 @@ impl SpoilerComputer {
             requested_position_right_5_id: context
                 .get_identifier("HYD_SPOILER_5_RIGHT_DEMAND".to_owned()),
 
+            spoilers_ground_spoilers_active_id: context
+                .get_identifier("SPOILERS_GROUND_SPOILERS_ACTIVE".to_owned()),
+
             left_positions_requested: [Ratio::default(); 5],
             right_positions_requested: [Ratio::default(); 5],
 
-            // Controllers are in outward->inward order
+            // Controllers are in inward->outward order
             left_controllers: [SpoilerController::new(); 5],
             right_controllers: [SpoilerController::new(); 5],
+
+            ground_spoilers_are_deployed: false,
         }
     }
 
@@ -4432,6 +4441,12 @@ impl SpoilerComputer {
 
         for (idx, controller) in &mut self.right_controllers.iter_mut().enumerate() {
             controller.set_requested_position(self.right_positions_requested[idx]);
+        }
+
+        // Placeholder logic only allowing inward panel if ground spoiler is used
+        if !self.ground_spoilers_are_deployed {
+            self.left_controllers[0].set_requested_position(Ratio::new::<ratio>(0.));
+            self.right_controllers[0].set_requested_position(Ratio::new::<ratio>(0.));
         }
     }
 
@@ -4459,6 +4474,8 @@ impl SimulationElement for SpoilerComputer {
             Ratio::new::<ratio>(reader.read(&self.requested_position_right_4_id)),
             Ratio::new::<ratio>(reader.read(&self.requested_position_right_5_id)),
         ];
+
+        self.ground_spoilers_are_deployed = reader.read(&self.spoilers_ground_spoilers_active_id);
 
         self.update_spoilers_requested_position();
     }
