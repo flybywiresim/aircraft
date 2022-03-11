@@ -22,6 +22,14 @@ class A32NX_PFD extends BaseInstrument {
 
     private readonly adirsValueProvider: AdirsValueProvider;
 
+    /**
+     * "mainmenu" = 0
+     * "loading" = 1
+     * "briefing" = 2
+     * "ingame" = 3
+     */
+    private gameState = 0;
+
     constructor() {
         super();
         this.bus = new EventBus();
@@ -163,11 +171,6 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('betaTarget');
         this.simVarPublisher.subscribe('latAcc');
 
-        this.simVarPublisher.startPublish();
-        this.hEventPublisher.startPublish();
-
-        this.adirsValueProvider.start();
-
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
     }
 
@@ -177,9 +180,19 @@ class A32NX_PFD extends BaseInstrument {
     public Update(): void {
         super.Update();
 
-        this.simVarPublisher.onUpdate();
-        this.simplaneValueProvider.onUpdate();
-        this.clock.onUpdate();
+        if (this.gameState !== 3) {
+            const gamestate = this.getGameState();
+            if (gamestate === 3) {
+                this.simVarPublisher.startPublish();
+                this.hEventPublisher.startPublish();
+                this.adirsValueProvider.start();
+            }
+            this.gameState = gamestate;
+        } else {
+            this.simVarPublisher.onUpdate();
+            this.simplaneValueProvider.onUpdate();
+            this.clock.onUpdate();
+        }
     }
 }
 

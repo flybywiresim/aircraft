@@ -107,10 +107,14 @@ export class Consumer<T> {
           const multiplier = Math.pow(10, precision);
 
           const currentValueAtPrecision = Math.round(dataValue * multiplier) / multiplier;
-          if (currentValueAtPrecision !== state.lastValue || state.hasNormalOps !== (data as any).isNormalOperation()) {
+          if (currentValueAtPrecision !== state.lastValue
+                || state.hasNormalOps !== (data as any).isNormalOperation()
+                || state.isNoComputedData !== (data as any).isNoComputedData()
+                || state.isFailureWarning !== (data as any).isFailureWarning()) {
               state.lastValue = currentValueAtPrecision;
               state.hasNormalOps = (data as any).isNormalOperation();
-
+              state.isNoComputedData = (data as any).isNoComputedData();
+              state.isFailureWarning = (data as any).isFailureWarning();
               this.with(data, next);
           }
       });

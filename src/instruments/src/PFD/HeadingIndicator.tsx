@@ -31,10 +31,6 @@ export class HeadingTape extends DisplayComponent<HeadingTapeProps> {
     }
 
     render(): VNode {
-        /*        if (!this.props.heading.isNormalOperation()) {
-                return <></>;
-            }
-          */
         return (
             <g ref={this.headingTapeRef}>
                 <path id="HeadingTapeBackground" d="m32.138 145.34h73.536v10.382h-73.536z" class="TapeBackground" />
@@ -135,7 +131,7 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
         const spsub = this.props.bus.getSubscriber<SimplaneValues>();
 
         spsub.on('selectedHeading').whenChanged().handle((h) => {
-            if (this.showSelectedHeading) {
+            if (this.showSelectedHeading === 1) {
                 this.selectedHeading = h;
                 this.handleDelta(this.props.heading.get(), this.selectedHeading);
             } else {
@@ -145,6 +141,9 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
 
         sub.on('showSelectedHeading').whenChanged().handle((sh) => {
             this.showSelectedHeading = sh;
+            if (this.showSelectedHeading === 0) {
+                this.selectedHeading = NaN;
+            }
             this.handleDelta(this.props.heading.get(), this.selectedHeading);
         });
 
@@ -190,9 +189,7 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
 
             <>
                 <path ref={this.targetIndicator} id="HeadingTargetIndicator" class="NormalStroke Cyan CornerRound" d="m69.978 145.1 1.9501-5.3609h-6.0441l1.9501 5.3609" />
-
                 <text ref={this.headingTextRight} id="SelectedHeadingTextRight" class="FontSmallest MiddleAlign Cyan" x="101.70432" y="144.34792">{this.text}</text>
-
                 <text ref={this.headingTextLeft} id="SelectedHeadingTextLeft" class="FontSmallest MiddleAlign Cyan" x="36.418198" y="144.32108">{this.text}</text>
             </>
         );

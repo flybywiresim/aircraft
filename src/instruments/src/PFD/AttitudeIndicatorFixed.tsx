@@ -267,13 +267,12 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
     private verticalRef2 = FSComponent.createRef<SVGPathElement>();
 
     private setOffset() {
-        const showLateralFD = this.lateralMode !== 0 && this.lateralMode !== 34 && this.lateralMode !== 40;
-        const showVerticalFD = this.verticalMode !== 0 && this.verticalMode !== 34;
+        const [toggled, showLateral, showVertical] = this.isActive();
 
         let FDRollOffset = 0;
         let FDPitchOffset = 0;
 
-        if (showLateralFD) {
+        if (toggled && showLateral) {
             const FDRollOrder = this.fdBank;
             FDRollOffset = Math.min(Math.max(FDRollOrder, -45), 45) * 0.44;
 
@@ -287,7 +286,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
             this.lateralRef2.instance.setAttribute('visibility', 'hidden');
         }
 
-        if (showVerticalFD) {
+        if (toggled && showVertical) {
             const FDPitchOrder = this.fdPitch;
             FDPitchOffset = Math.min(Math.max(FDPitchOrder, -22.5), 22.5) * 0.89;
 
@@ -302,11 +301,13 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
         }
     }
 
-    private isActive(): boolean {
-        if (!this.fdActive || this.trkFpaActive) {
-            return false;
-        }
-        return true;
+    private isActive(): [boolean, boolean, boolean] {
+        const toggled = this.fdActive && !this.trkFpaActive;
+
+        const showLateralFD = this.lateralMode !== 0 && this.lateralMode !== 34 && this.lateralMode !== 40;
+        const showVerticalFD = this.verticalMode !== 0 && this.verticalMode !== 34;
+
+        return [toggled, showLateralFD, showVerticalFD];
     }
 
     onAfterRender(node: VNode): void {
@@ -317,7 +318,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
         sub.on('activeLateralMode').whenChanged().handle((vm) => {
             this.lateralMode = vm;
 
-            if (this.isActive()) {
+            if (this.isActive()[0]) {
                 this.setOffset();
                 this.fdRef.instance.style.display = 'inline';
             } else {
@@ -328,7 +329,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
         sub.on('activeVerticalMode').whenChanged().handle((lm) => {
             this.verticalMode = lm;
 
-            if (this.isActive()) {
+            if (this.isActive()[0]) {
                 this.setOffset();
                 this.fdRef.instance.style.display = 'inline';
             } else {
@@ -340,7 +341,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
             if (getDisplayIndex() === 1) {
                 this.fdActive = fd;
 
-                if (this.isActive()) {
+                if (this.isActive()[0]) {
                     this.fdRef.instance.style.display = 'inline';
                 } else {
                     this.fdRef.instance.style.display = 'none';
@@ -352,7 +353,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
             if (getDisplayIndex() === 2) {
                 this.fdActive = fd;
 
-                if (this.isActive()) {
+                if (this.isActive()[0]) {
                     this.fdRef.instance.style.display = 'inline';
                 } else {
                     this.fdRef.instance.style.display = 'none';
@@ -363,7 +364,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
         sub.on('trkFpaActive').whenChanged().handle((tr) => {
             this.trkFpaActive = tr;
 
-            if (this.isActive()) {
+            if (this.isActive()[0]) {
                 this.fdRef.instance.style.display = 'inline';
             } else {
                 this.fdRef.instance.style.display = 'none';
@@ -373,7 +374,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
         sub.on('fdBank').withPrecision(2).handle((fd) => {
             this.fdBank = fd;
 
-            if (this.isActive()) {
+            if (this.isActive()[0]) {
                 this.setOffset();
                 this.fdRef.instance.style.display = 'inline';
             } else {
@@ -383,7 +384,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
         sub.on('fdPitch').withPrecision(2).handle((fd) => {
             this.fdPitch = fd;
 
-            if (this.isActive()) {
+            if (this.isActive()[0]) {
                 this.setOffset();
                 this.fdRef.instance.style.display = 'inline';
             } else {

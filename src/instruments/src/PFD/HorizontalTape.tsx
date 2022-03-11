@@ -164,14 +164,14 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
     }
 
     render(): VNode {
-        const tapeStuff = this.props.type === 'horizon' ? this.buildHorizonTicks() : this.buildHeadingTicks();
+        const tapeContent = this.props.type === 'horizon' ? this.buildHorizonTicks() : this.buildHeadingTicks();
 
         return (
 
             <g id="HeadingTick" ref={this.refElement}>
 
-                {tapeStuff.ticks}
-                {this.props.type === 'headingTape' && tapeStuff.labels}
+                {tapeContent.ticks}
+                {this.props.type === 'headingTape' && tapeContent.labels}
 
             </g>
 
