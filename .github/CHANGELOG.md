@@ -154,6 +154,7 @@
 1. [PFD] Implemented TCAS guidance on vertical speed tape - @wpine215 (Iceman)
 1. [SOUNDS] Connected TCAS TA/RA logic to TCAS Wwise events - @wpine215 (Iceman)  @2hwk (2Cas#1022)
 1. [ENGINE] Overall improvement of thrust limits - @Taz5150 (TazX [Z+2]#0405)
+1. [HYD] Aerodynamic model affects moving parts - @Crocket63
 1. [ATC] Implement ident button and fix auto mode - @tracernz (Mike)
 1. [FLIGHTMODEL] Prevent default stall warning bool from being activated - @donstim (donbikes#4084)
 1. [EFB] Colored raw Metar in EFB weather widget - @frankkopp (Frank Kopp)
@@ -166,6 +167,7 @@
 1. [FLIGHTMODEL] Flight model improvements - @donstim (donbikes#4084)
 1. [SPEEDS] Fix GS mini not being limited by VFE-5 in CONF FULL -  @donstim (donbikes#4084)
 1. [MCDU] Fix crash when clearing DIR TO waypoint - @tracernz (Mike)
+1. [HYD] Improved hydraulic valves stability - @Crocket63
 1. [ATHR] Fix Speed/Mach Idle transition in strong headwind - @IbrahimK42 (IbrahimK42)
 1. [SOUNDS] Add rain sounds in cockpit - @Mico975 (Mico)
 1. [SOUNDS] Add passenger announcements and ambience - @hotshotp (Boris)
@@ -174,6 +176,13 @@
 1. [MCDU] Improved Remote MCDU with CLR hold and light-dark mode - @frankkopp (Frank Kopp)
 1. [MCDU] Improved mcdu server command line handling  - @frankkopp (Cdr_Maverick#6475)
 1. [RA] Add dual Radio Altimeter simulation - @beheh (Benedict Etzel)
+1. [HYD] Fix nose wheel position during pushback - @Crocket63
+1. [MCDU] Improved Remote MCDU communication by reducing update frequency - @frankkopp (Frank Kopp)
+1. [FLIGHTMODEL] Additional flight model improvements to better match real airplane performance data - @donstim (donbikes#4084)
+1. [FMGC] Re-implement altitude and speed constraints - @tracernz (Mike)
+1. [HYD] Smoothed nose wheel steering when pushing back - @Crocket63
+1. [EFB] Add first officer flypad - @tracernz (Mike)
+1. [CLK] Added simvars for Clock CHR and ET - @ssewell (Shane Sewell)
 
 ## 0.7.0
 

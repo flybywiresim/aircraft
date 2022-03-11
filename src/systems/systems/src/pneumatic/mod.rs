@@ -524,6 +524,26 @@ pub trait PressurizeableReservoir {
     fn available_volume(&self) -> Volume;
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum EngineModeSelector {
+    Crank = 0,
+    Norm = 1,
+    Ignition = 2,
+}
+
+read_write_enum!(EngineModeSelector);
+
+impl From<f64> for EngineModeSelector {
+    fn from(value: f64) -> Self {
+        match value as u8 {
+            0 => EngineModeSelector::Crank,
+            1 => EngineModeSelector::Norm,
+            2 => EngineModeSelector::Ignition,
+            _ => panic!("Engine mode selector position not recognized."),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
