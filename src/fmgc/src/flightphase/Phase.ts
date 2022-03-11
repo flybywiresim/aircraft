@@ -123,7 +123,10 @@ export class DescentPhase extends Phase {
 export class ApproachPhase extends Phase {
     landingConfirmation = new ConfirmationNode(30 * 1000);
 
+    cruiseFl = 0;
+
     init() {
+        this.cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
         SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0);
         this.nextPhase = FmgcFlightPhase.Done;
     }
@@ -131,6 +134,11 @@ export class ApproachPhase extends Phase {
     shouldActivateNextPhase(_deltaTime) {
         if (SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number') === 41) {
             this.nextPhase = FmgcFlightPhase.GoAround;
+            return true;
+        }
+
+        if (SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100 !== this.cruiseFl) {
+            this.nextPhase = FmgcFlightPhase.Climb;
             return true;
         }
 
