@@ -190,6 +190,7 @@
 1. [AP] Corrected guidance for OP DES, CLB and DES for small flight level changes - @aguther (Andreas Guther)
 1. [AP] Improved roll law transition from flight to ground mode during Autoland - @aguther (Andreas Guther)
 1. [AP] Improved V/PATH law - lukecologne (luke)
+1. [MCDU] Added missing flight phase transition from APPR -> CLIMB - @aguther (Andreas Guther)
 
 ## 0.7.0
 
