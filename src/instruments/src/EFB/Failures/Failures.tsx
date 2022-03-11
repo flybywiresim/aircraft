@@ -13,7 +13,7 @@ interface ATAFailureCardProps {
     description: string,
 }
 
-const ATAChapterCard = ({ ataNumber, description, title }: ATAFailureCardProps) => ( // TODO: 'to' prop
+const ATAChapterCard = ({ ataNumber, description, title }: ATAFailureCardProps) => (
     <Link to={`/failures/${pathify(title)}`} className="flex flex-row p-2 space-x-4 rounded-md border-2 border-transparent transition duration-100 hover:border-theme-highlight">
         <div className="flex justify-center items-center w-1/5 text-5xl font-bold rounded-md font-title bg-theme-accent">
             ATA
@@ -33,7 +33,6 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAFailureCardProps) 
 );
 
 export const Failures = () => {
-    // TODO: FIXME: figure out why using pathify causes issues
     const { allFailures } = useFailuresOrchestrator();
     const chapters = Array.from(new Set(allFailures.map((it) => it.ata))).sort((a, b) => a - b);
     const pages: PageLink[] = [...chapters].map((chapter) => ({
