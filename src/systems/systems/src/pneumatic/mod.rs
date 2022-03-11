@@ -55,7 +55,6 @@ pub trait PneumaticContainer {
     const HEAT_TRANSFER_COEFF: f64 = 1e-2;
 
     fn pressure(&self) -> Pressure;
-    // TODO: remove?
     fn volume(&self) -> Volume; // Not the volume of gas, but the physical measurements
     fn temperature(&self) -> ThermodynamicTemperature;
     fn mass(&self) -> Mass;
@@ -101,10 +100,8 @@ pub trait PneumaticContainer {
         ));
     }
 
-    /**
-     * Transfer heat to the container depending on the temperature difference.
-     * Returns the temperature difference which would be applied to the opposite container.
-     */
+    /// Transfer heat to the container depending on the temperature difference.
+    /// Returns the temperature difference which would be applied to the opposite container.
     fn heat_conduction_single(
         &mut self,
         context: &UpdateContext,
@@ -144,13 +141,11 @@ impl PneumaticContainer for PneumaticPipe {
     }
 
     fn mass(&self) -> Mass {
-        /*
-        We calculate the mass instead of storing it because floating points are
-        not exact and after some time the true mass drifts from the calculated
-        mass which then results in some negative pressures and temperatures
-        when doing heat conduction. This later leads to NaNs.
-        Another possibility would be to calculate the volume instead.
-        */
+        // We calculate the mass instead of storing it because floating points are
+        // not exact and after some time the true mass drifts from the calculated
+        // mass which then results in some negative pressures and temperatures
+        // when doing heat conduction. This later leads to NaNs.
+        // Another possibility would be to calculate the volume instead.
         Self::calculate_mass(self.volume, self.pressure, self.temperature)
     }
 
@@ -442,10 +437,8 @@ pub struct Precooler {
 impl Precooler {
     const HEAT_CAPACITY_CONSTANT_PRESSURE: f64 = 1.005e3;
 
-    /**
-     * The `heat_transfer_coefficient` contains both the heat transfer coefficient and the area of exchange.
-     * Typical values of the heat transfer coefficient for air to air coolers are 60-180 W/(m^2*K).
-     */
+    /// The `heat_transfer_coefficient` contains both the heat transfer coefficient and the area of exchange.
+    /// Typical values of the heat transfer coefficient for air to air coolers are 60-180 W/(m^2*K).
     pub fn new(heat_transfer_coefficient: f64) -> Self {
         Self {
             heat_transfer_coefficient,
