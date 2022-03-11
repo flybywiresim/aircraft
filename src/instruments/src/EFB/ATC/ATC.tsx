@@ -194,7 +194,7 @@ export const ATC = () => {
 
                 <button
                     type="button"
-                    className="flex justify-center items-center py-2 w-80 bg-theme-accent rounded-md"
+                    className="flex justify-center items-center py-2 w-80 rounded-md bg-theme-accent"
                     onClick={handleHoppieToggle}
                 >
                     <p>
@@ -209,7 +209,7 @@ export const ATC = () => {
                             <div className="grid grid-cols-2">
                                 {controllers && controllers.map((controller, index) => (
                                     <div className={`${index && index % 2 !== 0 && 'ml-4'}`}>
-                                        <div className="overflow-hidden relative p-6 mt-4 w-full bg-theme-secondary rounded-md">
+                                        <div className="overflow-hidden relative p-6 mt-4 w-full rounded-md bg-theme-secondary">
                                             <h2 className="font-bold">
                                                 {controller.callsign}
                                             </h2>
@@ -219,7 +219,7 @@ export const ATC = () => {
 
                                             <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
                                                 <div
-                                                    className="flex justify-center items-center w-full bg-theme-highlight bg-opacity-80"
+                                                    className="flex justify-center items-center w-full bg-opacity-80 bg-theme-highlight"
                                                     onClick={() => setActiveFrequency(toFrequency(controller.frequency))}
                                                 >
                                                     <h2>Set Active</h2>
@@ -244,17 +244,17 @@ export const ATC = () => {
                             )}
                         </div>
                     </div>
-                    <div className="flex flex-row mt-4 h-96 rounded-lg border-2 border-theme-accent divide-x-2 divide-theme-accent">
+                    <div className="flex flex-row mt-4 h-96 rounded-lg border-2 divide-x-2 border-theme-accent divide-theme-accent">
                         <div className="flex flex-col justify-between p-6">
                             <div>
                                 <p>Active</p>
-                                <div className="flex justify-center items-center mt-4 w-72 h-24 font-rmp text-6xl text-theme-highlight rounded-lg border-2 border-theme-accent">
+                                <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl rounded-lg border-2 font-rmp text-theme-highlight border-theme-accent">
                                     {displayedActiveFrequency && displayedActiveFrequency}
                                 </div>
                             </div>
                             <div>
                                 <p>Standby</p>
-                                <div className="flex justify-center items-center mt-4 w-72 h-24 font-rmp text-6xl text-yellow-500 rounded-lg border-2 border-theme-accent">
+                                <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl text-yellow-500 rounded-lg border-2 font-rmp border-theme-accent">
                                     {displayedStandbyFrequency && displayedStandbyFrequency}
                                 </div>
                             </div>
@@ -269,11 +269,11 @@ export const ATC = () => {
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-col justify-center items-center mt-4 space-y-8 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
+                <div className="flex flex-col justify-center items-center mt-4 space-y-8 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
                     <h1 className="max-w-4xl text-center">This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page</h1>
                     <Link
-                        to="/settings/atsu-/-aoc"
-                        className="flex justify-center items-center py-2 px-16 space-x-4 text-navy bg-theme-highlight rounded-lg border-2 border-theme-secondary focus:outline-none"
+                        to="/settings/atsu---aoc"
+                        className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 focus:outline-none text-navy bg-theme-highlight border-theme-secondary"
                     >
                         <Gear size={26} />
                         <p className="text-navy">Change ATIS/ATC source</p>
