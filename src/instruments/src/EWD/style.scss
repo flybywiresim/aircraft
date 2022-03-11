@@ -1,13 +1,35 @@
-@font-face {
-  font-family: "Roboto";
-  src: url("/Fonts/RobotoMono-Medium.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
+@import "../Common/definitions";
+@import "../Common/gauges";
+
+@mixin GenericPulsingFill($color) {
+  @keyframes pulsing {
+      0%, 100% {
+          fill: $color;
+      }
+      50% {
+          fill: scale-color($color, $lightness: -50%);
+      }
+  }
+  animation: pulsing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+@mixin GenericPulsingStroke($color) {
+@keyframes pulsingS {
+  0%, 100% {
+      stroke: $color;
+  }
+  50% {
+      stroke: scale-color($color, $lightness: -50%);
+  }
+}
+animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+
 @font-face {
-  font-family: "Roboto-Light";
-  src: url("/Fonts/RobotoMono-Light.ttf") format("truetype");
+  font-family: "Ecam";
+  //noinspection CssUnknownTarget
+  src: url("/fonts/ECAMFontRegular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -16,19 +38,222 @@
   position: absolute;
   width: 768px;
   height: 768px;
+  background: $display-background;
+  font-family: "Ecam", monospace !important;
 
-  background: radial-gradient(
-      ellipse at center,
-      rgba(13, 20, 35, 1) 0%,
-      rgb(13, 20, 35) 100%
-  );
+    .EWDWarningTextLeft {
+        fill: white;
+        font-size: 1.55em;
+        letter-spacing: 0.047em;
+    }
 
-  visibility: visible !important;
+    tspan {
+      white-space: pre;
+    }
 
-  font-family: Roboto;
+    text, tspan {
+        fill: $display-white;
+        stroke: none !important;
 
-  path {
-    stroke: white;
-    stroke-width: 3;
-  }
+        &.Standard {
+            font-size: 22px;
+        }
+
+        &.Medium {
+            font-size: 20px;
+        }
+
+        &.Large {
+            font-size: 26px;
+        }
+
+        &.EWDWarn {
+            font-size: 24px;
+            letter-spacing: 1.75px;
+        }
+
+        &.Huge {
+            font-size: 31px;
+        }
+
+        &.Cyan {
+            fill: $display-cyan !important;
+        }
+
+        &.Green {
+            fill: $display-green !important;
+        }
+
+        &.Amber {
+            fill: $display-amber;
+        }
+
+        &.Red {
+            fill: $display-red;
+        }
+
+        &.Magenta {
+            fill: $display-magenta;
+        }
+
+        &.Center {
+            text-anchor: middle !important;
+        }
+
+        &.End {
+            text-anchor: end !important;
+        }
+
+        &.GreenTextPulse {
+            @include GenericPulsingFill($display-green);
+        }
+
+        &.Underline {
+            text-decoration: underline;
+            text-decoration-color: $display-amber;
+        }
+    }
+
+    .Separator {
+      stroke: $display-light-grey;
+      stroke-width: 3;
+      fill: none;
+    }
+
+    .AmberLine {
+        stroke: $display-amber !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .GreenLine {
+        stroke: $display-green !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .WhiteLine {
+        stroke: $display-white !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .RedLine {
+        stroke: $display-red !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+
+    .BackgroundLine {
+        stroke: $display-background !important;
+        stroke-width: 2;
+        fill: $display-background;
+    }
+
+    .BackgroundFill {
+        fill: $display-background !important;
+    }
+
+    .Show {
+        display:block;
+    }
+
+    .Hide {
+        display: none;
+    }
+
+    .Spread {
+        letter-spacing: 2px;
+    }
+
+    .DonutThrottleIndicator {
+        fill: none;
+        stroke-width: 2px;
+        stroke: $display-cyan;
+    }
+    .GreenPulse {
+        animation: green-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+        @keyframes green-pulse {
+            0%, 100% {
+              fill: $display-green;
+            }
+            50% {
+                fill: hsl(120, 100%, 20%)
+            }
+        }
+    }
+
+    .GreenPulseNoFill {
+        animation: green-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+        @keyframes green-pulse {
+            0%, 100% {
+              stroke: $display-green;
+            }
+            50% {
+                stroke: hsl(120, 100%, 20%)
+            }
+        }
+    }
+
+    .DarkGreyBox {
+        stroke: $display-grey;
+        fill: none;
+        stroke-width: 2;
+    }
+
+    .AmberBox {
+        stroke: $display-amber;
+        fill: none;
+        stroke-width: 2;
+    }
+
+    .LightGreyBox {
+        stroke: none;
+        fill: $display-light-grey;
+        opacity: 0.2
+    }
+
+    #FobLabel {
+        font-size: 28px;
+        fill: $display-white;
+    }
+
+    #FobColon {
+        font-size: 28px;
+        fill: $display-white;
+    }
+
+    #FobValue {
+        fill: $display-green;
+        font-size: 28px;
+        text-anchor: end;
+    }
+
+    #FobUnit {
+        fill: $display-cyan;
+        font-size: 20px;
+    }
+
+    .SlatsSmallWhite, .FlapsSmallWhite {
+        stroke: $display-white;
+        stroke-width: 2px;
+        stroke-linejoin: bevel;
+    }
+
+    .SlatsSmallCyan, .FlapsSmallCyan {
+        stroke: $display-cyan;
+        stroke-width: 2px;
+        stroke-linejoin: bevel;
+    }
+
+    .Slats, .Flaps {
+        stroke: $display-green !important;
+        stroke-width: 2px;
+        fill: none;
+        stroke-linejoin: bevel !important;
+    }
+
 }
