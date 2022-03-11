@@ -15,6 +15,5 @@ export default {
     plugins: [scss(
         { output: '../../../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/pfd.css' },
     ),
-    // typescript({ include: ['**/*.ts', '**/*.tsx', '../shared/src/*.ts', '../fmgc/src/**/ControlLaw.ts', '../failures/src/**/*.ts'] }), resolve()],
     resolve(), ts()],
 };

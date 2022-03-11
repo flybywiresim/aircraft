@@ -134,7 +134,6 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
                 <LandingElevationIndicator bus={this.props.bus} />
                 <g ref={this.tapeRef}>
                     <VerticalTape
-                        bugs={[]}
                         displayRange={DisplayRange + 30}
                         valueSpacing={ValueSpacing}
                         distanceSpacing={DistanceSpacing}

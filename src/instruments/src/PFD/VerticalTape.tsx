@@ -4,7 +4,6 @@ interface VerticalTapeProps {
     displayRange: number;
     valueSpacing: number;
     distanceSpacing: number;
-    bugs: [(offset: number) => SVGElement, number][];
     tapeValue: Subscribable<number>;
     lowerLimit: number;
     upperLimit: number;
@@ -34,13 +33,6 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
                 const offset = -elementValue * this.props.distanceSpacing / this.props.valueSpacing;
                 const element = { elementValue, offset };
                 if (element) {
-                    // console.log("ADDING", elementValue);
-                    // this.refElement.instance.append(<this.props.graduationElementFunction offset={offset} alt={elementValue} />);
-
-                    /*  if (elementValue < 30) {
-                        return <></>;
-                    } */
-
                     let text = '';
                     if (elementValue % 20 === 0) {
                         text = Math.abs(elementValue).toString().padStart(3, '0');
@@ -78,9 +70,6 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
                 const offset = -elementValue * this.props.distanceSpacing / this.props.valueSpacing;
                 const element = { elementValue, offset };
                 if (element) {
-                    // console.log("ADDING", newValue.value);
-                    // this.refElement.instance.append(<this.props.graduationElementFunction offset={offset} alt={elementValue} />);
-
                     let text = '';
                     if (elementValue % 500 === 0) {
                         text = (Math.abs(elementValue) / 100).toString().padStart(3, '0');
@@ -120,9 +109,6 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
                     const offset = -elementValue * this.props.distanceSpacing / this.props.valueSpacing;
                     const element = { elementValue, offset };
                     if (element) {
-                        // console.log("ADDING", newValue.value);
-                        // this.refElement.instance.append(<this.props.graduationElementFunction offset={offset} alt={elementValue} />);
-
                         this.tickRefs[i].instance.setAttribute('transform', `translate(0 ${offset})`);
 
                         let text = '';

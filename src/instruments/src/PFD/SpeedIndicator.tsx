@@ -276,7 +276,6 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
                     <path id="SpeedTapeOutlineRight" ref={this.speedTapeOutlineRef} class="NormalStroke White" d={`m19.031 38.086v${length}`} />
                     <VerticalTape
                         tapeValue={this.speedSub}
-                        bugs={[]}
                         lowerLimit={30}
                         upperLimit={660}
                         valueSpacing={ValueSpacing}

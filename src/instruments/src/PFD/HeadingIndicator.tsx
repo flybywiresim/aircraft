@@ -1,6 +1,6 @@
 import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, Subscribable, VNode } from 'msfssdk';
 import { HorizontalTape } from './HorizontalTape';
-import { getSmallestAngle } from './shared/utils';
+import { getSmallestAngle } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { SimplaneValues } from './shared/SimplaneValueProvider';

@@ -5,10 +5,10 @@ import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
     LagFilter,
+    getSmallestAngle,
 } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { getSmallestAngle } from './shared/utils';
 import { HorizontalTape } from './HorizontalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
@@ -236,18 +236,6 @@ export class Horizon extends DisplayComponent<HorizonProps> {
                     yOffset={this.yOffset}
                 />
                 <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
-                {/*    {this.props.heading.isNormalOperation()
-                && (
-                    <HorizontalTape
-                        //graduationElementFunction={TickFunction}
-                        bugs={bugs}
-                        yOffset={yOffset}
-                        displayRange={DisplayRange}
-                        distanceSpacing={DistanceSpacing}
-                        valueSpacing={ValueSpacing}
-                        heading={this.props.heading}
-                    />
-                )} */}
                 <RadioAltAndDH bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAlt} attExcessive={this.props.isAttExcessive} />
             </g>
         );
@@ -309,14 +297,6 @@ class TailstrikeIndicator extends DisplayComponent<{bus: EventBus}> {
             <path ref={this.tailStrike} id="TailstrikeWarning" d="m72.682 50.223h2.9368l-6.7128 8-6.7128-8h2.9368l3.7759 4.5z" class="NormalStroke Amber" />
         );
     }
-    // should also not be displayed when thrust levers are at or above FLX/MCT, but I don't know if there is a simvar
-    // for that
-    /*  if (getSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet') > 400
-        || getSimVar('AIRSPEED INDICATED', 'knots') < 50
-        || getSimVar('L:A32NX_AUTOTHRUST_TLA:1', 'number') >= 35
-        || getSimVar('L:A32NX_AUTOTHRUST_TLA:2', 'number') >= 35) {
-        return null;
-    } */
 }
 
 class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltitude: Subscribable<number>, attExcessive: Subscribable<boolean> }> {
@@ -529,8 +509,8 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
             const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
             offset = -accInG * 15 / 0.3;
         } else {
-            const beta = this.beta;// SimVar.GetSimVarValue('INCIDENCE BETA', 'degrees');
-            const betaTarget = this.betaTarget;// SimVar.GetSimVarValue('L:A32NX_BETA_TARGET', 'Number');
+            const beta = this.beta;
+            const betaTarget = this.betaTarget;
             offset = Math.max(Math.min(beta - betaTarget, 15), -15);
         }
 

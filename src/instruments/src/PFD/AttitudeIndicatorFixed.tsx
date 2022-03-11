@@ -315,28 +315,6 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-        sub.on('activeLateralMode').whenChanged().handle((vm) => {
-            this.lateralMode = vm;
-
-            if (this.isActive()[0]) {
-                this.setOffset();
-                this.fdRef.instance.style.display = 'inline';
-            } else {
-                this.fdRef.instance.style.display = 'none';
-            }
-        });
-
-        sub.on('activeVerticalMode').whenChanged().handle((lm) => {
-            this.verticalMode = lm;
-
-            if (this.isActive()[0]) {
-                this.setOffset();
-                this.fdRef.instance.style.display = 'inline';
-            } else {
-                this.fdRef.instance.style.display = 'none';
-            }
-        });
-
         sub.on('fd1Active').whenChanged().handle((fd) => {
             if (getDisplayIndex() === 1) {
                 this.fdActive = fd;
@@ -374,15 +352,22 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
         sub.on('fdBank').withPrecision(2).handle((fd) => {
             this.fdBank = fd;
 
-            if (this.isActive()[0]) {
-                this.setOffset();
-                this.fdRef.instance.style.display = 'inline';
-            } else {
-                this.fdRef.instance.style.display = 'none';
-            }
+            this.setOffset();
         });
         sub.on('fdPitch').withPrecision(2).handle((fd) => {
             this.fdPitch = fd;
+
+            this.setOffset();
+        });
+
+        sub.on('activeLateralMode').whenChanged().handle((vm) => {
+            this.lateralMode = vm;
+
+            this.setOffset();
+        });
+
+        sub.on('activeVerticalMode').whenChanged().handle((lm) => {
+            this.verticalMode = lm;
 
             if (this.isActive()[0]) {
                 this.setOffset();
