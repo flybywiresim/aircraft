@@ -145,6 +145,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
     const dispatch = useAppDispatch();
 
     const { chartId, searchQuery, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
+    const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
 
     useEffect(() => {
         if (selectedTab.bundleRunways) {
@@ -269,7 +270,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                 }}
                                             >
                                                 {
-                                                    isChartPinned((chart as NavigraphChart).id)
+                                                    pinnedCharts.some((pinnedChart) => pinnedChart.chartId === (chart as NavigraphChart).id)
                                                         ? <PinFill size={40} />
                                                         : <Pin size={40} />
                                                 }
@@ -325,7 +326,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                         }}
                                     >
                                         {
-                                            isChartPinned((chart as NavigraphChart).id)
+                                            pinnedCharts.some((pinnedChart) => pinnedChart.chartId === (chart as NavigraphChart).id)
                                                 ? <PinFill size={40} />
                                                 : <Pin size={40} />
                                         }
