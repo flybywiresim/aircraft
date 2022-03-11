@@ -1049,7 +1049,6 @@ const PseudoFWC: React.FC = () => {
                 simVarIsActive: !!(!landASAPRed && !onGround && (
                     engine1State === 0
                     || engine2State === 0
-                    || fobRounded < 3000
                 )),
                 whichCodeToReturn: [0],
                 codesToReturn: ['000036001'],

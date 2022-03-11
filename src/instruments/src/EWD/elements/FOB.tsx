@@ -6,7 +6,7 @@ interface FOBProps {
     unit: string,
     x: number,
     y: number,
-};
+}
 
 const FOB: React.FC<FOBProps> = ({ unit, x, y }) => {
     const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 1000);
