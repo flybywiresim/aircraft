@@ -11,6 +11,8 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
 
     private gsReferenceLine = FSComponent.createRef<SVGPathElement>();
 
+    private deviationGroup = FSComponent.createRef<SVGGElement>();
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -25,12 +27,6 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
                 this.gsReferenceLine.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
             }
         });
-
-        /*   sub.on('rollAr').handle((r) => {
-            if (this.lsButtonPressedVisibility && !r.isNormalOperation()) {
-                this.gsReferenceLine.instance.style.display = 'inline';
-            }
-        }); */
     }
 
     render(): VNode {
@@ -45,12 +41,11 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
                         <MarkerBeaconIndicator bus={this.props.bus} />
                     </g>
 
-                    {/*  {showVDev && (
-                    <g id="DeviationGroup">
-                        <VDevIndicator />
+                    <g id="DeviationGroup" ref={this.deviationGroup} style="display: none">
+                        <VDevIndicator bus={this.props.bus} />
                         <LDevIndicator />
                     </g>
-                )} */}
+
                     <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
                 </g>
             </>
@@ -242,6 +237,8 @@ class GlideSlopeIndicator extends DisplayComponent<{bus: EventBus, instrument: B
 
     private diamondGroup = FSComponent.createRef<SVGGElement>();
 
+    private hasGlideSlope = false;
+
     private handleGlideSlopeError(glideSlopeError: number): void {
         const deviation = this.lagFilter.step(glideSlopeError, this.props.instrument.deltaTime / 1000);
         const dots = deviation / 0.4;
@@ -268,17 +265,20 @@ class GlideSlopeIndicator extends DisplayComponent<{bus: EventBus, instrument: B
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
         sub.on('hasGlideslope').whenChanged().handle((hasGlideSlope) => {
+            this.hasGlideSlope = hasGlideSlope;
             if (hasGlideSlope) {
                 this.diamondGroup.instance.classList.remove('HiddenElement');
-                this.props.bus.on('glideSlopeError', this.handleGlideSlopeError.bind(this));
             } else {
                 this.diamondGroup.instance.classList.add('HiddenElement');
                 this.lagFilter.reset();
-                this.props.bus.off('glideSlopeError', this.handleGlideSlopeError.bind(this));
             }
         });
 
-        // sub.on('glideSlopeError').handle(this.handleGlideSlopeError.bind(this));
+        sub.on('glideSlopeError').handle((gs) => {
+            if (this.hasGlideSlope) {
+                this.handleGlideSlopeError(gs);
+            }
+        });
     }
 
     render(): VNode {
@@ -303,48 +303,69 @@ class GlideSlopeIndicator extends DisplayComponent<{bus: EventBus, instrument: B
     }
 }
 
-/* TODO convert once available
-const VDevIndicator = () => {
-    const deviation = getSimVar('GPS VERTICAL ERROR', 'feet');
-    const dots = deviation / 100;
+class VDevIndicator extends DisplayComponent<{bus: EventBus}> {
+    private VDevSymbolLower = FSComponent.createRef<SVGPathElement>();
 
-    let diamond: JSX.Element;
+    private VDevSymbolUpper = FSComponent.createRef<SVGPathElement>();
 
-    if (dots > 2) {
-        diamond = <path id="VDevSymbolLower" className="NormalStroke Green" d="m107.19 111.06v2.0159h5.0368v-2.0159" />;
-    } else if (dots < -2) {
-        diamond = <path id="VDevSymbolUpper" className="NormalStroke Green" d="m107.19 50.585v-2.0159h5.0368v2.0159" />;
-    } else {
-        diamond = <path id="VDevSymbol" className="NormalStroke Green" transform={`translate(0 ${dots * 30.238 / 2})`} d="m112.22 78.807h-5.0368v4.0318h5.0368v-2.0159z" />;
+    private VDevSymbol = FSComponent.createRef<SVGPathElement>();
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        // TODO use correct simvar once RNAV is implemented
+        const deviation = 0;
+        const dots = deviation / 100;
+
+        if (dots > 2) {
+            this.VDevSymbolLower.instance.style.visibility = 'visible';
+            this.VDevSymbolUpper.instance.style.visibility = 'hidden';
+            this.VDevSymbol.instance.style.visibility = 'hidden';
+        } else if (dots < -2) {
+            this.VDevSymbolLower.instance.style.visibility = 'hidden';
+            this.VDevSymbolUpper.instance.style.visibility = 'visible';
+            this.VDevSymbol.instance.style.visibility = 'hidden';
+        } else {
+            this.VDevSymbolLower.instance.style.visibility = 'hidden';
+            this.VDevSymbolUpper.instance.style.visibility = 'hidden';
+            this.VDevSymbol.instance.style.visibility = 'visible';
+            this.VDevSymbol.instance.style.transform = `translate3d(0px, ${dots * 30.238 / 2}px, 0px)`;
+        }
     }
 
-    return (
-        <g id="VertDevSymbolsGroup">
-            <text className="FontSmall AlignRight Green" x="95.022" y="43.126">V/DEV</text>
-            <path className="NormalStroke White" d="m108.7 65.704h2.0147" />
-            <path className="NormalStroke White" d="m108.7 50.585h2.0147" />
-            <path className="NormalStroke White" d="m108.7 111.06h2.0147" />
-            <path className="NormalStroke White" d="m108.7 95.942h2.0147" />
-            {diamond}
-        </g>
-    );
-};
+    render(): VNode {
+        return (
+            <g id="VertDevSymbolsGroup" style="display: none">
+                <text class="FontSmall AlignRight Green" x="95.022" y="43.126">V/DEV</text>
+                <path class="NormalStroke White" d="m108.7 65.704h2.0147" />
+                <path class="NormalStroke White" d="m108.7 50.585h2.0147" />
+                <path class="NormalStroke White" d="m108.7 111.06h2.0147" />
+                <path class="NormalStroke White" d="m108.7 95.942h2.0147" />
+                <path id="VDevSymbolLower" ref={this.VDevSymbolLower} class="NormalStroke Green" d="m107.19 111.06v2.0159h5.0368v-2.0159" />
+                <path id="VDevSymbolUpper" ref={this.VDevSymbolUpper} class="NormalStroke Green" d="m107.19 50.585v-2.0159h5.0368v2.0159" />
+                <path id="VDevSymbol" ref={this.VDevSymbol} class="NormalStroke Green" d="m112.22 78.807h-5.0368v4.0318h5.0368v-2.0159z" />
+            </g>
+        );
+    }
+}
 
-// Not implemented on the FMS side I think, so this is just static and hidden for now
-const LDevIndicator = () => (
-    <g id="LatDeviationSymbolsGroup" style={{ display: 'none' }}>
-        <text className="FontSmall AlignRight Green" x="30.888" y="122.639">L/DEV</text>
-        <path className="NormalStroke White" d="m38.686 129.51v2.0158" />
-        <path className="NormalStroke White" d="m53.796 129.51v2.0158" />
-        <path className="NormalStroke White" d="m84.017 129.51v2.0158" />
-        <path className="NormalStroke White" d="m99.127 129.51v2.0158" />
-        <path id="LDevSymbolLeft" className="NormalStroke Green" d="m38.686 127.99h-2.0147v5.0397h2.0147" />
-        <path id="LDevSymbolRight" className="NormalStroke Green" d="m99.127 127.99h2.0147v5.0397h-2.0147" />
-        <path id="LDevSymbol" className="NormalStroke Green" d="m66.892 127.99v5.0397h4.0294v-5.0397h-2.0147z" />
-    </g>
-);
-
-*/
+// Not implemented on the FMS side, so this is just static and hidden for now
+class LDevIndicator extends DisplayComponent<any> {
+    render(): VNode {
+        return (
+            <g id="LatDeviationSymbolsGroup" style="display: none">
+                <text className="FontSmall AlignRight Green" x="30.888" y="122.639">L/DEV</text>
+                <path className="NormalStroke White" d="m38.686 129.51v2.0158" />
+                <path className="NormalStroke White" d="m53.796 129.51v2.0158" />
+                <path className="NormalStroke White" d="m84.017 129.51v2.0158" />
+                <path className="NormalStroke White" d="m99.127 129.51v2.0158" />
+                <path id="LDevSymbolLeft" className="NormalStroke Green" d="m38.686 127.99h-2.0147v5.0397h2.0147" />
+                <path id="LDevSymbolRight" className="NormalStroke Green" d="m99.127 127.99h2.0147v5.0397h-2.0147" />
+                <path id="LDevSymbol" className="NormalStroke Green" d="m66.892 127.99v5.0397h4.0294v-5.0397h-2.0147z" />
+            </g>
+        );
+    }
+}
 
 class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
     private classNames = Subject.create('HiddenElement');
