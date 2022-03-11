@@ -68,7 +68,7 @@ const Loading = () => {
     return (
         <div className="flex flex-col justify-center items-center">
             <div
-                className="flex justify-center items-center bg-theme-secondary rounded-md"
+                className="flex justify-center items-center rounded-md bg-theme-secondary"
                 style={{ width: '400px', height: '400px' }}
             >
                 <CloudArrowDown className="animate-bounce" size={40} />
@@ -101,7 +101,7 @@ const AuthUi = () => {
     }, (navigraph.auth.interval * 1000));
 
     return (
-        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full h-content-section-reduced bg-theme-accent rounded-lg">
+        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full rounded-lg h-content-section-reduced bg-theme-accent">
             <div className="flex flex-col justify-center items-center">
                 <ShieldLock className="mr-2" size={40} />
                 <h2 className="flex justify-center items-center mt-2">
@@ -115,7 +115,7 @@ const AuthUi = () => {
                     into your browser and enter the code below
                 </p>
                 <h1
-                    className="flex items-center px-4 mt-4 h-16 text-4xl font-bold tracking-wider bg-theme-secondary rounded-md border-2 border-theme-highlight"
+                    className="flex items-center px-4 mt-4 h-16 text-4xl font-bold tracking-wider rounded-md border-2 bg-theme-secondary border-theme-highlight"
                     style={{ minWidth: '200px' }}
                 >
                     {navigraph.auth.code || 'LOADING'}
@@ -144,9 +144,8 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
 
     const dispatch = useAppDispatch();
 
-    const { selectedNavigationTabIndex } = useAppSelector((state) => state.navigationTab);
-
-    const { chartId, searchQuery } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
+    const { chartId, searchQuery, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.NAVIGRAPH]);
+    const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
 
     useEffect(() => {
         if (selectedTab.bundleRunways) {
@@ -234,7 +233,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                     <>
                         {organizedCharts.map((item) => (
                             <div className="flex overflow-hidden flex-col w-full rounded-md divide-y-2 divide-gray-700" key={item.name}>
-                                <span className="p-1 text-center bg-theme-secondary rounded-t-lg">{item.name}</span>
+                                <span className="p-1 text-center rounded-t-lg bg-theme-secondary">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
                                         className="flex flex-row bg-theme-accent"
@@ -247,7 +246,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                 : 'bg-theme-secondary'}`}
                                             />
                                             <div
-                                                className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
+                                                className="flex items-center px-2 h-full transition duration-100 hover:text-theme-body hover:bg-theme-highlight"
                                                 onClick={(event) => {
                                                     event.stopPropagation();
 
@@ -259,7 +258,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                             chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
                                                             title: searchQuery,
                                                             subTitle: (chart as NavigraphChart).procedureIdentifier,
-                                                            tabIndex: selectedNavigationTabIndex,
+                                                            tabIndex: selectedTabIndex,
                                                             timeAccessed: 0,
                                                             tag: selectedTab.name,
                                                             provider: ChartProvider.NAVIGRAPH,
@@ -271,7 +270,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                 }}
                                             >
                                                 {
-                                                    isChartPinned((chart as NavigraphChart).id)
+                                                    pinnedCharts.some((pinnedChart) => pinnedChart.chartId === (chart as NavigraphChart).id)
                                                         ? <PinFill size={40} />
                                                         : <Pin size={40} />
                                                 }
@@ -279,7 +278,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                         </div>
                                         <div className="flex flex-col m-2">
                                             <span>{(chart as NavigraphChart).procedureIdentifier}</span>
-                                            <span className="px-2 mt-0.5 mr-auto text-sm text-theme-text bg-theme-secondary rounded-md">
+                                            <span className="px-2 mt-0.5 mr-auto text-sm rounded-md text-theme-text bg-theme-secondary">
                                                 {(chart as NavigraphChart).indexNumber}
                                             </span>
                                         </div>
@@ -293,7 +292,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                     <>
                         {selectedTab.charts.map((chart) => (
                             <div
-                                className="flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
+                                className="flex overflow-hidden flex-row w-full rounded-md bg-theme-accent"
                                 onClick={() => handleChartClick(chart as NavigraphChart)}
                                 key={(chart as NavigraphChart).id}
                             >
@@ -303,7 +302,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                         : 'bg-theme-secondary'}`}
                                     />
                                     <div
-                                        className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
+                                        className="flex items-center px-2 h-full transition duration-100 hover:text-theme-body hover:bg-theme-highlight"
                                         onClick={(event) => {
                                             event.stopPropagation();
 
@@ -315,7 +314,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                                     chartName: { light: (chart as NavigraphChart).fileDay, dark: (chart as NavigraphChart).fileNight },
                                                     title: searchQuery,
                                                     subTitle: (chart as NavigraphChart).procedureIdentifier,
-                                                    tabIndex: selectedNavigationTabIndex,
+                                                    tabIndex: selectedTabIndex,
                                                     timeAccessed: 0,
                                                     tag: selectedTab.name,
                                                     provider: ChartProvider.NAVIGRAPH,
@@ -327,7 +326,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                         }}
                                     >
                                         {
-                                            isChartPinned((chart as NavigraphChart).id)
+                                            pinnedCharts.some((pinnedChart) => pinnedChart.chartId === (chart as NavigraphChart).id)
                                                 ? <PinFill size={40} />
                                                 : <Pin size={40} />
                                         }
@@ -336,7 +335,7 @@ const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartSelector
                                 <div className="flex flex-col m-2">
                                     <span>{(chart as NavigraphChart).procedureIdentifier}</span>
                                     <span
-                                        className="px-2 mr-auto text-sm text-theme-text bg-theme-secondary rounded-sm"
+                                        className="px-2 mr-auto text-sm rounded-sm text-theme-text bg-theme-secondary"
                                     >
                                         {(chart as NavigraphChart).indexNumber}
                                     </span>
@@ -455,7 +454,7 @@ const NavigraphChartsUI = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full h-content-section-reduced rounded-lg">
+        <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-content-section-reduced">
             <>
                 {!isFullScreen && (
                     <div className="flex-shrink-0" style={{ width: '450px' }}>
@@ -556,7 +555,7 @@ export const NavigraphNav = () => {
                     </>
                 )
                 : (
-                    <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full h-content-section-reduced bg-theme-secondary rounded-lg">
+                    <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full rounded-lg h-content-section-reduced bg-theme-secondary">
                         <p className="pt-6 mb-6 text-3xl">Insufficient .env file</p>
                     </div>
                 )}
