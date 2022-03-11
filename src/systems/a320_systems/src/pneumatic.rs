@@ -121,6 +121,9 @@ pub struct A320Pneumatic {
     apu_compression_chamber: CompressionChamber,
     apu_bleed_air_valve: DefaultValve,
 
+    hydraulic_reservoir_bleed_air_valves: [PurelyPneumaticValve; 2],
+    hydraulic_reservoir_bleed_air_pipe: PneumaticPipe,
+
     green_hydraulic_reservoir_with_valve:
         PressurisedReservoirWithExhaustValve<VariableVolumeContainer>,
     blue_hydraulic_reservoir_with_valve:
@@ -159,6 +162,15 @@ impl A320Pneumatic {
             ],
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
+            hydraulic_reservoir_bleed_air_valves: [
+                PurelyPneumaticValve::new(),
+                PurelyPneumaticValve::new(),
+            ],
+            hydraulic_reservoir_bleed_air_pipe: PneumaticPipe::new(
+                Volume::new::<cubic_meter>(0.2),
+                Pressure::new::<psi>(14.7),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
+            ),
             green_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
                 context,
                 HydraulicColor::Green,
@@ -252,7 +264,11 @@ impl A320Pneumatic {
             controller.update(&self.fadec);
         }
 
-        for engine_system in self.engine_systems.iter_mut() {
+        for (engine_system, hydraulic_valve) in self
+            .engine_systems
+            .iter_mut()
+            .zip(&mut self.hydraulic_reservoir_bleed_air_valves)
+        {
             for bleed_monitoring_computer in self.bleed_monitoring_computers.iter() {
                 let index = engine_system.number - 1;
 
@@ -270,6 +286,12 @@ impl A320Pneumatic {
                     );
                 }
             }
+
+            hydraulic_valve.update_move_fluid(
+                context,
+                engine_system,
+                &mut self.hydraulic_reservoir_bleed_air_pipe,
+            );
         }
 
         let [left_system, right_system] = &mut self.engine_systems;
@@ -283,11 +305,11 @@ impl A320Pneumatic {
             .update_move_fluid(context, left_system, right_system);
 
         self.green_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, left_system);
+            .update_flow_through_valve(context, &mut self.hydraulic_reservoir_bleed_air_pipe);
         self.blue_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, left_system);
+            .update_flow_through_valve(context, &mut self.hydraulic_reservoir_bleed_air_pipe);
         self.yellow_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, left_system);
+            .update_flow_through_valve(context, &mut self.hydraulic_reservoir_bleed_air_pipe);
 
         self.packs
             .iter_mut()
