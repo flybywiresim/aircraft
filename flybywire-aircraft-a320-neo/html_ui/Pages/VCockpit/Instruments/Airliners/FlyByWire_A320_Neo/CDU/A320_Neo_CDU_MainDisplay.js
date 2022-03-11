@@ -263,7 +263,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         setInterval(() => {
             if (!this.socket || this.socket.readyState !== 1) {
-                this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
+                this.connectWebsocket(NXDataStore.get("CONFIG_LOCAL_API_PORT", "8380"));
             }
         }, 5000);
         setInterval(() => {

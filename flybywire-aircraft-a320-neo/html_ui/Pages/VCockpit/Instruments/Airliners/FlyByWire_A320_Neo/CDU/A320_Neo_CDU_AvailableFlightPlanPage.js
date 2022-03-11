@@ -156,10 +156,8 @@ class CDUAvailableFlightPlanPage {
                     mcdu.coRoute["alternateIcao"] = selectedRoute.alternateIcao;
                 }
                 mcdu.coRoute["navlog"] = selectedRoute.navlog;
-                mcdu.addNewMessage(NXSystemMessages.uplinkInsertInProg);
                 setTimeout(async () => {
                     await insertCoRoute(mcdu);
-                    mcdu.addNewMessage(NXFictionalMessages.crteActFplnUplink);
                     CDUInitPage.ShowPage1(mcdu);
                 }, mcdu.getDelayRouteChange());
 

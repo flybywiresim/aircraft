@@ -14,4 +14,4 @@ class NXLocalApi {
         return response;
     }
 }
-NXLocalApi.url = "http://localhost:8380";
+NXLocalApi.url = `http://localhost:${NXDataStore.get('CONFIG_LOCAL_API_PORT', '8380')}`;

@@ -22,6 +22,6 @@ if [ ! -f "${DIR}/../flybywire-aircraft-a320-neo/resources/properties.json" ]
 then
     mkdir -p "${DIR}/../flybywire-aircraft-a320-neo/resources"
     cp apps/server/src/config/properties.json "${DIR}/../flybywire-aircraft-a320-neo/resources/properties.json"
+    cp node_modules/pdf-to-printer/dist/SumatraPDF.exe "${DIR}/../flybywire-aircraft-a320-neo/resources/SumatraPDF.exe"
 fi
-cp node_modules/pdf-to-printer/dist/SumatraPDF.exe "${DIR}/../flybywire-aircraft-a320-neo/resources/SumatraPDF.exe"
 cp dist/local-server.exe "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe"
