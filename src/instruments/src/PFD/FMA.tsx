@@ -174,13 +174,11 @@ class Row1 extends DisplayComponent<{bus:EventBus, isAttExcessive: Subscribable<
                 this.cellsToHide.instance.style.visibility = 'hidden';
                 this.b1Cell.instance.displayModeChangedPath(true);
                 this.c1Cell.instance.displayModeChangedPath(true);
-                // this.D1D2Cell.instance.displayModeChangedPath(true);
                 this.BC1Cell.instance.displayModeChangedPath(true);
             } else {
                 this.cellsToHide.instance.style.visibility = 'visible';
                 this.b1Cell.instance.displayModeChangedPath();
                 this.c1Cell.instance.displayModeChangedPath();
-                // this.D1D2Cell.instance.displayModeChangedPath();
                 this.BC1Cell.instance.displayModeChangedPath();
             }
         });
@@ -383,9 +381,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     render(): VNode {
         return (
             <>
-
                 <path ref={this.modeChangedPathRef} visibility="hidden" class="NormalStroke White" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-
                 <g ref={this.cellRef} />
             </>
         );
@@ -534,15 +530,15 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         case 31:
             text = 'G/S';
             break;
-        // case 2:
-        //     text = 'F-G/S';
-        //     break;
+        case 2:
+            text = 'F-G/S';
+            break;
         case 30:
             text = 'G/S*';
             break;
-        // case 4:
-        //     text = 'F-G/S*';
-        //     break;
+        case 4:
+            text = 'F-G/S*';
+            break;
         case 40:
         case 41:
             text = 'SRS';
@@ -550,9 +546,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         case 50:
             text = 'TCAS';
             break;
-        // case 9:
-        //     text = 'FINAL';
-        //     break;
+        case 9:
+            text = 'FINAL';
+            break;
         case 23:
             text = 'DES';
             break;
@@ -589,9 +585,9 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         case 20:
             text = 'ALT CST';
             break;
-        // case 18:
-        //     text = 'ALT CRZ';
-        //     break;
+        case 18:
+            text = 'ALT CRZ';
+            break;
         case 15: {
             const FPAText = `${(this.FPA >= 0 ? '+' : '')}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`;
 
@@ -743,9 +739,6 @@ class B2Cell extends DisplayComponent<CellProps> {
             }
 
             let text2;
-            // case 1:
-            //     text2 = 'F-G/S';
-            //     break;
             if (gsArmed) {
                 text2 = 'G/S';
             } else if (finalArmed) {
