@@ -119,6 +119,7 @@ const PseudoFWC: React.FC = () => {
     const [emergencyElectricGeneratorPotential] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number', 500);
     const [dcESSBusPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool', 500);
     const [ac1BusPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool', 500);
+    const [ac2BusPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool', 500);
     const emergencyGeneratorOn = emergencyElectricGeneratorPotential > 0 ? 1 : 0;
 
     /* ENGINE AND THROTTLE */
@@ -244,6 +245,10 @@ const PseudoFWC: React.FC = () => {
     const [tcasMode] = useSimVar('L:A32NX_TCAS_MODE', 'enum', 500);
     const [tcasSensitivity] = useSimVar('L:A32NX_TCAS_SENSITIVITY', 'enum', 500);
     const [compMesgCount] = useSimVar('L:A32NX_COMPANY_MSG_COUNT', 'number', 500);
+    const height1: Arinc429Word = useArinc429Var('L:A32NX_RA_1_RADIO_ALTITUDE');
+    const height2: Arinc429Word = useArinc429Var('L:A32NX_RA_2_RADIO_ALTITUDE');
+    const height1Failed = height1.isFailureWarning();
+    const height2Failed = height2.isFailureWarning();
 
     const [apuBleedValveOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool', 500);
     const [apuAvail] = useSimVar('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool', 500);
@@ -759,6 +764,26 @@ const PseudoFWC: React.FC = () => {
             memoInhibit: false,
             failure: 2,
             sysPage: 9,
+            side: 'LEFT',
+        },
+        3400140: { // RA 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: height1Failed && ac1BusPowered,
+            whichCodeToReturn: [0],
+            codesToReturn: ['340014001'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        3400150: { // RA 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: height2Failed && ac2BusPowered,
+            whichCodeToReturn: [0],
+            codesToReturn: ['340015001'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: -1,
             side: 'LEFT',
         },
         3400500: { // TCAS FAULT
@@ -1514,6 +1539,7 @@ const PseudoFWC: React.FC = () => {
 
         //
     }, [ac1BusPowered,
+        ac2BusPowered,
         adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
         adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
         adiru1State,
@@ -1580,6 +1606,8 @@ const PseudoFWC: React.FC = () => {
         gpwsFlaps3,
         gpwsOff,
         greenHydEng1PBAuto,
+        height1Failed,
+        height2Failed,
         hydPTU,
         iceDetectedTimer1,
         iceDetectedTimer2,
