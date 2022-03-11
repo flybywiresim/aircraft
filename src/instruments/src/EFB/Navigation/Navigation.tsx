@@ -31,11 +31,11 @@ import {
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { NavigraphNav } from './Pages/NavigraphPage';
-import { getPdfUrl, LocalFileChartUI } from './Pages/LocalFilesPage';
+import { getPdfUrl, LocalFileRoot } from './Pages/LocalFilesPage';
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
-    { name: 'Local Files', component: <LocalFileChartUI />, associatedTab: NavigationTab.LOCAL_FILES },
+    { name: 'Local Files', component: <LocalFileRoot />, associatedTab: NavigationTab.LOCAL_FILES },
     { name: 'Navigraph', component: <NavigraphNav />, associatedTab: NavigationTab.NAVIGRAPH },
     { name: 'Pinned Charts', component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
 ];
@@ -208,7 +208,7 @@ export const ChartComponent = () => {
             >
                 {isFullScreen && (
                     <div
-                        className="flex absolute top-6 right-6 flex-row items-center p-4 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100"
+                        className="flex absolute top-6 right-6 flex-row items-center p-4 rounded-md transition duration-100 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                         onClick={() => dispatch(editTabProperty({ tab: currentTab, isFullScreen: false }))}
                     >
                         <FullscreenExit size={40} />
@@ -315,7 +315,7 @@ export const ChartComponent = () => {
                                             }));
                                         }
                                     }}
-                                    className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                                    className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                                 >
                                     <ArrowsExpand size={40} />
                                 </button>
@@ -338,7 +338,7 @@ export const ChartComponent = () => {
                                             }));
                                         }
                                     }}
-                                    className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                                    className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                                 >
                                     <ArrowsExpand className="transform rotate-90" size={40} />
                                 </button>
@@ -349,7 +349,7 @@ export const ChartComponent = () => {
                                         setTransform(0, 0, 1);
                                         dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...chartPosition, positionX: 0, positionY: 0, scale: 1 } }));
                                     }}
-                                    className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                                    className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                                 >
                                     <XCircleFill size={40} />
                                 </button>
@@ -357,21 +357,21 @@ export const ChartComponent = () => {
                                 <button
                                     type="button"
                                     onClick={() => zoomIn()}
-                                    className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                                    className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                                 >
                                     <Plus size={40} />
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => zoomOut()}
-                                    className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                                    className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                                 >
                                     <Dash size={40} />
                                 </button>
                             </div>
                             <div className="flex overflow-hidden flex-col rounded-md">
                                 <div
-                                    className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100 cursor-pointer"
+                                    className="p-2 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                                     onClick={() => {
                                         // TODO: THIS NEEDS TO WORK BETTER
                                         dispatch(editTabProperty({ tab: currentTab, isFullScreen: !isFullScreen }));
@@ -405,7 +405,7 @@ export const ChartComponent = () => {
 
                                 {provider === 'NAVIGRAPH' && (
                                     <div
-                                        className="p-2 mt-3 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100 cursor-pointer"
+                                        className="p-2 mt-3 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                                         onClick={() => dispatch(setUsingDarkTheme(!usingDarkTheme))}
                                     >
                                         {!usingDarkTheme ? <MoonFill size={40} /> : <SunFill size={40} />}
@@ -415,7 +415,7 @@ export const ChartComponent = () => {
                         </div>
 
                         <div
-                            className="flex overflow-x-hidden overflow-y-scroll relative flex-row mx-auto h-full bg-theme-accent rounded-lg grabbable no-scrollbar"
+                            className="flex overflow-x-hidden overflow-y-scroll relative flex-row mx-auto h-full rounded-lg bg-theme-accent grabbable no-scrollbar"
                             ref={ref}
                         >
                             <TransformComponent wrapperStyle={{ height: ref.current?.clientHeight, width: ref.current?.clientWidth }}>
@@ -425,7 +425,7 @@ export const ChartComponent = () => {
                                 >
                                     {(chartLinks && provider === 'NAVIGRAPH') && (
                                         <p
-                                            className="absolute top-0 left-0 font-bold text-theme-highlight whitespace-nowrap transition duration-100 transform -translate-y-full"
+                                            className="absolute top-0 left-0 font-bold whitespace-nowrap transition duration-100 transform -translate-y-full text-theme-highlight"
                                         >
                                             This chart is linked to
                                             {' '}
