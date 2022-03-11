@@ -28,6 +28,7 @@ pub mod brake_circuit;
 pub mod electrical_generator;
 pub mod electrical_pump_physics;
 pub mod flap_slat;
+pub mod landing_gear;
 pub mod linear_actuator;
 pub mod nose_steering;
 
