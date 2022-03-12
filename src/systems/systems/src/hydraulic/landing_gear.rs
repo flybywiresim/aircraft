@@ -2,19 +2,44 @@ use crate::shared::low_pass_filter::LowPassFilter;
 use crate::simulation::UpdateContext;
 
 use super::linear_actuator::{
-    HydraulicAssemblyController, HydraulicLinearActuatorAssembly,
-    LinearActuatedRigidBodyOnHingeAxis, LinearActuator, LinearActuatorMode,
+    HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuatorMode,
 };
 
 use uom::si::{f64::*, pressure::psi, ratio::ratio};
 
 use std::time::Duration;
 
-struct GearHydraulicSupply {
+struct HydraulicGearSystem {
+    hydraulic_supply: GearSystemHydraulicSupply,
+}
+impl HydraulicGearSystem {
+    fn new() -> Self {
+        Self {
+            hydraulic_supply: GearSystemHydraulicSupply::new(),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        valves_controller: &impl GearValvesController,
+        main_hydraulic_circuit_pressure: Pressure,
+    ) {
+        self.hydraulic_supply
+            .update(context, valves_controller, main_hydraulic_circuit_pressure);
+    }
+}
+
+trait GearValvesController {
+    fn safety_valve_should_open(&self) -> bool;
+    fn shut_off_valve_should_open(&self) -> bool;
+}
+
+struct GearSystemHydraulicSupply {
     safety_valve: HydraulicValve,
     cutoff_valve: HydraulicValve,
 }
-impl GearHydraulicValves {
+impl GearSystemHydraulicSupply {
     fn new() -> Self {
         Self {
             safety_valve: HydraulicValve::new(HydraulicValveType::ClosedWhenOff),
@@ -323,6 +348,34 @@ mod tests {
     use crate::simulation::{Aircraft, SimulationElement, UpdateContext};
 
     impl SimulationElement for ProximityDetector {}
+
+    #[derive(Default)]
+    struct TestGearValvesController {
+        safety_valve_should_open: bool,
+        shut_off_valve_should_open: bool,
+    }
+    impl TestGearValvesController {
+        fn with_safety_and_shutoff_opened() -> Self {
+            Self {
+                safety_valve_should_open: true,
+                shut_off_valve_should_open: true,
+            }
+        }
+
+        fn with_safety_opened_shut_off_closed() -> Self {
+            Self {
+                safety_valve_should_open: true,
+                shut_off_valve_should_open: false,
+            }
+        }
+
+        fn with_all_valve_closed() -> Self {
+            Self {
+                safety_valve_should_open: false,
+                shut_off_valve_should_open: false,
+            }
+        }
+    }
 
     #[derive(Default)]
     struct TestGearComponentController {
