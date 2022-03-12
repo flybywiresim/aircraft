@@ -108,6 +108,9 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
     };
 
     const handleChartClick = async (chart: LocalFileChart) => {
+        const oldChartId = chartId;
+        dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartId: chart.fileName }));
+
         try {
             const pagesViewable = await getPagesViewable(chart);
             dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, pagesViewable }));
@@ -124,12 +127,13 @@ const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelector
                 toast.error('Failed to retrieve requested image.');
             }
 
+            dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartId: oldChartId }));
+
             return;
         }
         dispatch(setProvider(ChartProvider.LOCAL_FILES));
 
         dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, currentPage: 1 }));
-        dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, chartId: chart.fileName }));
     };
 
     return (
