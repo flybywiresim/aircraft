@@ -1112,6 +1112,8 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
         this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
         if (text !== null) {
             this.bc3Cell.instance.innerHTML = text;
+        } else {
+            this.bc3Cell.instance.innerHTML = '';
         }
     }
 
