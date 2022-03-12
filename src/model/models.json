@@ -82,6 +82,10 @@
       {
         "gltf": "./inop/inop.gltf",
         "bin": "./inop/inop.bin"
+      },
+      {
+        "gltf": "./master-warn/master-warn.gltf",
+        "bin": "./master-warn/master-warn.bin"
       }
     ],
     "modifications": [
@@ -817,6 +821,48 @@
           [0.587402, 0.973633],
           [0.587402, 0.958984],
           [0.621582, 0.973633]
+        ]
+      }
+    ],
+    "splitAnimations": [
+      {
+        "animation": "PUSH_AUTOPILOT_MASTERCAUT_L",
+        "newAnimations": [
+          {
+            "name": "PUSH_GLARE_MASTERCAUT_L",
+            "indices": [0],
+            "targetNode": "PUSH_GLARE_MASTERCAUT_L"
+          }
+        ]
+      },
+      {
+        "animation": "PUSH_AUTOPILOT_MASTERCAUT_R",
+        "newAnimations": [
+          {
+            "name": "PUSH_GLARE_MASTERCAUT_R",
+            "indices": [0],
+            "targetNode": "PUSH_GLARE_MASTERCAUT_R"
+          }
+        ]
+      },
+      {
+        "animation": "PUSH_AUTOPILOT_MASTERAWARN_L",
+        "newAnimations": [
+          {
+            "name": "PUSH_GLARE_MASTERWARN_L",
+            "indices": [0],
+            "targetNode": "PUSH_GLARE_MASTERWARN_L"
+          }
+        ]
+      },
+      {
+        "animation": "PUSH_AUTOPILOT_MASTERAWARN_R",
+        "newAnimations": [
+          {
+            "name": "PUSH_GLARE_MASTERWARN_R",
+            "indices": [0],
+            "targetNode": "PUSH_GLARE_MASTERWARN_R"
+          }
         ]
       }
     ]
