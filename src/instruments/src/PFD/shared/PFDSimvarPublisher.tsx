@@ -100,6 +100,9 @@ export interface PFDSimvars {
     betaTargetActive: number,
     betaTarget: number,
     latAcc: number,
+    crzAltMode: boolean,
+    tcasModeDisarmed: boolean,
+    flexTemp: number,
   }
 
 export enum PFDVars {
@@ -203,7 +206,11 @@ export enum PFDVars {
     beta = 'INCIDENCE BETA',
     betaTargetActive = 'L:A32NX_BETA_TARGET_ACTIVE',
     betaTarget = 'L:A32NX_BETA_TARGET',
-    latAcc = 'ACCELERATION BODY X'
+    latAcc = 'ACCELERATION BODY X',
+    crzAltMode = 'L:A32NX_FMA_CRUISE_ALT_MODE',
+    tcasModeDisarmed = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM',
+    flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
+
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -328,6 +335,9 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['betaTarget', { name: PFDVars.betaTarget, type: SimVarValueType.Number }],
 
         ['latAcc', { name: PFDVars.latAcc, type: SimVarValueType.GForce }],
+        ['crzAltMode', { name: PFDVars.crzAltMode, type: SimVarValueType.Bool }],
+        ['tcasModeDisarmed', { name: PFDVars.tcasModeDisarmed, type: SimVarValueType.Bool }],
+        ['flexTemp', { name: PFDVars.flexTemp, type: SimVarValueType.Number }],
 
     ])
 

@@ -451,24 +451,18 @@ class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>,
 
     private previousAirspeed = 0;
 
-    private previousTime = (new Date() as any).appTime();
-
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         this.props.airspeed.sub((newValue) => {
-            const currentTime = (new Date() as any).appTime();
-            const deltaTime = this.props.instrument.deltaTime;// (currentTime - this.previousTime);
-
-            // const clamped = newValue.isNormalOperation() ? Math.max(newValue.value, 30) : NaN;
+            const deltaTime = this.props.instrument.deltaTime;
             const clamped = Math.max(newValue, 30);
             const airspeedAcc = (clamped - this.previousAirspeed) / deltaTime * 1000;
             this.previousAirspeed = clamped;
 
             let filteredAirspeedAcc = this.lagFilter.step(airspeedAcc, deltaTime / 1000);
             filteredAirspeedAcc = this.airspeedAccRateLimiter.step(filteredAirspeedAcc, deltaTime / 1000);
-            // const airspeedAcc = this.lagFilter.step(newValue.value, deltaTime);
-            // console.log(filteredAirspeedAcc);
+
             const targetSpeed = filteredAirspeedAcc * 10;
             const sign = Math.sign(filteredAirspeedAcc);
 
@@ -487,14 +481,10 @@ class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>,
             this.pathString.set(pathString);
 
             if (Math.abs(targetSpeed) < 1) {
-                this.refElement.instance.setAttribute('visibility', 'hidden');
-                // this.arrowBaseRef.instance.setAttribute('d', `m15.455 80.823v${offset}`)
-                // this.arrowHeadRef.instance.setAttribute('d', pathString)
+                this.refElement.instance.style.visibility = 'hidden';
             } else {
-                this.refElement.instance.setAttribute('visibility', 'visible');
+                this.refElement.instance.style.visibility = 'visible';
             }
-
-            this.previousTime = currentTime;
         });
     }
 

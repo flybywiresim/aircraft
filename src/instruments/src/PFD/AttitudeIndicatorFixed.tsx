@@ -266,7 +266,7 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
 
     private verticalRef2 = FSComponent.createRef<SVGPathElement>();
 
-    private setOffset() {
+    private handleFdState() {
         const [toggled, showLateral, showVertical] = this.isActive();
 
         let FDRollOffset = 0;
@@ -352,29 +352,24 @@ class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
         sub.on('fdBank').withPrecision(2).handle((fd) => {
             this.fdBank = fd;
 
-            this.setOffset();
+            this.handleFdState();
         });
         sub.on('fdPitch').withPrecision(2).handle((fd) => {
             this.fdPitch = fd;
 
-            this.setOffset();
+            this.handleFdState();
         });
 
         sub.on('activeLateralMode').whenChanged().handle((vm) => {
             this.lateralMode = vm;
 
-            this.setOffset();
+            this.handleFdState();
         });
 
         sub.on('activeVerticalMode').whenChanged().handle((lm) => {
             this.verticalMode = lm;
 
-            if (this.isActive()[0]) {
-                this.setOffset();
-                this.fdRef.instance.style.display = 'inline';
-            } else {
-                this.fdRef.instance.style.display = 'none';
-            }
+            this.handleFdState();
         });
     }
 

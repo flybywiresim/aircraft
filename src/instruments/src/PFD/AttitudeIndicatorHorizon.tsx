@@ -491,7 +491,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
             this.determineSlideSlip();
         });
 
-        sub.on('latAcc').handle((latAcc) => {
+        sub.on('latAcc').atFrequency(2).handle((latAcc) => {
             this.latAcc = latAcc;
             this.determineSlideSlip();
         });

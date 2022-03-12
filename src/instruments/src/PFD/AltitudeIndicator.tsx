@@ -74,23 +74,28 @@ class RadioAltIndicator extends DisplayComponent<{ bus: EventBus, filteredRadioA
 
     private radioAltitude = new Arinc429Word(0);
 
+    private setOffset() {
+        if (this.props.filteredRadioAltitude.get() > DisplayRange || this.radioAltitude.isFailureWarning() || this.radioAltitude.isNoComputedData()) {
+            this.visibilitySub.set('hidden');
+        } else {
+            this.visibilitySub.set('visible');
+            const offset = (this.props.filteredRadioAltitude.get() - DisplayRange) * DistanceSpacing / ValueSpacing;
+            this.offsetSub.set(`m131.15 123.56h2.8709v${offset}h-2.8709z`);
+        }
+    }
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<Arinc429Values>();
 
-        this.props.filteredRadioAltitude.sub((filteredRadioAltitude) => {
-            if (filteredRadioAltitude > DisplayRange || this.radioAltitude.isFailureWarning() || this.radioAltitude.isNoComputedData()) {
-                this.visibilitySub.set('hidden');
-            } else {
-                this.visibilitySub.set('visible');
-                const offset = (filteredRadioAltitude - DisplayRange) * DistanceSpacing / ValueSpacing;
-                this.offsetSub.set(`m131.15 123.56h2.8709v${offset}h-2.8709z`);
-            }
-        });
+        this.props.filteredRadioAltitude.sub((_filteredRadioAltitude) => {
+            this.setOffset();
+        }, true);
 
         sub.on('chosenRa').handle((ra) => {
             this.radioAltitude = ra;
+            this.setOffset();
         });
     }
 
