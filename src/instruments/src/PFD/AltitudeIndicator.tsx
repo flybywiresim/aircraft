@@ -276,9 +276,9 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
                             && this.activeVerticalMode !== VerticalMode.VS && this.activeVerticalMode !== VerticalMode.FPA;
         const gsActive = this.activeVerticalMode === VerticalMode.GS_TRACK || this.activeVerticalMode === VerticalMode.GS_CPT;
         const landingModesActive = this.activeVerticalMode === VerticalMode.LAND || this.activeVerticalMode === VerticalMode.FLARE;
-        const finalAppArmed = this.activeVerticalMode === VerticalMode.FINAL;
+        const finalApp = this.activeVerticalMode === VerticalMode.FINAL;
 
-        const isWhite = this.constraint > 0 && (gsActive || landingModesActive || finalAppArmed);
+        const isWhite = this.constraint > 0 && (gsActive || landingModesActive || finalApp);
 
         this.isManaged = this.constraint > 0 && clbActive;
 
@@ -310,40 +310,52 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.targetSymbolRef.instance.classList.add('White');
         } else if (this.isManaged) {
             this.SelectedAltLowerFLText.instance.classList.remove('Cyan');
+            this.SelectedAltLowerFLText.instance.classList.remove('White');
             this.SelectedAltLowerFLText.instance.classList.add('Magenta');
 
             this.SelectedAltLowerText.instance.classList.remove('Cyan');
+            this.SelectedAltLowerText.instance.classList.remove('White');
             this.SelectedAltLowerText.instance.classList.add('Magenta');
 
             this.SelectedAltUpperFLText.instance.classList.remove('Cyan');
+            this.SelectedAltUpperFLText.instance.classList.remove('White');
             this.SelectedAltUpperFLText.instance.classList.add('Magenta');
 
             this.SelectedAltUpperText.instance.classList.remove('Cyan');
+            this.SelectedAltUpperText.instance.classList.remove('White');
             this.SelectedAltUpperText.instance.classList.add('Magenta');
 
             this.AltTapeTargetText.instance.classList.remove('Cyan');
+            this.AltTapeTargetText.instance.classList.remove('White');
             this.AltTapeTargetText.instance.classList.add('Magenta');
 
             this.targetSymbolRef.instance.classList.remove('Cyan');
+            this.targetSymbolRef.instance.classList.remove('White');
             this.targetSymbolRef.instance.classList.add('Magenta');
         } else {
             this.SelectedAltLowerFLText.instance.classList.add('Cyan');
             this.SelectedAltLowerFLText.instance.classList.remove('Magenta');
+            this.SelectedAltLowerFLText.instance.classList.remove('White');
 
             this.SelectedAltLowerText.instance.classList.add('Cyan');
             this.SelectedAltLowerText.instance.classList.remove('Magenta');
+            this.SelectedAltLowerText.instance.classList.remove('White');
 
             this.SelectedAltUpperFLText.instance.classList.add('Cyan');
             this.SelectedAltUpperFLText.instance.classList.remove('Magenta');
+            this.SelectedAltUpperFLText.instance.classList.remove('White');
 
             this.SelectedAltUpperText.instance.classList.add('Cyan');
             this.SelectedAltUpperText.instance.classList.remove('Magenta');
+            this.SelectedAltUpperText.instance.classList.remove('White');
 
             this.AltTapeTargetText.instance.classList.add('Cyan');
             this.AltTapeTargetText.instance.classList.remove('Magenta');
+            this.AltTapeTargetText.instance.classList.remove('White');
 
             this.targetSymbolRef.instance.classList.add('Cyan');
             this.targetSymbolRef.instance.classList.remove('Magenta');
+            this.targetSymbolRef.instance.classList.remove('White');
         }
     }
 
