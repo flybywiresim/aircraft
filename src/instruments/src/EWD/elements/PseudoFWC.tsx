@@ -1024,17 +1024,6 @@ const PseudoFWC: React.FC = () => {
                 sysPage: -1,
                 side: 'LEFT',
             },
-        '0000110': // FUEL < 3T
-            {
-                flightPhaseInhib: [],
-                simVarIsActive: fobRounded < 3000,
-                whichCodeToReturn: [unit === '1' ? 0 : 1],
-                codesToReturn: ['000011001', '000011002'], // config memo
-                memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
-                failure: 0,
-                sysPage: -1,
-                side: 'LEFT',
-            },
         '0000305': // GPWS FLAP MODE OFF
             {
                 flightPhaseInhib: [],
