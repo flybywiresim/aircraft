@@ -187,6 +187,9 @@
 1. [HYD] Removed blue reservoir absolute air sensor (removed on new neo) - @Crocket63
 1. [MODEL] Split master caution and warning lamps - @tracernz (Mike)
 1. [MCDU] Improved resilience of FMGC main loop - @aguther (Andreas Guther)
+1. [AP] Corrected guidance for OP DES, CLB and DES for small flight level changes - @aguther (Andreas Guther)
+1. [AP] Improved roll law transition from flight to ground mode during Autoland - @aguther (Andreas Guther)
+1. [AP] Improved V/PATH law - lukecologne (luke)
 
 ## 0.7.0
 
