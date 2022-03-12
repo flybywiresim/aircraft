@@ -1,3 +1,4 @@
+use crate::shared::low_pass_filter::LowPassFilter;
 use crate::simulation::UpdateContext;
 
 use super::linear_actuator::{
@@ -6,6 +7,39 @@ use super::linear_actuator::{
 };
 
 use uom::si::{f64::*, pressure::psi, ratio::ratio};
+
+use std::time::Duration;
+
+struct GearHydraulicSupply {
+    safety_valve: HydraulicValve,
+    cutoff_valve: HydraulicValve,
+}
+impl GearHydraulicValves {
+    fn new() -> Self {
+        Self {
+            safety_valve: HydraulicValve::new(HydraulicValveType::ClosedWhenOff),
+            cutoff_valve: HydraulicValve::new(HydraulicValveType::Mechanical),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        valves_controller: &impl GearValvesController,
+        main_hydraulic_circuit_pressure: Pressure,
+    ) {
+        self.safety_valve.update(
+            context,
+            valves_controller.safety_valve_should_open(),
+            main_hydraulic_circuit_pressure,
+        );
+        self.cutoff_valve.update(
+            context,
+            valves_controller.shut_off_valve_should_open(),
+            self.safety_valve.pressure_output(),
+        );
+    }
+}
 
 trait GearComponentController {
     fn should_hydraulic_unlock(&self) -> bool;
@@ -128,6 +162,7 @@ impl GearDoorHydraulicController {
 }
 impl HydraulicAssemblyController for GearDoorHydraulicController {
     fn requested_mode(&self) -> LinearActuatorMode {
+        // TODO if vent valve opened -> damping else -> valve closed mode
         LinearActuatorMode::PositionControl
     }
 
@@ -156,12 +191,92 @@ impl HydraulicLock {
 
     fn update(
         &mut self,
-        door_controller: &impl GearComponentController,
+        component_controller: &impl GearComponentController,
         current_pressure: Pressure,
     ) {
-        self.is_unlocked = door_controller.should_hydraulic_unlock()
+        self.is_unlocked = component_controller.should_hydraulic_unlock()
             && current_pressure.get::<psi>() > Self::UNLOCK_MIN_PRESS_PSI
-            || door_controller.should_manual_unlock()
+            || component_controller.should_manual_unlock()
+    }
+}
+
+#[derive(PartialEq, Clone, Copy)]
+enum HydraulicValveType {
+    ClosedWhenOff,
+    OpenedWhenOff,
+    Mechanical,
+}
+
+struct HydraulicValve {
+    position: LowPassFilter<Ratio>,
+    is_powered: bool,
+    valve_type: HydraulicValveType,
+
+    pressure_input: Pressure,
+    pressure_output: Pressure,
+}
+impl HydraulicValve {
+    const POSITION_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(50);
+
+    fn new(valve_type: HydraulicValveType) -> Self {
+        Self {
+            position: LowPassFilter::<Ratio>::new(Self::POSITION_RESPONSE_TIME_CONSTANT),
+            is_powered: true, // TODO set to false and add SimulationElement powering
+            valve_type,
+            pressure_input: Pressure::default(),
+            pressure_output: Pressure::default(),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        commanded_open: bool,
+        current_pressure_input: Pressure,
+    ) {
+        let commanded_position = self.actual_target_position_from_valve_type(commanded_open);
+
+        self.position.update(context.delta(), commanded_position);
+
+        self.pressure_input = current_pressure_input;
+        self.update_output_pressure();
+    }
+
+    fn actual_target_position_from_valve_type(&self, commanded_open: bool) -> Ratio {
+        match self.valve_type {
+            HydraulicValveType::OpenedWhenOff => {
+                if !commanded_open && self.is_powered {
+                    Ratio::new::<ratio>(0.)
+                } else {
+                    Ratio::new::<ratio>(1.)
+                }
+            }
+            HydraulicValveType::ClosedWhenOff => {
+                if commanded_open && self.is_powered {
+                    Ratio::new::<ratio>(1.)
+                } else {
+                    Ratio::new::<ratio>(0.)
+                }
+            }
+            HydraulicValveType::Mechanical => {
+                if commanded_open {
+                    Ratio::new::<ratio>(1.)
+                } else {
+                    Ratio::new::<ratio>(0.)
+                }
+            }
+        }
+    }
+
+    fn update_output_pressure(&mut self) {
+        self.pressure_output =
+            self.pressure_input
+                * (self.position.output().sqrt() * 1.4)
+                    .min(Ratio::new::<ratio>(1.).max(Ratio::new::<ratio>(0.)));
+    }
+
+    fn pressure_output(&self) -> Pressure {
+        self.pressure_output
     }
 }
 
