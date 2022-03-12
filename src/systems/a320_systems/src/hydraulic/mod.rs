@@ -89,18 +89,11 @@ impl A320HydraulicReservoirFactory {
             Volume::new::<liter>(10.),
             Volume::new::<liter>(8.),
             Volume::new::<gallon>(1.56),
-            vec![
-                PressureSwitch::new(
-                    Pressure::new::<psi>(25.),
-                    Pressure::new::<psi>(22.),
-                    PressureSwitchType::Relative,
-                ),
-                PressureSwitch::new(
-                    Pressure::new::<psi>(48.),
-                    Pressure::new::<psi>(45.),
-                    PressureSwitchType::Absolute,
-                ),
-            ],
+            vec![PressureSwitch::new(
+                Pressure::new::<psi>(25.),
+                Pressure::new::<psi>(22.),
+                PressureSwitchType::Relative,
+            )],
             Volume::new::<liter>(2.),
         )
     }
