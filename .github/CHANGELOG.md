@@ -183,6 +183,7 @@
 1. [HYD] Smoothed nose wheel steering when pushing back - @Crocket63
 1. [EFB] Add first officer flypad - @tracernz (Mike)
 1. [CLK] Added simvars for Clock CHR and ET - @ssewell (Shane Sewell)
+1. [MODEL] Split master caution and warning lamps - @tracernz (Mike)
 
 ## 0.7.0
 
