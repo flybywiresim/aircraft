@@ -235,6 +235,7 @@ class EngineControl {
       if (engineState == 4 || engineState == 14) {
         if (engineIgniter == 2 && engineStarter == 1) {
           engineState = 3;
+          resetTimer = 1;
         } else if (engineStarter == 0 && simN2 < 0.05 && egtFbw <= ambientTemp) {
           engineState = 0;
           resetTimer = 1;
