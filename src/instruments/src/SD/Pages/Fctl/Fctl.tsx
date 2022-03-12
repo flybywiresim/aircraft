@@ -263,7 +263,7 @@ const Elevator = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: Com
             <ElevatorAxis side={side} x={0} y={5} />
 
             <HydraulicIndicator x={side === 'left' ? -60 : 18} y={79} type={leftHydraulicSystem} />
-            <HydraulicIndicator x={side === 'right' ? -38 : 40} y={79} type={rightHydraulicSystem} />
+            <HydraulicIndicator x={side === 'left' ? -38 : 40} y={79} type={rightHydraulicSystem} />
         </SvgGroup>
     );
 };
