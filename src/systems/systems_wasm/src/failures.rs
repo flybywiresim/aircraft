@@ -1,5 +1,9 @@
-use fxhash::FxHashMap;
+#[cfg(not(target_arch = "wasm32"))]
+use crate::msfs::legacy::NamedVariable;
+#[cfg(target_arch = "wasm32")]
 use msfs::legacy::NamedVariable;
+
+use fxhash::FxHashMap;
 
 use systems::failures::FailureType;
 

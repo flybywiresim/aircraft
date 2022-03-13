@@ -6,7 +6,7 @@ use std::time::Duration;
 #[derive(PartialEq, Copy, Clone)]
 /// First order low pass filter
 /// y(k) = y(k-1)  +  (1-a)*( x(k) - y(k-1) ) with a = exp (-T/tau)
-/// See https://gregstanleyandassociates.com/whitepapers/FaultDiagnosis/Filtering/Exponential-Filter/exponential-filter.htm
+/// See <https://gregstanleyandassociates.com/whitepapers/FaultDiagnosis/Filtering/Exponential-Filter/exponential-filter.htm>
 pub struct LowPassFilter<T>
 where
     T: AddAssign<T> + Sub<Output = T> + Mul<f64, Output = T> + Copy,

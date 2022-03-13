@@ -4,7 +4,7 @@ use plotlib::style::LineStyle;
 use plotlib::view::ContinuousView;
 use std::time::Duration;
 
-pub use systems::hydraulic::*;
+use systems::hydraulic::*;
 
 use systems::{
     electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
