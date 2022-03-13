@@ -23,7 +23,7 @@ class Arinc429Word {
 
   void setFromData(T data, Arinc429SignStatus ssm);
 
-  double toSimVar() const;
+  double toSimVar();
 
   Arinc429SignStatus ssm() const;
 

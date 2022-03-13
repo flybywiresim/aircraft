@@ -21,11 +21,11 @@ template void Arinc429Word<uint32_t>::setFromData(uint32_t data, Arinc429SignSta
 template void Arinc429Word<float>::setFromData(float data, Arinc429SignStatus ssm);
 
 template <typename T>
-double Arinc429Word<T>::toSimVar() const {
+double Arinc429Word<T>::toSimVar() {
   return *reinterpret_cast<double*>(this);
 }
-template double Arinc429Word<uint32_t>::toSimVar() const;
-template double Arinc429Word<float>::toSimVar() const;
+template double Arinc429Word<uint32_t>::toSimVar();
+template double Arinc429Word<float>::toSimVar();
 
 template <typename T>
 Arinc429SignStatus Arinc429Word<T>::ssm() const {
