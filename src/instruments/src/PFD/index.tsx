@@ -33,7 +33,6 @@ export const PFD: React.FC = () => {
     });
 
     const [previousAirspeed, setPreviousAirspeed] = useState(0);
-    const [clampedAirspeed, setClampedAirspeed] = useState(0);
     const [filteredAirspeedAcc, setfilteredAirspeedAcc] = useState(0);
 
     const [airspeedAccFilter] = useState(() => new LagFilter(1.6));
@@ -76,10 +75,17 @@ export const PFD: React.FC = () => {
     useUpdate((deltaTime) => {
         failuresConsumer.update();
 
-        const clamped = computedAirspeed.isNormalOperation() ? Math.max(computedAirspeed.value, 30) : NaN;
+        let clamped: number;
+        if (computedAirspeed.isFailureWarning()) {
+            clamped = NaN;
+        } else if (computedAirspeed.isNoComputedData()) {
+            clamped = 30;
+        } else {
+            clamped = computedAirspeed.value;
+        }
+
         const airspeedAcc = (clamped - previousAirspeed) / deltaTime * 1000;
         setPreviousAirspeed(clamped);
-        setClampedAirspeed(clamped);
 
         const filteredAirspeedAcc = airspeedAccFilter.step(airspeedAcc, deltaTime / 1000);
         setfilteredAirspeedAcc(airspeedAccRateLimiter.step(filteredAirspeedAcc, deltaTime / 1000));
@@ -117,7 +123,8 @@ export const PFD: React.FC = () => {
 
     const heading = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_HEADING`);
     const groundTrack = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_TRACK`);
-    const groundSpeed = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_GROUND_SPEED`);
+    const fpa = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_FLIGHT_PATH_ANGLE`);
+    const da = useArinc429Var(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_DRIFT_ANGLE`);
 
     const decisionHeight = getSimVar('L:AIRLINER_DECISION_HEIGHT', 'feet');
 
@@ -201,10 +208,8 @@ export const PFD: React.FC = () => {
                 <AttitudeIndicatorFixedCenter
                     pitch={pitch}
                     roll={roll}
-                    vs={inertialVerticalSpeed}
-                    gs={groundSpeed}
-                    heading={heading}
-                    track={groundTrack}
+                    fpa={fpa}
+                    da={da}
                     isOnGround={isOnGround}
                     FDActive={FDActive}
                     isAttExcessive={isAttExcessive}
@@ -218,13 +223,14 @@ export const PFD: React.FC = () => {
                 <HeadingTape heading={heading} />
                 <AltitudeIndicator altitude={altitude} FWCFlightPhase={fwcFlightPhase} />
                 <AirspeedIndicator
-                    airspeed={clampedAirspeed}
+                    airspeed={computedAirspeed}
                     airspeedAcc={filteredAirspeedAcc}
                     FWCFlightPhase={fwcFlightPhase}
                     altitude={altitude}
                     VLs={vls}
                     VMax={VMax}
                     showBars={showSpeedBars}
+                    onGround={isOnGround}
                 />
                 <path
                     id="Mask2"
@@ -245,8 +251,8 @@ export const PFD: React.FC = () => {
                     altIsManaged={isManaged}
                     mode={pressureMode}
                 />
-                <AirspeedIndicatorOfftape airspeed={clampedAirspeed} targetSpeed={targetSpeed} speedIsManaged={!isSelected} />
-                <MachNumber mach={mach} />
+                <AirspeedIndicatorOfftape airspeed={computedAirspeed} targetSpeed={targetSpeed} speedIsManaged={!isSelected} onGround={isOnGround} />
+                <MachNumber mach={mach} onGround={isOnGround} />
                 <FMA isAttExcessive={isAttExcessive} />
             </svg>
         </DisplayUnit>
