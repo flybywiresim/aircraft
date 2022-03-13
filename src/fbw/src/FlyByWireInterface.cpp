@@ -566,15 +566,24 @@ void FlyByWireInterface::setupLocalVariables() {
     string idString = std::to_string(i + 1);
 
     idLeftAileronSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_LEFT_" + aileronStringLeft + "_AIL_SERVO_SOLENOID_ENERGIZED");
+    idLeftAileronCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_" + aileronStringLeft + "_AIL_COMMANDED_POSITION");
     idRightAileronSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_RIGHT_" + aileronStringRight + "_AIL_SERVO_SOLENOID_ENERGIZED");
+    idRightAileronCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_" + aileronStringRight + "_AIL_COMMANDED_POSITION");
+    idLeftSpoilerCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_SPOILER_" + idString + "_COMMANDED_POSITION");
+    idRightSpoilerCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_SPOILER_" + idString + "_COMMANDED_POSITION");
     idLeftElevatorSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_LEFT_" + elevatorStringLeft + "_ELEV_SERVO_SOLENOID_ENERGIZED");
+    idLeftElevatorCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_" + elevatorStringLeft + "_ELEV_COMMANDED_POSITION");
     idRightElevatorSolenoidEnergized[i] =
         make_unique<LocalVariable>("A32NX_RIGHT_" + elevatorStringRight + "_ELEV_SERVO_SOLENOID_ENERGIZED");
+    idRightElevatorCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_" + elevatorStringRight + "_ELEV_COMMANDED_POSITION");
 
     idYawDamperSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_" + yawDamperString + "_YAW_DAMPER_SERVO_SOLENOID_ENERGIZED");
+    idYawDamperCommandedPosition[i] = make_unique<LocalVariable>("A32NX_" + yawDamperString + "_YAW_DAMPER_COMMANDED_POSITION");
     idRudderTrimActiveModeCommanded[i] = make_unique<LocalVariable>("A32NX_RUDDER_TRIM_" + idString + "_ACTIVE_MODE_COMMANDED");
+    idRudderTrimCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RUDDER_TRIM_" + idString + "_COMMANDED_POSITION");
     idRudderTravelLimitActiveModeCommanded[i] =
         make_unique<LocalVariable>("A32NX_RUDDER_TRAVEL_LIM_" + idString + "_ACTIVE_MODE_COMMANDED");
+    idRudderTravelLimCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RUDDER_TRAVEL_LIM_" + idString + "_COMMANDED_POSITION");
   }
 
   for (int i = 0; i < 3; i++) {
@@ -1236,29 +1245,57 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
 
 bool FlyByWireInterface::updateServoSolenoidStatus() {
   idLeftAileronSolenoidEnergized[0]->set(elacsDiscreteOutputs[0].leftAileronActiveMode);
+  idLeftAileronCommandedPosition[0]->set(elacsAnalogOutputs[0].leftAileronPosOrder);
   idRightAileronSolenoidEnergized[0]->set(elacsDiscreteOutputs[0].rightAileronActiveMode);
+  idRightAileronCommandedPosition[0]->set(elacsAnalogOutputs[0].rightAileronPosOrder);
   idLeftAileronSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].leftAileronActiveMode);
+  idLeftAileronCommandedPosition[1]->set(elacsAnalogOutputs[1].leftAileronPosOrder);
   idRightAileronSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].rightAileronActiveMode);
+  idRightAileronCommandedPosition[1]->set(elacsAnalogOutputs[1].rightAileronPosOrder);
+
+  idLeftSpoilerCommandedPosition[0]->set(secsAnalogOutputs[2].leftSpoiler1Order);
+  idRightSpoilerCommandedPosition[0]->set(secsAnalogOutputs[2].rightSpoiler1Order);
+  idLeftSpoilerCommandedPosition[1]->set(secsAnalogOutputs[2].leftSpoiler2Order);
+  idRightSpoilerCommandedPosition[1]->set(secsAnalogOutputs[2].rightSpoiler2Order);
+  idLeftSpoilerCommandedPosition[2]->set(secsAnalogOutputs[1].leftSpoiler1Order);
+  idRightSpoilerCommandedPosition[2]->set(secsAnalogOutputs[1].rightSpoiler1Order);
+  idLeftSpoilerCommandedPosition[3]->set(secsAnalogOutputs[1].leftSpoiler2Order);
+  idRightSpoilerCommandedPosition[3]->set(secsAnalogOutputs[1].rightSpoiler2Order);
+  idLeftSpoilerCommandedPosition[4]->set(secsAnalogOutputs[0].leftSpoiler1Order);
+  idRightSpoilerCommandedPosition[4]->set(secsAnalogOutputs[0].rightSpoiler1Order);
 
   idLeftElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[1].leftElevatorDampingMode ||
                                           secsDiscreteOutputs[1].leftElevatorDampingMode);
+  idLeftElevatorCommandedPosition[0]->set(elacsAnalogOutputs[1].leftElevPosOrder + secsAnalogOutputs[1].leftElevPosOrder);
   idRightElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[1].rightElevatorDampingMode ||
                                            secsDiscreteOutputs[1].rightElevatorDampingMode);
+  idRightElevatorCommandedPosition[0]->set(elacsAnalogOutputs[1].rightElevPosOrder + secsAnalogOutputs[1].rightElevPosOrder);
   idLeftElevatorSolenoidEnergized[1]->set(elacsDiscreteOutputs[0].leftElevatorDampingMode ||
                                           secsDiscreteOutputs[0].leftElevatorDampingMode);
+  idLeftElevatorCommandedPosition[1]->set(elacsAnalogOutputs[0].leftElevPosOrder + secsAnalogOutputs[0].leftElevPosOrder);
   idRightElevatorSolenoidEnergized[1]->set(elacsDiscreteOutputs[0].rightElevatorDampingMode ||
                                            secsDiscreteOutputs[0].rightElevatorDampingMode);
+  idRightElevatorCommandedPosition[1]->set(elacsAnalogOutputs[0].rightElevPosOrder + secsAnalogOutputs[0].rightElevPosOrder);
 
   idTHSActiveModeCommanded[0]->set(elacsDiscreteOutputs[1].thsActive);
+  idTHSCommandedPosition[0]->set(elacsAnalogOutputs[1].thsPosOrder);
   idTHSActiveModeCommanded[1]->set(elacsDiscreteOutputs[0].thsActive || secsDiscreteOutputs[0].thsActive);
+  idTHSCommandedPosition[1]->set(elacsAnalogOutputs[0].thsPosOrder + secsAnalogOutputs[0].thsPosOrder);
   idTHSActiveModeCommanded[2]->set(secsDiscreteOutputs[1].thsActive);
+  idTHSCommandedPosition[2]->set(secsAnalogOutputs[1].thsPosOrder);
 
   idYawDamperSolenoidEnergized[0]->set(facsDiscreteOutputs[0].yawDamperEngaged);
+  idYawDamperCommandedPosition[0]->set(facsAnalogOutputs[0].yawDamperOrder);
   idYawDamperSolenoidEnergized[1]->set(facsDiscreteOutputs[1].yawDamperEngaged);
+  idYawDamperCommandedPosition[1]->set(facsAnalogOutputs[1].yawDamperOrder);
   idRudderTrimActiveModeCommanded[0]->set(facsDiscreteOutputs[0].rudderTrimEngaged);
+  idRudderTravelLimCommandedPosition[0]->set(facsAnalogOutputs[0].rudderTrimOrder);
   idRudderTrimActiveModeCommanded[1]->set(facsDiscreteOutputs[1].rudderTrimEngaged);
+  idRudderTravelLimCommandedPosition[1]->set(facsAnalogOutputs[1].rudderTrimOrder);
   idRudderTravelLimitActiveModeCommanded[0]->set(facsDiscreteOutputs[0].rudderTravelLimEngaged);
+  idRudderTravelLimCommandedPosition[0]->set(facsAnalogOutputs[0].rudderTravelLimOrder);
   idRudderTravelLimitActiveModeCommanded[1]->set(facsDiscreteOutputs[1].rudderTravelLimEngaged);
+  idRudderTravelLimCommandedPosition[1]->set(facsAnalogOutputs[1].rudderTravelLimOrder);
 
   return true;
 }

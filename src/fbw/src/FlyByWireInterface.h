@@ -406,13 +406,23 @@ class FlyByWireInterface {
 
   // Flight controls solenoid valve energization Lvars
   std::unique_ptr<LocalVariable> idLeftAileronSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idLeftAileronCommandedPosition[2];
   std::unique_ptr<LocalVariable> idRightAileronSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idRightAileronCommandedPosition[2];
+  std::unique_ptr<LocalVariable> idLeftSpoilerCommandedPosition[5];
+  std::unique_ptr<LocalVariable> idRightSpoilerCommandedPosition[5];
   std::unique_ptr<LocalVariable> idLeftElevatorSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idLeftElevatorCommandedPosition[2];
   std::unique_ptr<LocalVariable> idRightElevatorSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idRightElevatorCommandedPosition[2];
   std::unique_ptr<LocalVariable> idTHSActiveModeCommanded[3];
+  std::unique_ptr<LocalVariable> idTHSCommandedPosition[3];
   std::unique_ptr<LocalVariable> idYawDamperSolenoidEnergized[2];
+  std::unique_ptr<LocalVariable> idYawDamperCommandedPosition[2];
   std::unique_ptr<LocalVariable> idRudderTrimActiveModeCommanded[2];
+  std::unique_ptr<LocalVariable> idRudderTrimCommandedPosition[2];
   std::unique_ptr<LocalVariable> idRudderTravelLimitActiveModeCommanded[2];
+  std::unique_ptr<LocalVariable> idRudderTravelLimCommandedPosition[2];
 
   // FAC discrete input Lvars
   std::unique_ptr<LocalVariable> idFacPushbuttonStatus[2];
