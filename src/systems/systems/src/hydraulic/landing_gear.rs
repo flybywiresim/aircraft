@@ -64,6 +64,10 @@ impl GearSystemHydraulicSupply {
             self.safety_valve.pressure_output(),
         );
     }
+
+    fn gear_system_manifold_pressure(&self) -> Pressure {
+        self.cutoff_valve.pressure_output()
+    }
 }
 
 trait GearComponentController {
@@ -341,7 +345,9 @@ mod tests {
     use std::time::Duration;
     use uom::si::{angle::degree, length::meter, mass::kilogram, volume_rate::gallon_per_second};
 
-    use crate::hydraulic::linear_actuator::BoundedLinearLength;
+    use crate::hydraulic::linear_actuator::{
+        BoundedLinearLength, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
+    };
     use crate::shared::update_iterator::MaxStepLoop;
 
     use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
@@ -369,11 +375,27 @@ mod tests {
             }
         }
 
+        fn with_safety_closed_shut_off_opened() -> Self {
+            Self {
+                safety_valve_should_open: false,
+                shut_off_valve_should_open: true,
+            }
+        }
+
         fn with_all_valve_closed() -> Self {
             Self {
                 safety_valve_should_open: false,
                 shut_off_valve_should_open: false,
             }
+        }
+    }
+    impl GearValvesController for TestGearValvesController{
+        fn safety_valve_should_open(&self) -> bool {
+            self.safety_valve_should_open
+        }
+
+        fn shut_off_valve_should_open(&self) -> bool {
+            self.shut_off_valve_should_open
         }
     }
 
@@ -473,6 +495,8 @@ mod tests {
     }
     impl SimulationElement for TestSingleDoorAircraft {}
 
+    impl SimulationElement for GearSystemHydraulicSupply {}
+
     #[test]
     fn proximity_detector_active_when_at_position() {
         let mut test_bed = SimulationTestBed::from(ProximityDetector::new(
@@ -500,6 +524,82 @@ mod tests {
 
         test_bed.command_element(|e| e.update(Ratio::new::<ratio>(0.65)));
         assert!(!test_bed.query_element(|e| e.proximity_detected()));
+    }
+
+    #[test]
+    fn hydraulic_manifold_receives_pressure_with_all_valves_opened() {
+        let mut test_bed = SimulationTestBed::from(GearSystemHydraulicSupply::new())
+            .with_update_after_power_distribution(|el, context| {
+                el.update(
+                    context,
+                    &TestGearValvesController::with_safety_and_shutoff_opened(),
+                    Pressure::new::<psi>(3000.),
+                )
+            });
+
+        test_bed.run_with_delta(Duration::from_millis(100));
+
+        assert!(
+            test_bed.query_element(|e| e.gear_system_manifold_pressure())
+                > Pressure::new::<psi>(2500.)
+        );
+    }
+
+    #[test]
+    fn hydraulic_manifold_do_not_receive_pressure_with_shut_off_valve_closed() {
+        let mut test_bed = SimulationTestBed::from(GearSystemHydraulicSupply::new())
+            .with_update_after_power_distribution(|el, context| {
+                el.update(
+                    context,
+                    &TestGearValvesController::with_safety_opened_shut_off_closed(),
+                    Pressure::new::<psi>(3000.),
+                )
+            });
+
+        test_bed.run_with_delta(Duration::from_millis(100));
+
+        assert!(
+            test_bed.query_element(|e| e.gear_system_manifold_pressure())
+                < Pressure::new::<psi>(100.)
+        );
+    }
+
+    #[test]
+    fn hydraulic_manifold_do_not_receive_pressure_with_safety_valve_closed() {
+        let mut test_bed = SimulationTestBed::from(GearSystemHydraulicSupply::new())
+            .with_update_after_power_distribution(|el, context| {
+                el.update(
+                    context,
+                    &TestGearValvesController::with_safety_closed_shut_off_opened(),
+                    Pressure::new::<psi>(3000.),
+                )
+            });
+
+        test_bed.run_with_delta(Duration::from_millis(100));
+
+        assert!(
+            test_bed.query_element(|e| e.gear_system_manifold_pressure())
+                < Pressure::new::<psi>(100.)
+        );
+    }
+
+    #[test]
+    fn hydraulic_manifold_do_not_receive_pressure_with_all_valves_closed() {
+        let mut test_bed = SimulationTestBed::from(GearSystemHydraulicSupply::new())
+            .with_update_after_power_distribution(|el, context| {
+                el.update(
+                    context,
+                    &TestGearValvesController::with_all_valve_closed(),
+                    Pressure::new::<psi>(3000.),
+                )
+            });
+
+        test_bed.run_with_delta(Duration::from_millis(100));
+
+        assert!(
+            test_bed.query_element(|e| e.gear_system_manifold_pressure())
+                < Pressure::new::<psi>(100.)
+        );
     }
 
     #[test]
