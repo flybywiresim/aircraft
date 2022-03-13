@@ -351,7 +351,7 @@ impl From<&Variable> for VariableValue {
         match value {
             Variable::Aircraft(name, units, index, ..) => {
                 let index = *index;
-                VariableValue::Aircraft(match AircraftVariable::from(&name, units, index) {
+                VariableValue::Aircraft(match AircraftVariable::from(name, units, index) {
                     Ok(aircraft_variable) => aircraft_variable,
                     Err(error) => panic!(
                         "Error while trying to create aircraft variable named '{}': {}",
@@ -463,7 +463,7 @@ impl MsfsVariableRegistry {
 
     pub fn register_many(&mut self, variables: &[Variable]) -> Vec<VariableIdentifier> {
         variables
-            .into_iter()
+            .iter()
             .map(|variable| self.register(variable))
             .collect()
     }
@@ -497,10 +497,9 @@ impl MsfsVariableRegistry {
     }
 
     fn read(&self, identifier: &VariableIdentifier) -> Option<f64> {
-        match self.variables.get(identifier) {
-            Some(variable_value) => Some(variable_value.read()),
-            None => None,
-        }
+        self.variables
+            .get(identifier)
+            .map(|variable_value| variable_value.read())
     }
 
     fn read_many(&self, identifiers: &[VariableIdentifier]) -> Vec<Option<f64>> {
@@ -511,9 +510,8 @@ impl MsfsVariableRegistry {
     }
 
     fn write(&mut self, identifier: &VariableIdentifier, value: f64) {
-        match self.variables.get_mut(identifier) {
-            Some(variable_value) => variable_value.write(value),
-            None => (),
+        if let Some(variable_value) = self.variables.get_mut(identifier) {
+            variable_value.write(value);
         }
     }
 }
@@ -600,9 +598,8 @@ pub fn f64_to_sim_connect_32k_pos(scaled_axis_value: f64) -> u32 {
     let back_to_position_format = ((scaled_axis_value) * RANGE_32KPOS_VAL_FROM_SIMCONNECT)
         - OFFSET_32KPOS_VAL_FROM_SIMCONNECT;
     let to_i32 = back_to_position_format as i32;
-    let to_u32 = to_i32 as u32;
 
-    to_u32
+    to_i32 as u32
 }
 
 #[cfg(test)]
@@ -617,7 +614,7 @@ mod sim_connect_type_casts {
     fn middle_simconnect_value() {
         // We expect to get first element of YS1
         let val = sim_connect_32k_pos_to_f64(0);
-        assert!(val <= 0.501 && val >= 0.499);
+        assert!((0.499..=0.501).contains(&val));
     }
 
     #[test]

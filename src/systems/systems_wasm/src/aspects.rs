@@ -83,9 +83,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
     }
 
     pub fn build(self) -> MsfsAspect {
-        let aspect = MsfsAspect::new(self.message_handlers, self.actions);
-
-        aspect
+        MsfsAspect::new(self.message_handlers, self.actions)
     }
 
     /// Initialise the variable with the given value.
@@ -489,12 +487,13 @@ impl ExecutableVariableAction for Reduce {
         _: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
     ) -> Result<(), Box<dyn Error>> {
-        let values: Vec<f64> = variables
+        let result = variables
             .read_many(&self.input_variable_identifiers)
             .iter()
             .map(|&x| x.unwrap())
-            .collect();
-        let result = values.into_iter().fold(self.init, self.func);
+            .into_iter()
+            .fold(self.init, self.func);
+
         variables.write(&self.output_variable_identifier, result);
 
         Ok(())
@@ -899,6 +898,10 @@ impl ExecutableVariableAction for ToEvent {
         let should_write = match self.write_on {
             VariableToEventWriteOn::EveryTick => true,
             VariableToEventWriteOn::Change => match self.last_written_value {
+                // Allow floating point equality comparison, because we really care about the
+                // value being exactly equal and assume that the code that changes this value
+                // is equal for every simulation tick.
+                #[allow(clippy::float_cmp)]
                 Some(last_written_value) => value != last_written_value,
                 None => true,
             },
@@ -954,6 +957,10 @@ impl ExecutableVariableAction for OnChange {
             .map(|v| v.unwrap_or(0.))
             .collect();
 
+        // Allow floating point equality comparison, because we really care about the
+        // value being exactly equal and assume that the code that changes this value
+        // is equal for every simulation tick.
+        #[allow(clippy::float_cmp)]
         let has_changed = self
             .previous_values
             .iter()
