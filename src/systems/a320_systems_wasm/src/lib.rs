@@ -2,15 +2,21 @@
 mod ailerons;
 mod autobrakes;
 mod brakes;
+mod elevators;
 mod flaps;
 mod nose_wheel_steering;
+mod rudder;
+mod spoilers;
 
 use a320_systems::A320;
 use ailerons::ailerons;
 use autobrakes::autobrakes;
 use brakes::brakes;
+use elevators::elevators;
 use flaps::flaps;
 use nose_wheel_steering::nose_wheel_steering;
+use rudder::rudder;
+use spoilers::spoilers;
 use std::error::Error;
 use systems::shared::ElectricalBusType;
 use systems::{failures::FailureType, shared::HydraulicColor};
@@ -78,10 +84,14 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AIRSPEED INDICATED", "Knots", 0)?
     .provides_aircraft_variable("AIRSPEED MACH", "Mach", 0)?
     .provides_aircraft_variable("AIRSPEED TRUE", "Knots", 0)?
+    .provides_aircraft_variable("AMBIENT DENSITY", "Slugs per cubic feet", 0)?
     .provides_aircraft_variable("AMBIENT PRESSURE", "inHg", 0)?
     .provides_aircraft_variable("AMBIENT TEMPERATURE", "celsius", 0)?
     .provides_aircraft_variable("AMBIENT WIND DIRECTION", "Degrees", 0)?
     .provides_aircraft_variable("AMBIENT WIND VELOCITY", "Knots", 0)?
+    .provides_aircraft_variable("AMBIENT WIND X", "meter per second", 0)?
+    .provides_aircraft_variable("AMBIENT WIND Y", "meter per second", 0)?
+    .provides_aircraft_variable("AMBIENT WIND Z", "meter per second", 0)?
     .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
     .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
     .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?
@@ -103,6 +113,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("PLANE PITCH DEGREES", "Degrees", 0)?
     .provides_aircraft_variable("PLANE BANK DEGREES", "Degrees", 0)?
     .provides_aircraft_variable("PLANE HEADING DEGREES MAGNETIC", "Degrees", 0)?
+    .provides_aircraft_variable("PLANE HEADING DEGREES TRUE", "Degrees", 0)?
     .provides_aircraft_variable("PLANE LATITUDE", "degree latitude", 0)?
     .provides_aircraft_variable("PLANE LONGITUDE", "degree longitude", 0)?
     .provides_aircraft_variable("PUSHBACK STATE", "Enum", 0)?
@@ -118,6 +129,9 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("TURB ENG CORRECTED N2", "Percent", 2)?
     .provides_aircraft_variable("TURB ENG IGNITION SWITCH EX1", "Enum", 1)?
     .provides_aircraft_variable("UNLIMITED FUEL", "Bool", 0)?
+    .provides_aircraft_variable("VELOCITY BODY X", "feet per second", 0)?
+    .provides_aircraft_variable("VELOCITY BODY Y", "feet per second", 0)?
+    .provides_aircraft_variable("VELOCITY BODY Z", "feet per second", 0)?
     .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
     .with_aspect(|builder| {
         builder.copy(
@@ -166,6 +180,9 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(nose_wheel_steering)?
     .with_aspect(flaps)?
     .with_aspect(ailerons)?
+    .with_aspect(elevators)?
+    .with_aspect(rudder)?
+    .with_aspect(spoilers)?
     .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {

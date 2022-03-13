@@ -23,6 +23,7 @@ use uom::si::{
     volume_rate::{gallon_per_minute, gallon_per_second},
 };
 
+pub mod aerodynamic_model;
 pub mod brake_circuit;
 pub mod electrical_generator;
 pub mod electrical_pump_physics;
@@ -263,8 +264,8 @@ impl PowerTransferUnit {
         self.is_enabled = controller.should_enable();
 
         self.update_displacement(context, loop_left_section, loop_right_section);
-        self.update_active_state();
         self.update_shaft_physics(context, loop_left_section, loop_right_section);
+        self.update_active_state();
         self.update_flows();
     }
 
