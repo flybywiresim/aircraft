@@ -78,13 +78,13 @@ class EngineControl {
   /// <summary>
   /// Generate Idle/ Initial Engine Parameters (non-imbalanced)
   /// </summary>
-  void generateIdleParameters(double pressAltitude, double ambientTemp, double ambientPressure) {
+  void generateIdleParameters(double pressAltitude, double mach, double ambientTemp, double ambientPressure) {
     double idleCN1;
     double idleCFF;
 
-    idleCN1 = iCN1(pressAltitude, ambientTemp);
+    idleCN1 = iCN1(pressAltitude, mach, ambientTemp);
     idleN1 = idleCN1 * sqrt(ratios->theta2(0, ambientTemp));
-    idleN2 = iCN2(pressAltitude) * sqrt(ratios->theta(ambientTemp));
+    idleN2 = iCN2(pressAltitude, mach) * sqrt(ratios->theta(ambientTemp));
     idleCFF = poly->correctedFuelFlow(idleCN1, 0, pressAltitude);                                               // lbs/hr
     idleFF = idleCFF * LBS_TO_KGS * ratios->delta2(0, ambientPressure) * sqrt(ratios->theta2(0, ambientTemp));  // Kg/hr
     idleEGT = poly->correctedEGT(idleCN1, idleCFF, 0, pressAltitude) * ratios->theta2(0, ambientTemp);
@@ -235,6 +235,7 @@ class EngineControl {
       if (engineState == 4 || engineState == 14) {
         if (engineIgniter == 2 && engineStarter == 1) {
           engineState = 3;
+          resetTimer = 1;
         } else if (engineStarter == 0 && simN2 < 0.05 && egtFbw <= ambientTemp) {
           engineState = 0;
           resetTimer = 1;
@@ -1149,7 +1150,7 @@ class EngineControl {
     }
     wai = simVars->getWAI();
 
-    generateIdleParameters(pressAltitude, ambientTemp, ambientPressure);
+    generateIdleParameters(pressAltitude, mach, ambientTemp, ambientPressure);
 
     // Timer timer;
     for (engine = 1; engine <= 2; engine++) {

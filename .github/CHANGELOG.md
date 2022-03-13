@@ -140,6 +140,7 @@
 1. [AP] Added Autoland capability for special terrain profiles, i.e. KSEA 16R - @aguther (Andreas Guther)
 1. [ATHR] Adjustment of ATHR SPD/MACH gains - @IbrahimK42 (IbrahimK42)
 1. [ATHR] Fix ATHR Alt Soft Mode - @IbrahimK42 (IbrahimK42)
+1. [HYD] Elevator hydraulic control (only visual and hydraulics) - @Crocket63
 1. [HYD] Simplified max step loop updater - @Crocket63
 1. [MISC] Fix for bleed/hyd system failure in some conditions - @Crocket63
 1. [ECAM] Add pack abnormally off warnings - @tracernz (Mike)
@@ -154,6 +155,7 @@
 1. [PFD] Implemented TCAS guidance on vertical speed tape - @wpine215 (Iceman)
 1. [SOUNDS] Connected TCAS TA/RA logic to TCAS Wwise events - @wpine215 (Iceman)  @2hwk (2Cas#1022)
 1. [ENGINE] Overall improvement of thrust limits - @Taz5150 (TazX [Z+2]#0405)
+1. [HYD] Aerodynamic model affects moving parts - @Crocket63
 1. [ATC] Implement ident button and fix auto mode - @tracernz (Mike)
 1. [FLIGHTMODEL] Prevent default stall warning bool from being activated - @donstim (donbikes#4084)
 1. [EFB] Colored raw Metar in EFB weather widget - @frankkopp (Frank Kopp)
@@ -166,6 +168,7 @@
 1. [FLIGHTMODEL] Flight model improvements - @donstim (donbikes#4084)
 1. [SPEEDS] Fix GS mini not being limited by VFE-5 in CONF FULL -  @donstim (donbikes#4084)
 1. [MCDU] Fix crash when clearing DIR TO waypoint - @tracernz (Mike)
+1. [HYD] Improved hydraulic valves stability - @Crocket63
 1. [ATHR] Fix Speed/Mach Idle transition in strong headwind - @IbrahimK42 (IbrahimK42)
 1. [SOUNDS] Add rain sounds in cockpit - @Mico975 (Mico)
 1. [SOUNDS] Add passenger announcements and ambience - @hotshotp (Boris)
@@ -174,6 +177,22 @@
 1. [MCDU] Improved Remote MCDU with CLR hold and light-dark mode - @frankkopp (Frank Kopp)
 1. [MCDU] Improved mcdu server command line handling  - @frankkopp (Cdr_Maverick#6475)
 1. [RA] Add dual Radio Altimeter simulation - @beheh (Benedict Etzel)
+1. [HYD] Fix nose wheel position during pushback - @Crocket63
+1. [MCDU] Improved Remote MCDU communication by reducing update frequency - @frankkopp (Frank Kopp)
+1. [FLIGHTMODEL] Additional flight model improvements to better match real airplane performance data - @donstim (donbikes#4084)
+1. [FMGC] Re-implement altitude and speed constraints - @tracernz (Mike)
+1. [HYD] Smoothed nose wheel steering when pushing back - @Crocket63
+1. [EFB] Add first officer flypad - @tracernz (Mike)
+1. [CLK] Added simvars for Clock CHR and ET - @ssewell (Shane Sewell)
+1. [HYD] Fixed PTU starting sound trigger - @Crocket63
+1. [HYD] Removed blue reservoir absolute air sensor (removed on new neo) - @Crocket63
+1. [MODEL] Split master caution and warning lamps - @tracernz (Mike)
+1. [MCDU] Improved resilience of FMGC main loop - @aguther (Andreas Guther)
+1. [AP] Corrected guidance for OP DES, CLB and DES for small flight level changes - @aguther (Andreas Guther)
+1. [AP] Improved roll law transition from flight to ground mode during Autoland - @aguther (Andreas Guther)
+1. [AP] Improved V/PATH law - lukecologne (luke)
+1. [ADIRS] Improve ADR SSM behaviour, add missing data to the IR - @luke (lukecologne#1156)
+1. [PFD] Improve SPD and MACH flag behaviour, add FPV flag - @luke (lukecologne#1156)
 
 ## 0.7.0
 

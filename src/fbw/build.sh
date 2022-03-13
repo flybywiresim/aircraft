@@ -103,6 +103,7 @@ clang++ \
   "${DIR}/src/RudderTrimHandler.cpp" \
   "${DIR}/src/SpoilersHandler.cpp" \
   "${DIR}/src/ThrottleAxisMapping.cpp" \
+  "${DIR}/src/CalculatedRadioReceiver.cpp" \
   "${DIR}/src/main.cpp" \
 
 # restore directory

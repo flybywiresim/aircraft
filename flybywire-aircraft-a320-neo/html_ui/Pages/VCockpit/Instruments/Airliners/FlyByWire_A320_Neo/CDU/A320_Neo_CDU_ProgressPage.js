@@ -116,12 +116,16 @@ class CDUProgressPage {
             ["REQUIRED", "ESTIMATED", "ACCUR{sp}"],
             ["{small}3.4NM{end}[color]cyan", "{small}0.07NM{end}[color]green", "HIGH[color]green"]
         ]);
+
+        // regular update due to showing dynamic data on this page
         mcdu.page.SelfPtr = setTimeout(() => {
             if (mcdu.page.Current === mcdu.page.ProgressPage) {
                 CDUProgressPage.ShowPage(mcdu);
             }
-        }, mcdu.PageTimeout.Prog);
+        }, mcdu.PageTimeout.Default);
+
     }
+
     static ShowReportPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ProgressPageReport;
@@ -194,6 +198,7 @@ class CDUProgressPage {
             [destCell, "", destUTCCell + " " + destDistCell]
         ]);
     }
+
     static ShowPredictiveGPSPage(mcdu, overrideDestETA = "") {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ProgressPagePredictiveGPS;
