@@ -184,6 +184,7 @@
 1. [HYD] Smoothed nose wheel steering when pushing back - @Crocket63
 1. [EFB] Add first officer flypad - @tracernz (Mike)
 1. [CLK] Added simvars for Clock CHR and ET - @ssewell (Shane Sewell)
+1. [HYD] Fixed PTU starting sound trigger - @Crocket63
 1. [HYD] Removed blue reservoir absolute air sensor (removed on new neo) - @Crocket63
 1. [MODEL] Split master caution and warning lamps - @tracernz (Mike)
 1. [MCDU] Improved resilience of FMGC main loop - @aguther (Andreas Guther)
