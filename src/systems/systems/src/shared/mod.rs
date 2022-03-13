@@ -99,7 +99,7 @@ pub trait LgciuGearExtension {
 
 pub trait LgciuDoorPosition {
     fn all_fully_opened(&self) -> bool;
-    fn all_up_and_locked(&self) -> bool;
+    fn all_closed_and_locked(&self) -> bool;
 }
 
 pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition {}

@@ -1,6 +1,6 @@
 use crate::landing_gear::GearWheel;
 use crate::shared::low_pass_filter::LowPassFilter;
-use crate::shared::{LgciuGearExtension,LgciuDoorPosition};
+use crate::shared::{LgciuDoorPosition, LgciuGearExtension, LgciuSensors};
 
 use crate::simulation::UpdateContext;
 
@@ -109,7 +109,7 @@ impl GearSystemSensors for HydraulicGearSystem {
 }
 
 #[derive(PartialEq, Clone, Copy)]
-enum GearsSystemState {
+pub enum GearsSystemState {
     AllUpLocked,
     Retracting,
     Extending,
@@ -126,17 +126,11 @@ pub trait GearSystemSensors {
 
 pub struct GearSystemStateMachine {
     gears_state: GearsSystemState,
-
-    door_controller: GearSystemDoorController,
-    gear_controller: GearSystemGearController,
 }
 impl GearSystemStateMachine {
     pub fn new() -> Self {
         Self {
             gears_state: GearsSystemState::AllDownLocked,
-
-            door_controller: GearSystemDoorController::new(),
-            gear_controller: GearSystemGearController::new(GearsSystemState::AllDownLocked),
         }
     }
 
@@ -181,8 +175,12 @@ impl GearSystemStateMachine {
         }
     }
 
-    pub fn update(&mut self,  lgciu_extension: &impl LgciuGearExtension, gear_handle_position_is_up: bool) {
-        self.gears_state = self.new_gear_state(lgciu_extension, gear_handle_position_is_up);
+    pub fn update(&mut self, lgciu: &impl LgciuGearExtension, gear_handle_position_is_up: bool) {
+        self.gears_state = self.new_gear_state(lgciu, gear_handle_position_is_up);
+    }
+
+    pub fn state(&self) -> GearsSystemState {
+        self.gears_state
     }
 }
 
@@ -232,13 +230,13 @@ trait GearComponentController {
     fn should_open(&self) -> bool;
 }
 
-struct GearSystemGearController {
+pub struct GearSystemGearController {
     should_hydraulic_unlock: bool,
     should_manual_unlock: bool,
     should_open: bool,
 }
 impl GearSystemGearController {
-    fn new(state: GearsSystemState) -> Self {
+    pub fn new(state: GearsSystemState) -> Self {
         match state {
             GearsSystemState::AllUpLocked => Self {
                 should_hydraulic_unlock: false,
@@ -258,7 +256,7 @@ impl GearSystemGearController {
         }
     }
 
-    fn from_state(state: GearsSystemState, lgciu_doors: &impl LgciuDoorPosition) -> Self {
+    pub fn from_state(state: GearsSystemState, lgciu_doors: &impl LgciuDoorPosition) -> Self {
         match state {
             GearsSystemState::AllUpLocked => Self {
                 should_hydraulic_unlock: false,
@@ -317,13 +315,13 @@ impl GearComponentController for GearSystemGearController {
     }
 }
 
-struct GearSystemDoorController {
+pub struct GearSystemDoorController {
     should_hydraulic_unlock: bool,
     should_manual_unlock: bool,
     should_open: bool,
 }
 impl GearSystemDoorController {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             should_hydraulic_unlock: false,
             should_manual_unlock: false,
@@ -331,10 +329,7 @@ impl GearSystemDoorController {
         }
     }
 
-    fn from_state(
-        state: GearsSystemState,
-        lgciu_extension: &impl LgciuGearExtension,
-    ) -> Self {
+    pub fn from_state(state: GearsSystemState, lgciu_extension: &impl LgciuGearExtension) -> Self {
         match state {
             GearsSystemState::AllUpLocked => Self {
                 should_hydraulic_unlock: false,
