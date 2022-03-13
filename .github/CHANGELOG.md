@@ -191,6 +191,8 @@
 1. [AP] Corrected guidance for OP DES, CLB and DES for small flight level changes - @aguther (Andreas Guther)
 1. [AP] Improved roll law transition from flight to ground mode during Autoland - @aguther (Andreas Guther)
 1. [AP] Improved V/PATH law - lukecologne (luke)
+1. [ADIRS] Improve ADR SSM behaviour, add missing data to the IR - @luke (lukecologne#1156)
+1. [PFD] Improve SPD and MACH flag behaviour, add FPV flag - @luke (lukecologne#1156)
 
 ## 0.7.0
 
