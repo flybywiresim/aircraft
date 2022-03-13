@@ -84,7 +84,7 @@ const StatusBar = (props: StatusBarProps) => {
                 <IconPower
                     onClick={() => {
                         efbClearState();
-                        Power.setContentState(ContentState.OFF);
+                        Power.setContent(ContentState.OFF);
                     }}
                     className="ml-6"
                     size={25}
