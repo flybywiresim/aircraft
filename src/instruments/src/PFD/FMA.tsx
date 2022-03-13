@@ -219,12 +219,70 @@ class Row2 extends DisplayComponent<{bus:EventBus, isAttExcessive: Subscribable<
     render(): VNode {
         return (
             <g>
+                <A2Cell bus={this.props.bus} />
                 <g ref={this.cellsToHide}>
                     <B2Cell bus={this.props.bus} />
                     <C2Cell bus={this.props.bus} />
                 </g>
                 <E2Cell bus={this.props.bus} />
             </g>
+        );
+    }
+}
+
+class A2Cell extends DisplayComponent<{ bus:EventBus }> {
+    private text = Subject.create('');
+
+    private className = Subject.create('FontMedium MiddleAlign Cyan');
+
+    private autoBrkRef = FSComponent.createRef<SVGTextElement>();
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+        sub.on('autoBrakeMode').whenChanged().handle((am) => {
+            switch (am) {
+            case 0:
+                this.text.set('');
+                break;
+            case 1:
+                this.text.set('BRK LO');
+                break;
+            case 2:
+                this.text.set('BRK MED');
+                break;
+            case 3:
+                // MAX will be shown in 3rd row
+                this.text.set('');
+                break;
+            default:
+                break;
+            }
+        });
+
+        sub.on('autoBrakeActive').whenChanged().handle((am) => {
+            if (am) {
+                this.autoBrkRef.instance.style.visibility = 'hidden';
+            } else {
+                this.autoBrkRef.instance.style.visibility = 'visible';
+            }
+        });
+
+        sub.on('AThrMode').whenChanged().handle((athrMode) => {
+            // ATHR mode overrides BRK LO and MED memo
+            if (athrMode > 0 && athrMode <= 6) {
+                this.autoBrkRef.instance.style.visibility = 'hidden';
+            } else {
+                this.autoBrkRef.instance.style.visibility = 'visible';
+            }
+        });
+    }
+
+    render(): VNode {
+        return (
+            <text ref={this.autoBrkRef} class={this.className} x="16.782249" y="14.329653">{this.text}</text>
         );
     }
 }
@@ -270,6 +328,10 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
     private flexTemp = 0;
 
+    private autoBrakeActive = false;
+
+    private autoBrakeMode = 0;
+
     constructor(props) {
         super(props, 9);
     }
@@ -278,98 +340,121 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         let text: string = '';
         this.displayModeChangedPath(true);
         this.isShown = true;
-        switch (this.athrMode) {
-        case 1:
-            text = `
-                        <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                        <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
-                        <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
-                    `;
-            break;
-        case 2:
-            text = `<g>
-                        <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
-                        <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
-                        <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
-                    </g>`;
-            break;
-        case 3:
-            const FlexTemp = Math.round(this.flexTemp);
-            const FlexText = FlexTemp >= 0 ? (`+${FlexTemp}`) : FlexTemp.toString();
-            text = `<g>
-                        <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
-                        <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
-                        <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">
-                            <tspan xml:space="preserve">FLX  </tspan>
-                            <tspan class="Cyan">${FlexText}</tspan>
-                        </text>
-                    </g>`;
 
-            break;
-        case 4:
-            text = `<g>
-                        <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                        <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
-                        <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
-                    </g>`;
-            break;
-        case 5:
+        if (!this.autoBrakeActive) {
+            switch (this.athrMode) {
+            case 1:
+                text = `
+                                <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
+                            `;
+                break;
+            case 2:
+                text = `<g>
+                                <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
+                            </g>`;
+                break;
+            case 3:
+                const FlexTemp = Math.round(this.flexTemp);
+                const FlexText = FlexTemp >= 0 ? (`+${FlexTemp}`) : FlexTemp.toString();
+                text = `<g>
+                                <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">
+                                    <tspan xml:space="preserve">FLX  </tspan>
+                                    <tspan class="Cyan">${FlexText}</tspan>
+                                </text>
+                            </g>`;
 
-            text = `<g>
-                        <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                        <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
-                        <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
-                    </g>`;
-            break;
-        case 6:
-            text = `<g>
-                        <path class="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                        <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
-                        <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
-                    </g>`;
-            break;
-        case 7:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
-            this.displayModeChangedPath();
-            break;
-        case 8:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
-            this.displayModeChangedPath();
-            break;
-        case 9:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
-            this.displayModeChangedPath();
-            break;
-        case 10:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
-            this.displayModeChangedPath();
-            break;
-        case 11:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
-            this.displayModeChangedPath();
-            break;
-        case 12:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
-            this.displayModeChangedPath();
-            break;
-        case 13:
-            text = `<g>
-                        <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-                        <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
-                    </g>`;
-            break;
-        case 14:
-            text = `<g>
-                        <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
-                        <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
-                    </g>`;
-            break;
-        default:
-            text = '';
-            this.isShown = false;
+                break;
+            case 4:
+                text = `<g>
+                                <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
+                            </g>`;
+                break;
+            case 5:
+
+                text = `<g>
+                                <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
+                            </g>`;
+                break;
+            case 6:
+                text = `<g>
+                                <path class="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
+                            </g>`;
+                break;
+            case 7:
+                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
+                this.displayModeChangedPath();
+                break;
+            case 8:
+                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
+                this.displayModeChangedPath();
+                break;
+            case 9:
+                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
+                this.displayModeChangedPath();
+                break;
+            case 10:
+                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
+                this.displayModeChangedPath();
+                break;
+            case 11:
+                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
+                this.displayModeChangedPath();
+                break;
+            case 12:
+                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
+                this.displayModeChangedPath();
+                break;
+            case 13:
+                text = `<g>
+                                <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
+                                <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
+                            </g>`;
+                break;
+            case 14:
+                text = `<g>
+                                <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
+                                <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
+                            </g>`;
+                break;
+            default:
+                text = '';
+                this.isShown = false;
+            }
         }
 
         this.cellRef.instance.innerHTML = text;
+    }
+
+    private setAutoBrakeText() {
+        if (this.autoBrakeActive) {
+            let text = '';
+            switch (this.autoBrakeMode) {
+            case 1:
+                text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK LO</text>';
+                break;
+            case 2:
+                text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MED</text>';
+                break;
+            case 3:
+                text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MAX</text>';
+                break;
+            default:
+                text = '';
+            }
+            this.cellRef.instance.innerHTML = text;
+        }
     }
 
     onAfterRender(node: VNode): void {
@@ -385,6 +470,16 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         sub.on('AThrMode').whenChanged().handle((athrMode) => {
             this.athrMode = athrMode;
             this.setText();
+        });
+
+        sub.on('autoBrakeActive').whenChanged().handle((am) => {
+            this.autoBrakeActive = am;
+            this.setAutoBrakeText();
+        });
+
+        sub.on('autoBrakeMode').whenChanged().handle((a) => {
+            this.autoBrakeMode = a;
+            this.setAutoBrakeText();
         });
     }
 
@@ -442,6 +537,21 @@ class A3Cell extends DisplayComponent<CellProps> {
 
         sub.on('athrModeMessage').whenChanged().handle((m) => {
             this.onUpdateAthrModeMessage(m);
+        });
+
+        sub.on('autoBrakeMode').whenChanged().handle((am) => {
+            if (am === 3) {
+                this.textSub.set('BRK MAX');
+                this.classSub.set('FontMedium MiddleAlign Cyan');
+            } else {
+                this.textSub.set('');
+            }
+        });
+
+        sub.on('autoBrakeActive').whenChanged().handle((a) => {
+            if (a) {
+                this.classSub.set('HiddenElement');
+            }
         });
     }
 
@@ -1418,20 +1528,20 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
     }
 
     private getClass(athrStatus: number): string {
-        let color: string = '';
+        let className: string = '';
         this.isShown = true;
         switch (athrStatus) {
         case 1:
-            color = 'Cyan';
+            className = 'Cyan';
             break;
         case 2:
-            color = 'White';
+            className = 'White';
             break;
         default:
             this.isShown = false;
-            color = '';
+            className = 'HiddenElement';
         }
-        return color;
+        return className;
     }
 
     onAfterRender(node: VNode): void {
@@ -1440,9 +1550,9 @@ class E3Cell extends ShowForSecondsComponent<CellProps> {
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
         sub.on('athrStatus').whenChanged().handle((a) => {
-            const color = this.getClass(a);
-            this.classSub.set(`FontMedium MiddleAlign ${color}`);
-            if (color !== '') {
+            const className = this.getClass(a);
+            this.classSub.set(`FontMedium MiddleAlign ${className}`);
+            if (className !== 'HiddenElement') {
                 this.displayModeChangedPath();
             } else {
                 this.displayModeChangedPath(true);

@@ -1,9 +1,9 @@
 import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from 'msfssdk';
 
 export interface PFDSimvars {
-    coldDark: number,
-    elec: number,
-    elecFo: number,
+    coldDark: number;
+    elec: number;
+    elecFo: number;
     potentiometerCaptain: number;
     potentiometerFo: number;
     pitch: number;
@@ -36,15 +36,15 @@ export interface PFDSimvars {
     airKnob: number;
     vsBaro: number;
     vsInert: number;
-    sideStickX: number,
-    sideStickY: number,
-    fdYawCommand: number,
-    fdBank: number,
-    fdPitch: number,
-    v1: number,
-    vr:number,
-    fwcFlightPhase: number,
-    fmgcFlightPhase: number,
+    sideStickX: number;
+    sideStickY: number;
+    fdYawCommand: number;
+    fdBank: number;
+    fdPitch: number;
+    v1: number;
+    vr:number;
+    fwcFlightPhase: number;
+    fmgcFlightPhase: number;
     hasLoc: boolean;
     hasDme: boolean;
     navIdent: string;
@@ -103,6 +103,8 @@ export interface PFDSimvars {
     crzAltMode: boolean,
     tcasModeDisarmed: boolean,
     flexTemp: number,
+    autoBrakeMode: number;
+    autoBrakeActive: boolean;
   }
 
 export enum PFDVars {
@@ -210,6 +212,8 @@ export enum PFDVars {
     crzAltMode = 'L:A32NX_FMA_CRUISE_ALT_MODE',
     tcasModeDisarmed = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM',
     flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
+    autoBrakeMode = 'L:A32NX_AUTOBRAKES_ARMED_MODE',
+    autoBrakeActive = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
 
   }
 
@@ -338,6 +342,8 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['crzAltMode', { name: PFDVars.crzAltMode, type: SimVarValueType.Bool }],
         ['tcasModeDisarmed', { name: PFDVars.tcasModeDisarmed, type: SimVarValueType.Bool }],
         ['flexTemp', { name: PFDVars.flexTemp, type: SimVarValueType.Number }],
+        ['autoBrakeMode', { name: PFDVars.autoBrakeMode, type: SimVarValueType.Number }],
+        ['autoBrakeActive', { name: PFDVars.autoBrakeActive, type: SimVarValueType.Bool }],
 
     ])
 

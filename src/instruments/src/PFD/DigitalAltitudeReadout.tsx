@@ -231,8 +231,6 @@ class Drum extends DisplayComponent<DrumProperties> {
                 elementVal = NaN;
             }
 
-            // graduationElements.push(this.props.elementFunction(elementVal, offset, this.color));
-
             const digitRef = FSComponent.createRef<SVGTextElement>();
 
             if (this.props.type === 'hundreds') {
@@ -302,15 +300,11 @@ class Drum extends DisplayComponent<DrumProperties> {
 
         this.props.position.sub((p) => {
             this.position = p;
-            // this.getOffset();
-            // this.updateValue();
             this.getOffset(p);
-            // this.updateValue();
         }, true);
         this.props.value.sub((p) => {
             this.value = p;
             this.updateValue();
-            // this.getOffset(this.position);
         }, true);
         this.props.color.sub((p) => {
             this.color = p;

@@ -386,12 +386,14 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
 
     private offTapeFailedRef = FSComponent.createRef<SVGGElement>();
 
+    private decelRef = FSComponent.createRef<SVGTextElement>();
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const subscriber = this.props.bus.getSubscriber<PFDSimvars>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-        subscriber.on('speed').handle((s) => {
+        sub.on('speed').handle((s) => {
             const newVal = new Arinc429Word(s);
 
             if (!newVal.isNormalOperation()) {
@@ -411,10 +413,17 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
                 }
             }
         });
+
+        sub.on('autoBrakeActive').whenChanged().handle((a) => {
+            if (a) {
+                this.decelRef.instance.style.visibility = 'visible';
+            } else {
+                this.decelRef.instance.style.visibility = 'hidden';
+            }
+        });
     }
 
     render(): VNode {
-        // const clampedTargetSpeed = Math.max(Math.min(targetSpeed, 660), 30);
         return (
             <>
                 <g id="OfftapeFailedGroup" ref={this.offTapeFailedRef}>
@@ -427,6 +436,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
                     <path class="Fill Yellow SmallOutline" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
                     <path class="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
                     <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke White" d="m1.9058 123.56h21.859" />
+                    <text id="AutoBrkDecel" ref={this.decelRef} class="FontSmall Green" x="1.9058" y="128.56">DECEL</text>
                 </g>
             </>
 
@@ -553,11 +563,6 @@ class VLsBar extends DisplayComponent<{ bus: EventBus }> {
             this.setVlsPath(smoothedVls);
             this.vlsState.vls = smoothedVls;
         });
-
-        /*     if (VLs - airspeed < -DisplayRange) {
-            return null;
-        }
-     */
     }
 
     render(): VNode {
