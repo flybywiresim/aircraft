@@ -184,12 +184,15 @@
 1. [HYD] Smoothed nose wheel steering when pushing back - @Crocket63
 1. [EFB] Add first officer flypad - @tracernz (Mike)
 1. [CLK] Added simvars for Clock CHR and ET - @ssewell (Shane Sewell)
+1. [HYD] Fixed PTU starting sound trigger - @Crocket63
 1. [HYD] Removed blue reservoir absolute air sensor (removed on new neo) - @Crocket63
 1. [MODEL] Split master caution and warning lamps - @tracernz (Mike)
 1. [MCDU] Improved resilience of FMGC main loop - @aguther (Andreas Guther)
 1. [AP] Corrected guidance for OP DES, CLB and DES for small flight level changes - @aguther (Andreas Guther)
 1. [AP] Improved roll law transition from flight to ground mode during Autoland - @aguther (Andreas Guther)
 1. [AP] Improved V/PATH law - lukecologne (luke)
+1. [ADIRS] Improve ADR SSM behaviour, add missing data to the IR - @luke (lukecologne#1156)
+1. [PFD] Improve SPD and MACH flag behaviour, add FPV flag - @luke (lukecologne#1156)
 1. [FMGC] Updates flight model info for FMGC guidance - @donstim (donbikes#4084)
 
 ## 0.7.0
