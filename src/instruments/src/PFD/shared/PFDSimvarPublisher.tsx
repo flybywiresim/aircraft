@@ -105,6 +105,8 @@ export interface PFDSimvars {
     flexTemp: number,
     autoBrakeMode: number;
     autoBrakeActive: boolean;
+    fpaRaw: number;
+    daRaw: number;
   }
 
 export enum PFDVars {
@@ -204,7 +206,6 @@ export enum PFDVars {
     groundSpeed = 'L:A32NX_ADIRS_IR_1_GROUND_SPEED',
     radioAltitude1 = 'L:A32NX_RA_1_RADIO_ALTITUDE',
     radioAltitude2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
-
     beta = 'INCIDENCE BETA',
     betaTargetActive = 'L:A32NX_BETA_TARGET_ACTIVE',
     betaTarget = 'L:A32NX_BETA_TARGET',
@@ -214,6 +215,8 @@ export enum PFDVars {
     flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
     autoBrakeMode = 'L:A32NX_AUTOBRAKES_ARMED_MODE',
     autoBrakeActive = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
+    fpaRaw = 'L:A32NX_ADIRS_IR_1_GROUND_SPEED',
+    daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
 
   }
 
@@ -344,6 +347,8 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['flexTemp', { name: PFDVars.flexTemp, type: SimVarValueType.Number }],
         ['autoBrakeMode', { name: PFDVars.autoBrakeMode, type: SimVarValueType.Number }],
         ['autoBrakeActive', { name: PFDVars.autoBrakeActive, type: SimVarValueType.Bool }],
+        ['fpaRaw', { name: PFDVars.fpaRaw, type: SimVarValueType.Number }],
+        ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
 
     ])
 

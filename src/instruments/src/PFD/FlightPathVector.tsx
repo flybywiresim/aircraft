@@ -1,6 +1,6 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
-import { calculateHorizonOffsetFromPitch, getSmallestAngle } from './PFDUtils';
+import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 
@@ -10,24 +10,22 @@ const ValueSpacing = 10;
 interface FlightPathVectorData {
     roll: Arinc429Word;
     pitch: Arinc429Word;
-    track: Arinc429Word;
-    heading: Arinc429Word;
-    vs: Arinc429Word;
-    gs: Arinc429Word;
+    fpa: Arinc429Word;
+    da: Arinc429Word;
 }
 
-export class FlightPathVector extends DisplayComponent<{bus: EventBus, isAttExcessive: Subscribable<boolean>}> {
+export class FlightPathVector extends DisplayComponent<{bus: EventBus}> {
     private bird = FSComponent.createRef<SVGGElement>();
+
+    private fpvFlag = FSComponent.createRef<SVGGElement>();
 
     private isTrkFpaActive = false;
 
     private data: FlightPathVectorData = {
         roll: new Arinc429Word(0),
         pitch: new Arinc429Word(0),
-        track: new Arinc429Word(0),
-        heading: new Arinc429Word(0),
-        vs: new Arinc429Word(0),
-        gs: new Arinc429Word(0),
+        fpa: new Arinc429Word(0),
+        da: new Arinc429Word(0),
     }
 
     private needsUpdate = false;
@@ -39,7 +37,7 @@ export class FlightPathVector extends DisplayComponent<{bus: EventBus, isAttExce
 
         sub.on('trkFpaActive').whenChanged().handle((a) => {
             this.isTrkFpaActive = a;
-            if (this.isTrkFpaActive && !this.props.isAttExcessive.get()) {
+            if (this.isTrkFpaActive) {
                 this.moveBird();
                 this.bird.instance.classList.remove('HiddenElement');
             } else {
@@ -47,14 +45,12 @@ export class FlightPathVector extends DisplayComponent<{bus: EventBus, isAttExce
             }
         });
 
-        sub.on('groundTrackAr').handle((gt) => {
-            this.data.track = gt;
-            this.needsUpdate = true;
+        sub.on('fpa').handle((fpa) => {
+            this.data.fpa = fpa;
         });
 
-        sub.on('headingAr').handle((gh) => {
-            this.data.heading = gh;
-            this.needsUpdate = true;
+        sub.on('da').handle((da) => {
+            this.data.da = da;
         });
 
         sub.on('rollAr').handle((r) => {
@@ -67,38 +63,26 @@ export class FlightPathVector extends DisplayComponent<{bus: EventBus, isAttExce
             this.needsUpdate = true;
         });
 
-        sub.on('vs').handle((vs) => {
-            this.data.vs = vs;
-            this.needsUpdate = true;
-        });
-
-        sub.on('gs').handle((gs) => {
-            this.data.gs = gs;
-            this.needsUpdate = true;
-        });
-
         sub.on('realTime').handle((_t) => {
-            if (this.needsUpdate && this.isTrkFpaActive) {
+            if (this.needsUpdate) {
                 this.needsUpdate = false;
-                this.moveBird();
+
+                const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+                if (this.isTrkFpaActive && daAndFpaValid) {
+                    this.fpvFlag.instance.style.visibility = 'hidden';
+                    this.bird.instance.classList.remove('HiddenElement');
+                    this.moveBird();
+                } else if (this.isTrkFpaActive && this.data.pitch.isNormalOperation() && this.data.roll.isNormalOperation()) {
+                    this.fpvFlag.instance.style.visibility = 'visible';
+                    this.bird.instance.classList.add('HiddenElement');
+                }
             }
         });
-
-        this.props.isAttExcessive.sub((a) => {
-            if (this.isTrkFpaActive && !a) {
-                this.bird.instance.classList.remove('HiddenElement');
-            } else {
-                this.bird.instance.classList.add('HiddenElement');
-            }
-        }, true);
     }
 
     private moveBird() {
-        const FPA = Math.atan(this.data.vs.value / this.data.gs.value * 0.009875) * 180 / Math.PI;
-        const DA = getSmallestAngle(this.data.track.value, this.data.heading.value);
-
-        const daLimConv = Math.max(Math.min(DA, 21), -21) * DistanceSpacing / ValueSpacing;
-        const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(-this.data.pitch.value) - calculateHorizonOffsetFromPitch(FPA));
+        const daLimConv = Math.max(Math.min(this.data.da.value, 21), -21) * DistanceSpacing / ValueSpacing;
+        const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(-this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value));
         const rollCos = Math.cos(this.data.roll.value * Math.PI / 180);
         const rollSin = Math.sin(this.data.roll.value * Math.PI / 180);
 
@@ -110,24 +94,27 @@ export class FlightPathVector extends DisplayComponent<{bus: EventBus, isAttExce
 
     render(): VNode {
         return (
-            <g ref={this.bird} id="bird">
-                <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
-                    <g>
-                        <path
-                            class="NormalOutline"
-                            // eslint-disable-next-line max-len
-                            d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
-                        />
-                        <path class="ThickOutline" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
-                        <path
-                            class="NormalStroke Green"
-                            // eslint-disable-next-line max-len
-                            d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
-                        />
-                        <path class="ThickStroke Green" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
-                    </g>
-                </svg>
-            </g>
+            <>
+                <g ref={this.bird} id="bird">
+                    <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
+                        <g>
+                            <path
+                                class="NormalOutline"
+                                // eslint-disable-next-line max-len
+                                d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
+                            />
+                            <path class="ThickOutline" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
+                            <path
+                                class="NormalStroke Green"
+                                // eslint-disable-next-line max-len
+                                d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
+                            />
+                            <path class="ThickStroke Green" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
+                        </g>
+                    </svg>
+                </g>
+                <text ref={this.fpvFlag} id="FPVFlag" x="62.987099" y="89.42025" class="Blink9Seconds FontLargest Red EndAlign">FPV</text>
+            </>
         );
     }
 }

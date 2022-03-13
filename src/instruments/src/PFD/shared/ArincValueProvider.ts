@@ -14,6 +14,8 @@ export interface Arinc429Values {
     vs: Arinc429Word;
     gs: Arinc429Word;
     chosenRa: Arinc429Word;
+    fpa: Arinc429Word;
+    da: Arinc429Word;
 
 }
 export class ArincValueProvider {
@@ -40,6 +42,10 @@ export class ArincValueProvider {
     private ownRadioAltitude = new Arinc429Word(0);
 
     private oppRadioAltitude = new Arinc429Word(0);
+
+    private fpa = new Arinc429Word(0);
+
+    private da = new Arinc429Word(0);
 
     constructor(private readonly bus: EventBus) {
 
@@ -117,6 +123,16 @@ export class ArincValueProvider {
                 this.oppRadioAltitude = new Arinc429Word(ra);
             }
             this.determineAndPublishChosenRadioAltitude(publisher);
+        });
+
+        subscriber.on('fpaRaw').handle((fpa) => {
+            this.fpa = new Arinc429Word(fpa);
+            publisher.pub('fpa', this.fpa);
+        });
+
+        subscriber.on('daRaw').handle((da) => {
+            this.da = new Arinc429Word(da);
+            publisher.pub('da', this.da);
         });
     }
 

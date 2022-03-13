@@ -1,4 +1,4 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { getDisplayIndex } from './PFD';
 import { calculateHorizonOffsetFromPitch, getSmallestAngle } from './PFDUtils';
@@ -11,10 +11,8 @@ const ValueSpacing = 10;
 interface FlightPathVectorData {
     roll: Arinc429Word;
     pitch: Arinc429Word;
-    track: Arinc429Word;
-    heading: Arinc429Word;
-    vs: Arinc429Word;
-    gs: Arinc429Word;
+    fpa: Arinc429Word;
+    da: Arinc429Word;
     activeVerticalMode: number;
     activeLateralMode: number;
     fdRoll: number;
@@ -22,14 +20,12 @@ interface FlightPathVectorData {
     fdActive: boolean;
 }
 
-export class FlightPathDirector extends DisplayComponent<{bus: EventBus}> {
+export class FlightPathDirector extends DisplayComponent<{bus: EventBus, isAttExcessive: Subscribable<boolean>}> {
     private data: FlightPathVectorData = {
         roll: new Arinc429Word(0),
         pitch: new Arinc429Word(0),
-        track: new Arinc429Word(0),
-        heading: new Arinc429Word(0),
-        vs: new Arinc429Word(0),
-        gs: new Arinc429Word(0),
+        fpa: new Arinc429Word(0),
+        da: new Arinc429Word(0),
         fdPitch: 0,
         fdRoll: 0,
         fdActive: true,
@@ -70,13 +66,13 @@ export class FlightPathDirector extends DisplayComponent<{bus: EventBus}> {
             this.needsUpdate = true;
         });
 
-        sub.on('groundTrackAr').handle((gt) => {
-            this.data.track = gt;
+        sub.on('fpa').handle((fpa) => {
+            this.data.fpa = fpa;
             this.needsUpdate = true;
         });
 
-        sub.on('headingAr').handle((gh) => {
-            this.data.heading = gh;
+        sub.on('da').handle((da) => {
+            this.data.da = da;
             this.needsUpdate = true;
         });
 
@@ -110,28 +106,25 @@ export class FlightPathDirector extends DisplayComponent<{bus: EventBus}> {
             this.needsUpdate = true;
         });
 
-        sub.on('vs').handle((vs) => {
-            this.data.vs = vs;
-            this.needsUpdate = true;
-        });
-
-        sub.on('gs').handle((gs) => {
-            this.data.gs = gs;
-            this.needsUpdate = true;
-        });
-
         sub.on('realTime').handle((_t) => {
             this.handlePath();
             if (this.needsUpdate && this.isVisible) {
                 this.moveBird();
             }
         });
+
+        this.props.isAttExcessive.sub((_a) => {
+            this.needsUpdate = true;
+        }, true);
     }
 
     private handlePath() {
         const showLateralFD = this.data.activeLateralMode !== 0 && this.data.activeLateralMode !== 34 && this.data.activeLateralMode !== 40;
         const showVerticalFD = this.data.activeVerticalMode !== 0 && this.data.activeVerticalMode !== 34;
-        if (!showVerticalFD && !showLateralFD || !this.isTrkFpaActive || !this.data.fdActive) {
+        const daAndFpaValid = this.data.fpa.isNormalOperation() && this.data.da.isNormalOperation();
+
+        if (!showVerticalFD && !showLateralFD || !this.isTrkFpaActive
+            || !this.data.fdActive || !daAndFpaValid || this.props.isAttExcessive.get()) {
             this.birdPath.instance.style.visibility = 'hidden';
             this.isVisible = false;
         } else {
@@ -147,12 +140,8 @@ export class FlightPathDirector extends DisplayComponent<{bus: EventBus}> {
             const FDPitchOrder = this.data.fdPitch;
             const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 22.5), -22.5) * 1.9;
 
-            // TODO FPA and DA should come directly from the IR, and not be calculated here.
-            const FPA = Math.atan(this.data.vs.value / this.data.gs.value * 0.009875) * 180 / Math.PI;
-            const DA = getSmallestAngle(this.data.track.value, this.data.heading.value);
-
-            const daLimConv = Math.max(Math.min(DA, 21), -21) * DistanceSpacing / ValueSpacing;
-            const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(-this.data.pitch.value) - calculateHorizonOffsetFromPitch(FPA));
+            const daLimConv = Math.max(Math.min(this.data.da.value, 21), -21) * DistanceSpacing / ValueSpacing;
+            const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(-this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value));
             const rollCos = Math.cos(this.data.roll.value * Math.PI / 180);
             const rollSin = Math.sin(this.data.roll.value * Math.PI / 180);
 

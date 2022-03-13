@@ -153,8 +153,8 @@ export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndic
                         <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
                         <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
                     </g>
-                    <FlightPathVector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
-                    <FlightPathDirector bus={this.props.bus} />
+                    <FlightPathVector bus={this.props.bus} />
+                    <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
                 </g>
             </>
         );

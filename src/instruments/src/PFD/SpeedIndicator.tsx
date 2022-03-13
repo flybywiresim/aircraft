@@ -149,6 +149,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     private barTimeout= 0;
 
+    private onGround = 0;
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -183,9 +185,17 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         });
 
         pf.on('speedAr').withArinc429Precision(3).handle((airSpeed) => {
-            this.speedSub.set(airSpeed.value);
+            let airspeedValue: number;
+            if (airSpeed.isFailureWarning() || (airSpeed.isNoComputedData() && !this.onGround)) {
+                airspeedValue = NaN;
+            } else if (airSpeed.isNoComputedData()) {
+                airspeedValue = 30;
+            } else {
+                airspeedValue = airSpeed.value;
+            }
+            this.speedSub.set(airspeedValue);
 
-            if (!airSpeed.isNormalOperation()) {
+            if (Number.isNaN(airspeedValue)) {
                 this.speedTapeElements.instance.classList.add('HiddenElement');
                 this.failedGroup.instance.classList.remove('HiddenElement');
             } else {
@@ -193,7 +203,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
                 this.failedGroup.instance.classList.add('HiddenElement');
             }
 
-            const length = 42.9 + Math.max(Math.max(Math.min(airSpeed.value, 72.1), 30) - 30, 0);
+            const length = 42.9 + Math.max(Math.max(Math.min(airspeedValue, 72.1), 30) - 30, 0);
             this.speedTapeOutlineRef.instance.setAttribute('d', `m19.031 38.086v${length}`);
         });
 
@@ -217,6 +227,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
         // showBars replacement
         pf.on('onGround').whenChanged().handle((g) => {
+            this.onGround = g;
             if (g === 1) {
                 this.showBarsRef.instance.style.display = 'none';
                 this.barberPoleRef.instance.style.display = 'none';
@@ -388,22 +399,34 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
 
     private decelRef = FSComponent.createRef<SVGTextElement>();
 
+    private onGround = 0;
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('speed').handle((s) => {
-            const newVal = new Arinc429Word(s);
+        sub.on('onGround').whenChanged().handle((g) => {
+            this.onGround = g;
+        });
 
-            if (!newVal.isNormalOperation()) {
+        sub.on('speedAr').handle((speed) => {
+            let airspeedValue: number;
+            if (speed.isFailureWarning() || (speed.isNoComputedData() && !this.onGround)) {
+                airspeedValue = NaN;
+            } else if (speed.isNoComputedData()) {
+                airspeedValue = 30;
+            } else {
+                airspeedValue = speed.value;
+            }
+            if (Number.isNaN(airspeedValue)) {
                 this.offTapeRef.instance.classList.add('HiddenElement');
                 this.offTapeFailedRef.instance.classList.remove('HiddenElement');
             } else {
                 this.offTapeRef.instance.classList.remove('HiddenElement');
                 this.offTapeFailedRef.instance.classList.add('HiddenElement');
 
-                const clampedSpeed = Math.max(Math.min(newVal.value, 660), 30);
+                const clampedSpeed = Math.max(Math.min(airspeedValue, 660), 30);
                 const showLower = clampedSpeed > 72;
 
                 if (showLower) {
@@ -803,13 +826,15 @@ export class MachNumber extends DisplayComponent<{bus: EventBus}> {
 
     private showMach = false;
 
+    private onGround = 0;
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<Arinc429Values>();
+        const sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars>();
 
         sub.on('machAr').handle((mach) => {
-            if (!mach.isNormalOperation()) {
+            if (!mach.isNormalOperation() && !this.onGround) {
                 this.machTextSub.set('');
                 this.failedRef.instance.style.display = 'inline';
                 return;
@@ -825,6 +850,10 @@ export class MachNumber extends DisplayComponent<{bus: EventBus}> {
             if (this.showMach) {
                 this.machTextSub.set(`.${machPermille}`);
             }
+        });
+
+        sub.on('onGround').whenChanged().handle((g) => {
+            this.onGround = g;
         });
     }
 
