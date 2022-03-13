@@ -224,7 +224,7 @@ const PseudoFWC: React.FC = () => {
     const [callPushAft] = useSimVar('L:PUSH_OVHD_CALLS_AFT', 'bool', 100);
     const [cabinReady] = useSimVar('L:A32NX_CABIN_READY', 'bool');
 
-    const [toconfigBtn] = useSimVar('L:A32NX_BTN_TOCONFIG', 'bool', 100);
+    const [toconfigBtn] = useSimVar('L:A32NX_BTN_TOCONFIG', 'bool', 10);
     const [flapsMcdu] = useSimVar('L:A32NX_TO_CONFIG_FLAPS', 'number', 500);
     const [flapsMcduEntered] = useSimVar('L:A32NX_TO_CONFIG_FLAPS_ENTERED', 'bool', 500);
     const [speedBrake] = useSimVar('L:A32NX_SPOILERS_HANDLE_POSITION', 'number', 500);
@@ -1624,6 +1624,7 @@ const PseudoFWC: React.FC = () => {
         seatBelt,
         showTakeoffInhibit,
         showLandingInhibit,
+        speedBrake,
         spoilersArmed,
         strobeLightsOn,
         tcasFault,

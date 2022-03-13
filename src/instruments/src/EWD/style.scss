@@ -10,7 +10,7 @@
           fill: scale-color($color, $lightness: -50%);
       }
   }
-  animation: pulsing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: pulsing 1s step-end infinite;
 }
 
 @mixin GenericPulsingStroke($color) {
@@ -22,7 +22,7 @@
       stroke: scale-color($color, $lightness: -50%);
   }
 }
-animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+animation: pulsingS 1s step-end infinite;
 }
 
 
@@ -173,7 +173,8 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         stroke: $display-cyan;
     }
     .GreenPulse {
-        animation: green-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        animation: green-pulse 1s step-end infinite;
+        stroke: none !important;
 
         @keyframes green-pulse {
             0%, 100% {
@@ -186,7 +187,7 @@ animation: pulsingS 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
 
     .GreenPulseNoFill {
-        animation: green-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        animation: green-pulse 1s step-end infinite;
 
         @keyframes green-pulse {
             0%, 100% {
