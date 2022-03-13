@@ -2,15 +2,21 @@
 mod ailerons;
 mod autobrakes;
 mod brakes;
+mod elevators;
 mod flaps;
 mod nose_wheel_steering;
+mod rudder;
+mod spoilers;
 
 use a320_systems::A320;
 use ailerons::ailerons;
 use autobrakes::autobrakes;
 use brakes::brakes;
+use elevators::elevators;
 use flaps::flaps;
 use nose_wheel_steering::nose_wheel_steering;
+use rudder::rudder;
+use spoilers::spoilers;
 use std::error::Error;
 use systems::shared::ElectricalBusType;
 use systems::{failures::FailureType, shared::HydraulicColor};
@@ -127,6 +133,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("VELOCITY BODY Y", "feet per second", 0)?
     .provides_aircraft_variable("VELOCITY BODY Z", "feet per second", 0)?
     .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
+    .provides_aircraft_variable("INCIDENCE ALPHA", "degree", 0)?
+    .provides_aircraft_variable("ROTATION VELOCITY BODY X", "degree per second", 0)?
+    .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?
+    .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
     .with_aspect(|builder| {
         builder.copy(
             Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),
@@ -174,6 +184,9 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(nose_wheel_steering)?
     .with_aspect(flaps)?
     .with_aspect(ailerons)?
+    .with_aspect(elevators)?
+    .with_aspect(rudder)?
+    .with_aspect(spoilers)?
     .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {

@@ -17,6 +17,8 @@ pub struct AerodynamicModel {
 
     has_drag: bool,
     has_lift: bool,
+
+    area_coefficient: Ratio,
 }
 impl AerodynamicModel {
     const DEFAULT_LIFT_ANGLE_MAP_DEGREES: [f64; 7] = [-30., -18., -10., 0., 10., 18., 30.];
@@ -31,6 +33,7 @@ impl AerodynamicModel {
         max_drag_normal: Option<Vector3<f64>>,
         lift_axis: Option<Vector3<f64>>,
         lift_normal: Option<Vector3<f64>>,
+        area_coefficient: Ratio,
     ) -> Self {
         let mut obj = Self {
             max_drag_normal: max_drag_normal.unwrap_or_default(),
@@ -41,6 +44,8 @@ impl AerodynamicModel {
             drag_area: Area::default(),
             has_drag: max_drag_normal.is_some(),
             has_lift: lift_axis.is_some(),
+
+            area_coefficient,
         };
         obj.initialize_areas(body.size());
         obj
@@ -48,13 +53,13 @@ impl AerodynamicModel {
 
     fn initialize_areas(&mut self, size: Vector3<Length>) {
         self.drag_area = if self.has_drag {
-            area_projected(size, self.max_drag_normal)
+            area_projected(size, self.max_drag_normal) * self.area_coefficient
         } else {
             Area::default()
         };
 
         self.lift_area = if self.has_lift {
-            area_projected(size, self.lift_normal)
+            area_projected(size, self.lift_normal) * self.area_coefficient
         } else {
             Area::default()
         };
@@ -200,6 +205,7 @@ mod tests {
 
     use uom::si::{
         angle::{degree, radian},
+        ratio::ratio,
         velocity::meter_per_second,
     };
 
@@ -554,9 +560,9 @@ mod tests {
     }
 
     #[test]
-    fn horizontal_surface_no_drag_even_if_wind_comes_with_some_angle_of_attack() {
+    fn vertical_surface_no_drag_even_if_wind_comes_with_some_angle_of_attack() {
         let body = rudder_body();
-        let aero_model = vertical_surface_aero(&body);
+        let aero_model = vertical_surface_aero(&body, Ratio::new::<ratio>(1.));
 
         let mut test_bed = test_bed(TestAircraft::new(body, aero_model)).with_wind_speed_and_aoa(
             Velocity::new::<meter_per_second>(10.),
@@ -569,9 +575,9 @@ mod tests {
     }
 
     #[test]
-    fn horizontal_surface_generates_right_drag_from_left_to_right_wind() {
+    fn vertical_surface_generates_right_drag_from_left_to_right_wind() {
         let body = rudder_body();
-        let aero_model = vertical_surface_aero(&body);
+        let aero_model = vertical_surface_aero(&body, Ratio::new::<ratio>(1.));
 
         let mut test_bed = test_bed(TestAircraft::new(body, aero_model))
             .with_headwind(Velocity::new::<meter_per_second>(0.))
@@ -582,6 +588,36 @@ mod tests {
         assert!(test_bed.query(|a| force_almost_equal_zero(a.body_aero_force_forward_value())));
         assert!(test_bed.query(|a| force_almost_equal_zero(a.body_aero_force_up_value())));
         assert!(test_bed.query(|a| a.body_aero_force_right_value() >= Force::new::<newton>(50.)));
+    }
+
+    #[test]
+    fn half_area_ratio_surface_generates_half_the_drag() {
+        let body1 = rudder_body();
+        let aero_model = vertical_surface_aero(&body1, Ratio::new::<ratio>(1.));
+
+        let mut test_bed_full_area = test_bed(TestAircraft::new(body1, aero_model))
+            .with_headwind(Velocity::new::<meter_per_second>(0.))
+            .with_left_wind(Velocity::new::<meter_per_second>(10.));
+
+        test_bed_full_area.run_without_delta();
+
+        let lateral_force_full_area = test_bed_full_area.query(|a| a.body_aero_force_right_value());
+
+        let body2 = rudder_body();
+        let aero_model_half = vertical_surface_aero(&body2, Ratio::new::<ratio>(0.5));
+
+        let mut test_bed_half = test_bed(TestAircraft::new(body2, aero_model_half))
+            .with_headwind(Velocity::new::<meter_per_second>(0.))
+            .with_left_wind(Velocity::new::<meter_per_second>(10.));
+
+        test_bed_half.run_without_delta();
+
+        let lateral_force_half_area = test_bed_half.query(|a| a.body_aero_force_right_value());
+
+        assert!(forces_almost_equal(
+            lateral_force_full_area,
+            lateral_force_half_area * 2.
+        ));
     }
 
     #[test]
@@ -639,15 +675,17 @@ mod tests {
             Some(Vector3::new(0., 1., 0.)),
             Some(Vector3::new(0., 0., 1.)),
             Some(Vector3::new(0., 1., 0.)),
+            Ratio::new::<ratio>(1.),
         )
     }
 
-    fn vertical_surface_aero(body: &impl AerodynamicBody) -> AerodynamicModel {
+    fn vertical_surface_aero(body: &impl AerodynamicBody, area_ratio: Ratio) -> AerodynamicModel {
         AerodynamicModel::new(
             body,
             Some(Vector3::new(1., 0., 0.)),
             Some(Vector3::new(0., 0., 1.)),
             Some(Vector3::new(1., 0., 0.)),
+            area_ratio,
         )
     }
 
@@ -665,5 +703,9 @@ mod tests {
 
     fn force_almost_equal_zero(force: Force) -> bool {
         force.get::<newton>() < 1. && force.get::<newton>() > -1.
+    }
+
+    fn forces_almost_equal(force1: Force, force2: Force) -> bool {
+        (force1.get::<newton>() - force2.get::<newton>()).abs() < 1.
     }
 }
