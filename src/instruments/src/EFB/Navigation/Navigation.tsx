@@ -235,7 +235,10 @@ export const ChartComponent = () => {
                 }}
             >
                 {({ zoomIn, zoomOut, setTransform, state }) => (
-                    <div onMouseUp={() => dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...state } }))}>
+                    <div
+                        className="h-full"
+                        onMouseUp={() => dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...state } }))}
+                    >
                         {pagesViewable > 1 && (
                             <div className="flex overflow-hidden absolute top-6 left-6 z-40 flex-row items-center rounded-md">
                                 <div
