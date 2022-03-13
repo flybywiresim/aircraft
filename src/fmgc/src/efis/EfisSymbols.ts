@@ -269,7 +269,7 @@ export class EfisSymbols {
             const formatConstraintSpeed = (speed: number, prefix: string = '') => `${prefix}${Math.floor(speed)} KT`;
 
             for (const [index, leg] of this.guidanceController.activeGeometry.legs.entries()) {
-                if (leg.terminationWaypoint && leg.displayedOnMap) {
+                if (!leg.isNull && leg.terminationWaypoint && leg.displayedOnMap) {
                     if (!(leg.terminationWaypoint instanceof WayPoint)) {
                         const isActive = index === this.guidanceController.activeLegIndex;
 
