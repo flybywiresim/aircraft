@@ -1,4 +1,7 @@
+use crate::landing_gear::GearWheel;
 use crate::shared::low_pass_filter::LowPassFilter;
+use crate::shared::{LgciuGearExtension,LgciuDoorPosition};
+
 use crate::simulation::UpdateContext;
 
 use super::linear_actuator::{
@@ -72,28 +75,36 @@ impl HydraulicGearSystem {
     }
 }
 impl GearSystemSensors for HydraulicGearSystem {
-    fn doors_locked_up(&self, sensor_id: usize) -> bool {
-        self.nose_door_assembly.is_sensor_uplock(sensor_id)
-            && self.left_door_assembly.is_sensor_uplock(sensor_id)
-            && self.right_door_assembly.is_sensor_uplock(sensor_id)
+    fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
+        match wheel_id {
+            GearWheel::CENTER => self.nose_gear_assembly.is_sensor_uplock(sensor_id),
+            GearWheel::LEFT => self.left_gear_assembly.is_sensor_uplock(sensor_id),
+            GearWheel::RIGHT => self.right_gear_assembly.is_sensor_uplock(sensor_id),
+        }
     }
 
-    fn doors_fully_opened(&self, sensor_id: usize) -> bool {
-        self.nose_door_assembly.is_sensor_fully_opened(sensor_id)
-            && self.left_door_assembly.is_sensor_fully_opened(sensor_id)
-            && self.right_door_assembly.is_sensor_fully_opened(sensor_id)
+    fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
+        match wheel_id {
+            GearWheel::CENTER => self.nose_gear_assembly.is_sensor_fully_opened(sensor_id),
+            GearWheel::LEFT => self.left_gear_assembly.is_sensor_fully_opened(sensor_id),
+            GearWheel::RIGHT => self.right_gear_assembly.is_sensor_fully_opened(sensor_id),
+        }
     }
 
-    fn gears_locked_up(&self, sensor_id: usize) -> bool {
-        self.nose_gear_assembly.is_sensor_uplock(sensor_id)
-            && self.left_gear_assembly.is_sensor_uplock(sensor_id)
-            && self.right_gear_assembly.is_sensor_uplock(sensor_id)
+    fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
+        match wheel_id {
+            GearWheel::CENTER => self.nose_door_assembly.is_sensor_uplock(sensor_id),
+            GearWheel::LEFT => self.left_door_assembly.is_sensor_uplock(sensor_id),
+            GearWheel::RIGHT => self.right_door_assembly.is_sensor_uplock(sensor_id),
+        }
     }
 
-    fn gears_locked_down(&self, sensor_id: usize) -> bool {
-        self.nose_gear_assembly.is_sensor_fully_opened(sensor_id)
-            && self.left_gear_assembly.is_sensor_fully_opened(sensor_id)
-            && self.right_gear_assembly.is_sensor_fully_opened(sensor_id)
+    fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
+        match wheel_id {
+            GearWheel::CENTER => self.nose_door_assembly.is_sensor_fully_opened(sensor_id),
+            GearWheel::LEFT => self.left_door_assembly.is_sensor_fully_opened(sensor_id),
+            GearWheel::RIGHT => self.right_door_assembly.is_sensor_fully_opened(sensor_id),
+        }
     }
 }
 
@@ -105,25 +116,23 @@ enum GearsSystemState {
     AllDownLocked,
 }
 
-// Represents all inputs/sensors seen from a LGCIU perspective
-trait GearSystemSensors {
-    fn doors_locked_up(&self, sensor_id: usize) -> bool;
-    fn doors_fully_opened(&self, sensor_id: usize) -> bool;
-    fn gears_locked_up(&self, sensor_id: usize) -> bool;
-    fn gears_locked_down(&self, sensor_id: usize) -> bool;
+// Represents all sensors seen from a LGCIU perspective
+pub trait GearSystemSensors {
+    fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
+    fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
+    fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
+    fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
 }
 
-struct GearSystemStateMachine {
-    sensors_id: usize,
+pub struct GearSystemStateMachine {
     gears_state: GearsSystemState,
 
     door_controller: GearSystemDoorController,
     gear_controller: GearSystemGearController,
 }
 impl GearSystemStateMachine {
-    fn new(sensors_id: usize) -> Self {
+    pub fn new() -> Self {
         Self {
-            sensors_id,
             gears_state: GearsSystemState::AllDownLocked,
 
             door_controller: GearSystemDoorController::new(),
@@ -133,7 +142,7 @@ impl GearSystemStateMachine {
 
     fn new_gear_state(
         &self,
-        gear_inputs: &impl GearSystemSensors,
+        lgciu_extension: &impl LgciuGearExtension,
         gear_handle_position_is_up: bool,
     ) -> GearsSystemState {
         match self.gears_state {
@@ -145,7 +154,7 @@ impl GearSystemStateMachine {
                 }
             }
             GearsSystemState::Retracting => {
-                if gear_inputs.gears_locked_up(self.sensors_id) {
+                if lgciu_extension.all_up_and_locked() {
                     GearsSystemState::AllUpLocked
                 } else if !gear_handle_position_is_up {
                     GearsSystemState::Extending
@@ -154,7 +163,7 @@ impl GearSystemStateMachine {
                 }
             }
             GearsSystemState::Extending => {
-                if gear_inputs.gears_locked_down(self.sensors_id) {
+                if lgciu_extension.all_down_and_locked() {
                     GearsSystemState::AllDownLocked
                 } else if gear_handle_position_is_up {
                     GearsSystemState::Retracting
@@ -172,8 +181,8 @@ impl GearSystemStateMachine {
         }
     }
 
-    fn update(&mut self, gear_inputs: &impl GearSystemSensors, gear_handle_position_is_up: bool) {
-        self.gears_state = self.new_gear_state(gear_inputs, gear_handle_position_is_up);
+    pub fn update(&mut self,  lgciu_extension: &impl LgciuGearExtension, gear_handle_position_is_up: bool) {
+        self.gears_state = self.new_gear_state(lgciu_extension, gear_handle_position_is_up);
     }
 }
 
@@ -249,7 +258,7 @@ impl GearSystemGearController {
         }
     }
 
-    fn from_state(state: GearsSystemState, gear_inputs: &impl GearSystemSensors,sensors_id : usize) -> Self {
+    fn from_state(state: GearsSystemState, lgciu_doors: &impl LgciuDoorPosition) -> Self {
         match state {
             GearsSystemState::AllUpLocked => Self {
                 should_hydraulic_unlock: false,
@@ -257,7 +266,7 @@ impl GearSystemGearController {
                 should_open: false,
             },
             GearsSystemState::Retracting => {
-                if gear_inputs.doors_fully_opened(sensors_id) {
+                if lgciu_doors.all_fully_opened() {
                     Self {
                         should_hydraulic_unlock: true,
                         should_manual_unlock: false,
@@ -272,7 +281,7 @@ impl GearSystemGearController {
                 }
             }
             GearsSystemState::Extending => {
-                if gear_inputs.doors_fully_opened(sensors_id) {
+                if lgciu_doors.all_fully_opened() {
                     Self {
                         should_hydraulic_unlock: true,
                         should_manual_unlock: false,
@@ -322,7 +331,10 @@ impl GearSystemDoorController {
         }
     }
 
-    fn from_state(state: GearsSystemState, gear_inputs: &impl GearSystemSensors,sensors_id : usize) -> Self {
+    fn from_state(
+        state: GearsSystemState,
+        lgciu_extension: &impl LgciuGearExtension,
+    ) -> Self {
         match state {
             GearsSystemState::AllUpLocked => Self {
                 should_hydraulic_unlock: false,
@@ -330,7 +342,7 @@ impl GearSystemDoorController {
                 should_open: false,
             },
             GearsSystemState::Retracting => {
-                if !gear_inputs.gears_locked_up(sensors_id) {
+                if !lgciu_extension.all_up_and_locked() {
                     Self {
                         should_hydraulic_unlock: true,
                         should_manual_unlock: false,
@@ -345,7 +357,7 @@ impl GearSystemDoorController {
                 }
             }
             GearsSystemState::Extending => {
-                if !gear_inputs.gears_locked_down(sensors_id) {
+                if !lgciu_extension.all_down_and_locked() {
                     Self {
                         should_hydraulic_unlock: true,
                         should_manual_unlock: false,

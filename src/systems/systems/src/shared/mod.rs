@@ -97,7 +97,12 @@ pub trait LgciuGearExtension {
     fn all_up_and_locked(&self) -> bool;
 }
 
-pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension {}
+pub trait LgciuDoorPosition {
+    fn all_fully_opened(&self) -> bool;
+    fn all_up_and_locked(&self) -> bool;
+}
+
+pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition {}
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
 }
