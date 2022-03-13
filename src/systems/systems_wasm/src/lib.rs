@@ -13,7 +13,7 @@ use crate::aspects::{Aspect, ExecuteOn, MsfsAspectBuilder};
 use crate::electrical::{auxiliary_power_unit, electrical_buses};
 use ::msfs::{
     sim_connect::{data_definition, Period, SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
-    MSFSEvent,
+    sys, MSFSEvent,
 };
 use failures::Failures;
 use fxhash::FxHashMap;
@@ -535,7 +535,7 @@ struct SimulationTime {
 }
 
 impl SimulationTime {
-    const REQUEST_ID: u32 = 0;
+    const REQUEST_ID: sys::DWORD = 0;
 }
 
 struct Time {
@@ -586,7 +586,7 @@ const RANGE_32KPOS_VAL_FROM_SIMCONNECT: f64 =
     MAX_32KPOS_VAL_FROM_SIMCONNECT - MIN_32KPOS_VAL_FROM_SIMCONNECT;
 const OFFSET_32KPOS_VAL_FROM_SIMCONNECT: f64 = 16384.;
 // Takes a 32k position type from simconnect, returns a value from scaled from 0 to 1
-pub fn sim_connect_32k_pos_to_f64(sim_connect_axis_value: u32) -> f64 {
+pub fn sim_connect_32k_pos_to_f64(sim_connect_axis_value: sys::DWORD) -> f64 {
     let casted_value = (sim_connect_axis_value as i32) as f64;
     let scaled_value =
         (casted_value + OFFSET_32KPOS_VAL_FROM_SIMCONNECT) / RANGE_32KPOS_VAL_FROM_SIMCONNECT;
@@ -594,32 +594,10 @@ pub fn sim_connect_32k_pos_to_f64(sim_connect_axis_value: u32) -> f64 {
     scaled_value.min(1.).max(0.)
 }
 // Takes a [0:1] f64 and returns a simconnect 32k position type
-pub fn f64_to_sim_connect_32k_pos(scaled_axis_value: f64) -> u32 {
+pub fn f64_to_sim_connect_32k_pos(scaled_axis_value: f64) -> sys::DWORD {
     let back_to_position_format = ((scaled_axis_value) * RANGE_32KPOS_VAL_FROM_SIMCONNECT)
         - OFFSET_32KPOS_VAL_FROM_SIMCONNECT;
     let to_i32 = back_to_position_format as i32;
 
-    to_i32 as u32
-}
-
-#[cfg(test)]
-mod sim_connect_type_casts {
-    use super::*;
-    #[test]
-    fn min_simconnect_value() {
-        // We expect to get first element of YS1
-        assert!(sim_connect_32k_pos_to_f64(u32::MAX - 16384) <= 0.001);
-    }
-    #[test]
-    fn middle_simconnect_value() {
-        // We expect to get first element of YS1
-        let val = sim_connect_32k_pos_to_f64(0);
-        assert!((0.499..=0.501).contains(&val));
-    }
-
-    #[test]
-    fn max_simconnect_value() {
-        // We expect to get first element of YS1
-        assert!(sim_connect_32k_pos_to_f64(16384) >= 0.999);
-    }
+    to_i32 as sys::DWORD
 }
