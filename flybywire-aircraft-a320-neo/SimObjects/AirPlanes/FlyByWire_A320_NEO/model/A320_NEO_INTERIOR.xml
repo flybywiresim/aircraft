@@ -4478,99 +4478,109 @@
         </Template>
 
         <Component ID="SAFETY">
-            <UseTemplate Name="ASOBO_SAFETY_Push_Warning_Template">
-                <TYPE>AIRLINER</TYPE>
-                <PUSH_EVENT>
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
+                <NODE_ID>PUSH_GLARE_MASTERWARN_L</NODE_ID>
+                <PART_ID>MASTERWARN_L</PART_ID>
+                <LEFT_SINGLE_CODE>
                     0 (&gt;L:A32NX_MASTER_WARNING)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
-                </PUSH_EVENT>
-                <RELEASE_EVENT>
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
-                </RELEASE_EVENT>
-                <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
-                <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
-                <IS_STATE_ACTIVE>(L:Generic_Master_Warning_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</IS_STATE_ACTIVE>
+                </LEFT_LEAVE_CODE>
+                <!-- 801XP-C via CB 29LP -->
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED)</SEQ1_POWERED>
+                <SEQ1_CODE>(L:Generic_Master_Warning_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or</SEQ1_CODE>
+                <!-- 202XP-A via CB 27LP -->
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED)</SEQ2_POWERED>
+                <SEQ2_CODE>(L:Generic_Master_Warning_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or</SEQ2_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
-                <NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_L</NODE_ID>
-                <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERAWARN_L_SEQ1</NODE_ID_SEQ1>
-                <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERAWARN_L_SEQ2</NODE_ID_SEQ2>
-                <ANIM_NAME>PUSH_AUTOPILOT_MASTERAWARN_L</ANIM_NAME>
-                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
-                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-                <NO_SEQ2/>
-                <ID>1</ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_SAFETY_Push_Caution_Template">
-                <TYPE>AIRLINER</TYPE>
-                <PUSH_EVENT>
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
+                <NODE_ID>PUSH_GLARE_MASTERCAUT_L</NODE_ID>
+                <PART_ID>MASTERCAUT_L</PART_ID>
+                <LEFT_SINGLE_CODE>
                     0 (&gt;L:A32NX_MASTER_CAUTION)
                     1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
-                </PUSH_EVENT>
-                <RELEASE_EVENT>
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
                     0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
-                </RELEASE_EVENT>
-                <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
-                <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
-                <IS_STATE_ACTIVE>(L:Generic_Master_Caution_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</IS_STATE_ACTIVE>
+                </LEFT_LEAVE_CODE>
+                <!-- 801XP-C via CB 29LP -->
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED)</SEQ1_POWERED>
+                <SEQ1_CODE>(L:Generic_Master_Caution_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or</SEQ1_CODE>
+                <!-- 202XP-A via CB 27LP -->
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED)</SEQ2_POWERED>
+                <SEQ2_CODE>(L:Generic_Master_Caution_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or</SEQ2_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
-                <NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_L</NODE_ID>
-                <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERCAUT_L_SEQ1</NODE_ID_SEQ1>
-                <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERCAUT_L_SEQ2</NODE_ID_SEQ2>
-                <ANIM_NAME>PUSH_AUTOPILOT_MASTERCAUT_L</ANIM_NAME>
-                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
-                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-                <NO_SEQ2/>
-                <ID>1</ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_SAFETY_Push_Warning_Template">
-                <TYPE>AIRLINER</TYPE>
-                <PUSH_EVENT>
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
+                <NODE_ID>PUSH_GLARE_MASTERWARN_R</NODE_ID>
+                <PART_ID>MASTERWARN_R</PART_ID>
+                <LEFT_SINGLE_CODE>
                     0 (&gt;L:A32NX_MASTER_WARNING)
-                    1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_R)
-                </PUSH_EVENT>
-                <RELEASE_EVENT>
-                    0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_R)
-                </RELEASE_EVENT>
-                <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
-                <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
-                <IS_STATE_ACTIVE>(L:Generic_Master_Warning_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</IS_STATE_ACTIVE>
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:PUSH_AUTOPILOT_MASTERAWARN_L)
+                </LEFT_LEAVE_CODE>
+                <!-- 202XP-A via CB 27LP -->
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED)</SEQ1_POWERED>
+                <SEQ1_CODE>(L:Generic_Master_Warning_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or</SEQ1_CODE>
+                <!-- 801XP-C via CB 29LP -->
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED)</SEQ2_POWERED>
+                <SEQ2_CODE>(L:Generic_Master_Warning_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or</SEQ2_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_WARNING_ACKNOWLEDGE</TOOLTIPID>
-                <NODE_ID>PUSH_AUTOPILOT_MASTERAWARN_R</NODE_ID>
-                <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERAWARN_R_SEQ1</NODE_ID_SEQ1>
-                <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERAWARN_R_SEQ2</NODE_ID_SEQ2>
-                <ANIM_NAME>PUSH_AUTOPILOT_MASTERAWARN_R</ANIM_NAME>
-                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
-                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-                <NO_SEQ2/>
-                <PUSH_ID>Warning</PUSH_ID>
-                <ID>2</ID>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_SAFETY_Push_Caution_Template">
-                <TYPE>AIRLINER</TYPE>
-                <PUSH_EVENT>
+            <UseTemplate Name="FBW_Anim_Interactions">
+                <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                <ANIM_TEMPLATE>FBW_Push_Held</ANIM_TEMPLATE>
+                <NODE_ID>PUSH_GLARE_MASTERCAUT_R</NODE_ID>
+                <PART_ID>MASTERCAUT_R</PART_ID>
+                <LEFT_SINGLE_CODE>
                     0 (&gt;L:A32NX_MASTER_CAUTION)
-                    1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_R)
-                </PUSH_EVENT>
-                <RELEASE_EVENT>
-                    0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_R)
-                </RELEASE_EVENT>
-                <ALT_CODE>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 } *</ALT_CODE>
-                <!-- As emissives aren't split between SEQ1 and SEQ2, we'll just require either bus to power both lights. -->
-                <IS_STATE_ACTIVE>(L:Generic_Master_Caution_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or (L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool) or and</IS_STATE_ACTIVE>
+                    1 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE>
+                    0 (&gt;L:PUSH_AUTOPILOT_MASTERCAUT_L)
+                </LEFT_LEAVE_CODE>
+                <!-- 202XP-A via CB 27LP -->
+                <SEQ1_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED)</SEQ1_POWERED>
+                <SEQ1_CODE>(L:Generic_Master_Caution_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or</SEQ1_CODE>
+                <!-- 801XP-C via CB 29LP -->
+                <SEQ2_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED)</SEQ2_POWERED>
+                <SEQ2_CODE>(L:Generic_Master_Caution_Active) (L:A32NX_OVHD_INTLT_ANN) 0 == or</SEQ2_CODE>
                 <TOOLTIPID>TT:COCKPIT.TOOLTIPS.MASTER_CAUTION_ACKNOWLEDGE</TOOLTIPID>
-                <NODE_ID>PUSH_AUTOPILOT_MASTERCAUT_R</NODE_ID>
-                <NODE_ID_SEQ1>PUSH_AUTOPILOT_MASTERCAUT_R_SEQ1</NODE_ID_SEQ1>
-                <NODE_ID_SEQ2>PUSH_AUTOPILOT_MASTERCAUT_R_SEQ2</NODE_ID_SEQ2>
-                <ANIM_NAME>PUSH_AUTOPILOT_MASTERCAUT_R</ANIM_NAME>
-                <WWISE_EVENT_1>mpb1on</WWISE_EVENT_1>
-                <WWISE_EVENT_2>mpb1off</WWISE_EVENT_2>
-                <EMISSIVE_DRIVES_VISIBILITY>True</EMISSIVE_DRIVES_VISIBILITY>
-                <NO_SEQ2/>
-                <ID>2</ID>
             </UseTemplate>
+            <!-- old buttons without split seq 1/2 -->
+            <Component ID="HIDDEN">
+                <Component ID="PUSH_AUTOPILOT_MASTERCAUT_L" Node="PUSH_AUTOPILOT_MASTERCAUT_L">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
+                <Component ID="PUSH_AUTOPILOT_MASTERCAUT_R" Node="PUSH_AUTOPILOT_MASTERCAUT_R">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
+                <Component ID="PUSH_AUTOPILOT_MASTERAWARN_L" Node="PUSH_AUTOPILOT_MASTERAWARN_L">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
+                <Component ID="PUSH_AUTOPILOT_MASTERAWARN_R" Node="PUSH_AUTOPILOT_MASTERAWARN_R">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
+            </Component>
         </Component>
 
         <Component ID="DOOR_PANEL">

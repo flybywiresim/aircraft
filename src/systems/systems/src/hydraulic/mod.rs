@@ -264,8 +264,8 @@ impl PowerTransferUnit {
         self.is_enabled = controller.should_enable();
 
         self.update_displacement(context, loop_left_section, loop_right_section);
-        self.update_active_state();
         self.update_shaft_physics(context, loop_left_section, loop_right_section);
+        self.update_active_state();
         self.update_flows();
     }
 
