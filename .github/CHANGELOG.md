@@ -191,6 +191,7 @@
 1. [AP] Improved roll law transition from flight to ground mode during Autoland - @aguther (Andreas Guther)
 1. [AP] Improved V/PATH law - lukecologne (luke)
 1. [MCDU] Update init/fuel prediction pages to H3 - @tracernz (Mike)
+1. [FMGC] Updates flight model info for FMGC guidance - @donstim (donbikes#4084)
 
 ## 0.7.0
 
