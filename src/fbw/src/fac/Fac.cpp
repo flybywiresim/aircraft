@@ -18,8 +18,8 @@ void Fac::clearMemory() {
   rudderTravelLimServoAvail = false;
 }
 
-// Main update cycle
-void Fac::update(double deltaTime, double simulationTime, bool faultActive, bool isPowered) {
+// Main update cycle. Surface position through parameters here is temporary.
+void Fac::update(double deltaTime, double simulationTime, bool faultActive, bool isPowered, double surfaceCommands[2]) {
   monitorPowerSupply(deltaTime, isPowered);
 
   updateSelfTest(deltaTime);
@@ -29,6 +29,7 @@ void Fac::update(double deltaTime, double simulationTime, bool faultActive, bool
     computeComputerEngagementYawDamper();
     computeComputerEngagementRudderTrim();
     computeComputerEngagementRudderTravelLim();
+    computeSurfaceSlaving(surfaceCommands);
   }
 }
 
@@ -76,6 +77,27 @@ void Fac::computeComputerEngagementRudderTravelLim() {
   }
 
   rudderTravelLimEngaged = rudderTravelLimCanEngage && rudderTravelLimHasPriority;
+}
+
+// Compute the various surface slaving commands from the law outputs. (the law outputs come from outside the computer atm)
+void Fac::computeSurfaceSlaving(double surfaceCommands[2]) {
+  if (yawDamperEngaged) {
+    yawDamperPosCommand = surfaceCommands[0] * 30;
+  } else {
+    yawDamperPosCommand = 0;
+  }
+
+  if (rudderTrimEngaged) {
+    rudderTrimPosCommand = surfaceCommands[1] * 30;
+  } else {
+    rudderTrimPosCommand = 0;
+  }
+
+  if (rudderTravelLimEngaged) {
+    rudderTravelLimPosCommand = 0;
+  } else {
+    rudderTravelLimPosCommand = 0;
+  }
 }
 
 // Software reset logic. After a reset, start self-test if on ground and engines off, and reset RAM.
@@ -327,9 +349,9 @@ FacAnalogOutputs Fac::getAnalogOutputs() {
     output.rudderTrimOrder = 0;
     output.rudderTravelLimOrder = 0;
   } else {
-    output.yawDamperOrder = 0;
-    output.rudderTrimOrder = 0;
-    output.rudderTravelLimOrder = 0;
+    output.yawDamperOrder = yawDamperPosCommand;
+    output.rudderTrimOrder = rudderTrimPosCommand;
+    output.rudderTravelLimOrder = rudderTravelLimPosCommand;
   }
 
   return output;

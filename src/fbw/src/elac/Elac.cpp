@@ -54,10 +54,15 @@ void Elac::clearMemory() {
   ra2Invalid = false;
   ra1CoherenceRejected = false;
   ra2CoherenceRejected = false;
+  leftElevPosCommand = 0;
+  rightElevPosCommand = 0;
+  thsPosCommand = 0;
+  leftAileronPosCommand = 0;
+  rightAileronPosCommand = 0;
 }
 
-// Main update cycle
-void Elac::update(double deltaTime, double simulationTime, bool faultActive, bool isPowered) {
+// Main update cycle. Surface position through parameters here is temporary.
+void Elac::update(double deltaTime, double simulationTime, bool faultActive, bool isPowered, double surfaceCommands[4]) {
   monitorPowerSupply(deltaTime, isPowered);
   monitorButtonStatus();
 
@@ -73,6 +78,7 @@ void Elac::update(double deltaTime, double simulationTime, bool faultActive, boo
     computeLateralLawCapability();
     computePitchLawCapability();
     computeActiveLawsAndFunctionStatus();
+    computeSurfaceSlaving(surfaceCommands);
   }
 }
 
@@ -268,6 +274,30 @@ void Elac::computeComputerEngagementRoll() {
   }
 
   isEngagedInRoll = canEngageInRoll && hasPriorityInRoll;
+}
+
+// Compute the various surface slaving commands from the law outputs. (the law outputs come from outside the computer atm)
+void Elac::computeSurfaceSlaving(double surfaceCommands[4]) {
+  if (isEngagedInPitch) {
+    leftElevPosCommand = surfaceCommands[0] > 0 ? -surfaceCommands[0] * 30 : -surfaceCommands[0] * 19;
+    rightElevPosCommand = surfaceCommands[0] > 0 ? -surfaceCommands[0] * 30 : -surfaceCommands[0] * 19;
+    thsPosCommand = surfaceCommands[1];
+  } else {
+    leftElevPosCommand = 0;
+    rightElevPosCommand = 0;
+    thsPosCommand = 0;
+  }
+
+  if ((isEngagedInRoll || leftAileronCrossCommandActive) && leftAileronAvail) {
+    leftAileronPosCommand = surfaceCommands[2] * 25;
+  } else {
+    leftAileronPosCommand = 0;
+  }
+  if ((isEngagedInRoll || rightAileronCrossCommandActive) && rightAileronAvail) {
+    rightAileronPosCommand = surfaceCommands[3] * 25;
+  } else {
+    rightAileronPosCommand = 0;
+  }
 }
 
 // Monitor the RA inputs. Monitoring is performed in 3 different ways: SSM and refresh monitoring of the bus,
@@ -532,11 +562,11 @@ ElacAnalogOutputs Elac::getAnalogOutputs() {
     output.leftAileronPosOrder = 0;
     output.rightAileronPosOrder = 0;
   } else {
-    output.leftElevPosOrder = 0;
-    output.rightElevPosOrder = 0;
-    output.thsPosOrder = 0;
-    output.leftAileronPosOrder = 0;
-    output.rightAileronPosOrder = 0;
+    output.leftElevPosOrder = leftElevPosCommand;
+    output.rightElevPosOrder = rightElevPosCommand;
+    output.thsPosOrder = thsPosCommand;
+    output.leftAileronPosOrder = leftAileronPosCommand;
+    output.rightAileronPosOrder = rightAileronPosCommand;
   }
 
   return output;

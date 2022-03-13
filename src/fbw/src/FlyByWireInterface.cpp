@@ -565,20 +565,20 @@ void FlyByWireInterface::setupLocalVariables() {
     string yawDamperString = i == 0 ? "GREEN" : "YELLOW";
     string idString = std::to_string(i + 1);
 
-    idLeftAileronSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_LEFT_" + aileronStringLeft + "_AIL_SERVO_SOLENOID_ENERGIZED");
-    idLeftAileronCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_" + aileronStringLeft + "_AIL_COMMANDED_POSITION");
-    idRightAileronSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_RIGHT_" + aileronStringRight + "_AIL_SERVO_SOLENOID_ENERGIZED");
-    idRightAileronCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_" + aileronStringRight + "_AIL_COMMANDED_POSITION");
+    idLeftAileronSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_LEFT_AIL_" + aileronStringLeft + "_SERVO_SOLENOID_ENERGIZED");
+    idLeftAileronCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_AIL_" + aileronStringLeft + "_COMMANDED_POSITION");
+    idRightAileronSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_RIGHT_AIL_" + aileronStringRight + "_SERVO_SOLENOID_ENERGIZED");
+    idRightAileronCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_AIL_" + aileronStringRight + "_COMMANDED_POSITION");
     idLeftSpoilerCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_SPOILER_" + idString + "_COMMANDED_POSITION");
     idRightSpoilerCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_SPOILER_" + idString + "_COMMANDED_POSITION");
-    idLeftElevatorSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_LEFT_" + elevatorStringLeft + "_ELEV_SERVO_SOLENOID_ENERGIZED");
-    idLeftElevatorCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_" + elevatorStringLeft + "_ELEV_COMMANDED_POSITION");
+    idLeftElevatorSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_LEFT_ELEV_" + elevatorStringLeft + "_SERVO_SOLENOID_ENERGIZED");
+    idLeftElevatorCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_ELEV_" + elevatorStringLeft + "_COMMANDED_POSITION");
     idRightElevatorSolenoidEnergized[i] =
-        make_unique<LocalVariable>("A32NX_RIGHT_" + elevatorStringRight + "_ELEV_SERVO_SOLENOID_ENERGIZED");
-    idRightElevatorCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_" + elevatorStringRight + "_ELEV_COMMANDED_POSITION");
+        make_unique<LocalVariable>("A32NX_RIGHT_ELEV_" + elevatorStringRight + "_SERVO_SOLENOID_ENERGIZED");
+    idRightElevatorCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_ELEV_" + elevatorStringRight + "_COMMANDED_POSITION");
 
-    idYawDamperSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_" + yawDamperString + "_YAW_DAMPER_SERVO_SOLENOID_ENERGIZED");
-    idYawDamperCommandedPosition[i] = make_unique<LocalVariable>("A32NX_" + yawDamperString + "_YAW_DAMPER_COMMANDED_POSITION");
+    idYawDamperSolenoidEnergized[i] = make_unique<LocalVariable>("A32NX_YAW_DAMPER_" + yawDamperString + "_SERVO_SOLENOID_ENERGIZED");
+    idYawDamperCommandedPosition[i] = make_unique<LocalVariable>("A32NX_YAW_DAMPER_" + yawDamperString + "_COMMANDED_POSITION");
     idRudderTrimActiveModeCommanded[i] = make_unique<LocalVariable>("A32NX_RUDDER_TRIM_" + idString + "_ACTIVE_MODE_COMMANDED");
     idRudderTrimCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RUDDER_TRIM_" + idString + "_COMMANDED_POSITION");
     idRudderTravelLimitActiveModeCommanded[i] =
@@ -590,6 +590,7 @@ void FlyByWireInterface::setupLocalVariables() {
     string idString = std::to_string(i + 1);
 
     idTHSActiveModeCommanded[i] = make_unique<LocalVariable>("A32NX_THS_" + idString + "_ACTIVE_MODE_COMMANDED");
+    idTHSCommandedPosition[i] = make_unique<LocalVariable>("A32NX_THS_" + idString + "_COMMANDED_POSITION");
   }
 
   for (int i = 0; i < 2; i++) {
@@ -956,9 +957,9 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].discreteInputs.normalPowersupplyLost = false;
 
   elacs[elacIndex].analogInputs.capPitchStickPos = simInput.inputs[0] * 15;
-  elacs[elacIndex].analogInputs.foPitchStickPos = simInput.inputs[0] * 15;
+  elacs[elacIndex].analogInputs.foPitchStickPos = 0;
   elacs[elacIndex].analogInputs.capRollStickPos = simInput.inputs[1] * 19;
-  elacs[elacIndex].analogInputs.foRollStickPos = simInput.inputs[1] * 19;
+  elacs[elacIndex].analogInputs.foRollStickPos = 0;
   elacs[elacIndex].analogInputs.leftElevatorPos = 0;
   elacs[elacIndex].analogInputs.rightElevatorPos = 0;
   elacs[elacIndex].analogInputs.thsPos = 0;
@@ -986,8 +987,15 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].busInputs.sec2 = secsBusOutputs[1];
   elacs[elacIndex].busInputs.elacOpp = elacsBusOutputs[oppElacIndex];
 
+  double surfaceCommands[4] = {
+      flyByWireOutput.output.eta_pos,
+      flyByWireOutput.output.eta_trim_deg,
+      animationAileronHandler->getPositionLeft(),
+      animationAileronHandler->getPositionRight(),
+  };
+
   elacs[elacIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(elacIndex == 0 ? Failures::Elac1 : Failures::Elac2),
-                          elacIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get());
+                          elacIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get(), surfaceCommands);
 
   elacsDiscreteOutputs[elacIndex] = elacs[elacIndex].getDiscreteOutputs();
   elacsAnalogOutputs[elacIndex] = elacs[elacIndex].getAnalogOutputs();
@@ -1052,7 +1060,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
 
   if (secIndex < 2) {
     secs[secIndex].analogInputs.capPitchStickPos = simInput.inputs[0] * 15;
-    secs[secIndex].analogInputs.foPitchStickPos = simInput.inputs[0] * 15;
+    secs[secIndex].analogInputs.foPitchStickPos = 0;
     secs[secIndex].analogInputs.leftElevatorPos = 0;
     secs[secIndex].analogInputs.rightElevatorPos = 0;
     secs[secIndex].analogInputs.thsPos = 0;
@@ -1068,7 +1076,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].analogInputs.loadFactorAcc2 = 0;
   }
   secs[secIndex].analogInputs.capRollStickPos = simInput.inputs[1] * 19;
-  secs[secIndex].analogInputs.foRollStickPos = simInput.inputs[1] * 19;
+  secs[secIndex].analogInputs.foRollStickPos = 0;
   secs[secIndex].analogInputs.spdBrkLeverPos = 0;
   secs[secIndex].analogInputs.thrLever1Pos = 0;
   secs[secIndex].analogInputs.thrLever2Pos = 0;
@@ -1086,9 +1094,16 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].busInputs.elac1 = elacsBusOutputs[0];
   secs[secIndex].busInputs.elac2 = elacsBusOutputs[1];
 
+  double surfaceCommands[4] = {
+      flyByWireOutput.output.eta_pos,
+      flyByWireOutput.output.eta_trim_deg,
+      animationAileronHandler->getPositionLeft(),
+      animationAileronHandler->getPositionRight(),
+  };
+
   Failures failureIndex = secIndex == 0 ? Failures::Sec1 : (secIndex == 1 ? Failures::Sec2 : Failures::Sec3);
   secs[secIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex),
-                        secIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get());
+                        secIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get(), surfaceCommands);
 
   secsDiscreteOutputs[secIndex] = secs[secIndex].getDiscreteOutputs();
   secsAnalogOutputs[secIndex] = secs[secIndex].getAnalogOutputs();
@@ -1202,8 +1217,13 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].busInputs.elac1 = elacsBusOutputs[0];
   facs[facIndex].busInputs.elac2 = elacsBusOutputs[1];
 
+  double surfaceCommands[2] = {
+      flyByWireOutput.output.zeta_pos,
+      flyByWireOutput.output.zeta_trim_pos,
+  };
+
   facs[facIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(facIndex == 0 ? Failures::Fac1 : Failures::Fac2),
-                        facIndex == 0 ? idElecDcEssShedBusPowered->get() : idElecDcBus2Powered->get());
+                        facIndex == 0 ? idElecDcEssShedBusPowered->get() : idElecDcBus2Powered->get(), surfaceCommands);
 
   facsDiscreteOutputs[facIndex] = facs[facIndex].getDiscreteOutputs();
   facsAnalogOutputs[facIndex] = facs[facIndex].getAnalogOutputs();

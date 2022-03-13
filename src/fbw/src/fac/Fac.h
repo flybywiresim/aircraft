@@ -9,7 +9,7 @@ class Fac {
  public:
   Fac(bool isUnit1);
 
-  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered);
+  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered, double surfaceCommands[2]);
 
   FacBus getBusOutputs();
 
@@ -40,6 +40,8 @@ class Fac {
 
   void computeComputerEngagementRudderTravelLim();
 
+  void computeSurfaceSlaving(double surfaceCommands[2]);
+
   // Yaw damper engagement logic vars
   bool yawDamperEngaged;
 
@@ -66,6 +68,13 @@ class Fac {
   bool rudderTravelLimCanEngage;
 
   bool rudderTravelLimServoAvail;
+
+  // Surface slaving vars
+  double yawDamperPosCommand;
+
+  double rudderTrimPosCommand;
+
+  double rudderTravelLimPosCommand;
 
   // Computer Self-monitoring vars
   bool facHealthy;

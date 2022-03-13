@@ -11,7 +11,7 @@ class Elac {
  public:
   Elac(bool isUnit1);
 
-  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered);
+  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered, double surfaceCommands[4]);
 
   ElacOutBus getBusOutputs();
 
@@ -53,6 +53,8 @@ class Elac {
   void computeActiveLawsAndFunctionStatus();
 
   void computeSidestickPriorityLogic(double deltaTime);
+
+  void computeSurfaceSlaving(double surfaceCommands[4]);
 
   // RA monitoring vars
   bool ra1Invalid;
@@ -130,6 +132,17 @@ class Elac {
   ConfirmNode leftPriorityLockConfirmNode = ConfirmNode(true, 30);
 
   ConfirmNode rightPriorityLockConfirmNode = ConfirmNode(true, 30);
+
+  // Surface slaving vars
+  double leftElevPosCommand;
+
+  double rightElevPosCommand;
+
+  double thsPosCommand;
+
+  double leftAileronPosCommand;
+
+  double rightAileronPosCommand;
 
   // Computer Self-monitoring vars
   bool monitoringHealthy;

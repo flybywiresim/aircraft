@@ -31,8 +31,8 @@ void Sec::clearMemory() {
   activePitchLaw = PitchLaw::None;
 }
 
-// Main update cycle
-void Sec::update(double deltaTime, double simulationTime, bool faultActive, bool isPowered) {
+// Main update cycle. Surface position through parameters here is temporary.
+void Sec::update(double deltaTime, double simulationTime, bool faultActive, bool isPowered, double surfaceCommands[4]) {
   monitorPowerSupply(deltaTime, isPowered);
 
   updateSelfTest(deltaTime);
@@ -44,6 +44,7 @@ void Sec::update(double deltaTime, double simulationTime, bool faultActive, bool
     computeComputerEngagementPitch();
     computePitchLawCapability();
     computeActiveLawsAndFunctionStatus();
+    computeSurfaceSlaving(surfaceCommands);
   }
 }
 
@@ -151,6 +152,28 @@ void Sec::computeComputerEngagementPitch() {
   }
 
   isEngagedInPitch = canEngageInPitch && hasPriorityInPitch;
+}
+
+// Compute the various surface slaving commands from the law outputs. (the law outputs come from outside the computer atm)
+void Sec::computeSurfaceSlaving(double surfaceCommands[4]) {
+  if (isEngagedInPitch && leftElevatorAvail) {
+    leftElevPosCommand = surfaceCommands[0] > 0 ? -surfaceCommands[0] * 30 : -surfaceCommands[0] * 19;
+  } else {
+    leftElevPosCommand = 0;
+  }
+
+  if (isEngagedInPitch && rightElevatorAvail) {
+    rightElevPosCommand = surfaceCommands[0] > 0 ? -surfaceCommands[0] * 30 : -surfaceCommands[0] * 19;
+  } else {
+    rightElevPosCommand = 0;
+  }
+
+  if (isEngagedInPitch && thsAvail) {
+    thsPosCommand = surfaceCommands[1];
+
+  } else {
+    thsPosCommand = 0;
+  }
 }
 
 // Perform self monitoring. If
@@ -338,13 +361,13 @@ SecAnalogOutputs Sec::getAnalogOutputs() {
     output.leftSpoiler2Order = 0;
     output.rightSpoiler2Order = 0;
   } else {
-    output.leftElevPosOrder = 0;
-    output.rightElevPosOrder = 0;
-    output.thsPosOrder = 0;
-    output.leftSpoiler1Order = 0;
-    output.rightSpoiler1Order = 0;
-    output.leftSpoiler2Order = 0;
-    output.rightSpoiler2Order = 0;
+    output.leftElevPosOrder = leftElevPosCommand;
+    output.rightElevPosOrder = rightElevPosCommand;
+    output.thsPosOrder = thsPosCommand;
+    output.leftSpoiler1Order = leftSpoiler1PosCommand;
+    output.rightSpoiler1Order = rightSpoiler1PosCommand;
+    output.leftSpoiler2Order = leftSpoiler2PosCommand;
+    output.rightSpoiler2Order = rightSpoiler2PosCommand;
   }
 
   return output;

@@ -11,7 +11,7 @@ class Sec {
  public:
   Sec(bool isUnit1, bool isUnit3);
 
-  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered);
+  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered, double surfaceCommands[4]);
 
   SecOutBus getBusOutputs();
 
@@ -45,6 +45,8 @@ class Sec {
   void computeActiveLawsAndFunctionStatus();
 
   void computeSidestickPriorityLogic(double deltaTime);
+
+  void computeSurfaceSlaving(double surfaceCommands[4]);
 
   // Axis engagement vars
   bool isEngagedInPitch;
@@ -86,6 +88,21 @@ class Sec {
   ConfirmNode leftPriorityLockConfirmNode = ConfirmNode(true, 30);
 
   ConfirmNode rightPriorityLockConfirmNode = ConfirmNode(true, 30);
+
+  // Surface slaving vars
+  double leftElevPosCommand;
+
+  double rightElevPosCommand;
+
+  double thsPosCommand;
+
+  double leftSpoiler1PosCommand;
+
+  double rightSpoiler1PosCommand;
+
+  double leftSpoiler2PosCommand;
+
+  double rightSpoiler2PosCommand;
 
   // Computer Self-monitoring vars
   bool monitoringHealthy;
