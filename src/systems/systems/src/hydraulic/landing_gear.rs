@@ -11,11 +11,35 @@ use std::time::Duration;
 
 struct HydraulicGearSystem {
     hydraulic_supply: GearSystemHydraulicSupply,
+
+    nose_door_assembly: GearDoorAssembly,
+    left_door_assembly: GearDoorAssembly,
+    right_door_assembly: GearDoorAssembly,
+
+    // TODO is GearDoorAssembly generic enough for doors and gears?
+    nose_gear_assembly: GearDoorAssembly,
+    left_gear_assembly: GearDoorAssembly,
+    right_gear_assembly: GearDoorAssembly,
 }
 impl HydraulicGearSystem {
-    fn new() -> Self {
+    fn new(
+        nose_door: HydraulicLinearActuatorAssembly<1>,
+        left_door: HydraulicLinearActuatorAssembly<1>,
+        right_door: HydraulicLinearActuatorAssembly<1>,
+        nose_gear: HydraulicLinearActuatorAssembly<1>,
+        left_gear: HydraulicLinearActuatorAssembly<1>,
+        right_gear: HydraulicLinearActuatorAssembly<1>,
+    ) -> Self {
         Self {
             hydraulic_supply: GearSystemHydraulicSupply::new(),
+
+            nose_door_assembly: GearDoorAssembly::new(nose_door),
+            left_door_assembly: GearDoorAssembly::new(left_door),
+            right_door_assembly: GearDoorAssembly::new(right_door),
+
+            nose_gear_assembly: GearDoorAssembly::new(nose_gear),
+            left_gear_assembly: GearDoorAssembly::new(left_gear),
+            right_gear_assembly: GearDoorAssembly::new(right_gear),
         }
     }
 
@@ -23,101 +47,133 @@ impl HydraulicGearSystem {
         &mut self,
         context: &UpdateContext,
         valves_controller: &impl GearValvesController,
+        doors_controller: &impl GearComponentController,
+        gears_controller: &impl GearComponentController,
         main_hydraulic_circuit_pressure: Pressure,
     ) {
         self.hydraulic_supply
             .update(context, valves_controller, main_hydraulic_circuit_pressure);
+
+        let current_pressure = self.hydraulic_supply.gear_system_manifold_pressure();
+
+        self.nose_door_assembly
+            .update(context, doors_controller, current_pressure);
+        self.left_door_assembly
+            .update(context, doors_controller, current_pressure);
+        self.right_door_assembly
+            .update(context, doors_controller, current_pressure);
+
+        self.nose_gear_assembly
+            .update(context, gears_controller, current_pressure);
+        self.left_gear_assembly
+            .update(context, gears_controller, current_pressure);
+        self.right_gear_assembly
+            .update(context, gears_controller, current_pressure);
+    }
+}
+impl GearSystemSensors for HydraulicGearSystem {
+    fn doors_locked_up(&self, sensor_id: usize) -> bool {
+        self.nose_door_assembly.is_sensor_uplock(sensor_id)
+            && self.left_door_assembly.is_sensor_uplock(sensor_id)
+            && self.right_door_assembly.is_sensor_uplock(sensor_id)
+    }
+
+    fn doors_fully_opened(&self, sensor_id: usize) -> bool {
+        self.nose_door_assembly.is_sensor_fully_opened(sensor_id)
+            && self.left_door_assembly.is_sensor_fully_opened(sensor_id)
+            && self.right_door_assembly.is_sensor_fully_opened(sensor_id)
+    }
+
+    fn gears_locked_up(&self, sensor_id: usize) -> bool {
+        self.nose_gear_assembly.is_sensor_uplock(sensor_id)
+            && self.left_gear_assembly.is_sensor_uplock(sensor_id)
+            && self.right_gear_assembly.is_sensor_uplock(sensor_id)
+    }
+
+    fn gears_locked_down(&self, sensor_id: usize) -> bool {
+        self.nose_gear_assembly.is_sensor_fully_opened(sensor_id)
+            && self.left_gear_assembly.is_sensor_fully_opened(sensor_id)
+            && self.right_gear_assembly.is_sensor_fully_opened(sensor_id)
     }
 }
 
 #[derive(PartialEq, Clone, Copy)]
-enum GearSystemState {
+enum GearsSystemState {
     AllUpLocked,
-    DoorsOpening,
-    DoorsClosing,
-    GearRetracting,
-    GearExtending,
+    Retracting,
+    Extending,
     AllDownLocked,
 }
 
 // Represents all inputs/sensors seen from a LGCIU perspective
 trait GearSystemSensors {
-    fn doors_locked_up(&self) -> bool;
-    fn doors_fully_opened(&self) -> bool;
-    fn gears_locked_up(&self) -> bool;
-    fn gears_locked_down(&self) -> bool;
-    fn gear_handle_position_is_up(&self) -> bool;
+    fn doors_locked_up(&self, sensor_id: usize) -> bool;
+    fn doors_fully_opened(&self, sensor_id: usize) -> bool;
+    fn gears_locked_up(&self, sensor_id: usize) -> bool;
+    fn gears_locked_down(&self, sensor_id: usize) -> bool;
 }
 
 struct GearSystemStateMachine {
-    state: GearSystemState,
+    sensors_id: usize,
+    gears_state: GearsSystemState,
+
     door_controller: GearSystemDoorController,
     gear_controller: GearSystemGearController,
 }
 impl GearSystemStateMachine {
-    fn new(init_state: GearSystemState) -> Self {
+    fn new(sensors_id: usize) -> Self {
         Self {
-            state: init_state,
-            door_controller: GearSystemDoorController::from_state(init_state),
-            gear_controller: GearSystemGearController::from_state(init_state),
+            sensors_id,
+            gears_state: GearsSystemState::AllDownLocked,
+
+            door_controller: GearSystemDoorController::new(),
+            gear_controller: GearSystemGearController::new(GearsSystemState::AllDownLocked),
         }
     }
 
-    fn new_state(&self, gear_inputs: &impl GearSystemSensors) -> GearSystemState {
-        match self.state {
-            GearSystemState::AllUpLocked => {
-                if !gear_inputs.gear_handle_position_is_up() {
-                    GearSystemState::DoorsOpening
+    fn new_gear_state(
+        &self,
+        gear_inputs: &impl GearSystemSensors,
+        gear_handle_position_is_up: bool,
+    ) -> GearsSystemState {
+        match self.gears_state {
+            GearsSystemState::AllUpLocked => {
+                if !gear_handle_position_is_up {
+                    GearsSystemState::Extending
                 } else {
-                    self.state
+                    self.gears_state
                 }
             }
-            GearSystemState::DoorsOpening => {
-                if !gear_inputs.gear_handle_position_is_up() && gear_inputs.doors_fully_opened() {
-                    GearSystemState::GearExtending
-                } else if gear_inputs.gear_handle_position_is_up()
-                    && gear_inputs.doors_fully_opened()
-                {
-                    GearSystemState::GearRetracting
+            GearsSystemState::Retracting => {
+                if gear_inputs.gears_locked_up(self.sensors_id) {
+                    GearsSystemState::AllUpLocked
+                } else if !gear_handle_position_is_up {
+                    GearsSystemState::Extending
                 } else {
-                    self.state
+                    self.gears_state
                 }
             }
-            GearSystemState::DoorsClosing => {
-                if gear_inputs.gears_locked_down() {
-                    GearSystemState::AllDownLocked
-                } else if gear_inputs.gears_locked_up() {
-                    GearSystemState::AllUpLocked
+            GearsSystemState::Extending => {
+                if gear_inputs.gears_locked_down(self.sensors_id) {
+                    GearsSystemState::AllDownLocked
+                } else if gear_handle_position_is_up {
+                    GearsSystemState::Retracting
                 } else {
-                    self.state
+                    self.gears_state
                 }
             }
-            GearSystemState::GearRetracting => {
-                if gear_inputs.gears_locked_up() {
-                    GearSystemState::DoorsClosing
-                } else if !gear_inputs.gear_handle_position_is_up() {
-                    GearSystemState::GearExtending
+            GearsSystemState::AllDownLocked => {
+                if gear_handle_position_is_up {
+                    GearsSystemState::Retracting
                 } else {
-                    self.state
-                }
-            }
-            GearSystemState::GearExtending => {
-                if gear_inputs.gears_locked_down() {
-                    GearSystemState::DoorsClosing
-                } else if gear_inputs.gear_handle_position_is_up() {
-                    GearSystemState::GearRetracting
-                } else {
-                    self.state
-                }
-            }
-            GearSystemState::AllDownLocked => {
-                if gear_inputs.gear_handle_position_is_up() {
-                    GearSystemState::DoorsOpening
-                } else {
-                    self.state
+                    self.gears_state
                 }
             }
         }
+    }
+
+    fn update(&mut self, gear_inputs: &impl GearSystemSensors, gear_handle_position_is_up: bool) {
+        self.gears_state = self.new_gear_state(gear_inputs, gear_handle_position_is_up);
     }
 }
 
@@ -167,95 +223,70 @@ trait GearComponentController {
     fn should_open(&self) -> bool;
 }
 
-struct GearSystemDoorController {
-    should_hydraulic_unlock: bool,
-    should_manual_unlock: bool,
-    should_open: bool,
-}
-impl GearSystemDoorController {
-    fn from_state(state: GearSystemState) -> Self {
-        match state {
-            GearSystemState::AllUpLocked => Self {
-                should_hydraulic_unlock: false,
-                should_manual_unlock: false,
-                should_open: false,
-            },
-            GearSystemState::DoorsOpening => Self {
-                should_hydraulic_unlock: true,
-                should_manual_unlock: false,
-                should_open: true,
-            },
-            GearSystemState::DoorsClosing => Self {
-                should_hydraulic_unlock: false,
-                should_manual_unlock: false,
-                should_open: false,
-            },
-            GearSystemState::GearRetracting => Self {
-                should_hydraulic_unlock: false,
-                should_manual_unlock: false,
-                should_open: false,
-            },
-            GearSystemState::GearExtending => Self {
-                should_hydraulic_unlock: false,
-                should_manual_unlock: false,
-                should_open: false,
-            },
-            GearSystemState::AllDownLocked => Self {
-                should_hydraulic_unlock: false,
-                should_manual_unlock: false,
-                should_open: false,
-            },
-        }
-    }
-}
-impl GearComponentController for GearSystemDoorController {
-    fn should_hydraulic_unlock(&self) -> bool {
-        self.should_hydraulic_unlock
-    }
-
-    fn should_manual_unlock(&self) -> bool {
-        self.should_manual_unlock
-    }
-
-    fn should_open(&self) -> bool {
-        self.should_manual_unlock
-    }
-}
-
 struct GearSystemGearController {
     should_hydraulic_unlock: bool,
     should_manual_unlock: bool,
     should_open: bool,
 }
 impl GearSystemGearController {
-    fn from_state(state: GearSystemState) -> Self {
+    fn new(state: GearsSystemState) -> Self {
         match state {
-            GearSystemState::AllUpLocked => Self {
+            GearsSystemState::AllUpLocked => Self {
                 should_hydraulic_unlock: false,
                 should_manual_unlock: false,
                 should_open: false,
             },
-            GearSystemState::DoorsOpening => Self {
+            GearsSystemState::AllDownLocked => Self {
                 should_hydraulic_unlock: false,
-                should_manual_unlock: false,
-                should_open: false,
-            },
-            GearSystemState::DoorsClosing => Self {
-                should_hydraulic_unlock: false,
-                should_manual_unlock: false,
-                should_open: false,
-            },
-            GearSystemState::GearRetracting => Self {
-                should_hydraulic_unlock: true,
-                should_manual_unlock: false,
-                should_open: false,
-            },
-            GearSystemState::GearExtending => Self {
-                should_hydraulic_unlock: true,
                 should_manual_unlock: false,
                 should_open: true,
             },
-            GearSystemState::AllDownLocked => Self {
+            _ => Self {
+                should_hydraulic_unlock: false,
+                should_manual_unlock: false,
+                should_open: false,
+            },
+        }
+    }
+
+    fn from_state(state: GearsSystemState, gear_inputs: &impl GearSystemSensors,sensors_id : usize) -> Self {
+        match state {
+            GearsSystemState::AllUpLocked => Self {
+                should_hydraulic_unlock: false,
+                should_manual_unlock: false,
+                should_open: false,
+            },
+            GearsSystemState::Retracting => {
+                if gear_inputs.doors_fully_opened(sensors_id) {
+                    Self {
+                        should_hydraulic_unlock: true,
+                        should_manual_unlock: false,
+                        should_open: false,
+                    }
+                } else {
+                    Self {
+                        should_hydraulic_unlock: false,
+                        should_manual_unlock: false,
+                        should_open: true,
+                    }
+                }
+            }
+            GearsSystemState::Extending => {
+                if gear_inputs.doors_fully_opened(sensors_id) {
+                    Self {
+                        should_hydraulic_unlock: true,
+                        should_manual_unlock: false,
+                        should_open: true,
+                    }
+                } else {
+                    Self {
+                        should_hydraulic_unlock: false,
+                        should_manual_unlock: false,
+                        should_open: false,
+                    }
+                }
+            }
+            GearsSystemState::AllDownLocked => Self {
                 should_hydraulic_unlock: false,
                 should_manual_unlock: false,
                 should_open: true,
@@ -273,7 +304,80 @@ impl GearComponentController for GearSystemGearController {
     }
 
     fn should_open(&self) -> bool {
+        self.should_open
+    }
+}
+
+struct GearSystemDoorController {
+    should_hydraulic_unlock: bool,
+    should_manual_unlock: bool,
+    should_open: bool,
+}
+impl GearSystemDoorController {
+    fn new() -> Self {
+        Self {
+            should_hydraulic_unlock: false,
+            should_manual_unlock: false,
+            should_open: false,
+        }
+    }
+
+    fn from_state(state: GearsSystemState, gear_inputs: &impl GearSystemSensors,sensors_id : usize) -> Self {
+        match state {
+            GearsSystemState::AllUpLocked => Self {
+                should_hydraulic_unlock: false,
+                should_manual_unlock: false,
+                should_open: false,
+            },
+            GearsSystemState::Retracting => {
+                if !gear_inputs.gears_locked_up(sensors_id) {
+                    Self {
+                        should_hydraulic_unlock: true,
+                        should_manual_unlock: false,
+                        should_open: true,
+                    }
+                } else {
+                    Self {
+                        should_hydraulic_unlock: false,
+                        should_manual_unlock: false,
+                        should_open: false,
+                    }
+                }
+            }
+            GearsSystemState::Extending => {
+                if !gear_inputs.gears_locked_down(sensors_id) {
+                    Self {
+                        should_hydraulic_unlock: true,
+                        should_manual_unlock: false,
+                        should_open: true,
+                    }
+                } else {
+                    Self {
+                        should_hydraulic_unlock: false,
+                        should_manual_unlock: false,
+                        should_open: false,
+                    }
+                }
+            }
+            GearsSystemState::AllDownLocked => Self {
+                should_hydraulic_unlock: false,
+                should_manual_unlock: false,
+                should_open: true,
+            },
+        }
+    }
+}
+impl GearComponentController for GearSystemDoorController {
+    fn should_hydraulic_unlock(&self) -> bool {
+        self.should_hydraulic_unlock
+    }
+
+    fn should_manual_unlock(&self) -> bool {
         self.should_manual_unlock
+    }
+
+    fn should_open(&self) -> bool {
+        self.should_open
     }
 }
 
