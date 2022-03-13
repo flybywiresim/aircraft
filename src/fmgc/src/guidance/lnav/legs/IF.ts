@@ -64,8 +64,8 @@ export class IFLeg extends XFLeg {
         return undefined;
     }
 
-    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots): GuidanceParameters | undefined {
-        return this.nextGuidable.getGuidanceParameters(ppos, trueTrack, tas);
+    getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters | undefined {
+        return this.nextGuidable?.getGuidanceParameters(ppos, trueTrack, tas, gs) ?? undefined;
     }
 
     getNominalRollAngle(_gs): Degrees | undefined {
