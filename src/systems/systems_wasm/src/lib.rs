@@ -1,18 +1,22 @@
-#![cfg(any(target_arch = "wasm32", doc))]
 #[macro_use]
 pub mod aspects;
 mod electrical;
 mod failures;
+mod msfs;
+
+#[cfg(not(target_arch = "wasm32"))]
+use crate::msfs::legacy::{AircraftVariable, NamedVariable};
+#[cfg(target_arch = "wasm32")]
+use ::msfs::legacy::{AircraftVariable, NamedVariable};
 
 use crate::aspects::{Aspect, ExecuteOn, MsfsAspectBuilder};
 use crate::electrical::{auxiliary_power_unit, electrical_buses};
-use failures::Failures;
-use fxhash::FxHashMap;
-use msfs::{
-    legacy::{AircraftVariable, NamedVariable},
+use ::msfs::{
     sim_connect::{data_definition, Period, SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER},
     MSFSEvent,
 };
+use failures::Failures;
+use fxhash::FxHashMap;
 use std::fmt::{Display, Formatter};
 use std::{error::Error, time::Duration};
 use systems::shared::ElectricalBusType;

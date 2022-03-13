@@ -56,9 +56,9 @@ pub(super) trait Aspect {
     }
 }
 
-/// Type used to configure and build an [Aspect].
+/// Type used to configure an aspect of the connectivity between MSFS and the simulation.
 ///
-/// It should be noted that the resulting [Aspect] executes its tasks in the order in which they
+/// It should be noted that the resulting aspect executes its tasks in the order in which they
 /// were declared. Declaration order is important when one action depends on another action.
 /// When e.g. a variable that is mapped should then be written to an event, be sure to
 /// declare the mapping before the event writing.
