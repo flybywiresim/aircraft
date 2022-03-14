@@ -76,17 +76,27 @@ const VProtBug = (offset: number) => (
 );
 
 interface AirspeedIndicatorProps {
-    airspeed: number;
+    airspeed: Arinc429Word;
     airspeedAcc: number;
     FWCFlightPhase: number;
     altitude: Arinc429Word;
     VLs: number;
     VMax: number;
     showBars: boolean;
+    onGround: boolean;
 }
 
-export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, VLs, VMax, showBars }: AirspeedIndicatorProps) => {
-    if (Number.isNaN(airspeed)) {
+export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, VLs, VMax, showBars, onGround }: AirspeedIndicatorProps) => {
+    let airspeedValue: number;
+    if (airspeed.isFailureWarning() || (airspeed.isNoComputedData() && !onGround)) {
+        airspeedValue = NaN;
+    } else if (airspeed.isNoComputedData()) {
+        airspeedValue = 30;
+    } else {
+        airspeedValue = airspeed.value;
+    }
+
+    if (Number.isNaN(airspeedValue)) {
         return (
             <>
                 <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
@@ -102,16 +112,16 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
     const bugs: [(offset: number) => JSX.Element, number][] = [];
 
     if (showBars) {
-        bugs.push(...BarberpoleIndicator(airspeed, ValphaProtection, false, DisplayRange, VAlphaProtBar, 2.923));
+        bugs.push(...BarberpoleIndicator(airspeedValue, ValphaProtection, false, DisplayRange, VAlphaProtBar, 2.923));
     }
-    bugs.push(...BarberpoleIndicator(airspeed, VMax, true, DisplayRange, VMaxBar, 5.040));
+    bugs.push(...BarberpoleIndicator(airspeedValue, VMax, true, DisplayRange, VMaxBar, 5.040));
 
     const showVProt = VMax > 240;
     if (showVProt) {
         bugs.push([VProtBug, VMax + 6]);
     }
 
-    const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
+    const clampedSpeed = Math.max(Math.min(airspeedValue, 660), 30);
 
     const flapsHandleIndex = getSimVar('L:A32NX_FLAPS_HANDLE_INDEX', 'Number');
 
@@ -146,7 +156,7 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
     return (
         <g id="SpeedTapeElementsGroup">
             <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
-            <SpeedTapeOutline airspeed={airspeed} />
+            <SpeedTapeOutline airspeed={airspeed.value} />
             <VerticalTape
                 tapeValue={clampedSpeed}
                 bugs={bugs}
@@ -163,8 +173,8 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
             {showBars
                 && (
                     <>
-                        <VLsBar airspeed={airspeed} VLs={VLs} VAlphaProt={ValphaProtection} />
-                        <VAlphaLimBar airspeed={airspeed} VAlphalim={ValphaMax} />
+                        <VLsBar airspeed={airspeedValue} VLs={VLs} VAlphaProt={ValphaProtection} />
+                        <VAlphaLimBar airspeed={airspeedValue} VAlphalim={ValphaMax} />
                     </>
                 )}
         </g>
@@ -197,8 +207,17 @@ const VLsBar = ({ VAlphaProt, VLs, airspeed }) => {
     );
 };
 
-export const AirspeedIndicatorOfftape = ({ airspeed, targetSpeed, speedIsManaged }) => {
-    if (Number.isNaN(airspeed)) {
+export const AirspeedIndicatorOfftape = ({ airspeed, targetSpeed, speedIsManaged, onGround }) => {
+    let airspeedValue: number;
+    if (airspeed.isFailureWarning() || (airspeed.isNoComputedData() && !onGround)) {
+        airspeedValue = NaN;
+    } else if (airspeed.isNoComputedData()) {
+        airspeedValue = 30;
+    } else {
+        airspeedValue = airspeed.value;
+    }
+
+    if (Number.isNaN(airspeedValue)) {
         return (
             <>
                 <path id="SpeedTapeOutlineUpper" className="NormalStroke Red" d="m1.9058 38.086h21.859" />
@@ -207,7 +226,7 @@ export const AirspeedIndicatorOfftape = ({ airspeed, targetSpeed, speedIsManaged
         );
     }
 
-    const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
+    const clampedSpeed = Math.max(Math.min(airspeedValue, 660), 30);
     const clampedTargetSpeed = Math.max(Math.min(targetSpeed, 660), 30);
     const showLower = clampedSpeed > 72;
     return (
@@ -250,9 +269,10 @@ const SpeedTapeOutline = ({ airspeed, isRed = false }) => {
 
 interface MachNumberProps {
     mach: Arinc429Word,
+    onGround: boolean,
 }
 
-export const MachNumber = ({ mach }: MachNumberProps) => {
+export const MachNumber = ({ mach, onGround }: MachNumberProps) => {
     const machPermille = Math.round(mach.valueOr(0) * 1000);
     const [showMach, setShowMach] = useState(machPermille > 500);
 
@@ -265,7 +285,7 @@ export const MachNumber = ({ mach }: MachNumberProps) => {
         }
     }, [showMach, machPermille]);
 
-    if (!mach.isNormalOperation()) {
+    if (!mach.isNormalOperation() && !onGround) {
         return (
             <text id="MachFailText" className="Blink9Seconds FontLargest StartAlign Red" x="5.4257932" y="136.88908">MACH</text>
         );
