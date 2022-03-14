@@ -22,8 +22,8 @@ class CDUAtcConnectionNotification {
             atcStation = `${store["atcCenter"]}[color]cyan`;
             atcStationAvail = true;
         }
-        if (mcdu.atsuManager.flightNumber().length !== 0) {
-            flightNo = mcdu.atsuManager.flightNumber() + "[color]green";
+        if (mcdu.atsu.flightNumber().length !== 0) {
+            flightNo = mcdu.atsu.flightNumber() + "[color]green";
             flightNoAvail = true;
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
@@ -50,20 +50,20 @@ class CDUAtcConnectionNotification {
         }
 
         let notificationMessage = "";
-        if (mcdu.atsuManager.atc.logonInProgress()) {
-            const seconds = Math.floor(mcdu.atsuManager.atc.nextStationNotificationTime());
+        if (mcdu.atsu.atc.logonInProgress()) {
+            const seconds = Math.floor(mcdu.atsu.atc.nextStationNotificationTime());
             const hours = Math.floor(seconds / 3600);
             const minutes = Math.floor((seconds - hours * 3600) / 60);
             const zeroPad = (num, places) => String(num).padStart(places, 0);
 
             // check if the page is loaded again
-            if (store["atcCenter"] !== mcdu.atsuManager.atc.nextStation()) {
-                store["atcCenter"] = mcdu.atsuManager.atc.nextStation();
+            if (store["atcCenter"] !== mcdu.atsu.atc.nextStation()) {
+                store["atcCenter"] = mcdu.atsu.atc.nextStation();
             }
 
             notificationMessage = `${store["atcCenter"]} NOTIFIED ${`${zeroPad(hours, 2)}${zeroPad(minutes, 2)}Z`}[color]green`;
-        } else if (mcdu.atsuManager.atc.currentStation() !== '') {
-            notificationMessage = `${mcdu.atsuManager.atc.currentStation()}[color]green`;
+        } else if (mcdu.atsu.atc.currentStation() !== '') {
+            notificationMessage = `${mcdu.atsu.atc.currentStation()}[color]green`;
         }
 
         mcdu.setTemplate([
@@ -86,7 +86,7 @@ class CDUAtcConnectionNotification {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = (value) => {
-            if (store["loginState"] === 1 && mcdu.atsuManager.atc.nextStation() !== store["atcCenter"]) {
+            if (store["loginState"] === 1 && mcdu.atsu.atc.nextStation() !== store["atcCenter"]) {
                 mcdu.addNewMessage(NXSystemMessages.systemBusy);
                 return;
             }
@@ -94,12 +94,12 @@ class CDUAtcConnectionNotification {
             store["loginState"] = 0;
             if (/^[A-Z0-9]{4}$/.test(value) === false) {
                 mcdu.addNewMessage(NXSystemMessages.formatError);
-            } else if (mcdu.atsuManager.flightNumber().length === 0) {
+            } else if (mcdu.atsu.flightNumber().length === 0) {
                 mcdu.addNewMessage(NXFictionalMessages.fltNbrMissing);
             } else {
                 store["atcCenter"] = "";
 
-                mcdu.atsuManager.isRemoteStationAvailable(value).then((code) => {
+                mcdu.atsu.isRemoteStationAvailable(value).then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                         store["atcCenter"] = "";
@@ -130,12 +130,12 @@ class CDUAtcConnectionNotification {
             if (store["logonAllowed"] === true) {
                 store["loginState"] = 1;
 
-                mcdu.atsuManager.atc.logon(store["atcCenter"]).then((code) => {
+                mcdu.atsu.atc.logon(store["atcCenter"]).then((code) => {
                     if (code === Atsu.AtsuStatusCodes.Ok) {
                         // check if the login was successful
                         const interval = setInterval(() => {
-                            if (!mcdu.atsuManager.atc.logonInProgress()) {
-                                if (mcdu.atsuManager.atc.currentStation() === store["atcCenter"]) {
+                            if (!mcdu.atsu.atc.logonInProgress()) {
+                                if (mcdu.atsu.atc.currentStation() === store["atcCenter"]) {
                                     store["loginState"] = 0;
                                 } else {
                                     store["loginState"] = 2;

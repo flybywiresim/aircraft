@@ -180,7 +180,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.efisSymbols = undefined;
 
         // ATSU data
-        this.atsuManager = undefined;
+        this.atsu = undefined;
         this.holdSpeedTarget = undefined;
         this.holdIndex = undefined;
         this.holdDecelReached = undefined;
@@ -510,7 +510,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.speedLimitExceeded = false;
 
         // ATSU data
-        this.atsuManager = new Atsu.AtsuManager(this);
+        this.atsu = new Atsu.Atsu(this);
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
@@ -1802,7 +1802,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (airportFrom) {
                 this.dataManager.GetAirportByIdent(to).then((airportTo) => {
                     if (airportTo) {
-                        this.atsuManager.atc.resetAtisAutoUpdate();
+                        this.atsu.atc.resetAtisAutoUpdate();
                         this.eraseTemporaryFlightPlan(() => {
                             this.flightPlanManager.clearFlightPlan(() => {
                                 this.tempFpPendingAutoTune = true;
@@ -1900,14 +1900,14 @@ class FMCMainDisplay extends BaseAirliners {
 
     async tryUpdateAltDestination(altDestIdent) {
         if (altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
-            this.atsuManager.atc.resetAtisAutoUpdate();
+            this.atsu.atc.resetAtisAutoUpdate();
             this.altDestination = undefined;
             this._DistanceToAlt = 0;
             return true;
         }
         const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent).catch(console.error);
         if (airportAltDest) {
-            this.atsuManager.atc.resetAtisAutoUpdate();
+            this.atsu.atc.resetAtisAutoUpdate();
             this.altDestination = airportAltDest;
             this.tryUpdateDistanceToAlt();
             return true;
@@ -2291,7 +2291,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            this.atsuManager.connectToNetworks(flightNo)
+            this.atsu.connectToNetworks(flightNo)
                 .then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 0);
