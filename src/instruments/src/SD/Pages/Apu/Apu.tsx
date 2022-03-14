@@ -147,7 +147,7 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'PSI', 1000);
     const displayedBleedPressure = Math.round(apuBleedPressure / 2) * 2; // APU bleed pressure is shown in steps of two.
 
-    const [adir1ModeSelectorKnob] = useSimVar('L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB', 'Enum');
+    // const [adir1ModeSelectorKnob] = useSimVar('L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB', 'Enum');
 
     useEffect(() => {
         if (apuBleedPbOn) {
@@ -172,9 +172,9 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
                 <text
                     x={44}
                     y={48}
-                    className={`FontLarger Right ${adir1ModeSelectorKnob === 1 ? 'Green' : 'Amber'}`}
+                    className={`FontLarger Right ${apuBleedOpen && apuBleedPbOnConfirmed ? 'Green' : 'Amber'}`}
                 >
-                    {adir1ModeSelectorKnob === 1 ? displayedBleedPressure : 'XX'}
+                    {apuBleedOpen && apuBleedPbOnConfirmed ? displayedBleedPressure : 'XX'}
                 </text>
                 <text x={90} y={48} className="Cyan FontNormal Right">PSI</text>
 
