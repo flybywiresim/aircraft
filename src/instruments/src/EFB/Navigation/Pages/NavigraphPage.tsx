@@ -87,6 +87,13 @@ const Loading = () => {
 
 const AuthUi = () => {
     const navigraph = useNavigraph();
+    const [displayAuthCode, setDisplayAuthCode] = useState('LOADING');
+
+    useInterval(() => {
+        if (navigraph.auth.code) {
+            setDisplayAuthCode(navigraph.auth.code);
+        }
+    }, 1000);
 
     const hasQr = !!navigraph.auth.qrLink;
 
@@ -118,7 +125,7 @@ const AuthUi = () => {
                     className="flex items-center px-4 mt-4 h-16 text-4xl font-bold tracking-wider rounded-md border-2 bg-theme-secondary border-theme-highlight"
                     style={{ minWidth: '200px' }}
                 >
-                    {navigraph.auth.code || 'LOADING'}
+                    {displayAuthCode}
                 </h1>
                 <div className="mt-16">
                     {hasQr
@@ -526,6 +533,7 @@ const NavigraphChartsUI = () => {
 };
 
 export const NavigraphNav = () => {
+    const [tokenAvail, setTokenAvail] = useState(false);
     const navigraph = useNavigraph();
 
     useInterval(async () => {
@@ -542,12 +550,16 @@ export const NavigraphNav = () => {
         }
     }, []);
 
+    useInterval(() => {
+        setTokenAvail(navigraph.hasToken);
+    }, 1000, { runOnStart: true });
+
     return (
         <>
             {NavigraphClient.hasSufficientEnv
                 ? (
                     <>
-                        {navigraph.hasToken
+                        {tokenAvail
                             ? (
                                 <NavigraphChartsUI />
                             )
