@@ -6,7 +6,6 @@
 
 ## 0.8.0
 
-1. [EFB] Fix Metar parser error - @brainshot (brainshot)
 1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
 1. [SOUND] Pack sounds use new APU model variables - @tracernz (Mike)
 1. [HYD] Hydraulic system updated. Multiple sections. Better regulation - @Crocket63 (crocket)
@@ -184,6 +183,7 @@
 1. [HYD] Smoothed nose wheel steering when pushing back - @Crocket63
 1. [EFB] Add first officer flypad - @tracernz (Mike)
 1. [CLK] Added simvars for Clock CHR and ET - @ssewell (Shane Sewell)
+1. [EFB] Fix Metar parser error - @brainshot (brainshot)
 
 ## 0.7.0
 
