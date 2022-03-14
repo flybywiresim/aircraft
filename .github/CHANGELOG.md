@@ -194,6 +194,7 @@
 1. [ADIRS] Improve ADR SSM behaviour, add missing data to the IR - @luke (lukecologne#1156)
 1. [PFD] Improve SPD and MACH flag behaviour, add FPV flag - @luke (lukecologne#1156)
 1. [MCDU] Update init/fuel prediction pages to H3 - @tracernz (Mike)
+1. [FMGC] Updates flight model info for FMGC guidance - @donstim (donbikes#4084)
 
 ## 0.7.0
 
