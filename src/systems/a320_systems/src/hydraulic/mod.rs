@@ -720,6 +720,8 @@ pub(super) struct A320Hydraulic {
     right_spoilers: SpoilerGroup,
 }
 impl A320Hydraulic {
+    const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
+
     const FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
         0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
     ];
@@ -1589,7 +1591,9 @@ impl A320Hydraulic {
         let absolute_delta_pressure =
             (self.green_circuit.system_pressure() - self.yellow_circuit.system_pressure()).abs();
 
-        absolute_delta_pressure > Pressure::new::<psi>(2700.) && is_ptu_rotating
+        absolute_delta_pressure
+            > Pressure::new::<psi>(Self::HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI)
+            && is_ptu_rotating
     }
 }
 impl SimulationElement for A320Hydraulic {
@@ -5244,6 +5248,10 @@ mod tests {
                 self.read_by_name("HYD_NW_STRG_DISC_ECAM_MEMO")
             }
 
+            fn is_ptu_running_high_pitch_sound(&mut self) -> bool {
+                self.read_by_name("HYD_PTU_HIGH_PITCH_SOUND")
+            }
+
             fn start_eng1(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:1", true);
                 self.write_by_name("ENGINE_N2:1", n2);
@@ -8844,6 +8852,24 @@ mod tests {
 
             // Has turned fully left after 5s
             assert!(test_bed.get_nose_steering_ratio() < Ratio::new::<ratio>(-0.9));
+        }
+
+        #[test]
+        fn high_pitch_ptu_simvar_on_ptu_first_start() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .start_eng2(Ratio::new::<percent>(60.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(!test_bed.is_ptu_enabled());
+            assert!(test_bed.green_pressure() < Pressure::new::<psi>(100.));
+            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
+
+            test_bed = test_bed.set_park_brake(false).run_one_tick();
+
+            assert!(test_bed.is_ptu_enabled());
+            assert!(test_bed.is_ptu_running_high_pitch_sound());
         }
     }
 }

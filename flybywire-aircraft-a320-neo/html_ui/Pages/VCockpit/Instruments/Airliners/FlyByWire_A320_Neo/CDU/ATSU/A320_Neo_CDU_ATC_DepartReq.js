@@ -37,8 +37,8 @@ class CDUAtcDepartReq {
         mcdu.page.Current = mcdu.page.ATCDepartReq;
 
         if (store.firstCall && store.callsign === "") {
-            if (mcdu.atsuManager.flightNumber().length !== 0) {
-                store.callsign = mcdu.atsuManager.flightNumber();
+            if (mcdu.atsu.flightNumber().length !== 0) {
+                store.callsign = mcdu.atsu.flightNumber();
             }
         }
         if (store.firstCall && store.from === "") {
@@ -52,8 +52,8 @@ class CDUAtcDepartReq {
             }
         }
         if (store.firstCall && store.station === "") {
-            if (mcdu.atsuManager.atc.currentStation() !== "") {
-                store.station = mcdu.atsuManager.atc.currentStation();
+            if (mcdu.atsu.atc.currentStation() !== "") {
+                store.station = mcdu.atsu.atc.currentStation();
             }
         }
         store.firstCall = false;
@@ -112,7 +112,7 @@ class CDUAtcDepartReq {
         if (store.from !== "" && store.to !== "") {
             fromTo = `{cyan}${store.from}/${store.to}{end}`;
 
-            const atisReports = mcdu.atsuManager.atc.atisReports(store.from);
+            const atisReports = mcdu.atsu.atc.atisReports(store.from);
             if (atisReports.length !== 0 && atisReports[0].Information !== "") {
                 store.atis = atisReports[0].Information;
                 atis.setValue(store.atis);
@@ -198,7 +198,7 @@ class CDUAtcDepartReq {
             if (value === FMCMainDisplay.clrValue) {
                 store.station = "";
             } else if (/^[A-Z0-9]{4}$/.test(value)) {
-                mcdu.atsuManager.isRemoteStationAvailable(value).then((code) => {
+                mcdu.atsu.isRemoteStationAvailable(value).then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                     } else {
@@ -218,7 +218,7 @@ class CDUAtcDepartReq {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcDepartReq.CanSendData(store)) {
-                mcdu.atsuManager.registerMessage(CDUAtcDepartReq.CreateMessage(store));
+                mcdu.atsu.registerMessage(CDUAtcDepartReq.CreateMessage(store));
                 CDUAtcDepartReq.ShowPage1(mcdu);
             }
         };
