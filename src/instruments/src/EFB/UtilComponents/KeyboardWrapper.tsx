@@ -3,6 +3,7 @@ import Keyboard, { KeyboardInput } from 'react-simple-keyboard';
 import '../Assets/Keyboard.scss';
 import SimpleKeyboardLayouts from 'simple-keyboard-layouts';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { useAppSelector } from '../Store/store';
 
 interface KeyboardWrapperProps {
   onChangeAll: (inputObj: KeyboardInput, e?: MouseEvent) => any;
@@ -18,6 +19,8 @@ export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput, 
     const [currentLayout] = useState(() => new SimpleKeyboardLayouts().get(currentLayoutIdentifier));
     const [currentLayoutName, setCurrentLayoutName] = useState('default');
 
+    const { offsetY } = useAppSelector((state) => state.keyboard);
+
     const onKeyPress = (button: string) => {
         if (button === '{shift}' || button === '{lock}') {
             setCurrentLayoutName(currentLayoutName === 'default' ? 'shift' : 'default');
@@ -32,6 +35,7 @@ export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput, 
     return (
         <div
             className="fixed inset-x-0 bottom-0 z-50 m-0 shadow-lg"
+            style={{ transform: `translateY(${offsetY}px)` }}
         >
             <Keyboard
                 keyboardRef={(r) => {

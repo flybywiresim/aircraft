@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
@@ -33,12 +33,7 @@ import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
-import {
-    areAllChecklistItemsCompleted, setChecklistCompletion,
-    setChecklistItemCompletion,
-    setChecklistItems,
-    setSelectedChecklistIndex,
-} from './Store/features/checklists';
+import { setChecklistItems } from './Store/features/checklists';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 240;
@@ -256,10 +251,12 @@ const Efb = () => {
         }
     }, [currentLocalTime, usingAutobrightness]);
 
+    const { offsetY } = useAppSelector((state) => state.keyboard);
+
     switch (powerState) {
     case PowerStates.SHUTOFF:
     case PowerStates.STANDBY:
-        return <div className="w-screen h-screen" onClick={() => offToLoaded()} />;
+        return <div className="w-screen h-screen" onClick={offToLoaded} />;
     case PowerStates.LOADING:
         return <LoadingScreen />;
     case PowerStates.EMPTY:
@@ -269,7 +266,7 @@ const Efb = () => {
             <NavigraphContext.Provider value={navigraph}>
                 <ModalContainer />
                 <PowerContext.Provider value={{ powerState, setPowerState }}>
-                    <div className="bg-theme-body">
+                    <div className="bg-theme-body" style={{ transform: `translateY(-${offsetY}px)` }}>
                         <ToastContainer
                             position="top-center"
                             draggableDirection="y"

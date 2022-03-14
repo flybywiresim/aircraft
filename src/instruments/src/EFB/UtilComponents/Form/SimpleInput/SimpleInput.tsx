@@ -1,5 +1,7 @@
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import React, { useEffect, useRef, useState, PropsWithChildren } from 'react';
+import { useAppDispatch } from '../../../Store/store';
+import { setOffsetY } from '../../../Store/features/keyboard';
 import { KeyboardWrapper } from '../../KeyboardWrapper';
 
 interface SimpleInputProps {
@@ -30,11 +32,13 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
 
     const [OSKOpen, setOSKOpen] = useState(false);
 
+    const dispatch = useAppDispatch();
+
     useEffect(() => {
         if (keyboard.current) {
             keyboard.current.setInput(displayValue);
         }
-    }, [keyboard.current, OSKOpen]);
+    }, [OSKOpen]);
 
     useEffect(() => {
         if (props.value === undefined || props.value === '') {
@@ -63,7 +67,7 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         props.onChange?.(originalValue);
 
         if (keyboard.current) {
-            keyboard.current.setInput(originalValue.slice(0, props.maxLength));
+            keyboard.current.setInput(originalValue);
         }
         setDisplayValue(originalValue);
     };
@@ -76,6 +80,18 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
 
         if (autoOSK) {
             setOSKOpen(true);
+
+            if (inputRef.current) {
+                // 450 is just a guesstimate of the keyboard height
+                const spaceBeforeKeyboard = (1000 - 450);
+
+                if (inputRef.current.getBoundingClientRect().bottom > spaceBeforeKeyboard) {
+                    const offset = inputRef.current.getBoundingClientRect().bottom - spaceBeforeKeyboard;
+                    console.log('offset', offset);
+
+                    dispatch(setOffsetY(offset));
+                }
+            }
         }
     };
 
@@ -90,6 +106,8 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         if (!props.disabled) {
             props.onBlur?.(constrainedValue);
         }
+
+        dispatch(setOffsetY(0));
     };
 
     const getConstrainedValue = (value: string): string => {
@@ -149,10 +167,10 @@ export const SimpleInput = (props: PropsWithChildren<SimpleInputProps>) => {
         <>
             <input
                 className={`px-3 py-1.5 text-lg rounded-md border-2 transition duration-100
-                    focus-within:outline-none focus-within:border-theme-highlight 
+                    focus-within:outline-none focus-within:border-theme-highlight
                     ${props.disabled
             ? 'placeholder-theme-body bg-theme-unselected border-theme-unselected text-theme-body'
-            : 'placeholder-theme-unselected bg-theme-accent border-theme-accent text-theme-text'} 
+            : 'placeholder-theme-unselected bg-theme-accent border-theme-accent text-theme-text'}
                     ${props.className}`}
                 value={displayValue}
                 placeholder={props.placeholder}
