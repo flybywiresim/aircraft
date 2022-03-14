@@ -3,7 +3,7 @@
 
 import { NXDataStore } from '@shared/persistence';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
-import { AtsuManager } from '../AtsuManager';
+import { Atsu } from '../ATSU';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageType } from '../messages/AtsuMessage';
 import { AtisMessage, AtisType } from '../messages/AtisMessage';
@@ -22,7 +22,7 @@ export class Datalink {
 
     private firstPollHoppie = true;
 
-    private enqueueReceivedMessages(parent: AtsuManager, messages: AtsuMessage[]): void {
+    private enqueueReceivedMessages(parent: Atsu, messages: AtsuMessage[]): void {
         messages.forEach((message) => {
             // ignore empty messages (happens sometimes in CPDLC with buggy ATC software)
             if (message.Message.length !== 0) {
@@ -32,7 +32,7 @@ export class Datalink {
         });
     }
 
-    constructor(parent: AtsuManager) {
+    constructor(parent: Atsu) {
         // copy the datalink transmission time data
         switch (NXDataStore.get('CONFIG_DATALINK_TRANSMISSION_TIME', 'FAST')) {
         case 'REAL':
@@ -47,6 +47,10 @@ export class Datalink {
         }
 
         setInterval(() => {
+            if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
+                parent.atc.resetAtc();
+            }
+
             // update the internal timer
             if (this.overallDelay <= 200) {
                 this.overallDelay = 0;
@@ -66,7 +70,7 @@ export class Datalink {
                 });
                 this.waitedTimeHoppie = 0;
             } else {
-                this.waitedTimeHoppie += 200;
+                this.waitedTimeHoppie += 5000;
             }
 
             if (NXApiConnector.pollInterval() <= this.waitedTimeNXApi) {
@@ -77,9 +81,9 @@ export class Datalink {
                 });
                 this.waitedTimeNXApi = 0;
             } else {
-                this.waitedTimeNXApi += 200;
+                this.waitedTimeNXApi += 5000;
             }
-        }, 200);
+        }, 5000);
     }
 
     private estimateTransmissionTime(): void {
