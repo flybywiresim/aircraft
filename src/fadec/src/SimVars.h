@@ -1,7 +1,7 @@
 #pragma once
 
 /// <summary>
-/// SimConnect data types to send Sim Updated
+/// SimConnect data types to send to Sim Updated
 /// </summary>
 enum DataTypesID {
   PayloadStation1,
@@ -236,8 +236,8 @@ class SimVars {
     ThrustLimitClimb = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_CLB");
     ThrustLimitMct = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_MCT");
 
-    PacksState1 = register_named_variable("A32NX_PACKS_1_IS_SUPPLYING");
-    PacksState2 = register_named_variable("A32NX_PACKS_2_IS_SUPPLYING");
+    PacksState1 = register_named_variable("A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN");
+    PacksState2 = register_named_variable("A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN");
 
     this->setDeveloperState(0);
     this->setEngine1N2(0);

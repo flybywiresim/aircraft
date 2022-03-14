@@ -187,7 +187,7 @@ class CDUMenuPage {
             const cur = mcdu.page.Current;
             setTimeout(() => {
                 if (mcdu.page.Current === cur) {
-                    CDUFuelPredPage.ShowPage(mcdu);
+                    mcdu.goToFuelPredPage();
                 }
             }, mcdu.getDelaySwitchPage());
         };

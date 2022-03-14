@@ -11,8 +11,8 @@ export const Spoilers = ({ x, y }: ComponentPositionProps) => {
     const [aileronLeftDeflectionState] = useSimVar('L:A32NX_HYD_AILERON_LEFT_DEFLECTION', 'number', 50);
     const [aileronRightDeflectionState] = useSimVar('L:A32NX_HYD_AILERON_RIGHT_DEFLECTION', 'number', 50);
 
-    const [leftSpoilerState] = useSimVar('SPOILERS LEFT POSITION', 'percent over 100', 50);
-    const [rightSpoilerState] = useSimVar('SPOILERS RIGHT POSITION', 'percent over 100', 50);
+    const [leftSpoilerState] = useSimVar('L:A32NX_HYD_SPOILERS_LEFT_DEFLECTION', 'number', 50);
+    const [rightSpoilerState] = useSimVar('L:A32NX_HYD_SPOILERS_RIGHT_DEFLECTION', 'number', 50);
     const [speedBrakeHandlePosition] = useSimVar('SPOILERS HANDLE POSITION', 'percent over 100', 100);
 
     const [spoilersArmed] = useSimVar('L:A32NX_SPOILERS_ARMED', 'boolean', 500);

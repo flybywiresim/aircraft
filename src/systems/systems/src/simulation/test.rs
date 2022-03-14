@@ -78,6 +78,18 @@ pub trait TestBed {
         self.test_bed_mut().indicated_airspeed()
     }
 
+    fn set_long_acc(&mut self, acc: Acceleration) {
+        self.test_bed_mut().set_long_acceleration(acc);
+    }
+
+    fn set_lat_acc(&mut self, acc: Acceleration) {
+        self.test_bed_mut().set_lat_acceleration(acc);
+    }
+
+    fn set_norm_acc(&mut self, acc: Acceleration) {
+        self.test_bed_mut().set_normal_acceleration(acc);
+    }
+
     fn set_indicated_altitude(&mut self, indicated_altitude: Length) {
         self.test_bed_mut()
             .set_indicated_altitude(indicated_altitude);
@@ -359,6 +371,20 @@ impl<T: Aircraft> SimulationTestBed<T> {
     pub fn set_long_acceleration(&mut self, accel: Acceleration) {
         self.write_by_name(
             UpdateContext::ACCEL_BODY_Z_KEY,
+            accel.get::<foot_per_second_squared>(),
+        );
+    }
+
+    pub fn set_lat_acceleration(&mut self, accel: Acceleration) {
+        self.write_by_name(
+            UpdateContext::ACCEL_BODY_X_KEY,
+            accel.get::<foot_per_second_squared>(),
+        );
+    }
+
+    pub fn set_normal_acceleration(&mut self, accel: Acceleration) {
+        self.write_by_name(
+            UpdateContext::ACCEL_BODY_Y_KEY,
             accel.get::<foot_per_second_squared>(),
         );
     }

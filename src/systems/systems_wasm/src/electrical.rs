@@ -1,7 +1,10 @@
-use std::error::Error;
+#[cfg(not(target_arch = "wasm32"))]
+use crate::msfs::legacy::execute_calculator_code;
+#[cfg(target_arch = "wasm32")]
+use msfs::legacy::execute_calculator_code;
 
 use crate::{ExecuteOn, MsfsAspectBuilder, Variable};
-use msfs::legacy::execute_calculator_code;
+use std::error::Error;
 use systems::shared::{to_bool, ElectricalBusType};
 
 pub(super) fn electrical_buses<const N: usize>(

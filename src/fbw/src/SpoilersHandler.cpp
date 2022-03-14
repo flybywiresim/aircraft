@@ -23,7 +23,15 @@ double SpoilersHandler::getHandlePosition() const {
 }
 
 double SpoilersHandler::getSimPosition() const {
-  return simPosition;
+  return rateLimiter.getValue();
+}
+
+double SpoilersHandler::getLeftPosition() const {
+  return rateLimiterLeft.getValue();
+}
+
+double SpoilersHandler::getRightPosition() const {
+  return rateLimiterRight.getValue();
 }
 
 void SpoilersHandler::setInitialPosition(bool isArmed, double position) {
@@ -31,6 +39,8 @@ void SpoilersHandler::setInitialPosition(bool isArmed, double position) {
     return;
   }
   update(isArmed, fmin(1.0, fmax(0.0, position)));
+  rateLimiter.setRate(DEFLECTION_RATE);
+  rateLimiter.reset(targetSimPosition);
   isInitialized = true;
 }
 
@@ -42,10 +52,12 @@ void SpoilersHandler::setSimulationVariables(double simulationTime_new,
                                              double landingGearCompression_1_new,
                                              double landingGearCompression_2_new,
                                              double flapsHandleIndex_new,
-                                             bool isAngleOfAttackProtectionActive_new) {
+                                             bool isAngleOfAttackProtectionActive_new,
+                                             double aileronPosition_new) {
   update(simulationTime_new, isArmed, handlePosition, isAutopilotEngaged_new, groundSpeed_new, thrustLeverAngle_1_new,
          thrustLeverAngle_2_new, getGearStrutCompressionFromAnimation(landingGearCompression_1_new),
-         getGearStrutCompressionFromAnimation(landingGearCompression_2_new), flapsHandleIndex_new, isAngleOfAttackProtectionActive_new);
+         getGearStrutCompressionFromAnimation(landingGearCompression_2_new), flapsHandleIndex_new, isAngleOfAttackProtectionActive_new,
+         aileronPosition_new);
 }
 
 void SpoilersHandler::onEventSpoilersOn() {
@@ -86,7 +98,7 @@ void SpoilersHandler::onEventSpoilersArmSet(bool value) {
 
 void SpoilersHandler::update(bool isArmed_new, double handlePosition_new) {
   update(simulationTime, isArmed_new, handlePosition_new, isAutopilotEngaged, groundSpeed, thrustLeverAngle_1, thrustLeverAngle_2,
-         landingGearCompression_1, landingGearCompression_2, flapsHandleIndex, isAngleOfAttackProtectionActive);
+         landingGearCompression_1, landingGearCompression_2, flapsHandleIndex, isAngleOfAttackProtectionActive, aileronPosition);
 }
 
 void SpoilersHandler::update(double simulationTime_new,
@@ -99,13 +111,14 @@ void SpoilersHandler::update(double simulationTime_new,
                              double landingGearCompression_1_new,
                              double landingGearCompression_2_new,
                              double flapsHandleIndex_new,
-                             bool isAngleOfAttackProtectionActive_new) {
+                             bool isAngleOfAttackProtectionActive_new,
+                             double aileronPosition_new) {
   // inhibit condition -------------------------------------------------------------------------------------------------
 
   if ((flapsHandleIndex == FLAPS_HANDLE_INDEX_FULL) || areAboveMct(thrustLeverAngle_1_new, thrustLeverAngle_2_new) ||
       isAngleOfAttackProtectionActive_new) {
     if (!conditionInhibit) {
-      simPosition = POSITION_RETRACTED;
+      targetSimPosition = POSITION_RETRACTED;
     }
     timeInhibitReset = 0;
     conditionInhibit = true;
@@ -128,9 +141,9 @@ void SpoilersHandler::update(double simulationTime_new,
     // set sim position
     if (!conditionInhibit || handlePosition_new == POSITION_RETRACTED) {
       if (isAutopilotEngaged_new) {
-        simPosition = fmin(POSITION_LIMIT_AUTOPILOT, handlePosition_new);
+        targetSimPosition = fmin(POSITION_LIMIT_AUTOPILOT, handlePosition_new);
       } else {
-        simPosition = handlePosition_new;
+        targetSimPosition = handlePosition_new;
       }
       isGroundSpoilersActive = false;
     }
@@ -139,7 +152,7 @@ void SpoilersHandler::update(double simulationTime_new,
   // autopilot limitation on transition --------------------------------------------------------------------------------
 
   if (isAutopilotEngaged_new && isAutopilotEngaged != isAutopilotEngaged_new) {
-    simPosition = fmin(POSITION_LIMIT_AUTOPILOT, handlePosition_new);
+    targetSimPosition = fmin(POSITION_LIMIT_AUTOPILOT, handlePosition_new);
   }
 
   // store simulation variables ----------------------------------------------------------------------------------------
@@ -185,7 +198,7 @@ void SpoilersHandler::update(double simulationTime_new,
 
   if (conditionTakeOff) {
     if ((isArmed && areThrustLeversAtOrBelowIdle) || isAtLeastOneInReverseAndOtherAtOrBelowIdle(thrustLeverAngle_1, thrustLeverAngle_2)) {
-      simPosition = POSITION_FULL;
+      targetSimPosition = POSITION_FULL;
       isGroundSpoilersActive = true;
     }
   }
@@ -203,15 +216,15 @@ void SpoilersHandler::update(double simulationTime_new,
       if (numberOfMainLandingGearsOnGround == 2) {
         if (areThrustLeversAtOrBelowIdle || isAtLeastOneThrustLeverInReverseAndOtherBelowMct) {
           // full deployment
-          simPosition = POSITION_FULL;
+          targetSimPosition = POSITION_FULL;
           isGroundSpoilersActive = true;
         } else if (isArmed && areThrustLeversBelowClimb) {
           // partial deployment
-          simPosition = POSITION_PARTIAL;
+          targetSimPosition = POSITION_PARTIAL;
         }
       } else if (numberOfMainLandingGearsOnGround >= 1 && areThrustLeversAtOrBelowIdle) {
         // partial deployment
-        simPosition = fmax(handlePosition, POSITION_PARTIAL);
+        targetSimPosition = fmax(handlePosition, POSITION_PARTIAL);
       }
     }
 
@@ -220,11 +233,11 @@ void SpoilersHandler::update(double simulationTime_new,
       if (isAtLeastOneThrustLeverInReverseAndOtherBelowMct) {
         if (numberOfMainLandingGearsOnGround == 2) {
           // full deployment
-          simPosition = POSITION_FULL;
+          targetSimPosition = POSITION_FULL;
           isGroundSpoilersActive = true;
         } else if (numberOfMainLandingGearsOnGround >= 1) {
           // partial deployment
-          simPosition = POSITION_PARTIAL;
+          targetSimPosition = POSITION_PARTIAL;
         }
       }
     }
@@ -232,10 +245,23 @@ void SpoilersHandler::update(double simulationTime_new,
     // on touch & go retract spoilers when at least one thrust lever is > 20°
     if (numberOfMainLandingGearsOnGround > 0 &&
         (thrustLeverAngle_1 > TLA_CONDITION_TOUCH_GO || thrustLeverAngle_2 > TLA_CONDITION_TOUCH_GO)) {
-      simPosition = fmax(handlePosition, POSITION_RETRACTED);
+      targetSimPosition = fmax(handlePosition, POSITION_RETRACTED);
       isGroundSpoilersActive = false;
     }
   }
+
+  // spoilerons -------------------------------------------------------------------------------------------------------
+
+  aileronPosition = aileronPosition_new;
+  double spoileronsDeflection = fmax(0.0, fmin(1.0, SPOILERONS_AILERON_GAIN * (fabs(aileronPosition) - SPOILERONS_MIN_AILERON_POSITION)));
+  targetLeftPosition = fmax(0.0, fmin(1.0, targetSimPosition - copysign(spoileronsDeflection, aileronPosition)));
+  targetRightPosition = fmax(0.0, fmin(1.0, targetSimPosition + copysign(spoileronsDeflection, aileronPosition)));
+}
+
+void SpoilersHandler::updateSimPosition(double dt) {
+  rateLimiter.update(targetSimPosition, dt);
+  rateLimiterLeft.update(targetLeftPosition, dt);
+  rateLimiterRight.update(targetRightPosition, dt);
 }
 
 double SpoilersHandler::getGearStrutCompressionFromAnimation(double animationPosition) {

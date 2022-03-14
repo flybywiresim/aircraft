@@ -126,6 +126,7 @@ class FlyByWireModelClass
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_mi;
     rtDW_LagFilter_FlyByWire_T sf_LagFilter_e;
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_f;
+    rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_a5;
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_d;
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_ny;
     rtDW_RateLimiter_FlyByWire_T sf_RateLimiter_np;
@@ -282,6 +283,7 @@ class FlyByWireModelClass
     real_T RateLimiterVariableTs_InitialCondition_j;
     real_T RateLimiterVariableTs1_InitialCondition_m;
     real_T RateLimiterVariableTs_InitialCondition_fa;
+    real_T RateLimiterVariableTs_InitialCondition_n3;
     real_T RateLimiterDynamicVariableTs_InitialCondition_b;
     real_T RateLimitereta_InitialCondition;
     real_T RateLimiterxi_InitialCondition;
@@ -332,6 +334,7 @@ class FlyByWireModelClass
     real_T RateLimiterVariableTs_lo_g;
     real_T RateLimiterVariableTs1_lo_n;
     real_T RateLimiterVariableTs_lo_e;
+    real_T RateLimiterVariableTs_lo_m;
     real_T RateLimitereta_lo;
     real_T RateLimiterxi_lo;
     real_T RateLimiterzeta_lo;
@@ -358,6 +361,7 @@ class FlyByWireModelClass
     real_T RateLimiterVariableTs_up_i;
     real_T RateLimiterVariableTs1_up_j;
     real_T RateLimiterVariableTs_up_f1;
+    real_T RateLimiterVariableTs_up_l;
     real_T RateLimitereta_up;
     real_T RateLimiterxi_up;
     real_T RateLimiterzeta_up;
@@ -402,6 +406,7 @@ class FlyByWireModelClass
     real_T BankAngleProtection1_bp01Data[9];
     real_T Switch2_Threshold_i;
     real_T Switch1_Threshold;
+    real_T Constant_Value_l;
     real_T Constant2_Value_d;
     real_T Constant_Value_j;
     real_T Delay_InitialCondition;
@@ -681,11 +686,15 @@ class FlyByWireModelClass
     real_T Switch2_Threshold_n;
     real_T Saturation_UpperSat_p4;
     real_T Saturation_LowerSat_he;
+    real_T Switch_Threshold_p;
+    real_T Saturation_UpperSat_lt;
+    real_T Saturation_LowerSat_ol;
+    real_T Constant_Value_d;
     real_T Saturation1_UpperSat_e;
     real_T Saturation1_LowerSat_l;
     real_T Saturation_UpperSat_ll;
     real_T Saturation_LowerSat_og;
-    real_T Constant_Value_l;
+    real_T Constant_Value_l1;
     real_T Saturation_UpperSat_eq;
     real_T Saturation_LowerSat_n;
     real_T Saturation_UpperSat_il;
