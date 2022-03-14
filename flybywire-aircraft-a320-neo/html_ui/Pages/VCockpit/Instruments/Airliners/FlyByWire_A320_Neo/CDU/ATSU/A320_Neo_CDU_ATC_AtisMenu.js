@@ -9,15 +9,15 @@ class CDUAtcAtisMenu {
 
         if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
             airports[0].icao = mcdu.flightPlanManager.getPersistentOrigin().ident;
-            airports[0].autoupdate = mcdu.atsuManager.atc.atisAutoUpdateActive(airports[0].icao);
+            airports[0].autoupdate = mcdu.atsu.atc.atisAutoUpdateActive(airports[0].icao);
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
             airports[1].icao = mcdu.flightPlanManager.getDestination().ident;
-            airports[1].autoupdate = mcdu.atsuManager.atc.atisAutoUpdateActive(airports[1].icao);
+            airports[1].autoupdate = mcdu.atsu.atc.atisAutoUpdateActive(airports[1].icao);
         }
         if (mcdu.altDestination && mcdu.altDestination.ident) {
             airports[2].icao = mcdu.altDestination.ident;
-            airports[2].autoupdate = mcdu.atsuManager.atc.atisAutoUpdateActive(airports[2].icao);
+            airports[2].autoupdate = mcdu.atsu.atc.atisAutoUpdateActive(airports[2].icao);
         }
 
         return airports;
@@ -25,7 +25,7 @@ class CDUAtcAtisMenu {
 
     static InterpretLSK(mcdu, value, airports, idx) {
         if (!value) {
-            const reports = mcdu.atsuManager.atc.atisReports(airports[idx].icao);
+            const reports = mcdu.atsu.atc.atisReports(airports[idx].icao);
             if (reports.length !== 0) {
                 CDUAtcReportAtis.ShowPage(mcdu, `${airports[idx].icao}/${airports[idx].type === Atsu.AtisType.Departure ? "DEP" : "ARR"}`, reports, 0);
             }
@@ -64,7 +64,7 @@ class CDUAtcAtisMenu {
             // validate the airport
             mcdu.dataManager.GetAirportByIdent(entries[0]).then((airport) => {
                 if (airport) {
-                    airports[idx].autoupdate = mcdu.atsuManager.atc.atisAutoUpdateActive(entries[0]);
+                    airports[idx].autoupdate = mcdu.atsu.atc.atisAutoUpdateActive(entries[0]);
                     airports[idx].icao = entries[0];
                     airports[idx].type = type;
                     CDUAtcAtisMenu.ShowPage(mcdu, airports);
@@ -81,7 +81,7 @@ class CDUAtcAtisMenu {
         }
 
         if (airports[idx].autoupdate) {
-            const reports = mcdu.atsuManager.atc.atisReports(airports[idx].icao);
+            const reports = mcdu.atsu.atc.atisReports(airports[idx].icao);
             if (reports.length !== 0) {
                 CDUAtcAtisAutoUpdate.ToggleAutoUpdate(mcdu, airports[idx].icao);
                 airports[0].autoupdate = false;
@@ -96,7 +96,7 @@ class CDUAtcAtisMenu {
 
     static CreateLineData(mcdu, airport) {
         if (airport.icao !== "") {
-            const reports = mcdu.atsuManager.atc.atisReports(airport.icao);
+            const reports = mcdu.atsu.atc.atisReports(airport.icao);
 
             let prefix = "\xa0";
             let middle = "";
@@ -136,7 +136,7 @@ class CDUAtcAtisMenu {
         if (airports[idx].icao !== "" && !airports[idx].requested) {
             airports[idx].requested = true;
 
-            mcdu.atsuManager.atc.receiveAtis(airports[idx].icao, airports[idx].type).then((code) => {
+            mcdu.atsu.atc.receiveAtis(airports[idx].icao, airports[idx].type).then((code) => {
                 if (code !== Atsu.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(code);
                 }
@@ -164,7 +164,7 @@ class CDUAtcAtisMenu {
 
         let printTitle = "PRINT:MANUAL\xa0";
         let printButton = "SET AUTO*";
-        if (mcdu.atsuManager.atc.printAtisReportsPrint()) {
+        if (mcdu.atsu.atc.printAtisReportsPrint()) {
             printTitle = "PRINT:AUTO\xa0";
             printButton = "SET MANUAL*";
         }
@@ -221,7 +221,7 @@ class CDUAtcAtisMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            mcdu.atsuManager.atc.togglePrintAtisReports();
+            mcdu.atsu.atc.togglePrintAtisReports();
             CDUAtcAtisMenu.ShowPage(mcdu, airports);
         };
     }

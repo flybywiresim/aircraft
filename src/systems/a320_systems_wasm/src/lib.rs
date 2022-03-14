@@ -1,4 +1,3 @@
-#![cfg(any(target_arch = "wasm32", doc))]
 mod ailerons;
 mod autobrakes;
 mod brakes;
