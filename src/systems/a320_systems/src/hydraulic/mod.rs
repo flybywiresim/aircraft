@@ -19,7 +19,6 @@ use uom::si::{
 use systems::{
     engine::Engine,
     hydraulic::{
-        landing_gear::HydraulicGearSystem,
         aerodynamic_model::AerodynamicModel,
         brake_circuit::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel, BrakeCircuit,
@@ -27,6 +26,7 @@ use systems::{
         },
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
         flap_slat::FlapSlatAssembly,
+        landing_gear::HydraulicGearSystem,
         linear_actuator::{
             Actuator, BoundedLinearLength, HydraulicAssemblyController,
             HydraulicLinearActuatorAssembly, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
@@ -40,6 +40,7 @@ use systems::{
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PressureSwitchType,
         PumpController, RamAirTurbine, RamAirTurbineController, Reservoir, SectionPressure,
     },
+    landing_gear::GearSystemSensors,
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
@@ -50,8 +51,8 @@ use systems::{
         update_iterator::{FixedStepLoop, MaxStepLoop},
         DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
-        EmergencyGeneratorPower, EngineFirePushButtons, HydraulicColor,
-        HydraulicGeneratorControlUnit, LgciuSensors, ReservoirAirPressure,GearWheel,
+        EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
+        HydraulicGeneratorControlUnit, LgciuSensors, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -652,28 +653,25 @@ impl A320RudderFactory {
     }
 }
 
-
 struct A320GearDoorFactory {}
 impl A320GearDoorFactory {
     const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.05;
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
-    fn a320_gear_door_actuator(
-        bounded_linear_length: &impl BoundedLinearLength,
-    ) -> LinearActuator {
+    fn a320_gear_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         LinearActuator::new(
             bounded_linear_length,
-            2,
-            Length::new::<meter>(0.04422),
-            Length::new::<meter>(0.03366),
-            VolumeRate::new::<gallon_per_second>(0.01),
-            600000.,
-            15000.,
-            500.,
-            1000000.,
+            1,
+            Length::new::<meter>(0.055),
+            Length::new::<meter>(0.03),
+            VolumeRate::new::<gallon_per_second>(0.08),
+            20000.,
+            5000.,
+            2000.,
+            28000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 1., 1.],
+            [0.5, 1., 1., 1., 1., 0.5],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
@@ -682,79 +680,77 @@ impl A320GearDoorFactory {
     }
 
     fn a320_left_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
-        let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
+        let size = Vector3::new(-1.73, 0.02, 1.7);
+        let cg_offset = Vector3::new(2. / 3. * size[0], 0.1, 0.);
 
-        let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
-        let anchor = Vector3::new(-0.7596, -0.086, 0.);
-        let axis_direction = Vector3::new(0., 0., 1.);
+        let control_arm = Vector3::new(-0.76, 0., 0.);
+        let anchor = Vector3::new(-0.19, 0.23, 0.);
+
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(130.),
+            Mass::new::<kilogram>(50.),
             size,
             cg_offset,
             control_arm,
             anchor,
-            Angle::new::<degree>(-23.),
-            Angle::new::<degree>(136.),
-            Angle::new::<degree>(-23.),
-            100.,
+            Angle::new::<degree>(0.),
+            Angle::new::<degree>(85.),
+            Angle::new::<degree>(0.),
+            150.,
             true,
-            axis_direction,
+            Vector3::new(0., 0., 1.),
         )
     }
 
     fn a320_right_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
-        let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
+        let size = Vector3::new(1.73, 0.02, 1.7);
+        let cg_offset = Vector3::new(2. / 3. * size[0], 0.1, 0.);
 
-        let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
-        let anchor = Vector3::new(-0.7596, -0.086, 0.);
-        let axis_direction = Vector3::new(0., 0., 1.);
+        let control_arm = Vector3::new(0.76, 0., 0.);
+        let anchor = Vector3::new(0.19, 0.23, 0.);
+
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(130.),
+            Mass::new::<kilogram>(50.),
             size,
             cg_offset,
             control_arm,
             anchor,
-            Angle::new::<degree>(-23.),
-            Angle::new::<degree>(136.),
-            Angle::new::<degree>(-23.),
-            100.,
+            Angle::new::<degree>(-85.),
+            Angle::new::<degree>(85.),
+            Angle::new::<degree>(0.),
+            150.,
             true,
-            axis_direction,
+            Vector3::new(0., 0., 1.),
         )
     }
 
+    // TODO this is random data from main gear
     fn a320_nose_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
-        let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
+        let size = Vector3::new(1.73, 0.02, 1.7);
+        let cg_offset = Vector3::new(2. / 3. * size[0], 0.1, 0.);
 
-        let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
-        let anchor = Vector3::new(-0.7596, -0.086, 0.);
-        let axis_direction = Vector3::new(0., 0., 1.);
+        let control_arm = Vector3::new(0.76, 0., 0.);
+        let anchor = Vector3::new(0.19, 0.23, 0.);
+
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(130.),
+            Mass::new::<kilogram>(50.),
             size,
             cg_offset,
             control_arm,
             anchor,
-            Angle::new::<degree>(-23.),
-            Angle::new::<degree>(136.),
-            Angle::new::<degree>(-23.),
-            100.,
+            Angle::new::<degree>(-85.),
+            Angle::new::<degree>(85.),
+            Angle::new::<degree>(0.),
+            150.,
             true,
-            axis_direction,
+            Vector3::new(0., 0., 1.),
         )
     }
 
-
-    fn a320_gear_door_assembly(wheel_id :GearWheel) -> HydraulicLinearActuatorAssembly<1> {
-        let gear_door_body = match wheel_id{
-            GearWheel::CENTER =>         Self::a320_nose_gear_door_body(),
-
-            GearWheel::LEFT =>         Self::a320_left_gear_door_body(),
-
-            GearWheel::RIGHT =>         Self::a320_right_gear_door_body(),
+    fn a320_gear_door_assembly(wheel_id: GearWheel) -> HydraulicLinearActuatorAssembly<1> {
+        let gear_door_body = match wheel_id {
+            GearWheel::CENTER => Self::a320_nose_gear_door_body(),
+            GearWheel::LEFT => Self::a320_left_gear_door_body(),
+            GearWheel::RIGHT => Self::a320_right_gear_door_body(),
         };
 
         let gear_door_actuator = Self::a320_gear_door_actuator(&gear_door_body);
@@ -769,19 +765,18 @@ impl A320GearFactory {
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
-    fn a320_nose_gear_actuator(
-        bounded_linear_length: &impl BoundedLinearLength,
-    ) -> LinearActuator {
+    // TODO random data from main gear actuator
+    fn a320_nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         LinearActuator::new(
             bounded_linear_length,
-            2,
-            Length::new::<meter>(0.04422),
-            Length::new::<meter>(0.03366),
-            VolumeRate::new::<gallon_per_second>(0.01),
-            600000.,
+            1,
+            Length::new::<meter>(0.145),
+            Length::new::<meter>(0.105),
+            VolumeRate::new::<gallon_per_second>(0.15),
+            800000.,
             15000.,
-            500.,
-            1000000.,
+            50000.,
+            1200000.,
             Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
@@ -791,19 +786,17 @@ impl A320GearFactory {
         )
     }
 
-    fn a320_main_gear_actuator(
-        bounded_linear_length: &impl BoundedLinearLength,
-    ) -> LinearActuator {
+    fn a320_main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         LinearActuator::new(
             bounded_linear_length,
-            2,
-            Length::new::<meter>(0.04422),
-            Length::new::<meter>(0.03366),
-            VolumeRate::new::<gallon_per_second>(0.01),
-            600000.,
+            1,
+            Length::new::<meter>(0.145),
+            Length::new::<meter>(0.105),
+            VolumeRate::new::<gallon_per_second>(0.15),
+            800000.,
             15000.,
-            500.,
-            1000000.,
+            50000.,
+            1200000.,
             Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
@@ -814,46 +807,46 @@ impl A320GearFactory {
     }
 
     fn a320_left_gear_body() -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
-        let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
+        let size = Vector3::new(0.3, 3.453, 0.3);
+        let cg_offset = Vector3::new(0., -3. / 4. * size[1], 0.);
 
-        let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
-        let anchor = Vector3::new(-0.7596, -0.086, 0.);
-        let axis_direction = Vector3::new(0., 0., 1.);
+        let control_arm = Vector3::new(-0.1815, 0.15, 0.);
+        let anchor = Vector3::new(-0.26, 0.15, 0.);
+
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(130.),
+            Mass::new::<kilogram>(700.),
             size,
             cg_offset,
             control_arm,
             anchor,
-            Angle::new::<degree>(-23.),
-            Angle::new::<degree>(136.),
-            Angle::new::<degree>(-23.),
-            100.,
+            Angle::new::<degree>(0.),
+            Angle::new::<degree>(80.),
+            Angle::new::<degree>(0.),
+            150.,
             true,
-            axis_direction,
+            Vector3::new(0., 0., 1.),
         )
     }
 
     fn a320_right_gear_body() -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
-        let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
+        let size = Vector3::new(0.3, 3.453, 0.3);
+        let cg_offset = Vector3::new(0., -3. / 4. * size[1], 0.);
 
-        let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
-        let anchor = Vector3::new(-0.7596, -0.086, 0.);
-        let axis_direction = Vector3::new(0., 0., 1.);
+        let control_arm = Vector3::new(-0.1815, 0.15, 0.);
+        let anchor = Vector3::new(-0.26, 0.15, 0.);
+
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(130.),
+            Mass::new::<kilogram>(700.),
             size,
             cg_offset,
             control_arm,
             anchor,
-            Angle::new::<degree>(-23.),
-            Angle::new::<degree>(136.),
-            Angle::new::<degree>(-23.),
-            100.,
+            Angle::new::<degree>(-80.),
+            Angle::new::<degree>(80.),
+            Angle::new::<degree>(-80.),
+            150.,
             true,
-            axis_direction,
+            Vector3::new(0., 0., 1.),
         )
     }
 
@@ -879,22 +872,19 @@ impl A320GearFactory {
         )
     }
 
+    fn a320_gear_assembly(wheel_id: GearWheel) -> HydraulicLinearActuatorAssembly<1> {
+        let gear_body = match wheel_id {
+            GearWheel::CENTER => Self::a320_nose_gear_body(),
 
-    fn a320_gear_assembly(wheel_id :GearWheel) -> HydraulicLinearActuatorAssembly<1> {
+            GearWheel::LEFT => Self::a320_left_gear_body(),
 
-
-        let gear_body = match wheel_id{
-            GearWheel::CENTER =>         Self::a320_nose_gear_body(),
-
-            GearWheel::LEFT =>         Self::a320_left_gear_body(),
-
-            GearWheel::RIGHT =>         Self::a320_right_gear_body(),
+            GearWheel::RIGHT => Self::a320_right_gear_body(),
         };
 
-        let gear_actuator =  match wheel_id{
-            GearWheel::CENTER =>         Self::a320_nose_gear_actuator(&gear_body),
+        let gear_actuator = match wheel_id {
+            GearWheel::CENTER => Self::a320_nose_gear_actuator(&gear_body),
 
-            GearWheel::LEFT | GearWheel::RIGHT =>         Self::a320_main_gear_actuator(&gear_body),
+            GearWheel::LEFT | GearWheel::RIGHT => Self::a320_main_gear_actuator(&gear_body),
         };
 
         HydraulicLinearActuatorAssembly::new([gear_actuator], gear_body)
@@ -969,7 +959,7 @@ pub(super) struct A320Hydraulic {
     left_spoilers: SpoilerGroup,
     right_spoilers: SpoilerGroup,
 
-    gear_system : HydraulicGearSystem,
+    gear_system: HydraulicGearSystem,
 }
 impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
@@ -1195,9 +1185,13 @@ impl A320Hydraulic {
                 ActuatorSide::Right,
             ),
 
-            gear_system : HydraulicGearSystem::new(A320GearDoorFactory::a320_gear_door_assembly(GearWheel::CENTER),
-            A320GearDoorFactory::a320_gear_door_assembly(GearWheel::LEFT),A320GearDoorFactory::a320_gear_door_assembly(GearWheel::RIGHT),
-            A320GearFactory::a320_gear_assembly(GearWheel::CENTER),A320GearFactory::a320_gear_assembly(GearWheel::LEFT),A320GearFactory::a320_gear_assembly(GearWheel::RIGHT)
+            gear_system: HydraulicGearSystem::new(
+                A320GearDoorFactory::a320_gear_door_assembly(GearWheel::CENTER),
+                A320GearDoorFactory::a320_gear_door_assembly(GearWheel::LEFT),
+                A320GearDoorFactory::a320_gear_door_assembly(GearWheel::RIGHT),
+                A320GearFactory::a320_gear_assembly(GearWheel::CENTER),
+                A320GearFactory::a320_gear_assembly(GearWheel::LEFT),
+                A320GearFactory::a320_gear_assembly(GearWheel::RIGHT),
             ),
         }
     }
@@ -1851,6 +1845,10 @@ impl A320Hydraulic {
         absolute_delta_pressure
             > Pressure::new::<psi>(Self::HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI)
             && is_ptu_rotating
+    }
+
+    pub fn gear_system(&self) -> &impl GearSystemSensors {
+        &self.gear_system
     }
 }
 impl SimulationElement for A320Hydraulic {
@@ -5134,10 +5132,12 @@ mod tests {
 
                 self.lgciu1.update(
                     &self.landing_gear,
+                    &self.hydraulics.gear_system,
                     self.ext_pwr.output_potential().is_powered(),
                 );
                 self.lgciu2.update(
                     &self.landing_gear,
+                    &self.hydraulics.gear_system,
                     self.ext_pwr.output_potential().is_powered(),
                 );
 

@@ -160,10 +160,12 @@ impl Aircraft for A320 {
 
         self.lgciu1.update(
             &self.landing_gear,
+            self.hydraulic.gear_system(),
             self.ext_pwr.output_potential().is_powered(),
         );
         self.lgciu2.update(
             &self.landing_gear,
+            self.hydraulic.gear_system(),
             self.ext_pwr.output_potential().is_powered(),
         );
 

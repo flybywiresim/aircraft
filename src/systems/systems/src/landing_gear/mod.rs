@@ -1,11 +1,11 @@
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     hydraulic::landing_gear::{
-        GearComponentController, GearSystemSensors, GearSystemStateMachine, GearsSystemState,
+        GearComponentController, GearSystemStateMachine, GearsSystemState,
     },
-    shared::{GearWheel ,
-        ElectricalBusType, ElectricalBuses, LandingGearRealPosition, LgciuDoorPosition,
-        LgciuGearExtension, LgciuSensors, LgciuWeightOnWheels,LgciuGearAndDoor
+    shared::{
+        ElectricalBusType, ElectricalBuses, GearWheel, LandingGearRealPosition, LgciuDoorPosition,
+        LgciuGearAndDoor, LgciuGearExtension, LgciuSensors, LgciuWeightOnWheels,
     },
     simulation::{Read, SimulationElement, SimulatorReader, SimulatorWriter, Write},
 };
@@ -14,6 +14,12 @@ use uom::si::{
     ratio::{percent, ratio},
 };
 
+pub trait GearSystemSensors {
+    fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
+    fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
+    fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
+    fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
+}
 
 /// Represents a landing gear on Airbus aircraft.
 /// Note that this type somewhat hides the gear's position.
@@ -516,8 +522,8 @@ mod tests {
                 assert!(self.gear_position == 1 || self.gear_position == Self::UP_LOCK_TRESHOLD)
             }
 
-            if self.gear_position != 1 && self.gear_position !=Self::UP_LOCK_TRESHOLD {
-                assert!(self.door_position == 1 || self.door_position ==Self::UP_LOCK_TRESHOLD)
+            if self.gear_position != 1 && self.gear_position != Self::UP_LOCK_TRESHOLD {
+                assert!(self.door_position == 1 || self.door_position == Self::UP_LOCK_TRESHOLD)
             }
         }
     }

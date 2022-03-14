@@ -1,5 +1,6 @@
 use crate::shared::low_pass_filter::LowPassFilter;
-use crate::shared::{LgciuDoorPosition, LgciuGearAndDoor, LgciuGearExtension,GearWheel};
+use crate::shared::{GearWheel, LgciuDoorPosition, LgciuGearAndDoor, LgciuGearExtension};
+use crate::landing_gear::GearSystemSensors;
 
 use crate::simulation::UpdateContext;
 
@@ -114,14 +115,6 @@ pub enum GearsSystemState {
     AllDownLocked,
 }
 
-// Represents all sensors seen from a LGCIU perspective
-pub trait GearSystemSensors {
-    fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
-    fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
-    fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
-    fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
-}
-
 pub struct GearSystemStateMachine {
     gears_state: GearsSystemState,
 }
@@ -182,7 +175,7 @@ impl GearSystemStateMachine {
     }
 }
 
-trait GearValvesController {
+pub trait GearValvesController {
     fn safety_valve_should_open(&self) -> bool;
     fn shut_off_valve_should_open(&self) -> bool;
 }
