@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { IconAccessPoint, IconBattery4, IconPower } from '@tabler/icons';
 import { connect } from 'react-redux';
+import useInterval from '@instruments/common/useInterval';
 import { efbClearState } from '../Store/action-creator/efb';
 
 import { PowerContext, ContentState } from '../index';
@@ -53,17 +54,13 @@ const StatusBar = (props: StatusBarProps) => {
         return formatTime(([minutes, seconds]));
     }
 
-    useEffect(() => {
-        setInterval(() => {
-            const date = new Date();
-            const timeSinceStart = calculateTimeSinceStart(date);
-            props.updateCurrentTime(date);
-            props.updateTimeSinceStart(timeSinceStart);
-            setCurrentTime(date);
-        }, 1000);
-
-        return () => clearInterval();
-    }, []);
+    useInterval(() => {
+        const date = new Date();
+        const timeSinceStart = calculateTimeSinceStart(date);
+        props.updateCurrentTime(date);
+        props.updateTimeSinceStart(timeSinceStart);
+        setCurrentTime(date);
+    }, 1000);
 
     const { efbClearState } = props;
 
