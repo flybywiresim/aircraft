@@ -54,11 +54,14 @@ declare global {
 
         instrument: BaseInstrument;
 
+        /**
+         * These are the default MS types but for some reason we changed
         altDesc: number;
 
         altitude1: number;
 
         altitude2: number;
+        */
 
         legAltitudeDescription: number;
 

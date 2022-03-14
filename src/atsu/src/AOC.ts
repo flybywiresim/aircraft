@@ -9,9 +9,9 @@ import { AtisType } from './messages/AtisMessage';
 import { Datalink } from './com/Datalink';
 
 /**
- * Defines the AOC manager
+ * Defines the AOC
  */
-export class AocSystem {
+export class Aoc {
     private datalink: Datalink | undefined = undefined;
 
     private messageQueue: AtsuMessage[] = [];
@@ -33,7 +33,7 @@ export class AocSystem {
     }
 
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
-        if (AocSystem.isRelevantMessage(message)) {
+        if (Aoc.isRelevantMessage(message)) {
             return this.datalink.sendMessage(message, false);
         }
         return AtsuStatusCodes.UnknownMessage;

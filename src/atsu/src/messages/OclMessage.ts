@@ -29,8 +29,8 @@ export class OclMessage extends CpdlcMessage {
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {
-        let oclMessage = `OCEANIC REQUEST\n${this.Callsign}\n`;
-        oclMessage += `ENTRY POINT:${this.EntryPoint}\nAT:${this.EntryTime}\n`;
+        let oclMessage = `OCEANIC REQUEST\n${this.Callsign} \n`;
+        oclMessage += `ENTRY POINT:${this.EntryPoint}\nAT:${this.EntryTime} \n`;
         oclMessage += `REQ:${this.RequestedMach} ${this.RequestedFlightlevel}`;
 
         const freetext = this.Freetext.join('\n').replace(/^\s*\n/gm, '');

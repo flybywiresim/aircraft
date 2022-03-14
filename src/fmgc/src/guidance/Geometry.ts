@@ -329,8 +329,8 @@ export class Geometry {
         return rad;
     }
 
-    getDistanceToGo(ppos): number | null {
-        const activeLeg = this.legs.get(1);
+    getDistanceToGo(activeLegIdx: number, ppos: LatLongAlt): number | null {
+        const activeLeg = this.legs.get(activeLegIdx);
         if (activeLeg) {
             return activeLeg.getDistanceToGo(ppos);
         }

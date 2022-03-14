@@ -63,7 +63,7 @@ class CDU_CFDS_Test_Inst_EIS_Tests {
         };
         mcdu.onFuel = () => {
             SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 0);
-            CDUFuelPredPage.ShowPage(mcdu);
+            mcdu.goToFuelPredPage();
         };
         mcdu.onMenu = () => {
             SimVar.SetSimVarValue(`L:A32NX_DMC_DISPLAYTEST:${eisIndex}`, "Enum", 0);

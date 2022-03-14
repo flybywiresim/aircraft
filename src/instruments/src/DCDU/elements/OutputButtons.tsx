@@ -8,10 +8,12 @@ type OutputButtonsProps = {
     message: CpdlcMessage,
     setStatus: (sender: string, message: string) => void,
     isStatusAvailable: (sender: string) => boolean,
+    sendMessage: (message: number) => void,
+    deleteMessage: (message: number) => void,
     closeMessage: (message: number) => void
 }
 
-export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus, isStatusAvailable, closeMessage }) => {
+export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus, isStatusAvailable, sendMessage, deleteMessage, closeMessage }) => {
     const buttonsBlocked = message.ComStatus === AtsuMessageComStatus.Sending;
 
     useUpdate(() => {
@@ -36,13 +38,9 @@ export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus
 
         if (showAnswers) {
             if (index === 'L1') {
-                SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE_UID', 'number', message.UniqueMessageID);
+                deleteMessage(message.UniqueMessageID);
             } else if (index === 'R2') {
-                if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number') === -1) {
-                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
-                } else {
-                    setStatus('Buttons', 'SYSTEM BUSY');
-                }
+                sendMessage(message.UniqueMessageID);
             }
         } else if (index === 'R2') {
             closeMessage(message.UniqueMessageID);

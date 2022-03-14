@@ -10,15 +10,19 @@ import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirectio
 import { CpdlcMessagesDownlink, CpdlcMessageExpectedResponseType } from './messages/CpdlcMessageElements';
 import { CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
-import { AtsuManager } from './AtsuManager';
+import { Atsu } from './ATSU';
+import { DcduLink } from './components/DcduLink';
 import { FansMode, FutureAirNavigationSystem } from './com/FutureAirNavigationSystem';
 
-export class AtcSystem {
-    private parent: AtsuManager | undefined = undefined;
+/*
+ * Defines the ATC system for CPDLC communication
+ */
+export class Atc {
+    private parent: Atsu | undefined = undefined;
 
     private datalink: Datalink | undefined = undefined;
 
-    private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
+    private dcduLink: DcduLink | undefined = undefined;
 
     private cdplcResetRequired = false;
 
@@ -32,12 +36,6 @@ export class AtcSystem {
 
     private messageQueue: CpdlcMessage[] = [];
 
-    private dcduBufferedMessages: number[] = [];
-
-    private unreadMessagesLastCycle: number = 0;
-
-    private lastRingTime: number = 0;
-
     private printAtisReport = false;
 
     private atisAutoUpdateIcaos: [string, AtisType, number][] = [];
@@ -48,143 +46,35 @@ export class AtcSystem {
 
     private currentFansMode: FansMode = FansMode.FansNone;
 
-    constructor(parent: AtsuManager, datalink: Datalink) {
+    constructor(parent: Atsu, datalink: Datalink) {
         this.parent = parent;
         this.datalink = datalink;
-
-        // initialize the variables for the DCDU communication
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE_UID', 'number', -1);
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', -1);
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', -1);
-        SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number', -1);
-
-        setInterval(() => {
-            const cpdlcOnline = SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') === 1;
-
-            if (this.cdplcResetRequired && !cpdlcOnline) {
-                if (this.currentAtc !== '') {
-                    this.logoff();
-                }
-                if (this.nextAtc !== '') {
-                    this.resetLogon();
-                }
-
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_RESET');
-                this.cdplcResetRequired = false;
-            } else if (cpdlcOnline) {
-                this.cdplcResetRequired = true;
-
-                this.handleDcduMessageSync();
-                this.handlePilotNotifications();
-
-                // check if we have to timeout the logon request
-                if (this.logonInProgress()) {
-                    const currentTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
-                    const delta = currentTime - this.notificationTime;
-                    if (delta >= 300) {
-                        this.resetLogon();
-                    }
-                }
-            }
-        }, 100);
+        this.dcduLink = new DcduLink(parent, this);
     }
 
-    private handleDcduMessageSync() {
-        // check if a message needs to be deleted
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE_UID', 'number') !== -1) {
-            this.removeMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_DELETE_UID', 'number'));
-            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_DELETE_UID', 'number', -1);
-        }
-
-        // handle send calls of messages
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number') !== -1) {
-            const message = this.parent.findMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number'));
-            if (message !== undefined) {
-                if (message.Direction === AtsuMessageDirection.Downlink) {
-                    this.sendMessage(message).then((code) => {
-                        if (code !== AtsuStatusCodes.Ok) {
-                            this.parent.publishAtsuStatusCode(code);
-                        }
-                    });
-                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', -1);
-                } else if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number') !== -1) {
-                    this.sendResponse(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number'), SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number'));
-                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', -1);
-                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', -1);
-                }
+    public resetAtc() {
+        if (this.cdplcResetRequired) {
+            if (this.currentAtc !== '') {
+                this.logoff();
             }
-        }
-
-        // handle print calls of the message
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number') !== -1) {
-            const message = this.parent.findMessage(SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number'));
-            if (message !== undefined) {
-                this.parent.printMessage(message);
-            }
-            SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_PRINT_UID', 'number', -1);
-        }
-
-        // reset the ACK btn if it is clicked
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number') === 1) {
-            SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 0);
-            SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number', 0);
-        }
-
-        // check if the buffer of the DCDU is available
-        if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
-            while (this.dcduBufferedMessages.length !== 0) {
-                if (SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') !== 0) {
-                    break;
-                }
-
-                const uid = this.dcduBufferedMessages.shift();
-                const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
-                if (message !== undefined) {
-                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
-                }
-            }
-        }
-    }
-
-    private handlePilotNotifications() {
-        const unreadMessages = SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_UNREAD_MSGS', 'number');
-
-        if (unreadMessages !== 0) {
-            const currentTime = new Date().getTime();
-            let callRing = false;
-
-            if (this.unreadMessagesLastCycle < unreadMessages) {
-                this.lastRingTime = 0;
-                callRing = true;
-            } else {
-                const delta = Math.round(Math.abs((currentTime - this.lastRingTime) / 1000));
-
-                if (delta >= 10) {
-                    this.lastRingTime = currentTime;
-                    callRing = SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean') === 1;
-                }
+            if (this.nextAtc !== '') {
+                this.resetLogon();
             }
 
-            if (callRing) {
-                SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
-                Coherent.call('PLAY_INSTRUMENT_SOUND', 'cpdlc_ring');
-                this.lastRingTime = currentTime;
-
-                // ensure that the timeout is longer than the sound
-                setTimeout(() => SimVar.SetSimVarValue('W:cpdlc_ring', 'boolean', 0), 2000);
-            }
-        } else {
-            SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 0);
+            this.cdplcResetRequired = false;
         }
-
-        this.unreadMessagesLastCycle = unreadMessages;
     }
 
     public async connect(flightNo: string): Promise<AtsuStatusCodes> {
         if (this.currentAtc !== '') {
-            return this.logoff().then(() => HoppieConnector.connect(flightNo));
+            await this.logoff();
         }
-        return HoppieConnector.connect(flightNo);
+        return HoppieConnector.connect(flightNo).then((code) => {
+            if (code === AtsuStatusCodes.Ok) {
+                this.cdplcResetRequired = true;
+            }
+            return code;
+        });
     }
 
     public async disconnect(): Promise<AtsuStatusCodes> {
@@ -211,7 +101,7 @@ export class AtcSystem {
         this.currentAtc = '';
         this.nextAtc = '';
         this.notificationTime = 0;
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
+        this.dcduLink.setAtcLogonMessage('');
     }
 
     public async logon(station: string): Promise<AtsuStatusCodes> {
@@ -232,11 +122,27 @@ export class AtcSystem {
         message.Direction = AtsuMessageDirection.Downlink;
         message.Content = CpdlcMessagesDownlink.DM9998[1];
         message.ComStatus = AtsuMessageComStatus.Sending;
+        message.Message = 'REQUEST LOGON';
+        message.DcduRelevantMessage = false;
 
         this.nextAtc = station;
         this.parent.registerMessages([message]);
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `NEXT ATC: ${station}`);
+        this.dcduLink.setAtcLogonMessage(`NEXT ATC: ${station}`);
         this.notificationTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+
+        // check if the logon was successful within five minutes
+        setTimeout(() => {
+            // check if we have to timeout the logon request
+            if (this.logonInProgress()) {
+                const currentTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+                const delta = currentTime - this.notificationTime;
+
+                // validate that no second notification is triggered
+                if (delta >= 300) {
+                    this.resetLogon();
+                }
+            }
+        }, 300000);
 
         return this.datalink.sendMessage(message, false);
     }
@@ -276,7 +182,7 @@ export class AtcSystem {
 
     public async logoff(): Promise<AtsuStatusCodes> {
         return this.logoffWithoutReset().then((error) => {
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
+            this.dcduLink.setAtcLogonMessage('');
             this.currentFansMode = FansMode.FansNone;
             this.currentAtc = '';
             this.nextAtc = '';
@@ -301,12 +207,12 @@ export class AtcSystem {
         return responseMessage;
     }
 
-    private sendResponse(uid: number, response: number): void {
+    public sendResponse(uid: number, response: number): void {
         const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
         if (message !== undefined) {
             message.Response = this.createCpdlcResponse(message, response);
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+            this.dcduLink.update(message);
 
             if (message.Response !== undefined) {
                 this.datalink.sendMessage(message.Response, false).then((code) => {
@@ -315,13 +221,17 @@ export class AtcSystem {
                     } else {
                         message.Response.ComStatus = AtsuMessageComStatus.Failed;
                     }
-                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+                    this.dcduLink.update(message);
                 });
             }
         }
     }
 
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
+        if (message.ComStatus === AtsuMessageComStatus.Sending || message.ComStatus === AtsuMessageComStatus.Sent) {
+            return AtsuStatusCodes.Ok;
+        }
+
         if (message.Station === '') {
             if (this.currentAtc === '') {
                 return AtsuStatusCodes.NoAtc;
@@ -330,7 +240,9 @@ export class AtcSystem {
         }
 
         message.ComStatus = AtsuMessageComStatus.Sending;
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+        if ((message as CpdlcMessage).DcduRelevantMessage) {
+            this.dcduLink.update(message as CpdlcMessage);
+        }
 
         return this.datalink.sendMessage(message, false).then((code) => {
             if (code === AtsuStatusCodes.Ok) {
@@ -338,7 +250,11 @@ export class AtcSystem {
             } else {
                 message.ComStatus = AtsuMessageComStatus.Failed;
             }
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+
+            if ((message as CpdlcMessage).DcduRelevantMessage) {
+                this.dcduLink.update(message as CpdlcMessage);
+            }
+
             return code;
         });
     }
@@ -354,15 +270,15 @@ export class AtcSystem {
     public removeMessage(uid: number): boolean {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1) {
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', uid);
             this.messageQueue.splice(index, 1);
+            this.dcduLink.dequeue(uid);
         }
         return index !== -1;
     }
 
     public cleanupMessages(): void {
-        this.messageQueue.forEach((message) => this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', message.UniqueMessageID));
         this.messageQueue = [];
+        this.dcduLink.reset();
         this.atisMessages = new Map();
     }
 
@@ -370,13 +286,22 @@ export class AtcSystem {
         if (request.Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.NotRequired && response === undefined) {
             // received the station message for the DCDU
             if (request.Content?.TypeId === 'UM9999') {
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', request.Message);
+                if (this.currentAtc !== '') {
+                    this.dcduLink.setAtcLogonMessage(request.Message);
+                }
                 return true;
             }
 
             // received a logoff message
             if (request.Content?.TypeId === 'UM9995') {
-                this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
+                this.dcduLink.setAtcLogonMessage('');
+                this.currentAtc = '';
+                return true;
+            }
+
+            // received a service terminated message
+            if (request.Message.includes('TERMINATED')) {
+                this.dcduLink.setAtcLogonMessage('');
                 this.currentAtc = '';
                 return true;
             }
@@ -397,7 +322,7 @@ export class AtcSystem {
             if (request.Content?.TypeId === 'DM9998') {
                 // logon accepted by ATC
                 if (response.Content?.TypeId === 'UM9997') {
-                    this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', `CURRENT ATC UNIT @${this.nextAtc}@`);
+                    this.dcduLink.setAtcLogonMessage(`CURRENT ATC UNIT @${this.nextAtc}@`);
                     this.currentFansMode = FutureAirNavigationSystem.currentFansMode(this.nextAtc);
                     InputValidation.FANS = this.currentFansMode;
                     this.currentAtc = this.nextAtc;
@@ -407,7 +332,7 @@ export class AtcSystem {
 
                 // logon rejected
                 if (response.Content?.TypeId === 'UM9996') {
-                    this.listener.triggerToAllSubscribers('A32NX_DCDU_ATC_LOGON_MSG', '');
+                    this.dcduLink.setAtcLogonMessage('');
                     this.currentAtc = '';
                     this.nextAtc = '';
                     return true;
@@ -422,7 +347,6 @@ export class AtcSystem {
     public insertMessages(messages: AtsuMessage[]): void {
         messages.forEach((message) => {
             const cpdlcMessage = message as CpdlcMessage;
-            let analyzed = false;
 
             if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.CurrentTransmissionId === -1) {
                 cpdlcMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
@@ -436,7 +360,7 @@ export class AtcSystem {
                         while (element !== undefined) {
                             if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
                                 element.Response = cpdlcMessage;
-                                analyzed = this.analyzeMessage(element, cpdlcMessage);
+                                this.analyzeMessage(element, cpdlcMessage);
                                 break;
                             }
                             element = element.Response;
@@ -445,21 +369,11 @@ export class AtcSystem {
                 });
             } else {
                 this.messageQueue.unshift(cpdlcMessage);
-                analyzed = this.analyzeMessage(cpdlcMessage, undefined);
+                this.analyzeMessage(cpdlcMessage, undefined);
             }
 
-            if (!analyzed) {
-                if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.Station === '') {
-                    cpdlcMessage.Station = this.currentAtc;
-                }
-
-                const dcduRelevant = cpdlcMessage.ComStatus === AtsuMessageComStatus.Open || cpdlcMessage.ComStatus === AtsuMessageComStatus.Received;
-                if (dcduRelevant && SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_MAX_REACHED', 'boolean') === 0) {
-                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message as CpdlcMessage);
-                } else if (dcduRelevant) {
-                    this.parent.publishAtsuStatusCode(AtsuStatusCodes.DcduFull);
-                    this.dcduBufferedMessages.push(message.UniqueMessageID);
-                }
+            if (cpdlcMessage.DcduRelevantMessage) {
+                this.dcduLink.enqueue(cpdlcMessage);
             }
         });
     }

@@ -311,7 +311,7 @@ class A32NX_FWC {
 
         // FWC ESLD 1.0.190
         const setBelow2000ft = (radioHeight1.value < 2000 && !radioHeight1Invalid) || (radioHeight2.value < 2000 && !radioHeight2Invalid);
-        const resetBelow2000ft = (radioHeight1 > 2200 || radioHeight1Invalid) && (radioHeight2 > 2200 || radioHeight2Invalid);
+        const resetBelow2000ft = (radioHeight1.value > 2200 || radioHeight1Invalid) && (radioHeight2.value > 2200 || radioHeight2Invalid);
         const memo2 = this.memoLdgMemo_below2000ft.write(setBelow2000ft, resetBelow2000ft);
 
         const setInhibitMemo = this.memoLdgMemo_conf01.write(resetBelow2000ft && !radioHeight1Invalid && !radioHeight2Invalid, _deltaTime);

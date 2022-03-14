@@ -1,5 +1,5 @@
 import { AtsuStatusCodes } from './AtsuStatusCodes';
-import { AtsuManager } from './AtsuManager';
+import { Atsu } from './ATSU';
 import { FreetextMessage } from './messages/FreetextMessage';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessageNetwork, AtsuMessageType } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
@@ -10,8 +10,8 @@ import { MetarMessage } from './messages/MetarMessage';
 import { TafMessage } from './messages/TafMessage';
 import { AtisMessage, AtisType } from './messages/AtisMessage';
 import { RequestMessage } from './messages/RequestMessage';
-import { AocSystem } from './AocSystem';
-import { AtcSystem } from './AtcSystem';
+import { Aoc } from './AOC';
+import { Atc } from './ATC';
 import { DclMessage } from './messages/DclMessage';
 import { OclMessage } from './messages/OclMessage';
 import { InputValidation, InputWaypointType } from './InputValidation';
@@ -25,7 +25,7 @@ export {
     AtsuMessageNetwork,
     AtsuMessageSerializationFormat,
     AtsuMessageType,
-    AtsuManager,
+    Atsu,
     AtsuTimestamp,
     CpdlcMessage,
     CpdlcMessageExpectedResponseType,
@@ -38,8 +38,8 @@ export {
     TafMessage,
     AtisMessage,
     AtisType,
-    AocSystem,
-    AtcSystem,
+    Aoc,
+    Atc,
     DclMessage,
     OclMessage,
     FansMode,

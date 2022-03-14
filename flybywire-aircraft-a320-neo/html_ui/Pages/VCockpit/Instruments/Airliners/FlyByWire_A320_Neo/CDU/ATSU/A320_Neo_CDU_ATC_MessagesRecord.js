@@ -26,7 +26,7 @@ class CDUAtcMessagesRecord {
 
     static ShowPage(mcdu, messages = null, offset = 0, confirmErase = false) {
         if (!messages) {
-            messages = mcdu.atsuManager.atc.messages();
+            messages = mcdu.atsu.atc.messages();
         }
         mcdu.clearDisplay();
 
@@ -112,7 +112,7 @@ class CDUAtcMessagesRecord {
             mcdu.onLeftInput[i] = (value) => {
                 if (messages[offset + i]) {
                     if (value === FMCMainDisplay.clrValue) {
-                        mcdu.atsuManager.removeMessage(messages[offset + i].UniqueMessageID);
+                        mcdu.atsu.removeMessage(messages[offset + i].UniqueMessageID);
                         CDUAtcMessagesRecord.ShowPage(mcdu, null, offset, false);
                     } else {
                         CDUAtcMessage.ShowPage(mcdu, messages, offset + i);
@@ -129,7 +129,7 @@ class CDUAtcMessagesRecord {
                 if (!confirmErase) {
                     CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset, true);
                 } else {
-                    mcdu.atsuManager.atc.cleanupMessages();
+                    mcdu.atsu.atc.cleanupMessages();
                     CDUAtcMessagesRecord.ShowPage(mcdu, null, 0, false);
                 }
             }
