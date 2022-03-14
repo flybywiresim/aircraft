@@ -32,7 +32,7 @@ export const LnavConfig = {
     /**
      * Whether to use the L:A32NX_DEBUG_TAS and L:A32NX_DEBUG_GS LVar for prediction speeds
      */
-    DEBUG_USE_SPEED_LVARS: true,
+    DEBUG_USE_SPEED_LVARS: false,
 
     /**
      * Whether to force the drawing of course reversal (hold, proc turn) vectors at any point in the path
@@ -52,7 +52,7 @@ export const LnavConfig = {
     /**
      * Whether to draw path debug points and print them out
      */
-    DEBUG_PREDICTED_PATH: true,
+    DEBUG_PREDICTED_PATH: false,
 
     /**
      * Whether to print SVG path generation debug info
