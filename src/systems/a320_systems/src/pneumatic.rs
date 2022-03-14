@@ -1327,6 +1327,7 @@ mod tests {
     use systems::{
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
+        failures::FailureType,
         pneumatic::{
             BleedMonitoringComputerChannelOperationMode, ControllablePneumaticValve,
             CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
@@ -1334,8 +1335,8 @@ mod tests {
         },
         shared::{
             ApuBleedAirValveSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            EmergencyElectricalState, EngineFirePushButtons, InternationalStandardAtmosphere,
-            MachNumber, PneumaticValve, PotentialOrigin,
+            EmergencyElectricalState, EngineFirePushButtons, HydraulicColor,
+            InternationalStandardAtmosphere, MachNumber, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{SimulationTestBed, TestBed, WriteByName},
@@ -2619,6 +2620,56 @@ mod tests {
         assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
         assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
         assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
+    }
+
+    #[test]
+    fn hydraulic_reservoirs_is_pressurized_by_left_system() {
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .stop_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut);
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
+        test_bed
+            .test_bed
+            .run_multiple_frames(Duration::from_secs(16));
+
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
+        test_bed
+            .test_bed
+            .run_multiple_frames(Duration::from_secs(16));
+
+        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+    }
+
+    #[test]
+    fn hydraulic_reservoirs_is_pressurized_by_right_system() {
+        let mut test_bed = test_bed_with()
+            .stop_eng1()
+            .idle_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut);
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
+        test_bed
+            .test_bed
+            .run_multiple_frames(Duration::from_secs(16));
+
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
+        test_bed
+            .test_bed
+            .run_multiple_frames(Duration::from_secs(16));
+
+        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
     }
 
     #[test]

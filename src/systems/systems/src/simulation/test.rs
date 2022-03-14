@@ -50,6 +50,10 @@ pub trait TestBed {
         self.test_bed_mut().fail(failure_type);
     }
 
+    fn unfail(&mut self, failure_type: FailureType) {
+        self.test_bed_mut().unfail(failure_type);
+    }
+
     fn command<V: FnOnce(&mut Self::Aircraft)>(&mut self, func: V) {
         self.test_bed_mut().command(func);
     }
@@ -292,6 +296,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
 
     fn fail(&mut self, failure_type: FailureType) {
         self.simulation.activate_failure(failure_type);
+    }
+
+    fn unfail(&mut self, failure_type: FailureType) {
+        self.simulation.deactivate_failure(failure_type);
     }
 
     fn aircraft(&self) -> &T {
