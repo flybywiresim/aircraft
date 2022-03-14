@@ -147,8 +147,6 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'PSI', 1000);
     const displayedBleedPressure = Math.round(apuBleedPressure / 2) * 2; // APU bleed pressure is shown in steps of two.
 
-    // const [adir1ModeSelectorKnob] = useSimVar('L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB', 'Enum');
-
     useEffect(() => {
         if (apuBleedPbOn) {
             const timeout = setTimeout(() => {
