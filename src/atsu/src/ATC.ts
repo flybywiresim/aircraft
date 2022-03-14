@@ -100,6 +100,7 @@ export class Atc {
         message.RequestedResponses = CpdlcMessageRequestedResponseType.Yes;
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'REQUEST LOGON';
+        message.DcduRelevantMessage = false;
 
         this.nextAtc = station;
         this.parent.registerMessage(message);
@@ -168,6 +169,7 @@ export class Atc {
         message.RequestedResponses = CpdlcMessageRequestedResponseType.No;
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'LOGOFF';
+        message.DcduRelevantMessage = false;
 
         this.maxUplinkDelay = -1;
         this.parent.registerMessage(message);
@@ -261,6 +263,10 @@ export class Atc {
     }
 
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
+        if (message.ComStatus === AtsuMessageComStatus.Sending || message.ComStatus === AtsuMessageComStatus.Sent) {
+            return AtsuStatusCodes.Ok;
+        }
+
         if (message.Station === '') {
             if (this.currentAtc === '') {
                 return AtsuStatusCodes.NoAtc;
@@ -269,7 +275,9 @@ export class Atc {
         }
 
         message.ComStatus = AtsuMessageComStatus.Sending;
-        this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+        if ((message as CpdlcMessage).DcduRelevantMessage) {
+            this.dcduLink.update(message as CpdlcMessage);
+        }
 
         return this.datalink.sendMessage(message, false).then((code) => {
             if (code === AtsuStatusCodes.Ok) {
@@ -277,7 +285,11 @@ export class Atc {
             } else {
                 message.ComStatus = AtsuMessageComStatus.Failed;
             }
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', message);
+
+            if ((message as CpdlcMessage).DcduRelevantMessage) {
+                this.dcduLink.update(message as CpdlcMessage);
+            }
+
             return code;
         });
     }
@@ -400,7 +412,10 @@ export class Atc {
             if (cpdlcMessage.Direction === AtsuMessageDirection.Output && cpdlcMessage.Station === '') {
                 cpdlcMessage.Station = this.currentAtc;
             }
-            this.dcduLink.enqueue(cpdlcMessage);
+
+            if (cpdlcMessage.DcduRelevantMessage) {
+                this.dcduLink.enqueue(cpdlcMessage);
+            }
         }
     }
 
@@ -414,7 +429,7 @@ export class Atc {
     }
 
     private async updateAtis(icao: string, type: AtisType, overwrite: boolean): Promise<AtsuStatusCodes> {
-        return this.datalink.receiveAtis(icao, type).then((retval) => {
+        return this.datalink.receiveAtis(icao, type, () => { }).then((retval) => {
             if (retval[0] === AtsuStatusCodes.Ok) {
                 let code = AtsuStatusCodes.Ok;
                 const atis = retval[1] as AtisMessage;

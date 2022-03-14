@@ -1,5 +1,4 @@
 import { Arinc429Word } from '@shared/arinc429';
-import { getSmallestAngle } from '@instruments/common/utils.js';
 import { LateralMode, VerticalMode } from '@shared/autopilot.js';
 import React from 'react';
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
@@ -47,16 +46,14 @@ export const AttitudeIndicatorFixedUpper = ({ pitch, roll }: AttitudeIndicatorFi
 interface AttitudeIndicatorFixedCenterProps {
     pitch: Arinc429Word;
     roll: Arinc429Word;
-    vs: Arinc429Word;
-    gs: Arinc429Word;
-    heading: Arinc429Word;
-    track: Arinc429Word
+    fpa: Arinc429Word;
+    da: Arinc429Word
     isOnGround: boolean;
     FDActive: boolean;
     isAttExcessive: boolean;
 }
 
-export const AttitudeIndicatorFixedCenter = ({ pitch, roll, vs, gs, heading, track, isOnGround, FDActive, isAttExcessive }: AttitudeIndicatorFixedCenterProps) => {
+export const AttitudeIndicatorFixedCenter = ({ pitch, roll, fpa, da, isOnGround, FDActive, isAttExcessive }: AttitudeIndicatorFixedCenterProps) => {
     if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
         return (
             <text id="AttFailText" className="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
@@ -83,15 +80,13 @@ export const AttitudeIndicatorFixedCenter = ({ pitch, roll, vs, gs, heading, tra
                 <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
                 <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
             </g>
-            <FlightPathVector pitch={pitch} roll={roll} vs={vs} gs={gs} heading={heading} track={track} />
+            <FlightPathVector pitch={pitch} roll={roll} fpa={fpa} da={da} />
             {!isAttExcessive && (
                 <FlightPathDirector
                     pitch={pitch}
                     roll={roll}
-                    vs={vs}
-                    gs={gs}
-                    heading={heading}
-                    track={track}
+                    fpa={fpa}
+                    da={da}
                     FDActive={FDActive}
                 />
             ) }
@@ -159,61 +154,58 @@ const FlightDirector = ({ FDActive }) => {
 interface FPVProps {
     pitch: Arinc429Word;
     roll: Arinc429Word;
-    vs: Arinc429Word;
-    gs: Arinc429Word;
-    heading: Arinc429Word;
-    track: Arinc429Word
+    fpa: Arinc429Word;
+    da: Arinc429Word;
 }
-const FlightPathVector = ({ pitch, roll, vs, gs, heading, track }: FPVProps) => {
-    if (!getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
-        return null;
-    }
+const FlightPathVector = ({ pitch, roll, fpa, da }: FPVProps) => {
+    const fpaModeActive = getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool');
+    const daAndFpaValid = fpa.isNormalOperation() && da.isNormalOperation();
 
-    // TODO FPA and DA should come directly from the IR, and not be calculated here.
-    const FPA = Math.atan(vs.value / gs.value * 0.009875) * 180 / Math.PI;
-    const DA = getSmallestAngle(track.value, heading.value);
-
-    const daLimConv = Math.max(Math.min(DA, 21), -21) * DistanceSpacing / ValueSpacing;
-    const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(-pitch.value) - calculateHorizonOffsetFromPitch(FPA));
+    const daLimConv = Math.max(Math.min(da.value, 21), -21) * DistanceSpacing / ValueSpacing;
+    const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(-pitch.value) - calculateHorizonOffsetFromPitch(fpa.value));
     const rollCos = Math.cos(roll.value * Math.PI / 180);
     const rollSin = Math.sin(roll.value * Math.PI / 180);
 
     const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
     const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
 
-    return (
-        <g transform={`translate(${xOffset} ${yOffset})`}>
-            <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
-                <g>
-                    <path
-                        className="NormalOutline"
-                        // eslint-disable-next-line max-len
-                        d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
-                    />
-                    <path className="ThickOutline" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
-                    <path
-                        className="NormalStroke Green"
-                        // eslint-disable-next-line max-len
-                        d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
-                    />
-                    <path className="ThickStroke Green" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
-                </g>
-            </svg>
-        </g>
-    );
+    if (daAndFpaValid && fpaModeActive) {
+        return (
+            <g transform={`translate(${xOffset} ${yOffset})`}>
+                <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
+                    <g>
+                        <path
+                            className="NormalOutline"
+                            // eslint-disable-next-line max-len
+                            d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
+                        />
+                        <path className="ThickOutline" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
+                        <path
+                            className="NormalStroke Green"
+                            // eslint-disable-next-line max-len
+                            d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
+                        />
+                        <path className="ThickStroke Green" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
+                    </g>
+                </svg>
+            </g>
+        );
+    } if (fpaModeActive && pitch.isNormalOperation() && roll.isNormalOperation()) {
+        return <text id="FPVFlag" x="62.987099" y="89.42025" className="Blink9Seconds FontLargest Red EndAlign">FPV</text>;
+    }
+    return null;
 };
 
 interface FPDProps {
     pitch: Arinc429Word;
     roll: Arinc429Word;
-    vs: Arinc429Word;
-    gs: Arinc429Word;
-    heading: Arinc429Word;
-    track: Arinc429Word;
+    fpa: Arinc429Word;
+    da: Arinc429Word;
     FDActive: boolean;
 }
-const FlightPathDirector = ({ pitch, roll, vs, gs, heading, track, FDActive }: FPDProps) => {
-    if (!FDActive || !getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
+const FlightPathDirector = ({ pitch, roll, fpa, da, FDActive }: FPDProps) => {
+    const daAndFpaValid = fpa.isNormalOperation() && da.isNormalOperation();
+    if (!FDActive || !getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool') || !daAndFpaValid) {
         return null;
     }
 
@@ -231,12 +223,8 @@ const FlightPathDirector = ({ pitch, roll, vs, gs, heading, track, FDActive }: F
     const FDPitchOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_PITCH', 'number');
     const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 22.5), -22.5) * 1.9;
 
-    // TODO FPA and DA should come directly from the IR, and not be calculated here.
-    const FPA = Math.atan(vs.value / gs.value * 0.009875) * 180 / Math.PI;
-    const DA = getSmallestAngle(track.value, heading.value);
-
-    const daLimConv = Math.max(Math.min(DA, 21), -21) * DistanceSpacing / ValueSpacing;
-    const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(-pitch.value) - calculateHorizonOffsetFromPitch(FPA));
+    const daLimConv = Math.max(Math.min(da.value, 21), -21) * DistanceSpacing / ValueSpacing;
+    const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(-pitch.value) - calculateHorizonOffsetFromPitch(fpa.value));
     const rollCos = Math.cos(roll.value * Math.PI / 180);
     const rollSin = Math.sin(roll.value * Math.PI / 180);
 

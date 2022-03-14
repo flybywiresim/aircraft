@@ -198,7 +198,7 @@ class CDUAtcDepartReq {
             if (value === FMCMainDisplay.clrValue) {
                 store.station = "";
             } else if (/^[A-Z0-9]{4}$/.test(value)) {
-                mcdu.atsuManager.isRemoteStationAvailable(value).then((code) => {
+                mcdu.atsu.isRemoteStationAvailable(value).then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(code);
                     } else {

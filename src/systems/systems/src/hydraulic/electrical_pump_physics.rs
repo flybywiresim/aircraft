@@ -11,10 +11,15 @@ use uom::si::{
 };
 
 use crate::hydraulic::SectionPressure;
-use crate::shared::{pid::PidController, ConsumePower, ElectricalBusType, ElectricalBuses};
+use crate::shared::{
+    low_pass_filter::LowPassFilter, pid::PidController, ConsumePower, ElectricalBusType,
+    ElectricalBuses,
+};
 use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
+
+use std::time::Duration;
 
 pub(super) struct ElectricalPumpPhysics {
     active_id: VariableIdentifier,
@@ -25,7 +30,8 @@ pub(super) struct ElectricalPumpPhysics {
     consumed_power: Power,
 
     acceleration: AngularAcceleration,
-    speed: AngularVelocity,
+    speed_raw: AngularVelocity,
+    speed_filtered: LowPassFilter<AngularVelocity>,
     inertia: f64,
     is_active: bool,
 
@@ -35,6 +41,8 @@ pub(super) struct ElectricalPumpPhysics {
     resistant_torque: Torque,
 
     current_controller: PidController,
+
+    displacement_filtered: LowPassFilter<Volume>,
 }
 impl ElectricalPumpPhysics {
     const DEFAULT_INERTIA: f64 = 0.011;
@@ -42,12 +50,15 @@ impl ElectricalPumpPhysics {
     const DEFAULT_RESISTANT_TORQUE_WHEN_OFF_NEWTON_METER: f64 = 2.8;
     const BACKPRESSURE_PRELOAD_PSI: f64 = 200.;
 
+    const SPEED_DISPLACEMENT_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(50);
+    const MIN_FILTERING_RPM: f64 = 100.;
+
     // Efficiency gives generated mechanical torque ratio vs electrical power used.
     // 0.95 will convert 95% of electrical consumption in mechanical torque
     const ELECTRICAL_EFFICIENCY: f64 = 0.95;
 
     const DEFAULT_P_GAIN: f64 = 0.1;
-    const DEFAULT_I_GAIN: f64 = 0.4;
+    const DEFAULT_I_GAIN: f64 = 0.45;
 
     pub fn new(
         context: &mut InitContext,
@@ -65,7 +76,10 @@ impl ElectricalPumpPhysics {
             consumed_power: Power::new::<watt>(0.),
 
             acceleration: AngularAcceleration::new::<radian_per_second_squared>(0.),
-            speed: AngularVelocity::new::<radian_per_second>(0.),
+            speed_raw: AngularVelocity::new::<radian_per_second>(0.),
+            speed_filtered: LowPassFilter::<AngularVelocity>::new(
+                Self::SPEED_DISPLACEMENT_FILTER_TIME_CONSTANT,
+            ),
             inertia: Self::DEFAULT_INERTIA,
             is_active: false,
             output_current: ElectricCurrent::new::<ampere>(0.),
@@ -80,6 +94,9 @@ impl ElectricalPumpPhysics {
                 regulated_speed.get::<revolution_per_minute>(),
                 1.,
             ),
+            displacement_filtered: LowPassFilter::<Volume>::new(
+                Self::SPEED_DISPLACEMENT_FILTER_TIME_CONSTANT,
+            ),
         }
     }
 
@@ -89,8 +106,13 @@ impl ElectricalPumpPhysics {
         section: &impl SectionPressure,
         current_displacement: Volume,
     ) {
-        self.update_pump_resistant_torque(section, current_displacement);
+        self.displacement_filtered
+            .update(context.delta(), current_displacement);
+
+        self.update_pump_resistant_torque(section);
+
         self.update_pump_generated_torque(context);
+
         self.update_pump_speed(context);
     }
 
@@ -100,21 +122,24 @@ impl ElectricalPumpPhysics {
         self.acceleration = AngularAcceleration::new::<radian_per_second_squared>(
             final_torque.get::<newton_meter>() / self.inertia,
         );
-        self.speed += AngularVelocity::new::<radian_per_second>(
+        self.speed_raw += AngularVelocity::new::<radian_per_second>(
             self.acceleration.get::<radian_per_second_squared>() * context.delta_as_secs_f64(),
         );
-        self.speed = self
-            .speed
+        self.speed_raw = self
+            .speed_raw
             .max(AngularVelocity::new::<radian_per_second>(0.));
+
+        if self.speed_raw.get::<revolution_per_minute>() > Self::MIN_FILTERING_RPM {
+            self.speed_filtered.update(context.delta(), self.speed_raw);
+        } else {
+            self.speed_filtered.reset(AngularVelocity::default());
+        }
     }
 
-    fn update_pump_resistant_torque(
-        &mut self,
-        section: &impl SectionPressure,
-        current_displacement: Volume,
-    ) {
+    fn update_pump_resistant_torque(&mut self, section: &impl SectionPressure) {
         let dynamic_friction_torque = Torque::new::<newton_meter>(
-            Self::DEFAULT_DYNAMIC_FRICTION_CONSTANT * self.speed.get::<revolution_per_minute>(),
+            Self::DEFAULT_DYNAMIC_FRICTION_CONSTANT
+                * self.speed_filtered.output().get::<revolution_per_minute>(),
         );
 
         let pumping_torque = if self.is_active && self.is_powered {
@@ -123,7 +148,7 @@ impl ElectricalPumpPhysics {
                     .pressure()
                     .get::<psi>()
                     .max(Self::BACKPRESSURE_PRELOAD_PSI)
-                    * current_displacement.get::<cubic_inch>()
+                    * self.displacement_filtered.output().get::<cubic_inch>()
                     / (2. * std::f64::consts::PI),
             )
         } else {
@@ -136,7 +161,7 @@ impl ElectricalPumpPhysics {
     fn update_current_control(&mut self, context: &UpdateContext) {
         self.output_current = if self.pump_should_run() {
             ElectricCurrent::new::<ampere>(self.current_controller.next_control_output(
-                self.speed.get::<revolution_per_minute>(),
+                self.speed_raw.get::<revolution_per_minute>(),
                 Some(context.delta()),
             ))
         } else {
@@ -163,7 +188,7 @@ impl ElectricalPumpPhysics {
         self.update_electrical_power_consumption();
 
         if self.pump_should_run() {
-            if self.speed.get::<revolution_per_minute>() < 5.
+            if self.speed_raw.get::<revolution_per_minute>() < 5.
                 && self.output_current.get::<ampere>() > 0.
             {
                 self.generated_torque =
@@ -171,7 +196,7 @@ impl ElectricalPumpPhysics {
             } else {
                 self.generated_torque = Torque::new::<newton_meter>(
                     Self::ELECTRICAL_EFFICIENCY * self.consumed_power.get::<watt>()
-                        / self.speed.get::<radian_per_second>(),
+                        / self.speed_raw.get::<radian_per_second>(),
                 );
             }
         } else {
@@ -188,7 +213,7 @@ impl ElectricalPumpPhysics {
     }
 
     pub fn speed(&self) -> AngularVelocity {
-        self.speed
+        self.speed_filtered.output()
     }
 }
 impl SimulationElement for ElectricalPumpPhysics {
@@ -343,7 +368,7 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.pump.speed())
-                >= AngularVelocity::new::<revolution_per_minute>(7000.)
+                >= AngularVelocity::new::<revolution_per_minute>(6500.)
         );
     }
 
