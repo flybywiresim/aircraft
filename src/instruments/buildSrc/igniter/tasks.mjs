@@ -50,7 +50,7 @@ const ecamPages = [
     },
     {
         name: 'bleed-page',
-        path: 'SD/Pages/Press',
+        path: 'SD/Pages/Bleed',
     },
 ];
 
