@@ -427,6 +427,8 @@ void FlyByWireInterface::setupLocalVariables() {
   idSpoilersArmed = make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
   idSpoilersGroundSpoilersActive = make_unique<LocalVariable>("A32NX_SPOILERS_GROUND_SPOILERS_ACTIVE");
+  idSpoilersPositionLeft = make_unique<LocalVariable>("A32NX_SPOILERS_LEFT_DEFLECTION_DEMAND");
+  idSpoilersPositionRight = make_unique<LocalVariable>("A32NX_SPOILERS_RIGHT_DEFLECTION_DEMAND");
 
   idAileronPositionLeft = make_unique<LocalVariable>("A32NX_AILERON_LEFT_DEFLECTION_DEMAND");
   idAileronPositionRight = make_unique<LocalVariable>("A32NX_AILERON_RIGHT_DEFLECTION_DEMAND");
@@ -1696,7 +1698,10 @@ bool FlyByWireInterface::updateSpoilers(double sampleTime) {
   spoilersHandler->setSimulationVariables(
       simData.simulationTime, autopilotStateMachineOutput.enabled_AP1 == 1 || autopilotStateMachineOutput.enabled_AP2 == 1,
       simData.V_gnd_kn, thrustLeverAngle_1->get(), thrustLeverAngle_2->get(), simData.gear_animation_pos_1, simData.gear_animation_pos_2,
-      flapsHandleIndexFlapConf->get(), flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1);
+      flapsHandleIndexFlapConf->get(), flyByWireOutput.sim.data_computed.high_aoa_prot_active == 1, flyByWireOutput.output.xi_pos);
+
+  // update sim position
+  spoilersHandler->updateSimPosition(sampleTime);
 
   // check state of spoilers and adapt if necessary
   if (spoilersHandler->getSimPosition() != simData.spoilers_handle_position) {
@@ -1708,6 +1713,10 @@ bool FlyByWireInterface::updateSpoilers(double sampleTime) {
   idSpoilersArmed->set(spoilersHandler->getIsArmed() ? 1 : 0);
   idSpoilersHandlePosition->set(spoilersHandler->getHandlePosition());
   idSpoilersGroundSpoilersActive->set(spoilersHandler->getIsGroundSpoilersActive() ? 1 : 0);
+
+  // set spoiler demand as input for hydraulics
+  idSpoilersPositionLeft->set(spoilersHandler->getLeftPosition());
+  idSpoilersPositionRight->set(spoilersHandler->getRightPosition());
 
   // result
   return true;

@@ -360,6 +360,8 @@ export class ManagedFlightPlan {
         const mappedWaypoint: WayPoint = (waypoint instanceof WayPoint) ? waypoint : RawDataMapper.toWaypoint(waypoint, this._parentInstrument);
 
         if (mappedWaypoint.type === 'A' && index === 0) {
+            mappedWaypoint.endsInDiscontinuity = true;
+            mappedWaypoint.discontinuityCanBeCleared = true;
             this.originAirfield = mappedWaypoint;
             this.persistentOriginAirfield = mappedWaypoint;
 
@@ -398,6 +400,14 @@ export class ManagedFlightPlan {
             if (segment) {
                 if (index > this.length) {
                     index = undefined;
+                }
+
+                if (mappedWaypoint.additionalData.legType === undefined) {
+                    if (segment.waypoints.length < 1) {
+                        mappedWaypoint.additionalData.legType = LegType.IF;
+                    } else {
+                        mappedWaypoint.additionalData.legType = LegType.TF;
+                    }
                 }
 
                 if (index !== undefined) {
@@ -838,6 +848,8 @@ export class ManagedFlightPlan {
         // Make origin fix an IF leg
         if (origin) {
             origin.additionalData.legType = LegType.IF;
+            origin.endsInDiscontinuity = true;
+            origin.discontinuityCanBeCleared = true;
         }
 
         // Set origin fix coordinates to runway beginning coordinates
@@ -849,6 +861,8 @@ export class ManagedFlightPlan {
             const runwayTransition = airportInfo.departures[departureIndex].runwayTransitions[runwayIndex];
             if (runwayTransition) {
                 legs.push(...runwayTransition.legs);
+                origin.endsInDiscontinuity = false;
+                origin.discontinuityCanBeCleared = undefined;
             }
         }
 
@@ -913,6 +927,8 @@ export class ManagedFlightPlan {
                 }
             }
         }
+
+        this.restringSegmentBoundaries(SegmentType.Departure, SegmentType.Enroute);
     }
 
     /**
@@ -990,6 +1006,9 @@ export class ManagedFlightPlan {
                 }
             }
         }
+
+        this.restringSegmentBoundaries(SegmentType.Enroute, SegmentType.Arrival);
+        this.restringSegmentBoundaries(SegmentType.Arrival, SegmentType.Approach);
     }
 
     /**
@@ -1118,6 +1137,8 @@ export class ManagedFlightPlan {
             }
         }
 
+        this.restringSegmentBoundaries(SegmentType.Arrival, SegmentType.Approach);
+
         /* if (missedLegs.length > 0) {
             let { _startIndex, segment } = this.truncateSegment(SegmentType.Missed);
 
@@ -1139,6 +1160,154 @@ export class ManagedFlightPlan {
                 }
             }
         } */
+    }
+
+    private static isXfLeg(leg: WayPoint): boolean {
+        switch (leg.additionalData.legType) {
+            case LegType.CF:
+            case LegType.DF:
+            case LegType.IF:
+            case LegType.RF:
+            case LegType.TF:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static isFxLeg(leg: WayPoint): boolean {
+        switch (leg.additionalData.legType) {
+            case LegType.FA:
+            case LegType.FC:
+            case LegType.FD:
+            case LegType.FM:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static legsStartOrEndAtSameFix(legA: WayPoint, legB: WayPoint): boolean {
+        return legA.icao === legB.icao && ((ManagedFlightPlan.isXfLeg(legA) && ManagedFlightPlan.isXfLeg(legB)) || (ManagedFlightPlan.isFxLeg(legA) && ManagedFlightPlan.isFxLeg(legB)));
+    }
+
+    private static climbConstraint(leg: WayPoint): number {
+        switch (leg.legAltitudeDescription) {
+            case AltitudeDescriptor.At:
+            case AltitudeDescriptor.AtOrBelow:
+                return leg.legAltitude1;
+            case AltitudeDescriptor.Between:
+                return leg.legAltitude2;
+        }
+        return Infinity;
+    }
+
+    private static descentConstraint(leg: WayPoint): number {
+        switch (leg.legAltitudeDescription) {
+            case AltitudeDescriptor.At:
+            case AltitudeDescriptor.AtOrAbove:
+            case AltitudeDescriptor.Between:
+                return leg.legAltitude1;
+        }
+        return -Infinity;
+    }
+
+    private static mergeConstraints(legA: WayPoint, legB: WayPoint): { legAltitudeDescription: AltitudeDescriptor, legAltitude1: number, legAltitude2: number, speedConstraint: number } {
+        let legAltitudeDescription = AltitudeDescriptor.Empty;
+        let legAltitude1 = 0;
+        let legAltitude2 = 0;
+        if (legA.legAltitudeDescription === AltitudeDescriptor.At) {
+            legAltitudeDescription = AltitudeDescriptor.At;
+            if (legB.legAltitudeDescription === AltitudeDescriptor.At) {
+                legAltitude1 = Math.min(legA.legAltitude1, legB.legAltitude1);
+            } else {
+                legAltitude1 = legA.legAltitude1;
+            }
+        } else if (legB.legAltitudeDescription === AltitudeDescriptor.At) {
+            legAltitudeDescription = AltitudeDescriptor.At;
+            legAltitude1 = legB.legAltitude1;
+        } else if (legA.legAltitudeDescription > 0 || legB.legAltitudeDescription > 0) {
+            const maxAlt = Math.min(ManagedFlightPlan.climbConstraint(legA), ManagedFlightPlan.climbConstraint(legB));
+            const minAlt = Math.max(ManagedFlightPlan.descentConstraint(legA), ManagedFlightPlan.descentConstraint(legB));
+
+            if (Number.isFinite(maxAlt)) {
+                if (Number.isFinite(minAlt)) {
+                    if (Math.abs(minAlt - maxAlt) < 1) {
+                        legAltitudeDescription = AltitudeDescriptor.At;
+                        legAltitude1 = minAlt;
+                    } else {
+                        legAltitudeDescription = AltitudeDescriptor.Between;
+                        legAltitude1 = minAlt;
+                        legAltitude2 = maxAlt;
+                    }
+                } else {
+                    legAltitudeDescription = AltitudeDescriptor.AtOrBelow;
+                    legAltitude1 = maxAlt;
+                }
+            } else if (Number.isFinite(minAlt)) {
+                legAltitudeDescription = AltitudeDescriptor.AtOrAbove;
+                legAltitude1 = minAlt;
+            }
+        }
+
+        const speed = Math.min((legA.speedConstraint > 0) ? legA.speedConstraint : Infinity, (legB.speedConstraint > 0) ? legB.speedConstraint : Infinity);
+
+        return {
+            legAltitudeDescription,
+            legAltitude1,
+            legAltitude2,
+            speedConstraint: Number.isFinite(speed) ? speed : 0,
+        }
+    }
+
+    /**
+     * Check for common waypoints at the boundaries of segments, and merge them if found
+     * segmentA must be before segmentB in the plan!
+     */
+    private restringSegmentBoundaries(segmentTypeA: SegmentType, segmentTypeB: SegmentType) {
+        if (segmentTypeB < segmentTypeA) {
+            throw new Error('restringSegmentBoundaries: segmentTypeA must be before segmentTypeB');
+        }
+
+        const segmentA = this.getSegment(segmentTypeA);
+        const segmentB = this.getSegment(segmentTypeB);
+
+        if (segmentA?.waypoints.length < 1 || segmentB?.waypoints.length < 1) {
+            return;
+        }
+
+        const lastLegIndexA = segmentA.offset + segmentA.waypoints.length - 1;
+        const lastLegA = segmentA.waypoints[segmentA.waypoints.length - 1];
+        const firstLegIndexB = segmentB.offset;
+        const firstLegB = segmentB.waypoints[0];
+
+        if (ManagedFlightPlan.legsStartOrEndAtSameFix(lastLegA, firstLegB)) {
+            const constraints = ManagedFlightPlan.mergeConstraints(lastLegA, firstLegB);
+            if (segmentA.type === SegmentType.Departure) {
+                this.removeWaypoint(firstLegIndexB, true);
+                Object.assign(lastLegA, constraints);
+                lastLegA.endsInDiscontinuity = false;
+                lastLegA.discontinuityCanBeCleared = undefined;
+            } else {
+                this.removeWaypoint(lastLegIndexA, true);
+                Object.assign(firstLegB, constraints);
+                firstLegB.endsInDiscontinuity = false;
+                firstLegB.discontinuityCanBeCleared = undefined;
+            }
+        } else if (segmentTypeA === SegmentType.Arrival && segmentTypeB === SegmentType.Approach) {
+            let toDeleteFromB = 0;
+            for (let i = 0; i < segmentB.waypoints.length; i++) {
+                if (ManagedFlightPlan.legsStartOrEndAtSameFix(lastLegA, segmentB.waypoints[i])) {
+                    const constraints = ManagedFlightPlan.mergeConstraints(lastLegA, firstLegB);
+                    Object.assign(lastLegA, constraints);
+                    toDeleteFromB = i + 1;
+                    break;
+                }
+            }
+            for (let i = 0; i < toDeleteFromB; i++) {
+                this.removeWaypoint(segmentB.offset, true);
+            }
+        }
     }
 
     /**
