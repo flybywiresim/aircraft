@@ -1,9 +1,11 @@
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
-    hydraulic::landing_gear::{GearsSystemState,GearSystemSensors, GearSystemStateMachine,GearSystemGearController,GearSystemDoorController},
+    hydraulic::landing_gear::{
+        GearComponentController, GearSystemSensors, GearSystemStateMachine, GearsSystemState,
+    },
     shared::{
         ElectricalBusType, ElectricalBuses, LandingGearRealPosition, LgciuDoorPosition,
-        LgciuGearExtension, LgciuSensors, LgciuWeightOnWheels,
+        LgciuGearExtension, LgciuSensors, LgciuWeightOnWheels,LgciuGearAndDoor
     },
     simulation::{Read, SimulationElement, SimulatorReader, SimulatorWriter, Write},
 };
@@ -159,9 +161,8 @@ pub struct LandingGearControlInterfaceUnit {
 
     gear_system_control: GearSystemStateMachine,
     is_gear_lever_down: bool,
-
-    door_controller: GearSystemDoorController,
-    gear_controller: GearSystemGearController,
+    // door_controller: GearSystemDoorController,
+    // gear_controller: GearSystemGearController,
 }
 impl LandingGearControlInterfaceUnit {
     pub fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
@@ -199,8 +200,8 @@ impl LandingGearControlInterfaceUnit {
 
             gear_system_control: GearSystemStateMachine::new(),
             is_gear_lever_down: true,
-            door_controller: GearSystemDoorController::new(),
-            gear_controller: GearSystemGearController::new(GearsSystemState::AllDownLocked),
+            // door_controller: GearSystemDoorController::new(),
+            // gear_controller: GearSystemGearController::new(GearsSystemState::AllDownLocked),
         }
     }
 
@@ -230,11 +231,72 @@ impl LandingGearControlInterfaceUnit {
         self.nose_gear_down_and_locked =
             gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::CENTER, self.id_number);
 
+        self.nose_door_fully_opened =
+            gear_system_sensors.is_door_id_down_and_locked(GearWheel::CENTER, self.id_number);
+        self.right_door_fully_opened =
+            gear_system_sensors.is_door_id_down_and_locked(GearWheel::RIGHT, self.id_number);
+        self.left_door_fully_opened =
+            gear_system_sensors.is_door_id_down_and_locked(GearWheel::LEFT, self.id_number);
+        self.nose_door_up_and_locked =
+            gear_system_sensors.is_door_id_up_and_locked(GearWheel::CENTER, self.id_number);
+        self.right_door_up_and_locked =
+            gear_system_sensors.is_door_id_up_and_locked(GearWheel::RIGHT, self.id_number);
+        self.left_door_up_and_locked =
+            gear_system_sensors.is_door_id_up_and_locked(GearWheel::LEFT, self.id_number);
+
         self.gear_system_control
             .update(&ExtensionInfo::from_lgciu(self), !self.is_gear_lever_down);
 
-        self.door_controller = GearSystemDoorController::from_state(self.gear_system_control.state(), &ExtensionInfo::from_lgciu(self));
-        self.gear_controller = GearSystemGearController::from_state(self.gear_system_control.state(), &ExtensionInfo::from_lgciu(self));
+        // self.door_controller = GearSystemDoorController::from_state(
+        //     self.gear_system_control.state(),
+        //     &ExtensionInfo::from_lgciu(self),
+        // );
+        // self.gear_controller = GearSystemGearController::from_state(
+        //     self.gear_system_control.state(),
+        //     &ExtensionInfo::from_lgciu(self),
+        // );
+    }
+
+    fn door_controller(&self) -> LgciuHydraulicController {
+        match self.gear_system_control.state() {
+            GearsSystemState::AllUpLocked => LgciuHydraulicController::closing(),
+            GearsSystemState::Retracting => {
+                if !self.all_up_and_locked() {
+                    LgciuHydraulicController::opening()
+                } else {
+                    LgciuHydraulicController::closing()
+                }
+            }
+            GearsSystemState::Extending => {
+                if !self.all_down_and_locked() {
+                    LgciuHydraulicController::opening()
+                } else {
+                    LgciuHydraulicController::closing()
+                }
+            }
+            GearsSystemState::AllDownLocked => LgciuHydraulicController::closing(),
+        }
+    }
+
+    fn gear_controller(&self) -> LgciuHydraulicController {
+        match self.gear_system_control.state() {
+            GearsSystemState::AllUpLocked => LgciuHydraulicController::closing(),
+            GearsSystemState::Retracting => {
+                if self.all_fully_opened() || self.all_up_and_locked() {
+                    LgciuHydraulicController::closing()
+                } else {
+                    LgciuHydraulicController::opening()
+                }
+            }
+            GearsSystemState::Extending => {
+                if self.all_fully_opened() || self.all_down_and_locked() {
+                    LgciuHydraulicController::opening()
+                } else {
+                    LgciuHydraulicController::closing()
+                }
+            }
+            GearsSystemState::AllDownLocked => LgciuHydraulicController::opening(),
+        }
     }
 }
 impl SimulationElement for LandingGearControlInterfaceUnit {
@@ -338,12 +400,43 @@ impl LgciuDoorPosition for LandingGearControlInterfaceUnit {
 
 impl LgciuSensors for LandingGearControlInterfaceUnit {}
 
+#[derive(PartialEq, Clone, Copy)]
+//TODO get rid of this dummy structure
+struct LgciuHydraulicController {
+    open_req: bool,
+    close_req: bool,
+}
+impl LgciuHydraulicController {
+    fn opening() -> Self {
+        Self {
+            open_req: true,
+            close_req: false,
+        }
+    }
+
+    fn closing() -> Self {
+        Self {
+            open_req: false,
+            close_req: true,
+        }
+    }
+}
+impl GearComponentController for LgciuHydraulicController {
+    fn should_open(&self) -> bool {
+        self.open_req
+    }
+
+    fn should_close(&self) -> bool {
+        self.close_req
+    }
+}
+
 //TODO get rid of this dummy structure
 struct ExtensionInfo {
     all_up: bool,
     all_down: bool,
     all_closed: bool,
-    all_opened : bool,
+    all_opened: bool,
 }
 impl ExtensionInfo {
     fn from_lgciu(lgciu: &LandingGearControlInterfaceUnit) -> Self {
@@ -351,26 +444,27 @@ impl ExtensionInfo {
             all_up: lgciu.all_up_and_locked(),
             all_down: lgciu.all_down_and_locked(),
             all_closed: lgciu.all_closed_and_locked(),
-            all_opened : lgciu.all_fully_opened(),
+            all_opened: lgciu.all_fully_opened(),
         }
     }
 }
 impl LgciuGearExtension for ExtensionInfo {
     fn all_down_and_locked(&self) -> bool {
-        self.all_up
-    }
-    fn all_up_and_locked(&self) -> bool {
         self.all_down
     }
-}
-impl LgciuDoorPosition for ExtensionInfo{
-    fn all_fully_opened(&self) -> bool {
-        self.all_closed
+    fn all_up_and_locked(&self) -> bool {
+        self.all_up
     }
-    fn all_closed_and_locked(&self) -> bool {
+}
+impl LgciuDoorPosition for ExtensionInfo {
+    fn all_fully_opened(&self) -> bool {
         self.all_opened
     }
+    fn all_closed_and_locked(&self) -> bool {
+        self.all_closed
+    }
 }
+impl LgciuGearAndDoor for ExtensionInfo {}
 
 #[cfg(test)]
 mod tests {
@@ -378,95 +472,148 @@ mod tests {
     use crate::simulation::test::{ElementCtorFn, WriteByName};
     use crate::simulation::test::{SimulationTestBed, TestAircraft, TestBed};
 
-    struct TestGearSystem{
-        door_opened: bool,
-        gear_down: bool,
+    use crate::simulation::{
+        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
+    };
+
+    use crate::electrical::{test::TestElectricitySource, ElectricalBus, Electricity};
+    use crate::shared::PotentialOrigin;
+
+    use uom::si::{electric_potential::volt, f64::*};
+
+    struct TestGearSystem {
+        door_position: u8,
+        gear_position: u8,
     }
-    impl TestGearSystem{
-        fn update(&mut self,doors_controller: &impl GearComponentController,
-            gears_controller: &impl GearComponentController,){
+    impl TestGearSystem {
+        const UP_LOCK_TRESHOLD: u8 = 10;
 
-            if doors_controller.should_hydraulic_unlock() && doors_controller.should_open() {
-                self.door_opened = true;
+        fn new() -> Self {
+            Self {
+                door_position: Self::UP_LOCK_TRESHOLD,
+                gear_position: 1,
             }
-            if !doors_controller.should_hydraulic_unlock() && !doors_controller.should_open() {
-                self.door_opened = false;
+        }
+
+        fn update(
+            &mut self,
+            doors_controller: &impl GearComponentController,
+            gears_controller: &impl GearComponentController,
+        ) {
+            if doors_controller.should_open() {
+                self.door_position -= 1;
+            } else if doors_controller.should_close() {
+                self.door_position += 1;
             }
 
-
-            if gears_controller.should_hydraulic_unlock() && gears_controller.should_open() {
-                self.gear_down = true;
+            if gears_controller.should_open() {
+                self.gear_position -= 1;
+            } else if gears_controller.should_close() {
+                self.gear_position += 1;
             }
-            if !gears_controller.should_hydraulic_unlock() && !gears_controller.should_open() {
-                self.gear_down = false;
+
+            self.door_position = self.door_position.max(1).min(Self::UP_LOCK_TRESHOLD);
+            self.gear_position = self.gear_position.max(1).min(Self::UP_LOCK_TRESHOLD);
+
+            // Ensuring gear and doors never move at the same time
+            if self.door_position != 1 && self.door_position != Self::UP_LOCK_TRESHOLD {
+                assert!(self.gear_position == 1 || self.gear_position == Self::UP_LOCK_TRESHOLD)
+            }
+
+            if self.gear_position != 1 && self.gear_position !=Self::UP_LOCK_TRESHOLD {
+                assert!(self.door_position == 1 || self.door_position ==Self::UP_LOCK_TRESHOLD)
             }
         }
     }
     impl GearSystemSensors for TestGearSystem {
         fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
-            !self.gear_down
+            self.gear_position >= Self::UP_LOCK_TRESHOLD
         }
 
         fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
-            self.gear_down
+            self.gear_position <= 1
         }
 
         fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
-           !self.door_opened
+            self.door_position >= Self::UP_LOCK_TRESHOLD
         }
 
         fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
-            self.door_opened
+            self.door_position <= 1
         }
     }
 
-
     struct TestGearAircraft {
-        lgciu : LandingGearControlInterfaceUnit,
-        gear_system : TestGearSystem,
+        landing_gear: LandingGear,
+        lgciu: LandingGearControlInterfaceUnit,
+        gear_system: TestGearSystem,
 
-        pressure: Pressure,
+        powered_source_ac: TestElectricitySource,
+        dc_ess_bus: ElectricalBus,
     }
     impl TestGearAircraft {
-        fn new(
-
-        ) -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
-                lgciu : LandingGearControlInterfaceUnit::new(
+                landing_gear: LandingGear::new(context),
+                lgciu: LandingGearControlInterfaceUnit::new(
                     context,
                     1,
                     ElectricalBusType::DirectCurrentEssential,
                 ),
-                gear_system : TestGearSystem,
+                gear_system: TestGearSystem::new(),
 
-                pressure: Pressure::new::<psi>(0.),
+                powered_source_ac: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::EngineGenerator(1),
+                ),
+                dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
             }
         }
 
-        fn set_pressure(&mut self, pressure: Pressure) {
-            self.pressure = pressure;
-        }
-
-
         fn update(&mut self, context: &UpdateContext) {
             self.lgciu
-                .update(context, &self.gear_system);
+                .update(&self.landing_gear, &self.gear_system, false);
 
-            self.gear_system.update();
+            self.gear_system
+                .update(&self.lgciu.door_controller(), &self.lgciu.gear_controller());
 
-            // println!(
-            //     "Body position {:.2} , Hyd control {:#?}",
-            //     self.door_assembly.position_normalized().get::<ratio>(),
-            //     self.door_assembly.hydraulic_controller.requested_mode(),
-            // );
+            println!(
+                "LGCIU STATE {:#?} / Doors OPEN {} CLOSE {} / Gears OPEN {} CLOSE {}",
+                self.lgciu.gear_system_control.state(),
+                self.lgciu.door_controller().should_open(),
+                self.lgciu.door_controller().should_close(),
+                self.lgciu.gear_controller().should_open(),
+                self.lgciu.gear_controller().should_close(),
+            );
+
+            println!(
+                "Gear pos{} / Door pos{}",
+                self.gear_system.gear_position, self.gear_system.door_position,
+            );
         }
     }
     impl Aircraft for TestGearAircraft {
+        fn update_before_power_distribution(
+            &mut self,
+            _: &UpdateContext,
+            electricity: &mut Electricity,
+        ) {
+            self.powered_source_ac
+                .power_with_potential(ElectricPotential::new::<volt>(115.));
+            electricity.supplied_by(&self.powered_source_ac);
+            electricity.flow(&self.powered_source_ac, &self.dc_ess_bus);
+        }
+
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-                self.update(context);
+            self.update(context);
         }
     }
-    impl SimulationElement for TestGearAircraft {}
+    impl SimulationElement for TestGearAircraft {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.lgciu.accept(visitor);
+            visitor.visit(self);
+        }
+    }
 
     #[test]
     fn is_up_and_locked_returns_false_when_fully_down() {
@@ -547,6 +694,53 @@ mod tests {
         assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::CENTER)));
         assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::LEFT)));
         assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::RIGHT)));
+    }
+
+    #[test]
+    fn gear_state_downlock_on_init() {
+        let mut test_bed = SimulationTestBed::new(|context| TestGearAircraft::new(context));
+
+        assert!(
+            test_bed.query(|a| a.lgciu.gear_system_control.state())
+                == GearsSystemState::AllDownLocked
+        );
+    }
+
+    #[test]
+    fn gear_up_when_lever_up_down_when_lever_down() {
+        let mut test_bed = SimulationTestBed::new(|context| TestGearAircraft::new(context));
+
+        test_bed.write_by_name("GEAR HANDLE POSITION", 1);
+        for _ in 0..2 {
+            test_bed.run_without_delta();
+        }
+
+        assert!(
+            test_bed.query(|a| a.lgciu.gear_system_control.state())
+                == GearsSystemState::AllDownLocked
+        );
+
+        // Gear UP
+        test_bed.write_by_name("GEAR HANDLE POSITION", 0);
+        for _ in 0..30 {
+            test_bed.run_without_delta();
+        }
+
+        assert!(
+            test_bed.query(|a| a.lgciu.gear_system_control.state())
+                == GearsSystemState::AllUpLocked
+        );
+
+        // Gear DOWN
+        test_bed.write_by_name("GEAR HANDLE POSITION", 1);
+        for _ in 0..30 {
+            test_bed.run_without_delta();
+        }
+
+        assert!(
+            test_bed.query(|a| a.lgciu.gear_system_control.state())
+                == GearsSystemState::AllDownLocked
+        );
     }
 
     fn run_test_bed_on_with_position(

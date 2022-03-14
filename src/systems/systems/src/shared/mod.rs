@@ -103,6 +103,8 @@ pub trait LgciuDoorPosition {
 }
 
 pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition {}
+pub trait LgciuGearAndDoor: LgciuGearExtension + LgciuDoorPosition {}
+
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
 }
