@@ -173,7 +173,7 @@ class CDUAocRequestsAtis {
                     mcdu.atsu.registerMessage(retval[1]);
                     store.sendStatus = "";
                     if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
-                        updateView();
+                        CDUAocRequestsAtis.ShowPage(mcdu, store);
                     }
 
                     // print the message
@@ -186,7 +186,7 @@ class CDUAocRequestsAtis {
 
                     if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
                         store.sendStatus = "FAILED";
-                        updateView();
+                        CDUAocRequestsAtis.ShowPage(mcdu, store);
                     }
                 }
             });
