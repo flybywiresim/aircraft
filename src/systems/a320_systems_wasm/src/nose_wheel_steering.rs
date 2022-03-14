@@ -98,12 +98,10 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
             if realistic_tiller_enabled {
                 // Convert tiller handle position to [-1;1], -1 is left
                 tiller_handle_position * 2. - 1.
+            } else if !tiller_pedal_disconnect {
+                rudder_pedal_position
             } else {
-                if !tiller_pedal_disconnect {
-                    rudder_pedal_position
-                } else {
-                    0.
-                }
+                0.
             }
         },
         Variable::named("TILLER_HANDLE_POSITION"),

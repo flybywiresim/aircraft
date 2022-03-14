@@ -236,7 +236,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             CDUNavRadioPage.ShowPage(this);
         };
         this.onFuel = () => {
-            CDUFuelPredPage.ShowPage(this);
+            this.goToFuelPredPage();
         };
         this.onAtc = () => {
             CDUAtcMenu.ShowPage1(this);
@@ -1534,5 +1534,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.sendToSocket(`update:${JSON.stringify(content)}`);
     }
     /* END OF WEBSOCKET */
+
+    goToFuelPredPage() {
+        if (this.isAnEngineOn()) {
+            CDUFuelPredPage.ShowPage(this);
+        } else {
+            CDUInitPage.ShowPage2(this);
+        }
+    }
 }
 registerInstrument("a320-neo-cdu-main-display", A320_Neo_CDU_MainDisplay);

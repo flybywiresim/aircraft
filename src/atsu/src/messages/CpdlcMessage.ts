@@ -41,6 +41,8 @@ export class CpdlcMessage extends AtsuMessage {
 
     public PreviousTransmissionId = -1;
 
+    public DcduRelevantMessage = true;
+
     constructor() {
         super();
         this.Type = AtsuMessageType.CPDLC;
@@ -59,6 +61,7 @@ export class CpdlcMessage extends AtsuMessage {
         }
         this.CurrentTransmissionId = jsonData.CurrentTransmissionId;
         this.PreviousTransmissionId = jsonData.PreviousTransmissionId;
+        this.DcduRelevantMessage = jsonData.DcduRelevantMessage;
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {
