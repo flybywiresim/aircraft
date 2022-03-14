@@ -47,10 +47,12 @@ export class FlightPathVector extends DisplayComponent<{bus: EventBus}> {
 
         sub.on('fpa').handle((fpa) => {
             this.data.fpa = fpa;
+            this.needsUpdate = true;
         });
 
         sub.on('da').handle((da) => {
             this.data.da = da;
+            this.needsUpdate = true;
         });
 
         sub.on('rollAr').handle((r) => {

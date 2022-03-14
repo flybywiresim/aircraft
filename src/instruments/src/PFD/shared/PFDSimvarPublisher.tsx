@@ -215,7 +215,7 @@ export enum PFDVars {
     flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
     autoBrakeMode = 'L:A32NX_AUTOBRAKES_ARMED_MODE',
     autoBrakeActive = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
-    fpaRaw = 'L:A32NX_ADIRS_IR_1_GROUND_SPEED',
+    fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
     daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
 
   }
