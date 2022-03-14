@@ -46,15 +46,22 @@ declare global {
 
         distanceInFP: number;
 
+        distanceInMinutes: number;
+
         cumulativeDistanceInFP: number;
+
+        waypointReachedAt: number;
 
         instrument: BaseInstrument;
 
+        /**
+         * These are the default MS types but for some reason we changed
         altDesc: number;
 
         altitude1: number;
 
         altitude2: number;
+        */
 
         legAltitudeDescription: number;
 
@@ -67,6 +74,8 @@ declare global {
         constraintType: WaypointConstraintType;
 
         additionalData: { [key: string]: any }
+
+        turnDirection: TurnDirection;
 
         verticalAngle?: number;
 

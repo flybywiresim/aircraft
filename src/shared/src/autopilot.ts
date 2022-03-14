@@ -15,6 +15,11 @@ enum LateralMode {
     GA_TRACK = 50,
 }
 
+enum ArmedLateralMode {
+    NAV = 0,
+    LOC = 1,
+}
+
 enum VerticalMode {
     NONE = 0,
     ALT = 10,
@@ -27,6 +32,7 @@ enum VerticalMode {
     ALT_CST_CPT = 21,
     CLB = 22,
     DES = 23,
+    FINAL = 24,
     GS_CPT = 30,
     GS_TRACK = 31,
     LAND = 32,
@@ -34,10 +40,28 @@ enum VerticalMode {
     ROLL_OUT = 34,
     SRS = 40,
     SRS_GA = 41,
+    TCAS = 50,
+}
+
+enum ArmedVerticalMode {
+    ALT = 0,
+    ALT_CST = 1,
+    CLB = 2,
+    DES = 3,
+    GS = 4,
+    FINAL = 5,
+    TCAS = 6,
+}
+
+function isArmed(bitmask, armedBit: ArmedVerticalMode | ArmedLateralMode): boolean {
+    return ((bitmask >> armedBit) & 1) === 1;
 }
 
 export {
     ControlLaw,
     LateralMode,
+    ArmedLateralMode,
     VerticalMode,
+    ArmedVerticalMode,
+    isArmed,
 };

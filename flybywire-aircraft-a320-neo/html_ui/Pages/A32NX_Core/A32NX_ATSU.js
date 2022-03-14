@@ -2,8 +2,6 @@ function translateAtsuMessageType(type) {
     switch (type) {
         case Atsu.AtsuMessageType.Freetext:
             return "FREETEXT";
-        case Atsu.AtsuMessageType.PDC:
-            return "PDC";
         case Atsu.AtsuMessageType.METAR:
             return "METAR";
         case Atsu.AtsuMessageType.TAF:
@@ -86,6 +84,8 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
             mcdu.simbrief["sendStatus"] = "DONE";
 
             callback();
+
+            updateView();
 
             return mcdu.simbrief;
         })

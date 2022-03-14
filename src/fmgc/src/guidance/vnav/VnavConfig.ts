@@ -1,5 +1,7 @@
-//  Copyright (c) 2021 FlyByWire Simulations
-//  SPDX-License-Identifier: GPL-3.0
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 
 export enum VnavDescentMode {
     NORMAL,
@@ -27,7 +29,7 @@ export const VnavConfig = {
     /**
      * VNAV descent calculation mode (NORMAL, CDA or DPO)
      */
-    VNAV_DESCENT_MODE: VnavDescentMode.NORMAL,
+    VNAV_DESCENT_MODE: VnavDescentMode.CDA,
 
     /**
      * Whether to emit CDA flap1/2 pseudo-waypoints (only if VNAV_DESCENT_MODE is CDA)

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Arinc429Word } from '@shared/arinc429';
 import { useUpdate } from '@instruments/common/hooks';
-import { getSmallestAngle } from '@instruments/common/utils';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
@@ -30,14 +29,28 @@ interface HorizonProps {
     roll: Arinc429Word;
     heading: Arinc429Word;
     isOnGround: boolean;
-    radioAlt: number;
+    radioAltitude: Arinc429Word,
+    filteredRadioAltitude: number;
+    belowTransitionAltitude: boolean;
     decisionHeight: number;
     selectedHeading: number;
     FDActive: boolean;
     isAttExcessive: boolean;
 }
 
-export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHeight, selectedHeading, FDActive, isAttExcessive }: HorizonProps) => {
+export const Horizon = ({
+    pitch,
+    roll,
+    heading,
+    isOnGround,
+    radioAltitude,
+    filteredRadioAltitude,
+    belowTransitionAltitude,
+    decisionHeight,
+    selectedHeading,
+    FDActive,
+    isAttExcessive,
+}: HorizonProps) => {
     if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
         return null;
     }
@@ -139,7 +152,7 @@ export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHe
             <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalOutline SkyFill" />
             <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalStroke White" />
             <SideslipIndicator isOnGround={isOnGround} roll={roll} />
-            <RisingGround radioAlt={radioAlt} pitch={pitch} />
+            <RisingGround radioAltitude={radioAltitude} filteredRadioAltitude={filteredRadioAltitude} pitch={pitch} />
             {heading.isNormalOperation()
             && (
                 <HorizontalTape
@@ -153,95 +166,15 @@ export const Horizon = ({ pitch, roll, heading, isOnGround, radioAlt, decisionHe
                 />
             )}
             {!isAttExcessive
-            && <RadioAltAndDH radioAlt={radioAlt} decisionHeight={decisionHeight} roll={roll} />}
-            <FlightPathVector />
-            {!isAttExcessive
-            && <FlightPathDirector FDActive={FDActive} />}
-        </g>
-    );
-};
-
-const FlightPathVector = () => {
-    if (!getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
-        return null;
-    }
-
-    const roll = getSimVar('PLANE BANK DEGREES', 'degrees');
-    const pitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
-    const AOA = getSimVar('INCIDENCE ALPHA', 'degrees');
-    const FPA = pitch - (Math.cos(roll * Math.PI / 180) * AOA);
-    const DA = getSmallestAngle(getSimVar('GPS GROUND TRUE TRACK', 'degrees'), getSimVar('GPS GROUND TRUE HEADING', 'degrees'));
-
-    const xOffset = Math.max(Math.min(DA, 21), -21) * DistanceSpacing / ValueSpacing;
-    const yOffset = calculateHorizonOffsetFromPitch(pitch) - calculateHorizonOffsetFromPitch(FPA);
-
-    return (
-        <g transform={`translate(${xOffset} ${yOffset})`}>
-            <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
-                <g transform={`rotate(${-roll} 15.5 15.5)`}>
-                    <path
-                        className="NormalOutline"
-                        // eslint-disable-next-line max-len
-                        d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
+                && (
+                    <RadioAltAndDH
+                        radioAltitude={radioAltitude}
+                        filteredRadioAltitude={filteredRadioAltitude}
+                        belowTransitionAltitude={belowTransitionAltitude}
+                        decisionHeight={decisionHeight}
+                        roll={roll}
                     />
-                    <path className="ThickOutline" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
-                    <path
-                        className="NormalStroke Green"
-                        // eslint-disable-next-line max-len
-                        d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
-                    />
-                    <path className="ThickStroke Green" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
-                </g>
-            </svg>
-        </g>
-    );
-};
-
-const FlightPathDirector = ({ FDActive }) => {
-    if (!FDActive || !getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
-        return null;
-    }
-
-    const lateralAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
-    const verticalAPMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
-    const showLateralFD = lateralAPMode !== 0 && lateralAPMode !== 34 && lateralAPMode !== 40;
-    const showVerticalFD = verticalAPMode !== 0 && verticalAPMode !== 34;
-
-    if (!showVerticalFD && !showLateralFD) {
-        return null;
-    }
-
-    const FDRollOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');
-    const currentRoll = getSimVar('PLANE BANK DEGREES', 'degrees');
-    const FDRollOffset = (FDRollOrder - currentRoll) * 0.77;
-
-    const DA = getSmallestAngle(getSimVar('GPS GROUND TRUE TRACK', 'degrees'), getSimVar('GPS GROUND TRUE HEADING', 'degrees'));
-
-    const xOffset = Math.max(Math.min(DA, 21), -21) * DistanceSpacing / ValueSpacing;
-
-    const FDPitchOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_PITCH', 'number');
-    const currentPitch = -getSimVar('PLANE PITCH DEGREES', 'degrees');
-    const AOA = getSimVar('INCIDENCE ALPHA', 'degrees');
-    const FPA = currentPitch - (Math.cos(currentRoll * Math.PI / 180) * AOA);
-
-    const yOffset = calculateHorizonOffsetFromPitch(currentPitch) - calculateHorizonOffsetFromPitch(FPA) + (FDPitchOrder) * 0.44;
-
-    return (
-        <g transform={`translate(${xOffset} ${yOffset})`}>
-            <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
-                <g transform={`rotate(${FDRollOffset} 15.5 15.5)`} className="CornerRound">
-                    <path
-                        className="NormalOutline"
-                        // eslint-disable-next-line max-len
-                        d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
-                    />
-                    <path
-                        className="NormalStroke Green"
-                        // eslint-disable-next-line max-len
-                        d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
-                    />
-                </g>
-            </svg>
+                )}
         </g>
     );
 };
@@ -262,36 +195,59 @@ const TailstrikeIndicator = () => {
 };
 
 interface RadioAltAndDHProps {
-    radioAlt: number;
+    filteredRadioAltitude: number;
+    radioAltitude: Arinc429Word;
+    belowTransitionAltitude: boolean;
     decisionHeight: number;
     roll: Arinc429Word;
 }
 
-const RadioAltAndDH = ({ radioAlt, decisionHeight, roll }: RadioAltAndDHProps) => {
-    if (radioAlt <= 2500) {
-        const verticalOffset = calculateVerticalOffsetFromRoll(roll.value);
-        const size = (radioAlt > 400 ? 'FontLarge' : 'FontLargest');
-        const DHValid = decisionHeight >= 0;
-        const color = (radioAlt > 400 || (radioAlt > decisionHeight + 100 && DHValid) ? 'Green' : 'Amber');
+const RadioAltAndDH = ({ filteredRadioAltitude, radioAltitude, belowTransitionAltitude, decisionHeight, roll }: RadioAltAndDHProps) => {
+    const raValid = !radioAltitude.isFailureWarning();
+    const raValue = filteredRadioAltitude;
+    const verticalOffset = calculateVerticalOffsetFromRoll(roll.value);
+    let size = 'FontLarge';
+    const DHValid = decisionHeight >= 0;
 
-        let text = '';
-
-        if (radioAlt < 5) {
-            text = Math.round(radioAlt).toString();
-        } else if (radioAlt <= 50) {
-            text = (Math.round(radioAlt / 5) * 5).toString();
-        } else if (radioAlt > 50 || (radioAlt > decisionHeight + 100 && DHValid)) {
-            text = (Math.round(radioAlt / 10) * 10).toString();
+    let text = '';
+    let color = 'Amber';
+    if (raValid) {
+        if (raValue < 2500) {
+            if (raValue > 400 || (raValue > decisionHeight + 100 && DHValid)) {
+                color = 'Green';
+            }
+            if (raValue < 400) {
+                size = 'FontLargest';
+            }
+            if (raValue < 5) {
+                text = Math.round(raValue).toString();
+            } else if (raValue <= 50) {
+                text = (Math.round(raValue / 5) * 5).toString();
+            } else if (raValue > 50 || (raValue > decisionHeight + 100 && DHValid)) {
+                text = (Math.round(raValue / 10) * 10).toString();
+            }
         }
-
-        return (
-            <g id="DHAndRAGroup" transform={`translate(0 ${-verticalOffset})`}>
-                {radioAlt <= decisionHeight ? <text id="AttDHText" x="73.511879" y="113.19068" className="FontLargest Amber EndAlign Blink9Seconds TextOutline">DH</text> : null}
-                <text id="RadioAlt" x="69.202454" y="119.76205" className={`${size} ${color} MiddleAlign TextOutline`}>{text}</text>
-            </g>
-        );
+    } else {
+        color = belowTransitionAltitude ? 'Red Blink9Seconds' : 'Red';
+        text = 'RA';
     }
-    return null;
+
+    return (
+        <g id="DHAndRAGroup" transform={`translate(0 ${-verticalOffset})`}>
+            {raValid && DHValid && raValue <= decisionHeight ? (
+                <text
+                    id="AttDHText"
+                    x="73.511879"
+                    y="113.19068"
+                    className="FontLargest Amber EndAlign Blink9Seconds TextOutline"
+                >
+                    DH
+                </text>
+            )
+                : null}
+            <text id="RadioAlt" x="69.202454" y="119.76205" className={`${size} ${color} MiddleAlign TextOutline`}>{text}</text>
+        </g>
+    );
 };
 
 interface SideslipIndicatorProps {
@@ -337,12 +293,13 @@ const SideslipIndicator = ({ isOnGround, roll }: SideslipIndicatorProps) => {
 };
 
 interface RisingGroundProps {
-    radioAlt: number;
+    radioAltitude: Arinc429Word;
+    filteredRadioAltitude: number;
     pitch: Arinc429Word;
 }
 
-const RisingGround = ({ radioAlt, pitch }: RisingGroundProps) => {
-    const targetPitch = -0.1 * radioAlt;
+const RisingGround = ({ radioAltitude, filteredRadioAltitude, pitch }: RisingGroundProps) => {
+    const targetPitch = (radioAltitude.isNoComputedData() || radioAltitude.isFailureWarning()) ? -200 : -0.1 * filteredRadioAltitude;
 
     const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch((-pitch.value) - targetPitch) - 31.563, 0), -63.093);
 

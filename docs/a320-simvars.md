@@ -15,6 +15,7 @@
 1. [Pneumatic](#pneumatic)
 1. [Landing Gear (ATA 32)](#landing-gear-ata-32)
 1. [ATC (ATA 34)](#atc-ata-34)
+1. [Radio Altimeter (ATA 34)](#ra-ata-34)
 
 ## Uncategorized
 
@@ -1102,6 +1103,22 @@
       0 | inactive
       1 | active
 
+- A32NX_CHRONO_ELAPSED_TIME
+    - Number
+    - Clock instrument CHR display time elapsed
+      Value | Meaning
+      --- | ---
+      0 or greater | Seconds elapsed
+      -1 | Empty value
+
+- A32NX_CHRONO_ET_ELAPSED_TIME
+    - Number
+    - Clock instrument ET display time elapsed
+      Value | Meaning
+      --- | ---
+      0 or greater | Seconds elapsed
+      -1 | Empty value
+
 ## EIS Display System
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
@@ -1183,6 +1200,31 @@
     - {side}
         - L
         - R
+
+- A32NX_EFIS_{side}_TO_WPT_BEARING
+    - Degrees
+    - Provides the bearing to the active leg termination
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_TO_WPT_DISTANCE
+    - Nautical miles & > 0
+    - Provides the straight distance to the active leg termination
+    - {side}
+        - L
+        - R
+
+- A32NX_EFIS_{side}_TO_WPT_ETA
+    - Seconds
+    - Provides the number of seconds to the active leg termination (to be converted to UTC by DMC)
+    - {side}
+        - L
+        - R
+
+- A32NX_PFD_MSG_SET_HOLD_SPEED
+    - Bool
+    - Indicates if the SET HOLD SPEED message is shown on the PFD
 
 - A32NX_ISIS_LS_ACTIVE
 	- Bool
@@ -1444,17 +1486,18 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ADIRS_ADR_{number}_STATIC_AIR_TEMPERATURE
     - Arinc429Word<Celsius>
     - The static air temperature (SAT).
-      {number}: 1 or 3
 
 - A32NX_ADIRS_ADR_{number}_TOTAL_AIR_TEMPERATURE
     - Arinc429Word<Celsius>
     - The total air temperature (TAT).
-      {number}: 1 or 3
 
 - A32NX_ADIRS_ADR_{number}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
     - Arinc429Word<Celsius>
     - The delta (deviation) from international standard atmosphere temperature.
-      {number}: 1 or 3
+
+- A32NX_ADIRS_ADR_{number}_ANGLE_OF_ATTACK
+    - Arinc429Word<Degrees>
+    - The angle of attack (α) of the aircraft
 
 - A32NX_ADIRS_IR_{number}_PITCH
     - Arinc429Word<Degrees>
@@ -1496,9 +1539,82 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429Word<Degrees>
     - The longitude of the aircraft.
 
+- A32NX_ADIRS_IR_{number}_DRIFT_ANGLE
+    - Arinc429Word<Degrees>
+    - The drift angle of the aircraft (drift angle = heading - track)
+
+- A32NX_ADIRS_IR_{number}_FLIGHT_PATH_ANGLE
+    - Arinc429Word<Degrees>
+    - The kinematic flight path angle (γ) (arctan(VS / GS))
+
+- A32NX_ADIRS_IR_{number}_BODY_PITCH_RATE
+    - Arinc429Word<Degrees per second>
+    - The body pitch rate (q) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_BODY_ROLL_RATE
+    - Arinc429Word<Degrees per second>
+    - The body roll rate (p) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_BODY_YAW_RATE
+    - Arinc429Word<Degrees per second>
+    - The body yaw rate (r) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_BODY_LONGITUDINAL_ACC
+    - Arinc429Word<g-Number>
+    - The longitudinal (forward/backward) acceleration of the aircraft
+
+- A32NX_ADIRS_IR_{number}_BODY_LATERAL_ACC
+    - Arinc429Word<g-Number>
+    - The lateral (left/right) acceleration of the aircraft
+
+- A32NX_ADIRS_IR_{number}_BODY_NORMAL_ACC
+    - Arinc429Word<g-Number>
+    - The normal acceleration (load factor) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_HEADING_RATE
+    - Arinc429Word<Degrees per second>
+    - The heading rate (ψ^dot) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_PITCH_ATT_RATE
+    - Arinc429Word<Degrees per second>
+    - The pitch rate (θ^dot) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_ROLL_ATT_RATE
+    - Arinc429Word<Degrees per second>
+    - The roll rate (φ^dot) of the aircraft
+
 - A32NX_ADIRS_USES_GPS_AS_PRIMARY
     - Bool
     - Whether or not the GPS is used as the primary means of navigation/position determination.
+
+## Radio Receivers
+
+- A32NX_RADIO_RECEIVER_USAGE_ENABLED
+    - Bool
+    - Whether or not the calculated ILS signals shall be used
+
+- A32NX_RADIO_RECEIVER_LOC_IS_VALID
+    - Bool
+    - Indicates if the localizer signal is valid
+
+- A32NX_RADIO_RECEIVER_LOC_DISTANCE
+    - Number in nautical miles
+    - Indicates the distance from the localizer
+
+- A32NX_RADIO_RECEIVER_LOC_DEVIATION
+    - Number in degrees
+    - If A32NX_RADIO_RECEIVER_USAGE_ENABLED == 0 it contains the deviation from the sim
+    - If A32NX_RADIO_RECEIVER_USAGE_ENABLED == 1 it contains calculated LOC deviation
+
+- A32NX_RADIO_RECEIVER_GS_IS_VALID
+    - Bool
+    - Indicates if the glide slope signal is valid
+
+- A32NX_RADIO_RECEIVER_GS_DEVIATION
+    - Number in degrees
+    - Deviation from glide slope
+    - If A32NX_RADIO_RECEIVER_USAGE_ENABLED == 0 it contains the deviation from the sim
+    - If A32NX_RADIO_RECEIVER_USAGE_ENABLED == 1 it contains calculated LOC deviation
 
 ## Flight Management System
 
@@ -1559,6 +1675,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       ROLL_OUT | 34
       SRS | 40
       SRS_GA | 41
+      TCAS | 50
 
 - A32NX_FMA_VERTICAL_ARMED
     - Bitmask
@@ -1571,6 +1688,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       DES | 3
       GS | 4
       FINAL | 5
+      TCAS | 6
 
 - A32NX_FMA_EXPEDITE_MODE
     - Boolean
@@ -1802,15 +1920,20 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number
     - Used as data transport for event `H:A320_Neo_FCU_VS_SET`
 
+- A32NX_FG_PHI_LIMIT
+    - Number in Degrees
+    - Indicates the current bank limit requested by the FM
+    - Always positive
+
 - A32NX_FG_CROSS_TRACK_ERROR
     - Number in nm
     - Used for laternal guidance in mode NAV
-    - Error from desired path
+    - Error from desired path, -ve to the right of track
 
 - A32NX_FG_TRACK_ANGLE_ERROR
     - Number in degrees
     - Used for laternal guidance in mode NAV
-    - Error from desired heading or track
+    - Error from desired heading or track, -ve when clockwise of desired track
 
 - A32NX_FG_PHI_COMMAND
     - Number in degrees
@@ -2416,7 +2539,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       Transponder 1 | 0
       Transponder 2 | 1
 
-- A32NX_TRANSPONDER_ALT_RPTG
+- A32NX_SWITCH_ATC_ALT
     - The transponder altitude reporting switch position
     - Bool
 
@@ -2486,3 +2609,12 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
+
+## Radio Altimeter (ATA 34)
+
+- A32NX_RA_{number}_RADIO_ALTITUDE
+    - `Arinc429Word<Feet>`
+    - The height over ground as measured by the corresponding radio altimeter towards the aft of the aircraft
+    - {number}
+      - 0
+      - 1
