@@ -3,24 +3,24 @@
 
 import { Datalink } from './com/Datalink';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
-import { AtcSystem } from './AtcSystem';
-import { AocSystem } from './AocSystem';
+import { Atc } from './ATC';
+import { Aoc } from './AOC';
 import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
 
 /**
- * Defines the ATSU manager
+ * Defines the ATSU
  */
-export class AtsuManager {
+export class Atsu {
     private datalink = new Datalink(this);
 
     private fltNo: string = '';
 
     private messageCounter = 0;
 
-    public aoc = new AocSystem(this.datalink);
+    public aoc = new Aoc(this.datalink);
 
-    public atc = new AtcSystem(this, this.datalink);
+    public atc = new Atc(this, this.datalink);
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
@@ -35,7 +35,7 @@ export class AtsuManager {
             return AtsuStatusCodes.Ok;
         }
 
-        let retvalAoc = await AocSystem.connect(flightNo);
+        let retvalAoc = await Aoc.connect(flightNo);
         if (retvalAoc === AtsuStatusCodes.Ok || retvalAoc === AtsuStatusCodes.TelexDisabled) {
             retvalAoc = AtsuStatusCodes.Ok;
         }
@@ -46,7 +46,7 @@ export class AtsuManager {
             if (retvalAtc === AtsuStatusCodes.Ok || retvalAtc === AtsuStatusCodes.NoHoppieConnection) {
                 retvalAtc = AtsuStatusCodes.Ok;
             } else {
-                AocSystem.disconnect();
+                Aoc.disconnect();
             }
         }
 
@@ -62,7 +62,7 @@ export class AtsuManager {
     }
 
     public async disconnectFromNetworks(): Promise<AtsuStatusCodes> {
-        let retvalAoc = await AocSystem.disconnect();
+        let retvalAoc = await Aoc.disconnect();
         if (retvalAoc === AtsuStatusCodes.Ok || retvalAoc === AtsuStatusCodes.NoTelexConnection) {
             retvalAoc = AtsuStatusCodes.Ok;
         }
@@ -90,12 +90,12 @@ export class AtsuManager {
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         let retval = AtsuStatusCodes.UnknownMessage;
 
-        if (AocSystem.isRelevantMessage(message)) {
+        if (Aoc.isRelevantMessage(message)) {
             retval = await this.aoc.sendMessage(message);
             if (retval === AtsuStatusCodes.Ok) {
                 this.registerMessage(message);
             }
-        } else if (AtcSystem.isRelevantMessage(message)) {
+        } else if (Atc.isRelevantMessage(message)) {
             retval = await this.atc.sendMessage(message);
             if (retval === AtsuStatusCodes.Ok) {
                 this.registerMessage(message);
@@ -117,9 +117,9 @@ export class AtsuManager {
         message.UniqueMessageID = ++this.messageCounter;
         message.Timestamp = new AtsuTimestamp();
 
-        if (AocSystem.isRelevantMessage(message)) {
+        if (Aoc.isRelevantMessage(message)) {
             this.aoc.insertMessage(message);
-        } else if (AtcSystem.isRelevantMessage(message)) {
+        } else if (Atc.isRelevantMessage(message)) {
             this.atc.insertMessage(message);
         }
     }
