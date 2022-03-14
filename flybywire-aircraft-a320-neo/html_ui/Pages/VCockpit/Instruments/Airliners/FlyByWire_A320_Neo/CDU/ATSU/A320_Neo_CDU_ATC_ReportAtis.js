@@ -135,7 +135,7 @@ class CDUAtcReportAtis {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            mcdu.atsuManager.printMessage(message);
+            mcdu.atsu.printMessage(message);
         };
 
     }
