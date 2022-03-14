@@ -136,7 +136,7 @@ class CDUAocFreeText {
             message.Message = message.Message.substring(0, message.Message.length - 1);
 
             // send the message
-            mcdu.atsuManager.sendMessage(message).then((code) => {
+            mcdu.atsu.sendMessage(message).then((code) => {
                 if (code === Atsu.AtsuStatusCodes.Ok) {
                     store["sendStatus"] = "SENT";
                     store["msg_line1"] = "";

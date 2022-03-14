@@ -206,6 +206,25 @@ class CDUInitPage {
             }
         };
 
+        let groundTemp = '---';
+        if (mcdu.groundTemp !== undefined) {
+            groundTemp = `{${mcdu.groundTempPilot !== undefined ? 'big' : 'small'}}${mcdu.groundTemp.toFixed(0)}{end}`;
+        }
+
+        mcdu.onRightInput[5] = (scratchpadValue, scratchpadCallback) => {
+            try {
+                mcdu.trySetGroundTemp(scratchpadValue);
+                CDUInitPage.ShowPage1(mcdu);
+            } catch (msg) {
+                if (msg instanceof McduMessage) {
+                    mcdu.addNewMessage(msg);
+                    scratchpadCallback();
+                } else {
+                    throw msg;
+                }
+            }
+        };
+
         mcdu.setArrows(false, false, true, true);
 
         mcdu.setTemplate([
@@ -221,22 +240,14 @@ class CDUInitPage {
             ["COST INDEX", "TROPO"],
             [costIndex, tropo],
             ["CRZ FL/TEMP", "GND TEMP"],
-            [cruiseFlTemp, "---°[color]inop"],
+            [cruiseFlTemp, `{cyan}${groundTemp}°{end}`],
         ]);
 
         mcdu.onPrevPage = () => {
-            if (mcdu.isAnEngineOn()) {
-                CDUFuelPredPage.ShowPage(mcdu);
-            } else {
-                CDUInitPage.ShowPage2(mcdu);
-            }
+            mcdu.goToFuelPredPage();
         };
         mcdu.onNextPage = () => {
-            if (mcdu.isAnEngineOn()) {
-                CDUFuelPredPage.ShowPage(mcdu);
-            } else {
-                CDUInitPage.ShowPage2(mcdu);
-            }
+            mcdu.goToFuelPredPage();
         };
 
         mcdu.onRightInput[3] = () => {
@@ -286,8 +297,6 @@ class CDUInitPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.InitPageB;
         mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage2(mcdu);
-
-        let initBTitle = "INIT";
 
         let zfwColor = "[color]amber";
         let zfwCell = "___._";
@@ -364,7 +373,6 @@ class CDUInitPage {
             };
         }
         if (mcdu._fuelPlanningPhase === mcdu._fuelPlanningPhases.IN_PROGRESS) {
-            initBTitle = "INIT FUEL PLANNING";
             fuelPlanTopTitle = "BLOCK ";
             fuelPlanBottomTitle = "CONFIRM";
             fuelPlanColor = "[color]green";
@@ -458,8 +466,7 @@ class CDUInitPage {
         let minDestFob = "---.-";
         let minDestFobColor = "[color]white";
 
-        let tripWindColor = "[color]cyan";
-        let tripWindCell = "{small}" + mcdu._windDir + mcdu.averageWind.toFixed(0).padStart(3, "0") + "{end}";
+        let tripWindCell = `{small}${mcdu._windDir}{end}{big}${mcdu.averageWind.toFixed(0).padStart(3, "0")}{end}`;
         mcdu.onRightInput[4] = async (value, scratchpadCallback) => {
             if (await mcdu.trySetAverageWind(value)) {
                 CDUInitPage.ShowPage2(mcdu);
@@ -469,7 +476,6 @@ class CDUInitPage {
         };
 
         if (CDUInitPage.fuelPredConditionsMet(mcdu)) {
-            initBTitle = "INIT FUEL PREDICTION{sp}";
             fuelPlanTopTitle = "";
             fuelPlanBottomTitle = "";
 
@@ -590,9 +596,8 @@ class CDUInitPage {
                 lwCell = lwCell.length <= 4 ? "{sp}" + lwCell : lwCell;
 
                 tripWindCell = "{small}" + mcdu._windDir + "000" + "{end}";
-                tripWindColor = "[color]cyan";
                 if (isFinite(mcdu.averageWind)) {
-                    tripWindCell = "{small}" + mcdu._windDir + mcdu.averageWind.toFixed(0).padStart(3, "0") + "{end}";
+                    tripWindCell = `{small}${mcdu._windDir}{end}{big}${mcdu.averageWind.toFixed(0).padStart(3, "0")}{end}`;
                 }
                 mcdu.onRightInput[4] = async (value, scratchpadCallback) => {
                     setTimeout(async () => {
@@ -642,7 +647,7 @@ class CDUInitPage {
         mcdu.setArrows(false, false, true, true);
 
         mcdu.setTemplate([
-            [initBTitle],
+            ["INIT FUEL PRED"],
             ["TAXI", "ZFW/ZFWCG"],
             [taxiFuelCell + "[color]cyan", zfwCell + "|" + zfwCgCell + zfwColor],
             ["TRIP\xa0\xa0/TIME", "BLOCK"],
@@ -652,7 +657,7 @@ class CDUInitPage {
             ["ALTN\xa0\xa0/TIME", "TOW/\xa0\xa0\xa0\xa0LW"],
             [altnWeightCell + altnTimeColor + "/" + altnTimeCell + "{end}" + altnColor, towCell + "/" + lwCell + towLwColor],
             ["FINAL\xa0/TIME", "TRIP WIND"],
-            [finalWeightCell + "/" + finalTimeCell + finalColor, "{small}" + tripWindCell + "{end}" + tripWindColor],
+            [finalWeightCell + "/" + finalTimeCell + finalColor, `{cyan}${tripWindCell}{end}`],
             ["MIN DEST FOB", "EXTRA/\xa0TIME"],
             [minDestFob + minDestFobColor, extraWeightCell + extraTimeColor + "/" + extraTimeCell + "{end}" + extraColor],
         ]);

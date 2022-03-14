@@ -193,6 +193,8 @@
 1. [AP] Improved V/PATH law - lukecologne (luke)
 1. [ADIRS] Improve ADR SSM behaviour, add missing data to the IR - @luke (lukecologne#1156)
 1. [PFD] Improve SPD and MACH flag behaviour, add FPV flag - @luke (lukecologne#1156)
+1. [MCDU] Update init/fuel prediction pages to H3 - @tracernz (Mike)
+1. [MCDU] Implement ground temp on INIT A - @tracernz (Mike)
 1. [BLEED] Attached hydraulic reservoirs to both engine bleed systems - @Gurgel100 (Pascal)
 
 
