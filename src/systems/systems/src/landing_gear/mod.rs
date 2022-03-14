@@ -3,7 +3,7 @@ use crate::{
     hydraulic::landing_gear::{
         GearComponentController, GearSystemSensors, GearSystemStateMachine, GearsSystemState,
     },
-    shared::{
+    shared::{GearWheel ,
         ElectricalBusType, ElectricalBuses, LandingGearRealPosition, LgciuDoorPosition,
         LgciuGearExtension, LgciuSensors, LgciuWeightOnWheels,LgciuGearAndDoor
     },
@@ -14,11 +14,7 @@ use uom::si::{
     ratio::{percent, ratio},
 };
 
-pub enum GearWheel {
-    CENTER = 0,
-    LEFT = 1,
-    RIGHT = 2,
-}
+
 /// Represents a landing gear on Airbus aircraft.
 /// Note that this type somewhat hides the gear's position.
 /// The real aircraft also can only check whether or not the gear is up and

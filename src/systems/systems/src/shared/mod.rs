@@ -142,6 +142,12 @@ pub trait GroundSpeed {
     fn ground_speed(&self) -> Velocity;
 }
 
+pub enum GearWheel {
+    CENTER = 0,
+    LEFT = 1,
+    RIGHT = 2,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum HydraulicColor {
     Green,

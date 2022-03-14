@@ -1,6 +1,5 @@
-use crate::landing_gear::GearWheel;
 use crate::shared::low_pass_filter::LowPassFilter;
-use crate::shared::{LgciuDoorPosition, LgciuGearAndDoor, LgciuGearExtension};
+use crate::shared::{LgciuDoorPosition, LgciuGearAndDoor, LgciuGearExtension,GearWheel};
 
 use crate::simulation::UpdateContext;
 
@@ -12,7 +11,7 @@ use uom::si::{f64::*, pressure::psi, ratio::ratio};
 
 use std::time::Duration;
 
-struct HydraulicGearSystem {
+pub struct HydraulicGearSystem {
     hydraulic_supply: GearSystemHydraulicSupply,
 
     nose_door_assembly: GearDoorAssembly,
@@ -24,7 +23,7 @@ struct HydraulicGearSystem {
     right_gear_assembly: GearDoorAssembly,
 }
 impl HydraulicGearSystem {
-    fn new(
+    pub fn new(
         nose_door: HydraulicLinearActuatorAssembly<1>,
         left_door: HydraulicLinearActuatorAssembly<1>,
         right_door: HydraulicLinearActuatorAssembly<1>,
@@ -45,7 +44,7 @@ impl HydraulicGearSystem {
         }
     }
 
-    fn update(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         valves_controller: &impl GearValvesController,
