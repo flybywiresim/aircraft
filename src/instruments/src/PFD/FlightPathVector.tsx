@@ -115,7 +115,7 @@ export class FlightPathVector extends DisplayComponent<{bus: EventBus}> {
                         </g>
                     </svg>
                 </g>
-                <text ref={this.fpvFlag} id="FPVFlag" x="62.987099" y="89.42025" class="Blink9Seconds FontLargest Red EndAlign">FPV</text>
+                <text ref={this.fpvFlag} style="visibility:hidden" id="FPVFlag" x="62.987099" y="89.42025" class="Blink9Seconds FontLargest Red EndAlign">FPV</text>
             </>
         );
     }
