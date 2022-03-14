@@ -151,6 +151,31 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     private onGround = 0;
 
+    private airSpeed = new Arinc429Word(0);
+
+    private setOutline() {
+        let airspeedValue: number;
+        if (this.airSpeed.isFailureWarning() || (this.airSpeed.isNoComputedData() && !this.onGround)) {
+            airspeedValue = NaN;
+        } else if (this.airSpeed.isNoComputedData()) {
+            airspeedValue = 30;
+        } else {
+            airspeedValue = this.airSpeed.value;
+        }
+        this.speedSub.set(airspeedValue);
+
+        if (Number.isNaN(airspeedValue)) {
+            this.speedTapeElements.instance.classList.add('HiddenElement');
+            this.failedGroup.instance.classList.remove('HiddenElement');
+        } else {
+            this.speedTapeElements.instance.classList.remove('HiddenElement');
+            this.failedGroup.instance.classList.add('HiddenElement');
+        }
+
+        const length = 42.9 + Math.max(Math.max(Math.min(airspeedValue, 72.1), 30) - 30, 0);
+        this.speedTapeOutlineRef.instance.setAttribute('d', `m19.031 38.086v${length}`);
+    }
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -184,27 +209,9 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             }
         });
 
-        pf.on('speedAr').withArinc429Precision(3).handle((airSpeed) => {
-            let airspeedValue: number;
-            if (airSpeed.isFailureWarning() || (airSpeed.isNoComputedData() && !this.onGround)) {
-                airspeedValue = NaN;
-            } else if (airSpeed.isNoComputedData()) {
-                airspeedValue = 30;
-            } else {
-                airspeedValue = airSpeed.value;
-            }
-            this.speedSub.set(airspeedValue);
-
-            if (Number.isNaN(airspeedValue)) {
-                this.speedTapeElements.instance.classList.add('HiddenElement');
-                this.failedGroup.instance.classList.remove('HiddenElement');
-            } else {
-                this.speedTapeElements.instance.classList.remove('HiddenElement');
-                this.failedGroup.instance.classList.add('HiddenElement');
-            }
-
-            const length = 42.9 + Math.max(Math.max(Math.min(airspeedValue, 72.1), 30) - 30, 0);
-            this.speedTapeOutlineRef.instance.setAttribute('d', `m19.031 38.086v${length}`);
+        pf.on('speedAr').handle((airSpeed) => {
+            this.airSpeed = airSpeed;
+            this.setOutline();
         });
 
         pf.on('alphaProt').withPrecision(2).handle((a) => {
@@ -238,6 +245,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
                     this.barberPoleRef.instance.style.display = 'block';
                 }, 10000) as unknown as number;
             }
+            this.setOutline();
         });
     }
 
