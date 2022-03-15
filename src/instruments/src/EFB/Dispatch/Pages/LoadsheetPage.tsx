@@ -81,30 +81,30 @@ export const LoadSheetWidget = () => {
     };
 
     const simbriefDataLoaded = isSimbriefDataLoaded();
-    const {ofpScroll}  = useAppSelector(state => state.dispatchPage);
+    const { ofpScroll } = useAppSelector((state) => state.dispatchPage);
 
     return (
-        <div className="overflow-hidden relative p-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="overflow-hidden relative p-6 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
             <>
-                <div className="overflow-hidden absolute top-6 right-16 bg-theme-secondary rounded-md">
+                <div className="overflow-hidden absolute top-6 right-16 rounded-md bg-theme-secondary">
                     <button
                         type="button"
                         onClick={handleFontDecrease}
-                        className="py-2 px-3 hover:bg-theme-highlight hover:text-theme-body bg-opacity-50 hover:bg-opacity-100 transition duration-100"
+                        className="py-2 px-3 bg-opacity-50 hover:bg-opacity-100 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                     >
                         <ZoomOut size={30} />
                     </button>
                     <button
                         type="button"
                         onClick={handleFontIncrease}
-                        className="py-2 px-3 hover:bg-theme-highlight hover:text-theme-body bg-opacity-50 hover:bg-opacity-100 transition duration-100"
+                        className="py-2 px-3 bg-opacity-50 hover:bg-opacity-100 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
                     >
                         <ZoomIn size={30} />
                     </button>
                 </div>
                 <ScrollableContainer
                     height={51}
-                    onScroll={(scroll) => dispatch(setOfpScroll(scroll))}
+                    onScrollStop={(scroll) => dispatch(setOfpScroll(scroll))}
                     initialScroll={ofpScroll}
                 >
                     <div
@@ -127,7 +127,7 @@ export const LoadSheetWidget = () => {
                                     <button
                                         type="button"
                                         onClick={fetchData}
-                                        className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-lg border-2 border-theme-highlight transition duration-100"
+                                        className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                                     >
                                         <CloudArrowDown size={26} />
                                         <p className="text-current">Import SimBrief Data</p>

@@ -3,15 +3,16 @@ import React, { FC, useEffect, useRef, useState } from 'react';
 interface ScrollableContainerProps {
     height: number;
     className?: string;
-    onScroll?: (scrollTop: number) => void;
     initialScroll?: number;
+    onScroll?: (scrollTop: number) => void;
+    onScrollStop?: (scrollTop: number) => void;
 }
 
 /**
  * A container that can be scrolled vertically.
  * @param height - height of the container, in rem, that if exceeded will cause the container to become scrollable
  */
-export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, className, height, onScroll, initialScroll = 0 }) => {
+export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, className, height, onScroll, onScrollStop, initialScroll = 0 }) => {
     const [contentOverflows, setContentOverflows] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -48,17 +49,29 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, cl
     };
 
     useEffect(() => {
-        if(containerRef.current && containerRef.current.scrollHeight >= initialScroll) {
+        if (containerRef.current && containerRef.current.scrollHeight >= initialScroll) {
             containerRef.current.scrollTop = initialScroll;
         }
-    }, [])
+    }, []);
+
+    const timeout = useRef<NodeJS.Timeout>();
 
     return (
         <div
             className={`w-full overflow-y-auto scrollbar ${className}`}
             style={{ height: `${height}rem` }}
             ref={containerRef}
-            onScroll={(event) => onScroll?.(event.currentTarget.scrollTop)}
+            onScroll={(event) => {
+                if (timeout.current) {
+                    clearTimeout(timeout.current);
+                }
+
+                timeout.current = setTimeout(() => {
+                    onScrollStop?.(event.currentTarget.scrollTop);
+                }, 250);
+
+                onScroll?.(event.currentTarget.scrollTop);
+            }}
             onMouseDown={handleMouseDown}
         >
             <div className={`${contentOverflows && 'mr-6'}`} ref={contentRef}>
