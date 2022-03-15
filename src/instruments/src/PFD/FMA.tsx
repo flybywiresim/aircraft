@@ -12,7 +12,6 @@ export const FMA = ({ isAttExcessive }) => {
     const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
         || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && !BC3Message && engineMessage === 0;
 
-    // This is incorrect, A/BRK active should be a seperate signal and not just DECEL.
     const ABrkActive = getSimVar('L:A32NX_AUTOBRAKES_ACTIVE', 'bool');
     const ABrkMode = getSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'number');
     const AThrMode = getSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum');
