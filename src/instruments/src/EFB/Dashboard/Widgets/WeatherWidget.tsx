@@ -55,7 +55,7 @@ const MetarParserTypeProp: MetarParserType = {
     flight_category: '',
 };
 
-type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
+type WeatherWidgetProps = { name: string, editIcao: string, icao: string };
 
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
@@ -97,20 +97,37 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
         }
     };
 
-    function getMetar(icao:any, source: any) {
+    function getMetar(icao: any, source: any) {
         if (icao.length !== 4 || icao === '----') {
             return new Promise(() => {
                 setMetar(MetarParserTypeProp);
             });
         }
+
         return Metar.get(icao, source)
             .then((result) => {
-                const metarParse = parseMetar(result.metar);
-                setMetar(metarParse);
+                // For METAR source Microsoft result.metar is undefined without throwing an error.
+                // For the other METAR sources an error is thrown (Request failed with status code 404)
+                // and caught in the catch clause.
+                if (!result.metar) {
+                    setErrorMetar('NO VALID ICAO CHOSEN');
+                    setMetar(MetarParserTypeProp);
+                    return;
+                }
+                // Catch parsing error separately
+                try {
+                    const metarParse = parseMetar(result.metar);
+                    setMetar(metarParse);
+                } catch (err) {
+                    console.log(`Error while parsing Metar: ${err}`);
+                    setErrorMetar('RECEIVED METAR COULD NOT BE PARSED');
+                    setMetar(MetarParserTypeProp);
+                }
             })
+            // catch retrieving metar errors
             .catch((err) => {
-                console.log(`Error while parsing Metar: ${err}`);
-                if (err.toString().match(/^Error$/)) {
+                console.log(`Error while retrieving Metar: ${err}`);
+                if (err.toString().match(/^Error:/)) {
                     setErrorMetar('NO VALID ICAO CHOSEN');
                 } else {
                     setErrorMetar(`${err.toString().replace(/^Error: /, '')}`);
@@ -157,7 +174,12 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                     <div className="grid grid-cols-2 h-40">
                                         <div className="justify-left text-center text-lg">
                                             <div className="flex justify-center">
-                                                <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                                <IconGauge
+                                                    className="mb-2"
+                                                    size={35}
+                                                    stroke={1.5}
+                                                    strokeLinejoin="miter"
+                                                />
                                             </div>
                                             {metar.raw_text ? (
                                                 <>
@@ -171,7 +193,12 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                         </div>
                                         <div className="justify-left text-center text-lg">
                                             <div className="flex justify-center">
-                                                <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                                <IconWind
+                                                    className="mb-2"
+                                                    size={35}
+                                                    stroke={1.5}
+                                                    strokeLinejoin="miter"
+                                                />
                                             </div>
                                             {metar.raw_text
                                                 ? (
@@ -195,7 +222,12 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                         </div>
                                         <div className="text-center text-lg mt-6">
                                             <div className="flex justify-center">
-                                                <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                                <IconTemperature
+                                                    className="mb-2"
+                                                    size={35}
+                                                    stroke={1.5}
+                                                    strokeLinejoin="miter"
+                                                />
                                             </div>
                                             {metar.raw_text
                                                 ? (
@@ -216,7 +248,12 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                         </div>
                                         <div className="overflow-y-scroll text-center text-lg mt-6">
                                             <div className="flex justify-center">
-                                                <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                                <IconDroplet
+                                                    className="mb-2"
+                                                    size={35}
+                                                    stroke={1.5}
+                                                    strokeLinejoin="miter"
+                                                />
                                             </div>
                                             {metar.raw_text
                                                 ? (
