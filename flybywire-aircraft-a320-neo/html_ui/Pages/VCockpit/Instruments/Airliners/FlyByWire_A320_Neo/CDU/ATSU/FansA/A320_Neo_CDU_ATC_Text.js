@@ -36,9 +36,9 @@ class CDUAtcTextFansA {
         // create the freetext elements
         if (freetextLines.length !== 0) {
             if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansB) {
-                freetextElement = Atsu.CpdlcMessagesDownlink[type]["DM98"].deepCopy();
+                freetextElement = Atsu.CpdlcMessagesDownlink["DM98"][1].deepCopy();
             } else {
-                freetextElement = Atsu.CpdlcMessagesDownlink[type]["DM67"].deepCopy();
+                freetextElement = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             }
             freetextElement.Content[0].Value = freetextLines.join("\n");
         }
@@ -46,17 +46,17 @@ class CDUAtcTextFansA {
         // create the extensions
         let extension = null;
         if (data.performance) {
-            extension = Atsu.CpdlcMessagesDownlink[type]["DM66"].deepCopy();
+            extension = Atsu.CpdlcMessagesDownlink["DM66"][1].deepCopy();
         } else if (data.weather) {
-            extension = Atsu.CpdlcMessagesDownlink[type]["DM65"].deepCopy();
+            extension = Atsu.CpdlcMessagesDownlink["DM65"][1].deepCopy();
         } else if (data.turbulence) {
-            extension = Atsu.CpdlcMessagesDownlink[type]["DM67"].deepCopy();
+            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
         } else if (data.medical) {
-            extension = Atsu.CpdlcMessagesDownlink[type]["DM68"].deepCopy();
+            extension = Atsu.CpdlcMessagesDownlink["DM68"][1].deepCopy();
         } else if (data.technical) {
-            extension = Atsu.CpdlcMessagesDownlink[type]["DM68"].deepCopy();
+            extension = Atsu.CpdlcMessagesDownlink["DM68"][1].deepCopy();
         } else if (data.discretion) {
-            extension = Atsu.CpdlcMessagesDownlink[type]["DM75"].deepCopy();
+            extension = Atsu.CpdlcMessagesDownlink["DM75"][1].deepCopy();
         }
 
         if (messages.length === 0) {
