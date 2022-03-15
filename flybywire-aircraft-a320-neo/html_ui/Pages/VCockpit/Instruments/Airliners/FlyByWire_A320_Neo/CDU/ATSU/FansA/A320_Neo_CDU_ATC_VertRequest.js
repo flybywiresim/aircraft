@@ -438,8 +438,8 @@ class CDUAtcVertRequest {
                     if (error !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(error);
                     } else {
-                        data.blockAltLow = lowerStr;
-                        data.blockAltHigh = higherStr;
+                        data.blockAltLow = Atsu.InputValidation.formatScratchpadAltitude(entries[0]);
+                        data.blockAltHigh = Atsu.InputValidation.formatScratchpadAltitude(entries[1]);
                         CDUAtcVertRequest.ShowPage2(mcdu, data);
                     }
                 }
