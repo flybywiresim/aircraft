@@ -941,6 +941,10 @@
         - 2: Autobrake in MED
         - 3: Autobrake in MAX
 
+- A32NX_AUTOBRAKES_ACTIVE
+    - Bool
+    - Autobrakes are braking
+
 - A32NX_AUTOBRAKES_DECEL_LIGHT
     - Bool
     - Autobrakes are braking and reached the deceleration target
