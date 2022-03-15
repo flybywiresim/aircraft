@@ -193,6 +193,7 @@
 1. [AP] Improved V/PATH law - lukecologne (luke)
 1. [ADIRS] Improve ADR SSM behaviour, add missing data to the IR - @luke (lukecologne#1156)
 1. [PFD] Improve SPD and MACH flag behaviour, add FPV flag - @luke (lukecologne#1156)
+1. [COND] Change cabin air temperature knob mouse wheel increment - @rare-potato(Rare Potato#9693)
 
 ## 0.7.0
 
