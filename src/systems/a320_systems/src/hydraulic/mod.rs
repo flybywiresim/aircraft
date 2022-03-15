@@ -26,7 +26,7 @@ use systems::{
         },
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
         flap_slat::FlapSlatAssembly,
-        landing_gear::HydraulicGearSystem,
+        landing_gear::{HydraulicGearSystem,GearValvesController},
         linear_actuator::{
             Actuator, BoundedLinearLength, HydraulicAssemblyController,
             HydraulicLinearActuatorAssembly, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
@@ -1427,6 +1427,9 @@ impl A320Hydraulic {
             &self.gcu,
             emergency_elec,
         );
+
+
+        self.gear_system.update(context,&A320BrakeValvesController::default(),lgciu1.door_controller(),lgciu1.gear_controller(),self.green_circuit.pressure());
     }
 
     fn update_with_sim_rate(
@@ -1930,6 +1933,19 @@ impl HydraulicGeneratorControlUnit for A320Hydraulic {
 
     fn motor_speed(&self) -> AngularVelocity {
         self.gcu.motor_speed()
+    }
+}
+
+#[derive(Default)]
+struct A320BrakeValvesController{
+
+}
+impl GearValvesController for A320BrakeValvesController{
+    fn safety_valve_should_open(&self) -> bool{
+        true
+    }
+    fn shut_off_valve_should_open(&self) -> bool{
+        true
     }
 }
 

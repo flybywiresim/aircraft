@@ -102,8 +102,14 @@ pub trait LgciuDoorPosition {
     fn all_closed_and_locked(&self) -> bool;
 }
 
-pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition {}
+pub trait LgciuGearControl{
+    fn door_controller(&self) -> &impl GearComponentController;
+    fn gear_controller(&self) -> &impl GearComponentController;
+}
+
+pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition + LgciuGearControl {}
 pub trait LgciuGearAndDoor: LgciuGearExtension + LgciuDoorPosition {}
+
 
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;

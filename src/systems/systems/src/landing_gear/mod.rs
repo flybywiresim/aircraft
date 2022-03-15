@@ -258,48 +258,6 @@ impl LandingGearControlInterfaceUnit {
         //     &ExtensionInfo::from_lgciu(self),
         // );
     }
-
-    fn door_controller(&self) -> LgciuHydraulicController {
-        match self.gear_system_control.state() {
-            GearsSystemState::AllUpLocked => LgciuHydraulicController::closing(),
-            GearsSystemState::Retracting => {
-                if !self.all_up_and_locked() {
-                    LgciuHydraulicController::opening()
-                } else {
-                    LgciuHydraulicController::closing()
-                }
-            }
-            GearsSystemState::Extending => {
-                if !self.all_down_and_locked() {
-                    LgciuHydraulicController::opening()
-                } else {
-                    LgciuHydraulicController::closing()
-                }
-            }
-            GearsSystemState::AllDownLocked => LgciuHydraulicController::closing(),
-        }
-    }
-
-    fn gear_controller(&self) -> LgciuHydraulicController {
-        match self.gear_system_control.state() {
-            GearsSystemState::AllUpLocked => LgciuHydraulicController::closing(),
-            GearsSystemState::Retracting => {
-                if self.all_fully_opened() || self.all_up_and_locked() {
-                    LgciuHydraulicController::closing()
-                } else {
-                    LgciuHydraulicController::opening()
-                }
-            }
-            GearsSystemState::Extending => {
-                if self.all_fully_opened() || self.all_down_and_locked() {
-                    LgciuHydraulicController::opening()
-                } else {
-                    LgciuHydraulicController::closing()
-                }
-            }
-            GearsSystemState::AllDownLocked => LgciuHydraulicController::opening(),
-        }
-    }
 }
 impl SimulationElement for LandingGearControlInterfaceUnit {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -397,6 +355,49 @@ impl LgciuDoorPosition for LandingGearControlInterfaceUnit {
             && self.nose_door_up_and_locked
             && self.right_door_up_and_locked
             && self.left_door_up_and_locked
+    }
+}
+impl LgciuGearControl for LandingGearControlInterfaceUnit {
+    fn door_controller(&self) -> &impl GearComponentController {
+        match self.gear_system_control.state() {
+            GearsSystemState::AllUpLocked => LgciuHydraulicController::closing(),
+            GearsSystemState::Retracting => {
+                if !self.all_up_and_locked() {
+                    LgciuHydraulicController::opening()
+                } else {
+                    LgciuHydraulicController::closing()
+                }
+            }
+            GearsSystemState::Extending => {
+                if !self.all_down_and_locked() {
+                    LgciuHydraulicController::opening()
+                } else {
+                    LgciuHydraulicController::closing()
+                }
+            }
+            GearsSystemState::AllDownLocked => LgciuHydraulicController::closing(),
+        }
+    }
+
+    fn gear_controller(&self) -> &impl GearComponentController {
+        match self.gear_system_control.state() {
+            GearsSystemState::AllUpLocked => LgciuHydraulicController::closing(),
+            GearsSystemState::Retracting => {
+                if self.all_fully_opened() || self.all_up_and_locked() {
+                    LgciuHydraulicController::closing()
+                } else {
+                    LgciuHydraulicController::opening()
+                }
+            }
+            GearsSystemState::Extending => {
+                if self.all_fully_opened() || self.all_down_and_locked() {
+                    LgciuHydraulicController::opening()
+                } else {
+                    LgciuHydraulicController::closing()
+                }
+            }
+            GearsSystemState::AllDownLocked => LgciuHydraulicController::opening(),
+        }
     }
 }
 
