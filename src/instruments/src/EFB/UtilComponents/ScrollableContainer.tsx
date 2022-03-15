@@ -66,11 +66,13 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, cl
                     clearTimeout(timeout.current);
                 }
 
+                const newScrollTop = event.currentTarget.scrollTop;
+
                 timeout.current = setTimeout(() => {
-                    onScrollStop?.(event.currentTarget.scrollTop);
+                    onScrollStop?.(newScrollTop);
                 }, 250);
 
-                onScroll?.(event.currentTarget.scrollTop);
+                onScroll?.(newScrollTop);
             }}
             onMouseDown={handleMouseDown}
         >
