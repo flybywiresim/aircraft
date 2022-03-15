@@ -24,7 +24,7 @@
         }
 
         &.Huge {
-            font-size: 31px;
+            font-size: 28px;
         }
 
         &.Cyan {
@@ -72,5 +72,13 @@
     .GreenLine {
         stroke: $display-green !important;
         stroke-width: 2;
+    }
+
+    .Show {
+        display: block;
+    }
+
+    .Hide {
+        display: hide;
     }
 }
