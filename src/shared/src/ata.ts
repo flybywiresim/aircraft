@@ -92,7 +92,7 @@ export const AtaChaptersDescription = Object.freeze({
     24: 'All things related to the electrical system. The electrical system supplies power from the engines, APU, batteries, or emergency generator to all cockpit instruments.',
     29: 'The hydraulic system connects to the flight controls, flaps and landing gear to provide pressure to these surfaces. Failing these can cause loss of control over some flight surfaces.',
     31: 'The cockpit displays give critical flight information to the pilots. In a failure where displays are lost, the pilots must deal with a lack of flight data given to them.',
-    34: 'The navigation systems provide data about the position, speed, heading, and altitude of the aircraft. Failures in a system such as the ADIRS can return erroneous data to the pilots',
+    34: 'The navigation systems provide data about the position, speed, heading, and altitude of the aircraft. Failures in a system such as the ADIRS can cause a loss of data sent to instrumentation.',
 });
 
 export type AtaChapterNumber = keyof typeof AtaChaptersTitle;
