@@ -129,7 +129,7 @@ export const PinnedChartUI = () => {
 
         const selectedProvider = providerTabs[selectedProviderIndex].provider;
 
-        if (selectedProvider === 'LOCAL_FILES') {
+        if (selectedProvider === ChartProvider.LOCAL_FILES) {
             if (filterItem === 'BOTH') {
                 return true;
             }
@@ -137,7 +137,7 @@ export const PinnedChartUI = () => {
             return pinnedChart.tag === filterItem;
         }
 
-        if (selectedProvider === 'NAVIGRAPH') {
+        if (selectedProvider === ChartProvider.NAVIGRAPH) {
             if (filterItem === 'ALL') {
                 return true;
             }
