@@ -17,10 +17,10 @@ class CDUAtcMenuFansB {
             [""],
             [""],
             [""],
-            ["", ""],
             [""],
-            ["<MSG RECORD", ""],
-            ["", "FREQUENCY[color]inop\xa0"],
+            [""],
+            ["<MSG RECORD"],
+            ["", "FREQUENCY\xa0[color]inop"],
             ["<CONNECTION", "MONITORING>[color]inop"],
             ["\xa0ATSU DLK"],
             ["<RETURN"]
