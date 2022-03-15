@@ -173,6 +173,7 @@ export class Atc {
         message.Direction = AtsuMessageDirection.Downlink;
         message.Content = CpdlcMessagesDownlink.DM9999[1];
         message.ComStatus = AtsuMessageComStatus.Sending;
+        message.DcduRelevantMessage = false;
 
         this.maxUplinkDelay = -1;
         this.parent.registerMessages([message]);
