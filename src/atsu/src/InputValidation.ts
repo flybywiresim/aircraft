@@ -360,7 +360,14 @@ export class InputValidation {
         if (value[value.length - 1] === 'M') {
             return parseInt(value.substring(0, value.length - 1)) * 3.28;
         }
-        return parseInt(value);
+        if (value.endsWith('FT')) {
+            return parseInt(value.substring(0, value.length - 2));
+        }
+
+        const altitude = parseInt(value);
+        if (altitude < 1000) return altitude * 100;
+
+        return altitude;
     }
 
     /**
@@ -369,15 +376,20 @@ export class InputValidation {
      * @param {string} higher Higher altitude value
      * @returns True if lower is smaller than higher, else false
      */
-    public static validateAltitudeRange(lower: string, higher: string): boolean {
-        if (!InputValidation.sameAltitudeType(lower, higher)) {
-            return false;
-        }
+    public static validateAltitudeRange(lower: string, higher: string): AtsuStatusCodes {
+        if (!InputValidation.sameAltitudeType(lower, higher)) return AtsuStatusCodes.FormatError;
+
+        const errorLower = InputValidation.validateScratchpadAltitude(lower);
+        if (errorLower !== AtsuStatusCodes.Ok) return errorLower;
+        const errorHigher = InputValidation.validateScratchpadAltitude(higher);
+        if (errorHigher !== AtsuStatusCodes.Ok) return errorHigher;
 
         const lowerFt = InputValidation.convertToFeet(lower);
         const higherFt = InputValidation.convertToFeet(higher);
 
-        return lowerFt < higherFt;
+        if (lowerFt >= higherFt) return AtsuStatusCodes.EntryOutOfRange;
+
+        return AtsuStatusCodes.Ok;
     }
 
     /**
