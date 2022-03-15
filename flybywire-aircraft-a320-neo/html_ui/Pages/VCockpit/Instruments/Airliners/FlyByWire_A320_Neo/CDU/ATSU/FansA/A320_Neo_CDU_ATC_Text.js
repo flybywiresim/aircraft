@@ -35,7 +35,7 @@ class CDUAtcTextFansA {
 
         // create the freetext elements
         if (freetextLines.length !== 0) {
-            if (mcdu.atsuManager.atc.fansMode() === Atsu.FansMode.FansB) {
+            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansB) {
                 freetextElement = Atsu.CpdlcMessagesDownlink[type]["DM98"].deepCopy();
             } else {
                 freetextElement = Atsu.CpdlcMessagesDownlink[type]["DM67"].deepCopy();
@@ -265,12 +265,12 @@ class CDUAtcTextFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcTextFansA.CanSendData(messages, data)) {
-                if (mcdu.atsuManager.atc.currentStation() === "") {
+                if (mcdu.atsu.atc.currentStation() === "") {
                     mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
-                    const prepMessages = CDUAtcTextFansA.CreateMessages(messages, data);
+                    const prepMessages = CDUAtcTextFansA.CreateMessages(mcdu, messages, data);
                     if (prepMessages) {
-                        mcdu.atsuManager.registerMessages(prepMessages);
+                        mcdu.atsu.registerMessages(prepMessages);
                     }
                     CDUAtcTextFansA.ShowPage1(mcdu);
                 }
@@ -394,12 +394,12 @@ class CDUAtcTextFansA {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcTextFansA.CanSendData(messages, data)) {
-                if (mcdu.atsuManager.atc.currentStation() === "") {
+                if (mcdu.atsu.atc.currentStation() === "") {
                     mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
-                    const prepMessages = CDUAtcTextFansA.CreateMessages(messages, data);
+                    const prepMessages = CDUAtcTextFansA.CreateMessages(mcdu, messages, data);
                     if (prepMessages) {
-                        mcdu.atsuManager.registerMessages(prepMessages);
+                        mcdu.atsu.registerMessages(prepMessages);
                     }
                     CDUAtcTextFansA.ShowPage2(mcdu);
                 }

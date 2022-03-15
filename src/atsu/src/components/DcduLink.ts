@@ -40,14 +40,14 @@ export class DcduLink {
             this.atc.removeMessage(uid);
         });
 
-        Coherent.on('A32NX_ATSU_SEND_RESPONSE', (uid: number, response: CpdlcMessageResponse) => {
+        Coherent.on('A32NX_ATSU_SEND_RESPONSE', (uid: number, response: number) => {
             this.atc.sendResponse(uid, response);
         });
 
         Coherent.on('A32NX_ATSU_SEND_MESSAGE', (uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
-                if (message.Direction === AtsuMessageDirection.Output) {
+                if (message.Direction === AtsuMessageDirection.Downlink) {
                     this.atc.sendMessage(message).then((code) => {
                         if (code !== AtsuStatusCodes.Ok) {
                             this.atsu.publishAtsuStatusCode(code);
@@ -180,7 +180,7 @@ export class DcduLink {
     public enqueue(message: CpdlcMessage) {
         const block = new DcduMessage();
         block.MessageId = message.UniqueMessageID;
-        block.MessageRead = message.Direction === AtsuMessageDirection.Output;
+        block.MessageRead = message.Direction === AtsuMessageDirection.Downlink;
 
         if (this.messages.length < DcduLink.MaxDcduFileSize) {
             this.messages.push(block);

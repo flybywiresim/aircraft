@@ -383,12 +383,12 @@ class CDUAtcLatRequest {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcLatRequest.CanSendData(data)) {
-                if (mcdu.atsuManager.atc.currentStation() === "") {
+                if (mcdu.atsu.atc.currentStation() === "") {
                     mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcLatRequest.CreateRequests(data);
                     if (messages) {
-                        mcdu.atsuManager.registerMessages(messages);
+                        mcdu.atsu.registerMessages(messages);
                     }
                     CDUAtcLatRequest.ShowPage(mcdu);
                 }

@@ -1,6 +1,6 @@
 class CDUAtcMenu {
     static ShowPage1(mcdu) {
-        if (mcdu.atsuManager.atc.fansMode() === Atsu.FansMode.FansB) {
+        if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansB) {
             CDUAtcMenuFansB.ShowPage(mcdu);
         } else {
             CDUAtcMenuFansA.ShowPage(mcdu);

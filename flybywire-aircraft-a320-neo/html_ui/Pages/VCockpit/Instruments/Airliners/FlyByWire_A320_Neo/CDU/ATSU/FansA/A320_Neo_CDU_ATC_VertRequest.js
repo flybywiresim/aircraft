@@ -348,12 +348,12 @@ class CDUAtcVertRequest {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcVertRequest.CanSendData(data)) {
-                if (mcdu.atsuManager.atc.currentStation() === "") {
+                if (mcdu.atsu.atc.currentStation() === "") {
                     mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcVertRequest.CreateRequests(data);
                     if (messages) {
-                        mcdu.atsuManager.registerMessages(messages);
+                        mcdu.atsu.registerMessages(messages);
                     }
                     CDUAtcVertRequest.ShowPage1(mcdu);
                 }
@@ -574,12 +574,12 @@ class CDUAtcVertRequest {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcVertRequest.CanSendData(data)) {
-                if (mcdu.atsuManager.atc.currentStation() === "") {
+                if (mcdu.atsu.atc.currentStation() === "") {
                     mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcVertRequest.CreateRequests(data);
                     if (messages) {
-                        mcdu.atsuManager.registerMessage(messages);
+                        mcdu.atsu.registerMessages(messages);
                     }
                     CDUAtcVertRequest.ShowPage2(mcdu);
                 }
