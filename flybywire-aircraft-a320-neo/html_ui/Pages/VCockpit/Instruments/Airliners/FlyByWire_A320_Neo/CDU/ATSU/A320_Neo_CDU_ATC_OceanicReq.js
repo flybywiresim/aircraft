@@ -18,7 +18,7 @@ class CDUAtcOceanicReq {
         if (!mcdu.flightPlanManager.getDestination() || mcdu.flightPlanManager.getDestination().ident === "") {
             return false;
         }
-        if (mcdu.atsuManager.atc.currentStation() === "") {
+        if (mcdu.atsu.atc.currentStation() === "") {
             return false;
         }
         return data.entryPoint && data.entryTime && data.requestedMach && data.requestedFlightlevel;
@@ -34,7 +34,7 @@ class CDUAtcOceanicReq {
         retval.RequestedMach = data.requestedMach;
         retval.RequestedFlightlevel = data.requestedFlightlevel;
         retval.Freetext = data.freetext.filter((n) => n);
-        retval.Station = mcdu.atsuManager.atc.currentStation();
+        retval.Station = mcdu.atsu.atc.currentStation();
 
         return retval;
     }
@@ -231,8 +231,8 @@ class CDUAtcOceanicReq {
         );
 
         if (store.firstCall && !store.callsign) {
-            if (mcdu.atsuManager.flightNumber().length !== 0) {
-                store.callsign = mcdu.atsuManager.flightNumber();
+            if (mcdu.atsu.flightNumber().length !== 0) {
+                store.callsign = mcdu.atsu.flightNumber();
             }
         }
         store.firstCall = false;
@@ -240,8 +240,8 @@ class CDUAtcOceanicReq {
         if (store.callsign) {
             flightNo = `{green}${store.callsign}{end}`;
         }
-        if (mcdu.atsuManager.atc.currentStation() !== "") {
-            atcStation = `{cyan}${mcdu.atsuManager.atc.currentStation()}{end}`;
+        if (mcdu.atsu.atc.currentStation() !== "") {
+            atcStation = `{cyan}${mcdu.atsu.atc.currentStation()}{end}`;
         }
 
         // check if all required information are available to prepare the PDC message
@@ -285,7 +285,7 @@ class CDUAtcOceanicReq {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcOceanicReq.CanSendData(mcdu, store)) {
-                mcdu.atsuManager.registerMessage(CDUAtcOceanicReq.CreateMessage(mcdu, store));
+                mcdu.atsu.registerMessage(CDUAtcOceanicReq.CreateMessage(mcdu, store));
                 CDUAtcOceanicReq.ShowPage1(mcdu);
             }
         };
