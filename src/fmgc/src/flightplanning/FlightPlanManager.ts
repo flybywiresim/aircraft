@@ -310,15 +310,15 @@ export class FlightPlanManager {
     /**
      * Gets the origin of the currently active flight plan.
      */
-    public getOrigin(): WayPoint | undefined {
-        return this._flightPlans[this._currentFlightPlanIndex].originAirfield;
+    public getOrigin(flightPlanIndex = this._currentFlightPlanIndex): WayPoint | undefined {
+        return this._flightPlans[flightPlanIndex].originAirfield;
     }
 
     /**
      * Gets the origin of the currently active flight plan, even after it has been cleared for a direct-to.
      */
-    public getPersistentOrigin(): WayPoint | undefined {
-        return this._flightPlans[this._currentFlightPlanIndex].persistentOriginAirfield;
+    public getPersistentOrigin(flightPlanIndex = this._currentFlightPlanIndex): WayPoint | undefined {
+        return this._flightPlans[flightPlanIndex].persistentOriginAirfield;
     }
 
     /**
