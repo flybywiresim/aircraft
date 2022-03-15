@@ -3,9 +3,9 @@
 
 #main-bleed {
 
-    // .PageTitle {
-    //     font-size: 28px !important;
-    // }
+    .PageTitle {
+        font-size: 28px !important;
+    }
 
     text, tspan {
         fill: $display-white;
@@ -66,6 +66,11 @@
     }
 
     .Stroke2 {
+        stroke-width: 2;
+    }
+
+    .GreenLine {
+        stroke: $display-green !important;
         stroke-width: 2;
     }
 }
