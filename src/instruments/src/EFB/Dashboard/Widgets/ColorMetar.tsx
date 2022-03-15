@@ -13,28 +13,28 @@ export const ColoredMetar = ({ metar }: { metar: MetarParserType }) => {
         switch (metar.color_codes[index]) {
         case ColorCode.Highlight:
             return (
-                <span className="text-teal-regular">
+                <span className="text-2xl text-teal-regular">
                     {metarPart}
                     {' '}
                 </span>
             );
         case ColorCode.Info:
             return (
-                <span className="text-gray-500">
+                <span className="text-2xl text-gray-500">
                     {metarPart}
                     {' '}
                 </span>
             );
         case ColorCode.Caution:
             return (
-                <span className="text-yellow-500">
+                <span className="text-2xl text-yellow-500">
                     {metarPart}
                     {' '}
                 </span>
             );
         case ColorCode.Warning:
             return (
-                <span className="text-red-400">
+                <span className="text-2xl text-red-400">
                     {metarPart}
                     {' '}
                 </span>
@@ -42,7 +42,7 @@ export const ColoredMetar = ({ metar }: { metar: MetarParserType }) => {
         case ColorCode.TrendMarker:
             return (
                 <>
-                    <span className="font-bold text-gray-500">
+                    <span className="text-2xl font-bold text-gray-500">
                         {metarPart}
                     </span>
                     {' '}
@@ -50,7 +50,7 @@ export const ColoredMetar = ({ metar }: { metar: MetarParserType }) => {
             );
         default:
             return (
-                <span>
+                <span className="text-2xl">
                     {metarPart}
                     {' '}
                 </span>

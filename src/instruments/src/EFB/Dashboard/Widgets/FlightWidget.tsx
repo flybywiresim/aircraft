@@ -5,7 +5,7 @@ import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
 
-import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simbrief';
+import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
@@ -166,10 +166,10 @@ export const FlightWidget = () => {
                             </div>
                         </div>
                         <div>
-                            <h5 className="text-2xl font-bold">Route</h5>
+                            <h5 className="mb-1 font-bold">Route</h5>
                             <ScrollableContainer height={15}>
-                                <p className="font-mono">
-                                    <span className="text-theme-highlight">
+                                <p className="font-mono text-2xl">
+                                    <span className="text-2xl text-theme-highlight">
                                         {departingAirport}
                                         /
                                         {departingRunway}
@@ -177,7 +177,7 @@ export const FlightWidget = () => {
                                     {' '}
                                     {route}
                                     {' '}
-                                    <span className="text-theme-highlight">
+                                    <span className="text-2xl text-theme-highlight">
                                         {arrivingAirport}
                                         /
                                         {arrivingRunway}
