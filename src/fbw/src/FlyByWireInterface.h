@@ -320,6 +320,10 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeValid;
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeDeviation;
 
+  std::unique_ptr<LocalVariable> idAirConditionSettingCkpt;
+  std::unique_ptr<LocalVariable> idAirConditionSettingFwd;
+  std::unique_ptr<LocalVariable> idAirConditionSettingAft;
+
   void loadConfiguration();
   void setupLocalVariables();
 
@@ -341,6 +345,8 @@ class FlyByWireInterface {
   bool updateSpoilers(double sampleTime);
 
   bool updateAltimeterSetting(double sampleTime);
+
+  bool setAirConditionSetting(double sampleTime);
 
   double getTcasModeAvailable();
 

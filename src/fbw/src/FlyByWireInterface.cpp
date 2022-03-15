@@ -3,6 +3,8 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <random>
+#include <chrono>
 
 #include "FlyByWireInterface.h"
 #include "SimConnectData.h"
@@ -215,6 +217,9 @@ void FlyByWireInterface::loadConfiguration() {
   mappingTable3d.emplace_back(35.0, 75.0);
   mappingTable3d.emplace_back(45.0, 100.0);
   idThrottlePositionLookupTable3d.initialize(mappingTable3d, 0, 100);
+
+  // set air condition knob setting
+  setAirConditionSetting(calculatedSampleTime);
 }
 
 void FlyByWireInterface::setupLocalVariables() {
@@ -439,6 +444,10 @@ void FlyByWireInterface::setupLocalVariables() {
   idRadioReceiverLocalizerDistance = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
   idRadioReceiverGlideSlopeValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_IS_VALID");
   idRadioReceiverGlideSlopeDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_DEVIATION");
+
+  idAirConditionSettingCkpt = make_unique<LocalVariable>("A32NX_OVHD_COND_CKPT_SELECTOR_KNOB");
+  idAirConditionSettingFwd = make_unique<LocalVariable>("A32NX_OVHD_COND_FWD_SELECTOR_KNOB");
+  idAirConditionSettingAft = make_unique<LocalVariable>("A32NX_OVHD_COND_AFT_SELECTOR_KNOB");
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
@@ -1753,4 +1762,86 @@ double FlyByWireInterface::getTcasAdvisoryState() {
   }
 
   return state;
+}
+
+bool FlyByWireInterface::setAirConditionSetting(double sampleTime) {
+  //MIN           = 18.00C/64.400F     0
+  //9 O'CLOCK     = 19.92C/67.856F    16
+  //REALISTIC MIN = 21.12C/70.016F    26
+  //10 O' CLOCK   = 22.08C/71.744F    34
+  //AVERAGE       = 24.00C/75.000F    50
+  //2 O' CLOCK    = 25.92C/78.656F    66
+  //REALISTIC MAX = 26.88C/80.384F    74
+  //3 O' CLOCK    = 28.08C/82.544F    84
+  //MAX           = 30.00C/86.000F   100
+
+  //auto simData = simConnectInterface.getSimData();
+  //ambientTemperature = simData.ambient_temperature_celsius;
+  //cout << "DEBUG: Current ambient temperature   " << ambientTemperature << endl;
+
+  unsigned seed = chrono::system_clock::now().time_since_epoch().count();
+  default_random_engine generator(seed);
+  normal_distribution<double> distribution(0.5, 0.09727);
+  double random_number = distribution(generator);
+  int rounded_number = 2 * round((random_number * 100) / 2);
+
+  if (rounded_number <= 2) {
+    //~%0.15 chance (1/667) the knobs will be set between 10 o'clock and the lowest setting
+    int temp = rand()%(34 - 2) + 2;
+    int rounded_temp = 2 * round((temp * 100) / 2 );
+    idAirConditionSettingCkpt->set(rounded_temp);
+    idAirConditionSettingFwd->set(rounded_temp);
+    idAirConditionSettingAft->set(rounded_temp);
+  }
+  else if (rounded_number >= 98) {
+    //~%0.15 chance (1/667) the knobs will be set between 2 o'clock and the highest setting
+    int temp = rand()%(98 - 66) + 66;
+    int rounded_temp = 2 * round((temp * 100) / 2 );
+    idAirConditionSettingCkpt->set(rounded_temp);
+    idAirConditionSettingFwd->set(rounded_temp);
+    idAirConditionSettingAft->set(rounded_temp);
+  }
+  else if (42 < rounded_number && rounded_number < 58) {
+    //~68% chance (1/3) that the knobs will be at 12 o'clock
+    idAirConditionSettingCkpt->set(50);
+    idAirConditionSettingFwd->set(50);
+    idAirConditionSettingAft->set(50);
+  }
+  else if (34 <= rounded_number && rounded_number <= 42) {
+    //~11% chance (1/10) the knobs will be on the 10 o'clock setting
+    idAirConditionSettingCkpt->set(34);
+    idAirConditionSettingFwd->set(34);
+    idAirConditionSettingAft->set(34);
+  }
+  else if (58 <= rounded_number && rounded_number <= 66) {
+    //~11% chance (1/10) the knobs will be on the 2 o'clock setting
+    idAirConditionSettingCkpt->set(66);
+    idAirConditionSettingFwd->set(66);
+    idAirConditionSettingAft->set(66);
+  }
+  else if (2 < rounded_number && rounded_number < 34) {
+    //~5% chance (1/20) the knobs will be set between the 10 o'clock and 12 o'clock setting
+    int cold = 50 + rounded_number - 34; //THIS NEEDS TO BE CHANGED
+    idAirConditionSettingCkpt->set(cold);
+    idAirConditionSettingFwd->set(cold);
+    idAirConditionSettingAft->set(cold);
+  }
+  else if (66 < rounded_number && rounded_number < 98) {
+    //~5% chance (1/20) the knobs will be set between the 12 o'clock and 2 o'clock setting
+    int hot = 50 + rounded_number - 66; //THIS NEEDS TO BE CHANGED
+    idAirConditionSettingCkpt->set(hot);
+    idAirConditionSettingFwd->set(hot);
+    idAirConditionSettingAft->set(hot);
+  }
+  else {
+    cout << "WASM: Unkown Error setting Air Conditioning Knob" << endl;
+    return true;
+  }
+
+  cout << "WASM: Setting Cockpit A/C Knob    " << idAirConditionSettingCkpt->get() << endl;
+  cout << "WASM: Setting Forward A/C Knob    " << idAirConditionSettingFwd->get() << endl;
+  cout << "WASM: Setting Aft A/C Knob        " << idAirConditionSettingAft->get() << endl;
+  cout << "WASM: A/C Knob Rounded Variable   " << rounded_number << endl;
+
+  return true;
 }
