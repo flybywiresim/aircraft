@@ -441,8 +441,8 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         this.cellRef.instance.innerHTML = text;
     }
 
-    private setAutoBrakeText() {
-        if (this.autoBrakeActive) {
+    private setAutoBrakeText(newAutobrakeActive: boolean) {
+        if (newAutobrakeActive) {
             this.isShown = true;
             let text = '';
             switch (this.autoBrakeMode) {
@@ -461,12 +461,14 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             default:
                 text = '';
                 this.isShown = false;
+                this.displayModeChangedPath(true);
             }
             this.cellRef.instance.innerHTML = text;
-        } else {
+        } else if (this.autoBrakeActive && !newAutobrakeActive) {
             this.cellRef.instance.innerHTML = '';
             this.isShown = false;
         }
+        this.autoBrakeActive = newAutobrakeActive;
     }
 
     onAfterRender(node: VNode): void {
@@ -485,13 +487,11 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         });
 
         sub.on('autoBrakeActive').whenChanged().handle((am) => {
-            this.autoBrakeActive = am;
-            this.setAutoBrakeText();
+            this.setAutoBrakeText(am);
         });
 
         sub.on('autoBrakeMode').whenChanged().handle((a) => {
             this.autoBrakeMode = a;
-            this.setAutoBrakeText();
         });
     }
 
