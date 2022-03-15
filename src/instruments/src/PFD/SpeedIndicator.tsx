@@ -246,11 +246,11 @@ export const AirspeedIndicatorOfftape = ({ airspeed, targetSpeed, speedIsManaged
 const SpeedTarget = ({ airspeed, targetSpeed, isManaged, decelActive }) => {
     const color = isManaged ? 'Magenta' : 'Cyan';
     const text = Math.round(targetSpeed).toString().padStart(3, '0');
-    if (airspeed - targetSpeed > DisplayRange) {
+    if (airspeed - targetSpeed > DisplayRange && !decelActive) {
         return (
             <text id="SelectedSpeedLowerText" className={`FontSmallest EndAlign ${color}`} x="24.078989" y="128.27917">{text}</text>
         );
-    } if (airspeed - targetSpeed < -DisplayRange && !decelActive) {
+    } if (airspeed - targetSpeed < -DisplayRange) {
         return (
             <text id="SelectedSpeedLowerText" className={`FontSmallest EndAlign ${color}`} x="24.113895" y="36.670692">{text}</text>
         );
