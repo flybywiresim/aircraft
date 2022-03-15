@@ -286,6 +286,7 @@ export class Atc {
         if (request.Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.NotRequired && response === undefined) {
             // received the station message for the DCDU
             if (request.Content?.TypeId === 'UM9999') {
+                request.DcduRelevantMessage = false;
                 if (this.currentAtc !== '') {
                     this.dcduLink.setAtcLogonMessage(request.Message);
                 }
@@ -294,6 +295,7 @@ export class Atc {
 
             // received a logoff message
             if (request.Content?.TypeId === 'UM9995') {
+                request.DcduRelevantMessage = false;
                 this.dcduLink.setAtcLogonMessage('');
                 this.currentAtc = '';
                 return true;
@@ -301,6 +303,7 @@ export class Atc {
 
             // received a service terminated message
             if (request.Message.includes('TERMINATED')) {
+                request.DcduRelevantMessage = false;
                 this.dcduLink.setAtcLogonMessage('');
                 this.currentAtc = '';
                 return true;
@@ -310,6 +313,7 @@ export class Atc {
             if (request.Content?.TypeId === 'UM9998') {
                 const entries = request.Message.split(' ');
                 if (entries.length >= 2) {
+                    request.DcduRelevantMessage = false;
                     const station = entries[1].replace(/@/gi, '');
                     this.handover(station);
                     return true;
@@ -322,6 +326,7 @@ export class Atc {
             if (request.Content?.TypeId === 'DM9998') {
                 // logon accepted by ATC
                 if (response.Content?.TypeId === 'UM9997') {
+                    response.DcduRelevantMessage = false;
                     this.dcduLink.setAtcLogonMessage(`CURRENT ATC UNIT @${this.nextAtc}@`);
                     this.currentFansMode = FutureAirNavigationSystem.currentFansMode(this.nextAtc);
                     InputValidation.FANS = this.currentFansMode;
@@ -332,6 +337,7 @@ export class Atc {
 
                 // logon rejected
                 if (response.Content?.TypeId === 'UM9996') {
+                    response.DcduRelevantMessage = false;
                     this.dcduLink.setAtcLogonMessage('');
                     this.currentAtc = '';
                     this.nextAtc = '';
