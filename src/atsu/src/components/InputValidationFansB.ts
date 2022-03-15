@@ -14,7 +14,7 @@ export class InputValidationFansB {
         const altitudeStr = value.replace('FT', '').replace('M', '');
 
         // contains not only digits
-        if (/-*(?!^\d+$)^.+$/.test(altitudeStr)) {
+        if (!/^-?[0-9]\d*(\.\d+)?$/.test(altitudeStr)) {
             return AtsuStatusCodes.FormatError;
         }
         const altitude = parseInt(altitudeStr);
