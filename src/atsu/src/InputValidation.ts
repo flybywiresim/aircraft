@@ -296,23 +296,16 @@ export class InputValidation {
      * @returns Formatted string or empty string in case of a failure
      */
     public static formatScratchpadAltitude(value: string): string {
-        if (/^((FL)*[0-9]{1,3})$/.test(value)) {
-            if (value.startsWith('FL')) {
-                return value;
-            }
-            return `FL${value}`;
-        } if (/^([0-9]{1,3}(FT|M)|[0-9]{1,5}M|[0-9]{4,5})$/.test(value)) {
-            const feet = value[value.length - 1] !== 'M';
-
-            let altitude = value.replace('FT', '').replace('M', '');
-            if (!feet) {
-                altitude = `${altitude}M`;
-            }
-
-            return altitude;
+        if (value.startsWith('FL') || value.endsWith('M') || value.endsWith('FT')) {
+            return value;
         }
 
-        return '';
+        const altitude = parseInt(value);
+        if (altitude >= 30 && altitude <= 410) {
+            return `FL${value}`;
+        }
+
+        return `${value}FT`;
     }
 
     /**
