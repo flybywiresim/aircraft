@@ -9,6 +9,7 @@ import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/featu
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
+import { setOfpScroll } from '../../Store/features/dispatchPage';
 
 interface InformationEntryProps {
     title: string;
@@ -90,6 +91,7 @@ export const FlightWidget = () => {
             const action = await fetchSimbriefDataAction(simbriefUserId ?? '');
 
             dispatch(action);
+            dispatch(setOfpScroll(0));
         } catch (e) {
             toast.error(e.message);
         }

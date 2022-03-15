@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simbrief';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
+import { setOfpScroll } from '../../Store/features/dispatchPage';
 
 export const LoadSheetWidget = () => {
     const loadsheet = useAppSelector((state) => state.simbrief.data.loadsheet);
@@ -71,6 +72,7 @@ export const LoadSheetWidget = () => {
             const action = await fetchSimbriefDataAction(simbriefUserId ?? '');
 
             dispatch(action);
+            dispatch(setOfpScroll(0));
         } catch (e) {
             toast.error(e.message);
         }
@@ -79,6 +81,7 @@ export const LoadSheetWidget = () => {
     };
 
     const simbriefDataLoaded = isSimbriefDataLoaded();
+    const {ofpScroll}  = useAppSelector(state => state.dispatchPage);
 
     return (
         <div className="overflow-hidden relative p-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
@@ -87,19 +90,23 @@ export const LoadSheetWidget = () => {
                     <button
                         type="button"
                         onClick={handleFontDecrease}
-                        className="py-2 px-3 hover:bg-theme-highlight bg-opacity-50 hover:bg-opacity-100 transition duration-100"
+                        className="py-2 px-3 hover:bg-theme-highlight hover:text-theme-body bg-opacity-50 hover:bg-opacity-100 transition duration-100"
                     >
                         <ZoomOut size={30} />
                     </button>
                     <button
                         type="button"
                         onClick={handleFontIncrease}
-                        className="py-2 px-3 hover:bg-theme-highlight bg-opacity-50 hover:bg-opacity-100 transition duration-100"
+                        className="py-2 px-3 hover:bg-theme-highlight hover:text-theme-body bg-opacity-50 hover:bg-opacity-100 transition duration-100"
                     >
                         <ZoomIn size={30} />
                     </button>
                 </div>
-                <ScrollableContainer height={51}>
+                <ScrollableContainer
+                    height={51}
+                    onScroll={(scroll) => dispatch(setOfpScroll(scroll))}
+                    initialScroll={ofpScroll}
+                >
                     <div
                         ref={ref}
                         className="image-theme"
