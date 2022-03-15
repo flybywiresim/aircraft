@@ -240,7 +240,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                 )
                                 : (
                                     <>
-                                        <div className="mt-4 font-mono text-xl">
+                                        <div className="mt-4 font-mono text-2xl">
                                             {metar.raw_text
                                                 ? (
                                                     <>
