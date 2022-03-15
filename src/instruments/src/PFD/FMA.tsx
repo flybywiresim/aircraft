@@ -55,6 +55,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
 
     private secondBorderRef = FSComponent.createRef<SVGPathElement>();
 
+    private AB3Message = Subject.create(false);
+
     private handleFMABorders() {
         const sharedModeActive = this.activeLateralMode === 32 || this.activeLateralMode === 33
             || this.activeLateralMode === 34 || (this.activeLateralMode === 20 && this.activeVerticalMode === 24);
@@ -81,6 +83,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
             firstBorder = 'm33.117 0.33732v20.864';
         }
 
+        this.AB3Message.set(AB3Message);
         this.firstBorderRef.instance.setAttribute('d', firstBorder);
         this.secondBorderRef.instance.setAttribute('d', secondBorder);
     }
@@ -149,6 +152,7 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
                 <Row3
                     bus={this.props.bus}
                     isAttExcessive={this.props.isAttExcessive}
+                    AB3Message={this.AB3Message}
                 />
             </g>
         );
@@ -287,7 +291,7 @@ class A2Cell extends DisplayComponent<{ bus:EventBus }> {
     }
 }
 
-class Row3 extends DisplayComponent<{ bus:EventBus, isAttExcessive: Subscribable<boolean> }> {
+class Row3 extends DisplayComponent<{ bus:EventBus, isAttExcessive: Subscribable<boolean>, AB3Message: Subscribable<boolean> }> {
     private cellsToHide = FSComponent.createRef<SVGGElement>();
 
     onAfterRender(node: VNode): void {
@@ -305,7 +309,7 @@ class Row3 extends DisplayComponent<{ bus:EventBus, isAttExcessive: Subscribable
     render(): VNode {
         return (
             <g>
-                <A3Cell bus={this.props.bus} />
+                <A3Cell bus={this.props.bus} AB3Message={this.props.AB3Message} />
                 <g ref={this.cellsToHide}>
                     <AB3Cell bus={this.props.bus} />
                     <D3Cell bus={this.props.bus} />
@@ -439,21 +443,29 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
     private setAutoBrakeText() {
         if (this.autoBrakeActive) {
+            this.isShown = true;
             let text = '';
             switch (this.autoBrakeMode) {
             case 1:
                 text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK LO</text>';
+                this.displayModeChangedPath();
                 break;
             case 2:
                 text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MED</text>';
+                this.displayModeChangedPath();
                 break;
             case 3:
                 text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK MAX</text>';
+                this.displayModeChangedPath();
                 break;
             default:
                 text = '';
+                this.isShown = false;
             }
             this.cellRef.instance.innerHTML = text;
+        } else {
+            this.cellRef.instance.innerHTML = '';
+            this.isShown = false;
         }
     }
 
@@ -493,10 +505,18 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     }
 }
 
-class A3Cell extends DisplayComponent<CellProps> {
+interface A3CellProps extends CellProps {
+    AB3Message: Subscribable<boolean>;
+}
+
+class A3Cell extends DisplayComponent<A3CellProps> {
     private classSub = Subject.create('');
 
     private textSub = Subject.create('');
+
+    private autobrakeMode = 0;
+
+    private AB3Message = false;
 
     private onUpdateAthrModeMessage(message: number) {
         let text: string = '';
@@ -530,6 +550,15 @@ class A3Cell extends DisplayComponent<CellProps> {
         this.classSub.set(`FontMedium MiddleAlign ${className}`);
     }
 
+    private handleAutobrakeMode() {
+        if (this.autobrakeMode === 3 && !this.AB3Message) {
+            this.textSub.set('BRK MAX');
+            this.classSub.set('FontMedium MiddleAlign Cyan');
+        } else {
+            this.textSub.set('');
+        }
+    }
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -540,12 +569,13 @@ class A3Cell extends DisplayComponent<CellProps> {
         });
 
         sub.on('autoBrakeMode').whenChanged().handle((am) => {
-            if (am === 3) {
-                this.textSub.set('BRK MAX');
-                this.classSub.set('FontMedium MiddleAlign Cyan');
-            } else {
-                this.textSub.set('');
-            }
+            this.autobrakeMode = am;
+            this.handleAutobrakeMode();
+        });
+
+        this.props.AB3Message.sub((ab3) => {
+            this.AB3Message = ab3;
+            this.handleAutobrakeMode();
         });
 
         sub.on('autoBrakeActive').whenChanged().handle((a) => {

@@ -320,7 +320,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
                         <VAlphaLimBar bus={this.props.bus} />
                     </g>
 
-                    <SpeedTrendArrow airspeed={this.speedSub} instrument={this.props.instrument} />
+                    <SpeedTrendArrow airspeed={this.speedSub} instrument={this.props.instrument} bus={this.props.bus} />
 
                     <V1Offtape bus={this.props.bus} />
                 </g>
@@ -464,10 +464,10 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
                 <g id="SpeedOfftapeGroup" ref={this.offTapeRef}>
                     <path id="SpeedTapeOutlineUpper" class="NormalStroke White" d="m1.9058 38.086h21.859" />
                     <SpeedTarget bus={this.props.bus} />
+                    <text id="AutoBrkDecel" ref={this.decelRef} class="FontMedium EndAlign Green" x="20.53927" y="129.06996">DECEL</text>
                     <path class="Fill Yellow SmallOutline" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
                     <path class="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
                     <path id="SpeedTapeOutlineLower" ref={this.lowerRef} class="NormalStroke White" d="m1.9058 123.56h21.859" />
-                    <text id="AutoBrkDecel" ref={this.decelRef} class="FontSmall Green" x="1.9058" y="128.56">DECEL</text>
                 </g>
             </>
 
@@ -475,7 +475,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
     }
 }
 
-class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>, instrument: BaseInstrument }> {
+class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>, instrument: BaseInstrument, bus: EventBus }> {
     private refElement = FSComponent.createRef<SVGGElement>();
 
     private arrowBaseRef = FSComponent.createRef<SVGPathElement>();
@@ -495,9 +495,11 @@ class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>,
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.props.airspeed.sub((newValue) => {
+        const sub = this.props.bus.getSubscriber<ClockEvents>();
+
+        sub.on('realTime').handle((_t) => {
             const deltaTime = this.props.instrument.deltaTime;
-            const clamped = Math.max(newValue, 30);
+            const clamped = Math.max(this.props.airspeed.get(), 30);
             const airspeedAcc = (clamped - this.previousAirspeed) / deltaTime * 1000;
             this.previousAirspeed = clamped;
 
@@ -505,26 +507,25 @@ class SpeedTrendArrow extends DisplayComponent<{ airspeed: Subscribable<number>,
             filteredAirspeedAcc = this.airspeedAccRateLimiter.step(filteredAirspeedAcc, deltaTime / 1000);
 
             const targetSpeed = filteredAirspeedAcc * 10;
-            const sign = Math.sign(filteredAirspeedAcc);
-
-            const offset = -targetSpeed * DistanceSpacing / ValueSpacing;
-
-            let pathString;
-            const neutralPos = 80.823;
-            if (sign > 0) {
-                pathString = `m15.455 ${neutralPos + offset} l -1.2531 2.4607 M15.455 ${neutralPos + offset} l 1.2531 2.4607`;
-            } else {
-                pathString = `m15.455 ${neutralPos + offset} l 1.2531 -2.4607 M15.455 ${neutralPos + offset} l -1.2531 -2.4607`;
-            }
-
-            this.offset.set(`m15.455 80.823v${offset.toFixed(10)}`);
-
-            this.pathString.set(pathString);
 
             if (Math.abs(targetSpeed) < 1) {
                 this.refElement.instance.style.visibility = 'hidden';
             } else {
                 this.refElement.instance.style.visibility = 'visible';
+                let pathString;
+                const sign = Math.sign(filteredAirspeedAcc);
+
+                const offset = -targetSpeed * DistanceSpacing / ValueSpacing;
+                const neutralPos = 80.823;
+                if (sign > 0) {
+                    pathString = `m15.455 ${neutralPos + offset} l -1.2531 2.4607 M15.455 ${neutralPos + offset} l 1.2531 2.4607`;
+                } else {
+                    pathString = `m15.455 ${neutralPos + offset} l 1.2531 -2.4607 M15.455 ${neutralPos + offset} l -1.2531 -2.4607`;
+                }
+
+                this.offset.set(`m15.455 80.823v${offset.toFixed(10)}`);
+
+                this.pathString.set(pathString);
             }
         });
     }
@@ -701,6 +702,8 @@ class SpeedTarget extends DisplayComponent <{ bus: EventBus }> {
 
     private textSub = Subject.create('0');
 
+    private decelActive = false;
+
     private needsUpdate = true;
 
     private speedState: SpeedStateInfo = {
@@ -735,7 +738,7 @@ class SpeedTarget extends DisplayComponent <{ bus: EventBus }> {
             this.needsUpdate = true;
         });
 
-        sub.on('speedAr').handle((s) => {
+        sub.on('speedAr').withArinc429Precision(2).handle((s) => {
             this.speedState.speed = s;
 
             this.needsUpdate = true;
@@ -753,6 +756,11 @@ class SpeedTarget extends DisplayComponent <{ bus: EventBus }> {
 
         sub.on('targetSpeedManaged').whenChanged().handle((s) => {
             this.speedState.managedTargetSpeed = s;
+            this.needsUpdate = true;
+        });
+
+        sub.on('autoBrakeActive').whenChanged().handle((a) => {
+            this.decelActive = a;
             this.needsUpdate = true;
         });
 
@@ -801,17 +809,21 @@ class SpeedTarget extends DisplayComponent <{ bus: EventBus }> {
             this.lowerBoundRef.instance.style.visibility = 'hidden';
             this.speedTargetRef.instance.style.visibility = 'hidden';
             this.currentVisible = this.upperBoundRef;
-        } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange) {
+        } else if (this.speedState.speed.value - currentTargetSpeed < -DisplayRange && !this.decelActive) {
             this.lowerBoundRef.instance.style.visibility = 'visible';
             this.upperBoundRef.instance.style.visibility = 'hidden';
             this.speedTargetRef.instance.style.visibility = 'hidden';
             this.currentVisible = this.lowerBoundRef;
-        } else {
+        } else if (!this.decelActive) {
             this.lowerBoundRef.instance.style.visibility = 'hidden';
             this.upperBoundRef.instance.style.visibility = 'hidden';
             this.speedTargetRef.instance.style.visibility = 'visible';
             this.currentVisible = this.speedTargetRef;
             inRange = true;
+        } else {
+            this.lowerBoundRef.instance.style.visibility = 'hidden';
+            this.upperBoundRef.instance.style.visibility = 'hidden';
+            this.speedTargetRef.instance.style.visibility = 'hidden';
         }
         return inRange;
     }

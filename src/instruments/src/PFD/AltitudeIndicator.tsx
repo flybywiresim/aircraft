@@ -274,17 +274,14 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
         // TODO find proper logic for this (what happens when a constraint is sent by the fms but vertical mode is not managed)
         const clbActive = this.activeVerticalMode !== VerticalMode.OP_CLB && this.activeVerticalMode !== VerticalMode.OP_DES
                             && this.activeVerticalMode !== VerticalMode.VS && this.activeVerticalMode !== VerticalMode.FPA;
-        const gsActive = this.activeVerticalMode === VerticalMode.GS_TRACK || this.activeVerticalMode === VerticalMode.GS_CPT;
-        const landingModesActive = this.activeVerticalMode === VerticalMode.LAND || this.activeVerticalMode === VerticalMode.FLARE;
-        const finalApp = this.activeVerticalMode === VerticalMode.FINAL;
 
-        const isWhite = this.constraint > 0 && (gsActive || landingModesActive || finalApp);
+        const selectedAltIgnored = this.activeVerticalMode >= VerticalMode.GS_CPT && this.activeVerticalMode < VerticalMode.ROLL_OUT || this.activeVerticalMode === VerticalMode.FINAL;
 
         this.isManaged = this.constraint > 0 && clbActive;
 
         this.shownTargetAltitude = this.updateTargetAltitude(this.targetAltitudeSelected, this.isManaged, this.constraint);
 
-        if (isWhite) {
+        if (selectedAltIgnored) {
             this.SelectedAltLowerFLText.instance.classList.remove('Cyan');
             this.SelectedAltLowerFLText.instance.classList.remove('Magenta');
             this.SelectedAltLowerFLText.instance.classList.add('White');
