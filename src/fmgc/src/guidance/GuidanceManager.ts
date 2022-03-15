@@ -98,8 +98,9 @@ export class GuidanceManager {
             if (to.additionalData.legType === LegType.CA) {
                 const course = to.additionalData.vectorsCourse;
                 const altitude = to.additionalData.vectorsAltitude;
+                const extraLength = (from.additionalData.runwayLength ?? 0) / (2 * 1852);
 
-                return new CALeg(course, altitude, metadata, segment);
+                return new CALeg(course, altitude, metadata, segment, extraLength);
             }
 
             if (to.additionalData.legType === LegType.CI || to.additionalData.legType === LegType.VI) {

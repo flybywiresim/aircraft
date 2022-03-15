@@ -15,7 +15,7 @@ export const LnavConfig = {
     /**
      * Coefficient applied to all transition turn radii
      */
-    TURN_RADIUS_FACTOR: 1.1,
+    TURN_RADIUS_FACTOR: 1.0,
 
     /**
      * The number of transitions to compute after the active leg (-1: no limit, compute all transitions)
@@ -32,7 +32,7 @@ export const LnavConfig = {
     /**
      * Whether to use the L:A32NX_DEBUG_TAS and L:A32NX_DEBUG_GS LVar for prediction speeds
      */
-    DEBUG_USE_SPEED_LVARS: false,
+    DEBUG_USE_SPEED_LVARS: true,
 
     /**
      * Whether to force the drawing of course reversal (hold, proc turn) vectors at any point in the path
@@ -52,7 +52,7 @@ export const LnavConfig = {
     /**
      * Whether to draw path debug points and print them out
      */
-    DEBUG_PREDICTED_PATH: false,
+    DEBUG_PREDICTED_PATH: true,
 
     /**
      * Whether to print SVG path generation debug info

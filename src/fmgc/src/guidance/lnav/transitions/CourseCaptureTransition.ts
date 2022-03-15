@@ -16,7 +16,6 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Constants } from '@shared/Constants';
 import { Geo } from '@fmgc/utils/Geo';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
@@ -35,12 +34,10 @@ const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));
  */
 export class CourseCaptureTransition extends Transition {
     constructor(
-        previousLeg: PrevLeg,
-        nextLeg: NextLeg | TFLeg, // FIXME temporary
+        public previousLeg: PrevLeg,
+        public nextLeg: NextLeg | TFLeg, // FIXME temporary
     ) {
-        super();
-        this.previousLeg = previousLeg;
-        this.nextLeg = nextLeg;
+        super(previousLeg, nextLeg);
     }
 
     private terminator: Coordinates | undefined;
@@ -81,15 +78,12 @@ export class CourseCaptureTransition extends Transition {
 
     public predictedPath: PathVector[] = [];
 
-    recomputeWithParameters(_isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
-        this.previousLeg = previousGuidable as PrevLeg;
-        this.nextLeg = nextGuidable as NextLeg;
-
+    recomputeWithParameters(_isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue) {
         const termFix = this.previousLeg.getPathEndPoint();
 
         let courseChange;
         let initialTurningPoint;
-        if (!previousGuidable) {
+        if (!this.inboundGuidable) {
             if (this.courseVariation <= 90) {
                 courseChange = this.deltaTrack;
             } else if (Math.sign(this.courseVariation) === Math.sign(this.deltaTrack)) {
@@ -191,9 +185,9 @@ export class CourseCaptureTransition extends Transition {
         return arcDistanceToGo(ppos, itp, this.center, this.clockwise ? this.angle : -this.angle);
     }
 
-    getGuidanceParameters(ppos: LatLongAlt, trueTrack: number, tas: Knots): GuidanceParameters | null {
+    getGuidanceParameters(ppos: LatLongAlt, trueTrack: number, tas: Knots, gs: Knots): GuidanceParameters | null {
         // FIXME PPOS guidance and all...
-        return this.nextLeg.getGuidanceParameters(ppos, trueTrack, tas);
+        return this.nextLeg.getGuidanceParameters(ppos, trueTrack, tas, gs);
     }
 
     getNominalRollAngle(gs: Knots): Degrees {

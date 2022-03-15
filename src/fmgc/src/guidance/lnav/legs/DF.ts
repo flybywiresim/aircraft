@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
@@ -57,11 +56,13 @@ export class DFLeg extends XFLeg {
         );
     }
 
-    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
-        // We don't really do anything here
-        this.inboundGuidable = previousGuidable;
-        this.outboundGuidable = nextGuidable;
-
+    recomputeWithParameters(
+        _isActive: boolean,
+        _tas: Knots,
+        _gs: Knots,
+        _ppos: Coordinates,
+        _trueTrack: DegreesTrue,
+    ) {
         const newStart = this.inboundGuidable?.getPathEndPoint() ?? this.estimateStartPoint();
 
         // Adjust the start point if we can
@@ -80,12 +81,12 @@ export class DFLeg extends XFLeg {
                 {
                     type: PathVectorType.DebugPoint,
                     startPoint: this.start,
-                    annotation: 'DF_START',
+                    annotation: 'DF START',
                 },
                 {
                     type: PathVectorType.DebugPoint,
                     startPoint: this.getPathEndPoint(),
-                    annotation: 'DF_END',
+                    annotation: 'DF END',
                 },
             );
         }
