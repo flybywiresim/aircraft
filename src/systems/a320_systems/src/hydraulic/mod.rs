@@ -52,7 +52,7 @@ use systems::{
         DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
         EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
-        HydraulicGeneratorControlUnit, LgciuSensors, ReservoirAirPressure,
+        HydraulicGeneratorControlUnit, LgciuSensors, ReservoirAirPressure,LgciuGearControl
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1204,8 +1204,8 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         autobrake_panel: &AutobrakePanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        lgciu1: &impl LgciuSensors,
-        lgciu2: &impl LgciuSensors,
+        lgciu1: &(impl LgciuSensors+LgciuGearControl),
+        lgciu2: &(impl LgciuSensors+LgciuGearControl),
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
         reservoir_pneumatics: &impl ReservoirAirPressure,
@@ -1392,7 +1392,7 @@ impl A320Hydraulic {
         context: &UpdateContext,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
-        lgciu1: &impl LgciuSensors,
+        lgciu1: &(impl LgciuSensors+LgciuGearControl),
     ) {
         self.forward_cargo_door.update(
             context,
@@ -1429,7 +1429,7 @@ impl A320Hydraulic {
         );
 
 
-        self.gear_system.update(context,&A320BrakeValvesController::default(),lgciu1.door_controller(),lgciu1.gear_controller(),self.green_circuit.pressure());
+        self.gear_system.update(context,&A320BrakeValvesController::default(),lgciu1,self.green_circuit.system_pressure());
     }
 
     fn update_with_sim_rate(

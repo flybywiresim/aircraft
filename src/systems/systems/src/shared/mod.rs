@@ -103,12 +103,11 @@ pub trait LgciuDoorPosition {
 }
 
 pub trait LgciuGearControl{
-    fn door_controller(&self) -> &impl GearComponentController;
-    fn gear_controller(&self) -> &impl GearComponentController;
+    fn should_open_doors(&self) -> bool;
+    fn should_extend_gears(&self) -> bool;
 }
 
-pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition + LgciuGearControl {}
-pub trait LgciuGearAndDoor: LgciuGearExtension + LgciuDoorPosition {}
+pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition {}
 
 
 pub trait EngineCorrectedN1 {

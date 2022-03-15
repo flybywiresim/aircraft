@@ -1,13 +1,13 @@
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
-    hydraulic::landing_gear::{
-        GearComponentController, GearSystemStateMachine, GearsSystemState,
-    },
+    hydraulic::landing_gear::{GearComponentController, GearSystemStateMachine, GearsSystemState},
     shared::{
         ElectricalBusType, ElectricalBuses, GearWheel, LandingGearRealPosition, LgciuDoorPosition,
-        LgciuGearAndDoor, LgciuGearExtension, LgciuSensors, LgciuWeightOnWheels,
+        LgciuGearControl, LgciuGearExtension, LgciuSensors, LgciuWeightOnWheels,
     },
-    simulation::{Read, SimulationElement, SimulatorReader, SimulatorWriter, Write},
+    simulation::{
+        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
+    },
 };
 use uom::si::{
     f64::*,
@@ -127,15 +127,11 @@ impl SimulationElement for LandingGear {
     }
 }
 
-pub struct LandingGearControlInterfaceUnit {
-    gear_handle_position_id: VariableIdentifier,
-
-    is_powered: bool,
-
+struct LgciuSensorInputs {
     id_number: usize,
 
-    powered_by: ElectricalBusType,
     external_power_available: bool,
+    is_powered: bool,
 
     right_gear_sensor_compressed: bool,
     left_gear_sensor_compressed: bool,
@@ -160,21 +156,14 @@ pub struct LandingGearControlInterfaceUnit {
     nose_gear_compressed_id: VariableIdentifier,
     left_gear_compressed_id: VariableIdentifier,
     right_gear_compressed_id: VariableIdentifier,
-
-    gear_system_control: GearSystemStateMachine,
-    is_gear_lever_down: bool,
-    // door_controller: GearSystemDoorController,
-    // gear_controller: GearSystemGearController,
 }
-impl LandingGearControlInterfaceUnit {
-    pub fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
+impl LgciuSensorInputs {
+    fn new(context: &mut InitContext, id_number: usize) -> Self {
         Self {
-            gear_handle_position_id: context.get_identifier("GEAR HANDLE POSITION".to_owned()),
-
-            is_powered: false,
-            id_number: number,
-            powered_by,
+            id_number,
             external_power_available: false,
+            is_powered: false,
+
             right_gear_sensor_compressed: true,
             left_gear_sensor_compressed: true,
             nose_gear_sensor_compressed: true,
@@ -194,16 +183,11 @@ impl LandingGearControlInterfaceUnit {
             left_door_up_and_locked: false,
 
             nose_gear_compressed_id: context
-                .get_identifier(format!("LGCIU_{}_NOSE_GEAR_COMPRESSED", number)),
+                .get_identifier(format!("LGCIU_{}_NOSE_GEAR_COMPRESSED", id_number)),
             left_gear_compressed_id: context
-                .get_identifier(format!("LGCIU_{}_LEFT_GEAR_COMPRESSED", number)),
+                .get_identifier(format!("LGCIU_{}_LEFT_GEAR_COMPRESSED", id_number)),
             right_gear_compressed_id: context
-                .get_identifier(format!("LGCIU_{}_RIGHT_GEAR_COMPRESSED", number)),
-
-            gear_system_control: GearSystemStateMachine::new(),
-            is_gear_lever_down: true,
-            // door_controller: GearSystemDoorController::new(),
-            // gear_controller: GearSystemGearController::new(GearsSystemState::AllDownLocked),
+                .get_identifier(format!("LGCIU_{}_RIGHT_GEAR_COMPRESSED", id_number)),
         }
     }
 
@@ -212,12 +196,14 @@ impl LandingGearControlInterfaceUnit {
         landing_gear: &LandingGear,
         gear_system_sensors: &impl GearSystemSensors,
         external_power_available: bool,
+        is_powered: bool,
     ) {
+        self.external_power_available = external_power_available;
+        self.is_powered = is_powered;
+
         self.nose_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::CENTER);
         self.left_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::LEFT);
         self.right_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::RIGHT);
-
-        self.external_power_available = external_power_available;
 
         self.right_gear_up_and_locked =
             gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::RIGHT, self.id_number);
@@ -245,29 +231,9 @@ impl LandingGearControlInterfaceUnit {
             gear_system_sensors.is_door_id_up_and_locked(GearWheel::RIGHT, self.id_number);
         self.left_door_up_and_locked =
             gear_system_sensors.is_door_id_up_and_locked(GearWheel::LEFT, self.id_number);
-
-        self.gear_system_control
-            .update(&ExtensionInfo::from_lgciu(self), !self.is_gear_lever_down);
-
-        // self.door_controller = GearSystemDoorController::from_state(
-        //     self.gear_system_control.state(),
-        //     &ExtensionInfo::from_lgciu(self),
-        // );
-        // self.gear_controller = GearSystemGearController::from_state(
-        //     self.gear_system_control.state(),
-        //     &ExtensionInfo::from_lgciu(self),
-        // );
     }
 }
-impl SimulationElement for LandingGearControlInterfaceUnit {
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.powered_by);
-    }
-
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.is_gear_lever_down = reader.read(&self.gear_handle_position_id);
-    }
-
+impl SimulationElement for LgciuSensorInputs {
     fn write(&self, writer: &mut SimulatorWriter) {
         // ref FBW-32-01
         writer.write(
@@ -285,7 +251,7 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
     }
 }
 
-impl LgciuWeightOnWheels for LandingGearControlInterfaceUnit {
+impl LgciuWeightOnWheels for LgciuSensorInputs {
     fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool {
         self.is_powered
             && (self.right_gear_sensor_compressed
@@ -329,7 +295,7 @@ impl LgciuWeightOnWheels for LandingGearControlInterfaceUnit {
             && !(treat_ext_pwr_as_ground && self.external_power_available)
     }
 }
-impl LgciuGearExtension for LandingGearControlInterfaceUnit {
+impl LgciuGearExtension for LgciuSensorInputs {
     fn all_down_and_locked(&self) -> bool {
         self.is_powered
             && self.nose_gear_down_and_locked
@@ -343,7 +309,7 @@ impl LgciuGearExtension for LandingGearControlInterfaceUnit {
             && self.left_gear_up_and_locked
     }
 }
-impl LgciuDoorPosition for LandingGearControlInterfaceUnit {
+impl LgciuDoorPosition for LgciuSensorInputs {
     fn all_fully_opened(&self) -> bool {
         self.is_powered
             && self.nose_door_fully_opened
@@ -357,117 +323,174 @@ impl LgciuDoorPosition for LandingGearControlInterfaceUnit {
             && self.left_door_up_and_locked
     }
 }
+impl LgciuSensors for LgciuSensorInputs {}
+
+pub struct LandingGearControlInterfaceUnit {
+    gear_handle_position_id: VariableIdentifier,
+
+    is_powered: bool,
+
+    id_number: usize,
+
+    powered_by: ElectricalBusType,
+    external_power_available: bool,
+
+    sensor_inputs: LgciuSensorInputs,
+    gear_system_control: GearSystemStateMachine,
+    is_gear_lever_down: bool,
+    // door_controller: GearSystemDoorController,
+    // gear_controller: GearSystemGearController,
+}
+impl LandingGearControlInterfaceUnit {
+    pub fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
+        Self {
+            gear_handle_position_id: context.get_identifier("GEAR HANDLE POSITION".to_owned()),
+
+            is_powered: false,
+            id_number: number,
+            powered_by,
+            external_power_available: false,
+
+            sensor_inputs: LgciuSensorInputs::new(context, number),
+            gear_system_control: GearSystemStateMachine::new(),
+            is_gear_lever_down: true,
+            // door_controller: GearSystemDoorController::new(),
+            // gear_controller: GearSystemGearController::new(GearsSystemState::AllDownLocked),
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        landing_gear: &LandingGear,
+        gear_system_sensors: &impl GearSystemSensors,
+        external_power_available: bool,
+    ) {
+        self.sensor_inputs.update(
+            landing_gear,
+            gear_system_sensors,
+            external_power_available,
+            self.is_powered,
+        );
+
+        self.external_power_available = external_power_available;
+
+        self.gear_system_control
+            .update(&self.sensor_inputs, !self.is_gear_lever_down);
+    }
+}
+impl SimulationElement for LandingGearControlInterfaceUnit {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.sensor_inputs.accept(visitor);
+
+        visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.is_gear_lever_down = reader.read(&self.gear_handle_position_id);
+    }
+}
+
+impl LgciuWeightOnWheels for LandingGearControlInterfaceUnit {
+    fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.sensor_inputs
+            .right_gear_compressed(treat_ext_pwr_as_ground)
+    }
+    fn right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.sensor_inputs
+            .right_gear_extended(treat_ext_pwr_as_ground)
+    }
+
+    fn left_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.sensor_inputs
+            .left_gear_compressed(treat_ext_pwr_as_ground)
+    }
+    fn left_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.sensor_inputs
+            .left_gear_extended(treat_ext_pwr_as_ground)
+    }
+
+    fn left_and_right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.sensor_inputs
+            .left_and_right_gear_compressed(treat_ext_pwr_as_ground)
+    }
+    fn left_and_right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.sensor_inputs
+            .left_and_right_gear_extended(treat_ext_pwr_as_ground)
+    }
+    fn nose_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.sensor_inputs
+            .nose_gear_compressed(treat_ext_pwr_as_ground)
+    }
+    fn nose_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool {
+        self.sensor_inputs
+            .nose_gear_extended(treat_ext_pwr_as_ground)
+    }
+}
+impl LgciuGearExtension for LandingGearControlInterfaceUnit {
+    fn all_down_and_locked(&self) -> bool {
+        self.sensor_inputs.all_down_and_locked()
+    }
+    fn all_up_and_locked(&self) -> bool {
+        self.sensor_inputs.all_up_and_locked()
+    }
+}
+impl LgciuDoorPosition for LandingGearControlInterfaceUnit {
+    fn all_fully_opened(&self) -> bool {
+        self.sensor_inputs.all_fully_opened()
+    }
+    fn all_closed_and_locked(&self) -> bool {
+        self.sensor_inputs.all_closed_and_locked()
+    }
+}
 impl LgciuGearControl for LandingGearControlInterfaceUnit {
-    fn door_controller(&self) -> &impl GearComponentController {
+    fn should_open_doors(&self) -> bool {
         match self.gear_system_control.state() {
-            GearsSystemState::AllUpLocked => LgciuHydraulicController::closing(),
+            GearsSystemState::AllUpLocked => false,
             GearsSystemState::Retracting => {
                 if !self.all_up_and_locked() {
-                    LgciuHydraulicController::opening()
+                    true
                 } else {
-                    LgciuHydraulicController::closing()
+                    false
                 }
             }
             GearsSystemState::Extending => {
                 if !self.all_down_and_locked() {
-                    LgciuHydraulicController::opening()
+                    true
                 } else {
-                    LgciuHydraulicController::closing()
+                    false
                 }
             }
-            GearsSystemState::AllDownLocked => LgciuHydraulicController::closing(),
+            GearsSystemState::AllDownLocked => false,
         }
     }
 
-    fn gear_controller(&self) -> &impl GearComponentController {
+    fn should_extend_gears(&self) -> bool {
         match self.gear_system_control.state() {
-            GearsSystemState::AllUpLocked => LgciuHydraulicController::closing(),
+            GearsSystemState::AllUpLocked => false,
             GearsSystemState::Retracting => {
                 if self.all_fully_opened() || self.all_up_and_locked() {
-                    LgciuHydraulicController::closing()
+                    false
                 } else {
-                    LgciuHydraulicController::opening()
+                    true
                 }
             }
             GearsSystemState::Extending => {
                 if self.all_fully_opened() || self.all_down_and_locked() {
-                    LgciuHydraulicController::opening()
+                    true
                 } else {
-                    LgciuHydraulicController::closing()
+                    false
                 }
             }
-            GearsSystemState::AllDownLocked => LgciuHydraulicController::opening(),
+            GearsSystemState::AllDownLocked => true,
         }
     }
 }
 
 impl LgciuSensors for LandingGearControlInterfaceUnit {}
-
-#[derive(PartialEq, Clone, Copy)]
-//TODO get rid of this dummy structure
-struct LgciuHydraulicController {
-    open_req: bool,
-    close_req: bool,
-}
-impl LgciuHydraulicController {
-    fn opening() -> Self {
-        Self {
-            open_req: true,
-            close_req: false,
-        }
-    }
-
-    fn closing() -> Self {
-        Self {
-            open_req: false,
-            close_req: true,
-        }
-    }
-}
-impl GearComponentController for LgciuHydraulicController {
-    fn should_open(&self) -> bool {
-        self.open_req
-    }
-
-    fn should_close(&self) -> bool {
-        self.close_req
-    }
-}
-
-//TODO get rid of this dummy structure
-struct ExtensionInfo {
-    all_up: bool,
-    all_down: bool,
-    all_closed: bool,
-    all_opened: bool,
-}
-impl ExtensionInfo {
-    fn from_lgciu(lgciu: &LandingGearControlInterfaceUnit) -> Self {
-        Self {
-            all_up: lgciu.all_up_and_locked(),
-            all_down: lgciu.all_down_and_locked(),
-            all_closed: lgciu.all_closed_and_locked(),
-            all_opened: lgciu.all_fully_opened(),
-        }
-    }
-}
-impl LgciuGearExtension for ExtensionInfo {
-    fn all_down_and_locked(&self) -> bool {
-        self.all_down
-    }
-    fn all_up_and_locked(&self) -> bool {
-        self.all_up
-    }
-}
-impl LgciuDoorPosition for ExtensionInfo {
-    fn all_fully_opened(&self) -> bool {
-        self.all_opened
-    }
-    fn all_closed_and_locked(&self) -> bool {
-        self.all_closed
-    }
-}
-impl LgciuGearAndDoor for ExtensionInfo {}
 
 #[cfg(test)]
 mod tests {
@@ -498,20 +521,16 @@ mod tests {
             }
         }
 
-        fn update(
-            &mut self,
-            doors_controller: &impl GearComponentController,
-            gears_controller: &impl GearComponentController,
-        ) {
-            if doors_controller.should_open() {
+        fn update(&mut self, controller: &impl LgciuGearControl) {
+            if controller.should_open_doors() {
                 self.door_position -= 1;
-            } else if doors_controller.should_close() {
+            } else {
                 self.door_position += 1;
             }
 
-            if gears_controller.should_open() {
+            if controller.should_extend_gears() {
                 self.gear_position -= 1;
-            } else if gears_controller.should_close() {
+            } else {
                 self.gear_position += 1;
             }
 
@@ -577,16 +596,13 @@ mod tests {
             self.lgciu
                 .update(&self.landing_gear, &self.gear_system, false);
 
-            self.gear_system
-                .update(&self.lgciu.door_controller(), &self.lgciu.gear_controller());
+            self.gear_system.update(&self.lgciu);
 
             println!(
-                "LGCIU STATE {:#?} / Doors OPEN {} CLOSE {} / Gears OPEN {} CLOSE {}",
+                "LGCIU STATE {:#?} / Doors OPENING {}  / Gears OPENING {} ",
                 self.lgciu.gear_system_control.state(),
-                self.lgciu.door_controller().should_open(),
-                self.lgciu.door_controller().should_close(),
-                self.lgciu.gear_controller().should_open(),
-                self.lgciu.gear_controller().should_close(),
+                self.lgciu.should_open_doors(),
+                self.lgciu.should_extend_gears()
             );
 
             println!(

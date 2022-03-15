@@ -1,6 +1,8 @@
-use crate::shared::low_pass_filter::LowPassFilter;
-use crate::shared::{GearWheel, LgciuDoorPosition, LgciuGearAndDoor, LgciuGearExtension};
 use crate::landing_gear::GearSystemSensors;
+use crate::shared::low_pass_filter::LowPassFilter;
+use crate::shared::{
+    GearWheel, LgciuDoorPosition,  LgciuGearControl, LgciuGearExtension,
+};
 
 use crate::simulation::UpdateContext;
 
@@ -49,8 +51,7 @@ impl HydraulicGearSystem {
         &mut self,
         context: &UpdateContext,
         valves_controller: &impl GearValvesController,
-        doors_controller: &impl GearComponentController,
-        gears_controller: &impl GearComponentController,
+        gear_system_controller: &impl LgciuGearControl,
         main_hydraulic_circuit_pressure: Pressure,
     ) {
         self.hydraulic_supply
@@ -58,19 +59,37 @@ impl HydraulicGearSystem {
 
         let current_pressure = self.hydraulic_supply.gear_system_manifold_pressure();
 
-        self.nose_door_assembly
-            .update(context, doors_controller, current_pressure);
-        self.left_door_assembly
-            .update(context, doors_controller, current_pressure);
-        self.right_door_assembly
-            .update(context, doors_controller, current_pressure);
+        self.nose_door_assembly.update(
+            context,
+            gear_system_controller.should_open_doors(),
+            current_pressure,
+        );
+        self.left_door_assembly.update(
+            context,
+            gear_system_controller.should_open_doors(),
+            current_pressure,
+        );
+        self.right_door_assembly.update(
+            context,
+            gear_system_controller.should_open_doors(),
+            current_pressure,
+        );
 
-        self.nose_gear_assembly
-            .update(context, gears_controller, current_pressure);
-        self.left_gear_assembly
-            .update(context, gears_controller, current_pressure);
-        self.right_gear_assembly
-            .update(context, gears_controller, current_pressure);
+        self.nose_gear_assembly.update(
+            context,
+            gear_system_controller.should_extend_gears(),
+            current_pressure,
+        );
+        self.left_gear_assembly.update(
+            context,
+            gear_system_controller.should_extend_gears(),
+            current_pressure,
+        );
+        self.right_gear_assembly.update(
+            context,
+            gear_system_controller.should_extend_gears(),
+            current_pressure,
+        );
     }
 }
 impl GearSystemSensors for HydraulicGearSystem {
@@ -127,7 +146,7 @@ impl GearSystemStateMachine {
 
     fn new_gear_state(
         &self,
-        lgciu: &impl LgciuGearAndDoor,
+        lgciu: &(impl LgciuGearExtension + LgciuDoorPosition),
         gear_handle_position_is_up: bool,
     ) -> GearsSystemState {
         match self.gears_state {
@@ -166,7 +185,7 @@ impl GearSystemStateMachine {
         }
     }
 
-    pub fn update(&mut self, lgciu: &impl LgciuGearAndDoor, gear_handle_position_is_up: bool) {
+    pub fn update(&mut self, lgciu: &(impl LgciuGearExtension + LgciuDoorPosition), gear_handle_position_is_up: bool) {
         self.gears_state = self.new_gear_state(lgciu, gear_handle_position_is_up);
     }
 
@@ -259,15 +278,10 @@ impl GearDoorAssembly {
         }
     }
 
-    fn update(
-        &mut self,
-        context: &UpdateContext,
-        door_controller: &impl GearComponentController,
-        current_pressure: Pressure,
-    ) {
+    fn update(&mut self, context: &UpdateContext, should_open: bool, current_pressure: Pressure) {
         self.update_proximity_detectors();
 
-        self.update_hydraulic_control(door_controller, current_pressure);
+        self.update_hydraulic_control(should_open, current_pressure);
 
         self.hydraulic_assembly.update(
             context,
@@ -285,23 +299,19 @@ impl GearDoorAssembly {
         }
     }
 
-    fn update_hydraulic_control(
-        &mut self,
-        position_controller: &impl GearComponentController,
-        current_pressure: Pressure,
-    ) {
+    fn update_hydraulic_control(&mut self, should_open: bool, current_pressure: Pressure) {
         self.hydraulic_uplock
-            .update(position_controller.should_open(), false, current_pressure);
+            .update(should_open, false, current_pressure);
 
         let mut should_lock_down = false;
 
         if let Some(hyd_lock) = &mut self.hydraulic_downlock {
-            hyd_lock.update(position_controller.should_close(), false, current_pressure);
+            hyd_lock.update(!should_open, false, current_pressure);
             should_lock_down = hyd_lock.is_locked_or_ready_to_latch();
         }
 
         self.hydraulic_controller.update(
-            position_controller,
+            should_open,
             self.hydraulic_uplock.is_locked_or_ready_to_latch(),
             should_lock_down,
             self.position_normalized(),
@@ -343,12 +353,12 @@ impl GearDoorHydraulicController {
 
     fn update(
         &mut self,
-        position_controller: &impl GearComponentController,
+        should_open: bool,
         should_uplock: bool,
         should_downlock: bool,
         actual_position: Ratio,
     ) {
-        self.requested_position = if position_controller.should_open() {
+        self.requested_position = if should_open {
             Ratio::new::<ratio>(1.1)
         } else {
             Ratio::new::<ratio>(-0.1)
@@ -638,7 +648,7 @@ mod tests {
 
         fn update(&mut self, context: &UpdateContext) {
             self.door_assembly
-                .update(context, &self.component_controller, self.pressure);
+                .update(context, self.component_controller.should_open(), self.pressure);
 
             println!(
                 "Body position {:.2} , Hyd control {:#?}",
