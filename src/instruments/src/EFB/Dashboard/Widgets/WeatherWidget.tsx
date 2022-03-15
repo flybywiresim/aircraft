@@ -119,7 +119,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                     const metarParse = parseMetar(result.metar);
                     setMetar(metarParse);
                 } catch (err) {
-                    console.log(`Error while parsing Metar: ${err}`);
+                    console.log(`Error while parsing Metar ("${result.metar}"): ${err}`);
                     setErrorMetar('RECEIVED METAR COULD NOT BE PARSED');
                     setMetar(MetarParserTypeProp);
                 }
