@@ -20,8 +20,9 @@ class CDUAtcLatRequest {
         return data.dir || data.wxDev || data.sid || data.offset || data.hdg || data.trk || data.backOnTrack;
     }
 
-    static CreateRequest(type, values = []) {
+    static CreateRequest(mcdu, type, values = []) {
         const retval = new Atsu.RequestMessage();
+        retval.Station = mcdu.atsu.atc.currentStation();
         retval.Content = Atsu.CpdlcMessagesDownlink[type][1].deepCopy();
 
         for (let i = 0; i < values.length; ++i) {
@@ -31,36 +32,36 @@ class CDUAtcLatRequest {
         return retval;
     }
 
-    static CreateRequests(data) {
+    static CreateRequests(mcdu, data) {
         const retval = [];
 
         if (data.dir) {
-            retval.push(CDUAtcLatRequest.CreateRequest("DM22", [data.dir]));
+            retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM22", [data.dir]));
         }
         if (data.wxDev) {
             const elements = Atsu.InputValidation.expandLateralOffset(data.wxDev).split(" ");
-            retval.push(CDUAtcLatRequest.CreateRequest("DM27", [elements[0], elements[1]]));
+            retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM27", [elements[0], elements[1]]));
         }
         if (data.sid) {
-            retval.push(CDUAtcLatRequest.CreateRequest("DM22", [data.sid]));
+            retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM22", [data.sid]));
         }
         if (data.offset) {
             const elements = Atsu.InputValidation.expandLateralOffset(data.offset).split(" ");
 
             if (!data.offsetStart || /$[0-9]{4}Z^/.test(data.offsetStart)) {
-                retval.push(CDUAtcLatRequest.CreateRequest("DM17", [!data.offsetStart ? (new Atsu.AtsuTimestamp()).dcduTimestamp() : data.offsetStart, elements[0], elements[1]]));
+                retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM17", [!data.offsetStart ? (new Atsu.AtsuTimestamp()).dcduTimestamp() : data.offsetStart, elements[0], elements[1]]));
             } else {
-                retval.push(CDUAtcLatRequest.CreateRequest("DM16", [data.offsetStart, elements[0], elements[1]]));
+                retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM16", [data.offsetStart, elements[0], elements[1]]));
             }
         }
         if (data.hdg) {
-            retval.push(CDUAtcLatRequest.CreateRequest("DM70", [data.hdg === 0 ? "360" : data.hdg.toString()]));
+            retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM70", [data.hdg === 0 ? "360" : data.hdg.toString()]));
         }
         if (data.trk) {
-            retval.push(CDUAtcLatRequest.CreateRequest("DM71", [data.trk === 0 ? "360" : data.trk.toString()]));
+            retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM71", [data.trk === 0 ? "360" : data.trk.toString()]));
         }
         if (data.backOnTrack) {
-            retval.push(CDUAtcLatRequest.CreateRequest("DM51"));
+            retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM51"));
         }
 
         return retval;
@@ -371,7 +372,7 @@ class CDUAtcLatRequest {
         };
         mcdu.onRightInput[4] = () => {
             if (CDUAtcLatRequest.CanSendData(data)) {
-                const messages = CDUAtcLatRequest.CreateRequests(data);
+                const messages = CDUAtcLatRequest.CreateRequests(mcdu, data);
                 if (messages) {
                     CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
                 }
@@ -386,7 +387,7 @@ class CDUAtcLatRequest {
                 if (mcdu.atsu.atc.currentStation() === "") {
                     mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
-                    const messages = CDUAtcLatRequest.CreateRequests(data);
+                    const messages = CDUAtcLatRequest.CreateRequests(mcdu, data);
                     if (messages) {
                         mcdu.atsu.registerMessages(messages);
                     }

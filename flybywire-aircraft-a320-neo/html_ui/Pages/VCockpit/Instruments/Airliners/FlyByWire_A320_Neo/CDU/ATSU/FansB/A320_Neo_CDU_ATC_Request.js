@@ -21,43 +21,44 @@ class CDUAtcRequest {
         }
     }
 
-    static CreateRequest(type, value) {
+    static CreateRequest(mcdu, type, value) {
         const retval = new Atsu.RequestMessage();
+        retval.Station = mcdu.atsu.atc.currentStation();
         retval.Content = Atsu.CpdlcMessagesDownlink[type][1].deepCopy();
         retval.Content.Content[0].Value = value;
         return retval;
     }
 
-    static CreateDirectToRequest(data) {
-        const retval = CDUAtcRequest.CreateRequest("DM22", data.dirTo);
+    static CreateDirectToRequest(mcdu, data) {
+        const retval = CDUAtcRequest.CreateRequest(mcdu, "DM22", data.dirTo);
         CDUAtcRequest.AddExtension(data, retval);
         return retval;
     }
 
-    static CreateAltitudeRequest(data) {
-        const retval = CDUAtcRequest.CreateRequest("DM6", data.altitude);
+    static CreateAltitudeRequest(mcdu, data) {
+        const retval = CDUAtcRequest.CreateRequest(mcdu, "DM6", data.altitude);
         retval.Content.Content[0].Value = data.altitude;
         CDUAtcRequest.AddExtension(data, retval);
         return retval;
     }
 
-    static CreateSpeedRequest(data) {
-        const retval = CDUAtcRequest.CreateRequest("DM18", data.speed);
+    static CreateSpeedRequest(mcdu, data) {
+        const retval = CDUAtcRequest.CreateRequest(mcdu, "DM18", data.speed);
         CDUAtcRequest.AddExtension(data, retval);
         return retval;
     }
 
-    static CreateRequests(data) {
+    static CreateRequests(mcdu, data) {
         const requests = [];
 
         if (data.dirTo) {
-            requests.push(CDUAtcRequest.CreateDirectToRequest(data));
+            requests.push(CDUAtcRequest.CreateDirectToRequest(mcdu, data));
         }
         if (data.altitude) {
-            requests.push(CDUAtcRequest.CreateAltitudeRequest(data));
+            requests.push(CDUAtcRequest.CreateAltitudeRequest(mcdu, data));
         }
         if (data.speed) {
-            requests.push(CDUAtcRequest.CreateSpeedRequest(data));
+            requests.push(CDUAtcRequest.CreateSpeedRequest(mcdu, data));
         }
 
         return requests;
@@ -206,7 +207,7 @@ class CDUAtcRequest {
                 if (mcdu.atsu.atc.currentStation() === "") {
                     mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
-                    const requests = CDUAtcRequest.CreateRequests(store);
+                    const requests = CDUAtcRequest.CreateRequests(mcdu, store);
                     if (requests) {
                         mcdu.atsu.registerMessages(requests);
                     }

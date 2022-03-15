@@ -63,6 +63,7 @@ class CDUAtcTextFansA {
             // the freetext is set (guaranteed due to CanSendData)
             messages.push(new Atsu.RequestMessage());
             messages[0].Content = freetextElement;
+            messages[0].Station = mcdu.atsu.atc.currentStation();
             updateFreetext = false;
         }
 

@@ -113,8 +113,9 @@ class CDUAtcVertRequest {
         CDUAtcVertRequest.ShowPage1(mcdu, data);
     }
 
-    static CreateRequest(type, values = []) {
+    static CreateRequest(mcdu, type, values = []) {
         const retval = new Atsu.RequestMessage();
+        retval.Station = mcdu.atsu.atc.currentStation();
         retval.Content = Atsu.CpdlcMessagesDownlink[type][1].deepCopy();
 
         for (let i = 0; i < values.length; ++i) {
@@ -124,45 +125,45 @@ class CDUAtcVertRequest {
         return retval;
     }
 
-    static CreateRequests(data) {
+    static CreateRequests(mcdu, data) {
         const retval = [];
 
         if (data.clb) {
             if (data.startAt) {
-                retval.push(CDUAtcVertRequest.CreateRequest(/$[0-9]{4}Z^/.test(data.startAt) ? "DM13" : "DM11", [data.startAt, data.clb]));
+                retval.push(CDUAtcVertRequest.CreateRequest(mcdu, /$[0-9]{4}Z^/.test(data.startAt) ? "DM13" : "DM11", [data.startAt, data.clb]));
             } else {
-                retval.push(CDUAtcVertRequest.CreateRequest("DM9", [data.clb]));
+                retval.push(CDUAtcVertRequest.CreateRequest(mcdu, "DM9", [data.clb]));
             }
         }
         if (data.des) {
             if (data.startAt) {
-                retval.push(CDUAtcVertRequest.CreateRequest(/$[0-9]{4}Z^/.test(data.startAt) ? "DM14" : "DM12", [data.startAt, data.des]));
+                retval.push(CDUAtcVertRequest.CreateRequest(mcdu, /$[0-9]{4}Z^/.test(data.startAt) ? "DM14" : "DM12", [data.startAt, data.des]));
             } else {
-                retval.push(CDUAtcVertRequest.CreateRequest("DM10", [data.des]));
+                retval.push(CDUAtcVertRequest.CreateRequest(mcdu, "DM10", [data.des]));
             }
         }
         if (data.alt) {
-            retval.push(CDUAtcVertRequest.CreateRequest("DM6", [data.alt]));
+            retval.push(CDUAtcVertRequest.CreateRequest(mcdu, "DM6", [data.alt]));
         }
         if (data.spd) {
-            retval.push(CDUAtcVertRequest.CreateRequest(data.whenSpd ? "DM49" : "DM18", [data.spd]));
+            retval.push(CDUAtcVertRequest.CreateRequest(mcdu, data.whenSpd ? "DM49" : "DM18", [data.spd]));
         }
         if (data.whenHigher) {
-            retval.push(CDUAtcVertRequest.CreateRequest("DM53"));
+            retval.push(CDUAtcVertRequest.CreateRequest(mcdu, "DM53"));
             retval[retval.length - 1].ContentTemplateIndex = Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD" ? 0 : 1;
         }
         if (data.whenLower) {
-            retval.push(CDUAtcVertRequest.CreateRequest("DM52"));
+            retval.push(CDUAtcVertRequest.CreateRequest(mcdu, "DM52"));
             retval[retval.length - 1].ContentTemplateIndex = Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD" ? 0 : 1;
         }
         if (data.blockAltLow && data.blockAltHigh) {
-            retval.push(CDUAtcVertRequest.CreateRequest("DM7", [data.blockAltLow, data.blockAltHigh]));
+            retval.push(CDUAtcVertRequest.CreateRequest(mcdu, "DM7", [data.blockAltLow, data.blockAltHigh]));
         } else if (data.vmcDescend) {
-            retval.push(CDUAtcVertRequest.CreateRequest("DM69"));
+            retval.push(CDUAtcVertRequest.CreateRequest(mcdu, "DM69"));
         } else if (data.cruise) {
-            retval.push(CDUAtcVertRequest.CreateRequest(data.whenCruise ? "DM54" : "DM8", [data.cruise]));
+            retval.push(CDUAtcVertRequest.CreateRequest(mcdu, data.whenCruise ? "DM54" : "DM8", [data.cruise]));
         } else if (data.spdLow && data.spdHigh) {
-            retval.push(CDUAtcVertRequest.CreateRequest(data.whenSpdRange ? "DM50" : "DM19", [data.spdLow, data.spdHigh]));
+            retval.push(CDUAtcVertRequest.CreateRequest(mcdu, data.whenSpdRange ? "DM50" : "DM19", [data.spdLow, data.spdHigh]));
         }
 
         return retval;
@@ -336,7 +337,7 @@ class CDUAtcVertRequest {
         };
         mcdu.onRightInput[4] = () => {
             if (CDUAtcVertRequest.CanSendData(data)) {
-                const messages = CDUAtcVertRequest.CreateRequests(data);
+                const messages = CDUAtcVertRequest.CreateRequests(mcdu, data);
                 if (messages) {
                     CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
                 }
@@ -351,7 +352,7 @@ class CDUAtcVertRequest {
                 if (mcdu.atsu.atc.currentStation() === "") {
                     mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
-                    const messages = CDUAtcVertRequest.CreateRequests(data);
+                    const messages = CDUAtcVertRequest.CreateRequests(mcdu, data);
                     if (messages) {
                         mcdu.atsu.registerMessages(messages);
                     }
@@ -562,7 +563,7 @@ class CDUAtcVertRequest {
         };
         mcdu.onRightInput[4] = () => {
             if (CDUAtcVertRequest.CanSendData(data)) {
-                const messages = CDUAtcVertRequest.CreateRequests(data);
+                const messages = CDUAtcVertRequest.CreateRequests(mcdu, data);
                 if (messages) {
                     CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
                 }
@@ -577,7 +578,7 @@ class CDUAtcVertRequest {
                 if (mcdu.atsu.atc.currentStation() === "") {
                     mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
-                    const messages = CDUAtcVertRequest.CreateRequests(data);
+                    const messages = CDUAtcVertRequest.CreateRequests(mcdu, data);
                     if (messages) {
                         mcdu.atsu.registerMessages(messages);
                     }
