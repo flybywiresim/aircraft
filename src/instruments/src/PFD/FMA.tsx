@@ -198,7 +198,7 @@ const A2Cell = ({ AThrMode, ABrkActive, ABrkMode }) => {
 
     let text: string;
     if (!dualLineAthrMessage && !ABrkActive && ABrkMode === 1) {
-        text = 'BRK LO  ';
+        text = 'BRK LO ';
     } else if (!dualLineAthrMessage && !ABrkActive && ABrkMode === 2) {
         text = 'BRK MED ';
     } else {
