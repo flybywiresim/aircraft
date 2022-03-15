@@ -3,6 +3,13 @@ class CDUAtcMenuFansA {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCMenu;
 
+        // regular update due to showing dynamic data on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.ATCMenu) {
+                CDUAtcMenu.ShowPage1(mcdu);
+            }
+        }, mcdu.PageTimeout.Slow);
+
         mcdu.setTemplate([
             ["ATC MENU", "1", "2"],
             [""],
