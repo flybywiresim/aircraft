@@ -168,13 +168,11 @@ const FailuresHome = () => {
                 </div>
 
                 <ScrollableContainer height={48}>
-                    <div className="flex flex-col space-y-1">
-                        {layoutMode === 0 ? (
-                            <ComfortableUI chapters={filteredChapters} />
-                        ) : (
-                            <CompactUI chapters={filteredChapters} failures={filteredFailures} />
-                        )}
-                    </div>
+                    {layoutMode === 0 ? (
+                        <ComfortableUI chapters={filteredChapters} />
+                    ) : (
+                        <CompactUI chapters={filteredChapters} failures={filteredFailures} />
+                    )}
                 </ScrollableContainer>
             </div>
         </>
