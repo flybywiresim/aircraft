@@ -13,24 +13,45 @@ interface ATAFailureCardProps {
     description: string,
 }
 
-const ATAChapterCard = ({ ataNumber, description, title }: ATAFailureCardProps) => (
-    <Link to={`/failures/${pathify(ataNumber.toString())}`} className="flex flex-row p-2 space-x-4 rounded-md border-2 border-transparent transition duration-100 hover:border-theme-highlight">
-        <div className="flex justify-center items-center w-1/5 text-5xl font-bold rounded-md font-title bg-theme-accent">
-            ATA
-            {' '}
-            {ataNumber}
-        </div>
+const ATAChapterCard = ({ ataNumber, description, title }: ATAFailureCardProps) => {
+    const { activeFailures, allFailures } = useFailuresOrchestrator();
 
-        <div className="space-y-2 w-3/4">
-            <h1 className="font-bold">
-                {title}
-            </h1>
-            <p>
-                {description}
-            </p>
-        </div>
-    </Link>
-);
+    const hasActiveFailure = allFailures
+        .filter((it) => it.ata === ataNumber)
+        .some((it) => activeFailures.has(it.identifier));
+
+    return (
+        <Link
+            to={`/failures/${pathify(ataNumber.toString())}`}
+            className="flex flex-row p-2 space-x-4 rounded-md border-2 border-transparent transition duration-100 hover:border-theme-highlight"
+        >
+            <div
+                className="flex justify-center items-center w-1/5 text-5xl font-bold rounded-md font-title bg-theme-accent"
+            >
+                ATA
+                {' '}
+                {ataNumber}
+
+                <div className="inline-block relative -right-7 bottom-16 w-0 h-0 text-red-500 fill-current">
+                    {hasActiveFailure && (
+                        <svg style={{ width: '30px', height: '30px' }} viewBox="0 0 20 20">
+                            <circle cx={10} cy={10} r={5} />
+                        </svg>
+                    )}
+                </div>
+            </div>
+
+            <div className="space-y-2 w-3/4">
+                <h1 className="font-bold">
+                    {title}
+                </h1>
+                <p>
+                    {description}
+                </p>
+            </div>
+        </Link>
+    );
+};
 
 export const Failures = () => {
     const { allFailures } = useFailuresOrchestrator();
