@@ -109,7 +109,7 @@ export const AlertModal: FC<AlertModalProps> = ({
             <h1 className="font-bold">{title}</h1>
             <p className="mt-4">{bodyText}</p>
             <div
-                className="flex justify-center items-center px-8 mt-8 text-center rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight justify-centerpy-2"
+                className="flex justify-center items-center py-2 px-8 mt-8 w-full text-center rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                 onClick={handleAcknowledge}
             >
                 {acknowledgeText ?? 'Okay'}
