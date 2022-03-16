@@ -110,7 +110,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                 // For the other METAR sources an error is thrown (Request failed with status code 404)
                 // and caught in the catch clause.
                 if (!result.metar) {
-                    setErrorMetar('NO VALID ICAO CHOSEN');
+                    setErrorMetar('NO VALID ICAO CHOSEN OR NO METAR FOR ICAO AVAILABLE');
                     setMetar(MetarParserTypeProp);
                     return;
                 }
@@ -128,7 +128,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
             .catch((err) => {
                 console.log(`Error while retrieving Metar: ${err}`);
                 if (err.toString().match(/^Error:/)) {
-                    setErrorMetar('NO VALID ICAO CHOSEN');
+                    setErrorMetar('NO VALID ICAO CHOSEN OR NO METAR FOR ICAO AVAILABLE');
                 } else {
                     setErrorMetar(`${err.toString().replace(/^Error: /, '')}`);
                 }
