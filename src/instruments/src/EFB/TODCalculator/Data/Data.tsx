@@ -103,16 +103,16 @@ export const Data = ({ className }: {className: string}) => {
                 />
             </div>
 
-            <div className="w-full h-1 bg-theme-accent rounded-full" />
+            <div className="w-full h-1 rounded-full bg-theme-accent" />
 
-            {calculationTypes.map(({ label, placeholder, type, syncValue, negativeValue }) => (!calculationInput || calculationType === type) && (
+            {calculationTypes.map(({ label, placeholder, type, syncValue }) => (!calculationInput || calculationType === type) && (
                 <div>
                     <p>{label}</p>
                     <div className="flex flex-row">
                         <SimpleInput
                             placeholder={placeholder}
                             number
-                            className="w-full"
+                            className={`w-full ${!!calculationInput && !calculationInputSyncEnabled && 'rounded-r-none'}`}
                             onChange={(input) => dispatch(setTodData({ calculation: { input: parseFloat(input), type: input !== '' ? type : undefined } }))}
                             value={calculationInput ? Math.abs(calculationInput) : ''}
                             disabled={calculationInputSyncEnabled}
@@ -132,7 +132,7 @@ export const Data = ({ className }: {className: string}) => {
                         {!!calculationInput && !calculationInputSyncEnabled && (
                             <button
                                 type="button"
-                                className="flex items-center px-3 text-red-500 hover:text-theme-body hover:bg-red-500 rounded-md rounded-l-none border-2 border-red-500 transition duration-100"
+                                className="flex items-center px-3 text-red-500 hover:bg-red-500 rounded-md rounded-l-none border-2 border-red-500 transition duration-100 hover:text-theme-body"
                                 onClick={() => dispatch(setTodData({ calculation: { input: undefined, type: undefined } }))}
                             >
                                 X
