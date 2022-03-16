@@ -941,7 +941,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         if self.actuator_extension_gives_positive_angle() {
             self.lock_position_request.get::<ratio>() * self.total_travel + self.min_angle
         } else {
-            self.lock_position_request.get::<ratio>() * self.total_travel + self.max_angle
+            -self.lock_position_request.get::<ratio>() * self.total_travel + self.max_angle
         }
     }
 
@@ -1738,6 +1738,146 @@ mod tests {
     }
 
     #[test]
+    fn right_main_gear_locked_down_at_init() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(33), main_gear_right_assembly(true))
+        });
+
+        assert!(test_bed.query(|a| a.is_locked()));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        assert!(test_bed.query(|a| a.is_locked()));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+    }
+
+    #[test]
+    fn right_main_gear_locks_up_when_retracted() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(33), main_gear_right_assembly(true))
+        });
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
+        test_bed.run_with_delta(Duration::from_secs(9));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
+        assert!(test_bed.query(|a| a.is_locked()));
+    }
+
+    #[test]
+    fn right_main_gear_locks_down_when_extended() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(33), main_gear_right_assembly(true))
+        });
+
+        // FIRST GEAR UP
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
+        test_bed.run_with_delta(Duration::from_secs(9));
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
+        assert!(test_bed.query(|a| a.is_locked()));
+
+        //Gravity extension
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.01)));
+        test_bed.run_with_delta(Duration::from_secs(19));
+
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.011));
+        assert!(test_bed.query(|a| a.is_locked()));
+    }
+
+    #[test]
+    fn left_main_gear_retracts_with_pressure() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(33), main_gear_left_assembly(true))
+        });
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(10));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+    }
+
+    #[test]
+    fn left_main_gear_locked_down_at_init() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(33), main_gear_left_assembly(true))
+        });
+
+        assert!(test_bed.query(|a| a.is_locked()));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        assert!(test_bed.query(|a| a.is_locked()));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+    }
+
+    #[test]
+    fn left_main_gear_locks_up_when_retracted() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(33), main_gear_left_assembly(true))
+        });
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
+        test_bed.run_with_delta(Duration::from_secs(9));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
+        assert!(test_bed.query(|a| a.is_locked()));
+    }
+
+    #[test]
+    fn left_main_gear_locks_down_when_extended() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(33), main_gear_left_assembly(true))
+        });
+
+        // FIRST GEAR UP
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
+        test_bed.run_with_delta(Duration::from_secs(9));
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
+        assert!(test_bed.query(|a| a.is_locked()));
+
+        //Gravity extension
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.01)));
+        test_bed.run_with_delta(Duration::from_secs(19));
+
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.011));
+        assert!(test_bed.query(|a| a.is_locked()));
+    }
+
+    #[test]
     fn aileron_initialized_down_stays_down_with_broken_actuator() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(Duration::from_millis(10), aileron_assembly(true))
@@ -2253,6 +2393,13 @@ mod tests {
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
+    fn main_gear_left_assembly(is_locked: bool) -> HydraulicLinearActuatorAssembly<1> {
+        let rigid_body = main_gear_left_body(is_locked);
+        let actuator = main_gear_actuator(&rigid_body);
+
+        HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
+    }
+
     fn main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
         const DEFAULT_P_GAIN: f64 = 0.05;
@@ -2291,6 +2438,28 @@ mod tests {
             control_arm,
             anchor,
             Angle::new::<degree>(-80.),
+            Angle::new::<degree>(80.),
+            Angle::new::<degree>(0.),
+            150.,
+            is_locked,
+            Vector3::new(0., 0., 1.),
+        )
+    }
+
+    fn main_gear_left_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(0.3, 3.453, 0.3);
+        let cg_offset = Vector3::new(0., -3. / 4. * size[1], 0.);
+
+        let control_arm = Vector3::new(0.1815, 0.15, 0.);
+        let anchor = Vector3::new(0.26, 0.15, 0.);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(700.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(0.),
             Angle::new::<degree>(80.),
             Angle::new::<degree>(0.),
             150.,

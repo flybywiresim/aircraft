@@ -1,10 +1,10 @@
 use crate::landing_gear::GearSystemSensors;
 use crate::shared::low_pass_filter::LowPassFilter;
-use crate::shared::{
-    GearWheel, LgciuDoorPosition,  LgciuGearControl, LgciuGearExtension,
-};
+use crate::shared::{GearWheel, LgciuDoorPosition, LgciuGearControl, LgciuGearExtension};
 
-use crate::simulation::UpdateContext;
+use crate::simulation::{
+    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+};
 
 use super::linear_actuator::{
     HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuatorMode,
@@ -15,6 +15,14 @@ use uom::si::{f64::*, pressure::psi, ratio::ratio};
 use std::time::Duration;
 
 pub struct HydraulicGearSystem {
+    door_center_position_id: VariableIdentifier,
+    door_left_position_id: VariableIdentifier,
+    door_right_position_id: VariableIdentifier,
+
+    gear_center_position_id: VariableIdentifier,
+    gear_left_position_id: VariableIdentifier,
+    gear_right_position_id: VariableIdentifier,
+
     hydraulic_supply: GearSystemHydraulicSupply,
 
     nose_door_assembly: GearDoorAssembly,
@@ -27,6 +35,7 @@ pub struct HydraulicGearSystem {
 }
 impl HydraulicGearSystem {
     pub fn new(
+        context: &mut InitContext,
         nose_door: HydraulicLinearActuatorAssembly<1>,
         left_door: HydraulicLinearActuatorAssembly<1>,
         right_door: HydraulicLinearActuatorAssembly<1>,
@@ -35,15 +44,23 @@ impl HydraulicGearSystem {
         right_gear: HydraulicLinearActuatorAssembly<1>,
     ) -> Self {
         Self {
+            door_center_position_id: context.get_identifier("GEAR_DOOR_CENTER_POSITION".to_owned()),
+            door_left_position_id: context.get_identifier("GEAR_DOOR_LEFT_POSITION".to_owned()),
+            door_right_position_id: context.get_identifier("GEAR_DOOR_RIGHT_POSITION".to_owned()),
+
+            gear_center_position_id: context.get_identifier("GEAR_CENTER_POSITION".to_owned()),
+            gear_left_position_id: context.get_identifier("GEAR_LEFT_POSITION".to_owned()),
+            gear_right_position_id: context.get_identifier("GEAR_RIGHT_POSITION".to_owned()),
+
             hydraulic_supply: GearSystemHydraulicSupply::new(),
 
-            nose_door_assembly: GearDoorAssembly::new(nose_door, false),
-            left_door_assembly: GearDoorAssembly::new(left_door, false),
-            right_door_assembly: GearDoorAssembly::new(right_door, false),
+            nose_door_assembly: GearDoorAssembly::new(true, nose_door, false),
+            left_door_assembly: GearDoorAssembly::new(true, left_door, false),
+            right_door_assembly: GearDoorAssembly::new(true, right_door, false),
 
-            nose_gear_assembly: GearDoorAssembly::new(nose_gear, true),
-            left_gear_assembly: GearDoorAssembly::new(left_gear, true),
-            right_gear_assembly: GearDoorAssembly::new(right_gear, true),
+            nose_gear_assembly: GearDoorAssembly::new(false, nose_gear, true),
+            left_gear_assembly: GearDoorAssembly::new(false, left_gear, true),
+            right_gear_assembly: GearDoorAssembly::new(false, right_gear, true),
         }
     }
 
@@ -125,6 +142,53 @@ impl GearSystemSensors for HydraulicGearSystem {
         }
     }
 }
+impl SimulationElement for HydraulicGearSystem {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.door_center_position_id,
+            self.nose_door_assembly.position_normalized(),
+        );
+        writer.write(
+            &self.door_left_position_id,
+            self.left_door_assembly.position_normalized(),
+        );
+        writer.write(
+            &self.door_right_position_id,
+            self.right_door_assembly.position_normalized(),
+        );
+
+        writer.write(
+            &self.gear_center_position_id,
+            self.nose_gear_assembly.position_normalized(),
+        );
+        writer.write(
+            &self.gear_left_position_id,
+            self.left_gear_assembly.position_normalized(),
+        );
+        writer.write(
+            &self.gear_right_position_id,
+            self.right_gear_assembly.position_normalized(),
+        );
+
+        println!(
+            "Doors: {:.1} / {:.1} \\ {:.1} ",
+            self.left_door_assembly.position_normalized().get::<ratio>(),
+            self.nose_door_assembly.position_normalized().get::<ratio>(),
+            self.right_door_assembly
+                .position_normalized()
+                .get::<ratio>()
+        );
+
+        println!(
+            "Gears: {:.1} / {:.1} \\ {:.1} ",
+            self.left_gear_assembly.position_normalized().get::<ratio>(),
+            self.nose_gear_assembly.position_normalized().get::<ratio>(),
+            self.right_gear_assembly
+                .position_normalized()
+                .get::<ratio>()
+        );
+    }
+}
 
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum GearsSystemState {
@@ -134,6 +198,7 @@ pub enum GearsSystemState {
     AllDownLocked,
 }
 
+#[derive(Debug)]
 pub struct GearSystemStateMachine {
     gears_state: GearsSystemState,
 }
@@ -185,7 +250,11 @@ impl GearSystemStateMachine {
         }
     }
 
-    pub fn update(&mut self, lgciu: &(impl LgciuGearExtension + LgciuDoorPosition), gear_handle_position_is_up: bool) {
+    pub fn update(
+        &mut self,
+        lgciu: &(impl LgciuGearExtension + LgciuDoorPosition),
+        gear_handle_position_is_up: bool,
+    ) {
         self.gears_state = self.new_gear_state(lgciu, gear_handle_position_is_up);
     }
 
@@ -240,6 +309,7 @@ pub trait GearComponentController {
 }
 
 struct GearDoorAssembly {
+    is_door: bool,
     hydraulic_controller: GearDoorHydraulicController,
     hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
     fully_opened_proximity_detectors: [ProximityDetector; 2],
@@ -255,12 +325,14 @@ impl GearDoorAssembly {
     const UPLOCKED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.01;
 
     fn new(
-        door_hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
+        is_door: bool,
+        hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
         has_hydraulic_downlock: bool,
     ) -> Self {
         Self {
-            hydraulic_controller: GearDoorHydraulicController::new(),
-            hydraulic_assembly: door_hydraulic_assembly,
+            is_door,
+            hydraulic_controller: GearDoorHydraulicController::new(is_door),
+            hydraulic_assembly,
             fully_opened_proximity_detectors: [ProximityDetector::new(
                 Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO),
                 Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO),
@@ -291,11 +363,13 @@ impl GearDoorAssembly {
     }
 
     fn update_proximity_detectors(&mut self) {
+        let position_normalized = self.position_normalized();
+
         for sensor in &mut self.fully_opened_proximity_detectors {
-            sensor.update(self.hydraulic_assembly.position_normalized());
+            sensor.update(position_normalized);
         }
         for sensor in &mut self.uplock_proximity_detectors {
-            sensor.update(self.hydraulic_assembly.position_normalized());
+            sensor.update(position_normalized);
         }
     }
 
@@ -319,7 +393,11 @@ impl GearDoorAssembly {
     }
 
     fn position_normalized(&self) -> Ratio {
-        self.hydraulic_assembly.position_normalized()
+        if self.is_door {
+            self.hydraulic_assembly.position_normalized()
+        } else {
+            Ratio::new::<ratio>(1.) - self.hydraulic_assembly.position_normalized()
+        }
     }
 
     fn is_locked(&self) -> bool {
@@ -338,19 +416,25 @@ impl GearDoorAssembly {
 }
 
 struct GearDoorHydraulicController {
+    is_door: bool,
     requested_position: Ratio,
     should_lock: bool,
     lock_position: Ratio,
+
+    actual_position: Ratio,
 }
 impl GearDoorHydraulicController {
-    fn new() -> Self {
+    fn new(is_door: bool) -> Self {
         Self {
+            is_door,
             requested_position: Ratio::new::<ratio>(0.),
             should_lock: true,
             lock_position: Ratio::new::<ratio>(0.),
+            actual_position: Ratio::new::<ratio>(0.5),
         }
     }
 
+    // Here actual position shall be in convention 1 extended 0 retracted
     fn update(
         &mut self,
         should_open: bool,
@@ -358,6 +442,8 @@ impl GearDoorHydraulicController {
         should_downlock: bool,
         actual_position: Ratio,
     ) {
+        self.actual_position = actual_position;
+
         self.requested_position = if should_open {
             Ratio::new::<ratio>(1.1)
         } else {
@@ -377,11 +463,25 @@ impl GearDoorHydraulicController {
 impl HydraulicAssemblyController for GearDoorHydraulicController {
     fn requested_mode(&self) -> LinearActuatorMode {
         // TODO if vent valve opened -> damping else -> valve closed mode
+
+        if self.is_door
+        &&
+        self.requested_position.get::<ratio>() >= 1.
+        &&
+        self.actual_position.get::<ratio>() >= 0.98
+        {
+            LinearActuatorMode::ClosedValves
+        } else  {
         LinearActuatorMode::PositionControl
+        }
     }
 
     fn requested_position(&self) -> Ratio {
-        self.requested_position
+        if !self.is_door {
+            Ratio::new::<ratio>(1.) - self.requested_position
+        } else {
+            self.requested_position
+        }
     }
 
     fn should_lock(&self) -> bool {
@@ -389,7 +489,11 @@ impl HydraulicAssemblyController for GearDoorHydraulicController {
     }
 
     fn requested_lock_position(&self) -> Ratio {
-        self.lock_position
+        if !self.is_door {
+            Ratio::new::<ratio>(1.) - self.lock_position
+        } else {
+            self.lock_position
+        }
     }
 }
 
@@ -589,52 +693,61 @@ mod tests {
         }
     }
 
-    #[derive(Default)]
-    struct TestGearComponentController {
-        open_request: bool,
-        close_request: bool,
+    struct TestGearSystemController {
+        open_door_request: bool,
+        extend_gear_request: bool,
     }
-    impl TestGearComponentController {
-        fn set_open(&mut self, open: bool) {
-            self.open_request = open;
+    impl TestGearSystemController {
+        fn new() -> Self {
+            Self {
+                open_door_request: false,
+                extend_gear_request: true,
+            }
         }
 
-        fn set_close(&mut self, close: bool) {
-            self.close_request = close;
-        }
-    }
-    impl GearComponentController for TestGearComponentController {
-        fn should_close(&self) -> bool {
-            self.open_request
+        fn set_doors_opening(&mut self, open: bool) {
+            self.open_door_request = open;
         }
 
-        fn should_open(&self) -> bool {
-            self.open_request
+        fn set_gears_extending(&mut self, close: bool) {
+            self.extend_gear_request = close;
+        }
+    }
+    impl LgciuGearControl for TestGearSystemController {
+        fn should_open_doors(&self) -> bool {
+            self.open_door_request
+        }
+
+        fn should_extend_gears(&self) -> bool {
+            self.extend_gear_request
         }
     }
 
-    struct TestSingleDoorAircraft {
+    struct TestSingleGearAircraft {
         loop_updater: MaxStepLoop,
 
         door_assembly: GearDoorAssembly,
+        gear_assembly: GearDoorAssembly,
 
-        component_controller: TestGearComponentController,
+        component_controller: TestGearSystemController,
 
         pressure: Pressure,
     }
-    impl TestSingleDoorAircraft {
+    impl TestSingleGearAircraft {
         fn new(
             time_step: Duration,
-            hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
+            door_hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
+            gear_hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
         ) -> Self {
             Self {
                 loop_updater: MaxStepLoop::new(time_step),
 
-                door_assembly: GearDoorAssembly::new(hydraulic_assembly, false),
+                door_assembly: GearDoorAssembly::new(true, door_hydraulic_assembly, false),
+                gear_assembly: GearDoorAssembly::new(false, gear_hydraulic_assembly, true),
 
-                component_controller: TestGearComponentController::default(),
+                component_controller: TestGearSystemController::new(),
 
-                pressure: Pressure::new::<psi>(0.),
+                pressure: Pressure::new::<psi>(3000.),
             }
         }
 
@@ -642,30 +755,69 @@ mod tests {
             self.pressure = pressure;
         }
 
-        fn command_opening(&mut self) {
-            self.component_controller.set_open(true);
+        fn command_doors_opening(&mut self) {
+            self.component_controller.set_doors_opening(true);
+        }
+
+        fn command_doors_closing(&mut self) {
+            self.component_controller.set_doors_opening(false);
+        }
+
+        fn command_gears_extending(&mut self) {
+            self.component_controller.set_gears_extending(true);
+        }
+
+        fn command_gears_retracting(&mut self) {
+            self.component_controller.set_gears_extending(false);
         }
 
         fn update(&mut self, context: &UpdateContext) {
-            self.door_assembly
-                .update(context, self.component_controller.should_open(), self.pressure);
+            self.door_assembly.update(
+                context,
+                self.component_controller.should_open_doors(),
+                self.pressure,
+            );
+
+            self.gear_assembly.update(
+                context,
+                self.component_controller.should_extend_gears(),
+                self.pressure,
+            );
 
             println!(
-                "Body position {:.2} , Hyd control {:#?}",
+                "Door Body position {:.2} , Hyd control {:#?},Gear Body position {:.2} , Gear Hyd control {:#?}",
                 self.door_assembly.position_normalized().get::<ratio>(),
                 self.door_assembly.hydraulic_controller.requested_mode(),
+                self.gear_assembly.position_normalized().get::<ratio>(),
+                self.gear_assembly.hydraulic_controller.requested_mode(),
             );
         }
 
-        fn is_sensor_uplock(&self, sensor_id: usize) -> bool {
+        fn is_door_sensor_uplock(&self, sensor_id: usize) -> bool {
             self.door_assembly.is_sensor_uplock(sensor_id)
         }
 
-        fn is_sensor_fully_opened(&self, sensor_id: usize) -> bool {
+        fn is_door_sensor_fully_opened(&self, sensor_id: usize) -> bool {
             self.door_assembly.is_sensor_fully_opened(sensor_id)
         }
+
+        fn is_gear_sensor_uplock(&self, sensor_id: usize) -> bool {
+            self.gear_assembly.is_sensor_uplock(sensor_id)
+        }
+
+        fn is_gear_sensor_fully_opened(&self, sensor_id: usize) -> bool {
+            self.gear_assembly.is_sensor_fully_opened(sensor_id)
+        }
+
+        fn is_gear_physically_locked(&self) -> bool {
+            self.gear_assembly.is_locked()
+        }
+
+        fn is_door_physically_locked(&self) -> bool {
+            self.door_assembly.is_locked()
+        }
     }
-    impl Aircraft for TestSingleDoorAircraft {
+    impl Aircraft for TestSingleGearAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.loop_updater.update(context);
 
@@ -674,7 +826,7 @@ mod tests {
             }
         }
     }
-    impl SimulationElement for TestSingleDoorAircraft {}
+    impl SimulationElement for TestSingleGearAircraft {}
 
     impl SimulationElement for GearSystemHydraulicSupply {}
 
@@ -786,7 +938,11 @@ mod tests {
     #[test]
     fn door_assembly_init_uplocked() {
         let mut test_bed = SimulationTestBed::new(|_| {
-            TestSingleDoorAircraft::new(Duration::from_millis(33), main_gear_door_right_assembly())
+            TestSingleGearAircraft::new(
+                Duration::from_millis(33),
+                main_gear_door_right_assembly(),
+                main_gear_right_assembly(true),
+            )
         });
 
         test_bed.run_with_delta(Duration::from_millis(33));
@@ -800,7 +956,11 @@ mod tests {
     #[test]
     fn door_uplocked_gives_correct_proximity_sensor_state() {
         let mut test_bed = SimulationTestBed::new(|_| {
-            TestSingleDoorAircraft::new(Duration::from_millis(33), main_gear_door_right_assembly())
+            TestSingleGearAircraft::new(
+                Duration::from_millis(33),
+                main_gear_door_right_assembly(),
+                main_gear_right_assembly(true),
+            )
         });
 
         test_bed.run_with_delta(Duration::from_millis(33));
@@ -809,11 +969,143 @@ mod tests {
             test_bed.query(|a| a.door_assembly.position_normalized()) == Ratio::new::<ratio>(0.)
         );
 
-        assert!(test_bed.query(|a| a.is_sensor_uplock(0)));
-        assert!(test_bed.query(|a| a.is_sensor_uplock(1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(0)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(1)));
 
-        assert!(!test_bed.query(|a| a.is_sensor_fully_opened(0)));
-        assert!(!test_bed.query(|a| a.is_sensor_fully_opened(1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
+    }
+
+    #[test]
+    fn door_opens_gear_stays_down_and_locked() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestSingleGearAircraft::new(
+                Duration::from_millis(33),
+                main_gear_door_right_assembly(),
+                main_gear_right_assembly(true),
+            )
+        });
+
+        test_bed.run_with_delta(Duration::from_millis(33));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(0)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(1)));
+
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
+    }
+
+    #[test]
+    fn full_retract_extend_cycle() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestSingleGearAircraft::new(
+                Duration::from_millis(33),
+                main_gear_door_right_assembly(),
+                main_gear_right_assembly(true),
+            )
+        });
+        test_bed.run_with_delta(Duration::from_millis(33));
+
+        println!("RETRACT -- > DOOR OPENING");
+        test_bed.command(|a| a.command_doors_opening());
+        test_bed.run_with_delta(Duration::from_millis(4000));
+
+        assert!(test_bed.query(|a| a.is_gear_physically_locked()));
+        assert!(!test_bed.query(|a| a.is_door_physically_locked()));
+
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(0)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(1)));
+
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(0)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(1)));
+
+        println!("RETRACT -- > GEAR RETRACTING");
+        test_bed.command(|a| a.command_gears_retracting());
+        test_bed.run_with_delta(Duration::from_millis(10000));
+
+        assert!(test_bed.query(|a| a.is_gear_physically_locked()));
+        assert!(!test_bed.query(|a| a.is_door_physically_locked()));
+
+        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(0)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(1)));
+
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(0)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(1)));
+
+        println!("RETRACT -- > DOOR CLOSING");
+        test_bed.command(|a| a.command_doors_closing());
+        test_bed.run_with_delta(Duration::from_millis(6000));
+
+        assert!(test_bed.query(|a| a.is_gear_physically_locked()));
+        assert!(test_bed.query(|a| a.is_door_physically_locked()));
+
+        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(0)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(1)));
+
+        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(0)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(1)));
+
+        println!("EXTEND -- > DOOR OPENING");
+        test_bed.command(|a| a.command_doors_opening());
+        test_bed.run_with_delta(Duration::from_millis(5000));
+
+        assert!(test_bed.query(|a| a.is_gear_physically_locked()));
+        assert!(!test_bed.query(|a| a.is_door_physically_locked()));
+
+        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(0)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(1)));
+
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(0)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(1)));
+
+        println!("EXTEND -- > GEAR EXTENDING");
+        test_bed.command(|a| a.command_gears_extending());
+        test_bed.run_with_delta(Duration::from_millis(12000));
+
+        assert!(test_bed.query(|a| a.is_gear_physically_locked()));
+        assert!(!test_bed.query(|a| a.is_door_physically_locked()));
+
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(0)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(1)));
+
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(0)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(1)));
+
+        println!("EXTEND -- > DOOR CLOSING");
+        test_bed.command(|a| a.command_doors_closing());
+        test_bed.run_with_delta(Duration::from_millis(6000));
+
+        assert!(test_bed.query(|a| a.is_gear_physically_locked()));
+        assert!(test_bed.query(|a| a.is_door_physically_locked()));
+
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(0)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(1)));
+
+        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(0)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(1)));
     }
 
     fn main_gear_door_right_assembly() -> HydraulicLinearActuatorAssembly<1> {
@@ -862,6 +1154,59 @@ mod tests {
             anchor,
             Angle::new::<degree>(-85.),
             Angle::new::<degree>(85.),
+            Angle::new::<degree>(0.),
+            150.,
+            is_locked,
+            Vector3::new(0., 0., 1.),
+        )
+    }
+
+    fn main_gear_right_assembly(is_locked: bool) -> HydraulicLinearActuatorAssembly<1> {
+        let rigid_body = main_gear_right_body(is_locked);
+        let actuator = main_gear_actuator(&rigid_body);
+
+        HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
+    }
+
+    fn main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 5.;
+        const DEFAULT_P_GAIN: f64 = 0.05;
+        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+
+        LinearActuator::new(
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.145),
+            Length::new::<meter>(0.105),
+            VolumeRate::new::<gallon_per_second>(0.15),
+            800000.,
+            15000.,
+            50000.,
+            1200000.,
+            Duration::from_millis(100),
+            [1., 1., 1., 1., 1., 1.],
+            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
+        )
+    }
+
+    fn main_gear_right_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(0.3, 3.453, 0.3);
+        let cg_offset = Vector3::new(0., -3. / 4. * size[1], 0.);
+
+        let control_arm = Vector3::new(-0.1815, 0.15, 0.);
+        let anchor = Vector3::new(-0.26, 0.15, 0.);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(700.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-80.),
+            Angle::new::<degree>(80.),
             Angle::new::<degree>(0.),
             150.,
             is_locked,

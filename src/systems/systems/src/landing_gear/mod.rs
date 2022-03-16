@@ -128,7 +128,7 @@ impl SimulationElement for LandingGear {
 }
 
 struct LgciuSensorInputs {
-    id_number: usize,
+    number_index: usize,
 
     external_power_available: bool,
     is_powered: bool,
@@ -158,9 +158,11 @@ struct LgciuSensorInputs {
     right_gear_compressed_id: VariableIdentifier,
 }
 impl LgciuSensorInputs {
-    fn new(context: &mut InitContext, id_number: usize) -> Self {
+    fn new(context: &mut InitContext, number: usize) -> Self {
+        assert!(number > 0);
+
         Self {
-            id_number,
+            number_index: number - 1,
             external_power_available: false,
             is_powered: false,
 
@@ -183,11 +185,11 @@ impl LgciuSensorInputs {
             left_door_up_and_locked: false,
 
             nose_gear_compressed_id: context
-                .get_identifier(format!("LGCIU_{}_NOSE_GEAR_COMPRESSED", id_number)),
+                .get_identifier(format!("LGCIU_{}_NOSE_GEAR_COMPRESSED", number)),
             left_gear_compressed_id: context
-                .get_identifier(format!("LGCIU_{}_LEFT_GEAR_COMPRESSED", id_number)),
+                .get_identifier(format!("LGCIU_{}_LEFT_GEAR_COMPRESSED", number)),
             right_gear_compressed_id: context
-                .get_identifier(format!("LGCIU_{}_RIGHT_GEAR_COMPRESSED", id_number)),
+                .get_identifier(format!("LGCIU_{}_RIGHT_GEAR_COMPRESSED", number)),
         }
     }
 
@@ -206,31 +208,31 @@ impl LgciuSensorInputs {
         self.right_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::RIGHT);
 
         self.right_gear_up_and_locked =
-            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::RIGHT, self.id_number);
+            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::RIGHT, self.number_index);
         self.left_gear_up_and_locked =
-            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::LEFT, self.id_number);
+            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::LEFT, self.number_index);
         self.nose_gear_up_and_locked =
-            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::CENTER, self.id_number);
+            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::CENTER, self.number_index);
 
         self.right_gear_down_and_locked =
-            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::RIGHT, self.id_number);
+            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::RIGHT, self.number_index);
         self.left_gear_down_and_locked =
-            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::LEFT, self.id_number);
+            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::LEFT, self.number_index);
         self.nose_gear_down_and_locked =
-            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::CENTER, self.id_number);
+            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::CENTER, self.number_index);
 
         self.nose_door_fully_opened =
-            gear_system_sensors.is_door_id_down_and_locked(GearWheel::CENTER, self.id_number);
+            gear_system_sensors.is_door_id_down_and_locked(GearWheel::CENTER, self.number_index);
         self.right_door_fully_opened =
-            gear_system_sensors.is_door_id_down_and_locked(GearWheel::RIGHT, self.id_number);
+            gear_system_sensors.is_door_id_down_and_locked(GearWheel::RIGHT, self.number_index);
         self.left_door_fully_opened =
-            gear_system_sensors.is_door_id_down_and_locked(GearWheel::LEFT, self.id_number);
+            gear_system_sensors.is_door_id_down_and_locked(GearWheel::LEFT, self.number_index);
         self.nose_door_up_and_locked =
-            gear_system_sensors.is_door_id_up_and_locked(GearWheel::CENTER, self.id_number);
+            gear_system_sensors.is_door_id_up_and_locked(GearWheel::CENTER, self.number_index);
         self.right_door_up_and_locked =
-            gear_system_sensors.is_door_id_up_and_locked(GearWheel::RIGHT, self.id_number);
+            gear_system_sensors.is_door_id_up_and_locked(GearWheel::RIGHT, self.number_index);
         self.left_door_up_and_locked =
-            gear_system_sensors.is_door_id_up_and_locked(GearWheel::LEFT, self.id_number);
+            gear_system_sensors.is_door_id_up_and_locked(GearWheel::LEFT, self.number_index);
     }
 }
 impl SimulationElement for LgciuSensorInputs {
@@ -330,16 +332,12 @@ pub struct LandingGearControlInterfaceUnit {
 
     is_powered: bool,
 
-    id_number: usize,
-
     powered_by: ElectricalBusType,
     external_power_available: bool,
 
     sensor_inputs: LgciuSensorInputs,
     gear_system_control: GearSystemStateMachine,
     is_gear_lever_down: bool,
-    // door_controller: GearSystemDoorController,
-    // gear_controller: GearSystemGearController,
 }
 impl LandingGearControlInterfaceUnit {
     pub fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
@@ -347,15 +345,13 @@ impl LandingGearControlInterfaceUnit {
             gear_handle_position_id: context.get_identifier("GEAR HANDLE POSITION".to_owned()),
 
             is_powered: false,
-            id_number: number,
+
             powered_by,
             external_power_available: false,
 
             sensor_inputs: LgciuSensorInputs::new(context, number),
             gear_system_control: GearSystemStateMachine::new(),
             is_gear_lever_down: true,
-            // door_controller: GearSystemDoorController::new(),
-            // gear_controller: GearSystemGearController::new(GearsSystemState::AllDownLocked),
         }
     }
 
@@ -376,6 +372,10 @@ impl LandingGearControlInterfaceUnit {
 
         self.gear_system_control
             .update(&self.sensor_inputs, !self.is_gear_lever_down);
+    }
+
+    pub fn gear_system_state(&self) -> GearsSystemState {
+        self.gear_system_control.state()
     }
 }
 impl SimulationElement for LandingGearControlInterfaceUnit {

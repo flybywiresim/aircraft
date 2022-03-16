@@ -26,7 +26,7 @@ use systems::{
         },
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
         flap_slat::FlapSlatAssembly,
-        landing_gear::{HydraulicGearSystem,GearValvesController},
+        landing_gear::{GearValvesController, HydraulicGearSystem},
         linear_actuator::{
             Actuator, BoundedLinearLength, HydraulicAssemblyController,
             HydraulicLinearActuatorAssembly, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
@@ -52,7 +52,7 @@ use systems::{
         DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
         EmergencyGeneratorPower, EngineFirePushButtons, GearWheel, HydraulicColor,
-        HydraulicGeneratorControlUnit, LgciuSensors, ReservoirAirPressure,LgciuGearControl
+        HydraulicGeneratorControlUnit, LgciuGearControl, LgciuSensors, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -810,8 +810,8 @@ impl A320GearFactory {
         let size = Vector3::new(0.3, 3.453, 0.3);
         let cg_offset = Vector3::new(0., -3. / 4. * size[1], 0.);
 
-        let control_arm = Vector3::new(-0.1815, 0.15, 0.);
-        let anchor = Vector3::new(-0.26, 0.15, 0.);
+        let control_arm = Vector3::new(0.1815, 0.15, 0.);
+        let anchor = Vector3::new(0.26, 0.15, 0.);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(700.),
@@ -843,7 +843,7 @@ impl A320GearFactory {
             anchor,
             Angle::new::<degree>(-80.),
             Angle::new::<degree>(80.),
-            Angle::new::<degree>(-80.),
+            Angle::new::<degree>(0.),
             150.,
             true,
             Vector3::new(0., 0., 1.),
@@ -1186,6 +1186,7 @@ impl A320Hydraulic {
             ),
 
             gear_system: HydraulicGearSystem::new(
+                context,
                 A320GearDoorFactory::a320_gear_door_assembly(GearWheel::CENTER),
                 A320GearDoorFactory::a320_gear_door_assembly(GearWheel::LEFT),
                 A320GearDoorFactory::a320_gear_door_assembly(GearWheel::RIGHT),
@@ -1204,8 +1205,8 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         autobrake_panel: &AutobrakePanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        lgciu1: &(impl LgciuSensors+LgciuGearControl),
-        lgciu2: &(impl LgciuSensors+LgciuGearControl),
+        lgciu1: &(impl LgciuSensors + LgciuGearControl),
+        lgciu2: &(impl LgciuSensors + LgciuGearControl),
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
         reservoir_pneumatics: &impl ReservoirAirPressure,
@@ -1392,7 +1393,7 @@ impl A320Hydraulic {
         context: &UpdateContext,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
-        lgciu1: &(impl LgciuSensors+LgciuGearControl),
+        lgciu1: &(impl LgciuSensors + LgciuGearControl),
     ) {
         self.forward_cargo_door.update(
             context,
@@ -1428,8 +1429,12 @@ impl A320Hydraulic {
             emergency_elec,
         );
 
-
-        self.gear_system.update(context,&A320BrakeValvesController::default(),lgciu1,self.green_circuit.system_pressure());
+        self.gear_system.update(
+            context,
+            &A320BrakeValvesController::default(),
+            lgciu1,
+            self.green_circuit.system_pressure(),
+        );
     }
 
     fn update_with_sim_rate(
@@ -1911,6 +1916,8 @@ impl SimulationElement for A320Hydraulic {
         self.left_spoilers.accept(visitor);
         self.right_spoilers.accept(visitor);
 
+        self.gear_system.accept(visitor);
+
         visitor.visit(self);
     }
 
@@ -1937,14 +1944,12 @@ impl HydraulicGeneratorControlUnit for A320Hydraulic {
 }
 
 #[derive(Default)]
-struct A320BrakeValvesController{
-
-}
-impl GearValvesController for A320BrakeValvesController{
-    fn safety_valve_should_open(&self) -> bool{
+struct A320BrakeValvesController {}
+impl GearValvesController for A320BrakeValvesController {
+    fn safety_valve_should_open(&self) -> bool {
         true
     }
-    fn shut_off_valve_should_open(&self) -> bool{
+    fn shut_off_valve_should_open(&self) -> bool {
         true
     }
 }
@@ -4764,7 +4769,7 @@ mod tests {
                 ExternalPowerSource,
             },
             engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
-            hydraulic::electrical_generator::TestGenerator,
+            hydraulic::{electrical_generator::TestGenerator, landing_gear::GearsSystemState},
             landing_gear::{LandingGear, LandingGearControlInterfaceUnit},
             shared::{EmergencyElectricalState, HydraulicGeneratorControlUnit, PotentialOrigin},
             simulation::{
@@ -5769,6 +5774,10 @@ mod tests {
                 self.write_by_name("HYD_AILERON_LEFT_DEMAND", 0.);
                 self.write_by_name("HYD_AILERON_RIGHT_DEMAND", 1.);
                 self
+            }
+
+            fn gear_system_state(&self) -> GearsSystemState {
+                self.query(|a| a.lgciu1.gear_system_state())
             }
 
             fn empty_brake_accumulator_using_park_brake(mut self) -> Self {
@@ -9146,6 +9155,33 @@ mod tests {
 
             assert!(test_bed.is_ptu_enabled());
             assert!(test_bed.is_ptu_running_high_pitch_sound());
+        }
+
+        #[test]
+        fn nominal_gear_retraction_extension_cycles_in_flight() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_up();
+
+            assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
+
+            // 20s max
+            for _ in 0..40 {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(0.5));
+                println!("GEAR STATE {:?}", test_bed.gear_system_state());
+            }
+
+            assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
+
+            test_bed=test_bed.set_gear_down();
+            // 20s max
+            for _ in 0..40 {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(0.5));
+                println!("GEAR STATE {:?}", test_bed.gear_system_state());
+            }
+
+            assert!( test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
         }
     }
 }
