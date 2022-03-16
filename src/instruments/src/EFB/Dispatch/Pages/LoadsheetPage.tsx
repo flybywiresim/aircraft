@@ -3,7 +3,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { CloudArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
-import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simbrief';
+import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { setOfpScroll } from '../../Store/features/dispatchPage';
 

@@ -26,7 +26,11 @@ const EFBLoad = () => (
     </Router>
 );
 
-readSettingsFromPersistentStorage();
+if (process.env.VITE_BUILD) {
+    window.addEventListener('AceInitialized', () => readSettingsFromPersistentStorage());
+} else {
+    readSettingsFromPersistentStorage();
+}
 
 export const ErrorBoundaryMessage = () => (
     <div className="flex justify-center items-center w-full h-screen bg-theme-body">

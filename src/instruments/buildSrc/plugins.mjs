@@ -16,8 +16,6 @@ const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
 
 dotenv.config();
 
-console.log(process.env);
-
 function babel() {
     return babelPlugin({
         presets: [
@@ -70,6 +68,7 @@ export function baseCompile(instrumentName, instrumentFolder) {
         replace({
             'DEBUG': 'false',
             'preventAssignment': true,
+            'process.env.VITE_BUILD': 'false',
             'process.env.NODE_ENV': JSON.stringify('production'),
             'process.env.CLIENT_ID': JSON.stringify(process.env.CLIENT_ID),
             'process.env.CLIENT_SECRET': JSON.stringify(process.env.CLIENT_SECRET),

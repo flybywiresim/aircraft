@@ -27,7 +27,7 @@ import { Failures } from './Failures/Failures';
 
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 
-import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simbrief';
+import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simBrief';
 
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
@@ -37,8 +37,6 @@ import { setChecklistItems } from './Store/features/checklists';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 240;
-
-const navigraph = new NavigraphClient();
 
 const LoadingScreen = () => (
     <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
@@ -89,6 +87,8 @@ const Efb = () => {
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
     const [dayOfYear] = useSimVar('E:ZULU DAY OF YEAR', 'number');
     const [latitude] = useSimVar('PLANE LATITUDE', 'degree latitude');
+
+    const [navigraph] = useState(() => new NavigraphClient());
 
     const dispatch = useAppDispatch();
     const simbriefData = useAppSelector((state) => state.simbrief.data);
