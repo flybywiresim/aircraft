@@ -90,13 +90,13 @@ class CDUAtcMessagesRecord {
 
         mcdu.setTemplate([
             ["MSG RECORD"],
-            [msgHeadersLeft[0], msgHeadersRight[0]],
+            [msgHeadersLeft[0], `{big}${msgHeadersRight[0]}{end}`],
             [`${messages.length !== 0 ? msgStart[0] : "NO MESSAGES"}`],
-            [msgHeadersLeft[1], msgHeadersRight[1]],
+            [msgHeadersLeft[1], `{big}${msgHeadersRight[1]}{end}`],
             [msgStart[1]],
-            [msgHeadersLeft[2], msgHeadersRight[2]],
+            [msgHeadersLeft[2], `{big}${msgHeadersRight[2]}{end}`],
             [msgStart[2]],
-            [msgHeadersLeft[3], msgHeadersRight[3]],
+            [msgHeadersLeft[3], `{big}${msgHeadersRight[3]}{end}`],
             [msgStart[3]],
             [eraseRecordTitle],
             [eraseRecordButton],
