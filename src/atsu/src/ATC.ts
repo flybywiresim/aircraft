@@ -355,12 +355,20 @@ export class Atc {
         messages.forEach((message) => {
             const cpdlcMessage = message as CpdlcMessage;
 
+            let concatMessages = true;
+            if (cpdlcMessage.Direction === AtsuMessageDirection.Uplink && cpdlcMessage.Content !== undefined) {
+                // filter all standard messages and LOGON-related messages
+                concatMessages = cpdlcMessage.Content.TypeId === 'UM0' || cpdlcMessage.Content.TypeId === 'UM1' || cpdlcMessage.Content.TypeId === 'UM3'
+                                 || cpdlcMessage.Content.TypeId === 'UM4' || cpdlcMessage.Content.TypeId === 'UM5' || cpdlcMessage.Content.TypeId === 'UM9995'
+                                 || cpdlcMessage.Content.TypeId === 'UM9996' || cpdlcMessage.Content.TypeId === 'UM9997';
+            }
+
             if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.CurrentTransmissionId === -1) {
                 cpdlcMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
             }
 
             // search corresponding request, if previous ID is set
-            if (cpdlcMessage.PreviousTransmissionId !== -1) {
+            if (concatMessages && cpdlcMessage.PreviousTransmissionId !== -1) {
                 this.messageQueue.forEach((element) => {
                     // ensure that the sending and receiving stations are the same to avoid CPDLC ID overlaps
                     if (element.Station === cpdlcMessage.Station) {
@@ -378,11 +386,11 @@ export class Atc {
                 this.messageQueue.unshift(cpdlcMessage);
                 this.analyzeMessage(cpdlcMessage, undefined);
             }
-
-            if (cpdlcMessage.DcduRelevantMessage) {
-                this.dcduLink.enqueue(cpdlcMessage);
-            }
         });
+
+        if (messages.length !== 0 && (messages[0] as CpdlcMessage).DcduRelevantMessage) {
+            this.dcduLink.enqueue(messages);
+        }
     }
 
     public messageRead(uid: number): boolean {
