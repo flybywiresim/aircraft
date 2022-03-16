@@ -211,6 +211,11 @@ export class Atc {
     public sendResponse(uid: number, response: number): void {
         const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
         if (message !== undefined) {
+            // avoid double-sents
+            if (message.Response !== undefined && (message.Response.ComStatus === AtsuMessageComStatus.Sending || message.Response.ComStatus === AtsuMessageComStatus.Sent)) {
+                return;
+            }
+
             message.Response = this.createCpdlcResponse(message, response);
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
             this.dcduLink.update(message);
