@@ -11,12 +11,16 @@
         fill: $display-white;
         stroke: none !important;
 
+        &.Small {
+            font-size:14px;
+        }
+
         &.Standard {
             font-size: 17px;
         }
 
         &.Medium {
-            font-size: 20px;
+            font-size: 18px;
         }
 
         &.Large {
@@ -71,6 +75,11 @@
 
     .GreenLine {
         stroke: $display-green !important;
+        stroke-width: 2;
+    }
+
+    .AmberLine {
+        stroke: $display-amber !important;
         stroke-width: 2;
     }
 

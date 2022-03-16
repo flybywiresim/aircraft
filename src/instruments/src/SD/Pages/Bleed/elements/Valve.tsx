@@ -6,15 +6,15 @@ interface ValveProps {
     radius: number,
     position: 'V' |'H',
     css: string,
-    visible: boolean
+    sdacDatum: boolean
 }
 
-const Valve: FC<ValveProps> = ({ x, y, radius, position, css, visible }) => (
-    <g className={visible ? 'Show' : 'Hide'}>
+const Valve: FC<ValveProps> = ({ x, y, radius, position, css, sdacDatum }) => (
+    <g>
         <circle cx={x} cy={y} r={radius} className={css} />
-        {position === 'V'
-            ? <path className={css} d={`M ${x},${y - radius} l 0,${2 * radius}`} />
-            : <path className={css} d={`M ${x - radius},${y} l ${2 * radius},0`} />}
+        {!sdacDatum ? <text x={x + 1} y={y + 5} className="Small Amber Center">XX</text> : null}
+        {sdacDatum && position === 'V' ? <path className={css} d={`M ${x},${y - radius} l 0,${2 * radius}`} /> : null}
+        {sdacDatum && position === 'H' ? <path className={css} d={`M ${x - radius},${y} l ${2 * radius},0`} /> : null}
     </g>
 );
 

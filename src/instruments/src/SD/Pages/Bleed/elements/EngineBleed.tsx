@@ -6,10 +6,10 @@ interface EngineBleedProps {
     x: number,
     y: number,
     engine: 1 | 2,
+    sdacDatum: boolean,
 }
 
-const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine }) => {
-    console.log(`engine is ${engine}`);
+const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum }) => {
     const [engineN1] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
     const [engineN1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 500);
     const engineN1BelowIdle = (engineN1 + 2) < engineN1Idle;
@@ -29,17 +29,17 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine }) => {
             <text x={x - 55} y={y + 132} className="White Standard End">LO</text>
             <text x={x + 61} y={y + 132} className="White Standard">HI</text>
 
-            <Valve x={x} y={y + 150} radius={15} css="GreenLine" position="V" visible />
+            <Valve x={x} y={y + 150} radius={15} css="GreenLine" position="V" sdacDatum={sdacDatum} />
 
             {/* Engine Bleed temp */}
             <path className="GreyStroke Stroke2" d={`M ${x},${y + 247} l -27,0 l 0,54 l 54,0 l 0,-54 l -27,0`} />
             <text x={engine === 1 ? x + 40 : x - 70} y={y + 270} className="Cyan Standard">PSI</text>
             <text x={engine === 1 ? x + 40 : x - 70} y={y + 298} className="Cyan Standard">°C</text>
 
-            <Valve x={x} y={y + 355} radius={15} css="GreenLine" position="H" visible />
+            <Valve x={x} y={y + 355} radius={15} css="GreenLine" position="H" sdacDatum={sdacDatum} />
 
             <text x={x + 2} y={y + 433} className="White Center Standard">IP</text>
-            <Valve x={engine === 1 ? x + 47 : x - 47} y={y + 398} radius={15} css="GreenLine" position="H" visible />
+            <Valve x={engine === 1 ? x + 47 : x - 47} y={y + 398} radius={15} css="GreenLine" position="H" sdacDatum={sdacDatum} />
             <text x={engine === 1 ? x + 95 : x - 90} y={y + 433} className="White Center Standard">HP</text>
 
             <text x={engine === 1 ? x - 66 : x + 66} y={423} className={`Large ${engineN1BelowIdle ? 'Amber' : 'White'}`}>{engine}</text>
