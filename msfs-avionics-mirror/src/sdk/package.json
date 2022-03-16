@@ -1,0 +1,22 @@
+{
+  "name": "msfssdk",
+  "version": "0.1.0",
+  "description": "HTML and Typescript SDK for MSFS Coherent based instruments and aircraft development.",
+  "main": "index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://dev.azure.com/workingtitlesim/KittyHawk/_git/ProjectGolf"
+  },
+  "typedocMain": "index.ts",
+  "author": "Working Title Simulations",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/geodesy": "^2.2.2",
+    "@types/node": "^17.0.21",
+    "msfstypes": "file:../msfstypes/msfstypes-1.14.6.tgz",
+    "typescript": "~4.4.4"
+  }
+}

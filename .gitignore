@@ -3,6 +3,7 @@
 !/.vscode/**
 !/.github/**
 !/.husky/**
+!/msfs-avionics-mirror/**
 !/flybywire-aircraft-a320-neo/**
 /flybywire-aircraft-a320-neo/layout.json
 /flybywire-aircraft-a320-neo/manifest.json
@@ -12,7 +13,10 @@
 /flybywire-aircraft-a320-neo/html_ui/JS/fmgc/
 /flybywire-aircraft-a320-neo/html_ui/JS/sentry-client/
 /flybywire-aircraft-a320-neo/html_ui/JS/tcas/
-/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX
+/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/*
+!/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD
+/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/*.js
+/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/*.css
 /flybywire-aircraft-a320-neo/html_ui/JS/generated/**
 /flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated
 !/docs/**
@@ -62,3 +66,5 @@ src/instruments/buildSrc/custom/*
 /src/mcdu-server/client/build
 !/flybywire-aircraft-a320-neo/CORS SERVER/*
 /flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds
+msfs-avionics-mirror/src/sdk/build/**
+*.tgz

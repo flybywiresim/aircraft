@@ -16,6 +16,7 @@
     "build:failures": "rollup -c src/failures/rollup.config.js",
     "build:fmgc": "rollup -c src/fmgc/rollup.config.js",
     "build:tcas": "rollup -c src/tcas/rollup.config.js",
+    "build:pfd": "cd src/instruments/src/PFD && npx rollup -c",
     "build:mcdu-client": "rollup -c src/mcdu-server/client/rollup.config.js",
     "build:mcdu-server": "pkg src/mcdu-server/index.js --target node12-win-x64 --no-bytecode --public-packages \"*\" --public --output \"flybywire-aircraft-a320-neo/MCDU SERVER/server.exe\""
   },
@@ -75,6 +76,7 @@
     "rollup-plugin-postcss": "^4.0.0",
     "rollup-plugin-serve": "~1.1.0",
     "rollup-plugin-typescript-paths": "^1.3.0",
+    "rollup-plugin-typescript2": "^0.31.2",
     "sass-loader": "^10.1.0",
     "style-loader": "^2.0.0",
     "ts-jest": "^27.0.4",
@@ -98,6 +100,7 @@
     "classnames": "^2.2.6",
     "immer": "^9.0.3",
     "lodash": "^4.17.20",
+    "msfssdk": "file:msfs-avionics-mirror/src/sdk/build/msfssdk-0.1.0.tgz",
     "network": "^0.6.1",
     "pdf-to-printer": "^5.1.1",
     "pdfkit": "^0.13.0",
@@ -113,11 +116,12 @@
     "react-use-websocket": "^2.9.1",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
-    "rollup-plugin-scss": "^2.6.1",
-    "sass": "~1.30.0",
+    "rollup-plugin-import-css": "^3.0.2",
+    "rollup-plugin-scss": "^3.0.0",
+    "safe-stable-stringify": "^2.3.1",
+    "sass": "^1.45.1",
     "tailwindcss": "^2.2.2",
     "type-to-reducer": "^1.2.0",
-    "ws": "^7.4.5",
-    "safe-stable-stringify": "^2.3.1"
+    "ws": "^7.4.5"
   }
 }

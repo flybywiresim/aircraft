@@ -1,277 +1,465 @@
+import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
-import { LateralMode, VerticalMode } from '@shared/autopilot.js';
-import React from 'react';
-import { calculateHorizonOffsetFromPitch } from './PFDUtils';
-import { getSimVar } from '../util.js';
-
-const DistanceSpacing = 15;
-const ValueSpacing = 10;
+import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { FlightPathDirector } from './FlightPathDirector';
+import { FlightPathVector } from './FlightPathVector';
+import { Arinc429Values } from './shared/ArincValueProvider';
+import { PFDSimvars } from './shared/PFDSimvarPublisher';
 
 interface AttitudeIndicatorFixedUpperProps {
-    pitch: Arinc429Word;
-    roll: Arinc429Word;
+    bus: EventBus;
 }
 
-export const AttitudeIndicatorFixedUpper = ({ pitch, roll }: AttitudeIndicatorFixedUpperProps) => {
-    if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
-        return null;
+export class AttitudeIndicatorFixedUpper extends DisplayComponent<AttitudeIndicatorFixedUpperProps> {
+    private roll = new Arinc429Word(0);
+
+    private pitch = new Arinc429Word(0);
+
+    private visibilitySub = Subject.create('hidden');
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<Arinc429Values>();
+
+        sub.on('rollAr').handle((roll) => {
+            this.roll = roll;
+            if (!this.roll.isNormalOperation()) {
+                this.visibilitySub.set('hidden');
+            } else {
+                this.visibilitySub.set('visible');
+            }
+        });
+
+        sub.on('pitchAr').handle((pitch) => {
+            this.pitch = pitch;
+            if (!this.pitch.isNormalOperation()) {
+                this.visibilitySub.set('hidden');
+            } else {
+                this.visibilitySub.set('visible');
+            }
+        });
     }
 
-    return (
-        <g id="AttitudeUpperInfoGroup">
-            <g id="RollProtGroup" className="SmallStroke Green">
-                <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
-                <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
+    render(): VNode {
+        return (
+            <g id="AttitudeUpperInfoGroup" visibility={this.visibilitySub}>
+                <g id="RollProtGroup" class="SmallStroke Green">
+                    <path id="RollProtRight" d="m105.64 62.887 1.5716-0.8008m-1.5716-0.78293 1.5716-0.8008" />
+                    <path id="RollProtLeft" d="m32.064 61.303-1.5716-0.8008m1.5716 2.3845-1.5716-0.8008" />
+                </g>
+                <g id="RollProtLost" style="display: none" class="NormalStroke Amber">
+                    <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
+                    <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
+                </g>
+                <g class="SmallStroke White">
+                    <path d="m98.645 51.067 2.8492-2.8509" />
+                    <path d="m39.168 51.067-2.8492-2.8509" />
+                    <path d="m90.858 44.839a42.133 42.158 0 0 0-43.904 0" />
+                    <path d="m89.095 43.819 1.8313-3.1738 1.7448 1.0079-1.8313 3.1738" />
+                    <path d="m84.259 41.563 0.90817-2.4967-1.8932-0.68946-0.90818 2.4966" />
+                    <path d="m75.229 39.142 0.46109-2.6165 1.9841 0.35005-0.46109 2.6165" />
+                    <path d="m60.6 39.492-0.46109-2.6165 1.9841-0.35005 0.46109 2.6165" />
+                    <path d="m53.553 41.563-0.90818-2.4967 0.9466-0.34474 0.9466-0.34472 0.90818 2.4966" />
+                    <path d="m46.973 44.827-1.8313-3.1738 1.7448-1.0079 1.8313 3.1738" />
+                </g>
+                <path class="NormalStroke Yellow CornerRound" d="m68.906 38.650-2.5184-3.7000h5.0367l-2.5184 3.7000" />
             </g>
-            <g id="RollProtLost" style={{ display: 'none' }} className="NormalStroke Amber">
-                <path id="RollProtLostRight" d="m107.77 60.696-1.7808 1.7818m1.7808 0-1.7808-1.7818" />
-                <path id="RollProtLostLeft" d="m30.043 62.478 1.7808-1.7818m-1.7808 0 1.7808 1.7818" />
-            </g>
-            <g className="SmallStroke White">
-                <path d="m98.645 51.067 2.8492-2.8509" />
-                <path d="m39.168 51.067-2.8492-2.8509" />
-                <path d="m90.858 44.839a42.133 42.158 0 0 0-43.904 0" />
-                <path d="m89.095 43.819 1.8313-3.1738 1.7448 1.0079-1.8313 3.1738" />
-                <path d="m84.259 41.563 0.90817-2.4967-1.8932-0.68946-0.90818 2.4966" />
-                <path d="m75.229 39.142 0.46109-2.6165 1.9841 0.35005-0.46109 2.6165" />
-                <path d="m60.6 39.492-0.46109-2.6165 1.9841-0.35005 0.46109 2.6165" />
-                <path d="m53.553 41.563-0.90818-2.4967 0.9466-0.34474 0.9466-0.34472 0.90818 2.4966" />
-                <path d="m46.973 44.827-1.8313-3.1738 1.7448-1.0079 1.8313 3.1738" />
-            </g>
-            <path className="NormalStroke Yellow CornerRound" d="m68.906 38.650-2.5184-3.7000h5.0367l-2.5184 3.7000" />
-        </g>
-    );
-};
+        );
+    }
+}
 
 interface AttitudeIndicatorFixedCenterProps {
-    pitch: Arinc429Word;
-    roll: Arinc429Word;
-    fpa: Arinc429Word;
-    da: Arinc429Word
-    isOnGround: boolean;
-    FDActive: boolean;
-    isAttExcessive: boolean;
+    bus: EventBus;
+    isAttExcessive: Subscribable<boolean>;
 }
 
-export const AttitudeIndicatorFixedCenter = ({ pitch, roll, fpa, da, isOnGround, FDActive, isAttExcessive }: AttitudeIndicatorFixedCenterProps) => {
-    if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
+export class AttitudeIndicatorFixedCenter extends DisplayComponent<AttitudeIndicatorFixedCenterProps> {
+    private roll = new Arinc429Word(0);
+
+    private pitch = new Arinc429Word(0);
+
+    private visibilitySub = Subject.create('hidden');
+
+    private failureVis = Subject.create('hidden');
+
+    private fdVisibilitySub = Subject.create('hidden');
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<Arinc429Values>();
+
+        sub.on('rollAr').handle((r) => {
+            this.roll = r;
+            if (!this.roll.isNormalOperation()) {
+                this.visibilitySub.set('display:none');
+                this.failureVis.set('display:block');
+                this.fdVisibilitySub.set('display:none');
+            } else {
+                this.visibilitySub.set('display:inline');
+                this.failureVis.set('display:none');
+                if (!this.props.isAttExcessive.get()) {
+                    this.fdVisibilitySub.set('display:inline');
+                }
+            }
+        });
+
+        sub.on('pitchAr').handle((p) => {
+            this.pitch = p;
+
+            if (!this.pitch.isNormalOperation()) {
+                this.visibilitySub.set('display:none');
+                this.failureVis.set('display:block');
+                this.fdVisibilitySub.set('display:none');
+            } else {
+                this.visibilitySub.set('display:inline');
+                this.failureVis.set('display:none');
+                if (!this.props.isAttExcessive.get()) {
+                    this.fdVisibilitySub.set('display:inline');
+                }
+            }
+        });
+
+        this.props.isAttExcessive.sub((a) => {
+            if (a) {
+                this.fdVisibilitySub.set('display:none');
+            } else if (this.roll.isNormalOperation() && this.pitch.isNormalOperation()) {
+                this.fdVisibilitySub.set('display:inline');
+            }
+        });
+    }
+
+    render(): VNode {
         return (
-            <text id="AttFailText" className="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
-        );
-    }
+            <>
+                <text style={this.failureVis} id="AttFailText" class="Blink9Seconds FontLargest Red EndAlign" x="75.893127" y="83.136955">ATT</text>
+                <g id="AttitudeSymbolsGroup" style={this.visibilitySub}>
+                    <SidestickIndicator bus={this.props.bus} />
+                    <path class="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
 
-    return (
-        <g id="AttitudeSymbolsGroup">
-            <SidestickIndicator isOnGround={isOnGround} />
-            <path className="BlackFill" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
-            {!isAttExcessive && (
-                <>
-                    <FDYawBar FDActive={FDActive} />
-                    <FlightDirector FDActive={FDActive} />
-                </>
-            )}
-            <path className="NormalOutline" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
-            <path className="NormalStroke Yellow" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
-            <g className="NormalOutline">
-                <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
-                <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
-            </g>
-            <g id="FixedAircraftReference" className="NormalStroke Yellow BlackFill">
-                <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
-                <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
-            </g>
-            <FlightPathVector pitch={pitch} roll={roll} fpa={fpa} da={da} />
-            {!isAttExcessive && (
-                <FlightPathDirector
-                    pitch={pitch}
-                    roll={roll}
-                    fpa={fpa}
-                    da={da}
-                    FDActive={FDActive}
-                />
-            ) }
-        </g>
-    );
-};
-
-const FDYawBar = ({ FDActive }) => {
-    const lateralMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
-
-    if (!FDActive || !(lateralMode === LateralMode.RWY || lateralMode === LateralMode.FLARE || lateralMode === LateralMode.ROLL_OUT)) {
-        return null;
-    }
-
-    const FDYawCommand = getSimVar('L:A32NX_FLIGHT_DIRECTOR_YAW', 'number');
-    const offset = -Math.max(Math.min(FDYawCommand, 45), -45) * 0.44;
-
-    return (
-        <path id="GroundYawSymbol" className="NormalStroke Green" transform={`translate(${offset} 0)`} d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z" />
-    );
-};
-
-const FlightDirector = ({ FDActive }) => {
-    if (!FDActive || getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool')) {
-        return null;
-    }
-
-    const lateralAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
-    const verticalAPMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
-
-    const showLateralFD = lateralAPMode !== LateralMode.NONE && lateralAPMode !== LateralMode.ROLL_OUT && lateralAPMode !== LateralMode.RWY;
-    const showVerticalFD = verticalAPMode !== VerticalMode.NONE && verticalAPMode !== VerticalMode.ROLL_OUT;
-
-    let FDRollOffset = 0;
-    let FDPitchOffset = 0;
-
-    if (showLateralFD) {
-        const FDRollOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');
-        FDRollOffset = Math.min(Math.max(FDRollOrder, -45), 45) * 0.44;
-    }
-
-    if (showVerticalFD) {
-        const FDPitchOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_PITCH', 'number');
-        FDPitchOffset = Math.min(Math.max(FDPitchOrder, -22.5), 22.5) * 0.89;
-    }
-
-    return (
-        <>
-            <g className="ThickOutline">
-                {showLateralFD
-                    && <path transform={`translate(${FDRollOffset} 0)`} d="m68.903 61.672v38.302" />}
-                {showVerticalFD
-                    && <path transform={`translate(0 ${FDPitchOffset})`} d="m49.263 80.823h39.287" />}
-            </g>
-            <g className="ThickStroke Green">
-                {showLateralFD
-                && <path id="FlightDirectorRoll" transform={`translate(${FDRollOffset} 0)`} d="m68.903 61.672v38.302" />}
-                {showVerticalFD
-                && <path id="FlightDirectorPitch" transform={`translate(0 ${FDPitchOffset})`} d="m49.263 80.823h39.287" />}
-            </g>
-        </>
-    );
-};
-
-interface FPVProps {
-    pitch: Arinc429Word;
-    roll: Arinc429Word;
-    fpa: Arinc429Word;
-    da: Arinc429Word;
-}
-const FlightPathVector = ({ pitch, roll, fpa, da }: FPVProps) => {
-    const fpaModeActive = getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool');
-    const daAndFpaValid = fpa.isNormalOperation() && da.isNormalOperation();
-
-    const daLimConv = Math.max(Math.min(da.value, 21), -21) * DistanceSpacing / ValueSpacing;
-    const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(-pitch.value) - calculateHorizonOffsetFromPitch(fpa.value));
-    const rollCos = Math.cos(roll.value * Math.PI / 180);
-    const rollSin = Math.sin(roll.value * Math.PI / 180);
-
-    const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
-    const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;
-
-    if (daAndFpaValid && fpaModeActive) {
-        return (
-            <g transform={`translate(${xOffset} ${yOffset})`}>
-                <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
-                    <g>
-                        <path
-                            className="NormalOutline"
-                            // eslint-disable-next-line max-len
-                            d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
-                        />
-                        <path className="ThickOutline" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
-                        <path
-                            className="NormalStroke Green"
-                            // eslint-disable-next-line max-len
-                            d="m17.766 15.501c8.59e-4 -1.2531-1.0142-2.2694-2.2665-2.2694-1.2524 0-2.2674 1.0163-2.2665 2.2694-8.57e-4 1.2531 1.0142 2.2694 2.2665 2.2694 1.2524 0 2.2674-1.0163 2.2665-2.2694z"
-                        />
-                        <path className="ThickStroke Green" d="m17.766 15.501h5.0367m-9.5698 0h-5.0367m7.3033-2.2678v-2.5199" />
+                    <g style={this.fdVisibilitySub}>
+                        <FDYawBar bus={this.props.bus} />
+                        <FlightDirector bus={this.props.bus} />
                     </g>
-                </svg>
+
+                    <path class="NormalOutline" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
+                    <path class="NormalStroke Yellow" d="m67.647 82.083v-2.5198h2.5184v2.5198z" />
+                    <g class="NormalOutline">
+                        <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
+                        <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
+                    </g>
+                    <g id="FixedAircraftReference" class="NormalStroke Yellow BlackFill">
+                        <path d="m88.55 86.114h2.5184v-4.0317h12.592v-2.5198h-15.11z" />
+                        <path d="m34.153 79.563h15.11v6.5516h-2.5184v-4.0317h-12.592z" />
+                    </g>
+                    <FlightPathVector bus={this.props.bus} />
+                    <FlightPathDirector bus={this.props.bus} isAttExcessive={this.props.isAttExcessive} />
+                </g>
+            </>
+        );
+    }
+}
+
+class FDYawBar extends DisplayComponent<{ bus: EventBus }> {
+    private lateralMode = 0;
+
+    private fdYawCommand = 0;
+
+    private fdActive = false;
+
+    private yawRef = FSComponent.createRef<SVGPathElement>();
+
+    private isActive(): boolean {
+        if (!this.fdActive || !(this.lateralMode === 40 || this.lateralMode === 33 || this.lateralMode === 34)) {
+            return false;
+        }
+        return true;
+    }
+
+    private setOffset() {
+        const offset = -Math.max(Math.min(this.fdYawCommand, 45), -45) * 0.44;
+        if (this.isActive()) {
+            this.yawRef.instance.style.visibility = 'visible';
+            this.yawRef.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
+        }
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+        sub.on('fdYawCommand').handle((fy) => {
+            this.fdYawCommand = fy;
+
+            if (this.isActive()) {
+                this.setOffset();
+            } else {
+                this.yawRef.instance.style.visibility = 'hidden';
+            }
+        });
+
+        sub.on('activeLateralMode').whenChanged().handle((lm) => {
+            this.lateralMode = lm;
+
+            if (this.isActive()) {
+                this.setOffset();
+            } else {
+                this.yawRef.instance.style.visibility = 'hidden';
+            }
+        });
+
+        // FIXME, differentiate properly (without duplication)
+        sub.on('fd1Active').whenChanged().handle((fd) => {
+            if (getDisplayIndex() === 1) {
+                this.fdActive = fd;
+
+                if (this.isActive()) {
+                    this.setOffset();
+                } else {
+                    this.yawRef.instance.style.visibility = 'hidden';
+                }
+            }
+        });
+
+        sub.on('fd2Active').whenChanged().handle((fd) => {
+            if (getDisplayIndex() === 2) {
+                this.fdActive = fd;
+
+                if (this.isActive()) {
+                    this.setOffset();
+                } else {
+                    this.yawRef.instance.style.visibility = 'hidden';
+                }
+            }
+        });
+    }
+
+    render(): VNode {
+        return (
+            <path ref={this.yawRef} id="GroundYawSymbol" class="NormalStroke Green" d="m67.899 82.536v13.406h2.0147v-13.406l-1.0074-1.7135z" />
+        );
+    }
+}
+
+class FlightDirector extends DisplayComponent<{ bus: EventBus }> {
+    private lateralMode = 0;
+
+    private verticalMode = 0;
+
+    private fdActive = false;
+
+    private trkFpaActive = false;
+
+    private fdBank = 0;
+
+    private fdPitch = 0;
+
+    private fdRef = FSComponent.createRef<SVGGElement>();
+
+    private lateralRef1 = FSComponent.createRef<SVGPathElement>();
+
+    private lateralRef2 = FSComponent.createRef<SVGPathElement>();
+
+    private verticalRef1 = FSComponent.createRef<SVGPathElement>();
+
+    private verticalRef2 = FSComponent.createRef<SVGPathElement>();
+
+    private handleFdState() {
+        const [toggled, showLateral, showVertical] = this.isActive();
+
+        let FDRollOffset = 0;
+        let FDPitchOffset = 0;
+
+        if (toggled && showLateral) {
+            const FDRollOrder = this.fdBank;
+            FDRollOffset = Math.min(Math.max(FDRollOrder, -45), 45) * 0.44;
+
+            this.lateralRef1.instance.setAttribute('visibility', 'visible');
+            this.lateralRef1.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
+
+            this.lateralRef2.instance.setAttribute('visibility', 'visible');
+            this.lateralRef2.instance.style.transform = `translate3d(${FDRollOffset}px, 0px, 0px)`;
+        } else {
+            this.lateralRef1.instance.setAttribute('visibility', 'hidden');
+            this.lateralRef2.instance.setAttribute('visibility', 'hidden');
+        }
+
+        if (toggled && showVertical) {
+            const FDPitchOrder = this.fdPitch;
+            FDPitchOffset = Math.min(Math.max(FDPitchOrder, -22.5), 22.5) * 0.89;
+
+            this.verticalRef1.instance.setAttribute('visibility', 'visible');
+            this.verticalRef1.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
+
+            this.verticalRef2.instance.setAttribute('visibility', 'visible');
+            this.verticalRef2.instance.style.transform = `translate3d(0px, ${FDPitchOffset}px, 0px)`;
+        } else {
+            this.verticalRef1.instance.setAttribute('visibility', 'hidden');
+            this.verticalRef2.instance.setAttribute('visibility', 'hidden');
+        }
+    }
+
+    private isActive(): [boolean, boolean, boolean] {
+        const toggled = this.fdActive && !this.trkFpaActive;
+
+        const showLateralFD = this.lateralMode !== 0 && this.lateralMode !== 34 && this.lateralMode !== 40;
+        const showVerticalFD = this.verticalMode !== 0 && this.verticalMode !== 34;
+
+        return [toggled, showLateralFD, showVerticalFD];
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+        sub.on('fd1Active').whenChanged().handle((fd) => {
+            if (getDisplayIndex() === 1) {
+                this.fdActive = fd;
+
+                if (this.isActive()[0]) {
+                    this.fdRef.instance.style.display = 'inline';
+                } else {
+                    this.fdRef.instance.style.display = 'none';
+                }
+            }
+        });
+
+        sub.on('fd2Active').whenChanged().handle((fd) => {
+            if (getDisplayIndex() === 2) {
+                this.fdActive = fd;
+
+                if (this.isActive()[0]) {
+                    this.fdRef.instance.style.display = 'inline';
+                } else {
+                    this.fdRef.instance.style.display = 'none';
+                }
+            }
+        });
+
+        sub.on('trkFpaActive').whenChanged().handle((tr) => {
+            this.trkFpaActive = tr;
+
+            if (this.isActive()[0]) {
+                this.fdRef.instance.style.display = 'inline';
+            } else {
+                this.fdRef.instance.style.display = 'none';
+            }
+        });
+
+        sub.on('fdBank').withPrecision(2).handle((fd) => {
+            this.fdBank = fd;
+
+            this.handleFdState();
+        });
+        sub.on('fdPitch').withPrecision(2).handle((fd) => {
+            this.fdPitch = fd;
+
+            this.handleFdState();
+        });
+
+        sub.on('activeLateralMode').whenChanged().handle((vm) => {
+            this.lateralMode = vm;
+
+            this.handleFdState();
+        });
+
+        sub.on('activeVerticalMode').whenChanged().handle((lm) => {
+            this.verticalMode = lm;
+
+            this.handleFdState();
+        });
+    }
+
+    render(): VNode | null {
+        return (
+            <g ref={this.fdRef} style="display: none">
+                <g class="ThickOutline">
+
+                    <path ref={this.lateralRef1} d="m68.903 61.672v38.302" />
+
+                    <path ref={this.verticalRef1} d="m49.263 80.823h39.287" />
+                </g>
+                <g class="ThickStroke Green">
+
+                    <path ref={this.lateralRef2} id="FlightDirectorRoll" d="m68.903 61.672v38.302" />
+
+                    <path ref={this.verticalRef2} id="FlightDirectorPitch" d="m49.263 80.823h39.287" />
+                </g>
             </g>
         );
-    } if (fpaModeActive && pitch.isNormalOperation() && roll.isNormalOperation()) {
-        return <text id="FPVFlag" x="62.987099" y="89.42025" className="Blink9Seconds FontLargest Red EndAlign">FPV</text>;
     }
-    return null;
-};
-
-interface FPDProps {
-    pitch: Arinc429Word;
-    roll: Arinc429Word;
-    fpa: Arinc429Word;
-    da: Arinc429Word;
-    FDActive: boolean;
 }
-const FlightPathDirector = ({ pitch, roll, fpa, da, FDActive }: FPDProps) => {
-    const daAndFpaValid = fpa.isNormalOperation() && da.isNormalOperation();
-    if (!FDActive || !getSimVar('L:A32NX_TRK_FPA_MODE_ACTIVE', 'bool') || !daAndFpaValid) {
-        return null;
+
+class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
+    private sideStickX = 0;
+
+    private sideStickY = 0;
+
+    private onGround = 0;
+
+    private crossHairRef = FSComponent.createRef<SVGPathElement>();
+
+    private onGroundForVisibility = Subject.create('visible');
+
+    private engOneRunning = false;
+
+    private engTwoRunning = false;
+
+    private handleSideStickIndication() {
+        const oneEngineRunning = this.engOneRunning || this.engTwoRunning;
+
+        if (this.onGround === 0 || !oneEngineRunning) {
+            this.onGroundForVisibility.set('hidden');
+        } else {
+            this.onGroundForVisibility.set('visible');
+            this.crossHairRef.instance.style.transform = `translate3d(${this.sideStickX}px, ${this.sideStickY}px, 0px)`;
+        }
     }
 
-    const lateralAPMode = getSimVar('L:A32NX_FMA_LATERAL_MODE', 'number');
-    const verticalAPMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
-    const showLateralFD = lateralAPMode !== LateralMode.NONE && lateralAPMode !== LateralMode.ROLL_OUT && lateralAPMode !== LateralMode.RWY;
-    const showVerticalFD = verticalAPMode !== VerticalMode.NONE && verticalAPMode !== VerticalMode.ROLL_OUT;
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
 
-    if (!showVerticalFD && !showLateralFD) {
-        return null;
+        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+        sub.on('onGround').whenChanged().handle((g) => {
+            this.onGround = g;
+            this.handleSideStickIndication();
+        });
+
+        sub.on('sideStickX').whenChanged().handle((x) => {
+            this.sideStickX = x * 29.56;
+            this.handleSideStickIndication();
+        });
+
+        sub.on('sideStickY').whenChanged().handle((y) => {
+            this.sideStickY = -y * 23.02;
+            this.handleSideStickIndication();
+        });
+
+        sub.on('engOneRunning').whenChanged().handle((e) => {
+            this.engOneRunning = e;
+            this.handleSideStickIndication();
+        });
+
+        sub.on('engTwoRunning').whenChanged().handle((e) => {
+            this.engTwoRunning = e;
+            this.handleSideStickIndication();
+        });
     }
 
-    const FDRollOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_BANK', 'number');
-    const FDRollOrderLim = Math.max(Math.min(FDRollOrder, 45), -45);
-    const FDPitchOrder = getSimVar('L:A32NX_FLIGHT_DIRECTOR_PITCH', 'number');
-    const FDPitchOrderLim = Math.max(Math.min(FDPitchOrder, 22.5), -22.5) * 1.9;
-
-    const daLimConv = Math.max(Math.min(da.value, 21), -21) * DistanceSpacing / ValueSpacing;
-    const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(-pitch.value) - calculateHorizonOffsetFromPitch(fpa.value));
-    const rollCos = Math.cos(roll.value * Math.PI / 180);
-    const rollSin = Math.sin(roll.value * Math.PI / 180);
-
-    const FDRollOffset = FDRollOrderLim * 0.77;
-    const xOffsetFpv = daLimConv * rollCos - pitchSubFpaConv * rollSin;
-    const yOffsetFpv = pitchSubFpaConv * rollCos + daLimConv * rollSin;
-
-    const xOffset = xOffsetFpv - FDPitchOrderLim * rollSin;
-    const yOffset = yOffsetFpv + FDPitchOrderLim * rollCos;
-
-    return (
-        <g transform={`translate(${xOffset} ${yOffset})`}>
-            <svg x="53.4" y="65.3" width="31px" height="31px" version="1.1" viewBox="0 0 31 31" xmlns="http://www.w3.org/2000/svg">
-                <g transform={`rotate(${FDRollOffset} 15.5 15.5)`} className="CornerRound">
-                    <path
-                        className="NormalOutline"
-                        // eslint-disable-next-line max-len
-                        d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
-                    />
-                    <path
-                        className="NormalStroke Green"
-                        // eslint-disable-next-line max-len
-                        d="m16.507 15.501a1.0074 1.008 0 1 0-2.0147 0 1.0074 1.008 0 1 0 2.0147 0zm7.5551 0 6.5478-1.5119v3.0238l-6.5478-1.5119m-17.125 0-6.5478-1.5119v3.0238l6.5478-1.5119h17.125"
-                    />
-                </g>
-            </svg>
-        </g>
-    );
-};
-
-const SidestickIndicator = ({ isOnGround }) => {
-    const oneEngineRunning = getSimVar('GENERAL ENG COMBUSTION:1', 'bool') || getSimVar('GENERAL ENG COMBUSTION:2', 'bool');
-    if (!isOnGround || !oneEngineRunning) {
-        return null;
+    render(): VNode {
+        return (
+            <g id="GroundCursorGroup" class="NormalStroke White" visibility={this.onGroundForVisibility}>
+                <path id="GroundCursorBorders" d="m92.327 103.75h6.0441v-6.0476m-58.93 0v6.0476h6.0441m46.842-45.861h6.0441v6.0476m-58.93 0v-6.0476h6.0441" />
+                <path
+                    ref={this.crossHairRef}
+                    id="GroundCursorCrosshair"
+                    d="m73.994 81.579h-4.3316v4.3341m-5.8426-4.3341h4.3316v4.3341m5.8426-5.846h-4.3316v-4.3341m-5.8426 4.3341h4.3316v-4.3341"
+                />
+            </g>
+        );
     }
-
-    const SidestickPosX = getSimVar('L:A32NX_SIDESTICK_POSITION_X', 'number') * 29.56;
-    const SidestickPosY = -getSimVar('L:A32NX_SIDESTICK_POSITION_Y', 'number') * 23.02;
-
-    return (
-        <g id="GroundCursorGroup" className="NormalStroke White">
-            <path id="GroundCursorBorders" d="m92.327 103.75h6.0441v-6.0476m-58.93 0v6.0476h6.0441m46.842-45.861h6.0441v6.0476m-58.93 0v-6.0476h6.0441" />
-            <path
-                id="GroundCursorCrosshair"
-                transform={`translate(${SidestickPosX} ${SidestickPosY})`}
-                d="m73.994 81.579h-4.3316v4.3341m-5.8426-4.3341h4.3316v4.3341m5.8426-5.846h-4.3316v-4.3341m-5.8426 4.3341h4.3316v-4.3341"
-            />
-        </g>
-    );
-};
+}
