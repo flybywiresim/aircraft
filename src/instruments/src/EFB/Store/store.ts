@@ -13,6 +13,7 @@ import dashboardReducer from './features/dashboard';
 import checklistsReducer from './features/checklists';
 import keyboardReducer from './features/keyboard';
 import dispatchPageReducer from './features/dispatchPage';
+import failuresPageReducer from './features/failuresPage';
 
 export type RootState = ReturnType<typeof combinedReducer>;
 export type AppDispatch = typeof store.dispatch;
@@ -30,6 +31,7 @@ const combinedReducer = combineReducers({
     trackingChecklists: checklistsReducer,
     keyboard: keyboardReducer,
     dispatchPage: dispatchPageReducer,
+    failuresPage: failuresPageReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {

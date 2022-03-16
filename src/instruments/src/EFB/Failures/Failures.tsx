@@ -2,10 +2,16 @@ import React from 'react';
 import { AtaChaptersDescription, AtaChaptersTitle, AtaChapterNumber } from '@shared/ata';
 import { Link } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
+import { Failure } from '@flybywiresim/failures';
+import { useAppDispatch, useAppSelector } from '../Store/store';
+import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
+import { SelectGroup, SelectItem } from '../UtilComponents/Form/Select';
+import { FailureButton } from './Pages/Failure';
 import { PageLink, PageRedirect, pathify, TabRoutes } from '../Utils/routing';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 import { AtaChapterPage } from './Pages/AtaChapterPage';
+import { setSearchQuery, setLayoutMode, FailurePageLayoutMode } from '../Store/features/failuresPage';
 
 interface ATAFailureCardProps {
     ataNumber: AtaChapterNumber,
@@ -53,9 +59,78 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAFailureCardProps) 
     );
 };
 
+interface CompactUIProps {
+    chapters: AtaChapterNumber[];
+    failures: Failure[];
+}
+
+const CompactUI = ({ chapters, failures }: CompactUIProps) => {
+    const { activeFailures, changingFailures, activate, deactivate } = useFailuresOrchestrator();
+
+    return (
+        <div className="space-y-8">
+            {chapters.map((chapter) => (
+                <div className="space-y-2">
+                    <h2>{AtaChaptersTitle[chapter]}</h2>
+                    <div className="grid grid-cols-4 auto-rows-auto">
+                        {failures.filter((failure) => failure.ata === chapter).map((failure, index) => (
+                            <FailureButton
+                                name={failure.name}
+                                isActive={activeFailures.has(failure.identifier)}
+                                isChanging={changingFailures.has(failure.identifier)}
+                                onClick={() => {
+                                    if (!activeFailures.has(failure.identifier)) {
+                                        activate(failure.identifier);
+                                    } else {
+                                        deactivate(failure.identifier);
+                                    }
+                                }}
+                                className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} h-36`}
+                            />
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+interface ComfortableUIProps {
+    chapters: AtaChapterNumber[];
+}
+
+const ComfortableUI = ({ chapters }: ComfortableUIProps) => (
+    <div>
+        {chapters.map((chapter) => (
+            <ATAChapterCard
+                ataNumber={chapter}
+                title={AtaChaptersTitle[chapter]}
+                description={AtaChaptersDescription[chapter]}
+            />
+        ))}
+    </div>
+);
+
 const FailuresHome = () => {
     const { allFailures } = useFailuresOrchestrator();
     const chapters = Array.from(new Set(allFailures.map((it) => it.ata))).sort((a, b) => a - b);
+
+    const dispatch = useAppDispatch();
+    const { searchQuery, layoutMode } = useAppSelector((state) => state.failuresPage);
+
+    const filteredFailures = allFailures.filter((failure) => {
+        if (searchQuery === '') {
+            return true;
+        }
+
+        const failureNameUpper = failure.name.toUpperCase();
+
+        return failureNameUpper.includes(searchQuery)
+        || failure.identifier.toString().includes(searchQuery)
+        || AtaChaptersTitle[failure.ata].toUpperCase().includes(searchQuery);
+    });
+
+    const filteredChapters = chapters.filter((chapter) => filteredFailures.map((failure) => failure.ata).includes(chapter));
 
     return (
         <>
@@ -68,16 +143,37 @@ const FailuresHome = () => {
                 </div>
             </div>
 
-            <div className="p-4 mt-4 rounded-lg border-2 border-theme-accent h-content-section-reduced">
-                <ScrollableContainer height={52}>
+            <div className="p-4 mt-4 space-y-4 rounded-lg border-2 border-theme-accent h-content-section-reduced">
+                <div className="flex flex-row space-x-4">
+                    <SimpleInput
+                        placeholder="SEARCH"
+                        className="flex-grow uppercase"
+                        value={searchQuery}
+                        onChange={(value) => dispatch(setSearchQuery(value.toUpperCase()))}
+                    />
+                    <SelectGroup>
+                        <SelectItem
+                            selected={layoutMode === 0}
+                            onSelect={() => dispatch(setLayoutMode(FailurePageLayoutMode.COMFORT))}
+                        >
+                            Comfort
+                        </SelectItem>
+                        <SelectItem
+                            selected={layoutMode === 1}
+                            onSelect={() => dispatch(setLayoutMode(FailurePageLayoutMode.COMPACT))}
+                        >
+                            Compact
+                        </SelectItem>
+                    </SelectGroup>
+                </div>
+
+                <ScrollableContainer height={48}>
                     <div className="flex flex-col space-y-1">
-                        {chapters.map((chapter) => (
-                            <ATAChapterCard
-                                ataNumber={chapter}
-                                title={AtaChaptersTitle[chapter]}
-                                description={AtaChaptersDescription[chapter]}
-                            />
-                        ))}
+                        {layoutMode === 0 ? (
+                            <ComfortableUI chapters={filteredChapters} />
+                        ) : (
+                            <CompactUI chapters={filteredChapters} failures={filteredFailures} />
+                        )}
                     </div>
                 </ScrollableContainer>
             </div>
