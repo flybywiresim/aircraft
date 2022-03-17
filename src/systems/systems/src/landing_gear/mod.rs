@@ -234,6 +234,33 @@ impl LgciuSensorInputs {
         self.left_door_up_and_locked =
             gear_system_sensors.is_door_id_up_and_locked(GearWheel::LEFT, self.number_index);
     }
+
+    fn unlock_state(&self, wheel_id: GearWheel, gear_lever_is_down: bool) -> bool {
+        let gear_uplocked = match wheel_id {
+            GearWheel::LEFT => self.left_gear_up_and_locked,
+            GearWheel::CENTER => self.nose_gear_up_and_locked,
+            GearWheel::RIGHT => self.right_gear_up_and_locked,
+        };
+        let gear_downlocked = match wheel_id {
+            GearWheel::LEFT => self.left_gear_down_and_locked,
+            GearWheel::CENTER => self.nose_gear_down_and_locked,
+            GearWheel::RIGHT => self.right_gear_down_and_locked,
+        };
+
+        let in_transition = !(gear_downlocked ^ gear_uplocked);
+        let not_uplocked = !gear_lever_is_down && !gear_uplocked;
+        let not_downlocked = gear_lever_is_down && !gear_downlocked;
+
+        in_transition || not_uplocked || not_downlocked
+    }
+
+    fn downlock_state(&self, wheel_id: GearWheel) -> bool {
+        match wheel_id {
+            GearWheel::LEFT => self.left_gear_down_and_locked,
+            GearWheel::CENTER => self.nose_gear_down_and_locked,
+            GearWheel::RIGHT => self.right_gear_down_and_locked,
+        }
+    }
 }
 impl SimulationElement for LgciuSensorInputs {
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -330,6 +357,13 @@ impl LgciuSensors for LgciuSensorInputs {}
 pub struct LandingGearControlInterfaceUnit {
     gear_handle_position_id: VariableIdentifier,
 
+    left_gear_downlock_id: VariableIdentifier,
+    left_gear_unlock_id: VariableIdentifier,
+    nose_gear_downlock_id: VariableIdentifier,
+    nose_gear_unlock_id: VariableIdentifier,
+    right_gear_downlock_id: VariableIdentifier,
+    right_gear_unlock_id: VariableIdentifier,
+
     is_powered: bool,
 
     powered_by: ElectricalBusType,
@@ -343,6 +377,19 @@ impl LandingGearControlInterfaceUnit {
     pub fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             gear_handle_position_id: context.get_identifier("GEAR HANDLE POSITION".to_owned()),
+
+            left_gear_downlock_id: context
+                .get_identifier(format!("LGCIU_{}_LEFT_GEAR_DOWNLOCKED", number)),
+            left_gear_unlock_id: context
+                .get_identifier(format!("LGCIU_{}_LEFT_GEAR_UNLOCKED", number)),
+            nose_gear_downlock_id: context
+                .get_identifier(format!("LGCIU_{}_NOSE_GEAR_DOWNLOCKED", number)),
+            nose_gear_unlock_id: context
+                .get_identifier(format!("LGCIU_{}_NOSE_GEAR_UNLOCKED", number)),
+            right_gear_downlock_id: context
+                .get_identifier(format!("LGCIU_{}_RIGHT_GEAR_DOWNLOCKED", number)),
+            right_gear_unlock_id: context
+                .get_identifier(format!("LGCIU_{}_RIGHT_GEAR_UNLOCKED", number)),
 
             is_powered: false,
 
@@ -391,6 +438,38 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.is_gear_lever_down = reader.read(&self.gear_handle_position_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.left_gear_unlock_id,
+            self.sensor_inputs
+                .unlock_state(GearWheel::LEFT, self.gear_handle_is_down()),
+        );
+        writer.write(
+            &self.left_gear_downlock_id,
+            self.sensor_inputs.downlock_state(GearWheel::LEFT),
+        );
+
+        writer.write(
+            &self.nose_gear_unlock_id,
+            self.sensor_inputs
+                .unlock_state(GearWheel::CENTER, self.gear_handle_is_down()),
+        );
+        writer.write(
+            &self.nose_gear_downlock_id,
+            self.sensor_inputs.downlock_state(GearWheel::CENTER),
+        );
+
+        writer.write(
+            &self.right_gear_unlock_id,
+            self.sensor_inputs
+                .unlock_state(GearWheel::RIGHT, self.gear_handle_is_down()),
+        );
+        writer.write(
+            &self.right_gear_downlock_id,
+            self.sensor_inputs.downlock_state(GearWheel::RIGHT),
+        );
     }
 }
 
@@ -495,8 +574,7 @@ impl LandingGearHandle for LandingGearControlInterfaceUnit {
     }
 
     fn gear_handle_baulk_locked(&self) -> bool {
-        // TODO
-        false
+        !(self.left_and_right_gear_extended(false) && self.nose_gear_extended(false))
     }
 }
 
@@ -558,19 +636,19 @@ mod tests {
         }
     }
     impl GearSystemSensors for TestGearSystem {
-        fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
+        fn is_wheel_id_up_and_locked(&self, _: GearWheel, _: usize) -> bool {
             self.gear_position >= Self::UP_LOCK_TRESHOLD
         }
 
-        fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
+        fn is_wheel_id_down_and_locked(&self, _: GearWheel, _: usize) -> bool {
             self.gear_position <= 1
         }
 
-        fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
+        fn is_door_id_up_and_locked(&self, _: GearWheel, _: usize) -> bool {
             self.door_position >= Self::UP_LOCK_TRESHOLD
         }
 
-        fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
+        fn is_door_id_down_and_locked(&self, _: GearWheel, _: usize) -> bool {
             self.door_position <= 1
         }
     }
