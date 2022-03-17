@@ -165,8 +165,8 @@ impl<const ZONES: usize> AirConditioningSystemOverhead<ZONES> {
 
     fn selected_cabin_temperature(&self, zone_id: usize) -> ThermodynamicTemperature {
         let knob = &self.temperature_selectors[zone_id];
-        // Map from knob range 0-100 to 18-30 degrees C
-        ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.12 + 18.)
+        // Map from knob range 0-300 to 18-30 degrees C
+        ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.04 + 18.)
     }
 
     fn pack_pushbuttons_state(&self) -> [bool; 2] {

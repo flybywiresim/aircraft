@@ -381,7 +381,7 @@ var A320_Neo_LowerECAM_BLEED;
             this.packIndicator[1].setAttribute("style", "transform-origin: 121px 152px; transform: rotate(" + packRequestedlvl * 1.23 + "deg); stroke-width: 4.5px; stroke-linecap: round;");
 
             //placeholder logic for the bleed page temperatures and pressures, to be replaced/updated/removed when the cond-packs system is implemented
-            const packRequestedTemp = 18 + (0.12 * packRequestedlvl);
+            const packRequestedTemp = 18 + (0.04 * packRequestedlvl);
 
             const eng1TMP = SimVar.GetSimVarValue("ENG EXHAUST GAS TEMPERATURE:1", "Celsius");
             const eng1PSI = parseInt(SimVar.GetSimVarValue("TURB ENG BLEED AIR:1", "Ratio (0-16384)") / 2.9);
