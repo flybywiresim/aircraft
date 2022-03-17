@@ -1,7 +1,7 @@
 class CDUAocMessagesSent {
     static ShowPage(mcdu, messages = null, page = 0) {
         if (!messages) {
-            messages = mcdu.atsuManager.aoc.outputMessages();
+            messages = mcdu.atsu.aoc.outputMessages();
         }
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AOCSentMsgs;
@@ -66,7 +66,7 @@ class CDUAocMessagesSent {
             mcdu.onLeftInput[i] = (value) => {
                 if (messages[offset - 5 + i]) {
                     if (value === FMCMainDisplay.clrValue) {
-                        mcdu.atsuManager.removeMessage(messages[offset - 5 + i].UniqueMessageID);
+                        mcdu.atsu.removeMessage(messages[offset - 5 + i].UniqueMessageID);
                         CDUAocMessagesSent.ShowPage(mcdu);
                     } else {
                         CDUAocMessageSentDetail.ShowPage(mcdu, messages, offset - 5 + i);
