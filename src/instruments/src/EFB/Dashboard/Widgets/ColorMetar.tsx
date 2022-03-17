@@ -13,7 +13,7 @@ export const ColoredMetar = ({ metar }: { metar: MetarParserType }) => {
         switch (metar.color_codes[index]) {
         case ColorCode.Highlight:
             return (
-                <span className="text-2xl text-teal-regular">
+                <span className="text-2xl text-theme-highlight">
                     {metarPart}
                     {' '}
                 </span>
