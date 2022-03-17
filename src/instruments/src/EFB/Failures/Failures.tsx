@@ -69,36 +69,38 @@ const CompactUI = ({ chapters, failures }: CompactUIProps) => {
     const { searchQuery } = useAppSelector((state) => state.failuresPage);
 
     return (
-        <ScrollableContainer height={48} className="space-y-8">
-            {chapters.map((chapter) => (
-                <div className="space-y-2">
-                    <h2>{AtaChaptersTitle[chapter]}</h2>
-                    <div className="grid grid-cols-4 auto-rows-auto">
-                        {failures.filter((failure) => failure.ata === chapter).map((failure, index) => (
-                            <FailureButton
-                                name={failure.name}
-                                isActive={activeFailures.has(failure.identifier)}
-                                isChanging={changingFailures.has(failure.identifier)}
-                                highlightedTerm={(() => {
-                                    const searchQueryIdx = failure.name.toUpperCase().indexOf(searchQuery);
+        <ScrollableContainer height={48}>
+            <div className="space-y-8">
+                {chapters.map((chapter) => (
+                    <div className="space-y-2">
+                        <h2>{AtaChaptersTitle[chapter]}</h2>
+                        <div className="grid grid-cols-4 auto-rows-auto">
+                            {failures.filter((failure) => failure.ata === chapter).map((failure, index) => (
+                                <FailureButton
+                                    name={failure.name}
+                                    isActive={activeFailures.has(failure.identifier)}
+                                    isChanging={changingFailures.has(failure.identifier)}
+                                    highlightedTerm={(() => {
+                                        const searchQueryIdx = failure.name.toUpperCase().indexOf(searchQuery);
 
-                                    if (searchQuery === '' || searchQueryIdx === -1) return undefined;
+                                        if (searchQuery === '' || searchQueryIdx === -1) return undefined;
 
-                                    return failure.name.substring(searchQueryIdx, searchQueryIdx + searchQuery.length);
-                                })()}
-                                onClick={() => {
-                                    if (!activeFailures.has(failure.identifier)) {
-                                        activate(failure.identifier);
-                                    } else {
-                                        deactivate(failure.identifier);
-                                    }
-                                }}
-                                className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} h-36`}
-                            />
-                        ))}
+                                        return failure.name.substring(searchQueryIdx, searchQueryIdx + searchQuery.length);
+                                    })()}
+                                    onClick={() => {
+                                        if (!activeFailures.has(failure.identifier)) {
+                                            activate(failure.identifier);
+                                        } else {
+                                            deactivate(failure.identifier);
+                                        }
+                                    }}
+                                    className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} h-36`}
+                                />
+                            ))}
+                        </div>
                     </div>
-                </div>
-            ))}
+                ))}
+            </div>
         </ScrollableContainer>
     );
 };
