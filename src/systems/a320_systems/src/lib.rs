@@ -190,6 +190,7 @@ impl Aircraft for A320 {
             &self.emergency_electrical_overhead,
             &self.electrical,
             &self.pneumatic,
+            &self.adirs,
         );
 
         self.pneumatic.update_hydraulic_reservoir_spatial_volumes(

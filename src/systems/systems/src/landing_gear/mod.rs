@@ -2,8 +2,8 @@ use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     hydraulic::landing_gear::{GearComponentController, GearSystemStateMachine, GearsSystemState},
     shared::{
-        ElectricalBusType, ElectricalBuses, GearWheel, LandingGearRealPosition, LgciuDoorPosition,
-        LgciuGearControl, LgciuGearExtension, LgciuSensors, LgciuWeightOnWheels,
+        ElectricalBusType, ElectricalBuses, GearWheel, LandingGearHandle, LandingGearRealPosition,
+        LgciuDoorPosition, LgciuGearControl, LgciuGearExtension, LgciuSensors, LgciuWeightOnWheels,
     },
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
@@ -487,6 +487,16 @@ impl LgciuGearControl for LandingGearControlInterfaceUnit {
             }
             GearsSystemState::AllDownLocked => true,
         }
+    }
+}
+impl LandingGearHandle for LandingGearControlInterfaceUnit {
+    fn gear_handle_is_down(&self) -> bool {
+        self.gear_handle_is_down()
+    }
+
+    fn gear_handle_baulk_locked(&self) -> bool {
+        // TODO
+        false
     }
 }
 

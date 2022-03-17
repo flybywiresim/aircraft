@@ -102,13 +102,17 @@ pub trait LgciuDoorPosition {
     fn all_closed_and_locked(&self) -> bool;
 }
 
-pub trait LgciuGearControl{
+pub trait LgciuGearControl {
     fn should_open_doors(&self) -> bool;
     fn should_extend_gears(&self) -> bool;
 }
 
-pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition {}
+pub trait LandingGearHandle {
+    fn gear_handle_is_down(&self) -> bool;
+    fn gear_handle_baulk_locked(&self) -> bool;
+}
 
+pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition {}
 
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
@@ -145,6 +149,13 @@ pub trait EngineBleedPushbutton {
 
 pub trait GroundSpeed {
     fn ground_speed(&self) -> Velocity;
+}
+
+pub trait AdirsDiscreteOutputs {
+    fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool;
 }
 
 pub enum GearWheel {

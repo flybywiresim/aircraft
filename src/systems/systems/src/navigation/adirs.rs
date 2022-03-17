@@ -3,7 +3,7 @@ use crate::{
     overhead::{IndicationLight, OnOffFaultPushButton},
     shared::{
         arinc429::{Arinc429Word, SignStatus},
-        GroundSpeed, MachNumber,
+        AdirsDiscreteOutputs, GroundSpeed, MachNumber,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -430,12 +430,39 @@ impl GroundSpeed for AirDataInertialReferenceSystem {
         self.adirus[0].ground_speed()
     }
 }
+impl AdirsDiscreteOutputs for AirDataInertialReferenceSystem {
+    fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool {
+        assert!(adiru_number > 0 && adiru_number <= 3);
+        self.adirus[adiru_number - 1].low_speed_warning_1_104kts()
+    }
+
+    fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool {
+        assert!(adiru_number > 0 && adiru_number <= 3);
+        self.adirus[adiru_number - 1].low_speed_warning_1_104kts()
+    }
+
+    fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool {
+        assert!(adiru_number > 0 && adiru_number <= 3);
+        self.adirus[adiru_number - 1].low_speed_warning_1_104kts()
+    }
+
+    fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool {
+        assert!(adiru_number > 0 && adiru_number <= 3);
+        self.adirus[adiru_number - 1].low_speed_warning_1_104kts()
+    }
+}
 
 struct AirDataInertialReferenceUnit {
     state_id: VariableIdentifier,
 
     adr: AirDataReference,
     ir: InertialReference,
+
+    // Discrete outputs
+    low_speed_warning_1_104kts: bool,
+    low_speed_warning_2_54kts: bool,
+    low_speed_warning_3_159kts: bool,
+    low_speed_warning_4_260kts: bool,
 }
 impl AirDataInertialReferenceUnit {
     fn new(context: &mut InitContext, number: usize) -> Self {
@@ -443,6 +470,11 @@ impl AirDataInertialReferenceUnit {
             state_id: context.get_identifier(Self::state_id(number)),
             adr: AirDataReference::new(context, number),
             ir: InertialReference::new(context, number),
+
+            low_speed_warning_1_104kts: false,
+            low_speed_warning_2_54kts: false,
+            low_speed_warning_3_159kts: false,
+            low_speed_warning_4_260kts: false,
         }
     }
 
@@ -456,6 +488,8 @@ impl AirDataInertialReferenceUnit {
         self.adr.update(context, overhead, simulator_data);
         self.ir
             .update(context, &self.adr, overhead, align_time, simulator_data);
+
+        self.update_discrete_outputs();
     }
 
     fn is_fully_aligned(&self) -> bool {
@@ -486,6 +520,50 @@ impl AirDataInertialReferenceUnit {
 
     fn ir_has_fault(&self) -> bool {
         self.ir.has_fault()
+    }
+
+    fn update_discrete_outputs(&mut self) {
+        let speed_knot = self.adr.computed_airspeed_raw().get::<knot>();
+
+        if speed_knot < 100. {
+            self.low_speed_warning_1_104kts = false;
+        } else if speed_knot > 104. {
+            self.low_speed_warning_1_104kts = true;
+        }
+
+        if speed_knot < 50. {
+            self.low_speed_warning_2_54kts = false;
+        } else if speed_knot > 54. {
+            self.low_speed_warning_2_54kts = true;
+        }
+
+        if speed_knot < 155. {
+            self.low_speed_warning_3_159kts = false;
+        } else if speed_knot > 159. {
+            self.low_speed_warning_3_159kts = true;
+        }
+
+        if speed_knot < 260. {
+            self.low_speed_warning_4_260kts = false;
+        } else if speed_knot > 264. {
+            self.low_speed_warning_4_260kts = true;
+        }
+    }
+
+    fn low_speed_warning_1_104kts(&self) -> bool {
+        self.low_speed_warning_1_104kts
+    }
+
+    fn low_speed_warning_2_54kts(&self) -> bool {
+        self.low_speed_warning_2_54kts
+    }
+
+    fn low_speed_warning_3_159kts(&self) -> bool {
+        self.low_speed_warning_3_159kts
+    }
+
+    fn low_speed_warning_4_260kts(&self) -> bool {
+        self.low_speed_warning_4_260kts
     }
 }
 impl SimulationElement for AirDataInertialReferenceUnit {
@@ -768,6 +846,10 @@ impl AirDataReference {
         ThermodynamicTemperature::new::<degree_celsius>(
             static_air_temperature.get::<degree_celsius>() - isa,
         )
+    }
+
+    fn computed_airspeed_raw(&self) -> Velocity {
+        self.computed_airspeed.value()
     }
 }
 impl TrueAirspeedSource for AirDataReference {

@@ -67,7 +67,7 @@ impl HydraulicGearSystem {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        valves_controller: &impl GearValvesController,
+        valves_controller: &impl GearSystemController,
         gear_system_controller: &impl LgciuGearControl,
         main_hydraulic_circuit_pressure: Pressure,
     ) {
@@ -263,9 +263,12 @@ impl GearSystemStateMachine {
     }
 }
 
-pub trait GearValvesController {
+pub trait GearSystemController {
     fn safety_valve_should_open(&self) -> bool;
     fn shut_off_valve_should_open(&self) -> bool;
+    fn vent_valves_should_open(&self) -> bool;
+    fn doors_uplocks_should_mechanically_unlock(&self) -> bool;
+    fn gears_uplocks_should_mechanically_unlock(&self) -> bool;
 }
 
 struct GearSystemHydraulicSupply {
@@ -283,7 +286,7 @@ impl GearSystemHydraulicSupply {
     fn update(
         &mut self,
         context: &UpdateContext,
-        valves_controller: &impl GearValvesController,
+        valves_controller: &impl GearSystemController,
         main_hydraulic_circuit_pressure: Pressure,
     ) {
         self.safety_valve.update(
@@ -465,14 +468,12 @@ impl HydraulicAssemblyController for GearDoorHydraulicController {
         // TODO if vent valve opened -> damping else -> valve closed mode
 
         if self.is_door
-        &&
-        self.requested_position.get::<ratio>() >= 1.
-        &&
-        self.actual_position.get::<ratio>() >= 0.98
+            && self.requested_position.get::<ratio>() >= 1.
+            && self.actual_position.get::<ratio>() >= 0.98
         {
             LinearActuatorMode::ClosedValves
-        } else  {
-        LinearActuatorMode::PositionControl
+        } else {
+            LinearActuatorMode::PositionControl
         }
     }
 
@@ -539,7 +540,8 @@ struct HydraulicValve {
     pressure_output: Pressure,
 }
 impl HydraulicValve {
-    const POSITION_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(50);
+    const POSITION_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(150);
+    const MIN_POSITION_FOR_ZERO_PRESSURE_RATIO: f64 = 0.02;
 
     fn new(valve_type: HydraulicValveType) -> Self {
         Self {
@@ -593,9 +595,13 @@ impl HydraulicValve {
 
     fn update_output_pressure(&mut self) {
         self.pressure_output =
-            self.pressure_input
-                * (self.position.output().sqrt() * 1.4)
-                    .min(Ratio::new::<ratio>(1.).max(Ratio::new::<ratio>(0.)));
+            if self.position.output().get::<ratio>() > Self::MIN_POSITION_FOR_ZERO_PRESSURE_RATIO {
+                self.pressure_input
+                    * (self.position.output().sqrt() * 1.4)
+                        .min(Ratio::new::<ratio>(1.).max(Ratio::new::<ratio>(0.)))
+            } else {
+                Pressure::default()
+            }
     }
 
     fn pressure_output(&self) -> Pressure {
@@ -683,13 +689,25 @@ mod tests {
             }
         }
     }
-    impl GearValvesController for TestGearValvesController {
+    impl GearSystemController for TestGearValvesController {
         fn safety_valve_should_open(&self) -> bool {
             self.safety_valve_should_open
         }
 
         fn shut_off_valve_should_open(&self) -> bool {
             self.shut_off_valve_should_open
+        }
+
+        fn vent_valves_should_open(&self) -> bool {
+            false
+        }
+
+        fn doors_uplocks_should_mechanically_unlock(&self) -> bool {
+            false
+        }
+
+        fn gears_uplocks_should_mechanically_unlock(&self) -> bool {
+            false
         }
     }
 
