@@ -163,7 +163,7 @@ export class DcduLink {
     private setupIntervals() {
         if (this.atcMsgWatchdogInterval === undefined) {
             // start the watchdog to check the the ATC MSG button
-            setInterval(() => {
+            this.atcMsgWatchdogInterval = setInterval(() => {
                 if (SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number') === 1) {
                     this.cleanupNotifications();
                 }
