@@ -22,6 +22,7 @@ use uom::si::{
 
 pub mod acs_controller;
 pub mod cabin_air;
+pub mod selector_position;
 
 pub trait DuctTemperature {
     fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature>;
@@ -71,7 +72,7 @@ pub struct AirConditioningSystem<const ZONES: usize> {
 impl<const ZONES: usize> AirConditioningSystem<ZONES> {
     pub fn new(context: &mut InitContext, cabin_zones: [ZoneType; ZONES]) -> Self {
         Self {
-            acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zones),
+            acs_overhead: AirConditioningSystemOverhead::new(context, &cabin_zones), //NOTE
             acsc: AirConditioningSystemController::new(context, &cabin_zones),
             pack_flow_valves: [
                 PackFlowValve::new(context, 1),
