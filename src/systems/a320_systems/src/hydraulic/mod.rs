@@ -1187,7 +1187,7 @@ impl A320Hydraulic {
                 ActuatorSide::Right,
             ),
 
-            gear_system_safety_valve_controller: A320BrakeValvesController::default(),
+            gear_system_safety_valve_controller: A320BrakeValvesController::new(),
 
             gear_system: HydraulicGearSystem::new(
                 context,
@@ -1955,11 +1955,16 @@ impl HydraulicGeneratorControlUnit for A320Hydraulic {
     }
 }
 
-#[derive(Default)]
 struct A320BrakeValvesController {
     safety_valve_should_open: bool,
 }
 impl A320BrakeValvesController {
+    fn new() -> Self {
+        Self {
+            safety_valve_should_open: true,
+        }
+    }
+
     fn update(
         &mut self,
         adirs: &impl AdirsDiscreteOutputs,

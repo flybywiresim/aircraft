@@ -491,7 +491,7 @@ impl LgciuGearControl for LandingGearControlInterfaceUnit {
 }
 impl LandingGearHandle for LandingGearControlInterfaceUnit {
     fn gear_handle_is_down(&self) -> bool {
-        self.gear_handle_is_down()
+        self.is_gear_lever_down
     }
 
     fn gear_handle_baulk_locked(&self) -> bool {
