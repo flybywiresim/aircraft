@@ -10,9 +10,9 @@ export interface FailureButtonProps {
 }
 
 export const FailureButton: FC<FailureButtonProps> = ({ name, isActive, isChanging, onClick, className, highlightedTerm }: FailureButtonProps) => {
-    let color = 'white';
+    let color = 'border-0';
     if (!isChanging) {
-        color = isActive ? 'red-500' : 'colors-lime-300';
+        color = isActive ? 'border-utility-red' : 'border-utility-green';
     }
 
     return (
@@ -20,7 +20,7 @@ export const FailureButton: FC<FailureButtonProps> = ({ name, isActive, isChangi
             onClick={onClick}
             type="button"
             disabled={isChanging}
-            className={`flex rounded-md border-t-4 bg-theme-accent px-2 pt-3 pb-2 text-left border-${color} ${className}`}
+            className={`flex rounded-md border-t-4 bg-theme-accent px-2 pt-3 pb-2 text-left ${color} ${className}`}
         >
             {highlightedTerm ? (
                 <h2>

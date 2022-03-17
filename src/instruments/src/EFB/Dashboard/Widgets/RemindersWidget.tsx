@@ -1,9 +1,12 @@
 import React, { FC, useEffect, useState } from 'react';
 import { IconArrowRight } from '@tabler/icons';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { ArrowDown, ArrowUp, Check, PencilFill } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
+import { AtaChapterNumber } from '@shared/ata';
+import { findLatestSeenPathname } from '../../Utils/routing';
+import { setSearchQuery } from '../../Store/features/failuresPage';
 import { useNavigraph } from '../../ChartsApi/Navigraph';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
@@ -18,18 +21,41 @@ import { getRelevantChecklistIndices } from '../../Checklists/Checklists';
 import { PinnedChartCard } from '../../Navigation/Pages/PinnedChartsPage';
 
 interface ActiveFailureReminderProps {
-    name: string,
+    ata?: AtaChapterNumber;
+    name: string;
 }
 
-const ActiveFailureReminder: FC<ActiveFailureReminderProps> = ({ name }) => (
-    <div className="flex flex-col flex-wrap p-2 mt-4 mr-4 bg-theme-highlight rounded-md border-2 border-theme-highlight">
-        <h3 className="font-bold text-black">Active Failure</h3>
-        <span className="mt-2 text-black font-inter">{name}</span>
-        <span className="ml-auto text-black">
-            <IconArrowRight />
-        </span>
-    </div>
-);
+const ActiveFailureReminder: FC<ActiveFailureReminderProps> = ({ ata, name }) => {
+    const dispatch = useAppDispatch();
+    const history = useHistory();
+
+    return (
+        <div
+            className="flex flex-col flex-wrap p-2 mt-4 mr-4 rounded-md border-2 bg-theme-highlight border-theme-highlight"
+            onClick={() => {
+                dispatch(setSearchQuery(name.toUpperCase()));
+
+                const lastFailurePath = findLatestSeenPathname(history, '/failures');
+
+                if (!ata) {
+                    history.push('/failures/compact');
+                }
+
+                if (!lastFailurePath || lastFailurePath.includes('comfort')) {
+                    history.push(`/failures/comfort/${ata}`);
+                } else {
+                    history.push('/failures/compact');
+                }
+            }}
+        >
+            <h3 className="font-bold text-black">Active Failure</h3>
+            <span className="mt-2 text-black font-inter">{name}</span>
+            <span className="ml-auto text-black">
+                <IconArrowRight />
+            </span>
+        </div>
+    );
+};
 
 const WeatherReminder = () => {
     const { departingAirport, arrivingAirport } = useAppSelector((state) => state.simbrief.data);
@@ -39,7 +65,7 @@ const WeatherReminder = () => {
         <RemindersSection title="Weather" noLink>
             <div className="space-y-6">
                 <WeatherWidget name="origin" simbriefIcao={departingAirport} userIcao={userDepartureIcao} />
-                <div className="w-full h-1 bg-theme-accent rounded-full" />
+                <div className="w-full h-1 rounded-full bg-theme-accent" />
                 <WeatherWidget name="destination" simbriefIcao={arrivingAirport} userIcao={userDestinationIcao} />
             </div>
         </RemindersSection>
@@ -78,11 +104,16 @@ const MaintenanceReminder = () => {
                     .from(activeFailures)
                     // Sorts the failures by name length, greatest to least
                     .sort((a, b) => (allFailures.find((f) => f.identifier === b)?.name ?? '').length - (allFailures.find((f) => f.identifier === a)?.name ?? '').length)
-                    .map((failure) => (
-                        <ActiveFailureReminder
-                            name={allFailures.find((it) => it.identifier === failure)?.name ?? '<unknown>'}
-                        />
-                    ))}
+                    .map((failureIdentifier) => {
+                        const failure = allFailures.find((it) => it.identifier === failureIdentifier);
+
+                        return (
+                            <ActiveFailureReminder
+                                ata={failure?.ata}
+                                name={failure?.name ?? '<unknown>'}
+                            />
+                        );
+                    })}
                 {!activeFailures.size && (
                     <h1 className="m-auto my-4 font-bold opacity-60">No Active Failures</h1>
                 )}
@@ -187,7 +218,7 @@ interface ReminderKeyEditCardProps {
 }
 
 const ReminderKeyEditCard = ({ reminderKey, setter, index, keyArrLen }: ReminderKeyEditCardProps) => (
-    <div className="flex flex-row justify-between items-center p-4 w-full bg-theme-accent rounded-md">
+    <div className="flex flex-row justify-between items-center p-4 w-full rounded-md bg-theme-accent">
         <h1>{reminderKey}</h1>
         <div className="flex flex-row">
             <div className="w-10">
@@ -255,14 +286,14 @@ export const RemindersWidget = () => {
                     onClick={() => setReorderMode((old) => !old)}
                 />
             </div>
-            <div className="relative p-6 mt-4 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
+            <div className="relative p-6 mt-4 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
                 <ScrollableContainer height={51}>
                     <div className="flex flex-col space-y-4">
                         {reminderKeyArr.map((key) => REMINDERS.get(key))}
                     </div>
                 </ScrollableContainer>
                 <div className={`absolute inset-0 z-40 transition duration-100 ${reorderMode ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <div className="absolute inset-0 bg-theme-body opacity-80" />
+                    <div className="absolute inset-0 opacity-80 bg-theme-body" />
                     <div className="absolute inset-0">
                         <ScrollableContainer height={51}>
                             <div className="p-6 space-y-4">
@@ -296,7 +327,7 @@ const RemindersSection: FC<RemindersSectionProps> = ({ title, children, pageLink
             <h2 className="font-medium">{title}</h2>
 
             {!noLink && (
-                <Link to={pageLinkPath} className="flex items-center text-theme-highlight border-b-2 border-theme-highlight opacity-80 hover:opacity-100 transition duration-100">
+                <Link to={pageLinkPath} className="flex items-center border-b-2 opacity-80 hover:opacity-100 transition duration-100 text-theme-highlight border-theme-highlight">
                     <span className="font-bold text-theme-highlight font-manrope">Go to Page</span>
 
                     <IconArrowRight className="fill-current" />

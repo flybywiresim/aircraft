@@ -164,10 +164,10 @@ export const FlightWidget = () => {
                             </div>
                         </div>
                         <div>
-                            <h5 className="text-2xl font-bold">Route</h5>
+                            <h5 className="mb-2 text-2xl font-bold">Route</h5>
                             <ScrollableContainer height={15}>
-                                <p className="font-mono">
-                                    <span className="text-theme-highlight">
+                                <p className="font-mono text-2xl">
+                                    <span className="text-2xl text-theme-highlight">
                                         {departingAirport}
                                         /
                                         {departingRunway}
@@ -175,7 +175,7 @@ export const FlightWidget = () => {
                                     {' '}
                                     {route}
                                     {' '}
-                                    <span className="text-theme-highlight">
+                                    <span className="text-2xl text-theme-highlight">
                                         {arrivingAirport}
                                         /
                                         {arrivingRunway}

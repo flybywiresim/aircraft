@@ -163,7 +163,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                     <>
                         <div className="flex flex-row justify-between items-center">
                             <SimpleInput
-                                className="w-32 text-2xl font-medium text-center uppercase"
+                                className="w-32 !text-2xl font-medium text-center uppercase"
                                 placeholder={simbriefIcao || 'ICAO'}
                                 value={userIcao ?? simbriefIcao}
                                 onChange={(value) => handleIcao(value)}

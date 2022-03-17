@@ -25,13 +25,10 @@ const watchFolders = [
 ];
 
 module.exports = {
-    purge: {
-        enabled: false,
-        content: [
-            './**/*.{jsx,tsx}',
-        ],
-        safelist: [...reactComponentsClasses],
-    },
+    mode: 'jit',
+    content: [
+        './**/*.{jsx,tsx}',
+    ],
     theme: {
         extend: {
             width: () => ({
