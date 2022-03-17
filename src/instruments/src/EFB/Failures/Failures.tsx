@@ -1,6 +1,6 @@
 import React from 'react';
 import { AtaChaptersDescription, AtaChaptersTitle, AtaChapterNumber } from '@shared/ata';
-import { Link } from 'react-router-dom';
+import { Link, Route } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
 import { Failure } from '@flybywiresim/failures';
 import { useAppDispatch, useAppSelector } from '../Store/store';
@@ -28,7 +28,7 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAFailureCardProps) 
 
     return (
         <Link
-            to={`/failures/${pathify(ataNumber.toString())}`}
+            to={`/failures/home/${pathify(ataNumber.toString())}`}
             className="flex flex-row p-2 space-x-4 rounded-md border-2 border-transparent transition duration-100 hover:border-theme-highlight"
         >
             <div
@@ -66,9 +66,10 @@ interface CompactUIProps {
 
 const CompactUI = ({ chapters, failures }: CompactUIProps) => {
     const { activeFailures, changingFailures, activate, deactivate } = useFailuresOrchestrator();
+    const { searchQuery } = useAppSelector((state) => state.failuresPage);
 
     return (
-        <div className="space-y-8">
+        <ScrollableContainer height={48} className="space-y-8">
             {chapters.map((chapter) => (
                 <div className="space-y-2">
                     <h2>{AtaChaptersTitle[chapter]}</h2>
@@ -78,6 +79,13 @@ const CompactUI = ({ chapters, failures }: CompactUIProps) => {
                                 name={failure.name}
                                 isActive={activeFailures.has(failure.identifier)}
                                 isChanging={changingFailures.has(failure.identifier)}
+                                highlightedTerm={(() => {
+                                    const searchQueryIdx = failure.name.toUpperCase().indexOf(searchQuery);
+
+                                    if (searchQuery === '' || searchQueryIdx === -1) return undefined;
+
+                                    return failure.name.substring(searchQueryIdx, searchQueryIdx + searchQuery.length);
+                                })()}
                                 onClick={() => {
                                     if (!activeFailures.has(failure.identifier)) {
                                         activate(failure.identifier);
@@ -91,7 +99,7 @@ const CompactUI = ({ chapters, failures }: CompactUIProps) => {
                     </div>
                 </div>
             ))}
-        </div>
+        </ScrollableContainer>
     );
 };
 
@@ -100,15 +108,21 @@ interface ComfortableUIProps {
 }
 
 const ComfortableUI = ({ chapters }: ComfortableUIProps) => (
-    <div>
-        {chapters.map((chapter) => (
-            <ATAChapterCard
-                ataNumber={chapter}
-                title={AtaChaptersTitle[chapter]}
-                description={AtaChaptersDescription[chapter]}
-            />
-        ))}
-    </div>
+    <>
+        <Route exact path="/failures/home">
+            {chapters.map((chapter) => (
+                <ATAChapterCard
+                    ataNumber={chapter}
+                    title={AtaChaptersTitle[chapter]}
+                    description={AtaChaptersDescription[chapter]}
+                />
+            ))}
+        </Route>
+        <TabRoutes
+            basePath="/failures/home"
+            tabs={chapters.map((chapter) => ({ name: chapter.toString(), component: <AtaChapterPage chapter={chapter} /> }))}
+        />
+    </>
 );
 
 const FailuresHome = () => {
@@ -167,25 +181,19 @@ const FailuresHome = () => {
                     </SelectGroup>
                 </div>
 
-                <ScrollableContainer height={48}>
-                    {layoutMode === 0 ? (
-                        <ComfortableUI chapters={filteredChapters} />
-                    ) : (
-                        <CompactUI chapters={filteredChapters} failures={filteredFailures} />
-                    )}
-                </ScrollableContainer>
+                {layoutMode === 0 ? (
+                    <ComfortableUI chapters={filteredChapters} />
+                ) : (
+                    <CompactUI chapters={filteredChapters} failures={filteredFailures} />
+                )}
             </div>
         </>
     );
 };
 
 export const Failures = () => {
-    const { allFailures } = useFailuresOrchestrator();
-    const chapters = Array.from(new Set(allFailures.map((it) => it.ata))).sort((a, b) => a - b);
-
     const tabs: PageLink[] = [
         { name: 'Home', component: <FailuresHome /> },
-        ...chapters.map((chapter) => ({ name: chapter.toString(), component: <AtaChapterPage chapter={chapter} /> })),
     ];
 
     return (

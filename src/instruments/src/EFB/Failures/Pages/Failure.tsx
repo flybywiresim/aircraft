@@ -5,14 +5,16 @@ export interface FailureButtonProps {
     isActive: boolean,
     isChanging: boolean,
     onClick: MouseEventHandler<HTMLButtonElement>,
-    className: string
+    className: string,
+    highlightedTerm?: string,
 }
 
-export const FailureButton: FC<FailureButtonProps> = ({ name, isActive, isChanging, onClick, className }: FailureButtonProps) => {
+export const FailureButton: FC<FailureButtonProps> = ({ name, isActive, isChanging, onClick, className, highlightedTerm }: FailureButtonProps) => {
     let color = 'white';
     if (!isChanging) {
         color = isActive ? 'red-500' : 'colors-lime-300';
     }
+
     return (
         <button
             onClick={onClick}
@@ -20,7 +22,15 @@ export const FailureButton: FC<FailureButtonProps> = ({ name, isActive, isChangi
             disabled={isChanging}
             className={`flex rounded-md border-t-4 bg-theme-accent px-2 pt-3 pb-2 text-left border-${color} ${className}`}
         >
-            <h2>{name}</h2>
+            {highlightedTerm ? (
+                <h2>
+                    {name.substring(0, name.indexOf(highlightedTerm))}
+                    <span className="text-2xl bg-theme-highlight">{highlightedTerm}</span>
+                    {name.substring(name.indexOf(highlightedTerm) + highlightedTerm.length)}
+                </h2>
+            ) : (
+                <h2>{name}</h2>
+            )}
         </button>
     );
 };
