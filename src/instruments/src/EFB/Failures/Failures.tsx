@@ -64,41 +64,63 @@ interface FailureLayoutUIProps {
     failures: Failure[];
 }
 
-const CompactUI = ({ chapters, failures }: FailureLayoutUIProps) => {
+interface FailureGroupProps {
+    title: string;
+    failures: Failure[];
+}
+
+const FailureGroup = ({ title, failures }: FailureGroupProps) => {
     const { activeFailures, changingFailures, activate, deactivate } = useFailuresOrchestrator();
+    const { searchQuery } = useAppSelector((state) => state.failuresPage);
+
+    return (
+        <div className="space-y-2">
+            <h2>{title}</h2>
+            <div className="grid grid-cols-4 auto-rows-auto">
+                {failures.map((failure, index) => (
+                    <FailureButton
+                        name={failure.name}
+                        isActive={activeFailures.has(failure.identifier)}
+                        isChanging={changingFailures.has(failure.identifier)}
+                        highlightedTerm={(() => {
+                            const searchQueryIdx = failure.name.toUpperCase().indexOf(searchQuery);
+
+                            if (searchQuery === '' || searchQueryIdx === -1) return undefined;
+
+                            return failure.name.substring(searchQueryIdx, searchQueryIdx + searchQuery.length);
+                        })()}
+                        onClick={() => {
+                            if (!activeFailures.has(failure.identifier)) {
+                                activate(failure.identifier);
+                            } else {
+                                deactivate(failure.identifier);
+                            }
+                        }}
+                        className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} h-36`}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+};
+
+interface CompactUIProps {
+    chapters: AtaChapterNumber[];
+    failures: Failure[];
+}
+
+const CompactUI = ({ chapters, failures }: CompactUIProps) => {
+    const { allFailures, activeFailures } = useFailuresOrchestrator();
     const { searchQuery } = useAppSelector((state) => state.failuresPage);
 
     return (
         <ScrollableContainer height={48}>
             <div className="space-y-8">
+                { searchQuery.length === 0 && activeFailures.size !== 0 && (
+                    <FailureGroup title="Active Failures" failures={allFailures.filter((failure) => activeFailures.has(failure.identifier))} />
+                ) }
                 {chapters.map((chapter) => (
-                    <div className="space-y-2">
-                        <h2>{AtaChaptersTitle[chapter]}</h2>
-                        <div className="grid grid-cols-4 auto-rows-auto">
-                            {failures.filter((failure) => failure.ata === chapter).map((failure, index) => (
-                                <FailureButton
-                                    name={failure.name}
-                                    isActive={activeFailures.has(failure.identifier)}
-                                    isChanging={changingFailures.has(failure.identifier)}
-                                    highlightedTerm={(() => {
-                                        const searchQueryIdx = failure.name.toUpperCase().indexOf(searchQuery);
-
-                                        if (searchQuery === '' || searchQueryIdx === -1) return undefined;
-
-                                        return failure.name.substring(searchQueryIdx, searchQueryIdx + searchQuery.length);
-                                    })()}
-                                    onClick={() => {
-                                        if (!activeFailures.has(failure.identifier)) {
-                                            activate(failure.identifier);
-                                        } else {
-                                            deactivate(failure.identifier);
-                                        }
-                                    }}
-                                    className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} h-36`}
-                                />
-                            ))}
-                        </div>
-                    </div>
+                    <FailureGroup title={AtaChaptersTitle[chapter]} failures={failures.filter((failure) => failure.ata === chapter)} />
                 ))}
             </div>
         </ScrollableContainer>
@@ -172,13 +194,14 @@ export const Failures = () => {
                     <Navbar basePath="/failures" tabs={tabs} />
                 </div>
 
-                <TaRoute path="/failures/comfort">
+                <Route path="/failures/comfort">
                     <ComfortUI chapters={filteredChapters} failures={filteredFailures} />
-                </TaRoute>
+                </Route>
                 <Route path="/failures/compact">
                     <CompactUI chapters={filteredChapters} failures={filteredFailures} />
                 </Route>
             </div>
+
             <PageRedirect basePath="/failures" tabs={tabs} />
         </>
     );
