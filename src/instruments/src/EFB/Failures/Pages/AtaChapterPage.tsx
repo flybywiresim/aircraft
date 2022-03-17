@@ -19,7 +19,7 @@ export const AtaChapterPage = ({ chapter, failures }: AtaChapterPageProps) => {
 
     return (
         <div>
-            <Link to="/failures/home" className="inline-block">
+            <Link to="/failures/comfort" className="inline-block">
                 <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
                     <ArrowLeft size={30} />
                     <h1 className="font-bold text-current">

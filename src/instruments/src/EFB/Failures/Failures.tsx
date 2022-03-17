@@ -3,15 +3,15 @@ import { AtaChaptersDescription, AtaChaptersTitle, AtaChapterNumber } from '@sha
 import { Link, Route } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
 import { Failure } from '@flybywiresim/failures';
+import { Navbar } from '../UtilComponents/Navbar';
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
-import { SelectGroup, SelectItem } from '../UtilComponents/Form/Select';
 import { FailureButton } from './Pages/Failure';
-import { PageLink, PageRedirect, pathify, TabRoutes } from '../Utils/routing';
+import { PageLink, PageRedirect, pathify } from '../Utils/routing';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 import { AtaChapterPage } from './Pages/AtaChapterPage';
-import { setSearchQuery, setLayoutMode, FailurePageLayoutMode } from '../Store/features/failuresPage';
+import { setSearchQuery } from '../Store/features/failuresPage';
 
 interface ATAFailureCardProps {
     ataNumber: AtaChapterNumber,
@@ -28,7 +28,7 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAFailureCardProps) 
 
     return (
         <Link
-            to={`/failures/home/${pathify(ataNumber.toString())}`}
+            to={`/failures/comfort/${pathify(ataNumber.toString())}`}
             className="flex flex-row p-2 space-x-4 rounded-md border-2 border-transparent transition duration-100 hover:border-theme-highlight"
         >
             <div
@@ -105,9 +105,9 @@ const CompactUI = ({ chapters, failures }: FailureLayoutUIProps) => {
     );
 };
 
-const ComfortableUI = ({ chapters, failures }: FailureLayoutUIProps) => (
+const ComfortUI = ({ chapters, failures }: FailureLayoutUIProps) => (
     <>
-        <Route exact path="/failures/home">
+        <Route exact path="/failures/comfort">
             {chapters.map((chapter) => (
                 <ATAChapterCard
                     ataNumber={chapter}
@@ -117,19 +117,19 @@ const ComfortableUI = ({ chapters, failures }: FailureLayoutUIProps) => (
             ))}
         </Route>
         {chapters.map((chapter) => (
-            <Route path={`/failures/home/${chapter.toString()}`}>
+            <Route path={`/failures/comfort/${chapter.toString()}`}>
                 <AtaChapterPage chapter={chapter} failures={failures} />
             </Route>
         ))}
     </>
 );
 
-const FailuresHome = () => {
+export const Failures = () => {
     const { allFailures } = useFailuresOrchestrator();
     const chapters = Array.from(new Set(allFailures.map((it) => it.ata))).sort((a, b) => a - b);
 
     const dispatch = useAppDispatch();
-    const { searchQuery, layoutMode } = useAppSelector((state) => state.failuresPage);
+    const { searchQuery } = useAppSelector((state) => state.failuresPage);
 
     const filteredFailures = allFailures.filter((failure) => {
         if (searchQuery === '') {
@@ -144,6 +144,11 @@ const FailuresHome = () => {
     });
 
     const filteredChapters = chapters.filter((chapter) => filteredFailures.map((failure) => failure.ata).includes(chapter));
+
+    const tabs: PageLink[] = [
+        { name: 'Comfort', component: <ComfortUI chapters={filteredChapters} failures={filteredFailures} /> },
+        { name: 'Compact', component: <CompactUI chapters={filteredChapters} failures={filteredFailures} /> },
+    ];
 
     return (
         <>
@@ -164,40 +169,16 @@ const FailuresHome = () => {
                         value={searchQuery}
                         onChange={(value) => dispatch(setSearchQuery(value.toUpperCase()))}
                     />
-                    <SelectGroup>
-                        <SelectItem
-                            selected={layoutMode === 0}
-                            onSelect={() => dispatch(setLayoutMode(FailurePageLayoutMode.COMFORT))}
-                        >
-                            Comfort
-                        </SelectItem>
-                        <SelectItem
-                            selected={layoutMode === 1}
-                            onSelect={() => dispatch(setLayoutMode(FailurePageLayoutMode.COMPACT))}
-                        >
-                            Compact
-                        </SelectItem>
-                    </SelectGroup>
+                    <Navbar basePath="/failures" tabs={tabs} />
                 </div>
 
-                {layoutMode === 0 ? (
-                    <ComfortableUI chapters={filteredChapters} failures={filteredFailures} />
-                ) : (
+                <TaRoute path="/failures/comfort">
+                    <ComfortUI chapters={filteredChapters} failures={filteredFailures} />
+                </TaRoute>
+                <Route path="/failures/compact">
                     <CompactUI chapters={filteredChapters} failures={filteredFailures} />
-                )}
+                </Route>
             </div>
-        </>
-    );
-};
-
-export const Failures = () => {
-    const tabs: PageLink[] = [
-        { name: 'Home', component: <FailuresHome /> },
-    ];
-
-    return (
-        <>
-            <TabRoutes basePath="/failures" tabs={tabs} />
             <PageRedirect basePath="/failures" tabs={tabs} />
         </>
     );

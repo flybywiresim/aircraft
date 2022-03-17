@@ -1,19 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export enum FailurePageLayoutMode {
-    COMFORT,
-    COMPACT,
-}
-
 interface FailurePageState {
     searchQuery: string;
-    layoutMode: FailurePageLayoutMode;
 }
 
-const FailurePageInitialState: FailurePageState = {
-    searchQuery: '',
-    layoutMode: FailurePageLayoutMode.COMFORT,
-};
+const FailurePageInitialState: FailurePageState = { searchQuery: '' };
 
 export const failurePageSlice = createSlice({
     name: 'failurePage',
@@ -22,11 +13,8 @@ export const failurePageSlice = createSlice({
         setSearchQuery: (state, action: PayloadAction<string>) => {
             state.searchQuery = action.payload;
         },
-        setLayoutMode: (state, action: PayloadAction<FailurePageLayoutMode>) => {
-            state.layoutMode = action.payload;
-        },
     },
 });
 
-export const { setSearchQuery, setLayoutMode } = failurePageSlice.actions;
+export const { setSearchQuery } = failurePageSlice.actions;
 export default failurePageSlice.reducer;
