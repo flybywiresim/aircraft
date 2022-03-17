@@ -21,9 +21,10 @@ const PacksNaiWai: React.FC<PacksNaiWaiProps> = ({ x, y, flightPhase }) => {
     const [engine2State] = useSimVar('L:A32NX_ENGINE_STATE:2', 'enum', 500);
     const [throttle1Position] = useSimVar('L:XMLVAR_Throttle1Position', 'number', 500);
     const [throttle2Position] = useSimVar('L:XMLVAR_Throttle2Position', 'number', 500);
+    const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'psi', 500);
 
     const messageStrings = [
-        { name: 'PACKS', show: packs1Supplying || packs2Supplying },
+        { name: 'PACKS', show: (packs1Supplying || packs2Supplying) && apuBleedPressure === 0 },
         { name: 'NAI', show: engine1AntiIce || engine2AntiIce },
         { name: 'WAI', show: wingAntiIce },
     ];
@@ -31,7 +32,8 @@ const PacksNaiWai: React.FC<PacksNaiWaiProps> = ({ x, y, flightPhase }) => {
     const finalMessageString = messageStrings.filter((item) => item.show).map((item) => item.name).join('/');
 
     const showMessage = !!(
-        (onGround && (engine1State === 1 || engine2State === 1))
+        [3, 4].includes(throttle1Position) || [3, 4].includes(throttle1Position)
+        || (onGround && (engine1State === 1 || engine2State === 1))
     || (autoThrustMode >= 1 && autoThrustMode <= 4 && (throttle1Position === 2 || throttle2Position === 2))
     || (flightPhase >= 5 && flightPhase <= 7 && autoThrustMode === 5));
 
