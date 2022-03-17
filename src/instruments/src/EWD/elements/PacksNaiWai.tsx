@@ -14,6 +14,13 @@ const PacksNaiWai: React.FC<PacksNaiWaiProps> = ({ x, y, flightPhase }) => {
     const [engine1AntiIce] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG1_Pressed', 'number', 500);
     const [engine2AntiIce] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG2_Pressed', 'number', 500);
     const [wingAntiIce] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_WING_Pressed', 'bool', 500);
+    const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 500);
+    const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 500);
+    const onGround = left1LandingGear === 1 && right1LandingGear === 1;
+    const [engine1State] = useSimVar('L:A32NX_ENGINE_STATE:1', 'enum', 500);
+    const [engine2State] = useSimVar('L:A32NX_ENGINE_STATE:2', 'enum', 500);
+    const [throttle1Position] = useSimVar('L:XMLVAR_Throttle1Position', 'number', 500);
+    const [throttle2Position] = useSimVar('L:XMLVAR_Throttle2Position', 'number', 500);
 
     const messageStrings = [
         { name: 'PACKS', show: packs1Supplying || packs2Supplying },
@@ -23,17 +30,15 @@ const PacksNaiWai: React.FC<PacksNaiWaiProps> = ({ x, y, flightPhase }) => {
 
     const finalMessageString = messageStrings.filter((item) => item.show).map((item) => item.name).join('/');
 
-    const showMessage = !!(flightPhase === 2
-    || (autoThrustMode >= 1 && autoThrustMode <= 4)
+    const showMessage = !!(
+        (onGround && (engine1State === 1 || engine2State === 1))
+    || (autoThrustMode >= 1 && autoThrustMode <= 4 && (throttle1Position === 2 || throttle2Position === 2))
     || (flightPhase >= 5 && flightPhase <= 7 && autoThrustMode === 5));
 
-    if (!showMessage) {
-        return null;
-    }
     return (
-
-        <text className="Green Large End" x={x} y={y}>{finalMessageString}</text>
-
+        (showMessage
+            ? <text className="Green Large End" x={x} y={y}>{finalMessageString}</text>
+            : null)
     );
 };
 
