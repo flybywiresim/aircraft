@@ -170,23 +170,23 @@ impl SimulationElement for HydraulicGearSystem {
             self.right_gear_assembly.position_normalized(),
         );
 
-        println!(
-            "Doors: {:.1} / {:.1} \\ {:.1} ",
-            self.left_door_assembly.position_normalized().get::<ratio>(),
-            self.nose_door_assembly.position_normalized().get::<ratio>(),
-            self.right_door_assembly
-                .position_normalized()
-                .get::<ratio>()
-        );
+        // println!(
+        //     "Doors: {:.1} / {:.1} \\ {:.1} ",
+        //     self.left_door_assembly.position_normalized().get::<ratio>(),
+        //     self.nose_door_assembly.position_normalized().get::<ratio>(),
+        //     self.right_door_assembly
+        //         .position_normalized()
+        //         .get::<ratio>()
+        // );
 
-        println!(
-            "Gears: {:.1} / {:.1} \\ {:.1} ",
-            self.left_gear_assembly.position_normalized().get::<ratio>(),
-            self.nose_gear_assembly.position_normalized().get::<ratio>(),
-            self.right_gear_assembly
-                .position_normalized()
-                .get::<ratio>()
-        );
+        // println!(
+        //     "Gears: {:.1} / {:.1} \\ {:.1} ",
+        //     self.left_gear_assembly.position_normalized().get::<ratio>(),
+        //     self.nose_gear_assembly.position_normalized().get::<ratio>(),
+        //     self.right_gear_assembly
+        //         .position_normalized()
+        //         .get::<ratio>()
+        // );
     }
 }
 

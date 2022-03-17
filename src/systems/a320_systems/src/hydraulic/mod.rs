@@ -9259,8 +9259,7 @@ mod tests {
 
             assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
 
-            // 20s max
-            for _ in 0..40 {
+            for _ in 0..50 {
                 test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(0.5));
                 println!("GEAR STATE {:?}", test_bed.gear_system_state());
             }
@@ -9268,8 +9267,7 @@ mod tests {
             assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
 
             test_bed = test_bed.set_gear_down();
-            // 20s max
-            for _ in 0..40 {
+            for _ in 0..50 {
                 test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(0.5));
                 println!("GEAR STATE {:?}", test_bed.gear_system_state());
             }
