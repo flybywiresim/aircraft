@@ -19,7 +19,7 @@ export const ColoredMetar = ({ metar }: { metar: MetarParserType }) => {
                 </span>
             );
         case ColorCode.Info:
-            return (
+            return ( // TODO utility color
                 <span className="text-2xl text-gray-500">
                     {metarPart}
                     {' '}
@@ -27,14 +27,14 @@ export const ColoredMetar = ({ metar }: { metar: MetarParserType }) => {
             );
         case ColorCode.Caution:
             return (
-                <span className="text-2xl text-yellow-500">
+                <span className="text-2xl text-utility-amber">
                     {metarPart}
                     {' '}
                 </span>
             );
         case ColorCode.Warning:
             return (
-                <span className="text-2xl text-red-400">
+                <span className="text-2xl text-utility-salmon">
                     {metarPart}
                     {' '}
                 </span>

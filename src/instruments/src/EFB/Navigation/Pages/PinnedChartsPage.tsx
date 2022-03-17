@@ -23,9 +23,9 @@ const getTagColor = (tagName?: string) => {
     switch (tagName) {
     case 'STAR': return 'text-utility-green';
     case 'APP': return 'text-utility-orange';
-    case 'TAXI': return 'text-colors-blue-500';
-    case 'SID': return 'text-[#e92f8b]';
-    case 'REF': return 'text-[#993df5]';
+    case 'TAXI': return 'text-[#5280EA]';
+    case 'SID': return 'text-utility-pink';
+    case 'REF': return 'text-utility-purple';
     default: return 'text-theme-text';
     }
 };
