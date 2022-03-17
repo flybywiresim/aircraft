@@ -59,12 +59,12 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAFailureCardProps) 
     );
 };
 
-interface CompactUIProps {
+interface FailureLayoutUIProps {
     chapters: AtaChapterNumber[];
     failures: Failure[];
 }
 
-const CompactUI = ({ chapters, failures }: CompactUIProps) => {
+const CompactUI = ({ chapters, failures }: FailureLayoutUIProps) => {
     const { activeFailures, changingFailures, activate, deactivate } = useFailuresOrchestrator();
     const { searchQuery } = useAppSelector((state) => state.failuresPage);
 
@@ -105,11 +105,7 @@ const CompactUI = ({ chapters, failures }: CompactUIProps) => {
     );
 };
 
-interface ComfortableUIProps {
-    chapters: AtaChapterNumber[];
-}
-
-const ComfortableUI = ({ chapters }: ComfortableUIProps) => (
+const ComfortableUI = ({ chapters, failures }: FailureLayoutUIProps) => (
     <>
         <Route exact path="/failures/home">
             {chapters.map((chapter) => (
@@ -120,10 +116,11 @@ const ComfortableUI = ({ chapters }: ComfortableUIProps) => (
                 />
             ))}
         </Route>
-        <TabRoutes
-            basePath="/failures/home"
-            tabs={chapters.map((chapter) => ({ name: chapter.toString(), component: <AtaChapterPage chapter={chapter} /> }))}
-        />
+        {chapters.map((chapter) => (
+            <Route path={`/failures/home/${chapter.toString()}`}>
+                <AtaChapterPage chapter={chapter} failures={failures} />
+            </Route>
+        ))}
     </>
 );
 
@@ -184,7 +181,7 @@ const FailuresHome = () => {
                 </div>
 
                 {layoutMode === 0 ? (
-                    <ComfortableUI chapters={filteredChapters} />
+                    <ComfortableUI chapters={filteredChapters} failures={filteredFailures} />
                 ) : (
                     <CompactUI chapters={filteredChapters} failures={filteredFailures} />
                 )}

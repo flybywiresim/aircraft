@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
+import { Failure } from '@flybywiresim/failures';
 import { FailureButton } from './Failure';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
@@ -9,10 +10,11 @@ import { useAppSelector } from '../../Store/store';
 
 interface AtaChapterPageProps {
     chapter: AtaChapterNumber;
+    failures: Failure[];
 }
 
-export const AtaChapterPage = ({ chapter }: AtaChapterPageProps) => {
-    const { allFailures, activeFailures, changingFailures, activate, deactivate } = useFailuresOrchestrator();
+export const AtaChapterPage = ({ chapter, failures }: AtaChapterPageProps) => {
+    const { activeFailures, changingFailures, activate, deactivate } = useFailuresOrchestrator();
     const { searchQuery } = useAppSelector((state) => state.failuresPage);
 
     return (
@@ -30,7 +32,7 @@ export const AtaChapterPage = ({ chapter }: AtaChapterPageProps) => {
             <div className="p-4 mt-4 rounded-lg border-2 border-theme-accent h-content-section-reduced" style={{ height: '44.5rem' }}>
                 <ScrollableContainer height={44}>
                     <div className="grid grid-cols-4 auto-rows-auto">
-                        {allFailures.filter((failure) => failure.ata === chapter).map((failure, index) => (
+                        {failures.filter((failure) => failure.ata === chapter).map((failure, index) => (
                             <FailureButton
                                 name={failure.name}
                                 isActive={activeFailures.has(failure.identifier)}
