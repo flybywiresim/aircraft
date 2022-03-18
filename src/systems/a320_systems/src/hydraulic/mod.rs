@@ -3112,6 +3112,7 @@ impl SimulationElement for PushbackTug {
 pub struct A320AutobrakeController {
     armed_mode_id: VariableIdentifier,
     decel_light_id: VariableIdentifier,
+    active_id: VariableIdentifier,
     spoilers_ground_spoilers_active_id: VariableIdentifier,
     external_disarm_event_id: VariableIdentifier,
 
@@ -3152,6 +3153,7 @@ impl A320AutobrakeController {
         A320AutobrakeController {
             armed_mode_id: context.get_identifier("AUTOBRAKES_ARMED_MODE".to_owned()),
             decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
+            active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
             spoilers_ground_spoilers_active_id: context
                 .get_identifier("SPOILERS_GROUND_SPOILERS_ACTIVE".to_owned()),
             external_disarm_event_id: context.get_identifier("AUTOBRAKE_DISARM".to_owned()),
@@ -3334,6 +3336,7 @@ impl SimulationElement for A320AutobrakeController {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.armed_mode_id, self.mode as u8 as f64);
         writer.write(&self.decel_light_id, self.is_decelerating());
+        writer.write(&self.active_id, self.deceleration_demanded());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
