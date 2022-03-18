@@ -63,7 +63,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
     const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const source = metarSource === 'MSFS' ? 'MS' : metarSource;
-    const [metarError, setErrorMetar] = useState('NO VALID ICAO CHOSEN');
+    const [metarError, setErrorMetar] = useState('NO ICAO PROVIDED');
     const [usingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
 
     const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
@@ -90,7 +90,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     };
 
     const handleIcao = (icao: string) => {
-        if (icao.length === 4) {
+        if (icao.length > 0) {
             getMetar(icao, source);
         } else if (icao.length === 0) {
             getMetar(props.icao, source);
@@ -100,6 +100,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     function getMetar(icao: any, source: any) {
         if (icao.length !== 4 || icao === '----') {
             return new Promise(() => {
+                setErrorMetar('NO ICAO PROVIDED');
                 setMetar(MetarParserTypeProp);
             });
         }
@@ -110,7 +111,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                 // For the other METAR sources an error is thrown (Request failed with status code 404)
                 // and caught in the catch clause.
                 if (!result.metar) {
-                    setErrorMetar('NO VALID ICAO CHOSEN OR NO METAR FOR ICAO AVAILABLE');
+                    setErrorMetar('ICAO INVALID OR NO METAR AVAILABLE');
                     setMetar(MetarParserTypeProp);
                     return;
                 }
@@ -120,7 +121,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                     setMetar(metarParse);
                 } catch (err) {
                     console.log(`Error while parsing Metar ("${result.metar}"): ${err}`);
-                    setErrorMetar('RECEIVED METAR COULD NOT BE PARSED');
+                    setErrorMetar(`RECEIVED METAR COULD NOT BE PARSED: ${err.toString().replace(/^Error: /, '').toUpperCase()}`);
                     setMetar(MetarParserTypeProp);
                 }
             })
@@ -128,7 +129,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
             .catch((err) => {
                 console.log(`Error while retrieving Metar: ${err}`);
                 if (err.toString().match(/^Error:/)) {
-                    setErrorMetar('NO VALID ICAO CHOSEN OR NO METAR FOR ICAO AVAILABLE');
+                    setErrorMetar('ICAO INVALID OR NO METAR AVAILABLE');
                 } else {
                     setErrorMetar(`${err.toString().replace(/^Error: /, '')}`);
                 }

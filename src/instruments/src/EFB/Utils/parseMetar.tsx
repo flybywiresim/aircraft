@@ -21,7 +21,7 @@ import { ColorCode, MetarParserType, Visibility, Wind } from '../../Common/metar
  */
 export function parseMetar(metarString: string): MetarParserType {
     if (metarString === undefined) {
-        throw new Error('METAR NOT AVAILABLE');
+        throw new Error('METAR not available');
     }
     const metarArray = metarString
         .trim()
@@ -31,7 +31,7 @@ export function parseMetar(metarString: string): MetarParserType {
         .split(' ');
 
     if (metarArray.length < 3) {
-        throw new Error('METAR DATA INCOMPLETE');
+        throw new Error('METAR data incomplete');
     }
 
     const metarObject: MetarParserType = {
