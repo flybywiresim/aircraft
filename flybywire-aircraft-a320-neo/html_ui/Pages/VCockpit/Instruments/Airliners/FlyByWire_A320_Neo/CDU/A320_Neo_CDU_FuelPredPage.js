@@ -268,6 +268,15 @@ class CDUFuelPredPage {
             [minDestFobCell + minDestFobCellColor, extraFuelCell + extraTimeColor + "/" + extraTimeCell + "{end}" + extraCellColor]
         ]);
 
+        mcdu.setArrows(false, false, true, true);
+
+        mcdu.onPrevPage = () => {
+            CDUInitPage.ShowPage1(mcdu);
+        };
+        mcdu.onNextPage = () => {
+            CDUInitPage.ShowPage1(mcdu);
+        };
+
         // regular update due to showing dynamic data on this page
         mcdu.page.SelfPtr = setTimeout(() => {
             if (mcdu.page.Current === mcdu.page.FuelPredPage) {

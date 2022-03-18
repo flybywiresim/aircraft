@@ -2033,7 +2033,7 @@
 			</Requires>
 		</Sound>
 
-        <!-- CRC ==========================================================================================-->
+        <!-- CRC and Caution ========================================================================================-->
 
         <Sound WwiseData="true" WwiseEvent="CRC" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_MASTER_WARNING">
             <Range LowerBound="0.5" />
@@ -2149,6 +2149,14 @@
             <WwiseRTPC LocalVar="A32NX_SOUND_ANNOUNCEMENTS_ENABLED" Units="number" Index="0" RTPCName="LOCALVAR_A32NX_ANNOUNCEMENT_TOGGLE" />
         </Sound>
 
+
+        <Sound WwiseData="true" WwiseEvent="improved_tone_caution" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_MASTER_CAUTION" Continuous="false">
+            <Range LowerBound="0.5" />
+            <Requires SimVar="ELECTRICAL MAIN BUS VOLTAGE" Units="VOLTS" Index="1">
+                <Range LowerBound="28" />
+            </Requires>
+        </Sound>
+
         <!-- Altitude deviation warning =====================================================================-->
 
         <Sound WwiseData="true" WwiseEvent="cchordloop" NodeName="PEDALS_LEFT" ViewPoint="Inside" LocalVar="A32NX_ALT_DEVIATION" Continuous="true">
@@ -2177,7 +2185,7 @@
     <!-- AvionicSounds ========================================================================================== -->
 
     <AvionicSounds>
-        <Sound WwiseData="true" WwiseEvent="improved_tone_caution" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
+       <!-- <Sound WwiseData="true" WwiseEvent="improved_tone_caution" NodeName="PEDALS_LEFT" ViewPoint="Inside"/> -->
         <Sound WwiseData="true" WwiseEvent="cchordshort" Continuous="false" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="cchordloop" Continuous="true" NodeName="PEDALS_LEFT" ViewPoint="Inside"/>
         <Sound WwiseData="true" WwiseEvent="aural_stall" />

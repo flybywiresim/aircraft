@@ -2279,6 +2279,7 @@ class Cabin_Annunciations extends Annunciations {
             }
             this.warningTone = warningOn > 0;
             if (this.gps.isPrimary) {
+                console.log('Warning On is ' + warningOn);
                 SimVar.SetSimVarValue("L:Generic_Master_Warning_Active", "Bool", warningOn);
                 SimVar.SetSimVarValue("L:Generic_Master_Caution_Active", "Bool", cautionOn);
             }

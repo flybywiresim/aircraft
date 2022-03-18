@@ -2288,7 +2288,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Percentage
     - Percent rotation of the overhead temperature selectors for each of the cabin zones
-    - To transform the value into degree celsius use this formula: this * 0.12 + 18
+    - To transform the value into degree celsius use this formula: this * 0.04 + 18
     - {id}
         - CKPT
         - FWD
