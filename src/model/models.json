@@ -90,6 +90,10 @@
       {
         "gltf": "./glass/glass.gltf",
         "bin": "./glass/glass.bin"
+      },
+      {
+        "gltf": "./display-switching/display-switching.gltf",
+        "bin": "./display-switching/display-switching.bin"
       }
     ],
     "modifications": [

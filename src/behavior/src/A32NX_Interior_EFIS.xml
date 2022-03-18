@@ -119,4 +119,54 @@
             </Component>
         </Component>
     </Template>
+
+    <Template Name="FBW_AIRBUS_DisplaySwitching_Selector">
+        <DefaultTemplateParameters>
+            <FREQUENCY>1</FREQUENCY>
+        </DefaultTemplateParameters>
+        <Component ID="EFIS_DISPLAY_SELECTOR">
+            <UseTemplate Name="Asobo_GT_Update">
+                <UPDATE_CODE type="rnp">
+alias captainTransferButton = (L:A32NX_EFIS_PFD_ND_XFR_1, boolean);
+alias firstOfficerTransferButton = (L:A32NX_EFIS_PFD_ND_XFR_2, boolean);
+alias ecamNdTransfer = (L:A32NX_ECAM_ND_XFR_SWITCHING_KNOB, number);
+alias displayConfig = (L:A32NX_EFIS_DISPLAY_CONFIG, number);
+let chosenConfig = 0;
+
+if (ecamNdTransfer == 1) { // normal
+  if (captainTransferButton and firstOfficerTransferButton) {
+    chosenConfig = 7;
+  } else if (captainTransferButton) {
+    chosenConfig = 1;
+  } else if (firstOfficerTransferButton) {
+    chosenConfig = 2;
+  } else {
+    chosenConfig = 0;
+  }
+} else if (ecamNdTransfer == 0) { // capt
+  if (captainTransferButton and firstOfficerTransferButton) {
+    chosenConfig = 8;
+  } else if (captainTransferButton) {
+    chosenConfig = 6;
+  } else if (firstOfficerTransferButton) {
+    chosenConfig = 10;
+  } else {
+    chosenConfig = 4;
+  }
+} else if (ecamNdTransfer == 2) { // f/o
+  if (captainTransferButton and firstOfficerTransferButton) {
+    chosenConfig = 9;
+  } else if (captainTransferButton) {
+    chosenConfig = 11;
+  } else if (firstOfficerTransferButton) {
+    chosenConfig = 5;
+  } else {
+    chosenConfig = 3;
+  }
+}
+displayConfig = chosenConfig * 100 / 11;
+                </UPDATE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
 </ModelBehaviors>

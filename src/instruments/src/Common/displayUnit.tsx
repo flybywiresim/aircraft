@@ -16,7 +16,8 @@ enum DisplayUnitState {
     On,
     Off,
     Selftest,
-    Standby
+    Standby,
+    Failed,
 }
 
 function BacklightBleed(props) {
@@ -55,22 +56,22 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     });
 
     useEffect(() => {
-        if (state !== DisplayUnitState.Off && props.failed) {
-            setState(DisplayUnitState.Off);
+        if (props.failed) {
+            setState(DisplayUnitState.Failed);
         } else if (state === DisplayUnitState.On && (potentiometer === 0 || electricityState === 0)) {
             setState(DisplayUnitState.Standby);
             setTimer(10);
         } else if (state === DisplayUnitState.Standby && (potentiometer !== 0 && electricityState !== 0)) {
             setState(DisplayUnitState.On);
             setTimer(null);
-        } else if (state === DisplayUnitState.Off && (potentiometer !== 0 && electricityState !== 0 && !props.failed)) {
+        } else if ((state === DisplayUnitState.Off || state === DisplayUnitState.Failed) && (potentiometer !== 0 && electricityState !== 0)) {
             setState(DisplayUnitState.Selftest);
             setTimer(parseInt(NXDataStore.get('CONFIG_SELF_TEST_TIME', '15')));
         } else if (state === DisplayUnitState.Selftest && (potentiometer === 0 || electricityState === 0)) {
             setState(DisplayUnitState.Off);
             setTimer(null);
         }
-    }, [state, potentiometer, electricityState]);
+    }, [state, potentiometer, electricityState, props.failed]);
 
     if (state === DisplayUnitState.Selftest) {
         return (
@@ -106,6 +107,11 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
         <>
             <BacklightBleed homeCockpit={homeCockpit} />
             <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
+            <div style={{ display: state === DisplayUnitState.Failed ? 'block' : 'none' }}>
+                <svg className="FailedDisplay" viewBox="0 0 768 768">
+                    <polygon points="218,200 514,200 514,264 282,264 282,358 396,358 396,422 282,422 282,580 218,580" />
+                </svg>
+            </div>
         </>
     );
 };

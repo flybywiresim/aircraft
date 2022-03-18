@@ -53,7 +53,7 @@
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button_Held">
-                <LEFT_SINGLE_CODE>0</LEFT_SINGLE_CODE><!-- TODO -->
+                <LEFT_SINGLE_CODE>(L:A32NX_EFIS_PFD_ND_XFR_#ID#, bool) ! (&gt;L:A32NX_EFIS_PFD_ND_XFR_#ID#, bool)</LEFT_SINGLE_CODE><!-- TODO -->
                 <TOOLTIPID>Inoperant</TOOLTIPID>
             </UseTemplate>
         </Component>

@@ -19,3 +19,8 @@
   text-anchor: middle;
   font-family: "Ecam", monospace;
 }
+
+.FailedDisplay polygon {
+  fill: $display-amber;
+  stroke: none;
+}
