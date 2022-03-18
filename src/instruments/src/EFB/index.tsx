@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MemoryRouter as Router } from 'react-router-dom';
 import { customAlphabet } from 'nanoid';
-import * as Sentry from '@sentry/browser';
+import { NXDataStore } from '@shared/persistence';
+import { usePersistentProperty } from '@instruments/common/persistence';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import Efb from './Efb';
 import { render } from '../Common/index';
@@ -43,6 +44,7 @@ export const PowerContext = React.createContext<PowerContextInterface>(undefined
 
 const EFBLoad = () => {
     const [content, setContent] = useState<ContentState>(ContentState.OFF);
+    const [, setSessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
 
     function offToLoaded() {
         setContent(ContentState.LOADING);
@@ -50,6 +52,8 @@ const EFBLoad = () => {
             setContent(ContentState.LOADED);
         }, 6000);
     }
+
+    useEffect(() => () => setSessionId(''), []);
 
     useInteractionEvent('A32NX_EFB_POWER', () => {
         if (content === ContentState.OFF) {
@@ -84,7 +88,6 @@ const SESSION_ID_LENGTH = 14;
 const nanoid = customAlphabet(ALPHABET, SESSION_ID_LENGTH);
 const generatedSessionID = nanoid();
 
-Sentry.setTag('session_id', generatedSessionID);
-SimVar.SetSimVarValue('L:A32NX_SENTRY_SESSION_ID', 'string', generatedSessionID);
+NXDataStore.set('A32NX_SENTRY_SESSION_ID', generatedSessionID);
 
 render(<FailuresOrchestratorProvider><EFBLoad /></FailuresOrchestratorProvider>, true, true);
