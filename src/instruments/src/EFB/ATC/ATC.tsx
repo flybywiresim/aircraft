@@ -292,7 +292,7 @@ export const ATC = () => {
             ) : (
                 <div className="flex justify-center items-center mt-4 rounded-lg border-2 h-content-section-reduced border-theme-accent">
                     <div className="space-y-8 max-w-4xl">
-                        <h1 className="text-center">This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page</h1>
+                        <h1 className="text-center">This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.</h1>
                         <Link
                             to={`/settings/${pathify('ATSU / AOC')}`}
                             className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
