@@ -76,11 +76,13 @@
     .GreenLine {
         stroke: $display-green !important;
         stroke-width: 2;
+        fill: none;
     }
 
     .AmberLine {
         stroke: $display-amber !important;
         stroke-width: 2;
+        fill: none;
     }
 
     .Show {

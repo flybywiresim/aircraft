@@ -7,10 +7,11 @@ interface EngineBleedProps {
     y: number,
     engine: 1 | 2,
     sdacDatum: boolean,
-    enginePRValveOpen: boolean
+    enginePRValveOpen: boolean,
+    packFlowValveOpen: boolean
 }
 
-const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRValveOpen }) => {
+const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRValveOpen, packFlowValveOpen }) => {
     const [engineN1] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
     const [engineN1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 500);
     const engineN1BelowIdle = (engineN1 + 2) < engineN1Idle;
@@ -20,6 +21,8 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
     const precoolerOutletTempFive = Math.round(precoolerOutletTemp / 5) * 5;
     const [precoolerInletPress] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PRECOOLER_INLET_PRESSURE`, 'psi', 10);
     const precoolerInletPressTwo = Math.round(precoolerInletPress / 2) * 2;
+    // const [packFlowValveOpen] = useSimVar(`L:A32NX_COND_PACK_FLOW_VALVE_${engine}_IS_OPEN`, 'bool', 500);
+    const [packFlow] = useSimVar('L:A32NX_COND_PACK_FLOW', 'percent', 500);
 
     return (
         <g id={`bleed-${engine}`}>
@@ -34,7 +37,10 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
             <text x={x - 55} y={y + 132} className="White Standard End">LO</text>
             <text x={x + 61} y={y + 132} className="White Standard">HI</text>
 
-            <Valve x={x} y={y + 150} radius={15} css="GreenLine" position="V" sdacDatum={sdacDatum} />
+            {/* Pack inlet Flow */}
+            <BleedGauge x={x} y={y + 150} sdacDatum={sdacDatum} />
+
+            <Valve x={x} y={y + 150} radius={15} css="GreenLine" position={packFlowValveOpen ? 'V' : 'H'} sdacDatum={sdacDatum} />
 
             {/* Engine Bleed temp */}
             <path className="GreyStroke Stroke2" d={`M ${x},${y + 247} l -27,0 l 0,54 l 54,0 l 0,-54 l -27,0`} />
@@ -75,3 +81,17 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
 };
 
 export default EngineBleed;
+
+interface BleedGaugeProps {
+    x: number,
+    y: number,
+    sdacDatum: boolean
+}
+
+const BleedGauge: FC<BleedGaugeProps> = ({ x, y, sdacDatum }) => {
+    console.log('bleed');
+
+    return (
+        <g><p>Hello</p></g>
+    );
+};
