@@ -47,9 +47,9 @@ const LoadingScreen = () => (
 const EmptyScreen = ({ isCharging }: { isCharging: boolean }) => (
     <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
         {isCharging ? (
-            <BatteryCharging size={128} className="text-red-500" />
+            <BatteryCharging size={128} className="text-utility-red" />
         ) : (
-            <Battery size={128} className="text-red-500" />
+            <Battery size={128} className="text-utility-red" />
         )}
     </div>
 );

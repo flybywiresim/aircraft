@@ -132,7 +132,7 @@ export const Data = ({ className }: {className: string}) => {
                         {!!calculationInput && !calculationInputSyncEnabled && (
                             <button
                                 type="button"
-                                className="flex items-center px-3 text-red-500 hover:bg-red-500 rounded-md rounded-l-none border-2 border-red-500 transition duration-100 hover:text-theme-body"
+                                className="flex items-center px-3 rounded-md rounded-l-none border-2 transition duration-100 border-utility-red text-utility-red hover:bg-utility-red hover:text-theme-body"
                                 onClick={() => dispatch(setTodData({ calculation: { input: undefined, type: undefined } }))}
                             >
                                 X

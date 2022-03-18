@@ -172,7 +172,7 @@ export const PinnedChartUI = () => {
     });
 
     return (
-        <div className="p-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="p-4 space-y-4 rounded-lg border-2 h-content-section-reduced border-theme-accent">
             <div className="space-y-4">
                 {/* FIXME: The spacex4 is causing the keyboard to be shifted as well */}
                 <div className="flex flex-row items-center space-x-4">
@@ -248,12 +248,12 @@ export const PinnedChartUI = () => {
                             <div className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} flex flex-col`}>
                                 {editMode && (
                                     <div
-                                        className="py-3 w-full text-center text-theme-body hover:text-red-500 bg-red-500 hover:bg-theme-body rounded-t-md border-2 border-red-500 transition duration-100"
+                                        className="py-3 w-full font-bold text-center rounded-t-md border-2 transition duration-100 border-utility-red text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body"
                                         onClick={() => {
                                             dispatch(removedPinnedChart({ chartId: pinnedChart.chartId }));
                                         }}
                                     >
-                                        Delete
+                                        DELETE
                                     </div>
                                 )}
                                 <PinnedChartCard

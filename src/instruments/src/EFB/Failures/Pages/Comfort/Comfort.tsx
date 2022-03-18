@@ -32,7 +32,7 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAChapterCardProps) 
                 {' '}
                 {ataNumber}
 
-                <div className="inline-block relative -right-7 bottom-16 w-0 h-0 text-red-500 fill-current">
+                <div className="inline-block relative -right-7 bottom-16 w-0 h-0 fill-current text-utility-red">
                     {hasActiveFailure && (
                         <svg style={{ width: '30px', height: '30px' }} viewBox="0 0 20 20">
                             <circle cx={10} cy={10} r={5} />

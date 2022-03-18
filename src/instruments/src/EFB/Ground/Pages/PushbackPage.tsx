@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
 import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import useInterval from '@instruments/common/useInterval';
@@ -186,7 +187,7 @@ export const PushbackPage = () => {
                             onClick={(e) => handlePushBackClick(() => {
                                 dispatch(setTugRequestOnly(true));
                             }, e)}
-                            className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center ${applySelected('text-white bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600')}`}
+                            className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center ${applySelected('text-white bg-utility-red border-utility-red hover:bg-utility-red hover:border-utility-red')}`}
                         >
                             <StopCircleFill size={40} />
                         </button>
@@ -197,7 +198,7 @@ export const PushbackPage = () => {
                             type="button"
                             id="parking-brake"
                             onClick={() => setParkingBrakeEngaged((old) => !old)}
-                            className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center ${parkingBrakeEngaged ? 'bg-white text-red-500' : 'bg-red-500 text-white'}`}
+                            className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center ${parkingBrakeEngaged ? 'bg-white text-utility-red' : 'bg-utility-red text-white'}`}
                         >
                             <h1 className="font-bold text-current">{parkingBrakeEngaged ? 'OFF' : 'ON'}</h1>
                         </button>

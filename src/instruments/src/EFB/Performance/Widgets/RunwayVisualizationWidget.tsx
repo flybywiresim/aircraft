@@ -93,7 +93,7 @@ const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runw
 
             return (
                 <div
-                    className={`w-32 h-1 absolute left-1/2 transform -translate-x-1/2 bg-current ${isLabelOverDistance(label) ? 'text-red-500' : 'text-theme-highlight'}`}
+                    className={`w-32 h-1 absolute left-1/2 transform -translate-x-1/2 bg-current ${isLabelOverDistance(label) ? 'text-utility-red' : 'text-theme-highlight'}`}
                     style={{ bottom: `${bottomPercentage}%` }}
                 >
                     {showText && (

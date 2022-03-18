@@ -187,7 +187,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
 
                 {!validConfig && (
                     <div className="overflow-hidden w-full rounded-md border-2 border-theme-accent">
-                        <div className="flex justify-center items-center py-3 w-full bg-red-500">
+                        <div className="flex justify-center items-center py-3 w-full bg-utility-red">
                             <ExclamationCircleFill size={25} />
                         </div>
                         <h2 className="py-4 text-center">

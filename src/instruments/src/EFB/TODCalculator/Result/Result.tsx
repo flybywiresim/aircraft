@@ -31,7 +31,7 @@ export const Result = ({ className }: {className: string}) => {
                 headerText: 'Desired descent angle',
                 footerText: '',
                 unit: 'degrees',
-                calculate: () => -Math.round(todCalculator.calculateDegree(calculationInput), 1),
+                calculate: () => -Math.round(todCalculator.calculateDegree(calculationInput)),
             },
         ],
         [TOD_CALCULATION_TYPE.VERTICAL_SPEED]: [

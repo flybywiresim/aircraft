@@ -646,7 +646,7 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={handleClearInputs}
-                                className="flex flex-row justify-center items-center py-2 space-x-4 w-1/2 text-white bg-red-500 rounded-md outline-none"
+                                className="flex flex-row justify-center items-center py-2 space-x-4 w-1/2 text-white rounded-md outline-none bg-utility-red"
                                 type="button"
                             >
                                 <Trash size={26} />
@@ -654,7 +654,7 @@ export const LandingWidget = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="flex overflow-hidden flex-row w-full rounded-lg border-2 border-theme-accent divide-x-2 divide-theme-accent">
+                    <div className="flex overflow-hidden flex-row w-full rounded-lg border-2 divide-x-2 border-theme-accent divide-theme-accent">
                         <OutputDisplay
                             label="Maximum Manual"
                             value={distanceUnit === 'ft'
@@ -679,7 +679,7 @@ export const LandingWidget = () => {
                     </div>
                 </div>
             </div>
-            <div className="my-auto mx-10 w-2 h-5/6 bg-theme-accent rounded-full" />
+            <div className="my-auto mx-10 w-2 h-5/6 rounded-full bg-theme-accent" />
             <div className="mt-4">
                 <RunwayVisualizationWidget
                     mainLength={displayedRunwayLength}

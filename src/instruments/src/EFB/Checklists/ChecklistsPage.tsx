@@ -48,7 +48,7 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentProps) =>
     }
 
     if (itemImproperlyUnchecked) {
-        color = 'text-red-500';
+        color = 'text-utility-red';
     }
 
     const [autoItemTouches, setAutoItemTouches] = useState(0);
@@ -91,7 +91,7 @@ const ChecklistItemComponent = ({ item, index }: ChecklistItemComponentProps) =>
                     className="flex flex-shrink-0 justify-center items-center w-8 h-8 text-current border-4 border-current"
                 >
                     {!!autoFillChecklists && item.condition && (
-                        <Link45deg size={40} className={`${checklistShake && 'shake text-red-500'}`} />
+                        <Link45deg size={40} className={`${checklistShake && 'shake text-utility-red'}`} />
                     )}
                     {(isItemCompleted && (!autoFillChecklists || (autoFillChecklists && !item.condition))) && (
                         <CheckLg size={40} />

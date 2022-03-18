@@ -80,7 +80,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                                 }}
                             />
                             <button
-                                className="py-3 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                                className="py-3 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                                 onClick={() => {
                                     setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter, deadZone);
                                 }}
@@ -121,7 +121,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                         </div>
                     )}
 
-                <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="mt-4 w-48 h-12 text-xl text-red-600">
+                <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="mt-4 w-48 h-12 text-xl text-utility-red">
                     Please enter a
                     valid deadzone (&gt; 0.05)
                 </h2>

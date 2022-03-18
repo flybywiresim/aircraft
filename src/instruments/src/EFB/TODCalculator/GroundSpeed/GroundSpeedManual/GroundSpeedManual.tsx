@@ -6,9 +6,6 @@ import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode, addTodGroundSpeed } from '../../../Store/features/todCalculator';
 import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode';
 
-import Button, { BUTTON_TYPE } from '../../../UtilComponents/Button/Button';
-import Divider from '../../../UtilComponents/Divider/Divider';
-
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
 
 export const GroundSpeedManual = () => {
@@ -61,7 +58,7 @@ export const GroundSpeedManual = () => {
 
                 <div className="flex flex-row space-x-2">
                     <button
-                        className={`w-full py-2 rounded-md bg-red-500 text-theme-body border-2 border-red-500 transition duration-100 ${groundSpeed.length <= 1 ? 'opacity-60' : 'hover:bg-theme-body hover:text-red-500'}`}
+                        className={`w-full py-2 rounded-md bg-utility-red text-theme-body border-2 border-utility-red transition duration-100 ${groundSpeed.length <= 1 ? 'opacity-60' : 'hover:bg-theme-body hover:text-utility-red'}`}
                         type="button"
                         onClick={() => dispatch(removeTodGroundSpeed(groundSpeed.length - 1))}
                         disabled={groundSpeed.length <= 1}
@@ -82,7 +79,7 @@ export const GroundSpeedManual = () => {
 
             <button
                 type="button"
-                className="flex justify-center p-3 w-full text-theme-highlight hover:text-theme-body hover:bg-theme-highlight rounded-md border-2 border-theme-highlight transition duration-100"
+                className="flex justify-center p-3 w-full rounded-md border-2 transition duration-100 text-theme-highlight hover:text-theme-body hover:bg-theme-highlight border-theme-highlight"
                 onClick={() => dispatch(setTodGroundSpeedMode(TOD_INPUT_MODE.AUTO))}
             >
                 <p className="text-current">SYNC</p>
