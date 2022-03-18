@@ -7,15 +7,17 @@ import {
     ExclamationDiamond,
     Gear,
     Calculator,
-    JournalCheck, HouseDoor,
+    JournalCheck,
 } from 'react-bootstrap-icons';
 import { NavLink } from 'react-router-dom';
+
+import FbwTail from '../Assets/FBW-Tail.svg';
 
 export const ToolBar = () => (
     <nav className="flex overflow-hidden flex-col flex-shrink-0 justify-between w-32">
         <div className="flex flex-col items-center mt-11">
             <ToolBarButton to="/dashboard">
-                <HouseDoor size={35} />
+                <img className="w-[35px]" src={FbwTail} />
             </ToolBarButton>
             <ToolBarButton to="/dispatch">
                 <Clipboard size={35} />
@@ -56,8 +58,8 @@ interface ToolBarButtonProps {
 const ToolBarButton: FC<ToolBarButtonProps> = ({ to, children }) => (
     <NavLink
         to={to}
-        activeClassName={`bg-theme-accent !text-theme-text`}
-        className={`flex w-min items-center justify-center hover:text-theme-text hover:bg-theme-accent transition duration-100 py-3.5 px-3.5 rounded-md mt-4 text-theme-unselected`}
+        activeClassName="bg-theme-accent !text-theme-text"
+        className="flex justify-center items-center py-3.5 px-3.5 mt-4 text-theme-unselected hover:text-theme-text hover:bg-theme-accent rounded-md transition duration-100"
     >
         {children}
     </NavLink>
