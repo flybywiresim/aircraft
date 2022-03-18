@@ -13,6 +13,8 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum }) => {
     const [engineN1] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
     const [engineN1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 500);
     const engineN1BelowIdle = (engineN1 + 2) < engineN1Idle;
+    const [engineHPValveOpen] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_HP_VALVE_OPEN`, 'bool', 500);
+    const [enginePRValveOpen] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PR_VALVE_OPEN`, 'bool', 500);
 
     return (
         <g id={`bleed-${engine}`}>
@@ -20,10 +22,8 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum }) => {
             {/* Air Cond shape and labels */}
             <path className="GreyStroke Stroke1" d={`M ${x},${y} l -47,10 l 0,123 l 14,0`} />
             <path className="GreyStroke Stroke1" d={`M ${x - 47},${y + 64} l 14,0`} />
-
             <path className="GreyStroke Stroke1" d={`M ${x},${y} l +47,10 l 0,123 l -14,0`} />
             <path className="GreyStroke Stroke1" d={`M ${x + 47},${y + 64} l -14,0`} />
-
             <text x={x - 56} y={y + 64} className="White Standard End">C</text>
             <text x={x + 58} y={y + 64} className="White Standard">H</text>
             <text x={x - 55} y={y + 132} className="White Standard End">LO</text>
@@ -36,11 +36,17 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum }) => {
             <text x={engine === 1 ? x + 40 : x - 70} y={y + 270} className="Cyan Standard">PSI</text>
             <text x={engine === 1 ? x + 40 : x - 70} y={y + 298} className="Cyan Standard">°C</text>
 
-            <Valve x={x} y={y + 355} radius={15} css="GreenLine" position="H" sdacDatum={sdacDatum} />
-
+            {/* Pressure regulating valve */}
+            <path className={!engineN1BelowIdle && enginePRValveOpen === 1 ? 'GreenLine' : 'Hide'} d={`M ${x},${y + 340} l 0,-39`} />
+            <Valve x={x} y={y + 355} radius={15} css="GreenLine" position={enginePRValveOpen === 1 ? 'V' : 'H'} sdacDatum={sdacDatum} />
+            <path className={engineN1BelowIdle ? 'AmberLine' : 'GreenLine'} d={`M ${x},${y + 415} l 0,-45`} />
             <text x={x + 2} y={y + 433} className="White Center Standard">IP</text>
-            <Valve x={engine === 1 ? x + 47 : x - 47} y={y + 398} radius={15} css="GreenLine" position="H" sdacDatum={sdacDatum} />
+
+            {/* High pressure valve */}
+            <Valve x={engine === 1 ? x + 47 : x - 47} y={y + 398} radius={15} css="GreenLine" position={engineHPValveOpen === 1 ? 'H' : 'V'} sdacDatum={sdacDatum} />
+            <path className={engineN1BelowIdle ? 'AmberLine' : 'GreenLine'} d={`M ${engine === 1 ? x + 92 : x - 92},${y + 415} l 0,-17 l ${engine === 1 ? '-29' : '29'},0`} />
             <text x={engine === 1 ? x + 95 : x - 90} y={y + 433} className="White Center Standard">HP</text>
+            <path className={engineHPValveOpen === 1 ? 'GreenLine' : 'Hide'} d={`M ${engine === 1 ? x + 33 : x - 33},${y + 398} l ${engine === 1 ? '-33' : '33'},0`} />
 
             <text x={engine === 1 ? x - 66 : x + 66} y={423} className={`Large ${engineN1BelowIdle ? 'Amber' : 'White'}`}>{engine}</text>
         </g>
