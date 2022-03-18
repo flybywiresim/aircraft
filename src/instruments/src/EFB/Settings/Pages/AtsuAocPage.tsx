@@ -139,11 +139,11 @@ export const AtsuAocPage = () => {
         { name: 'NOAA', setting: 'NOAA' },
     ];
 
-    const modals = useModals();
+    const { showModal } = useModals();
 
     const handleTelexToggle = (toggleValue: boolean): void => {
         if (toggleValue) {
-            modals.showModal(
+            showModal(
                 <PromptModal
                     title="TELEX Warning"
                     bodyText="TELEX enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE THIS FEATURE AT YOUR OWN RISK. To learn more about TELEX and the features it enables, please go to https://docs.flybywiresim.com/telex."
@@ -158,7 +158,7 @@ export const AtsuAocPage = () => {
 
     const handleSentryToggle = (toggleValue: boolean) => {
         if (toggleValue) {
-            modals.showModal(
+            showModal(
                 <PromptModal
                     title="Optional A32NX Error Reporting"
                     bodyText="You are able to opt into anonymous error reporting that will allow us to diagnose, monitor, and take care of issues at a faster rate. This feature is completely optional and we will never collect your personal data, but may allow you to more easily get support and have the issues you encounter fixed at a faster rate."

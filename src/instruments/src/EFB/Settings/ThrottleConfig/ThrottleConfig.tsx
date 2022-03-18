@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
@@ -46,7 +47,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 2),
     ];
 
-    const modals = useModals();
+    const { showModal } = useModals();
 
     useEffect(() => {
         if (reverserOnAxis1 === 0 && selectedIndex < 2) {
@@ -201,7 +202,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         Back
                     </button>
@@ -210,7 +211,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                     <button
                         type="button"
                         onClick={() => {
-                            modals.showModal(
+                            showModal(
                                 <PromptModal
                                     title="Throttle Configuration Reset"
                                     bodyText="Are you sure that you want to reset your current throttle configuration settings to their default states? This action is irreversible."
@@ -220,7 +221,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                                 />,
                             );
                         }}
-                        className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         Reset to Defaults
                     </button>
@@ -229,7 +230,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         onClick={() => {
                             syncToThrottle(1);
                         }}
-                        className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         Load from File
                     </button>
@@ -237,7 +238,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         type="button"
                         onClick={() => applyLocalVar(1)}
                         className={`py-2.5 px-5 rounded-md transition duration-100 border-2 ${validConfig
-                            ? 'bg-theme-highlight text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight'
+                            ? 'text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight'
                             : 'bg-theme-accent border-theme-accent opacity-30'}`}
                     >
                         Apply

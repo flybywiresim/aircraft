@@ -111,7 +111,7 @@ export const FlightWidget = () => {
                     </h1>
                 )}
             </div>
-            <div className="overflow-hidden relative p-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
+            <div className="overflow-hidden relative p-6 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
                 <div className="flex flex-col justify-between h-full">
                     <div className="space-y-8">
                         <div className="flex flex-row justify-between">
@@ -133,13 +133,13 @@ export const FlightWidget = () => {
                                     <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
                                         {!!flightPlanProgress && (
                                             <IconPlane
-                                                className="absolute right-0 text-theme-highlight transform translate-x-1/2 -translate-y-1/2 fill-current"
+                                                className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
                                                 size={50}
                                                 strokeLinejoin="miter"
                                             />
                                         )}
                                     </div>
-                                    <div className="w-full bg-theme-text border-dashed" style={{ width: `${100 - flightPlanProgress}%` }} />
+                                    <div className="w-full border-dashed bg-theme-text" style={{ width: `${100 - flightPlanProgress}%` }} />
                                 </div>
                                 <p className={`text-right font-body ${flightPlanProgress > 99 ? 'text-theme-highlight' : 'text-theme-text'}`}>
                                     {schedInParsed}
@@ -187,7 +187,7 @@ export const FlightWidget = () => {
                     <button
                         type="button"
                         onClick={fetchData}
-                        className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-lg border-2 border-theme-highlight transition duration-100"
+                        className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         <CloudArrowDown size={26} />
                         <p className="text-current">Import SimBrief Data</p>
@@ -207,7 +207,7 @@ export const FlightWidget = () => {
                                         <button
                                             type="button"
                                             onClick={fetchData}
-                                            className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-lg border-2 border-theme-highlight transition duration-100"
+                                            className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                                         >
                                             <CloudArrowDown size={26} />
                                             <p className="text-current">Import SimBrief Data</p>

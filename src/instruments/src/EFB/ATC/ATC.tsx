@@ -1,9 +1,11 @@
+/* eslint-disable max-len */
 import React, { useState, useEffect, useCallback } from 'react';
 import * as apiClient from '@flybywiresim/api-client';
 import useInterval from '@instruments/common/useInterval';
 import { Link } from 'react-router-dom';
 import { CloudArrowDown, Gear } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { pathify } from '../Utils/routing';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import { usePersistentProperty } from '../../Common/persistence';
@@ -12,6 +14,42 @@ import { AlertModal, useModals } from '../UtilComponents/Modals/Modals';
 export declare class ATCInfoExtended extends apiClient.ATCInfo {
     distance: number;
 }
+
+interface FrequencyCardProps {
+    className?: string;
+    callsign: string;
+    frequency: string;
+    setActive: () => void;
+    setStandby: () => void;
+}
+
+const FrequencyCard = ({ className, callsign, frequency, setActive, setStandby }: FrequencyCardProps) => (
+    <div className={className}>
+        <div className="overflow-hidden relative p-6 mt-4 w-full rounded-md bg-theme-secondary">
+            <h2 className="font-bold">
+                {callsign}
+            </h2>
+            <h2>
+                {frequency}
+            </h2>
+
+            <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
+                <div
+                    className="flex justify-center items-center w-full bg-opacity-80 bg-theme-highlight"
+                    onClick={setActive}
+                >
+                    <h2>Set Active</h2>
+                </div>
+                <div
+                    className="flex justify-center items-center w-full bg-yellow-500 bg-opacity-80"
+                    onClick={() => setStandby}
+                >
+                    <h2>Set Standby</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+);
 
 export const ATC = () => {
     const [controllers, setControllers] = useState<ATCInfoExtended[]>();
@@ -124,7 +162,7 @@ export const ATC = () => {
                 showModal(
                     <AlertModal
                         title="Hoppie Error"
-                        bodyText="Hoppie system requires a user ID which needs to be set in Settings."
+                        bodyText="Hoppie system requires a user ID which needs to be set in Settings > ATSU / AOC."
                         onAcknowledge={() => {
                             setHoppieActive(0);
                         }}
@@ -186,7 +224,7 @@ export const ATC = () => {
 
     return (
         <div>
-            <div className="flex flex-row justify-between items-center mb-2">
+            <div className="flex relative flex-row justify-between items-center mb-2">
                 <h1 className="font-bold">
                     Air Traffic Control
                     {(atisSource === 'IVAO' || atisSource === 'VATSIM') && ` (${atisSource})`}
@@ -194,7 +232,7 @@ export const ATC = () => {
 
                 <button
                     type="button"
-                    className="flex justify-center items-center py-2 w-80 rounded-md bg-theme-accent"
+                    className="flex absolute top-0 right-0 justify-center items-center py-2 w-80 rounded-md bg-theme-accent"
                     onClick={handleHoppieToggle}
                 >
                     <p>
@@ -208,31 +246,14 @@ export const ATC = () => {
                         <ScrollableContainer height={29}>
                             <div className="grid grid-cols-2">
                                 {controllers && controllers.map((controller, index) => (
-                                    <div className={`${index && index % 2 !== 0 && 'ml-4'}`}>
-                                        <div className="overflow-hidden relative p-6 mt-4 w-full rounded-md bg-theme-secondary">
-                                            <h2 className="font-bold">
-                                                {controller.callsign}
-                                            </h2>
-                                            <h2>
-                                                {controller.frequency}
-                                            </h2>
-
-                                            <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
-                                                <div
-                                                    className="flex justify-center items-center w-full bg-opacity-80 bg-theme-highlight"
-                                                    onClick={() => setActiveFrequency(toFrequency(controller.frequency))}
-                                                >
-                                                    <h2>Set Active</h2>
-                                                </div>
-                                                <div
-                                                    className="flex justify-center items-center w-full bg-yellow-500 bg-opacity-80"
-                                                    onClick={() => setStandbyFrequency(toFrequency(controller.frequency))}
-                                                >
-                                                    <h2>Set Standby</h2>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <FrequencyCard
+                                        className={`${index && index % 2 !== 0 && 'ml-4'}`}
+                                        callsign={controller.callsign}
+                                        frequency={controller.frequency}
+                                        setActive={() => setActiveFrequency(toFrequency(controller.frequency))}
+                                        setStandby={() => setStandbyFrequency(toFrequency(controller.frequency))}
+                                        key={controller.frequency}
+                                    />
                                 ))}
                             </div>
                         </ScrollableContainer>
@@ -269,15 +290,17 @@ export const ATC = () => {
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-col justify-center items-center mt-4 space-y-8 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
-                    <h1 className="max-w-4xl text-center">This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page</h1>
-                    <Link
-                        to="/settings/atsu---aoc"
-                        className="flex justify-center items-center py-2 px-16 space-x-4 rounded-lg border-2 focus:outline-none text-navy bg-theme-highlight border-theme-secondary"
-                    >
-                        <Gear size={26} />
-                        <p className="text-navy">Change ATIS/ATC source</p>
-                    </Link>
+                <div className="flex justify-center items-center mt-4 rounded-lg border-2 h-content-section-reduced border-theme-accent">
+                    <div className="space-y-8 max-w-4xl">
+                        <h1 className="text-center">This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page</h1>
+                        <Link
+                            to={`/settings/${pathify('ATSU / AOC')}`}
+                            className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                        >
+                            <Gear size={26} />
+                            <p className="text-current">Change ATIS/ATC source</p>
+                        </Link>
+                    </div>
                 </div>
             )}
         </div>

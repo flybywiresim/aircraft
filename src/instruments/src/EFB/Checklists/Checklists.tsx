@@ -118,7 +118,7 @@ export const Checklists = () => {
         setAutomaticItemStates();
     }, [selectedChecklistIndex]);
 
-    const modals = useModals();
+    const { showModal } = useModals();
 
     return (
         <>
@@ -142,9 +142,9 @@ export const Checklists = () => {
                     </ScrollableContainer>
 
                     <div
-                        className="flex justify-center items-center h-12 font-bold text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red rounded-md border-2 border-utility-red transition duration-100"
+                        className="flex justify-center items-center h-12 font-bold rounded-md border-2 transition duration-100 text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red border-utility-red"
                         onClick={() => {
-                            modals.showModal(
+                            showModal(
                                 <PromptModal
                                     title="Checklist Reset Warning"
                                     bodyText="Are you sure to reset all checklists?"
@@ -167,7 +167,7 @@ export const Checklists = () => {
                     </div>
 
                     <div
-                        className="flex justify-center items-center h-12 font-bold text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red rounded-md border-2 border-utility-red transition duration-100"
+                        className="flex justify-center items-center h-12 font-bold rounded-md border-2 transition duration-100 text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red border-utility-red"
                         onClick={() => {
                             checklists[selectedChecklistIndex].items.forEach((_, itemIdx) => {
                                 if (autoFillChecklists && CHECKLISTS[selectedChecklistIndex].items[itemIdx].condition) {

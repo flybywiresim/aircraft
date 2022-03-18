@@ -105,7 +105,7 @@ const Efb = () => {
 
     const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
 
-    const modals = useModals();
+    const { showModal } = useModals();
 
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`);
@@ -139,7 +139,7 @@ const Efb = () => {
             const isCharging = oldLevel.isCharging;
 
             if (oldLevel.level > 20 && level <= 20) {
-                modals.showModal(
+                showModal(
                     <AlertModal
                         title="Battery Low"
                         bodyText="The battery is getting very low. Please charge the battery soon."

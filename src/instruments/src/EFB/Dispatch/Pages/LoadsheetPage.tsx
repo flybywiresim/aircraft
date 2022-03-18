@@ -127,7 +127,7 @@ export const LoadSheetWidget = () => {
                                     <button
                                         type="button"
                                         onClick={fetchData}
-                                        className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                                        className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                                     >
                                         <CloudArrowDown size={26} />
                                         <p className="text-current">Import SimBrief Data</p>
