@@ -169,63 +169,67 @@ function combineGltf(pathA, pathB, outputPath) {
     }
 
     // Add meshes
-    for (const mesh of gltfB.meshes) {
-        Object.keys(mesh.primitives[0].attributes)
-            .forEach((attribute) => {
-                mesh.primitives[0].attributes[attribute] += accessorsCount;
-            });
-        mesh.primitives[0].indices += accessorsCount;
-        // workaround to allow added meshes to use existing materials
-        if (!Number.isFinite(mesh.primitives[0].material)) {
-            for (let i = 0; i < gltfA.materials.length; i += 1) {
-                if (gltfA.materials[i].name === mesh.primitives[0].material) {
-                    mesh.primitives[0].material = i;
-                    break;
-                }
-            }
-            // If the material is not found, use material 0
+    if (gltfB.meshes) {
+        for (const mesh of gltfB.meshes) {
+            Object.keys(mesh.primitives[0].attributes)
+                .forEach((attribute) => {
+                    mesh.primitives[0].attributes[attribute] += accessorsCount;
+                });
+            mesh.primitives[0].indices += accessorsCount;
+            // workaround to allow added meshes to use existing materials
             if (!Number.isFinite(mesh.primitives[0].material)) {
-                mesh.primitives[0].material = 0;
+                for (let i = 0; i < gltfA.materials.length; i += 1) {
+                    if (gltfA.materials[i].name === mesh.primitives[0].material) {
+                        mesh.primitives[0].material = i;
+                        break;
+                    }
+                }
+                // If the material is not found, use material 0
+                if (!Number.isFinite(mesh.primitives[0].material)) {
+                    mesh.primitives[0].material = 0;
+                }
+            } else {
+                mesh.primitives[0].material += materialsCount;
             }
-        } else {
-            mesh.primitives[0].material += materialsCount;
+            gltfA.meshes.push(mesh);
         }
-        gltfA.meshes.push(mesh);
     }
 
     // Add nodes
-    for (const node of gltfB.nodes) {
-        node.mesh += meshesCount;
-        if (node.children) {
-            const newChildren = [];
-            for (const child of node.children) {
-                newChildren.push(child + nodesCount);
+    if (gltfB.nodes) {
+        for (const node of gltfB.nodes) {
+            node.mesh += meshesCount;
+            if (node.children) {
+                const newChildren = [];
+                for (const child of node.children) {
+                    newChildren.push(child + nodesCount);
+                }
+                node.children = newChildren;
             }
-            node.children = newChildren;
-        }
-        if (node.parentNode) {
-            for (let i = 0; i < gltfA.nodes.length; i++) {
-                if (gltfA.nodes[i].name === node.parentNode) {
-                    if (gltfA.nodes[i].children) {
-                        gltfA.nodes[i].children.push(gltfA.nodes.length);
-                    } else {
-                        gltfA.nodes[i].children = [gltfA.nodes.length];
+            if (node.parentNode) {
+                for (let i = 0; i < gltfA.nodes.length; i++) {
+                    if (gltfA.nodes[i].name === node.parentNode) {
+                        if (gltfA.nodes[i].children) {
+                            gltfA.nodes[i].children.push(gltfA.nodes.length);
+                        } else {
+                            gltfA.nodes[i].children = [gltfA.nodes.length];
+                        }
+                    }
+                }
+                delete node.parentNode;
+                for (let i = 0; i < gltfB.scenes[0].nodes.length; i++) {
+                    if (gltfB.scenes[0].nodes[i] === gltfA.nodes.length - nodesCount) {
+                        gltfB.scenes[0].nodes.splice(i, 1);
                     }
                 }
             }
-            delete node.parentNode;
-            for (let i = 0; i < gltfB.scenes[0].nodes.length; i++) {
-                if (gltfB.scenes[0].nodes[i] === gltfA.nodes.length - nodesCount) {
-                    gltfB.scenes[0].nodes.splice(i, 1);
-                }
-            }
+            gltfA.nodes.push(node);
         }
-        gltfA.nodes.push(node);
-    }
 
-    // Add nodes to scene
-    for (const node of gltfB.scenes[0].nodes) {
-        gltfA.scenes[0].nodes.push(node + nodesCount);
+        // Add nodes to scene
+        for (const node of gltfB.scenes[0].nodes) {
+            gltfA.scenes[0].nodes.push(node + nodesCount);
+        }
     }
 
     // Add animations
@@ -234,14 +238,30 @@ function combineGltf(pathA, pathB, outputPath) {
             gltfA.animations = [];
         }
         for (const animation of gltfB.animations) {
+            let skip = false;
             for (const channel of animation.channels) {
-                channel.target.node += nodesCount;
+                if (typeof channel.target.node === 'string') {
+                    for (let i = 0; i < gltfA.nodes.length; i++) {
+                        if (gltfA.nodes[i].name === channel.target.node) {
+                            channel.target.node = i;
+                            break;
+                        }
+                    }
+                } else {
+                    channel.target.node += nodesCount;
+                }
+                // if we didn't find the node, skip the whole animation
+                if (typeof channel.target.node === 'string') {
+                    skip = true;
+                }
             }
             for (const sampler of animation.samplers) {
                 sampler.input += accessorsCount;
                 sampler.output += accessorsCount;
             }
-            gltfA.animations.push(animation);
+            if (!skip) {
+                gltfA.animations.push(animation);
+            }
         }
     }
 
