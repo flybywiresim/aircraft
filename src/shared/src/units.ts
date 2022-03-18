@@ -5,11 +5,13 @@ export type Celsius = number; // derived unit
 export type HectoPascal = number; // derived unit
 export type KiloGram = number;
 export type Metre = number;
+export type Litre = number;
 
 // USCS base units
 export type Fahrenheit = number;
 export type Foot = number;
 export type Pound = number;
+export type Gallon = number;
 
 export type InchOfMercury = number;
 
@@ -37,7 +39,7 @@ export class Units {
         return Units.usingMetric ? value : Units.poundToKilogram(value);
     }
 
-    static kilogramToUser(value: KiloGram): Pound {
+    static kilogramToUser(value: KiloGram): Pound | KiloGram {
         return Units.usingMetric ? value : Units.kilogramToPound(value);
     }
 
@@ -58,7 +60,7 @@ export class Units {
         return Units.usingMetric ? value : Units.footToMetre(value);
     }
 
-    static metreToUser(value: Metre): Foot {
+    static metreToUser(value: Metre): Foot | Metre {
         return Units.usingMetric ? value : Units.metreToFoot(value);
     }
 
@@ -78,7 +80,7 @@ export class Units {
         return Units.usingMetric ? value : Units.fahrenheitToCelsius(value);
     }
 
-    static celsiusToUser(value: Celsius): Fahrenheit {
+    static celsiusToUser(value: Celsius): Fahrenheit | Celsius {
         return Units.usingMetric ? value : Units.celsiusToFahrenheit(value);
     }
 
@@ -108,5 +110,25 @@ export class Units {
 
     static get userPressureSuffixEis2(): 'hPa' | 'in.Hg' {
         return Units.usingMetric ? 'hPa' : 'in.Hg';
+    }
+
+    static gallonToLitre(value: number): Litre {
+        return value * 3.78541;
+    }
+
+    static litreToGallon(value: number): Gallon {
+        return value / 3.78541;
+    }
+
+    static litreToUser(value: number): Litre | Gallon {
+        return Units.usingMetric ? value : value * 0.264172052358148;
+    }
+
+    static userToLitre(value: number): Litre {
+        return Units.usingMetric ? value : value / 0.264172052358148;
+    }
+
+    static get userVolumeSuffixEis2(): 'l' | 'gal' {
+        return Units.usingMetric ? 'l' : 'gal';
     }
 }

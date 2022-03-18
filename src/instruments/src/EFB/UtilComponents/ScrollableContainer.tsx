@@ -3,6 +3,7 @@ import React, { FC, useEffect, useRef, useState } from 'react';
 interface ScrollableContainerProps {
     height: number;
     className?: string;
+    innerClassName?: string;
     initialScroll?: number;
     onScroll?: (scrollTop: number) => void;
     onScrollStop?: (scrollTop: number) => void;
@@ -12,7 +13,15 @@ interface ScrollableContainerProps {
  * A container that can be scrolled vertically.
  * @param height - height of the container, in rem, that if exceeded will cause the container to become scrollable
  */
-export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, className, height, onScroll, onScrollStop, initialScroll = 0 }) => {
+export const ScrollableContainer: FC<ScrollableContainerProps> = ({
+    children,
+    className,
+    height,
+    onScroll,
+    onScrollStop,
+    initialScroll = 0,
+    innerClassName,
+}) => {
     const [contentOverflows, setContentOverflows] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -76,7 +85,7 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({ children, cl
             }}
             onMouseDown={handleMouseDown}
         >
-            <div className={`${contentOverflows && 'mr-6'}`} ref={contentRef}>
+            <div className={`${contentOverflows && 'mr-6'} ${innerClassName}`} ref={contentRef}>
                 {children}
             </div>
         </div>
