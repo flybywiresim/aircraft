@@ -28,9 +28,7 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAChapterCardProps) 
             <div
                 className="flex justify-center items-center w-1/5 text-5xl font-bold rounded-md font-title bg-theme-accent"
             >
-                ATA
-                {' '}
-                {ataNumber}
+                {`ATA ${ataNumber}`}
 
                 <div className="inline-block relative -right-7 bottom-16 w-0 h-0 fill-current text-utility-red">
                     {hasActiveFailure && (
@@ -69,6 +67,7 @@ export const ComfortUI = ({ chapters, failures }: ComfortUIProps) => (
                 />
             ))}
         </Route>
+
         {chapters.map((chapter) => (
             <Route path={`/failures/comfort/${chapter.toString()}`}>
                 <AtaChapterPage chapter={chapter} failures={failures} />

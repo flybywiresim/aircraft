@@ -19,7 +19,7 @@ const ActiveFailureCard: FC<ActiveFailureCardProps> = ({ ata, name }) => {
 
     return (
         <div
-            className="flex flex-col flex-wrap p-2 mt-4 mr-4 rounded-md border-2 bg-theme-highlight border-theme-highlight"
+            className="flex flex-col flex-wrap p-2 mt-4 mr-4 rounded-md border-2 bg-theme-accent border-theme-accent hover:border-theme-highlight"
             onClick={() => {
                 dispatch(setSearchQuery(name.toUpperCase()));
 
@@ -36,9 +36,9 @@ const ActiveFailureCard: FC<ActiveFailureCardProps> = ({ ata, name }) => {
                 }
             }}
         >
-            <h3 className="font-bold text-black">Active Failure</h3>
-            <span className="mt-2 text-black font-inter">{name}</span>
-            <ArrowRight className="ml-auto text-black" />
+            <h3 className="font-bold">Active Failure</h3>
+            <span className="mt-2 font-inter">{name}</span>
+            <ArrowRight className="ml-auto" />
         </div>
     );
 };
@@ -63,6 +63,7 @@ export const MaintenanceReminder = () => {
                             />
                         );
                     })}
+
                 {!activeFailures.size && (
                     <h1 className="m-auto my-4 font-bold opacity-60">No Active Failures</h1>
                 )}

@@ -226,6 +226,7 @@ export const PinnedChartUI = () => {
                             Showing Charts from All Providers
                         </div>
                     )}
+
                     <SelectInput
                         className="w-64"
                         options={[
@@ -239,8 +240,8 @@ export const PinnedChartUI = () => {
                         onChange={(value) => dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, sortTypeIndex: value as PinSort }))}
                     />
                 </div>
-
             </div>
+
             {searchedCharts.length > 0 ? (
                 <ScrollableContainer height={44}>
                     <div className="grid grid-cols-4 auto-rows-auto">
