@@ -11,7 +11,22 @@ import {
 } from 'react-bootstrap-icons';
 import { NavLink } from 'react-router-dom';
 
+// @ts-ignore
 import FbwTail from '../Assets/FBW-Tail.svg';
+
+interface ToolBarButtonProps {
+    to: string;
+}
+
+const ToolBarButton: FC<ToolBarButtonProps> = ({ to, children }) => (
+    <NavLink
+        to={to}
+        activeClassName="bg-theme-accent !text-theme-text"
+        className="flex justify-center items-center py-3.5 px-3.5 mt-4 rounded-md transition duration-100 text-theme-unselected hover:text-theme-text hover:bg-theme-accent"
+    >
+        {children}
+    </NavLink>
+);
 
 export const ToolBar = () => (
     <nav className="flex overflow-hidden flex-col flex-shrink-0 justify-between w-32">
@@ -43,24 +58,10 @@ export const ToolBar = () => (
         </div>
 
         <div className="flex flex-col items-center mb-6">
-            <div className="w-14 h-1.5 bg-theme-accent rounded-full" />
+            <div className="w-14 h-1.5 rounded-full bg-theme-accent" />
             <ToolBarButton to="/settings">
                 <Gear color="currentColor" size={35} />
             </ToolBarButton>
         </div>
     </nav>
-);
-
-interface ToolBarButtonProps {
-    to: string;
-}
-
-const ToolBarButton: FC<ToolBarButtonProps> = ({ to, children }) => (
-    <NavLink
-        to={to}
-        activeClassName="bg-theme-accent !text-theme-text"
-        className="flex justify-center items-center py-3.5 px-3.5 mt-4 text-theme-unselected hover:text-theme-text hover:bg-theme-accent rounded-md transition duration-100"
-    >
-        {children}
-    </NavLink>
 );
