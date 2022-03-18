@@ -455,15 +455,17 @@ export const LocalFileRoot = () => {
         return <LocalFileChartUI />;
     case ConnectionState.FAILED:
         return (
-            <div className="flex flex-col justify-center items-center space-y-4 rounded-lg border-2 border-theme-accent h-content-section-reduced">
-                <h1>Failed to Establish Connection.</h1>
-                <button
-                    type="button"
-                    className="flex justify-center items-center py-2 px-8 space-x-4 rounded-lg border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
-                    onClick={handleConnectionRetry}
-                >
-                    Retry
-                </button>
+            <div className="flex justify-center items-center rounded-lg border-2 border-theme-accent h-content-section-reduced">
+                <div className="space-y-4">
+                    <h1>Failed to Establish Connection.</h1>
+                    <button
+                        type="button"
+                        className="flex justify-center items-center py-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                        onClick={handleConnectionRetry}
+                    >
+                        Retry
+                    </button>
+                </div>
             </div>
         );
     default: return <></>;
