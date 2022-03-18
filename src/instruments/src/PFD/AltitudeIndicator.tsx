@@ -1,6 +1,7 @@
 import React from 'react';
 import { Arinc429Word } from '@shared/arinc429';
 import { useSimVar } from '@instruments/common/simVars';
+import { VerticalMode } from '@shared/autopilot';
 import { VerticalTape } from './PFDUtils';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { getSimVar } from '../util.js';
@@ -163,7 +164,17 @@ interface SelectedAltIndicatorProps {
 }
 
 const SelectedAltIndicator = ({ currentAlt, targetAlt, altIsManaged, mode }: SelectedAltIndicatorProps) => {
-    const color = altIsManaged ? 'Magenta' : 'Cyan';
+    const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+    const selectedAltIgnored = (activeVerticalMode >= VerticalMode.GS_CPT && activeVerticalMode <= VerticalMode.ROLL_OUT) || activeVerticalMode === VerticalMode.FINAL;
+
+    let color: string;
+    if (selectedAltIgnored) {
+        color = 'White';
+    } else if (altIsManaged) {
+        color = 'Magenta';
+    } else {
+        color = 'Cyan';
+    }
 
     const isSTD = mode === 'STD';
     let boxLength = 19.14;
