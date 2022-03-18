@@ -293,10 +293,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         // The MCDU is a client to the MCDU Server and tries to connect in regular intervals.
         // every 2500ms
-        if (this.mcduServerConnectUpdateThrottler.canUpdate(_deltaTime) !== -1
-            && (!this.socket || this.socket.readyState !== 1)) {
-
-            this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
+        if (this.mcduServerConnectUpdateThrottler.canUpdate(_deltaTime) !== -1) {
+            if (this.socket) {
+                console.log("DEBUG: " + this.socket.readyState + "==================================");
+            }
+            if (!this.socket || this.socket.readyState !== 1) {
+                this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
+            }
         }
 
         // There is no (known) event when power is turned on or off (e.g. Ext Pwr) and remote clients
@@ -1427,14 +1430,24 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Attempts to connect to a local websocket server
      */
     connectWebsocket(port) {
+        console.log('Socket1 = ' + this.socket);
+
         if (this.socket) {
-            this.socket.close();
-            this.socket = undefined;
+            console.log('Socket1 ReadyState = ' + this.socket.readyState);
+            if (this.socket.readyState) {
+                console.log('Attempting to close socket: readyState=' + this.socket.readyState);
+                this.socket.close();
+            }
+            delete this.socket;
         }
+
+        console.log('Socket2 = ' + this.socket);
 
         const url = `ws://127.0.0.1:${port}`;
 
         this.socket = new WebSocket(url);
+
+        console.log('Socket3 = ' + this.socket);
 
         this.socket.onerror = () => {
             console.log(`WebSocket connection error. Maybe MCDU Server disconnected? (${url})`);
@@ -1468,7 +1481,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param {string} message
      */
     sendToSocket(message) {
-        if (this.socket && this.socket.readyState) {
+        // readyState 1 = OPEN
+        if (this.socket && this.socket.readyState === 1) {
             this.socket.send(message);
         }
     }
@@ -1478,7 +1492,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      */
     sendUpdate() {
         // only calculate update when socket is established.
-        if (!this.socket || !this.socket.readyState) {
+        if (!this.socket || this.socket.readyState !== 1) {
             return;
         }
         let left = {
