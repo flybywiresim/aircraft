@@ -210,7 +210,7 @@ export const PushbackPage = () => {
                         <p className="text-center">Forward</p>
                         <button
                             type="button"
-                            className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${commandedTugDirectionFactor === 1 && 'text-theme-highlight bg-theme-body'}`}
+                            className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${commandedTugDirectionFactor === 1 && '!text-theme-highlight !bg-theme-body'}`}
                             onClick={() => {
                                 setCommandedTugDirectionFactor(1);
                             }}
@@ -222,7 +222,7 @@ export const PushbackPage = () => {
                         <p className="text-center">Backward</p>
                         <button
                             type="button"
-                            className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${commandedTugDirectionFactor === -1 && 'text-theme-highlight bg-theme-body'}`}
+                            className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${commandedTugDirectionFactor === -1 && '!text-theme-highlight !bg-theme-body'}`}
                             onClick={() => {
                                 setCommandedTugDirectionFactor(-1);
                             }}
