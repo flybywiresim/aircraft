@@ -380,7 +380,6 @@ class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
         const baseClass = 'FontLarge StartAlign';
 
         sub.on('markerBeacon').whenChanged().handle((markerState) => {
-            console.log(markerState);
             if (markerState === 0) {
                 this.classNames.set(`${baseClass} HiddenElement`);
             } else if (markerState === 1) {

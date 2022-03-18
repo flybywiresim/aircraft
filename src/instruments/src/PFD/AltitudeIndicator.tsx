@@ -119,7 +119,6 @@ export class AltitudeIndicator extends DisplayComponent<AltitudeIndicatorProps> 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        console.log('RENDER ALTITUDEINDICATOR');
         const pf = this.props.bus.getSubscriber<Arinc429Values>();
 
         pf.on('altitudeAr').handle((a) => {
@@ -236,25 +235,25 @@ interface SelectedAltIndicatorProps {
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     private mode: 'QNH' | 'QFE' | 'STD' = 'QNH';
 
-    lowerGroupRef =FSComponent.createRef<SVGGElement>();
+    private selectedAltLowerGroupRef = FSComponent.createRef<SVGGElement>();
 
-    SelectedAltLowerText=FSComponent.createRef<SVGTextElement>();
+    private selectedAltLowerText = FSComponent.createRef<SVGTextElement>();
 
-    SelectedAltLowerFLText=FSComponent.createRef<SVGTextElement>();
+    private selectedAltLowerFLText = FSComponent.createRef<SVGTextElement>();
 
-    upperGroupRef=FSComponent.createRef<SVGGElement>();
+    private selectedAltUpperGroupRef = FSComponent.createRef<SVGGElement>();
 
-    SelectedAltUpperText=FSComponent.createRef<SVGTextElement>();
+    private selectedAltUpperText = FSComponent.createRef<SVGTextElement>();
 
-    SelectedAltUpperFLText=FSComponent.createRef<SVGTextElement>();
+    private selectedAltUpperFLText = FSComponent.createRef<SVGTextElement>();
 
-    targetGroupRef=FSComponent.createRef<SVGGElement>();
+    private targetGroupRef = FSComponent.createRef<SVGGElement>();
 
-    BlackFill=FSComponent.createRef<SVGPathElement>();
+    private blackFill = FSComponent.createRef<SVGPathElement>();
 
-    targetSymbolRef=FSComponent.createRef<SVGPathElement>();
+    private targetSymbolRef = FSComponent.createRef<SVGPathElement>();
 
-    AltTapeTargetText=FSComponent.createRef<SVGTextElement>();
+    private altTapeTargetText = FSComponent.createRef<SVGTextElement>();
 
     private altitude = new Arinc429Word(0);
 
@@ -282,73 +281,73 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
         this.shownTargetAltitude = this.updateTargetAltitude(this.targetAltitudeSelected, this.isManaged, this.constraint);
 
         if (selectedAltIgnored) {
-            this.SelectedAltLowerFLText.instance.classList.remove('Cyan');
-            this.SelectedAltLowerFLText.instance.classList.remove('Magenta');
-            this.SelectedAltLowerFLText.instance.classList.add('White');
+            this.selectedAltLowerFLText.instance.classList.remove('Cyan');
+            this.selectedAltLowerFLText.instance.classList.remove('Magenta');
+            this.selectedAltLowerFLText.instance.classList.add('White');
 
-            this.SelectedAltLowerText.instance.classList.remove('Cyan');
-            this.SelectedAltLowerText.instance.classList.remove('Magenta');
-            this.SelectedAltLowerText.instance.classList.add('White');
+            this.selectedAltLowerText.instance.classList.remove('Cyan');
+            this.selectedAltLowerText.instance.classList.remove('Magenta');
+            this.selectedAltLowerText.instance.classList.add('White');
 
-            this.SelectedAltUpperFLText.instance.classList.remove('Cyan');
-            this.SelectedAltUpperFLText.instance.classList.remove('Magenta');
-            this.SelectedAltUpperFLText.instance.classList.add('White');
+            this.selectedAltUpperFLText.instance.classList.remove('Cyan');
+            this.selectedAltUpperFLText.instance.classList.remove('Magenta');
+            this.selectedAltUpperFLText.instance.classList.add('White');
 
-            this.SelectedAltUpperText.instance.classList.remove('Cyan');
-            this.SelectedAltUpperText.instance.classList.remove('Magenta');
-            this.SelectedAltUpperText.instance.classList.add('White');
+            this.selectedAltUpperText.instance.classList.remove('Cyan');
+            this.selectedAltUpperText.instance.classList.remove('Magenta');
+            this.selectedAltUpperText.instance.classList.add('White');
 
-            this.AltTapeTargetText.instance.classList.remove('Cyan');
-            this.AltTapeTargetText.instance.classList.add('White');
+            this.altTapeTargetText.instance.classList.remove('Cyan');
+            this.altTapeTargetText.instance.classList.add('White');
 
             this.targetSymbolRef.instance.classList.remove('Cyan');
             this.targetSymbolRef.instance.classList.remove('Magenta');
 
             this.targetSymbolRef.instance.classList.add('White');
         } else if (this.isManaged) {
-            this.SelectedAltLowerFLText.instance.classList.remove('Cyan');
-            this.SelectedAltLowerFLText.instance.classList.remove('White');
-            this.SelectedAltLowerFLText.instance.classList.add('Magenta');
+            this.selectedAltLowerFLText.instance.classList.remove('Cyan');
+            this.selectedAltLowerFLText.instance.classList.remove('White');
+            this.selectedAltLowerFLText.instance.classList.add('Magenta');
 
-            this.SelectedAltLowerText.instance.classList.remove('Cyan');
-            this.SelectedAltLowerText.instance.classList.remove('White');
-            this.SelectedAltLowerText.instance.classList.add('Magenta');
+            this.selectedAltLowerText.instance.classList.remove('Cyan');
+            this.selectedAltLowerText.instance.classList.remove('White');
+            this.selectedAltLowerText.instance.classList.add('Magenta');
 
-            this.SelectedAltUpperFLText.instance.classList.remove('Cyan');
-            this.SelectedAltUpperFLText.instance.classList.remove('White');
-            this.SelectedAltUpperFLText.instance.classList.add('Magenta');
+            this.selectedAltUpperFLText.instance.classList.remove('Cyan');
+            this.selectedAltUpperFLText.instance.classList.remove('White');
+            this.selectedAltUpperFLText.instance.classList.add('Magenta');
 
-            this.SelectedAltUpperText.instance.classList.remove('Cyan');
-            this.SelectedAltUpperText.instance.classList.remove('White');
-            this.SelectedAltUpperText.instance.classList.add('Magenta');
+            this.selectedAltUpperText.instance.classList.remove('Cyan');
+            this.selectedAltUpperText.instance.classList.remove('White');
+            this.selectedAltUpperText.instance.classList.add('Magenta');
 
-            this.AltTapeTargetText.instance.classList.remove('Cyan');
-            this.AltTapeTargetText.instance.classList.remove('White');
-            this.AltTapeTargetText.instance.classList.add('Magenta');
+            this.altTapeTargetText.instance.classList.remove('Cyan');
+            this.altTapeTargetText.instance.classList.remove('White');
+            this.altTapeTargetText.instance.classList.add('Magenta');
 
             this.targetSymbolRef.instance.classList.remove('Cyan');
             this.targetSymbolRef.instance.classList.remove('White');
             this.targetSymbolRef.instance.classList.add('Magenta');
         } else {
-            this.SelectedAltLowerFLText.instance.classList.add('Cyan');
-            this.SelectedAltLowerFLText.instance.classList.remove('Magenta');
-            this.SelectedAltLowerFLText.instance.classList.remove('White');
+            this.selectedAltLowerFLText.instance.classList.add('Cyan');
+            this.selectedAltLowerFLText.instance.classList.remove('Magenta');
+            this.selectedAltLowerFLText.instance.classList.remove('White');
 
-            this.SelectedAltLowerText.instance.classList.add('Cyan');
-            this.SelectedAltLowerText.instance.classList.remove('Magenta');
-            this.SelectedAltLowerText.instance.classList.remove('White');
+            this.selectedAltLowerText.instance.classList.add('Cyan');
+            this.selectedAltLowerText.instance.classList.remove('Magenta');
+            this.selectedAltLowerText.instance.classList.remove('White');
 
-            this.SelectedAltUpperFLText.instance.classList.add('Cyan');
-            this.SelectedAltUpperFLText.instance.classList.remove('Magenta');
-            this.SelectedAltUpperFLText.instance.classList.remove('White');
+            this.selectedAltUpperFLText.instance.classList.add('Cyan');
+            this.selectedAltUpperFLText.instance.classList.remove('Magenta');
+            this.selectedAltUpperFLText.instance.classList.remove('White');
 
-            this.SelectedAltUpperText.instance.classList.add('Cyan');
-            this.SelectedAltUpperText.instance.classList.remove('Magenta');
-            this.SelectedAltUpperText.instance.classList.remove('White');
+            this.selectedAltUpperText.instance.classList.add('Cyan');
+            this.selectedAltUpperText.instance.classList.remove('Magenta');
+            this.selectedAltUpperText.instance.classList.remove('White');
 
-            this.AltTapeTargetText.instance.classList.add('Cyan');
-            this.AltTapeTargetText.instance.classList.remove('Magenta');
-            this.AltTapeTargetText.instance.classList.remove('White');
+            this.altTapeTargetText.instance.classList.add('Cyan');
+            this.altTapeTargetText.instance.classList.remove('Magenta');
+            this.altTapeTargetText.instance.classList.remove('White');
 
             this.targetSymbolRef.instance.classList.add('Cyan');
             this.targetSymbolRef.instance.classList.remove('Magenta');
@@ -366,7 +365,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.handleAltManagedChange();
             this.getOffset();
             this.handleAltitudeDisplay();
-            this.getText();
+            this.setText();
         });
 
         sub.on('selectedAltitude').whenChanged().handle((m) => {
@@ -374,7 +373,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.handleAltManagedChange();
             this.getOffset();
             this.handleAltitudeDisplay();
-            this.getText();
+            this.setText();
         });
 
         sub.on('altConstraint').whenChanged().handle((m) => {
@@ -382,7 +381,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.handleAltManagedChange();
             this.getOffset();
             this.handleAltitudeDisplay();
-            this.getText();
+            this.setText();
         });
 
         sub.on('altitudeAr').withArinc429Precision(2).handle((a) => {
@@ -395,14 +394,14 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             this.mode = m;
 
             if (this.mode === 'STD') {
-                this.SelectedAltLowerFLText.instance.style.visibility = 'visible';
-                this.SelectedAltUpperFLText.instance.style.visibility = 'visible';
+                this.selectedAltLowerFLText.instance.style.visibility = 'visible';
+                this.selectedAltUpperFLText.instance.style.visibility = 'visible';
             } else {
-                this.SelectedAltLowerFLText.instance.style.visibility = 'hidden';
-                this.SelectedAltUpperFLText.instance.style.visibility = 'hidden';
+                this.selectedAltLowerFLText.instance.style.visibility = 'hidden';
+                this.selectedAltUpperFLText.instance.style.visibility = 'hidden';
             }
             this.handleAltitudeDisplay();
-            this.getText();
+            this.setText();
         });
     }
 
@@ -412,21 +411,21 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
     private handleAltitudeDisplay() {
         if (this.altitude.value - this.shownTargetAltitude > DisplayRange) {
-            this.lowerGroupRef.instance.style.display = 'block';
-            this.upperGroupRef.instance.style.display = 'none';
+            this.selectedAltLowerGroupRef.instance.style.display = 'block';
+            this.selectedAltUpperGroupRef.instance.style.display = 'none';
             this.targetGroupRef.instance.style.display = 'none';
         } else if (this.altitude.value - this.shownTargetAltitude < -DisplayRange) {
             this.targetGroupRef.instance.style.display = 'none';
-            this.upperGroupRef.instance.style.display = 'block';
-            this.lowerGroupRef.instance.style.display = 'none';
+            this.selectedAltUpperGroupRef.instance.style.display = 'block';
+            this.selectedAltLowerGroupRef.instance.style.display = 'none';
         } else {
-            this.upperGroupRef.instance.style.display = 'none';
-            this.lowerGroupRef.instance.style.display = 'none';
+            this.selectedAltUpperGroupRef.instance.style.display = 'none';
+            this.selectedAltLowerGroupRef.instance.style.display = 'none';
             this.targetGroupRef.instance.style.display = 'inline';
         }
     }
 
-    private getText() {
+    private setText() {
         let boxLength = 19.14;
         let text = '0';
         if (this.mode === 'STD') {
@@ -436,7 +435,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
             text = Math.round(this.shownTargetAltitude).toString().padStart(5, ' ');
         }
         this.textSub.set(text);
-        this.BlackFill.instance.setAttribute('d', `m117.75 77.784h${boxLength}v6.0476h-${boxLength}z`);
+        this.blackFill.instance.setAttribute('d', `m117.75 77.784h${boxLength}v6.0476h-${boxLength}z`);
     }
 
     private getOffset() {
@@ -447,18 +446,18 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     render(): VNode | null {
         return (
             <>
-                <g id="SelectedAltLowerGroup" ref={this.lowerGroupRef}>
-                    <text id="SelectedAltLowerText" ref={this.SelectedAltLowerText} class="FontMedium EndAlign Cyan" x="135.7511" y="128.70299" style="white-space: pre">{this.textSub}</text>
-                    <text id="SelectedAltLowerFLText" ref={this.SelectedAltLowerFLText} class="FontSmall MiddleAlign Cyan" x="120.87094" y="128.71681">FL</text>
+                <g id="SelectedAltLowerGroup" ref={this.selectedAltLowerGroupRef}>
+                    <text id="SelectedAltLowerText" ref={this.selectedAltLowerText} class="FontMedium EndAlign Cyan" x="135.7511" y="128.70299" style="white-space: pre">{this.textSub}</text>
+                    <text id="SelectedAltLowerFLText" ref={this.selectedAltLowerFLText} class="FontSmall MiddleAlign Cyan" x="120.87094" y="128.71681">FL</text>
                 </g>
-                <g id="SelectedAltUpperGroup" ref={this.upperGroupRef}>
-                    <text id="SelectedAltUpperText" ref={this.SelectedAltUpperText} class="FontMedium EndAlign Cyan" x="136.22987" y="37.250134" style="white-space: pre">{this.textSub}</text>
-                    <text id="SelectedAltUpperFLText" ref={this.SelectedAltUpperFLText} class="FontSmall MiddleAlign Cyan" x="120.85925" y="37.125755">FL</text>
+                <g id="SelectedAltUpperGroup" ref={this.selectedAltUpperGroupRef}>
+                    <text id="SelectedAltUpperText" ref={this.selectedAltUpperText} class="FontMedium EndAlign Cyan" x="136.22987" y="37.250134" style="white-space: pre">{this.textSub}</text>
+                    <text id="SelectedAltUpperFLText" ref={this.selectedAltUpperFLText} class="FontSmall MiddleAlign Cyan" x="120.85925" y="37.125755">FL</text>
                 </g>
                 <g id="AltTapeTargetSymbol" ref={this.targetGroupRef}>
-                    <path class="BlackFill" ref={this.BlackFill} />
+                    <path class="BlackFill" ref={this.blackFill} />
                     <path class="NormalStroke Cyan" ref={this.targetSymbolRef} d="m122.79 83.831v6.5516h-7.0514v-8.5675l2.0147-1.0079m4.8441-3.0238v-6.5516h-6.8588v8.5675l2.0147 1.0079" />
-                    <text id="AltTapeTargetText" ref={this.AltTapeTargetText} class="FontMedium StartAlign Cyan" x="118.228" y="83.067062" style="white-space: pre">{this.textSub}</text>
+                    <text id="AltTapeTargetText" ref={this.altTapeTargetText} class="FontMedium StartAlign Cyan" x="118.228" y="83.067062" style="white-space: pre">{this.textSub}</text>
                 </g>
             </>
         );
@@ -494,11 +493,9 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & SimplaneValues>();
 
-        const simPlaneSub = this.props.bus.getSubscriber<SimplaneValues>();
-
-        simPlaneSub.on('baroMode').whenChanged().handle((m) => {
+        sub.on('baroMode').whenChanged().handle((m) => {
             if (m === 'QFE') {
                 this.mode.set(m);
                 this.stdGroup.instance.classList.add('HiddenElement');
@@ -543,12 +540,12 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
             this.getText();
         });
 
-        simPlaneSub.on('units').whenChanged().handle((u) => {
+        sub.on('units').whenChanged().handle((u) => {
             this.unit = u;
             this.getText();
         });
 
-        simPlaneSub.on('pressure').whenChanged().handle((p) => {
+        sub.on('pressure').whenChanged().handle((p) => {
             this.pressure = p;
             this.getText();
         });
@@ -613,7 +610,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     metricAltToggle: boolean;
 }
 
-class MetricAltIndicator extends DisplayComponent<{bus: EventBus }> {
+class MetricAltIndicator extends DisplayComponent<{ bus: EventBus }> {
     private needsUpdate = false;
 
     private metricAlt = FSComponent.createRef<SVGGElement>();

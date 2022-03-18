@@ -1,7 +1,7 @@
 import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { getDisplayIndex } from './PFD';
-import { calculateHorizonOffsetFromPitch, getSmallestAngle } from './PFDUtils';
+import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 
