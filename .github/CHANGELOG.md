@@ -197,6 +197,7 @@
 1. [MCDU] Implement ground temp on INIT A - @tracernz (Mike)
 1. [BLEED] Attached hydraulic reservoirs to both engine bleed systems - @Gurgel100 (Pascal)
 1. [COND] More accurately define air conditioning knob rotations - @rare-potato(Rare Potato#9693)
+1. [FMGC] FAF altitude constraints on precision approaches treated correctly - @tracernz (Mike)
 
 ## 0.7.0
 

@@ -1935,4 +1935,14 @@ export class FlightPlanManager {
     get activeFlightPlan(): ManagedFlightPlan | undefined {
         return this._flightPlans[FlightPlans.Active];
     }
+
+    getApproachType(flightPlanIndex = this._currentFlightPlanIndex): ApproachType | undefined {
+        const fp = this._flightPlans[flightPlanIndex];
+        return fp?.procedureDetails.approachType ?? undefined;
+    }
+
+    getGlideslopeIntercept(flightPlanIndex = this._currentFlightPlanIndex): number | undefined {
+        const fp = this._flightPlans[flightPlanIndex];
+        return fp?.glideslopeIntercept ?? undefined;
+    }
 }

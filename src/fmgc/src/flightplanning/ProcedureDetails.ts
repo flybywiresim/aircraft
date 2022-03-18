@@ -58,4 +58,7 @@ export class ProcedureDetails {
 
     /** The length from the threshold of the runway extension fix. */
     public destinationRunwayExtension = -1;
+
+    /** The type of approach selected */
+    public approachType?: ApproachType;
 }
