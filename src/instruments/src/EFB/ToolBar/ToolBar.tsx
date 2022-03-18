@@ -53,15 +53,11 @@ interface ToolBarButtonProps {
     to: string;
 }
 
-const toolbarClassName = (active: boolean) => `${active
-    ? 'bg-theme-accent text-theme-text'
-    : 'text-theme-unselected'} flex w-min items-center justify-center hover:text-theme-text hover:bg-theme-accent transition duration-100 py-3.5 px-3.5 rounded-md mt-4`;
-
 const ToolBarButton: FC<ToolBarButtonProps> = ({ to, children }) => (
     <NavLink
         to={to}
-        activeClassName={toolbarClassName(true)}
-        className={toolbarClassName(false)}
+        activeClassName={`bg-theme-accent !text-theme-text`}
+        className={`flex w-min items-center justify-center hover:text-theme-text hover:bg-theme-accent transition duration-100 py-3.5 px-3.5 rounded-md mt-4 text-theme-unselected`}
     >
         {children}
     </NavLink>
