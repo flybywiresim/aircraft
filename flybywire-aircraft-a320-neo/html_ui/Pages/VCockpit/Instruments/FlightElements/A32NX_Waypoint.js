@@ -407,6 +407,7 @@ class AirportInfo extends WayPointInfo {
     }
     SetFromIFacilityAirport(data, loadApproachesData = true) {
         super.SetFromIFacilityWaypoint(data);
+        this.coordinates.alt = 3.28084 * data.runways.reduce((sum, r) => sum + r.elevation, 0) / data.runways.length;
         this.privateType = data.airportPrivateType;
         this.fuel = data.fuel1 + " " + data.fuel2;
         this.bestApproach = data.bestApproach;

@@ -15,6 +15,12 @@
         fill: none;
     }
 
+    .GaugeInactive {
+        stroke: $display-amber;
+        stroke-width: 2;
+        fill: none;
+    }
+
     .GaugeText {
         stroke: $display-white;
         font-size: 17px;
@@ -24,5 +30,17 @@
         stroke: $display-green;
         stroke-width: 3;
         fill: none;
+    }
+
+    .GaugeThrustLimitIndicator {
+        stroke: $display-amber;
+        stroke-width: 3;
+        fill: none;
+    }
+
+    .GaugeThrustLimitIndicatorFill {
+        stroke: $display-amber;
+        stroke-width: 3;
+        fill: $display-amber;
     }
 }

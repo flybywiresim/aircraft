@@ -86,7 +86,7 @@ type CondUnitProps = {
 }
 
 const CondUnit = ({ title, selectedTemp, cabinTemp, trimTemp, x, offset, hotAir } : CondUnitProps) => {
-    const rotateTemp = offset + selectedTemp;
+    const rotateTemp = offset + (selectedTemp / 3);
     const polyPoints = `${x + 4},206 ${x},199 ${x - 4},206`;
     const gaugeD = `m ${x - 26} 208 Q ${x} 186 ${x + 26} 208`;
     const ductC = `${x - 40}`;
