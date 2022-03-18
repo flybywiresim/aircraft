@@ -7,14 +7,19 @@ interface EngineBleedProps {
     y: number,
     engine: 1 | 2,
     sdacDatum: boolean,
+    enginePRValveOpen: boolean
 }
 
-const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum }) => {
+const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRValveOpen }) => {
     const [engineN1] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
     const [engineN1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 500);
     const engineN1BelowIdle = (engineN1 + 2) < engineN1Idle;
     const [engineHPValveOpen] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_HP_VALVE_OPEN`, 'bool', 500);
-    const [enginePRValveOpen] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PR_VALVE_OPEN`, 'bool', 500);
+    // const [enginePRValveOpen] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PR_VALVE_OPEN`, 'bool', 500);
+    const [precoolerOutletTemp] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PRECOOLER_OUTLET_TEMPERATURE`, 'celsius', 100);
+    const precoolerOutletTempFive = Math.round(precoolerOutletTemp / 5) * 5;
+    const [precoolerInletPress] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PRECOOLER_INLET_PRESSURE`, 'psi', 10);
+    const precoolerInletPressTwo = Math.round(precoolerInletPress / 2) * 2;
 
     return (
         <g id={`bleed-${engine}`}>
@@ -35,10 +40,26 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum }) => {
             <path className="GreyStroke Stroke2" d={`M ${x},${y + 247} l -27,0 l 0,54 l 54,0 l 0,-54 l -27,0`} />
             <text x={engine === 1 ? x + 40 : x - 70} y={y + 270} className="Cyan Standard">PSI</text>
             <text x={engine === 1 ? x + 40 : x - 70} y={y + 298} className="Cyan Standard">°C</text>
+            {/* Precooler outlet pressure */}
+            <text
+                x={x}
+                y={y + 270}
+                className={`Large Center ${!sdacDatum || precoolerInletPressTwo <= 4 || precoolerInletPressTwo > 60 ? 'Amber' : 'Green'}`}
+            >
+                {!sdacDatum ? 'XX' : precoolerInletPressTwo}
+            </text>
+            {/* Precooler outlet temperature */}
+            <text
+                x={x + 20}
+                y={y + 295}
+                className={`Large End ${!sdacDatum || precoolerOutletTempFive < 150 || precoolerOutletTempFive > 257 ? 'Amber' : 'Green'}`}
+            >
+                {!sdacDatum ? 'XX' : precoolerOutletTempFive}
+            </text>
 
             {/* Pressure regulating valve */}
-            <path className={!engineN1BelowIdle && enginePRValveOpen === 1 ? 'GreenLine' : 'Hide'} d={`M ${x},${y + 340} l 0,-39`} />
-            <Valve x={x} y={y + 355} radius={15} css="GreenLine" position={enginePRValveOpen === 1 ? 'V' : 'H'} sdacDatum={sdacDatum} />
+            <path className={!engineN1BelowIdle && enginePRValveOpen ? 'GreenLine' : 'Hide'} d={`M ${x},${y + 340} l 0,-37`} />
+            <Valve x={x} y={y + 355} radius={15} css="GreenLine" position={enginePRValveOpen ? 'V' : 'H'} sdacDatum={sdacDatum} />
             <path className={engineN1BelowIdle ? 'AmberLine' : 'GreenLine'} d={`M ${x},${y + 415} l 0,-45`} />
             <text x={x + 2} y={y + 433} className="White Center Standard">IP</text>
 
@@ -48,7 +69,7 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum }) => {
             <text x={engine === 1 ? x + 95 : x - 90} y={y + 433} className="White Center Standard">HP</text>
             <path className={engineHPValveOpen === 1 ? 'GreenLine' : 'Hide'} d={`M ${engine === 1 ? x + 33 : x - 33},${y + 398} l ${engine === 1 ? '-33' : '33'},0`} />
 
-            <text x={engine === 1 ? x - 66 : x + 66} y={423} className={`Large ${engineN1BelowIdle ? 'Amber' : 'White'}`}>{engine}</text>
+            <text x={engine === 1 ? x - 66 : x + 66} y={423} className={`Huge ${engineN1BelowIdle ? 'Amber' : 'White'}`}>{engine}</text>
         </g>
     );
 };
