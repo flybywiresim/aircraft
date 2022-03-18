@@ -10,21 +10,21 @@ describe('parseMetar', () => {
         let undefString: string;
         expect(() => {
             parseMetar(undefString);
-        }).toThrow(new Error('METAR NOT AVAILABLE'));
+        }).toThrow(new Error('METAR not available'));
     });
 
     it('throws an error when provided with an empty value', () => {
         // empty metar string
         expect(() => {
             parseMetar('');
-        }).toThrow(new Error('METAR DATA INCOMPLETE'));
+        }).toThrow(new Error('METAR data incomplete'));
     });
 
     it('throws an error when provided with an incomplete value', () => {
         // empty metar string
         expect(() => {
             parseMetar('EDDM 291250Z');
-        }).toThrow(new Error('METAR DATA INCOMPLETE'));
+        }).toThrow(new Error('METAR data incomplete'));
     });
 
     it('throws an error when provided with an incorrect ICAO value', () => {
