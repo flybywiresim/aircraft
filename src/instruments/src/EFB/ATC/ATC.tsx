@@ -35,13 +35,13 @@ const FrequencyCard = ({ className, callsign, frequency, setActive, setStandby }
 
             <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
                 <div
-                    className="flex justify-center items-center w-full bg-opacity-80 bg-theme-highlight"
+                    className="flex justify-center items-center w-full font-bold bg-theme-highlight"
                     onClick={setActive}
                 >
                     <h2>Set Active</h2>
                 </div>
                 <div
-                    className="flex justify-center items-center w-full bg-yellow-500 bg-opacity-80"
+                    className="flex justify-center items-center w-full font-bold bg-utility-amber"
                     onClick={() => setStandby}
                 >
                     <h2>Set Standby</h2>
