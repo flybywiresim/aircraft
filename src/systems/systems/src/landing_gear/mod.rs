@@ -1,6 +1,6 @@
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
-    hydraulic::landing_gear::{GearComponentController, GearSystemStateMachine, GearsSystemState},
+    hydraulic::landing_gear::{GearSystemStateMachine, GearsSystemState},
     shared::{
         ElectricalBusType, ElectricalBuses, GearWheel, LandingGearHandle, LandingGearRealPosition,
         LgciuDoorPosition, LgciuGearControl, LgciuGearExtension, LgciuSensors, LgciuWeightOnWheels,
@@ -356,6 +356,7 @@ impl LgciuSensors for LgciuSensorInputs {}
 
 pub struct LandingGearControlInterfaceUnit {
     gear_handle_position_id: VariableIdentifier,
+    lever_baulk_lock_id: VariableIdentifier,
 
     left_gear_downlock_id: VariableIdentifier,
     left_gear_unlock_id: VariableIdentifier,
@@ -376,7 +377,10 @@ pub struct LandingGearControlInterfaceUnit {
 impl LandingGearControlInterfaceUnit {
     pub fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
-            gear_handle_position_id: context.get_identifier("GEAR HANDLE POSITION".to_owned()),
+            gear_handle_position_id: context
+                .get_identifier("FINAL_GEAR_HANDLE_POSITION".to_owned()),
+            lever_baulk_lock_id: context
+                .get_identifier(format!("LGCIU_{}_GEAR_HANDLE_BAULK_LOCKED", number)),
 
             left_gear_downlock_id: context
                 .get_identifier(format!("LGCIU_{}_LEFT_GEAR_DOWNLOCKED", number)),
@@ -470,6 +474,8 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
             &self.right_gear_downlock_id,
             self.sensor_inputs.downlock_state(GearWheel::RIGHT),
         );
+
+        writer.write(&self.lever_baulk_lock_id, self.gear_handle_baulk_locked());
     }
 }
 
@@ -574,7 +580,9 @@ impl LandingGearHandle for LandingGearControlInterfaceUnit {
     }
 
     fn gear_handle_baulk_locked(&self) -> bool {
-        !(self.left_and_right_gear_extended(false) && self.nose_gear_extended(false))
+        // Unpowered lgciu will lock mechanism
+        !self.is_powered
+            || !(self.left_and_right_gear_extended(false) && self.nose_gear_extended(false))
     }
 }
 
