@@ -3,7 +3,7 @@ import React from 'react';
 import { Route } from 'react-router';
 import { Link } from 'react-router-dom';
 import { Failure } from '@flybywiresim/failures';
-import { pathify } from '../Utils/routing';
+import { pathify } from '../../../Utils/routing';
 import { AtaChapterPage } from './AtaChapterPage';
 import { useFailuresOrchestrator } from '../../../failures-orchestrator-provider';
 
