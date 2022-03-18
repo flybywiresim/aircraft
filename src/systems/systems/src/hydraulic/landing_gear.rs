@@ -54,13 +54,14 @@ impl HydraulicGearSystem {
 
             hydraulic_supply: GearSystemHydraulicSupply::new(),
 
-            nose_door_assembly: GearDoorAssembly::new(true, nose_door, false),
-            left_door_assembly: GearDoorAssembly::new(true, left_door, false),
-            right_door_assembly: GearDoorAssembly::new(true, right_door, false),
+            nose_door_assembly: GearDoorAssembly::new(false, nose_door, false),
+            left_door_assembly: GearDoorAssembly::new(false, left_door, false),
+            right_door_assembly: GearDoorAssembly::new(false, right_door, false),
 
+            // Nose gear has pull to retract system while main gears have push to retract
             nose_gear_assembly: GearDoorAssembly::new(false, nose_gear, true),
-            left_gear_assembly: GearDoorAssembly::new(false, left_gear, true),
-            right_gear_assembly: GearDoorAssembly::new(false, right_gear, true),
+            left_gear_assembly: GearDoorAssembly::new(true, left_gear, true),
+            right_gear_assembly: GearDoorAssembly::new(true, right_gear, true),
         }
     }
 
@@ -312,7 +313,7 @@ pub trait GearComponentController {
 }
 
 struct GearDoorAssembly {
-    is_door: bool,
+    is_inverted_control: bool,
     hydraulic_controller: GearDoorHydraulicController,
     hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
     fully_opened_proximity_detectors: [ProximityDetector; 2],
@@ -328,13 +329,16 @@ impl GearDoorAssembly {
     const UPLOCKED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.01;
 
     fn new(
-        is_door: bool,
+        is_inverted_control: bool,
         hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
         has_hydraulic_downlock: bool,
     ) -> Self {
         Self {
-            is_door,
-            hydraulic_controller: GearDoorHydraulicController::new(is_door),
+            is_inverted_control,
+            hydraulic_controller: GearDoorHydraulicController::new(
+                is_inverted_control,
+                !has_hydraulic_downlock,
+            ),
             hydraulic_assembly,
             fully_opened_proximity_detectors: [ProximityDetector::new(
                 Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO),
@@ -396,7 +400,7 @@ impl GearDoorAssembly {
     }
 
     fn position_normalized(&self) -> Ratio {
-        if self.is_door {
+        if !self.is_inverted_control {
             self.hydraulic_assembly.position_normalized()
         } else {
             Ratio::new::<ratio>(1.) - self.hydraulic_assembly.position_normalized()
@@ -419,7 +423,8 @@ impl GearDoorAssembly {
 }
 
 struct GearDoorHydraulicController {
-    is_door: bool,
+    is_inverted_control: bool,
+    is_soft_downlock: bool,
     requested_position: Ratio,
     should_lock: bool,
     lock_position: Ratio,
@@ -427,9 +432,10 @@ struct GearDoorHydraulicController {
     actual_position: Ratio,
 }
 impl GearDoorHydraulicController {
-    fn new(is_door: bool) -> Self {
+    fn new(is_inverted_control: bool, is_soft_downlock: bool) -> Self {
         Self {
-            is_door,
+            is_inverted_control,
+            is_soft_downlock,
             requested_position: Ratio::new::<ratio>(0.),
             should_lock: true,
             lock_position: Ratio::new::<ratio>(0.),
@@ -467,18 +473,29 @@ impl HydraulicAssemblyController for GearDoorHydraulicController {
     fn requested_mode(&self) -> LinearActuatorMode {
         // TODO if vent valve opened -> damping else -> valve closed mode
 
-        if self.is_door
-            && self.requested_position.get::<ratio>() >= 1.
-            && self.actual_position.get::<ratio>() >= 0.98
-        {
-            LinearActuatorMode::ClosedValves
+        let converted_req_pos = if self.is_inverted_control {
+        } else {
+        };
+
+        if self.is_soft_downlock {
+            if (!self.is_inverted_control
+                && self.requested_position.get::<ratio>() >= 1.
+                && self.actual_position.get::<ratio>() >= 0.98)
+                || (self.is_inverted_control
+                    && self.requested_position.get::<ratio>() <= 0.
+                    && self.actual_position.get::<ratio>() <= 0.02)
+            {
+                LinearActuatorMode::ClosedValves
+            } else {
+                LinearActuatorMode::PositionControl
+            }
         } else {
             LinearActuatorMode::PositionControl
         }
     }
 
     fn requested_position(&self) -> Ratio {
-        if !self.is_door {
+        if self.is_inverted_control {
             Ratio::new::<ratio>(1.) - self.requested_position
         } else {
             self.requested_position
@@ -490,7 +507,7 @@ impl HydraulicAssemblyController for GearDoorHydraulicController {
     }
 
     fn requested_lock_position(&self) -> Ratio {
-        if !self.is_door {
+        if self.is_inverted_control {
             Ratio::new::<ratio>(1.) - self.lock_position
         } else {
             self.lock_position
@@ -760,8 +777,8 @@ mod tests {
             Self {
                 loop_updater: MaxStepLoop::new(time_step),
 
-                door_assembly: GearDoorAssembly::new(true, door_hydraulic_assembly, false),
-                gear_assembly: GearDoorAssembly::new(false, gear_hydraulic_assembly, true),
+                door_assembly: GearDoorAssembly::new(false, door_hydraulic_assembly, false),
+                gear_assembly: GearDoorAssembly::new(true, gear_hydraulic_assembly, true),
 
                 component_controller: TestGearSystemController::new(),
 

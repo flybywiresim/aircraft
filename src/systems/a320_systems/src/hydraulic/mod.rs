@@ -771,13 +771,13 @@ impl A320GearFactory {
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.145),
-            Length::new::<meter>(0.105),
-            VolumeRate::new::<gallon_per_second>(0.15),
+            Length::new::<meter>(0.12),
+            Length::new::<meter>(0.09),
+            VolumeRate::new::<gallon_per_second>(0.1),
             800000.,
             15000.,
             50000.,
-            1200000.,
+            2200000.,
             Duration::from_millis(100),
             [1., 1., 1., 1., 1., 1.],
             [0., 0.2, 0.21, 0.79, 0.8, 1.],
@@ -852,24 +852,24 @@ impl A320GearFactory {
     }
 
     fn a320_nose_gear_body() -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(100. / 1000., 1855. / 1000., 2025. / 1000.);
-        let cg_offset = Vector3::new(0., -size[1] / 2., 0.);
+        let size = Vector3::new(0.3, 2.453, 0.3);
+        let cg_offset = Vector3::new(0., -2. / 3. * size[1], 0.);
 
-        let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
-        let anchor = Vector3::new(-0.7596, -0.086, 0.);
-        let axis_direction = Vector3::new(0., 0., 1.);
+        let control_arm = Vector3::new(0., -0.093, 0.14);
+        let anchor = Vector3::new(0., 0.56, 0.);
+
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(130.),
+            Mass::new::<kilogram>(300.),
             size,
             cg_offset,
             control_arm,
             anchor,
-            Angle::new::<degree>(-23.),
-            Angle::new::<degree>(136.),
-            Angle::new::<degree>(-23.),
-            100.,
+            Angle::new::<degree>(-101.),
+            Angle::new::<degree>(92.),
+            Angle::new::<degree>(-9.),
+            150.,
             true,
-            axis_direction,
+            Vector3::new(1., 0., 0.),
         )
     }
 
