@@ -30,13 +30,13 @@ import {
 } from '../Store/features/navigationPage';
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
-import { NavigraphNav } from './Pages/NavigraphPage';
-import { getPdfUrl, LocalFileRoot } from './Pages/LocalFilesPage';
+import { NavigraphPage } from './Pages/NavigraphPage/NavigraphPage';
+import { LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage';
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
-    { name: 'Local Files', component: <LocalFileRoot />, associatedTab: NavigationTab.LOCAL_FILES },
-    { name: 'Navigraph', component: <NavigraphNav />, associatedTab: NavigationTab.NAVIGRAPH },
+    { name: 'Local Files', component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
+    { name: 'Navigraph', component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
     { name: 'Pinned Charts', component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
 ];
 
@@ -69,7 +69,7 @@ export const Navigation = () => {
     );
 };
 
-export const ChartComponent = () => {
+export const ChartViewer = () => {
     const dispatch = useAppDispatch();
     const {
         selectedNavigationTabIndex,

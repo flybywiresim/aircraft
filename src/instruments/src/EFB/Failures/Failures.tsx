@@ -3,7 +3,7 @@ import { AtaChaptersTitle } from '@shared/ata';
 import { Route } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
 import { CompactUI } from './Pages/Compact';
-import { ComfortUI } from './Pages/Comfort/index';
+import { ComfortUI } from './Pages/Comfort';
 import { Navbar } from '../UtilComponents/Navbar';
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
