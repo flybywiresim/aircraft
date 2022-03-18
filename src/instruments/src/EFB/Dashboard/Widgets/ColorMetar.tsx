@@ -10,52 +10,33 @@ import { ColorCode, MetarParserType } from '@instruments/common/metarTypes';
  */
 export const ColoredMetar = ({ metar }: { metar: MetarParserType }) => {
     const partsList = metar.raw_parts.map((metarPart, index) => {
+        let style = '';
+
         switch (metar.color_codes[index]) {
         case ColorCode.Highlight:
-            return (
-                <span className="text-2xl text-theme-highlight">
-                    {metarPart}
-                    {' '}
-                </span>
-            );
+            style = 'text-theme-highlight';
+            break;
         case ColorCode.Info:
-            return (
-                <span className="text-2xl text-gray-500">
-                    {metarPart}
-                    {' '}
-                </span>
-            );
+            style = 'text-gray-500';
+            break;
         case ColorCode.Caution:
-            return (
-                <span className="text-2xl text-yellow-500">
-                    {metarPart}
-                    {' '}
-                </span>
-            );
+            style = 'text-yellow-500';
+            break;
         case ColorCode.Warning:
-            return (
-                <span className="text-2xl text-red-400">
-                    {metarPart}
-                    {' '}
-                </span>
-            );
+            style = 'text-red-400';
+            break;
         case ColorCode.TrendMarker:
-            return (
-                <>
-                    <span className="text-2xl font-bold text-gray-500">
-                        {metarPart}
-                    </span>
-                    {' '}
-                </>
-            );
+            style = 'font-bold text-gray-500';
+            break;
         default:
-            return (
-                <span className="text-2xl">
-                    {metarPart}
-                    {' '}
-                </span>
-            );
         }
+
+        return (
+            <span className={`text-2xl ${style}`}>
+                {metarPart}
+                {' '}
+            </span>
+        );
     });
 
     return (

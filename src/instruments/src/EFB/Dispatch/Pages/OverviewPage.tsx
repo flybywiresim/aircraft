@@ -21,8 +21,6 @@ const InformationEntry: FC<InformationEntryProps> = ({ children, title, info }) 
 );
 
 export const OverviewPage = () => {
-    const { usingMetric } = Units;
-
     let [airline] = useSimVar('ATC AIRLINE', 'String', 1_000);
 
     airline ||= 'FlyByWire Simulations';
@@ -32,15 +30,9 @@ export const OverviewPage = () => {
 
         switch (unitType) {
         case 'weight':
-            if (usingMetric) {
-                return `${numberWithCommas(metricValue)} [kg]`;
-            }
-            return `${numberWithCommas(metricValue * 2.205)} [lbs]`;
+            return `${numberWithCommas(Units.kilogramToUser(metricValue))} [${Units.userWeightSuffixEis2}]`;
         case 'volume':
-            if (usingMetric) {
-                return `${numberWithCommas(metricValue)} [l]`;
-            }
-            return `${numberWithCommas(metricValue / 3.785)} [gal]`;
+            return `${numberWithCommas(Units.litreToUser(metricValue))} [${Units.userVolumeSuffixEis2}]`;
         case 'distance':
             return `${numberWithCommas(metricValue)} [nm]`;
         default: throw new Error('Invalid unit type');
@@ -48,7 +40,7 @@ export const OverviewPage = () => {
     };
 
     return (
-        <div className="overflow-hidden p-6 mr-3 w-1/2 h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="overflow-hidden p-6 mr-3 w-1/2 rounded-lg border-2 h-content-section-reduced border-theme-accent">
             <h1 className="font-bold">Airbus A320neo</h1>
             <p>{airline}</p>
 

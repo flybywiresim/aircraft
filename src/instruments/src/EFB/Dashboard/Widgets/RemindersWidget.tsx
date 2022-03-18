@@ -66,7 +66,7 @@ export const RemindersWidget = () => {
      * Let's check for any missing keys in the saved list in case more widgets get added in the future.
      */
     useEffect(() => {
-        Array.from(REMINDERS.keys()).forEach((key) => {
+        [...REMINDERS.keys()].forEach((key) => {
             if (!reminderKeyArr.includes(key)) {
                 setOrderedReminderKeys(`${orderedReminderKeys},${key}`);
             }
@@ -101,18 +101,16 @@ export const RemindersWidget = () => {
                 <div className={`absolute inset-0 z-40 transition duration-100 ${reorderMode ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                     <div className="absolute inset-0 opacity-80 bg-theme-body" />
                     <div className="absolute inset-0">
-                        <ScrollableContainer height={51}>
-                            <div className="p-6 space-y-4">
-                                {reminderKeyArr.map((key, index) => (
-                                    <ReminderKeyEditCard
-                                        reminderKey={key}
-                                        keyArrLen={reminderKeyArr.length}
-                                        setter={(index) => setOrderedReminderKeys(arrayMove(key, index))}
-                                        index={index}
-                                        key={key}
-                                    />
-                                ))}
-                            </div>
+                        <ScrollableContainer innerClassName="p-6 space-y-4" height={51}>
+                            {reminderKeyArr.map((key, index) => (
+                                <ReminderKeyEditCard
+                                    reminderKey={key}
+                                    keyArrLen={reminderKeyArr.length}
+                                    setter={(index) => setOrderedReminderKeys(arrayMove(key, index))}
+                                    index={index}
+                                    key={key}
+                                />
+                            ))}
                         </ScrollableContainer>
                     </div>
                 </div>

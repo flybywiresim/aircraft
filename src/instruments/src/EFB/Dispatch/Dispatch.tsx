@@ -21,6 +21,7 @@ export const Dispatch = () => {
                     basePath="/dispatch"
                 />
             </div>
+
             <PageRedirect basePath="/dispatch" tabs={tabs} />
             <TabRoutes basePath="/dispatch" tabs={tabs} />
         </div>

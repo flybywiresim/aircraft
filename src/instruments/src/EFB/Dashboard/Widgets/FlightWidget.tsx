@@ -22,11 +22,43 @@ const InformationEntry = ({ title, info }: InformationEntryProps) => (
     </div>
 );
 
+interface NoSimBriefDataOverlayProps {
+    simbriefDataLoaded: boolean;
+    simbriefDataPending: boolean;
+    fetchData: () => void;
+}
+
+const NoSimBriefDataOverlay = ({ simbriefDataLoaded, simbriefDataPending, fetchData }: NoSimBriefDataOverlayProps) => (
+    <div className={`absolute inset-0 transition duration-200 bg-theme-body ${simbriefDataLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <h1 className="flex justify-center items-center w-full h-full">
+            {simbriefDataPending ? (
+                <CloudArrowDown className="animate-bounce" size={40} />
+            ) : (
+                <>
+                    {!simbriefDataLoaded && (
+                        <div className="space-y-4">
+                            <h1>SimBrief data not yet loaded.</h1>
+
+                            <button
+                                type="button"
+                                onClick={fetchData}
+                                className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                            >
+                                <CloudArrowDown size={26} />
+                                <p className="text-current">Import SimBrief Data</p>
+                            </button>
+                        </div>
+                    )}
+                </>
+            )}
+        </h1>
+    </div>
+);
+
 export const FlightWidget = () => {
-    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
     const { data } = useAppSelector((state) => state.simbrief);
-    const simbriefDataLoaded = isSimbriefDataLoaded();
     const [simbriefDataPending, setSimbriefDataPending] = useState(false);
+    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
 
     const {
         schedIn,
@@ -96,6 +128,8 @@ export const FlightWidget = () => {
 
         setSimbriefDataPending(false);
     };
+
+    const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
         <div className="w-full">
@@ -194,30 +228,11 @@ export const FlightWidget = () => {
                     </button>
                 </div>
 
-                <div className={`absolute inset-0 transition duration-200 bg-theme-body ${simbriefDataLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                    <h1 className="flex justify-center items-center w-full h-full">
-                        {simbriefDataPending ? (
-                            <CloudArrowDown className="animate-bounce" size={40} />
-                        ) : (
-                            <>
-                                {!simbriefDataLoaded && (
-                                    <div className="space-y-4">
-                                        <h1>SimBrief data not yet loaded.</h1>
-
-                                        <button
-                                            type="button"
-                                            onClick={fetchData}
-                                            className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
-                                        >
-                                            <CloudArrowDown size={26} />
-                                            <p className="text-current">Import SimBrief Data</p>
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </h1>
-                </div>
+                <NoSimBriefDataOverlay
+                    simbriefDataLoaded={simbriefDataLoaded}
+                    simbriefDataPending={simbriefDataPending}
+                    fetchData={fetchData}
+                />
             </div>
         </div>
     );

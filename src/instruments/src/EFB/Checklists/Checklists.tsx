@@ -120,66 +120,70 @@ export const Checklists = () => {
 
     const { showModal } = useModals();
 
+    const handleResetConfirmation = () => {
+        showModal(
+            <PromptModal
+                title="Checklist Reset Warning"
+                bodyText="Are you sure to reset all checklists?"
+                onConfirm={() => {
+                    checklists.forEach((cl, clIndex) => {
+                        cl.items.forEach((_, itemIdx) => {
+                            if (autoFillChecklists && CHECKLISTS[clIndex].items[itemIdx].condition) {
+                                return;
+                            }
+                            dispatch(setChecklistItemCompletion({ checklistIndex: clIndex, itemIndex: itemIdx, completionValue: false }));
+                        });
+                        dispatch(setChecklistCompletion({ checklistIndex: clIndex, completion: false }));
+                    });
+                }}
+            />,
+        );
+    };
+
+    const handleResetChecklist = () => {
+        checklists[selectedChecklistIndex].items.forEach((_, itemIdx) => {
+            if (autoFillChecklists && CHECKLISTS[selectedChecklistIndex].items[itemIdx].condition) {
+                return;
+            }
+            dispatch(setChecklistItemCompletion({ checklistIndex: selectedChecklistIndex, itemIndex: itemIdx, completionValue: false }));
+        });
+        dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: false }));
+    };
+
     return (
         <>
             <h1 className="mb-4 font-bold">Checklists</h1>
             <div className="flex flex-row space-x-6 h-content-section-reduced">
                 <div className="flex flex-col flex-shrink-0 justify-between w-1/4">
-                    <ScrollableContainer height={46}>
-                        <div className="space-y-4">
-                            {CHECKLISTS.map((cl, index) => (
-                                <div
-                                    className={`flex justify-center items-center w-full h-12 rounded-md transition duration-100 ${getTabClassName(index)}`}
-                                    onClick={() => handleClick(index)}
-                                >
-                                    {!!(autoFillChecklists && firstRelevantUnmarkedIdx === index) && (
-                                        <Link45deg size={24} />
-                                    )}
-                                    {cl.name}
-                                </div>
-                            ))}
-                        </div>
+                    <ScrollableContainer innerClassName="space-y-4" height={46}>
+                        {CHECKLISTS.map((cl, index) => (
+                            <div
+                                className={`flex justify-center items-center w-full h-12 rounded-md transition duration-100 ${getTabClassName(index)}`}
+                                onClick={() => handleClick(index)}
+                            >
+                                {!!autoFillChecklists && firstRelevantUnmarkedIdx === index && (
+                                    <Link45deg size={24} />
+                                )}
+                                {cl.name}
+                            </div>
+                        ))}
                     </ScrollableContainer>
 
-                    <div
+                    <button
+                        type="button"
                         className="flex justify-center items-center h-12 font-bold rounded-md border-2 transition duration-100 text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red border-utility-red"
-                        onClick={() => {
-                            showModal(
-                                <PromptModal
-                                    title="Checklist Reset Warning"
-                                    bodyText="Are you sure to reset all checklists?"
-                                    onConfirm={() => {
-                                        checklists.forEach((cl, clIndex) => {
-                                            cl.items.forEach((_, itemIdx) => {
-                                                if (autoFillChecklists && CHECKLISTS[clIndex].items[itemIdx].condition) {
-                                                    return;
-                                                }
-                                                dispatch(setChecklistItemCompletion({ checklistIndex: clIndex, itemIndex: itemIdx, completionValue: false }));
-                                            });
-                                            dispatch(setChecklistCompletion({ checklistIndex: clIndex, completion: false }));
-                                        });
-                                    }}
-                                />,
-                            );
-                        }}
+                        onClick={handleResetConfirmation}
                     >
                         Reset All
-                    </div>
+                    </button>
 
-                    <div
+                    <button
+                        type="button"
                         className="flex justify-center items-center h-12 font-bold rounded-md border-2 transition duration-100 text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red border-utility-red"
-                        onClick={() => {
-                            checklists[selectedChecklistIndex].items.forEach((_, itemIdx) => {
-                                if (autoFillChecklists && CHECKLISTS[selectedChecklistIndex].items[itemIdx].condition) {
-                                    return;
-                                }
-                                dispatch(setChecklistItemCompletion({ checklistIndex: selectedChecklistIndex, itemIndex: itemIdx, completionValue: false }));
-                            });
-                            dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: false }));
-                        }}
+                        onClick={handleResetChecklist}
                     >
                         Reset Checklist
-                    </div>
+                    </button>
                 </div>
 
                 <ChecklistPage />

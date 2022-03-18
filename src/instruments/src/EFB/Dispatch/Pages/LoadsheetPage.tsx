@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { CloudArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
@@ -7,17 +8,63 @@ import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/featu
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { setOfpScroll } from '../../Store/features/dispatchPage';
 
+const NoSimBriefDataOverlay = () => {
+    const dispatch = useAppDispatch();
+    const simbriefDataLoaded = isSimbriefDataLoaded();
+
+    const [simbriefDataPending, setSimbriefDataPending] = useState(false);
+    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+
+    const fetchData = async () => {
+        setSimbriefDataPending(true);
+
+        try {
+            const action = await fetchSimbriefDataAction(simbriefUserId ?? '');
+
+            dispatch(action);
+            dispatch(setOfpScroll(0));
+        } catch (e) {
+            toast.error(e.message);
+        }
+
+        setSimbriefDataPending(false);
+    };
+
+    return (
+        <div className={`absolute inset-0 transition duration-200 bg-theme-body ${simbriefDataLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            <h1 className="flex justify-center items-center w-full h-full">
+                {simbriefDataPending ? (
+                    <CloudArrowDown className="animate-bounce" size={40} />
+                ) : (
+                    <>
+                        {!simbriefDataLoaded && (
+                            <div className="flex flex-col justify-center items-center space-y-8 h-full">
+                                <h1 className="max-w-4xl text-center">You have not yet imported any SimBrief data.</h1>
+                                <button
+                                    type="button"
+                                    onClick={fetchData}
+                                    className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                                >
+                                    <CloudArrowDown size={26} />
+                                    <p className="text-current">Import SimBrief Data</p>
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
+            </h1>
+        </div>
+    );
+};
+
 export const LoadSheetWidget = () => {
     const loadsheet = useAppSelector((state) => state.simbrief.data.loadsheet);
 
     const ref = useRef<HTMLDivElement>(null);
 
     const [fontSize, setFontSize] = usePersistentProperty('LOADSHEET_FONTSIZE', '14');
-    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
 
     const [imageSize, setImageSize] = useState(60);
-
-    const [simbriefDataPending, setSimbriefDataPending] = useState(false);
 
     const dispatch = useAppDispatch();
 
@@ -65,22 +112,6 @@ export const LoadSheetWidget = () => {
         setImageSize(cImageSize);
     };
 
-    const fetchData = async () => {
-        setSimbriefDataPending(true);
-
-        try {
-            const action = await fetchSimbriefDataAction(simbriefUserId ?? '');
-
-            dispatch(action);
-            dispatch(setOfpScroll(0));
-        } catch (e) {
-            toast.error(e.message);
-        }
-
-        setSimbriefDataPending(false);
-    };
-
-    const simbriefDataLoaded = isSimbriefDataLoaded();
     const { ofpScroll } = useAppSelector((state) => state.dispatchPage);
 
     return (
@@ -115,29 +146,8 @@ export const LoadSheetWidget = () => {
                     />
                 </ScrollableContainer>
             </>
-            <div className={`absolute inset-0 transition duration-200 bg-theme-body ${simbriefDataLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                <h1 className="flex justify-center items-center w-full h-full">
-                    {simbriefDataPending ? (
-                        <CloudArrowDown className="animate-bounce" size={40} />
-                    ) : (
-                        <>
-                            {!simbriefDataLoaded && (
-                                <div className="flex flex-col justify-center items-center space-y-8 h-full">
-                                    <h1 className="max-w-4xl text-center">You have not yet imported any SimBrief data.</h1>
-                                    <button
-                                        type="button"
-                                        onClick={fetchData}
-                                        className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
-                                    >
-                                        <CloudArrowDown size={26} />
-                                        <p className="text-current">Import SimBrief Data</p>
-                                    </button>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </h1>
-            </div>
+
+            <NoSimBriefDataOverlay />
         </div>
     );
 };
