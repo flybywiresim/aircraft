@@ -20,6 +20,12 @@ class CDUVerticalRevisionPage {
             let waypointIdent = "---";
             if (waypoint) {
                 waypointIdent = waypoint.ident;
+                if (isDestination) {
+                    const destinationRunway = mcdu.flightPlanManager.getDestinationRunway();
+                    if (destinationRunway) {
+                        waypointIdent += Avionics.Utils.formatRunway(destinationRunway.designation);
+                    }
+                }
             }
             let coordinates = "---";
             if (waypointInfo.coordinates) {
