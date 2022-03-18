@@ -197,6 +197,7 @@
 1. [MCDU] Implement ground temp on INIT A - @tracernz (Mike)
 1. [BLEED] Attached hydraulic reservoirs to both engine bleed systems - @Gurgel100 (Pascal)
 1. [COND] More accurately define air conditioning knob rotations - @rare-potato(Rare Potato#9693)
+1. [PFD] Add EIS S14 features (A/BRK info on PFD, white SELECTED ALT) to the PFD - @luke (lukecologne#1156)
 
 ## 0.7.0
 
