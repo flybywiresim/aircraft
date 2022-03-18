@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
 import { CloudArrowDown } from 'react-bootstrap-icons';
+import { toast } from 'react-toastify';
 import { LocalFileChartUI } from './LocalFileChartUI';
 
 enum ConnectionState {
@@ -8,6 +9,23 @@ enum ConnectionState {
     FAILED,
     ESTABLISHED,
 }
+
+export const getPdfUrl = async (fileName: string, pageNumber: number): Promise<string> => {
+    try {
+        const resp = await fetch(`http://localhost:8380/api/v1/utility/pdf?filename=${fileName}&pagenumber=${pageNumber}`);
+
+        if (!resp.ok) {
+            toast.error('Failed to retrieve requested PDF Document.');
+            return Promise.reject();
+        }
+
+        const blob = await resp.blob();
+        return URL.createObjectURL(blob);
+    } catch (_) {
+        toast.error('Failed to retrieve requested PDF Document.');
+        return Promise.reject();
+    }
+};
 
 export const LocalFilesPage = () => {
     const [connectionState, setConnectionState] = useState(ConnectionState.ATTEMPTING);
