@@ -1,6 +1,6 @@
-import { useAppDispatch, useAppSelector } from 'instruments/src/EFB/Store/store';
 import React, { useState, useEffect } from 'react';
 import { CloudArrowDown, PinFill, Pin } from 'react-bootstrap-icons';
+import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import {
     NavigationTab,
     editTabProperty,

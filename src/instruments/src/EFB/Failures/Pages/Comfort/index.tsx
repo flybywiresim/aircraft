@@ -1,9 +1,9 @@
 import { AtaChapterNumber, AtaChaptersTitle, AtaChaptersDescription } from '@shared/ata';
-import { pathify } from 'instruments/src/EFB/Utils/routing';
 import React from 'react';
 import { Route } from 'react-router';
 import { Link } from 'react-router-dom';
 import { Failure } from '@flybywiresim/failures';
+import { pathify } from '../Utils/routing';
 import { AtaChapterPage } from './AtaChapterPage';
 import { useFailuresOrchestrator } from '../../../failures-orchestrator-provider';
 
