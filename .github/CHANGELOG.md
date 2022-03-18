@@ -196,7 +196,8 @@
 1. [MCDU] Update init/fuel prediction pages to H3 - @tracernz (Mike)
 1. [MCDU] Implement ground temp on INIT A - @tracernz (Mike)
 1. [BLEED] Attached hydraulic reservoirs to both engine bleed systems - @Gurgel100 (Pascal)
-1. [EFB] Fix Metar parser error - @brainshot (brainshot)
+1. [COND] More accurately define air conditioning knob rotations - @rare-potato(Rare Potato#9693)
+1. [EFB] Fix Metar parser error - @brainshot (brainshot) @frankkopp (Frank Kopp)
 
 ## 0.7.0
 
