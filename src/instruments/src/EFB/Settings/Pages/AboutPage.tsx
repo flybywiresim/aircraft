@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { SettingsPage } from '../Settings';
-import { FbwLogo } from '../../UtilComponents/FbwLogo';
+
+import FbwTail from '../../Assets/FBW-Tail.svg';
 
 interface BuildInfo {
     built: string;
@@ -26,7 +27,7 @@ const BuildInfoEntry = ({ title, value, underline = 0 }: BuildInfoEntryProps) =>
         <div className="flex flex-row mt-2 font-mono">
             <p>{title + '\u00A0'.repeat(SPACE_BETWEEN - title.length)}</p>
             <p className="ml-4">
-                <span className="underline text-theme-highlight">{first}</span>
+                <span className="text-theme-highlight underline">{first}</span>
                 {last}
             </p>
         </div>
@@ -53,7 +54,7 @@ export const AboutPage = () => {
 
                     <div className="flex flex-col">
                         <div className="flex flex-row items-center">
-                            <FbwLogo width={36} height={36} />
+                            <img className="w-[36px]" src={FbwTail} />
                             <h1 className="ml-4 text-4xl font-bold font-manrope">flyPadOS 3</h1>
                         </div>
 

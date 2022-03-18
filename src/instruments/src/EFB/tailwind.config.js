@@ -1,28 +1,6 @@
 'use strict';
 
-const reactComponentsClasses = require('@flybywiresim/react-components/build/usedCSSClasses.json');
 const colors = require('tailwindcss/colors');
-
-const watchFolders = [
-    'ATC',
-    'ChartsApi',
-    'Dashboard',
-    'Dispatch',
-    'Enum',
-    'Failures',
-    'Ground',
-    'Navigation',
-    'Performance',
-    'Service',
-    'Settings',
-    'SimbriefApi',
-    'StatusBar',
-    'Store',
-    'TODCalculator',
-    'ToolBar',
-    'UtilComponents',
-    'Utils',
-];
 
 module.exports = {
     mode: 'jit',
@@ -74,10 +52,16 @@ module.exports = {
                     medium: '#00C4F5',
                 },
                 'utility': {
-                    red: '#dc2626',
-                    green: '#84cc16',
-                    orange: '#f06400',
-                    pink: '#e92f8b',
+                    'red': 'var(--color-utility-red)',
+                    'green': 'var(--color-utility-green)',
+                    'orange': 'var(--color-utility-orange)',
+                    'amber': 'var(--color-utility-amber)',
+                    'blue': 'var(--color-utility-blue)',
+                    'purple': 'var(--color-utility-purple)',
+                    'pink': 'var(--color-utility-pink)',
+                    'salmon': 'var(--color-utility-salmon)',
+                    'grey': 'var(--color-utility-grey)',
+                    'dark-grey': 'var(--color-utility-dark-grey)',
                 },
             },
             maxWidth: { '1/2': '50%' },
