@@ -1878,6 +1878,24 @@ mod tests {
     }
 
     #[test]
+    fn nose_gear_locks_up_when_retracted() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(33), nose_gear_assembly())
+        });
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.1), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
+        test_bed.run_with_delta(Duration::from_secs(9));
+
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+        assert!(test_bed.query(|a| a.is_locked()));
+    }
+
+    #[test]
     fn aileron_initialized_down_stays_down_with_broken_actuator() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(Duration::from_millis(10), aileron_assembly(true))
@@ -2465,6 +2483,59 @@ mod tests {
             150.,
             is_locked,
             Vector3::new(0., 0., 1.),
+        )
+    }
+
+    fn nose_gear_assembly() -> HydraulicLinearActuatorAssembly<1> {
+        let rigid_body = nose_gear_body();
+        let actuator = nose_gear_actuator(&rigid_body);
+
+        HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
+    }
+
+    fn nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 5.;
+        const DEFAULT_P_GAIN: f64 = 0.05;
+        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+
+        LinearActuator::new(
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.12),
+            Length::new::<meter>(0.09),
+            VolumeRate::new::<gallon_per_second>(0.1),
+            800000.,
+            15000.,
+            50000.,
+            2200000.,
+            Duration::from_millis(100),
+            [1., 1., 1., 1., 1., 1.],
+            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
+        )
+    }
+
+    fn nose_gear_body() -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(0.3, 2.453, 0.3);
+        let cg_offset = Vector3::new(0., -2. / 3. * size[1], 0.);
+
+        let control_arm = Vector3::new(0., -0.093, 0.14);
+        let anchor = Vector3::new(0., 0.56, 0.);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(300.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-101.),
+            Angle::new::<degree>(92.),
+            Angle::new::<degree>(-9.),
+            150.,
+            true,
+            Vector3::new(1., 0., 0.),
         )
     }
 
