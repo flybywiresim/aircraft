@@ -1427,7 +1427,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Attempts to connect to a local websocket server
      */
     connectWebsocket(port) {
-        if (this.socket && this.socket.readyState) {
+        if (this.socket) {
             this.socket.close();
             this.socket = undefined;
         }
