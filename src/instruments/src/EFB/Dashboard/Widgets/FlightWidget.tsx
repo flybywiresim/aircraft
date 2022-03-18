@@ -160,7 +160,7 @@ export const FlightWidget = () => {
                         </div>
                         <div>
                             <div className="flex flex-row items-center w-full">
-                                <p className={`text-theme-highlight font-body ${flightPlanProgress > 1 ? 'text-theme-highlight' : 'text-theme-text'}`}>
+                                <p className={`font-body ${flightPlanProgress > 1 ? 'text-theme-highlight' : 'text-theme-text'}`}>
                                     {schedOutParsed}
                                 </p>
                                 <div className="flex flex-row mx-6 w-full h-1">
@@ -173,7 +173,7 @@ export const FlightWidget = () => {
                                             />
                                         )}
                                     </div>
-                                    <div className="w-full border-dashed bg-theme-text" style={{ width: `${100 - flightPlanProgress}%` }} />
+                                    <div className="w-full border-b-4 border-dashed" style={{ width: `${100 - flightPlanProgress}%` }} />
                                 </div>
                                 <p className={`text-right font-body ${flightPlanProgress > 99 ? 'text-theme-highlight' : 'text-theme-text'}`}>
                                     {schedInParsed}
