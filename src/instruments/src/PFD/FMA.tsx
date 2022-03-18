@@ -44,7 +44,7 @@ export const FMA = ({ isAttExcessive, fcdcWord1 }) => {
 
             <Row1 isAttExcessive={isAttExcessive} AThrMode={AThrMode} ABrkActive={ABrkActive} ABrkMode={ABrkMode} />
             <Row2 isAttExcessive={isAttExcessive} AThrMode={AThrMode} ABrkActive={ABrkActive} ABrkMode={ABrkMode} />
-            <Row3 isAttExcessive={isAttExcessive} ABrkActive={ABrkActive} ABrkMode={ABrkMode} AB3Message={AB3Message} />
+            <Row3 isAttExcessive={isAttExcessive} ABrkActive={ABrkActive} ABrkMode={ABrkMode} AB3Message={AB3Message} fcdcWord1={fcdcWord1} />
         </g>
     );
 };
@@ -77,7 +77,7 @@ const Row2 = ({ isAttExcessive, AThrMode, ABrkActive, ABrkMode }) => (
     </g>
 );
 
-const Row3 = ({ isAttExcessive, ABrkMode, ABrkActive, AB3Message }) => (
+const Row3 = ({ isAttExcessive, ABrkMode, ABrkActive, AB3Message, fcdcWord1 }) => (
     <g>
         <A3Cell ABrkMode={ABrkMode} ABrkActive={ABrkActive} AB3Message={AB3Message} />
         {!isAttExcessive && (
