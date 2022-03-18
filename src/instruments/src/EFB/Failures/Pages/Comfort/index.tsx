@@ -52,14 +52,15 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAChapterCardProps) 
 };
 
 interface ComfortUIProps {
-    chapters: AtaChapterNumber[];
+    filteredChapters: AtaChapterNumber[];
+    allChapters: AtaChapterNumber[];
     failures: Failure[];
 }
 
-export const ComfortUI = ({ chapters, failures }: ComfortUIProps) => (
+export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUIProps) => (
     <>
         <Route exact path="/failures/comfort">
-            {chapters.map((chapter) => (
+            {filteredChapters.map((chapter) => (
                 <ATAChapterCard
                     ataNumber={chapter}
                     title={AtaChaptersTitle[chapter]}
@@ -68,7 +69,7 @@ export const ComfortUI = ({ chapters, failures }: ComfortUIProps) => (
             ))}
         </Route>
 
-        {chapters.map((chapter) => (
+        {allChapters.map((chapter) => (
             <Route path={`/failures/comfort/${chapter.toString()}`}>
                 <AtaChapterPage chapter={chapter} failures={failures} />
             </Route>

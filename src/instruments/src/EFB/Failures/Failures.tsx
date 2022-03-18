@@ -33,7 +33,7 @@ export const Failures = () => {
     const filteredChapters = chapters.filter((chapter) => filteredFailures.map((failure) => failure.ata).includes(chapter));
 
     const tabs: PageLink[] = [
-        { name: 'Comfort', component: <ComfortUI chapters={filteredChapters} failures={filteredFailures} /> },
+        { name: 'Comfort', component: <ComfortUI filteredChapters={filteredChapters} allChapters={chapters} failures={filteredFailures} /> },
         { name: 'Compact', component: <CompactUI chapters={filteredChapters} failures={filteredFailures} /> },
     ];
 
@@ -60,7 +60,7 @@ export const Failures = () => {
                 </div>
 
                 <Route path="/failures/comfort">
-                    <ComfortUI chapters={filteredChapters} failures={filteredFailures} />
+                    <ComfortUI filteredChapters={filteredChapters} allChapters={chapters} failures={filteredFailures} />
                 </Route>
                 <Route path="/failures/compact">
                     <CompactUI chapters={filteredChapters} failures={filteredFailures} />
