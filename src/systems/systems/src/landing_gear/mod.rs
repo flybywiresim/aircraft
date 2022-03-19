@@ -3,7 +3,8 @@ use crate::{
     hydraulic::landing_gear::{GearSystemStateMachine, GearsSystemState},
     shared::{
         ElectricalBusType, ElectricalBuses, GearWheel, LandingGearHandle, LandingGearRealPosition,
-        LgciuDoorPosition, LgciuGearControl, LgciuGearExtension, LgciuSensors, LgciuWeightOnWheels,
+        LgciuDoorPosition, LgciuGearControl, LgciuGearExtension, LgciuInterface,
+        LgciuWeightOnWheels,
     },
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
@@ -352,12 +353,128 @@ impl LgciuDoorPosition for LgciuSensorInputs {
             && self.left_door_up_and_locked
     }
 }
-impl LgciuSensors for LgciuSensorInputs {}
 
-pub struct LandingGearControlInterfaceUnit {
-    gear_handle_position_id: VariableIdentifier,
+/// Gathers multiple LGCIUs and handle the inter lgciu master/slave mechanism
+/// and their interface with gear handle lever logic
+pub struct LandingGearControlInterfaceUnitSet {
+    lgcius: [LandingGearControlInterfaceUnit; 2],
+    gear_handle_unit: LandingGearHandleUnit,
+}
+impl LandingGearControlInterfaceUnitSet {
+    pub fn new(
+        context: &mut InitContext,
+        lgciu1_powered_by: ElectricalBusType,
+        lgciu2_powered_by: ElectricalBusType,
+    ) -> Self {
+        Self {
+            lgcius: [
+                LandingGearControlInterfaceUnit::new(context, 1, lgciu1_powered_by),
+                LandingGearControlInterfaceUnit::new(context, 2, lgciu2_powered_by),
+            ],
+            gear_handle_unit: LandingGearHandleUnit::new(context),
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        landing_gear: &LandingGear,
+        gear_system_sensors: &impl GearSystemSensors,
+        external_power_available: bool,
+    ) {
+        self.lgcius[0].update(
+            landing_gear,
+            gear_system_sensors,
+            external_power_available,
+            &self.gear_handle_unit,
+        );
+        self.lgcius[1].update(
+            landing_gear,
+            gear_system_sensors,
+            external_power_available,
+            &self.gear_handle_unit,
+        );
+
+        self.gear_handle_unit
+            .update(&self.lgcius[0], &self.lgcius[1]);
+    }
+
+    pub fn lgciu1(&self) -> &LandingGearControlInterfaceUnit {
+        &self.lgcius[0]
+    }
+
+    pub fn lgciu2(&self) -> &LandingGearControlInterfaceUnit {
+        &self.lgcius[1]
+    }
+
+    #[cfg(test)]
+    fn gear_system_state(&self) -> GearsSystemState {
+        self.lgcius[0].gear_system_state()
+    }
+}
+impl SimulationElement for LandingGearControlInterfaceUnitSet {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.gear_handle_unit.accept(visitor);
+        self.lgcius[0].accept(visitor);
+        self.lgcius[1].accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
+struct LandingGearHandleUnit {
+    gear_handle_real_position_id: VariableIdentifier,
+    gear_handle_position_requested_id: VariableIdentifier,
     lever_baulk_lock_id: VariableIdentifier,
 
+    is_lever_down: bool,
+    lever_should_lock_down: bool,
+}
+impl LandingGearHandleUnit {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            gear_handle_real_position_id: context.get_identifier("GEAR_HANDLE_POSITION".to_owned()),
+            gear_handle_position_requested_id: context
+                .get_identifier("GEAR_LEVER_POSITION_REQUEST".to_owned()),
+
+            lever_baulk_lock_id: context.get_identifier("GEAR_HANDLE_BAULK_LOCK_ENABLE".to_owned()),
+
+            is_lever_down: true,
+            lever_should_lock_down: true,
+        }
+    }
+
+    fn update(&mut self, lgciu1: &impl LandingGearHandle, lgciu2: &impl LandingGearHandle) {
+        self.lever_should_lock_down =
+            lgciu1.gear_handle_baulk_locked() && lgciu2.gear_handle_baulk_locked()
+    }
+}
+impl LandingGearHandle for LandingGearHandleUnit {
+    fn gear_handle_is_down(&self) -> bool {
+        self.is_lever_down
+    }
+
+    fn gear_handle_baulk_locked(&self) -> bool {
+        self.lever_should_lock_down
+    }
+}
+impl SimulationElement for LandingGearHandleUnit {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let lever_down_raw: bool = reader.read(&self.gear_handle_position_requested_id);
+
+        if !lever_down_raw && (!self.lever_should_lock_down || !self.is_lever_down) {
+            self.is_lever_down = false;
+        } else {
+            self.is_lever_down = true;
+        }
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.lever_baulk_lock_id, self.gear_handle_baulk_locked());
+        writer.write(&self.gear_handle_real_position_id, self.is_lever_down);
+    }
+}
+
+pub struct LandingGearControlInterfaceUnit {
     left_gear_downlock_id: VariableIdentifier,
     left_gear_unlock_id: VariableIdentifier,
     nose_gear_downlock_id: VariableIdentifier,
@@ -377,11 +494,6 @@ pub struct LandingGearControlInterfaceUnit {
 impl LandingGearControlInterfaceUnit {
     pub fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
-            gear_handle_position_id: context
-                .get_identifier("FINAL_GEAR_HANDLE_POSITION".to_owned()),
-            lever_baulk_lock_id: context
-                .get_identifier(format!("LGCIU_{}_GEAR_HANDLE_BAULK_LOCKED", number)),
-
             left_gear_downlock_id: context
                 .get_identifier(format!("LGCIU_{}_LEFT_GEAR_DOWNLOCKED", number)),
             left_gear_unlock_id: context
@@ -411,7 +523,10 @@ impl LandingGearControlInterfaceUnit {
         landing_gear: &LandingGear,
         gear_system_sensors: &impl GearSystemSensors,
         external_power_available: bool,
+        gear_handle: &impl LandingGearHandle,
     ) {
+        self.is_gear_lever_down = gear_handle.gear_handle_is_down();
+
         self.sensor_inputs.update(
             landing_gear,
             gear_system_sensors,
@@ -438,10 +553,6 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
-    }
-
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.is_gear_lever_down = reader.read(&self.gear_handle_position_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -474,8 +585,6 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
             &self.right_gear_downlock_id,
             self.sensor_inputs.downlock_state(GearWheel::RIGHT),
         );
-
-        writer.write(&self.lever_baulk_lock_id, self.gear_handle_baulk_locked());
     }
 }
 
@@ -586,13 +695,16 @@ impl LandingGearHandle for LandingGearControlInterfaceUnit {
     }
 }
 
-impl LgciuSensors for LandingGearControlInterfaceUnit {}
+impl LgciuInterface for LandingGearControlInterfaceUnit {}
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::simulation::test::{ElementCtorFn, WriteByName};
-    use crate::simulation::test::{SimulationTestBed, TestAircraft, TestBed};
+
+    use crate::simulation::test::{
+        ElementCtorFn, ReadByName, SimulationTestBed, TestAircraft, TestBed, WriteByName,
+    };
+    use std::time::Duration;
 
     use crate::simulation::{
         Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
@@ -663,7 +775,7 @@ mod tests {
 
     struct TestGearAircraft {
         landing_gear: LandingGear,
-        lgciu: LandingGearControlInterfaceUnit,
+        lgcius: LandingGearControlInterfaceUnitSet,
         gear_system: TestGearSystem,
 
         powered_source_ac: TestElectricitySource,
@@ -673,9 +785,9 @@ mod tests {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 landing_gear: LandingGear::new(context),
-                lgciu: LandingGearControlInterfaceUnit::new(
+                lgcius: LandingGearControlInterfaceUnitSet::new(
                     context,
-                    1,
+                    ElectricalBusType::DirectCurrentEssential,
                     ElectricalBusType::DirectCurrentEssential,
                 ),
                 gear_system: TestGearSystem::new(),
@@ -688,17 +800,17 @@ mod tests {
             }
         }
 
-        fn update(&mut self, context: &UpdateContext) {
-            self.lgciu
+        fn update(&mut self) {
+            self.lgcius
                 .update(&self.landing_gear, &self.gear_system, false);
 
-            self.gear_system.update(&self.lgciu);
+            self.gear_system.update(self.lgcius.lgciu1());
 
             println!(
                 "LGCIU STATE {:#?} / Doors OPENING {}  / Gears OPENING {} ",
-                self.lgciu.gear_system_control.state(),
-                self.lgciu.should_open_doors(),
-                self.lgciu.should_extend_gears()
+                self.lgcius.lgciu1().gear_system_control.state(),
+                self.lgcius.lgciu1().should_open_doors(),
+                self.lgcius.lgciu1().should_extend_gears()
             );
 
             println!(
@@ -719,15 +831,84 @@ mod tests {
             electricity.flow(&self.powered_source_ac, &self.dc_ess_bus);
         }
 
-        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.update(context);
+        fn update_after_power_distribution(&mut self, _: &UpdateContext) {
+            self.update();
         }
     }
     impl SimulationElement for TestGearAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.lgciu.accept(visitor);
+            self.landing_gear.accept(visitor);
+            self.lgcius.accept(visitor);
             visitor.visit(self);
         }
+    }
+
+    struct LgciusTestBed {
+        test_bed: SimulationTestBed<TestGearAircraft>,
+    }
+    impl LgciusTestBed {
+        fn new() -> Self {
+            Self {
+                test_bed: SimulationTestBed::new(TestGearAircraft::new),
+            }
+        }
+
+        fn run_one_tick(mut self) -> Self {
+            self.run_with_delta(Duration::from_secs_f64(0.1));
+            self
+        }
+
+        fn run_waiting_for(mut self, delta: Duration) -> Self {
+            self.test_bed.run_multiple_frames(delta);
+            self
+        }
+
+        fn in_flight(mut self) -> Self {
+            self.set_on_ground(false);
+            self
+        }
+
+        fn on_the_ground(mut self) -> Self {
+            self.set_on_ground(true);
+            self
+        }
+
+        fn set_gear_handle_up(mut self) -> Self {
+            self.write_by_name("GEAR_LEVER_POSITION_REQUEST", 0.);
+            self
+        }
+
+        fn set_gear_handle_down(mut self) -> Self {
+            self.write_by_name("GEAR_LEVER_POSITION_REQUEST", 1.);
+            self
+        }
+
+        fn is_gear_handle_lock_down_active(&mut self) -> bool {
+            self.read_by_name("GEAR_HANDLE_BAULK_LOCK_ENABLE")
+        }
+
+        fn is_gear_handle_down(&mut self) -> bool {
+            self.read_by_name("GEAR_HANDLE_POSITION")
+        }
+    }
+    impl TestBed for LgciusTestBed {
+        type Aircraft = TestGearAircraft;
+
+        fn test_bed(&self) -> &SimulationTestBed<TestGearAircraft> {
+            &self.test_bed
+        }
+
+        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<TestGearAircraft> {
+            &mut self.test_bed
+        }
+    }
+
+    fn test_bed() -> LgciusTestBed {
+        LgciusTestBed::new()
+    }
+
+    fn test_bed_with() -> LgciusTestBed {
+        test_bed()
     }
 
     #[test]
@@ -812,49 +993,96 @@ mod tests {
     }
 
     #[test]
+    fn gear_lever_init_down_and_locked_on_ground() {
+        let mut test_bed = test_bed_with().on_the_ground().run_one_tick();
+
+        assert!(test_bed.is_gear_handle_lock_down_active());
+
+        assert!(test_bed.is_gear_handle_down());
+    }
+
+    #[test]
+    fn gear_lever_up_and_locked_can_go_down_but_not_up() {
+        // Need two ticks to stabilize lock mechanism dependancy
+        let mut test_bed = test_bed_with()
+            .in_flight()
+            .set_gear_handle_up()
+            .run_one_tick()
+            .run_one_tick();
+
+        assert!(!test_bed.is_gear_handle_lock_down_active());
+        assert!(!test_bed.is_gear_handle_down());
+
+        test_bed = test_bed.on_the_ground().set_gear_handle_up().run_one_tick();
+
+        assert!(test_bed.is_gear_handle_lock_down_active());
+        assert!(!test_bed.is_gear_handle_down());
+
+        test_bed = test_bed
+            .on_the_ground()
+            .set_gear_handle_down()
+            .run_one_tick();
+
+        assert!(test_bed.is_gear_handle_lock_down_active());
+        assert!(test_bed.is_gear_handle_down());
+
+        test_bed = test_bed.on_the_ground().set_gear_handle_up().run_one_tick();
+
+        assert!(test_bed.is_gear_handle_lock_down_active());
+        assert!(test_bed.is_gear_handle_down());
+    }
+
+    #[test]
+    fn gear_lever_down_not_locked_in_flight() {
+        let mut test_bed = test_bed_with()
+            .in_flight()
+            .set_gear_handle_down()
+            .run_one_tick();
+
+        test_bed = test_bed.run_one_tick();
+
+        assert!(!test_bed.is_gear_handle_lock_down_active());
+        assert!(test_bed.is_gear_handle_down());
+    }
+
+    #[test]
     fn gear_state_downlock_on_init() {
-        let mut test_bed = SimulationTestBed::new(|context| TestGearAircraft::new(context));
+        let test_bed = SimulationTestBed::new(|context| TestGearAircraft::new(context));
 
         assert!(
-            test_bed.query(|a| a.lgciu.gear_system_control.state())
-                == GearsSystemState::AllDownLocked
+            test_bed.query(|a| a.lgcius.gear_system_state()) == GearsSystemState::AllDownLocked
         );
     }
 
     #[test]
     fn gear_up_when_lever_up_down_when_lever_down() {
-        let mut test_bed = SimulationTestBed::new(|context| TestGearAircraft::new(context));
+        let mut test_bed = test_bed_with().in_flight().set_gear_handle_down();
 
-        test_bed.write_by_name("GEAR HANDLE POSITION", 1);
         for _ in 0..2 {
             test_bed.run_without_delta();
         }
 
         assert!(
-            test_bed.query(|a| a.lgciu.gear_system_control.state())
-                == GearsSystemState::AllDownLocked
+            test_bed.query(|a| a.lgcius.gear_system_state()) == GearsSystemState::AllDownLocked
         );
 
-        // Gear UP
-        test_bed.write_by_name("GEAR HANDLE POSITION", 0);
+        println!("GEAR UP!!");
+        test_bed = test_bed.set_gear_handle_up();
+
         for _ in 0..30 {
             test_bed.run_without_delta();
         }
 
-        assert!(
-            test_bed.query(|a| a.lgciu.gear_system_control.state())
-                == GearsSystemState::AllUpLocked
-        );
+        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearsSystemState::AllUpLocked);
 
         // Gear DOWN
-        test_bed.write_by_name("GEAR HANDLE POSITION", 1);
+        test_bed = test_bed.set_gear_handle_down();
         for _ in 0..30 {
             test_bed.run_without_delta();
         }
 
         assert!(
-            test_bed.query(|a| a.lgciu.gear_system_control.state())
-                == GearsSystemState::AllDownLocked
+            test_bed.query(|a| a.lgcius.gear_system_state()) == GearsSystemState::AllDownLocked
         );
     }
 

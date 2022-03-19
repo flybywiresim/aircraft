@@ -369,7 +369,7 @@ struct GearDoorAssembly {
 }
 impl GearDoorAssembly {
     const OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO: f64 = 1.;
-    const OPENED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.05;
+    const OPENED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.01;
 
     const UPLOCKED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO: f64 = 0.;
     const UPLOCKED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.01;
@@ -547,10 +547,6 @@ impl GearDoorHydraulicController {
 impl HydraulicAssemblyController for GearDoorHydraulicController {
     fn requested_mode(&self) -> LinearActuatorMode {
         // TODO if vent valve opened -> damping else -> valve closed mode
-
-        let converted_req_pos = if self.is_inverted_control {
-        } else {
-        };
 
         if self.is_soft_downlock {
             if (!self.is_inverted_control

@@ -112,7 +112,10 @@ pub trait LandingGearHandle {
     fn gear_handle_baulk_locked(&self) -> bool;
 }
 
-pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition {}
+pub trait LgciuInterface:
+    LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition + LgciuGearControl + LandingGearHandle
+{
+}
 
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;

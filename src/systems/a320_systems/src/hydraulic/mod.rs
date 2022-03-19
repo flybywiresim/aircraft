@@ -52,8 +52,8 @@ use systems::{
         AdirsDiscreteOutputs, DelayedFalseLogicGate, DelayedPulseTrueLogicGate,
         DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EmergencyGeneratorPower, EngineFirePushButtons, GearWheel,
-        HydraulicColor, HydraulicGeneratorControlUnit, LandingGearHandle, LgciuGearControl,
-        LgciuSensors, LgciuWeightOnWheels, ReservoirAirPressure,
+        HydraulicColor, HydraulicGeneratorControlUnit, LandingGearHandle, LgciuInterface,
+        LgciuWeightOnWheels, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1212,8 +1212,8 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         autobrake_panel: &AutobrakePanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        lgciu1: &(impl LgciuSensors + LgciuGearControl + LandingGearHandle),
-        lgciu2: &(impl LgciuSensors + LgciuGearControl),
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
         reservoir_pneumatics: &impl ReservoirAirPressure,
@@ -1403,8 +1403,8 @@ impl A320Hydraulic {
         context: &UpdateContext,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
-        lgciu1: &(impl LgciuSensors + LgciuGearControl + LandingGearHandle),
-        lgciu2: &(impl LgciuSensors + LgciuGearControl),
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
         adirs: &impl AdirsDiscreteOutputs,
     ) {
         self.forward_cargo_door.update(
@@ -1465,8 +1465,8 @@ impl A320Hydraulic {
         autobrake_panel: &AutobrakePanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
-        lgciu1: &impl LgciuSensors,
-        lgciu2: &impl LgciuSensors,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
@@ -1673,8 +1673,8 @@ impl A320Hydraulic {
         engine2: &impl Engine,
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        lgciu1: &impl LgciuSensors,
-        lgciu2: &impl LgciuSensors,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
         reservoir_pneumatics: &impl ReservoirAirPressure,
     ) {
         // First update what is currently consumed and given back by each actuator
@@ -2121,7 +2121,7 @@ impl A320EngineDrivenPumpController {
         &mut self,
         engine: &impl Engine,
         section: &impl SectionPressure,
-        lgciu: &impl LgciuSensors,
+        lgciu: &impl LgciuInterface,
     ) {
         self.is_pressure_low =
             self.should_pressurise() && !section.is_pressure_switch_pressurised();
@@ -2156,7 +2156,7 @@ impl A320EngineDrivenPumpController {
         engine_fire_push_buttons: &T,
         engine: &impl Engine,
         section: &impl SectionPressure,
-        lgciu: &impl LgciuSensors,
+        lgciu: &impl LgciuInterface,
         reservoir: &Reservoir,
     ) {
         let mut should_pressurise_if_powered = false;
@@ -2247,8 +2247,8 @@ impl A320BlueElectricPumpController {
         section: &impl SectionPressure,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        lgciu1: &impl LgciuSensors,
-        lgciu2: &impl LgciuSensors,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
         reservoir: &Reservoir,
     ) {
         let mut should_pressurise_if_powered = false;
@@ -2281,8 +2281,8 @@ impl A320BlueElectricPumpController {
         section: &impl SectionPressure,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        lgciu1: &impl LgciuSensors,
-        lgciu2: &impl LgciuSensors,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
     ) {
         let is_both_engine_low_oil_pressure =
             engine1.oil_pressure_is_low() && engine2.oil_pressure_is_low();
@@ -2529,7 +2529,7 @@ impl A320PowerTransferUnitController {
         forward_cargo_door_controller: &A320DoorController,
         aft_cargo_door_controller: &A320DoorController,
         pushback_tug: &PushbackTug,
-        lgciu2: &impl LgciuSensors,
+        lgciu2: &impl LgciuInterface,
         reservoir_left_side: &Reservoir,
         reservoir_right_side: &Reservoir,
     ) {
@@ -2902,8 +2902,8 @@ impl A320HydraulicBrakeSteerComputerUnit {
         context: &UpdateContext,
         green_circuit: &HydraulicCircuit,
         alternate_circuit: &BrakeCircuit,
-        lgciu1: &impl LgciuSensors,
-        lgciu2: &impl LgciuSensors,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
         autobrake_panel: &AutobrakePanel,
         engine1: &impl Engine,
         engine2: &impl Engine,
@@ -2988,7 +2988,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
 
     fn update_steering_demands(
         &mut self,
-        lgciu1: &impl LgciuSensors,
+        lgciu1: &impl LgciuInterface,
         engine1: &impl Engine,
         engine2: &impl Engine,
     ) {
@@ -3663,8 +3663,8 @@ impl A320AutobrakeController {
         allow_arming: bool,
         pedal_input_left: Ratio,
         pedal_input_right: Ratio,
-        lgciu1: &impl LgciuSensors,
-        lgciu2: &impl LgciuSensors,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
     ) {
         let in_flight_lgciu1 =
             !lgciu1.right_gear_compressed(false) && !lgciu1.left_gear_compressed(false);
@@ -3688,8 +3688,8 @@ impl A320AutobrakeController {
         allow_arming: bool,
         pedal_input_left: Ratio,
         pedal_input_right: Ratio,
-        lgciu1: &impl LgciuSensors,
-        lgciu2: &impl LgciuSensors,
+        lgciu1: &impl LgciuInterface,
+        lgciu2: &impl LgciuInterface,
     ) {
         self.update_input_conditions(
             context,
@@ -4901,12 +4901,14 @@ impl A320GravityExtension {
             self.is_extending_gear = true;
         }
 
-        // println!(
-        //     "Update is_extending: {} current angle :{} numturn {}",
-        //     self.is_extending_gear,
-        //     self.handle_angle.get::<degree>(),
-        //     self.extension_handle_number_of_turns()
-        // );
+        if self.is_turned {
+            println!(
+                "Update is_extending: {} current angle :{} numturn {}",
+                self.is_extending_gear,
+                self.handle_angle.get::<degree>(),
+                self.extension_handle_number_of_turns()
+            );
+        }
     }
 }
 impl GearGravityExtension for A320GravityExtension {
@@ -4935,7 +4937,7 @@ mod tests {
             },
             engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
             hydraulic::{electrical_generator::TestGenerator, landing_gear::GearsSystemState},
-            landing_gear::{LandingGear, LandingGearControlInterfaceUnit},
+            landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
             shared::{EmergencyElectricalState, HydraulicGeneratorControlUnit, PotentialOrigin},
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -5086,8 +5088,7 @@ mod tests {
             emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
             engine_fire_overhead: EngineFireOverheadPanel,
             landing_gear: LandingGear,
-            lgciu1: LandingGearControlInterfaceUnit,
-            lgciu2: LandingGearControlInterfaceUnit,
+            lgcius: LandingGearControlInterfaceUnitSet,
             adirus: A320TestAdirus,
             electrical: A320TestElectrical,
             ext_pwr: ExternalPowerSource,
@@ -5128,15 +5129,10 @@ mod tests {
                     ),
                     engine_fire_overhead: EngineFireOverheadPanel::new(context),
                     landing_gear: LandingGear::new(context),
-                    lgciu1: LandingGearControlInterfaceUnit::new(
+                    lgcius: LandingGearControlInterfaceUnitSet::new(
                         context,
-                        1,
                         ElectricalBusType::DirectCurrentEssential,
-                    ),
-                    lgciu2: LandingGearControlInterfaceUnit::new(
-                        context,
-                        2,
-                        ElectricalBusType::DirectCurrent(2),
+                        ElectricalBusType::DirectCurrentGndFltService,
                     ),
                     adirus: A320TestAdirus::default(),
                     electrical: A320TestElectrical::new(),
@@ -5347,12 +5343,7 @@ mod tests {
 
                 self.adirus.update(context);
 
-                self.lgciu1.update(
-                    &self.landing_gear,
-                    &self.hydraulics.gear_system,
-                    self.ext_pwr.output_potential().is_powered(),
-                );
-                self.lgciu2.update(
+                self.lgcius.update(
                     &self.landing_gear,
                     &self.hydraulics.gear_system,
                     self.ext_pwr.output_potential().is_powered(),
@@ -5365,8 +5356,8 @@ mod tests {
                     &self.overhead,
                     &self.autobrake_panel,
                     &self.engine_fire_overhead,
-                    &self.lgciu1,
-                    &self.lgciu2,
+                    self.lgcius.lgciu1(),
+                    self.lgcius.lgciu2(),
                     &self.emergency_electrical_overhead,
                     &self.electrical,
                     &self.pneumatics,
@@ -5381,8 +5372,7 @@ mod tests {
                 self.engine_1.accept(visitor);
                 self.engine_2.accept(visitor);
                 self.landing_gear.accept(visitor);
-                self.lgciu1.accept(visitor);
-                self.lgciu2.accept(visitor);
+                self.lgcius.accept(visitor);
                 self.hydraulics.accept(visitor);
                 self.autobrake_panel.accept(visitor);
                 self.overhead.accept(visitor);
@@ -5974,7 +5964,7 @@ mod tests {
             }
 
             fn gear_system_state(&self) -> GearsSystemState {
-                self.query(|a| a.lgciu1.gear_system_state())
+                self.query(|a| a.lgcius.lgciu1().gear_system_state())
             }
 
             fn empty_brake_accumulator_using_park_brake(mut self) -> Self {

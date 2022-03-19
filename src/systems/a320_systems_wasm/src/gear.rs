@@ -29,50 +29,31 @@ pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>
                 }
             },
         ),
-        Variable::aspect("GEAR_LEVER_POS_DEMAND"),
+        Variable::aspect("GEAR_LEVER_POSITION_REQUEST"),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
         "GEAR_UP",
         EventToVariableMapping::Value(0.),
-        Variable::aspect("GEAR_LEVER_POS_DEMAND"),
+        Variable::aspect("GEAR_LEVER_POSITION_REQUEST"),
         |options| options.mask(),
     )?;
     builder.event_to_variable(
         "GEAR_DOWN",
         EventToVariableMapping::Value(1.),
-        Variable::aspect("GEAR_LEVER_POS_DEMAND"),
+        Variable::aspect("GEAR_LEVER_POSITION_REQUEST"),
         |options| options.mask(),
     )?;
 
-    builder.map_many(
-        ExecuteOn::PreTick,
-        vec![
-            Variable::aspect("GEAR_LEVER_POS_DEMAND"),
-            Variable::aspect("LGCIU_1_GEAR_HANDLE_BAULK_LOCKED"),
-            Variable::aspect("LGCIU_2_GEAR_HANDLE_BAULK_LOCKED"),
-            Variable::aspect("FINAL_GEAR_HANDLE_POSITION"),
-        ],
-        |values| {
-            let gear_lever_position_demand = values[0];
-            let is_gear_locked_down_lgciu1 = values[1] > 0.5;
-            let is_gear_locked_down_lgciu2 = values[2] > 0.5;
-            let is_gear_previously_up = values[3] < 0.5;
-
-            if gear_lever_position_demand < 0.5
-                && ((!is_gear_locked_down_lgciu1 || !is_gear_locked_down_lgciu2)
-                    || is_gear_previously_up)
-            {
-                0.
-            } else {
-                1.
-            }
-        },
-        Variable::aspect("FINAL_GEAR_HANDLE_POSITION"),
+    builder.map(
+        ExecuteOn::PostTick,
+        Variable::aspect("GEAR_HANDLE_POSITION"),
+        |value| value,
+        Variable::named("FINAL_GEAR_HANDLE_POSITION"),
     );
 
     builder.variable_to_event_id(
-        Variable::aspect("FINAL_GEAR_HANDLE_POSITION"),
+        Variable::aspect("GEAR_HANDLE_POSITION"),
         VariableToEventMapping::EventDataRaw,
         VariableToEventWriteOn::EveryTick,
         gear_set_set_event_id,
