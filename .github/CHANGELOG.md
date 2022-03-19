@@ -193,7 +193,14 @@
 1. [AP] Improved V/PATH law - lukecologne (luke)
 1. [ADIRS] Improve ADR SSM behaviour, add missing data to the IR - @luke (lukecologne#1156)
 1. [PFD] Improve SPD and MACH flag behaviour, add FPV flag - @luke (lukecologne#1156)
-
+1. [MCDU] Update init/fuel prediction pages to H3 - @tracernz (Mike)
+1. [MCDU] Implement ground temp on INIT A - @tracernz (Mike)
+1. [BLEED] Attached hydraulic reservoirs to both engine bleed systems - @Gurgel100 (Pascal)
+1. [COND] More accurately define air conditioning knob rotations - @rare-potato(Rare Potato#9693)
+1. [PFD] Add EIS S14 features (A/BRK info on PFD, white SELECTED ALT) to the PFD - @luke (lukecologne#1156)
+1. [MODEL] Fix mirrored right main gear wheel UV - @bouveng (Johan Bouveng)
+1. [EFB] Fix Metar parser error - @brainshot (brainshot) @frankkopp (Frank Kopp)
+2. 
 ## 0.7.0
 
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)

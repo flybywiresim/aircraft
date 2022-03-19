@@ -178,9 +178,11 @@ class FMCMainDisplay extends BaseAirliners {
         this.zeroFuelWeightMassCenter = undefined;
         this.activeWpIdx = undefined;
         this.efisSymbols = undefined;
+        this.groundTempAuto = undefined;
+        this.groundTempPilot = undefined;
 
         // ATSU data
-        this.atsuManager = undefined;
+        this.atsu = undefined;
         this.holdSpeedTarget = undefined;
         this.holdIndex = undefined;
         this.holdDecelReached = undefined;
@@ -508,9 +510,11 @@ class FMCMainDisplay extends BaseAirliners {
         this.setHoldSpeedMessageActive = false;
         this.managedProfile = new Map();
         this.speedLimitExceeded = false;
+        this.groundTempAuto = undefined;
+        this.groundTempPilot = undefined;
 
         // ATSU data
-        this.atsuManager = new Atsu.AtsuManager(this);
+        this.atsu = new Atsu.Atsu(this);
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", NaN);
@@ -1802,12 +1806,13 @@ class FMCMainDisplay extends BaseAirliners {
             if (airportFrom) {
                 this.dataManager.GetAirportByIdent(to).then((airportTo) => {
                     if (airportTo) {
-                        this.atsuManager.atc.resetAtisAutoUpdate();
+                        this.atsu.atc.resetAtisAutoUpdate();
                         this.eraseTemporaryFlightPlan(() => {
                             this.flightPlanManager.clearFlightPlan(() => {
                                 this.tempFpPendingAutoTune = true;
                                 this.flightPlanManager.setOrigin(airportFrom.icao, () => {
                                     this.tmpOrigin = airportFrom.ident;
+                                    this.setGroundTempFromOrigin();
                                     this.flightPlanManager.setDestination(airportTo.icao, () => {
                                         this.flightPlanManager.getWaypoint(0).endsInDiscontinuity = true;
                                         this.flightPlanManager.getWaypoint(0).discontinuityCanBeCleared = true;
@@ -1900,14 +1905,14 @@ class FMCMainDisplay extends BaseAirliners {
 
     async tryUpdateAltDestination(altDestIdent) {
         if (altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
-            this.atsuManager.atc.resetAtisAutoUpdate();
+            this.atsu.atc.resetAtisAutoUpdate();
             this.altDestination = undefined;
             this._DistanceToAlt = 0;
             return true;
         }
         const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent).catch(console.error);
         if (airportAltDest) {
-            this.atsuManager.atc.resetAtisAutoUpdate();
+            this.atsu.atc.resetAtisAutoUpdate();
             this.altDestination = airportAltDest;
             this.tryUpdateDistanceToAlt();
             return true;
@@ -2291,7 +2296,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         SimVar.SetSimVarValue("ATC FLIGHT NUMBER", "string", flightNo, "FMC").then(() => {
-            this.atsuManager.connectToNetworks(flightNo)
+            this.atsu.connectToNetworks(flightNo)
                 .then((code) => {
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         SimVar.SetSimVarValue("L:A32NX_MCDU_FLT_NO_SET", "boolean", 0);
@@ -4535,6 +4540,36 @@ class FMCMainDisplay extends BaseAirliners {
         return false;
     }
 
+    setGroundTempFromOrigin() {
+        const origin = this.flightPlanManager.getPersistentOrigin(FlightPlans.Active);
+        if (!origin) {
+            return;
+        }
+
+        this.groundTempAuto = A32NX_Util.getIsaTemp(origin.infos.coordinates.alt);
+    }
+
+    trySetGroundTemp(scratchpadValue) {
+        if (this.flightPhaseManager.phase !== FmgcFlightPhases.PREFLIGHT) {
+            throw NXSystemMessages.notAllowed;
+        }
+
+        if (scratchpadValue === FMCMainDisplay.clrValue) {
+            this.groundTempPilot = undefined;
+            return;
+        }
+
+        if (scratchpadValue.match(/^[+\-]?[0-9]{1,2}$/) === null) {
+            throw NXSystemMessages.formatError;
+        }
+
+        this.groundTempPilot = parseInt(scratchpadValue);
+    }
+
+    get groundTemp() {
+        return this.groundTempPilot !== undefined ? this.groundTempPilot : this.groundTempAuto;
+    }
+
     navModeEngaged() {
         const lateralMode = SimVar.GetSimVarValue("L:A32NX_FMA_LATERAL_MODE", "Number");
         switch (lateralMode) {
@@ -4752,3 +4787,8 @@ class FMCMainDisplay extends BaseAirliners {
 FMCMainDisplay.clrValue = "\xa0\xa0\xa0\xa0\xa0CLR";
 FMCMainDisplay.ovfyValue = "\u0394";
 FMCMainDisplay._AvailableKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+const FlightPlans = Object.freeze({
+    Active: 0,
+    Temporary: 1,
+});
