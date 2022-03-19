@@ -161,14 +161,14 @@ class CDUAocRequestsAtis {
             store.sendStatus = "SENDING";
             updateView();
 
-            const sentRequest = () => {
+            const onRequestSent = () => {
                 store.sendStatus = "SENT";
                 if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
                     updateView();
                 }
             };
 
-            mcdu.atsu.aoc.receiveAtis(store.selected, store.requestId, sentRequest).then((retval) => {
+            mcdu.atsu.aoc.receiveAtis(store.selected, store.requestId, onRequestSent).then((retval) => {
                 if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
                     mcdu.atsu.registerMessage(retval[1]);
                     store.sendStatus = "";
