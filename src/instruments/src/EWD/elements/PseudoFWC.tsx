@@ -299,12 +299,12 @@ const PseudoFWC: React.FC = () => {
         || (greenLP === 1 && blueLP === 1)
     ));
 
-    const engDualFault = !onGround && (
-        (fireButton1 === 1 && fireButton2)
+    const engDualFault = !!(!onGround && (
+        (fireButton1 === 1 && fireButton2 === 1)
         || (!engine1ValueSwitch && !engine2ValueSwitch)
         || (engine1State === 0 && engine2State === 0)
         || (!N1AboveIdle && !N2AboveIdle)
-    );
+    ));
 
     const [masterWarningButtonLeft] = useSimVar('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool', 100);
     const [masterCautionButtonLeft] = useSimVar('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool', 100);
@@ -531,7 +531,7 @@ const PseudoFWC: React.FC = () => {
         },
         7700027: { // DUAL ENGINE FAILURE
             flightPhaseInhib: [],
-            simVarIsActive: engDualFault === 1,
+            simVarIsActive: engDualFault,
             whichCodeToReturn: [
                 0,
                 !emergencyGeneratorOn ? 1 : null,
