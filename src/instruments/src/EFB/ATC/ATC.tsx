@@ -25,7 +25,7 @@ interface FrequencyCardProps {
 
 const FrequencyCard = ({ className, callsign, frequency, setActive, setStandby }: FrequencyCardProps) => (
     <div className={className}>
-        <div className="overflow-hidden relative p-6 mt-4 w-full rounded-md bg-theme-secondary">
+        <div className="overflow-hidden relative p-6 w-full rounded-md bg-theme-secondary">
             <h2 className="font-bold">
                 {callsign}
             </h2>
@@ -241,21 +241,19 @@ export const ATC = () => {
                 </button>
             </div>
             { (atisSource === 'IVAO' || atisSource === 'VATSIM') ? (
-                <div className="w-full h-content-section-reduced">
+                <div className="mt-4 w-full h-content-section-reduced">
                     <div className="relative">
-                        <ScrollableContainer height={29}>
-                            <div className="grid grid-cols-2">
-                                {controllers && controllers.map((controller, index) => (
-                                    <FrequencyCard
-                                        className={`${index && index % 2 !== 0 && 'ml-4'}`}
-                                        callsign={controller.callsign}
-                                        frequency={controller.frequency}
-                                        setActive={() => setActiveFrequency(toFrequency(controller.frequency))}
-                                        setStandby={() => setStandbyFrequency(toFrequency(controller.frequency))}
-                                        key={controller.frequency}
-                                    />
-                                ))}
-                            </div>
+                        <ScrollableContainer innerClassName="grid grid-cols-2" height={29}>
+                            {controllers && controllers.map((controller, index) => (
+                                <FrequencyCard
+                                    className={`${index && index % 2 !== 0 && 'ml-4'} ${index >= 2 && 'mt-4'}`}
+                                    callsign={controller.callsign}
+                                    frequency={controller.frequency}
+                                    setActive={() => setActiveFrequency(toFrequency(controller.frequency))}
+                                    setStandby={() => setStandbyFrequency(toFrequency(controller.frequency))}
+                                    key={controller.frequency}
+                                />
+                            ))}
                         </ScrollableContainer>
 
                         <div className={`absolute flex items-center justify-center inset-0 transition duration-200 bg-theme-body h-full border-2 border-theme-accent rounded-md
@@ -276,7 +274,7 @@ export const ATC = () => {
                             </div>
                             <div>
                                 <p>Standby</p>
-                                <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl text-yellow-500 rounded-lg border-2 font-rmp border-theme-accent">
+                                <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl rounded-lg border-2 text-utility-amber font-rmp border-theme-accent">
                                     {displayedStandbyFrequency && displayedStandbyFrequency}
                                 </div>
                             </div>
