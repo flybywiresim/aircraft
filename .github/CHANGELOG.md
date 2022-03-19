@@ -200,7 +200,8 @@
 1. [PFD] Add EIS S14 features (A/BRK info on PFD, white SELECTED ALT) to the PFD - @luke (lukecologne#1156)
 1. [MODEL] Fix mirrored right main gear wheel UV - @bouveng (Johan Bouveng)
 1. [EFB] Fix Metar parser error - @brainshot (brainshot) @frankkopp (Frank Kopp)
-2. 
+1. [MODEL] Add custom cargo door hinge for texturing - @bouveng (Johan Bouveng)
+
 ## 0.7.0
 
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
