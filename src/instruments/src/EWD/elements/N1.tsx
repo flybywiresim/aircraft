@@ -43,7 +43,7 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
     const [autothrustStatus] = useSimVar('L:A32NX_AUTOTHRUST_STATUS', 'enum', 100);
 
     const n1ActualXY = valueRadianAngleConverter({ value: N1Actual, min, max, endAngle, startAngle, perpendicular: true });
-    const n1CommandXY = valueRadianAngleConverter({ value: N1Commanded / 10, min, max, endAngle, startAngle, perpendicular: true });
+    const n1CommandXY = valueRadianAngleConverter({ value: (N1Commanded / 10), min, max, endAngle, startAngle, perpendicular: true });
 
     const n1CommandPlusArrow = valueRadianAngleConverter({
         value: N1Commanded / 10,
@@ -63,8 +63,6 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
         x: x + (n1CommandArrow.x * radius * 0.50), // Based on 20 degree angle and hypotenuse of 0.5
         y: y + (n1CommandArrow.y * radius * 0.50),
     };
-
-    // console.log(Math.abs(N1Actual - (N1Commanded / 10)));
 
     const radiusDivide = radius / 5;
     const commandAndTrendRadius = [radius - radiusDivide, radius - (2 * radiusDivide), radius - (3 * radiusDivide), radius - (4 * radiusDivide)];
@@ -297,7 +295,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                             />
                             <AvailRev x={x} y={y} mesg={availRevText} visible={availRevVisible} active={active} revDoorOpen={revDoorOpenPercentage} />
                             <N1CommandAndTrend
-                                N1Actual={N1Percent / 10}
+                                N1Actual={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
                                 x={x}
                                 y={y}
                                 min={min}
