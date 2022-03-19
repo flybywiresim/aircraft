@@ -347,9 +347,9 @@ class CDUFlightPlanPage {
                     if (hasAltConstraint) {
                         if (mcdu.flightPlanManager.getOriginTransitionAltitude() >= 100 && wp.legAltitude1 > mcdu.flightPlanManager.getOriginTransitionAltitude()) {
                             altitudeConstraint = (wp.legAltitude1 / 100).toFixed(0).toString();
-                            altitudeConstraint = `FL${altitudeConstraint.padStart(3,"0")}`;
+                            altitudeConstraint = `FL${altitudeConstraint.padStart(3, "0")}`;
                         } else {
-                            altitudeConstraint = wp.legAltitude1.toFixed(0).toString().padStart(5,"\xa0");
+                            altitudeConstraint = wp.legAltitude1.toFixed(0).toString().padStart(5, "\xa0");
                         }
                     }
 
