@@ -43,8 +43,8 @@ export const Failures = () => {
                 <h1 className="font-bold">Failures</h1>
 
                 <div className="flex flex-row items-center py-1 px-4 space-x-2 rounded-md bg-colors-yellow-400">
-                    <InfoCircleFill className="text-theme-body" />
-                    <p className="text-theme-body">Full simulation of the failures below isn't yet guaranteed.</p>
+                    <InfoCircleFill className="text-black" />
+                    <p className="text-black">Full simulation of the failures below isn't yet guaranteed.</p>
                 </div>
             </div>
 
