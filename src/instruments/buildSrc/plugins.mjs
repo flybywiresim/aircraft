@@ -10,6 +10,7 @@ import postcss from 'rollup-plugin-postcss';
 import tailwindcss from 'tailwindcss';
 import dotenv from 'dotenv';
 import json from '@rollup/plugin-json';
+import postcssColorFunctionalNotation from 'postcss-color-functional-notation';
 import { Directories } from './directories.mjs';
 
 const extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs'];
@@ -46,6 +47,8 @@ function postCss(_, instrumentFolder) {
     } else {
         plugins = [];
     }
+
+    plugins.push(postcssColorFunctionalNotation());
 
     return postcss({
         use: { sass: {} },
