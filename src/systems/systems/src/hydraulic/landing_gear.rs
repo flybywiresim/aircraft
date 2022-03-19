@@ -14,6 +14,10 @@ use uom::si::{f64::*, pressure::psi, ratio::ratio};
 
 use std::time::Duration;
 
+pub trait GearGravityExtension {
+    fn extension_handle_number_of_turns(&self) -> u8;
+}
+
 pub struct HydraulicGearSystem {
     door_center_position_id: VariableIdentifier,
     door_left_position_id: VariableIdentifier,
@@ -54,14 +58,44 @@ impl HydraulicGearSystem {
 
             hydraulic_supply: GearSystemHydraulicSupply::new(),
 
-            nose_door_assembly: GearDoorAssembly::new(false, nose_door, false),
-            left_door_assembly: GearDoorAssembly::new(false, left_door, false),
-            right_door_assembly: GearDoorAssembly::new(false, right_door, false),
+            nose_door_assembly: GearDoorAssembly::new(
+                GearSysComponentId::Door,
+                false,
+                nose_door,
+                false,
+            ),
+            left_door_assembly: GearDoorAssembly::new(
+                GearSysComponentId::Door,
+                false,
+                left_door,
+                false,
+            ),
+            right_door_assembly: GearDoorAssembly::new(
+                GearSysComponentId::Door,
+                false,
+                right_door,
+                false,
+            ),
 
             // Nose gear has pull to retract system while main gears have push to retract
-            nose_gear_assembly: GearDoorAssembly::new(false, nose_gear, true),
-            left_gear_assembly: GearDoorAssembly::new(true, left_gear, true),
-            right_gear_assembly: GearDoorAssembly::new(true, right_gear, true),
+            nose_gear_assembly: GearDoorAssembly::new(
+                GearSysComponentId::Gear,
+                false,
+                nose_gear,
+                true,
+            ),
+            left_gear_assembly: GearDoorAssembly::new(
+                GearSysComponentId::Gear,
+                true,
+                left_gear,
+                true,
+            ),
+            right_gear_assembly: GearDoorAssembly::new(
+                GearSysComponentId::Gear,
+                true,
+                right_gear,
+                true,
+            ),
         }
     }
 
@@ -69,7 +103,7 @@ impl HydraulicGearSystem {
         &mut self,
         context: &UpdateContext,
         valves_controller: &impl GearSystemController,
-        gear_system_controller: &impl LgciuGearControl,
+        lgciu_controller: &impl LgciuGearControl,
         main_hydraulic_circuit_pressure: Pressure,
     ) {
         self.hydraulic_supply
@@ -79,33 +113,39 @@ impl HydraulicGearSystem {
 
         self.nose_door_assembly.update(
             context,
-            gear_system_controller.should_open_doors(),
+            lgciu_controller,
+            valves_controller,
             current_pressure,
         );
         self.left_door_assembly.update(
             context,
-            gear_system_controller.should_open_doors(),
+            lgciu_controller,
+            valves_controller,
             current_pressure,
         );
         self.right_door_assembly.update(
             context,
-            gear_system_controller.should_open_doors(),
+            lgciu_controller,
+            valves_controller,
             current_pressure,
         );
 
         self.nose_gear_assembly.update(
             context,
-            gear_system_controller.should_extend_gears(),
+            lgciu_controller,
+            valves_controller,
             current_pressure,
         );
         self.left_gear_assembly.update(
             context,
-            gear_system_controller.should_extend_gears(),
+            lgciu_controller,
+            valves_controller,
             current_pressure,
         );
         self.right_gear_assembly.update(
             context,
-            gear_system_controller.should_extend_gears(),
+            lgciu_controller,
+            valves_controller,
             current_pressure,
         );
     }
@@ -312,7 +352,13 @@ pub trait GearComponentController {
     fn should_close(&self) -> bool;
 }
 
+enum GearSysComponentId {
+    Door,
+    Gear,
+}
+
 struct GearDoorAssembly {
+    component_id: GearSysComponentId,
     is_inverted_control: bool,
     hydraulic_controller: GearDoorHydraulicController,
     hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
@@ -329,11 +375,13 @@ impl GearDoorAssembly {
     const UPLOCKED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.01;
 
     fn new(
+        component_id: GearSysComponentId,
         is_inverted_control: bool,
         hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
         has_hydraulic_downlock: bool,
     ) -> Self {
         Self {
+            component_id,
             is_inverted_control,
             hydraulic_controller: GearDoorHydraulicController::new(
                 is_inverted_control,
@@ -357,10 +405,16 @@ impl GearDoorAssembly {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, should_open: bool, current_pressure: Pressure) {
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        gear_system_controller: &impl LgciuGearControl,
+        valves_controller: &impl GearSystemController,
+        current_pressure: Pressure,
+    ) {
         self.update_proximity_detectors();
 
-        self.update_hydraulic_control(should_open, current_pressure);
+        self.update_hydraulic_control(gear_system_controller, valves_controller, current_pressure);
 
         self.hydraulic_assembly.update(
             context,
@@ -380,19 +434,40 @@ impl GearDoorAssembly {
         }
     }
 
-    fn update_hydraulic_control(&mut self, should_open: bool, current_pressure: Pressure) {
-        self.hydraulic_uplock
-            .update(should_open, false, current_pressure);
+    fn update_hydraulic_control(
+        &mut self,
+        gear_system_controller: &impl LgciuGearControl,
+        valves_controller: &impl GearSystemController,
+        current_pressure: Pressure,
+    ) {
+        let should_hydraulically_open = match self.component_id {
+            GearSysComponentId::Door => gear_system_controller.should_open_doors(),
+            GearSysComponentId::Gear => gear_system_controller.should_extend_gears(),
+        };
+        let should_mechanically_open = match self.component_id {
+            GearSysComponentId::Door => {
+                valves_controller.doors_uplocks_should_mechanically_unlock()
+            }
+            GearSysComponentId::Gear => {
+                valves_controller.gears_uplocks_should_mechanically_unlock()
+            }
+        };
+
+        self.hydraulic_uplock.update(
+            should_hydraulically_open,
+            should_mechanically_open,
+            current_pressure,
+        );
 
         let mut should_lock_down = false;
 
         if let Some(hyd_lock) = &mut self.hydraulic_downlock {
-            hyd_lock.update(!should_open, false, current_pressure);
+            hyd_lock.update(!should_hydraulically_open, false, current_pressure);
             should_lock_down = hyd_lock.is_locked_or_ready_to_latch();
         }
 
         self.hydraulic_controller.update(
-            should_open,
+            should_mechanically_open || should_hydraulically_open,
             self.hydraulic_uplock.is_locked_or_ready_to_latch(),
             should_lock_down,
             self.position_normalized(),
@@ -777,8 +852,18 @@ mod tests {
             Self {
                 loop_updater: MaxStepLoop::new(time_step),
 
-                door_assembly: GearDoorAssembly::new(false, door_hydraulic_assembly, false),
-                gear_assembly: GearDoorAssembly::new(true, gear_hydraulic_assembly, true),
+                door_assembly: GearDoorAssembly::new(
+                    GearSysComponentId::Door,
+                    false,
+                    door_hydraulic_assembly,
+                    false,
+                ),
+                gear_assembly: GearDoorAssembly::new(
+                    GearSysComponentId::Gear,
+                    true,
+                    gear_hydraulic_assembly,
+                    true,
+                ),
 
                 component_controller: TestGearSystemController::new(),
 
@@ -809,13 +894,15 @@ mod tests {
         fn update(&mut self, context: &UpdateContext) {
             self.door_assembly.update(
                 context,
-                self.component_controller.should_open_doors(),
+                &self.component_controller,
+                &TestGearValvesController::with_safety_and_shutoff_opened(),
                 self.pressure,
             );
 
             self.gear_assembly.update(
                 context,
-                self.component_controller.should_extend_gears(),
+                &self.component_controller,
+                &TestGearValvesController::with_safety_and_shutoff_opened(),
                 self.pressure,
             );
 

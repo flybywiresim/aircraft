@@ -26,7 +26,7 @@ use systems::{
         },
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
         flap_slat::FlapSlatAssembly,
-        landing_gear::{GearSystemController, HydraulicGearSystem},
+        landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
             Actuator, BoundedLinearLength, HydraulicAssemblyController,
             HydraulicLinearActuatorAssembly, LinearActuatedRigidBodyOnHingeAxis, LinearActuator,
@@ -960,6 +960,7 @@ pub(super) struct A320Hydraulic {
     left_spoilers: SpoilerGroup,
     right_spoilers: SpoilerGroup,
 
+    gear_gravity_extension: A320GravityExtension,
     gear_system_safety_valve_controller: A320BrakeValvesController,
     gear_system: HydraulicGearSystem,
 }
@@ -1186,6 +1187,8 @@ impl A320Hydraulic {
                 context,
                 ActuatorSide::Right,
             ),
+
+            gear_gravity_extension: A320GravityExtension::new(context),
 
             gear_system_safety_valve_controller: A320BrakeValvesController::new(),
 
@@ -1438,8 +1441,14 @@ impl A320Hydraulic {
             emergency_elec,
         );
 
-        self.gear_system_safety_valve_controller
-            .update(adirs, lgciu1, lgciu2);
+        self.gear_gravity_extension.update(context);
+
+        self.gear_system_safety_valve_controller.update(
+            adirs,
+            lgciu1,
+            lgciu2,
+            &self.gear_gravity_extension,
+        );
 
         self.gear_system.update(
             context,
@@ -1928,6 +1937,7 @@ impl SimulationElement for A320Hydraulic {
         self.left_spoilers.accept(visitor);
         self.right_spoilers.accept(visitor);
 
+        self.gear_gravity_extension.accept(visitor);
         self.gear_system.accept(visitor);
 
         visitor.visit(self);
@@ -1957,11 +1967,19 @@ impl HydraulicGeneratorControlUnit for A320Hydraulic {
 
 struct A320BrakeValvesController {
     safety_valve_should_open: bool,
+    cutoff_valve_should_open: bool,
+    vent_valves_should_open: bool,
+    doors_uplock_mechanical_release: bool,
+    gears_uplock_mechanical_release: bool,
 }
 impl A320BrakeValvesController {
     fn new() -> Self {
         Self {
             safety_valve_should_open: true,
+            cutoff_valve_should_open: true,
+            vent_valves_should_open: false,
+            doors_uplock_mechanical_release: false,
+            gears_uplock_mechanical_release: false,
         }
     }
 
@@ -1970,8 +1988,29 @@ impl A320BrakeValvesController {
         adirs: &impl AdirsDiscreteOutputs,
         lgciu1: &(impl LgciuWeightOnWheels + LandingGearHandle),
         lgciu2: &impl LgciuWeightOnWheels,
+        gear_gravity_extension: &impl GearGravityExtension,
     ) {
         self.update_safety_valve(adirs, lgciu1, lgciu2);
+
+        self.update_safety_and_vent_valve(gear_gravity_extension);
+
+        self.update_uplocks(gear_gravity_extension);
+    }
+
+    fn update_uplocks(&mut self, gear_gravity_extension: &impl GearGravityExtension) {
+        self.doors_uplock_mechanical_release =
+            gear_gravity_extension.extension_handle_number_of_turns() >= 2;
+        self.gears_uplock_mechanical_release =
+            gear_gravity_extension.extension_handle_number_of_turns() >= 3;
+    }
+
+    fn update_safety_and_vent_valve(&mut self, gear_gravity_extension: &impl GearGravityExtension) {
+        let one_or_more_handle_turns =
+            gear_gravity_extension.extension_handle_number_of_turns() >= 1;
+
+        self.cutoff_valve_should_open = !one_or_more_handle_turns;
+
+        self.vent_valves_should_open = one_or_more_handle_turns;
     }
 
     fn update_safety_valve(
@@ -1999,19 +2038,19 @@ impl GearSystemController for A320BrakeValvesController {
     }
 
     fn shut_off_valve_should_open(&self) -> bool {
-        true
+        self.cutoff_valve_should_open
     }
 
     fn vent_valves_should_open(&self) -> bool {
-        false
+        self.vent_valves_should_open
     }
 
     fn doors_uplocks_should_mechanically_unlock(&self) -> bool {
-        false
+        self.doors_uplock_mechanical_release
     }
 
     fn gears_uplocks_should_mechanically_unlock(&self) -> bool {
-        false
+        self.gears_uplock_mechanical_release
     }
 }
 
@@ -4815,6 +4854,71 @@ impl SimulationElement for SpoilerComputer {
         self.ground_spoilers_are_deployed = reader.read(&self.spoilers_ground_spoilers_active_id);
 
         self.update_spoilers_requested_position();
+    }
+}
+
+struct A320GravityExtension {
+    gear_gravity_extension_increment_id: VariableIdentifier,
+
+    last_increment: u32,
+
+    handle_angle: Angle,
+
+    is_extending_gear: bool,
+
+    is_turned: bool,
+}
+impl A320GravityExtension {
+    const INCREMENT_ANGLE_DEGREE_PER_SECOND: f64 = 120.;
+
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            gear_gravity_extension_increment_id: context
+                .get_identifier("GEAR_EMERGENCY_EXTENSION_TOGGLE_VALUE".to_owned()),
+            last_increment: 0,
+            handle_angle: Angle::default(),
+            is_extending_gear: true,
+            is_turned: false,
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext) {
+        if self.is_turned {
+            if self.is_extending_gear {
+                self.handle_angle += Angle::new::<degree>(
+                    Self::INCREMENT_ANGLE_DEGREE_PER_SECOND * context.delta_as_secs_f64(),
+                );
+            } else {
+                self.handle_angle -= Angle::new::<degree>(
+                    Self::INCREMENT_ANGLE_DEGREE_PER_SECOND * context.delta_as_secs_f64(),
+                );
+            }
+        }
+
+        if self.handle_angle.get::<degree>() > 360. * 3.1 {
+            self.is_extending_gear = false;
+        } else if self.handle_angle.get::<degree>() < -0.2 {
+            self.is_extending_gear = true;
+        }
+
+        // println!(
+        //     "Update is_extending: {} current angle :{} numturn {}",
+        //     self.is_extending_gear,
+        //     self.handle_angle.get::<degree>(),
+        //     self.extension_handle_number_of_turns()
+        // );
+    }
+}
+impl GearGravityExtension for A320GravityExtension {
+    fn extension_handle_number_of_turns(&self) -> u8 {
+        (self.handle_angle.get::<degree>() / 360.).floor() as u8
+    }
+}
+impl SimulationElement for A320GravityExtension {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let new_increment: f64 = reader.read_f64(&self.gear_gravity_extension_increment_id);
+        self.is_turned = (new_increment as u32) != self.last_increment;
+        self.last_increment = new_increment as u32;
     }
 }
 

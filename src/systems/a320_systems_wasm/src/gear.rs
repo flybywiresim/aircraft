@@ -89,16 +89,12 @@ pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>
     // MANUAL GRAVITY GEAR EXTENSION
     builder.event_to_variable(
         "GEAR_EMERGENCY_HANDLE_TOGGLE",
-        EventToVariableMapping::CurrentValueToValue(|current_value| {
-            println!("EMERGENCY {}", ((current_value + 1.) as u8) % 4);
-            (((current_value + 1.) as u8) % 4).into()
-        }),
-        Variable::named("GEAR_EMERGENCY_EXTENSION_INDEX"),
+        EventToVariableMapping::CurrentValueToValue(|current_value| (current_value + 1.).round()),
+        Variable::named("GEAR_EMERGENCY_EXTENSION_TOGGLE_VALUE"),
         |options| options.mask(),
     )?;
 
-    // POSITION FEEDBACK TO SIM
-
+    // GEAR POSITION FEEDBACK TO SIM
     builder.variables_to_object(Box::new(GearPosition {
         nose_position: 1.,
         left_position: 1.,
