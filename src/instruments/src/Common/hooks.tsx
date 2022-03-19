@@ -1,4 +1,5 @@
 import React from 'react';
+import { FlowEventSync } from '@shared/FlowEventSync';
 import { getRootElement } from './defaults';
 
 export const useUpdate = (handler: (deltaTime: number) => void) => {
@@ -75,5 +76,21 @@ export const useCoherentEvent = (event: string, handler: (...any) => void): void
         return () => {
             coherentHandler.clear();
         };
+    }, [event]);
+};
+
+export const useFlowSyncEvent = (event: string, handler: (topic: string, data: any) => void): void => {
+    const savedHandler = React.useRef(handler);
+    React.useEffect(() => {
+        savedHandler.current = handler;
+    }, [handler]);
+
+    React.useEffect(() => {
+        console.log('hooking coherent event', event);
+        const coherentHandler = new FlowEventSync(savedHandler.current, 2);
+        console.log(coherentHandler);
+        /*    return () => {
+            coherentHandler.();
+        }; */
     }, [event]);
 };
