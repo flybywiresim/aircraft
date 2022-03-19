@@ -55,7 +55,7 @@ const MetarParserTypeProp: MetarParserType = {
     flight_category: '',
 };
 
-type WeatherWidgetProps = { name: string, editIcao: string, icao: string};
+type WeatherWidgetProps = { name: string, editIcao: string, icao: string };
 
 const WeatherWidget = (props: WeatherWidgetProps) => {
     const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
@@ -63,7 +63,7 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
     const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const source = metarSource === 'MSFS' ? 'MS' : metarSource;
-    const [metarError, setErrorMetar] = useState('NO VALID ICAO CHOSEN');
+    const [metarError, setErrorMetar] = useState('NO ICAO PROVIDED');
     const [usingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
 
     const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
@@ -90,28 +90,46 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     };
 
     const handleIcao = (icao: string) => {
-        if (icao.length === 4) {
+        if (icao.length > 0) {
             getMetar(icao, source);
         } else if (icao.length === 0) {
             getMetar(props.icao, source);
         }
     };
 
-    function getMetar(icao:any, source: any) {
+    function getMetar(icao: any, source: any) {
         if (icao.length !== 4 || icao === '----') {
             return new Promise(() => {
+                setErrorMetar('NO ICAO PROVIDED');
                 setMetar(MetarParserTypeProp);
             });
         }
+
         return Metar.get(icao, source)
             .then((result) => {
-                const metarParse = parseMetar(result.metar);
-                setMetar(metarParse);
+                // For METAR source Microsoft result.metar is undefined without throwing an error.
+                // For the other METAR sources an error is thrown (Request failed with status code 404)
+                // and caught in the catch clause.
+                if (!result.metar) {
+                    setErrorMetar('ICAO INVALID OR NO METAR AVAILABLE');
+                    setMetar(MetarParserTypeProp);
+                    return;
+                }
+                // Catch parsing error separately
+                try {
+                    const metarParse = parseMetar(result.metar);
+                    setMetar(metarParse);
+                } catch (err) {
+                    console.log(`Error while parsing Metar ("${result.metar}"): ${err}`);
+                    setErrorMetar(`RECEIVED METAR COULD NOT BE PARSED: ${err.toString().replace(/^Error: /, '').toUpperCase()}`);
+                    setMetar(MetarParserTypeProp);
+                }
             })
+            // catch retrieving metar errors
             .catch((err) => {
-                console.log(`Error while parsing Metar: ${err}`);
-                if (err.toString().match(/^Error$/)) {
-                    setErrorMetar('NO VALID ICAO CHOSEN');
+                console.log(`Error while retrieving Metar: ${err}`);
+                if (err.toString().match(/^Error:/)) {
+                    setErrorMetar('ICAO INVALID OR NO METAR AVAILABLE');
                 } else {
                     setErrorMetar(`${err.toString().replace(/^Error: /, '')}`);
                 }
@@ -157,7 +175,12 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                     <div className="grid grid-cols-2 h-40">
                                         <div className="justify-left text-center text-lg">
                                             <div className="flex justify-center">
-                                                <IconGauge className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                                <IconGauge
+                                                    className="mb-2"
+                                                    size={35}
+                                                    stroke={1.5}
+                                                    strokeLinejoin="miter"
+                                                />
                                             </div>
                                             {metar.raw_text ? (
                                                 <>
@@ -171,7 +194,12 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                         </div>
                                         <div className="justify-left text-center text-lg">
                                             <div className="flex justify-center">
-                                                <IconWind className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                                <IconWind
+                                                    className="mb-2"
+                                                    size={35}
+                                                    stroke={1.5}
+                                                    strokeLinejoin="miter"
+                                                />
                                             </div>
                                             {metar.raw_text
                                                 ? (
@@ -195,7 +223,12 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                         </div>
                                         <div className="text-center text-lg mt-6">
                                             <div className="flex justify-center">
-                                                <IconTemperature className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                                <IconTemperature
+                                                    className="mb-2"
+                                                    size={35}
+                                                    stroke={1.5}
+                                                    strokeLinejoin="miter"
+                                                />
                                             </div>
                                             {metar.raw_text
                                                 ? (
@@ -216,7 +249,12 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                         </div>
                                         <div className="overflow-y-scroll text-center text-lg mt-6">
                                             <div className="flex justify-center">
-                                                <IconDroplet className="mb-2" size={35} stroke={1.5} strokeLinejoin="miter" />
+                                                <IconDroplet
+                                                    className="mb-2"
+                                                    size={35}
+                                                    stroke={1.5}
+                                                    strokeLinejoin="miter"
+                                                />
                                             </div>
                                             {metar.raw_text
                                                 ? (
