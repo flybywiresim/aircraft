@@ -412,7 +412,7 @@ export const FuelPage = () => {
                                 {simbriefDataLoaded && (
                                     <div
                                         className="flex justify-center items-center px-2 rounded-md rounded-l-none border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
-                                        onClick={simbriefDataLoaded ? undefined : handleFuelAutoFill}
+                                        onClick={simbriefDataLoaded ? handleFuelAutoFill : undefined}
                                     >
                                         <CloudArrowDown size={26} />
                                     </div>
