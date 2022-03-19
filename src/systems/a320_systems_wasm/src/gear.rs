@@ -10,11 +10,11 @@ use systems_wasm::aspects::{
 use systems_wasm::{set_data_on_sim_object, Variable};
 
 pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
-    // Read gear demand from sim and mask it
+    // Read gear demand from all sim sim events and mask them
     let gear_set_set_event_id = builder.event_to_variable(
         "GEAR_SET",
-        EventToVariableMapping::EventData32kPosition,
-        Variable::aspect("GEAR_SET_DEMAND"),
+        EventToVariableMapping::EventDataRaw,
+        Variable::aspect("GEAR_LEVER_POSITION_REQUEST"),
         |options| options.mask(),
     )?;
 
@@ -32,12 +32,14 @@ pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>
         Variable::aspect("GEAR_LEVER_POSITION_REQUEST"),
         |options| options.mask(),
     )?;
+
     builder.event_to_variable(
         "GEAR_UP",
         EventToVariableMapping::Value(0.),
         Variable::aspect("GEAR_LEVER_POSITION_REQUEST"),
         |options| options.mask(),
     )?;
+
     builder.event_to_variable(
         "GEAR_DOWN",
         EventToVariableMapping::Value(1.),
@@ -45,13 +47,15 @@ pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>
         |options| options.mask(),
     )?;
 
-    builder.map(
-        ExecuteOn::PostTick,
-        Variable::aspect("GEAR_HANDLE_POSITION"),
-        |value| value,
-        Variable::named("FINAL_GEAR_HANDLE_POSITION"),
-    );
+    // // Get final gear handle position from systems back to the sim
+    // builder.map(
+    //     ExecuteOn::PostTick,
+    //     Variable::aspect("GEAR_HANDLE_POSITION"),
+    //     |value| value,
+    //     Variable::named("FINAL_GEAR_HANDLE_POSITION"),
+    // );
 
+    // Feedback the gear event to the sim
     builder.variable_to_event_id(
         Variable::aspect("GEAR_HANDLE_POSITION"),
         VariableToEventMapping::EventDataRaw,
@@ -62,9 +66,9 @@ pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>
     // MANUAL GRAVITY GEAR EXTENSION
     builder.event_to_variable(
         "GEAR_EMERGENCY_HANDLE_TOGGLE",
-        EventToVariableMapping::CurrentValueToValue(|current_value| (current_value + 1.).round()),
-        Variable::named("GEAR_EMERGENCY_EXTENSION_TOGGLE_VALUE"),
-        |options| options.mask(),
+        EventToVariableMapping::Value(1.),
+        Variable::aspect("GEAR_EMERGENCY_EXTENSION_ACTIVE"),
+        |options| options.mask().afterwards_reset_to(0.),
     )?;
 
     // GEAR POSITION FEEDBACK TO SIM

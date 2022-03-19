@@ -4858,9 +4858,7 @@ impl SimulationElement for SpoilerComputer {
 }
 
 struct A320GravityExtension {
-    gear_gravity_extension_increment_id: VariableIdentifier,
-
-    last_increment: u32,
+    gear_gravity_extension_active_id: VariableIdentifier,
 
     handle_angle: Angle,
 
@@ -4873,9 +4871,9 @@ impl A320GravityExtension {
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            gear_gravity_extension_increment_id: context
-                .get_identifier("GEAR_EMERGENCY_EXTENSION_TOGGLE_VALUE".to_owned()),
-            last_increment: 0,
+            gear_gravity_extension_active_id: context
+                .get_identifier("GEAR_EMERGENCY_EXTENSION_ACTIVE".to_owned()),
+
             handle_angle: Angle::default(),
             is_extending_gear: true,
             is_turned: false,
@@ -4918,9 +4916,7 @@ impl GearGravityExtension for A320GravityExtension {
 }
 impl SimulationElement for A320GravityExtension {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let new_increment: f64 = reader.read_f64(&self.gear_gravity_extension_increment_id);
-        self.is_turned = (new_increment as u32) != self.last_increment;
-        self.last_increment = new_increment as u32;
+        self.is_turned = reader.read(&self.gear_gravity_extension_active_id);
     }
 }
 
