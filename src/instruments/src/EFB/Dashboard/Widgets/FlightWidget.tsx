@@ -84,36 +84,20 @@ export const FlightWidget = () => {
 
     const dispatch = useAppDispatch();
 
-    let schedInParsed = '----';
-    let schedOutParsed = '----';
-    let crzAlt = '-----';
-    let avgWind = '---/---';
-    let estimatedZfw = '--.-';
+    const sta = new Date(parseInt(schedIn) * 1000);
+    const schedInParsed = `${sta.getUTCHours().toString().padStart(2, '0')}${sta.getUTCMinutes().toString().padStart(2, '0')}Z`;
 
-    if (schedIn !== '--:--') {
-        const sta = new Date(parseInt(schedIn) * 1000);
-        schedInParsed = `${sta.getUTCHours().toString().padStart(2, '0')}${sta.getUTCMinutes().toString().padStart(2, '0')}Z`;
-    }
+    const std = new Date(parseInt(schedOut) * 1000);
+    const schedOutParsed = `${std.getUTCHours().toString().padStart(2, '0')}${std.getUTCMinutes().toString().padStart(2, '0')}Z`;
 
-    if (schedOut !== '--:--') {
-        const std = new Date(parseInt(schedOut) * 1000);
-        schedOutParsed = `${std.getUTCHours().toString().padStart(2, '0')}${std.getUTCMinutes().toString().padStart(2, '0')}Z`;
-    }
+    const flightLevel = (cruiseAltitude / 100);
+    const crzAlt = `FL${flightLevel}`;
 
-    if (cruiseAltitude !== 0) {
-        const flightLevel = (cruiseAltitude / 100);
-        crzAlt = `FL${flightLevel}`;
-    }
+    const avgWind = `${weather.avgWindDir}/${weather.avgWindSpeed}`;
 
-    if (weather.avgWindDir !== '---' && weather.avgWindSpeed !== '---') {
-        avgWind = `${weather.avgWindDir}/${weather.avgWindSpeed}`;
-    }
-
-    if (weights.estZeroFuelWeight !== 0) {
-        const eZfwUnround = weights.estZeroFuelWeight / 100;
-        const eZfw = Math.round(eZfwUnround) / 10;
-        estimatedZfw = `${eZfw}`;
-    }
+    const eZfwUnround = weights.estZeroFuelWeight / 100;
+    const eZfw = Math.round(eZfwUnround) / 10;
+    const estimatedZfw = `${eZfw}`;
 
     const fetchData = async () => {
         setSimbriefDataPending(true);
@@ -176,7 +160,7 @@ export const FlightWidget = () => {
                                         )}
                                     </div>
                                 </div>
-                                <p className={`text-right font-body ${flightPlanProgress > 99 ? 'text-theme-highlight' : 'text-theme-text'}`}>
+                                <p className={`text-right font-body ${Math.round(flightPlanProgress) >= 98 ? 'text-theme-highlight' : 'text-theme-text'}`}>
                                     {schedInParsed}
                                 </p>
                             </div>
