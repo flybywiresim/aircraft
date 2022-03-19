@@ -59,14 +59,6 @@ pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>
             let is_gear_locked_down_lgciu2 = values[2] > 0.5;
             let is_gear_previously_up = values[3] < 0.5;
 
-            // println!(
-            //     "POS DEMAND {} prev pos is up {} BAULK LOCK1 {} BAULK LOCK2 {}",
-            //     gear_lever_position_demand,
-            //     is_gear_previously_up,
-            //     is_gear_locked_down_lgciu1,
-            //     is_gear_locked_down_lgciu2,
-            // );
-
             if gear_lever_position_demand < 0.5
                 && ((!is_gear_locked_down_lgciu1 || !is_gear_locked_down_lgciu2)
                     || is_gear_previously_up)
