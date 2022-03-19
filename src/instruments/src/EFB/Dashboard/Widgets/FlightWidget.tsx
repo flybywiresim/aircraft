@@ -148,7 +148,7 @@ export const FlightWidget = () => {
                                     {schedOutParsed}
                                 </p>
                                 <div className="flex relative flex-row mx-6 w-full h-1">
-                                    <div className="absolute inset-x-0 border-b-4 border-dashed" />
+                                    <div className="absolute inset-x-0 border-b-4 border-dashed border-theme-text" />
 
                                     <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
                                         {!!flightPlanProgress && (
