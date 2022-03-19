@@ -56,7 +56,7 @@ export class FlightModel {
             baseDrag = (0.0066 * Cl ** 5) - (0.0271 * Cl ** 4) + (0.0615 * Cl ** 3) - (0.0187 * Cl ** 2) + (0.0035 * Cl) + 0.0538;
             break;
         case FlapConf.CONF_3:
-            baseDrag = (0.0768 * Cl ** 5) - (0.3979 * Cl ** 4) + (0.8252 * Cl ** 3) - (0.7951 * Cl ** 2) + (0.3851 * Cl) + 0.0107;
+            baseDrag = (0.0768 * Cl ** 5) - (0.3979 * Cl ** 4) + (0.8252 * Cl ** 3) - (0.7951 * Cl ** 2) + (0.3851 * Cl) - 0.0107;
             break;
         case FlapConf.CONF_FULL:
             baseDrag = (0.017 * Cl ** 5) - (0.0978 * Cl ** 4) + (0.2308 * Cl ** 3) - (0.2278 * Cl ** 2) + (0.1157 * Cl) + 0.0682;
