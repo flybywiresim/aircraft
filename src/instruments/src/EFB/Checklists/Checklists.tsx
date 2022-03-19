@@ -95,7 +95,7 @@ export const Checklists = () => {
                     return 'bg-utility-green font-bold text-theme-body';
                 }
 
-                return 'bg-colors-orange-400 font-bold text-theme-body';
+                return 'bg-utility-amber font-bold text-theme-body';
             }
 
             return 'bg-theme-highlight font-bold text-theme-body';
@@ -106,7 +106,7 @@ export const Checklists = () => {
                 return 'bg-theme-body border-2 border-utility-green font-bold text-utility-green hover:text-theme-body hover:bg-utility-green';
             }
 
-            return 'bg-theme-body border-2 border-colors-orange-400 font-bold text-colors-orange-400 hover:text-theme-body hover:bg-colors-orange-400';
+            return 'bg-theme-body border-2 border-utility-amber font-bold text-utility-amber hover:text-theme-body hover:bg-utility-amber';
         }
 
         return 'bg-theme-accent border-2 border-theme-accent font-bold text-theme-text hover:bg-theme-highlight hover:text-theme-body';
