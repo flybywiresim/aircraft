@@ -16,7 +16,7 @@ import {
 import { useSimVar } from '@instruments/common/simVars';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import Slider from 'rc-slider';
-import { DrawableCanvas } from './DrawableCanvas';
+import { DrawableCanvas } from '../UtilComponents/DrawableCanvas';
 import { useNavigraph } from '../ChartsApi/Navigraph';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch, useAppSelector } from '../Store/store';
