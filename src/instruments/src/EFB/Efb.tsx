@@ -24,6 +24,7 @@ import { Navigation } from './Navigation/Navigation';
 import { ATC } from './ATC/ATC';
 import { Settings } from './Settings/Settings';
 import { Failures } from './Failures/Failures';
+import { Presets } from './Presets/Presets';
 
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 
@@ -292,6 +293,7 @@ const Efb = () => {
                                     <Route path="/failures" component={Failures} />
                                     <Route path="/settings" component={Settings} />
                                     <Route path="/checklists" component={Checklists} />
+                                    <Route path="/presets" component={Presets} />
                                 </Switch>
                             </div>
                         </div>

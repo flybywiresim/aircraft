@@ -76,6 +76,10 @@
   p, div, a, span, button {
       @apply text-xl text-theme-text;
   }
+
+  ul {
+      @apply list-disc pl-12;
+  }
 }
 
 /* ---- Global Scrollbar ---- */

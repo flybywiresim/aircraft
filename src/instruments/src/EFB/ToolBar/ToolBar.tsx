@@ -8,6 +8,7 @@ import {
     Gear,
     Calculator,
     JournalCheck,
+    Sliders,
 } from 'react-bootstrap-icons';
 import { NavLink } from 'react-router-dom';
 
@@ -32,7 +33,7 @@ export const ToolBar = () => (
     <nav className="flex overflow-hidden flex-col flex-shrink-0 justify-between w-32">
         <div className="flex flex-col items-center mt-11">
             <ToolBarButton to="/dashboard">
-                <img className="w-[35px]" src={FbwTail} />
+                <img className="w-[35px]" src={FbwTail} alt="FbwTail" />
             </ToolBarButton>
             <ToolBarButton to="/dispatch">
                 <Clipboard size={35} />
@@ -55,10 +56,13 @@ export const ToolBar = () => (
             <ToolBarButton to="/checklists">
                 <JournalCheck size={35} />
             </ToolBarButton>
+            <ToolBarButton to="/presets">
+                <Sliders size={35} />
+            </ToolBarButton>
         </div>
 
         <div className="flex flex-col items-center mb-6">
-            <div className="w-14 h-1.5 rounded-full bg-theme-accent" />
+            <div className="w-14 h-1.5 bg-theme-accent rounded-full" />
             <ToolBarButton to="/settings">
                 <Gear color="currentColor" size={35} />
             </ToolBarButton>
