@@ -91,7 +91,7 @@ export const FlightWidget = () => {
     const schedOutParsed = `${std.getUTCHours().toString().padStart(2, '0')}${std.getUTCMinutes().toString().padStart(2, '0')}Z`;
 
     const flightLevel = (cruiseAltitude / 100);
-    const crzAlt = `FL${flightLevel}`;
+    const crzAlt = `FL${flightLevel.toString().padStart(3, '0')}`;
 
     const avgWind = `${weather.avgWindDir}/${weather.avgWindSpeed}`;
 
@@ -179,7 +179,7 @@ export const FlightWidget = () => {
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
                                 <InformationEntry title="Average Wind" info={avgWind} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title="Cruise Temp" info={crzAlt} />
+                                <InformationEntry title="Cruise Alt" info={crzAlt} />
                             </div>
                         </div>
                         <div>
