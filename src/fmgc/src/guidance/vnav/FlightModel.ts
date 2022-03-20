@@ -113,7 +113,7 @@ export class FlightModel {
         }
 
         for (let i = 0; i < xs.length - 1; i++) {
-            if (x > xs[i] && x < xs[i + 1]) {
+            if (x > xs[i] && x <= xs[i + 1]) {
                 return Common.interpolate(x, xs[i], xs[i + 1], ys[i], ys[i + 1]);
             }
         }
