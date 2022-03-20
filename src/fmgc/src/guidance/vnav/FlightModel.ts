@@ -1,5 +1,5 @@
 import { MathUtils } from '@shared/MathUtils';
-import { FlapConf } from './common';
+import { Common, FlapConf } from './common';
 
 export class FlightModel {
     static Cd0 = 0.0187;
@@ -17,6 +17,11 @@ export class FlightModel {
     static gravityConstKNS = 19.0626 // in knots/second
 
     static gravityConstMS2 = 9.806665; // in m/s^2
+
+    // From https://github.com/flybywiresim/a32nx/pull/6903#issuecomment-1073168320
+    static machValues: Mach[] = [0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85]
+
+    static dragCoefficientCorrections: number[] = [0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0015, 0.01]
 
     /**
      * Get lift coefficient at given conditions
@@ -83,7 +88,37 @@ export class FlightModel {
     static getDrag(weight: number, mach: number, delta: number, spdBrkDeflected: boolean, gearExtended: boolean, flapConf: FlapConf): number {
         const Cl = this.getLiftCoefficient(weight, mach, delta);
         const Cd = this.getDragCoefficient(Cl, spdBrkDeflected, gearExtended, flapConf);
-        return 1481.4 * (mach ** 2) * delta * this.wingArea * Cd;
+        const deltaCd = this.getMachCorrection(mach, flapConf);
+
+        return 1481.4 * (mach ** 2) * delta * this.wingArea * (Cd + deltaCd);
+    }
+
+    static getMachCorrection(mach: Mach, flapConf: FlapConf): number {
+        if (flapConf !== FlapConf.CLEAN) {
+            return 0;
+        }
+
+        return this.interpolate(mach, this.machValues, this.dragCoefficientCorrections);
+    }
+
+    /**
+     * Interpolates in a list
+     * @param x The value to look up in in `xs`.
+     * @param xs The table of x values with known y values
+     * @param ys The y values corresponding to the x values in `xs`
+     */
+    static interpolate(x: number, xs: number[], ys: number[]) {
+        if (x <= xs[0]) {
+            return ys[0];
+        }
+
+        for (let i = 0; i < xs.length - 1; i++) {
+            if (x > xs[i] && x < xs[i + 1]) {
+                return Common.interpolate(x, xs[i], xs[i + 1], ys[i], ys[i + 1]);
+            }
+        }
+
+        return ys[ys.length - 1];
     }
 
     // NEW
