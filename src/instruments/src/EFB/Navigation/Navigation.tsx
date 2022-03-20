@@ -451,6 +451,7 @@ export const ChartViewer = () => {
                                     width={chartDimensions.width ?? 0}
                                     height={chartDimensions.height ?? 0}
                                     resolutionScalar={4}
+                                    disabled={!drawMode}
                                 />
 
                                 <div

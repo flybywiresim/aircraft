@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 interface DrawableCanvasProps {
     width: number;
@@ -8,6 +8,7 @@ interface DrawableCanvasProps {
     brushSize?: number;
     rotation?: number;
     resolutionScalar?: number;
+    disabled?: boolean;
 }
 
 export const DrawableCanvas = ({
@@ -18,6 +19,7 @@ export const DrawableCanvas = ({
     brushSize = 10,
     rotation = 0,
     resolutionScalar = 1,
+    disabled,
 }: DrawableCanvasProps) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -28,6 +30,8 @@ export const DrawableCanvas = ({
     }, [canvasRef.current]);
 
     const handleMouseMove = useCallback((event: MouseEvent) => {
+        if (disabled) return;
+
         if (canvasRef.current) {
             const ctx = canvasRef.current.getContext('2d');
 
@@ -61,7 +65,6 @@ export const DrawableCanvas = ({
     };
 
     return (
-        // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
         <canvas
             ref={canvasRef}
             className={className}
