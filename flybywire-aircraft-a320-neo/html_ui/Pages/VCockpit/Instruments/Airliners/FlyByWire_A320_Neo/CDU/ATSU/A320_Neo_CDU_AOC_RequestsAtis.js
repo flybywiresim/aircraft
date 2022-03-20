@@ -1,7 +1,7 @@
 class CDUAocRequestsAtis {
     static CreateDataBlock(mcdu) {
         const retval = {
-            requestId: mcdu.currentFlightPhase === FmgcFlightPhases.PREFLIGHT ? Atsu.AtisType.Departure : Atsu.AtisType.Arrival,
+            requestId: mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT ? Atsu.AtisType.Departure : Atsu.AtisType.Arrival,
             departure: "",
             arrival: "",
             selected: "",
@@ -12,13 +12,13 @@ class CDUAocRequestsAtis {
 
         if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
             retval.departure = mcdu.flightPlanManager.getOrigin().ident;
-            if (mcdu.currentFlightPhase === FmgcFlightPhases.PREFLIGHT) {
+            if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT) {
                 retval.selected = retval.departure;
             }
         }
         if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
             retval.arrival = mcdu.flightPlanManager.getDestination().ident;
-            if (mcdu.currentFlightPhase !== FmgcFlightPhases.PREFLIGHT) {
+            if (mcdu.flightPhaseManager.phase !== FmgcFlightPhases.PREFLIGHT) {
                 retval.selected = retval.arrival;
             }
         }
@@ -166,16 +166,16 @@ class CDUAocRequestsAtis {
                 updateView();
             }, 1000);
 
-            mcdu.atsuManager.aoc.receiveAtis(store.selected, store.requestId).then((retval) => {
+            mcdu.atsu.aoc.receiveAtis(store.selected, store.requestId).then((retval) => {
                 if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
-                    mcdu.atsuManager.registerMessage(retval[1]);
+                    mcdu.atsu.registerMessage(retval[1]);
                     store.sendStatus = "";
                     updateView();
 
                     // print the message
                     if (store.formatID === 0) {
-                        mcdu.atsuManager.messageRead(retval[1].UniqueMessageID);
-                        mcdu.atsuManager.printMessage(retval[1]);
+                        mcdu.atsu.messageRead(retval[1].UniqueMessageID);
+                        mcdu.atsu.printMessage(retval[1]);
                     }
                 } else {
                     store.sendStatus = "FAILED";

@@ -361,12 +361,21 @@ function splitAnimations(gltfPath, outputPath, splitData) {
         const anim = gltf.animations[i];
         if (splitData.animation === anim.name) {
             gltf.animations.splice(i, 1);
-            for (const newAnim of splitData.newAnimations) {
-                gltf.animations.push({
-                    name: newAnim.name,
-                    channels: newAnim.indices.map((oldIndex, newIndex) => ({ ...anim.channels[oldIndex], sampler: newIndex })),
-                    samplers: newAnim.indices.map((oldIndex) => anim.samplers[oldIndex]),
-                });
+            for (const newAnimData of splitData.newAnimations) {
+                const newAnim = {
+                    name: newAnimData.name,
+                    channels: newAnimData.indices.map((oldIndex, newIndex) => ({ ...anim.channels[oldIndex], sampler: newIndex })),
+                    samplers: newAnimData.indices.map((oldIndex) => anim.samplers[oldIndex]),
+                };
+                if (newAnimData.targetNode !== undefined) {
+                    const nodeIndex = gltf.nodes.findIndex((n) => n.name === newAnimData.targetNode);
+                    if (nodeIndex >= 0) {
+                        newAnim.channels.forEach((c) => {
+                            c.target = { ...c.target, node: nodeIndex };
+                        });
+                    }
+                }
+                gltf.animations.push(newAnim);
             }
         }
     }

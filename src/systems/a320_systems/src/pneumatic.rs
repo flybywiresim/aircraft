@@ -17,8 +17,8 @@ use systems::{
         valve::*, BleedMonitoringComputerChannelOperationMode,
         BleedMonitoringComputerIsAliveSignal, CompressionChamber, ControllablePneumaticValve,
         CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
-        EngineCompressionChamberController, EngineState, PneumaticContainer, PneumaticPipe,
-        PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
+        EngineCompressionChamberController, EngineModeSelector, EngineState, PneumaticContainer,
+        PneumaticPipe, PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
         PressurizeableReservoir, TargetPressureSignal, VariableVolumeContainer,
     },
     shared::{
@@ -121,6 +121,9 @@ pub struct A320Pneumatic {
     apu_compression_chamber: CompressionChamber,
     apu_bleed_air_valve: DefaultValve,
 
+    hydraulic_reservoir_bleed_air_valves: [PurelyPneumaticValve; 2],
+    hydraulic_reservoir_bleed_air_pipe: PneumaticPipe,
+
     green_hydraulic_reservoir_with_valve:
         PressurisedReservoirWithExhaustValve<VariableVolumeContainer>,
     blue_hydraulic_reservoir_with_valve:
@@ -159,6 +162,15 @@ impl A320Pneumatic {
             ],
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
+            hydraulic_reservoir_bleed_air_valves: [
+                PurelyPneumaticValve::new(),
+                PurelyPneumaticValve::new(),
+            ],
+            hydraulic_reservoir_bleed_air_pipe: PneumaticPipe::new(
+                Volume::new::<cubic_meter>(0.2),
+                Pressure::new::<psi>(14.7),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
+            ),
             green_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
                 context,
                 HydraulicColor::Green,
@@ -252,7 +264,11 @@ impl A320Pneumatic {
             controller.update(&self.fadec);
         }
 
-        for engine_system in self.engine_systems.iter_mut() {
+        for (engine_system, hydraulic_valve) in self
+            .engine_systems
+            .iter_mut()
+            .zip(&mut self.hydraulic_reservoir_bleed_air_valves)
+        {
             for bleed_monitoring_computer in self.bleed_monitoring_computers.iter() {
                 let index = engine_system.number - 1;
 
@@ -270,6 +286,12 @@ impl A320Pneumatic {
                     );
                 }
             }
+
+            hydraulic_valve.update_move_fluid(
+                context,
+                engine_system,
+                &mut self.hydraulic_reservoir_bleed_air_pipe,
+            );
         }
 
         let [left_system, right_system] = &mut self.engine_systems;
@@ -283,11 +305,11 @@ impl A320Pneumatic {
             .update_move_fluid(context, left_system, right_system);
 
         self.green_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, left_system);
+            .update_flow_through_valve(context, &mut self.hydraulic_reservoir_bleed_air_pipe);
         self.blue_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, left_system);
+            .update_flow_through_valve(context, &mut self.hydraulic_reservoir_bleed_air_pipe);
         self.yellow_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, left_system);
+            .update_flow_through_valve(context, &mut self.hydraulic_reservoir_bleed_air_pipe);
 
         self.packs
             .iter_mut()
@@ -332,6 +354,9 @@ impl EngineStartState for A320Pneumatic {
     }
     fn right_engine_state(&self) -> EngineState {
         self.fadec.engine_state(2)
+    }
+    fn engine_mode_selector(&self) -> EngineModeSelector {
+        self.fadec.engine_mode_selector()
     }
 }
 impl SimulationElement for A320Pneumatic {
@@ -1067,12 +1092,15 @@ impl SimulationElement for A320PneumaticOverheadPanel {
 }
 
 /// We use this simply as an interface to engine parameter simvars. It should probably not be part of the pneumatic system.
-struct FullAuthorityDigitalEngineControl {
+pub struct FullAuthorityDigitalEngineControl {
     engine_1_state_id: VariableIdentifier,
     engine_2_state_id: VariableIdentifier,
 
     engine_1_state: EngineState,
     engine_2_state: EngineState,
+
+    engine_mode_selector1_id: VariableIdentifier,
+    engine_mode_selector1_position: EngineModeSelector,
 }
 impl FullAuthorityDigitalEngineControl {
     fn new(context: &mut InitContext) -> Self {
@@ -1081,6 +1109,9 @@ impl FullAuthorityDigitalEngineControl {
             engine_2_state_id: context.get_identifier("ENGINE_STATE:2".to_owned()),
             engine_1_state: EngineState::Off,
             engine_2_state: EngineState::Off,
+            engine_mode_selector1_id: context
+                .get_identifier("TURB ENG IGNITION SWITCH EX1:1".to_owned()),
+            engine_mode_selector1_position: EngineModeSelector::Norm,
         }
     }
 
@@ -1095,11 +1126,16 @@ impl FullAuthorityDigitalEngineControl {
     fn is_single_vs_dual_bleed_config(&self) -> bool {
         (self.engine_1_state == EngineState::On) ^ (self.engine_2_state == EngineState::On)
     }
+
+    fn engine_mode_selector(&self) -> EngineModeSelector {
+        self.engine_mode_selector1_position
+    }
 }
 impl SimulationElement for FullAuthorityDigitalEngineControl {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.engine_1_state = reader.read(&self.engine_1_state_id);
         self.engine_2_state = reader.read(&self.engine_2_state_id);
+        self.engine_mode_selector1_position = reader.read(&self.engine_mode_selector1_id);
     }
 }
 
@@ -1291,6 +1327,7 @@ mod tests {
     use systems::{
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
+        failures::FailureType,
         pneumatic::{
             BleedMonitoringComputerChannelOperationMode, ControllablePneumaticValve,
             CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
@@ -1298,8 +1335,8 @@ mod tests {
         },
         shared::{
             ApuBleedAirValveSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            EmergencyElectricalState, EngineFirePushButtons, InternationalStandardAtmosphere,
-            MachNumber, PneumaticValve, PotentialOrigin,
+            EmergencyElectricalState, EngineFirePushButtons, HydraulicColor,
+            InternationalStandardAtmosphere, MachNumber, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{SimulationTestBed, TestBed, WriteByName},
@@ -2583,6 +2620,56 @@ mod tests {
         assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
         assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
         assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
+    }
+
+    #[test]
+    fn hydraulic_reservoirs_is_pressurized_by_left_system() {
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .stop_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut);
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
+        test_bed
+            .test_bed
+            .run_multiple_frames(Duration::from_secs(16));
+
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
+        test_bed
+            .test_bed
+            .run_multiple_frames(Duration::from_secs(16));
+
+        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+    }
+
+    #[test]
+    fn hydraulic_reservoirs_is_pressurized_by_right_system() {
+        let mut test_bed = test_bed_with()
+            .stop_eng1()
+            .idle_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut);
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
+        test_bed
+            .test_bed
+            .run_multiple_frames(Duration::from_secs(16));
+
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
+        test_bed
+            .test_bed
+            .run_multiple_frames(Duration::from_secs(16));
+
+        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
     }
 
     #[test]

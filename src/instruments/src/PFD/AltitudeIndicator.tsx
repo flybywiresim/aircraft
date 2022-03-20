@@ -1,6 +1,7 @@
 import React from 'react';
 import { Arinc429Word } from '@shared/arinc429';
 import { useSimVar } from '@instruments/common/simVars';
+import { VerticalMode } from '@shared/autopilot';
 import { VerticalTape } from './PFDUtils';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { getSimVar } from '../util.js';
@@ -49,11 +50,16 @@ const LandingElevationIndicator = ({ altitude, FWCFlightPhase }: LandingElevatio
     );
 };
 
-const RadioAltIndicator = ({ radioAlt }) => {
-    if (radioAlt > DisplayRange) {
+interface RadioAltitudeProps {
+    radioAltitude: Arinc429Word,
+    filteredRadioAltitude: number,
+}
+
+const RadioAltIndicator = ({ radioAltitude, filteredRadioAltitude }: RadioAltitudeProps) => {
+    if (filteredRadioAltitude > DisplayRange || radioAltitude.isFailureWarning() || radioAltitude.isNoComputedData()) {
         return null;
     }
-    const offset = (radioAlt - DisplayRange) * DistanceSpacing / ValueSpacing;
+    const offset = (filteredRadioAltitude - DisplayRange) * DistanceSpacing / ValueSpacing;
 
     return (
         <path id="AltTapeGroundReference" className="Fill Red" d={`m131.15 123.56h2.8709v${offset}h-2.8709z`} />
@@ -98,10 +104,11 @@ interface AltitudeIndicatorOfftapeProps {
     targetAlt: number;
     altIsManaged: boolean;
     mode: '' | 'STD' | 'QFE' | 'QNH';
-    radioAlt: number;
+    radioAltitude: Arinc429Word;
+    filteredRadioAltitude: number,
 }
 
-export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManaged, mode, radioAlt }: AltitudeIndicatorOfftapeProps) => {
+export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManaged, mode, radioAltitude, filteredRadioAltitude }: AltitudeIndicatorOfftapeProps) => {
     const [tcasFail] = useSimVar('L:A32NX_TCAS_FAULT', 'boolean', 200);
 
     const altFailBlock = (
@@ -138,7 +145,7 @@ export const AltitudeIndicatorOfftape = ({ altitude, MDA, targetAlt, altIsManage
             <AltimeterIndicator mode={mode} altitude={altitude} />
             <MetricAltIndicator altitude={altitude} MDA={MDA} targetAlt={targetAlt} altIsManaged={altIsManaged} />
             <path id="AltReadoutBackground" className="BlackFill" d="m130.85 85.308h-13.13v-8.9706h13.13v-2.671h8.8647v14.313h-8.8647z" />
-            <RadioAltIndicator radioAlt={radioAlt} />
+            <RadioAltIndicator radioAltitude={radioAltitude} filteredRadioAltitude={filteredRadioAltitude} />
             <DigitalAltitudeReadout altitude={altitude} MDA={MDA} />
             {tcasFail && tcasFailBlock}
         </g>
@@ -157,7 +164,17 @@ interface SelectedAltIndicatorProps {
 }
 
 const SelectedAltIndicator = ({ currentAlt, targetAlt, altIsManaged, mode }: SelectedAltIndicatorProps) => {
-    const color = altIsManaged ? 'Magenta' : 'Cyan';
+    const activeVerticalMode = getSimVar('L:A32NX_FMA_VERTICAL_MODE', 'enum');
+    const selectedAltIgnored = (activeVerticalMode >= VerticalMode.GS_CPT && activeVerticalMode <= VerticalMode.ROLL_OUT) || activeVerticalMode === VerticalMode.FINAL;
+
+    let color: string;
+    if (selectedAltIgnored) {
+        color = 'White';
+    } else if (altIsManaged) {
+        color = 'Magenta';
+    } else {
+        color = 'Cyan';
+    }
 
     const isSTD = mode === 'STD';
     let boxLength = 19.14;

@@ -3,11 +3,12 @@ import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 
 interface VerticalSpeedIndicatorProps {
-    radioAlt: number,
     verticalSpeed: Arinc429Word
+    radioAltitude: Arinc429Word,
+    filteredRadioAltitude: number,
 }
 
-export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpeedIndicatorProps) => {
+export const VerticalSpeedIndicator = ({ verticalSpeed, radioAltitude, filteredRadioAltitude }: VerticalSpeedIndicatorProps) => {
     if (!verticalSpeed.isNormalOperation()) {
         return (
             <>
@@ -22,9 +23,14 @@ export const VerticalSpeedIndicator = ({ radioAlt, verticalSpeed }: VerticalSpee
     }
 
     const absVSpeed = Math.abs(verticalSpeed.value);
+    const radioAltitudeValid = !radioAltitude.isNoComputedData() && !radioAltitude.isFailureWarning();
 
     let isAmber = false;
-    if (absVSpeed > 6000 || (radioAlt < 2500 && radioAlt > 1000 && verticalSpeed.value < -2000) || (radioAlt < 1000 && verticalSpeed.value < -1200)) {
+    if (
+        absVSpeed >= 6000
+        || (verticalSpeed.value <= -2000 && radioAltitudeValid && filteredRadioAltitude <= 2500 && filteredRadioAltitude >= 1000)
+        || (verticalSpeed.value <= -1200 && radioAltitudeValid && filteredRadioAltitude <= 1000)
+    ) {
         isAmber = true;
     }
 

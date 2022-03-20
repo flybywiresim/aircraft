@@ -1,15 +1,19 @@
 class CDUAocMessagesReceived {
     static ShowPage(mcdu, messages = null, page = 0) {
         if (!messages) {
-            messages = mcdu.atsuManager.aoc.inputMessages();
+            messages = mcdu.atsu.aoc.inputMessages();
         }
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.AOCRcvdMsgs;
 
-        page = Math.min(Math.floor((messages.length - 1) / 5), page);
+        page = Math.max(0, Math.min(Math.floor((messages.length - 1) / 5), page));
 
-        mcdu.refreshPageCallback = () => {
-            this.ShowPage(mcdu, null, page);
-        };
+        // regular update due to showing dynamic data on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.AOCRcvdMsgs) {
+                CDUAocMessagesReceived.ShowPage(mcdu, null, page);
+            }
+        }, mcdu.PageTimeout.Slow);
 
         const offset = 5 + page * 5;
 
@@ -72,7 +76,7 @@ class CDUAocMessagesReceived {
             mcdu.onLeftInput[i] = (value) => {
                 if (messages[offset - 5 + i]) {
                     if (value === FMCMainDisplay.clrValue) {
-                        mcdu.atsuManager.removeMessage(messages[offset - 5 + i].UniqueMessageID);
+                        mcdu.atsu.removeMessage(messages[offset - 5 + i].UniqueMessageID);
                         CDUAocMessagesReceived.ShowPage(mcdu, null, page);
                     } else {
                         CDUAocRequestsMessage.ShowPage(mcdu, messages, offset - 5 + i);
