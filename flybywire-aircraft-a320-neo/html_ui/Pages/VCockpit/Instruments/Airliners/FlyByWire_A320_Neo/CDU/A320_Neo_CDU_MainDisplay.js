@@ -3,7 +3,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         super(...arguments);
 
         this.minPageUpdateThrottler = new UpdateThrottler(100);
-        this.mcduServerConnectUpdateThrottler = new UpdateThrottler(2500);
+        this.mcduServerConnectUpdateThrottler = new UpdateThrottler(5000);
         this.powerCheckUpdateThrottler = new UpdateThrottler(500);
 
         this._registered = false;
