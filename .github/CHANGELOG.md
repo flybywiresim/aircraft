@@ -201,6 +201,7 @@
 1. [MODEL] Fix mirrored right main gear wheel UV - @bouveng (Johan Bouveng)
 1. [EFB] Fix Metar parser error - @brainshot (brainshot) @frankkopp (Frank Kopp)
 1. [MODEL] Add custom cargo door hinge for texturing - @bouveng (Johan Bouveng)
+1. [MISC] Fix Home Cockpit mode to honor backlight bleed configuration in PFD/ND test mode - @ssewell (Shane Sewell)
 
 ## 0.7.0
 
