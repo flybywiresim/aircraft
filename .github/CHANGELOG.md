@@ -202,6 +202,7 @@
 1. [EFB] Fix Metar parser error - @brainshot (brainshot) @frankkopp (Frank Kopp)
 1. [MODEL] Add custom cargo door hinge for texturing - @bouveng (Johan Bouveng)
 1. [MISC] Fix Home Cockpit mode to honor backlight bleed configuration in PFD/ND test mode - @ssewell (Shane Sewell)
+1. [MCDU] Update Simbrief API integration with new weights and balance features - @sidnov (Sid)
 
 ## 0.7.0
 
