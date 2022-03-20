@@ -195,23 +195,42 @@ export class HoppieConnector {
             if (elem[0] === minScore) matches.push(elem[1]);
         });
 
-        console.log(`Found matches: ${matches}`);
+        console.log(`Found matches: ${matches}, score: ${minScore}`);
         if (matches.length === 0) return undefined;
+
+        // check if message without parameters are in, but the minScore not empty
+        if (matches.length > 1 && minScore !== 0) {
+            const nonEmpty = matches.filter((match) => CpdlcMessagesUplink[match][1].Content.length !== 0);
+            if (nonEmpty.length !== 0 && matches.length !== nonEmpty.length) {
+                console.log(`Ignoring ${matches.length - nonEmpty.length} messages without arguments. Remaining ${nonEmpty}`);
+                matches = nonEmpty;
+            }
+        }
 
         // check if more than the freetext-entry is valid
         if (matches.length > 1) {
             const nonFreetext = matches.filter((match) => match !== 'UM169' && match !== 'UM183');
             if (nonFreetext.length !== 0 && matches.length !== nonFreetext.length) {
-                console.log(`Ignoring ${matches.length - nonFreetext.length} freetext messages`);
+                console.log(`Ignoring ${matches.length - nonFreetext.length} freetext messages. Remaining: ${nonFreetext}`);
                 matches = nonFreetext;
             }
         }
 
-        console.log(`Selected UM-ID: ${matches[0]}`);
+        // check if the FANS mode is invalid
+        if (matches.length > 1 && this.fansMode !== FansMode.FansNone) {
+            const validFans = matches.filter((match) => CpdlcMessagesUplink[match][1].FansModes.findIndex((elem) => elem === this.fansMode) !== -1);
+            if (validFans.length !== 0 && matches.length !== validFans.length) {
+                console.log(`Ignoring ${matches.length - validFans.length} invalid FANS messages. Remaining: ${validFans}`);
+                matches = validFans;
+            }
+        }
+
+        // TODO add some more heuristic about messages
 
         // create a deep-copy of the message
         const retval: CpdlcMessageElement = CpdlcMessagesUplink[matches[0]][1].deepCopy();
         const elements = message.split(' ');
+        console.log(`Selected UM-ID: ${matches[0]}`);
 
         // parse the content and store it in the deep copy
         retval.Content.forEach((entry) => entry.validateAndReplaceContent(elements));
