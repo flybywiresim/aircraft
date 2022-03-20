@@ -558,32 +558,38 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.left_gear_unlock_id,
-            self.sensor_inputs
-                .unlock_state(GearWheel::LEFT, self.gear_handle_is_down()),
+            self.is_powered
+                && self
+                    .sensor_inputs
+                    .unlock_state(GearWheel::LEFT, self.gear_handle_is_down()),
         );
         writer.write(
             &self.left_gear_downlock_id,
-            self.sensor_inputs.downlock_state(GearWheel::LEFT),
+            self.is_powered && self.sensor_inputs.downlock_state(GearWheel::LEFT),
         );
 
         writer.write(
             &self.nose_gear_unlock_id,
-            self.sensor_inputs
-                .unlock_state(GearWheel::CENTER, self.gear_handle_is_down()),
+            self.is_powered
+                && self
+                    .sensor_inputs
+                    .unlock_state(GearWheel::CENTER, self.gear_handle_is_down()),
         );
         writer.write(
             &self.nose_gear_downlock_id,
-            self.sensor_inputs.downlock_state(GearWheel::CENTER),
+            self.is_powered && self.sensor_inputs.downlock_state(GearWheel::CENTER),
         );
 
         writer.write(
             &self.right_gear_unlock_id,
-            self.sensor_inputs
-                .unlock_state(GearWheel::RIGHT, self.gear_handle_is_down()),
+            self.is_powered
+                && self
+                    .sensor_inputs
+                    .unlock_state(GearWheel::RIGHT, self.gear_handle_is_down()),
         );
         writer.write(
             &self.right_gear_downlock_id,
-            self.sensor_inputs.downlock_state(GearWheel::RIGHT),
+            self.is_powered && self.sensor_inputs.downlock_state(GearWheel::RIGHT),
         );
     }
 }
