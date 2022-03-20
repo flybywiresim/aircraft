@@ -9,11 +9,14 @@ import {
     Dash,
     FullscreenExit,
     MoonFill,
+    PencilFill,
     Plus,
     SunFill, XCircleFill,
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
-import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
+import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
+import Slider from 'rc-slider';
+import { DrawableCanvas } from './DrawableCanvas';
 import { useNavigraph } from '../ChartsApi/Navigraph';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch, useAppSelector } from '../Store/store';
@@ -90,6 +93,9 @@ export const ChartViewer = () => {
         chartPosition,
         chartRotation,
     } = useAppSelector((state) => state.navigationTab[currentTab]);
+
+    const [drawMode, setDrawMode] = useState(false);
+    const [brushSize, setBrushSize] = useState(10);
 
     const { userName } = useNavigraph();
 
@@ -200,6 +206,9 @@ export const ChartViewer = () => {
         }
     }, [currentPage]);
 
+    const transformRef = useRef<ReactZoomPanPinchRef>(null);
+    const planeRef = useRef(null);
+
     if (!chartLinks.light || !chartLinks.dark) {
         return (
             <div
@@ -226,6 +235,7 @@ export const ChartViewer = () => {
             style={{ width: `${isFullScreen ? '1278px' : '804px'}` }}
         >
             <TransformWrapper
+                ref={transformRef}
                 initialScale={chartPosition.scale}
                 initialPositionX={chartPosition.positionX}
                 initialPositionY={chartPosition.positionY}
@@ -239,6 +249,18 @@ export const ChartViewer = () => {
                         className="h-full"
                         onMouseUp={() => dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...state } }))}
                     >
+                        <div className="overflow-hidden absolute bottom-6 left-6 z-30 rounded-md">
+                            {drawMode && (
+                                <Slider min={1} max={30} value={brushSize} onChange={(value) => setBrushSize(value)} />
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => setDrawMode((old) => !old)}
+                                className={`p-2 transition hover:text-theme-body duration-100 cursor-pointer bg-theme-secondary hover:bg-theme-highlight ${drawMode && 'text-theme-body bg-theme-highlight'}`}
+                            >
+                                <PencilFill className="fill-current" size={40} />
+                            </button>
+                        </div>
                         {pagesViewable > 1 && (
                             <div className="flex overflow-hidden absolute top-6 left-6 z-40 flex-row items-center rounded-md">
                                 <div
@@ -422,6 +444,15 @@ export const ChartViewer = () => {
                             ref={ref}
                         >
                             <TransformComponent wrapperStyle={{ height: ref.current?.clientHeight, width: ref.current?.clientWidth }}>
+                                <DrawableCanvas
+                                    className="absolute inset-0 z-10 transition duration-100"
+                                    rotation={chartRotation}
+                                    brushSize={brushSize}
+                                    width={chartDimensions.width ?? 0}
+                                    height={chartDimensions.height ?? 0}
+                                    resolutionScalar={4}
+                                />
+
                                 <div
                                     className="relative m-auto transition duration-100"
                                     style={{ transform: `rotate(${chartRotation}deg)` }}
@@ -437,7 +468,7 @@ export const ChartViewer = () => {
                                     )}
 
                                     { (aircraftIconVisible && boundingBox) && (
-                                        <svg viewBox={`0 0 ${boundingBox.width} ${boundingBox.height}`} className="absolute top-0 left-0 z-30">
+                                        <svg ref={planeRef} viewBox={`0 0 ${boundingBox.width} ${boundingBox.height}`} className="absolute top-0 left-0 z-30">
                                             <g
                                                 className="transition duration-100"
                                                 transform={`translate(${aircraftIconPosition.x} ${aircraftIconPosition.y}) rotate(${aircraftIconPosition.r})`}
