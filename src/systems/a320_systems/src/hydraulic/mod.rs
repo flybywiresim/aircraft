@@ -1247,7 +1247,7 @@ impl A320Hydraulic {
         );
 
         for cur_time_step in self.flight_controls_updater {
-            self.update_flight_controls_physics(&context.with_delta(cur_time_step));
+            self.update_flight_controls_physics(&context.with_delta(cur_time_step), lgciu1);
         }
 
         for cur_time_step in self.core_hydraulic_updater {
@@ -1343,7 +1343,11 @@ impl A320Hydraulic {
         self.yellow_circuit.system_section_pressure_switch() == PressureSwitchState::Pressurised
     }
 
-    fn update_flight_controls_physics(&mut self, context: &UpdateContext) {
+    fn update_flight_controls_physics(
+        &mut self,
+        context: &UpdateContext,
+        lgciu1: &impl LgciuInterface,
+    ) {
         self.left_aileron.update(
             context,
             self.elac_computer.left_controllers(),
@@ -1394,6 +1398,13 @@ impl A320Hydraulic {
             self.green_circuit.system_pressure(),
             self.blue_circuit.system_pressure(),
             self.yellow_circuit.system_pressure(),
+        );
+
+        self.gear_system.update(
+            context,
+            &self.gear_system_safety_valve_controller,
+            lgciu1,
+            self.green_circuit.system_pressure(),
         );
     }
 
@@ -1448,13 +1459,6 @@ impl A320Hydraulic {
             lgciu1,
             lgciu2,
             &self.gear_gravity_extension,
-        );
-
-        self.gear_system.update(
-            context,
-            &self.gear_system_safety_valve_controller,
-            lgciu1,
-            self.green_circuit.system_pressure(),
         );
     }
 
@@ -5659,7 +5663,7 @@ mod tests {
                 self.set_indicated_airspeed(Velocity::new::<knot>(180.));
                 self.start_eng1(Ratio::new::<percent>(80.))
                     .start_eng2(Ratio::new::<percent>(80.))
-                    .set_gear_up()
+                    .set_gear_lever_up()
                     .set_park_brake(false)
                     .external_power(false)
             }
@@ -5763,20 +5767,14 @@ mod tests {
                 self
             }
 
-            fn set_gear_up(mut self) -> Self {
-                self.write_by_name("GEAR CENTER POSITION", 0.);
-                self.write_by_name("GEAR LEFT POSITION", 0.);
-                self.write_by_name("GEAR RIGHT POSITION", 0.);
-                self.write_by_name("GEAR HANDLE POSITION", false);
+            fn set_gear_lever_up(mut self) -> Self {
+                self.write_by_name("GEAR_LEVER_POSITION_REQUEST", false);
 
                 self
             }
 
-            fn set_gear_down(mut self) -> Self {
-                self.write_by_name("GEAR CENTER POSITION", 100.);
-                self.write_by_name("GEAR LEFT POSITION", 100.);
-                self.write_by_name("GEAR RIGHT POSITION", 100.);
-                self.write_by_name("GEAR HANDLE POSITION", true);
+            fn set_gear_lever_down(mut self) -> Self {
+                self.write_by_name("GEAR_LEVER_POSITION_REQUEST", true);
 
                 self
             }
@@ -5888,7 +5886,7 @@ mod tests {
                     .set_anti_skid(true)
                     .set_left_brake(Ratio::new::<percent>(0.))
                     .set_right_brake(Ratio::new::<percent>(0.))
-                    .set_gear_down()
+                    .set_gear_lever_down()
                     .set_pushback_state(false)
                     .air_press_nominal()
                     .set_ailerons_neutral()
@@ -7560,7 +7558,7 @@ mod tests {
                 .set_left_brake(Ratio::new::<percent>(0.))
                 .set_right_brake(Ratio::new::<percent>(0.))
                 .in_flight()
-                .set_gear_up()
+                .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(1));
 
             // Check auto brake is active
@@ -7630,7 +7628,7 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
-                .set_gear_up()
+                .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(10));
 
             // No brake inputs
@@ -7663,14 +7661,14 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
-                .set_gear_up()
+                .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(10));
 
             // Now full brakes gear down
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(100.))
                 .set_right_brake(Ratio::new::<percent>(100.))
-                .set_gear_down()
+                .set_gear_lever_down()
                 .run_waiting_for(Duration::from_secs(1));
 
             // Brakes norm should work normally
@@ -7686,14 +7684,14 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
-                .set_gear_up()
+                .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(10));
 
             // Now full brakes gear down
             test_bed = test_bed
                 .set_left_brake(Ratio::new::<percent>(100.))
                 .set_right_brake(Ratio::new::<percent>(100.))
-                .set_gear_down()
+                .set_gear_lever_down()
                 .set_anti_skid(false)
                 .run_waiting_for(Duration::from_secs(1));
 
@@ -7754,7 +7752,7 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
-                .set_gear_up()
+                .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(12));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
@@ -7777,7 +7775,7 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
-                .set_gear_up()
+                .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(12));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
@@ -7801,7 +7799,7 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
-                .set_gear_up()
+                .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(12));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
@@ -7824,7 +7822,7 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
-                .set_gear_up()
+                .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs(15));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
@@ -9345,7 +9343,7 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
-                .set_gear_up();
+                .set_gear_lever_up();
 
             assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
 
@@ -9356,7 +9354,7 @@ mod tests {
 
             assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
 
-            test_bed = test_bed.set_gear_down();
+            test_bed = test_bed.set_gear_lever_down();
             for _ in 0..50 {
                 test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(0.5));
                 println!("GEAR STATE {:?}", test_bed.gear_system_state());
