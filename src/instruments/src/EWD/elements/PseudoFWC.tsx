@@ -186,8 +186,8 @@ const PseudoFWC: React.FC = () => {
     const [ratDeployed] = useSimVar('L:A32NX_HYD_RAT_STOW_POSITION', 'percent over 100', 500);
 
     /* LANDING GEAR AND LIGHTS */
-    const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 500);
-    const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 500);
+    // const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 500);
+    // const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 500);
     // const aircraftOnGround = left1LandingGear === 1 || right1LandingGear === 1;
     // FIXME The landing gear triggers the dual engine failure on loading
     const aircraftOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
