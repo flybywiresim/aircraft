@@ -203,6 +203,7 @@
 1. [MODEL] Add custom cargo door hinge for texturing - @bouveng (Johan Bouveng)
 1. [MISC] Fix Home Cockpit mode to honor backlight bleed configuration in PFD/ND test mode - @ssewell (Shane Sewell)
 1. [FMGC] Updates flight model info for FMGC guidance - @donstim (donbikes#4084)
+1. [PFD] Reimplement PFD with msfs-avionics framework for improved performance - @saschl (saschl#9432)
 
 ## 0.7.0
 
