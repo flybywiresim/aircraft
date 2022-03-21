@@ -123,10 +123,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.socketConnectionAttempts = 0;
         this.maxConnectionAttempts = 60;
         this.mcduServerConnect = NXDataStore.get("CONFIG_EXTERNAL_MCDU_SERVER_ENABLED", 'AUTO ON');
-        if (this.mcduServerConnect === 'AUTO OFF') {
+        if (this.mcduServerConnect !== 'PERM OFF') {
             NXDataStore.set("CONFIG_EXTERNAL_MCDU_SERVER_ENABLED", 'AUTO ON');
             this.mcduServerConnect = 'AUTO ON';
-        } else if (this.mcduServerConnect === 'PERM OFF') {
+        } else {
             console.log("MCDU server connection attempts permanently deactivated.");
         }
     }
