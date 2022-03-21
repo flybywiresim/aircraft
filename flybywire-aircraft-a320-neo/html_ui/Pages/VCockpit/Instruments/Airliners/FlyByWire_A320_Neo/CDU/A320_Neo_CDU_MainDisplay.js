@@ -326,11 +326,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     console.log("MCDU server connection attempts deactivated. No more attempts.");
                     this.socketConnectionAttempts = 0;
                 }
-                if (this.socket && this.socket.readyState === 1) {
+                if (this.socket) {
                     // If there is a connection established but the EFB setting has been changed
                     // then close connection
                     this.socket.close();
-                    delete this.socket;
+                    this.socket = undefined;
                 }
             }
         }
@@ -1466,17 +1466,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         const url = `ws://127.0.0.1:${port}`;
 
-        // There seems to be an issue with the sim's Coherent engine that
-        // makes it impossible to completely remove websocket objects after
-        // an unsuccessful connection attempt. Tests have shown the below
-        // leaves open sockets (visible in Coherent GT Debugger) leading
-        // to slow degradation of performance for some users.
-        // Therefore, it should be avoided to continuously do connection attempts.
-        // See above where this method is called for the mitigating solution.
         if (this.socket) {
             // Trying to close a socket in readState == 0 leads to
             // an error message ('WebSocket is closed before the connection is established')
             // in the console.
+            // Not closing sockets in readyState 0 leads to an accumulation of
+            // unclosed sockets
             this.socket.close();
             this.socket = undefined;
         }
