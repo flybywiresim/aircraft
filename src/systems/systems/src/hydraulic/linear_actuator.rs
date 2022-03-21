@@ -123,7 +123,7 @@ impl CoreHydraulicForce {
     ) -> Self {
         let max_force = Pressure::new::<psi>(3000.) * bore_side_area;
         Self {
-            current_mode: LinearActuatorMode::ClosedValves,
+            current_mode: LinearActuatorMode::ClosedCircuitDamping,
             closed_valves_reference_position: init_position,
 
             active_hydraulic_damping_constant,

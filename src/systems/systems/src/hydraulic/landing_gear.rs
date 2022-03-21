@@ -7,7 +7,7 @@ use crate::simulation::{
 };
 
 use super::linear_actuator::{
-    HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuatorMode,
+    Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuatorMode,
 };
 
 use uom::si::{f64::*, pressure::psi, ratio::ratio};
@@ -150,12 +150,14 @@ impl HydraulicGearSystem {
         );
 
         // println!(
-        //     "LD{:.2} ND{:.2} RD{:.2}",
+        //     "LD{:.2} ND{:.2} RD{:.2} CONTROL should unlock {} current_press {:.0}",
         //     self.left_door_assembly.position_normalized().get::<ratio>(),
         //     self.nose_door_assembly.position_normalized().get::<ratio>(),
         //     self.right_door_assembly
         //         .position_normalized()
-        //         .get::<ratio>()
+        //         .get::<ratio>(),
+        //     valves_controller.doors_uplocks_should_mechanically_unlock(),
+        //     current_pressure.get::<psi>()
         // );
 
         // println!(
@@ -166,6 +168,26 @@ impl HydraulicGearSystem {
         //         .position_normalized()
         //         .get::<ratio>()
         // );
+    }
+
+    // TODO make an iterator
+    pub fn nose_door_actuator(&mut self) -> &mut impl Actuator {
+        self.nose_door_assembly.actuator()
+    }
+    pub fn left_door_actuator(&mut self) -> &mut impl Actuator {
+        self.left_door_assembly.actuator()
+    }
+    pub fn right_door_actuator(&mut self) -> &mut impl Actuator {
+        self.right_door_assembly.actuator()
+    }
+    pub fn nose_gear_actuator(&mut self) -> &mut impl Actuator {
+        self.nose_gear_assembly.actuator()
+    }
+    pub fn left_gear_actuator(&mut self) -> &mut impl Actuator {
+        self.left_gear_assembly.actuator()
+    }
+    pub fn right_gear_actuator(&mut self) -> &mut impl Actuator {
+        self.right_gear_assembly.actuator()
     }
 }
 impl GearSystemSensors for HydraulicGearSystem {
@@ -498,6 +520,10 @@ impl GearDoorAssembly {
         } else {
             Ratio::new::<ratio>(1.) - self.hydraulic_assembly.position_normalized()
         }
+    }
+
+    fn actuator(&mut self) -> &mut impl Actuator {
+        self.hydraulic_assembly.actuator(0)
     }
 
     fn is_locked(&self) -> bool {

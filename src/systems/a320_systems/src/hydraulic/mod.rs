@@ -1632,6 +1632,24 @@ impl A320Hydraulic {
             .update_actuator_volumes(self.right_spoilers.actuator(0));
         self.green_circuit
             .update_actuator_volumes(self.right_spoilers.actuator(4));
+
+        self.green_circuit
+            .update_actuator_volumes(self.gear_system.nose_door_actuator());
+
+        self.green_circuit
+            .update_actuator_volumes(self.gear_system.left_door_actuator());
+
+        self.green_circuit
+            .update_actuator_volumes(self.gear_system.right_door_actuator());
+
+        self.green_circuit
+            .update_actuator_volumes(self.gear_system.nose_gear_actuator());
+
+        self.green_circuit
+            .update_actuator_volumes(self.gear_system.left_gear_actuator());
+
+        self.green_circuit
+            .update_actuator_volumes(self.gear_system.right_gear_actuator());
     }
 
     fn update_yellow_actuators_volume(&mut self) {
@@ -5595,6 +5613,14 @@ mod tests {
                 self.read_by_name("A32NX_HYD_RAT_RPM")
             }
 
+            fn get_emergency_handle_number_of_turns(&self) -> u8 {
+                self.query(|a| {
+                    a.hydraulics
+                        .gear_gravity_extension
+                        .extension_handle_number_of_turns()
+                })
+            }
+
             fn get_left_aileron_position(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("HYD_AIL_LEFT_DEFLECTION"))
             }
@@ -5869,6 +5895,40 @@ mod tests {
                 self.read_by_name("RIGHT_SLATS_POSITION_PERCENT")
             }
 
+            fn get_real_gear_position(&mut self, wheel_id: GearWheel) -> f64 {
+                match wheel_id {
+                    GearWheel::CENTER => self.read_by_name("GEAR_CENTER_POSITION"),
+                    GearWheel::LEFT => self.read_by_name("GEAR_LEFT_POSITION"),
+                    GearWheel::RIGHT => self.read_by_name("GEAR_RIGHT_POSITION"),
+                }
+            }
+
+            fn get_real_gear_door_position(&mut self, wheel_id: GearWheel) -> f64 {
+                match wheel_id {
+                    GearWheel::CENTER => self.read_by_name("GEAR_DOOR_CENTER_POSITION"),
+                    GearWheel::LEFT => self.read_by_name("GEAR_DOOR_LEFT_POSITION"),
+                    GearWheel::RIGHT => self.read_by_name("GEAR_DOOR_RIGHT_POSITION"),
+                }
+            }
+
+            fn is_all_gears_really_up(&mut self) -> bool {
+                self.get_real_gear_position(GearWheel::CENTER) <= 0.
+                    && self.get_real_gear_position(GearWheel::LEFT) <= 0.
+                    && self.get_real_gear_position(GearWheel::RIGHT) <= 0.
+            }
+
+            fn is_all_doors_really_up(&mut self) -> bool {
+                self.get_real_gear_door_position(GearWheel::CENTER) <= 0.
+                    && self.get_real_gear_door_position(GearWheel::LEFT) <= 0.
+                    && self.get_real_gear_door_position(GearWheel::RIGHT) <= 0.
+            }
+
+            fn is_all_doors_really_down(&mut self) -> bool {
+                self.get_real_gear_door_position(GearWheel::CENTER) >= 0.9
+                    && self.get_real_gear_door_position(GearWheel::LEFT) >= 0.9
+                    && self.get_real_gear_door_position(GearWheel::RIGHT) >= 0.9
+            }
+
             fn ac_bus_1_lost(mut self) -> Self {
                 self.command(|a| a.set_ac_bus_1_is_powered(false));
                 self
@@ -6049,6 +6109,26 @@ mod tests {
                     .set_left_brake(Ratio::new::<percent>(0.))
                     .set_right_brake(Ratio::new::<percent>(0.))
                     .run_waiting_for(Duration::from_secs(1));
+
+                self
+            }
+
+            fn set_gear_emergency_extension_active(mut self, is_active: bool) -> Self {
+                self.write_by_name("GEAR_EMERGENCY_EXTENSION_ACTIVE", is_active);
+                self
+            }
+
+            fn turn_emergency_gear_extension_n_turns(mut self, number_of_turns: u8) -> Self {
+                let mut number_of_loops = 0;
+                while self.get_emergency_handle_number_of_turns() < number_of_turns {
+                    self = self
+                        .set_gear_emergency_extension_active(true)
+                        .run_waiting_for(Duration::from_secs(1));
+                    number_of_loops += 1;
+                    assert!(number_of_loops < 50);
+                }
+
+                self = self.set_gear_emergency_extension_active(false);
 
                 self
             }
@@ -9395,6 +9475,23 @@ mod tests {
             }
 
             assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
+        }
+
+        #[test]
+        fn emergency_gear_extension_at_2_turns_open_doors() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .turn_emergency_gear_extension_n_turns(1)
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.is_all_doors_really_up());
+
+            test_bed = test_bed
+                .turn_emergency_gear_extension_n_turns(2)
+                .run_waiting_for(Duration::from_secs_f64(10.));
+
+            assert!(test_bed.is_all_doors_really_down());
         }
     }
 }
