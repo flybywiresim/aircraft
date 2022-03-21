@@ -244,6 +244,7 @@ const SimOptionsPage = () => {
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
     const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8380');
+    const [mcduServerEnabled, setMcduServerEnabled] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_SERVER_ENABLED', '1');
     const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
 
@@ -331,6 +332,18 @@ const SimOptionsPage = () => {
                             noLabel
                             onChange={(event) => {
                                 setMcduServerPort(event);
+                            }}
+                        />
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">Enable MCDU Server Connection (deactivates after 5min)</span>
+                        </span>
+                        <Toggle
+                            value={mcduServerEnabled === '1'}
+                            onToggle={(value) => {
+                                setMcduServerEnabled(value ? '1' : '0');
                             }}
                         />
                     </div>

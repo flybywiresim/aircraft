@@ -28,6 +28,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateRequest = false;
         this.initB = false;
         this.lastPowerState = 0;
+        this.socket = undefined;
+        this.socketConnectionRetries = 0;
         this.PageTimeout = {
             Fast: 500,
             Medium: 1000,
@@ -292,11 +294,25 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         // The MCDU is a client to the MCDU Server and tries to connect in regular intervals.
-        // every 2500ms
-        if (this.mcduServerConnectUpdateThrottler.canUpdate(_deltaTime) !== -1
-            && (!this.socket || this.socket.readyState !== 1)) {
-
-            this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
+        const connectionEnabled = NXDataStore.get("CONFIG_EXTERNAL_MCDU_SERVER_ENABLED", '1');
+        const maxConnectionAttempts = 60;
+        if (this.mcduServerConnectUpdateThrottler.canUpdate(_deltaTime) !== -1) {
+            // try to connect websocket if enabled and none existing
+            if (connectionEnabled === '1' && (!this.socket || this.socket.readyState !== 1)) {
+                // we try to connect for 5min then we deactivate the connection setting
+                if (this.socketConnectionRetries++ >= maxConnectionAttempts) {
+                    console.log("Maximum number of connection attempts to MCDU Server exceeded. No more attempts.");
+                    NXDataStore.set("CONFIG_EXTERNAL_MCDU_SERVER_ENABLED", '0');
+                    this.socketConnectionRetries = 0;
+                } else {
+                    console.log(`Attempting MCDU Server connection ${this.socketConnectionRetries} of ${maxConnectionAttempts} attempts.`);
+                    this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
+                }
+            } else if (connectionEnabled !== '1' && this.socket && this.socket.readyState === 1) {
+                // if there is a socket existing but enabled setting has been changed then close connection
+                this.socket.close();
+                delete this.socket;
+            }
         }
 
         // There is no (known) event when power is turned on or off (e.g. Ext Pwr) and remote clients
@@ -1427,9 +1443,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Attempts to connect to a local websocket server
      */
     connectWebsocket(port) {
+
         if (this.socket && this.socket.readyState) {
             this.socket.close();
-            this.socket = undefined;
+            delete this.socket;
         }
 
         const url = `ws://127.0.0.1:${port}`;
@@ -1449,6 +1466,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             (new NXNotif).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
             this.sendToSocket("mcduConnected");
             this.sendUpdate();
+            this.socketConnectionRetries = 0;
         };
 
         this.socket.onmessage = (event) => {
