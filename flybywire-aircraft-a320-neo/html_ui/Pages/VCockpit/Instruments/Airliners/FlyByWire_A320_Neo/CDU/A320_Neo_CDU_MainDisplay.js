@@ -1474,12 +1474,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         // Therefore, it should be avoided to continuously do connection attempts.
         // See above where this method is called for the mitigating solution.
         if (this.socket) {
-            if (this.socket.readyState !== 0) {
-                // Trying to close a socket in readState == 0 leads to
-                // an error message ('WebSocket is closed before the connection is established')
-                // in the console.
-                this.socket.close();
-            }
+            // Trying to close a socket in readState == 0 leads to
+            // an error message ('WebSocket is closed before the connection is established')
+            // in the console.
+            this.socket.close();
             this.socket = undefined;
         }
 
