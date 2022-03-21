@@ -445,7 +445,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
             }
         });
 
-        sub.on('autoBrakeActive').whenChanged().handle((a) => {
+        sub.on('autoBrakeDecel').whenChanged().handle((a) => {
             if (a) {
                 this.decelRef.instance.style.visibility = 'visible';
             } else {

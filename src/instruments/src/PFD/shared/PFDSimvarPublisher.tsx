@@ -105,17 +105,17 @@ export interface PFDSimvars {
     flexTemp: number,
     autoBrakeMode: number;
     autoBrakeActive: boolean;
+    autoBrakeDecel: boolean;
     fpaRaw: number;
     daRaw: number;
   }
 
 export enum PFDVars {
-    ColdDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
+    coldDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
     elec = 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED',
     elecFo = 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED',
     potentiometerCaptain= 'LIGHT POTENTIOMETER:88',
     potentiometerFo= 'LIGHT POTENTIOMETER:90',
-
     pitch = 'L:A32NX_ADIRS_IR_1_PITCH',
     roll = 'L:A32NX_ADIRS_IR_1_ROLL',
     heading = 'L:A32NX_ADIRS_IR_1_HEADING',
@@ -214,7 +214,8 @@ export enum PFDVars {
     tcasModeDisarmed = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_DISARM',
     flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
     autoBrakeMode = 'L:A32NX_AUTOBRAKES_ARMED_MODE',
-    autoBrakeActive = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
+    autoBrakeActive = 'L:A32NX_AUTOBRAKES_ACTIVE',
+    autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
     fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
     daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
 
@@ -223,13 +224,11 @@ export enum PFDVars {
 /** A publisher to poll and publish nav/com simvars. */
 export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
     private static simvars = new Map<keyof PFDSimvars, SimVarDefinition>([
-        ['coldDark', { name: PFDVars.ColdDark, type: SimVarValueType.Number }],
+        ['coldDark', { name: PFDVars.coldDark, type: SimVarValueType.Number }],
         ['elec', { name: PFDVars.elec, type: SimVarValueType.Bool }],
         ['elecFo', { name: PFDVars.elecFo, type: SimVarValueType.Bool }],
-
         ['potentiometerCaptain', { name: PFDVars.potentiometerCaptain, type: SimVarValueType.Number }],
         ['potentiometerFo', { name: PFDVars.potentiometerFo, type: SimVarValueType.Number }],
-
         ['pitch', { name: PFDVars.pitch, type: SimVarValueType.Number }],
         ['roll', { name: PFDVars.roll, type: SimVarValueType.Number }],
         ['heading', { name: PFDVars.heading, type: SimVarValueType.Number }],
@@ -268,36 +267,25 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['v1', { name: PFDVars.v1, type: SimVarValueType.Knots }],
         ['fwcFlightPhase', { name: PFDVars.fwcFlightPhase, type: SimVarValueType.Number }],
         ['fmgcFlightPhase', { name: PFDVars.fmgcFlightPhase, type: SimVarValueType.Enum }],
-
         ['hasLoc', { name: PFDVars.hasLoc, type: SimVarValueType.Bool }],
         ['hasDme', { name: PFDVars.hasDme, type: SimVarValueType.Bool }],
-
         ['navIdent', { name: PFDVars.navIdent, type: SimVarValueType.String }],
-
         ['navFreq', { name: PFDVars.navFreq, type: SimVarValueType.MHz }],
-
         ['dme', { name: PFDVars.dme, type: SimVarValueType.NM }],
-
         ['navRadialError', { name: PFDVars.navRadialError, type: SimVarValueType.Degree }],
-
         ['hasGlideslope', { name: PFDVars.hasGlideslope, type: SimVarValueType.Bool }],
-
         ['glideSlopeError', { name: PFDVars.glideSlopeError, type: SimVarValueType.Degree }],
-
         ['markerBeacon', { name: PFDVars.markerBeacon, type: SimVarValueType.Enum }],
         ['vr', { name: PFDVars.vr, type: SimVarValueType.Knots }],
         ['isAltManaged', { name: PFDVars.isAltManaged, type: SimVarValueType.Bool }],
         ['targetSpeedManaged', { name: PFDVars.targetSpeedManaged, type: SimVarValueType.Knots }],
-
         ['vMax', { name: PFDVars.vMax, type: SimVarValueType.Number }],
         ['mach', { name: PFDVars.mach, type: SimVarValueType.Number }],
         ['flapHandleIndex', { name: PFDVars.flapHandleIndex, type: SimVarValueType.Number }],
         ['greenDotSpeed', { name: PFDVars.greenDotSpeed, type: SimVarValueType.Number }],
         ['slatSpeed', { name: PFDVars.slatSpeed, type: SimVarValueType.Number }],
         ['fSpeed', { name: PFDVars.fSpeed, type: SimVarValueType.Number }],
-
         ['transAlt', { name: PFDVars.transAlt, type: SimVarValueType.Number }],
-
         ['transAltAppr', { name: PFDVars.transAltAppr, type: SimVarValueType.Number }],
         ['groundTrack', { name: PFDVars.groundTrack, type: SimVarValueType.Number }],
         ['showSelectedHeading', { name: PFDVars.showSelectedHeading, type: SimVarValueType.Number }],
@@ -306,7 +294,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['aoa', { name: PFDVars.aoa, type: SimVarValueType.Degree }],
         ['groundHeadingTrue', { name: PFDVars.groundHeadingTrue, type: SimVarValueType.Degree }],
         ['groundTrackTrue', { name: PFDVars.groundTrackTrue, type: SimVarValueType.Degree }],
-
         ['selectedFpa', { name: PFDVars.selectedFpa, type: SimVarValueType.Degree }],
         ['vfeNext', { name: PFDVars.vfeNext, type: SimVarValueType.Number }],
         ['ilsCourse', { name: PFDVars.ilsCourse, type: SimVarValueType.Number }],
@@ -321,32 +308,27 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['tcasGreenZoneL', { name: PFDVars.tcasGreenZoneL, type: SimVarValueType.Number }],
         ['tcasGreenZoneH', { name: PFDVars.tcasGreenZoneH, type: SimVarValueType.Number }],
         ['tcasFail', { name: PFDVars.tcasFail, type: SimVarValueType.Bool }],
-
         ['engOneRunning', { name: PFDVars.engOneRunning, type: SimVarValueType.Bool }],
         ['engTwoRunning', { name: PFDVars.engTwoRunning, type: SimVarValueType.Bool }],
         ['expediteMode', { name: PFDVars.expediteMode, type: SimVarValueType.Bool }],
         ['setHoldSpeed', { name: PFDVars.setHoldSpeed, type: SimVarValueType.Bool }],
         ['vls', { name: PFDVars.vls, type: SimVarValueType.Number }],
         ['alphaLim', { name: PFDVars.alphaLim, type: SimVarValueType.Number }],
-
         ['trkFpaDeselectedTCAS', { name: PFDVars.trkFpaDeselectedTCAS, type: SimVarValueType.Bool }],
         ['tcasRaInhibited', { name: PFDVars.tcasRaInhibited, type: SimVarValueType.Bool }],
         ['groundSpeed', { name: PFDVars.groundSpeed, type: SimVarValueType.Number }],
-
         ['radioAltitude1', { name: PFDVars.radioAltitude1, type: SimVarValueType.Number }],
         ['radioAltitude2', { name: PFDVars.radioAltitude2, type: SimVarValueType.Number }],
-
         ['beta', { name: PFDVars.beta, type: SimVarValueType.Degree }],
         ['betaTargetActive', { name: PFDVars.betaTargetActive, type: SimVarValueType.Number }],
-
         ['betaTarget', { name: PFDVars.betaTarget, type: SimVarValueType.Number }],
-
         ['latAcc', { name: PFDVars.latAcc, type: SimVarValueType.GForce }],
         ['crzAltMode', { name: PFDVars.crzAltMode, type: SimVarValueType.Bool }],
         ['tcasModeDisarmed', { name: PFDVars.tcasModeDisarmed, type: SimVarValueType.Bool }],
         ['flexTemp', { name: PFDVars.flexTemp, type: SimVarValueType.Number }],
         ['autoBrakeMode', { name: PFDVars.autoBrakeMode, type: SimVarValueType.Number }],
         ['autoBrakeActive', { name: PFDVars.autoBrakeActive, type: SimVarValueType.Bool }],
+        ['autoBrakeDecel', { name: PFDVars.autoBrakeDecel, type: SimVarValueType.Bool }],
         ['fpaRaw', { name: PFDVars.fpaRaw, type: SimVarValueType.Number }],
         ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
 
