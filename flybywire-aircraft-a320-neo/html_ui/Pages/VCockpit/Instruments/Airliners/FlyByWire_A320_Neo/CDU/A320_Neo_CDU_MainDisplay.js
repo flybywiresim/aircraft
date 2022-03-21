@@ -1480,7 +1480,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 // in the console.
                 this.socket.close();
             }
-            delete this.socket;
+            this.socket = undefined;
         }
 
         this.socket = new WebSocket(url);
