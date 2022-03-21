@@ -431,6 +431,14 @@ impl CoreHydraulicForce {
             Some(context.delta()),
         ));
 
+        // println!(
+        //     "Pos req {:.2} / Pos {:.2} / Flow req {:.3} / Flow {:.3}",
+        //     required_position.get::<ratio>(),
+        //     position_normalized.get::<ratio>(),
+        //     open_loop_flow_target.get::<gallon_per_second>(),
+        //     signed_flow.get::<gallon_per_second>(),
+        // );
+
         self.last_control_force
     }
 }
@@ -1603,14 +1611,14 @@ mod tests {
     fn right_main_gear_door_drops_when_unlocked() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_right_assembly(true),
             )
         });
 
         test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
         test_bed.command(|a| a.command_unlock());
-        test_bed.run_with_delta(Duration::from_secs(20));
+        test_bed.run_with_delta(Duration::from_secs(7));
 
         assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.98));
     }
@@ -1619,7 +1627,7 @@ mod tests {
     fn right_main_gear_door_drops_freefall_when_unlocked_with_broken_actuator() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_right_broken_assembly(true),
             )
         });
@@ -1632,26 +1640,10 @@ mod tests {
     }
 
     #[test]
-    fn left_main_gear_door_drops_when_unlocked() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(
-                Duration::from_millis(33),
-                main_gear_door_left_assembly(true),
-            )
-        });
-
-        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
-        test_bed.command(|a| a.command_unlock());
-        test_bed.run_with_delta(Duration::from_secs(20));
-
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.98));
-    }
-
-    #[test]
     fn right_main_gear_door_cant_open_fully_if_banking_right() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_right_assembly(true),
             )
         });
@@ -1667,10 +1659,75 @@ mod tests {
     }
 
     #[test]
+    fn right_main_gear_door_closes_after_opening_with_pressure() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                Duration::from_millis(10),
+                main_gear_door_right_assembly(true),
+            )
+        });
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs_f64(3.5));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+
+        test_bed.command(|a| a.command_closed_valve_mode(0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.1));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.5), 0));
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(4.));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.001));
+    }
+
+    #[test]
+    fn nose_gear_door_closes_after_opening_with_pressure() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), nose_gear_door_assembly())
+        });
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs_f64(2.5));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+
+        test_bed.command(|a| a.command_closed_valve_mode(0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.1));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.5), 0));
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(3.));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.001));
+    }
+
+    #[test]
+    fn left_main_gear_door_drops_when_unlocked() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                Duration::from_millis(10),
+                main_gear_door_left_assembly(true),
+            )
+        });
+
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(7));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.98));
+    }
+
+    #[test]
     fn left_main_gear_door_can_open_fully_if_banking_right() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_left_assembly(true),
             )
         });
@@ -1687,7 +1744,7 @@ mod tests {
     fn left_main_gear_door_opens_with_pressure() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_left_assembly(true),
             )
         });
@@ -1701,32 +1758,9 @@ mod tests {
     }
 
     #[test]
-    fn right_main_gear_door_closes_after_opening_with_pressure() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(
-                Duration::from_millis(33),
-                main_gear_door_right_assembly(true),
-            )
-        });
-
-        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
-        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
-        test_bed.command(|a| a.command_unlock());
-        test_bed.run_with_delta(Duration::from_secs(10));
-
-        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
-
-        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.5), 0));
-        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
-
-        test_bed.run_with_delta(Duration::from_secs(6));
-        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.001));
-    }
-
-    #[test]
     fn right_main_gear_retracts_with_pressure() {
         let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), main_gear_right_assembly(true))
+            TestAircraft::new(Duration::from_millis(10), main_gear_right_assembly(true))
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -1755,7 +1789,7 @@ mod tests {
     #[test]
     fn right_main_gear_locks_up_when_retracted() {
         let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), main_gear_right_assembly(true))
+            TestAircraft::new(Duration::from_millis(10), main_gear_right_assembly(true))
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -1764,16 +1798,16 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(1));
 
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
-        test_bed.run_with_delta(Duration::from_secs(9));
+        test_bed.run_with_delta(Duration::from_secs(10));
 
         assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
         assert!(test_bed.query(|a| a.is_locked()));
     }
 
     #[test]
-    fn right_main_gear_locks_down_when_extended() {
+    fn right_main_gear_locks_down_when_extended_by_gravity() {
         let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), main_gear_right_assembly(true))
+            TestAircraft::new(Duration::from_millis(10), main_gear_right_assembly(true))
         });
 
         // FIRST GEAR UP
@@ -1783,7 +1817,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(1));
 
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
-        test_bed.run_with_delta(Duration::from_secs(9));
+        test_bed.run_with_delta(Duration::from_secs(10));
         assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
         assert!(test_bed.query(|a| a.is_locked()));
 
@@ -1794,7 +1828,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(1));
 
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.01)));
-        test_bed.run_with_delta(Duration::from_secs(19));
+        test_bed.run_with_delta(Duration::from_secs(13));
 
         assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.011));
         assert!(test_bed.query(|a| a.is_locked()));
@@ -1803,7 +1837,7 @@ mod tests {
     #[test]
     fn left_main_gear_retracts_with_pressure() {
         let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), main_gear_left_assembly(true))
+            TestAircraft::new(Duration::from_millis(10), main_gear_left_assembly(true))
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -1832,7 +1866,7 @@ mod tests {
     #[test]
     fn left_main_gear_locks_up_when_retracted() {
         let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), main_gear_left_assembly(true))
+            TestAircraft::new(Duration::from_millis(10), main_gear_left_assembly(true))
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -1841,16 +1875,16 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(1));
 
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
-        test_bed.run_with_delta(Duration::from_secs(9));
+        test_bed.run_with_delta(Duration::from_secs(10));
 
         assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
         assert!(test_bed.query(|a| a.is_locked()));
     }
 
     #[test]
-    fn left_main_gear_locks_down_when_extended() {
+    fn left_main_gear_locks_down_when_extended_by_gravity() {
         let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), main_gear_left_assembly(true))
+            TestAircraft::new(Duration::from_millis(10), main_gear_left_assembly(true))
         });
 
         // FIRST GEAR UP
@@ -1860,7 +1894,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(1));
 
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
-        test_bed.run_with_delta(Duration::from_secs(9));
+        test_bed.run_with_delta(Duration::from_secs(10));
         assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
         assert!(test_bed.query(|a| a.is_locked()));
 
@@ -1871,7 +1905,7 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(1));
 
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.01)));
-        test_bed.run_with_delta(Duration::from_secs(19));
+        test_bed.run_with_delta(Duration::from_secs(13));
 
         assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.011));
         assert!(test_bed.query(|a| a.is_locked()));
@@ -1880,16 +1914,16 @@ mod tests {
     #[test]
     fn nose_gear_locks_up_when_retracted() {
         let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(Duration::from_millis(33), nose_gear_assembly())
+            TestAircraft::new(Duration::from_millis(10), nose_gear_assembly())
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
-        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.1), 0));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.5), 0));
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(1));
 
         test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
-        test_bed.run_with_delta(Duration::from_secs(9));
+        test_bed.run_with_delta(Duration::from_secs(10));
 
         assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
         assert!(test_bed.query(|a| a.is_locked()));
@@ -2318,7 +2352,7 @@ mod tests {
 
     fn main_gear_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
-        const DEFAULT_P_GAIN: f64 = 0.05;
+        const DEFAULT_P_GAIN: f64 = 0.7;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
@@ -2326,14 +2360,14 @@ mod tests {
             1,
             Length::new::<meter>(0.055),
             Length::new::<meter>(0.03),
-            VolumeRate::new::<gallon_per_second>(0.08),
+            VolumeRate::new::<gallon_per_second>(0.09),
             20000.,
             5000.,
             2000.,
-            28000.,
+            9000.,
             Duration::from_millis(100),
-            [0.5, 1., 1., 1., 1., 0.5],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.15, 0.16, 0.84, 0.85, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
@@ -2419,23 +2453,23 @@ mod tests {
     }
 
     fn main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        const DEFAULT_I_GAIN: f64 = 5.;
-        const DEFAULT_P_GAIN: f64 = 0.05;
-        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+        const DEFAULT_I_GAIN: f64 = 4.;
+        const DEFAULT_P_GAIN: f64 = 0.2;
+        const DEFAULT_FORCE_GAIN: f64 = 250000.;
 
         LinearActuator::new(
             bounded_linear_length,
             1,
             Length::new::<meter>(0.145),
             Length::new::<meter>(0.105),
-            VolumeRate::new::<gallon_per_second>(0.15),
+            VolumeRate::new::<gallon_per_second>(0.17),
             800000.,
             15000.,
             50000.,
             1200000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 1., 1.],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.1, 0.11, 0.89, 0.9, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
@@ -2494,23 +2528,23 @@ mod tests {
     }
 
     fn nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        const DEFAULT_I_GAIN: f64 = 5.;
-        const DEFAULT_P_GAIN: f64 = 0.05;
+        const DEFAULT_I_GAIN: f64 = 4.;
+        const DEFAULT_P_GAIN: f64 = 0.2;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.12),
-            Length::new::<meter>(0.09),
-            VolumeRate::new::<gallon_per_second>(0.1),
+            Length::new::<meter>(0.0792),
+            Length::new::<meter>(0.035),
+            VolumeRate::new::<gallon_per_second>(0.053),
             800000.,
             15000.,
             50000.,
             2200000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 1., 1.],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.1, 0.11, 0.89, 0.9, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
@@ -2521,7 +2555,7 @@ mod tests {
         let size = Vector3::new(0.3, 2.453, 0.3);
         let cg_offset = Vector3::new(0., -2. / 3. * size[1], 0.);
 
-        let control_arm = Vector3::new(0., -0.093, 0.14);
+        let control_arm = Vector3::new(0., -0.093, 0.212);
         let anchor = Vector3::new(0., 0.56, 0.);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
@@ -2536,6 +2570,59 @@ mod tests {
             150.,
             true,
             Vector3::new(1., 0., 0.),
+        )
+    }
+
+    fn nose_gear_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
+        let rigid_body = nose_gear_door_right_left_body();
+        let actuator = nose_gear_door_actuator(&rigid_body);
+
+        HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
+    }
+
+    fn nose_gear_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 5.;
+        const DEFAULT_P_GAIN: f64 = 0.15;
+        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+
+        LinearActuator::new(
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.0378),
+            Length::new::<meter>(0.023),
+            VolumeRate::new::<gallon_per_second>(0.027),
+            20000.,
+            5000.,
+            2000.,
+            28000.,
+            Duration::from_millis(100),
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.15, 0.16, 0.84, 0.85, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
+        )
+    }
+
+    fn nose_gear_door_right_left_body() -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(-0.4, 0.02, 1.5);
+        let cg_offset = Vector3::new(0.5 * size[0], 0., 0.);
+
+        let control_arm = Vector3::new(-0.1465, 0., 0.);
+        let anchor = Vector3::new(-0.1465, 0.40, 0.);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(40.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(0.),
+            Angle::new::<degree>(85.),
+            Angle::new::<degree>(0.),
+            150.,
+            true,
+            Vector3::new(0., 0., 1.),
         )
     }
 
