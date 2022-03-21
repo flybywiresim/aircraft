@@ -19,6 +19,13 @@ enum DisplayUnitState {
     Standby
 }
 
+function BacklightBleed(props) {
+    if (props.homeCockpit) {
+        return null;
+    }
+    return <div className="BacklightBleed" />;
+}
+
 export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     const [coldDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState((coldDark) ? DisplayUnitState.Off : DisplayUnitState.Standby);
@@ -68,7 +75,7 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
     if (state === DisplayUnitState.Selftest) {
         return (
             <>
-                <div className="BacklightBleed" />
+                <BacklightBleed homeCockpit={homeCockpit} />
                 <svg className="SelfTest" viewBox="0 0 600 600">
                     <rect className="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
 
@@ -95,17 +102,9 @@ export const DisplayUnit: React.FC<DisplayUnitProps> = (props) => {
         );
     }
 
-    if (homeCockpit) {
-        return (
-            <>
-                <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
-            </>
-        );
-    }
-
     return (
         <>
-            <div className="BacklightBleed" />
+            <BacklightBleed homeCockpit={homeCockpit} />
             <div style={{ display: state === DisplayUnitState.On ? 'block' : 'none' }}>{props.children}</div>
         </>
     );
