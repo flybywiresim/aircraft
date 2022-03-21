@@ -308,13 +308,6 @@ const PseudoFWC: React.FC = () => {
         || (!N1AboveIdle && !N2AboveIdle)
     ));
 
-    useEffect(() => {
-        console.log(`EngineDual Fault is ${engDualFault}`);
-        console.log(`Aircraft On ground is ${aircraftOnGround}`);
-        console.log(left1LandingGear);
-        console.log(right1LandingGear);
-    }, [engDualFault]);
-
     const [masterWarningButtonLeft] = useSimVar('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool', 100);
     const [masterCautionButtonLeft] = useSimVar('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool', 100);
     const [masterWarningButtonRight] = useSimVar('L:PUSH_AUTOPILOT_MASTERAWARN_R', 'bool', 100);
