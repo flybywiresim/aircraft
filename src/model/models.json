@@ -916,6 +916,10 @@
         "bin": "./fx_exhaust_apu/fx_exhaust_apu.bin"
       },
       {
+        "gltf": "./cargo-hinge/cargo-hinge.gltf",
+        "bin": "./cargo-hinge/cargo-hinge.bin"
+      },
+      {
         "combineFiles": ["./a320-exterior/A320_NEO_LOD00.gltf"],
         "nodes": [
           {

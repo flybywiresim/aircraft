@@ -200,7 +200,10 @@
 1. [PFD] Add EIS S14 features (A/BRK info on PFD, white SELECTED ALT) to the PFD - @luke (lukecologne#1156)
 1. [MODEL] Fix mirrored right main gear wheel UV - @bouveng (Johan Bouveng)
 1. [EFB] Fix Metar parser error - @brainshot (brainshot) @frankkopp (Frank Kopp)
-2. 
+1. [MODEL] Add custom cargo door hinge for texturing - @bouveng (Johan Bouveng)
+1. [MISC] Fix Home Cockpit mode to honor backlight bleed configuration in PFD/ND test mode - @ssewell (Shane Sewell)
+1. [FMGC] Updates flight model info for FMGC guidance - @donstim (donbikes#4084)
+
 ## 0.7.0
 
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
