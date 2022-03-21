@@ -7,8 +7,7 @@ npm pack
 cd ../sdk
 rm -rf node_modules
 rm -rf build
-rm -f package-lock.json
-npm install
+npm ci
 npm run build
 cp package.json build/
 cd build
