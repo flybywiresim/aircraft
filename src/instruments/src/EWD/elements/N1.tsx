@@ -78,44 +78,44 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
     />));
 
     return (
-        <>
-            <g>
-                <GaugeMarkerComponent
-                    value={N1Commanded / 10}
-                    x={x}
-                    y={y}
-                    min={min}
-                    max={max}
-                    radius={radius}
-                    startAngle={startAngle}
-                    endAngle={endAngle}
-                    multiplierOuter={0.8}
-                    className={`GreenLine ${autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3 ? 'Show' : 'Hide'}`}
-                    indicator
-                />
-                <GaugeMarkerComponent
-                    value={N1Commanded / 10}
-                    x={x}
-                    y={y}
-                    min={min}
-                    max={max}
-                    radius={radius}
-                    startAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle - 20 : n1CommandXY.angle}
-                    endAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1CommandXY.angle + 20}
-                    multiplierOuter={0.51}
-                    className={`GreenLine ${autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3 ? 'Show' : 'Hide'}`}
-                    indicator
-                />
-                <line
-                    x2={n1ActualArrowXY.x}
-                    y2={n1ActualArrowXY.y}
-                    x1={n1CommandArrowXY.x}
-                    y1={n1CommandArrowXY.y}
-                    className={`GreenLine ${autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3 ? 'Show' : 'Hide'}`}
-                />
-                {N1CommandArray}
-            </g>
-        </>
+
+        <g className={autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3 ? 'Show' : 'Hide'}>
+            <GaugeMarkerComponent
+                value={N1Commanded / 10}
+                x={x}
+                y={y}
+                min={min}
+                max={max}
+                radius={radius}
+                startAngle={startAngle}
+                endAngle={endAngle}
+                multiplierOuter={0.8}
+                className="GreenLine"
+                indicator
+            />
+            <GaugeMarkerComponent
+                value={N1Commanded / 10}
+                x={x}
+                y={y}
+                min={min}
+                max={max}
+                radius={radius}
+                startAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle - 20 : n1CommandXY.angle}
+                endAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1CommandXY.angle + 20}
+                multiplierOuter={0.51}
+                className="GreenLine"
+                indicator
+            />
+            <line
+                x2={n1ActualArrowXY.x}
+                y2={n1ActualArrowXY.y}
+                x1={n1CommandArrowXY.x}
+                y1={n1CommandArrowXY.y}
+                className="GreenLine"
+            />
+            {N1CommandArray}
+        </g>
+
     );
 };
 

@@ -188,7 +188,9 @@ const PseudoFWC: React.FC = () => {
     /* LANDING GEAR AND LIGHTS */
     const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 500);
     const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 500);
-    const onGround = left1LandingGear === 1 && right1LandingGear === 1;
+    // const aircraftOnGround = left1LandingGear === 1 || right1LandingGear === 1;
+    // FIXME The landing gear triggers the dual engine failure on loading
+    const aircraftOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
     const [landingGearDown] = useSimVar('GEAR HANDLE POSITION', 'bool', 500);
     const [landingLight2Retracted] = useSimVar('L:LANDING_2_Retracted', 'bool', 500);
     const [landingLight3Retracted] = useSimVar('L:LANDING_3_Retracted', 'bool', 500);
@@ -284,7 +286,7 @@ const PseudoFWC: React.FC = () => {
     const [excessPressure] = useSimVar('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool', 500);
 
     /* WARNINGS AND FAILURES */
-    const landASAPRed: boolean = !!(!onGround
+    const landASAPRed: boolean = !!(!aircraftOnGround
     && (
         fireButton1 === 1
         || eng1FireTest === 1
@@ -299,12 +301,19 @@ const PseudoFWC: React.FC = () => {
         || (greenLP === 1 && blueLP === 1)
     ));
 
-    const engDualFault = !!(!onGround && (
+    const engDualFault = !!(!aircraftOnGround && (
         (fireButton1 === 1 && fireButton2 === 1)
         || (!engine1ValueSwitch && !engine2ValueSwitch)
         || (engine1State === 0 && engine2State === 0)
         || (!N1AboveIdle && !N2AboveIdle)
     ));
+
+    useEffect(() => {
+        console.log(`EngineDual Fault is ${engDualFault}`);
+        console.log(`Aircraft On ground is ${aircraftOnGround}`);
+        console.log(left1LandingGear);
+        console.log(right1LandingGear);
+    }, [engDualFault]);
 
     const [masterWarningButtonLeft] = useSimVar('L:PUSH_AUTOPILOT_MASTERAWARN_L', 'bool', 100);
     const [masterCautionButtonLeft] = useSimVar('L:PUSH_AUTOPILOT_MASTERCAUT_L', 'bool', 100);
@@ -392,7 +401,7 @@ const PseudoFWC: React.FC = () => {
         if (agent1Eng1Discharge !== agent1Eng1DischargeNode) {
             setAgent1Eng1Discharge(agent1Eng1DischargeNode);
         }
-        const agent2Eng1DischargeNode = agent2Eng1DischargeTimer.write(fireButton1 === 1 && eng1Agent1PB === 1 && !onGround, deltaTime);
+        const agent2Eng1DischargeNode = agent2Eng1DischargeTimer.write(fireButton1 === 1 && eng1Agent1PB === 1 && !aircraftOnGround, deltaTime);
         if (agent2Eng1Discharge !== agent2Eng1DischargeNode) {
             setAgent2Eng1Discharge(agent2Eng1DischargeNode);
         }
@@ -408,7 +417,7 @@ const PseudoFWC: React.FC = () => {
         if (agentAPUDischarge !== agentAPUDischargeNode) {
             setAgentAPUDischarge(agentAPUDischargeNode);
         }
-        const iceDetected1Node = iceDetectedTimer1.write(icePercentage >= 0.1 && tat < 10 && !onGround, deltaTime);
+        const iceDetected1Node = iceDetectedTimer1.write(icePercentage >= 0.1 && tat < 10 && !aircraftOnGround, deltaTime);
         if (iceDetected1 !== iceDetected1Node) {
             setIceDetected1(iceDetected1Node);
         }
@@ -417,7 +426,7 @@ const PseudoFWC: React.FC = () => {
             setIceDetected2(iceDetected2Node);
         }
 
-        const iceSevereDetectedNode = iceSevereDetectedTimer.write(icePercentage >= 0.5 && tat < 10 && !onGround, deltaTime);
+        const iceSevereDetectedNode = iceSevereDetectedTimer.write(icePercentage >= 0.5 && tat < 10 && !aircraftOnGround, deltaTime);
         if (iceSevereDetected !== iceSevereDetectedNode) {
             setIceSevereDetected(iceSevereDetectedNode);
         }
@@ -531,7 +540,7 @@ const PseudoFWC: React.FC = () => {
         },
         7700027: { // DUAL ENGINE FAILURE
             flightPhaseInhib: [],
-            simVarIsActive: engDualFault,
+            simVarIsActive: engDualFault === true,
             whichCodeToReturn: [
                 0,
                 !emergencyGeneratorOn ? 1 : null,
@@ -552,20 +561,20 @@ const PseudoFWC: React.FC = () => {
             simVarIsActive: !!(eng1FireTest === 1 || fireButton1 === 1),
             whichCodeToReturn: [
                 0,
-                throttle1Position !== 0 && !onGround ? 1 : null,
-                (throttle1Position !== 0 || throttle2Position !== 0) && onGround ? 2 : null,
-                !parkBrake && onGround ? 3 : null,
-                !parkBrake && onGround ? 4 : null,
-                onGround ? 5 : null,
-                onGround ? 6 : null,
+                throttle1Position !== 0 && !aircraftOnGround ? 1 : null,
+                (throttle1Position !== 0 || throttle2Position !== 0) && aircraftOnGround ? 2 : null,
+                !parkBrake && aircraftOnGround ? 3 : null,
+                !parkBrake && aircraftOnGround ? 4 : null,
+                aircraftOnGround ? 5 : null,
+                aircraftOnGround ? 6 : null,
                 !engine1ValueSwitch ? null : 7,
                 !fireButton1 ? 8 : null,
-                !onGround && agent1Eng1Discharge === 1 && !eng1Agent1PB ? 9 : null,
-                agent1Eng1Discharge === 2 && !onGround && !eng1Agent1PB ? 10 : null,
-                !eng1Agent1PB && onGround ? 11 : null,
-                !eng1Agent2PB && onGround ? 12 : null,
-                onGround ? 13 : null,
-                !onGround ? 14 : null,
+                !aircraftOnGround && agent1Eng1Discharge === 1 && !eng1Agent1PB ? 9 : null,
+                agent1Eng1Discharge === 2 && !aircraftOnGround && !eng1Agent1PB ? 10 : null,
+                !eng1Agent1PB && aircraftOnGround ? 11 : null,
+                !eng1Agent2PB && aircraftOnGround ? 12 : null,
+                aircraftOnGround ? 13 : null,
+                !aircraftOnGround ? 14 : null,
                 agent2Eng1Discharge === 1 && !eng1Agent2PB ? 15 : null,
                 (agent2Eng1Discharge === 1 && !eng1Agent2PB) || (agent2Eng1Discharge === 2 && !eng1Agent2PB) ? 16 : null,
             ],
@@ -582,20 +591,20 @@ const PseudoFWC: React.FC = () => {
             simVarIsActive: !!(eng2FireTest === 1 || fireButton2 === 1),
             whichCodeToReturn: [
                 0,
-                throttle2Position !== 0 && !onGround ? 1 : null,
-                (throttle1Position !== 0 || throttle2Position !== 0) && onGround ? 2 : null,
-                !parkBrake && onGround ? 3 : null,
-                !parkBrake && onGround ? 4 : null,
-                onGround ? 5 : null,
-                onGround ? 6 : null,
+                throttle2Position !== 0 && !aircraftOnGround ? 1 : null,
+                (throttle1Position !== 0 || throttle2Position !== 0) && aircraftOnGround ? 2 : null,
+                !parkBrake && aircraftOnGround ? 3 : null,
+                !parkBrake && aircraftOnGround ? 4 : null,
+                aircraftOnGround ? 5 : null,
+                aircraftOnGround ? 6 : null,
                 !engine2ValueSwitch ? null : 7,
                 !fireButton2 ? 8 : null,
-                !onGround && agent1Eng2Discharge === 1 && !eng2Agent1PB ? 9 : null,
-                agent1Eng2Discharge === 2 && !onGround && !eng2Agent1PB ? 10 : null,
-                !eng2Agent1PB && onGround ? 11 : null,
-                !eng2Agent2PB && onGround ? 12 : null,
-                onGround ? 13 : null,
-                !onGround ? 14 : null,
+                !aircraftOnGround && agent1Eng2Discharge === 1 && !eng2Agent1PB ? 9 : null,
+                agent1Eng2Discharge === 2 && !aircraftOnGround && !eng2Agent1PB ? 10 : null,
+                !eng2Agent1PB && aircraftOnGround ? 11 : null,
+                !eng2Agent2PB && aircraftOnGround ? 12 : null,
+                aircraftOnGround ? 13 : null,
+                !aircraftOnGround ? 14 : null,
                 agent2Eng2Discharge === 1 && !eng2Agent2PB ? 15 : null,
                 (agent2Eng2Discharge === 1 && !eng2Agent2PB) || (agent2Eng2Discharge === 2 && !eng2Agent2PB) ? 16 : null,
             ],
@@ -672,7 +681,7 @@ const PseudoFWC: React.FC = () => {
         },
         2131221: { // EXCESS CAB ALT
             flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
-            simVarIsActive: !!(!onGround && excessPressure === 1),
+            simVarIsActive: !!(!aircraftOnGround && excessPressure === 1),
             // TODO no separate slats indication
             whichCodeToReturn: [
                 0,
@@ -709,10 +718,10 @@ const PseudoFWC: React.FC = () => {
                 cabinRecircBtnOn === 1 ? 2 : null,
                 [1, 10].includes(flightPhase) && !cargoFireAgentDisch ? 3 : null,
                 !cargoFireAgentDisch ? 4 : null,
-                !onGround ? 5 : null,
-                !onGround ? 6 : null,
-                onGround ? 7 : null,
-                onGround ? 8 : null,
+                !aircraftOnGround ? 5 : null,
+                !aircraftOnGround ? 6 : null,
+                aircraftOnGround ? 7 : null,
+                aircraftOnGround ? 8 : null,
             ],
             codesToReturn: ['260015001', '260015002', '260015003', '260015004', '260015005', '260015006', '260015007', '260015008', '260015009'],
             memoInhibit: false,
@@ -812,14 +821,14 @@ const PseudoFWC: React.FC = () => {
             && brakesHot === 1,
             whichCodeToReturn: [
                 0,
-                !onGround ? 1 : null,
+                !aircraftOnGround ? 1 : null,
                 [1, 10].includes(flightPhase) ? 2 : null,
-                !onGround ? 3 : null,
+                !aircraftOnGround ? 3 : null,
                 [1, 2].includes(flightPhase) && !brakeFan ? 4 : null,
-                onGround ? 5 : null,
-                !onGround ? 6 : null,
-                !onGround ? 7 : null,
-                !onGround ? 8 : null,
+                aircraftOnGround ? 5 : null,
+                !aircraftOnGround ? 6 : null,
+                !aircraftOnGround ? 7 : null,
+                !aircraftOnGround ? 8 : null,
             ],
             codesToReturn: ['320001001', '320001002', '320001003', '320001004', '320001005', '320001006', '320001007', '320001008', '320001009'],
             memoInhibit: false,
@@ -1005,7 +1014,7 @@ const PseudoFWC: React.FC = () => {
         '0000100': // STROBE LIGHT OFF
             {
                 flightPhaseInhib: [],
-                simVarIsActive: !!(!onGround && strobeLightsOn === 2),
+                simVarIsActive: !!(!aircraftOnGround && strobeLightsOn === 2),
                 whichCodeToReturn: [0],
                 codesToReturn: ['000010001'],
                 memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
@@ -1071,7 +1080,7 @@ const PseudoFWC: React.FC = () => {
         '0000360': // LAND ASAP AMBER
             {
                 flightPhaseInhib: [],
-                simVarIsActive: !!(!landASAPRed && !onGround && (
+                simVarIsActive: !!(!landASAPRed && !aircraftOnGround && (
                     engine1State === 0
                     || engine2State === 0
                 )),
@@ -1228,7 +1237,7 @@ const PseudoFWC: React.FC = () => {
         '0000275': // ICE NOT DETECTED
         {
             flightPhaseInhib: [1, 2, 3, 4, 8, 9, 10],
-            simVarIsActive: iceNotDetTimer2.read() && !onGround,
+            simVarIsActive: iceNotDetTimer2.read() && !aircraftOnGround,
             whichCodeToReturn: [0],
             codesToReturn: ['000027501'],
             memoInhibit: false,
