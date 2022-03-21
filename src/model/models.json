@@ -950,10 +950,6 @@
         "bin": "./rivet-mesh/rivet-mesh.bin"
       },
       {
-        "gltf": "./chock/chock.gltf",
-        "bin": "./chock/chock.bin"
-      },
-      {
         "gltf": "./chocks/chocks.gltf",
         "bin": "./chocks/chocks.bin"
       },
