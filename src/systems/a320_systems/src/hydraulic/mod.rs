@@ -656,27 +656,55 @@ impl A320RudderFactory {
 
 struct A320GearDoorFactory {}
 impl A320GearDoorFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.05;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
-    const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
+    fn a320_nose_gear_door_actuator(
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
+        const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
+        const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.15;
+        const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
-    fn a320_gear_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.055),
-            Length::new::<meter>(0.03),
-            VolumeRate::new::<gallon_per_second>(0.08),
+            Length::new::<meter>(0.0378),
+            Length::new::<meter>(0.023),
+            VolumeRate::new::<gallon_per_second>(0.027),
             20000.,
             5000.,
             2000.,
             28000.,
             Duration::from_millis(100),
-            [0.5, 1., 1., 1., 1., 0.5],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
-            Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
-            Self::FLOW_CONTROL_INTEGRAL_GAIN,
-            Self::FLOW_CONTROL_FORCE_GAIN,
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.15, 0.16, 0.84, 0.85, 1.],
+            FLOW_CONTROL_PROPORTIONAL_GAIN,
+            FLOW_CONTROL_INTEGRAL_GAIN,
+            FLOW_CONTROL_FORCE_GAIN,
+        )
+    }
+
+    fn a320_main_gear_door_actuator(
+        bounded_linear_length: &impl BoundedLinearLength,
+    ) -> LinearActuator {
+        const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
+        const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.7;
+        const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
+
+        LinearActuator::new(
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.055),
+            Length::new::<meter>(0.03),
+            VolumeRate::new::<gallon_per_second>(0.09),
+            20000.,
+            5000.,
+            2000.,
+            9000.,
+            Duration::from_millis(100),
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.15, 0.16, 0.84, 0.85, 1.],
+            FLOW_CONTROL_PROPORTIONAL_GAIN,
+            FLOW_CONTROL_INTEGRAL_GAIN,
+            FLOW_CONTROL_FORCE_GAIN,
         )
     }
 
@@ -724,21 +752,20 @@ impl A320GearDoorFactory {
         )
     }
 
-    // TODO this is random data from main gear
     fn a320_nose_gear_door_body() -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = Vector3::new(1.73, 0.02, 1.7);
-        let cg_offset = Vector3::new(2. / 3. * size[0], 0.1, 0.);
+        let size = Vector3::new(-0.4, 0.02, 1.5);
+        let cg_offset = Vector3::new(0.5 * size[0], 0., 0.);
 
-        let control_arm = Vector3::new(0.76, 0., 0.);
-        let anchor = Vector3::new(0.19, 0.23, 0.);
+        let control_arm = Vector3::new(-0.1465, 0., 0.);
+        let anchor = Vector3::new(-0.1465, 0.40, 0.);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
-            Mass::new::<kilogram>(50.),
+            Mass::new::<kilogram>(40.),
             size,
             cg_offset,
             control_arm,
             anchor,
-            Angle::new::<degree>(-85.),
+            Angle::new::<degree>(0.),
             Angle::new::<degree>(85.),
             Angle::new::<degree>(0.),
             150.,
@@ -753,8 +780,12 @@ impl A320GearDoorFactory {
             GearWheel::LEFT => Self::a320_left_gear_door_body(),
             GearWheel::RIGHT => Self::a320_right_gear_door_body(),
         };
-
-        let gear_door_actuator = Self::a320_gear_door_actuator(&gear_door_body);
+        let gear_door_actuator = match wheel_id {
+            GearWheel::CENTER => Self::a320_nose_gear_door_actuator(&gear_door_body),
+            GearWheel::LEFT | GearWheel::RIGHT => {
+                Self::a320_main_gear_door_actuator(&gear_door_body)
+            }
+        };
 
         HydraulicLinearActuatorAssembly::new([gear_door_actuator], gear_door_body)
     }
@@ -9347,16 +9378,16 @@ mod tests {
 
             assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
 
-            for _ in 0..50 {
-                test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(0.5));
+            for _ in 0..20 {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(1.));
                 println!("GEAR STATE {:?}", test_bed.gear_system_state());
             }
 
             assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
 
             test_bed = test_bed.set_gear_lever_down();
-            for _ in 0..50 {
-                test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(0.5));
+            for _ in 0..20 {
+                test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(1.));
                 println!("GEAR STATE {:?}", test_bed.gear_system_state());
             }
 

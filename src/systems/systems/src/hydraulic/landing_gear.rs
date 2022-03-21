@@ -148,6 +148,24 @@ impl HydraulicGearSystem {
             valves_controller,
             current_pressure,
         );
+
+        // println!(
+        //     "LD{:.2} ND{:.2} RD{:.2}",
+        //     self.left_door_assembly.position_normalized().get::<ratio>(),
+        //     self.nose_door_assembly.position_normalized().get::<ratio>(),
+        //     self.right_door_assembly
+        //         .position_normalized()
+        //         .get::<ratio>()
+        // );
+
+        // println!(
+        //     "LG{:.2} NG{:.2} RG{:.2}",
+        //     self.left_gear_assembly.position_normalized().get::<ratio>(),
+        //     self.nose_gear_assembly.position_normalized().get::<ratio>(),
+        //     self.right_gear_assembly
+        //         .position_normalized()
+        //         .get::<ratio>()
+        // );
     }
 }
 impl GearSystemSensors for HydraulicGearSystem {
@@ -369,7 +387,7 @@ struct GearDoorAssembly {
 }
 impl GearDoorAssembly {
     const OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO: f64 = 1.;
-    const OPENED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.01;
+    const OPENED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.03;
 
     const UPLOCKED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO: f64 = 0.;
     const UPLOCKED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.01;
