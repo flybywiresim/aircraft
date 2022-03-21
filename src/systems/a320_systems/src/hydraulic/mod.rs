@@ -793,48 +793,51 @@ impl A320GearDoorFactory {
 
 struct A320GearFactory {}
 impl A320GearFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.05;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
-    const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
-
-    // TODO random data from main gear actuator
     fn a320_nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.;
+        const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.2;
+        const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
+
         LinearActuator::new(
             bounded_linear_length,
             1,
-            Length::new::<meter>(0.12),
-            Length::new::<meter>(0.09),
-            VolumeRate::new::<gallon_per_second>(0.1),
+            Length::new::<meter>(0.0792),
+            Length::new::<meter>(0.035),
+            VolumeRate::new::<gallon_per_second>(0.053),
             800000.,
             15000.,
             50000.,
             2200000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 1., 1.],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
-            Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
-            Self::FLOW_CONTROL_INTEGRAL_GAIN,
-            Self::FLOW_CONTROL_FORCE_GAIN,
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.1, 0.11, 0.89, 0.9, 1.],
+            FLOW_CONTROL_PROPORTIONAL_GAIN,
+            FLOW_CONTROL_INTEGRAL_GAIN,
+            FLOW_CONTROL_FORCE_GAIN,
         )
     }
 
     fn a320_main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.;
+        const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.2;
+        const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
+
         LinearActuator::new(
             bounded_linear_length,
             1,
             Length::new::<meter>(0.145),
             Length::new::<meter>(0.105),
-            VolumeRate::new::<gallon_per_second>(0.15),
+            VolumeRate::new::<gallon_per_second>(0.17),
             800000.,
             15000.,
             50000.,
             1200000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 1., 1.],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
-            Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
-            Self::FLOW_CONTROL_INTEGRAL_GAIN,
-            Self::FLOW_CONTROL_FORCE_GAIN,
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.1, 0.11, 0.89, 0.9, 1.],
+            FLOW_CONTROL_PROPORTIONAL_GAIN,
+            FLOW_CONTROL_INTEGRAL_GAIN,
+            FLOW_CONTROL_FORCE_GAIN,
         )
     }
 
@@ -886,7 +889,7 @@ impl A320GearFactory {
         let size = Vector3::new(0.3, 2.453, 0.3);
         let cg_offset = Vector3::new(0., -2. / 3. * size[1], 0.);
 
-        let control_arm = Vector3::new(0., -0.093, 0.14);
+        let control_arm = Vector3::new(0., -0.093, 0.212);
         let anchor = Vector3::new(0., 0.56, 0.);
 
         LinearActuatedRigidBodyOnHingeAxis::new(
