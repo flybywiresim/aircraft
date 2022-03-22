@@ -308,7 +308,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         // to connect the websocket continuously. The below solution based on an EFB setting
         // and a maximal number of attempts should mitigate the issue until
         // Asobo has fixed the core issue.
-        if (this.mcduServerConnectUpdateThrottler.canUpdate(_deltaTime) !== -1) {
+        if (this.mcduServerConnectUpdateThrottler.canUpdate(_deltaTime) !== -1
+            && this.getGameState() === GameState.ingame) {
+
             // Try to connect websocket if enabled in EFB and no connection established
             this.mcduServerConnect = NXDataStore.get("CONFIG_EXTERNAL_MCDU_SERVER_ENABLED", 'AUTO ON');
             if (this.mcduServerConnect === 'AUTO ON' && (!this.socket || this.socket.readyState !== 1)) {
