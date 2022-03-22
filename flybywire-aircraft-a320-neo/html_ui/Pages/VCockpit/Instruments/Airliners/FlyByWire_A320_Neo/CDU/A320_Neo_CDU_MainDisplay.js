@@ -3,7 +3,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         super(...arguments);
 
         this.minPageUpdateThrottler = new UpdateThrottler(100);
-        this.mcduServerConnectUpdateThrottler = new UpdateThrottler(2500);
+        this.mcduServerConnectUpdateThrottler = new UpdateThrottler(5000);
         this.powerCheckUpdateThrottler = new UpdateThrottler(500);
 
         this._registered = false;
@@ -1427,7 +1427,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Attempts to connect to a local websocket server
      */
     connectWebsocket(port) {
-        if (this.socket) {
+        if (this.socket && this.socket.readyState) {
             this.socket.close();
             this.socket = undefined;
         }
