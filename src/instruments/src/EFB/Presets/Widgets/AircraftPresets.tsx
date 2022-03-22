@@ -5,6 +5,7 @@
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
+import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 
 export const AircraftPresets = () => {
     // Aircraft presets are handled by a backend WASM module. This frontend will
@@ -20,16 +21,7 @@ export const AircraftPresets = () => {
     const [simOnGround] = useSimVar('SIM ON GROUND', 'number', 200);
     const [loadPresetVar, setLoadPresetVar] = useSimVar('L:A32NX_LOAD_AIRCRAFT_PRESET', 'number', 200);
     const [loadPresetProgress] = useSimVar('L:A32NX_LOAD_AIRCRAFT_PRESET_PROGRESS', 'number', 100);
-
-    // Sets the LVAR to tell the wasm to load the preset into the aircraft
-    function handleLoadPreset(presetID: number) {
-        setLoadPresetVar(presetID);
-    }
-
-    // Called by the cancel button to stop and cancel loading of a preset
-    function handleCancel() {
-        setLoadPresetVar(0);
-    }
+    const { showModal } = useModals();
 
     const AIRCRAFT_PRESETS: { index: number, name: string }[] = [
         { index: 1, name: 'Cold & Dark' },
@@ -38,6 +30,22 @@ export const AircraftPresets = () => {
         { index: 4, name: 'Ready for Taxi' },
         { index: 5, name: 'Ready for Takeoff' },
     ];
+
+    // Sets the LVAR to tell the wasm to load the preset into the aircraft
+    function handleLoadPreset(presetID: number) {
+        showModal(
+            <PromptModal
+                title={`${AIRCRAFT_PRESETS[presetID - 1].name}`}
+                bodyText="Please confirm loading of preset."
+                onConfirm={() => setLoadPresetVar(presetID)}
+            />,
+        );
+    }
+
+    // Called by the cancel button to stop and cancel loading of a preset
+    function handleCancel() {
+        setLoadPresetVar(0);
+    }
 
     return (
         <div className="p-4 mt-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">

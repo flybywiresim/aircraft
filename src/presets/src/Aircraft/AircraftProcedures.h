@@ -64,24 +64,27 @@ static vector<ProcedureStep>* TURNAROUND_CONFIG_OFF = new vector<ProcedureStep>{
 };
 
 static vector<ProcedureStep>* PUSHBACK_CONFIG_ON = new vector<ProcedureStep>{
-  {"EXT PWR Off",      false, 3000, "(A:EXTERNAL POWER ON:1, BOOL) !",                      "(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
+  {"EXT PWR Off",       false, 3000, "(A:EXTERNAL POWER ON:1, BOOL) !",                      "(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
 
-  {"FUEL PUMP 2 On",   false, 100,  "(A:FUELSYSTEM PUMP SWITCH:2, Bool)",                   "2 (>K:FUELSYSTEM_PUMP_ON)"},
-  {"FUEL PUMP 5 On",   false, 500,  "(A:FUELSYSTEM PUMP SWITCH:5, Bool)",                   "5 (>K:FUELSYSTEM_PUMP_ON)"},
-  {"FUEL PUMP 1 On",   false, 100,  "(A:FUELSYSTEM PUMP SWITCH:1, Bool)",                   "1 (>K:FUELSYSTEM_PUMP_ON)"},
-  {"FUEL PUMP 4 On",   false, 500,  "(A:FUELSYSTEM PUMP SWITCH:4, Bool)",                   "4 (>K:FUELSYSTEM_PUMP_ON)"},
-  {"FUEL PUMP 3 On",   false, 100,  "(A:FUELSYSTEM PUMP SWITCH:3, Bool)",                   "3 (>K:FUELSYSTEM_PUMP_ON)"},
-  {"FUEL PUMP 6 On",   false, 1000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool)",                   "6 (>K:FUELSYSTEM_PUMP_ON)"},
-  {"Radar PWS On",     false, 500,  "(L:A32NX_SWITCH_RADAR_PWS_POSITION) 1 ==",             "1 (>L:A32NX_SWITCH_RADAR_PWS_POSITION)"},
-  {"Transponder On",   false, 500,  "(L:A32NX_TRANSPONDER_MODE) 1 ==",                      "1 (>L:A32NX_TRANSPONDER_MODE)"},
-  {"ATC ALT RPTG On",  false, 500,  "(L:A32NX_SWITCH_ATC_ALT) 1 ==",                        "1 (>L:A32NX_SWITCH_ATC_ALT)"},
-  {"TCAS TRAFFIC ABV", false, 500,  "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",          "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
-  {"COCKPIT DOOR LCK", false, 500,  "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",                   "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
-  {"Strobe Auto",      false, 500,  "(A:LIGHT STROBE, Bool)",                               "1 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},
-  {"Beacon On",        false, 500,  "(A:LIGHT BEACON, Bool)",                               "0 (>K:BEACON_LIGHTS_ON)"},
-  {"NO SMOKING On",    false, 500,  "(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 1 ==", "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)"},
-  {"EMER EXT Lt On",   false, 500,  "(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 1 ==",  "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)"},
-  {"SEAT BELTS On",    false, 500,  "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL)",             "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! if{ 1 (>K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }"},
+  {"FUEL PUMP 2 On",    false, 100,  "(A:FUELSYSTEM PUMP SWITCH:2, Bool)",                   "2 (>K:FUELSYSTEM_PUMP_ON)"},
+  {"FUEL PUMP 5 On",    false, 500,  "(A:FUELSYSTEM PUMP SWITCH:5, Bool)",                   "5 (>K:FUELSYSTEM_PUMP_ON)"},
+  {"FUEL PUMP 1 On",    false, 100,  "(A:FUELSYSTEM PUMP SWITCH:1, Bool)",                   "1 (>K:FUELSYSTEM_PUMP_ON)"},
+  {"FUEL PUMP 4 On",    false, 500,  "(A:FUELSYSTEM PUMP SWITCH:4, Bool)",                   "4 (>K:FUELSYSTEM_PUMP_ON)"},
+  {"FUEL PUMP 3 On",    false, 100,  "(A:FUELSYSTEM PUMP SWITCH:3, Bool)",                   "3 (>K:FUELSYSTEM_PUMP_ON)"},
+  {"FUEL PUMP 6 On",    false, 1000, "(A:FUELSYSTEM PUMP SWITCH:6, Bool)",                   "6 (>K:FUELSYSTEM_PUMP_ON)"},
+  {"Radar PWS On",      false, 500,  "(L:A32NX_SWITCH_RADAR_PWS_POSITION) 1 ==",             "1 (>L:A32NX_SWITCH_RADAR_PWS_POSITION)"},
+  {"Transponder On",    false, 500,  "(L:A32NX_TRANSPONDER_MODE) 1 ==",                      "1 (>L:A32NX_TRANSPONDER_MODE)"},
+  {"ATC ALT RPTG On",   false, 500,  "(L:A32NX_SWITCH_ATC_ALT) 1 ==",                        "1 (>L:A32NX_SWITCH_ATC_ALT)"},
+  {"TCAS TRAFFIC ABV",  false, 500,  "(L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION) 2 ==",          "2 (>L:A32NX_SWITCH_TCAS_TRAFFIC_POSITION)"},
+  {"COCKPIT DOOR LCK",  false, 500,  "(L:A32NX_COCKPIT_DOOR_LOCKED) 1 ==",                   "1 (>L:A32NX_COCKPIT_DOOR_LOCKED)"},
+  {"Strobe Auto",       false, 500,  "(A:LIGHT STROBE, Bool)",                               "1 (>L:STROBE_0_AUTO) 0 (>K:STROBES_ON)"},
+  {"Beacon On",         false, 500,  "(A:LIGHT BEACON, Bool)",                               "0 (>K:BEACON_LIGHTS_ON)"},
+  {"NO SMOKING On",     false, 500,  "(L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION) 1 ==", "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_POSITION)"},
+  {"EMER EXT Lt On",    false, 500,  "(L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION) 1 ==",  "1 (>L:XMLVAR_SWITCH_OVHD_INTLT_EMEREXIT_POSITION)"},
+  {"SEAT BELTS On",     false, 500,  "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL)",             "(A:CABIN SEATBELTS ALERT SWITCH:1, BOOL) ! if{ 1 (>K:CABIN_SEATBELTS_ALERT_SWITCH_TOGGLE) }"},
+  {"ADIRS 1 Alignment", true,  2000, "",                                                     "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
+  {"ADIRS 2 Alignment", true,  2000, "",                                                     "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 =="},
+  {"ADIRS 3 Alignment", true,  2000, "",                                                     "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 =="},
 };
 
 static vector<ProcedureStep>* PUSHBACK_CONFIG_OFF = new vector<ProcedureStep>{
@@ -104,9 +107,6 @@ static vector<ProcedureStep>* PUSHBACK_CONFIG_OFF = new vector<ProcedureStep>{
 };
 
 static vector<ProcedureStep>* TAXI_CONFIG_ON = new vector<ProcedureStep>{
-  {"ADIRS 1 Alignment",  true,  2000,  "",                                                 "(L:A32NX_ADIRS_ADIRU_1_STATE) 2 =="},
-  {"ADIRS 2 Alignment",  true,  2000,  "",                                                 "(L:A32NX_ADIRS_ADIRU_2_STATE) 2 =="},
-  {"ADIRS 3 Alignment",  true,  2000,  "",                                                 "(L:A32NX_ADIRS_ADIRU_3_STATE) 2 =="},
   {"ENG MODE SEL START", false, 2000,  "(L:A32NX_ENGINE_STATE:1) 1 == "
                                        "(L:A32NX_ENGINE_STATE:2) 1 == && "
                                        "(K:TURBINE_IGNITION_SWITCH_SET1) 2 == "
@@ -216,7 +216,3 @@ public:
   }
 
 };
-
-
-
-
