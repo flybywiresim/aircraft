@@ -36,9 +36,14 @@ declare global {
         ACE_ENGINE_HANDLE: object | undefined
 
         /**
-         * `true` if `window.ACE_ENGINE_HANDLE` is present and the instrument is connected to the sim through a remote bridge
+         * `true` if `window.ACE_ENGINE_HANDLE` is present and the instrument is using (but is not necessarily connected to) a remote bridge
          */
         ACE_IS_REMOTE: boolean | undefined
+        
+        /**
+         * `true` if `window.ACE_ENGINE_HANDLE` is present and `window.ACE_IS_REMOTE` is `true` and the instrument is connected to the sim through a remote bridge
+         */
+        ACE_REMOTE_IS_CONNECTED: boolean | undefined
     }
 
     namespace Fmgc {
