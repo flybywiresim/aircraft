@@ -8,7 +8,7 @@ using namespace std;
 
 struct ProcedureStep {
   std::string description;
-  // unique id for each step
+  // unique id for each step (will be assigned automatically in constructor)
   int id;
   // true if the procedure step is a pure condition check to wait for a certain state
   bool isConditional;
