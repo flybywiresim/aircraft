@@ -637,7 +637,7 @@ export const LandingWidget = () => {
                         <div className="flex flex-row mt-14 space-x-8">
                             <button
                                 onClick={handleCalculateLanding}
-                                className={`rounded-md flex flex-row justify-center items-center py-2 space-x-4 w-full bg-theme-highlight outline-none border-2 border-theme-highlight text-theme-body hover:text-theme-highlight hover:bg-theme-body ${!areInputsValid() && 'opacity-50'}`}
+                                className={`rounded-md flex flex-row justify-center items-center py-2 space-x-4 w-full bg-theme-highlight outline-none border-2 border-theme-highlight text-theme-body hover:text-theme-highlight hover:bg-theme-body ${!areInputsValid() && 'opacity-50 pointer-events-none'}`}
                                 type="button"
                                 disabled={!areInputsValid()}
                             >
