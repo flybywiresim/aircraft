@@ -29,6 +29,7 @@ private:
   // Sim LVAR IDs
   ID LoadAircraftPresetRequest{};
   ID ProgressAircraftPreset{};
+  ID ProgressAircraftPresetId{};
 
   // Simvar light variables
   ENUM SimOnGround{};
@@ -41,7 +42,7 @@ private:
   // current procedure ID
   int64_t currentProcedureID = 0;
   // current procedure
-  vector<ProcedureStep>* currentProcedure = nullptr;
+  vector<struct ProcedureStep*>* currentProcedure = nullptr;
   // flag to signal that a loading process is ongoing
   bool loadingIsActive = false;
   // in ms
@@ -100,22 +101,20 @@ private:
   }
 
   /**
-   * Reads the  preset loading request variable.
-   * @return INT64 signifying the preset to be loaded
-   */
-  __attribute__((unused))
-  inline FLOAT64 progressAircraftPreset() const {
-    return get_named_variable_value(ProgressAircraftPreset);
-  }
-
-  /**
-   * Sets the loading request value. Typically used to reset to 0 after the preset has been loaded.
-   * @param value usually loadFromData to 0 to reset the request.
+   * Sets the curren progress in percent (0.0..1.0)
+   * @param value 0.0..1.0 progress in percent
    */
   inline void setProgressAircraftPreset(FLOAT64 value) const {
     set_named_variable_value(ProgressAircraftPreset, value);
   }
 
+  /**
+   * Sets the ID of the current procedure step to the LVAR
+   * @param value current procedure step ID
+   */
+  inline void setProgressAircraftPresetId(FLOAT64 value) const {
+    set_named_variable_value(ProgressAircraftPresetId, value);
+  }
   /**
 * Retrieves the SIM ON GROUND var from the simulator.
 * @return value true if one ground, false otherwise

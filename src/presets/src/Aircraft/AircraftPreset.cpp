@@ -18,6 +18,7 @@ void AircraftPreset::initialize() {
   LoadAircraftPresetRequest = register_named_variable("A32NX_LOAD_AIRCRAFT_PRESET");
   this->setLoadAircraftPresetRequest(0);
   ProgressAircraftPreset = register_named_variable("A32NX_LOAD_AIRCRAFT_PRESET_PROGRESS");
+  ProgressAircraftPresetId = register_named_variable("A32NX_LOAD_AIRCRAFT_PRESET_CURRENT_ID");
   SimOnGround = get_aircraft_var_enum("SIM ON GROUND");
   isInitialized = true;
   std::cout << "PRESETS: AircraftPresets initialized" << std::endl;
@@ -47,7 +48,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
     if (!loadingIsActive) {
 
       // check if procedure ID exists
-      vector<ProcedureStep>* requestedProcedure = procedures.getProcedure(loadAircraftPresetRequest);
+      vector<ProcedureStep*>* requestedProcedure = procedures.getProcedure(loadAircraftPresetRequest);
       if (requestedProcedure == nullptr) {
         std::cout << "PRESETS: Preset " << loadAircraftPresetRequest << " not found!" << std::endl;
         setLoadAircraftPresetRequest(0);
@@ -62,7 +63,8 @@ void AircraftPreset::onUpdate(double deltaTime) {
       currentDelay = 0;
       currentStep = 0;
       loadingIsActive = true;
-      setProgressAircraftPreset(0.0);
+      setProgressAircraftPreset(0);
+      setProgressAircraftPresetId(0);
       std::cout << "PRESETS: Aircraft Preset " << currentProcedureID << " starting procedure!"
                 << std::endl;
       return;
@@ -78,6 +80,7 @@ void AircraftPreset::onUpdate(double deltaTime) {
       std::cout << "PRESETS: Aircraft Preset " << currentProcedureID << " done!"
                 << std::endl;
       setProgressAircraftPreset(0);
+      setProgressAircraftPresetId(0);
       setLoadAircraftPresetRequest(0);
       loadingIsActive = false;
       return;
@@ -93,9 +96,10 @@ void AircraftPreset::onUpdate(double deltaTime) {
 
     // update progress var
     setProgressAircraftPreset((double) currentStep / currentProcedure->size());
+    setProgressAircraftPresetId(currentProcedure->at(currentStep)->id);
 
     // convenience tmp
-    const auto currentStepPtr = &currentProcedure->at(currentStep);
+    const auto currentStepPtr = currentProcedure->at(currentStep);
 
     // calculate next delay
     currentDelay = currentLoadingTime + currentStepPtr->delayAfter;
