@@ -790,7 +790,7 @@
             },
             "extensions": {
                 "ASOBO_material_kitty_glass": {
-                    "glassReflectionMaskFactor": 0.7
+                    "glassReflectionMaskFactor": 1
                 }
             }
         }
