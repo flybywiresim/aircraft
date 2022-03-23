@@ -33,7 +33,7 @@ export const AircraftPresets = () => {
     ];
 
     // Sets the LVAR to tell the wasm to load the preset into the aircraft
-    function handleLoadPreset(presetID: number) {
+    const handleLoadPreset = (presetID: number) => {
         showModal(
             <PromptModal
                 title={`${AIRCRAFT_PRESETS[presetID - 1].name}`}
