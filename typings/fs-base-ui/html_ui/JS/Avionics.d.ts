@@ -202,6 +202,15 @@ declare global {
         facilityLoader: FacilityLoader;
 
         instrumentIdentifier: string;
+
+        getGameState(): number;
+    }
+
+    declare enum GameState {
+        "mainmenu" = 0,
+        "loading" = 1,
+        "briefing" = 2,
+        "ingame" = 3
     }
 }
 
