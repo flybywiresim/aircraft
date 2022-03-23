@@ -41,12 +41,12 @@ export const AircraftPresets = () => {
                 onConfirm={() => setLoadPresetVar(presetID)}
             />,
         );
-    }
+    };
 
     // Called by the cancel button to stop and cancel loading of a preset
     const handleCancel = () => {
         setLoadPresetVar(0);
-    }
+    };
 
     // These are defined in the presets' wasm C++ code and can be
     // printed to the console by compiling the c++ with --debug
