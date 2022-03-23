@@ -44,7 +44,7 @@ export const AircraftPresets = () => {
     }
 
     // Called by the cancel button to stop and cancel loading of a preset
-    function handleCancel() {
+    const handleCancel = () => {
         setLoadPresetVar(0);
     }
 
