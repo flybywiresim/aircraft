@@ -315,9 +315,8 @@ class CDUInitPage {
         }
         mcdu.onRightInput[0] = async (value, scratchpadCallback) => {
             if (value === "") {
-                mcdu.updateZfwVars();
                 mcdu.scratchpad.setText(
-                    (isFinite(mcdu.zeroFuelWeight) ? (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1) : "") +
+                    (isFinite(getZfw()) ? (NXUnits.kgToUser(getZfw() / 1000)).toFixed(1) : "") +
                     "/" +
                     (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));
             } else {
