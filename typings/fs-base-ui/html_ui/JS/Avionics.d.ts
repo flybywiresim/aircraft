@@ -308,6 +308,13 @@ declare global {
     }
     declare function registerInstrument(_instrumentName: string, _instrumentClass: CustomElementConstructor): void;
 
+    declare enum GameState {
+        "mainmenu" = 0,
+        "loading" = 1,
+        "briefing" = 2,
+        "ingame" = 3
+    }
+
 }
 
 
