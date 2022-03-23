@@ -10,7 +10,7 @@ export const FMA = ({ isAttExcessive }) => {
     const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
     const BC3Message = getBC3Message(isAttExcessive)[0] !== null;
     const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
-        || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && BC3Message && engineMessage === 0;
+        || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && !BC3Message && engineMessage === 0;
 
     let secondBorder: string;
     if (sharedModeActive && !isAttExcessive) {

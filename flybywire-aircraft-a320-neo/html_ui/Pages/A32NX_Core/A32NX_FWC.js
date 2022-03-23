@@ -47,7 +47,7 @@ class A32NX_FWC {
 
         // ESDL 1. 0.190
         this.memoLdgMemo_conf01 = new NXLogic_ConfirmNode(1, true); // CONF 01
-        this.memoLdgMemo_memory1 = new NXLogic_MemoryNode(false);
+        this.memoLdgMemo_inhibit = new NXLogic_MemoryNode(false);
         this.memoLdgMemo_conf02 = new NXLogic_ConfirmNode(10, true); // CONF 01
         this.memoLdgMemo_below2000ft = new NXLogic_MemoryNode(true);
 
@@ -115,7 +115,9 @@ class A32NX_FWC {
     }
 
     _updateFlightPhase(_deltaTime) {
-        const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
+        const radioHeight1 = Arinc429Word.fromSimVarValue("L:A32NX_RA_1_RADIO_ALTITUDE");
+        const radioHeight2 = Arinc429Word.fromSimVarValue("L:A32NX_RA_2_RADIO_ALTITUDE");
+        const radioHeight = radioHeight1.isFailureWarning() || radioHeight1.isNoComputedData() ? radioHeight2 : radioHeight1;
         const eng1N1 = SimVar.GetSimVarValue("ENG N1 RPM:1", "Percent");
         const eng2N1 = SimVar.GetSimVarValue("ENG N1 RPM:2", "Percent");
         // TODO find a better source for the following value ("core speed at or above idle")
@@ -125,7 +127,7 @@ class A32NX_FWC {
         );
         const eng1Or2Running = this.eng1OrTwoRunningConf.write(oneEngRunning, _deltaTime);
         const engOneAndTwoNotRunning = !eng1Or2Running;
-        const hFail = false;
+        const hFail = radioHeight1.isFailureWarning() && radioHeight2.isFailureWarning();
         const adcTestInhib = false;
 
         // ESLD 1.0.60
@@ -137,8 +139,8 @@ class A32NX_FWC {
         const acSpeedAbove80kts = this.speedAbove80KtsMemo.write(ias > 83, ias < 77);
 
         // ESLD 1.0.90
-        const hAbv1500 = radioHeight > 1500;
-        const hAbv800 = radioHeight > 800;
+        const hAbv1500 = radioHeight.isNoComputedData() || radioHeight.value > 1500;
+        const hAbv800 = radioHeight.isNoComputedData() || radioHeight.value > 800;
 
         // ESLD 1.0.79 + 1.0.80
         const eng1TLA = SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_TLA:1", "number");
@@ -301,22 +303,24 @@ class A32NX_FWC {
     }
 
     _updateLandingMemo(_deltaTime) {
-        const radioHeight = SimVar.GetSimVarValue("RADIO HEIGHT", "Feet");
-        const radioHeightInvalid = false;
+        const radioHeight1 = Arinc429Word.fromSimVarValue("L:A32NX_RA_1_RADIO_ALTITUDE");
+        const radioHeight2 = Arinc429Word.fromSimVarValue("L:A32NX_RA_2_RADIO_ALTITUDE");
+        const radioHeight1Invalid = radioHeight1.isFailureWarning() || radioHeight1.isNoComputedData();
+        const radioHeight2Invalid = radioHeight2.isFailureWarning() || radioHeight2.isNoComputedData();
         const gearDownlocked = SimVar.GetSimVarValue("GEAR TOTAL PCT EXTENDED", "percent") > 0.95;
 
         // FWC ESLD 1.0.190
-        const setBelow2000ft = radioHeight < 2000;
-        const resetBelow2000ft = radioHeight > 2200;
+        const setBelow2000ft = (radioHeight1.value < 2000 && !radioHeight1Invalid) || (radioHeight2.value < 2000 && !radioHeight2Invalid);
+        const resetBelow2000ft = (radioHeight1.value > 2200 || radioHeight1Invalid) && (radioHeight2.value > 2200 || radioHeight2Invalid);
         const memo2 = this.memoLdgMemo_below2000ft.write(setBelow2000ft, resetBelow2000ft);
 
-        const setLandingMemo = this.memoLdgMemo_conf01.write(!radioHeightInvalid && resetBelow2000ft, _deltaTime);
-        const resetLandingMemo = !(this.flightPhase === 7 || this.flightPhase === 8 || this.flightPhase === 6);
-        const memo1 = this.memoLdgMemo_memory1.write(setLandingMemo, resetLandingMemo);
+        const setInhibitMemo = this.memoLdgMemo_conf01.write(resetBelow2000ft && !radioHeight1Invalid && !radioHeight2Invalid, _deltaTime);
+        const resetInhibitMemo = !(this.flightPhase === 7 || this.flightPhase === 8 || this.flightPhase === 6);
+        const memo1 = this.memoLdgMemo_inhibit.write(setInhibitMemo, resetInhibitMemo);
 
         const showInApproach = memo1 && memo2 && this.flightPhase === 6;
 
-        const invalidRadioMemo = this.memoLdgMemo_conf02.write(radioHeightInvalid && gearDownlocked);
+        const invalidRadioMemo = this.memoLdgMemo_conf02.write(radioHeight1Invalid && radioHeight2Invalid && gearDownlocked && this.flightPhase === 6);
 
         this.ldgMemo = showInApproach || invalidRadioMemo || this.flightPhase === 8 || this.flightPhase === 7;
         SimVar.SetSimVarValue("L:A32NX_FWC_LDGMEMO", "Bool", this.ldgMemo);
