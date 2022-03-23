@@ -12,6 +12,10 @@ export const FMA = ({ isAttExcessive }) => {
     const AB3Message = (getSimVar('L:A32NX_MachPreselVal', 'mach') !== -1
         || getSimVar('L:A32NX_SpeedPreselVal', 'knots') !== -1) && !BC3Message && engineMessage === 0;
 
+    const ABrkActive = getSimVar('L:A32NX_AUTOBRAKES_ACTIVE', 'bool');
+    const ABrkMode = getSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'number');
+    const AThrMode = getSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum');
+
     let secondBorder: string;
     if (sharedModeActive && !isAttExcessive) {
         secondBorder = '';
@@ -37,16 +41,16 @@ export const FMA = ({ isAttExcessive }) => {
                 <path d="m133.72 0.33732v20.864" />
             </g>
 
-            <Row1 isAttExcessive={isAttExcessive} />
-            <Row2 isAttExcessive={isAttExcessive} />
-            <Row3 isAttExcessive={isAttExcessive} />
+            <Row1 isAttExcessive={isAttExcessive} AThrMode={AThrMode} ABrkActive={ABrkActive} ABrkMode={ABrkMode} />
+            <Row2 isAttExcessive={isAttExcessive} AThrMode={AThrMode} ABrkActive={ABrkActive} ABrkMode={ABrkMode} />
+            <Row3 isAttExcessive={isAttExcessive} ABrkActive={ABrkActive} ABrkMode={ABrkMode} AB3Message={AB3Message} />
         </g>
     );
 };
 
-const Row1 = ({ isAttExcessive }) => (
+const Row1 = ({ isAttExcessive, AThrMode, ABrkActive, ABrkMode }) => (
     <g>
-        <A1A2Cell />
+        <A1A2Cell AThrMode={AThrMode} ABrkActive={ABrkActive} ABrkMode={ABrkMode} />
         {!isAttExcessive && (
             <>
                 <B1Cell />
@@ -59,10 +63,11 @@ const Row1 = ({ isAttExcessive }) => (
     </g>
 );
 
-const Row2 = ({ isAttExcessive }) => (
+const Row2 = ({ isAttExcessive, AThrMode, ABrkActive, ABrkMode }) => (
     <g>
         {!isAttExcessive && (
             <>
+                <A2Cell AThrMode={AThrMode} ABrkActive={ABrkActive} ABrkMode={ABrkMode} />
                 <B2Cell />
                 <C2Cell />
             </>
@@ -71,9 +76,9 @@ const Row2 = ({ isAttExcessive }) => (
     </g>
 );
 
-const Row3 = ({ isAttExcessive }) => (
+const Row3 = ({ isAttExcessive, ABrkMode, ABrkActive, AB3Message }) => (
     <g>
-        <A3Cell />
+        <A3Cell ABrkMode={ABrkMode} ABrkActive={ABrkActive} AB3Message={AB3Message} />
         {!isAttExcessive && (
             <>
                 <AB3Cell />
@@ -85,13 +90,10 @@ const Row3 = ({ isAttExcessive }) => (
     </g>
 );
 
-const A1A2Cell = () => {
-    const AThrMode = getSimVar('L:A32NX_AUTOTHRUST_MODE', 'enum');
-
+const A1A2Cell = ({ AThrMode, ABrkActive, ABrkMode }) => {
     let text: string | undefined;
 
-    switch (AThrMode) {
-    case 1:
+    if (AThrMode === 1) {
         return (
             <g>
                 <path className="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
@@ -99,7 +101,7 @@ const A1A2Cell = () => {
                 <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
             </g>
         );
-    case 2:
+    } if (AThrMode === 2) {
         return (
             <g>
                 <path className="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
@@ -107,7 +109,7 @@ const A1A2Cell = () => {
                 <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
             </g>
         );
-    case 3: {
+    } if (AThrMode === 3) {
         const FlexTemp = Math.round(getSimVar('L:AIRLINER_TO_FLEX_TEMP', 'number'));
         const FlexText = FlexTemp >= 0 ? (`+${FlexTemp}`) : FlexTemp.toString();
         return (
@@ -120,8 +122,7 @@ const A1A2Cell = () => {
                 </text>
             </g>
         );
-    }
-    case 4:
+    } if (AThrMode === 4) {
         return (
             <g>
                 <path className="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
@@ -129,7 +130,7 @@ const A1A2Cell = () => {
                 <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
             </g>
         );
-    case 5:
+    } if (AThrMode === 5) {
         return (
             <g>
                 <path className="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
@@ -137,7 +138,7 @@ const A1A2Cell = () => {
                 <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
             </g>
         );
-    case 6:
+    } if (AThrMode === 6) {
         return (
             <g>
                 <path className="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
@@ -145,39 +146,39 @@ const A1A2Cell = () => {
                 <text className="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
             </g>
         );
-    case 7:
+    } if (AThrMode === 7) {
         text = 'SPEED';
-        break;
-    case 8:
+    } else if (AThrMode === 8) {
         text = 'MACH';
-        break;
-    case 9:
+    } else if (AThrMode === 9) {
         text = 'THR MCT';
-        break;
-    case 10:
+    } else if (AThrMode === 10) {
         text = 'THR CLB';
-        break;
-    case 11:
+    } else if (AThrMode === 11) {
         text = 'THR LVR';
-        break;
-    case 12:
+    } else if (AThrMode === 12) {
         text = 'THR IDLE';
-        break;
-    case 13:
+    } else if (AThrMode === 13) {
         return (
             <g>
                 <path className="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                 <text className="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
             </g>
         );
-    case 14:
+    } else if (AThrMode === 14) {
         return (
             <g>
                 <path className="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                 <text className="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
             </g>
         );
-    default:
+    } else if (ABrkMode === 1 && ABrkActive) {
+        text = 'BRK LO';
+    } else if (ABrkMode === 2 && ABrkActive) {
+        text = 'BRK MED';
+    } else if (ABrkMode === 3 && ABrkActive) {
+        text = 'BRK MAX';
+    } else {
         return null;
     }
 
@@ -186,38 +187,50 @@ const A1A2Cell = () => {
             <ShowForSeconds timer={9} id={AThrMode}>
                 <path className="NormalStroke White" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
             </ShowForSeconds>
-            <text className="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">{text}</text>
+            <text className="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665" xmlSpace="preserve">{text}</text>
         </g>
     );
 };
 
-const A3Cell = () => {
+const A2Cell = ({ AThrMode, ABrkActive, ABrkMode }) => {
+    const dualLineAthrMessage = AThrMode >= 1 && AThrMode <= 6;
+
+    let text: string;
+    if (!dualLineAthrMessage && !ABrkActive && ABrkMode === 1) {
+        text = 'BRK LO ';
+    } else if (!dualLineAthrMessage && !ABrkActive && ABrkMode === 2) {
+        text = 'BRK MED ';
+    } else {
+        return null;
+    }
+
+    return (<text className="FontMedium MiddleAlign Cyan" x="16.869141" y="14.351689" xmlSpace="preserve">{text}</text>);
+};
+
+const A3Cell = ({ ABrkMode, ABrkActive, AB3Message }) => {
     const engineMessage = getSimVar('L:A32NX_AUTOTHRUST_MODE_MESSAGE', 'enum');
 
     let text: string;
     let className: string;
-    switch (engineMessage) {
-    case 1:
+    if (engineMessage === 1) {
         text = 'THR LK';
         className = 'Amber BlinkInfinite';
-        break;
-    case 2:
+    } else if (engineMessage === 2) {
         text = 'LVR TOGA';
         className = 'White BlinkInfinite';
-        break;
-    case 3:
+    } else if (engineMessage === 3) {
         text = 'LVR CLB';
         className = 'White BlinkInfinite';
-        break;
-    case 4:
+    } else if (engineMessage === 4) {
         text = 'LVR MCT';
         className = 'White BlinkInfinite';
-        break;
-    case 5:
+    } else if (engineMessage === 5) {
         text = 'LVR ASYM';
         className = 'Amber';
-        break;
-    default:
+    } else if (ABrkMode === 3 && !ABrkActive && !AB3Message) {
+        text = 'BRK MAX';
+        className = 'Cyan';
+    } else {
         return null;
     }
 

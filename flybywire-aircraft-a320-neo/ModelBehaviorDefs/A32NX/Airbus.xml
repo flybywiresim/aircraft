@@ -747,6 +747,10 @@
             <NODE_ID>KNOB_OVHD_AIRCOND_#ID#</NODE_ID>
             <ANIM_SIMVAR>L:A32NX_OVHD_COND_#ID#_SELECTOR_KNOB</ANIM_SIMVAR>
             <ANIMCURSOR_MAX>1</ANIMCURSOR_MAX>
+            <ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
+            <ANIM_SIMVAR_MAX>300</ANIM_SIMVAR_MAX>
+            <INCREMENT>5</INCREMENT>
+            <WHEEL_INCREMENT>5</WHEEL_INCREMENT>
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">

@@ -39,11 +39,15 @@ export class RawDataMapper {
         waypoint.icao = facility.icao;
         waypoint.type = facility.icao[0];
 
+        let alt = 0;
+
         switch (waypoint.type) {
         case 'A': {
             const info = new AirportInfo(instrument);
             info.CopyBaseInfosFrom(waypoint);
             info.UpdateNamedFrequencies();
+
+            alt = 3.28084 * facility.runways.reduce((sum, r) => sum + r.elevation, 0) / facility.runways.length;
 
             info.approaches = facility.approaches;
             info.approaches.forEach((approach) => approach.transitions.forEach((trans) => trans.name = trans.legs[0].fixIcao.substring(7, 12).trim()));
@@ -84,7 +88,7 @@ export class RawDataMapper {
             waypoint.infos.routes = facility.routes;
         }
 
-        waypoint.infos.coordinates = new LatLongAlt(facility.lat, facility.lon);
+        waypoint.infos.coordinates = new LatLongAlt(facility.lat, facility.lon, alt);
         waypoint.additionalData = {};
         return waypoint;
     }

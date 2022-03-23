@@ -206,6 +206,25 @@ class CDUInitPage {
             }
         };
 
+        let groundTemp = '---';
+        if (mcdu.groundTemp !== undefined) {
+            groundTemp = `{${mcdu.groundTempPilot !== undefined ? 'big' : 'small'}}${mcdu.groundTemp.toFixed(0)}{end}`;
+        }
+
+        mcdu.onRightInput[5] = (scratchpadValue, scratchpadCallback) => {
+            try {
+                mcdu.trySetGroundTemp(scratchpadValue);
+                CDUInitPage.ShowPage1(mcdu);
+            } catch (msg) {
+                if (msg instanceof McduMessage) {
+                    mcdu.addNewMessage(msg);
+                    scratchpadCallback();
+                } else {
+                    throw msg;
+                }
+            }
+        };
+
         mcdu.setArrows(false, false, true, true);
 
         mcdu.setTemplate([
@@ -221,7 +240,7 @@ class CDUInitPage {
             ["COST INDEX", "TROPO"],
             [costIndex, tropo],
             ["CRZ FL/TEMP", "GND TEMP"],
-            [cruiseFlTemp, "---°[color]inop"],
+            [cruiseFlTemp, `{cyan}${groundTemp}°{end}`],
         ]);
 
         mcdu.onPrevPage = () => {
@@ -296,9 +315,8 @@ class CDUInitPage {
         }
         mcdu.onRightInput[0] = async (value, scratchpadCallback) => {
             if (value === "") {
-                mcdu.updateZfwVars();
                 mcdu.scratchpad.setText(
-                    (isFinite(mcdu.zeroFuelWeight) ? (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1) : "") +
+                    (isFinite(getZfw()) ? (NXUnits.kgToUser(getZfw() / 1000)).toFixed(1) : "") +
                     "/" +
                     (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));
             } else {
