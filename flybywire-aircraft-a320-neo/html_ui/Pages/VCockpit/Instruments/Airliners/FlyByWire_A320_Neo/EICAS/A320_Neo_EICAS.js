@@ -36,6 +36,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
             //skip CRZ and go back to ENG Page
             if (this.lowerScreenPages[i].name == "CRZ" && isOnGround) {
                 pageName = "ENG";
+                //The index of the ENG page is 0 so loop counter will point to correct index without triggering a new iteration.
                 i = 0;
             }
             if (this.lowerScreenPages[i].name == pageName) {
