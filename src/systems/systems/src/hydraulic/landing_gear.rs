@@ -10,7 +10,7 @@ use super::linear_actuator::{
     Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuatorMode,
 };
 
-use uom::si::{f64::*, pressure::psi, ratio::ratio};
+use uom::si::{f64::*, pressure::psi, ratio::ratio, volume_rate::gallon_per_second};
 
 use std::time::Duration;
 
@@ -148,26 +148,6 @@ impl HydraulicGearSystem {
             valves_controller,
             current_pressure,
         );
-
-        // println!(
-        //     "LD{:.2} ND{:.2} RD{:.2} CONTROL should unlock {} current_press {:.0}",
-        //     self.left_door_assembly.position_normalized().get::<ratio>(),
-        //     self.nose_door_assembly.position_normalized().get::<ratio>(),
-        //     self.right_door_assembly
-        //         .position_normalized()
-        //         .get::<ratio>(),
-        //     valves_controller.doors_uplocks_should_mechanically_unlock(),
-        //     current_pressure.get::<psi>()
-        // );
-
-        // println!(
-        //     "LG{:.2} NG{:.2} RG{:.2}",
-        //     self.left_gear_assembly.position_normalized().get::<ratio>(),
-        //     self.nose_gear_assembly.position_normalized().get::<ratio>(),
-        //     self.right_gear_assembly
-        //         .position_normalized()
-        //         .get::<ratio>()
-        // );
     }
 
     // TODO make an iterator
@@ -538,6 +518,10 @@ impl GearDoorAssembly {
     fn is_sensor_fully_opened(&self, sensor_id: usize) -> bool {
         assert!(sensor_id <= 1);
         self.fully_opened_proximity_detectors[sensor_id].proximity_detected()
+    }
+
+    fn actuator_flow(&self) -> VolumeRate {
+        self.hydraulic_assembly.actuator_flow(0)
     }
 }
 
@@ -1298,6 +1282,7 @@ mod tests {
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
+            true,
         )
     }
 
@@ -1351,6 +1336,7 @@ mod tests {
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
+            true,
         )
     }
 

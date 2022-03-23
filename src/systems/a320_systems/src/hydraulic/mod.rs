@@ -209,6 +209,7 @@ impl A320CargoDoorFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
+            false,
         )
     }
 
@@ -300,6 +301,7 @@ impl A320AileronFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
+            false,
         )
     }
 
@@ -397,6 +399,7 @@ impl A320SpoilerFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
+            false,
         )
     }
 
@@ -503,6 +506,7 @@ impl A320ElevatorFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
+            false,
         )
     }
 
@@ -590,6 +594,7 @@ impl A320RudderFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
+            false,
         )
     }
 
@@ -679,6 +684,7 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
+            true,
         )
     }
 
@@ -705,6 +711,7 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
+            true,
         )
     }
 
@@ -794,8 +801,8 @@ impl A320GearDoorFactory {
 struct A320GearFactory {}
 impl A320GearFactory {
     fn a320_nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.;
-        const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.2;
+        const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.5;
+        const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
@@ -807,19 +814,20 @@ impl A320GearFactory {
             800000.,
             15000.,
             50000.,
-            2200000.,
+            1000000.,
             Duration::from_millis(100),
             [0.5, 0.5, 1., 1., 0.5, 0.5],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
+            true,
         )
     }
 
     fn a320_main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.;
-        const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.2;
+        const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.5;
+        const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
 
         LinearActuator::new(
@@ -831,13 +839,14 @@ impl A320GearFactory {
             800000.,
             15000.,
             50000.,
-            1200000.,
+            2300000.,
             Duration::from_millis(100),
             [0.5, 0.5, 1., 1., 0.5, 0.5],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
+            true,
         )
     }
 
@@ -9475,6 +9484,26 @@ mod tests {
             }
 
             assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
+        }
+
+        #[test]
+        fn gear_retracts_using_yellow_epump_plus_ptu() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_down()
+                .set_green_ed_pump(false)
+                .set_yellow_ed_pump(false)
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(15.));
+
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
+
+            test_bed = test_bed.set_gear_lever_up();
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(60.));
+
+            assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
         }
 
         #[test]

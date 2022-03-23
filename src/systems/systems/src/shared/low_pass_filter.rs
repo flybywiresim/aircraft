@@ -25,6 +25,13 @@ where
         }
     }
 
+    pub fn new_with_init_value(time_constant: Duration, init_value: T) -> Self {
+        Self {
+            time_constant,
+            filtered_output: init_value,
+        }
+    }
+
     pub fn update(&mut self, time_delta: Duration, new_input: T) -> T {
         self.filtered_output += (new_input - self.filtered_output)
             * (1.
