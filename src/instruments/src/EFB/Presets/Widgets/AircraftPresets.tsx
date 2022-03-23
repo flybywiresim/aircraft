@@ -14,10 +14,12 @@ export const AircraftPresets = () => {
     // requests a preset to be loaded.
     // The backend will reset the LVAR to 0 when done.
     // As long as the LVAR is 1 the backend is still applying the preset.
-    // The progress while loading an aircraft preset can be read from
-    // the LVAR A32NX_LOAD_AIRCRAFT_PRESET_PROGRESS.
     // If the LVAR is set to 0 before the backend is finished applying the preset
     // will be stopped by the backend.
+    // The progress while loading an aircraft preset can be read from
+    // the LVAR A32NX_LOAD_AIRCRAFT_PRESET_PROGRESS.
+    // The current step ID can be read via A32NX_LOAD_AIRCRAFT_PRESET_CURRENT_ID
+    // and then use the StepDescription from './Procedures' to get the string.
 
     const [simOnGround] = useSimVar('SIM ON GROUND', 'number', 200);
     const [loadPresetVar, setLoadPresetVar] = useSimVar('L:A32NX_LOAD_AIRCRAFT_PRESET', 'number', 200);
