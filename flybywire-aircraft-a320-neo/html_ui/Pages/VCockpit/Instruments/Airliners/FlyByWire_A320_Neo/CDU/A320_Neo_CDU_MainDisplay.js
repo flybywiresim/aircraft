@@ -117,6 +117,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             AOCSentMsgs: 74,
             AOCFreeText: 75,
         };
+
+        // Handling of MCDU Sever connection attempts
+        this.socket = undefined;
+        this.socketConnectionAttempts = 0;
+        this.maxConnectionAttempts = 60;
+        this.mcduServerConnect = NXDataStore.get("CONFIG_EXTERNAL_MCDU_SERVER_ENABLED", 'AUTO ON');
+        if (this.mcduServerConnect !== 'PERM OFF') {
+            NXDataStore.set("CONFIG_EXTERNAL_MCDU_SERVER_ENABLED", 'AUTO ON');
+            this.mcduServerConnect = 'AUTO ON';
+        } else {
+            console.log("MCDU server connection attempts permanently deactivated.");
+        }
     }
 
     setupFmgcTriggers() {
@@ -292,15 +304,41 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         // The MCDU is a client to the MCDU Server and tries to connect in regular intervals.
-        // every 2500ms
+        // Due to an issue with the sim's Coherent engine we need to avoid trying
+        // to connect the websocket continuously. The below solution based on an EFB setting
+        // and a maximal number of attempts should mitigate the issue until
+        // Asobo has fixed the core issue.
         if (this.mcduServerConnectUpdateThrottler.canUpdate(_deltaTime) !== -1
-            && (!this.socket || this.socket.readyState !== 1)) {
+            && this.getGameState() === GameState.ingame) {
 
-            this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
+            // Try to connect websocket if enabled in EFB and no connection established
+            this.mcduServerConnect = NXDataStore.get("CONFIG_EXTERNAL_MCDU_SERVER_ENABLED", 'AUTO ON');
+            if (this.mcduServerConnect === 'AUTO ON' && (!this.socket || this.socket.readyState !== 1)) {
+                // We try to connect for a fixed amount of attempts, then we deactivate the connection setting
+                if (this.socketConnectionAttempts++ >= this.maxConnectionAttempts) {
+                    console.log("Maximum number of connection attempts to MCDU Server exceeded. No more attempts.");
+                    NXDataStore.set("CONFIG_EXTERNAL_MCDU_SERVER_ENABLED", 'AUTO OFF');
+                    this.socketConnectionAttempts = 0;
+                } else {
+                    console.log(`Attempting MCDU Server connection ${this.socketConnectionAttempts} of ${this.maxConnectionAttempts} attempts.`);
+                    this.connectWebsocket(NXDataStore.get("CONFIG_EXTERNAL_MCDU_PORT", "8380"));
+                }
+            } else if (this.mcduServerConnect !== 'AUTO ON') {
+                if (this.socketConnectionAttempts > 0) {
+                    console.log("MCDU server connection attempts deactivated. No more attempts.");
+                    this.socketConnectionAttempts = 0;
+                }
+                if (this.socket) {
+                    // If there is a connection established but the EFB setting has been changed
+                    // then close connection
+                    this.socket.close();
+                    this.socket = undefined;
+                }
+            }
         }
 
         // There is no (known) event when power is turned on or off (e.g. Ext Pwr) and remote clients
-        // would not be updated (cleared or updated). Therefore monitoring power is necessary.
+        // would not be updated (cleared or updated). Therefore, monitoring power is necessary.
         // every 500ms
         if (this.powerCheckUpdateThrottler.canUpdate(_deltaTime) !== -1
             && this.socket && this.socket.readyState) {
@@ -1427,12 +1465,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * Attempts to connect to a local websocket server
      */
     connectWebsocket(port) {
-        if (this.socket && this.socket.readyState) {
+
+        const url = `ws://127.0.0.1:${port}`;
+
+        if (this.socket) {
+            // Trying to close a socket in readState == 0 leads to
+            // an error message ('WebSocket is closed before the connection is established')
+            // in the console.
+            // Not closing sockets in readyState 0 leads to an accumulation of
+            // unclosed sockets
             this.socket.close();
             this.socket = undefined;
         }
-
-        const url = `ws://127.0.0.1:${port}`;
 
         this.socket = new WebSocket(url);
 
@@ -1449,6 +1493,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             (new NXNotif).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
             this.sendToSocket("mcduConnected");
             this.sendUpdate();
+            this.socketConnectionAttempts = 0;
         };
 
         this.socket.onmessage = (event) => {
