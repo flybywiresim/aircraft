@@ -10,10 +10,11 @@ type RogerButtonsProps = {
     setMessageStatus(message: number, response: CpdlcMessageResponse | undefined),
     setStatus: (sender: string, message: string) => void,
     isStatusAvailable: (sender: string) => boolean,
+    sendResponse: (message: number, response: CpdlcMessageResponse) => void,
     closeMessage: (message: number) => void
 }
 
-export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedResponse, setMessageStatus, setStatus, isStatusAvailable, closeMessage }) => {
+export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedResponse, setMessageStatus, setStatus, isStatusAvailable, sendResponse, closeMessage }) => {
     const buttonsBlocked = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending;
 
     useUpdate(() => {
@@ -47,15 +48,7 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedRes
             if (index === 'L1') {
                 setMessageStatus(message.UniqueMessageID, undefined);
             } else if (index === 'R2') {
-                let systemBusy = SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number') !== -1;
-                systemBusy = systemBusy || SimVar.GetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number') !== -1;
-
-                if (!systemBusy) {
-                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_ANSWER', 'number', selectedResponse as number);
-                    SimVar.SetSimVarValue('L:A32NX_DCDU_MSG_SEND_UID', 'number', message.UniqueMessageID);
-                } else {
-                    setStatus('Buttons', 'SYSTEM BUSY');
-                }
+                sendResponse(message.UniqueMessageID, selectedResponse as CpdlcMessageResponse);
             }
         } else if (index === 'R2') {
             closeMessage(message.UniqueMessageID);
