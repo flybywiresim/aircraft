@@ -1,4 +1,5 @@
 # Changelog
+
 <!-- ⚠⚠ Please follow the format provided ⚠⚠ -->
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
@@ -25,22 +26,28 @@
 1. [AP] improved G/S law - @aguther (Andreas Guther)
 1. [AP] Allow V/S push and pull during ALT CPT - @aguther (Andreas Guther)
 1. [AP] Soft Altitude mode uses now FMGC flight phase to detect cruise situation
-1. [MCDU] Fix GPS ground speed monitor to show ground speed in knots rather than meters/second - @donstim (donbikes#4084)
+1. [MCDU] Fix GPS ground speed monitor to show ground speed in knots rather than meters/second - @donstim (
+   donbikes#4084)
 1. [AP] Improved LOC* law - @aguther (Andreas Guther)
 1. [AP] Improved ROLL OUT law - @aguther (Andreas Guther)
-1. [ENGINE] Refactor FADEC and fuel consumption code (comments, variable nomenclature and overall clean-up) - @Taz5150 (TazX [Z+2]#0405)
+1. [ENGINE] Refactor FADEC and fuel consumption code (comments, variable nomenclature and overall clean-up) - @Taz5150 (
+   TazX [Z+2]#0405)
 1. [ARCH] Support ARINC 429 communication between aircraft components - @davidwalschots (David Walschots)
 1. [UTILS] Fix lbs to kgs units conversion to match MSFS - @donstim (donbikes#4084)
 1. [EFB] OFP supports all formats - @tracernz (Mike)
 1. [MODEL] Landing lights retract fully and independently - @tracernz (Mike)
 1. [LIGHTS] Sync Strobe/Beacon, EXT LT refactor + LDG LT behavior - @bouveng (Johan Bouveng)
 1. [AP] Improved SPD/MACH law model - @IbrahimK42 (IbrahimK42)
-1. [AP/FBW] Improved behavior in cruise when using high sim rate with roll performance - @aguther (Andreas Guther) and @IbrahimK42 (IbrahimK42)
+1. [AP/FBW] Improved behavior in cruise when using high sim rate with roll performance - @aguther (Andreas Guther) and
+   @IbrahimK42 (IbrahimK42)
 1. [PRESS] Introduce manual functionality of cabin pressurization system - @MJuhe (Miquel)
-1. [LIGHTS] Add TO/TAXI LT logic, ambience to TAXI/TO/LDG LT + min. changes to strobe/beacon/nav - @bouveng (Johan Bouveng)
-1. [FMGC] Fixed issue with TO flight phase transition when no V2 is entered and airport is near sea level - @aguther (Andreas Guther)
+1. [LIGHTS] Add TO/TAXI LT logic, ambience to TAXI/TO/LDG LT + min. changes to strobe/beacon/nav - @bouveng (Johan
+   Bouveng)
+1. [FMGC] Fixed issue with TO flight phase transition when no V2 is entered and airport is near sea level - @aguther (
+   Andreas Guther)
 1. [MISC] Fix for incrementing ISIS pressure values - @RichardPilbery (tricky_dicky#3571)
-1. [MCDU] Fix GPS ground speed on IRS status page to show ground speed in knots rather than meters/second - @donstim (donbikes#4084)
+1. [MCDU] Fix GPS ground speed on IRS status page to show ground speed in knots rather than meters/second - @donstim (
+   donbikes#4084)
 1. [MCDU] Fixed length limitation for system messages - @derl30n (Leon)
 1. [FMGC] Use correct variable to determine lateral AP mode for APPROACH phase switch - @aguther (Andreas Guther)
 1. [ENGINE] Correctly adapt fuel burn with sim rate - @aguther (Andreas Guther)
@@ -55,14 +62,16 @@
 1. [RMP] Added 25 kHz VHF spacing option - @tyler58546 (tyler58546)
 1. [MCDU] Scratchpad rewrite - @derl30n (Leon)
 1. [ATHR/ENGINE] Improved CLB thrust limit for improved FLEX N1 numbers - @aguther (Andreas Guther)
-1. [FBW] Improved roll stability in turbulence or with performance issues - @IbrahimK42 (IbrahimK42) and @aguther (Andreas Guther)
+1. [FBW] Improved roll stability in turbulence or with performance issues - @IbrahimK42 (IbrahimK42) and @aguther (
+   Andreas Guther)
 1. [MCDU] Hide POSITION UPDATE AT field on PROG page when GPS is available - @BlueberryKing (BlueberryKing)
 1. [MCDU] Sort approaches by type - @tracernz (Mike)
 1. [MODEL] Add four portholes. Two opposite the existing ones, and two above the wing. - @igor8518 (Igor Milovidov)
 1. [MODEL] Add dynamic registration decal option - @tracernz (Mike)
 1. [FCU] Autopilot button integ light brightness corrected - @tracernz (Mike)
 1. [FBW/AP/ATHR] Only enable client data section when a model runs externally - @aguther (Andreas Guther)
-1. [FBW/AP/ATHR] Added local variables to enable logging of flight controls and/or throttle events - @aguther (Andreas Guther)
+1. [FBW/AP/ATHR] Added local variables to enable logging of flight controls and/or throttle events - @aguther (Andreas
+   Guther)
 1. [AP] Fixed VMAX speed protection for several modes not working properly - @aguther (Andreas Guther)
 1. [AP] Added support for event AUTOPILOT_DISENGAGE_SET to disengage AP - @aguther (Andreas Guther)
 1. [AP] Reduced speed margin of speed protection to 5 kn - @aguther (Andreas Guther)
@@ -89,9 +98,10 @@
 1. [PFD] Added new messages and modes for TCAS - @lukecologne (lukecologne#1156)
 1. [FDR] Added additional data to the FDR - @aguther (Andreas Guther)
 1. [ATHR] Fixed ATHR being armed in flight when TOGA applied without GA condition - @aguther (Andreas Guther)
-1. [EFB] Fixed landing performance calculator clear button and wind magnitude, made small ui improvements - @ghitier (Guillaume H.)
+1. [EFB] Fixed landing performance calculator clear button and wind magnitude, made small ui improvements - @ghitier (
+   Guillaume H.)
 1. [ECAM] Fixed gross weight being shown without engines running - @BlueberryKing (BlueberryKing)
-1. [FLIGHT MODEL] Fixes co-pilot not being shown in external view -  @donstim (donbikes#4084)
+1. [FLIGHT MODEL] Fixes co-pilot not being shown in external view - @donstim (donbikes#4084)
 1. [BLEED] Replace default bleed system - @BlueberryKing (BlueberryKing)
 1. [ENGINE/ MODEL] Implement engine shutdown and realistic engine animation - @Taz5150 (TazX [Z+2]#0405)
 1. [ATSU] Use https for SimBrief - @tracernz (Mike)
@@ -105,13 +115,14 @@
 1. [LIGHTS] Add external PARK BRK LT - @bouveng (Johan Bouveng)
 1. [AP] Fixed missing HDG sync on FD/AP engagement when FD and AP have been off - @aguther (Andreas Guther)
 1. [FDR] Added additional values to help debug in some cases - @aguther (Andreas Guther)
-1. [ATHR] Added switch to use externally defined thrust limits and separated thrust limits into own model - @aguther (Andreas Guther)
+1. [ATHR] Added switch to use externally defined thrust limits and separated thrust limits into own model - @aguther (
+   Andreas Guther)
 1. [FBW] Improved sideslip controller - @IbrahimK42 (IbrahimK42)
 1. [API] DOME light switch did not move when set to "dim" via SimConnect - @pre-martin (Martin)
 1. [AP] Further improved ALT CST* and ALT CST conditions - @aguther (Andreas Guther)
 1. [MCDU] Added support for connecting MCDU to external devices - @tyler58546 (tyler58546)
 1. [ATHR] Improvement of ATHR laws - @IbrahimK42(IbrahimK42), @aguther (Andreas Guther)
-1. [MISC] Fixed flap configuration in final.flt and runway.flt files -  @donstim (donbikes#4084)
+1. [MISC] Fixed flap configuration in final.flt and runway.flt files - @donstim (donbikes#4084)
 1. [MISC] Added Home Cockpit mode to remove backlight bleed and reflections in displays - @ssewell (Shane Sewell)
 1. [EFB] Added Reset to Defaults button to EFB throttle calibration page - @frankkopp (Cdr_Maverick#6475)
 1. [HYD] Added more accurate simulation model of PTU - @Gurgel100 (Pascal)
@@ -151,7 +162,8 @@
 1. [COND] Add cabin temperature simulation and control - @mjuhe (Miquel Juhe)
 1. [COND] Improve air conditioning pack flow model - @mjuhe (Miquel Juhe)
 1. [FBW] Fix Rudder Trim Signal - @IbrahimK42 (IbrahimK42)
-1. [TCAS] Implemented traffic advisories, resolution advisories, and collision avoidance logic - @wpine215 (Iceman) @2hwk (2Cas#1022)
+1. [TCAS] Implemented traffic advisories, resolution advisories, and collision avoidance logic - @wpine215 (Iceman)
+   @2hwk (2Cas#1022)
 1. [PFD] Implemented TCAS guidance on vertical speed tape - @wpine215 (Iceman)
 1. [SOUNDS] Connected TCAS TA/RA logic to TCAS Wwise events - @wpine215 (Iceman)  @2hwk (2Cas#1022)
 1. [ENGINE] Overall improvement of thrust limits - @Taz5150 (TazX [Z+2]#0405)
@@ -166,20 +178,21 @@
 1. [SOUNDS] Use estimated landing rate for touchdown sound selection - @aguther (Andreas Guther)
 1. [ATHR] Increase spool up/down speed for THR IDLE and THR CLB to better match real plane - @aguther (Andreas Guther)
 1. [FLIGHTMODEL] Flight model improvements - @donstim (donbikes#4084)
-1. [SPEEDS] Fix GS mini not being limited by VFE-5 in CONF FULL -  @donstim (donbikes#4084)
+1. [SPEEDS] Fix GS mini not being limited by VFE-5 in CONF FULL - @donstim (donbikes#4084)
 1. [MCDU] Fix crash when clearing DIR TO waypoint - @tracernz (Mike)
 1. [HYD] Improved hydraulic valves stability - @Crocket63
 1. [ATHR] Fix Speed/Mach Idle transition in strong headwind - @IbrahimK42 (IbrahimK42)
 1. [SOUNDS] Add rain sounds in cockpit - @Mico975 (Mico)
 1. [SOUNDS] Add passenger announcements and ambience - @hotshotp (Boris)
 1. [EFB] Added setting for colored METAR in EFB weather widget - @frankkopp (Frank Kopp)
-1. [MCDU] Added button press sound to remote mcdu  - @frankkopp (Cdr_Maverick#6475)
+1. [MCDU] Added button press sound to remote mcdu - @frankkopp (Cdr_Maverick#6475)
 1. [MCDU] Improved Remote MCDU with CLR hold and light-dark mode - @frankkopp (Frank Kopp)
-1. [MCDU] Improved mcdu server command line handling  - @frankkopp (Cdr_Maverick#6475)
+1. [MCDU] Improved mcdu server command line handling - @frankkopp (Cdr_Maverick#6475)
 1. [RA] Add dual Radio Altimeter simulation - @beheh (Benedict Etzel)
 1. [HYD] Fix nose wheel position during pushback - @Crocket63
 1. [MCDU] Improved Remote MCDU communication by reducing update frequency - @frankkopp (Frank Kopp)
-1. [FLIGHTMODEL] Additional flight model improvements to better match real airplane performance data - @donstim (donbikes#4084)
+1. [FLIGHTMODEL] Additional flight model improvements to better match real airplane performance data - @donstim (
+   donbikes#4084)
 1. [FMGC] Re-implement altitude and speed constraints - @tracernz (Mike)
 1. [HYD] Smoothed nose wheel steering when pushing back - @Crocket63
 1. [EFB] Add first officer flypad - @tracernz (Mike)
@@ -205,13 +218,14 @@
 1. [FMGC] Updates flight model info for FMGC guidance - @donstim (donbikes#4084)
 1. [FLIGHTMODEL] Improved gear contact points - @donstim (donbikes#4084)
 1. [MCDU] Update Simbrief API integration with new weights and balance features - @sidnov (Sid)
+1. [EFB] EFB Setting to enable MCDU Server connection to avoid too many connection attempts - @frankkopp (Frank Kopp)
 
 ## 0.7.0
 
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
 1. [HYD] Connected hydraulics element to electrical buses. - @crocket6 (crocket)
 1. [ENGINE] Fixed fuel consumption model - @Taz5150 (TazX [Z+2]#0405)
-1. [ENGINE] Fixed fuel flow being 0 at Start-up  - @Taz5150 (TazX [Z+2]#0405)
+1. [ENGINE] Fixed fuel flow being 0 at Start-up - @Taz5150 (TazX [Z+2]#0405)
 1. [MCDU] Fixed input and display issues on PERF/W&B and INIT pages - @felixharnstrom (Felix Härnström)
 1. [MCDU] Progress page only shows GPS Primary when it should - @Username23-23 (NONAmr2433 #8777)
 1. [ND] Add VOR/ADF needles to ILS arc display - @tracernz (Mike)
@@ -219,7 +233,8 @@
 1. [ADIRS] Add on delay for ON BAT light - @tracernz (Mike)
 1. [MISC] Added 3D brake gauge - @tyler58546 (tyler58546), @DarkOfNova (DarkOfNova)
 1. [ECAM] Refactor flight control page to use React - @RichardPilbery (tricky_dicky#3571)
-1. [ELEC] The BCL commands the BAT contactor be closed when the BAT push button is moved from OFF to AUTO - @davidwalschots (David Walschots)
+1. [ELEC] The BCL commands the BAT contactor be closed when the BAT push button is moved from OFF to AUTO -
+   @davidwalschots (David Walschots)
 1. [MCDU] Implement BRG/DIST function on PROG page - @tracernz (Mike)
 1. [MCDU] Fix max page number on duplicate waypoint selection - @tracernz (Mike)
 1. [MCDU] Show max distance of 9999 NM on duplicate waypoint selection - @tracernz (Mike)
@@ -231,11 +246,14 @@
 1. [ECAM] Improved alternating of igniters - @joseph-tobin (joseph#1001)
 1. [TEXTURE] Upscaled the existing FBW livery to 8K - @FoxinTale (Aubrey)
 1. [CHECKLISTS] Added missing Fuel Pumps checkpoint - @sidnov (sidnov#8337)
-1. [ELEC] All external and internal lights are powered by the correct electrical bus. - @davidwalschots (David Walschots)
-1. [ELEC] Equipment such as wipers and display units are powered by the correct electrical bus - @davidwalschots (David Walschots)
+1. [ELEC] All external and internal lights are powered by the correct electrical bus. - @davidwalschots (David
+   Walschots)
+1. [ELEC] Equipment such as wipers and display units are powered by the correct electrical bus - @davidwalschots (David
+   Walschots)
 1. [ELEC] Button and indication lights are powered by the correct electrical bus - @davidwalschots (David Walschots)
 1. [ELEC] Engines keep running when electrical systems are lost - @davidwalschots (David Walschots)
-1. [ELEC] When turning the BAT pb to AUTO, the battery charge limiter has a 1 second startup delay - @davidwalschots (David Walschots)
+1. [ELEC] When turning the BAT pb to AUTO, the battery charge limiter has a 1 second startup delay - @davidwalschots (
+   David Walschots)
 1. [MCDU] Fixed entry of in.Hg baro settings ending in zero - @tracernz(Mike)
 1. [PFD] Reimplemented and improved PFD in react - @lukecologne (lukecologne#1156)
 1. [FBW] New custom fly-by-wire system - @aguther (Andreas Guther)
@@ -244,7 +262,8 @@
 1. [ENGINE] New engine model with custom EGT and fuel flow logic - @Taz5150 (TazX [Z+2]#0405)
 1. [FLIGHTMODEL] New flight model adapted to new engine model - @donstim (donbikes#4084)
 1. [FLIGHTMODEL] Added separated flaps position for 1 and 1+F - @donstim (donbikes#4084), @aguther (Andreas Guther)
-1. [FLIGHTMODEL] Custom spoiler logic and realistic impact on flight model - @donstim (donbikes#4084), @aguther (Andreas Guther)
+1. [FLIGHTMODEL] Custom spoiler logic and realistic impact on flight model - @donstim (donbikes#4084), @aguther (Andreas
+   Guther)
 1. [EFB] Added throttle calibration for autothrust system - @Saschl (saschl#9432)
 1. [ECAM] Add REFUELG message to upper ECAM when refuelling via fuel page on EFB - @sidnov (sidnov#8337)
 1. [EFB] Disabled LINK MCDU button on dashboard page - @ExampleWasTaken (ExampleWasTaken#0886)
@@ -266,15 +285,18 @@
 1. [FCU] Added more custom events that can be triggered via SimConnect to control the FCU - @aguther (Andreas Guther)
 1. [MISC] Autobrake can be armed via keybindings - @Saschl (saschl#9432)
 1. [FWC] Fix pushing of MASTER WARN and MASTER CAUT not disabling aural warnings - @davidwalschots (David Walschots)
-1. [ELEC] EMER ELEC PWR overhead MAN ON push button triggers emergency generator start (RAT not yet simulated) - @davidwalschots (David Walschots)
+1. [ELEC] EMER ELEC PWR overhead MAN ON push button triggers emergency generator start (RAT not yet simulated) -
+   @davidwalschots (David Walschots)
 1. [ELEC] RAT & EMER GEN fault light illuminates when applicable - @davidwalschots (David Walschots)
 1. [FBW] Realistic rudder trim deflection and reset rate - @aguther (Andreas Guther)
 1. [FBW] Elevator trim wheels no longer move when stop is reached - @aguther (Andreas Guther)
 1. [AP] Improved V/S and FPA speed protection mode - @aguther (Andreas Guther)
 1. [MISC] Seatbelt sign state can be toggled via external events - @Saschl (saschl#9432)
-1. [MISC] Standby instrument brightness buttons can now be held down rather than pressed to -/+ brightness - @2hwk (2Cas#1022)
+1. [MISC] Standby instrument brightness buttons can now be held down rather than pressed to -/+ brightness - @2hwk (
+   2Cas#1022)
 1. [AP] Fixed and improved mode transitions related to LAND modes - @aguther (Andreas Guther)
-1. [ENGINE] Adapt engine IDLE N1 based on environmental conditions - @Taz5150 (TazX [Z+2]#0405), @aguther (Andreas Guther)
+1. [ENGINE] Adapt engine IDLE N1 based on environmental conditions - @Taz5150 (TazX [Z+2]#0405), @aguther (Andreas
+   Guther)
 1. [ECAM] Added hydraulics page on SD - @RichardPilbery (tricky_dicky[Z+0]#3571)
 1. [ND] ND Waypoint Icon Size, Icon Outlines, Airplane Icon Color and Outline - @marcman86 (marcman86#4907)
 1. [ELEC] ENG FIRE push button deactivates IDG - @davidwalschots (David Walschots)
@@ -319,7 +341,8 @@
 1. [MCDU] Added clear scratchpad on CLR held down - @tracernz (Mike) and @MisterChocker (Leon)
 1. [MCDU] Fixed performance page refresh on flight phase transition - @MisterChocker (Leon)
 1. [FMGC] Added reset of fmgc variables - @MisterChocker (Leon)
-1. [ATHR] Fixed permanent A/THR disconnect (15s press) not being able to activate with 3D button on thrust levers - @aguther (Andreas Guther)
+1. [ATHR] Fixed permanent A/THR disconnect (15s press) not being able to activate with 3D button on thrust levers -
+   @aguther (Andreas Guther)
 1. [ND] TCAS symbols correctly display in 10, 20, 40nm ARC/ROSE views + bug fixes - @2hwk (2Cas#1022)
 1. [ENGINE] Cold Engine start-up model (primary parameters) - @Taz5150 (TazX [Z+2]#0405)
 1. [ATSU] Aircraft can only be fueled when on ground - @erso44 (Ersin Karakilic)
@@ -330,7 +353,8 @@
 1. [EFB] Add flypad themed simbrief maps to EFB/OFP - @bouveng (Johan Bouveng)
 1. [SOUND] Added blue and yellow electric hydraulic pump sounds - @hotshotp (Boris)
 1. [SOUND] Further improved ambience and engine sounds - @hotshotp (Boris)
-1. [ELEC] Improve electrical system implementation to allow for implementing advanced scenarios - @davidwalschots (David Walschots)
+1. [ELEC] Improve electrical system implementation to allow for implementing advanced scenarios - @davidwalschots (David
+   Walschots)
 1. [MCDU] MCDU accepts direct keyboard input (enabled by new option in A32NX Realism Settings). - @2hwk (2Cas#1022)
 1. [ISIS] Implement automatic brightness adjustment for standby instrument - @BlueberryKing (BlueberryKing#6641)
 1. [HYD] Fixed catering door movement wrongly starting the yellow elec pump - @crocket63 (crocket)
@@ -344,18 +368,23 @@
 1. [ECAM] Autoswitch ECAM pages use proper FWC phase logic - @2hwk (2Cas#1022)
 1. [HYD] Added basic LGCIU implementation with per wheel weight on wheels sensors - @Crocket63 (crocket)
 1. [MISC] Improved logic for chronometer operations - @sidnov (Sid)
-1. [DISPLAYS] Fix Self-Test no longer triggers when spawning from an in-flight state i.e. cruise/landing/takeoff on runway - @2hwk (2Cas#1022)
+1. [DISPLAYS] Fix Self-Test no longer triggers when spawning from an in-flight state i.e. cruise/landing/takeoff on
+   runway - @2hwk (2Cas#1022)
 1. [SOUND] Improved engine startup, idle sounds, and cabin wind - @hotshotp (Boris)
 1. [MODEL] Swap EFIS WPT and VOR D buttons - @tracernz (Mike)
 1. [MODEL] Fix no-smoking/no-PED switch animation - @tracernz (Mike)
 1. [DISPLAYS] Add pixelated screens - @bouveng (Johan Bouveng)
 1. [ADIRS] Simple ATT mode implementation (does not yet include HDG entry) - @davidwalschots (David Walschots)
-1. [ADIRS] The longest instead of the shortest remaining alignment time is displayed on the upper ECAM - @davidwalschots (David Walschots)
-1. [ADIRS] IR1, IR3, or IR2 can be pushed OFF to disconnect output of IR information from that particular ADIRU - @davidwalschots (David Walschots)
-1. [ADIRS] ADR1, ADR3, or ADR2 can be pushed OFF to disconnect output of ADR information from that particular ADIRU - @davidwalschots (David Walschots)
+1. [ADIRS] The longest instead of the shortest remaining alignment time is displayed on the upper ECAM -
+   @davidwalschots (David Walschots)
+1. [ADIRS] IR1, IR3, or IR2 can be pushed OFF to disconnect output of IR information from that particular ADIRU -
+   @davidwalschots (David Walschots)
+1. [ADIRS] ADR1, ADR3, or ADR2 can be pushed OFF to disconnect output of ADR information from that particular ADIRU -
+   @davidwalschots (David Walschots)
 1. [ADIRS] GPS PRIMARY LOST is only indicated when none of the IRs are aligned or ON - @davidwalschots (David Walschots)
 1. [ADIRS] Switching panel's ATT HDG and AIR DATA knobs functionality - @davidwalschots (David Walschots)
-1. [ADIRS] Upper ECAM shows IR x IN ATT ALIGN when any ADIRU is in ATT mode alignment  - @davidwalschots (David Walschots)
+1. [ADIRS] Upper ECAM shows IR x IN ATT ALIGN when any ADIRU is in ATT mode alignment - @davidwalschots (David
+   Walschots)
 1. [ADIRS] Wind, TAS, and GS indications depend on availability of IR and ADR data - @davidwalschots (David Walschots)
 1. [ADIRS] SAT, TAT, and ISA indications depend on the selected ADR (1 or 3) - @davidwalschots (David Walschots)
 1. [PRESS] First implementation of automatic pressurization system - @MJuhe (Miquel)
@@ -376,12 +405,14 @@
 1. [ECAM] Rewrite fuel page for React - @Benjozork (Benjamin Dupont) and @RichardPilbery (tricky_dicky[Z+0]#3571)
 1. [LIGHTS] Added workaround for missing lighting definitions in Asobo templates - @cloudynetwork (Peter Joseph)
 1. [MODEL] Change ECAM button lights to white - @tracernz (Mike)
-1. [GPWS] Fix "retard" callout so it plays at less than 20 ft radio altitude with autopilot off - @donstim (donbikes#4084)
+1. [GPWS] Fix "retard" callout so it plays at less than 20 ft radio altitude with autopilot off - @donstim (
+   donbikes#4084)
 1. [FADAC] Fix "fuel used. Fuel used is reset to zero when an engine is restarted on the gound. - john P Maguire#9027
 1. [SOUNDS] Replace all remaining Asobo sounds - @hotshotp (boris#8008)
 1. [SOUNDS] Implement an early version of closed vs open cockpit door sounds - @hotshotp (boris#8008)
 1. [OVHD] CVR ground test auto-resets on first engine start - @tracernz (Mike)
-1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. - @2hwk (2Cas#1022
+1. [GENERAL] Added Notification to user via popup + notification when settings change requires aircraft reload. -
+   @2hwk (2Cas#1022
 1. [ECAM] ENG oil temperature amber while below takeoff minimum - @tracernz (Mike)
 1. [MISC] Sync settings across instruments - @tracernz (Mike)
 1. [MCDU] Remove some settings from MCDU the are now in the FlyPad - @tracernz (Mike)
@@ -404,7 +435,8 @@
 1. [MCDU] Vertical slew arrows have been added on pages that can be scrolled - @tyler58546 (tyler58546)
 1. [MCDU] The "F-PLN" title has been removed from the flight plan page - @tyler58546 (tyler58546)
 1. [MCDU] The flight plan page now shows the flight number in the top left corner - @tyler58546 (tyler58546)
-1. [MCDU] The flight plan page now shows "TMPY" in the top line when displaying the temporary flight plan - @tyler58546 (tyler58546)
+1. [MCDU] The flight plan page now shows "TMPY" in the top line when displaying the temporary flight plan -
+   @tyler58546 (tyler58546)
 1. [MCDU] The "FROM" indicator on the flight plan page is now in the top line - @tyler58546 (tyler58546)
 1. [UTILS] Added speed conversions and fixed Mmo - @MisterChocker (Leon)
 1. [MISC] Fixed cockpit door button states - @ImenesFBW (Imenes)
@@ -442,19 +474,26 @@
 1. [APU] Out of range APU GEN output appears in amber - @davidwalschots (David Walschots)
 1. [APU] EGT is rounded to the nearest 5 degrees on the ECAM - @davidwalschots (David Walschots)
 1. [APU] APU is available 2 seconds after 95% N or at 99.5% N - @davidwalschots (David Walschots)
-1. [APU] APU enters cooldown mode when APU BLEED was used in the last two minutes before shutdown - @davidwalschots (David Walschots)
-1. [APU] When APU BLEED is ON and the APU isn't supplying bleed air, the overhead APU BLEED fault light turns on - @davidwalschots (David Walschots)
-1. [APU] The APU automatically shuts down when the left inner fuel tank is empty, unless unlimited fuel is on - @davidwalschots (David Walschots)
+1. [APU] APU enters cooldown mode when APU BLEED was used in the last two minutes before shutdown - @davidwalschots (
+   David Walschots)
+1. [APU] When APU BLEED is ON and the APU isn't supplying bleed air, the overhead APU BLEED fault light turns on -
+   @davidwalschots (David Walschots)
+1. [APU] The APU automatically shuts down when the left inner fuel tank is empty, unless unlimited fuel is on -
+   @davidwalschots (David Walschots)
 1. [APU] Automatic shutdown triggers FWC cautions on Upper ECAM - @davidwalschots (David Walschots)
 1. [APU] Automatic shutdown causes the APU to be shown as unavailable on SYS - @davidwalschots (David Walschots)
 1. [APU] Releasing the APU FIRE button makes the APU go into emergency shut down - @davidwalschots (David Walschots)
 1. [APU] Emergency shutdown triggers FWC cautions on Upper ECAM - @davidwalschots (David Walschots)
-1. [APU] Emergency shutdown causes the APU to be permanently shown as unavailable on SYS - @davidwalschots (David Walschots)
-1. [APU] BLEED PSI is shown when ADIRS1 on NAV, waiting for alignment is no longer necessary - @davidwalschots (David Walschots)
-1. [APU] BLEED PSI is shown as 0 when the APU bleed air valve is not open, as the pressure transducer is downstream of the valve. - @davidwalschots (David Walschots)
+1. [APU] Emergency shutdown causes the APU to be permanently shown as unavailable on SYS - @davidwalschots (David
+   Walschots)
+1. [APU] BLEED PSI is shown when ADIRS1 on NAV, waiting for alignment is no longer necessary - @davidwalschots (David
+   Walschots)
+1. [APU] BLEED PSI is shown as 0 when the APU bleed air valve is not open, as the pressure transducer is downstream of
+   the valve. - @davidwalschots (David Walschots)
 1. [GPWS] Fixed "too low terrain" warning on 2nd departure - @vkrizan (Viliam)
 1. [RMP] Separate radio management panels for each side and complete rewrite - @theomessin (Theodore Messinezis)
-1. [FLIGHTMODEL] Updated landing gear contact point values to closer match reality - @wpine215 (Iceman) and @donstim (donbikes#4084)
+1. [FLIGHTMODEL] Updated landing gear contact point values to closer match reality - @wpine215 (Iceman) and @donstim (
+   donbikes#4084)
 1. [TEXTURE] Various cockpit decal texture fixes and updates - @ImenesFBW (Imenes)
 1. [MCDU] Rework PERF TAKE OFF page - @beheh (Benedict Etzel)
 1. [SOUND] Fixed FCU knobs sounds - @ImenesFBW (Imenes)
@@ -486,7 +525,8 @@
 1. [MISC] Added brake fan button (with on and hot label) - @Inexorable95 (Inexorable)
 1. [MISC] Better brake cooling simulation (with and without brake fan) - @Inexorable95 (Inexorable)
 1. [MISC] Added registration decal - @tyler58546(tyler58546), @DarkOfNova (DarkOfNova)
-1. [OVHD] Implement even more additional overhead button/switch functionality (MASK MAN ON, EMER ELEC PWR MAN ON, Cargo smoke DISCH, etc.) - @ErickSharp (Erick Torres)
+1. [OVHD] Implement even more additional overhead button/switch functionality (MASK MAN ON, EMER ELEC PWR MAN ON, Cargo
+   smoke DISCH, etc.) - @ErickSharp (Erick Torres)
 1. [CDU] Fix ILS frequencies not autofilling - @pareil6 (pareil6)
 1. [EFB] Landing performance calculations page - @matt-winfield (TheMightyMat#0585)
 1. [LIGHTS] Improved Exterior Lights - @Snapmatics (Harry)
@@ -513,47 +553,72 @@
 1. [ELEC] When only the APU is active, it powers both AC BUS 1 and 2 - @davidwalschots (David Walschots)
 1. [ELEC] When only EXT PWR is active, it powers both AC BUS 1 and 2 - @davidwalschots (David Walschots)
 1. [ELEC] When the BUS TIE push button is OFF, GEN n can only power AC BUS n - @davidwalschots (David Walschots)
-1. [ELEC] When the BUS TIE push button is OFF, APU and EXT PWR cannot power the aircraft - @davidwalschots (David Walschots)
+1. [ELEC] When the BUS TIE push button is OFF, APU and EXT PWR cannot power the aircraft - @davidwalschots (David
+   Walschots)
 1. [ELEC] When the APU GEN push button is OFF, the APU cannot power the aircraft - @davidwalschots (David Walschots)
 1. [ELEC] When the EXT PWR push button is OFF, EXT PWR cannot power the aircraft - @davidwalschots (David Walschots)
 1. [ELEC] When the GEN n push button is OFF, GEN n cannot power the aircraft - @davidwalschots (David Walschots)
 1. [ELEC] When the IDG n push button is RELEASED, GEN n cannot power the aircraft - @davidwalschots (David Walschots)
 1. [ELEC] When AC BUS 1 is powered, it powers AC ESS BUS - @davidwalschots (David Walschots)
-1. [ELEC] When AC BUS 1 is unpowered and AC BUS 2 is powered, AC ESS BUS is automatically powered by AC BUS 2 after three seconds - @davidwalschots (David Walschots)
-1. [ELEC] When AC BUS 1 becomes powered after being unpowered, AC ESS BUS is powered by AC BUS 1 without delay - @davidwalschots (David Walschots)
-1. [ELEC] When AC ESS FEED push button is set to ALTN, AC ESS BUS is powered by AC BUS 2 without delay - @davidwalschots (David Walschots)
-1. [ELEC] In normal conditions, TR 1 supplies power to DC BUS 1, DC BAT BUS, and DC ESS BUS - @davidwalschots (David Walschots)
+1. [ELEC] When AC BUS 1 is unpowered and AC BUS 2 is powered, AC ESS BUS is automatically powered by AC BUS 2 after
+   three seconds - @davidwalschots (David Walschots)
+1. [ELEC] When AC BUS 1 becomes powered after being unpowered, AC ESS BUS is powered by AC BUS 1 without delay -
+   @davidwalschots (David Walschots)
+1. [ELEC] When AC ESS FEED push button is set to ALTN, AC ESS BUS is powered by AC BUS 2 without delay -
+   @davidwalschots (David Walschots)
+1. [ELEC] In normal conditions, TR 1 supplies power to DC BUS 1, DC BAT BUS, and DC ESS BUS - @davidwalschots (David
+   Walschots)
 1. [ELEC] In normal conditions, TR 2 supplies power to DC BUS 2 - @davidwalschots (David Walschots)
-1. [ELEC] When TR 1 is unavailable, TR 2 supplies power to DC BUS 2, DC BAT BUS, and DC BUS 1 - @davidwalschots (David Walschots)
-1. [ELEC] When TR 2 is unavailable, TR 1 supplies power to DC BUS 1, DC BAT BUS, and DC BUS 2 - @davidwalschots (David Walschots)
+1. [ELEC] When TR 1 is unavailable, TR 2 supplies power to DC BUS 2, DC BAT BUS, and DC BUS 1 - @davidwalschots (David
+   Walschots)
+1. [ELEC] When TR 2 is unavailable, TR 1 supplies power to DC BUS 1, DC BAT BUS, and DC BUS 2 - @davidwalschots (David
+   Walschots)
 1. [ELEC] When TR n is unavailable, TR ESS supplies power to DC ESS BUS - @davidwalschots (David Walschots)
 1. [ELEC] Above 100 knots, when TR 1 + 2 are unavailable, DC BAT BUS is unpowered - @davidwalschots (David Walschots)
-1. [ELEC] At or below 100 knots, when TR 1 + 2 are unavailable DC BAT BUS is powered by the batteries - @davidwalschots (David Walschots)
+1. [ELEC] At or below 100 knots, when TR 1 + 2 are unavailable DC BAT BUS is powered by the batteries -
+   @davidwalschots (David Walschots)
 1. [ELEC] In certain conditions DC ESS BUS is powered by BAT 2 - @davidwalschots (David Walschots)
-1. [ELEC] In certain conditions AC STAT INV BUS is powered by BAT 1 through the static inverter - @davidwalschots (David Walschots)
-1. [ELEC] In certain conditions AC ESS BUS is powered by BAT 1 via the static inverter - @davidwalschots (David Walschots)
-1. [ELEC] When the BAT 1 to static inverter contactor is closed, an arrow with STAT INV appears next to BAT 1 on the ECAM - @davidwalschots (David Walschots)
-1. [ELEC] Both galleys are shed when none of the main power sources (GEN 1, GEN 2, APU GEN, or EXT PWR) is powering the aircraft - @davidwalschots (David Walschots)
-1. [ELEC] The main galley is shed when the aircraft is powered by a single engine generator - @davidwalschots (David Walschots)
-1. [ELEC] The main galley is shed when the aircraft is in flight and supplied by APU GEN only - @davidwalschots (David Walschots)
-1. [ELEC] The main and secondary galley are shed when the COMMERCIAL push button is OFF - @davidwalschots (David Walschots)
-1. [ELEC] The main and secondary galley are shed when the GALY & CAB push button is OFF - @davidwalschots (David Walschots)
-1. [ELEC] When the main or secondary galley is shed GALLEY SHED is indicated on the ECAM - @davidwalschots (David Walschots)
+1. [ELEC] In certain conditions AC STAT INV BUS is powered by BAT 1 through the static inverter - @davidwalschots (David
+   Walschots)
+1. [ELEC] In certain conditions AC ESS BUS is powered by BAT 1 via the static inverter - @davidwalschots (David
+   Walschots)
+1. [ELEC] When the BAT 1 to static inverter contactor is closed, an arrow with STAT INV appears next to BAT 1 on the
+   ECAM - @davidwalschots (David Walschots)
+1. [ELEC] Both galleys are shed when none of the main power sources (GEN 1, GEN 2, APU GEN, or EXT PWR) is powering the
+   aircraft - @davidwalschots (David Walschots)
+1. [ELEC] The main galley is shed when the aircraft is powered by a single engine generator - @davidwalschots (David
+   Walschots)
+1. [ELEC] The main galley is shed when the aircraft is in flight and supplied by APU GEN only - @davidwalschots (David
+   Walschots)
+1. [ELEC] The main and secondary galley are shed when the COMMERCIAL push button is OFF - @davidwalschots (David
+   Walschots)
+1. [ELEC] The main and secondary galley are shed when the GALY & CAB push button is OFF - @davidwalschots (David
+   Walschots)
+1. [ELEC] When the main or secondary galley is shed GALLEY SHED is indicated on the ECAM - @davidwalschots (David
+   Walschots)
 1. [ELEC] The AC ESS FEED FAULT light illuminates when AC ESS BUS isn't powered - @davidwalschots (David Walschots)
 1. [ELEC] The battery voltage is equal to the ECAM indicated voltage - @davidwalschots (David Walschots)
 1. [ELEC] The legend of buses is displayed in green when powered, amber otherwise - @davidwalschots (David Walschots)
 1. [ELEC] The DC BAT BUS legend becomes amber XX when unpowered - @davidwalschots (David Walschots)
-1. [ELEC] When the BAT n push button is OFF, OFF is indicated. Otherwise the electrical parameters are displayed - @davidwalschots (David Walschots)
-1. [ELEC] When DC BAT BUS powered by batteries, the BAT to DC BAT BUS wire is displayed - @davidwalschots (David Walschots)
-1. [ELEC] Transformer rectifiers legend is white, unless V or A is amber, then it is also amber - @davidwalschots (David Walschots)
-1. [ELEC] When AC BUS 1 or AC BUS 2 are unpowered, the wires leading to TR 1 and TR 2 turn amber - @davidwalschots (David Walschots)
+1. [ELEC] When the BAT n push button is OFF, OFF is indicated. Otherwise the electrical parameters are displayed -
+   @davidwalschots (David Walschots)
+1. [ELEC] When DC BAT BUS powered by batteries, the BAT to DC BAT BUS wire is displayed - @davidwalschots (David
+   Walschots)
+1. [ELEC] Transformer rectifiers legend is white, unless V or A is amber, then it is also amber - @davidwalschots (David
+   Walschots)
+1. [ELEC] When AC BUS 1 or AC BUS 2 are unpowered, the wires leading to TR 1 and TR 2 turn amber - @davidwalschots (
+   David Walschots)
 1. [ELEC] ESS TR arrow and wire appear in green when ESS TR contactor is closed - @davidwalschots (David Walschots)
-1. [ELEC] A basic emergency generator implementation is created, but not yet usable until HYD is implemented - @davidwalschots (David Walschots)
-1. [ELEC] GEN 1 + 2 legend indicates amber OFF when the respective GEN push button is OFF - @davidwalschots (David Walschots)
+1. [ELEC] A basic emergency generator implementation is created, but not yet usable until HYD is implemented -
+   @davidwalschots (David Walschots)
+1. [ELEC] GEN 1 + 2 legend indicates amber OFF when the respective GEN push button is OFF - @davidwalschots (David
+   Walschots)
 1. [ELEC] GEN 1 + 2 indicates electrical parameters - @davidwalschots (David Walschots)
 1. [ELEC] EXT PWR indicates electrical parameters - @davidwalschots (David Walschots)
-1. [ELEC] The static inverter legend is displayed when BAT 1 supplies AC ESS through the static inverter - @davidwalschots (David Walschots)
-1. [ELEC] The static inverter box is displayed when BAT 1 supplies AC ESS through the static inverter - @davidwalschots (David Walschots)
+1. [ELEC] The static inverter legend is displayed when BAT 1 supplies AC ESS through the static inverter -
+   @davidwalschots (David Walschots)
+1. [ELEC] The static inverter box is displayed when BAT 1 supplies AC ESS through the static inverter -
+   @davidwalschots (David Walschots)
 1. [ELEC] IDG oil outlet temperature is indicated - @davidwalschots (David Walschots)
 1. [ELEC] When the IDG is disconnected, the IDG text becomes amber - @davidwalschots (David Walschots)
 1. [ELEC] When the IDG is disconnected, DISC appears in amber - @davidwalschots (David Walschots)
@@ -575,30 +640,48 @@
 1. [ELEC] The engine generator's load % is calculated and displayed on the ECAM - @davidwalschots (David Walschots)
 1. [ELEC] The static inverter consumes power from BAT 1 - @davidwalschots (David Walschots)
 1. [ELEC] The transformer rectifiers' I is calculated and displayed on the ECAM - @davidwalschots (David Walschots)
-1. [ELEC] The transformer rectifier consumes AC power from the GEN or EXT PWR source powering it - @davidwalschots (David Walschots)
+1. [ELEC] The transformer rectifier consumes AC power from the GEN or EXT PWR source powering it - @davidwalschots (
+   David Walschots)
 1. [ELEC] Realistic power consumption of the APU starter motor during APU start - @davidwalschots (David Walschots)
-1. [ELEC] APU GEN, ENG GEN, EMER GEN and EXT PWR contactor only closes when potential and frequency within normal limits - @davidwalschots (David Walschots)
+1. [ELEC] APU GEN, ENG GEN, EMER GEN and EXT PWR contactor only closes when potential and frequency within normal limits
+    - @davidwalschots (David Walschots)
 1. [ELEC] The battery charges and discharges - @davidwalschots (David Walschots)
 1. [ELEC] The battery charge/discharge rate is displayed on the ECAM - @davidwalschots (David Walschots)
-1. [ELEC] When the battery contactor is closed, and discharge I >= 1A for over 15 seconds, an amber arrow from the battery towards the DC BAT BUS is displayed - @davidwalschots (David Walschots)
-1. [ELEC] When the battery contactor is closed, and discharge I >= 1A for over 15 seconds, the I is displayed in amber - @davidwalschots (David Walschots)
-1. [ELEC] When the battery contactor is closed, and charge I >= 1A for over 15 seconds, an arrow from the DC BAT BUS to the battery is displayed - @davidwalschots (David Walschots)
-1. [ELEC] When the battery contactor is closed, and I < 1A, a line without an arrow is displayed between the battery and the DC BAT BUS - @davidwalschots (David Walschots)
-1. [ELEC] When the battery contactor is open. No line is displayed between the battery and the DC BAT BUS - @davidwalschots (David Walschots)
+1. [ELEC] When the battery contactor is closed, and discharge I >= 1A for over 15 seconds, an amber arrow from the
+   battery towards the DC BAT BUS is displayed - @davidwalschots (David Walschots)
+1. [ELEC] When the battery contactor is closed, and discharge I >= 1A for over 15 seconds, the I is displayed in amber -
+   @davidwalschots (David Walschots)
+1. [ELEC] When the battery contactor is closed, and charge I >= 1A for over 15 seconds, an arrow from the DC BAT BUS to
+   the battery is displayed - @davidwalschots (David Walschots)
+1. [ELEC] When the battery contactor is closed, and I < 1A, a line without an arrow is displayed between the battery and
+   the DC BAT BUS - @davidwalschots (David Walschots)
+1. [ELEC] When the battery contactor is open. No line is displayed between the battery and the DC BAT BUS -
+   @davidwalschots (David Walschots)
 1. [ELEC] Batteries charge each other in certain situations - @davidwalschots (David Walschots)
 1. [ELEC] DC BAT BUS legend becomes amber when its U <= 25V - @davidwalschots (David Walschots)
 1. [ELEC] Battery charge limiter (BCL) is almost fully implemented - @davidwalschots (David Walschots)
-1. [ELEC] The BCL closes the contactor when BAT U < 26.5V AND BATBUS U > 27V for 225 milliseconds or more - @davidwalschots (David Walschots)
+1. [ELEC] The BCL closes the contactor when BAT U < 26.5V AND BATBUS U > 27V for 225 milliseconds or more -
+   @davidwalschots (David Walschots)
 1. [ELEC] The BCL closes the contactor when the APU MASTER SW is ON - @davidwalschots (David Walschots)
-1. [ELEC] The BCL doesn't close/opens the contactor when in EMER ELEC (AC1 + AC2 unpowered, airspeed > 100kts), and less than 45 seconds have passed since entering EMER ELEC and emergency generator not available - @davidwalschots (David Walschots)
-1. [ELEC] The BCL doesn't close/opens the contactor when in EMER ELEC, and landing gear is not up - @davidwalschots (David Walschots)
-1. [ELEC] The BCL opens the contactor when on the ground and charge I < 4A for 10 seconds, unless APU started - @davidwalschots (David Walschots)
-1. [ELEC] The BCL opens the contactor when speed > 100 knots and charge I < 4A for 30 minutes - @davidwalschots (David Walschots)
-1. [ELEC] Following an APU start the BCL opens the contactor when charge I < 4A for 30 minutes - @davidwalschots (David Walschots)
-1. [ELEC] The BCL opens the contactor when on the ground and BAT U < 23V for 15 seconds (complete discharge protection) - @davidwalschots (David Walschots)
+1. [ELEC] The BCL doesn't close/opens the contactor when in EMER ELEC (AC1 + AC2 unpowered, airspeed > 100kts), and less
+   than 45 seconds have passed since entering EMER ELEC and emergency generator not available - @davidwalschots (David
+   Walschots)
+1. [ELEC] The BCL doesn't close/opens the contactor when in EMER ELEC, and landing gear is not up - @davidwalschots (
+   David Walschots)
+1. [ELEC] The BCL opens the contactor when on the ground and charge I < 4A for 10 seconds, unless APU started -
+   @davidwalschots (David Walschots)
+1. [ELEC] The BCL opens the contactor when speed > 100 knots and charge I < 4A for 30 minutes - @davidwalschots (David
+   Walschots)
+1. [ELEC] Following an APU start the BCL opens the contactor when charge I < 4A for 30 minutes - @davidwalschots (David
+   Walschots)
+1. [ELEC] The BCL opens the contactor when on the ground and BAT U < 23V for 15 seconds (complete discharge protection)
+    - @davidwalschots (David Walschots)
 1. [ELEC] The BCL opens the contactor on entering the EMER ELEC situation - @davidwalschots (David Walschots)
-1. [ELEC] The BCL opens the contactor when in EMER ELEC and over three minutes have passed with the APU MASTER SW in the ON position - @davidwalschots (David Walschots)
-1. [ELEC] When the battery push button is in the OFF position, the BCL is not powered. This means that any conditions which depend on external factors (such as APU start) or the timers for certain conditions are not remembered - @davidwalschots (David Walschots)
+1. [ELEC] The BCL opens the contactor when in EMER ELEC and over three minutes have passed with the APU MASTER SW in the
+   ON position - @davidwalschots (David Walschots)
+1. [ELEC] When the battery push button is in the OFF position, the BCL is not powered. This means that any conditions
+   which depend on external factors (such as APU start) or the timers for certain conditions are not remembered -
+   @davidwalschots (David Walschots)
 1. [MISC] Added functionality to the console/floor light switch - @ImenesFBW (Imenes)
 1. [EFB] Added EFB fuel page and refuel logic - @Inexorable95 (Inexorable)
 1. [MCDU] Improved Message compatibility for future features - @MisterChocker (Leon)
@@ -606,7 +689,7 @@
 1. [MCDU] Fixed waypoint deletion not showing in TMPY flight plan after SU3 - @pareil6 (pareil6)
 1. [CORE] Fixed bug in altitude constraints calculation code - @SergeySoprykin (SergeyS)
 1. [ECAM] Fixed visual error on COND page when hot air pressure valve was off - @RichardPilbery (tricky_dicky#3571)
-1. [MISC] Fixed ecam page cycling when pressing the all button  - @Saschl (saschl)
+1. [MISC] Fixed ecam page cycling when pressing the all button - @Saschl (saschl)
 1. [XPDR] Reimplemented XPDR in react, correct the XPDR code entry behavior - @lukecologne (luke)
 1. [MISC] Reimplemented BAT, rudder trim and Clock in react, add elapsed time feature to clock - @lukecologne (luke)
 1. [ND] Add VOR/ADF needles on ARC display mode - @tracernz (Mike)
@@ -621,7 +704,8 @@
 1. [RMP] Added integral illumination to RMP volume knobs - @ImenesFBW (Imenes)
 1. [RMP] Fixed ACP CALL buttons emissive behavior - @ImenesFBW (Imenes)
 1. [TEXTURE] Fixed decal clipping issues on the overhead fuel panel - @ImenesFBW (Imenes)
-1. [TEXTURE] Updated glare shield leather, flyPad holder, tray table, overhead and push-button textures - @MoreRightRudder (Mike)
+1. [TEXTURE] Updated glare shield leather, flyPad holder, tray table, overhead and push-button textures -
+   @MoreRightRudder (Mike)
 1. [MCDU] Progress page shows current flight phase - @Username23-23 (NONAmr2433 #8777)
 1. [TEXTURE] Upscaled the external airframe decals to go nicely with the upscaled livery. @FoxinTale (Aubrey)
 1. [MCDU] Scratchpad is now limited to 22 characters - @tyler58546 (tyler58546)
@@ -683,7 +767,7 @@
 1. [PFD] Added proper speed bug behaviour when outside range (approach phase) - @MisterChocker (Leon)
 1. [ECAM] Fixed thrust rating mode START in flight misbehavior - @MisterChocker (Leon)
 1. [CDU] Fixed wrong VLS calculation - @MisterChocker (Leon)
-1. [PFD] Fixed wrong managed speed calculation on approach  - @MisterChocker (Leon)
+1. [PFD] Fixed wrong managed speed calculation on approach - @MisterChocker (Leon)
 1. [ECAM] Applied FADEC power logic to thrust rating mode and value - @MisterChocker (Leon)
 1. [ECAM] Implemented thrust rating mode indication and logic - @MisterChocker (Leon)
 1. [CDU] Added actual VLS and VApp calculation - @MisterChocker (Leon)
@@ -695,26 +779,32 @@
 1. [MISC] Fixed DECEL always show up on left button only - @jokey2k (JoKeY | Markus#0001 on discord)
 1. [ECAM] Engine bleed valve closes at N2 > 50% - @RichardPilbery (Richard Pilbery)
 1. [MODEL] Spinner spiral now shows at medium blur - @lukecologne (luke)
-1. [MFD] Weather Radar now sweeps at 180 degrees, Correct masking for flight path/constr/waypoints and display elements, disabled WX/TERR ON MD in PLAN - @2hwk (2Cas#1022)
+1. [MFD] Weather Radar now sweeps at 180 degrees, Correct masking for flight path/constr/waypoints and display elements,
+   disabled WX/TERR ON MD in PLAN - @2hwk (2Cas#1022)
 1. [ECAM] Added ECAM ALL button functionality - @MikeKuijper (Mike Kuijper)
-1. [ECAM] Fix thrust lever position indicator on upper ECAM - @RichardPilbery (Richard Pilbery | tricky_dicky3571 on discord)
-1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge - @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
+1. [ECAM] Fix thrust lever position indicator on upper ECAM - @RichardPilbery (Richard Pilbery | tricky_dicky3571 on
+   discord)
+1. [ECAM] Adjusted Engine gauges so cursor extends beyond radius of gauge - @RichardPilbery (Richard Pilbery |
+   tricky_dicky#3571 on discord)
 1. [ECAM] Fix ECAM N1 engine indicator - @RichardPilbery (Richard Pilbery | tricky_dicky#3571 on discord)
 1. [LIGHTS] Added logo lights only turn on while on ground or flaps are extented - @linkeleven (linkeleven#2557)
-1. [CDU] Add basic airways support based on code from WorkingTitle team - @santii90 (Santiago Vazquez), @Lessar277 (Lessar27)
+1. [CDU] Add basic airways support based on code from WorkingTitle team - @santii90 (Santiago Vazquez), @Lessar277 (
+   Lessar27)
 1. [TEXTURES] Changed cockpit decals resolution from 1k to 2k - @FoxinTale (Aubrey)
 1. [ECAM] Fix fuel used values on CRUISE and FUEL pages - @Lessar277 (Lessar27#1112)
 1. [MISC] Add localisation files for aircraft info when using other languages than english - @pessip (Pessi Päivärinne)
 1. [ATC] Fix CLR input for squawk code - @paul92ilm (Lussion)
 1. [TEXTURES] Fixed aft overhead circuit breaker decal from 'LIGHTNING' to 'LIGHTING' (@DarkOfNova#0001)
-1. [CAMERA] Modified a couple of the default interior camera angles. - @ZigTag (Falcon#5815), @linkeleven (linkeleven#2557)
+1. [CAMERA] Modified a couple of the default interior camera angles. - @ZigTag (Falcon#5815), @linkeleven (
+   linkeleven#2557)
 1. [CDU] Fix takeoff vspeed - @linkeleven (linkeleven#2557)
 1. [ECAM] Decimal font size change - @RichardPilbery (Richard Pilbery)
 1. [CDU] Add correct UI behavior and colors for airways page - @santii90 (Santiago Vazquez)
 1. [CDU] Add ability to clear MDA/DH, add input logic for both MDA/DH - @paul92ilm (Lussion)
 1. [CHECKLISTS] Fix FD check in Taxi checklist - @Acrobot (Andrzej Pomirski)
 1. [ADIRS] Fix ADIRS lights and split into three separate units - @devsnek (devsnek#0001)
-1. [ECAM] Fixed donut and AVAIL message on N1 display. Add highlight on N2 during engine start - @RichardPilbery (Richard Pilbery)
+1. [ECAM] Fixed donut and AVAIL message on N1 display. Add highlight on N2 during engine start - @RichardPilbery (
+   Richard Pilbery)
 1. [CDU] Fix MCDU not loading when starting midair - @ThatRedMelon (Daniel Brown)
 1. [FCU] Clamp the selected altitude between 100 and 49000 - @lars-reimann (Lars Reimann)
 1. [TEXTURES] added Registry plaque and improved Textures - @Pleasure0102 (Pleasure)
@@ -722,20 +812,26 @@
 1. [CDU] Flight plan waypoints distances and times are now properly displayed and updated - @lousybyte (lousybyte)
 1. [CDU] Improved DECEL waypoint data and position - @lousybyte (lousybyte)
 1. [TEXTURES] Changed cockpit font and fixed spelling errors - @FoxinTale (Aubrey)
-1. [AUTO BRK] Fixed autobrake disarm behavior to match real life. MAX can no longer be selected when the aircraft is in the air. @geoffda (Geoff Darst)
+1. [AUTO BRK] Fixed autobrake disarm behavior to match real life. MAX can no longer be selected when the aircraft is in
+   the air. @geoffda (Geoff Darst)
 1. [FCU] Remember selected pressure mode when returning from Std mode - @lhoenig (Lukas Hoenig)
 1. [TEXTURES] upgraded to 4k Textures (pedestal,throttle unit) fixed decal texture - @Pleasure0102 (Pleasure)
 1. [PFD] Added FMAs ALT CST and ALT CST* as well as CLB magenta and DES or CLB blue - @MisterChocker (Leon)
-1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (Nistei), @Edwin B
+1. [CDU] Added CFDS display test, ATSU METAR/TAF/ATIS requests, and ATSU free text - @wpine215 (Iceman), @nistei (
+   Nistei), @Edwin B
 1. [CDU] Fixed error messages delete input - @MisterChocker (Leon)
 1. [CDU] Added input delay paging left/right and input 1-6L/1-6R - @MisterChocker (Leon)
-1. [GPWS] Completely redone GPWS logic, and improve Retard call logic, prevent multiple calls playing at once - lukecologne (luke)
+1. [GPWS] Completely redone GPWS logic, and improve Retard call logic, prevent multiple calls playing at once -
+   lukecologne (luke)
 1. [ECAM] Improve flaps/slats panel design on upper ECAM, improve flaps/slats transition logic - @paul92ilm (Lussion)
 1. [CDU] Allow inserting landing QNH in inHg - @pessip (Pessi Päivärinne)
 1. [Systems] GO-AROUND flight phase introduced
-1. [FMA] Improved and corrected FMA logic for autopilot connect/disconnect toggle during APPR mode, GO-AROUNDs, DH/MDA and other small tweaks - @antikythera288 (mrmercury#8898 on discord)
-1. [FCU] Correct behaviour of APPR and LOC buttons when connecting/disconnecting AP - @antikythera288 (mrmercury#8898 on discord)
-1. [AUTOPILOT] fully managed GO-AROUND implemented aswell as correct FD's for hand-flying the GO-AROUND (until missed approach paths are implemented, only via preselected HDG) - @antikythera288 (mrmercury#8898 on discord)
+1. [FMA] Improved and corrected FMA logic for autopilot connect/disconnect toggle during APPR mode, GO-AROUNDs, DH/MDA
+   and other small tweaks - @antikythera288 (mrmercury#8898 on discord)
+1. [FCU] Correct behaviour of APPR and LOC buttons when connecting/disconnecting AP - @antikythera288 (mrmercury#8898 on
+   discord)
+1. [AUTOPILOT] fully managed GO-AROUND implemented aswell as correct FD's for hand-flying the GO-AROUND (until missed
+   approach paths are implemented, only via preselected HDG) - @antikythera288 (mrmercury#8898 on discord)
 1. [MCDU] added fully working GO-AROUND Page - @antikythera288 (mrmercury#8898 on discord)
 1. [CDU] Fix IRS coordinates always showing N/E - @beheh (Benedict Etzel)
 1. [General] Added location reporting for the live map - @nistei (Nistei)
@@ -755,12 +851,14 @@
 1. [CDU] Fix missing preflight flight phase - @beheh (Benedict Etzel)
 1. [CDU] Fix flight phase when spawning mid-air - @beheh (Benedict Etzel)
 1. [CDU] Fixed autothrust targeting F or S speed on climb - @MisterChocker (Leon)
-1. [ND] Added altitude constraints in flight level based on the transition altitude provided in MCDU Take Off Performace @ilyeshammadi (Ilyes Hammadi)
+1. [ND] Added altitude constraints in flight level based on the transition altitude provided in MCDU Take Off Performace
+   @ilyeshammadi (Ilyes Hammadi)
 1. [CDU] Added TYPE I and TYPE II message types and handling - @MisterChocker (Leon)
 1. [ECAM] Fix cabin vertical speed unit - @MrMinimal (Tom Langwaldt)
 1. [CDU] Improved constraints recognition - @MisterChocker (Leon)
 1. [PFD] Add altitude indicator alerts @ilyeshammadi (Ilyes Hammadi)
-1. [CDU] The precomputed values for ZFW/ZFWCG are now properly updated when the weight load parameters are changed - @lousybyte (lousybyte)
+1. [CDU] The precomputed values for ZFW/ZFWCG are now properly updated when the weight load parameters are changed -
+   @lousybyte (lousybyte)
 1. [PFD] Improved speedband visuals - @MisterChocker (Leon)
 1. [ND] Add altitue constraint symbol and fix constraint circle color @ilyeshammadi (Ilyes Hammadi)
 1. [ECAM] Add COND page - @lcalaresu (Luc Calaresu), @highperformancedevelopments
@@ -808,9 +906,11 @@
 1. [PFD] Changed S and F speeds data source - @MisterChocker (Leon)
 1. [ANIMATIONS] Desynced the wiper animations - @pepperoni505 (pepperoni505), @lukecologne (luke)
 1. [CDU] Added calculation for ground speed mini - @MisterChocker (Leon)
-1. [FLIGHTMODEL] Changed rudder and vertical tail parameters for improved crosswind takeoff and landing capability - @donstim - (donbikes#4084)
+1. [FLIGHTMODEL] Changed rudder and vertical tail parameters for improved crosswind takeoff and landing capability -
+   @donstim - (donbikes#4084)
 1. [FLIGHTMODEL] Changed full landing flap deflection from 35 degrees to 40 degrees - @donstim - (donbikes#4084)
-1. [FLIGHTMODEL] Updated legacy flight model parameters for consistency with modern flight model - @donstim - (donbikes#4084)
+1. [FLIGHTMODEL] Updated legacy flight model parameters for consistency with modern flight model - @donstim - (
+   donbikes#4084)
 1. [ECAM] Adjusted flaps panel - @MisterChocker (Leon)
 1. [CDU] F-PLN page visual rework - @Lollo999 (Lorenzo Pinna)
 1. [Sound] Improved ground roll - @hotshotp (Boris)
@@ -840,7 +940,8 @@
 1. [OVHD] Fixed Battery Indicator Colour - @nathaninnes (Nathan Innes)
 1. [MISC] Removed Fuel Patch from MSFS Update 1.8.3 - @nathaninnes (Nathan Innes)
 1. [ND] Change ND Sizing - @nathaninnes (Nathan Innes)
-1. [GPWS] Added Pull Up, Sink Rate, Dont sink GPWS with Default Sounds & Added (Too low) terrain, flaps and gear without Sounds (Future PR by Boris) - @oliverpope03 (Oliver Pope)
+1. [GPWS] Added Pull Up, Sink Rate, Dont sink GPWS with Default Sounds & Added (Too low) terrain, flaps and gear without
+   Sounds (Future PR by Boris) - @oliverpope03 (Oliver Pope)
 1. [Sounds] Added new sounds for fuel pumps, flaps, ground roll and rattles, touchdowns, and wind - @hotshotp (Boris)
 1. [ND] Hide the aircraft indicator in PLAN mode while ADIRS are not aligned - @lousybyte (lousybyte)
 1. [LIGHTS] Improved Strobe, Nav and beacon lights - @lukecologne (lukecologne)
@@ -856,7 +957,8 @@
 1. [CDU] Add "Closest Airports" page - @lhoenig (Lukas Hoenig)
 1. [PFD] Fixed FD bars appearing on PFD when on the ground - @Curtis-VL (Curtis)
 1. [CDU] Added IRS Init page - @externoak (Externo)
-1. [OVHD] Implement additional overhead button/switch functionality (EMER ELEC, EVAC, air data switching, etc.) - @wpine215 (Iceman)
+1. [OVHD] Implement additional overhead button/switch functionality (EMER ELEC, EVAC, air data switching, etc.) -
+   @wpine215 (Iceman)
 1. [ECAM] Made open doors on DOOR/OXY page amber instead of green - @Benjozork (Benjamin Dupont)
 1. [PFD] Adjust vertical Flight Director offset - @veikkos (Veikko Soininen)
 1. [PFD] Fix Radio altimeter only updating every second - @lukecologne (luke)
@@ -865,14 +967,16 @@
 1. [ECAM] Overhauled WHEEL Page - @Benjozork (Benjamin Dupont)
 1. [CDU] Add approach waypoints to DCT page - @lengyc0208 (lyc)
 1. [Sounds] Added 3D emitters for all sounds - @hotshotp (Boris)
-1. [Sounds] Added sounds for Evac horn, emer cabin call, mech horn, gear extend/retract, and cargo door - @hotshotp (Boris)
+1. [Sounds] Added sounds for Evac horn, emer cabin call, mech horn, gear extend/retract, and cargo door - @hotshotp (
+   Boris)
 1. [CDU] Revised blue, green and amber colors on CDU - @lucky38i (Lucky38i)
 1. [CDU] Revised INIT A & B Page - @lucky38i (Lucky38i)
 1. [CDU] Fixed certain STARs not showing on arrivals page - @tyler58546 (tyler58546)
 1. [CHECKLISTS] Added several situations from QRH to checklists - @FBI#7771
 1. [ECAM] Fix ECAM wheel page being selected before all gears are downlocked - @lukecologne (luke)
 1. [MISC] Added standby instrument brightness adjustment and attitude reset - @2hwk (2Cas#1022 on discord)
-1. [MISC] Added standby instrument bugs page and corrected standby instrument font and behaviour on power loss - @2hwk (2Cas#1022 on discord)
+1. [MISC] Added standby instrument bugs page and corrected standby instrument font and behaviour on power loss - @2hwk (
+   2Cas#1022 on discord)
 1. [PFD] Added the ability to display metric altitudes - @lousybyte (lousybyte)
 1. [ECAM] Added messages related to anti-skid / N.W. steering being off - @Benjozork (Benjamin Dupont)
 1. [CDU] Updated HOLD Page to honeywell spec, PLAN page updated to show holds - @sepiroth887 (sepiroth887)
@@ -887,8 +991,10 @@
 1. [OVHD] Made AIR COND knobs continuous - @Benjozork (Benjamin Dupont)
 1. [DCDU] Add basic functionality and display - @Benjozork (Benjamin Dupont)
 1. [TEXTURES] Changed color of FD Panel.
-1. [MISC] New custom display font for PFD/ND/ECAM/MCDU. Overhauled formatting, CSS, and colors of ECAM pages - @wpine215 (Iceman)
-1. [TEXTURES] Fixed Speed Plaque and cleaned up texture on cockpit, some color corrections and more decals - @Pleasure0102 (Pleasure)
+1. [MISC] New custom display font for PFD/ND/ECAM/MCDU. Overhauled formatting, CSS, and colors of ECAM pages -
+   @wpine215 (Iceman)
+1. [TEXTURES] Fixed Speed Plaque and cleaned up texture on cockpit, some color corrections and more decals -
+   @Pleasure0102 (Pleasure)
 1. [TEXTURES] Changed Overhead Panel Texture (Decals, color, detail) - @Pleasure0102 (Pleasure)
 1. [LIVERY] Bundle the FlyByWire Livery with the A32NX addon - @devsnek (devsnek)
 1. [ECAM] Added cockpit door video - @Benjozork (Benjamin Dupont)
