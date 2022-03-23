@@ -1,22 +1,27 @@
 import { MathUtils } from '@shared/MathUtils';
-import { FlapConf } from './common';
+import { Common, FlapConf } from './common';
 
 export class FlightModel {
-    static Cd0 = 0.0237;
+    static Cd0 = 0.0187;
 
-    static wingSpan = 117.5;
+    static wingSpan = 117.454;
 
-    static wingArea = 1313.2;
+    static wingArea = 1319.7;
 
-    static wingEffcyFactor = 0.75;
+    static wingEffcyFactor = 0.70;
 
     static requiredAccelRateKNS = 1.33; // in knots/second
 
     static requiredAccelRateMS2 = 0.684; // in m/s^2
 
-    static gravityConstKNS = 19.069 // in knots/second
+    static gravityConstKNS = 19.0626 // in knots/second
 
-    static gravityConstMS2 = 9.81; // in m/s^2
+    static gravityConstMS2 = 9.806665; // in m/s^2
+
+    // From https://github.com/flybywiresim/a32nx/pull/6903#issuecomment-1073168320
+    static machValues: Mach[] = [0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85]
+
+    static dragCoefficientCorrections: number[] = [0, 0.0002, 0.0003, 0.0004, 0.0008, 0.0015, 0.01]
 
     /**
      * Get lift coefficient at given conditions
@@ -43,23 +48,23 @@ export class FlightModel {
      * @returns drag coefficient (Cd)
      */
     static getDragCoefficient(Cl: number, spdBrkDeflected = false, gearExtended = false, flapConf = FlapConf.CLEAN) : number {
-        // Values taken at mach 0.78
+        // Values taken at mach 0
         let baseDrag;
         switch (flapConf) {
         case FlapConf.CLEAN:
-            baseDrag = (0.0384 * Cl ** 5) - (0.1385 * Cl ** 4) + (0.1953 * Cl ** 3) - (0.0532 * Cl ** 2) - (0.0052 * Cl) + 0.0259;
+            baseDrag = (-0.1043 * Cl ** 5) + (0.2635 * Cl ** 4) - (0.2319 * Cl ** 3) + (0.1537 * Cl ** 2) - (0.0379 * Cl) + 0.0233;
             break;
         case FlapConf.CONF_1:
-            baseDrag = (0.0438 * Cl ** 5) - (0.1911 * Cl ** 4) + (0.3215 * Cl ** 3) - (0.1801 * Cl ** 2) + (0.0281 * Cl) + 0.0441;
+            baseDrag = (-0.0207 * Cl ** 5) + (0.0764 * Cl ** 4) - (0.0813 * Cl ** 3) + (0.0912 * Cl ** 2) - (0.0285 * Cl) + 0.0337;
             break;
         case FlapConf.CONF_2:
-            baseDrag = (0.0116 * Cl ** 5) - (0.0593 * Cl ** 4) + (0.1292 * Cl ** 3) - (0.0858 * Cl ** 2) + (0.0043 * Cl) + 0.0895;
+            baseDrag = (0.0066 * Cl ** 5) - (0.0271 * Cl ** 4) + (0.0615 * Cl ** 3) - (0.0187 * Cl ** 2) + (0.0035 * Cl) + 0.0538;
             break;
         case FlapConf.CONF_3:
-            baseDrag = (0.01 * Cl ** 5) - (0.0558 * Cl ** 4) + (0.1325 * Cl ** 3) - (0.1019 * Cl ** 2) + (0.0123 * Cl) + 0.1004;
+            baseDrag = (0.0768 * Cl ** 5) - (0.3979 * Cl ** 4) + (0.8252 * Cl ** 3) - (0.7951 * Cl ** 2) + (0.3851 * Cl) - 0.0107;
             break;
         case FlapConf.CONF_FULL:
-            baseDrag = (0.0014 * Cl ** 5) - (0.0097 * Cl ** 4) + (0.0369 * Cl ** 3) - (0.0222 * Cl ** 2) - (0.0201 * Cl) + 0.1534;
+            baseDrag = (0.017 * Cl ** 5) - (0.0978 * Cl ** 4) + (0.2308 * Cl ** 3) - (0.2278 * Cl ** 2) + (0.1157 * Cl) + 0.0682;
             break;
         default:
             break;
@@ -83,7 +88,37 @@ export class FlightModel {
     static getDrag(weight: number, mach: number, delta: number, spdBrkDeflected: boolean, gearExtended: boolean, flapConf: FlapConf): number {
         const Cl = this.getLiftCoefficient(weight, mach, delta);
         const Cd = this.getDragCoefficient(Cl, spdBrkDeflected, gearExtended, flapConf);
-        return 1481.4 * (mach ** 2) * delta * this.wingArea * Cd;
+        const deltaCd = this.getMachCorrection(mach, flapConf);
+
+        return 1481.4 * (mach ** 2) * delta * this.wingArea * (Cd + deltaCd);
+    }
+
+    static getMachCorrection(mach: Mach, flapConf: FlapConf): number {
+        if (flapConf !== FlapConf.CLEAN) {
+            return 0;
+        }
+
+        return this.interpolate(mach, this.machValues, this.dragCoefficientCorrections);
+    }
+
+    /**
+     * Interpolates in a list
+     * @param x The value to look up in in `xs`.
+     * @param xs The table of x values with known y values
+     * @param ys The y values corresponding to the x values in `xs`
+     */
+    static interpolate(x: number, xs: number[], ys: number[]) {
+        if (x <= xs[0]) {
+            return ys[0];
+        }
+
+        for (let i = 0; i < xs.length - 1; i++) {
+            if (x > xs[i] && x <= xs[i + 1]) {
+                return Common.interpolate(x, xs[i], xs[i + 1], ys[i], ys[i + 1]);
+            }
+        }
+
+        return ys[ys.length - 1];
     }
 
     // NEW
