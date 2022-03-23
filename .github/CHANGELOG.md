@@ -218,7 +218,7 @@
 1. [FMGC] Updates flight model info for FMGC guidance - @donstim (donbikes#4084)
 1. [FLIGHTMODEL] Improved gear contact points - @donstim (donbikes#4084)
 1. [MCDU] Update Simbrief API integration with new weights and balance features - @sidnov (Sid)
-1. [MCDU] EFB Setting to enable MCDU Server connection to avoid too many connection attempts - @frankkopp (Frank Kopp)
+1. [EFB] EFB Setting to enable MCDU Server connection to avoid too many connection attempts - @frankkopp (Frank Kopp)
 
 ## 0.7.0
 
