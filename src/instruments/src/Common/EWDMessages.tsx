@@ -11,7 +11,7 @@ const EWDMessages = {
     '000001010': '    \x1b<3mFLAPS T.O',
     '000001011': '    \x1b<3mT.O CONFIG\x1b<5m..TEST',
     '000001012': '    \x1b<3mT.O CONFIG NORMAL',
-    '000002001': '\x1b<3m\x1b4mLDG\x1bm LDG DEAR\x1b<5m......DN',
+    '000002001': '\x1b<3m\x1b4mLDG\x1bm LDG GEAR\x1b<5m......DN',
     '000002002': '\x1b<3m\x1b4mLDG\x1bm LDG GEAR DN',
     '000002003': '    \x1b<3mSIGNS\x1b<5m.........ON',
     '000002004': '    \x1b<3mSIGNS ON',
