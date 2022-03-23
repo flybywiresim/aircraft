@@ -928,6 +928,10 @@
         "bin": "./decal-logo-front/decal-logo-front.bin"
       },
       {
+        "gltf": "./bandit-extras/bandit_window_extras.gltf",
+        "bin": "./bandit-extras/bandit_window_extras.bin"
+      },
+      {
         "combineFiles": ["./a320-exterior/A320_NEO_LOD00.gltf"],
         "nodes": [
           {
