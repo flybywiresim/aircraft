@@ -29,6 +29,23 @@ declare global {
     type Millibar = number;
     type PressurePerSquareInch = number;
 
+    interface Window {
+        /**
+         * Present if the instrument is running in [ACE](https://github.com/flybywiresim/ace)
+         */
+        ACE_ENGINE_HANDLE: object | undefined
+
+        /**
+         * `true` if `window.ACE_ENGINE_HANDLE` is present and the instrument is using (but is not necessarily connected to) a remote bridge
+         */
+        ACE_IS_REMOTE: boolean | undefined
+        
+        /**
+         * `true` if `window.ACE_ENGINE_HANDLE` is present and `window.ACE_IS_REMOTE` is `true` and the instrument is connected to the sim through a remote bridge
+         */
+        ACE_REMOTE_IS_CONNECTED: boolean | undefined
+    }
+
     namespace Fmgc {
         const FlightPhaseManager: typeof FlightPhaseManager_
     }

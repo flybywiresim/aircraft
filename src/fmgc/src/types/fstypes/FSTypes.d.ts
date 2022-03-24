@@ -11,6 +11,7 @@ import {
     FrequencyType,
     LegType,
     NdbType,
+    RnavTypeFlags,
     RouteType,
     RunwayDesignatorChar,
     RunwayLighting,
@@ -63,7 +64,7 @@ declare global {
         altitude2: number;
         */
 
-        legAltitudeDescription: number;
+        legAltitudeDescription: AltitudeDescriptor;
 
         legAltitude1: number;
 
@@ -195,14 +196,19 @@ declare global {
     }
 
     interface RawApproach {
+        approachSuffix: string;
+        approachType: ApproachType;
         finalLegs: RawProcedureLeg[];
         // unknown/empty
         icaos: Array<string>;
         missedLegs: RawProcedureLeg[];
         // "(VOR|ILS|LOC|RNAV|...) [0-9]{2} ([A-Z])?"
         name: string;
+        rnavTypeFlags: RnavTypeFlags;
         // 3 digits [0-9]{2}[LCR]
         runway: string;
+        runwayDesignator: RunwayDesignatorChar;
+        runwayNumber: number;
         transitions: RawApproachTransition[];
         __Type: 'JS_Approach';
     }
