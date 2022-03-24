@@ -3992,16 +3992,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._atc1Frequency = _frq;
     }
 
-    updateZfwVars() {
-        const totalWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kilograms") / 1000;
-        const blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
-        this.zeroFuelWeight = totalWeight - blockFuel;
-        this.zeroFuelWeightMassCenter = getZfwcg().toFixed(1);
-    }
-
     updateFuelVars() {
         this.blockFuel = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * SimVar.GetSimVarValue("FUEL WEIGHT PER GALLON", "kilograms") / 1000;
-        this.updateZfwVars();
     }
 
     trySetFlapsTHS(s) {

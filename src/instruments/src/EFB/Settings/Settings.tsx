@@ -244,6 +244,7 @@ const SimOptionsPage = () => {
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
     const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8380');
+    const [mcduServerEnabled, setMcduServerEnabled] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_SERVER_ENABLED', 'AUTO ON');
     const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
 
@@ -262,6 +263,12 @@ const SimOptionsPage = () => {
         { name: 'Auto', setting: 'AUTO' },
         { name: 'in Hg', setting: 'IN HG' },
         { name: 'hPa', setting: 'HPA' },
+    ];
+
+    const mcduServerMode: ButtonType[] = [
+        { name: 'Auto On', setting: 'AUTO ON' },
+        { name: 'Auto Off', setting: 'AUTO OFF' },
+        { name: 'Perm Off', setting: 'PERM OFF' },
     ];
 
     useEffect(() => {
@@ -333,6 +340,23 @@ const SimOptionsPage = () => {
                                 setMcduServerPort(event);
                             }}
                         />
+                    </div>
+
+                    <div className="py-4 flex flex-row justify-between items-center">
+                        <span>
+                            <span className="text-lg text-gray-300">Enable MCDU Server Connection (Auto On deactivates after 5 minutes if no successful connection)</span>
+                        </span>
+                        <SelectGroup>
+                            {mcduServerMode.map((button) => (
+                                <SelectItem
+                                    enabled
+                                    onSelect={() => setMcduServerEnabled(button.setting)}
+                                    selected={mcduServerEnabled === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
                     </div>
 
                     <div className="py-4 flex flex-row justify-between items-center">
