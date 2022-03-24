@@ -23,7 +23,7 @@
  */
 
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
-import { AltitudeDescriptor, LegType, TurnDirection } from '../types/fstypes/FSEnums';
+import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
 import { FlightPlanSegment, SegmentType } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
 import { RawDataMapper } from './RawDataMapper';
@@ -1043,11 +1043,11 @@ export class ManagedFlightPlan {
         const legs = [];
         const missedLegs = [];
         const destination = this.destinationAirfield;
+        this.procedureDetails.approachType = undefined;
 
         const { approachIndex } = this.procedureDetails;
         const { approachTransitionIndex } = this.procedureDetails;
         const { destinationRunwayIndex } = this.procedureDetails;
-        const { destinationRunwayExtension } = this.procedureDetails;
 
         const destinationInfo = destination.infos as AirportInfo;
 
@@ -1058,6 +1058,7 @@ export class ManagedFlightPlan {
         }
 
         if (approachIndex !== -1) {
+            this.procedureDetails.approachType = destinationInfo.approaches[approachIndex].approachType;
             legs.push(...destinationInfo.approaches[approachIndex].finalLegs);
             missedLegs.push(...destinationInfo.approaches[approachIndex].missedLegs);
         }
@@ -1081,7 +1082,7 @@ export class ManagedFlightPlan {
 
             const runway: OneWayRunway | null = this.getDestinationRunway();
 
-            const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument);
+            const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument, this.procedureDetails.approachType);
 
             if (runway) {
                 procedure.calculateApproachData(runway);
@@ -1462,5 +1463,23 @@ export class ManagedFlightPlan {
 
     get manualHoldActive(): boolean {
         return this.waypoints[this.activeWaypointIndex]?.additionalData?.legType === LegType.HM;
+    }
+
+    get glideslopeIntercept(): number | undefined {
+        const appr = this.getSegment(SegmentType.Approach);
+        for (const wp of appr.waypoints) {
+            if (wp.additionalData.fixTypeFlags & FixTypeFlags.FAF && (wp.legAltitudeDescription === AltitudeDescriptor.G || wp.legAltitudeDescription === AltitudeDescriptor.H)) {
+                return wp.legAltitude1;
+            }
+        }
+    }
+
+    get destinationIndex(): number {
+        const appr = this.getSegment(SegmentType.Approach);
+        const index = appr.offset + appr.waypoints.length;
+        if (this.destinationAirfield) {
+            return index + 1;
+        }
+        return -1;
     }
 }
