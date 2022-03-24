@@ -944,6 +944,21 @@ impl A320GearFactory {
     }
 }
 
+struct A320GearSystemFactory {}
+impl A320GearSystemFactory {
+    fn a320_gear_system(context: &mut InitContext) -> HydraulicGearSystem {
+        HydraulicGearSystem::new(
+            context,
+            A320GearDoorFactory::a320_gear_door_assembly(GearWheel::CENTER),
+            A320GearDoorFactory::a320_gear_door_assembly(GearWheel::LEFT),
+            A320GearDoorFactory::a320_gear_door_assembly(GearWheel::RIGHT),
+            A320GearFactory::a320_gear_assembly(GearWheel::CENTER),
+            A320GearFactory::a320_gear_assembly(GearWheel::LEFT),
+            A320GearFactory::a320_gear_assembly(GearWheel::RIGHT),
+        )
+    }
+}
+
 pub(super) struct A320Hydraulic {
     hyd_ptu_ecam_memo_id: VariableIdentifier,
     ptu_high_pitch_sound_id: VariableIdentifier,
@@ -1012,8 +1027,8 @@ pub(super) struct A320Hydraulic {
     left_spoilers: SpoilerGroup,
     right_spoilers: SpoilerGroup,
 
-    gear_gravity_extension: A320GravityExtension,
-    gear_system_safety_valve_controller: A320BrakeValvesController,
+    gear_system_gravity_extension_controller: A320GravityExtension,
+    gear_system_hydraulic_controller: A320GearHydraulicController,
     gear_system: HydraulicGearSystem,
 }
 impl A320Hydraulic {
@@ -1240,19 +1255,11 @@ impl A320Hydraulic {
                 ActuatorSide::Right,
             ),
 
-            gear_gravity_extension: A320GravityExtension::new(context),
+            gear_system_gravity_extension_controller: A320GravityExtension::new(context),
 
-            gear_system_safety_valve_controller: A320BrakeValvesController::new(),
+            gear_system_hydraulic_controller: A320GearHydraulicController::new(),
 
-            gear_system: HydraulicGearSystem::new(
-                context,
-                A320GearDoorFactory::a320_gear_door_assembly(GearWheel::CENTER),
-                A320GearDoorFactory::a320_gear_door_assembly(GearWheel::LEFT),
-                A320GearDoorFactory::a320_gear_door_assembly(GearWheel::RIGHT),
-                A320GearFactory::a320_gear_assembly(GearWheel::CENTER),
-                A320GearFactory::a320_gear_assembly(GearWheel::LEFT),
-                A320GearFactory::a320_gear_assembly(GearWheel::RIGHT),
-            ),
+            gear_system: A320GearSystemFactory::a320_gear_system(context),
         }
     }
 
@@ -1454,7 +1461,7 @@ impl A320Hydraulic {
 
         self.gear_system.update(
             context,
-            &self.gear_system_safety_valve_controller,
+            &self.gear_system_hydraulic_controller,
             lgciu1,
             self.green_circuit.system_pressure(),
         );
@@ -1504,13 +1511,14 @@ impl A320Hydraulic {
             emergency_elec,
         );
 
-        self.gear_gravity_extension.update(context);
+        self.gear_system_gravity_extension_controller
+            .update(context);
 
-        self.gear_system_safety_valve_controller.update(
+        self.gear_system_hydraulic_controller.update(
             adirs,
             lgciu1,
             lgciu2,
-            &self.gear_gravity_extension,
+            &self.gear_system_gravity_extension_controller,
         );
     }
 
@@ -2011,7 +2019,8 @@ impl SimulationElement for A320Hydraulic {
         self.left_spoilers.accept(visitor);
         self.right_spoilers.accept(visitor);
 
-        self.gear_gravity_extension.accept(visitor);
+        self.gear_system_gravity_extension_controller
+            .accept(visitor);
         self.gear_system.accept(visitor);
 
         visitor.visit(self);
@@ -2039,14 +2048,14 @@ impl HydraulicGeneratorControlUnit for A320Hydraulic {
     }
 }
 
-struct A320BrakeValvesController {
+struct A320GearHydraulicController {
     safety_valve_should_open: bool,
     cutoff_valve_should_open: bool,
     vent_valves_should_open: bool,
     doors_uplock_mechanical_release: bool,
     gears_uplock_mechanical_release: bool,
 }
-impl A320BrakeValvesController {
+impl A320GearHydraulicController {
     fn new() -> Self {
         Self {
             safety_valve_should_open: true,
@@ -2106,7 +2115,7 @@ impl A320BrakeValvesController {
             (speed_condition || on_ground_condition) && self_maintained_gear_lever_condition;
     }
 }
-impl GearSystemController for A320BrakeValvesController {
+impl GearSystemController for A320GearHydraulicController {
     fn safety_valve_should_open(&self) -> bool {
         self.safety_valve_should_open
     }
@@ -5634,7 +5643,7 @@ mod tests {
             fn get_emergency_handle_number_of_turns(&self) -> u8 {
                 self.query(|a| {
                     a.hydraulics
-                        .gear_gravity_extension
+                        .gear_system_gravity_extension_controller
                         .extension_handle_number_of_turns()
                 })
             }
