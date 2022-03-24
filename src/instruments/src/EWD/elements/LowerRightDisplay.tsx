@@ -1,11 +1,11 @@
-import FormattedFwcText from '@instruments/common/EWDMessageParser';
+import EWDMessageParser from '@instruments/common/EWDMessageParser';
 import EWDMessages from '@instruments/common/EWDMessages';
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 
 const padEWDCode = (code: number) => code.toString().padStart(9, '0');
 
-interface LowerRightDisplayProps {
+type LowerRightDisplayProps = {
     x: number,
     y: number,
 }
@@ -31,7 +31,7 @@ export const LowerRightDisplay: React.FC<LowerRightDisplayProps> = ({ x, y }) =>
     return (
         <g id="LowerRightDisplay">
 
-            <FormattedFwcText x={x} y={y} message={message} />
+            <EWDMessageParser x={x} y={y} message={message} />
 
         </g>
     );

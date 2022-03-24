@@ -48,6 +48,10 @@ const ecamPages = [
         name: 'press-page',
         path: 'SD/Pages/Press',
     },
+    {
+        name: 'bleed-page',
+        path: 'SD/Pages/Bleed',
+    },
 ];
 
 export function getInputs() {

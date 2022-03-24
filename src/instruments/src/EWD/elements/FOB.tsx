@@ -1,12 +1,12 @@
 import { useSimVar } from '@instruments/common/simVars';
-import { fuelForDisplay } from '@instruments/common/fuel';
+import { fuelForDisplay } from '@instruments/common/FuelFunctions';
 import React from 'react';
 
-interface FOBProps {
+type FOBProps = {
     unit: string,
     x: number,
     y: number,
-}
+};
 
 const FOB: React.FC<FOBProps> = ({ unit, x, y }) => {
     const [fob] = useSimVar('FUEL TOTAL QUANTITY WEIGHT', 'kg', 1000);
