@@ -86,6 +86,10 @@
       {
         "gltf": "./master-warn/master-warn.gltf",
         "bin": "./master-warn/master-warn.bin"
+      },
+      {
+        "gltf": "./glass/glass.gltf",
+        "bin": "./glass/glass.bin"
       }
     ],
     "modifications": [
@@ -31930,8 +31934,7 @@
           "x0_WHEEL_RIGHT_vertices#0_TEXCOORD_0",
           "x0_WHEEL_RIGHT_vertices#0_TEXCOORD_1"
         ],
-        "data":
-        [
+        "data": [
           [0.2421875, 0.84033203125],
           [0.263916015625, 0.84033203125],
           [0.263916015625, 0.83349609375],

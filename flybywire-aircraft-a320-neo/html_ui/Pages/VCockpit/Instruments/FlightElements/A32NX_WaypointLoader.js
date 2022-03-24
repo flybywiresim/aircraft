@@ -148,11 +148,21 @@ class FacilityLoader {
             case 'V':
                 return Promise.all([queueRawLoad('LOAD_VOR', icao, 'V'), queueRawLoad('LOAD_INTERSECTION', icao, 'W')])
                     .then(facilities => {
-                        return Object.assign(facilities[0], facilities[1]);
+                        if (facilities[1]) {
+                            return Object.assign(facilities[0], facilities[1]);
+                        }
+                        console.warn('Missing insersection data', facilities[0]);
+                        return facilities[0];
                     });
             case 'N':
                 return Promise.all([queueRawLoad('LOAD_NDB', icao, 'N'), queueRawLoad('LOAD_INTERSECTION', icao, 'W')])
-                    .then(facilities => Object.assign(facilities[0], facilities[1]));
+                    .then(facilities => {
+                        if (facilities[1]) {
+                            Object.assign(facilities[0], facilities[1]);
+                        }
+                        console.warn('Missing insersection data', facilities[0]);
+                        return facilities[0];
+                    });
         }
 
     }
