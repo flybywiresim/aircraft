@@ -1353,7 +1353,7 @@ const PseudoFWC: React.FC = () => {
     /* TO CONFIG */
 
     useEffect(() => {
-        if (tomemo === 1) {
+        if (tomemo === 1 && toconfigBtn === 1) {
             // TODO Note that fuel tank low pressure and gravity feed warnings are not included
             let systemStatus = false;
             if (engine1Generator && engine2Generator && !greenLP && !yellowLP && !blueLP && eng1pumpPBisAuto && eng2pumpPBisAuto) {
