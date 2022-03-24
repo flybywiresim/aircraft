@@ -10,7 +10,7 @@ use super::linear_actuator::{
     Actuator, HydraulicAssemblyController, HydraulicLinearActuatorAssembly, LinearActuatorMode,
 };
 
-use uom::si::{f64::*, pressure::psi, ratio::ratio, volume_rate::gallon_per_second};
+use uom::si::{f64::*, pressure::psi, ratio::ratio};
 
 use std::time::Duration;
 
@@ -255,7 +255,7 @@ pub struct GearSystemStateMachine {
     gears_state: GearsSystemState,
 }
 impl GearSystemStateMachine {
-    pub fn new() -> Self {
+    pub fn default() -> Self {
         Self {
             gears_state: GearsSystemState::AllDownLocked,
         }
@@ -635,7 +635,7 @@ impl HydraulicLock {
 #[derive(PartialEq, Clone, Copy)]
 enum HydraulicValveType {
     ClosedWhenOff,
-    OpenedWhenOff,
+    _OpenedWhenOff,
     Mechanical,
 }
 
@@ -677,7 +677,7 @@ impl HydraulicValve {
 
     fn actual_target_position_from_valve_type(&self, commanded_open: bool) -> Ratio {
         match self.valve_type {
-            HydraulicValveType::OpenedWhenOff => {
+            HydraulicValveType::_OpenedWhenOff => {
                 if !commanded_open && self.is_powered {
                     Ratio::new::<ratio>(0.)
                 } else {
@@ -758,7 +758,7 @@ mod tests {
     };
     use crate::shared::update_iterator::MaxStepLoop;
 
-    use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
+    use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement, UpdateContext};
 
     impl SimulationElement for ProximityDetector {}

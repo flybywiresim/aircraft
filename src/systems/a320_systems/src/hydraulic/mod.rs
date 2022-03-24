@@ -2786,7 +2786,7 @@ impl BrakeCircuitController for A320BrakeSystemOutputs {
 
 struct A320HydraulicBrakeSteerComputerUnit {
     park_brake_lever_pos_id: VariableIdentifier,
-    gear_handle_position_id: VariableIdentifier,
+
     antiskid_brakes_active_id: VariableIdentifier,
     left_brake_pedal_input_id: VariableIdentifier,
     right_brake_pedal_input_id: VariableIdentifier,
@@ -2800,7 +2800,7 @@ struct A320HydraulicBrakeSteerComputerUnit {
 
     autobrake_controller: A320AutobrakeController,
     parking_brake_demand: bool,
-    is_gear_lever_down: bool,
+
     left_brake_pilot_input: Ratio,
     right_brake_pilot_input: Ratio,
 
@@ -2860,7 +2860,6 @@ impl A320HydraulicBrakeSteerComputerUnit {
     fn new(context: &mut InitContext) -> Self {
         Self {
             park_brake_lever_pos_id: context.get_identifier("PARK_BRAKE_LEVER_POS".to_owned()),
-            gear_handle_position_id: context.get_identifier("GEAR HANDLE POSITION".to_owned()),
             antiskid_brakes_active_id: context.get_identifier("ANTISKID BRAKES ACTIVE".to_owned()),
             left_brake_pedal_input_id: context.get_identifier("LEFT_BRAKE_PEDAL_INPUT".to_owned()),
             right_brake_pedal_input_id: context
@@ -2876,9 +2875,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
 
             autobrake_controller: A320AutobrakeController::new(context),
 
-            // Position of parking brake lever
             parking_brake_demand: true,
-            is_gear_lever_down: true,
             left_brake_pilot_input: Ratio::new::<ratio>(0.0),
             right_brake_pilot_input: Ratio::new::<ratio>(0.0),
             norm_brake_outputs: A320BrakeSystemOutputs::new(),
@@ -2994,12 +2991,10 @@ impl A320HydraulicBrakeSteerComputerUnit {
 
         let is_in_flight_gear_lever_up = !(lgciu1.left_and_right_gear_compressed(true)
             || lgciu2.left_and_right_gear_compressed(true)
-            || self.is_gear_lever_down);
+            || lgciu1.gear_handle_is_down());
 
-        self.should_disable_auto_brake_when_retracting.update(
-            context,
-            !lgciu1.all_down_and_locked() && !self.is_gear_lever_down,
-        );
+        self.should_disable_auto_brake_when_retracting
+            .update(context, is_in_flight_gear_lever_up);
 
         if is_in_flight_gear_lever_up {
             if self.should_disable_auto_brake_when_retracting.output() {
@@ -3125,7 +3120,7 @@ impl SimulationElement for A320HydraulicBrakeSteerComputerUnit {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.parking_brake_demand = reader.read(&self.park_brake_lever_pos_id);
-        self.is_gear_lever_down = reader.read(&self.gear_handle_position_id);
+
         self.anti_skid_activated = reader.read(&self.antiskid_brakes_active_id);
         self.left_brake_pilot_input =
             Ratio::new::<percent>(reader.read(&self.left_brake_pedal_input_id));
@@ -9480,19 +9475,12 @@ mod tests {
 
             assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
 
-            for _ in 0..20 {
-                test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(1.));
-                println!("GEAR STATE {:?}", test_bed.gear_system_state());
-            }
-
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(25.));
             assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
 
-            test_bed = test_bed.set_gear_lever_down();
-            for _ in 0..20 {
-                test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(1.));
-                println!("GEAR STATE {:?}", test_bed.gear_system_state());
-            }
-
+            test_bed = test_bed
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(25.));
             assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
         }
 
@@ -9538,7 +9526,7 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
-                .run_waiting_for(Duration::from_secs_f64(20.));
+                .run_waiting_for(Duration::from_secs_f64(25.));
 
             assert!(test_bed.is_all_doors_really_up());
             assert!(test_bed.is_all_gears_really_up());
@@ -9547,7 +9535,7 @@ mod tests {
                 .set_green_ed_pump(false)
                 .set_ptu_state(false)
                 .turn_emergency_gear_extension_n_turns(3)
-                .run_waiting_for(Duration::from_secs_f64(30.));
+                .run_waiting_for(Duration::from_secs_f64(35.));
 
             assert!(test_bed.is_all_doors_really_down());
             assert!(test_bed.is_all_gears_really_down());

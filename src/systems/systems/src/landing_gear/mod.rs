@@ -513,7 +513,7 @@ impl LandingGearControlInterfaceUnit {
             external_power_available: false,
 
             sensor_inputs: LgciuSensorInputs::new(context, number),
-            gear_system_control: GearSystemStateMachine::new(),
+            gear_system_control: GearSystemStateMachine::default(),
             is_gear_lever_down: true,
         }
     }
@@ -650,20 +650,8 @@ impl LgciuGearControl for LandingGearControlInterfaceUnit {
     fn should_open_doors(&self) -> bool {
         match self.gear_system_control.state() {
             GearsSystemState::AllUpLocked => false,
-            GearsSystemState::Retracting => {
-                if !self.all_up_and_locked() {
-                    true
-                } else {
-                    false
-                }
-            }
-            GearsSystemState::Extending => {
-                if !self.all_down_and_locked() {
-                    true
-                } else {
-                    false
-                }
-            }
+            GearsSystemState::Retracting => !self.all_up_and_locked(),
+            GearsSystemState::Extending => !self.all_down_and_locked(),
             GearsSystemState::AllDownLocked => false,
         }
     }
@@ -671,20 +659,8 @@ impl LgciuGearControl for LandingGearControlInterfaceUnit {
     fn should_extend_gears(&self) -> bool {
         match self.gear_system_control.state() {
             GearsSystemState::AllUpLocked => false,
-            GearsSystemState::Retracting => {
-                if self.all_fully_opened() || self.all_up_and_locked() {
-                    false
-                } else {
-                    true
-                }
-            }
-            GearsSystemState::Extending => {
-                if self.all_fully_opened() || self.all_down_and_locked() {
-                    true
-                } else {
-                    false
-                }
-            }
+            GearsSystemState::Retracting => !(self.all_fully_opened() || self.all_up_and_locked()),
+            GearsSystemState::Extending => self.all_fully_opened() || self.all_down_and_locked(),
             GearsSystemState::AllDownLocked => true,
         }
     }
@@ -696,8 +672,9 @@ impl LandingGearHandle for LandingGearControlInterfaceUnit {
 
     fn gear_handle_baulk_locked(&self) -> bool {
         // Unpowered lgciu will lock mechanism
-        !self.is_powered
-            || !(self.left_and_right_gear_extended(false) && self.nose_gear_extended(false))
+        !(self.is_powered
+            && self.left_and_right_gear_extended(false)
+            && self.nose_gear_extended(false))
     }
 }
 
@@ -719,7 +696,7 @@ mod tests {
     use crate::electrical::{test::TestElectricitySource, ElectricalBus, Electricity};
     use crate::shared::PotentialOrigin;
 
-    use uom::si::{electric_potential::volt, f64::*};
+    use uom::si::electric_potential::volt;
 
     struct TestGearSystem {
         door_position: u8,

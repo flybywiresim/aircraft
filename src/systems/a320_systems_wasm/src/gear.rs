@@ -4,8 +4,8 @@ use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 
 use systems_wasm::aspects::{
-    EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, VariableToEventMapping,
-    VariableToEventWriteOn, VariablesToObject,
+    EventToVariableMapping, MsfsAspectBuilder, VariableToEventMapping, VariableToEventWriteOn,
+    VariablesToObject,
 };
 use systems_wasm::{set_data_on_sim_object, Variable};
 
@@ -46,14 +46,6 @@ pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>
         Variable::aspect("GEAR_LEVER_POSITION_REQUEST"),
         |options| options.mask(),
     )?;
-
-    // // Get final gear handle position from systems back to the sim
-    // builder.map(
-    //     ExecuteOn::PostTick,
-    //     Variable::aspect("GEAR_HANDLE_POSITION"),
-    //     |value| value,
-    //     Variable::named("FINAL_GEAR_HANDLE_POSITION"),
-    // );
 
     // Feedback the gear event to the sim
     builder.variable_to_event_id(

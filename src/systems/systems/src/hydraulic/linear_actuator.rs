@@ -717,6 +717,7 @@ impl LinearActuator {
         self.core_hydraulics.force()
     }
 
+    #[cfg(test)]
     fn signed_flow(&self) -> VolumeRate {
         self.signed_flow
     }
