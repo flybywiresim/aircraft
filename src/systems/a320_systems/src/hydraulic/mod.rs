@@ -1659,23 +1659,9 @@ impl A320Hydraulic {
         self.green_circuit
             .update_actuator_volumes(self.right_spoilers.actuator(4));
 
-        self.green_circuit
-            .update_actuator_volumes(self.gear_system.nose_door_actuator());
-
-        self.green_circuit
-            .update_actuator_volumes(self.gear_system.left_door_actuator());
-
-        self.green_circuit
-            .update_actuator_volumes(self.gear_system.right_door_actuator());
-
-        self.green_circuit
-            .update_actuator_volumes(self.gear_system.nose_gear_actuator());
-
-        self.green_circuit
-            .update_actuator_volumes(self.gear_system.left_gear_actuator());
-
-        self.green_circuit
-            .update_actuator_volumes(self.gear_system.right_gear_actuator());
+        for actuator in self.gear_system.all_actuators() {
+            self.green_circuit.update_actuator_volumes(actuator);
+        }
     }
 
     fn update_yellow_actuators_volume(&mut self) {
@@ -5944,6 +5930,12 @@ mod tests {
                     && self.get_real_gear_position(GearWheel::RIGHT) <= 0.
             }
 
+            fn is_all_gears_really_down(&mut self) -> bool {
+                self.get_real_gear_position(GearWheel::CENTER) >= 1.
+                    && self.get_real_gear_position(GearWheel::LEFT) >= 1.
+                    && self.get_real_gear_position(GearWheel::RIGHT) >= 1.
+            }
+
             fn is_all_doors_really_up(&mut self) -> bool {
                 self.get_real_gear_door_position(GearWheel::CENTER) <= 0.
                     && self.get_real_gear_door_position(GearWheel::LEFT) <= 0.
@@ -9539,6 +9531,62 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
             assert!(test_bed.is_all_doors_really_down());
+        }
+
+        #[test]
+        fn emergency_gear_extension_at_3_turns_release_gear() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs_f64(20.));
+
+            assert!(test_bed.is_all_doors_really_up());
+            assert!(test_bed.is_all_gears_really_up());
+
+            test_bed = test_bed
+                .set_green_ed_pump(false)
+                .set_ptu_state(false)
+                .turn_emergency_gear_extension_n_turns(3)
+                .run_waiting_for(Duration::from_secs_f64(30.));
+
+            assert!(test_bed.is_all_doors_really_down());
+            assert!(test_bed.is_all_gears_really_down());
+        }
+
+        #[test]
+        fn complete_gear_cycle_do_not_change_fluid_volume() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
+
+            let initial_fluid_quantity = test_bed.get_green_reservoir_volume();
+
+            test_bed = test_bed
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(20.));
+            assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
+            assert!(test_bed.is_all_doors_really_up());
+
+            let uplocked_fluid_quantity = test_bed.get_green_reservoir_volume();
+
+            assert!(initial_fluid_quantity - uplocked_fluid_quantity > Volume::new::<gallon>(1.));
+            assert!(initial_fluid_quantity - uplocked_fluid_quantity < Volume::new::<gallon>(2.));
+
+            test_bed = test_bed
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(20.));
+            assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
+            assert!(test_bed.is_all_doors_really_up());
+
+            let downlocked_fluid_quantity = test_bed.get_green_reservoir_volume();
+            assert!(
+                (initial_fluid_quantity - downlocked_fluid_quantity).abs()
+                    < Volume::new::<gallon>(0.01)
+            );
         }
     }
 }

@@ -822,6 +822,7 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
         self.linear_actuators[index].position_normalized()
     }
 
+    #[cfg(test)]
     pub fn actuator_flow(&self, index: usize) -> VolumeRate {
         self.linear_actuators[index].signed_flow().abs()
     }

@@ -150,24 +150,15 @@ impl HydraulicGearSystem {
         );
     }
 
-    // TODO make an iterator
-    pub fn nose_door_actuator(&mut self) -> &mut impl Actuator {
-        self.nose_door_assembly.actuator()
-    }
-    pub fn left_door_actuator(&mut self) -> &mut impl Actuator {
-        self.left_door_assembly.actuator()
-    }
-    pub fn right_door_actuator(&mut self) -> &mut impl Actuator {
-        self.right_door_assembly.actuator()
-    }
-    pub fn nose_gear_actuator(&mut self) -> &mut impl Actuator {
-        self.nose_gear_assembly.actuator()
-    }
-    pub fn left_gear_actuator(&mut self) -> &mut impl Actuator {
-        self.left_gear_assembly.actuator()
-    }
-    pub fn right_gear_actuator(&mut self) -> &mut impl Actuator {
-        self.right_gear_assembly.actuator()
+    pub fn all_actuators(&mut self) -> [&mut impl Actuator; 6] {
+        [
+            self.nose_door_assembly.actuator(),
+            self.left_door_assembly.actuator(),
+            self.right_door_assembly.actuator(),
+            self.nose_gear_assembly.actuator(),
+            self.left_gear_assembly.actuator(),
+            self.right_gear_assembly.actuator(),
+        ]
     }
 }
 impl GearSystemSensors for HydraulicGearSystem {
@@ -520,6 +511,7 @@ impl GearDoorAssembly {
         self.fully_opened_proximity_detectors[sensor_id].proximity_detected()
     }
 
+    #[cfg(test)]
     fn actuator_flow(&self) -> VolumeRate {
         self.hydraulic_assembly.actuator_flow(0)
     }
