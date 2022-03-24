@@ -210,6 +210,7 @@ impl A320CargoDoorFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            true,
         )
     }
 
@@ -301,6 +302,7 @@ impl A320AileronFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
+            false,
             false,
         )
     }
@@ -400,6 +402,7 @@ impl A320SpoilerFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            true,
         )
     }
 
@@ -507,6 +510,7 @@ impl A320ElevatorFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
+            false,
         )
     }
 
@@ -594,6 +598,7 @@ impl A320RudderFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
+            false,
             false,
         )
     }
@@ -685,6 +690,7 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
+            true,
         )
     }
 
@@ -711,6 +717,7 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
+            true,
             true,
         )
     }
@@ -801,9 +808,9 @@ impl A320GearDoorFactory {
 struct A320GearFactory {}
 impl A320GearFactory {
     fn a320_nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.5;
+        const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
-        const FLOW_CONTROL_FORCE_GAIN: f64 = 200000.;
+        const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
 
         LinearActuator::new(
             bounded_linear_length,
@@ -822,11 +829,12 @@ impl A320GearFactory {
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
+            true,
         )
     }
 
     fn a320_main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 4.5;
+        const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.0;
         const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.3;
         const FLOW_CONTROL_FORCE_GAIN: f64 = 250000.;
 
@@ -839,13 +847,14 @@ impl A320GearFactory {
             800000.,
             15000.,
             50000.,
-            2300000.,
+            2500000.,
             Duration::from_millis(100),
             [0.5, 0.5, 1., 1., 0.5, 0.5],
             [0., 0.1, 0.11, 0.89, 0.9, 1.],
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
+            true,
             true,
         )
     }

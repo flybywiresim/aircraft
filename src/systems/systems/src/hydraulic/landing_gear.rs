@@ -1283,6 +1283,7 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
+            true,
         )
     }
 
@@ -1336,6 +1337,7 @@ mod tests {
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
+            true,
             true,
         )
     }
