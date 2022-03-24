@@ -313,6 +313,7 @@ class CDUFlightPlanPage {
                 let timeColor = color;
 
                 // Altitude
+                const hasAltConstraint = wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6;
                 let altitudeConstraint = "-----";
                 let altPrefix = "\xa0";
                 if (fpIndex === fpm.getDestinationIndex()) {
@@ -341,14 +342,18 @@ class CDUFlightPlanPage {
                     const lastRouteIndex = fpm.getLastIndexBeforeApproach();
                     //const departureWp = firstRouteIndex > 1 && fpm.getDepartureWaypoints().indexOf(wp) !== -1;
 
-                    if (mcdu.flightPlanManager.getOriginTransitionAltitude() >= 100 && wp.legAltitude1 > mcdu.flightPlanManager.getOriginTransitionAltitude()) {
-                        altitudeConstraint = (wp.legAltitude1 / 100).toFixed(0).toString();
-                        altitudeConstraint = `FL${altitudeConstraint.padStart(3,"0")}`;
-                    } else {
-                        altitudeConstraint = wp.legAltitude1.toFixed(0).toString().padStart(5,"\xa0");
+                    // TODO all this constraint code is very sussy
+
+                    if (hasAltConstraint) {
+                        if (mcdu.flightPlanManager.getOriginTransitionAltitude() >= 100 && wp.legAltitude1 > mcdu.flightPlanManager.getOriginTransitionAltitude()) {
+                            altitudeConstraint = (wp.legAltitude1 / 100).toFixed(0).toString();
+                            altitudeConstraint = `FL${altitudeConstraint.padStart(3, "0")}`;
+                        } else {
+                            altitudeConstraint = wp.legAltitude1.toFixed(0).toString().padStart(5, "\xa0");
+                        }
                     }
 
-                    if (wp.legAltitudeDescription !== 0 && ident !== "(DECEL)") {
+                    if (hasAltConstraint && ident !== "(DECEL)") {
                         altPrefix = "{magenta}*{end}";
                         if (wp.legAltitudeDescription === 4) {
                             altitudeConstraint = ((wp.legAltitude1 + wp.legAltitude2) * 0.5).toFixed(0).toString();
