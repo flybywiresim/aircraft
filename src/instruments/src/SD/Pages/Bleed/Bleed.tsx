@@ -42,7 +42,7 @@ export const BleedPage: FC = () => {
             {/* Ram air */}
             <Valve x={300} y={93} radius={15} css="GreenLine" position="H" sdacDatum={sdacDatum} />
 
-            {/* Cross Bleed Duct */}
+            {/* Cross Bleed Duct  */}
             <g id="cross-bleed">
                 <path className={`${leftVerticalDuctColour}Line`} d={`M ${135},${227} l 0,82`} />
                 <path className={xbleedAirValveOpen === 1 ? 'GreenLine' : 'Hide'} d={`M ${135},${267} l 329,0`} />
