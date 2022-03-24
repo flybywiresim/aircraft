@@ -131,6 +131,14 @@ export enum NearestSearchType {
     Boundary = 5,
 }
 
+export enum RnavTypeFlags {
+    None = 0,
+    Lnav = 1 << 0,
+    LnavVnav = 1 << 1,
+    Lp = 1 << 2,
+    Lpv = 1 << 3
+}
+
 export enum RouteType {
     None = 0,
     LowLevel = 1, // L, victor
