@@ -1222,7 +1222,20 @@
                 "metallicRoughnessTexture": {
                     "index": 4
                 }
-            }        
+            },
+            "extensions": {
+                "ASOBO_material_draw_order": {
+                    "drawOrderOffset": 3
+                },
+                "ASOBO_material_blend_gbuffer": {
+                       "baseColorBlendFactor": 1,
+                       "emissiveBlendFactor": 0,
+                       "metallicBlendFactor": 1,
+                       "occlusionBlendFactor": 1,
+                       "roughnessBlendFactor": 1,
+                       "normalBlendFactor":1
+                }
+            }
         },
         {
             "name": "DECALS_DOOR_STICKERS_RIBBON-Ridge",
@@ -1242,15 +1255,16 @@
                 }
             },
             "extensions": {
-                "ASOBO_material_blend_gbuffer": {
-                    "baseColorBlendFactor": 0,
-                    "emissiveBlendFactor": 0,
-                    "metallicBlendFactor": 0,
-                    "occlusionBlendFactor": 0.7,
-                    "roughnessBlendFactor": 0
-                },
                 "ASOBO_material_draw_order": {
                     "drawOrderOffset": 10
+                },
+                "ASOBO_material_blend_gbuffer": {
+                       "baseColorBlendFactor": 0,
+                       "emissiveBlendFactor": 0,
+                       "metallicBlendFactor": 0,
+                       "occlusionBlendFactor": 1,
+                       "roughnessBlendFactor": 0,
+                       "normalBlendFactor":1
                 }
             }
         }
@@ -1740,7 +1754,7 @@
     "buffers": [
         {
             "byteLength": 289652,
-            "uri": "bandit_window_extras.bin"
+            "uri": "AddBanditStickersTrim.bin"
         }
     ],
     "images": [
