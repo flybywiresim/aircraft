@@ -32,8 +32,6 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
     const [flapsPos, setFlapsPos] = useState([x, y]);
     const [deltaFlapsAngle, setDeltaFlapsAngle] = useState(flapsAngle);
 
-    const [alphaLockEngaged] = useSimVar('L:A32NX_SFCC_1_ALPHA_LOCK_ENGAGED', 'bool', 500); // TODO: this SimVar is part of PR #6647
-
     useEffect(() => {
         const xVal = 34;
         const yVal = 12;
@@ -45,17 +43,19 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
             setSlatsInitial(false);
             if (handleIndex) {
                 switch (true) {
-                case (slatsAngle === 18):
-                    setSlatPos([x - 49, y + 12]);
+                case (handleIndex === 2):
+                    setSlatPos([476, 440]);
                     break;
-                case (slatsAngle === 22):
-                    setSlatPos([x - 83, y + 24]);
+                case (handleIndex === 3):
+                    setSlatPos([442, 452]);
                     break;
-                case (slatsAngle === 27):
-                    setSlatPos([x - 117, y + 36]);
+                case (handleIndex === 4):
+                    setSlatPos([442, 452]);
+                    break;
+                case (handleIndex === 5):
+                    setSlatPos([408, 464]);
                     break;
                 default:
-                    setSlatPos([x - 15, y]);
                     break;
                 }
             }
@@ -86,12 +86,7 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
                 );
             }
         }
-        // Hack to cater for strange behaviour when loading in on approach
-        if (slatsAngle === 27) {
-            setSlatPos([x - 117, y + 36]);
-        } else {
-            setDeltaSlatsAngle(slatsAngle);
-        }
+        setDeltaSlatsAngle(slatsAngle);
     }, [slatsAngle]);
 
     useEffect(() => {
@@ -105,20 +100,19 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
             setFlapsInitial(false);
             if (handleIndex) {
                 switch (true) {
-                case (flapsAngle === 10):
-                    setFlapsPos([x + 43, y + 9]);
+                case (handleIndex === 2):
+                    setFlapsPos([568, 437]);
                     break;
-                case (flapsAngle === 15):
-                    setFlapsPos([x + 86, y + 18]);
+                case (handleIndex === 3):
+                    setFlapsPos([611, 446]);
                     break;
-                case (flapsAngle === 20):
-                    setFlapsPos([x + 129, y + 27]);
+                case (handleIndex === 4):
+                    setFlapsPos([654, 455]);
                     break;
-                case (flapsAngle === 40):
-                    setFlapsPos([x + 172, y + 36]);
+                case (handleIndex === 5):
+                    setFlapsPos([697, 464]);
                     break;
                 default:
-                    setFlapsPos([x, y]);
                     break;
                 }
             }
@@ -148,10 +142,6 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
                     ],
                 );
             }
-        }
-
-        if (flapsAngle === 40) {
-            setFlapsPos([x + 172, y + 36]);
         }
         setDeltaFlapsAngle(flapsAngle);
     }, [flapsAngle]);
@@ -183,9 +173,8 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
                 <path d={`M ${x - 92},${y + 46} l -7,2 l -1,4 l 7,-2 Z`} className={`SlatsSmallCyan ${targetSlatsAngle === 22 && slatsAngle !== 22 ? 'Show' : 'Hide'}`} />
                 <path d={`M ${x - 126},${y + 57} l -7,2 l -1,4 l 7,-2 Z`} className={`SlatsSmallCyan ${targetSlatsAngle === 27 && slatsAngle !== 27 ? 'Show' : 'Hide'}`} />
             </g>
-            {alphaLockEngaged === 1 && <text className="Medium Center GreenPulseNoFill" x={x - 95} y={y - 10}>A LOCK</text>}
-            <path className={`Slats ${alphaLockEngaged === 1 ? 'GreenPulseNoFill' : ''}`} d={`M ${slatPos[0]},${slatPos[1]} l -19,7 l -4,13 l 19,-7 Z`} />
-            <line className={`GreenLine ${alphaLockEngaged === 1 ? 'GreenPulse' : ''}`} x1={x - 16} y1={y} x2={slatPos[0]} y2={slatPos[1]} />
+            <path className="Slats" d={`M ${slatPos[0]},${slatPos[1]} l -19,7 l -4,13 l 19,-7 Z`} />
+            <line className="GreenLine" x1={x - 16} y1={y} x2={slatPos[0]} y2={slatPos[1]} />
             {/* Flaps */}
             <g id="Flaps" className={(flapsPowered || slatsPowered) && (flapsAngle > 0 || slatsAngle > 0) ? 'Show' : 'Hide'}>
                 <path d={`M ${x + 52},${y + 15} l 3,5 l 5,1 l 0,-4 Z`} className="FlapsSmallWhite" />

@@ -1,4 +1,4 @@
-import { fuelForDisplay } from '@instruments/common/fuel';
+import { fuelForDisplay } from '@instruments/common/FuelFunctions';
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
 
@@ -12,6 +12,7 @@ type FFProps = {
 
 const FF: React.FC<FFProps> = ({ unit, x, y, engine, active }) => {
     const [fuelFlow] = useSimVar(`L:A32NX_ENGINE_FF:${engine}`, 'number', 1000); // KG/HR
+    // const fuelFlow = 320;
 
     return (
         <>

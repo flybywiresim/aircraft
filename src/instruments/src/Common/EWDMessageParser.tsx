@@ -3,19 +3,19 @@ import React from 'react';
 const LINE_SPACING = 28;
 const LETTER_WIDTH = 16;
 
-type FormattedFwcTextProps = {
+type EWDParserProps = {
     x: number,
     y: number,
     message: string
 }
 
-const FormattedFwcText: React.FC<FormattedFwcTextProps> = ({ x, y, message }) => {
+const EWDParser: React.FC<EWDParserProps> = ({ x, y, message }) => {
     const lines: any[] = [];
     let spans: any[] = [];
 
     let color = 'White';
     let underlined = false;
-    // const flashing = false; TODO
+    let flashing = false;
     let framed = false;
 
     const decorations: any[] = [];
@@ -73,7 +73,7 @@ const FormattedFwcText: React.FC<FormattedFwcTextProps> = ({ x, y, message }) =>
                     case 'm':
                         // Reset attribute
                         underlined = false;
-                        // flashing = false;
+                        flashing = false;
                         framed = false;
                         break;
                     case '4m':
@@ -82,7 +82,7 @@ const FormattedFwcText: React.FC<FormattedFwcTextProps> = ({ x, y, message }) =>
                         break;
                     case ')m':
                         // Flashing attribute
-                        // flashing = true;
+                        flashing = true;
                         break;
                     case "'m":
                         // Characters which follow must be framed
@@ -166,4 +166,4 @@ const FormattedFwcText: React.FC<FormattedFwcTextProps> = ({ x, y, message }) =>
     );
 };
 
-export default FormattedFwcText;
+export default EWDParser;
