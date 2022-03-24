@@ -210,11 +210,10 @@ class CDUAocOfpData {
         mcdu.onRightInput[4] = () => {
             getSimBriefOfp(mcdu, updateView, () => {
                 setDefaultWeights(mcdu.simbrief.paxWeight, mcdu.simbrief.bagWeight);
-                Promise.all([
-                    setTargetPax(mcdu.simbrief.paxCount),
-                    setTargetCargo(mcdu.simbrief.bagCount, mcdu.simbrief.freight),
-                ]).then(() => {
-                    updateView();
+                setTargetPax(mcdu.simbrief.paxCount).then(() => {
+                    setTargetCargo(mcdu.simbrief.bagCount, mcdu.simbrief.freight).then(() => {
+                        updateView();
+                    });
                 });
             });
         };
