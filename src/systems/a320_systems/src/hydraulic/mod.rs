@@ -707,6 +707,8 @@ pub(super) struct A320Hydraulic {
     aft_cargo_door_controller: A320DoorController,
 
     elac_computer: ElacComputer,
+    aileron_system_controller: AileronSystemHydraulicController,
+
     left_aileron: AileronAssembly,
     right_aileron: AileronAssembly,
     left_elevator: ElevatorAssembly,
@@ -928,6 +930,8 @@ impl A320Hydraulic {
             aft_cargo_door_controller: A320DoorController::new(context, Self::AFT_CARGO_DOOR_ID),
 
             elac_computer: ElacComputer::new(context),
+            aileron_system_controller: AileronSystemHydraulicController::new(context),
+
             left_aileron: A320AileronFactory::new_aileron(context, ActuatorSide::Left),
             right_aileron: A320AileronFactory::new_aileron(context, ActuatorSide::Right),
             left_elevator: A320ElevatorFactory::new_elevator(context, ActuatorSide::Left),
@@ -1084,14 +1088,14 @@ impl A320Hydraulic {
     fn update_flight_controls_physics(&mut self, context: &UpdateContext) {
         self.left_aileron.update(
             context,
-            self.elac_computer.left_controllers(),
+            self.aileron_system_controller.left_controllers(),
             self.blue_circuit.system_pressure(),
             self.green_circuit.system_pressure(),
         );
 
         self.right_aileron.update(
             context,
-            self.elac_computer.right_controllers(),
+            self.aileron_system_controller.right_controllers(),
             self.blue_circuit.system_pressure(),
             self.green_circuit.system_pressure(),
         );
@@ -1635,6 +1639,8 @@ impl SimulationElement for A320Hydraulic {
         self.slat_system.accept(visitor);
 
         self.elac_computer.accept(visitor);
+        self.aileron_system_controller.accept(visitor);
+
         self.left_aileron.accept(visitor);
         self.right_aileron.accept(visitor);
         self.left_elevator.accept(visitor);
@@ -3528,10 +3534,7 @@ impl LeftElevatorHydConfiguration {
     }
 }
 
-/// Implements a placeholder elac computer logic commanding correct hydraulic modes depending
-/// on pressure state.
-/// TODO: Receive each actuator mode and commands directly from a FBW Elac implementation
-struct ElacComputer {
+struct AileronSystemHydraulicController {
     left_aileron_blue_actuator_solenoid_id: VariableIdentifier,
     right_aileron_blue_actuator_solenoid_id: VariableIdentifier,
     left_aileron_green_actuator_solenoid_id: VariableIdentifier,
@@ -3542,11 +3545,183 @@ struct ElacComputer {
     left_aileron_green_actuator_position_demand_id: VariableIdentifier,
     right_aileron_green_actuator_position_demand_id: VariableIdentifier,
 
-    elevator_requested_position_id: VariableIdentifier,
-    elevator_requested_position: Ratio,
-
     left_aileron_controllers: [AileronController; 2],
     right_aileron_controllers: [AileronController; 2],
+}
+impl AileronSystemHydraulicController {
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            left_aileron_blue_actuator_solenoid_id: context
+                .get_identifier("LEFT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_aileron_blue_actuator_solenoid_id: context
+                .get_identifier("RIGHT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_aileron_green_actuator_solenoid_id: context
+                .get_identifier("LEFT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_aileron_green_actuator_solenoid_id: context
+                .get_identifier("RIGHT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+
+            left_aileron_blue_actuator_position_demand_id: context
+                .get_identifier("LEFT_AIL_BLUE_COMMANDED_POSITION".to_owned()),
+            right_aileron_blue_actuator_position_demand_id: context
+                .get_identifier("RIGHT_AIL_BLUE_COMMANDED_POSITION".to_owned()),
+            left_aileron_green_actuator_position_demand_id: context
+                .get_identifier("LEFT_AIL_GREEN_COMMANDED_POSITION".to_owned()),
+            right_aileron_green_actuator_position_demand_id: context
+                .get_identifier("RIGHT_AIL_GREEN_COMMANDED_POSITION".to_owned()),
+
+            // Controllers are in outward->inward order, so for aileron [Blue circuit, Green circuit]
+            left_aileron_controllers: [AileronController::new(), AileronController::new()],
+            right_aileron_controllers: [AileronController::new(), AileronController::new()],
+        }
+    }
+
+    fn left_controllers(&self) -> &[impl HydraulicAssemblyController] {
+        &self.left_aileron_controllers[..]
+    }
+
+    fn right_controllers(&self) -> &[impl HydraulicAssemblyController] {
+        &self.right_aileron_controllers[..]
+    }
+
+    fn update_aileron_controllers_positions(
+        &mut self,
+        left_position_requests: [Ratio; 2],
+        right_position_requests: [Ratio; 2],
+    ) {
+        self.left_aileron_controllers[AileronActuatorPosition::Blue as usize]
+            .set_requested_position(left_position_requests[AileronActuatorPosition::Blue as usize]);
+        self.left_aileron_controllers[AileronActuatorPosition::Green as usize]
+            .set_requested_position(
+                left_position_requests[AileronActuatorPosition::Green as usize],
+            );
+
+        self.right_aileron_controllers[AileronActuatorPosition::Blue as usize]
+            .set_requested_position(
+                right_position_requests[AileronActuatorPosition::Blue as usize],
+            );
+        self.right_aileron_controllers[AileronActuatorPosition::Green as usize]
+            .set_requested_position(
+                right_position_requests[AileronActuatorPosition::Green as usize],
+            );
+    }
+
+    /// Will drive mode from solenoid state
+    /// -If energized actuator controls position
+    /// -If not energized actuator is slaved in damping
+    /// -We differentiate case of all actuators in damping mode where we set a more dampened
+    /// mode to reach realistic slow droop speed.
+    fn update_aileron_controllers_solenoids(
+        &mut self,
+        left_solenoids_energized: [bool; 2],
+        right_solenoids_energized: [bool; 2],
+    ) {
+        if left_solenoids_energized.iter().any(|x| *x) {
+            self.left_aileron_controllers[AileronActuatorPosition::Blue as usize].set_mode(
+                Self::aileron_actuator_mode_from_solenoid(
+                    left_solenoids_energized[AileronActuatorPosition::Blue as usize],
+                ),
+            );
+            self.left_aileron_controllers[AileronActuatorPosition::Green as usize].set_mode(
+                Self::aileron_actuator_mode_from_solenoid(
+                    left_solenoids_energized[AileronActuatorPosition::Green as usize],
+                ),
+            );
+        } else {
+            for controller in &mut self.left_aileron_controllers {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
+
+        if left_solenoids_energized.iter().any(|x| *x) {
+            self.right_aileron_controllers[AileronActuatorPosition::Blue as usize].set_mode(
+                Self::aileron_actuator_mode_from_solenoid(
+                    right_solenoids_energized[AileronActuatorPosition::Blue as usize],
+                ),
+            );
+            self.right_aileron_controllers[AileronActuatorPosition::Green as usize].set_mode(
+                Self::aileron_actuator_mode_from_solenoid(
+                    right_solenoids_energized[AileronActuatorPosition::Green as usize],
+                ),
+            );
+        } else {
+            for controller in &mut self.right_aileron_controllers {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
+    }
+
+    fn aileron_actuator_mode_from_solenoid(solenoid_energized: bool) -> LinearActuatorMode {
+        if solenoid_energized {
+            LinearActuatorMode::PositionControl
+        } else {
+            LinearActuatorMode::ActiveDamping
+        }
+    }
+
+    fn aileron_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
+        Ratio::new::<ratio>(surface_angle.get::<degree>() / 50. + 0.5)
+    }
+}
+impl SimulationElement for AileronSystemHydraulicController {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let left_blue_aileron_requested_position =
+            Angle::new::<degree>(reader.read(&self.left_aileron_blue_actuator_position_demand_id));
+        let left_green_aileron_requested_position =
+            Angle::new::<degree>(reader.read(&self.left_aileron_green_actuator_position_demand_id));
+
+        let right_blue_aileron_requested_position =
+            Angle::new::<degree>(reader.read(&self.right_aileron_blue_actuator_position_demand_id));
+
+        let right_green_aileron_requested_position = Angle::new::<degree>(
+            reader.read(&self.right_aileron_green_actuator_position_demand_id),
+        );
+
+        let left_blue_aileron_solenoid_energized =
+            reader.read(&self.left_aileron_blue_actuator_solenoid_id);
+        let left_green_aileron_solenoid_energized =
+            reader.read(&self.left_aileron_green_actuator_solenoid_id);
+
+        let right_blue_aileron_solenoid_energized =
+            reader.read(&self.right_aileron_blue_actuator_solenoid_id);
+        let right_green_aileron_solenoid_energized =
+            reader.read(&self.right_aileron_green_actuator_solenoid_id);
+
+        // Note that we reverse left, as positions are just passed through msfs for now
+        self.update_aileron_controllers_positions(
+            [
+                Self::aileron_actuator_position_from_surface_angle(
+                    -left_blue_aileron_requested_position,
+                ),
+                Self::aileron_actuator_position_from_surface_angle(
+                    -left_green_aileron_requested_position,
+                ),
+            ],
+            [
+                Self::aileron_actuator_position_from_surface_angle(
+                    right_blue_aileron_requested_position,
+                ),
+                Self::aileron_actuator_position_from_surface_angle(
+                    right_green_aileron_requested_position,
+                ),
+            ],
+        );
+
+        self.update_aileron_controllers_solenoids(
+            [
+                left_blue_aileron_solenoid_energized,
+                left_green_aileron_solenoid_energized,
+            ],
+            [
+                right_blue_aileron_solenoid_energized,
+                right_green_aileron_solenoid_energized,
+            ],
+        );
+    }
+}
+
+struct ElacComputer {
+    elevator_requested_position_id: VariableIdentifier,
+    elevator_requested_position: Ratio,
 
     left_elevator_controllers: [AileronController; 2],
     right_elevator_controllers: [AileronController; 2],
@@ -3571,32 +3746,10 @@ impl ElacComputer {
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            left_aileron_blue_actuator_solenoid_id: context
-                .get_identifier("LEFT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
-            right_aileron_blue_actuator_solenoid_id: context
-                .get_identifier("RIGHT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
-            left_aileron_green_actuator_solenoid_id: context
-                .get_identifier("LEFT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
-            right_aileron_green_actuator_solenoid_id: context
-                .get_identifier("RIGHT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
-
-            left_aileron_blue_actuator_position_demand_id: context
-                .get_identifier("LEFT_AIL_BLUE_COMMANDED_POSITION".to_owned()),
-            right_aileron_blue_actuator_position_demand_id: context
-                .get_identifier("RIGHT_AIL_BLUE_COMMANDED_POSITION".to_owned()),
-            left_aileron_green_actuator_position_demand_id: context
-                .get_identifier("LEFT_AIL_GREEN_COMMANDED_POSITION".to_owned()),
-            right_aileron_green_actuator_position_demand_id: context
-                .get_identifier("RIGHT_AIL_GREEN_COMMANDED_POSITION".to_owned()),
-
             elevator_requested_position_id: context
                 .get_identifier("HYD_ELEVATOR_DEMAND".to_owned()),
 
             elevator_requested_position: Ratio::default(),
-
-            // Controllers are in outward->inward order, so for aileron [Blue circuit, Green circuit]
-            left_aileron_controllers: [AileronController::new(), AileronController::new()],
-            right_aileron_controllers: [AileronController::new(), AileronController::new()],
 
             // Controllers are in outboard->inboard order
             left_elevator_controllers: [AileronController::new(), AileronController::new()],
@@ -3757,167 +3910,11 @@ impl ElacComputer {
     fn right_elevator_controllers(&self) -> &[impl HydraulicAssemblyController] {
         &self.right_elevator_controllers[..]
     }
-
-    fn left_controllers(&self) -> &[impl HydraulicAssemblyController] {
-        &self.left_aileron_controllers[..]
-    }
-
-    fn right_controllers(&self) -> &[impl HydraulicAssemblyController] {
-        &self.right_aileron_controllers[..]
-    }
-
-    fn update_aileron_controllers_positions(
-        &mut self,
-        left_position_requests: [Ratio; 2],
-        right_position_requests: [Ratio; 2],
-    ) {
-        self.left_aileron_controllers[AileronActuatorPosition::Blue as usize]
-            .set_requested_position(left_position_requests[AileronActuatorPosition::Blue as usize]);
-        self.left_aileron_controllers[AileronActuatorPosition::Green as usize]
-            .set_requested_position(
-                left_position_requests[AileronActuatorPosition::Green as usize],
-            );
-
-        self.right_aileron_controllers[AileronActuatorPosition::Blue as usize]
-            .set_requested_position(
-                right_position_requests[AileronActuatorPosition::Blue as usize],
-            );
-        self.right_aileron_controllers[AileronActuatorPosition::Green as usize]
-            .set_requested_position(
-                right_position_requests[AileronActuatorPosition::Green as usize],
-            );
-    }
-
-    /// Will drive mode from solenoid state
-    /// -If energized actuator controls position
-    /// -If not energized actuator is slaved in damping
-    /// -We differentiate case of all actuators in damping mode where we set a more dampened
-    /// mode to reach realistic slow droop speed.
-    fn update_aileron_controllers_solenoids(
-        &mut self,
-        left_solenoids_energized: [bool; 2],
-        right_solenoids_energized: [bool; 2],
-    ) {
-        if left_solenoids_energized.iter().any(|x| *x) {
-            self.left_aileron_controllers[AileronActuatorPosition::Blue as usize].set_mode(
-                Self::aileron_actuator_mode_from_solenoid(
-                    left_solenoids_energized[AileronActuatorPosition::Blue as usize],
-                ),
-            );
-            self.left_aileron_controllers[AileronActuatorPosition::Green as usize].set_mode(
-                Self::aileron_actuator_mode_from_solenoid(
-                    left_solenoids_energized[AileronActuatorPosition::Green as usize],
-                ),
-            );
-        } else {
-            for controller in &mut self.left_aileron_controllers {
-                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
-            }
-        }
-
-        if left_solenoids_energized.iter().any(|x| *x) {
-            self.right_aileron_controllers[AileronActuatorPosition::Blue as usize].set_mode(
-                Self::aileron_actuator_mode_from_solenoid(
-                    right_solenoids_energized[AileronActuatorPosition::Blue as usize],
-                ),
-            );
-            self.right_aileron_controllers[AileronActuatorPosition::Green as usize].set_mode(
-                Self::aileron_actuator_mode_from_solenoid(
-                    right_solenoids_energized[AileronActuatorPosition::Green as usize],
-                ),
-            );
-        } else {
-            for controller in &mut self.right_aileron_controllers {
-                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
-            }
-        }
-    }
-
-    fn aileron_actuator_mode_from_solenoid(solenoid_energized: bool) -> LinearActuatorMode {
-        if solenoid_energized {
-            LinearActuatorMode::PositionControl
-        } else {
-            LinearActuatorMode::ActiveDamping
-        }
-    }
-
-    fn aileron_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
-        Ratio::new::<ratio>(surface_angle.get::<degree>() / 50. + 0.5)
-    }
 }
 impl SimulationElement for ElacComputer {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.elevator_requested_position =
             Ratio::new::<ratio>(reader.read(&self.elevator_requested_position_id));
-
-        let left_blue_aileron_requested_position =
-            Angle::new::<degree>(reader.read(&self.left_aileron_blue_actuator_position_demand_id));
-        let left_green_aileron_requested_position =
-            Angle::new::<degree>(reader.read(&self.left_aileron_green_actuator_position_demand_id));
-
-        let right_blue_aileron_requested_position =
-            Angle::new::<degree>(reader.read(&self.right_aileron_blue_actuator_position_demand_id));
-
-        let right_green_aileron_requested_position = Angle::new::<degree>(
-            reader.read(&self.right_aileron_green_actuator_position_demand_id),
-        );
-
-        let left_blue_aileron_solenoid_energized =
-            reader.read(&self.left_aileron_blue_actuator_solenoid_id);
-        let left_green_aileron_solenoid_energized =
-            reader.read(&self.left_aileron_green_actuator_solenoid_id);
-
-        let right_blue_aileron_solenoid_energized =
-            reader.read(&self.right_aileron_blue_actuator_solenoid_id);
-        let right_green_aileron_solenoid_energized =
-            reader.read(&self.right_aileron_green_actuator_solenoid_id);
-
-        // Note that we reverse left, as positions are just passed through msfs for now
-        self.update_aileron_controllers_positions(
-            [
-                Self::aileron_actuator_position_from_surface_angle(
-                    -left_blue_aileron_requested_position,
-                ),
-                Self::aileron_actuator_position_from_surface_angle(
-                    -left_green_aileron_requested_position,
-                ),
-            ],
-            [
-                Self::aileron_actuator_position_from_surface_angle(
-                    right_blue_aileron_requested_position,
-                ),
-                Self::aileron_actuator_position_from_surface_angle(
-                    right_green_aileron_requested_position,
-                ),
-            ],
-        );
-
-        self.update_aileron_controllers_solenoids(
-            [
-                left_blue_aileron_solenoid_energized,
-                left_green_aileron_solenoid_energized,
-            ],
-            [
-                right_blue_aileron_solenoid_energized,
-                right_green_aileron_solenoid_energized,
-            ],
-        );
-
-        // println!(
-        //     "Left dmnd [{:.1},{:.1}] left sol[{:?},{:?}], final modes[{:?},{:?}]",
-        //     Self::aileron_actuator_position_from_surface_angle(
-        //         left_blue_aileron_requested_position
-        //     )
-        //     .get::<ratio>(),
-        //     Self::aileron_actuator_position_from_surface_angle(
-        //         left_green_aileron_requested_position
-        //     )
-        //     .get::<ratio>(),
-        //     left_blue_aileron_solenoid_energized,
-        //     left_green_aileron_solenoid_energized,
-        //     self.left_aileron_controllers[0].requested_mode(),
-        //     self.left_aileron_controllers[1].requested_mode(),
-        // );
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -5536,10 +5533,7 @@ mod tests {
             }
 
             fn set_elevator_neutral(mut self) -> Self {
-                self.write_by_name("LEFT_AIL_BLUE_COMMANDED_POSITION", 0.);
-                self.write_by_name("RIGHT_AIL_BLUE_COMMANDED_POSITION", 0.);
-                self.write_by_name("LEFT_AIL_GREEN_COMMANDED_POSITION", 0.);
-                self.write_by_name("RIGHT_AIL_GREEN_COMMANDED_POSITION", 0.);
+                self.write_by_name("HYD_ELEVATOR_DEMAND", 0.5);
                 self
             }
 
