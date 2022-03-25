@@ -1285,18 +1285,18 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idLeftSpoilerCommandedPosition[4]->set(secsAnalogOutputs[1].leftSpoiler1Order);
   idRightSpoilerCommandedPosition[4]->set(secsAnalogOutputs[1].rightSpoiler1Order);
 
-  idLeftElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[0].leftElevatorDampingMode ||
-                                          secsDiscreteOutputs[0].leftElevatorDampingMode);
-  idLeftElevatorCommandedPosition[0]->set(elacsAnalogOutputs[1].leftElevPosOrder + secsAnalogOutputs[1].leftElevPosOrder);
-  idRightElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[0].rightElevatorDampingMode ||
-                                           secsDiscreteOutputs[0].rightElevatorDampingMode);
-  idRightElevatorCommandedPosition[0]->set(elacsAnalogOutputs[1].rightElevPosOrder + secsAnalogOutputs[1].rightElevPosOrder);
-  idLeftElevatorSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].leftElevatorDampingMode ||
+  idLeftElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[1].leftElevatorDampingMode ||
                                           secsDiscreteOutputs[1].leftElevatorDampingMode);
-  idLeftElevatorCommandedPosition[1]->set(elacsAnalogOutputs[0].leftElevPosOrder + secsAnalogOutputs[0].leftElevPosOrder);
-  idRightElevatorSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].rightElevatorDampingMode ||
+  idLeftElevatorCommandedPosition[0]->set(elacsAnalogOutputs[0].leftElevPosOrder + secsAnalogOutputs[0].leftElevPosOrder);
+  idRightElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[1].rightElevatorDampingMode ||
                                            secsDiscreteOutputs[1].rightElevatorDampingMode);
-  idRightElevatorCommandedPosition[1]->set(elacsAnalogOutputs[0].rightElevPosOrder + secsAnalogOutputs[0].rightElevPosOrder);
+  idRightElevatorCommandedPosition[0]->set(elacsAnalogOutputs[0].rightElevPosOrder + secsAnalogOutputs[0].rightElevPosOrder);
+  idLeftElevatorSolenoidEnergized[1]->set(elacsDiscreteOutputs[0].leftElevatorDampingMode ||
+                                          secsDiscreteOutputs[0].leftElevatorDampingMode);
+  idLeftElevatorCommandedPosition[1]->set(elacsAnalogOutputs[1].leftElevPosOrder + secsAnalogOutputs[1].leftElevPosOrder);
+  idRightElevatorSolenoidEnergized[1]->set(elacsDiscreteOutputs[0].rightElevatorDampingMode ||
+                                           secsDiscreteOutputs[0].rightElevatorDampingMode);
+  idRightElevatorCommandedPosition[1]->set(elacsAnalogOutputs[1].rightElevPosOrder + secsAnalogOutputs[1].rightElevPosOrder);
 
   idTHSActiveModeCommanded[0]->set(elacsDiscreteOutputs[1].thsActive);
   idTHSCommandedPosition[0]->set(elacsAnalogOutputs[1].thsPosOrder);
