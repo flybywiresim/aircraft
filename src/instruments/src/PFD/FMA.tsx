@@ -345,26 +345,25 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         this.displayModeChangedPath(true);
         this.isShown = true;
 
-        if (!this.autoBrakeActive) {
-            switch (this.athrMode) {
-            case 1:
-                text = `
+        switch (this.athrMode) {
+        case 1:
+            text = `
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
                             `;
-                break;
-            case 2:
-                text = `<g>
+            break;
+        case 2:
+            text = `<g>
                                 <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
                             </g>`;
-                break;
-            case 3:
-                const FlexTemp = Math.round(this.flexTemp);
-                const FlexText = FlexTemp >= 0 ? (`+${FlexTemp}`) : FlexTemp.toString();
-                text = `<g>
+            break;
+        case 3:
+            const FlexTemp = Math.round(this.flexTemp);
+            const FlexText = FlexTemp >= 0 ? (`+${FlexTemp}`) : FlexTemp.toString();
+            text = `<g>
                                 <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">
@@ -373,78 +372,66 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                                 </text>
                             </g>`;
 
-                break;
-            case 4:
-                text = `<g>
+            break;
+        case 4:
+            text = `<g>
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
                             </g>`;
-                break;
-            case 5:
+            break;
+        case 5:
 
-                text = `<g>
+            text = `<g>
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
                             </g>`;
-                break;
-            case 6:
-                text = `<g>
+            break;
+        case 6:
+            text = `<g>
                                 <path class="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
                             </g>`;
-                break;
-            case 7:
-                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
-                this.displayModeChangedPath();
-                break;
-            case 8:
-                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
-                this.displayModeChangedPath();
-                break;
-            case 9:
-                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
-                this.displayModeChangedPath();
-                break;
-            case 10:
-                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
-                this.displayModeChangedPath();
-                break;
-            case 11:
-                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
-                this.displayModeChangedPath();
-                break;
-            case 12:
-                text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
-                this.displayModeChangedPath();
-                break;
-            case 13:
-                text = `<g>
+            break;
+        case 7:
+            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">SPEED</text>';
+            this.displayModeChangedPath();
+            break;
+        case 8:
+            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">MACH</text>';
+            this.displayModeChangedPath();
+            break;
+        case 9:
+            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR MCT</text>';
+            this.displayModeChangedPath();
+            break;
+        case 10:
+            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR CLB</text>';
+            this.displayModeChangedPath();
+            break;
+        case 11:
+            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR LVR</text>';
+            this.displayModeChangedPath();
+            break;
+        case 12:
+            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
+            this.displayModeChangedPath();
+            break;
+        case 13:
+            text = `<g>
                                 <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                                 <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
                             </g>`;
-                break;
-            case 14:
-                text = `<g>
+            break;
+        case 14:
+            text = `<g>
                                 <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                                 <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
                             </g>`;
-                break;
-            default:
-                text = '';
-                this.isShown = false;
-            }
-        }
-
-        this.cellRef.instance.innerHTML = text;
-    }
-
-    private setAutoBrakeText(newAutobrakeActive: boolean) {
-        if (newAutobrakeActive) {
-            this.isShown = true;
-            let text = '';
+            break;
+        default:
             switch (this.autoBrakeMode) {
             case 1:
                 text = '<text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">BRK LO</text>';
@@ -463,12 +450,9 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                 this.isShown = false;
                 this.displayModeChangedPath(true);
             }
-            this.cellRef.instance.innerHTML = text;
-        } else if (this.autoBrakeActive && !newAutobrakeActive) {
-            this.cellRef.instance.innerHTML = '';
-            this.isShown = false;
         }
-        this.autoBrakeActive = newAutobrakeActive;
+
+        this.cellRef.instance.innerHTML = text;
     }
 
     onAfterRender(node: VNode): void {
@@ -487,11 +471,13 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
         });
 
         sub.on('autoBrakeActive').whenChanged().handle((am) => {
-            this.setAutoBrakeText(am);
+            this.autoBrakeActive = am;
+            this.setText();
         });
 
         sub.on('autoBrakeMode').whenChanged().handle((a) => {
             this.autoBrakeMode = a;
+            this.setText();
         });
     }
 

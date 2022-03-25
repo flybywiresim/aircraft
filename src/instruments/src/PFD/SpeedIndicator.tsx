@@ -759,7 +759,7 @@ class SpeedTarget extends DisplayComponent <{ bus: EventBus }> {
             this.needsUpdate = true;
         });
 
-        sub.on('autoBrakeActive').whenChanged().handle((a) => {
+        sub.on('autoBrakeDecel').whenChanged().handle((a) => {
             this.decelActive = a;
             this.needsUpdate = true;
         });
@@ -814,7 +814,7 @@ class SpeedTarget extends DisplayComponent <{ bus: EventBus }> {
             this.upperBoundRef.instance.style.visibility = 'hidden';
             this.speedTargetRef.instance.style.visibility = 'hidden';
             this.currentVisible = this.lowerBoundRef;
-        } else if (!this.decelActive) {
+        } else if (Math.abs(this.speedState.speed.value - currentTargetSpeed) < DisplayRange) {
             this.lowerBoundRef.instance.style.visibility = 'hidden';
             this.upperBoundRef.instance.style.visibility = 'hidden';
             this.speedTargetRef.instance.style.visibility = 'visible';
