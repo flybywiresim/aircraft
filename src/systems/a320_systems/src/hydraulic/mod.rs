@@ -264,8 +264,8 @@ impl A320CargoDoorFactory {
 
 struct A320AileronFactory {}
 impl A320AileronFactory {
-    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.35;
-    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
+    const FLOW_CONTROL_PROPORTIONAL_GAIN: f64 = 0.25;
+    const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 3.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
 
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 800000.;
@@ -289,7 +289,7 @@ impl A320AileronFactory {
             VolumeRate::new::<gallon_per_second>(0.055),
             80000.,
             1500.,
-            5000.,
+            15000.,
             randomized_damping,
             Duration::from_millis(300),
             [1., 1., 1., 1., 1., 1.],
