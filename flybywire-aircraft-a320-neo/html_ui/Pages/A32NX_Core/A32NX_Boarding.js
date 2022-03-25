@@ -32,26 +32,21 @@ class A32NX_Boarding {
     async fillPaxStation(station, paxToFill) {
         const pax = Math.min(paxToFill, station.seats);
         station.pax = pax;
-
         await SimVar.SetSimVarValue(`L:${station.simVar}`, "Number", parseInt(pax));
     }
 
     async fillCargoStation(station, loadToFill) {
         station.load = loadToFill;
         await SimVar.SetSimVarValue(`L:${station.simVar}`, "Number", parseInt(loadToFill));
-
     }
 
     async setPax(numberOfPax) {
         let paxRemaining = parseInt(numberOfPax);
 
         async function fillStation(station, percent, paxToFill) {
-
             const pax = Math.min(Math.trunc(percent * paxToFill), station.seats);
             station.pax = pax;
-
             await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", parseInt(pax));
-
             paxRemaining -= pax;
         }
 
@@ -62,22 +57,15 @@ class A32NX_Boarding {
         return;
     }
 
-    async loadPaxPayload() {
-        const PAX_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number");
-        for (const paxStation of Object.values(this.paxStations)) {
-            await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${paxStation.stationIndex}`, "kilograms", paxStation.pax * PAX_WEIGHT);
-        }
-
-        return;
+    loadPaxPayload() {
+        return Promise.all(Object.values(this.paxStations).map(paxStation => {
+            return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${paxStation.stationIndex}`, "kilograms", paxStation.pax * PAX_WEIGHT);
+        }));
     }
-
-    async loadCargoPayload() {
-
-        for (const loadStation of Object.values(this.cargoStations)) {
-            await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${loadStation.stationIndex}`, "kilograms", loadStation.load);
-        }
-
-        return;
+    loadCargoPayload() {
+        return Promise.all(Object.values(this.cargoStations).map(loadStation => {
+            return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${loadStation.stationIndex}`, "kilograms", loadStation.load);
+        }));
     }
 
     async loadCargoZero() {
