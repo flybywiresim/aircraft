@@ -174,6 +174,22 @@ void Sec::computeSurfaceSlaving(double surfaceCommands[4]) {
   } else {
     thsPosCommand = 0;
   }
+
+  if (spoilerPair1Avail) {
+    leftSpoiler1PosCommand = surfaceCommands[2];
+    rightSpoiler1PosCommand = surfaceCommands[3];
+  } else {
+    leftSpoiler1PosCommand = 0;
+    rightSpoiler1PosCommand = 0;
+  }
+
+  if (spoilerPair2Avail) {
+    leftSpoiler2PosCommand = surfaceCommands[2];
+    rightSpoiler2PosCommand = surfaceCommands[3];
+  } else {
+    leftSpoiler2PosCommand = 0;
+    rightSpoiler2PosCommand = 0;
+  }
 }
 
 // Perform self monitoring. If

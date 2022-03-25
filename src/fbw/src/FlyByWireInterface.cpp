@@ -1098,8 +1098,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   double surfaceCommands[4] = {
       flyByWireOutput.output.eta_pos,
       flyByWireOutput.output.eta_trim_deg,
-      animationAileronHandler->getPositionLeft(),
-      animationAileronHandler->getPositionRight(),
+      spoilersHandler->getLeftPosition(),
+      spoilersHandler->getRightPosition(),
   };
 
   Failures failureIndex = secIndex == 0 ? Failures::Sec1 : (secIndex == 1 ? Failures::Sec2 : Failures::Sec3);
@@ -1278,12 +1278,12 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRightSpoilerCommandedPosition[0]->set(secsAnalogOutputs[2].rightSpoiler1Order);
   idLeftSpoilerCommandedPosition[1]->set(secsAnalogOutputs[2].leftSpoiler2Order);
   idRightSpoilerCommandedPosition[1]->set(secsAnalogOutputs[2].rightSpoiler2Order);
-  idLeftSpoilerCommandedPosition[2]->set(secsAnalogOutputs[1].leftSpoiler1Order);
-  idRightSpoilerCommandedPosition[2]->set(secsAnalogOutputs[1].rightSpoiler1Order);
-  idLeftSpoilerCommandedPosition[3]->set(secsAnalogOutputs[1].leftSpoiler2Order);
-  idRightSpoilerCommandedPosition[3]->set(secsAnalogOutputs[1].rightSpoiler2Order);
-  idLeftSpoilerCommandedPosition[4]->set(secsAnalogOutputs[0].leftSpoiler1Order);
-  idRightSpoilerCommandedPosition[4]->set(secsAnalogOutputs[0].rightSpoiler1Order);
+  idLeftSpoilerCommandedPosition[2]->set(secsAnalogOutputs[0].leftSpoiler1Order);
+  idRightSpoilerCommandedPosition[2]->set(secsAnalogOutputs[0].rightSpoiler1Order);
+  idLeftSpoilerCommandedPosition[3]->set(secsAnalogOutputs[0].leftSpoiler2Order);
+  idRightSpoilerCommandedPosition[3]->set(secsAnalogOutputs[0].rightSpoiler2Order);
+  idLeftSpoilerCommandedPosition[4]->set(secsAnalogOutputs[1].leftSpoiler1Order);
+  idRightSpoilerCommandedPosition[4]->set(secsAnalogOutputs[1].rightSpoiler1Order);
 
   idLeftElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[0].leftElevatorDampingMode ||
                                           secsDiscreteOutputs[0].leftElevatorDampingMode);
