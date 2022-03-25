@@ -1286,11 +1286,9 @@ impl A320Hydraulic {
             .update_actuator_volumes(&mut self.braking_circuit_norm);
 
         self.green_circuit
-            .update_actuator_volumes(self.left_aileron.actuator(AileronActuatorPosition::Inboard));
-        self.green_circuit.update_actuator_volumes(
-            self.right_aileron
-                .actuator(AileronActuatorPosition::Inboard),
-        );
+            .update_actuator_volumes(self.left_aileron.actuator(AileronActuatorPosition::Green));
+        self.green_circuit
+            .update_actuator_volumes(self.right_aileron.actuator(AileronActuatorPosition::Green));
 
         self.green_circuit.update_actuator_volumes(
             self.left_elevator
@@ -1357,14 +1355,10 @@ impl A320Hydraulic {
         self.blue_circuit
             .update_actuator_volumes(&mut self.emergency_gen);
 
-        self.blue_circuit.update_actuator_volumes(
-            self.left_aileron
-                .actuator(AileronActuatorPosition::Outboard),
-        );
-        self.blue_circuit.update_actuator_volumes(
-            self.right_aileron
-                .actuator(AileronActuatorPosition::Outboard),
-        );
+        self.blue_circuit
+            .update_actuator_volumes(self.left_aileron.actuator(AileronActuatorPosition::Blue));
+        self.blue_circuit
+            .update_actuator_volumes(self.right_aileron.actuator(AileronActuatorPosition::Blue));
 
         self.blue_circuit.update_actuator_volumes(
             self.left_elevator
@@ -3489,29 +3483,6 @@ impl HydraulicAssemblyController for AileronController {
     }
 }
 
-enum AileronHydConfiguration {
-    GB,
-    G,
-    B,
-    NoHyd,
-}
-impl AileronHydConfiguration {
-    fn from_hyd_state(
-        green_circuit_available: bool,
-        blue_circuit_available: bool,
-    ) -> AileronHydConfiguration {
-        if green_circuit_available && blue_circuit_available {
-            AileronHydConfiguration::GB
-        } else if green_circuit_available {
-            AileronHydConfiguration::G
-        } else if blue_circuit_available {
-            AileronHydConfiguration::B
-        } else {
-            AileronHydConfiguration::NoHyd
-        }
-    }
-}
-
 enum RightElevatorHydConfiguration {
     YB,
     Y,
@@ -3561,12 +3532,17 @@ impl LeftElevatorHydConfiguration {
 /// on pressure state.
 /// TODO: Receive each actuator mode and commands directly from a FBW Elac implementation
 struct ElacComputer {
-    left_aileron_requested_position_id: VariableIdentifier,
-    right_aileron_requested_position_id: VariableIdentifier,
-    elevator_requested_position_id: VariableIdentifier,
+    left_aileron_blue_actuator_solenoid_id: VariableIdentifier,
+    right_aileron_blue_actuator_solenoid_id: VariableIdentifier,
+    left_aileron_green_actuator_solenoid_id: VariableIdentifier,
+    right_aileron_green_actuator_solenoid_id: VariableIdentifier,
 
-    left_aileron_requested_position: Ratio,
-    right_aileron_requested_position: Ratio,
+    left_aileron_blue_actuator_position_demand_id: VariableIdentifier,
+    right_aileron_blue_actuator_position_demand_id: VariableIdentifier,
+    left_aileron_green_actuator_position_demand_id: VariableIdentifier,
+    right_aileron_green_actuator_position_demand_id: VariableIdentifier,
+
+    elevator_requested_position_id: VariableIdentifier,
     elevator_requested_position: Ratio,
 
     left_aileron_controllers: [AileronController; 2],
@@ -3595,15 +3571,27 @@ impl ElacComputer {
 
     fn new(context: &mut InitContext) -> Self {
         Self {
-            left_aileron_requested_position_id: context
-                .get_identifier("HYD_AILERON_LEFT_DEMAND".to_owned()),
-            right_aileron_requested_position_id: context
-                .get_identifier("HYD_AILERON_RIGHT_DEMAND".to_owned()),
+            left_aileron_blue_actuator_solenoid_id: context
+                .get_identifier("LEFT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_aileron_blue_actuator_solenoid_id: context
+                .get_identifier("RIGHT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            left_aileron_green_actuator_solenoid_id: context
+                .get_identifier("LEFT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+            right_aileron_green_actuator_solenoid_id: context
+                .get_identifier("RIGHT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED".to_owned()),
+
+            left_aileron_blue_actuator_position_demand_id: context
+                .get_identifier("LEFT_AIL_BLUE_COMMANDED_POSITION".to_owned()),
+            right_aileron_blue_actuator_position_demand_id: context
+                .get_identifier("RIGHT_AIL_BLUE_COMMANDED_POSITION".to_owned()),
+            left_aileron_green_actuator_position_demand_id: context
+                .get_identifier("LEFT_AIL_GREEN_COMMANDED_POSITION".to_owned()),
+            right_aileron_green_actuator_position_demand_id: context
+                .get_identifier("RIGHT_AIL_GREEN_COMMANDED_POSITION".to_owned()),
+
             elevator_requested_position_id: context
                 .get_identifier("HYD_ELEVATOR_DEMAND".to_owned()),
 
-            left_aileron_requested_position: Ratio::default(),
-            right_aileron_requested_position: Ratio::default(),
             elevator_requested_position: Ratio::default(),
 
             // Controllers are in outward->inward order, so for aileron [Blue circuit, Green circuit]
@@ -3622,16 +3610,6 @@ impl ElacComputer {
         }
     }
 
-    fn update_aileron_requested_position(&mut self) {
-        for controller in &mut self.left_aileron_controllers {
-            controller.set_requested_position(self.left_aileron_requested_position);
-        }
-
-        for controller in &mut self.right_aileron_controllers {
-            controller.set_requested_position(self.right_aileron_requested_position);
-        }
-    }
-
     fn update_elevator_requested_position(&mut self) {
         for controller in &mut self.left_elevator_controllers {
             controller.set_requested_position(self.elevator_requested_position);
@@ -3642,16 +3620,6 @@ impl ElacComputer {
         }
     }
 
-    fn set_aileron_no_position_control(&mut self) {
-        for controller in &mut self.left_aileron_controllers {
-            controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        }
-
-        for controller in &mut self.right_aileron_controllers {
-            controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        }
-    }
-
     fn set_elevator_no_position_control(&mut self) {
         for controller in &mut self.left_elevator_controllers {
             controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
@@ -3659,60 +3627,6 @@ impl ElacComputer {
 
         for controller in &mut self.right_elevator_controllers {
             controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
-        }
-    }
-
-    fn set_left_aileron_position_control(
-        &mut self,
-        hydraulic_configuration: AileronHydConfiguration,
-    ) {
-        match hydraulic_configuration {
-            AileronHydConfiguration::GB | AileronHydConfiguration::B => {
-                self.left_aileron_controllers[AileronActuatorPosition::Outboard as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-                self.left_aileron_controllers[AileronActuatorPosition::Inboard as usize]
-                    .set_mode(LinearActuatorMode::ActiveDamping);
-            }
-
-            AileronHydConfiguration::G => {
-                self.left_aileron_controllers[AileronActuatorPosition::Outboard as usize]
-                    .set_mode(LinearActuatorMode::ActiveDamping);
-                self.left_aileron_controllers[AileronActuatorPosition::Inboard as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-            }
-            AileronHydConfiguration::NoHyd => {
-                self.left_aileron_controllers[AileronActuatorPosition::Outboard as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-                self.left_aileron_controllers[AileronActuatorPosition::Inboard as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-            }
-        }
-    }
-
-    fn set_right_aileron_position_control(
-        &mut self,
-        hydraulic_configuration: AileronHydConfiguration,
-    ) {
-        match hydraulic_configuration {
-            AileronHydConfiguration::GB | AileronHydConfiguration::G => {
-                self.right_aileron_controllers[AileronActuatorPosition::Outboard as usize]
-                    .set_mode(LinearActuatorMode::ActiveDamping);
-                self.right_aileron_controllers[AileronActuatorPosition::Inboard as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-            }
-
-            AileronHydConfiguration::B => {
-                self.right_aileron_controllers[AileronActuatorPosition::Outboard as usize]
-                    .set_mode(LinearActuatorMode::PositionControl);
-                self.right_aileron_controllers[AileronActuatorPosition::Inboard as usize]
-                    .set_mode(LinearActuatorMode::ActiveDamping);
-            }
-            _ => {
-                self.right_aileron_controllers[AileronActuatorPosition::Outboard as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-                self.right_aileron_controllers[AileronActuatorPosition::Inboard as usize]
-                    .set_mode(LinearActuatorMode::ClosedCircuitDamping);
-            }
         }
     }
 
@@ -3808,21 +3722,6 @@ impl ElacComputer {
         }
     }
 
-    fn update_aileron(&mut self) {
-        if self.is_powered {
-            self.set_right_aileron_position_control(AileronHydConfiguration::from_hyd_state(
-                self.green_circuit_available,
-                self.blue_circuit_available,
-            ));
-            self.set_left_aileron_position_control(AileronHydConfiguration::from_hyd_state(
-                self.green_circuit_available,
-                self.blue_circuit_available,
-            ));
-        } else {
-            self.set_aileron_no_position_control();
-        }
-    }
-
     fn circuit_is_available(pressure: Pressure, current_availability: bool) -> bool {
         if pressure.get::<psi>() > Self::PRESSURE_AVAILABLE_HIGH_HYSTERESIS_PSI {
             true
@@ -3839,7 +3738,6 @@ impl ElacComputer {
         green_pressure: Pressure,
         yellow_pressure: Pressure,
     ) {
-        self.update_aileron_requested_position();
         self.update_elevator_requested_position();
 
         self.blue_circuit_available =
@@ -3848,8 +3746,6 @@ impl ElacComputer {
             Self::circuit_is_available(green_pressure, self.green_circuit_available);
         self.yellow_circuit_available =
             Self::circuit_is_available(yellow_pressure, self.yellow_circuit_available);
-
-        self.update_aileron();
 
         self.update_elevator();
     }
@@ -3869,16 +3765,159 @@ impl ElacComputer {
     fn right_controllers(&self) -> &[impl HydraulicAssemblyController] {
         &self.right_aileron_controllers[..]
     }
+
+    fn update_aileron_controllers_positions(
+        &mut self,
+        left_position_requests: [Ratio; 2],
+        right_position_requests: [Ratio; 2],
+    ) {
+        self.left_aileron_controllers[AileronActuatorPosition::Blue as usize]
+            .set_requested_position(left_position_requests[AileronActuatorPosition::Blue as usize]);
+        self.left_aileron_controllers[AileronActuatorPosition::Green as usize]
+            .set_requested_position(
+                left_position_requests[AileronActuatorPosition::Green as usize],
+            );
+
+        self.right_aileron_controllers[AileronActuatorPosition::Blue as usize]
+            .set_requested_position(
+                right_position_requests[AileronActuatorPosition::Blue as usize],
+            );
+        self.right_aileron_controllers[AileronActuatorPosition::Green as usize]
+            .set_requested_position(
+                right_position_requests[AileronActuatorPosition::Green as usize],
+            );
+    }
+
+    /// Will drive mode from solenoid state
+    /// -If energized actuator controls position
+    /// -If not energized actuator is slaved in damping
+    /// -We differentiate case of all actuators in damping mode where we set a more dampened
+    /// mode to reach realistic slow droop speed.
+    fn update_aileron_controllers_solenoids(
+        &mut self,
+        left_solenoids_energized: [bool; 2],
+        right_solenoids_energized: [bool; 2],
+    ) {
+        if left_solenoids_energized.iter().any(|x| *x) {
+            self.left_aileron_controllers[AileronActuatorPosition::Blue as usize].set_mode(
+                Self::aileron_actuator_mode_from_solenoid(
+                    left_solenoids_energized[AileronActuatorPosition::Blue as usize],
+                ),
+            );
+            self.left_aileron_controllers[AileronActuatorPosition::Green as usize].set_mode(
+                Self::aileron_actuator_mode_from_solenoid(
+                    left_solenoids_energized[AileronActuatorPosition::Green as usize],
+                ),
+            );
+        } else {
+            for controller in &mut self.left_aileron_controllers {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
+
+        if left_solenoids_energized.iter().any(|x| *x) {
+            self.right_aileron_controllers[AileronActuatorPosition::Blue as usize].set_mode(
+                Self::aileron_actuator_mode_from_solenoid(
+                    right_solenoids_energized[AileronActuatorPosition::Blue as usize],
+                ),
+            );
+            self.right_aileron_controllers[AileronActuatorPosition::Green as usize].set_mode(
+                Self::aileron_actuator_mode_from_solenoid(
+                    right_solenoids_energized[AileronActuatorPosition::Green as usize],
+                ),
+            );
+        } else {
+            for controller in &mut self.right_aileron_controllers {
+                controller.set_mode(LinearActuatorMode::ClosedCircuitDamping);
+            }
+        }
+    }
+
+    fn aileron_actuator_mode_from_solenoid(solenoid_energized: bool) -> LinearActuatorMode {
+        if solenoid_energized {
+            LinearActuatorMode::PositionControl
+        } else {
+            LinearActuatorMode::ActiveDamping
+        }
+    }
+
+    fn aileron_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
+        Ratio::new::<ratio>(surface_angle.get::<degree>() / 50. + 0.5)
+    }
 }
 impl SimulationElement for ElacComputer {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.left_aileron_requested_position =
-            Ratio::new::<ratio>(reader.read(&self.left_aileron_requested_position_id));
-        self.right_aileron_requested_position =
-            Ratio::new::<ratio>(reader.read(&self.right_aileron_requested_position_id));
-
         self.elevator_requested_position =
             Ratio::new::<ratio>(reader.read(&self.elevator_requested_position_id));
+
+        let left_blue_aileron_requested_position =
+            Angle::new::<degree>(reader.read(&self.left_aileron_blue_actuator_position_demand_id));
+        let left_green_aileron_requested_position =
+            Angle::new::<degree>(reader.read(&self.left_aileron_green_actuator_position_demand_id));
+
+        let right_blue_aileron_requested_position =
+            Angle::new::<degree>(reader.read(&self.right_aileron_blue_actuator_position_demand_id));
+
+        let right_green_aileron_requested_position = Angle::new::<degree>(
+            reader.read(&self.right_aileron_green_actuator_position_demand_id),
+        );
+
+        let left_blue_aileron_solenoid_energized =
+            reader.read(&self.left_aileron_blue_actuator_solenoid_id);
+        let left_green_aileron_solenoid_energized =
+            reader.read(&self.left_aileron_green_actuator_solenoid_id);
+
+        let right_blue_aileron_solenoid_energized =
+            reader.read(&self.right_aileron_blue_actuator_solenoid_id);
+        let right_green_aileron_solenoid_energized =
+            reader.read(&self.right_aileron_green_actuator_solenoid_id);
+
+        // Note that we reverse left, as positions are just passed through msfs for now
+        self.update_aileron_controllers_positions(
+            [
+                Self::aileron_actuator_position_from_surface_angle(
+                    -left_blue_aileron_requested_position,
+                ),
+                Self::aileron_actuator_position_from_surface_angle(
+                    -left_green_aileron_requested_position,
+                ),
+            ],
+            [
+                Self::aileron_actuator_position_from_surface_angle(
+                    right_blue_aileron_requested_position,
+                ),
+                Self::aileron_actuator_position_from_surface_angle(
+                    right_green_aileron_requested_position,
+                ),
+            ],
+        );
+
+        self.update_aileron_controllers_solenoids(
+            [
+                left_blue_aileron_solenoid_energized,
+                left_green_aileron_solenoid_energized,
+            ],
+            [
+                right_blue_aileron_solenoid_energized,
+                right_green_aileron_solenoid_energized,
+            ],
+        );
+
+        // println!(
+        //     "Left dmnd [{:.1},{:.1}] left sol[{:?},{:?}], final modes[{:?},{:?}]",
+        //     Self::aileron_actuator_position_from_surface_angle(
+        //         left_blue_aileron_requested_position
+        //     )
+        //     .get::<ratio>(),
+        //     Self::aileron_actuator_position_from_surface_angle(
+        //         left_green_aileron_requested_position
+        //     )
+        //     .get::<ratio>(),
+        //     left_blue_aileron_solenoid_energized,
+        //     left_green_aileron_solenoid_energized,
+        //     self.left_aileron_controllers[0].requested_mode(),
+        //     self.left_aileron_controllers[1].requested_mode(),
+        // );
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -4029,8 +4068,8 @@ enum ActuatorSide {
 
 #[derive(PartialEq, Clone, Copy)]
 enum AileronActuatorPosition {
-    Outboard = 0,
-    Inboard = 1,
+    Blue = 0,
+    Green = 1,
 }
 
 #[derive(PartialEq, Clone, Copy)]
@@ -5444,6 +5483,7 @@ mod tests {
                     .set_gear_down()
                     .set_pushback_state(false)
                     .air_press_nominal()
+                    .set_elac1_aileron_actuators_energized()
                     .set_ailerons_neutral()
                     .set_elevator_neutral()
             }
@@ -5496,19 +5536,34 @@ mod tests {
             }
 
             fn set_elevator_neutral(mut self) -> Self {
-                self.write_by_name("HYD_ELEVATOR_DEMAND", 0.5);
+                self.write_by_name("LEFT_AIL_BLUE_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_AIL_BLUE_COMMANDED_POSITION", 0.);
+                self.write_by_name("LEFT_AIL_GREEN_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_AIL_GREEN_COMMANDED_POSITION", 0.);
                 self
             }
 
             fn set_ailerons_left_turn(mut self) -> Self {
-                self.write_by_name("HYD_AILERON_LEFT_DEMAND", 1.);
-                self.write_by_name("HYD_AILERON_RIGHT_DEMAND", 0.);
+                self.write_by_name("LEFT_AIL_BLUE_COMMANDED_POSITION", -25.);
+                self.write_by_name("RIGHT_AIL_BLUE_COMMANDED_POSITION", -25.);
+                self.write_by_name("LEFT_AIL_GREEN_COMMANDED_POSITION", -25.);
+                self.write_by_name("RIGHT_AIL_GREEN_COMMANDED_POSITION", -25.);
+                self
+            }
+
+            fn set_elac1_aileron_actuators_energized(mut self) -> Self {
+                self.write_by_name("LEFT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED", 1.);
+                self.write_by_name("RIGHT_AIL_BLUE_SERVO_SOLENOID_ENERGIZED", 0.);
+                self.write_by_name("LEFT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED", 0.);
+                self.write_by_name("RIGHT_AIL_GREEN_SERVO_SOLENOID_ENERGIZED", 1.);
                 self
             }
 
             fn set_ailerons_right_turn(mut self) -> Self {
-                self.write_by_name("HYD_AILERON_LEFT_DEMAND", 0.);
-                self.write_by_name("HYD_AILERON_RIGHT_DEMAND", 1.);
+                self.write_by_name("LEFT_AIL_BLUE_COMMANDED_POSITION", 25.);
+                self.write_by_name("RIGHT_AIL_BLUE_COMMANDED_POSITION", 25.);
+                self.write_by_name("LEFT_AIL_GREEN_COMMANDED_POSITION", 25.);
+                self.write_by_name("RIGHT_AIL_GREEN_COMMANDED_POSITION", 25.);
                 self
             }
 
@@ -8749,20 +8804,21 @@ mod tests {
         }
 
         #[test]
-        fn ailerons_respond_if_green_pressure() {
+        fn ailerons_respond_if_green_and_blue_pressure() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .set_ptu_state(true)
                 .set_yellow_e_pump(false)
+                .set_blue_e_pump_ovrd_pressed(true)
                 .run_one_tick();
 
             test_bed = test_bed
                 .set_ailerons_left_turn()
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_blue_pressurised());
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.9);
             assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
@@ -8771,7 +8827,7 @@ mod tests {
                 .set_ailerons_right_turn()
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_blue_pressurised());
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
             assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.9);
@@ -8785,11 +8841,12 @@ mod tests {
                 .set_cold_dark_inputs()
                 .set_ptu_state(true)
                 .set_yellow_e_pump(false)
+                .set_blue_e_pump_ovrd_pressed(true)
                 .run_one_tick();
 
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_blue_pressurised());
             assert!(test_bed.is_green_pressurised());
             assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.4);
             assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.4);
@@ -8797,9 +8854,10 @@ mod tests {
             test_bed = test_bed
                 .set_ptu_state(false)
                 .set_yellow_e_pump(true)
+                .set_blue_e_pump(false)
                 .run_waiting_for(Duration::from_secs_f64(60.));
 
-            assert!(!test_bed.is_yellow_pressurised());
+            assert!(!test_bed.is_blue_pressurised());
             assert!(!test_bed.is_green_pressurised());
             assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.1);
             assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.1);
