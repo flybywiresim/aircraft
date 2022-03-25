@@ -13,14 +13,21 @@ export const Chrono = () => {
     const [prevTime, setPrevTime] = useState(absTime);
 
     const [elapsedTime, setElapsedTime] = useState<null | number>(null);
+    const [, setElapsedSimvarTime] = useSimVar('L:A32NX_CHRONO_ELAPSED_TIME', 'number', 250);
     const [running, setRunning] = useState(false);
 
     useEffect(() => {
         if (running) {
-            setElapsedTime((elapsedTime || 0) + debouncedTimeDelta(absTime, prevTime));
+            const newElapsedTime = (elapsedTime || 0) + debouncedTimeDelta(absTime, prevTime);
+            setElapsedTime(newElapsedTime);
+            setElapsedSimvarTime(newElapsedTime);
         }
         setPrevTime(absTime);
     }, [absTime]);
+
+    useEffect(() => {
+        setElapsedSimvarTime(-1);
+    }, []);
 
     useInteractionEvent('A32NX_CHRONO_TOGGLE', () => {
         if (dcEssIsPowered) {
@@ -35,8 +42,10 @@ export const Chrono = () => {
         if (dcEssIsPowered) {
             if (running) {
                 setElapsedTime(0);
+                setElapsedSimvarTime(0);
             } else {
                 setElapsedTime(null);
+                setElapsedSimvarTime(-1); // Simvar is not nullable, so a -1 placeholder is used
             }
         }
     });

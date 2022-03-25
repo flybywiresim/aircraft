@@ -76,17 +76,27 @@ const VProtBug = (offset: number) => (
 );
 
 interface AirspeedIndicatorProps {
-    airspeed: number;
+    airspeed: Arinc429Word;
     airspeedAcc: number;
     FWCFlightPhase: number;
     altitude: Arinc429Word;
     VLs: number;
     VMax: number;
     showBars: boolean;
+    onGround: boolean;
 }
 
-export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, VLs, VMax, showBars }: AirspeedIndicatorProps) => {
-    if (Number.isNaN(airspeed)) {
+export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altitude, VLs, VMax, showBars, onGround }: AirspeedIndicatorProps) => {
+    let airspeedValue: number;
+    if (airspeed.isFailureWarning() || (airspeed.isNoComputedData() && !onGround)) {
+        airspeedValue = NaN;
+    } else if (airspeed.isNoComputedData()) {
+        airspeedValue = 30;
+    } else {
+        airspeedValue = airspeed.value;
+    }
+
+    if (Number.isNaN(airspeedValue)) {
         return (
             <>
                 <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
@@ -102,16 +112,16 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
     const bugs: [(offset: number) => JSX.Element, number][] = [];
 
     if (showBars) {
-        bugs.push(...BarberpoleIndicator(airspeed, ValphaProtection, false, DisplayRange, VAlphaProtBar, 2.923));
+        bugs.push(...BarberpoleIndicator(airspeedValue, ValphaProtection, false, DisplayRange, VAlphaProtBar, 2.923));
     }
-    bugs.push(...BarberpoleIndicator(airspeed, VMax, true, DisplayRange, VMaxBar, 5.040));
+    bugs.push(...BarberpoleIndicator(airspeedValue, VMax, true, DisplayRange, VMaxBar, 5.040));
 
     const showVProt = VMax > 240;
     if (showVProt) {
         bugs.push([VProtBug, VMax + 6]);
     }
 
-    const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
+    const clampedSpeed = Math.max(Math.min(airspeedValue, 660), 30);
 
     const flapsHandleIndex = getSimVar('L:A32NX_FLAPS_HANDLE_INDEX', 'Number');
 
@@ -146,7 +156,7 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
     return (
         <g id="SpeedTapeElementsGroup">
             <path id="SpeedTapeBackground" className="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
-            <SpeedTapeOutline airspeed={airspeed} />
+            <SpeedTapeOutline airspeed={airspeed.value} />
             <VerticalTape
                 tapeValue={clampedSpeed}
                 bugs={bugs}
@@ -163,8 +173,8 @@ export const AirspeedIndicator = ({ airspeed, airspeedAcc, FWCFlightPhase, altit
             {showBars
                 && (
                     <>
-                        <VLsBar airspeed={airspeed} VLs={VLs} VAlphaProt={ValphaProtection} />
-                        <VAlphaLimBar airspeed={airspeed} VAlphalim={ValphaMax} />
+                        <VLsBar airspeed={airspeedValue} VLs={VLs} VAlphaProt={ValphaProtection} />
+                        <VAlphaLimBar airspeed={airspeedValue} VAlphalim={ValphaMax} />
                     </>
                 )}
         </g>
@@ -197,8 +207,17 @@ const VLsBar = ({ VAlphaProt, VLs, airspeed }) => {
     );
 };
 
-export const AirspeedIndicatorOfftape = ({ airspeed, targetSpeed, speedIsManaged }) => {
-    if (Number.isNaN(airspeed)) {
+export const AirspeedIndicatorOfftape = ({ airspeed, targetSpeed, speedIsManaged, onGround }) => {
+    let airspeedValue: number;
+    if (airspeed.isFailureWarning() || (airspeed.isNoComputedData() && !onGround)) {
+        airspeedValue = NaN;
+    } else if (airspeed.isNoComputedData()) {
+        airspeedValue = 30;
+    } else {
+        airspeedValue = airspeed.value;
+    }
+
+    if (Number.isNaN(airspeedValue)) {
         return (
             <>
                 <path id="SpeedTapeOutlineUpper" className="NormalStroke Red" d="m1.9058 38.086h21.859" />
@@ -207,24 +226,27 @@ export const AirspeedIndicatorOfftape = ({ airspeed, targetSpeed, speedIsManaged
         );
     }
 
-    const clampedSpeed = Math.max(Math.min(airspeed, 660), 30);
+    const decelActive = getSimVar('L:A32NX_AUTOBRAKES_DECEL_LIGHT', 'bool');
+
+    const clampedSpeed = Math.max(Math.min(airspeedValue, 660), 30);
     const clampedTargetSpeed = Math.max(Math.min(targetSpeed, 660), 30);
     const showLower = clampedSpeed > 72;
     return (
         <g id="SpeedOfftapeGroup">
             <path id="SpeedTapeOutlineUpper" className="NormalStroke White" d="m1.9058 38.086h21.859" />
             {showLower ? <path id="SpeedTapeOutlineLower" className="NormalStroke White" d="m1.9058 123.56h21.859" /> : null}
-            <SpeedTarget airspeed={clampedSpeed} targetSpeed={clampedTargetSpeed} isManaged={speedIsManaged} />
+            <SpeedTarget airspeed={clampedSpeed} targetSpeed={clampedTargetSpeed} isManaged={speedIsManaged} decelActive={decelActive} />
+            <DecelText decelActive={decelActive} />
             <path className="Fill Yellow SmallOutline" d="m13.994 80.46v0.7257h6.5478l3.1228 1.1491v-3.0238l-3.1228 1.1491z" />
             <path className="Fill Yellow SmallOutline" d="m0.092604 81.185v-0.7257h2.0147v0.7257z" />
         </g>
     );
 };
 
-const SpeedTarget = ({ airspeed, targetSpeed, isManaged }) => {
+const SpeedTarget = ({ airspeed, targetSpeed, isManaged, decelActive }) => {
     const color = isManaged ? 'Magenta' : 'Cyan';
     const text = Math.round(targetSpeed).toString().padStart(3, '0');
-    if (airspeed - targetSpeed > DisplayRange) {
+    if (airspeed - targetSpeed > DisplayRange && !decelActive) {
         return (
             <text id="SelectedSpeedLowerText" className={`FontSmallest EndAlign ${color}`} x="24.078989" y="128.27917">{text}</text>
         );
@@ -234,10 +256,15 @@ const SpeedTarget = ({ airspeed, targetSpeed, isManaged }) => {
         );
     }
     const offset = (airspeed - targetSpeed) * DistanceSpacing / ValueSpacing;
-    return (
-        <path className={`NormalStroke ${color} CornerRound`} transform={`translate(0 ${offset})`} d="m19.274 81.895 5.3577 1.9512v-6.0476l-5.3577 1.9512" />
-    );
+    if (Math.abs(airspeed - targetSpeed) < DisplayRange) {
+        return (
+            <path className={`NormalStroke ${color} CornerRound`} transform={`translate(0 ${offset})`} d="m19.274 81.895 5.3577 1.9512v-6.0476l-5.3577 1.9512" />
+        );
+    }
+    return null;
 };
+
+const DecelText = ({ decelActive }) => (decelActive ? (<text id="DecelText" className="FontMedium EndAlign Green" x="20.53927" y="129.06996">DECEL</text>) : null);
 
 const SpeedTapeOutline = ({ airspeed, isRed = false }) => {
     const length = 42.9 + Math.max(Math.max(Math.min(airspeed, 72.1), 30) - 30, 0);
@@ -250,9 +277,10 @@ const SpeedTapeOutline = ({ airspeed, isRed = false }) => {
 
 interface MachNumberProps {
     mach: Arinc429Word,
+    onGround: boolean,
 }
 
-export const MachNumber = ({ mach }: MachNumberProps) => {
+export const MachNumber = ({ mach, onGround }: MachNumberProps) => {
     const machPermille = Math.round(mach.valueOr(0) * 1000);
     const [showMach, setShowMach] = useState(machPermille > 500);
 
@@ -265,7 +293,7 @@ export const MachNumber = ({ mach }: MachNumberProps) => {
         }
     }, [showMach, machPermille]);
 
-    if (!mach.isNormalOperation()) {
+    if (!mach.isNormalOperation() && !onGround) {
         return (
             <text id="MachFailText" className="Blink9Seconds FontLargest StartAlign Red" x="5.4257932" y="136.88908">MACH</text>
         );

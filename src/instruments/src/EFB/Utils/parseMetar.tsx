@@ -20,6 +20,9 @@ import { ColorCode, MetarParserType, Visibility, Wind } from '../../Common/metar
  * @license   Original library: MIT License, Extensions: https://github.com/flybywiresim/a32nx/blob/master/LICENSE
  */
 export function parseMetar(metarString: string): MetarParserType {
+    if (metarString === undefined) {
+        throw new Error('METAR not available');
+    }
     const metarArray = metarString
         .trim()
         .replace(/^METAR\S*?\s/, '')
@@ -28,7 +31,7 @@ export function parseMetar(metarString: string): MetarParserType {
         .split(' ');
 
     if (metarArray.length < 3) {
-        throw new Error('Not enough METAR information found');
+        throw new Error('METAR data incomplete');
     }
 
     const metarObject: MetarParserType = {
@@ -96,6 +99,7 @@ export function parseMetar(metarString: string): MetarParserType {
         RMK,
         MISC,
     }
+
     let mode = Mode.ICAO;
 
     // as trend can be a complete new metar section we have this mode to not
@@ -209,8 +213,8 @@ export function parseMetar(metarString: string): MetarParserType {
 
                 mode = Mode.COND;
             } else if (metarPart === 'CAVOK'
-                || metarPart === 'CLR'
-                || metarPart === 'NCD') {
+                    || metarPart === 'CLR'
+                    || metarPart === 'NCD') {
                 // only write to the object for the main section
                 if (!trendMode) {
                     metarObject.visibility = {
@@ -254,17 +258,17 @@ export function parseMetar(metarString: string): MetarParserType {
 
                 // cautions
                 if ((intensity === 'VC' && descriptor === 'SH')
-                    || condCaution.includes(precipitation)
-                    || condCaution.includes(obscuration)
+                        || condCaution.includes(precipitation)
+                        || condCaution.includes(obscuration)
                 ) {
                     metarObject.color_codes[index] = ColorCode.Caution;
                 }
                 // warnings
                 if (intensity === '+'
-                    || condWarning.includes(descriptor)
-                    || condWarning.includes(precipitation)
-                    || condWarning.includes(obscuration)
-                    || condWarning.includes(other)
+                        || condWarning.includes(descriptor)
+                        || condWarning.includes(precipitation)
+                        || condWarning.includes(obscuration)
+                        || condWarning.includes(other)
                 ) {
                     metarObject.color_codes[index] = ColorCode.Warning;
                 }

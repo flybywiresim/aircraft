@@ -1358,7 +1358,7 @@ mod acs_controller_tests {
                 let zone_selected_temp_id = format!("OVHD_COND_{}_SELECTOR_KNOB", &id);
                 self.write_by_name(
                     &zone_selected_temp_id,
-                    (temp.get::<degree_celsius>() - 18.) / 0.12,
+                    (temp.get::<degree_celsius>() - 18.) / 0.04,
                 );
             }
             self
