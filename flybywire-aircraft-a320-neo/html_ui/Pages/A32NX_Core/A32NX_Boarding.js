@@ -58,6 +58,7 @@ class A32NX_Boarding {
     }
 
     loadPaxPayload() {
+        const PAX_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number");
         return Promise.all(Object.values(this.paxStations).map(paxStation => {
             return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${paxStation.stationIndex}`, "kilograms", paxStation.pax * PAX_WEIGHT);
         }));
@@ -198,17 +199,12 @@ class A32NX_Boarding {
                 const stationCurrentLoad = SimVar.GetSimVarValue(`L:${loadStation.simVar}`, "Number");
                 const stationCurrentLoadTarget = SimVar.GetSimVarValue(`L:${loadStation.simVar}_DESIRED`, "Number");
 
-                if ((stationCurrentLoad < stationCurrentLoadTarget) && (Math.abs((stationCurrentLoadTarget - stationCurrentLoad)) > 60)) {
-                    this.fillCargoStation(loadStation, stationCurrentLoad + 60);
+                const loadDelta = Math.abs(stationCurrentLoadTarget - stationCurrentLoad);
+                if (stationCurrentLoad < stationCurrentLoadTarget) {
+                    this.fillCargoStation(loadStation, stationCurrentLoad + Math.min(60, loadDelta));
                     break;
-                } else if ((stationCurrentLoad < stationCurrentLoadTarget) && (Math.abs((stationCurrentLoadTarget - stationCurrentLoad)) <= 60)) {
-                    this.fillCargoStation(loadStation, (stationCurrentLoad + (Math.abs(stationCurrentLoadTarget - stationCurrentLoad))));
-                    break;
-                } else if ((stationCurrentLoad > stationCurrentLoadTarget) && (Math.abs((stationCurrentLoadTarget - stationCurrentLoad)) > 60)) {
-                    this.fillCargoStation(loadStation, stationCurrentLoad - 60);
-                    break;
-                } else if ((stationCurrentLoad > stationCurrentLoadTarget) && (Math.abs((stationCurrentLoadTarget - stationCurrentLoad)) <= 60)) {
-                    this.fillCargoStation(loadStation, (stationCurrentLoad - (Math.abs(stationCurrentLoad - stationCurrentLoadTarget))));
+                } else if (stationCurrentLoad > stationCurrentLoadTarget) {
+                    this.fillCargoStation(loadStation, stationCurrentLoad - Math.min(60, loadDelta));
                     break;
                 } else {
                     continue;
