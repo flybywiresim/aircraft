@@ -1,233 +1,403 @@
-import { useUpdate } from '@instruments/common/hooks.js';
-import { useSimVar } from '@instruments/common/simVars.js';
-import React, { useState } from 'react';
-import { getSimVar } from '../util.js';
+import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from 'msfssdk';
+import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { Arinc429Values } from './shared/ArincValueProvider';
+import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
 
-export function LandingSystem({ LSButtonPressed, pitch, roll }) {
-    let showVDev = false;
+export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument: BaseInstrument }> {
+    private lsButtonPressedVisibility = false;
 
-    if (!LSButtonPressed) {
-        showVDev = !!Simplane.getAutoPilotApproachLoaded() && Simplane.getAutoPilotApproachType() === 10;
+    private lsGroupRef = FSComponent.createRef<SVGGElement>();
+
+    private gsReferenceLine = FSComponent.createRef<SVGPathElement>();
+
+    private deviationGroup = FSComponent.createRef<SVGGElement>();
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<HEvent & Arinc429Values>();
+
+        sub.on('hEvent').handle((eventName) => {
+            if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
+                this.lsButtonPressedVisibility = !this.lsButtonPressedVisibility;
+                SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', this.lsButtonPressedVisibility);
+
+                this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
+                this.gsReferenceLine.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
+            }
+        });
     }
 
-    return (
-        <g id="LSAndDeviationGroup">
-            <LandingSystemInfo displayed={LSButtonPressed} />
-            {LSButtonPressed && (
-                <g id="LSGroup">
-                    <LocalizerIndicator />
-                    <GlideslopeIndicator />
-                    <MarkerBeaconIndicator />
+    render(): VNode {
+        return (
+            <>
+                <g id="LSAndDeviationGroup" ref={this.lsGroupRef} style="display: none">
+                    <LandingSystemInfo bus={this.props.bus} />
+
+                    <g id="LSGroup">
+                        <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
+                        <GlideSlopeIndicator bus={this.props.bus} instrument={this.props.instrument} />
+                        <MarkerBeaconIndicator bus={this.props.bus} />
+                    </g>
+
+                    <g id="DeviationGroup" ref={this.deviationGroup} style="display: none">
+                        <VDevIndicator bus={this.props.bus} />
+                        <LDevIndicator />
+                    </g>
+
+                    <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
                 </g>
-            )}
-            {showVDev && (
-                <g id="DeviationGroup">
-                    <VDevIndicator />
-                    <LDevIndicator />
-                </g>
-            )}
-            { (LSButtonPressed || (pitch.isNormalOperation() && roll.isNormalOperation()))
-                && <path className="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />}
-        </g>
-    );
+            </>
+        );
+    }
 }
 
-const LandingSystemInfo = ({ displayed }) => {
-    if (!displayed || !getSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number')) {
-        return null;
+class LandingSystemInfo extends DisplayComponent<{ bus: EventBus }> {
+    private hasDme = false;
+
+    private identText = Subject.create('');
+
+    private freqTextLeading = Subject.create('');
+
+    private freqTextTrailing = Subject.create('');
+
+    private navFreq = 0;
+
+    private dme = 0;
+
+    private dmeVisibilitySub = Subject.create('hidden');
+
+    private destRef = FSComponent.createRef<SVGTextElement>();
+
+    private lsInfoGroup = FSComponent.createRef<SVGGElement>();
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+        // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
+        sub.on('hasLoc').whenChanged().handle((hasLoc) => {
+            if (hasLoc) {
+                this.lsInfoGroup.instance.style.display = 'inline';
+            } else {
+                this.lsInfoGroup.instance.style.display = 'none';
+            }
+        });
+
+        sub.on('hasDme').whenChanged().handle((hasDme) => {
+            this.hasDme = hasDme;
+            this.updateContents();
+        });
+
+        sub.on('navIdent').whenChanged().handle((navIdent) => {
+            this.identText.set(navIdent);
+            this.updateContents();
+        });
+
+        sub.on('navFreq').whenChanged().handle((navFreq) => {
+            this.navFreq = navFreq;
+            this.updateContents();
+        });
+
+        sub.on('dme').whenChanged().handle((dme) => {
+            this.dme = dme;
+            this.updateContents();
+        });
     }
 
-    // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
-    const identText = getSimVar('NAV IDENT:3', 'string');
-
-    const freqTextSplit = (Math.round(getSimVar('NAV FREQUENCY:3', 'MHz') * 1000) / 1000).toString().split('.');
-
-    // temporary fix when NAV FREQUENCY:3 returns 0
-    if (freqTextSplit.length < 2) {
-        return null;
-    }
-
-    const freqTextLeading = freqTextSplit[0];
-    const freqTextTrailing = freqTextSplit[1].padEnd(2, '0');
-
-    const hasDME = getSimVar('NAV HAS DME:3', 'Bool');
-
-    let distLeading = '';
-    let distTrailing = '';
-    if (hasDME) {
-        const dist = Math.round(getSimVar('NAV DME:3', 'nautical miles') * 10) / 10;
-
-        if (dist < 20) {
-            const distSplit = dist.toString().split('.');
-
-            [distLeading] = distSplit;
-            distTrailing = `.${distSplit.length > 1 ? distSplit[1] : '0'}`;
+    private updateContents() {
+        const freqTextSplit = (Math.round(this.navFreq * 1000) / 1000).toString().split('.');
+        this.freqTextLeading.set(freqTextSplit[0] === '0' ? '' : freqTextSplit[0]);
+        if (freqTextSplit[1]) {
+            this.freqTextTrailing.set(`.${freqTextSplit[1].padEnd(2, '0')}`);
         } else {
-            distLeading = Math.round(dist).toString();
-            distTrailing = '';
+            this.freqTextTrailing.set('');
+        }
+
+        let distLeading = '';
+        let distTrailing = '';
+        if (this.hasDme) {
+            this.dmeVisibilitySub.set('display: inline');
+            const dist = Math.round(this.dme * 10) / 10;
+
+            if (dist < 20) {
+                const distSplit = dist.toString().split('.');
+
+                distLeading = distSplit[0];
+                distTrailing = `.${distSplit.length > 1 ? distSplit[1] : '0'}`;
+            } else {
+                distLeading = Math.round(dist).toString();
+                distTrailing = '';
+            }
+            // eslint-disable-next-line max-len
+            this.destRef.instance.innerHTML = `<tspan id="ILSDistLeading" class="FontLarge StartAlign">${distLeading}</tspan><tspan id="ILSDistTrailing" class="FontSmallest StartAlign">${distTrailing}</tspan>`;
+        } else {
+            this.dmeVisibilitySub.set('display: none');
         }
     }
 
-    return (
-        <g id="LSInfoGroup">
-            <text id="ILSIdent" className="Magenta FontLarge AlignLeft" x="1.184" y="145.11522">{identText}</text>
-            <text id="ILSFreqLeading" className="Magenta FontLarge AlignLeft" x="1.3610243" y="151.11575">{freqTextLeading}</text>
-            <text id="ILSFreqTrailing" className="Magenta FontSmallest AlignLeft" x="12.964463" y="151.24084">{`.${freqTextTrailing}`}</text>
-            {hasDME && (
-                <g id="ILSDistGroup">
-                    <text className="Magenta AlignLeft" x="1.3685881" y="157.26602">
-                        <tspan id="ILSDistLeading" className="FontLarge">{distLeading}</tspan>
-                        <tspan id="ILSDistTrailing" className="FontSmallest">{distTrailing}</tspan>
-                    </text>
-                    <text className="Cyan FontSmallest AlignLeft" x="17.159119" y="157.22606">NM</text>
+    render(): VNode {
+        return (
+            <g id="LSInfoGroup" ref={this.lsInfoGroup}>
+                <text id="ILSIdent" class="Magenta FontLarge AlignLeft" x="1.184" y="145.11522">{this.identText}</text>
+                <text id="ILSFreqLeading" class="Magenta FontLarge AlignLeft" x="1.3610243" y="151.11575">{this.freqTextLeading}</text>
+                <text id="ILSFreqTrailing" class="Magenta FontSmallest AlignLeft" x="12.964463" y="151.24084">{this.freqTextTrailing}</text>
+
+                <g id="ILSDistGroup" style={this.dmeVisibilitySub}>
+                    <text ref={this.destRef} class="Magenta AlignLeft" x="1.3685881" y="157.26602" />
+                    <text class="Cyan FontSmallest AlignLeft" x="17.159119" y="157.22606">NM</text>
                 </g>
-            )}
-        </g>
-    );
-};
 
-const LocalizerIndicator = () => {
-    const [hasLoc] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number', 250);
-    const [radialError] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_DEVIATION', 'number', 250);
-    const [filterLocalizerIndicator] = useState(() => new LagFilter(1.5));
-    const [diamond, setDiamond] = useState<JSX.Element | null>(null);
+            </g>
+        );
+    }
+}
 
-    useUpdate((deltaTime) => {
-        if (hasLoc) {
-            const deviation = filterLocalizerIndicator.step(radialError, deltaTime / 1000);
-            const dots = deviation / 0.8;
+class LocalizerIndicator extends DisplayComponent<{bus: EventBus, instrument: BaseInstrument}> {
+    private lagFilter = new LagFilter(1.5);
 
-            if (dots > 2) {
-                setDiamond(<path id="LocDiamondRight" className="NormalStroke Magenta" d="m99.127 133.03 3.7776-2.5198-3.7776-2.5198" />);
-            } else if (dots < -2) {
-                setDiamond(<path id="LocDiamondLeft" className="NormalStroke Magenta" d="m38.686 133.03-3.7776-2.5198 3.7776-2.5198" />);
-            } else {
-                setDiamond(<path
-                    id="LocDiamond"
-                    className="NormalStroke Magenta"
-                    transform={`translate(${dots * 30.221 / 2} 0)`}
-                    d="m65.129 130.51 3.7776 2.5198 3.7776-2.5198-3.7776-2.5198z"
-                />);
-            }
+    private rightDiamond = FSComponent.createRef<SVGPathElement>();
+
+    private leftDiamond = FSComponent.createRef<SVGPathElement>();
+
+    private locDiamond = FSComponent.createRef<SVGPathElement>();
+
+    private diamondGroup = FSComponent.createRef<SVGGElement>();
+
+    private handleNavRadialError(radialError: number): void {
+        const deviation = this.lagFilter.step(radialError, this.props.instrument.deltaTime / 1000);
+        const dots = deviation / 0.8;
+
+        if (dots > 2) {
+            this.rightDiamond.instance.classList.remove('HiddenElement');
+            this.leftDiamond.instance.classList.add('HiddenElement');
+            this.locDiamond.instance.classList.add('HiddenElement');
+        } else if (dots < -2) {
+            this.rightDiamond.instance.classList.add('HiddenElement');
+            this.leftDiamond.instance.classList.remove('HiddenElement');
+            this.locDiamond.instance.classList.add('HiddenElement');
         } else {
-            setDiamond(null);
-            filterLocalizerIndicator.reset();
+            this.locDiamond.instance.classList.remove('HiddenElement');
+            this.rightDiamond.instance.classList.add('HiddenElement');
+            this.leftDiamond.instance.classList.add('HiddenElement');
+            this.locDiamond.instance.style.transform = `translate3d(${dots * 30.221 / 2}px, 0px, 0px)`;
         }
-    });
-
-    return (
-        <g id="LocalizerSymbolsGroup">
-            <path className="NormalStroke White" d="m54.804 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z" />
-            <path className="NormalStroke White" d="m39.693 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
-            <path className="NormalStroke White" d="m85.024 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z" />
-            <path className="NormalStroke White" d="m100.13 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
-            {diamond}
-            <path id="LocalizerNeutralLine" className="Yellow Fill" d="m68.098 134.5v-8.0635h1.5119v8.0635z" />
-        </g>
-    );
-};
-
-const GlideslopeIndicator = () => {
-    const [hasGlideslope] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number', 250);
-    const [glideSlopeError] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_DEVIATION', 'number', 250);
-    const [filterGlideslopeIndicator] = useState(() => new LagFilter(1.5));
-    const [diamond, setDiamond] = useState<JSX.Element | null>(null);
-
-    useUpdate((deltaTime) => {
-        if (hasGlideslope) {
-            const deviation = filterGlideslopeIndicator.step(glideSlopeError, deltaTime / 1000);
-            const dots = deviation / 0.4;
-
-            if (dots > 2) {
-                setDiamond(<path id="GlideSlopeDiamondLower" className="NormalStroke Magenta" d="m107.19 111.06 2.5184 3.7798 2.5184-3.7798" />);
-            } else if (dots < -2) {
-                setDiamond(<path id="GlideSlopeDiamondUpper" className="NormalStroke Magenta" d="m107.19 50.585 2.5184-3.7798 2.5184 3.7798" />);
-            } else {
-                setDiamond(<path
-                    id="GlideSlopeDiamond"
-                    className="NormalStroke Magenta"
-                    transform={`translate(0 ${dots * 30.238 / 2})`}
-                    d="m109.7 77.043-2.5184 3.7798 2.5184 3.7798 2.5184-3.7798z"
-                />);
-            }
-        } else {
-            setDiamond(null);
-            filterGlideslopeIndicator.reset();
-        }
-    });
-
-    return (
-        <g id="GlideslopeSymbolsGroup">
-            <path className="NormalStroke White" d="m110.71 50.585a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
-            <path className="NormalStroke White" d="m110.71 65.704a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
-            <path className="NormalStroke White" d="m110.71 95.942a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
-            <path className="NormalStroke White" d="m110.71 111.06a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
-            {diamond}
-        </g>
-    );
-};
-
-const VDevIndicator = () => {
-    const deviation = getSimVar('GPS VERTICAL ERROR', 'feet');
-    const dots = deviation / 100;
-
-    let diamond: JSX.Element;
-
-    if (dots > 2) {
-        diamond = <path id="VDevSymbolLower" className="NormalStroke Green" d="m107.19 111.06v2.0159h5.0368v-2.0159" />;
-    } else if (dots < -2) {
-        diamond = <path id="VDevSymbolUpper" className="NormalStroke Green" d="m107.19 50.585v-2.0159h5.0368v2.0159" />;
-    } else {
-        diamond = <path id="VDevSymbol" className="NormalStroke Green" transform={`translate(0 ${dots * 30.238 / 2})`} d="m112.22 78.807h-5.0368v4.0318h5.0368v-2.0159z" />;
     }
 
-    return (
-        <g id="VertDevSymbolsGroup">
-            <text className="FontSmall AlignRight Green" x="95.022" y="43.126">V/DEV</text>
-            <path className="NormalStroke White" d="m108.7 65.704h2.0147" />
-            <path className="NormalStroke White" d="m108.7 50.585h2.0147" />
-            <path className="NormalStroke White" d="m108.7 111.06h2.0147" />
-            <path className="NormalStroke White" d="m108.7 95.942h2.0147" />
-            {diamond}
-        </g>
-    );
-};
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
 
-// Not implemented on the FMS side I think, so this is just static and hidden for now
-const LDevIndicator = () => (
-    <g id="LatDeviationSymbolsGroup" style={{ display: 'none' }}>
-        <text className="FontSmall AlignRight Green" x="30.888" y="122.639">L/DEV</text>
-        <path className="NormalStroke White" d="m38.686 129.51v2.0158" />
-        <path className="NormalStroke White" d="m53.796 129.51v2.0158" />
-        <path className="NormalStroke White" d="m84.017 129.51v2.0158" />
-        <path className="NormalStroke White" d="m99.127 129.51v2.0158" />
-        <path id="LDevSymbolLeft" className="NormalStroke Green" d="m38.686 127.99h-2.0147v5.0397h2.0147" />
-        <path id="LDevSymbolRight" className="NormalStroke Green" d="m99.127 127.99h2.0147v5.0397h-2.0147" />
-        <path id="LDevSymbol" className="NormalStroke Green" d="m66.892 127.99v5.0397h4.0294v-5.0397h-2.0147z" />
-    </g>
-);
+        const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-const MarkerBeaconIndicator = () => {
-    const markerState = getSimVar('MARKER BEACON STATE', 'Enum');
-
-    let classNames = '';
-    let markerText = '';
-
-    if (markerState === 0) {
-        return null;
-    } if (markerState === 1) {
-        classNames = 'Cyan OuterMarkerBlink';
-        markerText = 'OM';
-    } else if (markerState === 2) {
-        classNames = 'Amber MiddleMarkerBlink';
-        markerText = 'MM';
-    } else {
-        classNames = 'White InnerMarkerBlink';
-        markerText = 'IM';
+        sub.on('hasLoc').whenChanged().handle((hasLoc) => {
+            if (hasLoc) {
+                this.diamondGroup.instance.classList.remove('HiddenElement');
+                this.props.bus.on('navRadialError', this.handleNavRadialError.bind(this));
+            } else {
+                this.diamondGroup.instance.classList.add('HiddenElement');
+                this.lagFilter.reset();
+                this.props.bus.off('navRadialError', this.handleNavRadialError.bind(this));
+            }
+        });
     }
 
-    return (
-        <text id="ILSMarkerText" className={`FontLarge StartAlign ${classNames}`} x="98.339211" y="125.12898">{markerText}</text>
-    );
-};
+    render(): VNode {
+        return (
+            <g id="LocalizerSymbolsGroup">
+                <path class="NormalStroke White" d="m54.804 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z" />
+                <path class="NormalStroke White" d="m39.693 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
+                <path class="NormalStroke White" d="m85.024 130.51a1.0073 1.0079 0 1 0-2.0147 0 1.0073 1.0079 0 1 0 2.0147 0z" />
+                <path class="NormalStroke White" d="m100.13 130.51a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
+                <g class="HiddenElement" ref={this.diamondGroup}>
+                    <path id="LocDiamondRight" ref={this.rightDiamond} class="NormalStroke Magenta HiddenElement" d="m99.127 133.03 3.7776-2.5198-3.7776-2.5198" />
+                    <path id="LocDiamondLeft" ref={this.leftDiamond} class="NormalStroke Magenta HiddenElement" d="m38.686 133.03-3.7776-2.5198 3.7776-2.5198" />
+                    <path
+                        id="LocDiamond"
+                        ref={this.locDiamond}
+                        class="NormalStroke Magenta HiddenElement"
+                        d="m65.129 130.51 3.7776 2.5198 3.7776-2.5198-3.7776-2.5198z"
+                    />
+                </g>
+                <path id="LocalizerNeutralLine" class="Yellow Fill" d="m68.098 134.5v-8.0635h1.5119v8.0635z" />
+            </g>
+        );
+    }
+}
+
+class GlideSlopeIndicator extends DisplayComponent<{bus: EventBus, instrument: BaseInstrument}> {
+    private lagFilter = new LagFilter(1.5);
+
+    private upperDiamond = FSComponent.createRef<SVGPathElement>();
+
+    private lowerDiamond = FSComponent.createRef<SVGPathElement>();
+
+    private glideSlopeDiamond = FSComponent.createRef<SVGPathElement>();
+
+    private diamondGroup = FSComponent.createRef<SVGGElement>();
+
+    private hasGlideSlope = false;
+
+    private handleGlideSlopeError(glideSlopeError: number): void {
+        const deviation = this.lagFilter.step(glideSlopeError, this.props.instrument.deltaTime / 1000);
+        const dots = deviation / 0.4;
+
+        if (dots > 2) {
+            this.upperDiamond.instance.classList.remove('HiddenElement');
+            this.lowerDiamond.instance.classList.add('HiddenElement');
+            this.glideSlopeDiamond.instance.classList.add('HiddenElement');
+        } else if (dots < -2) {
+            this.upperDiamond.instance.classList.add('HiddenElement');
+            this.lowerDiamond.instance.classList.remove('HiddenElement');
+            this.glideSlopeDiamond.instance.classList.add('HiddenElement');
+        } else {
+            this.upperDiamond.instance.classList.add('HiddenElement');
+            this.lowerDiamond.instance.classList.add('HiddenElement');
+            this.glideSlopeDiamond.instance.classList.remove('HiddenElement');
+            this.glideSlopeDiamond.instance.style.transform = `translate3d(0px, ${dots * 30.238 / 2}px, 0px)`;
+        }
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+        sub.on('hasGlideslope').whenChanged().handle((hasGlideSlope) => {
+            this.hasGlideSlope = hasGlideSlope;
+            if (hasGlideSlope) {
+                this.diamondGroup.instance.classList.remove('HiddenElement');
+            } else {
+                this.diamondGroup.instance.classList.add('HiddenElement');
+                this.lagFilter.reset();
+            }
+        });
+
+        sub.on('glideSlopeError').handle((gs) => {
+            if (this.hasGlideSlope) {
+                this.handleGlideSlopeError(gs);
+            }
+        });
+    }
+
+    render(): VNode {
+        return (
+            <g id="LocalizerSymbolsGroup">
+                <path class="NormalStroke White" d="m110.71 50.585a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
+                <path class="NormalStroke White" d="m110.71 65.704a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
+                <path class="NormalStroke White" d="m110.71 95.942a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
+                <path class="NormalStroke White" d="m110.71 111.06a1.0074 1.0079 0 1 0-2.0147 0 1.0074 1.0079 0 1 0 2.0147 0z" />
+                <g class="HideGSDiamond" ref={this.diamondGroup}>
+                    <path id="GlideSlopeDiamondLower" ref={this.upperDiamond} class="NormalStroke Magenta HiddenElement" d="m107.19 111.06 2.5184 3.7798 2.5184-3.7798" />
+                    <path id="GlideSlopeDiamondUpper" ref={this.lowerDiamond} class="NormalStroke Magenta HiddenElement" d="m107.19 50.585 2.5184-3.7798 2.5184 3.7798" />
+                    <path
+                        id="GlideSlopeDiamond"
+                        ref={this.glideSlopeDiamond}
+                        class="NormalStroke Magenta HiddenElement"
+                        d="m109.7 77.043-2.5184 3.7798 2.5184 3.7798 2.5184-3.7798z"
+                    />
+                </g>
+            </g>
+        );
+    }
+}
+
+class VDevIndicator extends DisplayComponent<{bus: EventBus}> {
+    private VDevSymbolLower = FSComponent.createRef<SVGPathElement>();
+
+    private VDevSymbolUpper = FSComponent.createRef<SVGPathElement>();
+
+    private VDevSymbol = FSComponent.createRef<SVGPathElement>();
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        // TODO use correct simvar once RNAV is implemented
+        const deviation = 0;
+        const dots = deviation / 100;
+
+        if (dots > 2) {
+            this.VDevSymbolLower.instance.style.visibility = 'visible';
+            this.VDevSymbolUpper.instance.style.visibility = 'hidden';
+            this.VDevSymbol.instance.style.visibility = 'hidden';
+        } else if (dots < -2) {
+            this.VDevSymbolLower.instance.style.visibility = 'hidden';
+            this.VDevSymbolUpper.instance.style.visibility = 'visible';
+            this.VDevSymbol.instance.style.visibility = 'hidden';
+        } else {
+            this.VDevSymbolLower.instance.style.visibility = 'hidden';
+            this.VDevSymbolUpper.instance.style.visibility = 'hidden';
+            this.VDevSymbol.instance.style.visibility = 'visible';
+            this.VDevSymbol.instance.style.transform = `translate3d(0px, ${dots * 30.238 / 2}px, 0px)`;
+        }
+    }
+
+    render(): VNode {
+        return (
+            <g id="VertDevSymbolsGroup" style="display: none">
+                <text class="FontSmall AlignRight Green" x="95.022" y="43.126">V/DEV</text>
+                <path class="NormalStroke White" d="m108.7 65.704h2.0147" />
+                <path class="NormalStroke White" d="m108.7 50.585h2.0147" />
+                <path class="NormalStroke White" d="m108.7 111.06h2.0147" />
+                <path class="NormalStroke White" d="m108.7 95.942h2.0147" />
+                <path id="VDevSymbolLower" ref={this.VDevSymbolLower} class="NormalStroke Green" d="m107.19 111.06v2.0159h5.0368v-2.0159" />
+                <path id="VDevSymbolUpper" ref={this.VDevSymbolUpper} class="NormalStroke Green" d="m107.19 50.585v-2.0159h5.0368v2.0159" />
+                <path id="VDevSymbol" ref={this.VDevSymbol} class="NormalStroke Green" d="m112.22 78.807h-5.0368v4.0318h5.0368v-2.0159z" />
+            </g>
+        );
+    }
+}
+
+// Not implemented on the FMS side, so this is just static and hidden for now
+class LDevIndicator extends DisplayComponent<any> {
+    render(): VNode {
+        return (
+            <g id="LatDeviationSymbolsGroup" style="display: none">
+                <text className="FontSmall AlignRight Green" x="30.888" y="122.639">L/DEV</text>
+                <path className="NormalStroke White" d="m38.686 129.51v2.0158" />
+                <path className="NormalStroke White" d="m53.796 129.51v2.0158" />
+                <path className="NormalStroke White" d="m84.017 129.51v2.0158" />
+                <path className="NormalStroke White" d="m99.127 129.51v2.0158" />
+                <path id="LDevSymbolLeft" className="NormalStroke Green" d="m38.686 127.99h-2.0147v5.0397h2.0147" />
+                <path id="LDevSymbolRight" className="NormalStroke Green" d="m99.127 127.99h2.0147v5.0397h-2.0147" />
+                <path id="LDevSymbol" className="NormalStroke Green" d="m66.892 127.99v5.0397h4.0294v-5.0397h-2.0147z" />
+            </g>
+        );
+    }
+}
+
+class MarkerBeaconIndicator extends DisplayComponent<{ bus: EventBus }> {
+    private classNames = Subject.create('HiddenElement');
+
+    private markerText = Subject.create('');
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+        const baseClass = 'FontLarge StartAlign';
+
+        sub.on('markerBeacon').whenChanged().handle((markerState) => {
+            if (markerState === 0) {
+                this.classNames.set(`${baseClass} HiddenElement`);
+            } else if (markerState === 1) {
+                this.classNames.set(`${baseClass} Cyan OuterMarkerBlink`);
+                this.markerText.set('OM');
+            } else if (markerState === 2) {
+                this.classNames.set(`${baseClass} Amber MiddleMarkerBlink`);
+                this.markerText.set('MM');
+            } else {
+                this.classNames.set(`${baseClass} White InnerMarkerBlink`);
+                this.markerText.set('IM');
+            }
+        });
+    }
+
+    render(): VNode {
+        return (
+            <text id="ILSMarkerText" class={this.classNames} x="98.339211" y="125.12898">{this.markerText}</text>
+        );
+    }
+}
