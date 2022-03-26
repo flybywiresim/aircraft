@@ -221,7 +221,7 @@ impl PowerTransferUnit {
 
     const SHAFT_SPEED_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
 
-    const DELAY_TO_DECLARE_CONTINUOUS: Duration = Duration::from_millis(1000);
+    const DELAY_TO_DECLARE_CONTINUOUS: Duration = Duration::from_millis(1500);
     const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 400.;
 
     pub fn new(context: &mut InitContext) -> Self {
@@ -283,9 +283,9 @@ impl PowerTransferUnit {
         self.is_enabled = controller.should_enable();
 
         self.update_displacement(context, loop_left_section, loop_right_section);
-        self.update_active_state();
         self.update_shaft_physics(context, loop_left_section, loop_right_section);
         self.update_continuous_state(context);
+        self.update_active_state();
         self.update_flows();
     }
 

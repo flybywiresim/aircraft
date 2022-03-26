@@ -27,9 +27,8 @@ class CDUFuelPredPage {
         let zfwColor = "[color]amber";
         mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
             if (value === "") {
-                mcdu.updateZfwVars();
                 mcdu.scratchpad.setText(
-                    (isFinite(mcdu.zeroFuelWeight) ? (NXUnits.kgToUser(mcdu.zeroFuelWeight)).toFixed(1) : "") +
+                    (isFinite(getZfw()) ? (NXUnits.kgToUser(getZfw() / 1000)).toFixed(1) : "") +
                     "/" +
                     (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));
             } else {
@@ -267,6 +266,15 @@ class CDUFuelPredPage {
             ["MIN DEST FOB", "EXTRA TIME"],
             [minDestFobCell + minDestFobCellColor, extraFuelCell + extraTimeColor + "/" + extraTimeCell + "{end}" + extraCellColor]
         ]);
+
+        mcdu.setArrows(false, false, true, true);
+
+        mcdu.onPrevPage = () => {
+            CDUInitPage.ShowPage1(mcdu);
+        };
+        mcdu.onNextPage = () => {
+            CDUInitPage.ShowPage1(mcdu);
+        };
 
         // regular update due to showing dynamic data on this page
         mcdu.page.SelfPtr = setTimeout(() => {

@@ -11,12 +11,21 @@ class CDUVerticalRevisionPage {
             mcdu.clearDisplay();
             mcdu.page.Current = mcdu.page.VerticalRevisionPage;
 
+            const wpIndex = mcdu.flightPlanManager.indexOfWaypoint(waypoint);
+
             const confirmConstraint = confirmSpeed !== undefined || confirmAlt !== undefined;
             const constraintType = CDUVerticalRevisionPage.constraintType(mcdu, waypoint);
+            const isDestination = wpIndex === mcdu.flightPlanManager.getDestinationIndex();
 
             let waypointIdent = "---";
             if (waypoint) {
                 waypointIdent = waypoint.ident;
+                if (isDestination) {
+                    const destinationRunway = mcdu.flightPlanManager.getDestinationRunway();
+                    if (destinationRunway) {
+                        waypointIdent += Avionics.Utils.formatRunway(destinationRunway.designation);
+                    }
+                }
             }
             let coordinates = "---";
             if (waypointInfo.coordinates) {
@@ -72,23 +81,75 @@ class CDUVerticalRevisionPage {
                     break;
                 }
             }
+
+            let r3Title = "ALT CSTR\xa0";
+            let r3Cell = "{cyan}[\xa0\xa0\xa0\xa0]*{end}";
+            let l3Title = "\xa0SPD CSTR";
+            let l3Cell = "{cyan}*[\xa0\xa0\xa0]{end}";
+            let l4Title = "MACH/START WPT[color]inop";
+            let l4Cell = `\xa0{inop}[\xa0]/{small}${waypointIdent}{end}{end}`;
+            let r5Cell = "STEP ALTS>[color]inop";
+
+            if (isDestination) {
+                const hasGsIntercept = mcdu.flightPlanManager.getApproachType() === ApproachType.APPROACH_TYPE_ILS; // also GLS and MLS
+                const gsIntercept = hasGsIntercept ? mcdu.flightPlanManager.getGlideslopeIntercept() : 0;
+                if (hasGsIntercept && gsIntercept > 0) {
+                    r3Title = "G/S INTCP\xa0";
+                    r3Cell = `{green}{small}${gsIntercept.toFixed(0)}{end}{end}`;
+                } else {
+                    r3Title = "";
+                    r3Cell = "";
+                }
+
+                const closeToDest = mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().liveDistanceTo <= 180;
+                l4Title = "\xa0QNH";
+                if (isFinite(mcdu.perfApprQNH)) {
+                    if (mcdu.perfApprQNH < 500) {
+                        l4Cell = `{cyan}${mcdu.perfApprQNH.toFixed(2)}{end}`;
+                    } else {
+                        l4Cell = `{cyan}${mcdu.perfApprQNH.toFixed(0)}{end}`;
+                    }
+                } else if (closeToDest) {
+                    l4Cell = "{amber}____{end}";
+                } else {
+                    l4Cell = "{cyan}[\xa0\xa0]{end}";
+                }
+                mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
+                    if (mcdu.setPerfApprQNH(value)) {
+                        CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, confirmSpeed, confirmAlt, confirmCode);
+                    } else {
+                        scratchpadCallback();
+                    }
+                };
+
+                l3Title = "";
+                l3Cell = "";
+                r5Cell = "";
+            } else {
+                if (altitudeConstraint) {
+                    r3Cell = `{magenta}${altitudeConstraint}{end}`;
+                }
+                if (speedConstraint) {
+                    l3Cell = `{magenta}${speedConstraint}{end}`;
+                }
+            }
+
             mcdu.setTemplate([
                 ["VERT REV {small}AT{end}{green} " + waypointIdent + "{end}"],
                 [],
                 [""],
                 [speedLimitTitle, ""],
                 [speedLimitCell, "RTA>[color]inop"],
-                ["\xa0SPD CSTR", "ALT CSTR\xa0"],
-                [speedConstraint ? speedConstraint + "[color]magenta" : "*[\xa0\xa0\xa0][color]cyan", altitudeConstraint ? altitudeConstraint + "[color]magenta" : "[\xa0\xa0\xa0\xa0]*[color]cyan"],
-                ["MACH/START WPT[color]inop", ""],
-                [`\xa0{inop}[\xa0]/{small}${waypointIdent}{end}{end}`, ""],
+                [l3Title, r3Title],
+                [l3Cell, r3Cell],
+                [l4Title, ""],
+                [l4Cell, ""],
                 [""],
-                ["<WIND", "STEP ALTS>[color]inop"],
+                ["<WIND/TEMP", r5Cell],
                 [""],
                 [confirmConstraint ? "{amber}*CLB{end}" : "<RETURN", confirmConstraint ? "{amber}DES*{end}" : "", confirmConstraint ? "{amber}{small}OR{end}{end}" : ""]
             ]);
-            mcdu.onLeftInput[0] = () => {}; // EFOB
-            mcdu.onRightInput[0] = () => {}; // EXTRA
+
             mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
                 if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.CRUISE || mcdu.flightPhaseManager.phase > FmgcFlightPhases.APPROACH) {
                     return;
@@ -152,7 +213,7 @@ class CDUVerticalRevisionPage {
             mcdu.onRightInput[1] = () => {}; // RTA
             mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
                 if (value === FMCMainDisplay.clrValue) {
-                    mcdu.flightPlanManager.setWaypointSpeed(-1, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                    mcdu.flightPlanManager.setWaypointSpeed(-1, wpIndex, () => {
                         this.ShowPage(mcdu, waypoint);
                     });
                     return;
@@ -177,14 +238,14 @@ class CDUVerticalRevisionPage {
                     return;
                 }
 
-                mcdu.flightPlanManager.setWaypointSpeed(speed, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                mcdu.flightPlanManager.setWaypointSpeed(speed, wpIndex, () => {
                     this.ShowPage(mcdu, waypoint);
                 }, constraintType === WaypointConstraintType.DES);
             }; // SPD CSTR
             mcdu.onRightInput[2] = (value, scratchpadCallback) => {
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, 0);
-                    mcdu.flightPlanManager.setWaypointAltitude(0, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                    mcdu.flightPlanManager.setWaypointAltitude(0, wpIndex, () => {
                         mcdu.updateConstraints();
                         this.ShowPage(mcdu, waypoint);
                     });
@@ -213,7 +274,7 @@ class CDUVerticalRevisionPage {
                 }
 
                 mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, code);
-                mcdu.flightPlanManager.setWaypointAltitude(altitude, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                mcdu.flightPlanManager.setWaypointAltitude(altitude, wpIndex, () => {
                     mcdu.updateConstraints();
                     this.ShowPage(mcdu, waypoint);
                 }, constraintType === WaypointConstraintType.DES);
@@ -233,26 +294,26 @@ class CDUVerticalRevisionPage {
             } else {
                 mcdu.onLeftInput[5] = () => {
                     if (confirmSpeed !== undefined) {
-                        mcdu.flightPlanManager.setWaypointSpeed(confirmSpeed, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                        mcdu.flightPlanManager.setWaypointSpeed(confirmSpeed, wpIndex, () => {
                             this.ShowPage(mcdu, waypoint);
                         }, false);
                     }
                     if (confirmAlt !== undefined) {
                         mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, confirmCode);
-                        mcdu.flightPlanManager.setWaypointAltitude(confirmAlt, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                        mcdu.flightPlanManager.setWaypointAltitude(confirmAlt, wpIndex, () => {
                             this.ShowPage(mcdu, waypoint);
                         }, false);
                     }
                 };
                 mcdu.onRightInput[5] = () => {
                     if (confirmSpeed !== undefined) {
-                        mcdu.flightPlanManager.setWaypointSpeed(confirmSpeed, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                        mcdu.flightPlanManager.setWaypointSpeed(confirmSpeed, wpIndex, () => {
                             this.ShowPage(mcdu, waypoint);
                         }, true);
                     }
                     if (confirmAlt !== undefined) {
                         mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, confirmCode);
-                        mcdu.flightPlanManager.setWaypointAltitude(confirmAlt, mcdu.flightPlanManager.indexOfWaypoint(waypoint), () => {
+                        mcdu.flightPlanManager.setWaypointAltitude(confirmAlt, wpIndex, () => {
                             this.ShowPage(mcdu, waypoint);
                         }, true);
                     }

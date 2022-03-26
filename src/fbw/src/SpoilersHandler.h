@@ -1,5 +1,7 @@
 #pragma once
 
+#include "RateLimiter.h"
+
 class SpoilersHandler {
  public:
   bool getIsInitialized() const;
@@ -7,6 +9,9 @@ class SpoilersHandler {
   double getHandlePosition() const;
   double getSimPosition() const;
   bool getIsGroundSpoilersActive() const;
+
+  double getLeftPosition() const;
+  double getRightPosition() const;
 
   void setInitialPosition(bool isArmed, double position);
   void setSimulationVariables(double simulationTime_new,
@@ -17,7 +22,9 @@ class SpoilersHandler {
                               double landingGearCompression_1_new,
                               double landingGearCompression_2_new,
                               double flapsHandleIndex_new,
-                              bool isAngleOfAttackProtectionActive_new);
+                              bool isAngleOfAttackProtectionActive_new,
+                              double aileronPosition_new);
+  void updateSimPosition(double dt);
 
   void onEventSpoilersOn();
   void onEventSpoilersOff();
@@ -31,6 +38,8 @@ class SpoilersHandler {
   void onEventSpoilersArmSet(bool value);
 
  private:
+  static constexpr double DEFLECTION_RATE = 0.66;
+
   static constexpr double POSITION_RETRACTED = 0.0;
   static constexpr double POSITION_PARTIAL = 0.25;
   static constexpr double POSITION_LIMIT_AUTOPILOT = 0.5;
@@ -47,10 +56,19 @@ class SpoilersHandler {
   static constexpr double FLAPS_HANDLE_INDEX_FULL = 5;
   static constexpr double INHIBIT_COOLDOWN_TIME = 10.0;
 
+  static constexpr double SPOILERONS_MIN_AILERON_POSITION = 0.08;
+  static constexpr double SPOILERONS_AILERON_GAIN = 0.3571;
+
   bool isInitialized = false;
   bool isArmed = false;
   double handlePosition = 0.0;
-  double simPosition = 0.0;
+  double targetSimPosition = 0.0;
+  double targetLeftPosition = 0.0;
+  double targetRightPosition = 0.0;
+
+  RateLimiter rateLimiter;
+  RateLimiter rateLimiterLeft;
+  RateLimiter rateLimiterRight;
 
   bool conditionInhibit = false;
   double timeInhibitReset = 0.0;
@@ -65,6 +83,7 @@ class SpoilersHandler {
   double landingGearCompression_1 = 0.0;
   double landingGearCompression_2 = 0.0;
   double flapsHandleIndex = 0.0;
+  double aileronPosition = 0.0;
   bool isAngleOfAttackProtectionActive = false;
 
   bool isGroundSpoilersActive = false;
@@ -81,7 +100,8 @@ class SpoilersHandler {
               double landingGearCompression_1_new,
               double landingGearCompression_2_new,
               double flapsHandleIndex_new,
-              bool isAngleOfAttackProtectionActive_new);
+              bool isAngleOfAttackProtectionActive_new,
+              double aileronPosition_new);
 
   static double getGearStrutCompressionFromAnimation(double animationPosition);
 
