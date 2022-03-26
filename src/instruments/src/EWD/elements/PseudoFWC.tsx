@@ -202,6 +202,7 @@ const PseudoFWC: React.FC = () => {
     const [spoilersArmed] = useSimVar('L:A32NX_SPOILERS_ARMED', 'bool', 500);
     const [seatBelt] = useSimVar('A:CABIN SEATBELTS ALERT SWITCH', 'bool', 500);
     const [noSmoking] = useSimVar('L:A32NX_NO_SMOKING_MEMO', 'bool', 500);
+    const [noSmokingSwitchPosition] = useSimVar('L:XMLVAR_SWITCH_OVHD_INTLT_NOSMOKING_Position', 'enum', 500);
 
     const [strobeLightsOn] = useSimVar('L:LIGHTING_STROBE_0', 'bool', 500);
 
@@ -912,7 +913,7 @@ const PseudoFWC: React.FC = () => {
             simVarIsActive: !!ldgmemo,
             whichCodeToReturn: [
                 landingGearDown === 1 ? 1 : 0,
-                noSmoking === 1 && seatBelt === 1 ? 3 : 2,
+                noSmokingSwitchPosition !== 2 && seatBelt === 1 ? 3 : 2,
                 cabinReady ? 5 : 4,
                 spoilersArmed ? 7 : 6,
                 !gpwsFlaps3 && flapsHandle !== 4 ? 8 : null,
@@ -1613,6 +1614,7 @@ const PseudoFWC: React.FC = () => {
         manLandingElevation,
         ndXfrKnob,
         noSmoking,
+        noSmokingSwitchPosition,
         nwSteeringDisc,
         packOffBleedIsAvailable1,
         packOffBleedIsAvailable1,
