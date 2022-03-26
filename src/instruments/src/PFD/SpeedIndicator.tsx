@@ -834,8 +834,65 @@ class SpeedTarget extends DisplayComponent <{ bus: EventBus }> {
                 <text ref={this.upperBoundRef} id="SelectedSpeedLowerText" class="FontSmallest EndAlign Cyan" x="24.078989" y="128.27917">{this.textSub}</text>
                 <text ref={this.lowerBoundRef} id="SelectedSpeedLowerText" class="FontSmallest EndAlign Cyan" x="24.113895" y="36.670692">{this.textSub}</text>
                 <path ref={this.speedTargetRef} class="NormalStroke CornerRound Cyan" style="transform: translate3d(0px, 0px, 0px)" d="m19.274 81.895 5.3577 1.9512v-6.0476l-5.3577 1.9512" />
+                <SpeedMargins bus={this.props.bus} />
             </>
         );
+    }
+}
+
+class SpeedMargins extends DisplayComponent<{ bus: EventBus }> {
+    private entireComponentRef = FSComponent.createRef<SVGGElement>();
+
+    private upperSpeedMarginRef = FSComponent.createRef<SVGPathElement>();
+
+    private lowerSpeedMarginRef = FSComponent.createRef<SVGPathElement>();
+
+    private currentSpeed = new Arinc429Word(0);
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+
+        sub.on('showSpeedMargins').handle(this.hideOrShow(this.entireComponentRef));
+
+        sub.on('speedAr').withArinc429Precision(2).handle((s) => this.currentSpeed = s);
+
+        sub.on('upperSpeedMargin').handle(this.moveToSpeed(this.upperSpeedMarginRef));
+
+        sub.on('lowerSpeedMargin').handle(this.moveToSpeed(this.lowerSpeedMarginRef));
+    }
+
+    render(): VNode {
+        return (
+            <g ref={this.entireComponentRef} id="SpeedMargins" style="display: none;">
+                <path ref={this.upperSpeedMarginRef} id="UpperSpeedMargin" class="Fill Magenta" d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z" />
+                <path ref={this.lowerSpeedMarginRef} id="LowerSpeedMargin" class="Fill Magenta" d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z" />
+            </g>
+        );
+    }
+
+    private moveToSpeed<T extends(HTMLElement | SVGElement)>(component: NodeReference<T>) {
+        return (speed: number) => {
+            const offset = (Math.round(100 * (this.currentSpeed.value - speed) * DistanceSpacing / ValueSpacing) / 100).toFixed(2);
+
+            const isInRange = Math.abs(this.currentSpeed.value - speed) < DisplayRange;
+            component.instance.style.visibility = isInRange ? 'visible' : 'hidden';
+
+            if (isInRange) {
+                component.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
+            }
+        };
+    }
+
+    private hideOrShow<T extends(HTMLElement | SVGElement)>(component: NodeReference<T>) {
+        return (isActive: boolean) => {
+            if (isActive) {
+                component.instance.removeAttribute('style');
+            } else {
+                component.instance.setAttribute('style', 'display: none');
+            }
+        };
     }
 }
 

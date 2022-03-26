@@ -35,12 +35,10 @@ export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, side, range
         return null;
     }
 
-    const constraintFlags = NdSymbolTypeFlags.ConstraintMet | NdSymbolTypeFlags.ConstraintMissed | NdSymbolTypeFlags.ConstraintUnknown;
-
     return (
         <Layer x={x} y={y}>
             { /* constraint circles need to be drawn under the flight path */ }
-            {symbols.filter((symbol) => (symbol.type & constraintFlags) > 0).map((symbol) => {
+            {symbols.filter((symbol) => (symbol.type & NdSymbolTypeFlags.Constraint) > 0).map((symbol) => {
                 const position = mapParams.coordinatesToXYy(symbol.location);
 
                 return (
@@ -66,6 +64,10 @@ export const FlightPlan: FC<FlightPathProps> = memo(({ x = 0, y = 0, side, range
             ))}
 
             {symbols.map((symbol) => {
+                if (!symbol.location) {
+                    return false;
+                }
+
                 const position = mapParams.coordinatesToXYy(symbol.location);
 
                 let endPosition;
@@ -256,7 +258,7 @@ interface SymbolMarkerProps {
     ndRange: number,
 }
 
-const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, endX, endY, arcRadius, arcSweep, type, constraints, length, direction, radials, radii, mapParams, ndRange }) => {
+export const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, endX, endY, arcRadius, arcSweep, type, constraints, length, direction, radials, radii, mapParams, ndRange }) => {
     let colour = 'White';
     let shadow = true;
     // todo airport as well if in flightplan
@@ -386,9 +388,9 @@ const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, endX, endY, arc
         showIdent = false;
         elements.push(
             <>
-                <path d="M 0, 0.5 h 15.5 l 12, 12 m -4, 0 l 4, 0 l 0, -4" strokeWidth={1.8} className="shadow" />
+                <path d="M 0, 0 h 21 l 17 17 m -5, 0 l 5, 0 l 0, -5" strokeWidth={1.8} className="shadow" />
 
-                <path d="M 0, 0.5 h 15.5 l 12, 12 m -4, 0 l 4, 0 l 0, -4" strokeWidth={1.5} className="White" />
+                <path d="M 0, 0 h 21 l 17 17 m -5, 0 l 5, 0 l 0, -5" strokeWidth={1.5} className={typeFlagToColor(type)} />
             </>,
         );
     } else if (type & (NdSymbolTypeFlags.PwpCdaFlap1)) {
@@ -416,10 +418,60 @@ const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, endX, endY, arc
         elements.push(
             <>
                 <circle cx={0} cy={0} r={13} strokeWidth={1.6} className="shadow" />
-                <circle cx={0} cy={0} r={12} strokeWidth={1.5} className="Magenta" />
+                <circle cx={0} cy={0} r={12} strokeWidth={1.5} className={typeFlagToColor(type)} />
 
-                <text x={1.5} y={2} className="Magenta shadow" strokeWidth={1} textAnchor="middle" dominantBaseline="middle" fontSize={22}>D</text>
+                <text x={1.5} y={2} className={`${typeFlagToColor(type)} shadow`} strokeWidth={1} textAnchor="middle" dominantBaseline="middle" fontSize={22}>D</text>
             </>,
+        );
+    } else if (type & (NdSymbolTypeFlags.PwpClimbLevelOff)) {
+        showIdent = false;
+        elements.push(
+            <>
+                <path d="M -38, 17 l 17, -17 h 21 m -5, -5 l 5, 5 l -5, 5" strokeWidth={1.8} className="shadow" />
+
+                <path d="M -38, 17 l 17, -17 h 21 m -5, -5 l 5, 5 l -5, 5" strokeWidth={1.5} className={typeFlagToColor(type)} />
+            </>,
+        );
+    } else if (type & (NdSymbolTypeFlags.PwpDescentLevelOff)) {
+        showIdent = false;
+        elements.push(
+            <>
+                <path d="M -38, -17 l 17, 17 h 21 m -5, -5 l 5, 5 l -5, 5" strokeWidth={1.8} className="shadow" />
+
+                <path d="M -38, -17 l 17, 17 h 21 m -5, -5 l 5, 5 l -5, 5" strokeWidth={1.5} className={typeFlagToColor(type)} />
+            </>,
+        );
+    } else if (type & (NdSymbolTypeFlags.PwpStartOfClimb)) {
+        showIdent = false;
+        elements.push(
+            <>
+                <path d="M 0, 0 h 21 l 17 -17 m -5, 0 l 5, 0 l 0, 5" strokeWidth={1.8} className="shadow" />
+
+                <path d="M 0, 0 h 21 l 17 -17 m -5, 0 l 5, 0 l 0, 5" strokeWidth={1.5} className={typeFlagToColor(type)} />
+            </>,
+        );
+    } else if (type & (NdSymbolTypeFlags.PwpInterceptProfile)) {
+        showIdent = false;
+        elements.push(
+            <>
+                <path d="M -38, 0 l 14, -17 v 34 l 14 -17 h10 m -5 -5 l 5 5 l -5 5" strokeWidth={1.8} className="shadow" />
+
+                <path d="M -38, 0 l 14, -17 v 34 l 14 -17 h10 m -5 -5 l 5 5 l -5 5" strokeWidth={1.5} className={typeFlagToColor(type)} />
+            </>,
+        );
+    } else if (type & (NdSymbolTypeFlags.PwpTimeMarker)) {
+        colour = 'Green';
+        showIdent = true;
+        elements.push(
+            <>
+                <circle r={12} className="shadow" strokeWidth={2.5} />
+                <circle r={12} className="Green" strokeWidth={2} />
+            </>,
+        );
+    } else if (type & (NdSymbolTypeFlags.PwpSpeedChange)) {
+        showIdent = false;
+        elements.push(
+            <circle cx={0} cy={0} r={7} className={`${typeFlagToColor(type)} Fill`} />,
         );
     }
 
@@ -444,32 +496,12 @@ interface ConstraintMarkerProps {
     type: NdSymbolTypeFlags,
 }
 
-const ConstraintMarker: FC<ConstraintMarkerProps> = memo(({ x, y, type }) => {
-    if (type & NdSymbolTypeFlags.ConstraintMet) {
-        return (
-            <Layer x={x} y={y}>
-                <circle r={12} className="shadow" strokeWidth={2.5} />
-                <circle r={12} className="Magenta" strokeWidth={2} />
-            </Layer>
-        );
-    }
-
-    if (type & NdSymbolTypeFlags.ConstraintMissed) {
-        return (
-            <Layer x={x} y={y}>
-                <circle r={12} className="shadow" strokeWidth={2.5} />
-                <circle r={12} className="Amber" strokeWidth={2} />
-            </Layer>
-        );
-    }
-
-    return (
-        <Layer x={x} y={y}>
-            <circle r={12} className="shadow" strokeWidth={2.5} />
-            <circle r={12} className="White" strokeWidth={2} />
-        </Layer>
-    );
-});
+export const ConstraintMarker: FC<ConstraintMarkerProps> = memo(({ x, y, type }) => (
+    <Layer x={x} y={y}>
+        <circle r={12} className="shadow" strokeWidth={2.5} />
+        <circle r={12} className={typeFlagToColor(type)} strokeWidth={2} />
+    </Layer>
+));
 
 export type DebugLegProps<TLeg extends Leg> = {
     leg: TLeg,
@@ -571,4 +603,16 @@ const DebugHXLeg: FC<DebugLegProps<HALeg | HFLeg | HMLeg>> = ({ leg, mapParams }
             <text fill="#ff4444" x={infoX} y={infoY + 20} fontSize={16}>{legType}</text>
         </>
     );
+};
+
+const typeFlagToColor = (typeFlag: NdSymbolTypeFlags) => {
+    if (typeFlag & NdSymbolTypeFlags.CyanColor) {
+        return 'Cyan';
+    } if (typeFlag & NdSymbolTypeFlags.MagentaColor) {
+        return 'Magenta';
+    } if (typeFlag & NdSymbolTypeFlags.AmberColor) {
+        return 'Amber';
+    }
+
+    return 'White';
 };
