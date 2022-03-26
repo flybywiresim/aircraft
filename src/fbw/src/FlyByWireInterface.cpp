@@ -608,6 +608,11 @@ void FlyByWireInterface::setupLocalVariables() {
     idSplrFaultRight[i] = make_unique<LocalVariable>("A32NX_RIGHT_SPLR_" + idString + "_SERVO_FAILED");
   }
 
+  idLeftAileronPosition = make_unique<LocalVariable>("A32NX_HYD_AILERON_LEFT_DEFLECTION");
+  idRightAileronPosition = make_unique<LocalVariable>("A32NX_HYD_AILERON_RIGHT_DEFLECTION");
+  idLeftElevatorPosition = make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_LEFT_DEFLECTION");
+  idRightElevatorPosition = make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_RIGHT_DEFLECTION");
+
   idElecDcBus2Powered = make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
   idElecDcEssShedBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED");
   idElecDcEssBusPowered = make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
@@ -961,11 +966,13 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].analogInputs.foPitchStickPos = 0;
   elacs[elacIndex].analogInputs.capRollStickPos = simInput.inputs[1] * 19;
   elacs[elacIndex].analogInputs.foRollStickPos = 0;
-  elacs[elacIndex].analogInputs.leftElevatorPos = 0;
-  elacs[elacIndex].analogInputs.rightElevatorPos = 0;
+  double leftElevPos = -idLeftElevatorPosition->get();
+  double rightElevPos = -idRightElevatorPosition->get();
+  elacs[elacIndex].analogInputs.leftElevatorPos = leftElevPos > 0 ? leftElevPos * 17 : leftElevPos * 30;
+  elacs[elacIndex].analogInputs.rightElevatorPos = rightElevPos > 0 ? rightElevPos * 17 : rightElevPos * 30;
   elacs[elacIndex].analogInputs.thsPos = 0;
-  elacs[elacIndex].analogInputs.leftAileronPos = 0;
-  elacs[elacIndex].analogInputs.rightAileronPos = 0;
+  elacs[elacIndex].analogInputs.leftAileronPos = idLeftAileronPosition->get() * 25;
+  elacs[elacIndex].analogInputs.rightAileronPos = -idRightAileronPosition->get() * 25;
   elacs[elacIndex].analogInputs.rudderPedalPos = simInput.inputs[2] * 30;
   elacs[elacIndex].analogInputs.loadFactorAcc1 = 0;
   elacs[elacIndex].analogInputs.loadFactorAcc2 = 0;
@@ -1062,8 +1069,10 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   if (secIndex < 2) {
     secs[secIndex].analogInputs.capPitchStickPos = simInput.inputs[0] * 15;
     secs[secIndex].analogInputs.foPitchStickPos = 0;
-    secs[secIndex].analogInputs.leftElevatorPos = 0;
-    secs[secIndex].analogInputs.rightElevatorPos = 0;
+    double leftElevPos = -idLeftElevatorPosition->get();
+    double rightElevPos = -idRightElevatorPosition->get();
+    secs[secIndex].analogInputs.leftElevatorPos = leftElevPos > 0 ? leftElevPos * 17 : leftElevPos * 30;
+    secs[secIndex].analogInputs.rightElevatorPos = rightElevPos > 0 ? rightElevPos * 17 : rightElevPos * 30;
     secs[secIndex].analogInputs.thsPos = 0;
     secs[secIndex].analogInputs.loadFactorAcc1 = 0;
     secs[secIndex].analogInputs.loadFactorAcc2 = 0;

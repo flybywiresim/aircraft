@@ -253,7 +253,7 @@ const Aileron = ({
     const fcdc2AileronDeflection = useArinc429Var(`L:A32NX_FCDC_2_AILERON_${side.toUpperCase()}_POS`);
     const aileronDeflection = !fcdc1AileronDeflection.isFailureWarning() ? fcdc1AileronDeflection : fcdc2AileronDeflection;
 
-    const aileronDeflectPctNormalized = aileronDeflection.valueOr(0) * 54;
+    const aileronDeflectPctNormalized = aileronDeflection.valueOr(0) * 54 / 25;
     const cursorPath = `M${side === 'left' ? 1 : -1} ${side === 'left' ? 51
         : 51} l${side === 'right' ? '-' : ''}15 -7 l0 14Z`;
     const servcontrol1Avail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 11 : 13);
@@ -361,7 +361,7 @@ const Elevator = ({
     const elevatorDeflection = !fcdc1ElevatorDeflection.isFailureWarning() ? fcdc1ElevatorDeflection : fcdc2ElevatorDeflection;
     const elevatorPositionValid = elevatorDeflection.isNormalOperation();
 
-    const elevatorDeflectPctNormalized = elevatorDeflection.value * (elevatorDeflection.value > 0 ? 70 : 52);
+    const elevatorDeflectPctNormalized = elevatorDeflection.value * 70 / 30;
     const cursorPath = `M${side === 'left' ? 1 : -1},70 l${side === 'right' ? '-' : ''}15,-7 l0,14Z`;
     const servcontrolLeftAvail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 15 : 18);
     const servcontrolRightAvail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 16 : 17);
