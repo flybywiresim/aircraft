@@ -412,7 +412,7 @@ impl A320SpoilerFactory {
             control_arm,
             anchor,
             Angle::new::<degree>(-10.),
-            Angle::new::<degree>(40.),
+            Angle::new::<degree>(50.),
             Angle::new::<degree>(-10.),
             50.,
             false,
@@ -436,7 +436,18 @@ impl A320SpoilerFactory {
         let spoiler_4 = Self::new_a320_spoiler_element(context, id, 4);
         let spoiler_5 = Self::new_a320_spoiler_element(context, id, 5);
 
-        SpoilerGroup::new([spoiler_1, spoiler_2, spoiler_3, spoiler_4, spoiler_5])
+        match id {
+            ActuatorSide::Left => SpoilerGroup::new(
+                context,
+                "LEFT",
+                [spoiler_1, spoiler_2, spoiler_3, spoiler_4, spoiler_5],
+            ),
+            ActuatorSide::Right => SpoilerGroup::new(
+                context,
+                "RIGHT",
+                [spoiler_1, spoiler_2, spoiler_3, spoiler_4, spoiler_5],
+            ),
+        }
     }
 
     fn new_a320_spoiler_element(
@@ -714,10 +725,9 @@ pub(super) struct A320Hydraulic {
     left_elevator: ElevatorAssembly,
     right_elevator: ElevatorAssembly,
 
-    fac_computer: FacComputer,
+    fac_computer: RudderSystemHydraulicController,
     rudder: RudderAssembly,
 
-    spoiler_computer: SpoilerComputer,
     left_spoilers: SpoilerGroup,
     right_spoilers: SpoilerGroup,
 }
@@ -937,10 +947,9 @@ impl A320Hydraulic {
             left_elevator: A320ElevatorFactory::new_elevator(context, ActuatorSide::Left),
             right_elevator: A320ElevatorFactory::new_elevator(context, ActuatorSide::Right),
 
-            fac_computer: FacComputer::new(context),
+            fac_computer: RudderSystemHydraulicController::new(context),
             rudder: A320RudderFactory::new_rudder(context),
 
-            spoiler_computer: SpoilerComputer::new(context),
             left_spoilers: A320SpoilerFactory::new_a320_spoiler_group(context, ActuatorSide::Left),
             right_spoilers: A320SpoilerFactory::new_a320_spoiler_group(
                 context,
@@ -1124,7 +1133,6 @@ impl A320Hydraulic {
 
         self.left_spoilers.update(
             context,
-            self.spoiler_computer.left_controllers(),
             self.green_circuit.system_pressure(),
             self.blue_circuit.system_pressure(),
             self.yellow_circuit.system_pressure(),
@@ -1132,7 +1140,6 @@ impl A320Hydraulic {
 
         self.right_spoilers.update(
             context,
-            self.spoiler_computer.right_controllers(),
             self.green_circuit.system_pressure(),
             self.blue_circuit.system_pressure(),
             self.yellow_circuit.system_pressure(),
@@ -1643,7 +1650,6 @@ impl SimulationElement for A320Hydraulic {
         self.fac_computer.accept(visitor);
         self.rudder.accept(visitor);
 
-        self.spoiler_computer.accept(visitor);
         self.left_spoilers.accept(visitor);
         self.right_spoilers.accept(visitor);
 
@@ -3807,10 +3813,7 @@ impl SimulationElement for ElevatorSystemHydraulicController {
     }
 }
 
-/// Implements a placeholder fac computer logic commanding correct hydraulic modes depending
-/// on pressure state.
-/// TODO: Receive each actuator mode and commands directly from a FBW fac implementation
-struct FacComputer {
+struct RudderSystemHydraulicController {
     requested_rudder_position_id: VariableIdentifier,
 
     rudder_position_requested: Ratio,
@@ -3819,7 +3822,7 @@ struct FacComputer {
 
     is_powered: bool,
 }
-impl FacComputer {
+impl RudderSystemHydraulicController {
     //TODO hot busses of FAC to check
     const ALL_POWER_BUSES: [ElectricalBusType; 4] = [
         ElectricalBusType::DirectCurrentEssential,
@@ -3931,7 +3934,7 @@ impl FacComputer {
         &self.rudder_controllers[..]
     }
 }
-impl SimulationElement for FacComputer {
+impl SimulationElement for RudderSystemHydraulicController {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.rudder_position_requested =
             Ratio::new::<ratio>(reader.read(&self.requested_rudder_position_id));
@@ -4193,8 +4196,6 @@ impl SpoilerElement {
             [current_pressure],
         );
 
-        // We return actuator position so it's consistent with demand
-        // Later we must decide who works in actuator position and surface position between demand and control
         self.position = self.hydraulic_assembly.actuator_position_normalized(0);
     }
 }
@@ -4206,25 +4207,34 @@ impl SimulationElement for SpoilerElement {
 
 struct SpoilerGroup {
     spoilers: [SpoilerElement; 5],
+    hydraulic_controllers: [SpoilerController; 5],
 }
 impl SpoilerGroup {
-    fn new(spoilers: [SpoilerElement; 5]) -> Self {
-        Self { spoilers }
+    fn new(context: &mut InitContext, spoiler_side: &str, spoilers: [SpoilerElement; 5]) -> Self {
+        Self {
+            spoilers,
+            hydraulic_controllers: [
+                SpoilerController::new(context, spoiler_side, 1),
+                SpoilerController::new(context, spoiler_side, 2),
+                SpoilerController::new(context, spoiler_side, 3),
+                SpoilerController::new(context, spoiler_side, 4),
+                SpoilerController::new(context, spoiler_side, 5),
+            ],
+        }
     }
 
     fn update(
         &mut self,
         context: &UpdateContext,
-        spoiler_controllers: &[impl HydraulicAssemblyController],
         green_pressure: Pressure,
         blue_pressure: Pressure,
         yellow_pressure: Pressure,
     ) {
-        self.spoilers[0].update(context, &spoiler_controllers[0], green_pressure);
-        self.spoilers[1].update(context, &spoiler_controllers[1], yellow_pressure);
-        self.spoilers[2].update(context, &spoiler_controllers[2], blue_pressure);
-        self.spoilers[3].update(context, &spoiler_controllers[3], yellow_pressure);
-        self.spoilers[4].update(context, &spoiler_controllers[4], green_pressure);
+        self.spoilers[0].update(context, &self.hydraulic_controllers[0], green_pressure);
+        self.spoilers[1].update(context, &self.hydraulic_controllers[1], yellow_pressure);
+        self.spoilers[2].update(context, &self.hydraulic_controllers[2], blue_pressure);
+        self.spoilers[3].update(context, &self.hydraulic_controllers[3], yellow_pressure);
+        self.spoilers[4].update(context, &self.hydraulic_controllers[4], green_pressure);
     }
 
     fn actuator(&mut self, spoiler_id: usize) -> &mut impl Actuator {
@@ -4233,6 +4243,10 @@ impl SpoilerGroup {
 }
 impl SimulationElement for SpoilerGroup {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        for controller in &mut self.hydraulic_controllers {
+            controller.accept(visitor);
+        }
+
         for spoiler in &mut self.spoilers {
             spoiler.accept(visitor);
         }
@@ -4241,25 +4255,24 @@ impl SimulationElement for SpoilerGroup {
     }
 }
 
-#[derive(PartialEq, Clone, Copy)]
 struct SpoilerController {
-    mode: LinearActuatorMode,
+    position_demand_id: VariableIdentifier,
     requested_position: Ratio,
 }
 impl SpoilerController {
-    fn new() -> Self {
+    fn new(context: &mut InitContext, spoiler_side: &str, spoiler_id_number: usize) -> Self {
         Self {
-            mode: LinearActuatorMode::PositionControl,
+            position_demand_id: context.get_identifier(format!(
+                "{}_SPOILER_{}_COMMANDED_POSITION",
+                spoiler_side, spoiler_id_number
+            )),
 
             requested_position: Ratio::new::<ratio>(0.),
         }
     }
 
-    /// Receives a [0;1] position request, 0 is down 1 is up
-    fn set_requested_position(&mut self, requested_position: Ratio) {
-        self.requested_position = requested_position
-            .min(Ratio::new::<ratio>(1.))
-            .max(Ratio::new::<ratio>(0.));
+    fn spoiler_actuator_position_from_surface_angle(surface_angle: Angle) -> Ratio {
+        Ratio::new::<ratio>((surface_angle.get::<degree>() / 50.).min(1.).max(0.))
     }
 }
 impl HydraulicAssemblyController for SpoilerController {
@@ -4279,96 +4292,12 @@ impl HydraulicAssemblyController for SpoilerController {
         Ratio::default()
     }
 }
-
-struct SpoilerComputer {
-    requested_position_left_1_id: VariableIdentifier,
-    requested_position_left_2_id: VariableIdentifier,
-    requested_position_left_3_id: VariableIdentifier,
-    requested_position_left_4_id: VariableIdentifier,
-    requested_position_left_5_id: VariableIdentifier,
-
-    requested_position_right_1_id: VariableIdentifier,
-    requested_position_right_2_id: VariableIdentifier,
-    requested_position_right_3_id: VariableIdentifier,
-    requested_position_right_4_id: VariableIdentifier,
-    requested_position_right_5_id: VariableIdentifier,
-
-    left_positions_requested: [Ratio; 5],
-    right_positions_requested: [Ratio; 5],
-
-    left_controllers: [SpoilerController; 5],
-    right_controllers: [SpoilerController; 5],
-}
-impl SpoilerComputer {
-    fn new(context: &mut InitContext) -> Self {
-        Self {
-            requested_position_left_1_id: context
-                .get_identifier("HYD_SPOILER_1_LEFT_DEMAND".to_owned()),
-            requested_position_left_2_id: context
-                .get_identifier("HYD_SPOILER_2_LEFT_DEMAND".to_owned()),
-            requested_position_left_3_id: context
-                .get_identifier("HYD_SPOILER_3_LEFT_DEMAND".to_owned()),
-            requested_position_left_4_id: context
-                .get_identifier("HYD_SPOILER_4_LEFT_DEMAND".to_owned()),
-            requested_position_left_5_id: context
-                .get_identifier("HYD_SPOILER_5_LEFT_DEMAND".to_owned()),
-
-            requested_position_right_1_id: context
-                .get_identifier("HYD_SPOILER_1_RIGHT_DEMAND".to_owned()),
-            requested_position_right_2_id: context
-                .get_identifier("HYD_SPOILER_2_RIGHT_DEMAND".to_owned()),
-            requested_position_right_3_id: context
-                .get_identifier("HYD_SPOILER_3_RIGHT_DEMAND".to_owned()),
-            requested_position_right_4_id: context
-                .get_identifier("HYD_SPOILER_4_RIGHT_DEMAND".to_owned()),
-            requested_position_right_5_id: context
-                .get_identifier("HYD_SPOILER_5_RIGHT_DEMAND".to_owned()),
-
-            left_positions_requested: [Ratio::default(); 5],
-            right_positions_requested: [Ratio::default(); 5],
-
-            // Controllers are in inward->outward order
-            left_controllers: [SpoilerController::new(); 5],
-            right_controllers: [SpoilerController::new(); 5],
-        }
-    }
-
-    fn update_spoilers_requested_position(&mut self) {
-        for (idx, controller) in &mut self.left_controllers.iter_mut().enumerate() {
-            controller.set_requested_position(self.left_positions_requested[idx]);
-        }
-
-        for (idx, controller) in &mut self.right_controllers.iter_mut().enumerate() {
-            controller.set_requested_position(self.right_positions_requested[idx]);
-        }
-    }
-
-    fn left_controllers(&self) -> &[impl HydraulicAssemblyController] {
-        &self.left_controllers[..]
-    }
-
-    fn right_controllers(&self) -> &[impl HydraulicAssemblyController] {
-        &self.right_controllers[..]
-    }
-}
-impl SimulationElement for SpoilerComputer {
+impl SimulationElement for SpoilerController {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.left_positions_requested = [
-            Ratio::new::<ratio>(reader.read(&self.requested_position_left_1_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_left_2_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_left_3_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_left_4_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_left_5_id)),
-        ];
-        self.right_positions_requested = [
-            Ratio::new::<ratio>(reader.read(&self.requested_position_right_1_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_right_2_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_right_3_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_right_4_id)),
-            Ratio::new::<ratio>(reader.read(&self.requested_position_right_5_id)),
-        ];
-
-        self.update_spoilers_requested_position();
+        self.requested_position =
+            Self::spoiler_actuator_position_from_surface_angle(Angle::new::<degree>(
+                reader.read(&self.position_demand_id),
+            ));
     }
 }
 
@@ -4999,6 +4928,24 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("HYD_ELEV_LEFT_DEFLECTION"))
             }
 
+            fn get_mean_right_spoilers_position(&mut self) -> Ratio {
+                (Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_1_RIGHT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_2_RIGHT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_3_RIGHT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_4_RIGHT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_5_RIGHT_DEFLECTION")))
+                    / 5.
+            }
+
+            fn get_mean_left_spoilers_position(&mut self) -> Ratio {
+                (Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_1_LEFT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_2_LEFT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_3_LEFT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_4_LEFT_DEFLECTION"))
+                    + Ratio::new::<ratio>(self.read_by_name("HYD_SPOIL_5_LEFT_DEFLECTION")))
+                    / 5.
+            }
+
             fn get_right_elevator_position(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("HYD_ELEV_RIGHT_DEFLECTION"))
             }
@@ -5395,12 +5342,12 @@ mod tests {
                 self
             }
 
-            fn set_deploy_spoilers(mut self) -> Self {
+            fn set_deploy_ground_spoilers(mut self) -> Self {
                 self.write_by_name("SPOILERS_GROUND_SPOILERS_ACTIVE", true);
                 self
             }
 
-            fn set_retract_spoilers(mut self) -> Self {
+            fn set_retract_ground_spoilers(mut self) -> Self {
                 self.write_by_name("SPOILERS_GROUND_SPOILERS_ACTIVE", false);
                 self
             }
@@ -5457,6 +5404,42 @@ mod tests {
                 self.write_by_name("RIGHT_ELEV_BLUE_COMMANDED_POSITION", 0.);
                 self.write_by_name("LEFT_ELEV_GREEN_COMMANDED_POSITION", 0.);
                 self.write_by_name("RIGHT_ELEV_YELLOW_COMMANDED_POSITION", 0.);
+                self
+            }
+
+            fn set_left_spoilers_out(mut self) -> Self {
+                self.write_by_name("LEFT_SPOILER_1_COMMANDED_POSITION", 50.);
+                self.write_by_name("LEFT_SPOILER_2_COMMANDED_POSITION", 50.);
+                self.write_by_name("LEFT_SPOILER_3_COMMANDED_POSITION", 50.);
+                self.write_by_name("LEFT_SPOILER_4_COMMANDED_POSITION", 50.);
+                self.write_by_name("LEFT_SPOILER_5_COMMANDED_POSITION", 50.);
+                self
+            }
+
+            fn set_left_spoilers_in(mut self) -> Self {
+                self.write_by_name("LEFT_SPOILER_1_COMMANDED_POSITION", 0.);
+                self.write_by_name("LEFT_SPOILER_2_COMMANDED_POSITION", 0.);
+                self.write_by_name("LEFT_SPOILER_3_COMMANDED_POSITION", 0.);
+                self.write_by_name("LEFT_SPOILER_4_COMMANDED_POSITION", 0.);
+                self.write_by_name("LEFT_SPOILER_5_COMMANDED_POSITION", 0.);
+                self
+            }
+
+            fn set_right_spoilers_out(mut self) -> Self {
+                self.write_by_name("RIGHT_SPOILER_1_COMMANDED_POSITION", 50.);
+                self.write_by_name("RIGHT_SPOILER_2_COMMANDED_POSITION", 50.);
+                self.write_by_name("RIGHT_SPOILER_3_COMMANDED_POSITION", 50.);
+                self.write_by_name("RIGHT_SPOILER_4_COMMANDED_POSITION", 50.);
+                self.write_by_name("RIGHT_SPOILER_5_COMMANDED_POSITION", 50.);
+                self
+            }
+
+            fn set_right_spoilers_in(mut self) -> Self {
+                self.write_by_name("RIGHT_SPOILER_1_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_SPOILER_2_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_SPOILER_3_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_SPOILER_4_COMMANDED_POSITION", 0.);
+                self.write_by_name("RIGHT_SPOILER_5_COMMANDED_POSITION", 0.);
                 self
             }
 
@@ -7397,7 +7380,7 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
 
             test_bed = test_bed
-                .set_deploy_spoilers()
+                .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
@@ -7425,13 +7408,13 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
 
             test_bed = test_bed
-                .set_deploy_spoilers()
+                .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
 
             test_bed = test_bed
-                .set_retract_spoilers()
+                .set_retract_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(1));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
@@ -7457,7 +7440,7 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
 
             test_bed = test_bed
-                .set_deploy_spoilers()
+                .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
@@ -7502,7 +7485,7 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
 
             test_bed = test_bed
-                .set_deploy_spoilers()
+                .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
@@ -7550,7 +7533,7 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
 
             test_bed = test_bed
-                .set_deploy_spoilers()
+                .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
@@ -7595,7 +7578,7 @@ mod tests {
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
 
             test_bed = test_bed
-                .set_deploy_spoilers()
+                .set_deploy_ground_spoilers()
                 .run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
@@ -8923,25 +8906,41 @@ mod tests {
         }
 
         #[test]
-        fn spoilers_move_to_requested_position() {
+        fn spoilers_deploy_with_pressure() {
             let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
                 .set_cold_dark_inputs()
-                .in_flight()
-                .run_waiting_for(Duration::from_secs(10));
+                .set_blue_e_pump_ovrd_pressed(true)
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.green_pressure() > Pressure::new::<psi>(2900.));
-            assert!(test_bed.yellow_pressure() > Pressure::new::<psi>(2900.));
-            assert!(test_bed.blue_pressure() > Pressure::new::<psi>(2900.));
+            assert!(test_bed.is_blue_pressurised());
+            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_green_pressurised());
 
             test_bed = test_bed
-                .set_spoiler_position_demand(Ratio::new::<ratio>(0.7), Ratio::new::<ratio>(0.5))
-                .run_waiting_for(Duration::from_secs(2));
+                .set_left_spoilers_out()
+                .run_waiting_for(Duration::from_secs_f64(2.));
 
-            assert!(test_bed.get_spoiler_left_mean_position().get::<ratio>() > 0.68);
-            assert!(test_bed.get_spoiler_left_mean_position().get::<ratio>() < 0.72);
+            assert!(test_bed.get_mean_left_spoilers_position().get::<ratio>() > 0.9);
+            assert!(test_bed.get_mean_right_spoilers_position().get::<ratio>() < 0.01);
 
-            assert!(test_bed.get_spoiler_right_mean_position().get::<ratio>() > 0.48);
-            assert!(test_bed.get_spoiler_right_mean_position().get::<ratio>() < 0.52);
+            test_bed = test_bed
+                .set_left_spoilers_in()
+                .set_right_spoilers_out()
+                .run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.get_mean_right_spoilers_position().get::<ratio>() > 0.9);
+            assert!(test_bed.get_mean_left_spoilers_position().get::<ratio>() < 0.01);
+
+            test_bed = test_bed
+                .set_left_spoilers_in()
+                .set_right_spoilers_in()
+                .run_waiting_for(Duration::from_secs_f64(2.));
+
+            assert!(test_bed.get_mean_left_spoilers_position().get::<ratio>() < 0.01);
+            assert!(test_bed.get_mean_right_spoilers_position().get::<ratio>() < 0.01);
         }
     }
 }
