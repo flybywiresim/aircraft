@@ -1138,6 +1138,15 @@ export class TcasComputer implements TcasComponent {
         this.updateInhibitions();
         this.updateStatusFaults();
         if (this.tcasMode.getVar() === TcasMode.STBY) {
+            this.advisoryState = TcasState.NONE;
+            this.tcasState.setVar(TcasState.NONE);
+            this.correctiveRa.setVar(false);
+            SimVar.SetSimVarValue('L:A32NX_TCAS_STATE', 'Enum', 0);
+            SimVar.SetSimVarValue('L:A32NX_TCAS_RA_CORRECTIVE', 'bool', 0);
+            SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:1', 'Number', 0);
+            SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:2', 'Number', 0);
+            SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:1', 'Number', 0);
+            SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:2', 'Number', 0);
             if (this.sendAirTraffic.length !== 0) {
                 this.sendAirTraffic.length = 0;
                 this.sendListener.triggerToAllSubscribers('A32NX_TCAS_TRAFFIC', stringify(this.sendAirTraffic));
