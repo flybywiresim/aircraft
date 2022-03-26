@@ -1264,6 +1264,35 @@
     - Bool
     - Indicates if the SET HOLD SPEED message is shown on the PFD
 
+- A32NX_PFD_MSG_TD_REACHED
+    - Bool
+    - Indicates if the T/D REACHED message is shown on the PFD
+
+- A32NX_PFD_LINEAR_DEVIATION_ACTIVE
+    - Bool
+    - Indicates if the linear deviation is shown on the PFD
+
+- A32NX_PFD_TARGET_ALTITUDE
+    - Feet
+    - Indicates the current target altitude in the DES mode. This is an indicated altitude and not a pressure altitude
+    - This is used to compute a linear deviation
+
+- A32NX_PFD_VERTICAL_PROFILE_LATCHED
+    - Boolean
+    - Indicates whether to show the latch symbol on the PFD with the deviation indicator
+
+- L:A32NX_PFD_SHOW_SPEED_MARGINS
+    - Boolean
+    - Indicates whether speed margins are shown on the PFD in DES mode.
+
+- L:A32NX_PFD_UPPER_SPEED_MARGIN
+    - Knots
+    - Indicates the speed for the upper speed margin limit in DES mode
+
+- L:A32NX_PFD_LOWER_SPEED_MARGIN
+    - Knots
+    - Indicates the speed for the lower speed margin limit in DES mode
+
 - A32NX_ISIS_LS_ACTIVE
 	- Bool
 	- Indicates whether LS scales are shown on the ISIS
@@ -1668,6 +1697,16 @@ In the variables below, {number} should be replaced with one item in the set: { 
   - Bool
   - Indicates whether the FMS should switch to APPROACH phase.
   - **WARNING:** This is temporary and internal. Do not use.
+
+- A32NX_FM_VNAV_DEBUG_POINT
+    - Nautical miles
+    - Indicates the distance from start at which to draw a debug pseudowaypoint on the ND
+    - **WARNING:** This is only used for testing purposes.
+
+- A32NX_FM_VNAV_DEBUG_SPEED_BIAS
+    - Knots
+    - This is indicative of how aggressively the speed margins should be used while above the profile
+    - **WARNING:** This is only used for testing purposes.
 
 ## Autopilot System
 

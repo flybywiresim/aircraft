@@ -497,14 +497,14 @@ export class Geometry {
         let outboundLength = 0;
 
         if (outbound) {
-            if (outbound instanceof FixedRadiusTransition) {
+            if (outbound instanceof FixedRadiusTransition && !outbound.isReverted) {
                 // Type I transitions are split between the prev and next legs
                 outboundLength = outbound.distance / 2;
             }
         }
 
         if (inbound) {
-            if (inbound instanceof FixedRadiusTransition) {
+            if (inbound instanceof FixedRadiusTransition && !inbound.isReverted) {
                 // Type I transitions are split between the prev and next legs
                 inboundLength = inbound.distance / 2;
             } else {

@@ -22,6 +22,10 @@ class NXUnits {
         return NXUnits.metricWeight ? value : value * 2.204625;
     }
 
+    static poundsToUser(value) {
+        return NXUnits.metricWeight ? value / 2.204625 : value;
+    }
+
     static userWeightUnit() {
         return NXUnits.metricWeight ? 'KG' : 'LBS'; // EIS uses S suffix on LB
     }
