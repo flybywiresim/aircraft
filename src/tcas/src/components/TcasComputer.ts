@@ -467,7 +467,7 @@ export class TcasComputer implements TcasComponent {
             // information, we need to rely on the fallback method
             // this also leads to problems above 1750 ft (the threshold for ground detection), since the aircraft on ground are then shown again.
             // Currently just hide all above currently ground alt (of ppos) + 380, not ideal but works better than other solutions.
-            const groundAlt = this.planeAlt - this.radioAlt; // altitude of the terrain
+            const groundAlt = this.planeAlt - this.radioAlt.value; // altitude of the terrain
             const onGround = traffic.alt < (groundAlt + 360) || traffic.groundSpeed < 30;
             traffic.onGround = onGround;
             let isDisplayed = false;
