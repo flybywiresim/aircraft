@@ -4,6 +4,7 @@
 
 #include "../Arinc429.h"
 #include "../utils/ConfirmNode.h"
+#include "../utils/HysteresisNode.h"
 #include "../utils/PulseNode.h"
 #include "../utils/SRFlipFlop.h"
 
@@ -112,9 +113,15 @@ class Elac {
   // Hydraulic supply sensor monitoring
   bool isYellowHydraulicPowerAvail;
 
+  HysteresisNode yellowAvailHysteresis = HysteresisNode(1750, 1450);
+
   bool isBlueHydraulicPowerAvail;
 
+  HysteresisNode blueAvailHysteresis = HysteresisNode(1750, 1450);
+
   bool isGreenHydraulicPowerAvail;
+
+  HysteresisNode greenAvailHysteresis = HysteresisNode(1750, 1450);
 
   // Sidestick priority
   bool leftSidestickDisabled;

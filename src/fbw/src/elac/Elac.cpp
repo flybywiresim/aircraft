@@ -23,8 +23,11 @@ void Elac::initSelfTests(bool viaPushButton) {
 // After the self-test is complete, erase all data in RAM.
 void Elac::clearMemory() {
   isYellowHydraulicPowerAvail = false;
+  yellowAvailHysteresis.update(0);
   isBlueHydraulicPowerAvail = false;
+  blueAvailHysteresis.update(0);
   isGreenHydraulicPowerAvail = false;
+  greenAvailHysteresis.update(0);
 
   isEngagedInPitch = false;
   canEngageInPitch = false;
@@ -349,19 +352,23 @@ void Elac::monitorRa(double deltaTime) {
 
 // Compute hydraulic loop availabilities from different sensor sources
 void Elac::monitorHydraulicData() {
-  if (!discreteInputs.yellowLowPressure && analogInputs.yellowHydPressure > 1450) {
+  yellowAvailHysteresis.update(analogInputs.yellowHydPressure);
+  blueAvailHysteresis.update(analogInputs.yellowHydPressure);
+  greenAvailHysteresis.update(analogInputs.yellowHydPressure);
+
+  if (!discreteInputs.yellowLowPressure && yellowAvailHysteresis.getOutput()) {
     isYellowHydraulicPowerAvail = true;
   } else {
     isYellowHydraulicPowerAvail = false;
   }
 
-  if (!discreteInputs.blueLowPressure && analogInputs.blueHydPressure > 1450) {
+  if (!discreteInputs.blueLowPressure && blueAvailHysteresis.getOutput()) {
     isBlueHydraulicPowerAvail = true;
   } else {
     isBlueHydraulicPowerAvail = false;
   }
 
-  if (!discreteInputs.greenLowPressure && analogInputs.greenHydPressure > 1450) {
+  if (!discreteInputs.greenLowPressure && greenAvailHysteresis.getOutput()) {
     isGreenHydraulicPowerAvail = true;
   } else {
     isGreenHydraulicPowerAvail = false;

@@ -26,6 +26,8 @@
 #include "fcdc/Fcdc.h"
 #include "sec/Sec.h"
 
+#include "utils/HysteresisNode.h"
+
 class FlyByWireInterface {
  public:
   bool connect();
@@ -105,6 +107,11 @@ class FlyByWireInterface {
   athr_output autoThrustOutput;
 
   RaBus raBusOutputs[2] = {};
+
+  // These are temporary, until the actual hydraulic switch simvars are implemented
+  HysteresisNode yellowHysteresis = HysteresisNode(1750, 1450);
+  HysteresisNode blueHysteresis = HysteresisNode(1750, 1450);
+  HysteresisNode greenHysteresis = HysteresisNode(1750, 1450);
 
   Elac elacs[2] = {Elac(true), Elac(false)};
   ElacDiscreteOutputs elacsDiscreteOutputs[2] = {};

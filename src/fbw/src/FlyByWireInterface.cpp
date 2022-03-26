@@ -933,6 +933,11 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
 
+  // These are temporary, until the actual hydraulic switch simvars are implemented
+  yellowHysteresis.update(idHydYellowSystemPressure->get());
+  blueHysteresis.update(idHydBlueSystemPressure->get());
+  greenHysteresis.update(idHydGreenSystemPressure->get());
+
   elacs[elacIndex].discreteInputs.groundSpoilersActive1 = secsDiscreteOutputs[0].groundSpoilerOut;
   elacs[elacIndex].discreteInputs.groundSpoilersActive2 =
       elacIndex == 0 ? secsDiscreteOutputs[1].groundSpoilerOut : secsDiscreteOutputs[2].groundSpoilerOut;
@@ -957,11 +962,11 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].discreteInputs.rAilServoFailed = idAilFaultRight[elacIndex]->get();
   elacs[elacIndex].discreteInputs.rElevServoFailed = idElevFaultRight[elacIndex]->get();
   elacs[elacIndex].discreteInputs.thsOverrideActive = false;
-  elacs[elacIndex].discreteInputs.yellowLowPressure = idHydYellowSystemPressure->get() < 1450;
+  elacs[elacIndex].discreteInputs.yellowLowPressure = !yellowHysteresis.getOutput();
   elacs[elacIndex].discreteInputs.captPriorityTakeoverPressed = idCaptPriorityButtonPressed->get();
   elacs[elacIndex].discreteInputs.foPriorityTakeoverPressed = idFoPriorityButtonPressed->get();
-  elacs[elacIndex].discreteInputs.blueLowPressure = idHydBlueSystemPressure->get() < 1450;
-  elacs[elacIndex].discreteInputs.greenLowPressure = idHydGreenSystemPressure->get() < 1450;
+  elacs[elacIndex].discreteInputs.blueLowPressure = !blueHysteresis.getOutput();
+  elacs[elacIndex].discreteInputs.greenLowPressure = !greenHysteresis.getOutput();
   elacs[elacIndex].discreteInputs.elacEngagedFromSwitch = idElacPushbuttonStatus[elacIndex]->get();
   elacs[elacIndex].discreteInputs.normalPowersupplyLost = false;
 
@@ -1048,9 +1053,9 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].discreteInputs.thsOverrideActive = false;
   }
 
-  secs[secIndex].discreteInputs.greenLowPressure = idHydGreenSystemPressure->get() < 1450;
-  secs[secIndex].discreteInputs.blueLowPressure = idHydBlueSystemPressure->get() < 1450;
-  secs[secIndex].discreteInputs.yellowLowPressure = idHydYellowSystemPressure->get() < 1450;
+  secs[secIndex].discreteInputs.greenLowPressure = !greenHysteresis.getOutput();
+  secs[secIndex].discreteInputs.blueLowPressure = !blueHysteresis.getOutput();
+  secs[secIndex].discreteInputs.yellowLowPressure = !yellowHysteresis.getOutput();
   secs[secIndex].discreteInputs.sfcc1SlatOut = false;
   secs[secIndex].discreteInputs.sfcc2SlatOut = false;
 
@@ -1215,8 +1220,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].discreteInputs.noseGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
   facs[facIndex].discreteInputs.ir3Switch = false;
   facs[facIndex].discreteInputs.adr3Switch = false;
-  facs[facIndex].discreteInputs.yawDamperHasHydPress =
-      facIndex == 0 ? idHydGreenSystemPressure->get() > 1450 : idHydYellowSystemPressure->get() > 1450;
+  facs[facIndex].discreteInputs.yawDamperHasHydPress = facIndex == 0 ? greenHysteresis.getOutput() : yellowHysteresis.getOutput();
 
   facs[facIndex].analogInputs.yawDamperPosition = 0;
   facs[facIndex].analogInputs.rudderTrimPosition = 0;

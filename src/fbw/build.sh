@@ -89,6 +89,7 @@ clang++ \
   "${DIR}/src/utils/ConfirmNode.cpp" \
   "${DIR}/src/utils/SRFlipFLop.cpp" \
   "${DIR}/src/utils/PulseNode.cpp" \
+  "${DIR}/src/utils/HysteresisNode.cpp" \
   -I "${DIR}/src/model" \
   "${DIR}/src/model/AutopilotLaws_data.cpp" \
   "${DIR}/src/model/AutopilotLaws.cpp" \
