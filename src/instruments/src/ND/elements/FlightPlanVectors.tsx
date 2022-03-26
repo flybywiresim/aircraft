@@ -3,7 +3,7 @@ import { Layer } from '@instruments/common/utils';
 import { DebugPointColour, PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { EfisSide, EfisVectorsGroup } from '@shared/NavigationDisplay';
-import { useCoherentEvent, useFlowSyncEvent } from '@instruments/common/hooks';
+import { useFlowSyncEvent } from '@instruments/common/hooks';
 import { MapParameters } from '../utils/MapParameters';
 
 export interface FlightPlanVectorsProps {
@@ -24,62 +24,10 @@ export const FlightPlanVectors: FC<FlightPlanVectorsProps> = memo(({ x, y, mapPa
 
     const lineStyle = vectorsGroupLineStyle(group);
 
-    /*   useCoherentEvent(`A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[group]}`, useCallback((newVectors: string, start: number, done: boolean) => {
-        if (newVectors) {
-            // const parsed: PathVector[] = JSON.parse(newVectors);
-            setVectors(data);
-            setStagingVectors((old) => {
-                const ret = [...old];
-
-                for (let i = start; i < start + newVectors.length; i++) {
-                    ret[i] = parsed[i - start];
-                }
-
-                if (done) {
-                    const trimAfter = start + parsed.length;
-
-                    ret.splice(trimAfter);
-
-                    if (LnavConfig.DEBUG_PATH_DRAWING) {
-                        console.log(`[ND/Vectors/${EfisVectorsGroup[group]}] Trimmed after end of transmit: oldSize=${old.length} newSize=${ret.length} trimAfter=${trimAfter}`);
-                    }
-
-                    setVectors(ret);
-                }
-
-                return ret;
-            });
-        } else if (LnavConfig.DEBUG_PATH_DRAWING) {
-            console.warn(`[ND/Vectors] Received falsy vectors on event '${EfisVectorsGroup[group]}'.`);
-        }
-    }, [group])); */
-
     useFlowSyncEvent(`A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[group]}`, useCallback((topic, data) => {
         if (data && topic === `A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[group]}`) {
-            // const parsed: PathVector[] = JSON.parse(data);
             setStagingVectors(data);
             setVectors(data);
-            /*   setStagingVectors((old) => {
-                const ret = [...old];
-
-                for (let i = start; i < start + newVectors.length; i++) {
-                    ret[i] = parsed[i - start];
-                }
-
-                if (done) {
-                    const trimAfter = start + parsed.length;
-
-                    ret.splice(trimAfter);
-
-                    if (LnavConfig.DEBUG_PATH_DRAWING) {
-                        console.log(`[ND/Vectors/${EfisVectorsGroup[group]}] Trimmed after end of transmit: oldSize=${old.length} newSize=${ret.length} trimAfter=${trimAfter}`);
-                    }
-
-                    setVectors(ret);
-                }
-
-                return ret;
-            }); */
         } else if (LnavConfig.DEBUG_PATH_DRAWING) {
             console.warn(`[ND/Vectors] Received falsy vectors on event '${EfisVectorsGroup[group]}'.`);
         }
