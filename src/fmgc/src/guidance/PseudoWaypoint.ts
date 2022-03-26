@@ -2,7 +2,6 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 
 /**
  * Types that tie pseudo waypoints to sequencing actions
@@ -18,6 +17,11 @@ export enum PseudoWaypointSequencingAction {
      * Used for approach phase auto-engagement condition eg. (DECEL)
      */
     APPROACH_PHASE_AUTO_ENGAGE,
+
+    /**
+     * Used to delete the step waypoint
+     */
+    STEP_REACHED,
 
 }
 
@@ -55,13 +59,44 @@ export interface PseudoWaypoint {
     efisSymbolLla: Coordinates,
 
     /**
+     * The distance from the start of the path
+     */
+    distanceFromStart: NauticalMiles,
+
+    /**
      * Whether the pseudo waypoint is displayed on the MCDU
      */
     displayedOnMcdu: boolean,
 
     /**
-     * Waypoint stats for the PWP
+     * THe MCDU F-PLN page ident, if different
      */
-    stats: WaypointStats,
+    mcduIdent?: string,
 
+    /**
+     * THe MCDU F-PLN page fix annotation, if applicable
+     */
+    mcduHeader?: string,
+
+    /**
+     * Additional information that is display if the waypoint is displayed on the MCDU (`displayedOnMcdu`)
+     */
+    flightPlanInfo?: PseudoWaypointFlightPlanInfo
+
+    /**
+     * Determines whether a PWP should show up as a symbol on the ND
+     */
+    displayedOnNd: boolean,
+}
+
+export interface PseudoWaypointFlightPlanInfo {
+    distanceFromStart?: NauticalMiles,
+
+    altitude: Feet,
+
+    speed: Knots,
+
+    secondsFromPresent: Seconds,
+
+    distanceFromLastFix?: NauticalMiles,
 }

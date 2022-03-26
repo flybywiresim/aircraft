@@ -89,7 +89,8 @@ const NXSystemMessages = {
     noAtisReceived:         new TypeIMessage("NO ATIS REPORT RECEIVED"),
     noPreviousAtis:         new TypeIMessage("NO PREVIOUS ATIS STORED"),
     arptTypeAlreadyInUse:   new TypeIMessage("ARPT/TYPE ALREADY USED"),
-    cancelAtisUpdate:       new TypeIMessage("CANCEL UPDATE BEFORE")
+    cancelAtisUpdate:       new TypeIMessage("CANCEL UPDATE BEFORE"),
+    stepAboveMaxFl:         new TypeIMessage("STEP ABOVE MAX FL"),
 };
 
 const NXFictionalMessages = {

@@ -37,6 +37,12 @@
   stroke: $display-magenta;
 }
 
+// Used for the speed change dot
+.Magenta.Fill {
+  fill: $display-dark-magenta;
+  stroke: none;
+}
+
 .Magenta text,
 text.Magenta {
   fill: $display-magenta;
@@ -46,6 +52,11 @@ text.Magenta {
 .Cyan {
   fill: none;
   stroke: $display-cyan;
+}
+
+.Cyan.Fill {
+  fill: $display-cyan;
+  stroke: none;
 }
 
 .Cyan text,

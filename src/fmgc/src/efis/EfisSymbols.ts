@@ -12,6 +12,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { SegmentType } from '@fmgc/wtsdk';
 import { distanceTo } from 'msfs-geo';
+import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { FlowEventSync } from '@shared/FlowEventSync';
 import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes/FSEnums';
 import { NearbyFacilities } from './NearbyFacilities';
@@ -46,6 +47,8 @@ export class EfisSymbols {
     private lastNearbyFacilitiesVersion;
 
     private lastFpVersion;
+
+    private lastVnavDriverVersion: number = -1;
 
     constructor(flightPlanManager: FlightPlanManager, guidanceController: GuidanceController) {
         this.flightPlanManager = flightPlanManager;
@@ -90,6 +93,8 @@ export class EfisSymbols {
         const planCentre = this.flightPlanManager.getWaypoint(planCentreIndex)?.infos.coordinates;
         const planCentreChanged = planCentre?.lat !== this.lastPlanCentre?.lat || planCentre?.long !== this.lastPlanCentre?.long;
         this.lastPlanCentre = planCentre;
+        const vnavPredictionsChanged = this.lastVnavDriverVersion !== this.guidanceController.vnavDriver.version;
+        this.lastVnavDriverVersion = this.guidanceController.vnavDriver.version;
 
         const activeFp = this.flightPlanManager.getCurrentFlightPlan();
         // TODO temp f-pln
@@ -112,6 +117,12 @@ export class EfisSymbols {
             return false;
         };
 
+        let waypointPredictions = new Map<number, VerticalWaypointPrediction>();
+        // Check we are in an AP mode where constraints are not ignored
+        if (this.guidanceController.vnavDriver.shouldObeyAltitudeConstraints()) {
+            waypointPredictions = this.guidanceController.vnavDriver.currentNavGeometryProfile?.waypointPredictions;
+        }
+
         for (const side of EfisSymbols.sides) {
             const range = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
             const mode: Mode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
@@ -125,7 +136,15 @@ export class EfisSymbols {
             this.lastEfisOption[side] = efisOption;
             const nearbyOverlayChanged = efisOption !== EfisOption.Constraints && efisOption !== EfisOption.None && nearbyFacilitiesChanged;
 
-            if (!pposChanged && !trueHeadingChanged && !rangeChange && !modeChange && !efisOptionChange && !nearbyOverlayChanged && !fpChanged && !planCentreChanged) {
+            if (!pposChanged
+                && !trueHeadingChanged
+                && !rangeChange
+                && !modeChange
+                && !efisOptionChange
+                && !nearbyOverlayChanged
+                && !fpChanged
+                && !planCentreChanged
+                && !vnavPredictionsChanged) {
                 continue;
             }
 
@@ -351,12 +370,26 @@ export class EfisSymbols {
                         direction = wp.additionalData.course;
                     }
 
-                    if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
-                    // TODO vnav to predict
-                        type |= NdSymbolTypeFlags.ConstraintUnknown;
+                    if (i === activeFp.activeWaypointIndex) {
+                        type |= NdSymbolTypeFlags.ActiveLegTermination;
                     }
 
-                    if (efisOption === EfisOption.Constraints) {
+                    const isBehindAircraft = i < activeFp.activeWaypointIndex;
+                    const isInManagedNav = this.guidanceController.vnavDriver.isInManagedNav();
+
+                    if (isInManagedNav && !isBehindAircraft && wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
+                        const predictionAtWaypoint = waypointPredictions.get(i);
+
+                        type |= NdSymbolTypeFlags.Constraint;
+
+                        if (predictionAtWaypoint?.isAltitudeConstraintMet) {
+                            type |= NdSymbolTypeFlags.MagentaColor;
+                        } else if (predictionAtWaypoint) {
+                            type |= NdSymbolTypeFlags.AmberColor;
+                        }
+                    }
+
+                    if (!isBehindAircraft && efisOption === EfisOption.Constraints) {
                         const descent = wp.constraintType === WaypointConstraintType.DES;
                         switch (wp.legAltitudeDescription) {
                         case 1:
@@ -423,12 +456,13 @@ export class EfisSymbols {
 
             // Pseudo waypoints
 
-            for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it)) {
+            for (const pwp of this.guidanceController.currentPseudoWaypoints.filter((it) => it && it.displayedOnNd)) {
                 upsertSymbol({
                     databaseId: `W      ${pwp.ident}`,
                     ident: pwp.ident,
-                    location: pwp.efisSymbolLla,
+                    location: this.guidanceController.vnavDriver.isInManagedNav() ? pwp.efisSymbolLla : undefined,
                     type: pwp.efisSymbolFlag,
+                    distanceFromAirplane: pwp.distanceFromStart,
                 });
             }
 
