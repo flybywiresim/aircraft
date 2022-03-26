@@ -7,7 +7,7 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { MathUtils } from '@shared/MathUtils';
 import { Mode, NdTraffic } from '@shared/NavigationDisplay';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { useCoherentEvent } from '@instruments/common/hooks';
+import { useFlowSyncEvent } from '@instruments/common/hooks';
 import { MapParameters } from '../utils/MapParameters';
 
 export type TcasProps = {
@@ -38,9 +38,10 @@ const TCAS_MASK_ROSE: TcasMask = [
 const useAirTraffic = (mapParams, mode) : NdTraffic[] => {
     const [airTraffic, setAirTraffic] = useState<NdTraffic[]>([]);
     const tcasMask = (mode === Mode.ARC ? TCAS_MASK_ARC : TCAS_MASK_ROSE);
-    useCoherentEvent('A32NX_TCAS_TRAFFIC', (airTrafficString: string) => {
-        const newTraffic = JSON.parse(airTrafficString);
-        setAirTraffic(trafficToDisplay(newTraffic, mapParams, tcasMask));
+    useFlowSyncEvent('A32NX_TCAS_TRAFFIC', (topic, data) => {
+        if (topic === 'A32NX_TCAS_TRAFFIC') {
+            setAirTraffic(trafficToDisplay(data, mapParams, tcasMask));
+        }
     });
     useEffect(() => {
         setAirTraffic(trafficToDisplay(airTraffic, mapParams, tcasMask));
