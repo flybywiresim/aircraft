@@ -1,10 +1,10 @@
-@import "../Common/definitions";
+@import "shared/definitions";
 @import "animations";
 
 @font-face {
   font-family: "Ecam";
   //noinspection CssUnknownTarget
-  src: url("/fonts/ECAMFontRegular.ttf") format("truetype");
+  src: url("/Fonts/ECAMFontRegular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -176,10 +176,12 @@ text.White {
   stroke: $display-green;
   fill: none;
 }
+
 .Green.Fill {
   fill: $display-green;
   stroke: none;
 }
+
 text.Green {
   fill: $display-green;
   stroke: none;
@@ -243,4 +245,22 @@ text.Red {
   fill: $display-background;
   stroke: none;
   fill-rule: evenodd;
+}
+
+.ModeChangedPath {
+  visibility: visible !important;
+}
+
+.HiddenElement {
+  display: none;
+}
+
+.BacklightBleed {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 998;
+  opacity: 0.75;
+  background-color: rgba(0, 0, 255, 0.025);
+  box-shadow: inset 0px 0px 30px 10px rgba(0, 75, 255, 0.04);
 }
