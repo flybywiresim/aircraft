@@ -457,10 +457,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             }
         }
 
-        if (text !== '' && text !== this.cellRef.instance.innerHTML) {
-            this.displayModeChangedPath();
-            this.cellRef.instance.innerHTML = text;
-        }
+        this.cellRef.instance.innerHTML = text;
     }
 
     onAfterRender(node: VNode): void {
@@ -485,7 +482,6 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
         sub.on('autoBrakeMode').whenChanged().handle((a) => {
             this.autoBrakeMode = a;
-            this.setText();
         });
     }
 
