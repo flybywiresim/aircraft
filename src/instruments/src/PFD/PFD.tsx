@@ -12,6 +12,7 @@ import { FMA } from './FMA';
 import { HeadingOfftape, HeadingTape } from './HeadingIndicator';
 import { Horizon } from './AttitudeIndicatorHorizon';
 import { LandingSystem } from './LandingSystemIndicator';
+import { LinearDeviationIndicator } from './LinearDeviationIndicator';
 import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './SpeedIndicator';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 
@@ -128,6 +129,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
                     <VerticalSpeedIndicator bus={this.props.bus} instrument={this.props.instrument} filteredRadioAltitude={this.filteredRadioAltitude} />
                     <HeadingOfftape bus={this.props.bus} failed={this.headingFailed} />
                     <AltitudeIndicatorOfftape bus={this.props.bus} filteredRadioAltitude={this.filteredRadioAltitude} />
+                    <LinearDeviationIndicator bus={this.props.bus} />
 
                     <MachNumber bus={this.props.bus} />
                     <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} />

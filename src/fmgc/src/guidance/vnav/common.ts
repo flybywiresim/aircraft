@@ -1,11 +1,11 @@
 import { AltitudeConstraint, SpeedConstraint } from '../lnav/legs';
 
 export enum FlapConf {
-    CLEAN,
-    CONF_1,
-    CONF_2,
-    CONF_3,
-    CONF_FULL
+    CLEAN = 0,
+    CONF_1 = 1,
+    CONF_2 = 2,
+    CONF_3 = 3,
+    CONF_FULL = 4,
 }
 
 export enum AccelFactorMode {
@@ -81,7 +81,7 @@ export class Common {
     }
 
     /**
-     * Get pressure ratio for a particular theta
+     * Get pressure ratio for a particular altitude
      * @param alt pressure altitude
      * @param aboveTropo whether the aircraft is above the tropopause
      * @returns pressure ratio
@@ -126,7 +126,7 @@ export class Common {
 
     static machToCas(mach: number, delta: number): number {
         const term1 = (0.2 * mach ** 2 + 1) ** 3.5;
-        const term2 = (delta * term1 + 1) ** (1 / 3.5) - 1;
+        const term2 = (delta * (term1 - 1) + 1) ** (1 / 3.5) - 1;
         return 1479.1 * Math.sqrt(term2);
     }
 
@@ -156,14 +156,16 @@ export class Common {
         if (aboveTropo) {
             return 1 + 0.7 * (mach ** 2) * phi;
         }
+
         return 1 + 0.7 * (mach ** 2) * (phi - 0.190263 * tempRatio);
     }
 
     static getAccelFactorMach(mach: number, aboveTropo: boolean, tempRatio?: number): number {
         if (aboveTropo) {
-            return 0;
+            return 1;
         }
-        return -0.13318 * (mach ** 2) * tempRatio;
+
+        return 1 - 0.13318 * (mach ** 2) * tempRatio;
     }
 
     /**
@@ -182,9 +184,9 @@ export class Common {
         aboveTropo: boolean,
         accelFactorMode: AccelFactorMode,
     ): number {
-        const stdTemp = Common.getIsaTemp(altitude, aboveTropo);
-        const temp = Common.getTemp(altitude, isaDev, aboveTropo);
-        const tempRatio = stdTemp / temp;
+        // This is T_ISA / T, the ratio between ISA temperature at that altitude and the actual temperature at that altitude
+        const tempRatio = (273.15 + this.getIsaTemp(altitude, aboveTropo)) / (273.15 + this.getTemp(altitude, isaDev, aboveTropo));
+
         if (accelFactorMode === AccelFactorMode.CONSTANT_CAS) {
             return Common.getAccelFactorCAS(mach, aboveTropo, tempRatio);
         }

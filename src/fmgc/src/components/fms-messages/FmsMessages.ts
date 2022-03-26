@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { TdReached } from '@fmgc/components/fms-messages/TdReached';
 import { FMMessage, FMMessageTriggers } from '@shared/FmMessages';
 import { FmgcComponent } from '../FmgcComponent';
 import { GpsPrimary } from './GpsPrimary';
@@ -33,6 +34,7 @@ export class FmsMessages implements FmgcComponent {
         new GpsPrimaryLost(),
         new MapPartlyDisplayedLeft(),
         new MapPartlyDisplayedRight(),
+        new TdReached(),
     ];
 
     init(): void {
