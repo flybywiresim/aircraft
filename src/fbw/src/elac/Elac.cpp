@@ -353,8 +353,8 @@ void Elac::monitorRa(double deltaTime) {
 // Compute hydraulic loop availabilities from different sensor sources
 void Elac::monitorHydraulicData() {
   yellowAvailHysteresis.update(analogInputs.yellowHydPressure);
-  blueAvailHysteresis.update(analogInputs.yellowHydPressure);
-  greenAvailHysteresis.update(analogInputs.yellowHydPressure);
+  blueAvailHysteresis.update(analogInputs.blueHydPressure);
+  greenAvailHysteresis.update(analogInputs.greenHydPressure);
 
   if (!discreteInputs.yellowLowPressure && yellowAvailHysteresis.getOutput()) {
     isYellowHydraulicPowerAvail = true;
