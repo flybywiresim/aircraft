@@ -133,7 +133,7 @@ const PseudoFWC: React.FC = () => {
     const [N1Eng1] = useSimVar('L:A32NX_ENGINE_N1:1', 'number', 500);
     const [N1Eng2] = useSimVar('L:A32NX_ENGINE_N1:2', 'number', 500);
     const [N1IdleEng1] = useSimVar('L:A32NX_ENGINE_IDLE_N1:1', 'number', 500);
-    const [N1IdleEng2] = useSimVar('L:A32NX_ENGINE_IDEL_N1:2', 'number', 500);
+    const [N1IdleEng2] = useSimVar('L:A32NX_ENGINE_IDLE_N1:2', 'number', 500);
     const N1AboveIdle = Math.floor(N1Eng1) > N1IdleEng1 ? 1 : 0;
     const N2AboveIdle = Math.floor(N1Eng2) > N1IdleEng2 ? 1 : 0;
     const [autothrustLeverWarningFlex] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool', 500);
