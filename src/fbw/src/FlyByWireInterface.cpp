@@ -1107,8 +1107,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   double surfaceCommands[4] = {
       flyByWireOutput.output.eta_pos,
       flyByWireOutput.output.eta_trim_deg,
-      spoilersHandler->getLeftPosition(),
-      spoilersHandler->getRightPosition(),
+      spoilersHandler->getLeftPosition() * 50,
+      spoilersHandler->getRightPosition() * 50,
   };
 
   Failures failureIndex = secIndex == 0 ? Failures::Sec1 : (secIndex == 1 ? Failures::Sec2 : Failures::Sec3);
