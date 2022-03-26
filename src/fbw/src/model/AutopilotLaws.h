@@ -78,6 +78,8 @@ class AutopilotLawsModelClass
     real_T k;
     real_T maxH_dot;
     real_T nav_gs_deg;
+    real_T pY;
+    real_T pY_b;
     real_T pY_g;
     real_T limit;
     boolean_T Delay_DSTATE_l[100];
@@ -92,12 +94,13 @@ class AutopilotLawsModelClass
     boolean_T prevVerticalLaw_not_empty_n;
     boolean_T prevTarget_not_empty_j;
     boolean_T islevelOffActive_k;
-    boolean_T pY_not_empty;
     boolean_T wasActive;
     boolean_T wasActive_not_empty;
     boolean_T wasActive_c;
     boolean_T wasActive_not_empty_p;
     boolean_T nav_gs_deg_not_empty;
+    boolean_T pY_not_empty;
+    boolean_T pY_not_empty_g;
     boolean_T pY_not_empty_d;
     boolean_T limit_not_empty;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_j;
@@ -120,7 +123,7 @@ class AutopilotLawsModelClass
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_es;
     rtDW_storevalue_AutopilotLaws_T sf_storevalue_g;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_n;
-    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_bx;
+    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_b;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_cu;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_j;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_g5;
@@ -134,7 +137,6 @@ class AutopilotLawsModelClass
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_hp;
     rtDW_LeadLagFilter_AutopilotLaws_T sf_LeadLagFilter_k;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_cs;
-    rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_b;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_a;
     rtDW_LagFilter_AutopilotLaws_T sf_LagFilter_g;
     rtDW_WashoutFilter_AutopilotLaws_T sf_WashoutFilter_d;
@@ -175,9 +177,9 @@ class AutopilotLawsModelClass
     real_T ScheduledGain_BreakpointsForDimension1_h[7];
     real_T ScheduledGain_BreakpointsForDimension1_o[7];
     real_T ScheduledGain2_BreakpointsForDimension1[7];
-    real_T ScheduledGain_BreakpointsForDimension1_e[5];
+    real_T ScheduledGain_BreakpointsForDimension1_e[6];
     real_T ScheduledGain2_BreakpointsForDimension1_h[5];
-    real_T ScheduledGain_BreakpointsForDimension1_ec[7];
+    real_T ScheduledGain_BreakpointsForDimension1_ec[8];
     real_T ScheduledGain1_BreakpointsForDimension1[7];
     real_T LagFilter_C1;
     real_T LagFilter2_C1;
@@ -217,7 +219,6 @@ class AutopilotLawsModelClass
     real_T LagFilterH_C1;
     real_T LeadLagFilter_C1;
     real_T LeadLagFilter_C1_a;
-    real_T LagFilterH1_C1;
     real_T WashoutFilter_C1_cn;
     real_T HighPassFilter_C1_gw;
     real_T LowPassFilter_C1_d1;
@@ -289,7 +290,6 @@ class AutopilotLawsModelClass
     real_T VS_Gain_n;
     real_T VS_Gain_j;
     real_T VS_Gain_e;
-    real_T VS1_Gain;
     real_T VS_Gain_n5;
     real_T VS_Gain_nx;
     real_T VS_Gain_ne;
@@ -307,9 +307,9 @@ class AutopilotLawsModelClass
     real_T ScheduledGain_Table_o[7];
     real_T ScheduledGain_Table_e[7];
     real_T ScheduledGain2_Table[7];
-    real_T ScheduledGain_Table_p[5];
+    real_T ScheduledGain_Table_p[6];
     real_T ScheduledGain2_Table_f[5];
-    real_T ScheduledGain_Table_l[7];
+    real_T ScheduledGain_Table_l[8];
     real_T ScheduledGain1_Table[7];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T Subsystem_Value;
@@ -528,7 +528,6 @@ class AutopilotLawsModelClass
     real_T Gain_Gain_m3;
     real_T Saturation_UpperSat_c;
     real_T Saturation_LowerSat_d;
-    real_T Constant2_Value_h;
     real_T Gain1_Gain_kf;
     real_T Saturation_UpperSat_m;
     real_T Saturation_LowerSat_fw;
@@ -787,7 +786,7 @@ class AutopilotLawsModelClass
     real_T ug_Gain_e;
     real_T Gain1_Gain_be;
     real_T Gain_Gain_gx;
-    real_T Constant2_Value_hd;
+    real_T Constant2_Value_h;
     real_T Constant1_Value_o;
     real_T Gain1_Gain_nj;
     real_T Gain_Gain_aq;
@@ -829,11 +828,6 @@ class AutopilotLawsModelClass
     real_T Gain2_Gain_mj;
     real_T uDLookupTable_tableData[4];
     real_T uDLookupTable_bp01Data[4];
-    real_T ftmintoms_Gain_dc;
-    real_T kntoms1_Gain;
-    real_T Saturation_UpperSat_dp;
-    real_T Saturation_LowerSat_f1;
-    real_T Gain_Gain_owa;
     real_T Constant1_Value_o0;
     real_T Constant2_Value_kz;
     real_T fpmtoms_Gain_po;
