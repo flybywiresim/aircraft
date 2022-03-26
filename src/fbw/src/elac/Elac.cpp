@@ -24,10 +24,13 @@ void Elac::initSelfTests(bool viaPushButton) {
 void Elac::clearMemory() {
   isYellowHydraulicPowerAvail = false;
   yellowAvailHysteresis.update(0);
+  yellowAvailConfirm.update(false, 0);
   isBlueHydraulicPowerAvail = false;
   blueAvailHysteresis.update(0);
+  blueAvailConfirm.update(false, 0);
   isGreenHydraulicPowerAvail = false;
   greenAvailHysteresis.update(0);
+  greenAvailConfirm.update(false, 0);
 
   isEngagedInPitch = false;
   canEngageInPitch = false;
@@ -75,7 +78,7 @@ void Elac::update(double deltaTime, double simulationTime, bool faultActive, boo
   if (monitoringHealthy) {
     monitorRa(deltaTime);
     computeSidestickPriorityLogic(deltaTime);
-    monitorHydraulicData();
+    monitorHydraulicData(deltaTime);
     computeComputerEngagementPitch();
     computeComputerEngagementRoll();
     computeLateralLawCapability();
@@ -351,28 +354,15 @@ void Elac::monitorRa(double deltaTime) {
 }
 
 // Compute hydraulic loop availabilities from different sensor sources
-void Elac::monitorHydraulicData() {
+void Elac::monitorHydraulicData(double deltaTime) {
   yellowAvailHysteresis.update(analogInputs.yellowHydPressure);
   blueAvailHysteresis.update(analogInputs.blueHydPressure);
   greenAvailHysteresis.update(analogInputs.greenHydPressure);
 
-  if (!discreteInputs.yellowLowPressure && yellowAvailHysteresis.getOutput()) {
-    isYellowHydraulicPowerAvail = true;
-  } else {
-    isYellowHydraulicPowerAvail = false;
-  }
-
-  if (!discreteInputs.blueLowPressure && blueAvailHysteresis.getOutput()) {
-    isBlueHydraulicPowerAvail = true;
-  } else {
-    isBlueHydraulicPowerAvail = false;
-  }
-
-  if (!discreteInputs.greenLowPressure && greenAvailHysteresis.getOutput()) {
-    isGreenHydraulicPowerAvail = true;
-  } else {
-    isGreenHydraulicPowerAvail = false;
-  }
+  isYellowHydraulicPowerAvail =
+      yellowAvailConfirm.update(!discreteInputs.yellowLowPressure && yellowAvailHysteresis.getOutput(), deltaTime);
+  isBlueHydraulicPowerAvail = blueAvailConfirm.update(!discreteInputs.blueLowPressure && blueAvailHysteresis.getOutput(), deltaTime);
+  isGreenHydraulicPowerAvail = greenAvailConfirm.update(!discreteInputs.greenLowPressure && greenAvailHysteresis.getOutput(), deltaTime);
 }
 
 // Perform self monitoring

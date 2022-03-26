@@ -39,7 +39,7 @@ class Elac {
 
   void updateSelfTest(double deltaTime);
 
-  void monitorHydraulicData();
+  void monitorHydraulicData(double deltaTime);
 
   void monitorRa(double deltaTime);
 
@@ -115,13 +115,19 @@ class Elac {
 
   HysteresisNode yellowAvailHysteresis = HysteresisNode(1750, 1450);
 
+  ConfirmNode yellowAvailConfirm = ConfirmNode(true, 0.5);
+
   bool isBlueHydraulicPowerAvail;
 
   HysteresisNode blueAvailHysteresis = HysteresisNode(1750, 1450);
 
+  ConfirmNode blueAvailConfirm = ConfirmNode(true, 0.5);
+
   bool isGreenHydraulicPowerAvail;
 
   HysteresisNode greenAvailHysteresis = HysteresisNode(1750, 1450);
+
+  ConfirmNode greenAvailConfirm = ConfirmNode(true, 0.5);
 
   // Sidestick priority
   bool leftSidestickDisabled;

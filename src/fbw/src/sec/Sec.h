@@ -48,6 +48,8 @@ class Sec {
 
   void computeSurfaceSlaving(double surfaceCommands[4]);
 
+  void computeHydraulicSupplyStatus(double deltaTime);
+
   // Axis engagement vars
   bool isEngagedInPitch;
 
@@ -103,6 +105,19 @@ class Sec {
   double leftSpoiler2PosCommand;
 
   double rightSpoiler2PosCommand;
+
+  // Hydraulic supply data computation vars
+  bool isYellowHydraulicPowerAvail;
+
+  ConfirmNode yellowAvailConfirm = ConfirmNode(true, 0.5);
+
+  bool isBlueHydraulicPowerAvail;
+
+  ConfirmNode blueAvailConfirm = ConfirmNode(true, 0.5);
+
+  bool isGreenHydraulicPowerAvail;
+
+  ConfirmNode greenAvailConfirm = ConfirmNode(true, 0.5);
 
   // Computer Self-monitoring vars
   bool monitoringHealthy;

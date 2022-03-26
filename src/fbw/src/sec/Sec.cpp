@@ -29,6 +29,12 @@ void Sec::clearMemory() {
   spoilerPair2Avail = false;
   pitchLawCapability = PitchLaw::None;
   activePitchLaw = PitchLaw::None;
+  isYellowHydraulicPowerAvail = false;
+  yellowAvailConfirm.update(false, 0);
+  isBlueHydraulicPowerAvail = false;
+  blueAvailConfirm.update(false, 0);
+  isGreenHydraulicPowerAvail = false;
+  greenAvailConfirm.update(false, 0);
 }
 
 // Main update cycle. Surface position through parameters here is temporary.
@@ -40,6 +46,7 @@ void Sec::update(double deltaTime, double simulationTime, bool faultActive, bool
 
   if (monitoringHealthy) {
     computeSidestickPriorityLogic(deltaTime);
+    computeHydraulicSupplyStatus(deltaTime);
     computeComputerEngagementRoll();
     computeComputerEngagementPitch();
     computePitchLawCapability();
@@ -111,14 +118,14 @@ void Sec::computeComputerEngagementRoll() {
   bool spoilerPair2SupplyAvail;
 
   if (isUnit1 && !isUnit3) {
-    spoilerPair1SupplyAvail = !discreteInputs.blueLowPressure;
-    spoilerPair2SupplyAvail = !discreteInputs.yellowLowPressure;
+    spoilerPair1SupplyAvail = isBlueHydraulicPowerAvail;
+    spoilerPair2SupplyAvail = isYellowHydraulicPowerAvail;
   } else if (!isUnit1 && !isUnit3) {
-    spoilerPair1SupplyAvail = !discreteInputs.greenLowPressure;
+    spoilerPair1SupplyAvail = isGreenHydraulicPowerAvail;
     spoilerPair2SupplyAvail = false;
   } else {
-    spoilerPair1SupplyAvail = !discreteInputs.greenLowPressure;
-    spoilerPair2SupplyAvail = !discreteInputs.yellowLowPressure;
+    spoilerPair1SupplyAvail = isGreenHydraulicPowerAvail;
+    spoilerPair2SupplyAvail = isYellowHydraulicPowerAvail;
   }
 
   spoilerPair1Avail = spoilerPair1NotFailed && spoilerPair1SupplyAvail;
@@ -135,9 +142,9 @@ void Sec::computeComputerEngagementRoll() {
 // Also compute if the computer should be engaged in pitch. It should be engaged in pitch,
 // if it can drive in pitch, and it has priority in pitch.
 void Sec::computeComputerEngagementPitch() {
-  leftElevatorAvail = !discreteInputs.lElevServoFailed && (isUnit1 ? !discreteInputs.blueLowPressure : !discreteInputs.greenLowPressure);
-  rightElevatorAvail = !discreteInputs.rElevServoFailed && (isUnit1 ? !discreteInputs.blueLowPressure : !discreteInputs.yellowLowPressure);
-  thsAvail = !discreteInputs.thsMotorFault && (!discreteInputs.greenLowPressure || !discreteInputs.yellowLowPressure);
+  leftElevatorAvail = !discreteInputs.lElevServoFailed && (isUnit1 ? isBlueHydraulicPowerAvail : isGreenHydraulicPowerAvail);
+  rightElevatorAvail = !discreteInputs.rElevServoFailed && (isUnit1 ? isBlueHydraulicPowerAvail : isYellowHydraulicPowerAvail);
+  thsAvail = !discreteInputs.thsMotorFault && (isGreenHydraulicPowerAvail || isYellowHydraulicPowerAvail);
 
   canEngageInPitch = monitoringHealthy && (leftElevatorAvail || rightElevatorAvail || thsAvail) && !isUnit3;
 
@@ -190,6 +197,12 @@ void Sec::computeSurfaceSlaving(double surfaceCommands[4]) {
     leftSpoiler2PosCommand = 0;
     rightSpoiler2PosCommand = 0;
   }
+}
+
+void Sec::computeHydraulicSupplyStatus(double deltaTime) {
+  isYellowHydraulicPowerAvail = yellowAvailConfirm.update(!discreteInputs.yellowLowPressure, deltaTime);
+  isBlueHydraulicPowerAvail = blueAvailConfirm.update(!discreteInputs.blueLowPressure, deltaTime);
+  isGreenHydraulicPowerAvail = greenAvailConfirm.update(!discreteInputs.greenLowPressure, deltaTime);
 }
 
 // Perform self monitoring. If
