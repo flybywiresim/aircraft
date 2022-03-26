@@ -548,16 +548,16 @@ FcdcBus Fcdc::getBusOutputs() {
   output.efcsStatus3.setBit(29, discreteInputs.sec3Off);
 
   output.efcsStatus4.setSsm(Arinc429SignStatus::NormalOperation);
-  output.efcsStatus4.setBit(11, busInputs.sec3.leftSpoiler1Position.valueOr(0) > 2.5);
-  output.efcsStatus4.setBit(12, busInputs.sec3.rightSpoiler1Position.valueOr(0) > 2.5);
-  output.efcsStatus4.setBit(13, busInputs.sec3.leftSpoiler2Position.valueOr(0) > 2.5);
-  output.efcsStatus4.setBit(14, busInputs.sec3.rightSpoiler2Position.valueOr(0) > 2.5);
-  output.efcsStatus4.setBit(15, busInputs.sec1.leftSpoiler1Position.valueOr(0) > 2.5);
-  output.efcsStatus4.setBit(16, busInputs.sec1.rightSpoiler1Position.valueOr(0) > 2.5);
-  output.efcsStatus4.setBit(17, busInputs.sec1.leftSpoiler2Position.valueOr(0) > 2.5);
-  output.efcsStatus4.setBit(18, busInputs.sec1.rightSpoiler2Position.valueOr(0) > 2.5);
-  output.efcsStatus4.setBit(19, busInputs.sec2.leftSpoiler1Position.valueOr(0) > 2.5);
-  output.efcsStatus4.setBit(20, busInputs.sec2.rightSpoiler1Position.valueOr(0) > 2.5);
+  output.efcsStatus4.setBit(11, busInputs.sec3.leftSpoiler1Position.valueOr(0) < -2.5);
+  output.efcsStatus4.setBit(12, busInputs.sec3.rightSpoiler1Position.valueOr(0) < -2.5);
+  output.efcsStatus4.setBit(13, busInputs.sec3.leftSpoiler2Position.valueOr(0) < -2.5);
+  output.efcsStatus4.setBit(14, busInputs.sec3.rightSpoiler2Position.valueOr(0) < -2.5);
+  output.efcsStatus4.setBit(15, busInputs.sec1.leftSpoiler1Position.valueOr(0) < -2.5);
+  output.efcsStatus4.setBit(16, busInputs.sec1.rightSpoiler1Position.valueOr(0) < -2.5);
+  output.efcsStatus4.setBit(17, busInputs.sec1.leftSpoiler2Position.valueOr(0) < -2.5);
+  output.efcsStatus4.setBit(18, busInputs.sec1.rightSpoiler2Position.valueOr(0) < -2.5);
+  output.efcsStatus4.setBit(19, busInputs.sec2.leftSpoiler1Position.valueOr(0) < -2.5);
+  output.efcsStatus4.setBit(20, busInputs.sec2.rightSpoiler1Position.valueOr(0) < -2.5);
   output.efcsStatus4.setBit(21, busInputs.sec3.leftSpoiler1Position.isNo() && busInputs.sec3.rightSpoiler1Position.isNo());
   output.efcsStatus4.setBit(22, busInputs.sec3.leftSpoiler2Position.isNo() && busInputs.sec3.rightSpoiler2Position.isNo());
   output.efcsStatus4.setBit(23, busInputs.sec1.leftSpoiler1Position.isNo() && busInputs.sec1.rightSpoiler1Position.isNo());
@@ -651,16 +651,60 @@ FcdcBus Fcdc::getBusOutputs() {
     output.foPitchCommand.setFromData(0, Arinc429SignStatus::NoComputedData);
   }
 
-  output.spoilerLeft1Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
-  output.spoilerLeft2Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
-  output.spoilerLeft3Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
-  output.spoilerLeft4Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
-  output.spoilerLeft5Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
-  output.spoilerRight1Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
-  output.spoilerRight2Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
-  output.spoilerRight3Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
-  output.spoilerRight4Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
-  output.spoilerRight5Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  if (busInputs.sec3.leftSpoiler1Position.isNo()) {
+    output.spoilerLeft1Pos.setFromData(busInputs.sec3.leftSpoiler1Position.value(), Arinc429SignStatus::NormalOperation);
+  } else {
+    output.spoilerLeft1Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+  if (busInputs.sec3.rightSpoiler1Position.isNo()) {
+    output.spoilerRight1Pos.setFromData(busInputs.sec3.rightSpoiler1Position.value(), Arinc429SignStatus::NormalOperation);
+  } else {
+    output.spoilerRight1Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+
+  if (busInputs.sec3.leftSpoiler2Position.isNo()) {
+    output.spoilerLeft2Pos.setFromData(busInputs.sec3.leftSpoiler2Position.value(), Arinc429SignStatus::NormalOperation);
+  } else {
+    output.spoilerLeft2Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+  if (busInputs.sec3.rightSpoiler2Position.isNo()) {
+    output.spoilerRight2Pos.setFromData(busInputs.sec3.rightSpoiler2Position.value(), Arinc429SignStatus::NormalOperation);
+  } else {
+    output.spoilerRight2Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+
+  if (busInputs.sec1.leftSpoiler1Position.isNo()) {
+    output.spoilerLeft3Pos.setFromData(busInputs.sec1.leftSpoiler1Position.value(), Arinc429SignStatus::NormalOperation);
+  } else {
+    output.spoilerLeft3Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+  if (busInputs.sec1.rightSpoiler1Position.isNo()) {
+    output.spoilerRight3Pos.setFromData(busInputs.sec1.rightSpoiler1Position.value(), Arinc429SignStatus::NormalOperation);
+  } else {
+    output.spoilerRight3Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+
+  if (busInputs.sec1.leftSpoiler2Position.isNo()) {
+    output.spoilerLeft4Pos.setFromData(busInputs.sec1.leftSpoiler2Position.value(), Arinc429SignStatus::NormalOperation);
+  } else {
+    output.spoilerLeft4Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+  if (busInputs.sec1.rightSpoiler2Position.isNo()) {
+    output.spoilerRight4Pos.setFromData(busInputs.sec1.rightSpoiler2Position.value(), Arinc429SignStatus::NormalOperation);
+  } else {
+    output.spoilerRight4Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+
+  if (busInputs.sec2.leftSpoiler1Position.isNo()) {
+    output.spoilerLeft5Pos.setFromData(busInputs.sec2.leftSpoiler1Position.value(), Arinc429SignStatus::NormalOperation);
+  } else {
+    output.spoilerLeft5Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
+  if (busInputs.sec2.rightSpoiler1Position.isNo()) {
+    output.spoilerRight5Pos.setFromData(busInputs.sec2.rightSpoiler1Position.value(), Arinc429SignStatus::NormalOperation);
+  } else {
+    output.spoilerRight5Pos.setFromData(0, Arinc429SignStatus::NoComputedData);
+  }
 
   return output;
 }

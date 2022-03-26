@@ -604,6 +604,9 @@ void FlyByWireInterface::setupLocalVariables() {
     idLeftSpoilerCommandedPosition[i] = make_unique<LocalVariable>("A32NX_LEFT_SPOILER_" + idString + "_COMMANDED_POSITION");
     idRightSpoilerCommandedPosition[i] = make_unique<LocalVariable>("A32NX_RIGHT_SPOILER_" + idString + "_COMMANDED_POSITION");
 
+    idLeftSpoilerPosition[i] = make_unique<LocalVariable>("A32NX_HYD_SPOILER_" + idString + "_LEFT_DEFLECTION");
+    idRightSpoilerPosition[i] = make_unique<LocalVariable>("A32NX_HYD_SPOILER_" + idString + "_RIGHT_DEFLECTION");
+
     idSplrFaultLeft[i] = make_unique<LocalVariable>("A32NX_LEFT_SPLR_" + idString + "_SERVO_FAILED");
     idSplrFaultRight[i] = make_unique<LocalVariable>("A32NX_RIGHT_SPLR_" + idString + "_SERVO_FAILED");
   }
@@ -1090,10 +1093,10 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].analogInputs.spdBrkLeverPos = 0;
   secs[secIndex].analogInputs.thrLever1Pos = 0;
   secs[secIndex].analogInputs.thrLever2Pos = 0;
-  secs[secIndex].analogInputs.leftSpoiler1Pos = 0;
-  secs[secIndex].analogInputs.rightSpoiler1Pos = 0;
-  secs[secIndex].analogInputs.leftSpoiler2Pos = 0;
-  secs[secIndex].analogInputs.rightSpoiler2Pos = 0;
+  secs[secIndex].analogInputs.leftSpoiler1Pos = -idLeftSpoilerPosition[splrIndex]->get() * 50;
+  secs[secIndex].analogInputs.rightSpoiler1Pos = -idRightSpoilerPosition[splrIndex]->get() * 50;
+  secs[secIndex].analogInputs.leftSpoiler2Pos = -idLeftSpoilerPosition[splrIndex + 1]->get() * 50;
+  secs[secIndex].analogInputs.rightSpoiler2Pos = -idRightSpoilerPosition[splrIndex + 1]->get() * 50;
   secs[secIndex].analogInputs.wheelSpeedLeft = 0;
   secs[secIndex].analogInputs.wheelSpeedRight = 0;
 
