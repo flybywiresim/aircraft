@@ -342,7 +342,6 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
     private setText() {
         let text: string = '';
-        this.displayModeChangedPath(true);
         this.isShown = true;
 
         switch (this.athrMode) {
@@ -458,7 +457,10 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             }
         }
 
-        this.cellRef.instance.innerHTML = text;
+        if (text !== '' && text !== this.cellRef.instance.innerHTML) {
+            this.displayModeChangedPath();
+            this.cellRef.instance.innerHTML = text;
+        }
     }
 
     onAfterRender(node: VNode): void {
