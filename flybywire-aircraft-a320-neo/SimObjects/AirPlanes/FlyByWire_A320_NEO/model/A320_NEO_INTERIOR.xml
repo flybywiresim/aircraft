@@ -698,6 +698,42 @@
                     <EMISSIVE_CODE>4</EMISSIVE_CODE>
                 </UseTemplate>
 
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
+                    <NODE_ID>SCREEN_PFD_L</NODE_ID>
+                    <ANIM_NAME>SCREEN_PFD_L</ANIM_NAME>
+                    <ANIM_CODE>(L:A32NX_EFIS_DISPLAY_CONFIG, number)</ANIM_CODE>
+                </UseTemplate>
+
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
+                    <NODE_ID>SCREEN_MFD_L</NODE_ID>
+                    <ANIM_NAME>SCREEN_MFD_L</ANIM_NAME>
+                    <ANIM_CODE>(L:A32NX_EFIS_DISPLAY_CONFIG, number)</ANIM_CODE>
+                </UseTemplate>
+
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
+                    <NODE_ID>SCREEN_PFD_R</NODE_ID>
+                    <ANIM_NAME>SCREEN_PFD_R</ANIM_NAME>
+                    <ANIM_CODE>(L:A32NX_EFIS_DISPLAY_CONFIG, number)</ANIM_CODE>
+                </UseTemplate>
+
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
+                    <NODE_ID>SCREEN_MFD_R</NODE_ID>
+                    <ANIM_NAME>SCREEN_MFD_R</ANIM_NAME>
+                    <ANIM_CODE>(L:A32NX_EFIS_DISPLAY_CONFIG, number)</ANIM_CODE>
+                </UseTemplate>
+
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
+                    <NODE_ID>SCREEN_EICAS1</NODE_ID>
+                    <ANIM_NAME>SCREEN_EICAS1</ANIM_NAME>
+                    <ANIM_CODE>(L:A32NX_EFIS_DISPLAY_CONFIG, number)</ANIM_CODE>
+                </UseTemplate>
+
+                <UseTemplate Name="ASOBO_GT_Anim_Code">
+                    <NODE_ID>SCREEN_EICAS2</NODE_ID>
+                    <ANIM_NAME>SCREEN_EICAS2</ANIM_NAME>
+                    <ANIM_CODE>(L:A32NX_EFIS_DISPLAY_CONFIG, number)</ANIM_CODE>
+                </UseTemplate>
+
                 <!-- DCDU -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>SCREEN_COM_L</NODE_ID>
@@ -5079,6 +5115,12 @@
             </UseTemplate>
             <UseTemplate Name="FBW_Coffee_Cup">
                 <NODE_ID>COCKPIT_COFFEE_R</NODE_ID>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="EFIS_DISPLAY_UNITS">
+            <UseTemplate Name="FBW_AIRBUS_DisplaySwitching_Selector">
+                <FREQUENCY>1</FREQUENCY>
             </UseTemplate>
         </Component>
     </Behaviors>

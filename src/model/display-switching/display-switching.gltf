@@ -1,0 +1,386 @@
+{
+    "animations": [
+        {
+            "name": "SCREEN_PFD_L",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": "SCREEN_PFD_L",
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": "SCREEN_PFD_L",
+                        "path": "scale"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 0,
+                    "output": 1,
+                    "interpolation": "STEP"
+                },
+                {
+                    "input": 0,
+                    "output": 2,
+                    "interpolation": "STEP"
+                }
+            ]
+        },
+        {
+            "name": "SCREEN_MFD_L",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": "SCREEN_MFD_L",
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": "SCREEN_MFD_L",
+                        "path": "scale"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 3,
+                    "output": 4,
+                    "interpolation": "STEP"
+                },
+                {
+                    "input": 3,
+                    "output": 5,
+                    "interpolation": "STEP"
+                }
+            ]
+        },
+        {
+            "name": "SCREEN_EICAS1",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": "SCREEN_EICAS1",
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": "SCREEN_EICAS1",
+                        "path": "scale"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 6,
+                    "output": 7,
+                    "interpolation": "STEP"
+                },
+                {
+                    "input": 6,
+                    "output": 8,
+                    "interpolation": "STEP"
+                }
+            ]
+        },
+        {
+            "name": "SCREEN_EICAS2",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": "SCREEN_EICAS2",
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": "SCREEN_EICAS2",
+                        "path": "scale"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 9,
+                    "output": 10,
+                    "interpolation": "STEP"
+                },
+                {
+                    "input": 9,
+                    "output": 11,
+                    "interpolation": "STEP"
+                }
+            ]
+        },
+        {
+            "name": "SCREEN_MFD_R",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": "SCREEN_MFD_R",
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": "SCREEN_MFD_R",
+                        "path": "scale"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 12,
+                    "output": 13,
+                    "interpolation": "STEP"
+                },
+                {
+                    "input": 12,
+                    "output": 14,
+                    "interpolation": "STEP"
+                }
+            ]
+        },
+        {
+            "name": "SCREEN_PFD_R",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": "SCREEN_PFD_R",
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": "SCREEN_PFD_R",
+                        "path": "scale"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 15,
+                    "output": 16,
+                    "interpolation": "STEP"
+                },
+                {
+                    "input": 15,
+                    "output": 17,
+                    "interpolation": "STEP"
+                }
+            ]
+        }
+    ],
+    "accessors": [
+        {
+            "bufferView": 0,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 12,
+            "min": [
+                0.0
+            ],
+            "max": [
+                0.36666666666666664
+            ],
+            "type": "SCALAR",
+            "name": "accessorAnimationInput"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 48,
+            "componentType": 5126,
+            "count": 12,
+            "type": "VEC3",
+            "name": "accessorAnimationPositions"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 192,
+            "componentType": 5126,
+            "count": 12,
+            "type": "VEC3",
+            "name": "accessorAnimationScales"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 336,
+            "componentType": 5126,
+            "count": 12,
+            "min": [
+                0.0
+            ],
+            "max": [
+                0.36666666666666664
+            ],
+            "type": "SCALAR",
+            "name": "accessorAnimationInput"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 384,
+            "componentType": 5126,
+            "count": 12,
+            "type": "VEC3",
+            "name": "accessorAnimationPositions"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 528,
+            "componentType": 5126,
+            "count": 12,
+            "type": "VEC3",
+            "name": "accessorAnimationScales"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 672,
+            "componentType": 5126,
+            "count": 12,
+            "min": [
+                0.0
+            ],
+            "max": [
+                0.36666666666666664
+            ],
+            "type": "SCALAR",
+            "name": "accessorAnimationInput"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 720,
+            "componentType": 5126,
+            "count": 12,
+            "type": "VEC3",
+            "name": "accessorAnimationPositions"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 864,
+            "componentType": 5126,
+            "count": 12,
+            "type": "VEC3",
+            "name": "accessorAnimationScales"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1008,
+            "componentType": 5126,
+            "count": 12,
+            "min": [
+                0.0
+            ],
+            "max": [
+                0.36666666666666664
+            ],
+            "type": "SCALAR",
+            "name": "accessorAnimationInput"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1056,
+            "componentType": 5126,
+            "count": 12,
+            "type": "VEC3",
+            "name": "accessorAnimationPositions"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1200,
+            "componentType": 5126,
+            "count": 12,
+            "type": "VEC3",
+            "name": "accessorAnimationScales"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1344,
+            "componentType": 5126,
+            "count": 12,
+            "min": [
+                0.0
+            ],
+            "max": [
+                0.36666666666666664
+            ],
+            "type": "SCALAR",
+            "name": "accessorAnimationInput"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1392,
+            "componentType": 5126,
+            "count": 12,
+            "type": "VEC3",
+            "name": "accessorAnimationPositions"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1536,
+            "componentType": 5126,
+            "count": 12,
+            "type": "VEC3",
+            "name": "accessorAnimationScales"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1680,
+            "componentType": 5126,
+            "count": 12,
+            "min": [
+                0.0
+            ],
+            "max": [
+                0.36666666666666664
+            ],
+            "type": "SCALAR",
+            "name": "accessorAnimationInput"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1728,
+            "componentType": 5126,
+            "count": 12,
+            "type": "VEC3",
+            "name": "accessorAnimationPositions"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1872,
+            "componentType": 5126,
+            "count": 12,
+            "type": "VEC3",
+            "name": "accessorAnimationScales"
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 2016,
+            "uri": "display-switching.bin"
+        }
+    ],
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 2016,
+            "byteOffset": 0,
+            "name": "BufferViewDisplayAnimations"
+        }
+    ]
+}

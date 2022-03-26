@@ -230,6 +230,7 @@
 1. [MODEL] Add detailed rivet mesh to allow for ALDB+COMP+NORM ribbons - @bouveng (Johan Bouveng)
 1. [SD] Rewrite Bleed page to React - @RichardPilbery (tricky_dicky#3571)
 1. [PFD] Reimplement PFD with msfs-avionics framework for improved performance - @saschl (saschl#9432)
+1. [EIS] Implement display switching - @tracernz (Mike)
 
 ## 0.7.0
 
