@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { MemoryRouter as Router } from 'react-router-dom';
-import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
+import { FailuresProviderContextProvider } from './failures-provider-context-provider';
 import Efb from './Efb';
 import { render } from '../Common/index';
 import { readSettingsFromPersistentStorage } from './Settings/sync';
@@ -77,4 +76,4 @@ const EFBLoad = () => {
 
 readSettingsFromPersistentStorage();
 
-render(<FailuresOrchestratorProvider><EFBLoad /></FailuresOrchestratorProvider>, true, true);
+render(<FailuresProviderContextProvider remote={false}><EFBLoad /></FailuresProviderContextProvider>, true, true);

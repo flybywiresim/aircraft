@@ -79,14 +79,14 @@ declare global {
          * @param context This binding for executing the handler, defaults to the Emitter.
          * @return An object with a clear function to remove the handler for the event.
          */
-        function on(name: string, callback: (...any: any[]) => void, context: any): { clear: () => void };
+        function on(name: string, callback: (...any: any[]) => void, context?: any): { clear: () => void };
         /**
          * Remove a handler for an event.
          * @param name The event name.
          * @param callback Function to be called when the event is triggered.
          * @param context This binding for executing the handler, defaults to the Emitter.
          */
-        function off(name: string, callback: () => void, context: any): void;
+        function off(name: string, callback: () => void, context?: any): void;
         /**
          * Trigger an event. This function will trigger any C++ handler registered for
          * this event with `Coherent::UI::View::RegisterForEvent`.

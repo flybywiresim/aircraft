@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { A320Failure, Failure, FailuresOrchestrator } from '@flybywiresim/failures';
+import { A320Failure, Failure, FailuresOrchestrator, RemoteFailuresProvider } from '@flybywiresim/failures';
 import { useUpdate } from '@instruments/common/hooks';
 
 interface FailuresOrchestratorContext {
@@ -10,7 +10,7 @@ interface FailuresOrchestratorContext {
     deactivate(identifier: number): Promise<void>;
 }
 
-const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
+const failures: ([number, string])[] = [
     [A320Failure.LeftPfdDisplay, 'Captain PFD display'],
     [A320Failure.RightPfdDisplay, 'F/O PFD display'],
     [A320Failure.TransformerRectifier1, 'TR 1'],
@@ -27,7 +27,11 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [A320Failure.YellowReservoirReturnLeak, 'Yellow reservoir return leak'],
     [A320Failure.RadioAltimeter1, 'RA 1'],
     [A320Failure.RadioAltimeter2, 'RA 2'],
-]);
+];
+
+const createOrchestrator = () => new FailuresOrchestrator('A32NX', failures);
+
+const createRemoteProvider = () => new RemoteFailuresProvider('A32NX', failures);
 
 const Context = React.createContext<FailuresOrchestratorContext>({
     allFailures: [],
@@ -37,22 +41,24 @@ const Context = React.createContext<FailuresOrchestratorContext>({
     deactivate: () => Promise.resolve(),
 });
 
-export const FailuresOrchestratorProvider = ({ children }) => {
-    const [orchestrator] = useState(createOrchestrator);
+export const FailuresProviderContextProvider = ({ remote, children }) => {
+    const [store] = useState<FailuresOrchestrator | RemoteFailuresProvider>(remote ? createRemoteProvider : createOrchestrator);
 
-    const [allFailures] = useState(() => orchestrator.getAllFailures());
+    const [allFailures] = useState(() => store.getAllFailures());
     const [activeFailures, setActiveFailures] = useState<Set<number>>(() => new Set<number>());
     const [changingFailures, setChangingFailures] = useState<Set<number>>(() => new Set<number>());
 
     useUpdate(() => {
-        orchestrator.update();
+        if ('update' in store) {
+            store.update();
+        }
 
-        const af = orchestrator.getActiveFailures();
+        const af = store.getActiveFailures();
         if (!areEqual(activeFailures, af)) {
             setActiveFailures(af);
         }
 
-        const cf = orchestrator.getChangingFailures();
+        const cf = store.getChangingFailures();
         if (!areEqual(changingFailures, cf)) {
             setChangingFailures(cf);
         }
@@ -64,8 +70,8 @@ export const FailuresOrchestratorProvider = ({ children }) => {
                 allFailures,
                 activeFailures,
                 changingFailures,
-                activate: (identifier) => orchestrator.activate(identifier),
-                deactivate: (identifier) => orchestrator.deactivate(identifier),
+                activate: (identifier) => store.activate(identifier),
+                deactivate: (identifier) => store.deactivate(identifier),
             }}
         >
             {children}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
+import { useFailuresOrchestrator } from '../failures-provider-context-provider';
 import { FailureButton } from './FailureButton';
 
 export const Failures = () => {

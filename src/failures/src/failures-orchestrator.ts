@@ -1,5 +1,7 @@
 import { QueuedSimVarWriter, SimVarReaderWriter } from './communication';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
+import { FailuresProvider } from './failures-provider';
+import { FailuresTriggers, PrefixedFailuresTriggers } from './communication/triggers';
 
 export interface Failure {
     identifier: number,
@@ -9,9 +11,10 @@ export interface Failure {
 /**
  * Orchestrates the activation and deactivation of failures.
  *
- * Only a single instance of the orchestrator should exist within the whole application.
+ * Only a single instance of the orchestrator should exist within the whole application. Its data can be accessed using
+ * a {@link RemoteFailuresProvider}
  */
-export class FailuresOrchestrator {
+export class FailuresOrchestrator implements FailuresProvider {
     private failures: Failure[] = [];
 
     private activeFailures = new Set<number>();
@@ -22,20 +25,45 @@ export class FailuresOrchestrator {
 
     private deactivateFailureQueue: QueuedSimVarWriter;
 
+    private readonly listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
+
+    private triggers: FailuresTriggers;
+
     constructor(simVarPrefix: string, failures: [number, string][]) {
         this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getActivateFailureSimVarName(simVarPrefix)));
         this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getDeactivateFailureSimVarName(simVarPrefix)));
+
         failures.forEach((failure) => {
             this.failures.push({
                 identifier: failure[0],
                 name: failure[1],
             });
         });
+
+        this.triggers = PrefixedFailuresTriggers(simVarPrefix);
+
+        Coherent.on(this.triggers.ActivateFailure, (identifier: number) => {
+            this.activate(identifier);
+        });
+
+        Coherent.on(this.triggers.DeactivateFailure, (identifier: number) => {
+            this.deactivate(identifier);
+        });
+
+        Coherent.on(this.triggers.RequestFailuresState, () => {
+            this.publishStateUpdate();
+        });
+
+        this.publishStateUpdate();
     }
 
     update() {
         this.activateFailureQueue.update();
         this.deactivateFailureQueue.update();
+    }
+
+    private publishStateUpdate() {
+        this.listener.triggerToAllSubscribers(this.triggers.NewFailuresState, Array.from(this.activeFailures), Array.from(this.changingFailures));
     }
 
     /**
@@ -46,6 +74,8 @@ export class FailuresOrchestrator {
         await this.activateFailureQueue.write(identifier);
         this.changingFailures.delete(identifier);
         this.activeFailures.add(identifier);
+
+        this.publishStateUpdate();
     }
 
     /**
@@ -56,19 +86,14 @@ export class FailuresOrchestrator {
         await this.deactivateFailureQueue.write(identifier);
         this.changingFailures.delete(identifier);
         this.activeFailures.delete(identifier);
+
+        this.publishStateUpdate();
     }
 
-    /**
-     * Determines whether or not the failure with the given identifier is active.
-     */
     isActive(identifier: number): boolean {
         return this.activeFailures.has(identifier);
     }
 
-    /**
-     * Determines whether or not the failure with the given identifier is currently
-     * changing its state between active and inactive.
-     */
     isChanging(identifier: number): boolean {
         return this.changingFailures.has(identifier);
     }
