@@ -166,7 +166,6 @@ pub struct PowerTransferUnit {
     motor_flow_id: VariableIdentifier,
     valve_opened_id: VariableIdentifier,
     shaft_rpm_id: VariableIdentifier,
-    continuous_mode_id: VariableIdentifier,
 
     is_enabled: bool,
     is_active_right: bool,
@@ -231,7 +230,6 @@ impl PowerTransferUnit {
             motor_flow_id: context.get_identifier("HYD_PTU_MOTOR_FLOW".to_owned()),
             valve_opened_id: context.get_identifier("HYD_PTU_VALVE_OPENED".to_owned()),
             shaft_rpm_id: context.get_identifier("HYD_PTU_SHAFT_RPM".to_owned()),
-            continuous_mode_id: context.get_identifier("HYD_PTU_CONTINUOUS_MODE".to_owned()),
 
             is_enabled: false,
             is_active_right: false,
@@ -447,6 +445,10 @@ impl PowerTransferUnit {
     fn is_rotating(&self) -> bool {
         self.shaft_speed.abs().get::<revolution_per_minute>() > Self::MIN_SPEED_SIMULATION_RPM
     }
+
+    pub fn is_in_continuous_mode(&self) -> bool {
+        self.is_in_continuous_mode
+    }
 }
 impl SimulationElement for PowerTransferUnit {
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -455,7 +457,6 @@ impl SimulationElement for PowerTransferUnit {
         writer.write(&self.motor_flow_id, self.flow());
         writer.write(&self.valve_opened_id, self.is_enabled());
         writer.write(&self.shaft_rpm_id, self.shaft_speed_filtered.output());
-        writer.write(&self.continuous_mode_id, self.is_in_continuous_mode);
     }
 }
 

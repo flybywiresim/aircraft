@@ -654,6 +654,7 @@ impl A320RudderFactory {
 pub(super) struct A320Hydraulic {
     hyd_ptu_ecam_memo_id: VariableIdentifier,
     ptu_high_pitch_sound_id: VariableIdentifier,
+    ptu_continuous_mode_id: VariableIdentifier,
 
     nose_steering: SteeringActuator,
 
@@ -778,6 +779,7 @@ impl A320Hydraulic {
         A320Hydraulic {
             hyd_ptu_ecam_memo_id: context.get_identifier("HYD_PTU_ON_ECAM_MEMO".to_owned()),
             ptu_high_pitch_sound_id: context.get_identifier("HYD_PTU_HIGH_PITCH_SOUND".to_owned()),
+            ptu_continuous_mode_id: context.get_identifier("HYD_PTU_CONTINUOUS_MODE".to_owned()),
 
             nose_steering: SteeringActuator::new(
                 context,
@@ -1662,9 +1664,14 @@ impl SimulationElement for A320Hydraulic {
             self.should_show_hyd_ptu_message_on_ecam(),
         );
 
+        let ptu_has_high_pitch_sound = self.is_ptu_running_high_pitch_sound();
+
+        writer.write(&self.ptu_high_pitch_sound_id, ptu_has_high_pitch_sound);
+
+        // Two sound variables of ptu made exclusive with high pitch sound having priority
         writer.write(
-            &self.ptu_high_pitch_sound_id,
-            self.is_ptu_running_high_pitch_sound(),
+            &self.ptu_continuous_mode_id,
+            self.power_transfer_unit.is_in_continuous_mode() && !ptu_has_high_pitch_sound,
         );
     }
 }
