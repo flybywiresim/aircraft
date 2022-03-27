@@ -1,3 +1,3 @@
-import { LocalApiClient } from 'local-api-client/src/LocalApiClient';
+import { LocalApiClient } from './LocalApiClient';
 
 export { LocalApiClient };
