@@ -1,4 +1,4 @@
-import { DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from 'msfssdk';
 
 import './common.scss';
 
@@ -21,8 +21,6 @@ enum DisplayUnitState {
 export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
     private state: DisplayUnitState = SimVar.GetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool') ? DisplayUnitState.Off : DisplayUnitState.Standby;
 
-    private readonly simvarPublisher;
-
     private electricityState: number = 0;
 
     private potentiometer: number = 0;
@@ -39,24 +37,27 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
 
     private failed = false;
 
-    constructor(props: DisplayUnitProps) {
-        super(props);
-        this.simvarPublisher = this.props.bus.getSubscriber<PFDSimvars>();
-    }
-
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
+        const sub = this.props.bus.getSubscriber<PFDSimvars & ClockEvents>();
         const isCaptainSide = getDisplayIndex() === 1;
 
-        this.simvarPublisher.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
+        sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
             this.potentiometer = value;
             this.updateState();
         });
 
-        this.simvarPublisher.on(isCaptainSide ? 'elec' : 'elecFo').whenChanged().handle((value) => {
+        sub.on(isCaptainSide ? 'elec' : 'elecFo').whenChanged().handle((value) => {
             this.electricityState = value;
             this.updateState();
+        });
+
+        sub.on('realTime').atFrequency(1).handle((_t) => {
+            // override MSFS menu animations setting for this instrument
+            if (!document.documentElement.classList.contains('animationsEnabled')) {
+                document.documentElement.classList.add('animationsEnabled');
+            }
         });
 
         this.props.failed.sub((f) => {
