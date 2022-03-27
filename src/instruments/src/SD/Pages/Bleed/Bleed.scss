@@ -78,6 +78,10 @@
         stroke-width: 2;
     }
 
+    .Stroke3 {
+        stroke-width: 3 !important;
+    }
+
     .LineCapRound {
         stroke-linecap: round;
     }
@@ -90,6 +94,12 @@
 
     .AmberLine {
         stroke: $display-amber !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .WhiteLine {
+        stroke: $display-white !important;
         stroke-width: 2;
         fill: none;
     }

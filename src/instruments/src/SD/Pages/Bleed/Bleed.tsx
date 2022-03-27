@@ -29,6 +29,12 @@ export const BleedPage: FC = () => {
     const rightVerticalDuctColour = !xbleedAirValveOpen && !engine2PRValveOpen ? 'Amber' : 'Green';
     const indicationBleedUsers = !packFlowValve1Open && !packFlowValve2Open && ramAirToggle === 0 ? 'Amber' : 'Green';
 
+    const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 1000);
+    const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 1000);
+    const aircraftOnGround = left1LandingGear === 1 || right1LandingGear === 1;
+
+    const groundAirSupplied = false;
+
     return (
         <EcamPage name="main-bleed">
             <PageTitle x={6} y={18} text="BLEED" />
@@ -40,7 +46,11 @@ export const BleedPage: FC = () => {
             <path className={`${indicationBleedUsers}Line`} d="M 135,62 l 0,-19 l 329,0 l 0,19" />
 
             {/* Ram air */}
-            <Valve x={300} y={93} radius={15} css="GreenLine" position="H" sdacDatum={sdacDatum} />
+            <path className={ramAirToggle === 1 ? 'GreenLine' : 'Hide'} d="M 300,78 l 0,-35" />
+            <Valve x={300} y={93} radius={15} css={aircraftOnGround && ramAirToggle === 1 ? 'AmberLine' : 'GreenLine'} position={ramAirToggle === 1 ? 'V' : 'H'} sdacDatum={sdacDatum} />
+            <path className="GreenLine" d="M 300,108 l 0,19" />
+            <text className="Large White Center" x={300} y={145}>RAM</text>
+            <text className="Large White Center" x={300} y={166}>AIR</text>
 
             {/* Cross Bleed Duct  */}
             <g id="cross-bleed">
@@ -55,6 +65,13 @@ export const BleedPage: FC = () => {
 
             <EngineBleed x={135} y={62} engine={1} sdacDatum={sdacDatum} enginePRValveOpen={engine1PRValveOpen} packFlowValveOpen={packFlowValve1Open} />
             <EngineBleed x={464} y={62} engine={2} sdacDatum={sdacDatum} enginePRValveOpen={engine2PRValveOpen} packFlowValveOpen={packFlowValve2Open} />
+
+            {/* Ground Supply of Compressed Air */}
+            <g id="CompressedAir" className={groundAirSupplied ? 'Show' : 'Hide'}>
+                <Triangle x={248} y={274} colour="White" orientation={0} fill={0} scale={0.75} />
+                <text className="Medium White Center" x={250} y={306}>GND</text>
+            </g>
+
         </EcamPage>
     );
 };

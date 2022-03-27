@@ -29,7 +29,7 @@ const APUValve: FC<APUValveProps> = ({ x, y, sdacDatum }) => {
                     sdacDatum={sdacDatum}
                 />
                 <path className="GreenLine" d={`M ${x},${y + 15} l 0,19`} />
-                <text className="Medium White Center" x={x} y={y + 52}>APU</text>
+                <text className="Large White Center" x={x} y={y + 52}>APU</text>
             </g>
         )
         : null

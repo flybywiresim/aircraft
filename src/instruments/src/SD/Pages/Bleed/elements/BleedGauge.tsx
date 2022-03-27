@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
-import Valve from 'instruments/src/SD/Pages/Bleed/elements/Valve';
+import Valve from './Valve';
 
 interface BleedGaugeProps {
     x: number,
@@ -99,7 +99,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValv
                     radius={radius}
                     startAngle={startAngle}
                     endAngle={endAngle}
-                    className={`${packFlowValveOpen ? 'GaugeIndicator' : 'AmberLine'} Gauge LineCapRound`}
+                    className={`${packFlowValveOpen ? 'GaugeIndicator' : 'AmberLine Stroke3'} Gauge LineCapRound`}
                     indicator
                     multiplierOuter={1.1}
                 />
