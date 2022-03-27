@@ -719,9 +719,12 @@ pub(super) struct A320Hydraulic {
     spoiler_computer: SpoilerComputer,
     left_spoilers: SpoilerGroup,
     right_spoilers: SpoilerGroup,
+
+    ptu_high_pitch_sound_active: DelayedFalseLogicGate,
 }
 impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
+    const HIGH_PITCH_PTU_SOUND_DURATION: Duration = Duration::from_millis(3000);
 
     const FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
         0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
@@ -944,6 +947,10 @@ impl A320Hydraulic {
                 context,
                 ActuatorSide::Right,
             ),
+
+            ptu_high_pitch_sound_active: DelayedFalseLogicGate::new(
+                Self::HIGH_PITCH_PTU_SOUND_DURATION,
+            ),
         }
     }
 
@@ -1002,6 +1009,9 @@ impl A320Hydraulic {
                 reservoir_pneumatics,
             );
         }
+
+        self.ptu_high_pitch_sound_active
+            .update(context, self.is_ptu_running_high_pitch_sound());
     }
 
     fn ptu_has_fault(&self) -> bool {
@@ -1664,14 +1674,16 @@ impl SimulationElement for A320Hydraulic {
             self.should_show_hyd_ptu_message_on_ecam(),
         );
 
-        let ptu_has_high_pitch_sound = self.is_ptu_running_high_pitch_sound();
-
-        writer.write(&self.ptu_high_pitch_sound_id, ptu_has_high_pitch_sound);
+        writer.write(
+            &self.ptu_high_pitch_sound_id,
+            self.ptu_high_pitch_sound_active.output(),
+        );
 
         // Two sound variables of ptu made exclusive with high pitch sound having priority
         writer.write(
             &self.ptu_continuous_mode_id,
-            self.power_transfer_unit.is_in_continuous_mode() && !ptu_has_high_pitch_sound,
+            self.power_transfer_unit.is_in_continuous_mode()
+                && !self.ptu_high_pitch_sound_active.output(),
         );
     }
 }

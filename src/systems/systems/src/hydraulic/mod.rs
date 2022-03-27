@@ -456,7 +456,7 @@ impl SimulationElement for PowerTransferUnit {
         writer.write(&self.active_r2l_id, self.is_active_right);
         writer.write(&self.motor_flow_id, self.flow());
         writer.write(&self.valve_opened_id, self.is_enabled());
-        writer.write(&self.shaft_rpm_id, self.shaft_speed_filtered.output());
+        writer.write(&self.shaft_rpm_id, (self.shaft_speed_filtered.output()).abs());
     }
 }
 
