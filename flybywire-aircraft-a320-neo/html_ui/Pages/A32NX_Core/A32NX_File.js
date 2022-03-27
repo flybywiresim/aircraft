@@ -6,7 +6,7 @@
  * @returns
  */
 const getCoRoute = async (mcdu, coRoute, updateView) => {
-    return LocalApiClient.getCoRoute(coRoute)
+    return LocalApiClient.CompanyRoute.getCoRoute(coRoute)
         .then(response => {
             switch (response.status) {
                 case 422:
@@ -42,7 +42,7 @@ const getCoRoute = async (mcdu, coRoute, updateView) => {
 const getRouteList = async (mcdu) => {
     const origin = mcdu.flightPlanManager.getOrigin().ident;
     const dest = mcdu.flightPlanManager.getDestination().ident;
-    return LocalApiClient.getRouteList(origin, dest)
+    return LocalApiClient.CompanyRoute.getRouteList(origin, dest)
         .then(response => {
             response.json().then(data => {
                 data.forEach((route) => {

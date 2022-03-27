@@ -1,3 +1,3 @@
-import { LocalApiClient } from './LocalApiClient';
+import { CompanyRoute } from './components/Coroute';
 
-export { LocalApiClient };
+export { CompanyRoute };
