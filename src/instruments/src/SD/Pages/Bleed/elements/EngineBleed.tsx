@@ -22,8 +22,6 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
     const precoolerOutletTempFive = Math.round(precoolerOutletTemp / 5) * 5;
     const [precoolerInletPress] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PRECOOLER_INLET_PRESSURE`, 'psi', 10);
     const precoolerInletPressTwo = Math.round(precoolerInletPress / 2) * 2;
-    // const [packFlowValveOpen] = useSimVar(`L:A32NX_COND_PACK_FLOW_VALVE_${engine}_IS_OPEN`, 'bool', 500);
-    const [packFlow] = useSimVar('L:A32NX_COND_PACK_FLOW', 'percent', 500);
 
     return (
         <g id={`bleed-${engine}`}>
@@ -90,7 +88,18 @@ interface BleedGaugeProps {
 }
 
 const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValveOpen }) => {
-    console.log('bleed');
+    // TODO
+    // Pack precpper outlet temp, pack inlet flow rate, pack bypass valve and pack outlet temp should be revised once the packs are modelled
+
+    const [precoolerOutletTemp] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PRECOOLER_OUTLET_TEMPERATURE`, 'celsius', 500);
+    const compressorOutletTemp = Math.round(precoolerOutletTemp / 5) * 5;
+
+    const [packInletFlowPercentage] = useSimVar('L:A32NX_COND_PACK_FLOW', 'percent', 500);
+
+    const [fwdCondSelectorKnob] = useSimVar('L:A32NX_OVHD_COND_FWD_SELECTOR_KNOB', 'number', 1000); // 0 to 300
+    const packBypassValve = Math.round(fwdCondSelectorKnob / 300 * 100);
+    const [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
+    const packOutletTemp = Math.round(fwdCabinTemp / 5) * 5;
 
     const radius = 38;
     const startAngle = -63;
@@ -103,8 +112,8 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValv
     return (
         <g id={`Engine${engine}AirCond`}>
             {/* Pack Outlet Temp */}
-            <text className="Large End Green" x={x + 15} y={y - 114}>{30}</text>
-            <text x={x + 20} y={y - 114} className="Cyan Standard">°C</text>
+            <text className="Large End Green" x={x + 15} y={y - 117}>{packOutletTemp}</text>
+            <text x={x + 20} y={y - 117} className="Cyan Standard">°C</text>
 
             {/* Bypass valve */}
             <GaugeComponent x={x} y={y - 69} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
@@ -123,7 +132,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValv
                     multiplierOuter={1.1}
                 />
                 <GaugeMarkerComponent
-                    value={40}
+                    value={packBypassValve}
                     x={x}
                     y={y - 69}
                     min={minBypass}
@@ -138,8 +147,8 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValv
             </GaugeComponent>
 
             {/* Compressor Outlet Temp */}
-            <text className="Large End Green" x={x + 20} y={y - 45}>{100}</text>
-            <text x={x + 20} y={y - 45} className="Cyan Standard">°C</text>
+            <text className={`Large End ${compressorOutletTemp > 230 || !sdacDatum ? 'Amber' : 'Green'}`} x={x + 20} y={y - 47}>{sdacDatum ? compressorOutletTemp : 'XX'}</text>
+            <text x={x + 20} y={y - 47} className="Cyan Standard">°C</text>
 
             {/* Pack inlet flow */}
             <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
@@ -158,7 +167,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValv
                     multiplierOuter={1.1}
                 />
                 <GaugeMarkerComponent
-                    value={110}
+                    value={packInletFlowPercentage < 80 ? 80 : packInletFlowPercentage}
                     x={x}
                     y={y}
                     min={min}
@@ -166,7 +175,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValv
                     radius={radius}
                     startAngle={startAngle}
                     endAngle={endAngle}
-                    className="GaugeIndicator Gauge LineCapRound"
+                    className={`${packFlowValveOpen ? 'GaugeIndicator' : 'AmberLine'} Gauge LineCapRound`}
                     indicator
                     multiplierOuter={1.1}
                 />
