@@ -4,24 +4,46 @@ set -ex
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 GIT_DIR="local-api/"
+LOCAL_API_URL="github.com/flybywiresim/local-api/releases/latest/download/FBW-local-api.zip"
 
-npm install -g npm@8.4.0
+apt install unzip
 
-if [ -d "src/$GIT_DIR" ]
+cd src/
+# Check if zip already exits and delete it
+if [ -f "FBW-local-api.zip"]
 then
-    cd "src/$GIT_DIR"
-else
-    cd "src/"
-    git clone https://github.com/flybywiresim/local-api.git
-    cd $GIT_DIR
+    rm "FBW-local-api.zip"
 fi
 
-npm install
-npm run build:exec
+# Download latest local-api zip and extract it
+curl -fsSL $LOCAL_API_URL -O
+unzip FBW-local-api.zip -d ${GIT_DIR}
+
+# Hash Check
+if [ -f "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe" ]
+then
+    LOCAL_HASH=$(md5sum "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe")
+    NEW_HASH=$(md5sum ${GIT_DIR}/local-server.exe)
+
+    if [ $LOCAL_HASH !== $NEW_HASH ]
+    then
+        cp ${GIT_DIR}/local-server.exe "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe"
+    fi
+fi
+
+# If properties file doesn't exist copy the default one
 if [ ! -f "${DIR}/../flybywire-aircraft-a320-neo/resources/properties.json" ]
 then
     mkdir -p "${DIR}/../flybywire-aircraft-a320-neo/resources"
-    cp apps/server/src/config/properties.json "${DIR}/../flybywire-aircraft-a320-neo/resources/properties.json"
-    cp node_modules/pdf-to-printer/dist/SumatraPDF.exe "${DIR}/../flybywire-aircraft-a320-neo/resources/SumatraPDF.exe"
+    cp ${GIT_DIR}/properties.json "${DIR}/../flybywire-aircraft-a320-neo/resources/properties.json"
 fi
-cp dist/local-server.exe "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe"
+
+# Copy Sumatra
+if [ ! -f "${DIR}/../flybywire-aircraft-a320-neo/resources/SumatraPDF.exe" ]
+then
+    cp ${GIT_DIR}/SumatraPDF.exe "${DIR}/../flybywire-aircraft-a320-neo/resources/SumatraPDF.exe"
+fi
+
+# Cleanup
+rm -rf ${GIT_DIR}
+rm FBW-local-api.zip
