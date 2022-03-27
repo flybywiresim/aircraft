@@ -1,3 +1,4 @@
+import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
 import React, { FC } from 'react';
 import Valve from './Valve';
@@ -38,9 +39,7 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
             <text x={x + 61} y={y + 132} className="White Standard">HI</text>
 
             {/* Pack inlet Flow */}
-            <BleedGauge x={x} y={y + 150} sdacDatum={sdacDatum} />
-
-            <Valve x={x} y={y + 150} radius={15} css="GreenLine" position={packFlowValveOpen ? 'V' : 'H'} sdacDatum={sdacDatum} />
+            <BleedGauge x={x} y={y + 150} sdacDatum={sdacDatum} packFlowValveOpen={packFlowValveOpen} engine={engine} />
 
             {/* Engine Bleed temp */}
             <path className="GreyStroke Stroke2" d={`M ${x},${y + 247} l -27,0 l 0,54 l 54,0 l 0,-54 l -27,0`} />
@@ -85,13 +84,96 @@ export default EngineBleed;
 interface BleedGaugeProps {
     x: number,
     y: number,
-    sdacDatum: boolean
+    engine: number,
+    sdacDatum: boolean,
+    packFlowValveOpen: boolean,
 }
 
-const BleedGauge: FC<BleedGaugeProps> = ({ x, y, sdacDatum }) => {
+const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValveOpen }) => {
     console.log('bleed');
 
+    const radius = 38;
+    const startAngle = -63;
+    const endAngle = 63;
+    const min = 80;
+    const max = 120;
+    const minBypass = 0;
+    const maxBypass = 100;
+
     return (
-        <g><p>Hello</p></g>
+        <g id={`Engine${engine}AirCond`}>
+            {/* Pack Outlet Temp */}
+            <text className="Large End Green" x={x + 15} y={y - 114}>{30}</text>
+            <text x={x + 20} y={y - 114} className="Cyan Standard">°C</text>
+
+            {/* Bypass valve */}
+            <GaugeComponent x={x} y={y - 69} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
+                <GaugeMarkerComponent
+                    value={50}
+                    x={x}
+                    y={y - 69}
+                    min={minBypass}
+                    max={maxBypass}
+                    radius={radius}
+                    startAngle={startAngle}
+                    endAngle={endAngle}
+                    className="WhiteStroke Stroke2"
+                    showValue={false}
+                    outer
+                    multiplierOuter={1.1}
+                />
+                <GaugeMarkerComponent
+                    value={40}
+                    x={x}
+                    y={y - 69}
+                    min={minBypass}
+                    max={maxBypass}
+                    radius={radius}
+                    startAngle={startAngle}
+                    endAngle={endAngle}
+                    className="GaugeIndicator Gauge LineCapRound"
+                    indicator
+                    multiplierOuter={1.1}
+                />
+            </GaugeComponent>
+
+            {/* Compressor Outlet Temp */}
+            <text className="Large End Green" x={x + 20} y={y - 45}>{100}</text>
+            <text x={x + 20} y={y - 45} className="Cyan Standard">°C</text>
+
+            {/* Pack inlet flow */}
+            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
+                <GaugeMarkerComponent
+                    value={100}
+                    x={x}
+                    y={y}
+                    min={min}
+                    max={max}
+                    radius={radius}
+                    startAngle={startAngle}
+                    endAngle={endAngle}
+                    className="WhiteStroke Stroke2"
+                    showValue={false}
+                    outer
+                    multiplierOuter={1.1}
+                />
+                <GaugeMarkerComponent
+                    value={110}
+                    x={x}
+                    y={y}
+                    min={min}
+                    max={max}
+                    radius={radius}
+                    startAngle={startAngle}
+                    endAngle={endAngle}
+                    className="GaugeIndicator Gauge LineCapRound"
+                    indicator
+                    multiplierOuter={1.1}
+                />
+            </GaugeComponent>
+
+            {/* Flow control valve */}
+            <Valve x={x} y={y} radius={15} css="GreenLine BackgroundFill" position={packFlowValveOpen ? 'V' : 'H'} sdacDatum={sdacDatum} />
+        </g>
     );
 };

@@ -65,12 +65,21 @@
         stroke: $display-light-grey;
     }
 
+    .WhiteStroke {
+        fill: none;
+        stroke: $display-white;
+    }
+
     .Stroke1 {
         stroke-width: 1;
     }
 
     .Stroke2 {
         stroke-width: 2;
+    }
+
+    .LineCapRound {
+        stroke-linecap: round;
     }
 
     .GreenLine {
@@ -83,6 +92,10 @@
         stroke: $display-amber !important;
         stroke-width: 2;
         fill: none;
+    }
+
+    .BackgroundFill {
+        fill: $display-background !important;
     }
 
     .Show {
