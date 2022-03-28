@@ -379,6 +379,9 @@ export class LnavDriver implements GuidanceComponent {
                         this.sequenceLeg(currentLeg, outboundTransition);
                     }
                     geometry.onLegSequenced(currentLeg, nextLeg, followingLeg);
+                } else {
+                    this.sequenceDiscontinuity(currentLeg);
+                    geometry.onLegSequenced(currentLeg, nextLeg, followingLeg);
                 }
             }
         }
@@ -472,22 +475,29 @@ export class LnavDriver implements GuidanceComponent {
         const lateralModel = SimVar.GetSimVarValue('L:A32NX_FMA_LATERAL_MODE', 'Enum');
         const verticalMode = SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'Enum');
 
+        let reverted = false;
+
         if (lateralModel === LateralMode.NAV) {
             // Set HDG (current heading)
             SimVar.SetSimVarValue('H:A320_Neo_FCU_HDG_PULL', 'number', 0);
             SimVar.SetSimVarValue('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'number', Simplane.getHeadingMagnetic());
+            reverted = true;
         }
 
-        // Vertical mode is DES, OP DES, CLB or OP CLB
-        if (verticalMode === VerticalMode.DES || verticalMode === VerticalMode.OP_DES
-            || verticalMode === VerticalMode.CLB || verticalMode === VerticalMode.OP_CLB
-        ) {
-            // Set V/S
+        if (verticalMode === VerticalMode.DES) {
+            // revert to V/S
             SimVar.SetSimVarValue('H:A320_Neo_FCU_VS_PULL', 'number', 0);
+            reverted = true;
+        } else if (verticalMode === VerticalMode.CLB) {
+            // revert to OP CLB
+            SimVar.SetSimVarValue('H:A320_Neo_FCU_ALT_PULL', 'number', 0);
+            reverted = true;
         }
 
-        // Triple click
-        Coherent.call('PLAY_INSTRUMENT_SOUND', '3click').catch(console.error);
+        if (reverted) {
+            // Triple click
+            Coherent.call('PLAY_INSTRUMENT_SOUND', '3click').catch(console.error);
+        }
 
         this.sequenceLeg(_leg, null);
     }

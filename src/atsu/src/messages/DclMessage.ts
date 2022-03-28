@@ -31,9 +31,9 @@ export class DclMessage extends CpdlcMessage {
     public serialize(format: AtsuMessageSerializationFormat) {
         let dclMessage = '';
         if (format === AtsuMessageSerializationFormat.Network) {
-            dclMessage = 'REQUEST PREDEP CLEARANCE\n';
-            dclMessage += `${this.Callsign} ${this.AcType} TO ${this.Destination}\n`;
-            dclMessage += `AT ${this.Origin}${this.Gate !== '' ? ` STAND ${this.Gate}` : ''}\n`;
+            dclMessage = 'REQUEST PREDEP CLEARANCE \n';
+            dclMessage += `${this.Callsign} ${this.AcType} TO ${this.Destination} \n`;
+            dclMessage += `AT ${this.Origin}${this.Gate !== '' ? ` STAND ${this.Gate}` : ''} \n`;
             dclMessage += `ATIS ${this.Atis}`;
         } else {
             if (format !== AtsuMessageSerializationFormat.DCDU) {

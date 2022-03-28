@@ -221,41 +221,83 @@ export class GuidanceController {
         this.updateEfisState('L', this.leftEfisState);
         this.updateEfisState('R', this.rightEfisState);
 
-        try {
-            // Generate new geometry when flight plan changes
-            // TODO also need to do it when FMS perf params change, e.g. speed limit/alt, climb/crz/des speeds
-            const newFlightPlanVersion = this.flightPlanManager.currentFlightPlanVersion;
-            if (newFlightPlanVersion !== this.lastFlightPlanVersion) {
-                this.lastFlightPlanVersion = newFlightPlanVersion;
+        // Generate new geometry when flight plan changes
+        // TODO also need to do it when FMS perf params change, e.g. speed limit/alt, climb/crz/des speeds
+        const newFlightPlanVersion = this.flightPlanManager.currentFlightPlanVersion;
+        if (newFlightPlanVersion !== this.lastFlightPlanVersion) {
+            this.lastFlightPlanVersion = newFlightPlanVersion;
 
+            try {
                 this.updateGeometries();
-                this.geometryRecomputationTimer = 0;
+            } catch (e) {
+                console.error('[FMS] Error during update of geometry. See exception below.');
+                console.error(e);
             }
+            this.geometryRecomputationTimer = 0;
+        }
 
-            if (this.geometryRecomputationTimer > GEOMETRY_RECOMPUTATION_TIMER) {
-                this.geometryRecomputationTimer = 0;
+        if (this.geometryRecomputationTimer > GEOMETRY_RECOMPUTATION_TIMER) {
+            this.geometryRecomputationTimer = 0;
 
+            try {
                 this.recomputeGeometries();
 
                 if (this.activeGeometry) {
                     this.vnavDriver.acceptMultipleLegGeometry(this.activeGeometry);
                     this.pseudoWaypoints.acceptMultipleLegGeometry(this.activeGeometry);
                 }
+            } catch (e) {
+                console.error('[FMS] Error during geometry recomputation. See exception below.');
+                console.error(e);
             }
+        }
 
+        try {
             this.updateMrpState();
+        } catch (e) {
+            console.error('[FMS] Error during map state computation. See exception below.');
+            console.error(e);
+        }
+
+        try {
             this.updateMapPartlyDisplayed();
+        } catch (e) {
+            console.error('[FMS] Error during map partly displayed computation. See exception below.');
+            console.error(e);
+        }
 
-            // Main loop
-
+        try {
             this.lnavDriver.update(deltaTime);
-            this.vnavDriver.update(deltaTime);
-            this.pseudoWaypoints.update(deltaTime);
-            this.efisVectors.update(deltaTime);
+        } catch (e) {
+            console.error('[FMS] Error during LNAV driver update. See exception below.');
+            console.error(e);
+        }
 
+        try {
+            this.vnavDriver.update(deltaTime);
+        } catch (e) {
+            console.error('[FMS] Error during VNAV driver update. See exception below.');
+            console.error(e);
+        }
+
+        try {
+            this.pseudoWaypoints.update(deltaTime);
+        } catch (e) {
+            console.error('[FMS] Error during pseudo waypoints update. See exception below.');
+            console.error(e);
+        }
+
+        try {
+            this.efisVectors.update(deltaTime);
+        } catch (e) {
+            console.error('[FMS] Error during EFIS vectors update. See exception below.');
+            console.error(e);
+        }
+
+        try {
             this.taskQueue.update(deltaTime);
         } catch (e) {
-            console.error('[FMS] Error during tick. See exception below.');
+            console.error('[FMS] Error during task queue update. See exception below.');
             console.error(e);
         }
     }

@@ -345,7 +345,7 @@ export class EfisSymbols {
                         direction = wp.additionalData.course;
                     }
 
-                    if (wp.legAltitudeDescription !== 0) {
+                    if (wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
                     // TODO vnav to predict
                         type |= NdSymbolTypeFlags.ConstraintUnknown;
                     }

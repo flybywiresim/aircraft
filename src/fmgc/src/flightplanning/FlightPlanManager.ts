@@ -310,15 +310,15 @@ export class FlightPlanManager {
     /**
      * Gets the origin of the currently active flight plan.
      */
-    public getOrigin(): WayPoint | undefined {
-        return this._flightPlans[this._currentFlightPlanIndex].originAirfield;
+    public getOrigin(flightPlanIndex = this._currentFlightPlanIndex): WayPoint | undefined {
+        return this._flightPlans[flightPlanIndex].originAirfield;
     }
 
     /**
      * Gets the origin of the currently active flight plan, even after it has been cleared for a direct-to.
      */
-    public getPersistentOrigin(): WayPoint | undefined {
-        return this._flightPlans[this._currentFlightPlanIndex].persistentOriginAirfield;
+    public getPersistentOrigin(flightPlanIndex = this._currentFlightPlanIndex): WayPoint | undefined {
+        return this._flightPlans[flightPlanIndex].persistentOriginAirfield;
     }
 
     /**
@@ -376,7 +376,8 @@ export class FlightPlanManager {
      */
     public setActiveWaypointIndex(index: number, callback = EmptyCallback.Void, fplnIndex = this._currentFlightPlanIndex): void {
         const currentFlightPlan = this._flightPlans[fplnIndex];
-        if (index >= 0 && index < currentFlightPlan.length) {
+        // we allow the last leg to be sequenced therefore the index can be 1 past the end of the plan length
+        if (index >= 0 && index <= currentFlightPlan.length) {
             currentFlightPlan.activeWaypointIndex = index;
             Coherent.call('SET_ACTIVE_WAYPOINT_INDEX', index + 1).catch(console.error);
 
@@ -1933,5 +1934,15 @@ export class FlightPlanManager {
 
     get activeFlightPlan(): ManagedFlightPlan | undefined {
         return this._flightPlans[FlightPlans.Active];
+    }
+
+    getApproachType(flightPlanIndex = this._currentFlightPlanIndex): ApproachType | undefined {
+        const fp = this._flightPlans[flightPlanIndex];
+        return fp?.procedureDetails.approachType ?? undefined;
+    }
+
+    getGlideslopeIntercept(flightPlanIndex = this._currentFlightPlanIndex): number | undefined {
+        const fp = this._flightPlans[flightPlanIndex];
+        return fp?.glideslopeIntercept ?? undefined;
     }
 }
