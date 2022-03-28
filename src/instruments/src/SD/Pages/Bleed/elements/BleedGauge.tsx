@@ -36,7 +36,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValv
     return (
         <g id={`Engine${engine}AirCond`}>
             {/* Pack Outlet Temp */}
-            <text className="Large End Green" x={x + 15} y={y - 117}>{packOutletTemp}</text>
+            <text className={`Large End ${sdacDatum ? 'Green' : 'Amber'}`} x={sdacDatum ? x + 15 : x + 12} y={y - 117}>{sdacDatum ? packOutletTemp : 'XX'}</text>
             <text x={x + 20} y={y - 117} className="Cyan Standard">°C</text>
 
             {/* Bypass valve */}
@@ -55,23 +55,35 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValv
                     outer
                     multiplierOuter={1.1}
                 />
-                <GaugeMarkerComponent
-                    value={packBypassValve}
-                    x={x}
-                    y={y - 69}
-                    min={minBypass}
-                    max={maxBypass}
-                    radius={radius}
-                    startAngle={startAngle}
-                    endAngle={endAngle}
-                    className="GaugeIndicator Gauge LineCapRound"
-                    indicator
-                    multiplierOuter={1.1}
-                />
+                {sdacDatum
+                && (
+                    <GaugeMarkerComponent
+                        value={packBypassValve}
+                        x={x}
+                        y={y - 69}
+                        min={minBypass}
+                        max={maxBypass}
+                        radius={radius}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        className="GaugeIndicator Gauge LineCapRound"
+                        indicator
+                        multiplierOuter={1.1}
+                    />
+                )}
             </GaugeComponent>
+            {!sdacDatum
+            && <text className="Large Amber End" x={x + 12} y={y - 85}>XX</text>}
 
             {/* Compressor Outlet Temp */}
-            <text className={`Large End ${compressorOutletTemp > 230 || !sdacDatum ? 'Amber' : 'Green'}`} x={x + 20} y={y - 47}>{sdacDatum ? compressorOutletTemp : 'XX'}</text>
+            <text
+                className={`Large End ${compressorOutletTemp > 230 || !sdacDatum ? 'Amber' : 'Green'}`}
+                x={sdacDatum ? x + 15 : x + 12}
+                y={y - 47}
+            >
+                {sdacDatum ? compressorOutletTemp : 'XX'}
+
+            </text>
             <text x={x + 20} y={y - 47} className="Cyan Standard">°C</text>
 
             {/* Pack inlet flow */}
@@ -90,20 +102,25 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValv
                     outer
                     multiplierOuter={1.1}
                 />
-                <GaugeMarkerComponent
-                    value={packInletFlowPercentage < 80 ? 80 : packInletFlowPercentage}
-                    x={x}
-                    y={y}
-                    min={min}
-                    max={max}
-                    radius={radius}
-                    startAngle={startAngle}
-                    endAngle={endAngle}
-                    className={`${packFlowValveOpen ? 'GaugeIndicator' : 'AmberLine Stroke3'} Gauge LineCapRound`}
-                    indicator
-                    multiplierOuter={1.1}
-                />
+                {sdacDatum
+                && (
+                    <GaugeMarkerComponent
+                        value={packInletFlowPercentage < 80 ? 80 : packInletFlowPercentage}
+                        x={x}
+                        y={y}
+                        min={min}
+                        max={max}
+                        radius={radius}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        className={`${packFlowValveOpen ? 'GaugeIndicator' : 'AmberLine Stroke3'} Gauge LineCapRound`}
+                        indicator
+                        multiplierOuter={1.1}
+                    />
+                ) }
             </GaugeComponent>
+            {!sdacDatum
+            && <text className="Standard Amber End" x={x + 12} y={y - 20}>XX</text>}
 
             {/* Flow control valve */}
             <Valve x={x} y={y} radius={15} css="GreenLine BackgroundFill" position={packFlowValveOpen ? 'V' : 'H'} sdacDatum={sdacDatum} />

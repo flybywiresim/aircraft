@@ -49,6 +49,10 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
                 <text className="Medium White" x={engine === 1 ? x - 120 : x + 80} y={y + 200}>ANTI</text>
                 <text className="Medium White" x={engine === 1 ? x - 120 : x + 90} y={y + 220}>ICE</text>
             </g>
+            <g className={!sdacDatum ? 'Show' : 'Hide'}>
+                <text className="Standard Amber" x={engine === 1 ? x - 75 : x + 55} y={y + 205}>XX</text>
+                <text className="Standard Amber" x={engine === 1 ? x - 50 : x + 30} y={y + 215}>XX</text>
+            </g>
 
             {/* Engine Bleed temp */}
             <path className="GreyStroke Stroke2" d={`M ${x},${y + 247} l -27,0 l 0,54 l 54,0 l 0,-54 l -27,0`} />
@@ -64,7 +68,7 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
             </text>
             {/* Precooler outlet temperature */}
             <text
-                x={x + 20}
+                x={sdacDatum ? x + 20 : x + 14}
                 y={y + 295}
                 className={`Large End ${!sdacDatum || precoolerOutletTempFive < 150 || precoolerOutletTempFive > 257 ? 'Amber' : 'Green'}`}
             >
@@ -81,7 +85,7 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
             <Valve x={engine === 1 ? x + 47 : x - 47} y={y + 398} radius={15} css="GreenLine" position={engineHPValveOpen === 1 ? 'H' : 'V'} sdacDatum={sdacDatum} />
             <path className={engineN1BelowIdle ? 'AmberLine' : 'GreenLine'} d={`M ${engine === 1 ? x + 92 : x - 92},${y + 415} l 0,-17 l ${engine === 1 ? '-29' : '29'},0`} />
             <text x={engine === 1 ? x + 95 : x - 90} y={y + 433} className="White Center Standard">HP</text>
-            <path className={engineHPValveOpen === 1 ? 'GreenLine' : 'Hide'} d={`M ${engine === 1 ? x + 33 : x - 33},${y + 398} l ${engine === 1 ? '-33' : '33'},0`} />
+            <path className={engineHPValveOpen === 1 || !sdacDatum ? 'GreenLine' : 'Hide'} d={`M ${engine === 1 ? x + 33 : x - 33},${y + 398} l ${engine === 1 ? '-33' : '33'},0`} />
 
             <text x={engine === 1 ? x - 61 : x + 58} y={423} className={`Huge ${engineN1BelowIdle ? 'Amber' : 'White'}`}>{engine}</text>
         </g>

@@ -25,8 +25,8 @@ export const BleedPage: FC = () => {
     const [packFlowValve2Open] = useSimVar('L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN', 'bool', 500);
     const [ramAirToggle] = useSimVar('L:A32NX_AIRCOND_RAMAIR_TOGGLE', 'bool', 500);
 
-    const leftVerticalDuctColour = !xbleedAirValveOpen && (!apuBleedAirValveOpen || (!apuMasterSwitchOn && !apuIsAvailable)) && !engine1PRValveOpen ? 'Amber' : 'Green';
-    const rightVerticalDuctColour = !xbleedAirValveOpen && !engine2PRValveOpen ? 'Amber' : 'Green';
+    const leftVerticalDuctColour = (!xbleedAirValveOpen && (!apuBleedAirValveOpen || (!apuMasterSwitchOn && !apuIsAvailable)) && !engine1PRValveOpen) && sdacDatum ? 'Amber' : 'Green';
+    const rightVerticalDuctColour = (!xbleedAirValveOpen && !engine2PRValveOpen) && sdacDatum ? 'Amber' : 'Green';
     const indicationBleedUsers = !packFlowValve1Open && !packFlowValve2Open && ramAirToggle === 0 ? 'Amber' : 'Green';
 
     const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 1000);
@@ -50,7 +50,7 @@ export const BleedPage: FC = () => {
             <path className={`${indicationBleedUsers}Line`} d="M 135,62 l 0,-19 l 329,0 l 0,19" />
 
             {/* Ram air */}
-            <path className={ramAirToggle === 1 ? 'GreenLine' : 'Hide'} d="M 300,78 l 0,-35" />
+            <path className={ramAirToggle === 1 || !sdacDatum ? 'GreenLine' : 'Hide'} d="M 300,78 l 0,-35" />
             <Valve x={300} y={93} radius={15} css={aircraftOnGround && ramAirToggle === 1 ? 'AmberLine' : 'GreenLine'} position={ramAirToggle === 1 ? 'V' : 'H'} sdacDatum={sdacDatum} />
             <path className="GreenLine" d="M 300,108 l 0,19" />
             <text className="Large White Center" x={300} y={145}>RAM</text>
@@ -59,7 +59,9 @@ export const BleedPage: FC = () => {
             {/* Cross Bleed Duct  */}
             <g id="cross-bleed">
                 <path className={`${leftVerticalDuctColour}Line`} d={`M ${135},${227} l 0,82`} />
-                <path className={xbleedAirValveOpen === 1 ? 'GreenLine' : 'Hide'} d={`M ${135},${267} l 329,0`} />
+                329
+                <path className={xbleedAirValveOpen === 1 ? 'GreenLine' : 'Hide'} d={`M ${135},${267} l 205,0`} />
+                <path className={xbleedAirValveOpen === 1 ? 'GreenLine' : 'Hide'} d="M 370,267 l 94,0" />
                 <Valve x={355} y={267} radius={15} css="GreenLine" position={xbleedAirValveOpen === 1 ? 'H' : 'V'} sdacDatum={sdacDatum} />
                 <path className={`${rightVerticalDuctColour}Line`} d={`M ${464},${227} l 0,82`} />
             </g>
