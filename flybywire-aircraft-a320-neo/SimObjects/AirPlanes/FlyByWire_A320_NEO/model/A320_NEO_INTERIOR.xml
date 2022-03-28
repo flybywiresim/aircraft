@@ -584,7 +584,7 @@
                     <PART_ID>SCREEN_PFD1</PART_ID>
                     <CAMERA_TITLE>PFD</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>4</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- CPT EFIS GPWS G/S -->
@@ -695,7 +695,7 @@
                     <PART_ID>SCREEN_MFD1</PART_ID>
                     <CAMERA_TITLE>MFD</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>4</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <UseTemplate Name="ASOBO_GT_Anim_Code">
@@ -740,7 +740,7 @@
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool) if{
-                            4 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
+                            6 (L:#PLANE_NAME#_PANEL_DCDU_L_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -779,7 +779,7 @@
                     <POTENTIOMETER>90</POTENTIOMETER>
                     <PART_ID>SCREEN_PFD2</PART_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>4</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O ND BRIGHTNESS -->
@@ -797,7 +797,7 @@
                     <POTENTIOMETER>91</POTENTIOMETER>
                     <PART_ID>SCREEN_MFD2</PART_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>4</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- F/O ND WX BRIGHTNESS -->
@@ -815,7 +815,7 @@
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
                     <EMISSIVE_CODE>
                         (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) if{
-                            4 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
+                            6 (L:#PLANE_NAME#_PANEL_DCDU_R_BRIGHTNESS, percent over 100) *
                         } els{
                             0
                         }
@@ -937,7 +937,7 @@
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
                     <NODE_ID>DYN_SCREEN</NODE_ID>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>4</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
                 </UseTemplate>
                 <CameraTitle>PA</CameraTitle>
 
@@ -1022,7 +1022,7 @@
                     <PART_ID>SCREEN_EICAS1</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>4</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
                 </UseTemplate>
 
                 <!-- LOWER ECAM SCREEN -->
@@ -1039,7 +1039,7 @@
                     <PART_ID>SCREEN_EICAS2</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                     <!-- Effects such as pixels and glass reflections require the screen brightness to be increased -->
-                    <EMISSIVE_CODE>4</EMISSIVE_CODE>
+                    <EMISSIVE_CODE>6</EMISSIVE_CODE>
                 </UseTemplate>
             </Component>
 
