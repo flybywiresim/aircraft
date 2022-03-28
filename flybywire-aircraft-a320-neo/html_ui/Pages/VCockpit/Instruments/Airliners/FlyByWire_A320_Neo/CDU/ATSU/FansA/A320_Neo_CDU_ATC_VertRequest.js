@@ -294,6 +294,7 @@ class CDUAtcVertRequest {
                 const error = Atsu.InputValidation.validateScratchpadSpeed(value);
                 if (error === Atsu.AtsuStatusCodes.Ok) {
                     data.speed = Atsu.InputValidation.formatScratchpadSpeed(value);
+                    data.whenSpeed = false;
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -460,6 +461,7 @@ class CDUAtcVertRequest {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.cruise = Atsu.InputValidation.formatScratchpadAltitude(value);
+                    data.whenCruise = false;
                 }
             }
             CDUAtcVertRequest.ShowPage2(mcdu, data);
@@ -527,6 +529,7 @@ class CDUAtcVertRequest {
                     if (range[1].length === 2) {
                         data.speedLow = range[1][0];
                         data.speedHigh = range[1][1];
+                        data.whenSpeedRange = false;
                     }
                 }
             }
