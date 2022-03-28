@@ -123,6 +123,7 @@ export class InputValidation {
             return AtsuStatusCodes.EntryOutOfRange;
         }
 
+        // TODO replace by REGEX
         // valid 8.33 kHz spacings
         const frequencySpacingOther = ['00', '05', '10', '15', '25', '30', '35', '40', '50', '55', '60', '65', '75', '80', '85', '90'];
         const frequencySpacingEnd = ['00', '05', '10', '15', '25', '30', '35', '40', '50', '55', '60', '65', '75'];
@@ -147,20 +148,7 @@ export class InputValidation {
      */
     public static validateScratchpadAltitude(value: string): AtsuStatusCodes {
         if (/^((FL)*[0-9]{1,3})$/.test(value)) {
-            let flightlevelStr = '';
-
-            if (value.startsWith('FL')) {
-                flightlevelStr = value.substring(2, value.length);
-            } else {
-                flightlevelStr = value;
-            }
-
-            // contains not only digits
-            if (/(?!^\d+$)^.+$/.test(flightlevelStr)) {
-                return AtsuStatusCodes.FormatError;
-            }
-            const flightlevel = parseInt(flightlevelStr);
-
+            const flightlevel = parseInt(value.match(/([0-9]+)/)[0]);
             if (flightlevel >= 30 && flightlevel <= 410) {
                 return AtsuStatusCodes.Ok;
             }
@@ -196,11 +184,11 @@ export class InputValidation {
 
         if (/^[LR][0-9]{1,3}(NM|KM)$/.test(offset) || /^[LR][0-9]{1,3}$/.test(offset)) {
             // format: DNNNKM, DNNNNM, DNNN
-            distance = parseInt(offset.substring(1, 4));
+            distance = parseInt(offset.match(/([0-9]+)/)[0]);
             nmUnit = !offset.endsWith('KM');
         } else if (/^[0-9]{1,3}(NM|KM)[LR]$/.test(offset) || /^[0-9]{1,3}[LR]$/.test(offset)) {
             // format: NNNKMD, NNNNMD, NNND
-            distance = parseInt(offset.substring(0, 3));
+            distance = parseInt(offset.match(/([0-9]+)/)[0]);
             nmUnit = !(offset.endsWith('KML') || offset.endsWith('KMR'));
         } else {
             return AtsuStatusCodes.FormatError;
@@ -247,19 +235,6 @@ export class InputValidation {
     }
 
     /**
-     * Validates that lower is smaller than higher
-     * @param {string} lower Lower speed value
-     * @param {string} higher Higher speed value
-     * @returns True if lower is smaller than higher, else false
-     */
-    private static validSpeedRange(lower: string, higher: string): boolean {
-        if (lower[0] === 'M') {
-            return parseInt(lower.substring(2, lower.length)) < parseInt(higher.substring(2, higher.length));
-        }
-        return parseInt(lower) < parseInt(higher);
-    }
-
-    /**
      * Validates that a scratchpad entry follows the FCOM definition for speed ranges
      * @param {string} Given speed range candidate
      * @returns An array of AtsuStatusCodes-value and the speed ranges
@@ -284,7 +259,7 @@ export class InputValidation {
         if (!InputValidation.sameSpeedType(lower, higher)) {
             return [AtsuStatusCodes.FormatError, []];
         }
-        if (!InputValidation.validSpeedRange(lower, higher)) {
+        if (parseInt(lower.match(/([0-9]+)/)[0]) >= parseInt(higher.match(/([0-9]+)/)[0])) {
             return [AtsuStatusCodes.EntryOutOfRange, []];
         }
         return [AtsuStatusCodes.Ok, [lower, higher]];
@@ -315,9 +290,7 @@ export class InputValidation {
      */
     public static formatScratchpadSpeed(value: string): string {
         if (value[0] === 'M' || value[0] === '.') {
-            let machNumber = parseInt(value.split('.')[1]);
-            if (machNumber < 10) machNumber *= 10;
-            return `M.${machNumber}`;
+            return `M.${value.match(/([0-9]+)/)[0]}`;
         }
         return value.replace('KT', '');
     }
@@ -347,20 +320,21 @@ export class InputValidation {
      * @returns The altitude in feet
      */
     private static convertToFeet(value: string): number {
+        const height = parseInt(value.match(/([0-9]+)/)[0]);
+
         if (value.startsWith('FL')) {
-            return parseInt(value.substring(2, value.length)) * 100;
+            return height * 100;
         }
         if (value[value.length - 1] === 'M') {
-            return parseInt(value.substring(0, value.length - 1)) * 3.28;
+            return height * 3.28;
         }
         if (value.endsWith('FT')) {
-            return parseInt(value.substring(0, value.length - 2));
+            return height;
         }
 
-        const altitude = parseInt(value);
-        if (altitude < 1000) return altitude * 100;
+        if (height < 1000) return height * 100;
 
-        return altitude;
+        return height;
     }
 
     /**

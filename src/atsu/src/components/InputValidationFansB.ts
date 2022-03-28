@@ -10,14 +10,7 @@ export class InputValidationFansB {
         }
 
         const feet = !value.endsWith('M');
-
-        const altitudeStr = value.replace('FT', '').replace('M', '');
-
-        // contains not only digits
-        if (!/^-?[0-9]\d*(\.\d+)?$/.test(altitudeStr)) {
-            return AtsuStatusCodes.FormatError;
-        }
-        const altitude = parseInt(altitudeStr);
+        const altitude = parseInt(value.match(/(-*[0-9]+)/)[0]);
 
         if (feet) {
             if (altitude >= 0 && altitude <= 410 && !value.endsWith('FT')) {
@@ -38,13 +31,7 @@ export class InputValidationFansB {
     public static validateScratchpadSpeed(value: string): AtsuStatusCodes {
         if (/^((M*)\.[0-9]{1,2})$/.test(value)) {
             // MACH number
-
-            const machStr = value.split('.')[1];
-            // contains not only digits
-            if (/(?!^\d+$)^.+$/.test(machStr)) {
-                return AtsuStatusCodes.FormatError;
-            }
-            let mach = parseInt(machStr);
+            let mach = parseInt(value.match(/([0-9]+)/)[0]);
             if (mach < 10) mach *= 10;
 
             if (mach >= 50 && mach <= 92) {
@@ -53,13 +40,7 @@ export class InputValidationFansB {
             return AtsuStatusCodes.EntryOutOfRange;
         } if (/^([0-9]{1,3}(KT)*)$/.test(value)) {
             // knots
-
-            const knotsStr = value.replace('KT', '');
-            // contains not only digits
-            if (/(?!^\d+$)^.+$/.test(knotsStr)) {
-                return AtsuStatusCodes.FormatError;
-            }
-            const knots = parseInt(knotsStr);
+            const knots = parseInt(value.match(/([0-9]+)/)[0]);
 
             if (knots >= 0 && knots <= 350) {
                 return AtsuStatusCodes.Ok;
