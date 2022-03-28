@@ -222,12 +222,7 @@ class CDUAtcLatRequest {
                 if (error !== Atsu.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
-                    const angle = parseInt(value);
-                    if (angle === 360) {
-                        data.heading = 0;
-                    } else {
-                        data.heading = angle;
-                    }
+                    data.heading = parseInt(value) % 360;
                 }
             }
 
@@ -343,12 +338,7 @@ class CDUAtcLatRequest {
                 if (error !== Atsu.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
-                    const angle = parseInt(value);
-                    if (angle === 360) {
-                        data.track = 0;
-                    } else {
-                        data.track = angle;
-                    }
+                    data.track = parseInt(value) % 360;
                 }
             }
 
