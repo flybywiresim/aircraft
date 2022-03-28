@@ -1,5 +1,6 @@
 import { useSimVar } from '@instruments/common/simVars';
 import React, { FC } from 'react';
+import { Triangle } from '../../../Common/Shapes';
 import BleedGauge from './BleedGauge';
 import Valve from './Valve';
 
@@ -9,10 +10,13 @@ interface EngineBleedProps {
     engine: 1 | 2,
     sdacDatum: boolean,
     enginePRValveOpen: boolean,
-    packFlowValveOpen: boolean
+    packFlowValveOpen: boolean,
+    onGround: boolean,
+    engineAntiIceOn: boolean,
+    anyEngineAntiIceOn: boolean
 }
 
-const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRValveOpen, packFlowValveOpen }) => {
+const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRValveOpen, packFlowValveOpen, onGround, engineAntiIceOn, anyEngineAntiIceOn }) => {
     const [engineN1] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
     const [engineN1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 500);
     const engineN1BelowIdle = (engineN1 + 2) < engineN1Idle;
@@ -37,6 +41,14 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
 
             {/* Pack inlet Flow */}
             <BleedGauge x={x} y={y + 150} sdacDatum={sdacDatum} packFlowValveOpen={packFlowValveOpen} engine={engine} />
+
+            {/* Anti-ice */}
+            <g id={`anti-ice-engine-${engine}`} className={anyEngineAntiIceOn ? 'Show' : 'Hide'}>
+                {engineAntiIceOn
+                && <Triangle x={engine === 1 ? x - 30 : x + 30} y={y + 205} colour={onGround ? 'Amber' : 'Green'} orientation={engine === 1 ? -90 : 90} fill={0} scale={0.75} />}
+                <text className="Medium White" x={engine === 1 ? x - 120 : x + 80} y={y + 200}>ANTI</text>
+                <text className="Medium White" x={engine === 1 ? x - 120 : x + 90} y={y + 220}>ICE</text>
+            </g>
 
             {/* Engine Bleed temp */}
             <path className="GreyStroke Stroke2" d={`M ${x},${y + 247} l -27,0 l 0,54 l 54,0 l 0,-54 l -27,0`} />

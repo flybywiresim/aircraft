@@ -31,7 +31,11 @@ export const BleedPage: FC = () => {
 
     const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 1000);
     const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 1000);
-    const aircraftOnGround = left1LandingGear === 1 || right1LandingGear === 1;
+    const aircraftOnGround: boolean = left1LandingGear === 1 || right1LandingGear === 1;
+
+    const [engine1AntiIceOn] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG1_Pressed', 'bool', 500);
+    const [engine2AntiIceOn] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG2_Pressed', 'bool', 500);
+    const engineAntiIceOn = engine1AntiIceOn === 1 || engine2AntiIceOn === 1;
 
     const groundAirSupplied = false;
 
@@ -63,8 +67,28 @@ export const BleedPage: FC = () => {
             {/* APU */}
             <APUValve x={300} y={338} sdacDatum={sdacDatum} />
 
-            <EngineBleed x={135} y={62} engine={1} sdacDatum={sdacDatum} enginePRValveOpen={engine1PRValveOpen} packFlowValveOpen={packFlowValve1Open} />
-            <EngineBleed x={464} y={62} engine={2} sdacDatum={sdacDatum} enginePRValveOpen={engine2PRValveOpen} packFlowValveOpen={packFlowValve2Open} />
+            <EngineBleed
+                x={135}
+                y={62}
+                engine={1}
+                sdacDatum={sdacDatum}
+                enginePRValveOpen={engine1PRValveOpen}
+                packFlowValveOpen={packFlowValve1Open}
+                onGround={aircraftOnGround}
+                engineAntiIceOn={engine1AntiIceOn}
+                anyEngineAntiIceOn={engineAntiIceOn}
+            />
+            <EngineBleed
+                x={464}
+                y={62}
+                engine={2}
+                sdacDatum={sdacDatum}
+                enginePRValveOpen={engine2PRValveOpen}
+                packFlowValveOpen={packFlowValve2Open}
+                onGround={aircraftOnGround}
+                engineAntiIceOn={engine2AntiIceOn}
+                anyEngineAntiIceOn={engineAntiIceOn}
+            />
 
             {/* Ground Supply of Compressed Air */}
             <g id="CompressedAir" className={groundAirSupplied ? 'Show' : 'Hide'}>
