@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 
 export const LightPresets = () => {
     // Manage names for presets in EFB only and always map them to the
@@ -60,7 +61,7 @@ export const LightPresets = () => {
     }, []);
 
     return (
-        <div className="p-2 mt-2 mb-2 rounded-lg border-2 h-content-section-reduced border-theme-accent">
+        <div className="p-2 mt-2 mb-2 h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <div className="flex flex-row justify-center items-center p-2 mb-3 space-x-2 h-16 rounded-md border-2 border-theme-accent">
                 {isPowered ? 'Select an interior lighting preset to load or save.' : 'The aircraft must be powered for interior lighting presets.'}
             </div>
@@ -90,7 +91,8 @@ type SinglePresetParams = {
 
 // One single row of preset with ID, name, load and save
 const SinglePreset = (props: SinglePresetParams) => {
-    //
+    const { showModal } = useModals();
+
     // Light presets are handled in a wasm module as setting the indexed "LIGHT POTENTIOMETER"
     // variable didn't work in Javascript.
     // To tell the presets.wasm module to load a preset the LVAR "L:A32NX_LOAD_LIGHTING_PRESET"
@@ -129,12 +131,20 @@ const SinglePreset = (props: SinglePresetParams) => {
     const savePreset = (presetID: number) => {
         // Saving of presets only allowed when aircraft is powered (also the case in the wasm)
         if (isPowered) {
-            setSavePresetVar(presetID);
-            toast.success(`Saving Preset: ${presetID}: ${presetName}`, {
-                autoClose: 250,
-                hideProgressBar: true,
-                closeButton: false,
-            });
+            showModal(
+                <PromptModal
+                    title={`${presetName}`}
+                    bodyText={`Please confirm saving preset ${presetID}: ${presetName}`}
+                    onConfirm={() => {
+                        setSavePresetVar(presetID);
+                        toast.success(`Saving Preset: ${presetID}: ${presetName}`, {
+                            autoClose: 250,
+                            hideProgressBar: true,
+                            closeButton: false,
+                        });
+                    }}
+                />,
+            );
         } else {
             toast.warning('Aircraft needs to be powered to save presets.', {
                 autoClose: 1000,
@@ -168,7 +178,7 @@ const SinglePreset = (props: SinglePresetParams) => {
                 {props.presetID}
             </div>
 
-            <div className="flex justify-center items-center mx-4 w-full h-20 rounded-md border-2 text-theme-text bg-theme-accent border-theme-accent">
+            <div className="flex justify-center items-center mx-4 w-full h-20 text-theme-text bg-theme-accent rounded-md border-2 border-theme-accent">
                 <SimpleInput
                     className="w-80 text-2xl font-medium text-center"
                     placeholder="No Name"
