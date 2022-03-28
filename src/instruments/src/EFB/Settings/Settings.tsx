@@ -243,8 +243,8 @@ const SimOptionsPage = () => {
     const [fpSync, setFpSync] = usePersistentProperty('FP_SYNC', 'LOAD');
     const [dynamicRegistration, setDynamicRegistration] = usePersistentProperty('DYNAMIC_REGISTRATION_DECAL', '0');
     const [defaultBaro, setDefaultBaro] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'AUTO');
-    const [mcduServerPort, setMcduServerPort] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_PORT', '8380');
-    const [mcduServerEnabled, setMcduServerEnabled] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_SERVER_ENABLED', 'AUTO ON');
+    const [localApiPort, setLocalApiPort] = usePersistentProperty('CONFIG_LOCAL_API_PORT', '8380');
+    const [localApiEnabled, setLocalApiEnabled] = usePersistentProperty('CONFIG_LOCAL_API_ENABLED', 'AUTO ON');
     const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
 
@@ -344,14 +344,14 @@ const SimOptionsPage = () => {
 
                     <div className="py-4 flex flex-row justify-between items-center">
                         <span>
-                            <span className="text-lg text-gray-300">Enable MCDU Server Connection (Auto On deactivates after 5 minutes if no successful connection)</span>
+                            <span className="text-lg text-gray-300">Enable Local API Connection (Auto On deactivates after 5 minutes if no successful connection)</span>
                         </span>
                         <SelectGroup>
                             {mcduServerMode.map((button) => (
                                 <SelectItem
                                     enabled
-                                    onSelect={() => setMcduServerEnabled(button.setting)}
-                                    selected={mcduServerEnabled === button.setting}
+                                    onSelect={() => setLocalApiEnabled(button.setting)}
+                                    selected={localApiEnabled === button.setting}
                                 >
                                     {button.name}
                                 </SelectItem>
