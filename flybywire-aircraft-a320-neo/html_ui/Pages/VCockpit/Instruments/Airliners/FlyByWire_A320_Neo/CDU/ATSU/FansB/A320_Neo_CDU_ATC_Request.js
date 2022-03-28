@@ -1,7 +1,7 @@
 class CDUAtcRequest {
     static CreateDataBlock(store = null) {
         return {
-            dirTo: null,
+            directTo: null,
             altitude: null,
             speed: null,
             dueToWeather: store ? store.dueToWeather : false,
@@ -10,7 +10,7 @@ class CDUAtcRequest {
     }
 
     static CanBeSent(data) {
-        return data.dirTo || data.altitude || data.speed;
+        return data.directTo || data.altitude || data.speed;
     }
 
     static AddExtension(data, request) {
@@ -30,7 +30,7 @@ class CDUAtcRequest {
     }
 
     static CreateDirectToRequest(mcdu, data) {
-        const retval = CDUAtcRequest.CreateRequest(mcdu, "DM22", data.dirTo);
+        const retval = CDUAtcRequest.CreateRequest(mcdu, "DM22", data.directTo);
         CDUAtcRequest.AddExtension(data, retval);
         return retval;
     }
@@ -51,7 +51,7 @@ class CDUAtcRequest {
     static CreateRequests(mcdu, data) {
         const requests = [];
 
-        if (data.dirTo) {
+        if (data.directTo) {
             requests.push(CDUAtcRequest.CreateDirectToRequest(mcdu, data));
         }
         if (data.altitude) {
@@ -67,9 +67,9 @@ class CDUAtcRequest {
     static ShowPage(mcdu, store = CDUAtcRequest.CreateDataBlock()) {
         mcdu.clearDisplay();
 
-        let dirTo = "[\xa0\xa0\xa0\xa0][color]cyan";
-        if (store.dirTo) {
-            dirTo = `${store.dirTo}[color]cyan`;
+        let directTo = "[\xa0\xa0\xa0\xa0][color]cyan";
+        if (store.directTo) {
+            directTo = `${store.directTo}[color]cyan`;
         }
 
         let altitude = "[\xa0\xa0\xa0\xa0][color]cyan";
@@ -102,7 +102,7 @@ class CDUAtcRequest {
         mcdu.setTemplate([
             ["REQUEST"],
             ["\xa0DIR TO", "FL/ALT\xa0"],
-            [dirTo, altitude],
+            [directTo, altitude],
             ["", "SPD/MACH\xa0"],
             ["", speed],
             [""],
@@ -120,14 +120,14 @@ class CDUAtcRequest {
         };
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                store.dirTo = null;
+                store.directTo = null;
                 CDUAtcRequest.ShowPage(mcdu, store);
             } else if (value) {
                 Atsu.InputValidation.classifyScratchpadWaypointType(mcdu, value, false).then((retval) => {
                     if (retval[1] !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(retval[1]);
                     } else {
-                        store.dirTo = value;
+                        store.directTo = value;
                         CDUAtcRequest.ShowPage(mcdu, store);
                     }
                 });

@@ -1,23 +1,23 @@
 class CDUAtcLatRequest {
     static CreateDataBlock() {
         return {
-            dir: null,
-            wxDev: null,
+            directTo: null,
+            weatherDeviation: null,
             sid: null,
             offset: null,
             offsetStart: null,
-            hdg: null,
-            trk: null,
+            heading: null,
+            track: null,
             backOnTrack: false
         };
     }
 
     static CanSendData(data) {
-        return data.dir || data.wxDev || data.sid || data.offset || data.hdg || data.trk || data.backOnTrack;
+        return data.directTo || data.weatherDeviation || data.sid || data.offset || data.heading || data.track || data.backOnTrack;
     }
 
     static CanEraseData(data) {
-        return data.dir || data.wxDev || data.sid || data.offset || data.hdg || data.trk || data.backOnTrack;
+        return data.directTo || data.weatherDeviation || data.sid || data.offset || data.heading || data.track || data.backOnTrack;
     }
 
     static CreateRequest(mcdu, type, values = []) {
@@ -35,11 +35,11 @@ class CDUAtcLatRequest {
     static CreateRequests(mcdu, data) {
         const retval = [];
 
-        if (data.dir) {
-            retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM22", [data.dir]));
+        if (data.directTo) {
+            retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM22", [data.directTo]));
         }
-        if (data.wxDev) {
-            const elements = Atsu.InputValidation.expandLateralOffset(data.wxDev).split(" ");
+        if (data.weatherDeviation) {
+            const elements = Atsu.InputValidation.expandLateralOffset(data.weatherDeviation).split(" ");
             retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM27", [elements[0], elements[1]]));
         }
         if (data.sid) {
@@ -54,11 +54,11 @@ class CDUAtcLatRequest {
                 retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM16", [data.offsetStart, elements[0], elements[1]]));
             }
         }
-        if (data.hdg) {
-            retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM70", [data.hdg === 0 ? "360" : data.hdg.toString()]));
+        if (data.heading) {
+            retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM70", [data.heading === 0 ? "360" : data.heading.toString()]));
         }
-        if (data.trk) {
-            retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM71", [data.trk === 0 ? "360" : data.trk.toString()]));
+        if (data.track) {
+            retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM71", [data.track === 0 ? "360" : data.track.toString()]));
         }
         if (data.backOnTrack) {
             retval.push(CDUAtcLatRequest.CreateRequest(mcdu, "DM51"));
@@ -71,20 +71,20 @@ class CDUAtcLatRequest {
         mcdu.clearDisplay();
 
         let wheaterDeviation = "{cyan}[  ]{end}";
-        if (data.wxDev) {
-            wheaterDeviation = `${data.wxDev}[color]cyan`;
+        if (data.weatherDeviation) {
+            wheaterDeviation = `${data.weatherDeviation}[color]cyan`;
         }
         let heading = "[ ]°[color]cyan";
-        if (data.hdg !== null) {
-            heading = `${data.hdg}°[color]cyan`;
+        if (data.heading !== null) {
+            heading = `${data.heading}°[color]cyan`;
         }
         let grdTrack = "[ ]°[color]cyan";
-        if (data.trk !== null) {
-            grdTrack = `${data.trk}°[color]cyan`;
+        if (data.track !== null) {
+            grdTrack = `${data.track}°[color]cyan`;
         }
         let directTo = "{cyan}[     ]{end}";
-        if (data.dir) {
-            directTo = `${data.dir}[color]cyan`;
+        if (data.directTo) {
+            directTo = `${data.directTo}[color]cyan`;
         }
         let sidStar = "{cyan}[   ]{end}";
         if (data.sid) {
@@ -137,13 +137,13 @@ class CDUAtcLatRequest {
         };
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.dir = null;
+                data.directTo = null;
             } else if (value) {
                 if (mcdu.isLatLonFormat(value)) {
                     // format: DDMM.MB/EEEMM.MC
                     try {
                         mcdu.parseLatLon(value);
-                        data.dir = value;
+                        data.directTo = value;
                     } catch (err) {
                         if (err === NXSystemMessages.formatError) {
                             mcdu.addNewMessage(err);
@@ -155,7 +155,7 @@ class CDUAtcLatRequest {
                         if (waypoints.length === 0) {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         } else {
-                            data.dir = value;
+                            data.directTo = value;
                         }
 
                         CDUAtcLatRequest.ShowPage(mcdu, data);
@@ -216,7 +216,7 @@ class CDUAtcLatRequest {
         };
         mcdu.onLeftInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.hdg = null;
+                data.heading = null;
             } else if (value) {
                 const error = Atsu.InputValidation.validateScratchpadDegree(value);
                 if (error !== Atsu.AtsuStatusCodes.Ok) {
@@ -224,9 +224,9 @@ class CDUAtcLatRequest {
                 } else {
                     const angle = parseInt(value);
                     if (angle === 360) {
-                        data.hdg = 0;
+                        data.heading = 0;
                     } else {
-                        data.hdg = angle;
+                        data.heading = angle;
                     }
                 }
             }
@@ -253,11 +253,11 @@ class CDUAtcLatRequest {
         };
         mcdu.onRightInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.wxDev = null;
+                data.weatherDeviation = null;
             } else if (value) {
                 const error = Atsu.InputValidation.validateScratchpadOffset(value);
                 if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.wxDev = value;
+                    data.weatherDeviation = value;
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -337,7 +337,7 @@ class CDUAtcLatRequest {
         };
         mcdu.onRightInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.trk = null;
+                data.track = null;
             } else if (value) {
                 const error = Atsu.InputValidation.validateScratchpadDegree(value);
                 if (error !== Atsu.AtsuStatusCodes.Ok) {
@@ -345,9 +345,9 @@ class CDUAtcLatRequest {
                 } else {
                     const angle = parseInt(value);
                     if (angle === 360) {
-                        data.trk = 0;
+                        data.track = 0;
                     } else {
-                        data.trk = angle;
+                        data.track = angle;
                     }
                 }
             }
