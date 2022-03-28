@@ -7,6 +7,9 @@ export enum FansMode {
     FansB
 }
 
+// Sources for FANS-B areas:
+// https://www.icao.int/WACAF/Documents/Meetings/2016/Lisbon-2016/SAT-FI11/SAT-FIT-11_IP%2004%20-attachment_Boeing.pdf
+// Station logons are taken from VATSIM vACCs and sector file data of controllers (IVAO and VATSIM use the same callsigns)
 export class FutureAirNavigationSystem {
     // contains all CPDLC callsigns that use FANS-B
     // FANS-A is assumed to be the fallback
