@@ -2248,13 +2248,37 @@ mod a320_electrical_circuit_tests {
             Self {}
         }
     }
-    impl LandingGearRealPosition for TestLandingGear {
-        fn is_up_and_locked(&self) -> bool {
+    impl LgciuWeightOnWheels for TestLandingGear {
+        fn right_gear_compressed(&self, _: bool) -> bool {
+            false
+        }
+
+        fn right_gear_extended(&self, _: bool) -> bool {
             true
         }
 
-        fn is_down_and_locked(&self) -> bool {
+        fn left_gear_compressed(&self, _: bool) -> bool {
             false
+        }
+
+        fn left_gear_extended(&self, _: bool) -> bool {
+            true
+        }
+
+        fn left_and_right_gear_compressed(&self, _: bool) -> bool {
+            false
+        }
+
+        fn left_and_right_gear_extended(&self, _: bool) -> bool {
+            true
+        }
+
+        fn nose_gear_compressed(&self, _: bool) -> bool {
+            false
+        }
+
+        fn nose_gear_extended(&self, _: bool) -> bool {
+            true
         }
     }
 

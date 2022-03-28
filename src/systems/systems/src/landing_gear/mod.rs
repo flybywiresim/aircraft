@@ -2,9 +2,8 @@ use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
     hydraulic::landing_gear::{GearSystemStateMachine, GearsSystemState},
     shared::{
-        ElectricalBusType, ElectricalBuses, GearWheel, LandingGearHandle, LandingGearRealPosition,
-        LgciuDoorPosition, LgciuGearControl, LgciuGearExtension, LgciuInterface,
-        LgciuWeightOnWheels,
+        ElectricalBusType, ElectricalBuses, GearWheel, LandingGearHandle, LgciuDoorPosition,
+        LgciuGearControl, LgciuGearExtension, LgciuInterface, LgciuWeightOnWheels,
     },
     simulation::{
         Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
@@ -28,26 +27,15 @@ pub trait GearSystemSensors {
 /// locked or down and locked. No in between state.
 /// It provides as well the state of all weight on wheel sensors
 pub struct LandingGear {
-    center_position_id: VariableIdentifier,
-    left_position_id: VariableIdentifier,
-    right_position_id: VariableIdentifier,
     center_compression_id: VariableIdentifier,
     left_compression_id: VariableIdentifier,
     right_compression_id: VariableIdentifier,
-
-    center_position: Ratio,
-    left_position: Ratio,
-    right_position: Ratio,
 
     center_compression: Ratio,
     left_compression: Ratio,
     right_compression: Ratio,
 }
 impl LandingGear {
-    const GEAR_CENTER_POSITION: &'static str = "GEAR CENTER POSITION";
-    const GEAR_LEFT_POSITION: &'static str = "GEAR LEFT POSITION";
-    const GEAR_RIGHT_POSITION: &'static str = "GEAR RIGHT POSITION";
-
     pub const GEAR_CENTER_COMPRESSION: &'static str = "GEAR ANIMATION POSITION";
     pub const GEAR_LEFT_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:1";
     pub const GEAR_RIGHT_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:2";
@@ -57,16 +45,9 @@ impl LandingGear {
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            center_position_id: context.get_identifier(Self::GEAR_CENTER_POSITION.to_owned()),
-            left_position_id: context.get_identifier(Self::GEAR_LEFT_POSITION.to_owned()),
-            right_position_id: context.get_identifier(Self::GEAR_RIGHT_POSITION.to_owned()),
             center_compression_id: context.get_identifier(Self::GEAR_CENTER_COMPRESSION.to_owned()),
             left_compression_id: context.get_identifier(Self::GEAR_LEFT_COMPRESSION.to_owned()),
             right_compression_id: context.get_identifier(Self::GEAR_RIGHT_COMPRESSION.to_owned()),
-
-            center_position: Ratio::new::<percent>(0.),
-            left_position: Ratio::new::<percent>(0.),
-            right_position: Ratio::new::<percent>(0.),
 
             center_compression: Ratio::new::<percent>(0.),
             left_compression: Ratio::new::<percent>(0.),
@@ -74,25 +55,9 @@ impl LandingGear {
         }
     }
 
-    fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel) -> bool {
-        (self.wheel_id_position(wheel_id).get::<percent>() - 0.).abs() < f64::EPSILON
-    }
-
-    fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel) -> bool {
-        (self.wheel_id_position(wheel_id).get::<percent>() - 100.).abs() < f64::EPSILON
-    }
-
     fn is_wheel_id_compressed(&self, wheel_id: GearWheel) -> bool {
         self.wheel_id_compression(wheel_id)
             > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
-    }
-
-    fn wheel_id_position(&self, wheel_id: GearWheel) -> Ratio {
-        match wheel_id {
-            GearWheel::CENTER => self.center_position,
-            GearWheel::LEFT => self.left_position,
-            GearWheel::RIGHT => self.right_position,
-        }
     }
 
     fn wheel_id_compression(&self, wheel_id: GearWheel) -> Ratio {
@@ -103,25 +68,8 @@ impl LandingGear {
         }
     }
 }
-impl LandingGearRealPosition for LandingGear {
-    fn is_up_and_locked(&self) -> bool {
-        self.is_wheel_id_up_and_locked(GearWheel::CENTER)
-            && self.is_wheel_id_up_and_locked(GearWheel::LEFT)
-            && self.is_wheel_id_up_and_locked(GearWheel::RIGHT)
-    }
-
-    fn is_down_and_locked(&self) -> bool {
-        self.is_wheel_id_down_and_locked(GearWheel::CENTER)
-            && self.is_wheel_id_down_and_locked(GearWheel::LEFT)
-            && self.is_wheel_id_down_and_locked(GearWheel::RIGHT)
-    }
-}
 impl SimulationElement for LandingGear {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.center_position = reader.read(&self.center_position_id);
-        self.left_position = reader.read(&self.left_position_id);
-        self.right_position = reader.read(&self.right_position_id);
-
         self.center_compression = reader.read(&self.center_compression_id);
         self.left_compression = reader.read(&self.left_compression_id);
         self.right_compression = reader.read(&self.right_compression_id);
@@ -895,48 +843,6 @@ mod tests {
     }
 
     #[test]
-    fn is_up_and_locked_returns_false_when_fully_down() {
-        let test_bed = run_test_bed_on_with_position(Ratio::new::<percent>(100.));
-
-        assert!(!test_bed.query_element(|e| e.is_up_and_locked()));
-    }
-
-    #[test]
-    fn is_up_and_locked_returns_false_when_somewhat_down() {
-        let test_bed = run_test_bed_on_with_position(Ratio::new::<percent>(1.));
-
-        assert!(!test_bed.query_element(|e| e.is_up_and_locked()));
-    }
-
-    #[test]
-    fn is_up_and_locked_returns_true_when_fully_up() {
-        let test_bed = run_test_bed_on_with_position(Ratio::new::<percent>(0.));
-
-        assert!(test_bed.query_element(|e| e.is_up_and_locked()));
-    }
-
-    #[test]
-    fn is_down_and_locked_returns_false_when_fully_up() {
-        let test_bed = run_test_bed_on_with_position(Ratio::new::<percent>(0.));
-
-        assert!(!test_bed.query_element(|e| e.is_down_and_locked()));
-    }
-
-    #[test]
-    fn is_down_and_locked_returns_false_when_somewhat_up() {
-        let test_bed = run_test_bed_on_with_position(Ratio::new::<percent>(99.));
-
-        assert!(!test_bed.query_element(|e| e.is_down_and_locked()));
-    }
-
-    #[test]
-    fn is_down_and_locked_returns_true_when_fully_down() {
-        let test_bed = run_test_bed_on_with_position(Ratio::new::<percent>(100.));
-
-        assert!(test_bed.query_element(|e| e.is_down_and_locked()));
-    }
-
-    #[test]
     fn all_weight_on_wheels_when_all_compressed() {
         let test_bed = run_test_bed_on_with_compression(
             Ratio::new::<ratio>(0.9),
@@ -1067,19 +973,6 @@ mod tests {
         assert!(
             test_bed.query(|a| a.lgcius.gear_system_state()) == GearsSystemState::AllDownLocked
         );
-    }
-
-    fn run_test_bed_on_with_position(
-        position: Ratio,
-    ) -> SimulationTestBed<TestAircraft<LandingGear>> {
-        let mut test_bed = SimulationTestBed::from(ElementCtorFn(LandingGear::new));
-        test_bed.write_by_name(LandingGear::GEAR_CENTER_POSITION, position);
-        test_bed.write_by_name(LandingGear::GEAR_LEFT_POSITION, position);
-        test_bed.write_by_name(LandingGear::GEAR_RIGHT_POSITION, position);
-
-        test_bed.run();
-
-        test_bed
     }
 
     fn run_test_bed_on_with_compression(
