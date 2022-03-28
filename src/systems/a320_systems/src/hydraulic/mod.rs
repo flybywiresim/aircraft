@@ -2623,7 +2623,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
     fn update(
         &mut self,
         context: &UpdateContext,
-        green_system_section_pressure: &impl SectionPressure,
+        current_pressure: &impl SectionPressure,
         alternate_circuit: &BrakeCircuit,
         lgciu1: &impl LgciuSensors,
         lgciu2: &impl LgciuSensors,
@@ -2633,7 +2633,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
     ) {
         self.update_steering_demands(lgciu1, engine1, engine2);
 
-        self.update_normal_braking_availability(green_system_section_pressure.pressure());
+        self.update_normal_braking_availability(current_pressure.pressure());
         self.update_brake_pressure_limitation();
 
         self.autobrake_controller.update(
@@ -4241,8 +4241,8 @@ impl AileronAssembly {
         &mut self,
         context: &UpdateContext,
         aileron_controllers: &[impl HydraulicAssemblyController],
-        current_pressure_outboard: &impl SectionPressure,
-        current_pressure_inboard: &impl SectionPressure,
+        current_pressure_outward: &impl SectionPressure,
+        current_pressure_inward: &impl SectionPressure,
     ) {
         self.aerodynamic_model
             .update_body(context, self.hydraulic_assembly.body());
@@ -4250,8 +4250,8 @@ impl AileronAssembly {
             context,
             aileron_controllers,
             [
-                current_pressure_outboard.pressure_downstream_leak_valve(),
-                current_pressure_inboard.pressure_downstream_leak_valve(),
+                current_pressure_outward.pressure_downstream_leak_valve(),
+                current_pressure_inward.pressure_downstream_leak_valve(),
             ],
         );
 
@@ -4301,8 +4301,8 @@ impl ElevatorAssembly {
         &mut self,
         context: &UpdateContext,
         aileron_controllers: &[impl HydraulicAssemblyController],
-        current_pressure_outboard: &impl SectionPressure,
-        current_pressure_inboard: &impl SectionPressure,
+        current_pressure_outward: &impl SectionPressure,
+        current_pressure_inward: &impl SectionPressure,
     ) {
         self.aerodynamic_model
             .update_body(context, self.hydraulic_assembly.body());
@@ -4310,8 +4310,8 @@ impl ElevatorAssembly {
             context,
             aileron_controllers,
             [
-                current_pressure_outboard.pressure_downstream_leak_valve(),
-                current_pressure_inboard.pressure_downstream_leak_valve(),
+                current_pressure_outward.pressure_downstream_leak_valve(),
+                current_pressure_inward.pressure_downstream_leak_valve(),
             ],
         );
 
