@@ -45,8 +45,10 @@ pub trait HydraulicPressure {
 
 pub trait SectionPressure {
     fn pressure(&self) -> Pressure;
+    fn pressure_downstream_leak_valve(&self) -> Pressure;
     fn is_pressure_switch_pressurised(&self) -> bool;
 }
+
 pub trait PressureSource {
     /// Gives the maximum available volume at current pump state if it was working at maximum available displacement
     fn delta_vol_max(&self) -> Volume;
@@ -1233,6 +1235,14 @@ impl SimulationElement for Section {
 impl SectionPressure for Section {
     fn pressure(&self) -> Pressure {
         self.pressure()
+    }
+
+    fn pressure_downstream_leak_valve(&self) -> Pressure {
+        if let Some(valve) = &self.leak_measurement_valve {
+            valve.downstream_pressure()
+        } else {
+            self.pressure()
+        }
     }
 
     fn is_pressure_switch_pressurised(&self) -> bool {
