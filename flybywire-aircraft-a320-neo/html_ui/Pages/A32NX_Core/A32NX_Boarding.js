@@ -31,7 +31,7 @@ class A32NX_Boarding {
             // Set default pax (0)
             await this.setPax(0);
             await this.loadPaxPayload();
-            await this.loadCargoZero();
+            this.loadCargoZero();
             await this.loadCargoPayload();
         }
     }
@@ -76,14 +76,12 @@ class A32NX_Boarding {
         }));
     }
 
-    async loadCargoZero() {
+    loadCargoZero() {
         for (const station of Object.values(this.cargoStations)) {
-            await SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "kilograms", 0);
-            await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", 0);
-            await SimVar.SetSimVarValue(`L:${station.simVar}`, "Number", 0);
+            SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "kilograms", 0);
+            SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", 0);
+            SimVar.SetSimVarValue(`L:${station.simVar}`, "Number", 0);
         }
-
-        return;
     }
 
     async update(_deltaTime) {
@@ -91,7 +89,6 @@ class A32NX_Boarding {
 
         const boardingStartedByUser = SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "Bool");
         const boardingRate = NXDataStore.get("CONFIG_BOARDING_RATE", 'REAL');
-        const isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool");
 
         if (!boardingStartedByUser) {
             return;
