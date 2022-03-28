@@ -20,13 +20,13 @@ class CDUAtcPositionReport {
         currPos = latStr + sep + lonStr;
         let ovhdWaypoint;
         if (mcdu.routeIndex === mcdu.flightPlanManager.getWaypointsCount() - 1) {
-            ovhdWaypoint = mcdu.flightPlanManager.getOrigin();
+            ovhdWaypoint = mcdu.flightPlanManager.getDeparture();
         } else {
             ovhdWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex - 1);
         }
         let toWaypoint;
         if (mcdu.routeIndex === mcdu.flightPlanManager.getWaypointsCount() - 1) {
-            toWaypoint = mcdu.flightPlanManager.getDestination();
+            toWaypoint = mcdu.flightPlanManager.getArrival();
         } else {
             toWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex);
         }
@@ -49,7 +49,7 @@ class CDUAtcPositionReport {
             toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toWaypoint.infos.etaInFP);
             let nextWaypoint;
             if (mcdu.routeIndex + 1 === mcdu.flightPlanManager.getWaypointsCount()) {
-                nextWaypoint = mcdu.flightPlanManager.getDestination();
+                nextWaypoint = mcdu.flightPlanManager.getArrival();
             } else {
                 nextWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex + 1);
             }

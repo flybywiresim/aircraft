@@ -10,14 +10,14 @@ class CDUAocRequestsAtis {
             sendStatus: ""
         };
 
-        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
-            retval.departure = mcdu.flightPlanManager.getOrigin().ident;
+        if (mcdu.flightPlanManager.getDeparture() && mcdu.flightPlanManager.getDeparture().ident) {
+            retval.departure = mcdu.flightPlanManager.getDeparture().ident;
             if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT) {
                 retval.selected = retval.departure;
             }
         }
-        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-            retval.arrival = mcdu.flightPlanManager.getDestination().ident;
+        if (mcdu.flightPlanManager.getArrival() && mcdu.flightPlanManager.getArrival().ident) {
+            retval.arrival = mcdu.flightPlanManager.getArrival().ident;
             if (mcdu.flightPhaseManager.phase !== FmgcFlightPhases.PREFLIGHT) {
                 retval.selected = retval.arrival;
             }
