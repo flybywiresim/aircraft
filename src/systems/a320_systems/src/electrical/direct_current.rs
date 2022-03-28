@@ -10,7 +10,7 @@ use systems::{
     },
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, ContactorSignal, ElectricalBusType,
-        LandingGearRealPosition,
+        LgciuWeightOnWheels,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -98,7 +98,7 @@ impl A320DirectCurrentElectrical {
         emergency_generator: &EmergencyGenerator,
         apu: &mut impl AuxiliaryPowerUnitElectrical,
         apu_overhead: &(impl ApuMaster + ApuStart),
-        landing_gear: &impl LandingGearRealPosition,
+        lgciu1: &impl LgciuWeightOnWheels,
     ) {
         self.tr_1_contactor
             .close_when(electricity.is_powered(ac_state.tr_1()));
@@ -167,7 +167,7 @@ impl A320DirectCurrentElectrical {
             emergency_generator,
             &self.battery_1,
             &self.dc_bat_bus,
-            landing_gear,
+            lgciu1,
             overhead,
             apu,
             apu_overhead,
@@ -187,7 +187,7 @@ impl A320DirectCurrentElectrical {
             emergency_generator,
             &self.battery_2,
             &self.dc_bat_bus,
-            landing_gear,
+            lgciu1,
             overhead,
             apu,
             apu_overhead,

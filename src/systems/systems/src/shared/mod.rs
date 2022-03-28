@@ -74,11 +74,6 @@ pub trait FeedbackPositionPickoffUnit {
     fn angle(&self) -> Angle;
 }
 
-pub trait LandingGearRealPosition {
-    fn is_up_and_locked(&self) -> bool;
-    fn is_down_and_locked(&self) -> bool;
-}
-
 pub trait LgciuWeightOnWheels {
     fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
     fn right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;

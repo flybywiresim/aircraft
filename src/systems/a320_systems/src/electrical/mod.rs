@@ -29,7 +29,7 @@ use systems::{
     shared::{
         ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical, EmergencyElectricalRatPushButton,
         EmergencyElectricalState, EmergencyGeneratorPower, EngineCorrectedN2,
-        EngineFirePushButtons, HydraulicGeneratorControlUnit, LandingGearRealPosition,
+        EngineFirePushButtons, HydraulicGeneratorControlUnit, LgciuWeightOnWheels,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -72,7 +72,7 @@ impl A320Electrical {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl EngineCorrectedN2; 2],
         gcu: &impl HydraulicGeneratorControlUnit,
-        landing_gear: &impl LandingGearRealPosition,
+        lgciu1: &impl LgciuWeightOnWheels,
     ) {
         self.alternating_current.update_main_power_sources(
             context,
@@ -98,6 +98,7 @@ impl A320Electrical {
             &self.emergency_gen,
         );
 
+        // Elec using LGCIU1 L&R compressed (14A output  ASM 32_62_00)
         self.direct_current.update(
             context,
             electricity,
@@ -107,7 +108,7 @@ impl A320Electrical {
             &self.emergency_gen,
             apu,
             apu_overhead,
-            landing_gear,
+            lgciu1,
         );
 
         self.alternating_current.update_after_direct_current(
