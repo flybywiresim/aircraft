@@ -9,6 +9,13 @@ function airplaneCanBoard() {
     return !(gs > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1));
 }
 
+function setDefaultWeights(simbriefPaxWeight, simbriefBagWeight) {
+    const perPaxWeight = (simbriefPaxWeight === 0) ? 84 : simbriefPaxWeight;
+    const perBagWeight = (simbriefBagWeight === 0) ? 20 : simbriefBagWeight;
+    SimVar.SetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number", parseInt(perPaxWeight));
+    SimVar.SetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number", parseInt(perBagWeight));
+}
+
 class A32NX_Boarding {
     constructor() {
         this.boardingState = "finished";
