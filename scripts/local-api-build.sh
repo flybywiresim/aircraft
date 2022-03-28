@@ -19,7 +19,7 @@ fi
 curl -fsSL $LOCAL_API_URL -O
 unzip FBW-local-api.zip -d ${GIT_DIR}
 
-# Hash Check
+# Hash Check or add exe if it doesn't exist
 if [ -f "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe" ]
 then
     LOCAL_HASH=$(md5sum "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe")
@@ -29,6 +29,8 @@ then
     then
         cp ${GIT_DIR}/local-server.exe "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe"
     fi
+else
+    cp ${GIT_DIR}/local-server.exe "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe"
 fi
 
 # If properties file doesn't exist copy the default one
