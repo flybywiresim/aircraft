@@ -50,7 +50,7 @@ use systems::{
         DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
         EmergencyGeneratorPower, EngineFirePushButtons, HydraulicColor,
-        HydraulicGeneratorControlUnit, LgciuSensors, ReservoirAirPressure,
+        HydraulicGeneratorControlUnit, LgciuSensors, ReservoirAirPressure, SectionPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -1092,53 +1092,53 @@ impl A320Hydraulic {
         self.left_aileron.update(
             context,
             self.elac_computer.left_controllers(),
-            self.blue_circuit.system_pressure(),
-            self.green_circuit.system_pressure(),
+            self.blue_circuit.system_section(),
+            self.green_circuit.system_section(),
         );
 
         self.right_aileron.update(
             context,
             self.elac_computer.right_controllers(),
-            self.blue_circuit.system_pressure(),
-            self.green_circuit.system_pressure(),
+            self.blue_circuit.system_section(),
+            self.green_circuit.system_section(),
         );
 
         self.left_elevator.update(
             context,
             self.elac_computer.left_elevator_controllers(),
-            self.blue_circuit.system_pressure(),
-            self.green_circuit.system_pressure(),
+            self.blue_circuit.system_section(),
+            self.green_circuit.system_section(),
         );
 
         self.right_elevator.update(
             context,
             self.elac_computer.right_elevator_controllers(),
-            self.blue_circuit.system_pressure(),
-            self.yellow_circuit.system_pressure(),
+            self.blue_circuit.system_section(),
+            self.yellow_circuit.system_section(),
         );
 
         self.rudder.update(
             context,
             self.fac_computer.rudder_controllers(),
-            self.green_circuit.system_pressure(),
-            self.blue_circuit.system_pressure(),
-            self.yellow_circuit.system_pressure(),
+            self.green_circuit.system_section(),
+            self.blue_circuit.system_section(),
+            self.yellow_circuit.system_section(),
         );
 
         self.left_spoilers.update(
             context,
             self.spoiler_computer.left_controllers(),
-            self.green_circuit.system_pressure(),
-            self.blue_circuit.system_pressure(),
-            self.yellow_circuit.system_pressure(),
+            self.green_circuit.system_section(),
+            self.blue_circuit.system_section(),
+            self.yellow_circuit.system_section(),
         );
 
         self.right_spoilers.update(
             context,
             self.spoiler_computer.right_controllers(),
-            self.green_circuit.system_pressure(),
-            self.blue_circuit.system_pressure(),
-            self.yellow_circuit.system_pressure(),
+            self.green_circuit.system_section(),
+            self.blue_circuit.system_section(),
+            self.yellow_circuit.system_section(),
         );
     }
 
@@ -1153,25 +1153,25 @@ impl A320Hydraulic {
         self.forward_cargo_door.update(
             context,
             &self.forward_cargo_door_controller,
-            self.yellow_circuit.system_pressure(),
+            self.yellow_circuit.system_section(),
         );
 
         self.aft_cargo_door.update(
             context,
             &self.aft_cargo_door_controller,
-            self.yellow_circuit.system_pressure(),
+            self.yellow_circuit.system_section(),
         );
 
         self.ram_air_turbine.update_physics(
             &context.delta(),
             context.indicated_airspeed(),
-            self.blue_circuit.system_pressure(),
+            self.blue_circuit.system_section(),
         );
 
         self.gcu.update(
             context,
             &self.emergency_gen,
-            self.blue_circuit.system_pressure(),
+            self.blue_circuit.system_section(),
             emergency_elec,
             rat_and_emer_gen_man_on,
             lgciu1,
@@ -1179,7 +1179,7 @@ impl A320Hydraulic {
 
         self.emergency_gen.update(
             context,
-            self.blue_circuit.system_pressure(),
+            self.blue_circuit.system_section(),
             &self.gcu,
             emergency_elec,
         );
@@ -1199,7 +1199,7 @@ impl A320Hydraulic {
     ) {
         self.nose_steering.update(
             context,
-            self.yellow_circuit.system_pressure(),
+            self.yellow_circuit.system_section(),
             &self.brake_steer_computer,
             &self.pushback_tug,
         );
@@ -1207,7 +1207,7 @@ impl A320Hydraulic {
         // Process brake logic (which circuit brakes) and send brake demands (how much)
         self.brake_steer_computer.update(
             context,
-            &self.green_circuit,
+            self.green_circuit.system_section(),
             &self.braking_circuit_altn,
             lgciu1,
             lgciu2,
@@ -1241,43 +1241,43 @@ impl A320Hydraulic {
             context,
             self.slats_flaps_complex.flap_demand(),
             self.slats_flaps_complex.flap_demand(),
-            self.green_circuit.system_pressure(),
-            self.yellow_circuit.system_pressure(),
+            self.green_circuit.system_section(),
+            self.yellow_circuit.system_section(),
         );
 
         self.slat_system.update(
             context,
             self.slats_flaps_complex.slat_demand(),
             self.slats_flaps_complex.slat_demand(),
-            self.blue_circuit.system_pressure(),
-            self.green_circuit.system_pressure(),
+            self.blue_circuit.system_section(),
+            self.green_circuit.system_section(),
         );
 
         self.forward_cargo_door_controller.update(
             context,
             &self.forward_cargo_door,
-            self.yellow_circuit.system_pressure(),
+            self.yellow_circuit.system_section(),
         );
 
         self.aft_cargo_door_controller.update(
             context,
             &self.aft_cargo_door,
-            self.yellow_circuit.system_pressure(),
+            self.yellow_circuit.system_section(),
         );
 
         self.elac_computer.update(
-            self.blue_circuit.system_pressure(),
-            self.green_circuit.system_pressure(),
-            self.yellow_circuit.system_pressure(),
+            self.blue_circuit.system_section(),
+            self.green_circuit.system_section(),
+            self.yellow_circuit.system_section(),
         );
 
         self.slats_flaps_complex
             .update(context, &self.flap_system, &self.slat_system);
 
         self.fac_computer.update(
-            self.green_circuit.system_pressure(),
-            self.blue_circuit.system_pressure(),
-            self.yellow_circuit.system_pressure(),
+            self.green_circuit.system_section(),
+            self.blue_circuit.system_section(),
+            self.yellow_circuit.system_section(),
         );
     }
 
@@ -1596,8 +1596,9 @@ impl A320Hydraulic {
         let is_ptu_rotating = self.power_transfer_unit.is_active_left_to_right()
             || self.power_transfer_unit.is_active_right_to_left();
 
-        let absolute_delta_pressure =
-            (self.green_circuit.system_pressure() - self.yellow_circuit.system_pressure()).abs();
+        let absolute_delta_pressure = (self.green_circuit.system_section_pressure()
+            - self.yellow_circuit.system_section_pressure())
+        .abs();
 
         absolute_delta_pressure
             > Pressure::new::<psi>(Self::HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI)
@@ -2568,7 +2569,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
         self.anti_skid_activated && self.normal_brakes_available
     }
 
-    fn update_normal_braking_availability(&mut self, normal_braking_circuit_pressure: &Pressure) {
+    fn update_normal_braking_availability(&mut self, normal_braking_circuit_pressure: Pressure) {
         if normal_braking_circuit_pressure.get::<psi>() > Self::MIN_PRESSURE_BRAKE_ALTN_HYST_HI
             && (self.left_brake_pilot_input.get::<ratio>() < Self::PILOT_INPUT_DETECTION_TRESHOLD
                 && self.right_brake_pilot_input.get::<ratio>()
@@ -2615,7 +2616,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
     fn update(
         &mut self,
         context: &UpdateContext,
-        green_circuit: &HydraulicCircuit,
+        green_system_section_pressure: &impl SectionPressure,
         alternate_circuit: &BrakeCircuit,
         lgciu1: &impl LgciuSensors,
         lgciu2: &impl LgciuSensors,
@@ -2625,7 +2626,7 @@ impl A320HydraulicBrakeSteerComputerUnit {
     ) {
         self.update_steering_demands(lgciu1, engine1, engine2);
 
-        self.update_normal_braking_availability(&green_circuit.system_pressure());
+        self.update_normal_braking_availability(green_system_section_pressure.pressure());
         self.update_brake_pressure_limitation();
 
         self.autobrake_controller.update(
@@ -2937,8 +2938,14 @@ impl A320DoorController {
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, door: &CargoDoor, current_pressure: Pressure) {
-        self.control_state = self.determine_control_state_and_lock_action(door, current_pressure);
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        door: &CargoDoor,
+        current_pressure: &impl SectionPressure,
+    ) {
+        self.control_state =
+            self.determine_control_state_and_lock_action(door, current_pressure.pressure());
         self.update_timers(context);
         self.update_actions_from_state();
     }
@@ -3096,14 +3103,14 @@ impl CargoDoor {
         &mut self,
         context: &UpdateContext,
         cargo_door_controller: &impl HydraulicAssemblyController,
-        current_pressure: Pressure,
+        current_pressure: &impl SectionPressure,
     ) {
         self.aerodynamic_model
             .update_body(context, self.hydraulic_assembly.body());
         self.hydraulic_assembly.update(
             context,
             std::slice::from_ref(cargo_door_controller),
-            [current_pressure],
+            [current_pressure.pressure()],
         );
 
         self.position = self.hydraulic_assembly.position_normalized();
@@ -3959,19 +3966,25 @@ impl ElacComputer {
 
     fn update(
         &mut self,
-        blue_pressure: Pressure,
-        green_pressure: Pressure,
-        yellow_pressure: Pressure,
+        blue_pressure: &impl SectionPressure,
+        green_pressure: &impl SectionPressure,
+        yellow_pressure: &impl SectionPressure,
     ) {
         self.update_aileron_requested_position();
         self.update_elevator_requested_position();
 
-        self.blue_circuit_available =
-            Self::circuit_is_available(blue_pressure, self.blue_circuit_available);
-        self.green_circuit_available =
-            Self::circuit_is_available(green_pressure, self.green_circuit_available);
-        self.yellow_circuit_available =
-            Self::circuit_is_available(yellow_pressure, self.yellow_circuit_available);
+        self.blue_circuit_available = Self::circuit_is_available(
+            blue_pressure.pressure_downstream_leak_valve(),
+            self.blue_circuit_available,
+        );
+        self.green_circuit_available = Self::circuit_is_available(
+            green_pressure.pressure_downstream_leak_valve(),
+            self.green_circuit_available,
+        );
+        self.yellow_circuit_available = Self::circuit_is_available(
+            yellow_pressure.pressure_downstream_leak_valve(),
+            self.yellow_circuit_available,
+        );
 
         self.update_aileron();
 
@@ -4113,15 +4126,20 @@ impl FacComputer {
 
     fn update(
         &mut self,
-        green_pressure: Pressure,
-        blue_pressure: Pressure,
-        yellow_pressure: Pressure,
+        green_pressure: &impl SectionPressure,
+        blue_pressure: &impl SectionPressure,
+        yellow_pressure: &impl SectionPressure,
     ) {
         self.update_rudder_requested_position();
 
-        let blue_circuit_available = blue_pressure.get::<psi>() > 1500.;
-        let green_circuit_available = green_pressure.get::<psi>() > 1500.;
-        let yellow_circuit_available = yellow_pressure.get::<psi>() > 1500.;
+        let blue_circuit_available =
+            blue_pressure.pressure_downstream_leak_valve().get::<psi>() > 1500.;
+        let green_circuit_available =
+            green_pressure.pressure_downstream_leak_valve().get::<psi>() > 1500.;
+        let yellow_circuit_available = yellow_pressure
+            .pressure_downstream_leak_valve()
+            .get::<psi>()
+            > 1500.;
 
         self.update_rudder(
             green_circuit_available,
@@ -4216,15 +4234,18 @@ impl AileronAssembly {
         &mut self,
         context: &UpdateContext,
         aileron_controllers: &[impl HydraulicAssemblyController],
-        current_pressure_outboard: Pressure,
-        current_pressure_inboard: Pressure,
+        current_pressure_outboard: &impl SectionPressure,
+        current_pressure_inboard: &impl SectionPressure,
     ) {
         self.aerodynamic_model
             .update_body(context, self.hydraulic_assembly.body());
         self.hydraulic_assembly.update(
             context,
             aileron_controllers,
-            [current_pressure_outboard, current_pressure_inboard],
+            [
+                current_pressure_outboard.pressure_downstream_leak_valve(),
+                current_pressure_inboard.pressure_downstream_leak_valve(),
+            ],
         );
 
         self.position = self.hydraulic_assembly.position_normalized();
@@ -4273,15 +4294,18 @@ impl ElevatorAssembly {
         &mut self,
         context: &UpdateContext,
         aileron_controllers: &[impl HydraulicAssemblyController],
-        current_pressure_outboard: Pressure,
-        current_pressure_inboard: Pressure,
+        current_pressure_outboard: &impl SectionPressure,
+        current_pressure_inboard: &impl SectionPressure,
     ) {
         self.aerodynamic_model
             .update_body(context, self.hydraulic_assembly.body());
         self.hydraulic_assembly.update(
             context,
             aileron_controllers,
-            [current_pressure_outboard, current_pressure_inboard],
+            [
+                current_pressure_outboard.pressure_downstream_leak_valve(),
+                current_pressure_inboard.pressure_downstream_leak_valve(),
+            ],
         );
 
         self.position = self.hydraulic_assembly.position_normalized();
@@ -4326,9 +4350,9 @@ impl RudderAssembly {
         &mut self,
         context: &UpdateContext,
         rudder_controllers: &[impl HydraulicAssemblyController],
-        current_pressure_green: Pressure,
-        current_pressure_blue: Pressure,
-        current_pressure_yellow: Pressure,
+        current_pressure_green: &impl SectionPressure,
+        current_pressure_blue: &impl SectionPressure,
+        current_pressure_yellow: &impl SectionPressure,
     ) {
         self.aerodynamic_model
             .update_body(context, self.hydraulic_assembly.body());
@@ -4337,9 +4361,9 @@ impl RudderAssembly {
             context,
             rudder_controllers,
             [
-                current_pressure_green,
-                current_pressure_blue,
-                current_pressure_yellow,
+                current_pressure_green.pressure_downstream_leak_valve(),
+                current_pressure_blue.pressure_downstream_leak_valve(),
+                current_pressure_yellow.pressure_downstream_leak_valve(),
             ],
         );
 
@@ -4423,24 +4447,35 @@ impl SpoilerGroup {
         &mut self,
         context: &UpdateContext,
         spoiler_controllers: &[impl HydraulicAssemblyController],
-        green_pressure: Pressure,
-        blue_pressure: Pressure,
-        yellow_pressure: Pressure,
+        green_pressure: &impl SectionPressure,
+        blue_pressure: &impl SectionPressure,
+        yellow_pressure: &impl SectionPressure,
     ) {
-        self.spoilers[0].update(context, &spoiler_controllers[0], green_pressure);
-        self.spoilers[1].update(context, &spoiler_controllers[1], yellow_pressure);
-        self.spoilers[2].update(context, &spoiler_controllers[2], blue_pressure);
-        self.spoilers[3].update(context, &spoiler_controllers[3], yellow_pressure);
-        self.spoilers[4].update(context, &spoiler_controllers[4], green_pressure);
-
-        // println!(
-        //     "ACTUATORS {:.2} {:.2} {:.2} {:.2} {:.2}",
-        //     self.spoilers[0].position.get::<ratio>(),
-        //     self.spoilers[1].position.get::<ratio>(),
-        //     self.spoilers[2].position.get::<ratio>(),
-        //     self.spoilers[3].position.get::<ratio>(),
-        //     self.spoilers[4].position.get::<ratio>(),
-        // );
+        self.spoilers[0].update(
+            context,
+            &spoiler_controllers[0],
+            green_pressure.pressure_downstream_leak_valve(),
+        );
+        self.spoilers[1].update(
+            context,
+            &spoiler_controllers[1],
+            yellow_pressure.pressure_downstream_leak_valve(),
+        );
+        self.spoilers[2].update(
+            context,
+            &spoiler_controllers[2],
+            blue_pressure.pressure_downstream_leak_valve(),
+        );
+        self.spoilers[3].update(
+            context,
+            &spoiler_controllers[3],
+            yellow_pressure.pressure_downstream_leak_valve(),
+        );
+        self.spoilers[4].update(
+            context,
+            &spoiler_controllers[4],
+            green_pressure.pressure_downstream_leak_valve(),
+        );
     }
 
     fn actuator(&mut self, spoiler_id: usize) -> &mut impl Actuator {
@@ -8895,7 +8930,7 @@ mod tests {
 
             test_bed = test_bed
                 .set_ailerons_left_turn()
-                .run_waiting_for(Duration::from_secs_f64(5.));
+                .run_waiting_for(Duration::from_secs_f64(6.));
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(!test_bed.is_green_pressure_switch_pressurised());

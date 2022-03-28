@@ -4,7 +4,7 @@ use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::pneumatic::PressurizeableReservoir;
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses,
-    HydraulicColor,
+    HydraulicColor, SectionPressure,
 };
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -41,12 +41,6 @@ pub trait HydraulicPressure {
 
     /// Pressure transducer value in system section upstream leak measurement valve
     fn system_section_pressure(&self) -> Pressure;
-}
-
-pub trait SectionPressure {
-    fn pressure(&self) -> Pressure;
-    fn pressure_downstream_leak_valve(&self) -> Pressure;
-    fn is_pressure_switch_pressurised(&self) -> bool;
 }
 
 pub trait PressureSource {
@@ -840,10 +834,6 @@ impl HydraulicCircuit {
         self.pump_sections[idx].pressure()
     }
 
-    pub fn system_pressure(&self) -> Pressure {
-        self.system_section.pressure()
-    }
-
     pub fn system_accumulator_fluid_volume(&self) -> Volume {
         self.system_section.accumulator_volume()
     }
@@ -862,6 +852,10 @@ impl HydraulicCircuit {
 
     pub fn reservoir(&self) -> &Reservoir {
         &self.reservoir
+    }
+
+    pub fn system_section_pressure(&self) -> Pressure {
+        self.system_section.pressure()
     }
 
     pub fn system_section(&self) -> &impl SectionPressure {
@@ -2136,14 +2130,14 @@ impl RamAirTurbine {
         &mut self,
         delta_time: &Duration,
         indicated_airspeed: Velocity,
-        pressure: Pressure,
+        pressure: &impl SectionPressure,
     ) {
         self.wind_turbine.update(
             delta_time,
             indicated_airspeed,
             self.position,
             self.delta_vol_max(),
-            pressure,
+            pressure.pressure(),
         );
     }
 

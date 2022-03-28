@@ -246,29 +246,29 @@ mod tests {
     use std::time::Duration;
     use uom::si::{pressure::psi, volume::gallon};
 
+    #[derive(Default)]
     struct TestHydraulicSection {
-        current_pressure: Pressure,
+        pressure: Pressure,
     }
     impl TestHydraulicSection {
-        fn new() -> Self {
-            Self {
-                current_pressure: Pressure::new::<psi>(0.),
-            }
-        }
-
         fn set_pressure(&mut self, pressure: Pressure) {
-            self.current_pressure = pressure;
+            self.pressure = pressure;
         }
     }
     impl SectionPressure for TestHydraulicSection {
         fn pressure(&self) -> Pressure {
-            self.current_pressure
+            self.pressure
+        }
+
+        fn pressure_downstream_leak_valve(&self) -> Pressure {
+            self.pressure
         }
 
         fn is_pressure_switch_pressurised(&self) -> bool {
-            self.current_pressure.get::<psi>() > 2000.
+            self.pressure.get::<psi>() > 1700.
         }
     }
+
     struct TestAircraft {
         core_hydraulic_updater: FixedStepLoop,
 
@@ -285,7 +285,7 @@ mod tests {
             Self {
                 core_hydraulic_updater: FixedStepLoop::new(Duration::from_millis(33)),
                 pump: physical_pump(context),
-                hydraulic_section: TestHydraulicSection::new(),
+                hydraulic_section: TestHydraulicSection::default(),
                 current_displacement: Volume::new::<gallon>(0.),
                 powered_source_ac: TestElectricitySource::powered(
                     context,
