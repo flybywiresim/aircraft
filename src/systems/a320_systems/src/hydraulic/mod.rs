@@ -36,7 +36,7 @@ use systems::{
             SteeringRatioToAngle,
         },
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        HydraulicPressure, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
+        HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
         PressureSwitchType, PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
     },
     overhead::{
@@ -1792,7 +1792,7 @@ impl A320EngineDrivenPumpController {
     fn update_low_pressure(
         &mut self,
         engine: &impl Engine,
-        hydraulic_circuit: &impl HydraulicPressure,
+        hydraulic_circuit: &impl HydraulicPressureSensors,
         lgciu: &impl LgciuSensors,
     ) {
         self.is_pressure_low = self.should_pressurise()
@@ -1829,7 +1829,7 @@ impl A320EngineDrivenPumpController {
         overhead_panel: &A320HydraulicOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engine: &impl Engine,
-        hydraulic_circuit: &impl HydraulicPressure,
+        hydraulic_circuit: &impl HydraulicPressureSensors,
         lgciu: &impl LgciuSensors,
         reservoir: &Reservoir,
     ) {
@@ -1918,7 +1918,7 @@ impl A320BlueElectricPumpController {
     fn update(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
-        hydraulic_circuit: &impl HydraulicPressure,
+        hydraulic_circuit: &impl HydraulicPressureSensors,
         engine1: &impl Engine,
         engine2: &impl Engine,
         lgciu1: &impl LgciuSensors,
@@ -1959,7 +1959,7 @@ impl A320BlueElectricPumpController {
     fn update_low_pressure(
         &mut self,
         overhead_panel: &A320HydraulicOverheadPanel,
-        hydraulic_circuit: &impl HydraulicPressure,
+        hydraulic_circuit: &impl HydraulicPressureSensors,
         engine1: &impl Engine,
         engine2: &impl Engine,
         lgciu1: &impl LgciuSensors,
@@ -2083,7 +2083,7 @@ impl A320YellowElectricPumpController {
         overhead_panel: &A320HydraulicOverheadPanel,
         forward_cargo_door_controller: &A320DoorController,
         aft_cargo_door_controller: &A320DoorController,
-        hydraulic_circuit: &impl HydraulicPressure,
+        hydraulic_circuit: &impl HydraulicPressureSensors,
         reservoir: &Reservoir,
     ) {
         self.update_cargo_door_logic(
@@ -2104,7 +2104,7 @@ impl A320YellowElectricPumpController {
         self.update_low_level(reservoir, overhead_panel);
     }
 
-    fn update_low_pressure(&mut self, hydraulic_circuit: &impl HydraulicPressure) {
+    fn update_low_pressure(&mut self, hydraulic_circuit: &impl HydraulicPressureSensors) {
         self.update_low_pressure_hysteresis(hydraulic_circuit);
 
         self.is_pressure_low = self.should_pressurise() && !self.low_pressure_hystereris;
@@ -2112,12 +2112,19 @@ impl A320YellowElectricPumpController {
         self.has_pressure_low_fault = self.is_pressure_low;
     }
 
-    fn update_low_pressure_hysteresis(&mut self, hydraulic_circuit: &impl HydraulicPressure) {
-        if hydraulic_circuit.system_section_pressure().get::<psi>()
+    fn update_low_pressure_hysteresis(
+        &mut self,
+        hydraulic_circuit: &impl HydraulicPressureSensors,
+    ) {
+        if hydraulic_circuit
+            .system_section_pressure_transducer()
+            .get::<psi>()
             > Self::LOW_PRESS_HYSTERESIS_HIGH_PSI
         {
             self.low_pressure_hystereris = true;
-        } else if hydraulic_circuit.system_section_pressure().get::<psi>()
+        } else if hydraulic_circuit
+            .system_section_pressure_transducer()
+            .get::<psi>()
             < Self::LOW_PRESS_HYSTERESIS_LOW_PSI
         {
             self.low_pressure_hystereris = false;

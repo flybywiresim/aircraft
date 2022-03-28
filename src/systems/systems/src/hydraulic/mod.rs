@@ -31,8 +31,9 @@ pub mod flap_slat;
 pub mod linear_actuator;
 pub mod nose_steering;
 
-/// Indicates the pressure state of an hydraulic circuit at different locations
-pub trait HydraulicPressure {
+/// Indicates the pressure sensors info of an hydraulic circuit at different locations
+/// Information can be wrong in case of sensor failure -> do not use for physical pressure
+pub trait HydraulicPressureSensors {
     /// Pressure switch state in pump section
     fn pump_section_switch_pressurised(&self, pump_index: usize) -> bool;
 
@@ -40,7 +41,7 @@ pub trait HydraulicPressure {
     fn system_section_switch_pressurised(&self) -> bool;
 
     /// Pressure transducer value in system section upstream leak measurement valve
-    fn system_section_pressure(&self) -> Pressure;
+    fn system_section_pressure_transducer(&self) -> Pressure;
 }
 
 pub trait PressureSource {
@@ -879,7 +880,7 @@ impl SimulationElement for HydraulicCircuit {
         visitor.visit(self);
     }
 }
-impl HydraulicPressure for HydraulicCircuit {
+impl HydraulicPressureSensors for HydraulicCircuit {
     fn pump_section_switch_pressurised(&self, pump_index: usize) -> bool {
         self.pump_section(pump_index)
             .is_pressure_switch_pressurised()
@@ -889,7 +890,7 @@ impl HydraulicPressure for HydraulicCircuit {
         self.system_section().is_pressure_switch_pressurised()
     }
 
-    fn system_section_pressure(&self) -> Pressure {
+    fn system_section_pressure_transducer(&self) -> Pressure {
         self.system_section().pressure()
     }
 }
