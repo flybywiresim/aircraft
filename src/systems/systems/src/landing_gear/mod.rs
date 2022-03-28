@@ -1,6 +1,5 @@
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
-    hydraulic::landing_gear::{GearSystemStateMachine, GearsSystemState},
     shared::{
         ElectricalBusType, ElectricalBuses, GearWheel, LandingGearHandle, LgciuDoorPosition,
         LgciuGearControl, LgciuGearExtension, LgciuInterface, LgciuWeightOnWheels,
@@ -134,7 +133,7 @@ impl LgciuSensorInputs {
             left_door_up_and_locked: false,
 
             nose_gear_compressed_id: context
-                .get_identifier(format!("LGCIU_{}_NOSE_GEAR_COMPRESSED", number)),
+                .get_identifier(format!("LGCIU_{}_CENTER_GEAR_COMPRESSED", number)),
             left_gear_compressed_id: context
                 .get_identifier(format!("LGCIU_{}_LEFT_GEAR_COMPRESSED", number)),
             right_gear_compressed_id: context
@@ -447,9 +446,9 @@ impl LandingGearControlInterfaceUnit {
             left_gear_unlock_id: context
                 .get_identifier(format!("LGCIU_{}_LEFT_GEAR_UNLOCKED", number)),
             nose_gear_downlock_id: context
-                .get_identifier(format!("LGCIU_{}_NOSE_GEAR_DOWNLOCKED", number)),
+                .get_identifier(format!("LGCIU_{}_CENTER_GEAR_DOWNLOCKED", number)),
             nose_gear_unlock_id: context
-                .get_identifier(format!("LGCIU_{}_NOSE_GEAR_UNLOCKED", number)),
+                .get_identifier(format!("LGCIU_{}_CENTER_GEAR_UNLOCKED", number)),
             right_gear_downlock_id: context
                 .get_identifier(format!("LGCIU_{}_RIGHT_GEAR_DOWNLOCKED", number)),
             right_gear_unlock_id: context
@@ -628,6 +627,79 @@ impl LandingGearHandle for LandingGearControlInterfaceUnit {
 
 impl LgciuInterface for LandingGearControlInterfaceUnit {}
 
+#[derive(PartialEq, Clone, Copy, Debug)]
+pub enum GearsSystemState {
+    AllUpLocked,
+    Retracting,
+    Extending,
+    AllDownLocked,
+}
+
+#[derive(Debug)]
+struct GearSystemStateMachine {
+    gears_state: GearsSystemState,
+}
+impl GearSystemStateMachine {
+    pub fn default() -> Self {
+        Self {
+            gears_state: GearsSystemState::AllDownLocked,
+        }
+    }
+
+    fn new_gear_state(
+        &self,
+        lgciu: &(impl LgciuGearExtension + LgciuDoorPosition),
+        gear_handle_position_is_up: bool,
+    ) -> GearsSystemState {
+        match self.gears_state {
+            GearsSystemState::AllUpLocked => {
+                if !gear_handle_position_is_up {
+                    GearsSystemState::Extending
+                } else {
+                    self.gears_state
+                }
+            }
+            GearsSystemState::Retracting => {
+                if lgciu.all_up_and_locked() && lgciu.all_closed_and_locked() {
+                    GearsSystemState::AllUpLocked
+                } else if !gear_handle_position_is_up {
+                    GearsSystemState::Extending
+                } else {
+                    self.gears_state
+                }
+            }
+            GearsSystemState::Extending => {
+                if lgciu.all_down_and_locked() && lgciu.all_closed_and_locked() {
+                    GearsSystemState::AllDownLocked
+                } else if gear_handle_position_is_up {
+                    GearsSystemState::Retracting
+                } else {
+                    self.gears_state
+                }
+            }
+            GearsSystemState::AllDownLocked => {
+                if gear_handle_position_is_up {
+                    GearsSystemState::Retracting
+                } else {
+                    self.gears_state
+                }
+            }
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        lgciu: &(impl LgciuGearExtension + LgciuDoorPosition),
+        gear_handle_position_is_up: bool,
+    ) {
+        self.gears_state = self.new_gear_state(lgciu, gear_handle_position_is_up);
+    }
+
+    pub fn state(&self) -> GearsSystemState {
+        self.gears_state
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -786,11 +858,6 @@ mod tests {
 
         fn run_one_tick(mut self) -> Self {
             self.run_with_delta(Duration::from_secs_f64(0.1));
-            self
-        }
-
-        fn run_waiting_for(mut self, delta: Duration) -> Self {
-            self.test_bed.run_multiple_frames(delta);
             self
         }
 

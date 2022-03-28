@@ -967,7 +967,7 @@ pub(super) struct A320Hydraulic {
 
     core_hydraulic_updater: FixedStepLoop,
     physics_updater: MaxStepLoop,
-    flight_controls_updater: MaxStepLoop,
+    ultra_fast_physics_updater: MaxStepLoop,
 
     brake_steer_computer: A320HydraulicBrakeSteerComputerUnit,
 
@@ -1101,7 +1101,7 @@ impl A320Hydraulic {
 
             core_hydraulic_updater: FixedStepLoop::new(Self::HYDRAULIC_SIM_TIME_STEP),
             physics_updater: MaxStepLoop::new(Self::HYDRAULIC_SIM_MAX_TIME_STEP_MILLISECONDS),
-            flight_controls_updater: MaxStepLoop::new(
+            ultra_fast_physics_updater: MaxStepLoop::new(
                 Self::HYDRAULIC_SIM_FLIGHT_CONTROLS_MAX_TIME_STEP_MILLISECONDS,
             ),
 
@@ -1280,7 +1280,7 @@ impl A320Hydraulic {
     ) {
         self.core_hydraulic_updater.update(context);
         self.physics_updater.update(context);
-        self.flight_controls_updater.update(context);
+        self.ultra_fast_physics_updater.update(context);
 
         for cur_time_step in self.physics_updater {
             self.update_fast_physics(
@@ -1305,8 +1305,8 @@ impl A320Hydraulic {
             engine2,
         );
 
-        for cur_time_step in self.flight_controls_updater {
-            self.update_flight_controls_physics(&context.with_delta(cur_time_step), lgciu1);
+        for cur_time_step in self.ultra_fast_physics_updater {
+            self.update_ultra_fast_physics(&context.with_delta(cur_time_step), lgciu1);
         }
 
         for cur_time_step in self.core_hydraulic_updater {
@@ -1402,11 +1402,7 @@ impl A320Hydraulic {
         self.yellow_circuit.system_section_pressure_switch() == PressureSwitchState::Pressurised
     }
 
-    fn update_flight_controls_physics(
-        &mut self,
-        context: &UpdateContext,
-        lgciu1: &impl LgciuInterface,
-    ) {
+    fn update_ultra_fast_physics(&mut self, context: &UpdateContext, lgciu1: &impl LgciuInterface) {
         self.left_aileron.update(
             context,
             self.elac_computer.left_controllers(),
@@ -4996,8 +4992,8 @@ mod tests {
                 ExternalPowerSource,
             },
             engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
-            hydraulic::{electrical_generator::TestGenerator, landing_gear::GearsSystemState},
-            landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
+            hydraulic::electrical_generator::TestGenerator,
+            landing_gear::{GearsSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
             shared::{EmergencyElectricalState, HydraulicGeneratorControlUnit, PotentialOrigin},
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},

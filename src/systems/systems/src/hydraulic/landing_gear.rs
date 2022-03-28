@@ -1,6 +1,6 @@
 use crate::landing_gear::GearSystemSensors;
 use crate::shared::low_pass_filter::LowPassFilter;
-use crate::shared::{GearWheel, LgciuDoorPosition, LgciuGearControl, LgciuGearExtension};
+use crate::shared::{GearWheel, LgciuGearControl};
 
 use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -242,79 +242,6 @@ impl SimulationElement for HydraulicGearSystem {
     }
 }
 
-#[derive(PartialEq, Clone, Copy, Debug)]
-pub enum GearsSystemState {
-    AllUpLocked,
-    Retracting,
-    Extending,
-    AllDownLocked,
-}
-
-#[derive(Debug)]
-pub struct GearSystemStateMachine {
-    gears_state: GearsSystemState,
-}
-impl GearSystemStateMachine {
-    pub fn default() -> Self {
-        Self {
-            gears_state: GearsSystemState::AllDownLocked,
-        }
-    }
-
-    fn new_gear_state(
-        &self,
-        lgciu: &(impl LgciuGearExtension + LgciuDoorPosition),
-        gear_handle_position_is_up: bool,
-    ) -> GearsSystemState {
-        match self.gears_state {
-            GearsSystemState::AllUpLocked => {
-                if !gear_handle_position_is_up {
-                    GearsSystemState::Extending
-                } else {
-                    self.gears_state
-                }
-            }
-            GearsSystemState::Retracting => {
-                if lgciu.all_up_and_locked() && lgciu.all_closed_and_locked() {
-                    GearsSystemState::AllUpLocked
-                } else if !gear_handle_position_is_up {
-                    GearsSystemState::Extending
-                } else {
-                    self.gears_state
-                }
-            }
-            GearsSystemState::Extending => {
-                if lgciu.all_down_and_locked() && lgciu.all_closed_and_locked() {
-                    GearsSystemState::AllDownLocked
-                } else if gear_handle_position_is_up {
-                    GearsSystemState::Retracting
-                } else {
-                    self.gears_state
-                }
-            }
-            GearsSystemState::AllDownLocked => {
-                if gear_handle_position_is_up {
-                    GearsSystemState::Retracting
-                } else {
-                    self.gears_state
-                }
-            }
-        }
-    }
-
-    pub fn update(
-        &mut self,
-        lgciu: &(impl LgciuGearExtension + LgciuDoorPosition),
-        gear_handle_position_is_up: bool,
-    ) {
-        self.gears_state = self.new_gear_state(lgciu, gear_handle_position_is_up);
-    }
-
-    pub fn state(&self) -> GearsSystemState {
-        self.gears_state
-    }
-}
-
 pub trait GearSystemController {
     fn safety_valve_should_open(&self) -> bool;
     fn shut_off_valve_should_open(&self) -> bool;
@@ -497,10 +424,6 @@ impl GearDoorAssembly {
         self.hydraulic_assembly.actuator(0)
     }
 
-    fn is_locked(&self) -> bool {
-        self.hydraulic_assembly.is_locked()
-    }
-
     fn is_sensor_uplock(&self, sensor_id: usize) -> bool {
         assert!(sensor_id <= 1);
         self.uplock_proximity_detectors[sensor_id].proximity_detected()
@@ -512,8 +435,13 @@ impl GearDoorAssembly {
     }
 
     #[cfg(test)]
-    fn actuator_flow(&self) -> VolumeRate {
+    fn _actuator_flow(&self) -> VolumeRate {
         self.hydraulic_assembly.actuator_flow(0)
+    }
+
+    #[cfg(test)]
+    fn is_locked(&self) -> bool {
+        self.hydraulic_assembly.is_locked()
     }
 }
 
@@ -1130,6 +1058,24 @@ mod tests {
 
         assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
         assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
+    }
+
+    #[test]
+    fn no_unlocking_from_door_uplock_without_pressure() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestSingleGearAircraft::new(
+                Duration::from_millis(33),
+                main_gear_door_right_assembly(),
+                main_gear_right_assembly(true),
+            )
+        });
+        test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(10.)));
+
+        test_bed.command(|a| a.command_doors_opening());
+        test_bed.run_with_delta(Duration::from_millis(4000));
+
+        assert!(test_bed.query(|a| a.is_gear_physically_locked()));
+        assert!(test_bed.query(|a| a.is_door_physically_locked()));
     }
 
     #[test]
