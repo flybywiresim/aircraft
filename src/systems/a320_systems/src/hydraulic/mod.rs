@@ -6133,7 +6133,7 @@ mod tests {
                 while self.get_emergency_handle_number_of_turns() < number_of_turns {
                     self = self
                         .set_gear_emergency_extension_active(true)
-                        .run_waiting_for(Duration::from_secs(1));
+                        .run_waiting_for(Duration::from_secs_f64(0.5));
                     number_of_loops += 1;
                     assert!(number_of_loops < 50);
                 }
