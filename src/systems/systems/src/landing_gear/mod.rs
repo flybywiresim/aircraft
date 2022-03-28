@@ -367,11 +367,19 @@ impl SimulationElement for LandingGearControlInterfaceUnitSet {
         visitor.visit(self);
     }
 }
+impl LandingGearHandle for LandingGearControlInterfaceUnitSet {
+    fn gear_handle_is_down(&self) -> bool {
+        self.gear_handle_unit.gear_handle_is_down()
+    }
+
+    fn gear_handle_baulk_locked(&self) -> bool {
+        self.gear_handle_unit.gear_handle_baulk_locked()
+    }
+}
 
 struct LandingGearHandleUnit {
     gear_handle_real_position_id: VariableIdentifier,
     gear_handle_position_requested_id: VariableIdentifier,
-    lever_baulk_lock_id: VariableIdentifier,
 
     is_lever_down: bool,
     lever_should_lock_down: bool,
@@ -382,8 +390,6 @@ impl LandingGearHandleUnit {
             gear_handle_real_position_id: context.get_identifier("GEAR_HANDLE_POSITION".to_owned()),
             gear_handle_position_requested_id: context
                 .get_identifier("GEAR_LEVER_POSITION_REQUEST".to_owned()),
-
-            lever_baulk_lock_id: context.get_identifier("GEAR_HANDLE_BAULK_LOCK_ENABLE".to_owned()),
 
             is_lever_down: true,
             lever_should_lock_down: true,
@@ -416,7 +422,6 @@ impl SimulationElement for LandingGearHandleUnit {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.lever_baulk_lock_id, self.gear_handle_baulk_locked());
         writer.write(&self.gear_handle_real_position_id, self.is_lever_down);
     }
 }
@@ -882,7 +887,7 @@ mod tests {
         }
 
         fn is_gear_handle_lock_down_active(&mut self) -> bool {
-            self.read_by_name("GEAR_HANDLE_BAULK_LOCK_ENABLE")
+            self.query(|a| a.lgcius.gear_handle_baulk_locked())
         }
 
         fn is_gear_handle_down(&mut self) -> bool {
