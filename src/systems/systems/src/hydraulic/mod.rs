@@ -380,13 +380,6 @@ impl PowerTransferUnit {
         self.is_in_continuous_mode = (self.is_in_continuous_mode
             || self.is_rotating_after_delay.output())
             && self.is_rotating();
-
-        println!(
-            "RPM {:.1}  is_rot_after_dely {} CONTINUOUS {}",
-            self.shaft_speed.get::<revolution_per_minute>(),
-            self.is_rotating_after_delay.output(),
-            self.is_in_continuous_mode,
-        );
     }
 
     fn calc_generated_torque(pressure: Pressure, displacement: Volume) -> Torque {
