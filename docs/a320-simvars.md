@@ -2546,7 +2546,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - LEFT
         - RIGHT
 
-- A32NX_GEAR_DOOR_{}_POSITION
+- A32NX_GEAR_DOOR_{gear}_POSITION
     - Indicates the gear door position. 1 is fully opened. 0 fully closed and locked.
     - Percent over 100
     - {gear}
@@ -2554,7 +2554,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - LEFT
         - RIGHT
 
-- A32NX_GEAR_{}_POSITION
+- A32NX_GEAR_{gear}_POSITION
     - Indicates the gear position. 1 is fully opened. 0 fully closed and locked.
     - Percent over 100
     - {gear}
