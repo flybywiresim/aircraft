@@ -407,10 +407,9 @@ export const LandingWidget = () => {
                                 <div className="flex flex-row">
                                     <TooltipWrapper text={`${(autoFillSource === 'METAR' && !isAutoFillIcaoValid()) ? 'You need to enter an ICAO code in order to make a METAR request.' : ''}`}>
                                         <button
-                                            onClick={handleAutoFill}
+                                            onClick={isAutoFillIcaoValid ? handleAutoFill : undefined}
                                             className={`rounded-md rounded-r-none flex flex-row justify-center items-center px-8 py-2 space-x-4 text-theme-body transition duration-100 border-2 border-theme-highlight bg-theme-highlight outline-none ${!isAutoFillIcaoValid() ? 'opacity-50' : 'hover:text-theme-highlight hover:bg-theme-body'}`}
                                             type="button"
-                                            disabled={!isAutoFillIcaoValid()}
                                         >
                                             <CloudArrowDown size={26} />
                                             <p className="text-current">Fill data from</p>
