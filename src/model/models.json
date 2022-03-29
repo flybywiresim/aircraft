@@ -924,6 +924,10 @@
         "bin": "./cargo-hinge/cargo-hinge.bin"
       },
       {
+        "gltf": "./decal-logo-front/decal-logo-front.gltf",
+        "bin": "./decal-logo-front/decal-logo-front.bin"
+      },
+      {
         "combineFiles": ["./a320-exterior/A320_NEO_LOD00.gltf"],
         "nodes": [
           {
