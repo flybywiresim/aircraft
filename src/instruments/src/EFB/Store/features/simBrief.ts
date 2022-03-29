@@ -11,12 +11,14 @@ export interface SimbriefData {
     departingName: string;
     departingPosLat: number;
     departingPosLong: number;
+    departingMetar: string;
     arrivingAirport: string;
     arrivingRunway: string;
     arrivingIata: string;
     arrivingName: string;
     arrivingPosLat: number;
     arrivingPosLong: number;
+    arrivingMetar: string;
     flightDistance: string;
     flightETAInSeconds: string;
     cruiseAltitude: number;
@@ -54,12 +56,14 @@ export const initialState: {data: SimbriefData} = {
         departingName: '',
         departingPosLat: 0,
         departingPosLong: 0,
+        departingMetar: '',
         arrivingAirport: '',
         arrivingRunway: '',
         arrivingIata: '',
         arrivingName: '',
         arrivingPosLat: 0,
         arrivingPosLong: 0,
+        arrivingMetar: '',
         aircraftReg: '',
         flightDistance: '',
         route: '',
@@ -133,12 +137,14 @@ export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<P
             departingName: returnedSimbriefData.origin.name,
             departingPosLat: returnedSimbriefData.origin.posLat,
             departingPosLong: returnedSimbriefData.origin.posLong,
+            departingMetar: returnedSimbriefData.origin.metar,
             arrivingAirport: returnedSimbriefData.destination.icao,
             arrivingRunway: returnedSimbriefData.destination.runway,
             arrivingIata: returnedSimbriefData.destination.iata,
             arrivingName: returnedSimbriefData.destination.name,
             arrivingPosLat: returnedSimbriefData.destination.posLat,
             arrivingPosLong: returnedSimbriefData.destination.posLong,
+            arrivingMetar: returnedSimbriefData.destination.metar,
             aircraftReg: returnedSimbriefData.aircraftReg,
             flightDistance: returnedSimbriefData.distance,
             flightETAInSeconds: returnedSimbriefData.flightETAInSeconds,

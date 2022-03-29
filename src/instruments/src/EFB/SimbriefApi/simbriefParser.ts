@@ -34,6 +34,8 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
     const { alternate } = simbriefJson;
     const { files } = simbriefJson;
     const { text } = simbriefJson;
+    const { weather } = simbriefJson;
+
     return {
         airline: general.icao_airline,
         flightNumber: general.flight_number,
@@ -49,6 +51,7 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
             name: origin.name,
             posLat: origin.pos_lat,
             posLong: origin.pos_long,
+            metar: weather.orig_metar,
         },
         destination: {
             iata: destination.iata_code,
@@ -57,6 +60,7 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
             name: destination.name,
             posLat: destination.pos_lat,
             posLong: destination.pos_long,
+            metar: weather.dest_metar,
         },
         distance: `${general.air_distance}nm`,
         flightETAInSeconds: times.est_time_enroute,

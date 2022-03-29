@@ -26,6 +26,7 @@ interface IAirportInfo {
     name: string,
     posLat: number,
     posLong: number,
+    metar: string,
 }
 
 export interface IWeights {

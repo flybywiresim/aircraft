@@ -93,7 +93,7 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }
             <div
                 className="h-full"
                 ref={contentRef}
-                onClick={() => {
+                onMouseDown={() => {
                     setHiddenLocked(true);
 
                     if (showTooltip) {

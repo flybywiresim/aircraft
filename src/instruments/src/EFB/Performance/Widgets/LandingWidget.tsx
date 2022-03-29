@@ -22,6 +22,7 @@ import { Units } from '@shared/units';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { LandingCalculator, LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -66,9 +67,11 @@ export const LandingWidget = () => {
     const calculator: LandingCalculator = new LandingCalculator();
 
     const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
-    const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('METAR');
+    const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
 
     const { usingMetric } = Units;
+
+    const { showModal } = useModals();
 
     const {
         icao,
@@ -95,7 +98,7 @@ export const LandingWidget = () => {
 
     } = useAppSelector((state) => state.performance.landing);
 
-    const { arrivingAirport } = useAppSelector((state) => state.simbrief.data);
+    const { arrivingAirport, arrivingMetar } = useAppSelector((state) => state.simbrief.data);
 
     const handleCalculateLanding = (): void => {
         if (!areInputsValid()) return;
@@ -141,7 +144,7 @@ export const LandingWidget = () => {
         }));
     };
 
-    const handleSyncValues = async (icao: string): Promise<void> => {
+    const syncValuesWithApiMetar = async (icao: string): Promise<void> => {
         if (!isValidIcao(icao)) return;
 
         fetch(`https://api.flybywiresim.com/metar/${icao}`)
@@ -339,9 +342,32 @@ export const LandingWidget = () => {
 
     const handleAutoFill = () => {
         if (autoFillSource === 'METAR') {
-            handleSyncValues(icao);
+            syncValuesWithApiMetar(icao);
         } else {
-            handleSyncValues(arrivingAirport);
+            try {
+                const parsedMetar: MetarParserType = parseMetar(arrivingMetar);
+
+                const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
+
+                dispatch(setLandingValues({
+                    weight: weightKgs,
+                    windDirection: parsedMetar.wind.degrees,
+                    windMagnitude: parsedMetar.wind.speed_kts,
+                    temperature: parsedMetar.temperature.celsius,
+                    pressure: parsedMetar.barometer.mb,
+                }));
+            } catch (err) {
+                showModal(
+                    <PromptModal
+                        title="Error Parsing OFP METAR"
+                        bodyText="The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?"
+                        cancelText="No"
+                        confirmText="Yes"
+                        onConfirm={() => syncValuesWithApiMetar(arrivingAirport)}
+                    />,
+                );
+            }
+
             dispatch(setLandingValues({ icao: arrivingAirport }));
         }
     };
@@ -380,19 +406,19 @@ export const LandingWidget = () => {
                                 <div className="flex flex-row">
                                     <button
                                         onClick={handleAutoFill}
-                                        className={`rounded-md rounded-r-none flex flex-row justify-center items-center px-8 py-2 space-x-4 text-white bg-indigo-800 outline-none ${!isAutoFillIcaoValid() && 'opacity-50'}`}
+                                        className={`rounded-md rounded-r-none flex flex-row justify-center items-center px-8 py-2 space-x-4 text-theme-body transition duration-100 hover:text-theme-highlight hover:bg-theme-body border-2 border-theme-highlight bg-theme-highlight outline-none ${!isAutoFillIcaoValid() && 'pointer-events-none opacity-50'}`}
                                         type="button"
                                         disabled={!isAutoFillIcaoValid()}
                                     >
                                         <CloudArrowDown size={26} />
-                                        <p className="text-current">Fill from</p>
+                                        <p className="text-current">Fill data from</p>
                                     </button>
                                     <SelectInput
                                         value={autoFillSource}
                                         className="w-36 rounded-l-none"
                                         options={[
-                                            { value: 'METAR', displayValue: 'METAR' },
                                             { value: 'OFP', displayValue: 'OFP' },
+                                            { value: 'METAR', displayValue: 'METAR' },
                                         ]}
                                         onChange={(value: 'METAR' | 'OFP') => setAutoFillSource(value)}
                                     />
