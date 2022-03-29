@@ -4,7 +4,7 @@ import { useAppDispatch } from '../Store/store';
 import { setPosX, setPosY, setShown, setText } from '../Store/features/tooltip';
 
 interface TooltipProps {
-    text: string;
+    text?: string;
     posX: number;
     posY: number;
     shown: boolean;
@@ -21,7 +21,7 @@ export const Tooltip = forwardRef(({ text, posX, posY, shown }: TooltipProps, re
 ));
 
 interface TooltipWrapperProps {
-    text: string;
+    text?: string;
 }
 
 export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }) => {
@@ -37,7 +37,7 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }
     const PADDING_PX = 10;
 
     useEffect(() => {
-        if (!showTooltip) return;
+        if (!showTooltip || !text) return;
 
         dispatch(setText(text));
 

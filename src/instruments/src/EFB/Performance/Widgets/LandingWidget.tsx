@@ -22,6 +22,7 @@ import { Units } from '@shared/units';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { LandingCalculator, LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
@@ -404,15 +405,17 @@ export const LandingWidget = () => {
                             <div className="flex flex-row justify-between mt-4">
                                 <SimpleInput className="w-64 uppercase" value={icao} placeholder="ICAO" onChange={handleICAOChange} maxLength={4} />
                                 <div className="flex flex-row">
-                                    <button
-                                        onClick={handleAutoFill}
-                                        className={`rounded-md rounded-r-none flex flex-row justify-center items-center px-8 py-2 space-x-4 text-theme-body transition duration-100 hover:text-theme-highlight hover:bg-theme-body border-2 border-theme-highlight bg-theme-highlight outline-none ${!isAutoFillIcaoValid() && 'pointer-events-none opacity-50'}`}
-                                        type="button"
-                                        disabled={!isAutoFillIcaoValid()}
-                                    >
-                                        <CloudArrowDown size={26} />
-                                        <p className="text-current">Fill data from</p>
-                                    </button>
+                                    <TooltipWrapper text={`${(autoFillSource === 'METAR' && !isAutoFillIcaoValid()) ? 'You need to enter an ICAO code in order to make a METAR request.' : ''}`}>
+                                        <button
+                                            onClick={handleAutoFill}
+                                            className={`rounded-md rounded-r-none flex flex-row justify-center items-center px-8 py-2 space-x-4 text-theme-body transition duration-100 border-2 border-theme-highlight bg-theme-highlight outline-none ${!isAutoFillIcaoValid() ? 'opacity-50' : 'hover:text-theme-highlight hover:bg-theme-body'}`}
+                                            type="button"
+                                            disabled={!isAutoFillIcaoValid()}
+                                        >
+                                            <CloudArrowDown size={26} />
+                                            <p className="text-current">Fill data from</p>
+                                        </button>
+                                    </TooltipWrapper>
                                     <SelectInput
                                         value={autoFillSource}
                                         className="w-36 rounded-l-none"
