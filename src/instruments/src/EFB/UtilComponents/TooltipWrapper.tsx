@@ -67,48 +67,47 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }
 
     return (
         // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
-        <div
-            onMouseOver={() => {
-                if (timeout.current === null && text) {
-                    timeout.current = setTimeout(() => {
-                        setShowTooltip(true);
+        <>
+            {React.Children.map(children, (child) => React.cloneElement(
+                child as React.ReactElement,
+                {
+                    ref: contentRef,
+                    onMouseDown: () => {
+                        setHiddenLocked(true);
 
-                        dispatch(setShown(true));
-                    }, TOOLTIP_SHOW_DELAY);
-                }
-            }}
-            onMouseLeave={() => {
-                if (timeout.current) {
-                    clearTimeout(timeout.current);
-                    timeout.current = null;
-                }
+                        if (showTooltip) {
+                            dispatch(setShown(false));
+                        }
 
-                setShowTooltip(false);
-                setHiddenLocked(false);
-                dispatch(setShown(false));
-            }}
-        >
-            <div
-                className="h-full"
-                ref={contentRef}
-                onMouseDown={() => {
-                    setHiddenLocked(true);
+                        if (timeout.current) {
+                            clearTimeout(timeout.current);
+                            timeout.current = null;
+                        }
+                    },
+                    onMouseOver: () => {
+                        if (timeout.current === null && text && !hiddenLocked) {
+                            timeout.current = setTimeout(() => {
+                                setShowTooltip(true);
 
-                    if (showTooltip) {
+                                dispatch(setShown(true));
+                            }, TOOLTIP_SHOW_DELAY);
+                        }
+                    },
+                    onMouseLeave: () => {
+                        if (timeout.current) {
+                            clearTimeout(timeout.current);
+                            timeout.current = null;
+                        }
+
+                        setShowTooltip(false);
+                        setHiddenLocked(false);
                         dispatch(setShown(false));
-                    }
-
-                    if (timeout.current) {
-                        clearTimeout(timeout.current);
-                        timeout.current = null;
-                    }
-                }}
-            >
-                {children}
-            </div>
+                    },
+                },
+            ))}
 
             {/* Dummy tooltip for use in calculations */}
             <Tooltip ref={tooltipRef} posX={0} posY={0} text={text} shown={false} />
-        </div>
+        </>
     );
 };
