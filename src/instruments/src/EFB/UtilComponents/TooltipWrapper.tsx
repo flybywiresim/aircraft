@@ -73,9 +73,7 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }
                     timeout.current = setTimeout(() => {
                         setShowTooltip(true);
 
-                        if (!hiddenLocked) {
-                            dispatch(setShown(true));
-                        }
+                        dispatch(setShown(true));
                     }, TOOLTIP_SHOW_DELAY);
                 }
             }}
@@ -98,6 +96,11 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }
 
                     if (showTooltip) {
                         dispatch(setShown(false));
+                    }
+
+                    if (timeout.current) {
+                        clearTimeout(timeout.current);
+                        timeout.current = null;
                     }
                 }}
             >
