@@ -414,7 +414,7 @@ export const FuelPage = () => {
                                 {simbriefDataLoaded && (
                                     <TooltipWrapper text="Fill Block Fuel from SimBrief Data">
                                         <div
-                                            className="flex justify-center items-center px-2 h-full rounded-md rounded-l-none border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                                            className="flex justify-center items-center px-2 h-auto rounded-md rounded-l-none border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                                             onClick={simbriefDataLoaded ? handleFuelAutoFill : undefined}
                                         >
                                             <CloudArrowDown size={26} />
