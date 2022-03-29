@@ -102,16 +102,6 @@ export const SimOptionsPage = () => {
                         <Toggle value={dynamicRegistration === 'ENABLED'} onToggle={(value) => setDynamicRegistration(value ? 'ENABLED' : 'DISABLED')} />
                     </SettingItem>
 
-                    <SettingItem name="Throttle Detents">
-                        <button
-                            type="button"
-                            className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
-                            onClick={() => setShowThrottleSettings(true)}
-                        >
-                            Calibrate
-                        </button>
-                    </SettingItem>
-
                     <SettingItem name="Use Calculated ILS Signals">
                         <Toggle
                             value={radioReceiverUsage === '1'}
@@ -120,6 +110,16 @@ export const SimOptionsPage = () => {
                                 setRadioReceiverUsageSimVar(value ? 1 : 0);
                             }}
                         />
+                    </SettingItem>
+
+                    <SettingItem name="Throttle Detents">
+                        <button
+                            type="button"
+                            className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                            onClick={() => setShowThrottleSettings(true)}
+                        >
+                            Calibrate
+                        </button>
                     </SettingItem>
 
                 </SettingsPage>
