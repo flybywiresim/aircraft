@@ -7,11 +7,11 @@ class CDUAocRequestsWeather {
             requestId: 0
         };
 
-        if (mcdu.flightPlanManager.getDeparture() && mcdu.flightPlanManager.getDeparture().ident) {
-            retval.airports[0] = mcdu.flightPlanManager.getDeparture().ident;
+        if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
+            retval.airports[0] = mcdu.flightPlanManager.getOrigin().ident;
         }
-        if (mcdu.flightPlanManager.getArrival() && mcdu.flightPlanManager.getArrival().ident) {
-            retval.airports[1] = mcdu.flightPlanManager.getArrival().ident;
+        if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
+            retval.airports[1] = mcdu.flightPlanManager.getDestination().ident;
         }
         if (mcdu.altDestination && mcdu.altDestination.ident) {
             retval.airports[2] = mcdu.altDestination.ident;

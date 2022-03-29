@@ -15,7 +15,7 @@ class CDUAtcOceanicReq {
         if (!data.callsign) {
             return false;
         }
-        if (!mcdu.flightPlanManager.getArrival() || mcdu.flightPlanManager.getArrival().ident === "") {
+        if (!mcdu.flightPlanManager.getDestination() || mcdu.flightPlanManager.getDestination().ident === "") {
             return false;
         }
         if (mcdu.atsu.atc.currentStation() === "") {
@@ -28,7 +28,7 @@ class CDUAtcOceanicReq {
         const retval = new Atsu.OclMessage();
 
         retval.Callsign = data.callsign;
-        retval.Destination = mcdu.flightPlanManager.getArrival().ident;
+        retval.Destination = mcdu.flightPlanManager.getDestination().ident;
         retval.EntryPoint = data.entryPoint;
         retval.EntryTime = data.entryTime;
         retval.RequestedMach = data.requestedMach;

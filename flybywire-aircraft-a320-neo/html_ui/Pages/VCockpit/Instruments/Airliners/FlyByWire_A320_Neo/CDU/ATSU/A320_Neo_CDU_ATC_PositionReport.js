@@ -20,13 +20,13 @@ class CDUAtcPositionReport {
         currPos = latStr + sep + lonStr;
         let ovhdWaypoint;
         if (mcdu.routeIndex === mcdu.flightPlanManager.getWaypointsCount() - 1) {
-            ovhdWaypoint = mcdu.flightPlanManager.getDeparture();
+            ovhdWaypoint = mcdu.flightPlanManager.getOrigin();
         } else {
             ovhdWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex - 1);
         }
         let toWaypoint;
         if (mcdu.routeIndex === mcdu.flightPlanManager.getWaypointsCount() - 1) {
-            toWaypoint = mcdu.flightPlanManager.getArrival();
+            toWaypoint = mcdu.flightPlanManager.getDestination();
         } else {
             toWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex);
         }
