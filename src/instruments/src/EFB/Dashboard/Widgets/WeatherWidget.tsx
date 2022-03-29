@@ -17,6 +17,7 @@ import {
     setUserDestinationIcao,
 } from '../../Store/features/dashboard';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
+import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 
 const MetarParserTypeProp: MetarParserType = {
     raw_text: '',
@@ -184,16 +185,18 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                     <>
                         <div className="flex flex-row justify-between items-center">
                             <SimpleInput
-                                className="w-32 font-medium text-center uppercase !text-2xl"
+                                className="w-32 !text-2xl font-medium text-center uppercase"
                                 placeholder={simbriefIcao || 'ICAO'}
                                 value={userIcao ?? simbriefIcao}
                                 onChange={(value) => handleIcao(value)}
                                 maxLength={4}
                             />
-                            <div className="flex flex-row space-x-2">
-                                <p>Raw</p>
-                                <Toggle value={!!showMetar} onToggle={(value) => setShowMetar(value ? 1 : 0)} />
-                            </div>
+                            <TooltipWrapper text={`${showMetar && 'Switch to icon view' || 'Switch to raw metar view'}`}>
+                                <div className="flex flex-row space-x-2">
+                                    <p>Raw</p>
+                                    <Toggle value={!!showMetar} onToggle={(value) => setShowMetar(value ? 1 : 0)} />
+                                </div>
+                            </TooltipWrapper>
                         </div>
                         <div style={{ minHeight: '100px' }}>
                             {!showMetar
