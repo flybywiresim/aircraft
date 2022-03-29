@@ -12,11 +12,10 @@ interface EngineBleedProps {
     enginePRValveOpen: boolean,
     packFlowValveOpen: boolean,
     onGround: boolean,
-    engineAntiIceOn: boolean,
-    anyEngineAntiIceOn: boolean
+    wingAntiIceOn: boolean,
 }
 
-const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRValveOpen, packFlowValveOpen, onGround, engineAntiIceOn, anyEngineAntiIceOn }) => {
+const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRValveOpen, packFlowValveOpen, onGround, wingAntiIceOn }) => {
     const [engineN1] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
     const [engineN1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 500);
     const engineN1BelowIdle = (engineN1 + 2) < engineN1Idle;
@@ -43,11 +42,10 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
             <BleedGauge x={x} y={y + 150} sdacDatum={sdacDatum} packFlowValveOpen={packFlowValveOpen} engine={engine} />
 
             {/* Anti-ice */}
-            <g id={`anti-ice-engine-${engine}`} className={anyEngineAntiIceOn ? 'Show' : 'Hide'}>
-                {engineAntiIceOn
-                && <Triangle x={engine === 1 ? x - 30 : x + 30} y={y + 205} colour={onGround ? 'Amber' : 'Green'} orientation={engine === 1 ? -90 : 90} fill={0} scale={0.75} />}
-                <text className="Medium White" x={engine === 1 ? x - 120 : x + 80} y={y + 200}>ANTI</text>
-                <text className="Medium White" x={engine === 1 ? x - 120 : x + 90} y={y + 220}>ICE</text>
+            <g id={`anti-ice-engine-${engine}`} className={wingAntiIceOn ? 'Show' : 'Hide'}>
+                <Triangle x={engine === 1 ? x - 41 : x + 41} y={y + 206} colour={onGround ? 'Amber' : 'Green'} orientation={engine === 1 ? -90 : 90} fill={0} scale={0.75} />
+                <text className="Medium White" x={engine === 1 ? x - 80 : x + 42} y={y + 195}>ANTI</text>
+                <text className="Medium White" x={engine === 1 ? x - 80 : x + 52} y={y + 215}>ICE</text>
             </g>
             <g className={!sdacDatum ? 'Show' : 'Hide'}>
                 <text className="Standard Amber" x={engine === 1 ? x - 75 : x + 55} y={y + 205}>XX</text>

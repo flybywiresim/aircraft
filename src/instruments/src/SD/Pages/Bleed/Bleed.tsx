@@ -33,9 +33,7 @@ export const BleedPage: FC = () => {
     const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 1000);
     const aircraftOnGround: boolean = left1LandingGear === 1 || right1LandingGear === 1;
 
-    const [engine1AntiIceOn] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG1_Pressed', 'bool', 500);
-    const [engine2AntiIceOn] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG2_Pressed', 'bool', 500);
-    const engineAntiIceOn = engine1AntiIceOn === 1 || engine2AntiIceOn === 1;
+    const [wingAntiIceOn] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_WING_Pressed', 'bool', 500);
 
     const groundAirSupplied = false;
 
@@ -77,8 +75,7 @@ export const BleedPage: FC = () => {
                 enginePRValveOpen={engine1PRValveOpen}
                 packFlowValveOpen={packFlowValve1Open}
                 onGround={aircraftOnGround}
-                engineAntiIceOn={engine1AntiIceOn}
-                anyEngineAntiIceOn={engineAntiIceOn}
+                wingAntiIceOn={wingAntiIceOn === 1}
             />
             <EngineBleed
                 x={464}
@@ -88,8 +85,7 @@ export const BleedPage: FC = () => {
                 enginePRValveOpen={engine2PRValveOpen}
                 packFlowValveOpen={packFlowValve2Open}
                 onGround={aircraftOnGround}
-                engineAntiIceOn={engine2AntiIceOn}
-                anyEngineAntiIceOn={engineAntiIceOn}
+                wingAntiIceOn={wingAntiIceOn === 1}
             />
 
             {/* Ground Supply of Compressed Air */}
