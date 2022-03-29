@@ -223,6 +223,7 @@
 1. [EICAS] Fixed issue where CRUISE page was viewable on ground. - @patmack14 (Patrick Macken)
 1. [EWD] Rewritten EWD in React - @RichardPilbery (tricky_dicky#3571) & @beheh (Benedict Etzel)
 1. [EWD] Rewritten logic for FWC into React - @RichardPilbery (tricky_dicky#3571) & @beheh (Benedict Etzel)
+1. [MODEL] Add new decal mesh next to fwd doors - @bouveng (Johan Bouveng)
 
 ## 0.7.0
 
