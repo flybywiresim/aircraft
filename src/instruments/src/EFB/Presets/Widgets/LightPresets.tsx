@@ -9,6 +9,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
+import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 
 export const LightPresets = () => {
     // Manage names for presets in EFB only and always map them to the
@@ -178,29 +179,35 @@ const SinglePreset = (props: SinglePresetParams) => {
                 {props.presetID}
             </div>
 
-            <div className="flex justify-center items-center mx-4 w-full h-20 text-theme-text bg-theme-accent rounded-md border-2 border-theme-accent">
-                <SimpleInput
-                    className="w-80 text-2xl font-medium text-center"
-                    placeholder="No Name"
-                    value={presetName}
-                    onBlur={(value) => changePresetName(value)}
-                    maxLength={16}
-                />
-            </div>
+            <TooltipWrapper text="Click text to change the preset's name">
+                <div className="flex justify-center items-center mx-4 w-full h-20 text-theme-text bg-theme-accent rounded-md border-2 border-theme-accent">
+                    <SimpleInput
+                        className="w-80 text-2xl font-medium text-center"
+                        placeholder="No Name"
+                        value={presetName}
+                        onBlur={(value) => changePresetName(value)}
+                        maxLength={16}
+                    />
+                </div>
+            </TooltipWrapper>
 
-            <div
-                className={`flex justify-center items-center mx-4 w-full h-20 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight rounded-md border-2 border-theme-accent transition duration-100 items-centerh-24 ${!isPowered && 'opacity-50 pointer-events-none'}`}
-                onClick={() => handleLoad()}
-            >
-                Load Preset
-            </div>
+            <TooltipWrapper text={`${!isPowered && 'Aircraft must be powered' || 'Load this preset'}`}>
+                <div
+                    className={`flex justify-center items-center mx-4 w-full h-20 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight rounded-md border-2 border-theme-accent transition duration-100 ${!isPowered && 'opacity-50'}`}
+                    onClick={() => handleLoad()}
+                >
+                    Load Preset
+                </div>
+            </TooltipWrapper>
 
-            <div
-                className={`flex justify-center items-center mx-4 w-full h-20 text-white bg-green-700 hover:bg-green-500 rounded-md border-2 border-green-700 hover:border-green-800 transition duration-100 ${!isPowered && 'opacity-50 pointer-events-none'}`}
-                onClick={() => handleSave()}
-            >
-                Save Preset
-            </div>
+            <TooltipWrapper text={`${!isPowered && 'Aircraft must be powered' || 'Save the current lighting levels'}`}>
+                <div
+                    className={`flex justify-center items-center mx-4 w-full h-20 text-white bg-green-700 hover:bg-green-500 rounded-md border-2 border-green-700 hover:border-green-800 transition duration-100 ${!isPowered && 'opacity-50'}`}
+                    onClick={() => handleSave()}
+                >
+                    Save Preset
+                </div>
+            </TooltipWrapper>
         </div>
     );
 };
