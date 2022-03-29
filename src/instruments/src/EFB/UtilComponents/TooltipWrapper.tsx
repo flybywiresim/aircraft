@@ -69,7 +69,7 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }
         // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
         <div
             onMouseOver={() => {
-                if (timeout.current === null) {
+                if (timeout.current === null && text) {
                     timeout.current = setTimeout(() => {
                         setShowTooltip(true);
 
