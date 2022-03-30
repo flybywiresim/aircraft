@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import * as apiClient from '@flybywiresim/api-client';
 import useInterval from '@instruments/common/useInterval';
 import { Link } from 'react-router-dom';
-import { CloudArrowDown, Gear } from 'react-bootstrap-icons';
+import { CloudArrowDown, Gear, InfoCircle } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { pathify } from '../Utils/routing';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
@@ -20,10 +20,11 @@ interface FrequencyCardProps {
     callsign: string;
     frequency: string;
     setActive: () => void;
+    setCurrent: () => void;
     setStandby: () => void;
 }
 
-const FrequencyCard = ({ className, callsign, frequency, setActive, setStandby }: FrequencyCardProps) => (
+const FrequencyCard = ({ className, callsign, frequency, setActive, setCurrent, setStandby }: FrequencyCardProps) => (
     <div className={className}>
         <div className="overflow-hidden relative p-6 w-full rounded-md bg-theme-secondary">
             <h2 className="font-bold">
@@ -45,6 +46,12 @@ const FrequencyCard = ({ className, callsign, frequency, setActive, setStandby }
                     onClick={setStandby}
                 >
                     <h2 className="text-current">Set Standby</h2>
+                </div>
+                <div
+                    className="flex justify-center items-center w-1/4 font-bold border-2 transition duration-100 bg-theme-text text-theme-body hover:text-theme-text hover:bg-theme-body border-theme-text"
+                    onClick={setCurrent}
+                >
+                    <InfoCircle size={35} />
                 </div>
             </div>
         </div>
@@ -250,6 +257,7 @@ export const ATC = () => {
                                     callsign={controller.callsign}
                                     frequency={controller.frequency}
                                     setActive={() => setActiveFrequency(toFrequency(controller.frequency))}
+                                    setCurrent={() => setCurrentAtc(controllers?.find((c) => c.frequency === controller.frequency))}
                                     setStandby={() => setStandbyFrequency(toFrequency(controller.frequency))}
                                     key={controller.frequency}
                                 />
