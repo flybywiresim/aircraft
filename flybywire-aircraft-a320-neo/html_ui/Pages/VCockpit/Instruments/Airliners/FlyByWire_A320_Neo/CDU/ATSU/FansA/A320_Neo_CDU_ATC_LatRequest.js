@@ -172,8 +172,8 @@ class CDUAtcLatRequest {
         mcdu.onLeftInput[1] = (value) => {
             if (mcdu.currentFlightPhase === FmgcFlightPhases.PREFLIGHT) {
                 // requesting a SID
-                if (mcdu.flightPlanManager.getDeparture() && mcdu.flightPlanManager.getDeparture().ident) {
-                    mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(mcdu.flightPlanManager.getDeparture().ident).then((waypoints) => {
+                if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
+                    mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(mcdu.flightPlanManager.getOrigin().ident).then((waypoints) => {
                         if (waypoints.length === 0) {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         } else if (waypoints[0].infos instanceof AirportInfo) {
@@ -190,8 +190,8 @@ class CDUAtcLatRequest {
                 }
             } else {
                 // requesting an arrival
-                if (mcdu.flightPlanManager.getArrival() && mcdu.flightPlanManager.getArrival().ident) {
-                    mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(mcdu.flightPlanManager.getArrival().ident).then((waypoints) => {
+                if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
+                    mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(mcdu.flightPlanManager.getDestination().ident).then((waypoints) => {
                         if (waypoints.length === 0) {
                             mcdu.addNewMessage(NXSystemMessages.notInDatabase);
                         } else if (waypoints[0].infos instanceof AirportInfo) {
