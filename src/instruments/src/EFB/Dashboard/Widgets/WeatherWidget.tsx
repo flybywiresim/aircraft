@@ -4,6 +4,7 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import { Droplet, Speedometer2, ThermometerHalf, Wind } from 'react-bootstrap-icons';
+import useInterval from '@instruments/common/useInterval';
 import { parseMetar } from '../../Utils/parseMetar';
 import { MetarParserType } from '../../../Common/metarTypes';
 import { usePersistentNumberProperty, usePersistentProperty } from '../../../Common/persistence';
@@ -86,6 +87,8 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     const setMetar = name === 'origin' ? setDepartureMetar : setDestinationMetar;
 
     const [showMetar, setShowMetar] = usePersistentNumberProperty(`CONFIG_SHOW_METAR_${name}`, 0);
+
+    const { userDepartureIcao, userDestinationIcao } = useAppSelector((state) => state.dashboard);
 
     const BaroValue = () => {
         const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
@@ -177,6 +180,10 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
         }
     }, [simbriefIcao, userIcao, source]);
 
+    useInterval(() => {
+        handleIcao(userIcao ?? simbriefIcao);
+    }, 5_000);
+
     return (
         <div>
             {metar === undefined
@@ -185,7 +192,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                     <>
                         <div className="flex flex-row justify-between items-center">
                             <SimpleInput
-                                className="w-32 !text-2xl font-medium text-center uppercase"
+                                className="w-32 font-medium text-center uppercase !text-2xl"
                                 placeholder={simbriefIcao || 'ICAO'}
                                 value={userIcao ?? simbriefIcao}
                                 onChange={(value) => handleIcao(value)}
