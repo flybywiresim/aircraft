@@ -39,8 +39,8 @@ import { getPdfUrl, LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
-    { name: 'Local Files', component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
     { name: 'Navigraph', component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
+    { name: 'Local Files', component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
     { name: 'Pinned Charts', component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
 ];
 
@@ -218,7 +218,7 @@ export const ChartViewer = () => {
             >
                 {isFullScreen && (
                     <div
-                        className="flex absolute top-6 right-6 flex-row items-center p-4 rounded-md transition duration-100 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                        className="flex absolute top-6 right-6 flex-row items-center p-4 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100"
                         onClick={() => dispatch(editTabProperty({ tab: currentTab, isFullScreen: false }))}
                     >
                         <FullscreenExit size={40} />
@@ -347,7 +347,7 @@ export const ChartViewer = () => {
                                                 }));
                                             }
                                         }}
-                                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                                     >
                                         <ArrowsExpand size={40} />
                                     </button>
@@ -373,7 +373,7 @@ export const ChartViewer = () => {
                                                 }));
                                             }
                                         }}
-                                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                                     >
                                         <ArrowsExpand className="transform rotate-90" size={40} />
                                     </button>
@@ -386,7 +386,7 @@ export const ChartViewer = () => {
                                             setTransform(0, 0, 1);
                                             dispatch(editTabProperty({ tab: currentTab, chartPosition: { ...chartPosition, positionX: 0, positionY: 0, scale: 1 } }));
                                         }}
-                                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                                     >
                                         <XCircleFill size={40} />
                                     </button>
@@ -396,7 +396,7 @@ export const ChartViewer = () => {
                                     <button
                                         type="button"
                                         onClick={() => zoomIn()}
-                                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                                     >
                                         <Plus size={40} />
                                     </button>
@@ -406,7 +406,7 @@ export const ChartViewer = () => {
                                     <button
                                         type="button"
                                         onClick={() => zoomOut()}
-                                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                                     >
                                         <Dash size={40} />
                                     </button>
@@ -414,7 +414,7 @@ export const ChartViewer = () => {
                             </div>
                             <div className="flex overflow-hidden flex-col rounded-md">
                                 <div
-                                    className="p-2 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                                    className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100 cursor-pointer"
                                     onClick={() => {
                                         // TODO: THIS NEEDS TO WORK BETTER
                                         dispatch(editTabProperty({ tab: currentTab, isFullScreen: !isFullScreen }));
@@ -448,7 +448,7 @@ export const ChartViewer = () => {
 
                                 {provider === 'NAVIGRAPH' && (
                                     <div
-                                        className="p-2 mt-3 rounded-md transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                                        className="p-2 mt-3 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight rounded-md transition duration-100 cursor-pointer"
                                         onClick={() => dispatch(setUsingDarkTheme(!usingDarkTheme))}
                                     >
                                         {!usingDarkTheme ? <MoonFill size={40} /> : <SunFill size={40} />}
@@ -458,7 +458,7 @@ export const ChartViewer = () => {
                         </div>
 
                         <div
-                            className="flex overflow-x-hidden overflow-y-scroll relative flex-row mx-auto h-full rounded-lg bg-theme-accent grabbable no-scrollbar"
+                            className="flex overflow-x-hidden overflow-y-scroll relative flex-row mx-auto h-full bg-theme-accent rounded-lg grabbable no-scrollbar"
                             ref={ref}
                         >
                             <TransformComponent wrapperStyle={{ height: ref.current?.clientHeight, width: ref.current?.clientWidth }}>
@@ -478,7 +478,7 @@ export const ChartViewer = () => {
                                 >
                                     {(chartLinks && provider === 'NAVIGRAPH') && (
                                         <p
-                                            className="absolute top-0 left-0 font-bold whitespace-nowrap transition duration-100 transform -translate-y-full text-theme-highlight"
+                                            className="absolute top-0 left-0 font-bold text-theme-highlight whitespace-nowrap transition duration-100 transform -translate-y-full"
                                         >
                                             This chart is linked to
                                             {' '}
