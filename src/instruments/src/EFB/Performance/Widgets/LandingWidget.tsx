@@ -395,6 +395,24 @@ export const LandingWidget = () => {
         return undefined;
     };
 
+    const fillDataTooltip = () => {
+        switch (autoFillSource) {
+        case 'METAR':
+            if (!isAutoFillIcaoValid()) {
+                return 'You need to enter an ICAO code in order to make a METAR request.';
+            }
+            break;
+        case 'OFP':
+            if (!isAutoFillIcaoValid()) {
+                return 'You need to load SimBrief data in order to autofill data.';
+            }
+            break;
+        default: return undefined;
+        }
+
+        return undefined;
+    };
+
     return (
         <div className="flex overflow-hidden flex-row justify-between h-content-section-reduced">
             <div className="w-full">
@@ -405,7 +423,7 @@ export const LandingWidget = () => {
                             <div className="flex flex-row justify-between mt-4">
                                 <SimpleInput className="w-64 uppercase" value={icao} placeholder="ICAO" onChange={handleICAOChange} maxLength={4} />
                                 <div className="flex flex-row">
-                                    <TooltipWrapper text={`${(autoFillSource === 'METAR' && !isAutoFillIcaoValid()) ? 'You need to enter an ICAO code in order to make a METAR request.' : ''}`}>
+                                    <TooltipWrapper text={fillDataTooltip()}>
                                         <button
                                             onClick={isAutoFillIcaoValid() ? handleAutoFill : undefined}
                                             className={`rounded-md rounded-r-none flex flex-row justify-center items-center px-8 py-2 space-x-4 text-theme-body transition duration-100 border-2 border-theme-highlight bg-theme-highlight outline-none ${!isAutoFillIcaoValid() ? 'opacity-50' : 'hover:text-theme-highlight hover:bg-theme-body'}`}
