@@ -1,4 +1,5 @@
 const EWDMessages = {
+    '000000001': '              \x1b<3mNORMAL',
     '000001001': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK\x1b<5m.....MAX',
     '000001002': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK MAX',
     '000001003': '    \x1b<3mSIGNS\x1b<5m.........ON',

@@ -1667,6 +1667,10 @@ const PseudoFWC: React.FC = () => {
         }
     }, [memoMessageRight]);
 
+    useEffect(() => {
+        SimVar.SetSimVarValue('L:A32NX_STATUS_LEFT_LINE_8', 'string', '000000001');
+    }, []);
+
     return null;
 };
 
