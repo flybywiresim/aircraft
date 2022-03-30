@@ -72,7 +72,9 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }
                 child as React.ReactElement,
                 {
                     ref: contentRef,
-                    onMouseDown: () => {
+                    onMouseDown: (e: React.MouseEvent) => {
+                        (child as React.ReactElement).props.onMouseDown?.(e);
+
                         setHiddenLocked(true);
 
                         if (showTooltip) {
@@ -84,7 +86,9 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }
                             timeout.current = null;
                         }
                     },
-                    onMouseOver: () => {
+                    onMouseOver: (e: React.MouseEvent) => {
+                        (child as React.ReactElement).props.onMouseOver?.(e);
+
                         if (timeout.current === null && text && !hiddenLocked) {
                             timeout.current = setTimeout(() => {
                                 setShowTooltip(true);
@@ -93,7 +97,9 @@ export const TooltipWrapper: React.FC<TooltipWrapperProps> = ({ children, text }
                             }, TOOLTIP_SHOW_DELAY);
                         }
                     },
-                    onMouseLeave: () => {
+                    onMouseLeave: (e: React.MouseEvent) => {
+                        (child as React.ReactElement).props.onMouseLeave?.(e);
+
                         if (timeout.current) {
                             clearTimeout(timeout.current);
                             timeout.current = null;
