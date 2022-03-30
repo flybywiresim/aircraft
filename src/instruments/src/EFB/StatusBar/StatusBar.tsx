@@ -183,9 +183,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                 <BatteryStatus batteryLevel={batteryLevel} isCharging={isCharging} />
 
                 <TooltipWrapper text="Turn off or Shutdown EFB">
-                    <div>
-                        <Power size={26} {...bind} />
-                    </div>
+                    <Power size={26} {...bind} />
                 </TooltipWrapper>
             </div>
         </div>
