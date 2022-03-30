@@ -5,17 +5,14 @@ import {
     ArrowCounterclockwise,
     ArrowsExpand,
     ArrowsFullscreen,
-    Bullseye,
     Dash,
     FullscreenExit,
     MoonFill,
-    PencilFill,
     Plus,
     SunFill, XCircleFill,
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
-import Slider from 'rc-slider';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { DrawableCanvas } from '../UtilComponents/DrawableCanvas';
 import { useNavigraph } from '../ChartsApi/Navigraph';
@@ -24,7 +21,6 @@ import { useAppDispatch, useAppSelector } from '../Store/store';
 import {
     NavigationTab,
     setBoundingBox,
-    setPlaneInFocus,
     setUsingDarkTheme,
     setSelectedNavigationTabIndex,
     editTabProperty,
@@ -95,8 +91,8 @@ export const ChartViewer = () => {
         chartRotation,
     } = useAppSelector((state) => state.navigationTab[currentTab]);
 
-    const [drawMode, setDrawMode] = useState(false);
-    const [brushSize, setBrushSize] = useState(10);
+    const [drawMode] = useState(false);
+    const [brushSize] = useState(10);
 
     const { userName } = useNavigraph();
 

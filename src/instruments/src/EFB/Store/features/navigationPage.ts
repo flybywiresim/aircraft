@@ -198,7 +198,6 @@ export const isChartPinned = (chartId: string): boolean => (store.getState() as 
 
 export const {
     setUsingDarkTheme,
-    setPlaneInFocus,
     setBoundingBox,
     setProvider,
     addPinnedChart,
