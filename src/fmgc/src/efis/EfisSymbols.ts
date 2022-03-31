@@ -131,7 +131,6 @@ export class EfisSymbols {
 
             if (mode === Mode.PLAN && !planCentre) {
                 this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, [], false);
-                console.log('sent clear symbol event: ', []);
                 return;
             }
 
@@ -438,7 +437,6 @@ export class EfisSymbols {
             }
 
             this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, symbols, false);
-            console.log('sent symbol event: ', symbols);
 
             // make sure we don't run too often
             this.blockUpdate = true;

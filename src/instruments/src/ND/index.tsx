@@ -93,7 +93,6 @@ const NavigationDisplay: React.FC = () => {
 
     useFlowSyncEvent(`A32NX_EFIS_${side}_SYMBOLS`, useCallback((topic, data) => {
         if (data && topic === `A32NX_EFIS_${side}_SYMBOLS`) {
-            console.log('received symbols event: ', data);
             setSymbols(data);
         }
     }, []));
