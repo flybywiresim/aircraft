@@ -153,6 +153,7 @@ impl Aircraft for A320 {
         self.apu_overhead.update_after_apu(&self.apu);
 
         self.lgcius.update(
+            context,
             &self.landing_gear,
             self.hydraulic.gear_system(),
             self.ext_pwr.output_potential().is_powered(),
@@ -174,8 +175,7 @@ impl Aircraft for A320 {
             &self.hydraulic_overhead,
             &self.autobrake_panel,
             &self.engine_fire_overhead,
-            self.lgcius.lgciu1(),
-            self.lgcius.lgciu2(),
+            &self.lgcius,
             &self.emergency_electrical_overhead,
             &self.electrical,
             &self.pneumatic,

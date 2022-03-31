@@ -100,6 +100,7 @@ pub trait LgciuDoorPosition {
 pub trait LgciuGearControl {
     fn should_open_doors(&self) -> bool;
     fn should_extend_gears(&self) -> bool;
+    fn control_active(&self) -> bool;
 }
 
 pub trait LandingGearHandle {

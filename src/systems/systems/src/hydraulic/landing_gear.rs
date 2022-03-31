@@ -106,8 +106,12 @@ impl HydraulicGearSystem {
         lgciu_controller: &impl LgciuGearControl,
         main_hydraulic_circuit_pressure: Pressure,
     ) {
-        self.hydraulic_supply
-            .update(context, valves_controller, main_hydraulic_circuit_pressure);
+        self.hydraulic_supply.update(
+            context,
+            valves_controller,
+            lgciu_controller,
+            main_hydraulic_circuit_pressure,
+        );
 
         let current_pressure = self.hydraulic_supply.gear_system_manifold_pressure();
 
@@ -235,12 +239,14 @@ pub trait GearSystemController {
 struct GearSystemHydraulicSupply {
     safety_valve: HydraulicValve,
     cutoff_valve: HydraulicValve,
+    gear_and_door_selector_valve: HydraulicValve,
 }
 impl GearSystemHydraulicSupply {
     fn new() -> Self {
         Self {
             safety_valve: HydraulicValve::new(HydraulicValveType::ClosedWhenOff),
             cutoff_valve: HydraulicValve::new(HydraulicValveType::Mechanical),
+            gear_and_door_selector_valve: HydraulicValve::new(HydraulicValveType::ClosedWhenOff),
         }
     }
 
@@ -248,6 +254,7 @@ impl GearSystemHydraulicSupply {
         &mut self,
         context: &UpdateContext,
         valves_controller: &impl GearSystemController,
+        gear_controller: &impl LgciuGearControl,
         main_hydraulic_circuit_pressure: Pressure,
     ) {
         self.safety_valve.update(
@@ -260,10 +267,15 @@ impl GearSystemHydraulicSupply {
             valves_controller.shut_off_valve_should_open(),
             self.safety_valve.pressure_output(),
         );
+        self.gear_and_door_selector_valve.update(
+            context,
+            gear_controller.control_active(),
+            self.cutoff_valve.pressure_output(),
+        );
     }
 
     fn gear_system_manifold_pressure(&self) -> Pressure {
-        self.cutoff_valve.pressure_output()
+        self.gear_and_door_selector_valve.pressure_output()
     }
 }
 
@@ -300,7 +312,7 @@ impl GearDoorAssembly {
         hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
         has_hydraulic_downlock: bool,
     ) -> Self {
-        Self {
+        let mut obj = Self {
             component_id,
             is_inverted_control,
             hydraulic_controller: GearDoorHydraulicController::new(
@@ -322,7 +334,11 @@ impl GearDoorAssembly {
             } else {
                 None
             },
-        }
+        };
+
+        obj.update_proximity_detectors();
+
+        obj
     }
 
     fn update(
@@ -732,12 +748,22 @@ mod tests {
     struct TestGearSystemController {
         open_door_request: bool,
         extend_gear_request: bool,
+        control_active: bool,
     }
     impl TestGearSystemController {
         fn new() -> Self {
             Self {
                 open_door_request: false,
                 extend_gear_request: true,
+                control_active: true,
+            }
+        }
+
+        fn without_active_control() -> Self {
+            Self {
+                open_door_request: false,
+                extend_gear_request: true,
+                control_active: false,
             }
         }
 
@@ -748,6 +774,10 @@ mod tests {
         fn set_gears_extending(&mut self, close: bool) {
             self.extend_gear_request = close;
         }
+
+        fn set_control_active(&mut self, is_active: bool) {
+            self.control_active = true;
+        }
     }
     impl LgciuGearControl for TestGearSystemController {
         fn should_open_doors(&self) -> bool {
@@ -756,6 +786,10 @@ mod tests {
 
         fn should_extend_gears(&self) -> bool {
             self.extend_gear_request
+        }
+
+        fn control_active(&self) -> bool {
+            self.control_active
         }
     }
 
@@ -914,6 +948,7 @@ mod tests {
                 el.update(
                     context,
                     &TestGearValvesController::with_safety_and_shutoff_opened(),
+                    &TestGearSystemController::new(),
                     Pressure::new::<psi>(3000.),
                 )
             });
@@ -933,6 +968,7 @@ mod tests {
                 el.update(
                     context,
                     &TestGearValvesController::with_safety_opened_shut_off_closed(),
+                    &TestGearSystemController::new(),
                     Pressure::new::<psi>(3000.),
                 )
             });
@@ -952,6 +988,7 @@ mod tests {
                 el.update(
                     context,
                     &TestGearValvesController::with_safety_closed_shut_off_opened(),
+                    &TestGearSystemController::new(),
                     Pressure::new::<psi>(3000.),
                 )
             });
@@ -971,6 +1008,27 @@ mod tests {
                 el.update(
                     context,
                     &TestGearValvesController::with_all_valve_closed(),
+                    &TestGearSystemController::new(),
+                    Pressure::new::<psi>(3000.),
+                )
+            });
+
+        test_bed.run_with_delta(Duration::from_millis(100));
+
+        assert!(
+            test_bed.query_element(|e| e.gear_system_manifold_pressure())
+                < Pressure::new::<psi>(100.)
+        );
+    }
+
+    #[test]
+    fn hydraulic_manifold_do_not_receive_pressure_with_all_valves_opened_but_control_not_active() {
+        let mut test_bed = SimulationTestBed::from(GearSystemHydraulicSupply::new())
+            .with_update_after_power_distribution(|el, context| {
+                el.update(
+                    context,
+                    &TestGearValvesController::with_safety_and_shutoff_opened(),
+                    &TestGearSystemController::without_active_control(),
                     Pressure::new::<psi>(3000.),
                 )
             });

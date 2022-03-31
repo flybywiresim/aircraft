@@ -1,11 +1,14 @@
-use crate::simulation::{InitContext, VariableIdentifier};
+use std::time::Duration;
+
 use crate::{
+    failures::{Failure, FailureType},
     shared::{
         ElectricalBusType, ElectricalBuses, GearWheel, LandingGearHandle, LgciuDoorPosition,
         LgciuGearControl, LgciuGearExtension, LgciuInterface, LgciuWeightOnWheels,
     },
     simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter, Write,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 use uom::si::{
@@ -215,19 +218,18 @@ impl SimulationElement for LgciuSensorInputs {
         // ref FBW-32-01
         writer.write(
             &self.nose_gear_compressed_id,
-            self.nose_gear_compressed(false),
+            self.is_powered && self.nose_gear_compressed(false),
         );
         writer.write(
             &self.left_gear_compressed_id,
-            self.left_gear_compressed(false),
+            self.is_powered && self.left_gear_compressed(false),
         );
         writer.write(
             &self.right_gear_compressed_id,
-            self.right_gear_compressed(false),
+            self.is_powered && self.right_gear_compressed(false),
         );
     }
 }
-
 impl LgciuWeightOnWheels for LgciuSensorInputs {
     fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool {
         self.is_powered
@@ -301,9 +303,65 @@ impl LgciuDoorPosition for LgciuSensorInputs {
     }
 }
 
+struct LandingGearControlCoordinator {
+    active_lgciu_index: usize,
+    previous_gear_handle_is_down: bool,
+}
+impl LandingGearControlCoordinator {
+    fn new() -> Self {
+        Self {
+            active_lgciu_index: 0,
+            previous_gear_handle_is_down: true,
+        }
+    }
+
+    fn update(&mut self, lgcius_status: [LgciuStatus; 2], gear_handle: &impl LandingGearHandle) {
+        let lgciu_should_switch_at_new_up_cycle =
+            self.previous_gear_handle_is_down && !gear_handle.gear_handle_is_down();
+
+        let lgciu_should_switch_because_failed_and_new_lever_command =
+            self.previous_gear_handle_is_down != gear_handle.gear_handle_is_down()
+                && lgcius_status[self.active_lgciu_index] != LgciuStatus::Ok;
+
+        let lgciu_should_switch_because_is_failed = match lgcius_status[self.active_lgciu_index] {
+            LgciuStatus::Ok | LgciuStatus::FailedNoChangeOver => false,
+            LgciuStatus::FailedNotPowered | LgciuStatus::FailedAutoChangeOver => true,
+        };
+
+        if lgciu_should_switch_at_new_up_cycle
+            || lgciu_should_switch_because_is_failed
+            || lgciu_should_switch_because_failed_and_new_lever_command
+        {
+            self.lgciu_switchover(lgcius_status);
+        }
+
+        self.previous_gear_handle_is_down = gear_handle.gear_handle_is_down();
+    }
+
+    fn lgciu_switchover(&mut self, lgcius_status: [LgciuStatus; 2]) {
+        let target_lgciu_index = (self.active_lgciu_index + 1) % 2;
+
+        let target_lgciu_state = lgcius_status[target_lgciu_index];
+
+        if target_lgciu_state == LgciuStatus::Ok {
+            println!(
+                "COORD=> CURRENT MASTER STATE {:?}, SWITCHING TO LGCIU {}",
+                lgcius_status[self.active_lgciu_index],
+                target_lgciu_index + 1
+            );
+            self.active_lgciu_index = target_lgciu_index;
+        }
+    }
+
+    fn active_lgciu_number(&self) -> usize {
+        self.active_lgciu_index + 1
+    }
+}
+
 /// Gathers multiple LGCIUs and handle the inter lgciu master/slave mechanism
 /// and their interface with gear handle lever logic
 pub struct LandingGearControlInterfaceUnitSet {
+    coordinator: LandingGearControlCoordinator,
     lgcius: [LandingGearControlInterfaceUnit; 2],
     gear_handle_unit: LandingGearHandleUnit,
 }
@@ -314,6 +372,7 @@ impl LandingGearControlInterfaceUnitSet {
         lgciu2_powered_by: ElectricalBusType,
     ) -> Self {
         Self {
+            coordinator: LandingGearControlCoordinator::new(),
             lgcius: [
                 LandingGearControlInterfaceUnit::new(context, 1, lgciu1_powered_by),
                 LandingGearControlInterfaceUnit::new(context, 2, lgciu2_powered_by),
@@ -324,21 +383,39 @@ impl LandingGearControlInterfaceUnitSet {
 
     pub fn update(
         &mut self,
+        context: &UpdateContext,
         landing_gear: &LandingGear,
         gear_system_sensors: &impl GearSystemSensors,
         external_power_available: bool,
     ) {
-        self.lgcius[0].update(
-            landing_gear,
-            gear_system_sensors,
-            external_power_available,
+        self.coordinator.update(
+            [self.lgcius[0].status(), self.lgcius[1].status()],
             &self.gear_handle_unit,
         );
-        self.lgcius[1].update(
+
+        self.lgcius[0].update(
+            context,
             landing_gear,
             gear_system_sensors,
             external_power_available,
             &self.gear_handle_unit,
+            self.coordinator.active_lgciu_number() == 1,
+        );
+        self.lgcius[1].update(
+            context,
+            landing_gear,
+            gear_system_sensors,
+            external_power_available,
+            &self.gear_handle_unit,
+            self.coordinator.active_lgciu_number() == 2,
+        );
+
+        println!(
+            "COORD=> Status [{:?}/{:?}] LGCIUGear ctrl  [{:?}/{:?}] ",
+            self.lgcius[0].status(),
+            self.lgcius[1].status(),
+            self.lgcius[0].gear_system_state(),
+            self.lgcius[1].gear_system_state(),
         );
 
         self.gear_handle_unit
@@ -353,9 +430,13 @@ impl LandingGearControlInterfaceUnitSet {
         &self.lgcius[1]
     }
 
+    pub fn active_lgciu(&self) -> &LandingGearControlInterfaceUnit {
+        &self.lgcius[self.coordinator.active_lgciu_number() - 1]
+    }
+
     #[cfg(test)]
     fn gear_system_state(&self) -> GearsSystemState {
-        self.lgcius[0].gear_system_state()
+        self.active_lgciu().gear_system_state()
     }
 }
 impl SimulationElement for LandingGearControlInterfaceUnitSet {
@@ -426,6 +507,14 @@ impl SimulationElement for LandingGearHandleUnit {
     }
 }
 
+#[derive(PartialEq, Clone, Copy, Debug)]
+enum LgciuStatus {
+    Ok,
+    FailedNotPowered,
+    FailedNoChangeOver,
+    FailedAutoChangeOver,
+}
+
 pub struct LandingGearControlInterfaceUnit {
     left_gear_downlock_id: VariableIdentifier,
     left_gear_unlock_id: VariableIdentifier,
@@ -435,6 +524,7 @@ pub struct LandingGearControlInterfaceUnit {
     right_gear_unlock_id: VariableIdentifier,
 
     is_powered: bool,
+    is_powered_previous_state: bool,
 
     powered_by: ElectricalBusType,
     external_power_available: bool,
@@ -442,9 +532,21 @@ pub struct LandingGearControlInterfaceUnit {
     sensor_inputs: LgciuSensorInputs,
     gear_system_control: GearSystemStateMachine,
     is_gear_lever_down: bool,
+
+    transition_duration: Duration,
+    gear_lever_position_is_down_previous_state: bool,
+    status: LgciuStatus,
+    power_supply_failure: Failure,
+    internal_error_failure: Failure,
+
+    is_active_computer_previous_state: bool,
 }
 impl LandingGearControlInterfaceUnit {
+    const MAX_TRANSITION_DURATION: Duration = Duration::from_secs(30);
+
     pub fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
+        assert!(number == 1 || number == 2);
+
         Self {
             left_gear_downlock_id: context
                 .get_identifier(format!("LGCIU_{}_LEFT_GEAR_DOWNLOCKED", number)),
@@ -460,6 +562,7 @@ impl LandingGearControlInterfaceUnit {
                 .get_identifier(format!("LGCIU_{}_RIGHT_GEAR_UNLOCKED", number)),
 
             is_powered: false,
+            is_powered_previous_state: false,
 
             powered_by,
             external_power_available: false,
@@ -467,17 +570,28 @@ impl LandingGearControlInterfaceUnit {
             sensor_inputs: LgciuSensorInputs::new(context, number),
             gear_system_control: GearSystemStateMachine::default(),
             is_gear_lever_down: true,
+
+            transition_duration: Duration::default(),
+            gear_lever_position_is_down_previous_state: true,
+            status: LgciuStatus::Ok,
+            power_supply_failure: Failure::new(FailureType::LgciuPowerSupply(number)),
+            internal_error_failure: Failure::new(FailureType::LgciuInternalError(number)),
+
+            is_active_computer_previous_state: number == 1,
         }
     }
 
     pub fn update(
         &mut self,
+        context: &UpdateContext,
         landing_gear: &LandingGear,
         gear_system_sensors: &impl GearSystemSensors,
         external_power_available: bool,
         gear_handle: &impl LandingGearHandle,
+        is_active_computer: bool,
     ) {
         self.is_gear_lever_down = gear_handle.gear_handle_is_down();
+        self.external_power_available = external_power_available;
 
         self.sensor_inputs.update(
             landing_gear,
@@ -486,25 +600,116 @@ impl LandingGearControlInterfaceUnit {
             self.is_powered,
         );
 
-        self.external_power_available = external_power_available;
+        if is_active_computer && !self.is_active_computer_previous_state {
+            self.actions_when_becoming_master();
+        }
 
-        self.gear_system_control
-            .update(&self.sensor_inputs, !self.is_gear_lever_down);
+        if self.is_powered && !self.is_powered_previous_state {
+            self.actions_when_startup();
+        }
+
+        if is_active_computer {
+            self.gear_system_control
+                .update(&self.sensor_inputs, !self.is_gear_lever_down);
+        }
+
+        self.update_monitoring(context, gear_handle);
+
+        self.is_active_computer_previous_state = is_active_computer;
+        self.is_powered_previous_state = self.is_powered;
+    }
+
+    fn update_monitoring(&mut self, context: &UpdateContext, gear_handle: &impl LandingGearHandle) {
+        self.update_transition_timer(context, gear_handle);
+
+        if !self.is_powered {
+            self.status = LgciuStatus::FailedNotPowered;
+        } else {
+            if self.status == LgciuStatus::Ok {
+                if self.transition_duration > Self::MAX_TRANSITION_DURATION {
+                    self.status = LgciuStatus::FailedNoChangeOver;
+                }
+
+                if self.internal_error_failure.is_active() {
+                    self.status = LgciuStatus::FailedAutoChangeOver;
+                }
+            }
+        }
+    }
+
+    fn update_transition_timer(
+        &mut self,
+        context: &UpdateContext,
+        gear_handle: &impl LandingGearHandle,
+    ) {
+        match self.gear_system_state() {
+            GearsSystemState::AllUpLocked | GearsSystemState::AllDownLocked => {
+                if self.status == LgciuStatus::Ok {
+                    self.transition_duration = Duration::default()
+                } else {
+                    self.transition_duration += context.delta()
+                }
+            }
+            GearsSystemState::Extending | GearsSystemState::Retracting => {
+                // If gear handle position is changed during transistion we reset transition timer
+                if self.gear_lever_position_is_down_previous_state
+                    == gear_handle.gear_handle_is_down()
+                {
+                    self.transition_duration += context.delta()
+                } else {
+                    self.transition_duration = Duration::default()
+                }
+            }
+        };
+
+        self.gear_lever_position_is_down_previous_state = gear_handle.gear_handle_is_down();
+    }
+
+    fn actions_when_becoming_master(&mut self) {
+        self.reset_faults();
+        self.compute_init_gear_state();
+    }
+
+    fn actions_when_startup(&mut self) {
+        self.reset_faults();
+        self.compute_init_gear_state();
+    }
+
+    fn compute_init_gear_state(&mut self) {
+        self.status = if self
+            .gear_system_control
+            .init_gear_state(&self.sensor_inputs, !self.is_gear_lever_down)
+        {
+            LgciuStatus::Ok
+        } else {
+            LgciuStatus::FailedNoChangeOver
+        };
+    }
+
+    fn reset_faults(&mut self) {
+        self.transition_duration = Duration::default();
     }
 
     pub fn gear_system_state(&self) -> GearsSystemState {
         self.gear_system_control.state()
     }
+
+    fn status(&self) -> LgciuStatus {
+        self.status
+    }
 }
 impl SimulationElement for LandingGearControlInterfaceUnit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.sensor_inputs.accept(visitor);
+        self.internal_error_failure.accept(visitor);
+        self.power_supply_failure.accept(visitor);
 
         visitor.visit(self);
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.powered_by);
+        self.is_powered =
+            !self.power_supply_failure.is_active() && buses.is_powered(self.powered_by);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -616,6 +821,13 @@ impl LgciuGearControl for LandingGearControlInterfaceUnit {
             GearsSystemState::AllDownLocked => true,
         }
     }
+
+    fn control_active(&self) -> bool {
+        match self.status {
+            LgciuStatus::Ok | LgciuStatus::FailedNoChangeOver => true,
+            LgciuStatus::FailedNotPowered | LgciuStatus::FailedAutoChangeOver => false,
+        }
+    }
 }
 impl LandingGearHandle for LandingGearControlInterfaceUnit {
     fn gear_handle_is_down(&self) -> bool {
@@ -690,6 +902,34 @@ impl GearSystemStateMachine {
                 }
             }
         }
+    }
+
+    /// Tries to figure out gear state from given inputs
+    /// Typically used on init/reset
+    /// Returns init status: true-> state is updated / false -> init is failed due to sensor inconsistency
+    fn init_gear_state(
+        &mut self,
+        lgciu: &(impl LgciuGearExtension + LgciuDoorPosition),
+        gear_handle_position_is_up: bool,
+    ) -> bool {
+        let doors_in_transition = !lgciu.all_fully_opened() && !lgciu.all_closed_and_locked();
+        let gears_in_transition = !lgciu.all_down_and_locked() && !lgciu.all_up_and_locked();
+
+        if doors_in_transition && gears_in_transition {
+            return false;
+        }
+
+        self.gears_state = if lgciu.all_up_and_locked() && lgciu.all_closed_and_locked() {
+            GearsSystemState::AllUpLocked
+        } else if lgciu.all_down_and_locked() && lgciu.all_closed_and_locked() {
+            GearsSystemState::AllDownLocked
+        } else if gear_handle_position_is_up {
+            GearsSystemState::Retracting
+        } else {
+            GearsSystemState::Extending
+        };
+
+        true
     }
 
     pub fn update(
@@ -808,17 +1048,17 @@ mod tests {
             }
         }
 
-        fn update(&mut self) {
+        fn update(&mut self, context: &UpdateContext) {
             self.lgcius
-                .update(&self.landing_gear, &self.gear_system, false);
+                .update(context, &self.landing_gear, &self.gear_system, false);
 
-            self.gear_system.update(self.lgcius.lgciu1());
+            self.gear_system.update(self.lgcius.active_lgciu());
 
             println!(
                 "LGCIU STATE {:#?} / Doors OPENING {}  / Gears OPENING {} ",
-                self.lgcius.lgciu1().gear_system_control.state(),
-                self.lgcius.lgciu1().should_open_doors(),
-                self.lgcius.lgciu1().should_extend_gears()
+                self.lgcius.active_lgciu().gear_system_control.state(),
+                self.lgcius.active_lgciu().should_open_doors(),
+                self.lgcius.active_lgciu().should_extend_gears()
             );
 
             println!(
@@ -839,8 +1079,8 @@ mod tests {
             electricity.flow(&self.powered_source_ac, &self.dc_ess_bus);
         }
 
-        fn update_after_power_distribution(&mut self, _: &UpdateContext) {
-            self.update();
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.update(context);
         }
     }
     impl SimulationElement for TestGearAircraft {

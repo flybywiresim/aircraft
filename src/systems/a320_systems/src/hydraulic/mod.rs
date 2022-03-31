@@ -40,7 +40,7 @@ use systems::{
         PowerTransferUnit, PowerTransferUnitController, PressureSwitch, PressureSwitchType,
         PumpController, RamAirTurbine, RamAirTurbineController, Reservoir, SectionPressure,
     },
-    landing_gear::GearSystemSensors,
+    landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
@@ -1271,8 +1271,7 @@ impl A320Hydraulic {
         overhead_panel: &A320HydraulicOverheadPanel,
         autobrake_panel: &AutobrakePanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        lgciu1: &impl LgciuInterface,
-        lgciu2: &impl LgciuInterface,
+        lgcius: &LandingGearControlInterfaceUnitSet,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec: &(impl EmergencyElectricalState + EmergencyGeneratorPower),
         reservoir_pneumatics: &impl ReservoirAirPressure,
@@ -1287,8 +1286,8 @@ impl A320Hydraulic {
                 &context.with_delta(cur_time_step),
                 rat_and_emer_gen_man_on,
                 emergency_elec,
-                lgciu1,
-                lgciu2,
+                lgcius.lgciu1(),
+                lgcius.lgciu2(),
                 adirs,
             );
         }
@@ -1299,14 +1298,14 @@ impl A320Hydraulic {
             autobrake_panel,
             rat_and_emer_gen_man_on,
             emergency_elec,
-            lgciu1,
-            lgciu2,
+            lgcius.lgciu1(),
+            lgcius.lgciu2(),
             engine1,
             engine2,
         );
 
         for cur_time_step in self.ultra_fast_physics_updater {
-            self.update_ultra_fast_physics(&context.with_delta(cur_time_step), lgciu1);
+            self.update_ultra_fast_physics(&context.with_delta(cur_time_step), lgcius);
         }
 
         for cur_time_step in self.core_hydraulic_updater {
@@ -1316,8 +1315,8 @@ impl A320Hydraulic {
                 engine2,
                 overhead_panel,
                 engine_fire_push_buttons,
-                lgciu1,
-                lgciu2,
+                lgcius.lgciu1(),
+                lgcius.lgciu2(),
                 reservoir_pneumatics,
             );
         }
@@ -1402,7 +1401,11 @@ impl A320Hydraulic {
         self.yellow_circuit.system_section_pressure_switch() == PressureSwitchState::Pressurised
     }
 
-    fn update_ultra_fast_physics(&mut self, context: &UpdateContext, lgciu1: &impl LgciuInterface) {
+    fn update_ultra_fast_physics(
+        &mut self,
+        context: &UpdateContext,
+        lgcius: &LandingGearControlInterfaceUnitSet,
+    ) {
         self.left_aileron.update(
             context,
             self.elac_computer.left_controllers(),
@@ -1458,7 +1461,7 @@ impl A320Hydraulic {
         self.gear_system.update(
             context,
             &self.gear_system_hydraulic_controller,
-            lgciu1,
+            lgcius.active_lgciu(),
             self.green_circuit.system_pressure(),
         );
     }
@@ -5400,6 +5403,7 @@ mod tests {
                 self.adirus.update(context);
 
                 self.lgcius.update(
+                    context,
                     &self.landing_gear,
                     &self.hydraulics.gear_system,
                     self.ext_pwr.output_potential().is_powered(),
@@ -5412,8 +5416,7 @@ mod tests {
                     &self.overhead,
                     &self.autobrake_panel,
                     &self.engine_fire_overhead,
-                    self.lgcius.lgciu1(),
-                    self.lgcius.lgciu2(),
+                    &self.lgcius,
                     &self.emergency_electrical_overhead,
                     &self.electrical,
                     &self.pneumatics,
@@ -6062,7 +6065,7 @@ mod tests {
             }
 
             fn gear_system_state(&self) -> GearsSystemState {
-                self.query(|a| a.lgcius.lgciu1().gear_system_state())
+                self.query(|a| a.lgcius.active_lgciu().gear_system_state())
             }
 
             fn empty_brake_accumulator_using_park_brake(mut self) -> Self {
@@ -9478,6 +9481,11 @@ mod tests {
                 .set_gear_lever_down()
                 .run_waiting_for(Duration::from_secs_f64(25.));
             assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
+
+            test_bed = test_bed
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(25.));
+            assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
         }
 
         #[test]

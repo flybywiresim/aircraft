@@ -7,6 +7,8 @@ pub enum FailureType {
     ReservoirLeak(HydraulicColor),
     ReservoirAirLeak(HydraulicColor),
     ReservoirReturnLeak(HydraulicColor),
+    LgciuPowerSupply(usize),
+    LgciuInternalError(usize),
     RadioAltimeter(usize),
 }
 

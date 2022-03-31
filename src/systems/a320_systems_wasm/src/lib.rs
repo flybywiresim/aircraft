@@ -76,6 +76,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             29_008,
             FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
         ),
+        (32_000, FailureType::LgciuPowerSupply(1)),
+        (32_001, FailureType::LgciuPowerSupply(2)),
+        (32_002, FailureType::LgciuInternalError(1)),
+        (32_003, FailureType::LgciuInternalError(2)),
         (34_000, FailureType::RadioAltimeter(1)),
         (34_001, FailureType::RadioAltimeter(2)),
     ])
