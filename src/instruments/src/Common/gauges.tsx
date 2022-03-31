@@ -193,21 +193,24 @@ type valueRadianAngleConverterType = {
     max: number,
     endAngle: number,
     startAngle: number,
+    perpendicular?: boolean
 }
 
-export const valueRadianAngleConverter = ({ value, min, max, endAngle, startAngle } : valueRadianAngleConverterType) => {
+export const valueRadianAngleConverter = ({ value, min, max, endAngle, startAngle, perpendicular = false } : valueRadianAngleConverterType) => {
     const valuePercentage = (value - min) / (max - min);
-    let angleInRadians = startAngle > endAngle
-        ? startAngle + (valuePercentage * (360 - startAngle + endAngle)) - 90
-        : startAngle + (valuePercentage * (endAngle - startAngle)) - 90;
-    angleInRadians *= (Math.PI / 180.0);
+    const angle = perpendicular ? 0 : 90;
+    const angleInDegress = startAngle > endAngle
+        ? startAngle + (valuePercentage * (360 - startAngle + endAngle)) - angle
+        : startAngle + (valuePercentage * (endAngle - startAngle)) - angle;
+    const angleInRadians = angleInDegress * (Math.PI / 180.0);
     return ({
         x: Math.cos(angleInRadians),
         y: Math.sin(angleInRadians),
+        angle: angleInDegress,
     });
 };
 
-type GaugeMarkerComponentType = {
+export type GaugeMarkerComponentType = {
     value: number,
     x: number,
     y: number,
@@ -224,14 +227,16 @@ type GaugeMarkerComponentType = {
     multiplierInner?: number,
     textNudgeX?: number,
     textNudgeY?: number,
+    halfIndicator?: boolean
     bold?: boolean,
 };
 
 export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
     value, x, y, min, max, radius, startAngle, endAngle, className, showValue,
-    indicator, outer, multiplierOuter = 1.15, multiplierInner = 0.85, textNudgeX = 0, textNudgeY = 0, bold,
+    indicator, outer, multiplierOuter = 1.15, multiplierInner = 0.85, textNudgeX = 0, textNudgeY = 0, bold, halfIndicator = false,
 }) => {
     const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle });
+
     let start = {
         x: x + (dir.x * radius * multiplierInner),
         y: y + (dir.y * radius * multiplierInner),
@@ -253,7 +258,11 @@ export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
     }
 
     if (indicator) {
-        start = { x, y };
+        // Need case for EGT and other gauges which do not originate from the centre of the arc
+        // In this case use original start definition
+        if (!halfIndicator) {
+            start = { x, y };
+        }
 
         end = {
             x: x + (dir.x * radius * multiplierOuter),
@@ -272,12 +281,12 @@ export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
     return (
         <>
             <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} strokeWidth={bold ? 2 : undefined} className={className} />
-            <text x={pos.x} y={pos.y} className={className} alignmentBaseline="central" textAnchor="middle">{textValue}</text>
+            <text x={pos.x} y={pos.y} className="GaugeText" alignmentBaseline="central" textAnchor="middle">{textValue}</text>
         </>
     );
 });
 
-type GaugeComponentProps = {
+export type GaugeComponentProps = {
     x: number,
     y: number,
     radius: number,
@@ -298,6 +307,58 @@ export const GaugeComponent: FC<GaugeComponentProps> = memo(({ x, y, radius, sta
                     <>{children}</>
                 </g>
             </g>
+        </>
+    );
+});
+
+type ThrottlePositionDonutComponentType = {
+    value: number,
+    x: number,
+    y: number,
+    min: number,
+    max: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    className: string
+};
+
+export const ThrottlePositionDonutComponent: FC<ThrottlePositionDonutComponentType> = memo(({ value, x, y, min, max, radius, startAngle, endAngle, className }) => {
+    const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle });
+
+    x += (dir.x * radius * 1.12);
+    y += (dir.y * radius * 1.12);
+
+    return (
+        <>
+            <circle cx={x} cy={y} r={4} className={className} />
+        </>
+    );
+});
+
+type GaugeMaxComponentType = {
+    value: number,
+    x: number,
+    y: number,
+    min: number,
+    max: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    className: string,
+};
+
+export const GaugeMaxComponent: FC<GaugeMaxComponentType> = memo(({ value, x, y, min, max, radius, startAngle, endAngle, className }) => {
+    const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle });
+
+    const xy = {
+        x: x + (dir.x * radius),
+        y: y + (dir.y * radius),
+    };
+
+    return (
+        <>
+            <rect x={xy.x} y={xy.y} width={6} height={4} className={className} transform={`rotate(${dir.angle} ${xy.x} ${xy.y})`} />
         </>
     );
 });

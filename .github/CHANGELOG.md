@@ -220,6 +220,12 @@
 1. [MCDU] Update Simbrief API integration with new weights and balance features - @sidnov (Sid)
 1. [EFB] EFB Setting to enable MCDU Server connection to avoid too many connection attempts - @frankkopp (Frank Kopp)
 1. [EIS] Implement display switching - @tracernz (Mike)
+1. [FMGC] FAF altitude constraints on precision approaches treated correctly - @tracernz (Mike)
+1. [EICAS] Fixed issue where CRUISE page was viewable on ground. - @patmack14 (Patrick Macken)
+1. [EWD] Rewritten EWD in React - @RichardPilbery (tricky_dicky#3571) & @beheh (Benedict Etzel)
+1. [EWD] Rewritten logic for FWC into React - @RichardPilbery (tricky_dicky#3571) & @beheh (Benedict Etzel)
+1. [MODEL] Add new decal mesh next to fwd doors - @bouveng (Johan Bouveng)
+1. [MODEL] Add bandit/window mask + ext door decals & tail details - @bouveng (Johan Bouveng)
 
 ## 0.7.0
 
