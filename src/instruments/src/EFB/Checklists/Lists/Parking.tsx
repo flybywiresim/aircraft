@@ -14,7 +14,9 @@ export const parkingChecklist: ChecklistDefinition = {
                 const engOneN2 = SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:1', 'Number');
                 const engTwoN2 = SimVar.GetSimVarValue('L:A32NX_ENGINE_N1:2', 'Number');
 
-                return engOneN2 === 0 && engTwoN2 === 0;
+                if (!engOneN2 || !engTwoN2) return false;
+
+                return engOneN2 <= 3 && engTwoN2 <= 3;
             },
         },
         {
