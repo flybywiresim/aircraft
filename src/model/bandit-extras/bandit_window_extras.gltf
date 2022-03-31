@@ -1,0 +1,1788 @@
+{
+    "accessors": [
+        {
+            "bufferView": 1,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 2545,
+            "type": "VEC4",
+            "name": "DECAL_BANDIT_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 2545,
+            "type": "VEC4",
+            "name": "DECAL_BANDIT_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 2545,
+            "min": [
+                -1.5766096115112305,
+                1.5864158868789673,
+                10.197530746459961
+            ],
+            "max": [
+                1.5766024589538574,
+                2.406184434890747,
+                12.363205909729004
+            ],
+            "type": "VEC3",
+            "name": "DECAL_BANDIT_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 2545,
+            "type": "VEC4",
+            "name": "DECAL_BANDIT_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 2545,
+            "type": "VEC2",
+            "name": "DECAL_BANDIT_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 2545,
+            "type": "VEC2",
+            "name": "DECAL_BANDIT_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "componentType": 5123,
+            "count": 10215,
+            "type": "SCALAR",
+            "name": "DECAL_BANDIT_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 91648,
+            "componentType": 5123,
+            "count": 744,
+            "type": "VEC4",
+            "name": "Trim_Grade-White_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 91636,
+            "componentType": 5120,
+            "count": 744,
+            "type": "VEC4",
+            "name": "Trim_Grade-White_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 91620,
+            "componentType": 5126,
+            "count": 744,
+            "min": [
+                -1.3702223300933838,
+                1.8703105449676514,
+                -18.482166290283203
+            ],
+            "max": [
+                1.3702223300933838,
+                2.35800838470459,
+                -18.37265396118164
+            ],
+            "type": "VEC3",
+            "name": "Trim_Grade-White_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 91632,
+            "componentType": 5120,
+            "count": 744,
+            "type": "VEC4",
+            "name": "Trim_Grade-White_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 91640,
+            "componentType": 5122,
+            "count": 744,
+            "type": "VEC2",
+            "name": "Trim_Grade-White_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 91644,
+            "componentType": 5122,
+            "count": 744,
+            "type": "VEC2",
+            "name": "Trim_Grade-White_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20432,
+            "componentType": 5123,
+            "count": 2004,
+            "type": "SCALAR",
+            "name": "Trim_Grade-White_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 118432,
+            "componentType": 5123,
+            "count": 20,
+            "type": "VEC4",
+            "name": "Trim_Marker_L_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 118420,
+            "componentType": 5120,
+            "count": 20,
+            "type": "VEC4",
+            "name": "Trim_Marker_L_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 118404,
+            "componentType": 5126,
+            "count": 20,
+            "min": [
+                0.31654733419418335,
+                -0.011006355285644531,
+                1.9538074731826782
+            ],
+            "max": [
+                0.3395245671272278,
+                -0.005321502685546875,
+                2.0002901554107666
+            ],
+            "type": "VEC3",
+            "name": "Trim_Marker_L_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 118416,
+            "componentType": 5120,
+            "count": 20,
+            "type": "VEC4",
+            "name": "Trim_Marker_L_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 118424,
+            "componentType": 5122,
+            "count": 20,
+            "type": "VEC2",
+            "name": "Trim_Marker_L_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 118428,
+            "componentType": 5122,
+            "count": 20,
+            "type": "VEC2",
+            "name": "Trim_Marker_L_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24440,
+            "componentType": 5123,
+            "count": 30,
+            "type": "SCALAR",
+            "name": "Trim_Marker_L_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 119152,
+            "componentType": 5123,
+            "count": 20,
+            "type": "VEC4",
+            "name": "Trim_Marker_R_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 119140,
+            "componentType": 5120,
+            "count": 20,
+            "type": "VEC4",
+            "name": "Trim_Marker_R_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 119124,
+            "componentType": 5126,
+            "count": 20,
+            "min": [
+                -0.33947527408599854,
+                -0.011002540588378906,
+                1.9537601470947266
+            ],
+            "max": [
+                -0.3166004419326782,
+                -0.00531768798828125,
+                2.0003414154052734
+            ],
+            "type": "VEC3",
+            "name": "Trim_Marker_R_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 119136,
+            "componentType": 5120,
+            "count": 20,
+            "type": "VEC4",
+            "name": "Trim_Marker_R_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 119144,
+            "componentType": 5122,
+            "count": 20,
+            "type": "VEC2",
+            "name": "Trim_Marker_R_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 119148,
+            "componentType": 5122,
+            "count": 20,
+            "type": "VEC2",
+            "name": "Trim_Marker_R_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24500,
+            "componentType": 5123,
+            "count": 30,
+            "type": "SCALAR",
+            "name": "Trim_Marker_R_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 119872,
+            "componentType": 5123,
+            "count": 77,
+            "type": "VEC4",
+            "name": "Decals_C_WHEEL_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 119860,
+            "componentType": 5120,
+            "count": 77,
+            "type": "VEC4",
+            "name": "Decals_C_WHEEL_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 119844,
+            "componentType": 5126,
+            "count": 77,
+            "min": [
+                -0.1200382262468338,
+                -0.258348286151886,
+                0.38040271401405334
+            ],
+            "max": [
+                0.11575235426425934,
+                0.3777536153793335,
+                1.1682534217834473
+            ],
+            "type": "VEC3",
+            "name": "Decals_C_WHEEL_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 119864,
+            "componentType": 5122,
+            "count": 77,
+            "type": "VEC2",
+            "name": "Decals_C_WHEEL_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 119868,
+            "componentType": 5122,
+            "count": 77,
+            "type": "VEC2",
+            "name": "Decals_C_WHEEL_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24560,
+            "componentType": 5123,
+            "count": 153,
+            "type": "SCALAR",
+            "name": "Decals_C_WHEEL_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 122644,
+            "componentType": 5123,
+            "count": 452,
+            "type": "VEC4",
+            "name": "Decals_CargoDoor_Fwd_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 122632,
+            "componentType": 5120,
+            "count": 452,
+            "type": "VEC4",
+            "name": "Decals_CargoDoor_Fwd_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 122616,
+            "componentType": 5126,
+            "count": 452,
+            "min": [
+                0.8989077210426331,
+                -1.5078959465026855,
+                -0.9173624515533447
+            ],
+            "max": [
+                1.2831189632415771,
+                -1.3170465230941772,
+                -0.4264008402824402
+            ],
+            "type": "VEC3",
+            "name": "Decals_CargoDoor_Fwd_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 122628,
+            "componentType": 5120,
+            "count": 452,
+            "type": "VEC4",
+            "name": "Decals_CargoDoor_Fwd_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 122636,
+            "componentType": 5122,
+            "count": 452,
+            "type": "VEC2",
+            "name": "Decals_CargoDoor_Fwd_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 122640,
+            "componentType": 5122,
+            "count": 452,
+            "type": "VEC2",
+            "name": "Decals_CargoDoor_Fwd_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24868,
+            "componentType": 5123,
+            "count": 1272,
+            "type": "SCALAR",
+            "name": "Decals_CargoDoor_Fwd_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 138916,
+            "componentType": 5123,
+            "count": 404,
+            "type": "VEC4",
+            "name": "Decals_CargoDoor_FwdRidge_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 138904,
+            "componentType": 5120,
+            "count": 404,
+            "type": "VEC4",
+            "name": "Decals_CargoDoor_FwdRidge_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 138888,
+            "componentType": 5126,
+            "count": 404,
+            "min": [
+                0.8966151475906372,
+                -1.5051953792572021,
+                -0.6681925654411316
+            ],
+            "max": [
+                1.277933120727539,
+                -1.3157206773757935,
+                -0.5318171381950378
+            ],
+            "type": "VEC3",
+            "name": "Decals_CargoDoor_FwdRidge_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 138900,
+            "componentType": 5120,
+            "count": 404,
+            "type": "VEC4",
+            "name": "Decals_CargoDoor_FwdRidge_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 138908,
+            "componentType": 5122,
+            "count": 404,
+            "type": "VEC2",
+            "name": "Decals_CargoDoor_FwdRidge_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 138912,
+            "componentType": 5122,
+            "count": 404,
+            "type": "VEC2",
+            "name": "Decals_CargoDoor_FwdRidge_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 27412,
+            "componentType": 5123,
+            "count": 1200,
+            "type": "SCALAR",
+            "name": "Decals_CargoDoor_FwdRidge_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 153460,
+            "componentType": 5123,
+            "count": 272,
+            "type": "VEC4",
+            "name": "Decals_Door_Fwd_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 153448,
+            "componentType": 5120,
+            "count": 272,
+            "type": "VEC4",
+            "name": "Decals_Door_Fwd_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 153432,
+            "componentType": 5126,
+            "count": 272,
+            "min": [
+                0.18914970755577087,
+                -0.15599359571933746,
+                -0.29632821679115295
+            ],
+            "max": [
+                0.38279953598976135,
+                0.21844534575939178,
+                0.43475034832954407
+            ],
+            "type": "VEC3",
+            "name": "Decals_Door_Fwd_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 153444,
+            "componentType": 5120,
+            "count": 272,
+            "type": "VEC4",
+            "name": "Decals_Door_Fwd_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 153452,
+            "componentType": 5122,
+            "count": 272,
+            "type": "VEC2",
+            "name": "Decals_Door_Fwd_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 153456,
+            "componentType": 5122,
+            "count": 272,
+            "type": "VEC2",
+            "name": "Decals_Door_Fwd_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 29812,
+            "componentType": 5123,
+            "count": 618,
+            "type": "SCALAR",
+            "name": "Decals_Door_Fwd_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 163252,
+            "componentType": 5123,
+            "count": 276,
+            "type": "VEC4",
+            "name": "Decals_Door_Rear_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 163240,
+            "componentType": 5120,
+            "count": 276,
+            "type": "VEC4",
+            "name": "Decals_Door_Rear_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 163224,
+            "componentType": 5126,
+            "count": 276,
+            "min": [
+                -0.3275545537471771,
+                -0.20422184467315674,
+                -0.3971290588378906
+            ],
+            "max": [
+                -0.22496606409549713,
+                0.18625305593013763,
+                0.34635162353515625
+            ],
+            "type": "VEC3",
+            "name": "Decals_Door_Rear_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 163236,
+            "componentType": 5120,
+            "count": 276,
+            "type": "VEC4",
+            "name": "Decals_Door_Rear_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 163244,
+            "componentType": 5122,
+            "count": 276,
+            "type": "VEC2",
+            "name": "Decals_Door_Rear_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 163248,
+            "componentType": 5122,
+            "count": 276,
+            "type": "VEC2",
+            "name": "Decals_Door_Rear_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 31048,
+            "componentType": 5123,
+            "count": 642,
+            "type": "SCALAR",
+            "name": "Decals_Door_Rear_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 173188,
+            "componentType": 5123,
+            "count": 1124,
+            "type": "VEC4",
+            "name": "Decals_Static_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 173176,
+            "componentType": 5120,
+            "count": 1124,
+            "type": "VEC4",
+            "name": "Decals_Static_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 173160,
+            "componentType": 5126,
+            "count": 1124,
+            "min": [
+                -0.38528215885162354,
+                -2.5477192401885986,
+                -24.982421875
+            ],
+            "max": [
+                3.340334415435791,
+                0.31864190101623535,
+                0.43475034832954407
+            ],
+            "type": "VEC3",
+            "name": "Decals_Static_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 173172,
+            "componentType": 5120,
+            "count": 1124,
+            "type": "VEC4",
+            "name": "Decals_Static_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 173180,
+            "componentType": 5122,
+            "count": 1124,
+            "type": "VEC2",
+            "name": "Decals_Static_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 173184,
+            "componentType": 5122,
+            "count": 1124,
+            "type": "VEC2",
+            "name": "Decals_Static_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 32332,
+            "componentType": 5123,
+            "count": 2844,
+            "type": "SCALAR",
+            "name": "Decals_Static_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 213652,
+            "componentType": 5123,
+            "count": 502,
+            "type": "VEC4",
+            "name": "Decals_Static_Ridge_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 213640,
+            "componentType": 5120,
+            "count": 502,
+            "type": "VEC4",
+            "name": "Decals_Static_Ridge_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 213624,
+            "componentType": 5126,
+            "count": 502,
+            "min": [
+                -1.0775046348571777,
+                -0.6428108215332031,
+                -9.726841926574707
+            ],
+            "max": [
+                -0.3458746671676636,
+                -0.3038370609283447,
+                4.267275810241699
+            ],
+            "type": "VEC3",
+            "name": "Decals_Static_Ridge_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 213636,
+            "componentType": 5120,
+            "count": 502,
+            "type": "VEC4",
+            "name": "Decals_Static_Ridge_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 213644,
+            "componentType": 5122,
+            "count": 502,
+            "type": "VEC2",
+            "name": "Decals_Static_Ridge_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 213648,
+            "componentType": 5122,
+            "count": 502,
+            "type": "VEC2",
+            "name": "Decals_Static_Ridge_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 38020,
+            "componentType": 5123,
+            "count": 1488,
+            "type": "SCALAR",
+            "name": "Decals_Static_Ridge_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 231724,
+            "componentType": 5123,
+            "count": 44,
+            "type": "VEC4",
+            "name": "Decals_ZigZag_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 231712,
+            "componentType": 5120,
+            "count": 44,
+            "type": "VEC4",
+            "name": "Decals_ZigZag_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 231696,
+            "componentType": 5126,
+            "count": 44,
+            "min": [
+                -0.32394421100616455,
+                4.027013778686523,
+                -21.161516189575195
+            ],
+            "max": [
+                0.32394349575042725,
+                6.96099853515625,
+                -19.622068405151367
+            ],
+            "type": "VEC3",
+            "name": "Decals_ZigZag_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 231708,
+            "componentType": 5120,
+            "count": 44,
+            "type": "VEC4",
+            "name": "Decals_ZigZag_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 231716,
+            "componentType": 5122,
+            "count": 44,
+            "type": "VEC2",
+            "name": "Decals_ZigZag_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 231720,
+            "componentType": 5122,
+            "count": 44,
+            "type": "VEC2",
+            "name": "Decals_ZigZag_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 40996,
+            "componentType": 5123,
+            "count": 96,
+            "type": "SCALAR",
+            "name": "Decals_ZigZag_indices#0"
+        },
+        {
+            "bufferView": 2,
+            "componentType": 5126,
+            "count": 81,
+            "min": [
+                0.041666666666666664
+            ],
+            "max": [
+                3.375
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 3,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 4,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 5,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 6,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 7,
+            "componentType": 5126,
+            "count": 161,
+            "min": [
+                0.041666666666666664
+            ],
+            "max": [
+                6.708333333333333
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 8,
+            "componentType": 5126,
+            "count": 161,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 9,
+            "componentType": 5126,
+            "count": 161,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 10,
+            "componentType": 5126,
+            "count": 161,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 11,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 12,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 13,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC3"
+        }
+    ],
+    "animations": [
+        {
+            "name": "Trim-Marker_L-Anim",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 2,
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": 2,
+                        "path": "rotation"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 83,
+                    "output": 84,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 83,
+                    "output": 85,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        },
+        {
+            "name": "Trim-Marker_R-Anim",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 3,
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": 3,
+                        "path": "rotation"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 83,
+                    "output": 86,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 83,
+                    "output": 87,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        },
+        {
+            "name": "C_WHEEL_BASE-DECAL-Anim",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 4,
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": 4,
+                        "path": "rotation"
+                    }
+                },
+                {
+                    "sampler": 2,
+                    "target": {
+                        "node": 4,
+                        "path": "scale"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 88,
+                    "output": 89,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 88,
+                    "output": 90,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 88,
+                    "output": 91,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        },
+        {
+            "name": "Decals_CargoDoor_Fwd",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 5,
+                        "path": "rotation"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 83,
+                    "output": 92,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        },
+        {
+            "name": "Decals_CargoDoor_FwdRidge",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 6,
+                        "path": "rotation"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 83,
+                    "output": 92,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        },
+        {
+            "name": "Decals_Door_Fwd-Anim",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 7,
+                        "path": "translation"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 83,
+                    "output": 93,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        },
+        {
+            "name": "Decals_Door_Rear",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 8,
+                        "path": "translation"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 83,
+                    "output": 94,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.7.5",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    3.340334415435791,
+                    6.96099853515625,
+                    12.363205909729004
+                ],
+                "BoundingBoxMin": [
+                    -1.5766096115112305,
+                    -2.5477192401885986,
+                    -24.982421875
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 41188,
+            "byteOffset": 0,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 233280,
+            "byteStride": 36,
+            "byteOffset": 41188,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 324,
+            "byteOffset": 274468
+        },
+        {
+            "buffer": 0,
+            "byteLength": 972,
+            "byteOffset": 274792
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1296,
+            "byteOffset": 275764
+        },
+        {
+            "buffer": 0,
+            "byteLength": 972,
+            "byteOffset": 277060
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1296,
+            "byteOffset": 278032
+        },
+        {
+            "buffer": 0,
+            "byteLength": 644,
+            "byteOffset": 279328
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1932,
+            "byteOffset": 279972
+        },
+        {
+            "buffer": 0,
+            "byteLength": 2576,
+            "byteOffset": 281904
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1932,
+            "byteOffset": 284480
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1296,
+            "byteOffset": 286412
+        },
+        {
+            "buffer": 0,
+            "byteLength": 972,
+            "byteOffset": 287708
+        },
+        {
+            "buffer": 0,
+            "byteLength": 972,
+            "byteOffset": 288680
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_asset_optimized",
+        "ASOBO_normal_map_convention"
+    ],
+    "materials": [
+        {
+            "name": "BanditMat",
+            "alphaMode": "BLEND",
+            "occlusionTexture": {
+                "index": 0
+            },
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 1
+                },
+                "metallicRoughnessTexture": {
+                    "index": 0
+                }
+            },
+            "extensions": {
+                "ASOBO_material_blend_gbuffer": {
+                    "baseColorBlendFactor": 1,
+                    "emissiveBlendFactor": 0,
+                    "metallicBlendFactor": 0,
+                    "occlusionBlendFactor": 0,
+                    "roughnessBlendFactor": 0.2,
+                    "normalBlendFactor":0
+                },
+                "ASOBO_material_draw_order": {
+                    "drawOrderOffset": 2
+                }
+            }
+        },
+        {
+            "name": "TrimMat",
+            "pbrMetallicRoughness": {
+                "metallicFactor": 0.2,
+                "roughnessFactor": 0.1,
+                "baseColorTexture": {
+                    "index": 1
+                }
+            },
+            "extensions": {
+                "ASOBO_material_blend_gbuffer": {
+                    "baseColorBlendFactor": 1,
+                    "emissiveBlendFactor": 0,
+                    "metallicBlendFactor": 0.6,
+                    "occlusionBlendFactor": 0,
+                    "roughnessBlendFactor": 0.6,
+                    "normalBlendFactor":0
+                },
+                "ASOBO_material_draw_order": {
+                    "drawOrderOffset": 2
+                }
+            }
+        },
+        {
+            "name": "DECALS_DOOR_STICKERS_RIBBON",
+            "alphaMode": "BLEND",
+            "normalTexture": {
+                "index": 3
+            },
+            "occlusionTexture": {
+                "index": 4
+            },
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 5
+                },
+                "metallicRoughnessTexture": {
+                    "index": 4
+                }
+            },
+            "extensions": {
+                "ASOBO_material_draw_order": {
+                    "drawOrderOffset": 3
+                },
+                "ASOBO_material_blend_gbuffer": {
+                       "baseColorBlendFactor": 1,
+                       "emissiveBlendFactor": 0,
+                       "metallicBlendFactor": 1,
+                       "occlusionBlendFactor": 1,
+                       "roughnessBlendFactor": 1,
+                       "normalBlendFactor":1
+                }
+            }
+        },
+        {
+            "name": "DECALS_DOOR_STICKERS_RIBBON-Ridge",
+            "alphaMode": "BLEND",
+            "normalTexture": {
+                "index": 6
+            },
+            "occlusionTexture": {
+                "index": 7
+            },
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 8
+                },
+                "metallicRoughnessTexture": {
+                    "index": 7
+                }
+            },
+            "extensions": {
+                "ASOBO_material_draw_order": {
+                    "drawOrderOffset": 10
+                },
+                "ASOBO_material_blend_gbuffer": {
+                       "baseColorBlendFactor": 0,
+                       "emissiveBlendFactor": 0,
+                       "metallicBlendFactor": 0,
+                       "occlusionBlendFactor": 1,
+                       "roughnessBlendFactor": 0,
+                       "normalBlendFactor":1
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 0,
+                        "NORMAL": 1,
+                        "POSITION": 2,
+                        "TANGENT": 3,
+                        "TEXCOORD_0": 4,
+                        "TEXCOORD_1": 5
+                    },
+                    "indices": 6,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 3405,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "DECAL_BANDIT"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 7,
+                        "NORMAL": 8,
+                        "POSITION": 9,
+                        "TANGENT": 10,
+                        "TEXCOORD_0": 11,
+                        "TEXCOORD_1": 12
+                    },
+                    "indices": 13,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 668,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Trim_Grade-White"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 14,
+                        "NORMAL": 15,
+                        "POSITION": 16,
+                        "TANGENT": 17,
+                        "TEXCOORD_0": 18,
+                        "TEXCOORD_1": 19
+                    },
+                    "indices": 20,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 10,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Trim_Marker_L"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 21,
+                        "NORMAL": 22,
+                        "POSITION": 23,
+                        "TANGENT": 24,
+                        "TEXCOORD_0": 25,
+                        "TEXCOORD_1": 26
+                    },
+                    "indices": 27,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 10,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Trim_Marker_R"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 28,
+                        "NORMAL": 29,
+                        "POSITION": 30,
+                        "TEXCOORD_0": 31,
+                        "TEXCOORD_1": 32
+                    },
+                    "indices": 33,
+                    "material": 2,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 51,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Decals_C_WHEEL"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 34,
+                        "NORMAL": 35,
+                        "POSITION": 36,
+                        "TANGENT": 37,
+                        "TEXCOORD_0": 38,
+                        "TEXCOORD_1": 39
+                    },
+                    "indices": 40,
+                    "material": 2,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 424,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Decals_CargoDoor_Fwd"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 41,
+                        "NORMAL": 42,
+                        "POSITION": 43,
+                        "TANGENT": 44,
+                        "TEXCOORD_0": 45,
+                        "TEXCOORD_1": 46
+                    },
+                    "indices": 47,
+                    "material": 3,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 400,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Decals_CargoDoor_FwdRidge"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 48,
+                        "NORMAL": 49,
+                        "POSITION": 50,
+                        "TANGENT": 51,
+                        "TEXCOORD_0": 52,
+                        "TEXCOORD_1": 53
+                    },
+                    "indices": 54,
+                    "material": 2,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 206,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Decals_Door_Fwd"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 55,
+                        "NORMAL": 56,
+                        "POSITION": 57,
+                        "TANGENT": 58,
+                        "TEXCOORD_0": 59,
+                        "TEXCOORD_1": 60
+                    },
+                    "indices": 61,
+                    "material": 2,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 214,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Decals_Door_Rear"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 62,
+                        "NORMAL": 63,
+                        "POSITION": 64,
+                        "TANGENT": 65,
+                        "TEXCOORD_0": 66,
+                        "TEXCOORD_1": 67
+                    },
+                    "indices": 68,
+                    "material": 2,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 948,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Decals_Static"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 69,
+                        "NORMAL": 70,
+                        "POSITION": 71,
+                        "TANGENT": 72,
+                        "TEXCOORD_0": 73,
+                        "TEXCOORD_1": 74
+                    },
+                    "indices": 75,
+                    "material": 3,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 496,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Decals_Static_Ridge"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 76,
+                        "NORMAL": 77,
+                        "POSITION": 78,
+                        "TANGENT": 79,
+                        "TEXCOORD_0": 80,
+                        "TEXCOORD_1": 81
+                    },
+                    "indices": 82,
+                    "material": 3,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 32,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Decals_ZigZag"
+        }
+    ],
+    "nodes": [
+        {
+            "mesh": 0,
+            "name": "DECAL_BANDIT"
+        },
+        {
+            "mesh": 1,
+            "name": "Trim_Grade"
+        },
+        {
+            "translation": [
+                1.0254286527633667,
+                2.257779598236084,
+                -20.48752212524414
+            ],
+            "mesh": 2,
+            "name": "Trim_Marker_L"
+        },
+        {
+            "translation": [
+                -1.0254288911819458,
+                2.2577757835388184,
+                -20.487524032592773
+            ],
+            "mesh": 3,
+            "name": "Trim_Marker_R"
+        },
+        {
+            "translation": [
+                0,
+                -0.4771597385406494,
+                8.130898475646973
+            ],
+            "rotation": [
+                -0.04361940175294876,
+                0,
+                3.506709845169098e-06,
+                0.9990482330322266
+            ],
+            "mesh": 4,
+            "name": "Decals_C_WHEEL"
+        },
+        {
+            "translation": [
+                -1.9689692258834839,
+                0.9521068930625916,
+                5.4972968101501465
+            ],
+            "mesh": 5,
+            "name": "Decals_CargoDoor_Fwd"
+        },
+        {
+            "translation": [
+                -1.9689692258834839,
+                0.9521068930625916,
+                5.4972968101501465
+            ],
+            "mesh": 6,
+            "name": "Decals_CargoDoor_FwdRidge"
+        },
+        {
+            "translation": [
+                1.521816611289978,
+                1.9051718711853027,
+                8.474589347839355
+            ],
+            "mesh": 7,
+            "name": "Decals_Door_Fwd"
+        },
+        {
+            "translation": [
+                -1.489198088645935,
+                2.0375592708587646,
+                -16.10403060913086
+            ],
+            "mesh": 8,
+            "name": "Decals_Door_Rear"
+        },
+        {
+            "translation": [
+                -1.5227694511413574,
+                1.9051709175109863,
+                8.474589347839355
+            ],
+            "mesh": 9,
+            "name": "Decals_Static"
+        },
+        {
+            "mesh": 10,
+            "name": "Decals_Static_Ridge"
+        },
+        {
+            "mesh": 11,
+            "name": "Decals_ZigZag"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "name": "Scene",
+            "nodes": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+            ]
+        }
+    ],
+    "textures": [
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 0
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 1
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 1
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 2
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 3
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 4
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 2
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 3
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 4
+                }
+            }
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 289652,
+            "uri": "bandit_window_extras.bin"
+        }
+    ],
+    "images": [
+        {
+            "uri": "DECALS_BANDIT_WINDOW_COMP.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "DECALS_BANDIT_WINDOW_ALBD.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "DECALS_DOOR_STICKERS_RIBBON_NORM.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "DECALS_DOOR_STICKERS_RIBBON_COMP.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "DECALS_DOOR_STICKERS_RIBBON_ALBD.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        }
+    ],
+    "samplers": [
+        {
+            "magFilter": 9729,
+            "minFilter": 9987
+        }
+    ]
+}
