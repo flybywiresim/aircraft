@@ -346,6 +346,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
         switch (this.athrMode) {
         case 1:
+            this.displayModeChangedPath(true);
             text = `
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
@@ -353,6 +354,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                             `;
             break;
         case 2:
+            this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
@@ -360,6 +362,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                             </g>`;
             break;
         case 3:
+            this.displayModeChangedPath(true);
             const FlexTemp = Math.round(this.flexTemp);
             const FlexText = FlexTemp >= 0 ? (`+${FlexTemp}`) : FlexTemp.toString();
             text = `<g>
@@ -373,6 +376,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
 
             break;
         case 4:
+            this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
@@ -380,7 +384,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                             </g>`;
             break;
         case 5:
-
+            this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
@@ -388,6 +392,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
                             </g>`;
             break;
         case 6:
+            this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
@@ -419,12 +424,14 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath();
             break;
         case 13:
+            this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                                 <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">A.FLOOR</text>
                             </g>`;
             break;
         case 14:
+            this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke Amber BlinkInfinite" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
                                 <text class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">TOGA LK</text>
