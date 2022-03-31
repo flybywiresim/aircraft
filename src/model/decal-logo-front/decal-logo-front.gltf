@@ -1,0 +1,212 @@
+{
+    "accessors": [
+        {
+            "bufferView": 1,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 133,
+            "type": "VEC4",
+            "name": "DECAL_FRONT_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 133,
+            "type": "VEC4",
+            "name": "DECAL_FRONT_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 133,
+            "min": [
+                -1.817928433418274,
+                1.642573356628418,
+                9.09134292602539
+            ],
+            "max": [
+                1.8179341554641724,
+                2.4494845867156982,
+                10.042323112487793
+            ],
+            "type": "VEC3",
+            "name": "DECAL_FRONT_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 133,
+            "type": "VEC2",
+            "name": "DECAL_FRONT_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 133,
+            "type": "VEC2",
+            "name": "DECAL_FRONT_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "componentType": 5123,
+            "count": 348,
+            "type": "SCALAR",
+            "name": "DECAL_FRONT_indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.7.5",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    1.8179341554641724,
+                    2.4494845867156982,
+                    10.042323112487793
+                ],
+                "BoundingBoxMin": [
+                    -1.817928433418274,
+                    0,
+                    0
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 696,
+            "byteOffset": 0,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 4788,
+            "byteStride": 36,
+            "byteOffset": 696,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_asset_optimized",
+        "ASOBO_normal_map_convention"
+    ],
+    "materials": [
+        {
+            "name": "FRONT_DECAL-Mat",
+            "occlusionTexture": {
+                "index": 0
+            },
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 1
+                },
+                "metallicRoughnessTexture": {
+                    "index": 0
+                }
+            },
+            "extensions": {
+                "ASOBO_material_blend_gbuffer": {
+                    "baseColorBlendFactor":1,
+                    "roughnessBlendFactor":0.8,
+                    "metallnesBlendFactor":0.8,
+                    "emissiveBlendFactor":0,
+                    "normalBlendFactor":0,
+                    "occlusionBlendFactor":0.0
+                },
+                "ASOBO_material_draw_order": {
+                    "drawOrderOffset": 3
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 0,
+                        "NORMAL": 1,
+                        "POSITION": 2,
+                        "TEXCOORD_0": 3,
+                        "TEXCOORD_1": 4
+                    },
+                    "indices": 5,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 116,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "DECAL_LOGO_FRONT"
+        }
+    ],
+    "nodes": [
+        {
+            "mesh": 0,
+            "name": "DECAL_LOGO_FRONT"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "name": "Scene",
+            "nodes": [
+                0
+            ]
+        }
+    ],
+    "textures": [
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 0
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 1
+                }
+            }
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 5484,
+            "uri": "decal-logo-front.bin"
+        }
+    ],
+    "images": [
+        {
+            "uri": "DECAL_LOGO_FRONT_COMP.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "DECAL_LOGO_FRONT_ALBD.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        }
+    ],
+    "samplers": [
+        {
+            "magFilter": 9729,
+            "minFilter": 9987
+        }
+    ]
+}
