@@ -217,9 +217,9 @@
             },
             "pbrMetallicRoughness": {
                 "baseColorFactor": [
-                    0.88,
-                    0.88,
-                    0.88,
+                    1,
+                    1,
+                    1,
                     1
                 ],
                 "baseColorTexture": {
