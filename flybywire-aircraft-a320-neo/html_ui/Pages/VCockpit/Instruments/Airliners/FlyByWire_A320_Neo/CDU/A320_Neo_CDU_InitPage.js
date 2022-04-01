@@ -4,10 +4,9 @@ class CDUInitPage {
         mcdu.page.Current = mcdu.page.InitPageA;
         mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage1(mcdu);
         mcdu.activeSystem = 'FMGC';
-        mcdu.coRoute.routes = [];
 
         let fromTo = "____|____[color]amber";
-        let coRoute = mcdu.coRoute.routeNumber === undefined ? "__________[color]amber" : `${mcdu.coRoute.routeNumber}[color]cyan`;
+        let coRoute = "__________[color]amber";
         const flightNo = new CDU_SingleValueField(mcdu,
             "string",
             mcdu.flightNumber,
@@ -139,6 +138,9 @@ class CDUInitPage {
             }
         }
 
+        if (mcdu.coRoute) {
+            coRoute = mcdu.coRoute + "[color]cyan";
+        }
         mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
             mcdu.updateCoRoute(value, (result) => {
                 if (result) {
@@ -179,9 +181,7 @@ class CDUInitPage {
                 });
             } else if (mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident) {
                 if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
-                    getRouteList(mcdu).then(() => {
-                        CDUAvailableFlightPlanPage.ShowPage(mcdu);
-                    });
+                    CDUAvailableFlightPlanPage.ShowPage(mcdu);
                 }
             }
         };

@@ -23,8 +23,7 @@ export default new TaskOfTasks('a32nx', [
             'wasm-opt -O1 -o flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm'
         ], ['src/fadec', 'flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm']),
         new TaskOfTasks('local-api', [
-            new ExecTask('local-server-client', 'npm run build:local-api-client', ['src/local-api', 'flybywire-aircraft-a320-neo/html_ui/JS/local-api-client']),
-            new ExecTask('local-server','bash scripts/local-api-build.sh', ['src/local-api','flybywire-aircraft-a320-neo/local-server.exe' ] )
+            new ExecTask('local-api-server','bash scripts/local-api-build.sh')
 
         ])
     ], true),

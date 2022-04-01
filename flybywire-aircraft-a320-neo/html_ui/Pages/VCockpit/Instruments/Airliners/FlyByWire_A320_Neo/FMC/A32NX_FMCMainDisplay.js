@@ -303,10 +303,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndexSet = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
-        this.coRoute = {
-            routeNumber: undefined,
-            routes: []
-        };
+        this.coRoute = "";
         this.tmpOrigin = "";
         this.perfTOTemp = NaN;
         this._overridenFlapApproachSpeed = NaN;
@@ -1821,9 +1818,7 @@ class FMCMainDisplay extends BaseAirliners {
                                         this.flightPlanManager.getWaypoint(0).discontinuityCanBeCleared = true;
                                         this.tmpOrigin = airportTo.ident;
                                         SimVar.SetSimVarValue("L:FLIGHTPLAN_USE_DECEL_WAYPOINT", "number", 1);
-                                        getRouteList(this).then(() => {
-                                            callback(true);
-                                        });
+                                        callback(true);
                                     }).catch(console.error);
                                 }).catch(console.error);
                             }).catch(console.error);
