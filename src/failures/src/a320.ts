@@ -19,6 +19,10 @@ export const A320Failure = Object.freeze({
     LgciuPowerSupply2: 32001,
     LgciuInternalError1: 32002,
     LgciuInternalError2: 32003,
+    GearProxSensorDamageGearUplockLeft1: 32004,
+    GearProxSensorDamageDoorDownlockRight2: 32005,
+    GearProxSensorDamageGearUplockCenter1: 32006,
+    GearProxSensorDamageDoorUplockLeft2: 32007,
     RadioAltimeter1: 34000,
     RadioAltimeter2: 34001,
 });

@@ -548,6 +548,7 @@ pub struct LandingGearControlInterfaceUnit {
     transition_duration: Duration,
     gear_lever_position_is_down_previous_state: bool,
     status: LgciuStatus,
+
     power_supply_failure: Failure,
     internal_error_failure: Failure,
 
@@ -586,6 +587,7 @@ impl LandingGearControlInterfaceUnit {
             transition_duration: Duration::default(),
             gear_lever_position_is_down_previous_state: true,
             status: LgciuStatus::Ok,
+
             power_supply_failure: Failure::new(FailureType::LgciuPowerSupply(number)),
             internal_error_failure: Failure::new(FailureType::LgciuInternalError(number)),
 

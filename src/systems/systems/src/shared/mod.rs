@@ -113,6 +113,35 @@ pub trait LgciuInterface:
 {
 }
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum ProximityDetectorId {
+    UplockGearCenter1,
+    UplockGearCenter2,
+    UplockGearLeft1,
+    UplockGearLeft2,
+    UplockGearRight1,
+    UplockGearRight2,
+    DownlockGearCenter1,
+    DownlockGearCenter2,
+    DownlockGearLeft1,
+    DownlockGearLeft2,
+    DownlockGearRight1,
+    DownlockGearRight2,
+
+    UplockDoorCenter1,
+    UplockDoorCenter2,
+    UplockDoorLeft1,
+    UplockDoorLeft2,
+    UplockDoorRight1,
+    UplockDoorRight2,
+    DownlockDoorCenter1,
+    DownlockDoorCenter2,
+    DownlockDoorLeft1,
+    DownlockDoorLeft2,
+    DownlockDoorRight1,
+    DownlockDoorRight2,
+}
+
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
 }

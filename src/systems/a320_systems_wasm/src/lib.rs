@@ -19,8 +19,8 @@ use nose_wheel_steering::nose_wheel_steering;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
-use systems::shared::ElectricalBusType;
-use systems::{failures::FailureType, shared::HydraulicColor};
+use systems::failures::FailureType;
+use systems::shared::{ElectricalBusType, HydraulicColor, ProximityDetectorId};
 use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 
@@ -80,6 +80,22 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (32_001, FailureType::LgciuPowerSupply(2)),
         (32_002, FailureType::LgciuInternalError(1)),
         (32_003, FailureType::LgciuInternalError(2)),
+        (
+            32_004,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockGearLeft1),
+        ),
+        (
+            32_005,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::DownlockDoorRight2),
+        ),
+        (
+            32_006,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockGearCenter1),
+        ),
+        (
+            32_007,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockDoorLeft2),
+        ),
         (34_000, FailureType::RadioAltimeter(1)),
         (34_001, FailureType::RadioAltimeter(2)),
     ])

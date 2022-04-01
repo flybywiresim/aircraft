@@ -1,9 +1,11 @@
+use crate::failures::{Failure, FailureType};
 use crate::landing_gear::GearSystemSensors;
 use crate::shared::low_pass_filter::LowPassFilter;
-use crate::shared::{GearWheel, LgciuGearControl};
+use crate::shared::{GearWheel, LgciuGearControl, ProximityDetectorId};
 
 use crate::simulation::{
-    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
 
 use super::linear_actuator::{
@@ -63,18 +65,42 @@ impl HydraulicGearSystem {
                 false,
                 nose_door,
                 false,
+                [
+                    ProximityDetectorId::UplockDoorCenter1,
+                    ProximityDetectorId::UplockDoorCenter2,
+                ],
+                [
+                    ProximityDetectorId::DownlockDoorCenter1,
+                    ProximityDetectorId::DownlockDoorCenter2,
+                ],
             ),
             left_door_assembly: GearDoorAssembly::new(
                 GearSysComponentId::Door,
                 false,
                 left_door,
                 false,
+                [
+                    ProximityDetectorId::UplockDoorLeft1,
+                    ProximityDetectorId::UplockDoorLeft2,
+                ],
+                [
+                    ProximityDetectorId::DownlockDoorLeft1,
+                    ProximityDetectorId::DownlockDoorLeft2,
+                ],
             ),
             right_door_assembly: GearDoorAssembly::new(
                 GearSysComponentId::Door,
                 false,
                 right_door,
                 false,
+                [
+                    ProximityDetectorId::UplockDoorRight1,
+                    ProximityDetectorId::UplockDoorRight2,
+                ],
+                [
+                    ProximityDetectorId::DownlockDoorRight1,
+                    ProximityDetectorId::DownlockDoorRight2,
+                ],
             ),
 
             // Nose gear has pull to retract system while main gears have push to retract
@@ -83,18 +109,42 @@ impl HydraulicGearSystem {
                 false,
                 nose_gear,
                 true,
+                [
+                    ProximityDetectorId::UplockGearCenter1,
+                    ProximityDetectorId::UplockGearCenter2,
+                ],
+                [
+                    ProximityDetectorId::DownlockGearCenter1,
+                    ProximityDetectorId::DownlockGearCenter2,
+                ],
             ),
             left_gear_assembly: GearDoorAssembly::new(
                 GearSysComponentId::Gear,
                 true,
                 left_gear,
                 true,
+                [
+                    ProximityDetectorId::UplockGearLeft1,
+                    ProximityDetectorId::UplockGearLeft2,
+                ],
+                [
+                    ProximityDetectorId::DownlockGearLeft1,
+                    ProximityDetectorId::DownlockGearLeft2,
+                ],
             ),
             right_gear_assembly: GearDoorAssembly::new(
                 GearSysComponentId::Gear,
                 true,
                 right_gear,
                 true,
+                [
+                    ProximityDetectorId::UplockGearRight1,
+                    ProximityDetectorId::UplockGearRight2,
+                ],
+                [
+                    ProximityDetectorId::DownlockGearRight1,
+                    ProximityDetectorId::DownlockGearRight2,
+                ],
             ),
         }
     }
@@ -199,6 +249,18 @@ impl GearSystemSensors for HydraulicGearSystem {
     }
 }
 impl SimulationElement for HydraulicGearSystem {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.nose_gear_assembly.accept(visitor);
+        self.left_gear_assembly.accept(visitor);
+        self.right_gear_assembly.accept(visitor);
+
+        self.nose_door_assembly.accept(visitor);
+        self.left_door_assembly.accept(visitor);
+        self.right_door_assembly.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.door_center_position_id,
@@ -311,6 +373,8 @@ impl GearDoorAssembly {
         is_inverted_control: bool,
         hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
         has_hydraulic_downlock: bool,
+        uplock_id: [ProximityDetectorId; 2],
+        downlock_id: [ProximityDetectorId; 2],
     ) -> Self {
         let mut obj = Self {
             component_id,
@@ -320,14 +384,30 @@ impl GearDoorAssembly {
                 !has_hydraulic_downlock,
             ),
             hydraulic_assembly,
-            fully_opened_proximity_detectors: [ProximityDetector::new(
-                Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO),
-                Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO),
-            ); 2],
-            uplock_proximity_detectors: [ProximityDetector::new(
-                Ratio::new::<ratio>(Self::UPLOCKED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO),
-                Ratio::new::<ratio>(Self::UPLOCKED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO),
-            ); 2],
+            fully_opened_proximity_detectors: [
+                ProximityDetector::new(
+                    downlock_id[0],
+                    Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO),
+                    Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO),
+                ),
+                ProximityDetector::new(
+                    downlock_id[1],
+                    Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO),
+                    Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO),
+                ),
+            ],
+            uplock_proximity_detectors: [
+                ProximityDetector::new(
+                    uplock_id[0],
+                    Ratio::new::<ratio>(Self::UPLOCKED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO),
+                    Ratio::new::<ratio>(Self::UPLOCKED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO),
+                ),
+                ProximityDetector::new(
+                    uplock_id[1],
+                    Ratio::new::<ratio>(Self::UPLOCKED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO),
+                    Ratio::new::<ratio>(Self::UPLOCKED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO),
+                ),
+            ],
             hydraulic_uplock: HydraulicLock::new(),
             hydraulic_downlock: if has_hydraulic_downlock {
                 Some(HydraulicLock::new())
@@ -440,6 +520,14 @@ impl GearDoorAssembly {
     #[cfg(test)]
     fn is_locked(&self) -> bool {
         self.hydraulic_assembly.is_locked()
+    }
+}
+impl SimulationElement for GearDoorAssembly {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.uplock_proximity_detectors, visitor);
+        accept_iterable!(self.fully_opened_proximity_detectors, visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -643,20 +731,27 @@ impl HydraulicValve {
     }
 }
 
-#[derive(Clone, Copy)]
 struct ProximityDetector {
     is_active: bool,
 
     installation_position_normalized: Ratio,
     trigger_distance: Ratio,
+
+    damage_failure: Failure,
 }
 impl ProximityDetector {
-    fn new(installation_position_normalized: Ratio, trigger_distance: Ratio) -> Self {
+    fn new(
+        id: ProximityDetectorId,
+        installation_position_normalized: Ratio,
+        trigger_distance: Ratio,
+    ) -> Self {
         Self {
             is_active: false,
 
             installation_position_normalized,
             trigger_distance,
+
+            damage_failure: Failure::new(FailureType::GearProxSensorDamage(id)),
         }
     }
 
@@ -666,7 +761,18 @@ impl ProximityDetector {
     }
 
     fn proximity_detected(&self) -> bool {
-        self.is_active
+        if self.damage_failure.is_active() {
+            false
+        } else {
+            self.is_active
+        }
+    }
+}
+impl SimulationElement for ProximityDetector {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.damage_failure.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -686,8 +792,6 @@ mod tests {
 
     use crate::simulation::test::{SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement, UpdateContext};
-
-    impl SimulationElement for ProximityDetector {}
 
     #[derive(Default)]
     struct TestGearValvesController {
@@ -817,12 +921,28 @@ mod tests {
                     false,
                     door_hydraulic_assembly,
                     false,
+                    [
+                        ProximityDetectorId::UplockDoorRight1,
+                        ProximityDetectorId::UplockDoorRight2,
+                    ],
+                    [
+                        ProximityDetectorId::DownlockDoorRight1,
+                        ProximityDetectorId::DownlockDoorRight2,
+                    ],
                 ),
                 gear_assembly: GearDoorAssembly::new(
                     GearSysComponentId::Gear,
                     true,
                     gear_hydraulic_assembly,
                     true,
+                    [
+                        ProximityDetectorId::UplockGearRight1,
+                        ProximityDetectorId::UplockGearRight2,
+                    ],
+                    [
+                        ProximityDetectorId::DownlockGearRight1,
+                        ProximityDetectorId::DownlockGearRight2,
+                    ],
                 ),
 
                 component_controller: TestGearSystemController::new(),
@@ -915,6 +1035,7 @@ mod tests {
     #[test]
     fn proximity_detector_active_when_at_position() {
         let mut test_bed = SimulationTestBed::from(ProximityDetector::new(
+            ProximityDetectorId::UplockGearRight1,
             Ratio::new::<ratio>(0.5),
             Ratio::new::<ratio>(0.1),
         ));
@@ -923,8 +1044,23 @@ mod tests {
     }
 
     #[test]
+    fn proximity_detector_failed_when_at_position_shows_not_active() {
+        let mut test_bed = SimulationTestBed::from(ProximityDetector::new(
+            ProximityDetectorId::UplockGearRight1,
+            Ratio::new::<ratio>(0.5),
+            Ratio::new::<ratio>(0.1),
+        ));
+        test_bed.fail(FailureType::GearProxSensorDamage(
+            ProximityDetectorId::UplockGearRight1,
+        ));
+        test_bed.command_element(|e| e.update(Ratio::new::<ratio>(0.5)));
+        assert!(!test_bed.query_element(|e| e.proximity_detected()));
+    }
+
+    #[test]
     fn proximity_detector_active_only_when_in_range() {
         let mut test_bed = SimulationTestBed::from(ProximityDetector::new(
+            ProximityDetectorId::UplockGearRight1,
             Ratio::new::<ratio>(0.5),
             Ratio::new::<ratio>(0.1),
         ));

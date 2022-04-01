@@ -1,4 +1,4 @@
-use crate::shared::HydraulicColor;
+use crate::shared::{HydraulicColor, ProximityDetectorId};
 use crate::simulation::SimulationElement;
 
 #[derive(Clone, Copy, PartialEq)]
@@ -9,6 +9,7 @@ pub enum FailureType {
     ReservoirReturnLeak(HydraulicColor),
     LgciuPowerSupply(usize),
     LgciuInternalError(usize),
+    GearProxSensorDamage(ProximityDetectorId),
     RadioAltimeter(usize),
 }
 
