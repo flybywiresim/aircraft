@@ -361,6 +361,7 @@ impl LandingGearControlCoordinator {
 /// Gathers multiple LGCIUs and handle the inter lgciu master/slave mechanism
 /// and their interface with gear handle lever logic
 pub struct LandingGearControlInterfaceUnitSet {
+    gear_handle_baulk_lock_id: VariableIdentifier,
     coordinator: LandingGearControlCoordinator,
     lgcius: [LandingGearControlInterfaceUnit; 2],
     gear_handle_unit: LandingGearHandleUnit,
@@ -372,6 +373,7 @@ impl LandingGearControlInterfaceUnitSet {
         lgciu2_powered_by: ElectricalBusType,
     ) -> Self {
         Self {
+            gear_handle_baulk_lock_id: context.get_identifier("GEAR_LEVER_LOCKED".to_owned()),
             coordinator: LandingGearControlCoordinator::new(),
             lgcius: [
                 LandingGearControlInterfaceUnit::new(context, 1, lgciu1_powered_by),
@@ -446,6 +448,13 @@ impl SimulationElement for LandingGearControlInterfaceUnitSet {
         self.lgcius[1].accept(visitor);
 
         visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.gear_handle_baulk_lock_id,
+            self.gear_handle_baulk_locked(),
+        );
     }
 }
 impl LandingGearHandle for LandingGearControlInterfaceUnitSet {

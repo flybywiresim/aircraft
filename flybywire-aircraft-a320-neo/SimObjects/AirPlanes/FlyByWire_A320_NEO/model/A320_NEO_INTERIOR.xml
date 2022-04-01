@@ -807,11 +807,11 @@
                 <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn OFF brake fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LANDING_GEAR_Lever_Gear_Template">
+            <UseTemplate Name="FBW_LANDING_GEAR_Gear_Lever_Template">
                 <ANIM_NAME>lever_landing_gear</ANIM_NAME>
                 <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
                 <WWISE_EVENT>gearleverclick</WWISE_EVENT>
-                <NO_GEARUP_ON_GROUND/>
+                <NO_GEARUP_IF_LOCKED/>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
