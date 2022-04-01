@@ -188,7 +188,7 @@
         </UseTemplate>
     </Template>
 
-    <!-- GEAR LEVER CUSTOM MODEL -->
+    <!-- GEAR LEVER CUSTOM MODEL LOCKED DOWN WITH SIMVAR FROM SYSTEM WASM -->
     <Template Name="FBW_LANDING_GEAR_Gear_Lever_Template">
 		<Parameters Type="Default">
 			<ANIM_NAME>LANDING_GEAR_Lever_Gear</ANIM_NAME>
@@ -234,7 +234,6 @@
 			</Component>
 		</Condition>
 	</Template>
-    <!--  -->
 
     <Template Name="FBW_Airbus_Fuel_Pump">
         <UseTemplate Name="FBW_Push_Toggle">
