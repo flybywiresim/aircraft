@@ -124,7 +124,7 @@ export const Checklists = () => {
         showModal(
             <PromptModal
                 title="Checklist Reset Warning"
-                bodyText="Are you sure to reset all checklists?"
+                bodyText="Are you sure you want to reset all checklists?"
                 onConfirm={() => {
                     checklists.forEach((cl, clIndex) => {
                         cl.items.forEach((_, itemIdx) => {
