@@ -513,6 +513,9 @@ impl SimulationElement for LandingGearHandleUnit {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.gear_handle_real_position_id, self.is_lever_down);
+
+        // Aligning request on demand so in sim position is always consistent with system state
+        writer.write(&self.gear_handle_position_requested_id, self.is_lever_down);
     }
 }
 
