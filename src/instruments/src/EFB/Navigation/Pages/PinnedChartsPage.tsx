@@ -200,7 +200,7 @@ export const PinnedChartUI = () => {
 
                     <TooltipWrapper text="Change Chart Provider">
                         <SelectInput
-                            className="w-48"
+                            className="w-56"
                             options={Object.values(providerTabs).map(({ alias, provider }) => ({ displayValue: alias, value: provider }))}
                             value={selectedProvider}
                             onChange={(value) => dispatch(editTabProperty({
