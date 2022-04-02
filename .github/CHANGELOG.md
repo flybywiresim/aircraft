@@ -229,6 +229,7 @@
 1. [MCUD] Add LSK for vert rev at destination - @tracernz (Mike)
 1. [MODEL] Add detailed rivet mesh to allow for ALDB+COMP+NORM ribbons - @bouveng (Johan Bouveng)
 1. [SD] Rewrite Bleed page to React - @RichardPilbery (tricky_dicky#3571)
+1. [FMGC] Add runway-by-itself approaches - @tracernz (Mike)
 
 ## 0.7.0
 

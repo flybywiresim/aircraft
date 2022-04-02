@@ -6,6 +6,7 @@ class CDUAvailableDeparturesPage {
             mcdu.page.Current = mcdu.page.AvailableDeparturesPage;
             let selectedRunwayCell = "---";
             let selectedRunwayCellColor = "white";
+            /** @type {OneWayRunway} */
             const selectedRunway = mcdu.flightPlanManager.getOriginRunway();
             if (selectedRunway) {
                 selectedRunwayCell = Avionics.Utils.formatRunway(selectedRunway.designation);
@@ -87,7 +88,7 @@ class CDUAvailableDeparturesPage {
                             sidMatchesSelectedRunway = true;
                         } else {
                             for (let j = 0; j < sid.runwayTransitions.length; j++) {
-                                if (sid.runwayTransitions[j].name.indexOf(selectedRunway.designation) !== -1) {
+                                if (sid.runwayTransitions[j].runwayNumber === selectedRunway.number && sid.runwayTransitions[j].runwayDesignation === selectedRunway.designator) {
                                     sidMatchesSelectedRunway = true;
                                     transitionIndex = j;
                                     break;
@@ -131,7 +132,7 @@ class CDUAvailableDeparturesPage {
                 if (selectedRunway) {
                     for (const departure of airportInfo.departures) {
                         for (const transition of departure.runwayTransitions) {
-                            if (transition.name.indexOf(selectedRunway.designation) !== -1) {
+                            if (transition.runwayNumber === selectedRunway.number && transition.runwayDesignation === selectedRunway.designator) {
                                 maxPage++;
                                 break;
                             }
