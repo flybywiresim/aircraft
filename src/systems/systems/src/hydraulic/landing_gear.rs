@@ -1,11 +1,11 @@
-use crate::failures::{Failure, FailureType};
-use crate::landing_gear::GearSystemSensors;
-use crate::shared::low_pass_filter::LowPassFilter;
-use crate::shared::{GearWheel, LgciuGearControl, ProximityDetectorId};
-
-use crate::simulation::{
-    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-    VariableIdentifier, Write,
+use crate::{
+    failures::{Failure, FailureType},
+    landing_gear::GearSystemSensors,
+    shared::{low_pass_filter::LowPassFilter, GearWheel, LgciuGearControl, ProximityDetectorId},
+    simulation::{
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write,
+    },
 };
 
 use super::linear_actuator::{
@@ -31,13 +31,13 @@ pub struct HydraulicGearSystem {
 
     hydraulic_supply: GearSystemHydraulicSupply,
 
-    nose_door_assembly: GearDoorAssembly,
-    left_door_assembly: GearDoorAssembly,
-    right_door_assembly: GearDoorAssembly,
+    nose_door_assembly: GearSystemComponentAssembly,
+    left_door_assembly: GearSystemComponentAssembly,
+    right_door_assembly: GearSystemComponentAssembly,
 
-    nose_gear_assembly: GearDoorAssembly,
-    left_gear_assembly: GearDoorAssembly,
-    right_gear_assembly: GearDoorAssembly,
+    nose_gear_assembly: GearSystemComponentAssembly,
+    left_gear_assembly: GearSystemComponentAssembly,
+    right_gear_assembly: GearSystemComponentAssembly,
 }
 impl HydraulicGearSystem {
     pub fn new(
@@ -60,7 +60,7 @@ impl HydraulicGearSystem {
 
             hydraulic_supply: GearSystemHydraulicSupply::new(),
 
-            nose_door_assembly: GearDoorAssembly::new(
+            nose_door_assembly: GearSystemComponentAssembly::new(
                 GearSysComponentId::Door,
                 false,
                 nose_door,
@@ -74,7 +74,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockDoorCenter2,
                 ],
             ),
-            left_door_assembly: GearDoorAssembly::new(
+            left_door_assembly: GearSystemComponentAssembly::new(
                 GearSysComponentId::Door,
                 false,
                 left_door,
@@ -88,7 +88,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockDoorLeft2,
                 ],
             ),
-            right_door_assembly: GearDoorAssembly::new(
+            right_door_assembly: GearSystemComponentAssembly::new(
                 GearSysComponentId::Door,
                 false,
                 right_door,
@@ -104,7 +104,7 @@ impl HydraulicGearSystem {
             ),
 
             // Nose gear has pull to retract system while main gears have push to retract
-            nose_gear_assembly: GearDoorAssembly::new(
+            nose_gear_assembly: GearSystemComponentAssembly::new(
                 GearSysComponentId::Gear,
                 false,
                 nose_gear,
@@ -118,7 +118,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockGearCenter2,
                 ],
             ),
-            left_gear_assembly: GearDoorAssembly::new(
+            left_gear_assembly: GearSystemComponentAssembly::new(
                 GearSysComponentId::Gear,
                 true,
                 left_gear,
@@ -132,7 +132,7 @@ impl HydraulicGearSystem {
                     ProximityDetectorId::DownlockGearLeft2,
                 ],
             ),
-            right_gear_assembly: GearDoorAssembly::new(
+            right_gear_assembly: GearSystemComponentAssembly::new(
                 GearSysComponentId::Gear,
                 true,
                 right_gear,
@@ -341,7 +341,7 @@ impl GearSystemHydraulicSupply {
     }
 }
 
-pub trait GearComponentController {
+pub trait GearSystemComponentController {
     fn should_open(&self) -> bool;
     fn should_close(&self) -> bool;
 }
@@ -351,7 +351,7 @@ enum GearSysComponentId {
     Gear,
 }
 
-struct GearDoorAssembly {
+struct GearSystemComponentAssembly {
     component_id: GearSysComponentId,
     is_inverted_control: bool,
     hydraulic_controller: GearDoorHydraulicController,
@@ -361,7 +361,7 @@ struct GearDoorAssembly {
     hydraulic_uplock: HydraulicLock,
     hydraulic_downlock: Option<HydraulicLock>,
 }
-impl GearDoorAssembly {
+impl GearSystemComponentAssembly {
     const OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO: f64 = 1.;
     const OPENED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.03;
 
@@ -522,7 +522,7 @@ impl GearDoorAssembly {
         self.hydraulic_assembly.is_locked()
     }
 }
-impl SimulationElement for GearDoorAssembly {
+impl SimulationElement for GearSystemComponentAssembly {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.uplock_proximity_detectors, visitor);
         accept_iterable!(self.fully_opened_proximity_detectors, visitor);
@@ -880,7 +880,7 @@ mod tests {
         }
 
         fn set_control_active(&mut self, is_active: bool) {
-            self.control_active = true;
+            self.control_active = is_active;
         }
     }
     impl LgciuGearControl for TestGearSystemController {
@@ -900,8 +900,8 @@ mod tests {
     struct TestSingleGearAircraft {
         loop_updater: MaxStepLoop,
 
-        door_assembly: GearDoorAssembly,
-        gear_assembly: GearDoorAssembly,
+        door_assembly: GearSystemComponentAssembly,
+        gear_assembly: GearSystemComponentAssembly,
 
         component_controller: TestGearSystemController,
 
@@ -916,7 +916,7 @@ mod tests {
             Self {
                 loop_updater: MaxStepLoop::new(time_step),
 
-                door_assembly: GearDoorAssembly::new(
+                door_assembly: GearSystemComponentAssembly::new(
                     GearSysComponentId::Door,
                     false,
                     door_hydraulic_assembly,
@@ -930,7 +930,7 @@ mod tests {
                         ProximityDetectorId::DownlockDoorRight2,
                     ],
                 ),
-                gear_assembly: GearDoorAssembly::new(
+                gear_assembly: GearSystemComponentAssembly::new(
                     GearSysComponentId::Gear,
                     true,
                     gear_hydraulic_assembly,
