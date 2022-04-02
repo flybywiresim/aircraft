@@ -203,7 +203,7 @@ export const PushbackPage = () => {
                             onClick={() => setParkingBrakeEngaged((old) => !old)}
                             className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center ${parkingBrakeEngaged ? 'bg-white text-utility-red' : 'bg-utility-red text-white'}`}
                         >
-                            <h1 className="font-bold text-current uppercase">{parkingBrakeEngaged ? t('Pushback.ParkingBrake.Off') : t('Pushback.ParkingBrake.On')}</h1>
+                            <h1 className="font-bold text-current uppercase">{parkingBrakeEngaged ? t('Pushback.ParkingBrake.On') : t('Pushback.ParkingBrake.Off')}</h1>
                         </button>
                     </div>
                 </div>
