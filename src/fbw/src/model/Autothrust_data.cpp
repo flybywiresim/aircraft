@@ -174,6 +174,8 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
 
   0.0,
 
+  0.0,
+
   -2.0,
 
   0.0,
@@ -210,6 +212,10 @@ AutothrustModelClass::Parameters_Autothrust_T AutothrustModelClass::Autothrust_P
   15.0,
 
   0.5,
+
+  -2.0,
+
+  0.1,
 
   athr_mode_A_FLOOR,
 
