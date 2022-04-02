@@ -113,6 +113,13 @@ pub trait LgciuInterface:
 {
 }
 
+#[derive(Copy, Clone, PartialEq)]
+#[repr(usize)]
+pub enum LgciuId {
+    Lgciu1 = 0,
+    Lgciu2 = 1,
+}
+
 #[derive(Clone, Copy, PartialEq)]
 pub enum ProximityDetectorId {
     UplockGearCenter1,

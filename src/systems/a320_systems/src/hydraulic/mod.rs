@@ -4747,15 +4747,6 @@ impl SpoilerGroup {
         self.spoilers[2].update(context, &spoiler_controllers[2], blue_pressure);
         self.spoilers[3].update(context, &spoiler_controllers[3], yellow_pressure);
         self.spoilers[4].update(context, &spoiler_controllers[4], green_pressure);
-
-        // println!(
-        //     "ACTUATORS {:.2} {:.2} {:.2} {:.2} {:.2}",
-        //     self.spoilers[0].position.get::<ratio>(),
-        //     self.spoilers[1].position.get::<ratio>(),
-        //     self.spoilers[2].position.get::<ratio>(),
-        //     self.spoilers[3].position.get::<ratio>(),
-        //     self.spoilers[4].position.get::<ratio>(),
-        // );
     }
 
     fn actuator(&mut self, spoiler_id: usize) -> &mut impl Actuator {
@@ -5835,7 +5826,9 @@ mod tests {
             }
 
             fn set_gear_lever_up(mut self) -> Self {
+                // One tick is needed so lever up can be evaluated
                 self.write_by_name("GEAR_LEVER_POSITION_REQUEST", false);
+                self = self.run_one_tick();
 
                 self
             }
@@ -9467,14 +9460,13 @@ mod tests {
 
         #[test]
         fn nominal_gear_retraction_extension_cycles_in_flight() {
-            let mut test_bed = test_bed_with()
-                .set_cold_dark_inputs()
-                .in_flight()
-                .set_gear_lever_up();
+            let mut test_bed = test_bed_with().set_cold_dark_inputs().in_flight();
 
             assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(25.));
+            test_bed = test_bed
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(25.));
             assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
 
             test_bed = test_bed
@@ -9530,6 +9522,7 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
+                .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(25.));
 
             assert!(test_bed.is_all_doors_really_up());

@@ -20,7 +20,7 @@ use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
 use systems::failures::FailureType;
-use systems::shared::{ElectricalBusType, HydraulicColor, ProximityDetectorId};
+use systems::shared::{ElectricalBusType, HydraulicColor, LgciuId, ProximityDetectorId};
 use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 
@@ -76,10 +76,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             29_008,
             FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
         ),
-        (32_000, FailureType::LgciuPowerSupply(1)),
-        (32_001, FailureType::LgciuPowerSupply(2)),
-        (32_002, FailureType::LgciuInternalError(1)),
-        (32_003, FailureType::LgciuInternalError(2)),
+        (32_000, FailureType::LgciuPowerSupply(LgciuId::Lgciu1)),
+        (32_001, FailureType::LgciuPowerSupply(LgciuId::Lgciu2)),
+        (32_002, FailureType::LgciuInternalError(LgciuId::Lgciu1)),
+        (32_003, FailureType::LgciuInternalError(LgciuId::Lgciu2)),
         (
             32_004,
             FailureType::GearProxSensorDamage(ProximityDetectorId::UplockGearLeft1),

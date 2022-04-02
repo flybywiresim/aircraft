@@ -4,7 +4,7 @@ use crate::{
     failures::{Failure, FailureType},
     shared::{
         ElectricalBusType, ElectricalBuses, GearWheel, LandingGearHandle, LgciuDoorPosition,
-        LgciuGearControl, LgciuGearExtension, LgciuInterface, LgciuWeightOnWheels,
+        LgciuGearControl, LgciuGearExtension, LgciuId, LgciuInterface, LgciuWeightOnWheels,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -17,10 +17,10 @@ use uom::si::{
 };
 
 pub trait GearSystemSensors {
-    fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
-    fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
-    fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
-    fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool;
+    fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool;
+    fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool;
+    fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool;
+    fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool;
 }
 
 /// Represents a landing gear on Airbus aircraft.
@@ -78,8 +78,15 @@ impl SimulationElement for LandingGear {
     }
 }
 
+fn lgciu_number(lgciu_id: LgciuId) -> u8 {
+    match lgciu_id {
+        LgciuId::Lgciu1 => 1,
+        LgciuId::Lgciu2 => 2,
+    }
+}
+
 struct LgciuSensorInputs {
-    number_index: usize,
+    lgciu_id: LgciuId,
 
     external_power_available: bool,
     is_powered: bool,
@@ -109,11 +116,9 @@ struct LgciuSensorInputs {
     right_gear_compressed_id: VariableIdentifier,
 }
 impl LgciuSensorInputs {
-    fn new(context: &mut InitContext, number: usize) -> Self {
-        assert!(number > 0);
-
+    fn new(context: &mut InitContext, lgciu_id: LgciuId) -> Self {
         Self {
-            number_index: number - 1,
+            lgciu_id,
             external_power_available: false,
             is_powered: false,
 
@@ -135,12 +140,18 @@ impl LgciuSensorInputs {
             right_door_up_and_locked: false,
             left_door_up_and_locked: false,
 
-            nose_gear_compressed_id: context
-                .get_identifier(format!("LGCIU_{}_CENTER_GEAR_COMPRESSED", number)),
-            left_gear_compressed_id: context
-                .get_identifier(format!("LGCIU_{}_LEFT_GEAR_COMPRESSED", number)),
-            right_gear_compressed_id: context
-                .get_identifier(format!("LGCIU_{}_RIGHT_GEAR_COMPRESSED", number)),
+            nose_gear_compressed_id: context.get_identifier(format!(
+                "LGCIU_{}_CENTER_GEAR_COMPRESSED",
+                lgciu_number(lgciu_id)
+            )),
+            left_gear_compressed_id: context.get_identifier(format!(
+                "LGCIU_{}_LEFT_GEAR_COMPRESSED",
+                lgciu_number(lgciu_id)
+            )),
+            right_gear_compressed_id: context.get_identifier(format!(
+                "LGCIU_{}_RIGHT_GEAR_COMPRESSED",
+                lgciu_number(lgciu_id)
+            )),
         }
     }
 
@@ -159,31 +170,31 @@ impl LgciuSensorInputs {
         self.right_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::RIGHT);
 
         self.right_gear_up_and_locked =
-            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::RIGHT, self.number_index);
+            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::RIGHT, self.lgciu_id);
         self.left_gear_up_and_locked =
-            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::LEFT, self.number_index);
+            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::LEFT, self.lgciu_id);
         self.nose_gear_up_and_locked =
-            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::CENTER, self.number_index);
+            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::CENTER, self.lgciu_id);
 
         self.right_gear_down_and_locked =
-            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::RIGHT, self.number_index);
+            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::RIGHT, self.lgciu_id);
         self.left_gear_down_and_locked =
-            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::LEFT, self.number_index);
+            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::LEFT, self.lgciu_id);
         self.nose_gear_down_and_locked =
-            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::CENTER, self.number_index);
+            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::CENTER, self.lgciu_id);
 
         self.nose_door_fully_opened =
-            gear_system_sensors.is_door_id_down_and_locked(GearWheel::CENTER, self.number_index);
+            gear_system_sensors.is_door_id_down_and_locked(GearWheel::CENTER, self.lgciu_id);
         self.right_door_fully_opened =
-            gear_system_sensors.is_door_id_down_and_locked(GearWheel::RIGHT, self.number_index);
+            gear_system_sensors.is_door_id_down_and_locked(GearWheel::RIGHT, self.lgciu_id);
         self.left_door_fully_opened =
-            gear_system_sensors.is_door_id_down_and_locked(GearWheel::LEFT, self.number_index);
+            gear_system_sensors.is_door_id_down_and_locked(GearWheel::LEFT, self.lgciu_id);
         self.nose_door_up_and_locked =
-            gear_system_sensors.is_door_id_up_and_locked(GearWheel::CENTER, self.number_index);
+            gear_system_sensors.is_door_id_up_and_locked(GearWheel::CENTER, self.lgciu_id);
         self.right_door_up_and_locked =
-            gear_system_sensors.is_door_id_up_and_locked(GearWheel::RIGHT, self.number_index);
+            gear_system_sensors.is_door_id_up_and_locked(GearWheel::RIGHT, self.lgciu_id);
         self.left_door_up_and_locked =
-            gear_system_sensors.is_door_id_up_and_locked(GearWheel::LEFT, self.number_index);
+            gear_system_sensors.is_door_id_up_and_locked(GearWheel::LEFT, self.lgciu_id);
     }
 
     fn unlock_state(&self, wheel_id: GearWheel, gear_lever_is_down: bool) -> bool {
@@ -344,11 +355,11 @@ impl LandingGearControlCoordinator {
         let target_lgciu_state = lgcius_status[target_lgciu_index];
 
         if target_lgciu_state == LgciuStatus::Ok {
-            println!(
-                "COORD=> CURRENT MASTER STATE {:?}, SWITCHING TO LGCIU {}",
-                lgcius_status[self.active_lgciu_index],
-                target_lgciu_index + 1
-            );
+            // println!(
+            //     "COORD=> CURRENT MASTER STATE {:?}, SWITCHING TO LGCIU {}",
+            //     lgcius_status[self.active_lgciu_index],
+            //     target_lgciu_index + 1
+            // );
             self.active_lgciu_index = target_lgciu_index;
         }
     }
@@ -376,8 +387,8 @@ impl LandingGearControlInterfaceUnitSet {
             gear_handle_baulk_lock_id: context.get_identifier("GEAR_LEVER_LOCKED".to_owned()),
             coordinator: LandingGearControlCoordinator::new(),
             lgcius: [
-                LandingGearControlInterfaceUnit::new(context, 1, lgciu1_powered_by),
-                LandingGearControlInterfaceUnit::new(context, 2, lgciu2_powered_by),
+                LandingGearControlInterfaceUnit::new(context, LgciuId::Lgciu1, lgciu1_powered_by),
+                LandingGearControlInterfaceUnit::new(context, LgciuId::Lgciu2, lgciu2_powered_by),
             ],
             gear_handle_unit: LandingGearHandleUnit::new(context),
         }
@@ -412,13 +423,13 @@ impl LandingGearControlInterfaceUnitSet {
             self.coordinator.active_lgciu_number() == 2,
         );
 
-        println!(
-            "COORD=> Status [{:?}/{:?}] LGCIUGear ctrl  [{:?}/{:?}] ",
-            self.lgcius[0].status(),
-            self.lgcius[1].status(),
-            self.lgcius[0].gear_system_state(),
-            self.lgcius[1].gear_system_state(),
-        );
+        // println!(
+        //     "COORD=> Status [{:?}/{:?}] LGCIUGear ctrl  [{:?}/{:?}] ",
+        //     self.lgcius[0].status(),
+        //     self.lgcius[1].status(),
+        //     self.lgcius[0].gear_system_state(),
+        //     self.lgcius[1].gear_system_state(),
+        // );
 
         self.gear_handle_unit
             .update(&self.lgcius[0], &self.lgcius[1]);
@@ -557,22 +568,36 @@ pub struct LandingGearControlInterfaceUnit {
 impl LandingGearControlInterfaceUnit {
     const MAX_TRANSITION_DURATION: Duration = Duration::from_secs(30);
 
-    pub fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
-        assert!(number == 1 || number == 2);
-
+    pub fn new(
+        context: &mut InitContext,
+        lgciu_id: LgciuId,
+        powered_by: ElectricalBusType,
+    ) -> Self {
         Self {
-            left_gear_downlock_id: context
-                .get_identifier(format!("LGCIU_{}_LEFT_GEAR_DOWNLOCKED", number)),
-            left_gear_unlock_id: context
-                .get_identifier(format!("LGCIU_{}_LEFT_GEAR_UNLOCKED", number)),
-            nose_gear_downlock_id: context
-                .get_identifier(format!("LGCIU_{}_CENTER_GEAR_DOWNLOCKED", number)),
-            nose_gear_unlock_id: context
-                .get_identifier(format!("LGCIU_{}_CENTER_GEAR_UNLOCKED", number)),
-            right_gear_downlock_id: context
-                .get_identifier(format!("LGCIU_{}_RIGHT_GEAR_DOWNLOCKED", number)),
-            right_gear_unlock_id: context
-                .get_identifier(format!("LGCIU_{}_RIGHT_GEAR_UNLOCKED", number)),
+            left_gear_downlock_id: context.get_identifier(format!(
+                "LGCIU_{}_LEFT_GEAR_DOWNLOCKED",
+                lgciu_number(lgciu_id)
+            )),
+            left_gear_unlock_id: context.get_identifier(format!(
+                "LGCIU_{}_LEFT_GEAR_UNLOCKED",
+                lgciu_number(lgciu_id)
+            )),
+            nose_gear_downlock_id: context.get_identifier(format!(
+                "LGCIU_{}_CENTER_GEAR_DOWNLOCKED",
+                lgciu_number(lgciu_id)
+            )),
+            nose_gear_unlock_id: context.get_identifier(format!(
+                "LGCIU_{}_CENTER_GEAR_UNLOCKED",
+                lgciu_number(lgciu_id)
+            )),
+            right_gear_downlock_id: context.get_identifier(format!(
+                "LGCIU_{}_RIGHT_GEAR_DOWNLOCKED",
+                lgciu_number(lgciu_id)
+            )),
+            right_gear_unlock_id: context.get_identifier(format!(
+                "LGCIU_{}_RIGHT_GEAR_UNLOCKED",
+                lgciu_number(lgciu_id)
+            )),
 
             is_powered: false,
             is_powered_previous_state: false,
@@ -580,7 +605,7 @@ impl LandingGearControlInterfaceUnit {
             powered_by,
             external_power_available: false,
 
-            sensor_inputs: LgciuSensorInputs::new(context, number),
+            sensor_inputs: LgciuSensorInputs::new(context, lgciu_id),
             gear_system_control: GearSystemStateMachine::default(),
             is_gear_lever_down: true,
 
@@ -588,10 +613,10 @@ impl LandingGearControlInterfaceUnit {
             gear_lever_position_is_down_previous_state: true,
             status: LgciuStatus::Ok,
 
-            power_supply_failure: Failure::new(FailureType::LgciuPowerSupply(number)),
-            internal_error_failure: Failure::new(FailureType::LgciuInternalError(number)),
+            power_supply_failure: Failure::new(FailureType::LgciuPowerSupply(lgciu_id)),
+            internal_error_failure: Failure::new(FailureType::LgciuInternalError(lgciu_id)),
 
-            is_active_computer_previous_state: number == 1,
+            is_active_computer_previous_state: lgciu_id == LgciuId::Lgciu1,
         }
     }
 
@@ -638,15 +663,13 @@ impl LandingGearControlInterfaceUnit {
 
         if !self.is_powered {
             self.status = LgciuStatus::FailedNotPowered;
-        } else {
-            if self.status == LgciuStatus::Ok {
-                if self.transition_duration > Self::MAX_TRANSITION_DURATION {
-                    self.status = LgciuStatus::FailedNoChangeOver;
-                }
+        } else if self.status == LgciuStatus::Ok {
+            if self.transition_duration > Self::MAX_TRANSITION_DURATION {
+                self.status = LgciuStatus::FailedNoChangeOver;
+            }
 
-                if self.internal_error_failure.is_active() {
-                    self.status = LgciuStatus::FailedAutoChangeOver;
-                }
+            if self.internal_error_failure.is_active() {
+                self.status = LgciuStatus::FailedAutoChangeOver;
             }
         }
     }
@@ -1018,19 +1041,19 @@ mod tests {
         }
     }
     impl GearSystemSensors for TestGearSystem {
-        fn is_wheel_id_up_and_locked(&self, _: GearWheel, _: usize) -> bool {
+        fn is_wheel_id_up_and_locked(&self, _: GearWheel, _: LgciuId) -> bool {
             self.gear_position >= Self::UP_LOCK_TRESHOLD
         }
 
-        fn is_wheel_id_down_and_locked(&self, _: GearWheel, _: usize) -> bool {
+        fn is_wheel_id_down_and_locked(&self, _: GearWheel, _: LgciuId) -> bool {
             self.gear_position <= 1
         }
 
-        fn is_door_id_up_and_locked(&self, _: GearWheel, _: usize) -> bool {
+        fn is_door_id_up_and_locked(&self, _: GearWheel, _: LgciuId) -> bool {
             self.door_position >= Self::UP_LOCK_TRESHOLD
         }
 
-        fn is_door_id_down_and_locked(&self, _: GearWheel, _: usize) -> bool {
+        fn is_door_id_down_and_locked(&self, _: GearWheel, _: LgciuId) -> bool {
             self.door_position <= 1
         }
     }
@@ -1218,12 +1241,9 @@ mod tests {
 
     #[test]
     fn gear_lever_up_and_locked_can_go_down_but_not_up() {
-        // Need two ticks to stabilize lock mechanism dependancy
-        let mut test_bed = test_bed_with()
-            .in_flight()
-            .set_gear_handle_up()
-            .run_one_tick()
-            .run_one_tick();
+        let mut test_bed = test_bed_with().in_flight().run_one_tick();
+
+        test_bed = test_bed.set_gear_handle_up().run_one_tick();
 
         assert!(!test_bed.is_gear_handle_lock_down_active());
         assert!(!test_bed.is_gear_handle_down());

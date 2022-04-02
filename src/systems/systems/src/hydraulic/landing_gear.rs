@@ -1,7 +1,9 @@
 use crate::{
     failures::{Failure, FailureType},
     landing_gear::GearSystemSensors,
-    shared::{low_pass_filter::LowPassFilter, GearWheel, LgciuGearControl, ProximityDetectorId},
+    shared::{
+        low_pass_filter::LowPassFilter, GearWheel, LgciuGearControl, LgciuId, ProximityDetectorId,
+    },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
@@ -216,35 +218,35 @@ impl HydraulicGearSystem {
     }
 }
 impl GearSystemSensors for HydraulicGearSystem {
-    fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
+    fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
         match wheel_id {
-            GearWheel::CENTER => self.nose_gear_assembly.is_sensor_uplock(sensor_id),
-            GearWheel::LEFT => self.left_gear_assembly.is_sensor_uplock(sensor_id),
-            GearWheel::RIGHT => self.right_gear_assembly.is_sensor_uplock(sensor_id),
+            GearWheel::CENTER => self.nose_gear_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::LEFT => self.left_gear_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::RIGHT => self.right_gear_assembly.is_sensor_uplock(lgciu_id),
         }
     }
 
-    fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
+    fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
         match wheel_id {
-            GearWheel::CENTER => self.nose_gear_assembly.is_sensor_fully_opened(sensor_id),
-            GearWheel::LEFT => self.left_gear_assembly.is_sensor_fully_opened(sensor_id),
-            GearWheel::RIGHT => self.right_gear_assembly.is_sensor_fully_opened(sensor_id),
+            GearWheel::CENTER => self.nose_gear_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::LEFT => self.left_gear_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::RIGHT => self.right_gear_assembly.is_sensor_fully_opened(lgciu_id),
         }
     }
 
-    fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
+    fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
         match wheel_id {
-            GearWheel::CENTER => self.nose_door_assembly.is_sensor_uplock(sensor_id),
-            GearWheel::LEFT => self.left_door_assembly.is_sensor_uplock(sensor_id),
-            GearWheel::RIGHT => self.right_door_assembly.is_sensor_uplock(sensor_id),
+            GearWheel::CENTER => self.nose_door_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::LEFT => self.left_door_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::RIGHT => self.right_door_assembly.is_sensor_uplock(lgciu_id),
         }
     }
 
-    fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, sensor_id: usize) -> bool {
+    fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
         match wheel_id {
-            GearWheel::CENTER => self.nose_door_assembly.is_sensor_fully_opened(sensor_id),
-            GearWheel::LEFT => self.left_door_assembly.is_sensor_fully_opened(sensor_id),
-            GearWheel::RIGHT => self.right_door_assembly.is_sensor_fully_opened(sensor_id),
+            GearWheel::CENTER => self.nose_door_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::LEFT => self.left_door_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::RIGHT => self.right_door_assembly.is_sensor_fully_opened(lgciu_id),
         }
     }
 }
@@ -502,14 +504,12 @@ impl GearSystemComponentAssembly {
         self.hydraulic_assembly.actuator(0)
     }
 
-    fn is_sensor_uplock(&self, sensor_id: usize) -> bool {
-        assert!(sensor_id <= 1);
-        self.uplock_proximity_detectors[sensor_id].proximity_detected()
+    fn is_sensor_uplock(&self, lgciu_id: LgciuId) -> bool {
+        self.uplock_proximity_detectors[lgciu_id as usize].proximity_detected()
     }
 
-    fn is_sensor_fully_opened(&self, sensor_id: usize) -> bool {
-        assert!(sensor_id <= 1);
-        self.fully_opened_proximity_detectors[sensor_id].proximity_detected()
+    fn is_sensor_fully_opened(&self, lgciu_id: LgciuId) -> bool {
+        self.fully_opened_proximity_detectors[lgciu_id as usize].proximity_detected()
     }
 
     #[cfg(test)]
@@ -995,20 +995,20 @@ mod tests {
             );
         }
 
-        fn is_door_sensor_uplock(&self, sensor_id: usize) -> bool {
-            self.door_assembly.is_sensor_uplock(sensor_id)
+        fn is_door_sensor_uplock(&self, lgciu_id: LgciuId) -> bool {
+            self.door_assembly.is_sensor_uplock(lgciu_id)
         }
 
-        fn is_door_sensor_fully_opened(&self, sensor_id: usize) -> bool {
-            self.door_assembly.is_sensor_fully_opened(sensor_id)
+        fn is_door_sensor_fully_opened(&self, lgciu_id: LgciuId) -> bool {
+            self.door_assembly.is_sensor_fully_opened(lgciu_id)
         }
 
-        fn is_gear_sensor_uplock(&self, sensor_id: usize) -> bool {
-            self.gear_assembly.is_sensor_uplock(sensor_id)
+        fn is_gear_sensor_uplock(&self, lgciu_id: LgciuId) -> bool {
+            self.gear_assembly.is_sensor_uplock(lgciu_id)
         }
 
-        fn is_gear_sensor_fully_opened(&self, sensor_id: usize) -> bool {
-            self.gear_assembly.is_sensor_fully_opened(sensor_id)
+        fn is_gear_sensor_fully_opened(&self, lgciu_id: LgciuId) -> bool {
+            self.gear_assembly.is_sensor_fully_opened(lgciu_id)
         }
 
         fn is_gear_physically_locked(&self) -> bool {
@@ -1211,11 +1211,11 @@ mod tests {
             test_bed.query(|a| a.door_assembly.position_normalized()) == Ratio::new::<ratio>(0.)
         );
 
-        assert!(test_bed.query(|a| a.is_door_sensor_uplock(0)));
-        assert!(test_bed.query(|a| a.is_door_sensor_uplock(1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu2)));
 
-        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
-        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu2)));
     }
 
     #[test]
@@ -1229,11 +1229,11 @@ mod tests {
         });
 
         test_bed.run_with_delta(Duration::from_millis(33));
-        assert!(test_bed.query(|a| a.is_door_sensor_uplock(0)));
-        assert!(test_bed.query(|a| a.is_door_sensor_uplock(1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu2)));
 
-        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
-        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu2)));
     }
 
     #[test]
@@ -1272,15 +1272,15 @@ mod tests {
         assert!(test_bed.query(|a| a.is_gear_physically_locked()));
         assert!(!test_bed.query(|a| a.is_door_physically_locked()));
 
-        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
-        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
-        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(0)));
-        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu2)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(LgciuId::Lgciu2)));
 
-        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
-        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
-        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(0)));
-        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu2)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu2)));
 
         println!("RETRACT -- > GEAR RETRACTING");
         test_bed.command(|a| a.command_gears_retracting());
@@ -1289,15 +1289,15 @@ mod tests {
         assert!(test_bed.query(|a| a.is_gear_physically_locked()));
         assert!(!test_bed.query(|a| a.is_door_physically_locked()));
 
-        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
-        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
-        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(0)));
-        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(1)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu2)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(LgciuId::Lgciu2)));
 
-        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
-        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
-        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(0)));
-        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu2)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu2)));
 
         println!("RETRACT -- > DOOR CLOSING");
         test_bed.command(|a| a.command_doors_closing());
@@ -1306,15 +1306,15 @@ mod tests {
         assert!(test_bed.query(|a| a.is_gear_physically_locked()));
         assert!(test_bed.query(|a| a.is_door_physically_locked()));
 
-        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
-        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
-        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(0)));
-        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(1)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu2)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(LgciuId::Lgciu2)));
 
-        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
-        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
-        assert!(test_bed.query(|a| a.is_door_sensor_uplock(0)));
-        assert!(test_bed.query(|a| a.is_door_sensor_uplock(1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu2)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu2)));
 
         println!("EXTEND -- > DOOR OPENING");
         test_bed.command(|a| a.command_doors_opening());
@@ -1323,15 +1323,15 @@ mod tests {
         assert!(test_bed.query(|a| a.is_gear_physically_locked()));
         assert!(!test_bed.query(|a| a.is_door_physically_locked()));
 
-        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
-        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
-        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(0)));
-        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(1)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu2)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_uplock(LgciuId::Lgciu2)));
 
-        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
-        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
-        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(0)));
-        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu2)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu2)));
 
         println!("EXTEND -- > GEAR EXTENDING");
         test_bed.command(|a| a.command_gears_extending());
@@ -1340,15 +1340,15 @@ mod tests {
         assert!(test_bed.query(|a| a.is_gear_physically_locked()));
         assert!(!test_bed.query(|a| a.is_door_physically_locked()));
 
-        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
-        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
-        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(0)));
-        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu2)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(LgciuId::Lgciu2)));
 
-        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
-        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
-        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(0)));
-        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu2)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu2)));
 
         println!("EXTEND -- > DOOR CLOSING");
         test_bed.command(|a| a.command_doors_closing());
@@ -1357,15 +1357,15 @@ mod tests {
         assert!(test_bed.query(|a| a.is_gear_physically_locked()));
         assert!(test_bed.query(|a| a.is_door_physically_locked()));
 
-        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(0)));
-        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(1)));
-        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(0)));
-        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_gear_sensor_fully_opened(LgciuId::Lgciu2)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_gear_sensor_uplock(LgciuId::Lgciu2)));
 
-        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(0)));
-        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(1)));
-        assert!(test_bed.query(|a| a.is_door_sensor_uplock(0)));
-        assert!(test_bed.query(|a| a.is_door_sensor_uplock(1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu1)));
+        assert!(!test_bed.query(|a| a.is_door_sensor_fully_opened(LgciuId::Lgciu2)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu1)));
+        assert!(test_bed.query(|a| a.is_door_sensor_uplock(LgciuId::Lgciu2)));
     }
 
     fn main_gear_door_right_assembly() -> HydraulicLinearActuatorAssembly<1> {
