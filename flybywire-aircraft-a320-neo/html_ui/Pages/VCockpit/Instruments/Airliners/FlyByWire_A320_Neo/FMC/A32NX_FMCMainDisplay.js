@@ -2454,7 +2454,15 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
-    async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, callback = EmptyCallback.Boolean) {
+    /**
+     *
+     * @param {string} lastWaypointIdent The waypoint along the airway to insert up to
+     * @param {number} index the flight plan index of the from waypoint
+     * @param {string} airwayName the name/ident of the airway
+     * @param {boolean} smartAirway true if the intersection is computed by the smart airways function
+     * @returns index of the last waypoint inserted or -1 on error
+     */
+    async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, smartAirway = false) {
         const referenceWaypoint = this.flightPlanManager.getWaypoint(index - 1);
         const lastWaypointIdentPadEnd = lastWaypointIdent.padEnd(5, " ");
         if (referenceWaypoint) {
@@ -2486,6 +2494,7 @@ class FMCMainDisplay extends BaseAirliners {
                                             if (i < count) {
                                                 waypoint.infos.airwayOut = airwayName;
                                             }
+                                            waypoint.additionalData.smartAirway = smartAirway;
                                             console.log("icao:" + icao + " added");
                                             resolve();
                                         }).catch(console.error);
@@ -2494,23 +2503,22 @@ class FMCMainDisplay extends BaseAirliners {
 
                                 await syncInsertWaypointByIcao(airway.icaos[firstIndex + i * inc], index + i).catch(console.error);
                             }
-                            callback(true);
-                            return;
+                            return index + count;
                         }
                         this.addNewMessage(NXFictionalMessages.secondIndexNotFound);
-                        return callback(false);
+                        return -1;
                     }
                     this.addNewMessage(NXFictionalMessages.firstIndexNotFound);
-                    return callback(false);
+                    return -1;
                 }
                 this.addNewMessage(NXFictionalMessages.noRefWpt);
-                return callback(false);
+                return -1;
             }
             this.addNewMessage(NXFictionalMessages.noWptInfos);
-            return callback(false);
+            return -1;
         }
         this.addNewMessage(NXFictionalMessages.noRefWpt);
-        return callback(false);
+        return -1;
     }
 
     // Copy airway selections from temporary to active flightplan

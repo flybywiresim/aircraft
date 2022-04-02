@@ -233,6 +233,7 @@
 1. [FMGC] Implement "coarse" prediction system for turn speeds - @tracernz (Mike)
 1. [PFD] Reimplement PFD with msfs-avionics framework for improved performance - @saschl (saschl#9432)
 1. [EIS] Implement display switching - @tracernz (Mike)
+1. [FMGC] Automatic airway waypoint intersection - @tracernz (Mike)
 
 ## 0.7.0
 
