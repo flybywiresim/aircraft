@@ -12,6 +12,7 @@
     font-weight: 300;
     src: url("/Fonts/JetBrainsMono-Regular.ttf") format("truetype");
   }
+
   @font-face {
     font-family: "Inter";
     font-weight: 400;
@@ -22,6 +23,7 @@
     font-weight: 600;
     src: url("/Fonts/Inter-SemiBold.ttf") format("truetype");
   }
+
   @font-face {
     font-family: "Manrope";
     font-weight: 300;
@@ -47,11 +49,102 @@
     font-weight: 700;
     src: url("/Fonts/Manrope-Bold.ttf") format("truetype");
   }
+
   @font-face {
     font-family: "AirbusRMP";
     font-weight: 900;
     src: url("/Fonts/AirbusRMP.ttf") format("truetype");
   }
+
+  @font-face {
+    font-family: "NotoSansKR";
+    font-weight: 300;
+    src: url("/Fonts/NotoSansKR-Regular.otf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansKR";
+    font-weight: 400;
+    src: url("/Fonts/NotoSansKR-Regular.otf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansKR";
+    font-weight: 500;
+    src: url("/Fonts/NotoSansKR-Regular.otf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansKR";
+    font-weight: 700;
+    src: url("/Fonts/NotoSansKR-Regular.otf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "NotoSansJP";
+    font-weight: 300;
+    src: url("/Fonts/NotoSansJP-Regular.otf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansJP";
+    font-weight: 400;
+    src: url("/Fonts/NotoSansJP-Regular.otf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansJP";
+    font-weight: 500;
+    src: url("/Fonts/NotoSansJP-Regular.otf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansJP";
+    font-weight: 700;
+    src: url("/Fonts/NotoSansJP-Regular.otf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "NotoSansSC";
+    font-weight: 300;
+    src: url("/Fonts/NotoSansSC-Regular.otf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansSC";
+    font-weight: 400;
+    src: url("/Fonts/NotoSansSC-Regular.otf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansSC";
+    font-weight: 500;
+    src: url("/Fonts/NotoSansSC-Regular.otf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansSC";
+    font-weight: 700;
+    src: url("/Fonts/NotoSansSC-Regular.otf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "NotoSansArabic";
+    font-weight: 300;
+    src: url("/Fonts/NotoSansArabic-Regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansArabic";
+    font-weight: 400;
+    src: url("/Fonts/NotoSansArabic-Regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansArabic";
+    font-weight: 500;
+    src: url("/Fonts/NotoSansArabic-Regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansArabic";
+    font-weight: 600;
+    src: url("/Fonts/NotoSansArabic-Regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansArabic";
+    font-weight: 700;
+    src: url("/Fonts/NotoSansArabic-Regular.ttf") format("truetype");
+  }
+
 
   html body {
     @apply font-body;

@@ -68,8 +68,8 @@ module.exports = {
         },
         fontFamily: {
             mono: ['JetBrains Mono'],
-            body: ['Inter'],
-            title: ['Manrope'],
+            body: ['Inter', 'NotoSansKR', 'NotoSansJP','NotoSansSC','NotoSansArabic'],
+            title: ['Manrope', 'NotoSansKR', 'NotoSansJP','NotoSansSC','NotoSansArabic'],
             rmp: ['AirbusRMP'],
         },
     },
