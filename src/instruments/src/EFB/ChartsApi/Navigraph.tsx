@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import pkce from '@navigraph/pkce';
 
 import { NXDataStore } from '@shared/persistence';
-import { t } from 'i18next';
+import i18next from '../i18n';
 
 export interface NavigraphBoundingBox {
     bottomLeft: { lat: number, lon: number, xPx: number, yPx: number },
@@ -321,7 +321,7 @@ export default class NavigraphClient {
             }
         }
 
-        return { name: t('NavigationAndCharts.Navigraph.AirportDoesNotExist') };
+        return { name: i18next.t('NavigationAndCharts.Navigraph.AirportDoesNotExist') };
     }
 
     public get hasToken(): boolean {

@@ -1,15 +1,15 @@
 import React from 'react';
 
 import { useTranslation } from 'react-i18next';
-import { t } from 'i18next';
+import i18next from '../i18n';
 import { Navbar } from '../UtilComponents/Navbar';
 import { TODCalculator } from '../TODCalculator/TODCalculator';
 import { LandingWidget } from './Widgets/LandingWidget';
 import { TabRoutes, PageLink, PageRedirect } from '../Utils/routing';
 
 const tabs: PageLink[] = [
-    { name: 'Top of Descent', alias: t('Performance.TopOfDescent.Title'), component: <TODCalculator /> },
-    { name: 'Landing', alias: t('Performance.Landing.Title'), component: <LandingWidget /> },
+    { name: 'Top of Descent', alias: i18next.t('Performance.TopOfDescent.Title'), component: <TODCalculator /> },
+    { name: 'Landing', alias: i18next.t('Performance.Landing.Title'), component: <LandingWidget /> },
 ];
 
 export const Performance = () => {

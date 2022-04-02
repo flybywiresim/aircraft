@@ -4,7 +4,7 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { useSimVar } from '@instruments/common/simVars';
 
 import Slider from 'rc-slider';
-import { languageOptions } from 'instruments/src/EFB/i18n';
+import { languageOptions } from '../../i18n';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';

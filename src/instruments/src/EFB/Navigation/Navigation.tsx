@@ -14,7 +14,7 @@ import {
 import { useSimVar } from '@instruments/common/simVars';
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { useTranslation } from 'react-i18next';
-import { t } from 'i18next';
+import i18next from '../i18n';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { DrawableCanvas } from '../UtilComponents/DrawableCanvas';
 import { useNavigraph } from '../ChartsApi/Navigraph';
@@ -37,9 +37,9 @@ import { getPdfUrl, LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
-    { name: 'Navigraph', alias: t('NavigationAndCharts.Navigraph.Title'), component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
-    { name: 'Local Files', alias: t('NavigationAndCharts.LocalFiles.Title'), component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
-    { name: 'Pinned Charts', alias: t('NavigationAndCharts.PinnedCharts.Title'), component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
+    { name: 'Navigraph', alias: i18next.t('NavigationAndCharts.Navigraph.Title'), component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
+    { name: 'Local Files', alias: i18next.t('NavigationAndCharts.LocalFiles.Title'), component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
+    { name: 'Pinned Charts', alias: i18next.t('NavigationAndCharts.PinnedCharts.Title'), component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
 ];
 
 export const Navigation = () => {
