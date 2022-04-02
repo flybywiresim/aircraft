@@ -76,6 +76,16 @@
                 <TRIM_ONLY>True</TRIM_ONLY>
                 <ANIM_NAME_TRIM>trimtab_elevator_key</ANIM_NAME_TRIM>
             </UseTemplate>
+            <!-- TRIM MARKER L -->
+			<UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
+				<TRIM_ONLY>True</TRIM_ONLY>
+				<ANIM_NAME_TRIM>Trim-Marker_L-Anim</ANIM_NAME_TRIM>
+			</UseTemplate>
+            <!-- TRIM MARKER R -->
+			<UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
+				<TRIM_ONLY>True</TRIM_ONLY>
+				<ANIM_NAME_TRIM>Trim-Marker_R-Anim</ANIM_NAME_TRIM>
+			</UseTemplate>
             <UseTemplate Name="FBW_HANDLING_Aileron_Template">
                 <ANIM_NAME_LEFT>l_aileron_percent_key</ANIM_NAME_LEFT>
                 <ANIM_NAME_RIGHT>r_aileron_percent_key</ANIM_NAME_RIGHT>
@@ -124,6 +134,10 @@
             <UseTemplate Name="ASOBO_GEAR_Center_Template">
                 <ANIM_NAME>c_gear</ANIM_NAME>
             </UseTemplate>
+			<!-- GEAR C DECALALS -->
+			<UseTemplate Name="ASOBO_GEAR_Center_Template">
+				<ANIM_NAME>C_WHEEL_BASE-DECAL-Anim</ANIM_NAME>
+			</UseTemplate>
             <UseTemplate Name="ASOBO_GEAR_Left_Template">
                 <ANIM_NAME>l_gear</ANIM_NAME>
             </UseTemplate>
@@ -205,6 +219,26 @@
                 <ID>3</ID>
                 <ANIM_NAME>door_rear</ANIM_NAME>
             </UseTemplate>
+            <!-- CARGO DOOR DECALS -->
+			<UseTemplate Name="ASOBO_GT_Anim">
+				<ANIM_NAME>Decals_CargoDoor_Fwd</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_FWD_DOOR_CARGO_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Anim">
+				<ANIM_NAME>Decals_CargoDoor_FwdRidge</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_FWD_DOOR_CARGO_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
+			</UseTemplate>
+			<!-- DOOR DECALS -->
+			<UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+				<ID>0</ID>
+				<ANIM_NAME>Decals_Door_Fwd-Anim</ANIM_NAME>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+				<ID>3</ID>
+				<ANIM_NAME>Decals_Door_Rear</ANIM_NAME>
+			</UseTemplate>
             <UseTemplate Name="ASOBO_FuelHose_InteractivePoint_Template">
                 <ID>9</ID>
                 <NODE_ID>GROUND_FUELPIPE</NODE_ID>
