@@ -155,7 +155,7 @@ export const Checklists = () => {
 
     return (
         <>
-            <h1 className="mb-4 font-bold">Checklists</h1>
+            <h1 className="mb-4 font-bold">{t('Checklists.Title')}</h1>
             <div className="flex flex-row space-x-6 h-content-section-reduced">
                 <div className="flex flex-col flex-shrink-0 justify-between w-1/4">
                     <ScrollableContainer innerClassName="space-y-4" height={46}>

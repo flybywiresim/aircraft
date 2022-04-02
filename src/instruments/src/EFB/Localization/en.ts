@@ -22,6 +22,8 @@ export const en = {
         ResetAll: 'Reset All',
         ResetChecklist: 'Reset Checklist',
         TheLastChecklistIsComplete: 'The last checklist is complete',
+        ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'There are remaining autofill checklist items that have not yet been completed',
+        Title: 'Checklists',
     },
     Dashboard: {
         Alternate: 'Alternate',

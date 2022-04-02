@@ -22,6 +22,8 @@ export const es = {
         ResetAll: 'Restablecer todos',
         ResetChecklist: 'Restablecer lista de verificación',
         TheLastChecklistIsComplete: 'La última lista de verificación está completa',
+        ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Quedan elementos de la lista de verificación de autocompletar que aún no se han completado',
+        Title: 'Listas de Verificación',
     },
     Dashboard: {
         Alternate: 'Alternativa',
