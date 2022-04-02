@@ -878,10 +878,6 @@ mod tests {
         fn set_gears_extending(&mut self, close: bool) {
             self.extend_gear_request = close;
         }
-
-        fn set_control_active(&mut self, is_active: bool) {
-            self.control_active = is_active;
-        }
     }
     impl LgciuGearControl for TestGearSystemController {
         fn should_open_doors(&self) -> bool {

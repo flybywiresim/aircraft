@@ -315,13 +315,13 @@ impl LgciuDoorPosition for LgciuSensorInputs {
 }
 
 struct LandingGearControlCoordinator {
-    active_lgciu_index: usize,
+    active_lgciu_id: LgciuId,
     previous_gear_handle_is_down: bool,
 }
 impl LandingGearControlCoordinator {
     fn new() -> Self {
         Self {
-            active_lgciu_index: 0,
+            active_lgciu_id: LgciuId::Lgciu1,
             previous_gear_handle_is_down: true,
         }
     }
@@ -332,12 +332,13 @@ impl LandingGearControlCoordinator {
 
         let lgciu_should_switch_because_failed_and_new_lever_command =
             self.previous_gear_handle_is_down != gear_handle.gear_handle_is_down()
-                && lgcius_status[self.active_lgciu_index] != LgciuStatus::Ok;
+                && lgcius_status[self.active_lgciu_id as usize] != LgciuStatus::Ok;
 
-        let lgciu_should_switch_because_is_failed = match lgcius_status[self.active_lgciu_index] {
-            LgciuStatus::Ok | LgciuStatus::FailedNoChangeOver => false,
-            LgciuStatus::FailedNotPowered | LgciuStatus::FailedAutoChangeOver => true,
-        };
+        let lgciu_should_switch_because_is_failed =
+            match lgcius_status[self.active_lgciu_id as usize] {
+                LgciuStatus::Ok | LgciuStatus::FailedNoChangeOver => false,
+                LgciuStatus::FailedNotPowered | LgciuStatus::FailedAutoChangeOver => true,
+            };
 
         if lgciu_should_switch_at_new_up_cycle
             || lgciu_should_switch_because_is_failed
@@ -350,9 +351,9 @@ impl LandingGearControlCoordinator {
     }
 
     fn lgciu_switchover(&mut self, lgcius_status: [LgciuStatus; 2]) {
-        let target_lgciu_index = (self.active_lgciu_index + 1) % 2;
+        let target_lgciu = (self.active_lgciu_id as usize + 1) % 2;
 
-        let target_lgciu_state = lgcius_status[target_lgciu_index];
+        let target_lgciu_state = lgcius_status[target_lgciu];
 
         if target_lgciu_state == LgciuStatus::Ok {
             // println!(
@@ -360,12 +361,16 @@ impl LandingGearControlCoordinator {
             //     lgcius_status[self.active_lgciu_index],
             //     target_lgciu_index + 1
             // );
-            self.active_lgciu_index = target_lgciu_index;
+            self.active_lgciu_id = if target_lgciu == 0 {
+                LgciuId::Lgciu1
+            } else {
+                LgciuId::Lgciu2
+            };
         }
     }
 
-    fn active_lgciu_number(&self) -> usize {
-        self.active_lgciu_index + 1
+    fn active_lgciu_id(&self) -> LgciuId {
+        self.active_lgciu_id
     }
 }
 
@@ -401,28 +406,30 @@ impl LandingGearControlInterfaceUnitSet {
         gear_system_sensors: &impl GearSystemSensors,
         external_power_available: bool,
     ) {
+        self.lgcius[LgciuId::Lgciu1 as usize].update(
+            context,
+            landing_gear,
+            gear_system_sensors,
+            external_power_available,
+            &self.gear_handle_unit,
+            self.coordinator.active_lgciu_id() == LgciuId::Lgciu1,
+        );
+        self.lgcius[LgciuId::Lgciu2 as usize].update(
+            context,
+            landing_gear,
+            gear_system_sensors,
+            external_power_available,
+            &self.gear_handle_unit,
+            self.coordinator.active_lgciu_id() == LgciuId::Lgciu2,
+        );
+
         self.coordinator.update(
-            [self.lgcius[0].status(), self.lgcius[1].status()],
+            [
+                self.lgcius[LgciuId::Lgciu1 as usize].status(),
+                self.lgcius[LgciuId::Lgciu2 as usize].status(),
+            ],
             &self.gear_handle_unit,
         );
-
-        self.lgcius[0].update(
-            context,
-            landing_gear,
-            gear_system_sensors,
-            external_power_available,
-            &self.gear_handle_unit,
-            self.coordinator.active_lgciu_number() == 1,
-        );
-        self.lgcius[1].update(
-            context,
-            landing_gear,
-            gear_system_sensors,
-            external_power_available,
-            &self.gear_handle_unit,
-            self.coordinator.active_lgciu_number() == 2,
-        );
-
         // println!(
         //     "COORD=> Status [{:?}/{:?}] LGCIUGear ctrl  [{:?}/{:?}] ",
         //     self.lgcius[0].status(),
@@ -431,20 +438,27 @@ impl LandingGearControlInterfaceUnitSet {
         //     self.lgcius[1].gear_system_state(),
         // );
 
-        self.gear_handle_unit
-            .update(&self.lgcius[0], &self.lgcius[1]);
+        self.gear_handle_unit.update(
+            &self.lgcius[LgciuId::Lgciu1 as usize],
+            &self.lgcius[LgciuId::Lgciu2 as usize],
+        );
     }
 
     pub fn lgciu1(&self) -> &LandingGearControlInterfaceUnit {
-        &self.lgcius[0]
+        &self.lgcius[LgciuId::Lgciu1 as usize]
     }
 
     pub fn lgciu2(&self) -> &LandingGearControlInterfaceUnit {
-        &self.lgcius[1]
+        &self.lgcius[LgciuId::Lgciu2 as usize]
     }
 
     pub fn active_lgciu(&self) -> &LandingGearControlInterfaceUnit {
-        &self.lgcius[self.coordinator.active_lgciu_number() - 1]
+        &self.lgcius[self.coordinator.active_lgciu_id() as usize]
+    }
+
+    #[cfg(test)]
+    fn active_lgciu_id(&self) -> LgciuId {
+        self.coordinator.active_lgciu_id()
     }
 
     #[cfg(test)]
@@ -455,8 +469,8 @@ impl LandingGearControlInterfaceUnitSet {
 impl SimulationElement for LandingGearControlInterfaceUnitSet {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.gear_handle_unit.accept(visitor);
-        self.lgcius[0].accept(visitor);
-        self.lgcius[1].accept(visitor);
+        self.lgcius[LgciuId::Lgciu1 as usize].accept(visitor);
+        self.lgcius[LgciuId::Lgciu2 as usize].accept(visitor);
 
         visitor.visit(self);
     }
@@ -998,7 +1012,7 @@ mod tests {
     use crate::electrical::{test::TestElectricitySource, ElectricalBus, Electricity};
     use crate::shared::PotentialOrigin;
 
-    use uom::si::electric_potential::volt;
+    use uom::si::{electric_potential::volt, pressure::psi};
 
     struct TestGearSystem {
         door_position: u8,
@@ -1014,17 +1028,19 @@ mod tests {
             }
         }
 
-        fn update(&mut self, controller: &impl LgciuGearControl) {
-            if controller.should_open_doors() {
-                self.door_position -= 1;
-            } else {
-                self.door_position += 1;
-            }
+        fn update(&mut self, controller: &impl LgciuGearControl, pressure: Pressure) {
+            if pressure.get::<psi>() > 500. {
+                if controller.should_open_doors() {
+                    self.door_position -= 1;
+                } else {
+                    self.door_position += 1;
+                }
 
-            if controller.should_extend_gears() {
-                self.gear_position -= 1;
-            } else {
-                self.gear_position += 1;
+                if controller.should_extend_gears() {
+                    self.gear_position -= 1;
+                } else {
+                    self.gear_position += 1;
+                }
             }
 
             self.door_position = self.door_position.max(1).min(Self::UP_LOCK_TRESHOLD);
@@ -1065,6 +1081,7 @@ mod tests {
 
         powered_source_ac: TestElectricitySource,
         dc_ess_bus: ElectricalBus,
+        pressure: Pressure,
     }
     impl TestGearAircraft {
         fn new(context: &mut InitContext) -> Self {
@@ -1082,6 +1099,8 @@ mod tests {
                     PotentialOrigin::EngineGenerator(1),
                 ),
                 dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
+
+                pressure: Pressure::new::<psi>(3000.),
             }
         }
 
@@ -1089,7 +1108,8 @@ mod tests {
             self.lgcius
                 .update(context, &self.landing_gear, &self.gear_system, false);
 
-            self.gear_system.update(self.lgcius.active_lgciu());
+            self.gear_system
+                .update(self.lgcius.active_lgciu(), self.pressure);
 
             println!(
                 "LGCIU STATE {:#?} / Doors OPENING {}  / Gears OPENING {} ",
@@ -1102,6 +1122,10 @@ mod tests {
                 "Gear pos{} / Door pos{}",
                 self.gear_system.gear_position, self.gear_system.door_position,
             );
+        }
+
+        fn set_no_pressure(&mut self) {
+            self.pressure = Pressure::new::<psi>(0.);
         }
     }
     impl Aircraft for TestGearAircraft {
@@ -1169,6 +1193,10 @@ mod tests {
 
         fn is_gear_handle_down(&mut self) -> bool {
             self.read_by_name("GEAR_HANDLE_POSITION")
+        }
+
+        fn fail_hyd_pressure(&mut self) {
+            self.command(|a| a.set_no_pressure());
         }
     }
     impl TestBed for LgciusTestBed {
@@ -1318,6 +1346,95 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.lgcius.gear_system_state()) == GearsSystemState::AllDownLocked
+        );
+    }
+
+    #[test]
+    fn lgciu_master_switch_on_gear_up() {
+        let mut test_bed = test_bed_with()
+            .in_flight()
+            .set_gear_handle_down()
+            .run_one_tick();
+
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+
+        test_bed = test_bed.set_gear_handle_up().run_one_tick();
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+
+        test_bed = test_bed.set_gear_handle_down().run_one_tick();
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+
+        test_bed = test_bed.set_gear_handle_up().run_one_tick();
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+    }
+
+    #[test]
+    fn lgciu_master_switch_if_failed_lgciu_power_and_stays_on_same_lgciu() {
+        let mut test_bed = test_bed_with()
+            .in_flight()
+            .set_gear_handle_down()
+            .run_one_tick();
+
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+
+        test_bed = test_bed.set_gear_handle_up().run_one_tick();
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+
+        test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
+
+        test_bed = test_bed.run_one_tick();
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+
+        test_bed = test_bed.set_gear_handle_down().run_one_tick();
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+
+        test_bed = test_bed.set_gear_handle_up().run_one_tick();
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+    }
+
+    #[test]
+    fn lgciu_master_switch_if_unfailed_lgciu_power() {
+        let mut test_bed = test_bed_with()
+            .in_flight()
+            .set_gear_handle_down()
+            .run_one_tick();
+
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+
+        test_bed = test_bed.set_gear_handle_up().run_one_tick();
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+
+        test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
+
+        test_bed = test_bed.run_one_tick();
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+
+        test_bed.unfail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
+
+        test_bed = test_bed.set_gear_handle_down().run_one_tick();
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
+
+        test_bed = test_bed.set_gear_handle_up().run_one_tick();
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu2);
+    }
+
+    #[test]
+    fn lgciu_master_fails_but_do_not_switch_if_gear_not_up_in_30s() {
+        let mut test_bed = test_bed_with()
+            .in_flight()
+            .set_gear_handle_down()
+            .run_one_tick();
+
+        test_bed = test_bed.set_gear_handle_up().run_one_tick();
+
+        test_bed.fail_hyd_pressure();
+
+        test_bed.run_with_delta(Duration::from_secs(28));
+        assert!(test_bed.query(|a| a.lgcius.active_lgciu().status) == LgciuStatus::Ok);
+
+        test_bed.run_with_delta(Duration::from_secs(3));
+        assert!(
+            test_bed.query(|a| a.lgcius.active_lgciu().status) == LgciuStatus::FailedNoChangeOver
         );
     }
 
