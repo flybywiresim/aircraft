@@ -4947,19 +4947,10 @@ impl A320GravityExtension {
             }
         }
 
-        if self.handle_angle.get::<degree>() > 360. * 3.1 {
+        if self.handle_angle.get::<degree>() > 360. * 3.3 {
             self.is_extending_gear = false;
         } else if self.handle_angle.get::<degree>() < -0.2 {
             self.is_extending_gear = true;
-        }
-
-        if self.is_turned {
-            println!(
-                "Update is_extending: {} current angle :{} numturn {}",
-                self.is_extending_gear,
-                self.handle_angle.get::<degree>(),
-                self.extension_handle_number_of_turns()
-            );
         }
     }
 }

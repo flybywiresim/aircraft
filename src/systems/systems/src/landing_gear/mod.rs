@@ -356,11 +356,6 @@ impl LandingGearControlCoordinator {
         let target_lgciu_state = lgcius_status[target_lgciu];
 
         if target_lgciu_state == LgciuStatus::Ok {
-            // println!(
-            //     "COORD=> CURRENT MASTER STATE {:?}, SWITCHING TO LGCIU {}",
-            //     lgcius_status[self.active_lgciu_index],
-            //     target_lgciu_index + 1
-            // );
             self.active_lgciu_id = if target_lgciu == 0 {
                 LgciuId::Lgciu1
             } else {
@@ -406,6 +401,14 @@ impl LandingGearControlInterfaceUnitSet {
         gear_system_sensors: &impl GearSystemSensors,
         external_power_available: bool,
     ) {
+        self.coordinator.update(
+            [
+                self.lgcius[LgciuId::Lgciu1 as usize].status(),
+                self.lgcius[LgciuId::Lgciu2 as usize].status(),
+            ],
+            &self.gear_handle_unit,
+        );
+
         self.lgcius[LgciuId::Lgciu1 as usize].update(
             context,
             landing_gear,
@@ -422,21 +425,6 @@ impl LandingGearControlInterfaceUnitSet {
             &self.gear_handle_unit,
             self.coordinator.active_lgciu_id() == LgciuId::Lgciu2,
         );
-
-        self.coordinator.update(
-            [
-                self.lgcius[LgciuId::Lgciu1 as usize].status(),
-                self.lgcius[LgciuId::Lgciu2 as usize].status(),
-            ],
-            &self.gear_handle_unit,
-        );
-        // println!(
-        //     "COORD=> Status [{:?}/{:?}] LGCIUGear ctrl  [{:?}/{:?}] ",
-        //     self.lgcius[0].status(),
-        //     self.lgcius[1].status(),
-        //     self.lgcius[0].gear_system_state(),
-        //     self.lgcius[1].gear_system_state(),
-        // );
 
         self.gear_handle_unit.update(
             &self.lgcius[LgciuId::Lgciu1 as usize],
@@ -559,6 +547,7 @@ pub struct LandingGearControlInterfaceUnit {
     nose_gear_unlock_id: VariableIdentifier,
     right_gear_downlock_id: VariableIdentifier,
     right_gear_unlock_id: VariableIdentifier,
+    fault_ecam_id: VariableIdentifier,
 
     is_powered: bool,
     is_powered_previous_state: bool,
@@ -612,6 +601,8 @@ impl LandingGearControlInterfaceUnit {
                 "LGCIU_{}_RIGHT_GEAR_UNLOCKED",
                 lgciu_number(lgciu_id)
             )),
+            fault_ecam_id: context
+                .get_identifier(format!("LGCIU_{}_FAULT", lgciu_number(lgciu_id))),
 
             is_powered: false,
             is_powered_previous_state: false,
@@ -799,6 +790,8 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
             &self.right_gear_downlock_id,
             self.is_powered && self.sensor_inputs.downlock_state(GearWheel::RIGHT),
         );
+
+        writer.write(&self.fault_ecam_id, self.status() != LgciuStatus::Ok);
     }
 }
 
@@ -1382,7 +1375,8 @@ mod tests {
 
         test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
 
-        test_bed = test_bed.run_one_tick();
+        // Two ticks needed after failure to have consistent state of lgciu vs coordinator
+        test_bed = test_bed.run_one_tick().run_one_tick();
         assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
 
         test_bed = test_bed.set_gear_handle_down().run_one_tick();
@@ -1406,7 +1400,8 @@ mod tests {
 
         test_bed.fail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
 
-        test_bed = test_bed.run_one_tick();
+        // Two ticks needed after failure to have consistent state of lgciu vs coordinator
+        test_bed = test_bed.run_one_tick().run_one_tick();
         assert!(test_bed.query(|a| a.lgcius.active_lgciu_id()) == LgciuId::Lgciu1);
 
         test_bed.unfail(FailureType::LgciuPowerSupply(LgciuId::Lgciu2));
@@ -1433,9 +1428,8 @@ mod tests {
         assert!(test_bed.query(|a| a.lgcius.active_lgciu().status) == LgciuStatus::Ok);
 
         test_bed.run_with_delta(Duration::from_secs(3));
-        assert!(
-            test_bed.query(|a| a.lgcius.active_lgciu().status) == LgciuStatus::FailedNoChangeOver
-        );
+        assert!(test_bed.query(|a| a.lgcius.lgciu2().status) == LgciuStatus::FailedNoChangeOver);
+        assert!(test_bed.query(|a| a.lgcius.lgciu1().status) == LgciuStatus::Ok);
     }
 
     fn run_test_bed_on_with_compression(

@@ -196,6 +196,8 @@ const PseudoFWC: React.FC = () => {
     const [landingLight3Retracted] = useSimVar('L:LANDING_3_Retracted', 'bool', 500);
     const [autoBrakesArmedMode] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum', 500);
     const [antiskidActive] = useSimVar('ANTISKID BRAKES ACTIVE', 'bool', 500);
+    const [lgciu1Fault] = useSimVar('L:A32NX_LGCIU_1_FAULT', 'bool', 500);
+    const [lgciu2Fault] = useSimVar('L:A32NX_LGCIU_2_FAULT', 'bool', 500);
 
     /* OTHER STUFF */
 
@@ -764,6 +766,36 @@ const PseudoFWC: React.FC = () => {
             simVarIsActive: antiskidActive === 0,
             whichCodeToReturn: [0, 1],
             codesToReturn: ['320006001', '320006002'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 9,
+            side: 'LEFT',
+        },
+        3200061: { // LGCIU1 flightPhaseInhib: [4, 5, 7, 8],
+            flightPhaseInhib: [],
+            simVarIsActive: lgciu1Fault && !(lgciu1Fault && lgciu2Fault),
+            whichCodeToReturn: [0],
+            codesToReturn: ['320006101'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 9,
+            side: 'LEFT',
+        },
+        3200062: { // LGCIU2
+            flightPhaseInhib: [],
+            simVarIsActive: lgciu2Fault && !(lgciu1Fault && lgciu2Fault),
+            whichCodeToReturn: [0],
+            codesToReturn: ['320006201'],
+            memoInhibit: false,
+            failure: 2,
+            sysPage: 9,
+            side: 'LEFT',
+        },
+        3200063: { // LGCIU 1 + 2
+            flightPhaseInhib: [],
+            simVarIsActive: lgciu1Fault && lgciu2Fault,
+            whichCodeToReturn: [0],
+            codesToReturn: ['320006301'],
             memoInhibit: false,
             failure: 2,
             sysPage: 9,
