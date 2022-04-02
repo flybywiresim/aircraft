@@ -160,11 +160,11 @@ void Elac::computeActiveLawsAndFunctionStatus() {
   LateralLaw oppElacRollCapability;
   bool oppElacLateralCapBit1 = busInputs.elacOpp.discreteStatusWord2.bitFromValueOr(13, false);
   bool oppElacLateralCapBit2 = busInputs.elacOpp.discreteStatusWord2.bitFromValueOr(14, false);
-  if (oppElacPitchCapBit1 && !oppElacPitchCapBit2) {
+  if (oppElacLateralCapBit1 && !oppElacLateralCapBit2) {
     oppElacRollCapability = LateralLaw::NormalLaw;
-  } else if (!oppElacPitchCapBit1 && oppElacPitchCapBit2) {
+  } else if (!oppElacLateralCapBit1 && oppElacLateralCapBit2) {
     oppElacRollCapability = LateralLaw::DirectLaw;
-  } else if (!oppElacPitchCapBit1 && !oppElacPitchCapBit2) {
+  } else if (!oppElacLateralCapBit1 && !oppElacLateralCapBit2) {
     oppElacRollCapability = LateralLaw::None;
   }
 
