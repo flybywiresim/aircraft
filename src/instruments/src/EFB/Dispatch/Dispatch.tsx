@@ -10,8 +10,8 @@ export const Dispatch = () => {
     const { t } = useTranslation();
 
     const tabs: PageLink[] = [
-        { name: 'Overview', alias: t('Dispatch.Overview.Title'), component: <OverviewPage /> },
         { name: 'OFP', alias: t('Dispatch.Ofp.Title'), component: <LoadSheetWidget /> },
+        { name: 'Overview', alias: t('Dispatch.Overview.Title'), component: <OverviewPage /> },
     ];
 
     return (
