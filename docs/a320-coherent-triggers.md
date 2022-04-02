@@ -43,6 +43,18 @@ See `FMMessage` in `src/shared/src/FmMessages.ts`.
     - Payload: `[identifier: number]`
     - `identifier`: failure identifier
 
+- CONFIRM_ACTIVATE_FAILURE
+    - Dataflow: Failures orchestrator -> Remote failures providers
+    - Confirms to remote providers that a failure was activated
+    - Payload: `[identifier: number]`
+    - `identifier`: failure identifier
+
+- CONFIRM_DEACTIVATE_FAILURE
+    - Dataflow: Failures orchestrator -> Remote failures providers
+    - Confirms to remote providers that a failure was deactivated
+    - Payload: `[identifier: number]`
+    - `identifier`: failure identifier
+
 - A32NX_REQUEST_FAILURES_STATE
     - Dataflow: Remote failures providers -> Failures orchestrator
     - Requests the orchestrator to immediately send a `A32NX_NEW_FAILURES_STATE` message
