@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { toast } from 'react-toastify';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { useTranslation } from 'react-i18next';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
@@ -62,7 +63,7 @@ export const LightPresets = () => {
     }, []);
 
     return (
-        <div className="p-2 mt-2 mb-2 h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="p-2 mt-2 mb-2 rounded-lg border-2 h-content-section-reduced border-theme-accent">
             <div className="flex flex-row justify-center items-center p-2 mb-3 space-x-2 h-16 rounded-md border-2 border-theme-accent">
                 {isPowered ? 'Select an interior lighting preset to load or save.' : 'The aircraft must be powered for interior lighting presets.'}
             </div>
@@ -94,6 +95,8 @@ type SinglePresetParams = {
 const SinglePreset = (props: SinglePresetParams) => {
     const { showModal } = useModals();
 
+    const { t } = useTranslation();
+
     // Light presets are handled in a wasm module as setting the indexed "LIGHT POTENTIOMETER"
     // variable didn't work in Javascript.
     // To tell the presets.wasm module to load a preset the LVAR "L:A32NX_LOAD_LIGHTING_PRESET"
@@ -114,13 +117,13 @@ const SinglePreset = (props: SinglePresetParams) => {
         // loading of presets only allowed when aircraft is powered (also the case in the wasm)
         if (isPowered) {
             setLoadPresetVar(presetID);
-            toast.success(`Loading Preset: ${presetID}: ${presetName}`, {
+            toast.success(`${t('Presets.InteriorLighting.LoadingPreset')}: ${presetID}: ${presetName}`, {
                 autoClose: 250,
                 hideProgressBar: true,
                 closeButton: false,
             });
         } else {
-            toast.warning('Aircraft needs to be powered to load presets.', {
+            toast.warning(t('Presets.InteriorLighting.AircraftNeedsToBePoweredToLoadPresets'), {
                 autoClose: 1000,
                 hideProgressBar: true,
                 closeButton: false,
@@ -135,10 +138,10 @@ const SinglePreset = (props: SinglePresetParams) => {
             showModal(
                 <PromptModal
                     title={`${presetName}`}
-                    bodyText={`Please confirm saving preset ${presetID}: ${presetName}`}
+                    bodyText={`${t('Presets.InteriorLighting.PleaseConfirmSavingPreset')} ${presetID}: ${presetName}`}
                     onConfirm={() => {
                         setSavePresetVar(presetID);
-                        toast.success(`Saving Preset: ${presetID}: ${presetName}`, {
+                        toast.success(`${t('Presets.InteriorLighting.SavingPreset')}: ${presetID}: ${presetName}`, {
                             autoClose: 250,
                             hideProgressBar: true,
                             closeButton: false,
@@ -147,7 +150,7 @@ const SinglePreset = (props: SinglePresetParams) => {
                 />,
             );
         } else {
-            toast.warning('Aircraft needs to be powered to save presets.', {
+            toast.warning(t('Presets.InteriorLighting.AircraftNeedsToBePoweredToSavePresets'), {
                 autoClose: 1000,
                 hideProgressBar: true,
                 closeButton: false,
@@ -170,7 +173,7 @@ const SinglePreset = (props: SinglePresetParams) => {
     // Get preset name from persistent store when the names map changes
     useEffect(() => {
         const tmp = props.getPresetName(props.presetID);
-        setPresetName(tmp || 'No Name');
+        setPresetName(tmp || t('Presets.InteriorLighting.NoName'));
     }, [props.namesMap]);
 
     return (
@@ -180,7 +183,7 @@ const SinglePreset = (props: SinglePresetParams) => {
             </div>
 
             <TooltipWrapper text="Click text to change the preset's name">
-                <div className="flex justify-center items-center mx-4 w-full h-20 text-theme-text bg-theme-accent rounded-md border-2 border-theme-accent">
+                <div className="flex justify-center items-center mx-4 w-full h-20 rounded-md border-2 text-theme-text bg-theme-accent border-theme-accent">
                     <SimpleInput
                         className="w-80 text-2xl font-medium text-center"
                         placeholder="No Name"
@@ -196,7 +199,7 @@ const SinglePreset = (props: SinglePresetParams) => {
                     className={`flex justify-center items-center mx-4 w-full h-20 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight rounded-md border-2 border-theme-accent transition duration-100 ${!isPowered && 'opacity-50'}`}
                     onClick={() => handleLoad()}
                 >
-                    Load Preset
+                    {t('Presets.InteriorLighting.LoadPreset')}
                 </div>
             </TooltipWrapper>
 
@@ -205,7 +208,7 @@ const SinglePreset = (props: SinglePresetParams) => {
                     className={`flex justify-center items-center mx-4 w-full h-20 text-white bg-green-700 hover:bg-green-500 rounded-md border-2 border-green-700 hover:border-green-800 transition duration-100 ${!isPowered && 'opacity-50'}`}
                     onClick={() => handleSave()}
                 >
-                    Save Preset
+                    {t('Presets.InteriorLighting.SavePreset')}
                 </div>
             </TooltipWrapper>
         </div>

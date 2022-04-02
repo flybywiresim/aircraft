@@ -2,6 +2,7 @@ import { AtaChapterNumber } from '@shared/ata';
 import React, { FC } from 'react';
 import { ArrowRight } from 'react-bootstrap-icons';
 import { useHistory } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { RemindersSection } from './RemindersSection';
 import { useFailuresOrchestrator } from '../../../failures-orchestrator-provider';
 import { findLatestSeenPathname } from '../../../Utils/routing';
@@ -45,9 +46,10 @@ const ActiveFailureCard: FC<ActiveFailureCardProps> = ({ ata, name }) => {
 
 export const MaintenanceReminder = () => {
     const { allFailures, activeFailures } = useFailuresOrchestrator();
+    const { t } = useTranslation();
 
     return (
-        <RemindersSection title="Maintenance" pageLinkPath="/failures">
+        <RemindersSection title={t('Dashboard.Maintenance')} pageLinkPath="/failures">
             <div className="flex flex-row flex-wrap">
                 {Array
                     .from(activeFailures)
@@ -65,7 +67,7 @@ export const MaintenanceReminder = () => {
                     })}
 
                 {!activeFailures.size && (
-                    <h1 className="m-auto my-4 font-bold opacity-60">No Active Failures</h1>
+                    <h1 className="m-auto my-4 font-bold text-center opacity-60">{t('Dashboard.NoActiveFailures')}</h1>
                 )}
             </div>
         </RemindersSection>

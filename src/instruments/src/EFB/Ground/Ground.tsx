@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { ServicesPage } from './Pages/ServicesPage';
@@ -45,16 +46,18 @@ export const applySelected = (className: string, id?: string) => {
 };
 
 export const Ground = () => {
+    const { t } = useTranslation();
+
     const tabs: PageLink[] = [
-        { name: 'Services', component: <ServicesPage /> },
-        { name: 'Pushback', component: <PushbackPage /> },
-        { name: 'Fuel', component: <FuelPage /> },
+        { name: 'Services', alias: t('Ground.Services.Title'), component: <ServicesPage /> },
+        { name: 'Pushback', alias: t('Ground.Pushback.Title'), component: <PushbackPage /> },
+        { name: 'Fuel', alias: t('Ground.Fuel.Title'), component: <FuelPage /> },
     ];
 
     return (
         <div className="w-full">
             <div className="relative mb-4">
-                <h1 className="font-bold">Ground</h1>
+                <h1 className="font-bold">{t('Ground.Title')}</h1>
                 <Navbar
                     className="absolute top-0 right-0"
                     tabs={tabs}

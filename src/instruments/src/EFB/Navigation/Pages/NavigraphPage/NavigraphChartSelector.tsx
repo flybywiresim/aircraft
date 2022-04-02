@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CloudArrowDown, PinFill, Pin } from 'react-bootstrap-icons';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import {
     NavigationTab,
@@ -34,6 +35,8 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
     const NO_RUNWAY_NAME = 'NONE';
     const [runwaySet, setRunwaySet] = useState<Set<string>>(new Set());
     const [organizedCharts, setOrganizedCharts] = useState<RunwayOrganizedChart[]>([]);
+
+    const { t } = useTranslation();
 
     const dispatch = useAppDispatch();
 
@@ -112,7 +115,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                 className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
                 style={{ height: '42.75rem' }}
             >
-                <p>There are no charts to display.</p>
+                <p>{t('NavigationAndCharts.ThereAreNoChartsToDisplay')}</p>
             </div>
         );
     }

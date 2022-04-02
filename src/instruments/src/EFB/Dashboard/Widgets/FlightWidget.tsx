@@ -5,6 +5,7 @@ import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
 
+import { useTranslation } from 'react-i18next';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
@@ -28,32 +29,41 @@ interface NoSimBriefDataOverlayProps {
     fetchData: () => void;
 }
 
-const NoSimBriefDataOverlay = ({ simbriefDataLoaded, simbriefDataPending, fetchData }: NoSimBriefDataOverlayProps) => (
-    <div className={`absolute inset-0 transition duration-200 bg-theme-body ${simbriefDataLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-        <h1 className="flex justify-center items-center w-full h-full">
-            {simbriefDataPending ? (
-                <CloudArrowDown className="animate-bounce" size={40} />
-            ) : (
-                <>
-                    {!simbriefDataLoaded && (
-                        <div className="space-y-4">
-                            <h1>SimBrief data not yet loaded.</h1>
+const NoSimBriefDataOverlay = ({ simbriefDataLoaded, simbriefDataPending, fetchData }: NoSimBriefDataOverlayProps) => {
+    const { t } = useTranslation();
 
-                            <button
-                                type="button"
-                                onClick={fetchData}
-                                className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
-                            >
-                                <CloudArrowDown size={26} />
-                                <p className="text-current">Import SimBrief Data</p>
-                            </button>
-                        </div>
-                    )}
-                </>
-            )}
-        </h1>
-    </div>
-);
+    return (
+        <div className={`absolute inset-0 transition duration-200 bg-theme-body ${simbriefDataLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            <h1 className="flex justify-center items-center w-full h-full">
+                {simbriefDataPending ? (
+                    <CloudArrowDown className="animate-bounce" size={40} />
+                ) : (
+                    <>
+                        {!simbriefDataLoaded && (
+                            <div className="space-y-4">
+                                <h1
+                                    className="text-center"
+                                    style={{ maxWidth: '18em' }}
+                                >
+                                    {t('Dashboard.SimBriefDataNotYetLoaded')}
+                                </h1>
+
+                                <button
+                                    type="button"
+                                    onClick={fetchData}
+                                    className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                                >
+                                    <CloudArrowDown size={26} />
+                                    <p className="text-current">{t('Dashboard.ImportSimBriefData')}</p>
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
+            </h1>
+        </div>
+    );
+};
 
 export const FlightWidget = () => {
     const { data } = useAppSelector((state) => state.simbrief);
@@ -83,6 +93,8 @@ export const FlightWidget = () => {
     const { flightPlanProgress } = useAppSelector((state) => state.flightProgress);
 
     const dispatch = useAppDispatch();
+
+    const { t } = useTranslation();
 
     const sta = new Date(parseInt(schedIn) * 1000);
     const schedInParsed = `${sta.getUTCHours().toString().padStart(2, '0')}${sta.getUTCMinutes().toString().padStart(2, '0')}Z`;
@@ -118,7 +130,7 @@ export const FlightWidget = () => {
     return (
         <div className="w-full">
             <div className="flex flex-row justify-between items-center mb-4">
-                <h1 className="font-bold">Your Flight</h1>
+                <h1 className="font-bold">{t('Dashboard.YourFlight')}</h1>
                 {simbriefDataLoaded && (
                     <h1>
                         {(airline.length > 0 ? airline : '') + flightNum}
@@ -129,7 +141,7 @@ export const FlightWidget = () => {
                     </h1>
                 )}
             </div>
-            <div className="overflow-hidden relative p-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
+            <div className="overflow-hidden relative p-6 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
                 <div className="flex flex-col justify-between h-full">
                     <div className="space-y-8">
                         <div className="flex flex-row justify-between">
@@ -148,12 +160,12 @@ export const FlightWidget = () => {
                                     {schedOutParsed}
                                 </p>
                                 <div className="flex relative flex-row mx-6 w-full h-1">
-                                    <div className="absolute inset-x-0 border-b-4 border-theme-text border-dashed" />
+                                    <div className="absolute inset-x-0 border-b-4 border-dashed border-theme-text" />
 
                                     <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
                                         {!!flightPlanProgress && (
                                             <IconPlane
-                                                className="absolute right-0 text-theme-highlight transform translate-x-1/2 -translate-y-1/2 fill-current"
+                                                className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
                                                 size={50}
                                                 strokeLinejoin="miter"
                                             />
@@ -167,23 +179,23 @@ export const FlightWidget = () => {
                         </div>
                         <div>
                             <div className="flex flex-row mb-4">
-                                <InformationEntry title="Alternate" info={altIcao ?? 'NONE'} />
+                                <InformationEntry title={t('Dashboard.Alternate')} info={altIcao ?? 'NONE'} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title="Company Route" info={departingIata + arrivingIata} />
+                                <InformationEntry title={t('Dashboard.CompanyRoute')} info={departingIata + arrivingIata} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title="ZFW" info={estimatedZfw} />
+                                <InformationEntry title={t('Dashboard.ZFW')} info={estimatedZfw} />
                             </div>
                             <div className="my-auto w-full h-0.5 bg-theme-accent" />
                             <div className="flex flex-row mt-4">
-                                <InformationEntry title="Cost Index" info={costInd} />
+                                <InformationEntry title={t('Dashboard.CostIndex')} info={costInd} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title="Average Wind" info={avgWind} />
+                                <InformationEntry title={t('Dashboard.AverageWind')} info={avgWind} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title="Cruise Alt" info={crzAlt} />
+                                <InformationEntry title={t('Dashboard.CruiseAlt')} info={crzAlt} />
                             </div>
                         </div>
                         <div>
-                            <h5 className="mb-2 text-2xl font-bold">Route</h5>
+                            <h5 className="mb-2 text-2xl font-bold">{t('Dashboard.Route')}</h5>
                             <ScrollableContainer height={15}>
                                 <p className="font-mono text-2xl">
                                     <span className="text-2xl text-theme-highlight">
@@ -206,10 +218,10 @@ export const FlightWidget = () => {
                     <button
                         type="button"
                         onClick={fetchData}
-                        className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-lg border-2 border-theme-highlight transition duration-100"
+                        className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         <CloudArrowDown size={26} />
-                        <p className="text-current">Import SimBrief Data</p>
+                        <p className="text-current">{t('Dashboard.ImportSimBriefData')}</p>
                     </button>
                 </div>
 

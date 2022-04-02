@@ -5,6 +5,7 @@ import useInterval from '@instruments/common/useInterval';
 import { Link } from 'react-router-dom';
 import { CloudArrowDown, Gear, InfoCircle } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 import { pathify } from '../Utils/routing';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
@@ -24,39 +25,43 @@ interface FrequencyCardProps {
     setStandby: () => void;
 }
 
-const FrequencyCard = ({ className, callsign, frequency, setActive, setCurrent, setStandby }: FrequencyCardProps) => (
-    <div className={className}>
-        <div className="overflow-hidden relative p-6 w-full rounded-md bg-theme-secondary">
-            <h2 className="font-bold">
-                {callsign}
-            </h2>
-            <h2>
-                {frequency}
-            </h2>
+const FrequencyCard = ({ className, callsign, frequency, setActive, setCurrent, setStandby }: FrequencyCardProps) => {
+    const { t } = useTranslation();
 
-            <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
-                <div
-                    className="flex justify-center items-center w-full font-bold border-2 transition duration-100 bg-theme-highlight text-theme-body hover:text-theme-highlight hover:bg-theme-body border-theme-highlight"
-                    onClick={setActive}
-                >
-                    <h2 className="text-current">Set Active</h2>
-                </div>
-                <div
-                    className="flex justify-center items-center w-full font-bold border-2 transition duration-100 bg-utility-amber text-theme-body hover:text-utility-amber hover:bg-theme-body border-utility-amber"
-                    onClick={setStandby}
-                >
-                    <h2 className="text-current">Set Standby</h2>
-                </div>
-                <div
-                    className="flex justify-center items-center w-1/4 font-bold border-2 transition duration-100 bg-theme-text text-theme-body hover:text-theme-text hover:bg-theme-body border-theme-text"
-                    onClick={setCurrent}
-                >
-                    <InfoCircle size={35} />
+    return (
+        <div className={className}>
+            <div className="overflow-hidden relative p-6 w-full rounded-md bg-theme-secondary">
+                <h2 className="font-bold">
+                    {callsign}
+                </h2>
+                <h2>
+                    {frequency}
+                </h2>
+
+                <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
+                    <div
+                        className="flex justify-center items-center w-full font-bold text-center border-2 transition duration-100 bg-theme-highlight text-theme-body hover:text-theme-highlight hover:bg-theme-body border-theme-highlight"
+                        onClick={setActive}
+                    >
+                        <h2 className="text-current">{t('AirTrafficControl.SetActive')}</h2>
+                    </div>
+                    <div
+                        className="flex justify-center items-center w-full font-bold text-center border-2 transition duration-100 bg-utility-amber text-theme-body hover:text-utility-amber hover:bg-theme-body border-utility-amber"
+                        onClick={setStandby}
+                    >
+                        <h2 className="text-current">{t('AirTrafficControl.SetStandby')}</h2>
+                    </div>
+                    <div
+                        className="flex justify-center items-center w-1/4 font-bold border-2 transition duration-100 bg-theme-text text-theme-body hover:text-theme-text hover:bg-theme-body border-theme-text"
+                        onClick={setCurrent}
+                    >
+                        <InfoCircle size={35} />
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 export const ATC = () => {
     const [controllers, setControllers] = useState<ATCInfoExtended[]>();
@@ -74,6 +79,8 @@ export const ATC = () => {
     const [callsign] = useSimVar('ATC FLIGHT NUMBER', 'string');
 
     const [atcDataPending, setAtcDataPending] = useState(true);
+
+    const { t } = useTranslation();
 
     const { showModal } = useModals();
 
@@ -168,8 +175,8 @@ export const ATC = () => {
             if (hoppieUserId === '' || hoppieUserId === undefined) {
                 showModal(
                     <AlertModal
-                        title="Hoppie Error"
-                        bodyText="Hoppie system requires a user ID which needs to be set in Settings > ATSU / AOC."
+                        title={t('AirTrafficControl.HoppieError')}
+                        bodyText={t('AirTrafficControl.HoppieSystemRequiresAUserIdWhichNeedsToBeSetInSettings')}
                         onAcknowledge={() => {
                             setHoppieActive(0);
                         }}
@@ -189,7 +196,7 @@ export const ATC = () => {
                 if (retval === 'error {illegal logon code}') {
                     showModal(
                         <AlertModal
-                            title="Hoppie Error"
+                            title={t('AirTrafficControl.HoppieError')}
                             bodyText="Invalid logon code used."
                             onAcknowledge={() => {
                                 setHoppieActive(0);
@@ -210,7 +217,7 @@ export const ATC = () => {
                     if (retval === 'error {callsign already in use}') {
                         showModal(
                             <AlertModal
-                                title="Hoppie Error"
+                                title={t('AirTrafficControl.HoppieError')}
                                 bodyText="Flightnumber is already in use."
                                 onAcknowledge={() => {
                                     setHoppieActive(0);
@@ -233,7 +240,7 @@ export const ATC = () => {
         <div>
             <div className="flex relative flex-row justify-between items-center mb-2">
                 <h1 className="font-bold">
-                    Air Traffic Control
+                    {t('AirTrafficControl.Title')}
                     {(atisSource === 'IVAO' || atisSource === 'VATSIM') && ` (${atisSource})`}
                 </h1>
 
@@ -243,7 +250,7 @@ export const ATC = () => {
                     onClick={handleHoppieToggle}
                 >
                     <p>
-                        {hoppieActive ? 'Disconnect Hoppie ACARS' : 'Connect Hoppie ACARS'}
+                        {hoppieActive ? t('AirTrafficControl.DisconnectHoppieACARS') : t('AirTrafficControl.ConnectHoppieACARS')}
                     </p>
                 </button>
             </div>
@@ -275,13 +282,13 @@ export const ATC = () => {
                     <div className="flex flex-row mt-4 h-96 rounded-lg border-2 divide-x-2 border-theme-accent divide-theme-accent">
                         <div className="flex flex-col justify-between p-6">
                             <div>
-                                <p>Active</p>
+                                <p>{t('AirTrafficControl.Active')}</p>
                                 <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl rounded-lg border-2 font-rmp text-theme-highlight border-theme-accent">
                                     {displayedActiveFrequency && displayedActiveFrequency}
                                 </div>
                             </div>
                             <div>
-                                <p>Standby</p>
+                                <p>{t('AirTrafficControl.Standby')}</p>
                                 <div className="flex justify-center items-center mt-4 w-72 h-24 text-6xl rounded-lg border-2 text-utility-amber font-rmp border-theme-accent">
                                     {displayedStandbyFrequency && displayedStandbyFrequency}
                                 </div>
@@ -291,7 +298,7 @@ export const ATC = () => {
                             <ControllerInformation currentAtc={currentAtc} />
                         ) : (
                             <div className="flex justify-center items-center w-full">
-                                <h1 className="font-bold">NO INFORMATION AVAILABLE FOR THIS FREQUENCY</h1>
+                                <h1 className="font-bold">{t('AirTrafficControl.NoInformationAvailableForThisFrequency')}</h1>
                             </div>
                         )}
                     </div>

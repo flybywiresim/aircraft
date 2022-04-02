@@ -4,12 +4,15 @@ import { CloudArrowDown, ShieldLock } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import QRCode from 'qrcode.react';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { useTranslation } from 'react-i18next';
 import { useNavigraph } from '../../../ChartsApi/Navigraph';
 
 const Loading = () => {
     const navigraph = useNavigraph();
     const [, setRefreshToken] = usePersistentProperty('NAVIGRAPH_REFRESH_TOKEN');
     const [showResetButton, setShowResetButton] = useState(false);
+
+    const { t } = useTranslation();
 
     const handleResetRefreshToken = () => {
         setRefreshToken('');
@@ -38,7 +41,7 @@ const Loading = () => {
                 style={{ width: '400px' }}
                 onClick={handleResetRefreshToken}
             >
-                Reset Navigraph Authentication
+                {t('NavigationAndCharts.Navigraph.ResetNavigraphAuthentication')}
             </button>
         </div>
     );
@@ -47,6 +50,8 @@ const Loading = () => {
 export const NavigraphAuthUI = () => {
     const navigraph = useNavigraph();
     const [displayAuthCode, setDisplayAuthCode] = useState('LOADING');
+
+    const { t } = useTranslation();
 
     useInterval(() => {
         if (navigraph.auth.code) {
@@ -72,15 +77,15 @@ export const NavigraphAuthUI = () => {
                 <ShieldLock className="mr-2" size={40} />
 
                 <h2 className="flex justify-center items-center mt-2">
-                    Authenticate with Navigraph
+                    {t('NavigationAndCharts.Navigraph.AuthenticateWithNavigraph')}
                 </h2>
 
                 <p className="mt-6 w-2/3 text-center">
-                    Scan the QR Code or open
+                    {t('NavigationAndCharts.Navigraph.ScanTheQrCodeOrOpen')}
                     {' '}
                     <span className="text-theme-highlight">{navigraph.auth.link}</span>
                     {' '}
-                    into your browser and enter the code below
+                    {t('NavigationAndCharts.Navigraph.IntoYourBrowserAndEnterTheCodeBelow')}
                 </p>
 
                 <h1

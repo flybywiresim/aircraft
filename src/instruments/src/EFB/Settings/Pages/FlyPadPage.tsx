@@ -4,10 +4,12 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { useSimVar } from '@instruments/common/simVars';
 
 import Slider from 'rc-slider';
+import { languageOptions } from 'instruments/src/EFB/i18n';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 
 export const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
@@ -19,6 +21,7 @@ export const FlyPadPage = () => {
     const [timeFormat, setTimeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
     const [showStatusBarFlightProgress, setShowStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
     const [usingColoredMetar, setUsingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
+    const [language, setLanguage] = usePersistentProperty('EFB_LANGUAGE', 'en');
 
     const themeButtons: ButtonType[] = [
         { name: 'Blue', setting: 'blue' },
@@ -121,6 +124,15 @@ export const FlyPadPage = () => {
 
             <SettingItem name="Show Colored Raw Metar">
                 <Toggle value={!!usingColoredMetar} onToggle={(value) => setUsingColoredMetar(value ? 1 : 0)} />
+            </SettingItem>
+
+            <SettingItem name="Language">
+                <SelectInput
+                    className="w-64"
+                    value={language}
+                    onChange={(value) => setLanguage(value as string)}
+                    options={languageOptions.map((option) => ({ value: option.langCode, displayValue: option.alias }))}
+                />
             </SettingItem>
         </SettingsPage>
     );

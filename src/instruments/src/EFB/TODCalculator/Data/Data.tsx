@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { round } from 'lodash';
 import { useSimVar } from '@instruments/common/simVars';
+import { useTranslation } from 'react-i18next';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import Card from '../../UtilComponents/Card/Card';
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType';
@@ -24,6 +25,8 @@ export const Data = ({ className }: {className: string}) => {
     const calculationInput = useAppSelector((state) => state.todCalculator.calculation.input);
     const targetAltitude = useAppSelector((state) => state.todCalculator.targetAltitude);
     const currentAltitude = useAppSelector((state) => state.todCalculator.currentAltitude);
+
+    const { t } = useTranslation();
 
     altitude = round(altitude, -1);
     distance = round(distance, 1);
@@ -64,15 +67,15 @@ export const Data = ({ className }: {className: string}) => {
     }, [calculationInputSyncEnabled, distance, verticalSpeed, pitchAngle]);
 
     const calculationTypes = [
-        { label: 'Distance', placeholder: 'NM', type: TOD_CALCULATION_TYPE.DISTANCE, syncValue: distance, negativeValue: false },
-        { label: 'Vertical speed', placeholder: 'ft/min', type: TOD_CALCULATION_TYPE.VERTICAL_SPEED, syncValue: verticalSpeed, negativeValue: true },
-        { label: 'Angle', placeholder: 'degrees', type: TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE, syncValue: pitchAngle, negativeValue: true },
+        { label: `${t('Performance.TopOfDescent.Data.Distance')}`, placeholder: 'NM', type: TOD_CALCULATION_TYPE.DISTANCE, syncValue: distance, negativeValue: false },
+        { label: `${t('Performance.TopOfDescent.Data.VerticalSpeed')}`, placeholder: 'ft/min', type: TOD_CALCULATION_TYPE.VERTICAL_SPEED, syncValue: verticalSpeed, negativeValue: true },
+        { label: `${t('Performance.TopOfDescent.Data.Angle')}`, placeholder: 'degrees', type: TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE, syncValue: pitchAngle, negativeValue: true },
     ];
 
     return (
-        <Card title="Data" childrenContainerClassName="flex-1 flex flex-col justify-start space-y-4" className={className}>
+        <Card title={t('Performance.TopOfDescent.Data.Title')} childrenContainerClassName="flex-1 flex flex-col justify-start space-y-4" className={className}>
             <div>
-                <p>Current Altitude</p>
+                <p>{t('Performance.TopOfDescent.Data.CurrentAltitude')}</p>
 
                 <div className="flex flex-row">
                     <SimpleInput
@@ -97,7 +100,7 @@ export const Data = ({ className }: {className: string}) => {
             </div>
 
             <div>
-                <p>Target Altitude</p>
+                <p>{t('Performance.TopOfDescent.Data.TargetAltitude')}</p>
                 <SimpleInput
                     placeholder="feet"
                     className="w-full"

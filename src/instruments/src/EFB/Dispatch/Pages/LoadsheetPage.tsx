@@ -3,6 +3,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { CloudArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
@@ -15,6 +16,8 @@ const NoSimBriefDataOverlay = () => {
 
     const [simbriefDataPending, setSimbriefDataPending] = useState(false);
     const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+
+    const { t } = useTranslation();
 
     const fetchData = async () => {
         setSimbriefDataPending(true);
@@ -40,14 +43,14 @@ const NoSimBriefDataOverlay = () => {
                     <>
                         {!simbriefDataLoaded && (
                             <div className="flex flex-col justify-center items-center space-y-8 h-full">
-                                <h1 className="max-w-4xl text-center">You have not yet imported any SimBrief data.</h1>
+                                <h1 className="max-w-4xl text-center">{t('Dispatch.Ofp.YouHaveNotYetImportedAnySimBriefData')}</h1>
                                 <button
                                     type="button"
                                     onClick={fetchData}
                                     className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                                 >
                                     <CloudArrowDown size={26} />
-                                    <p className="text-current">Import SimBrief Data</p>
+                                    <p className="text-current">{t('Dispatch.Ofp.ImportSimBriefData')}</p>
                                 </button>
                             </div>
                         )}

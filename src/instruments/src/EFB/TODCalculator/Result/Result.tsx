@@ -1,5 +1,6 @@
 import React from 'react';
 import { toNumber, last } from 'lodash';
+import { useTranslation } from 'react-i18next';
 import { TODCalculator } from '../../Service/TODCalculator';
 import Card from '../../UtilComponents/Card/Card';
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType';
@@ -12,6 +13,8 @@ export const Result = ({ className }: {className: string}) => {
     const groundSpeed = useAppSelector((state) => state.todCalculator.groundSpeed) ?? 0;
     const currentAltitude = useAppSelector((state) => state.todCalculator.currentAltitude) ?? 0;
 
+    const { t } = useTranslation();
+
     const todCalculator = new TODCalculator(toNumber(currentAltitude), toNumber(targetAltitude), groundSpeed);
     const currentGroundSpeed = last(groundSpeed).groundSpeed;
 
@@ -22,13 +25,13 @@ export const Result = ({ className }: {className: string}) => {
     const results = ({
         [TOD_CALCULATION_TYPE.DISTANCE]: [
             {
-                headerText: 'Desired vertical speed',
+                headerText: `${t('Performance.TopOfDescent.Result.DesiredVerticalSpeed')}`,
                 footerText: '',
                 unit: 'ft/min',
                 calculate: () => Math.round(todCalculator.calculateVS(calculationInput)),
             },
             {
-                headerText: 'Desired descent angle',
+                headerText: `${t('Performance.TopOfDescent.Result.DesiredDescentAngle')}`,
                 footerText: '',
                 unit: 'degrees',
                 calculate: () => -Math.round(todCalculator.calculateDegree(calculationInput)),
@@ -36,16 +39,16 @@ export const Result = ({ className }: {className: string}) => {
         ],
         [TOD_CALCULATION_TYPE.VERTICAL_SPEED]: [
             {
-                headerText: 'Start your descent about',
-                footerText: 'before target',
+                headerText: `${t('Performance.TopOfDescent.Result.StartYourDescentAbout')}`,
+                footerText: `${t('Performance.TopOfDescent.Result.BeforeTarget')}`,
                 unit: 'NM',
                 calculate: () => Math.round(todCalculator.calculateDistance(Math.abs(calculationInput), 'FTM')),
             },
         ],
         [TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE]: [
             {
-                headerText: 'Start your descent about',
-                footerText: 'before target',
+                headerText: `${t('Performance.TopOfDescent.Result.StartYourDescentAbout')}`,
+                footerText: `${t('Performance.TopOfDescent.Result.BeforeTarget')}`,
                 unit: 'NM',
                 calculate: () => Math.round(todCalculator.calculateDistance(Math.abs(calculationInput), 'DEGREE')),
             },
@@ -67,14 +70,14 @@ export const Result = ({ className }: {className: string}) => {
     if (!inputDataValid && !validCalculations.length) return null;
 
     return (
-        <Card title="Result" childrenContainerClassName="flex-1 flex flex-col justify-center px-0" className={className}>
+        <Card title={t('Performance.TopOfDescent.Result.Title')} childrenContainerClassName="flex-1 flex flex-col justify-center px-0" className={className}>
             {results.map(({ headerText, footerText, calculate, unit }) => {
                 const calculation = calculate();
 
                 if (calculationValid(calculation)) {
                     return (
                         <div className="flex flex-col justify-center items-center mb-10 last:mb-0">
-                            <h1 className="mb-4 text-2xl font-medium ">{headerText}</h1>
+                            <h1 className="mb-4 text-2xl font-medium text-center">{headerText}</h1>
 
                             <span className="text-6xl whitespace-nowrap">
                                 {calculation}

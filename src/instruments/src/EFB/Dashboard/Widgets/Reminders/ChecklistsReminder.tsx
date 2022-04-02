@@ -2,6 +2,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, Check } from 'react-bootstrap-icons';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { areAllChecklistItemsCompleted, getChecklistCompletion, setSelectedChecklistIndex, TrackingChecklist } from '../../../Store/features/checklists';
 import { RemindersSection } from './RemindersSection';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
@@ -63,12 +64,14 @@ export const ChecklistsReminder = () => {
 
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', 1000);
 
+    const { t } = useTranslation();
+
     useEffect(() => {
         setRelevantChecklists([...checklists].filter((_, clIndex) => relevantChecklistIndices.includes(clIndex)));
     }, [flightPhase]);
 
     return (
-        <RemindersSection title="Checklists" pageLinkPath="/checklists">
+        <RemindersSection title={t('Dashboard.Checklists')} pageLinkPath="/checklists">
             {relevantChecklists.length ? (
                 <div className="grid grid-cols-2">
                     {relevantChecklists.map((checklist, index) => (
@@ -80,7 +83,7 @@ export const ChecklistsReminder = () => {
                     ))}
                 </div>
             ) : (
-                <h1 className="m-auto my-4 font-bold opacity-60">No Relevant Checklists</h1>
+                <h1 className="m-auto my-4 font-bold text-center opacity-60">{t('Dashboard.NoRelevantChecklists')}</h1>
             )}
         </RemindersSection>
     );

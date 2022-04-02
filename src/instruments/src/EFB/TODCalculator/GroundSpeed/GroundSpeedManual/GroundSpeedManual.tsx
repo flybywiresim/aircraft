@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import React from 'react';
 
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 
 import { setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode, addTodGroundSpeed } from '../../../Store/features/todCalculator';
@@ -11,6 +12,7 @@ import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInpu
 export const GroundSpeedManual = () => {
     const dispatch = useAppDispatch();
     const groundSpeed = useAppSelector((state) => state.todCalculator.groundSpeed);
+    const { t } = useTranslation();
 
     return (
         <div className="flex flex-col justify-between space-y-12 h-full">
@@ -19,7 +21,7 @@ export const GroundSpeedManual = () => {
                     {groundSpeed.map(({ from, groundSpeed }, index) => (
                         <div className="flex flex-row space-x-4 w-full rounded-lg">
                             <div>
-                                <p>{`Min. Altitude ${index + 1}`}</p>
+                                <p>{`${t('Performance.TopOfDescent.GroundSpeed.MinAltitude')} ${index + 1}`}</p>
                                 <SimpleInput
                                     placeholder="feet"
                                     number
@@ -37,7 +39,7 @@ export const GroundSpeedManual = () => {
                             </div>
 
                             <div>
-                                <p>Ground Speed</p>
+                                <p>{t('Performance.TopOfDescent.GroundSpeed.GroundSpeed')}</p>
                                 <SimpleInput
                                     number
                                     className="w-full"
@@ -63,7 +65,7 @@ export const GroundSpeedManual = () => {
                         onClick={() => dispatch(removeTodGroundSpeed(groundSpeed.length - 1))}
                         disabled={groundSpeed.length <= 1}
                     >
-                        Remove Last
+                        {t('Performance.TopOfDescent.GroundSpeed.RemoveLast')}
                     </button>
 
                     <button
@@ -72,7 +74,7 @@ export const GroundSpeedManual = () => {
                         onClick={() => dispatch(addTodGroundSpeed({ from: -1, groundSpeed: -1 }))}
                         disabled={groundSpeed.length >= 6}
                     >
-                        Add
+                        {t('Performance.TopOfDescent.GroundSpeed.Add')}
                     </button>
                 </div>
             </div>
@@ -82,7 +84,7 @@ export const GroundSpeedManual = () => {
                 className="flex justify-center p-3 w-full rounded-md border-2 transition duration-100 text-theme-highlight hover:text-theme-body hover:bg-theme-highlight border-theme-highlight"
                 onClick={() => dispatch(setTodGroundSpeedMode(TOD_INPUT_MODE.AUTO))}
             >
-                <p className="text-current">SYNC</p>
+                <p className="text-current">{t('Performance.TopOfDescent.GroundSpeed.Sync')}</p>
             </button>
         </div>
     );

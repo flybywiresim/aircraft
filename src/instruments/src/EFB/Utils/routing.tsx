@@ -3,6 +3,7 @@ import { Route, Redirect, useHistory } from 'react-router-dom';
 
 export interface PageLink {
     name: string;
+    alias?: string;
     component: JSX.Element;
 }
 

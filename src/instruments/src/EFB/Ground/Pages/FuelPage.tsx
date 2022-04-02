@@ -6,6 +6,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import Slider from 'rc-slider';
 import { Units } from '@shared/units';
+import { useTranslation } from 'react-i18next';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { useAppSelector } from '../../Store/store';
@@ -89,6 +90,8 @@ export const FuelPage = () => {
     const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 1_000);
     const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
 
+    const { t } = useTranslation();
+
     const { units } = useAppSelector((state) => state.simbrief.data);
     const { planRamp } = useAppSelector((state) => state.simbrief.data.fuels);
     const simbriefDataLoaded = isSimbriefDataLoaded();
@@ -128,17 +131,17 @@ export const FuelPage = () => {
     const formatRefuelStatusLabel = () => {
         if (airplaneCanRefuel()) {
             if (round(totalTarget) === totalCurrentGallon()) {
-                return '(Completed)';
+                return `(${t('Ground.Fuel.Completed')})`;
             }
             if (refuelStartedByUser) {
-                return ((totalTarget) > (totalCurrentGallon())) ? '(Refueling...)' : '(Defueling...)';
+                return ((totalTarget) > (totalCurrentGallon())) ? `(${t('Ground.Fuel.Refueling')}...)` : `(${t('Ground.Fuel.Defueling')}...)`;
             }
-            return '(Ready to start)';
+            return `(${t('Ground.Fuel.ReadyToStart')})`;
         }
         if (refuelStartedByUser) {
             setRefuelStartedByUser(false);
         }
-        return '(Unavailable)';
+        return `(${t('Ground.Fuel.Unavailable')})`;
     };
 
     const formatRefuelStatusClass = () => {
@@ -271,7 +274,7 @@ export const FuelPage = () => {
             <div className="z-30">
                 <div className="flex absolute inset-x-0 top-0 flex-col items-center mx-auto space-y-3">
                     <TankReadoutWidget
-                        title="Total Fuel"
+                        title={t('Ground.Fuel.TotalFuel')}
                         current={totalCurrent()}
                         target={totalTarget}
                         capacity={totalFuel()}
@@ -282,7 +285,7 @@ export const FuelPage = () => {
                         inlinedTitle
                     />
                     <TankReadoutWidget
-                        title="Center Tank"
+                        title={t('Ground.Fuel.CenterTank')}
                         current={centerCurrent}
                         target={centerTarget}
                         capacity={CENTER_TANK_GALLONS}
@@ -296,7 +299,7 @@ export const FuelPage = () => {
                 <div className="flex absolute inset-x-0 top-40 flex-row justify-between">
                     <div className="overflow-hidden w-min rounded-2xl border-2 divide-y border-theme-accent divide-theme-accent">
                         <TankReadoutWidget
-                            title="Left Inner Tank"
+                            title={t('Ground.Fuel.LeftInnerTank')}
                             current={LInnCurrent}
                             target={LInnTarget}
                             capacity={INNER_CELL_GALLONS}
@@ -305,7 +308,7 @@ export const FuelPage = () => {
                             convertedFuelValue={convertFuelValue(LInnCurrent)}
                         />
                         <TankReadoutWidget
-                            title="Left Outer Tank"
+                            title={t('Ground.Fuel.LeftOuterTank')}
                             current={LOutCurrent}
                             target={LOutTarget}
                             capacity={OUTER_CELL_GALLONS}
@@ -316,7 +319,7 @@ export const FuelPage = () => {
                     </div>
                     <div className="overflow-hidden w-min rounded-2xl border-2 divide-y border-theme-accent divide-theme-accent">
                         <TankReadoutWidget
-                            title="Right Inner Tank"
+                            title={t('Ground.Fuel.RightInnerTank')}
                             current={RInnCurrent}
                             target={RInnTarget}
                             capacity={INNER_CELL_GALLONS}
@@ -325,7 +328,7 @@ export const FuelPage = () => {
                             convertedFuelValue={convertFuelValueCenter(RInnCurrent)}
                         />
                         <TankReadoutWidget
-                            title="Right Outer Tank"
+                            title={t('Ground.Fuel.RightOuterTank')}
                             current={ROutCurrent}
                             target={ROutTarget}
                             capacity={OUTER_CELL_GALLONS}
@@ -387,7 +390,7 @@ export const FuelPage = () => {
                     <div className="py-3 px-5 space-y-4">
                         <div className="flex flex-row justify-between items-center">
                             <div className="flex flex-row items-center space-x-3">
-                                <h2 className="font-medium">Refuel</h2>
+                                <h2 className="font-medium">{t('Ground.Fuel.Refuel')}</h2>
                                 <p className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</p>
                             </div>
                             <p>{`Estimated ${calculateEta()} minutes`}</p>
@@ -437,7 +440,7 @@ export const FuelPage = () => {
                 </div>
 
                 <div className="flex overflow-x-hidden absolute right-6 bottom-0 z-30 flex-row justify-between items-center py-3 px-6 space-x-14 rounded-2xl border border-theme-accent">
-                    <h2 className="font-medium">Refuel Time</h2>
+                    <h2 className="font-medium">{t('Ground.Fuel.RefuelTime')}</h2>
 
                     <SelectGroup>
                         <SelectItem selected={isAirplaneCnD() ? refuelRate === '2' : !isAirplaneCnD()} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>

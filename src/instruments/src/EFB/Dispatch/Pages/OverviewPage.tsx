@@ -3,6 +3,7 @@ import { IconPlane } from '@tabler/icons';
 import { Box, LightningFill, PeopleFill, Rulers, Speedometer2 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { Units } from '@shared/units';
+import { useTranslation } from 'react-i18next';
 import { NoseOutline } from '../../Assets/NoseOutline';
 
 interface InformationEntryProps {
@@ -23,6 +24,8 @@ const InformationEntry: FC<InformationEntryProps> = ({ children, title, info }) 
 export const OverviewPage = () => {
     let [airline] = useSimVar('ATC AIRLINE', 'String', 1_000);
 
+    const { t } = useTranslation();
+
     airline ||= 'FlyByWire Simulations';
 
     const getConvertedInfo = (metricValue: number, unitType: 'weight' |'volume' |'distance') => {
@@ -40,7 +43,7 @@ export const OverviewPage = () => {
     };
 
     return (
-        <div className="overflow-hidden p-6 mr-3 w-1/2 rounded-lg border-2 h-content-section-reduced border-theme-accent">
+        <div className="overflow-hidden p-6 mr-3 w-min rounded-lg border-2 h-content-section-reduced border-theme-accent">
             <h1 className="font-bold">Airbus A320neo</h1>
             <p>{airline}</p>
 
@@ -50,44 +53,44 @@ export const OverviewPage = () => {
 
             <div className="flex flex-row mt-8 space-x-16">
                 <div className="flex flex-col space-y-8">
-                    <InformationEntry title="Model" info="A320-251N [A20N]">
+                    <InformationEntry title={t('Dispatch.Overview.Model')} info="A320-251N [A20N]">
                         <IconPlane className="fill-current" size={23} stroke={1.5} strokeLinejoin="miter" />
                     </InformationEntry>
 
-                    <InformationEntry title="Range" info={getConvertedInfo(3400, 'distance')}>
+                    <InformationEntry title={t('Dispatch.Overview.Range')} info={getConvertedInfo(3400, 'distance')}>
                         <Rulers size={23} />
                     </InformationEntry>
 
-                    <InformationEntry title="MRW" info={getConvertedInfo(79400, 'weight')}>
+                    <InformationEntry title={t('Dispatch.Overview.MRW')} info={getConvertedInfo(79400, 'weight')}>
                         <Box size={23} />
                     </InformationEntry>
 
-                    <InformationEntry title="MZFW" info={getConvertedInfo(64300, 'weight')}>
+                    <InformationEntry title={t('Dispatch.Overview.MZFW')} info={getConvertedInfo(64300, 'weight')}>
                         <Box size={23} />
                     </InformationEntry>
 
-                    <InformationEntry title="Maximum Passengers" info="174 passengers">
+                    <InformationEntry title={t('Dispatch.Overview.MaximumPassengers')} info="174 passengers">
                         <PeopleFill size={23} />
                     </InformationEntry>
                 </div>
                 <div className="flex flex-col space-y-8">
-                    <InformationEntry title="Engines" info="CFM LEAP 1A-26">
+                    <InformationEntry title={t('Dispatch.Overview.Engines')} info="CFM LEAP 1A-26">
                         <LightningFill size={23} />
                     </InformationEntry>
 
-                    <InformationEntry title="MMO" info="0.82">
+                    <InformationEntry title={t('Dispatch.Overview.MMO')} info="0.82">
                         <Speedometer2 size={23} />
                     </InformationEntry>
 
-                    <InformationEntry title="MTOW" info={getConvertedInfo(79000, 'weight')}>
+                    <InformationEntry title={t('Dispatch.Overview.MTOW')} info={getConvertedInfo(79000, 'weight')}>
                         <Box size={23} />
                     </InformationEntry>
 
-                    <InformationEntry title="Maximum Fuel Capacity" info={getConvertedInfo(23721, 'volume')}>
+                    <InformationEntry title={t('Dispatch.Overview.MaximumFuelCapacity')} info={getConvertedInfo(23721, 'volume')}>
                         <Box size={23} />
                     </InformationEntry>
 
-                    <InformationEntry title="Maximum Cargo" info={getConvertedInfo(9435, 'weight')}>
+                    <InformationEntry title={t('Dispatch.Overview.MaximumCargo')} info={getConvertedInfo(9435, 'weight')}>
                         <Box size={23} />
                     </InformationEntry>
                 </div>

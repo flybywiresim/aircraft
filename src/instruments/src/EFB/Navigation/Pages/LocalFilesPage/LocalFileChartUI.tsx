@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 import { LocalFileChart, LocalFileChartSelector, LocalFileOrganizedCharts } from './LocalFileChartSelector';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -17,6 +18,8 @@ interface LocalFileCharts {
 
 export const LocalFileChartUI = () => {
     const dispatch = useAppDispatch();
+
+    const { t } = useTranslation();
 
     const [statusBarInfo, setStatusBarInfo] = useState('');
 
@@ -161,23 +164,26 @@ export const LocalFileChartUI = () => {
                             {simbriefDataLoaded && (
                                 <SelectGroup className="flex-shrink-0 rounded-l-none">
                                     <SelectItem
+                                        className="uppercase"
                                         selected={searchQuery === departingAirport}
                                         onSelect={() => handleIcaoChange(departingAirport)}
                                     >
-                                        FROM
+                                        {t('NavigationAndCharts.From')}
                                     </SelectItem>
                                     <SelectItem
+                                        className="uppercase"
                                         selected={searchQuery === arrivingAirport}
                                         onSelect={() => handleIcaoChange(arrivingAirport)}
                                     >
-                                        TO
+                                        {t('NavigationAndCharts.To')}
                                     </SelectItem>
                                     {!!altIcao && (
                                         <SelectItem
+                                            className="uppercase"
                                             selected={searchQuery === altIcao}
                                             onSelect={() => handleIcaoChange(altIcao)}
                                         >
-                                            ALTN
+                                            {t('NavigationAndCharts.Altn')}
                                         </SelectItem>
                                     )}
                                 </SelectGroup>

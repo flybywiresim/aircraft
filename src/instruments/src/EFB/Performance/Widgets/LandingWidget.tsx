@@ -22,6 +22,7 @@ import { Units } from '@shared/units';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
+import { useTranslation } from 'react-i18next';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { LandingCalculator, LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
@@ -413,13 +414,15 @@ export const LandingWidget = () => {
         return undefined;
     };
 
+    const { t } = useTranslation();
+
     return (
-        <div className="flex overflow-hidden flex-row justify-between h-content-section-reduced">
+        <div className="flex overflow-hidden flex-row justify-between space-x-10 h-content-section-reduced">
             <div className="w-full">
                 <div className="flex flex-col justify-between w-full h-full">
                     <div className="mb-4">
                         <div className="mt-4 mb-8">
-                            <p>Airport ICAO</p>
+                            <p>{t('Performance.Landing.AirportIcao')}</p>
                             <div className="flex flex-row justify-between mt-4">
                                 <SimpleInput className="w-64 uppercase" value={icao} placeholder="ICAO" onChange={handleICAOChange} maxLength={4} />
                                 <div className="flex flex-row">
@@ -430,7 +433,7 @@ export const LandingWidget = () => {
                                             type="button"
                                         >
                                             <CloudArrowDown size={26} />
-                                            <p className="text-current">Fill data from</p>
+                                            <p className="text-current">{t('Performance.Landing.FillDataFrom')}</p>
                                         </button>
                                     </TooltipWrapper>
                                     <SelectInput
@@ -447,7 +450,7 @@ export const LandingWidget = () => {
                         </div>
                         <div className="flex flex-row justify-between">
                             <div className="flex flex-col space-y-4">
-                                <Label text="Wind Direction">
+                                <Label text={t('Performance.Landing.WindDirection')}>
                                     <SimpleInput
                                         className="w-64"
                                         value={windDirection}
@@ -460,7 +463,7 @@ export const LandingWidget = () => {
                                         number
                                     />
                                 </Label>
-                                <Label text="Wind Magnitude">
+                                <Label text={t('Performance.Landing.WindMagnitude')}>
                                     <SimpleInput
                                         className="w-64"
                                         value={windMagnitude}
@@ -471,7 +474,7 @@ export const LandingWidget = () => {
                                         number
                                     />
                                 </Label>
-                                <Label text="Temperature">
+                                <Label text={t('Performance.Landing.Temperature')}>
                                     <div className="flex flex-row w-64">
                                         <SimpleInput
                                             className="w-full rounded-r-none"
@@ -494,7 +497,7 @@ export const LandingWidget = () => {
                                         />
                                     </div>
                                 </Label>
-                                <Label text="QNH">
+                                <Label text={t('Performance.Landing.Qnh')}>
                                     <div className="flex flex-row w-64">
                                         <SimpleInput
                                             className="w-full rounded-r-none"
@@ -517,7 +520,7 @@ export const LandingWidget = () => {
                                         />
                                     </div>
                                 </Label>
-                                <Label text="Runway Altitude">
+                                <Label text={t('Performance.Landing.RunwayAltitude')}>
                                     <SimpleInput
                                         className="w-64"
                                         value={altitude}
@@ -529,7 +532,7 @@ export const LandingWidget = () => {
                                         number
                                     />
                                 </Label>
-                                <Label text="Runway Heading">
+                                <Label text={t('Performance.Landing.RunwayHeading')}>
                                     <SimpleInput
                                         className="w-64"
                                         value={runwayHeading}
@@ -542,7 +545,7 @@ export const LandingWidget = () => {
                                         number
                                     />
                                 </Label>
-                                <Label text="Runway Condition">
+                                <Label text={t('Performance.Landing.RunwayCondition')}>
                                     <SelectInput
                                         className="w-64"
                                         defaultValue={initialState.landing.runwayCondition}
@@ -560,7 +563,7 @@ export const LandingWidget = () => {
                                 </Label>
                             </div>
                             <div className="flex flex-col space-y-4">
-                                <Label text="Runway Slope">
+                                <Label text={t('Performance.Landing.RunwaySlope')}>
                                     <SimpleInput
                                         className="w-64"
                                         value={slope}
@@ -573,7 +576,7 @@ export const LandingWidget = () => {
                                         reverse
                                     />
                                 </Label>
-                                <Label text="Runway LDA">
+                                <Label text={t('Performance.Landing.RunwayLda')}>
                                     <div className="flex flex-row w-64">
                                         <SimpleInput
                                             className="w-full rounded-r-none"
@@ -596,7 +599,7 @@ export const LandingWidget = () => {
                                         />
                                     </div>
                                 </Label>
-                                <Label text="Approach Speed">
+                                <Label text={t('Performance.Landing.ApproachSpeed')}>
                                     <SimpleInput
                                         className="w-64"
                                         value={approachSpeed}
@@ -608,7 +611,7 @@ export const LandingWidget = () => {
                                         number
                                     />
                                 </Label>
-                                <Label text="Weight">
+                                <Label text={t('Performance.Landing.Weight')}>
                                     <div className="flex flex-row w-64">
                                         <SimpleInput
                                             className="w-full rounded-r-none"
@@ -631,7 +634,7 @@ export const LandingWidget = () => {
                                         />
                                     </div>
                                 </Label>
-                                <Label text="Flaps Configuration">
+                                <Label text={t('Performance.Landing.FlapsConfiguration')}>
                                     <SelectInput
                                         className="w-64"
                                         defaultValue={initialState.landing.flaps}
@@ -643,7 +646,7 @@ export const LandingWidget = () => {
                                         ]}
                                     />
                                 </Label>
-                                <Label text="Overweight Procedure">
+                                <Label text={t('Performance.Landing.OverweightProcedure')}>
                                     <SelectInput
                                         className="w-64"
                                         defaultValue={initialState.landing.overweightProcedure}
@@ -655,7 +658,7 @@ export const LandingWidget = () => {
                                         ]}
                                     />
                                 </Label>
-                                <Label text="Reverse Thrust">
+                                <Label text={t('Performance.Landing.ReverseThrust')}>
                                     <SelectInput
                                         className="w-64"
                                         defaultValue={initialState.landing.reverseThrust}
@@ -667,7 +670,7 @@ export const LandingWidget = () => {
                                         ]}
                                     />
                                 </Label>
-                                <Label text="Autoland">
+                                <Label text={t('Performance.Landing.AutoLand')}>
                                     <SelectInput
                                         className="w-64"
                                         defaultValue={initialState.landing.autoland}
@@ -689,7 +692,7 @@ export const LandingWidget = () => {
                                 disabled={!areInputsValid()}
                             >
                                 <Calculator size={26} />
-                                <p className="font-bold text-current">Calculate</p>
+                                <p className="font-bold text-current">{t('Performance.Landing.Calculate')}</p>
                             </button>
                             <button
                                 onClick={handleClearInputs}
@@ -697,27 +700,27 @@ export const LandingWidget = () => {
                                 type="button"
                             >
                                 <Trash size={26} />
-                                <p className="font-bold text-current">Clear</p>
+                                <p className="font-bold text-current">{t('Performance.Landing.Clear')}</p>
                             </button>
                         </div>
                     </div>
                     <div className="flex overflow-hidden flex-row w-full rounded-lg border-2 divide-x-2 border-theme-accent divide-theme-accent">
                         <OutputDisplay
-                            label="Maximum Manual"
+                            label={t('Performance.Landing.MaximumManual')}
                             value={distanceUnit === 'ft'
                                 ? `${Math.round(Units.metreToFoot(maxAutobrakeLandingDist))}ft`
                                 : `${maxAutobrakeLandingDist}m`}
                             error={maxAutobrakeLandingDist > (displayedRunwayLength ?? 0)}
                         />
                         <OutputDisplay
-                            label="Medium"
+                            label={t('Performance.Landing.Medium')}
                             value={distanceUnit === 'ft'
                                 ? `${Math.round(Units.metreToFoot(mediumAutobrakeLandingDist))}ft`
                                 : `${mediumAutobrakeLandingDist}m`}
                             error={mediumAutobrakeLandingDist > (displayedRunwayLength ?? 0)}
                         />
                         <OutputDisplay
-                            label="Low"
+                            label={t('Performance.Landing.Low')}
                             value={distanceUnit === 'ft'
                                 ? `${Math.round(Units.metreToFoot(lowAutobrakeLandingDist))}ft`
                                 : `${lowAutobrakeLandingDist}m`}
@@ -726,7 +729,6 @@ export const LandingWidget = () => {
                     </div>
                 </div>
             </div>
-            <div className="my-auto mx-10 w-2 h-5/6 rounded-full bg-theme-accent" />
             <div className="mt-4">
                 <RunwayVisualizationWidget
                     mainLength={displayedRunwayLength}

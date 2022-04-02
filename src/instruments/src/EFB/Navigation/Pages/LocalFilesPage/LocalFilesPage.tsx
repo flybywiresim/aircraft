@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
 import { CloudArrowDown } from 'react-bootstrap-icons';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { LocalFileChartUI } from './LocalFileChartUI';
 
@@ -29,6 +30,8 @@ export const getPdfUrl = async (fileName: string, pageNumber: number): Promise<s
 
 export const LocalFilesPage = () => {
     const [connectionState, setConnectionState] = useState(ConnectionState.ATTEMPTING);
+
+    const { t } = useTranslation();
 
     const setConnectedState = async () => {
         try {
@@ -59,7 +62,7 @@ export const LocalFilesPage = () => {
     case ConnectionState.ATTEMPTING:
         return (
             <div className="flex flex-col justify-center items-center space-y-8 rounded-lg border-2 border-theme-accent h-content-section-reduced">
-                <h1>Establishing Connection</h1>
+                <h1>{t('NavigationAndCharts.LocalFiles.EstablishingConnection')}</h1>
                 <CloudArrowDown size={40} className="animate-bounce" />
             </div>
         );
@@ -69,13 +72,13 @@ export const LocalFilesPage = () => {
         return (
             <div className="flex justify-center items-center rounded-lg border-2 border-theme-accent h-content-section-reduced">
                 <div className="space-y-4">
-                    <h1>Failed to Establish Connection.</h1>
+                    <h1>{t('NavigationAndCharts.LocalFiles.FailedToEstablishConnection')}</h1>
                     <button
                         type="button"
                         className="flex justify-center items-center py-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                         onClick={handleConnectionRetry}
                     >
-                        Retry
+                        {t('NavigationAndCharts.LocalFiles.Retry')}
                     </button>
                 </div>
             </div>

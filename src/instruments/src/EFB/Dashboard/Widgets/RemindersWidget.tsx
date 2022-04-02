@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { ArrowDown, ArrowUp, PencilFill } from 'react-bootstrap-icons';
+import { useTranslation } from 'react-i18next';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { WeatherReminder } from './Reminders/WeatherReminder';
 import { PinnedChartsReminder } from './Reminders/PinnedChartsReminder';
@@ -83,10 +84,12 @@ export const RemindersWidget = () => {
         return reminderKeyArr.toString();
     };
 
+    const { t } = useTranslation();
+
     return (
         <div className="w-full">
             <div className="flex flex-row justify-between items-center space-x-3">
-                <h1 className="font-bold">Important Information</h1>
+                <h1 className="font-bold">{t('Dashboard.ImportantInformation')}</h1>
 
                 <TooltipWrapper text="Rearrange Widgets">
                     <PencilFill

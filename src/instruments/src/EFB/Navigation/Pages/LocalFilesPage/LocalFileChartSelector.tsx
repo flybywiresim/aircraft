@@ -1,5 +1,6 @@
 import React from 'react';
 import { CloudArrowDown, PinFill, Pin } from 'react-bootstrap-icons';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import {
     NavigationTab,
@@ -32,6 +33,8 @@ interface LocalFileChartSelectorProps {
 export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
     const dispatch = useAppDispatch();
 
+    const { t } = useTranslation();
+
     const { chartId, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
     const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
 
@@ -52,7 +55,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
                 className="flex justify-center items-center h-full rounded-md border-2 border-theme-accent"
                 style={{ height: '42.75rem' }}
             >
-                <p>There are no charts to display.</p>
+                <p>{t('NavigationAndCharts.ThereAreNoChartsToDisplay')}</p>
             </div>
         );
     }

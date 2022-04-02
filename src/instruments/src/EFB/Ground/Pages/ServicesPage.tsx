@@ -1,5 +1,5 @@
 import React, { useState, FC, useEffect } from 'react';
-import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
+import { useSplitSimVar } from '@instruments/common/simVars';
 import {
     DoorOpenFill,
     Truck,
@@ -9,6 +9,7 @@ import {
     ArchiveFill,
 } from 'react-bootstrap-icons';
 
+import { useTranslation } from 'react-i18next';
 import { UprightOutline } from '../../Assets/UprightOutline';
 
 import { useAppDispatch, useAppSelector } from '../../Store/store';
@@ -72,6 +73,8 @@ export const ServicesPage = () => {
 
     const [tugActive] = useState(false);
 
+    const { t } = useTranslation();
+
     const STATE_WAITING = 'WAITING';
 
     useEffect(() => {
@@ -110,9 +113,9 @@ export const ServicesPage = () => {
             {/* TODO: Replace with JIT value */}
             <UprightOutline className="inset-x-0 mx-auto w-full h-full text-theme-text" />
 
-            <ServiceButtonWrapper x={64} y={64}>
+            <ServiceButtonWrapper x={0} y={64}>
                 <GroundServiceButton
-                    name="Connect Jet Bridge"
+                    name={t('Ground.Services.ConnectJetBridge')}
                     onClick={(e) => handleClick(() => {
                         setJetWayActive(1);
                         setRampActive(1);
@@ -123,7 +126,7 @@ export const ServicesPage = () => {
                     <PersonPlusFill size={36} />
                 </GroundServiceButton>
                 <DoorToggle
-                    name="Door Fwd"
+                    name={t('Ground.Services.DoorFwd')}
                     index={0}
                     tugActive={tugActive}
                     onClick={handleClick}
@@ -132,7 +135,7 @@ export const ServicesPage = () => {
                     disabled={disabledButtons.includes('door-fwd-left')}
                 />
                 <GroundServiceButton
-                    name="Call Fuel Truck"
+                    name={t('Ground.Services.CallFuelTruck')}
                     onClick={(e) => handleClick(() => setFuelingActive(1), e)}
                     className={applySelectedWithSync('', 'fuel', fuelingActive)}
                     id="fuel"
@@ -143,7 +146,7 @@ export const ServicesPage = () => {
 
             <ServiceButtonWrapper x={750} y={64} className="">
                 <GroundServiceButton
-                    name={`${powerActive ? 'Disconnect' : 'Connect'} External Power`}
+                    name={powerActive ? t('Ground.Services.DisconnectExternalPower') : t('Ground.Services.ConnectExternalPower')}
                     onClick={(e) => handleClick(() => setPowerActive(1), e)}
                     className={applySelectedWithSync('', 'power', powerActive)}
                     id="power"
@@ -151,7 +154,7 @@ export const ServicesPage = () => {
                     <PlugFill size={36} />
                 </GroundServiceButton>
                 <GroundServiceButton
-                    name="Call Baggage Truck"
+                    name={t('Ground.Services.CallBaggageTruck')}
                     onClick={(e) => handleClick(() => setCargoActive(1), e)}
                     className={applySelectedWithSync('', 'baggage', cargoActive)}
                     id="baggage"
@@ -163,7 +166,7 @@ export const ServicesPage = () => {
             <ServiceButtonWrapper x={750} y={600} className="">
                 <DoorToggle
                     tugActive={tugActive}
-                    name="Door Aft"
+                    name={t('Ground.Services.DoorAft')}
                     index={3}
                     onClick={handleClick}
                     selectionCallback={applySelectedWithSync}
@@ -171,7 +174,7 @@ export const ServicesPage = () => {
                     disabled={disabledButtons.includes('door-aft-right')}
                 />
                 <GroundServiceButton
-                    name="Call Catering Truck"
+                    name={t('Ground.Services.CallCateringTruck')}
                     onClick={(e) => handleClick(() => setCateringActive(1), e, 'door-aft-right')}
                     className={applySelectedWithSync('', 'catering', cateringActive, 'door-aft-right')}
                     id="catering"

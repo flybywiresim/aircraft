@@ -10,6 +10,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { ModalProvider } from './UtilComponents/Modals/Modals';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import Efb from './Efb';
+import './i18n';
 
 import './Assets/Efb.scss';
 import './Assets/Theme.css';

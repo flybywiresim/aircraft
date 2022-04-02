@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, ChevronRight } from 'react-bootstrap-icons';
 import { AboutPage } from './Pages/AboutPage';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
-import { pathify, TabRoutes } from '../Utils/routing';
+import { pathify, TabRoutes, PageLink } from '../Utils/routing';
 import { AircraftOptionsPinProgramsPage } from './Pages/AircraftOptionsPinProgramsPage';
 import { SimOptionsPage } from './Pages/SimOptionsPage';
 import { RealismPage } from './Pages/RealismPage';
@@ -17,11 +17,6 @@ import { FlyPadPage } from './Pages/FlyPadPage';
 export type ButtonType = {
     name: string,
     setting: string,
-}
-
-interface PageLink {
-    name: string,
-    component: JSX.Element,
 }
 
 interface SelectionTabsProps {
@@ -36,7 +31,7 @@ export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
                     to={`settings/${pathify(tab.name)}`}
                     className="flex justify-between items-center p-6 rounded-md border-2 border-transparent transition duration-100 bg-theme-accent hover:border-theme-highlight"
                 >
-                    <p className="text-2xl">{tab.name}</p>
+                    <p className="text-2xl">{tab.alias ?? tab.name}</p>
                     <ChevronRight size={30} />
                 </Link>
             ))

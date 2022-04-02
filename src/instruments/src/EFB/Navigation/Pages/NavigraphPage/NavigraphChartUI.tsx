@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
+import { useTranslation } from 'react-i18next';
 import { NavigraphChartSelector, OrganizedChart } from './NavigraphChartSelector';
 import { NavigationTab, editTabProperty } from '../../../Store/features/navigationPage';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
@@ -27,6 +28,8 @@ export const NavigraphChartUI = () => {
         departure: [],
         reference: [],
     });
+
+    const { t } = useTranslation();
 
     const [organizedCharts, setOrganizedCharts] = useState<OrganizedChart[]>([
         { name: 'STAR', charts: charts.arrival },
@@ -102,11 +105,11 @@ export const NavigraphChartUI = () => {
 
     const getStatusBarText = () => {
         if (searchQuery.length !== 4) {
-            return 'No Airport Selected';
+            return t('NavigationAndCharts.Navigraph.NoAirportSelected');
         }
 
         if (loading) {
-            return 'Please Wait';
+            return t('NavigationAndCharts.Navigraph.PleaseWait');
         }
 
         return statusBarInfo;
@@ -132,23 +135,26 @@ export const NavigraphChartUI = () => {
                             {isSimbriefDataLoaded() && (
                                 <SelectGroup className="flex-shrink-0 rounded-l-none">
                                     <SelectItem
+                                        className="uppercase"
                                         selected={searchQuery === departingAirport}
                                         onSelect={() => handleIcaoChange(departingAirport)}
                                     >
-                                        FROM
+                                        {t('NavigationAndCharts.From')}
                                     </SelectItem>
                                     <SelectItem
+                                        className="uppercase"
                                         selected={searchQuery === arrivingAirport}
                                         onSelect={() => handleIcaoChange(arrivingAirport)}
                                     >
-                                        TO
+                                        {t('NavigationAndCharts.To')}
                                     </SelectItem>
                                     {!!altIcao && (
                                         <SelectItem
+                                            className="uppercase"
                                             selected={searchQuery === altIcao}
                                             onSelect={() => handleIcaoChange(altIcao)}
                                         >
-                                            ALTN
+                                            {t('NavigationAndCharts.Altn')}
                                         </SelectItem>
                                     )}
                                 </SelectGroup>
