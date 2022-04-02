@@ -66,6 +66,14 @@ export class FailuresOrchestrator implements FailuresProvider {
         this.listener.triggerToAllSubscribers(this.triggers.NewFailuresState, Array.from(this.activeFailures), Array.from(this.changingFailures));
     }
 
+    private publishConfirmActivate(identifier: number) {
+        this.listener.triggerToAllSubscribers(this.triggers.ConfirmActivateFailure, identifier);
+    }
+
+    private publishConfirmDeactivate(identifier: number) {
+        this.listener.triggerToAllSubscribers(this.triggers.ConfirmDeactivateFailure, identifier);
+    }
+
     /**
      * Activates the failure with the given identifier.
      */
@@ -78,6 +86,7 @@ export class FailuresOrchestrator implements FailuresProvider {
         this.changingFailures.delete(identifier);
         this.activeFailures.add(identifier);
 
+        this.publishConfirmActivate(identifier);
         this.publishStateUpdate();
     }
 
@@ -93,6 +102,7 @@ export class FailuresOrchestrator implements FailuresProvider {
         this.changingFailures.delete(identifier);
         this.activeFailures.delete(identifier);
 
+        this.publishConfirmDeactivate(identifier);
         this.publishStateUpdate();
     }
 

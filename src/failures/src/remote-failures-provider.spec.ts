@@ -6,7 +6,9 @@ import {
     activateSimVarName,
     deactivateSimVarName,
     flushPromises,
-    identifier, remoteActivateFailure, remoteDeactivateFailure,
+    identifier,
+    remoteActivateFailure,
+    remoteDeactivateFailure,
 } from './test-values';
 
 describe('RemoteFailuresProvider', () => {

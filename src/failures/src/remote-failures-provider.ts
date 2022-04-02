@@ -32,20 +32,36 @@ export class RemoteFailuresProvider implements FailuresProvider {
             this.processNewState(active, changing);
         });
 
+        Coherent.on(this.triggers.ConfirmActivateFailure, (identifier) => {
+            this.processConfirmActivate(identifier);
+        });
+
+        Coherent.on(this.triggers.ConfirmDeactivateFailure, (identifier) => {
+            this.processConfirmDeactivate(identifier);
+        });
+
         this.listener.triggerToAllSubscribers(this.triggers.RequestFailuresState);
     }
 
     private processNewState(newActiveFailures: number[], newChangingFailures: number[]): void {
-        for (const oldChanging of this.changingFailures) {
-            // FIXME this is prone to race conditions - if an update comes after the ACTIVATE trigger is fired but before the failure is active on the
-            // orchestrator's side, the callback will be wrongly called. Introduce CONFIRM_ACTIVATE and CONFIRM_DEACTIVATE triggers ?
-            if (!newChangingFailures.includes(oldChanging)) {
-                this.changingFailuresCallbacks.get(oldChanging)?.(oldChanging);
-            }
-        }
-
         this.activeFailures = new Set(newActiveFailures);
         this.changingFailures = new Set(newChangingFailures);
+    }
+
+    private processConfirmActivate(identifier: number): void {
+        const cb = this.changingFailuresCallbacks.get(identifier);
+
+        if (cb) {
+            cb(identifier);
+        }
+    }
+
+    private processConfirmDeactivate(identifier: number): void {
+        const cb = this.changingFailuresCallbacks.get(identifier);
+
+        if (cb) {
+            cb(identifier);
+        }
     }
 
     getAllFailures(): Readonly<Readonly<Failure>[]> {
