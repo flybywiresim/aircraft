@@ -23,6 +23,7 @@ export type LocalFileChart = {
 
 export type LocalFileOrganizedCharts = {
     name: string,
+    alias: string,
     charts: LocalFileChart[],
 }
 interface LocalFileChartSelectorProps {

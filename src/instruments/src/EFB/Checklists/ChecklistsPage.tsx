@@ -4,6 +4,7 @@ import { CheckLg, Link45deg } from 'react-bootstrap-icons';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
 import { useSimVar } from '@instruments/common/simVars';
+import { useTranslation } from 'react-i18next';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import {
     areAllChecklistItemsCompleted,
@@ -132,6 +133,8 @@ const CompletionButton = () => {
         return !item.completed;
     });
 
+    const { t } = useTranslation();
+
     useEffect(() => {
         setCompleteItemVar(false);
     }, []);
@@ -163,14 +166,14 @@ const CompletionButton = () => {
                         dispatch(setSelectedChecklistIndex(selectedChecklistIndex + 1));
                     }}
                 >
-                    Proceed to next checklist
+                    {t('Checklists.ProceedToNextChecklist')}
                 </div>
             );
         }
 
         return (
             <div className="flex justify-center items-center py-2 w-full rounded-md border-2 text-theme-highlight bg-theme-body border-theme-highlight">
-                The last checklist is complete
+                {t('Checklists.TheLastChecklistIsComplete')}
             </div>
         );
     }
@@ -187,7 +190,7 @@ const CompletionButton = () => {
                     }));
                 }}
             >
-                Mark item as complete
+                {t('Checklists.MarkItemAsComplete')}
             </div>
         );
     }
@@ -200,14 +203,14 @@ const CompletionButton = () => {
                     dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: true }));
                 }}
             >
-                Mark checklist as complete
+                {t('Checklists.MarkChecklistAsComplete')}
             </div>
         );
     }
 
     return (
         <div className="flex justify-center items-center py-2 w-full rounded-md border-2 text-utility-green bg-theme-body border-utility-green">
-            There are remaining autofill checklist items that have not yet been completed
+            {t('Checklist.ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted')}
         </div>
     );
 };

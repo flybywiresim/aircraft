@@ -1,6 +1,7 @@
 import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
 import React from 'react';
 import { Failure } from '@flybywiresim/failures';
+import { useTranslation } from 'react-i18next';
 import { FailureButton } from '../FailureButton';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { useAppSelector } from '../../Store/store';
@@ -59,6 +60,7 @@ interface CompactUIProps {
 export const CompactUI = ({ chapters, failures }: CompactUIProps) => {
     const { allFailures, activeFailures } = useFailuresOrchestrator();
     const { searchQuery } = useAppSelector((state) => state.failuresPage);
+    const { t } = useTranslation();
 
     return (
         <ScrollableContainer height={48}>
@@ -71,7 +73,7 @@ export const CompactUI = ({ chapters, failures }: CompactUIProps) => {
                 ))}
                 {failures.length === 0 && (
                     <div className="flex justify-center items-center rounded-md border-2 border-theme-accent" style={{ height: '48rem' }}>
-                        <p>No Items Found</p>
+                        <p>{t('Failures.NoItemsFound')}</p>
                     </div>
                 )}
             </div>

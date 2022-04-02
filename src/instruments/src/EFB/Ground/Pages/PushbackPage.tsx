@@ -11,6 +11,7 @@ import {
 import Slider from 'rc-slider';
 import { useUpdate } from '@instruments/common/hooks';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 import { removeDisabledButton, setActiveButtons, setTugRequestOnly, setPushbackWaitTimerHandle } from '../../Store/features/buttons';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { applySelected, applySelectedWithSync, StatefulButton } from '../Ground';
@@ -26,6 +27,8 @@ export const PushbackPage = () => {
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 1000);
     const [tugActive, setTugActive] = useState(false);
     const [noseWheelPos, setNoseWheelPos] = useSimVar('L:A32NX_NOSE_WHEEL_POSITION', 'percent over 100');
+
+    const { t } = useTranslation();
 
     const getTugHeading = (value: number): number => (tugHeading + value) % 360;
 
@@ -163,7 +166,7 @@ export const PushbackPage = () => {
             <div className="flex flex-col p-6 space-y-4 rounded-lg border-2 border-theme-accent">
                 <div className="flex flex-row space-x-4">
                     <div className="w-full">
-                        <p className="text-center">Call Tug</p>
+                        <p className="text-center">{t('Pushback.CallTug')}</p>
                         <button
                             type="button"
                             id="tug-request"
@@ -180,7 +183,7 @@ export const PushbackPage = () => {
                         </button>
                     </div>
                     <div className="w-full">
-                        <p className="text-center">Halt</p>
+                        <p className="text-center">{t('Pushback.Halt')}</p>
                         <button
                             type="button"
                             id="stop"
@@ -193,21 +196,21 @@ export const PushbackPage = () => {
                         </button>
                     </div>
                     <div className="w-full">
-                        <p className="text-center">Parking Brake</p>
+                        <p className="text-center">{t('Pushback.ParkingBrake.Title')}</p>
                         <button
                             type="button"
                             id="parking-brake"
                             onClick={() => setParkingBrakeEngaged((old) => !old)}
                             className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center ${parkingBrakeEngaged ? 'bg-white text-utility-red' : 'bg-utility-red text-white'}`}
                         >
-                            <h1 className="font-bold text-current">{parkingBrakeEngaged ? 'OFF' : 'ON'}</h1>
+                            <h1 className="font-bold text-current uppercase">{parkingBrakeEngaged ? t('Pushback.ParkingBrake.Off') : t('Pushback.ParkingBrake.On')}</h1>
                         </button>
                     </div>
                 </div>
 
                 <div className="flex flex-row space-x-4">
                     <div className="w-full">
-                        <p className="text-center">Forward</p>
+                        <p className="text-center">{t('Pushback.Forward')}</p>
                         <button
                             type="button"
                             className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${commandedTugDirectionFactor === 1 && '!text-theme-highlight !bg-theme-body'}`}
@@ -219,7 +222,7 @@ export const PushbackPage = () => {
                         </button>
                     </div>
                     <div className="w-full">
-                        <p className="text-center">Backward</p>
+                        <p className="text-center">{t('Pushback.Backward')}</p>
                         <button
                             type="button"
                             className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${commandedTugDirectionFactor === -1 && '!text-theme-highlight !bg-theme-body'}`}
@@ -232,7 +235,7 @@ export const PushbackPage = () => {
                     </div>
                 </div>
                 <div>
-                    <p>Tug Direction</p>
+                    <p>{t('Pushback.TugDirection')}</p>
                     <div className="flex flex-row items-center space-x-4">
                         <p className="font-bold text-unselected">L</p>
                         <Slider
@@ -250,7 +253,7 @@ export const PushbackPage = () => {
                     </div>
                 </div>
                 <div>
-                    <p>Tug Speed</p>
+                    <p>{t('Pushback.TugSpeed')}</p>
                     <Slider
                         min={0}
                         step={0.01}

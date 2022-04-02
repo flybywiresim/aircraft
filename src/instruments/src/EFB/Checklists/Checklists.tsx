@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { Link45deg } from 'react-bootstrap-icons';
+import { useTranslation } from 'react-i18next';
 import { ChecklistPage } from './ChecklistsPage';
 import { CHECKLISTS } from './Lists';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
@@ -81,6 +82,8 @@ export const Checklists = () => {
         dispatch(setSelectedChecklistIndex(index));
     };
 
+    const { t } = useTranslation();
+
     const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
 
     const [autoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
@@ -123,8 +126,8 @@ export const Checklists = () => {
     const handleResetConfirmation = () => {
         showModal(
             <PromptModal
-                title="Checklist Reset Warning"
-                bodyText="Are you sure you want to reset all checklists?"
+                title={t('Checklists.ChecklistResetWarning')}
+                bodyText={t('Checklists.AreYouSureYouWantToResetChecklists')}
                 onConfirm={() => {
                     checklists.forEach((cl, clIndex) => {
                         cl.items.forEach((_, itemIdx) => {
@@ -174,7 +177,7 @@ export const Checklists = () => {
                         className="flex justify-center items-center h-12 font-bold rounded-md border-2 transition duration-100 text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red border-utility-red"
                         onClick={handleResetConfirmation}
                     >
-                        Reset All
+                        {t('Checklists.ResetAll')}
                     </button>
 
                     <button
@@ -182,7 +185,7 @@ export const Checklists = () => {
                         className="flex justify-center items-center h-12 font-bold rounded-md border-2 transition duration-100 text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red border-utility-red"
                         onClick={handleResetChecklist}
                     >
-                        Reset Checklist
+                        {t('Checklists.ResetChecklist')}
                     </button>
                 </div>
 

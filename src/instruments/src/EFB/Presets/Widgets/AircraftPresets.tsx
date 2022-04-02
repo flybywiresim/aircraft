@@ -4,6 +4,7 @@
 /* eslint-disable max-len */
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
+import { useTranslation } from 'react-i18next';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { AircraftPresetsList, StepDescription } from './Procedures';
@@ -27,6 +28,8 @@ export const AircraftPresets = () => {
     const [loadPresetCurrentId] = useSimVar('L:A32NX_LOAD_AIRCRAFT_PRESET_CURRENT_ID', 'number', 100);
     const { showModal } = useModals();
 
+    const { t } = useTranslation();
+
     // Sets the LVAR to tell the wasm to load the preset into the aircraft
     const handleLoadPreset = (presetID: number) => {
         showModal(
@@ -44,13 +47,14 @@ export const AircraftPresets = () => {
     };
 
     return (
-        <div className="p-4 mt-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
+        <div className="p-4 mt-4 space-y-4 rounded-lg border-2 h-content-section-reduced border-theme-accent">
             <div className="flex flex-row justify-center items-center p-2 space-x-2 h-20 rounded-md border-2 border-theme-accent">
                 {loadPresetVar ? (
                     <>
-                        <div className="overflow-hidden justify-center content-center w-full h-full bg-theme-accent rounded-md">
+                        <div className="overflow-hidden justify-center content-center w-full h-full rounded-md bg-theme-accent">
                             <span className="pt-1 pl-3 h-1/2 text-xl">
-                                Current Procedure Step:
+                                {t('Presets.AircraftStates.CurrentProcedureStep')}
+                                :
                                 {' '}
                                 {StepDescription.get(loadPresetCurrentId)}
                             </span>
@@ -61,16 +65,17 @@ export const AircraftPresets = () => {
                         </div>
 
                         <div
-                            className="flex items-center px-4 h-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                            className="flex items-center px-4 h-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                             onClick={() => handleCancel()}
                         >
-                            Cancel
+                            {t('Presets.AircraftStates.Cancel')}
                         </div>
                     </>
                 ) : (
                     <>
-                        {simOnGround ? 'Select a Preset to Load'
-                            : 'The aircraft must be on the ground to load a preset.'}
+                        {simOnGround
+                            ? t('Presets.AircraftStates.SelectAPresetToLoad')
+                            : t('Presets.AircraftStates.TheAircraftMustBeOnTheGroundToLoadAPreset')}
                     </>
                 )}
             </div>

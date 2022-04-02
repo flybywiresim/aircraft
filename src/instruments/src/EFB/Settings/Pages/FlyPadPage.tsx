@@ -10,6 +10,7 @@ import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
+import { keyboardLayoutOptions } from '../../UtilComponents/KeyboardWrapper';
 
 export const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
@@ -22,6 +23,7 @@ export const FlyPadPage = () => {
     const [showStatusBarFlightProgress, setShowStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
     const [usingColoredMetar, setUsingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
     const [language, setLanguage] = usePersistentProperty('EFB_LANGUAGE', 'en');
+    const [keyboardLayout, setKeyboardLayout] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');
 
     const themeButtons: ButtonType[] = [
         { name: 'Blue', setting: 'blue' },
@@ -132,6 +134,15 @@ export const FlyPadPage = () => {
                     value={language}
                     onChange={(value) => setLanguage(value as string)}
                     options={languageOptions.map((option) => ({ value: option.langCode, displayValue: option.alias }))}
+                />
+            </SettingItem>
+
+            <SettingItem name="Onscreen Keyboard Layout">
+                <SelectInput
+                    className="w-64"
+                    value={keyboardLayout}
+                    onChange={(value) => setKeyboardLayout(value as string)}
+                    options={keyboardLayoutOptions.map((option) => ({ value: option.name, displayValue: option.alias }))}
                 />
             </SettingItem>
         </SettingsPage>

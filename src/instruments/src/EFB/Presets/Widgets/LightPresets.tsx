@@ -13,6 +13,8 @@ import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 
 export const LightPresets = () => {
+    const { t } = useTranslation();
+
     // Manage names for presets in EFB only and always map them to the
     // preset IDs used in the WASM implementation.
     const [storedNames, setStoredNames] = usePersistentProperty('LIGHT_PRESET_NAMES', '');
@@ -65,7 +67,9 @@ export const LightPresets = () => {
     return (
         <div className="p-2 mt-2 mb-2 rounded-lg border-2 h-content-section-reduced border-theme-accent">
             <div className="flex flex-row justify-center items-center p-2 mb-3 space-x-2 h-16 rounded-md border-2 border-theme-accent">
-                {isPowered ? 'Select an interior lighting preset to load or save.' : 'The aircraft must be powered for interior lighting presets.'}
+                {isPowered
+                    ? t('Presets.InteriorLighting.SelectAnInteriorLightingPresetToLoadOrSave')
+                    : t('Presets.InteriorLighting.TheAircraftMustBePoweredForInteriorLightingPresets')}
             </div>
             <ScrollableContainer height={48}>
                 <div className="grid grid-cols-1 grid-rows-5 grid-flow-row gap-4">

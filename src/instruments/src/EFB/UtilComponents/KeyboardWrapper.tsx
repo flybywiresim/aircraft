@@ -13,6 +13,45 @@ interface KeyboardWrapperProps {
   onKeyDown?: (buttonName: string) => void;
 }
 
+export const keyboardLayoutOptions = [
+    {
+        name: 'english',
+        alias: 'English',
+    },
+    {
+        name: 'spanish',
+        alias: 'Español',
+    },
+    {
+        name: 'german',
+        alias: 'Deutsch',
+    },
+    {
+        name: 'french',
+        alias: 'Français',
+    },
+    {
+        name: 'arabic',
+        alias: 'العربية',
+    },
+    {
+        name: 'italian',
+        alias: 'Italiano',
+    },
+    {
+        name: 'korean',
+        alias: '한국어',
+    },
+    {
+        name: 'japanese',
+        alias: '日本語',
+    },
+    {
+        name: 'thai',
+        alias: 'ไทย',
+    },
+];
+
 export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput, onKeyDown }: KeyboardWrapperProps) => {
     // TODO: Write to this property using a dropdown in settings later on
     const [currentLayoutIdentifier] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');

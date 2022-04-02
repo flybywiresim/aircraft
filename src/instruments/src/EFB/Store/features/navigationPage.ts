@@ -60,7 +60,7 @@ interface InitialChartState {
     [NavigationTab.LOCAL_FILES]: ProviderTabInfo;
     [NavigationTab.PINNED_CHARTS]: {
         searchQuery: string;
-        selectedProviderIndex: number;
+        selectedProvider: ChartProvider | 'ALL';
         chartTypeIndex: number;
         sortTypeIndex: PinSort;
         editMode: boolean;
@@ -129,7 +129,7 @@ const initialState: InitialChartState = {
     },
     [NavigationTab.PINNED_CHARTS]: {
         searchQuery: '',
-        selectedProviderIndex: 0,
+        selectedProvider: 'ALL',
         chartTypeIndex: 0,
         sortTypeIndex: PinSort.NONE,
         editMode: false,

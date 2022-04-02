@@ -3,6 +3,7 @@ import React from 'react';
 import { Route } from 'react-router';
 import { Link } from 'react-router-dom';
 import { Failure } from '@flybywiresim/failures';
+import { useTranslation } from 'react-i18next';
 import { pathify } from '../../../Utils/routing';
 import { AtaChapterPage } from './AtaChapterPage';
 import { useFailuresOrchestrator } from '../../../failures-orchestrator-provider';
@@ -57,27 +58,31 @@ interface ComfortUIProps {
     failures: Failure[];
 }
 
-export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUIProps) => (
-    <>
-        <Route exact path="/failures/comfort">
-            {filteredChapters.map((chapter) => (
-                <ATAChapterCard
-                    ataNumber={chapter}
-                    title={AtaChaptersTitle[chapter]}
-                    description={AtaChaptersDescription[chapter]}
-                />
-            ))}
-            {filteredChapters.length === 0 && (
-                <div className="flex justify-center items-center mt-4 rounded-md border-2 border-theme-accent" style={{ height: '48rem' }}>
-                    <p>No Items Found</p>
-                </div>
-            )}
-        </Route>
+export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUIProps) => {
+    const { t } = useTranslation();
 
-        {allChapters.map((chapter) => (
-            <Route path={`/failures/comfort/${chapter.toString()}`}>
-                <AtaChapterPage chapter={chapter} failures={failures} />
+    return (
+        <>
+            <Route exact path="/failures/comfort">
+                {filteredChapters.map((chapter) => (
+                    <ATAChapterCard
+                        ataNumber={chapter}
+                        title={AtaChaptersTitle[chapter]}
+                        description={AtaChaptersDescription[chapter]}
+                    />
+                ))}
+                {filteredChapters.length === 0 && (
+                    <div className="flex justify-center items-center mt-4 rounded-md border-2 border-theme-accent" style={{ height: '48rem' }}>
+                        <p>{t('Failures.NoItemsFound')}</p>
+                    </div>
+                )}
             </Route>
-        ))}
-    </>
-);
+
+            {allChapters.map((chapter) => (
+                <Route path={`/failures/comfort/${chapter.toString()}`}>
+                    <AtaChapterPage chapter={chapter} failures={failures} />
+                </Route>
+            ))}
+        </>
+    );
+};

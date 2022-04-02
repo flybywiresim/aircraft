@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import React, { createContext, FC, useContext, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ModalContextInterface{
     showModal: (modal: JSX.Element) => void;
@@ -67,6 +68,8 @@ export const PromptModal: FC<PromptModalProps> = ({
         popModal();
     };
 
+    const { t } = useTranslation();
+
     return (
 
         <div className="p-8 w-5/12 rounded-xl border-2 bg-theme-body border-theme-accent">
@@ -78,13 +81,13 @@ export const PromptModal: FC<PromptModalProps> = ({
                     className="flex justify-center items-center py-2 px-8 w-full text-center rounded-md border-2 transition duration-100 text-theme-text hover:text-theme-highlight bg-theme-accent hover:bg-theme-body border-theme-accent hover:border-theme-highlight"
                     onClick={handleCancel}
                 >
-                    {cancelText ?? 'Cancel'}
+                    {cancelText ?? t('Modals.Cancel')}
                 </div>
                 <div
                     className="flex justify-center items-center py-2 px-8 w-full text-center rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     onClick={handleConfirm}
                 >
-                    {confirmText ?? 'Confirm'}
+                    {confirmText ?? t('Modals.Confirm')}
                 </div>
             </div>
         </div>
@@ -98,6 +101,7 @@ export const AlertModal: FC<AlertModalProps> = ({
     acknowledgeText,
 }) => {
     const { popModal } = useModals();
+    const { t } = useTranslation();
 
     const handleAcknowledge = () => {
         onAcknowledge?.();
@@ -112,7 +116,7 @@ export const AlertModal: FC<AlertModalProps> = ({
                 className="flex justify-center items-center py-2 px-8 mt-8 w-full text-center rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                 onClick={handleAcknowledge}
             >
-                {acknowledgeText ?? 'Okay'}
+                {acknowledgeText ?? t('Modals.Okay')}
             </div>
         </div>
     );

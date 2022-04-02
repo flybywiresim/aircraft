@@ -109,7 +109,7 @@ export const NavigraphChartUI = () => {
         }
 
         if (loading) {
-            return t('NavigationAndCharts.Navigraph.PleaseWait');
+            return t('NavigationAndCharts.PleaseWait');
         }
 
         return statusBarInfo;

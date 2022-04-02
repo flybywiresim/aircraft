@@ -31,9 +31,9 @@ export const LocalFileChartUI = () => {
     });
 
     const [organizedCharts, setOrganizedCharts] = useState<LocalFileOrganizedCharts[]>([
-        { name: 'IMAGE', charts: charts.images },
-        { name: 'PDF', charts: charts.pdfs },
-        { name: 'BOTH', charts: [...charts.images, ...charts.pdfs] },
+        { name: 'IMAGE', alias: t('NavigationAndCharts.LocalFiles.Image'), charts: charts.images },
+        { name: 'PDF', alias: t('NavigationAndCharts.LocalFiles.Pdf'), charts: charts.pdfs },
+        { name: 'BOTH', alias: t('NavigationAndCharts.LocalFiles.Both'), charts: [...charts.images, ...charts.pdfs] },
     ]);
 
     const { searchQuery, isFullScreen, chartName, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
@@ -76,9 +76,9 @@ export const LocalFileChartUI = () => {
 
     useEffect(() => {
         setOrganizedCharts([
-            { name: 'IMAGE', charts: charts.images },
-            { name: 'PDF', charts: charts.pdfs },
-            { name: 'BOTH', charts: [...charts.pdfs, ...charts.images] },
+            { name: 'IMAGE', alias: t('NavigationAndCharts.LocalFiles.Image'), charts: charts.images },
+            { name: 'PDF', alias: t('NavigationAndCharts.LocalFiles.Pdf'), charts: charts.pdfs },
+            { name: 'BOTH', alias: t('NavigationAndCharts.LocalFiles.Both'), charts: [...charts.pdfs, ...charts.images] },
         ]);
     }, [charts]);
 
@@ -135,11 +135,11 @@ export const LocalFileChartUI = () => {
 
     const getStatusBarText = () => {
         if (!searchQuery.length) {
-            return 'Showing All Items';
+            return t('NavigationAndCharts.ShowingAllItems');
         }
 
         if (loading) {
-            return 'Please Wait';
+            return t('NavigationAndCharts.PleaseWait');
         }
 
         return statusBarInfo;
@@ -155,7 +155,7 @@ export const LocalFileChartUI = () => {
                     <div className="overflow-hidden flex-shrink-0" style={{ width: '450px' }}>
                         <div className="flex flex-row justify-center items-center">
                             <SimpleInput
-                                placeholder="File Name"
+                                placeholder={t('NavigationAndCharts.LocalFiles.FileName')}
                                 value={searchQuery}
                                 className={`w-full flex-shrink uppercase ${simbriefDataLoaded && 'rounded-r-none'}`}
                                 onChange={handleIcaoChange}
@@ -204,9 +204,9 @@ export const LocalFileChartUI = () => {
                                         selected={index === selectedTabIndex}
                                         onSelect={() => dispatch(editTabProperty({ tab: NavigationTab.LOCAL_FILES, selectedTabIndex: index }))}
                                         key={organizedChart.name}
-                                        className="flex justify-center w-full"
+                                        className="flex justify-center w-full uppercase"
                                     >
-                                        {organizedChart.name}
+                                        {organizedChart.alias}
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
