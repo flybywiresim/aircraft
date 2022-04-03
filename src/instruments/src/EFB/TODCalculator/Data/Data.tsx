@@ -87,7 +87,7 @@ export const Data = ({ className }: {className: string}) => {
                         number
                     />
 
-                    <TooltipWrapper text={`${currentAltitudeSyncEnabled ? 'Desynchronize' : 'Synchronize'} Input with Aircraft's Current Altitude`}>
+                    <TooltipWrapper text={currentAltitudeSyncEnabled ? t('Performance.TopOfDescent.TT.DesynchronizeInputWithAircraftsCurrentAltitude') : t('Performance.TopOfDescent.TT.SynchronizeInputWithAircraftsCurrentAltitude')}>
                         <button
                             onClick={() => dispatch(setTodCurrentAltitudeSync(!currentAltitudeSyncEnabled))}
                             className={`flex items-center h-auto border-2 border-theme-highlight text-theme-highlight px-3 rounded-md rounded-l-none transition duration-100 ${currentAltitudeSyncEnabled && 'bg-theme-highlight !text-theme-body'}`}

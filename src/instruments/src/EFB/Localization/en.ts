@@ -13,9 +13,7 @@ export const en = {
         Standby: 'Standby',
         Title: 'Air Traffic Control',
     },
-    Checklist: {
-        ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'There are remaining autofill checklist items that have not yet been completed',
-    },
+    Checklist: { ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'There are remaining autofill checklist items that have not yet been completed' },
     Checklists: {
         AreYouSureYouWantToResetAllChecklists: 'Are you sure you want to reset all checklists?',
         AreYouSureYouWantToResetChecklists: 'Are you sure you want to reset all checklists?',
@@ -44,9 +42,7 @@ export const en = {
                 NoPinnedCharts: 'No Pinned Charts',
                 Title: 'Pinned Charts',
             },
-            TT: {
-                RearrangeWidgets: 'Rearrange Widgets',
-            },
+            TT: { RearrangeWidgets: 'Rearrange Widgets' },
             Title: 'Important Information',
             Weather: {
                 AirPressure: 'Air Pressure',
@@ -60,7 +56,7 @@ export const en = {
                 Temperature: 'Temperature',
                 Title: 'Weather',
                 WindSpeed: 'Wind Speed',
-            }
+            },
         },
         Title: 'Dashboard',
         YourFlight: {
@@ -74,7 +70,7 @@ export const en = {
             SimBriefDataNotYetLoaded: 'SimBrief data not yet loaded.',
             Title: 'Your Flight',
             ZFW: 'ZFW',
-        }
+        },
     },
     Dispatch: {
         Ofp: {
@@ -102,12 +98,8 @@ export const en = {
         Title: 'Dispatch',
     },
     Failures: {
-        Comfort: {
-            Title: 'Comfort',
-        },
-        Compact: {
-            Title: 'Compact',
-        },
+        Comfort: { Title: 'Comfort' },
+        Compact: { Title: 'Compact' },
         FullSimulationOfTheFailuresBelowIsntYetGuaranteed: "Full simulation of the failures below isn't yet guaranteed.",
         Search: 'Search',
         Title: 'Failures',
@@ -134,9 +126,7 @@ export const en = {
             TotalFuel: 'Total Fuel',
             Unavailable: 'Unavailable',
         },
-        Pushback: {
-            Title: 'Pushback',
-        },
+        Pushback: { Title: 'Pushback' },
         Services: {
             CallBaggageTruck: 'Call Baggage Truck',
             CallCateringTruck: 'Call Catering Truck',
@@ -205,8 +195,8 @@ export const en = {
             FitChartToHeight: 'Fit Chart to Height',
             FitChartToWidth: 'Fit Chart to Width',
             ResetMovement: 'Reset Movement',
-            'RotateLeft45Degrees': 'Rotate Left 45 Degrees',
-            'RotateRight45Degrees': 'Rotate Right 45 Degrees',
+            RotateLeft45Degrees: 'Rotate Left 45 Degrees',
+            RotateRight45Degrees: 'Rotate Right 45 Degrees',
             ZoomIn: 'Zoom In',
             ZoomOut: 'Zoom Out',
         },
@@ -266,11 +256,16 @@ export const en = {
             },
             Result: {
                 BeforeTarget: 'before target',
+                DesiredDescentAngle: 'Desired Descent Angle',
                 StartYourDescentAbout: 'Start your descent about',
                 Title: 'Result',
             },
+            TT: {
+                DesynchronizeInputWithAircraftsCurrentAltitude: "Desynchronize Input with Aircraft's Current Altitude",
+                SynchronizeInputWithAircraftsCurrentAltitude: "Synchronize Input with Aircraft's Current Altitude",
+            },
             Title: 'Top of Descent',
-        }
+        },
     },
     Presets: {
         AircraftStates: {
@@ -317,9 +312,7 @@ export const en = {
         TugSpeed: 'Tug Speed',
     },
     Settings: {
-        About: {
-            Title: 'About',
-        },
+        About: { Title: 'About' },
         AircraftOptionsPinPrograms: {
             AccelerationHeight: 'Acceleration Height',
             EngineOutAccelerationHeight: 'Engine-Out Acceleration Height',
@@ -339,7 +332,7 @@ export const en = {
             ErrorReporting: 'Error Reporting',
             HoppieUserId: 'Hoppie User ID',
             MetarSource: 'METAR Source',
-            'OptionalA32nxErrorReporting': 'Optional A32NX Error Reporting',
+            OptionalA32nxErrorReporting: 'Optional A32NX Error Reporting',
             PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId: 'Please check that you have correctly entered your SimBrief username or pilot ID.',
             SimBriefUsernamePilotId: 'SimBrief Username/Pilot ID',
             TafSource: 'TAF Source',
@@ -379,7 +372,7 @@ export const en = {
             Calibrate: 'Calibrate',
             DefaultBarometerUnit: 'Default Barometer Unit',
             DynamicRegistrationDecal: 'Dynamic Registration Decal',
-            'EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection': 'Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)',
+            EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection: 'Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)',
             ExternalMcduServerPort: 'External MCDU Server Port',
             LoadOnly: 'Load Only',
             None: 'None',
@@ -413,24 +406,24 @@ export const en = {
         flyPad: {
             '12Hour': '12 Hour',
             '24Hour': '24 Hour',
-            AutoBrightness: 'Auto Brightness',
-            AutomaticallyShowOnscreenKeyboard: 'Automatically Show Onscreen Keyboard',
-            Blue: 'Blue',
-            Brightness: 'Brightness',
-            Dark: 'Dark',
-            Language: 'Language',
-            Light: 'Light',
-            Local: 'Local',
-            LocalTimeFormat: 'Local Time Format',
-            OnscreenKeyboardLayout: 'Onscreen Keyboard Layout',
-            ShowColoredRawMetar: 'Show Colored Raw Metar',
-            ShowStatusBarFlightProgressIndicator: 'Show Status Bar Flight Progress Indicator',
-            Theme: 'Theme',
-            TimeDisplayed: 'Time Displayed',
-            Title: 'flyPad',
-            Utc: 'UTC',
-            UtcAndLocal: 'UTC and Local',
-        }
+            'AutoBrightness': 'Auto Brightness',
+            'AutomaticallyShowOnscreenKeyboard': 'Automatically Show Onscreen Keyboard',
+            'Blue': 'Blue',
+            'Brightness': 'Brightness',
+            'Dark': 'Dark',
+            'Language': 'Language',
+            'Light': 'Light',
+            'Local': 'Local',
+            'LocalTimeFormat': 'Local Time Format',
+            'OnscreenKeyboardLayout': 'Onscreen Keyboard Layout',
+            'ShowColoredRawMetar': 'Show Colored Raw Metar',
+            'ShowStatusBarFlightProgressIndicator': 'Show Status Bar Flight Progress Indicator',
+            'Theme': 'Theme',
+            'TimeDisplayed': 'Time Displayed',
+            'Title': 'flyPad',
+            'Utc': 'UTC',
+            'UtcAndLocal': 'UTC and Local',
+        },
     },
     StatusBar: {
         Apr: 'Apr',
@@ -456,5 +449,5 @@ export const en = {
         Thu: 'Thu',
         Tue: 'Tue',
         Wed: 'Wed',
-    }
+    },
 };

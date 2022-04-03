@@ -266,8 +266,13 @@ export const es = {
             },
             Result: {
                 BeforeTarget: 'antes del objetivo',
+                DesiredDescentAngle: 'Ángulo de descenso deseado',
                 StartYourDescentAbout: 'Comienza tu descenso sobre',
                 Title: 'Resultado',
+            },
+            TT: {
+                DesynchronizeInputWithAircraftsCurrentAltitude: 'Desincronizar la entrada con la altitud actual de la aeronave',
+                SynchronizeInputWithAircraftsCurrentAltitude: 'Sincronizar la entrada con la altitud actual de la aeronave',
             },
             Title: 'Cima del descenso',
         }
