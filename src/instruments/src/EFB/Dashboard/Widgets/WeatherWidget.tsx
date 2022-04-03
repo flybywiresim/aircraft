@@ -5,6 +5,7 @@ import React, { FC, useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import { Droplet, Speedometer2, ThermometerHalf, Wind } from 'react-bootstrap-icons';
 import useInterval from '@instruments/common/useInterval';
+import { useTranslation } from 'react-i18next';
 import { parseMetar } from '../../Utils/parseMetar';
 import { MetarParserType } from '../../../Common/metarTypes';
 import { usePersistentNumberProperty, usePersistentProperty } from '../../../Common/persistence';
@@ -87,6 +88,8 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     const setMetar = name === 'origin' ? setDepartureMetar : setDestinationMetar;
 
     const [showMetar, setShowMetar] = usePersistentNumberProperty(`CONFIG_SHOW_METAR_${name}`, 0);
+
+    const { t } = useTranslation();
 
     const BaroValue = () => {
         const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
@@ -185,20 +188,24 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     return (
         <div>
             {metar === undefined
-                ? <p>Loading ...</p>
+                ? <p>{t('Dashboard.ImportantInformation.Weather.Loading')}</p>
                 : (
                     <>
                         <div className="flex flex-row justify-between items-center">
                             <SimpleInput
-                                className="w-32 !text-2xl font-medium text-center uppercase"
+                                className="w-32 font-medium text-center uppercase !text-2xl"
                                 placeholder={simbriefIcao || 'ICAO'}
                                 value={userIcao ?? simbriefIcao}
                                 onChange={(value) => handleIcao(value)}
                                 maxLength={4}
                             />
-                            <TooltipWrapper text={`${showMetar && 'Switch to icon view' || 'Switch to raw metar view'}`}>
+                            <TooltipWrapper
+                                text={showMetar
+                                    ? t('Dashboard.ImportantInformation.Weather.TT.SwitchToIconView')
+                                    : t('Dashboard.ImportantInformation.Weather.TT.SwitchToRawMetarView')}
+                            >
                                 <div className="flex flex-row space-x-2">
-                                    <p>Raw</p>
+                                    <p>{t('Dashboard.ImportantInformation.Weather.Raw')}</p>
                                     <Toggle value={!!showMetar} onToggle={(value) => setShowMetar(value ? 1 : 0)} />
                                 </div>
                             </TooltipWrapper>
@@ -212,7 +219,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                         >
                                             <div className="flex flex-col items-center space-y-1">
                                                 <Speedometer2 size={35} />
-                                                <p>Air Pressure</p>
+                                                <p>{t('Dashboard.ImportantInformation.Weather.AirPressure')}</p>
                                                 {metar.raw_text ? (
                                                     <>
                                                         {metar.barometer ? <BaroValue /> : 'N/A'}
@@ -225,7 +232,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                             </div>
                                             <div className="flex flex-col items-center space-y-1">
                                                 <Wind size={35} />
-                                                <p>Wind Speed</p>
+                                                <p>{t('Dashboard.ImportantInformation.Weather.WindSpeed')}</p>
                                                 {metar.raw_text
                                                     ? (
                                                         <>
@@ -242,7 +249,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                             </div>
                                             <div className="flex flex-col items-center space-y-1">
                                                 <ThermometerHalf size={35} />
-                                                <p>Temperature</p>
+                                                <p>{t('Dashboard.ImportantInformation.Weather.Temperature')}</p>
                                                 {metar.raw_text
                                                     ? (
                                                         <>
@@ -254,7 +261,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                             </div>
                                             <div className="flex flex-col items-center space-y-1">
                                                 <Droplet size={35} />
-                                                <p>Dew Point</p>
+                                                <p>{t('Dashboard.ImportantInformation.Weather.DewPoint')}</p>
                                                 {metar.raw_text
                                                     ? (
                                                         <>

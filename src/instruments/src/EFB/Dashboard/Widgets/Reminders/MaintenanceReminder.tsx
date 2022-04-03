@@ -49,7 +49,7 @@ export const MaintenanceReminder = () => {
     const { t } = useTranslation();
 
     return (
-        <RemindersSection title={t('Dashboard.Maintenance')} pageLinkPath="/failures">
+        <RemindersSection title={t('Dashboard.ImportantInformation.Maintenance.Title')} pageLinkPath="/failures">
             <div className="flex flex-row flex-wrap">
                 {Array
                     .from(activeFailures)
@@ -67,7 +67,7 @@ export const MaintenanceReminder = () => {
                     })}
 
                 {!activeFailures.size && (
-                    <h1 className="m-auto my-4 font-bold text-center opacity-60">{t('Dashboard.NoActiveFailures')}</h1>
+                    <h1 className="m-auto my-4 font-bold text-center opacity-60">{t('Dashboard.ImportantInformation.Maintenance.NoActiveFailures')}</h1>
                 )}
             </div>
         </RemindersSection>

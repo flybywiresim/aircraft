@@ -140,7 +140,9 @@ export const PinnedChartUI = () => {
     });
 
     const filteredCharts = providerCharts.filter((pinnedChart) => {
-        const filterItem = filterTabs[chartTypeIndex].tag;
+        const filterItem = filterTabs[chartTypeIndex];
+
+        if (!filterItem) return true;
 
         const provider = providerTabs[selectedProvider].provider;
 
@@ -198,7 +200,7 @@ export const PinnedChartUI = () => {
                         onChange={(value) => dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, searchQuery: value.toUpperCase() }))}
                     />
 
-                    <TooltipWrapper text="Change Chart Provider">
+                    <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.TT.ChangeChartProvider')}>
                         <SelectInput
                             className="w-56"
                             options={Object.values(providerTabs).map(({ alias, provider }) => ({ displayValue: alias, value: provider }))}
@@ -247,7 +249,7 @@ export const PinnedChartUI = () => {
                         </div>
                     )}
 
-                    <TooltipWrapper text="Change Chart Sort Method">
+                    <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.TT.ChangeChartSortMethod')}>
                         <SelectInput
                             className="w-64"
                             options={[

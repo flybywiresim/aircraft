@@ -40,7 +40,7 @@ export const ToolBar = () => {
     return (
         <nav className="flex flex-col flex-shrink-0 justify-between py-6 w-32">
             <div className="flex flex-col items-center mt-9 space-y-4">
-                <ToolBarButton to="/dashboard" tooltipText="Dashboard">
+                <ToolBarButton to="/dashboard" tooltipText={t('Dashboard.Title')}>
                     <img className="w-[35px]" src={FbwTail} alt="FbwTail" />
                 </ToolBarButton>
                 <ToolBarButton to="/dispatch" tooltipText={t('Dispatch.Title')}>

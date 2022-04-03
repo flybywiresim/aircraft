@@ -10,7 +10,7 @@ export const WeatherReminder = () => {
     const { t } = useTranslation();
 
     return (
-        <RemindersSection title={t('Dashboard.Weather')} noLink>
+        <RemindersSection title={t('Dashboard.ImportantInformation.Weather.Title')} noLink>
             <div className="space-y-6">
                 <WeatherWidget name="origin" simbriefIcao={departingAirport} userIcao={userDepartureIcao} />
                 <div className="w-full h-1 rounded-full bg-theme-accent" />

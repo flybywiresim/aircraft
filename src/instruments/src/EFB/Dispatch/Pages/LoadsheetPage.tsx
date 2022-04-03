@@ -72,6 +72,8 @@ export const LoadSheetWidget = () => {
 
     const dispatch = useAppDispatch();
 
+    const { t } = useTranslation();
+
     useEffect(() => {
         const pImages = ref.current?.getElementsByTagName('img');
 
@@ -122,7 +124,7 @@ export const LoadSheetWidget = () => {
         <div className="overflow-hidden relative p-6 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
             <>
                 <div className="overflow-hidden absolute top-6 right-16 rounded-md bg-theme-secondary">
-                    <TooltipWrapper text="Reduce Font Size">
+                    <TooltipWrapper text={t('Dispatch.Ofp.TT.ReduceFontSize')}>
                         <button
                             type="button"
                             onClick={handleFontDecrease}
@@ -132,7 +134,7 @@ export const LoadSheetWidget = () => {
                         </button>
                     </TooltipWrapper>
 
-                    <TooltipWrapper text="Increase Font Size">
+                    <TooltipWrapper text={t('Dispatch.Ofp.TT.IncreaseFontSize')}>
                         <button
                             type="button"
                             onClick={handleFontIncrease}

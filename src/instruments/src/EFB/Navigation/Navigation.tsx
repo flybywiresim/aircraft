@@ -299,7 +299,7 @@ export const ChartViewer = () => {
 
                         <div className="flex overflow-hidden absolute top-6 right-6 bottom-6 z-30 flex-col justify-between rounded-md cursor-pointer">
                             <div className="flex overflow-hidden flex-col rounded-md">
-                                <TooltipWrapper text="Rotate Left 45 Degrees">
+                                <TooltipWrapper text={t('NavigationAndCharts.TT.RotateLeft45Degrees')}>
                                     <button
                                         type="button"
                                         onClick={handleRotateLeft}
@@ -317,7 +317,7 @@ export const ChartViewer = () => {
                                         <Bullseye size={40} />
                                     </button>
                                 )} */}
-                                <TooltipWrapper text="Rotate Right 45 Degrees">
+                                <TooltipWrapper text={t('NavigationAndCharts.TT.RotateRight45Degrees')}>
                                     <button
                                         type="button"
                                         onClick={handleRotateRight}
@@ -328,7 +328,7 @@ export const ChartViewer = () => {
                                 </TooltipWrapper>
                             </div>
                             <div className="flex overflow-hidden flex-col rounded-md">
-                                <TooltipWrapper text="Expand Chart Vertically">
+                                <TooltipWrapper text={t('NavigationAndCharts.TT.FitChartToHeight')}>
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -354,7 +354,7 @@ export const ChartViewer = () => {
                                     </button>
                                 </TooltipWrapper>
 
-                                <TooltipWrapper text="Expand Chart Horizontally">
+                                <TooltipWrapper text={t('NavigationAndCharts.TT.FitChartToWidth')}>
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -380,7 +380,7 @@ export const ChartViewer = () => {
                                     </button>
                                 </TooltipWrapper>
 
-                                <TooltipWrapper text="Reset Transformation">
+                                <TooltipWrapper text={t('NavigationAndCharts.TT.ResetMovement')}>
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -393,7 +393,7 @@ export const ChartViewer = () => {
                                     </button>
                                 </TooltipWrapper>
 
-                                <TooltipWrapper text="Zoom In">
+                                <TooltipWrapper text={t('NavigationAndCharts.TT.ZoomIn')}>
                                     <button
                                         type="button"
                                         onClick={() => zoomIn()}
@@ -403,7 +403,7 @@ export const ChartViewer = () => {
                                     </button>
                                 </TooltipWrapper>
 
-                                <TooltipWrapper text="Zoom Out">
+                                <TooltipWrapper text={t('NavigationAndCharts.TT.ZoomOut')}>
                                     <button
                                         type="button"
                                         onClick={() => zoomOut()}

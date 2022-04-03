@@ -45,7 +45,7 @@ const NoSimBriefDataOverlay = ({ simbriefDataLoaded, simbriefDataPending, fetchD
                                     className="text-center"
                                     style={{ maxWidth: '18em' }}
                                 >
-                                    {t('Dashboard.SimBriefDataNotYetLoaded')}
+                                    {t('Dashboard.YourFlight.SimBriefDataNotYetLoaded')}
                                 </h1>
 
                                 <button
@@ -54,7 +54,7 @@ const NoSimBriefDataOverlay = ({ simbriefDataLoaded, simbriefDataPending, fetchD
                                     className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                                 >
                                     <CloudArrowDown size={26} />
-                                    <p className="text-current">{t('Dashboard.ImportSimBriefData')}</p>
+                                    <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
                                 </button>
                             </div>
                         )}
@@ -130,7 +130,7 @@ export const FlightWidget = () => {
     return (
         <div className="w-full">
             <div className="flex flex-row justify-between items-center mb-4">
-                <h1 className="font-bold">{t('Dashboard.YourFlight')}</h1>
+                <h1 className="font-bold">{t('Dashboard.YourFlight.Title')}</h1>
                 {simbriefDataLoaded && (
                     <h1>
                         {(airline.length > 0 ? airline : '') + flightNum}
@@ -179,23 +179,23 @@ export const FlightWidget = () => {
                         </div>
                         <div>
                             <div className="flex flex-row mb-4">
-                                <InformationEntry title={t('Dashboard.Alternate')} info={altIcao ?? 'NONE'} />
+                                <InformationEntry title={t('Dashboard.YourFlight.Alternate')} info={altIcao ?? 'NONE'} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.CompanyRoute')} info={departingIata + arrivingIata} />
+                                <InformationEntry title={t('Dashboard.YourFlight.CompanyRoute')} info={departingIata + arrivingIata} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.ZFW')} info={estimatedZfw} />
+                                <InformationEntry title={t('Dashboard.YourFlight.ZFW')} info={estimatedZfw} />
                             </div>
                             <div className="my-auto w-full h-0.5 bg-theme-accent" />
                             <div className="flex flex-row mt-4">
-                                <InformationEntry title={t('Dashboard.CostIndex')} info={costInd} />
+                                <InformationEntry title={t('Dashboard.YourFlight.CostIndex')} info={costInd} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.AverageWind')} info={avgWind} />
+                                <InformationEntry title={t('Dashboard.YourFlight.AverageWind')} info={avgWind} />
                                 <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.CruiseAlt')} info={crzAlt} />
+                                <InformationEntry title={t('Dashboard.YourFlight.CruiseAlt')} info={crzAlt} />
                             </div>
                         </div>
                         <div>
-                            <h5 className="mb-2 text-2xl font-bold">{t('Dashboard.Route')}</h5>
+                            <h5 className="mb-2 text-2xl font-bold">{t('Dashboard.YourFlight.Route')}</h5>
                             <ScrollableContainer height={15}>
                                 <p className="font-mono text-2xl">
                                     <span className="text-2xl text-theme-highlight">
@@ -221,7 +221,7 @@ export const FlightWidget = () => {
                         className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         <CloudArrowDown size={26} />
-                        <p className="text-current">{t('Dashboard.ImportSimBriefData')}</p>
+                        <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
                     </button>
                 </div>
 

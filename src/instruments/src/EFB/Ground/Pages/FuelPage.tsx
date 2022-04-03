@@ -25,20 +25,21 @@ interface TankReadoutProps {
     convertedFuelValue: number;
     className?: string;
     inlinedTitle?: boolean;
+    width?: number;
 }
 
-const TankReadoutWidget = ({ title, current, target, capacity, currentUnit, tankValue, convertedFuelValue, className, inlinedTitle }: TankReadoutProps) => {
+const TankReadoutWidget = ({ title, current, target, capacity, currentUnit, tankValue, convertedFuelValue, className, inlinedTitle, width = 366 }: TankReadoutProps) => {
     const getFuelBarPercent = (curr: number, max: number) => (Math.max(curr, 0) / max) * 100;
 
     return (
-        <div className={`overflow-hidden w-min p-4 space-y-3 bg-theme-body ${className}`} style={{ width: '366px' }}>
+        <div className={`overflow-hidden w-min p-4 space-y-3 bg-theme-body ${className}`} style={{ width: `${width}px` }}>
             <div className={inlinedTitle ? 'flex flex-row items-center justify-between' : undefined}>
                 <h2>{title}</h2>
                 <p>{`${convertedFuelValue}/${round(tankValue)} ${currentUnit}`}</p>
             </div>
             <ProgressBar
                 height="20px"
-                width="326px"
+                width={`${width - 40}px`}
                 displayBar={false}
                 completedBarBegin={getFuelBarPercent(target, capacity)}
                 isLabelVisible={false}
@@ -283,6 +284,7 @@ export const FuelPage = () => {
                         convertedFuelValue={totalCurrent()}
                         className="overflow-hidden rounded-2xl border-2 border-theme-accent"
                         inlinedTitle
+                        width={420}
                     />
                     <TankReadoutWidget
                         title={t('Ground.Fuel.CenterTank')}
@@ -294,6 +296,7 @@ export const FuelPage = () => {
                         convertedFuelValue={convertFuelValueCenter(centerCurrent)}
                         className="overflow-hidden rounded-2xl border-2 border-theme-accent"
                         inlinedTitle
+                        width={420}
                     />
                 </div>
                 <div className="flex absolute inset-x-0 top-40 flex-row justify-between">
@@ -395,9 +398,9 @@ export const FuelPage = () => {
                             </div>
                             <p>{`Estimated ${calculateEta()} minutes`}</p>
                         </div>
-                        <div style={{ width: '470px' }} className="flex flex-row items-center space-x-6">
+                        <div className="flex flex-row items-center space-x-6">
                             <Slider
-                                style={{ width: '24rem' }}
+                                style={{ width: '28rem' }}
                                 value={sliderValue}
                                 onChange={updateSlider}
                             />
@@ -415,7 +418,7 @@ export const FuelPage = () => {
                                     <div className="absolute top-2 right-4 text-lg text-gray-400">{currentUnit}</div>
                                 </div>
                                 {simbriefDataLoaded && (
-                                    <TooltipWrapper text="Fill Block Fuel from SimBrief Data">
+                                    <TooltipWrapper text={t('Ground.Fuel.TT.FillBlockFuelFromSimBrief')}>
                                         <div
                                             className="flex justify-center items-center px-2 h-auto rounded-md rounded-l-none border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                                             onClick={simbriefDataLoaded ? handleFuelAutoFill : undefined}
@@ -439,17 +442,17 @@ export const FuelPage = () => {
                     </div>
                 </div>
 
-                <div className="flex overflow-x-hidden absolute right-6 bottom-0 z-30 flex-row justify-between items-center py-3 px-6 space-x-14 rounded-2xl border border-theme-accent">
-                    <h2 className="font-medium">{t('Ground.Fuel.RefuelTime')}</h2>
+                <div className="flex overflow-x-hidden absolute right-6 bottom-0 z-30 flex-col justify-center items-center py-3 px-6 space-y-2 rounded-2xl border border-theme-accent">
+                    <h2 className="flex font-medium">{t('Ground.Fuel.RefuelTime')}</h2>
 
                     <SelectGroup>
                         <SelectItem selected={isAirplaneCnD() ? refuelRate === '2' : !isAirplaneCnD()} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
 
-                        <TooltipWrapper text={`${!isAirplaneCnD() && 'Aircraft Must Be Cold and Dark to Change Refuel Times'}`}>
+                        <TooltipWrapper text={`${!isAirplaneCnD() && t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes')}`}>
                             <SelectItem className={`${!isAirplaneCnD() && 'opacity-20'}`} disabled={!isAirplaneCnD()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
                         </TooltipWrapper>
 
-                        <TooltipWrapper text={`${!isAirplaneCnD() && 'Aircraft Must Be Cold and Dark to Change Refuel Times'}`}>
+                        <TooltipWrapper text={`${!isAirplaneCnD() && t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes')}`}>
                             <SelectItem className={`${!isAirplaneCnD() && 'opacity-20'}`} disabled={!isAirplaneCnD()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
                         </TooltipWrapper>
                     </SelectGroup>

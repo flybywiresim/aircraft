@@ -89,9 +89,9 @@ export const RemindersWidget = () => {
     return (
         <div className="w-full">
             <div className="flex flex-row justify-between items-center space-x-3">
-                <h1 className="font-bold">{t('Dashboard.ImportantInformation')}</h1>
+                <h1 className="font-bold">{t('Dashboard.ImportantInformation.Title')}</h1>
 
-                <TooltipWrapper text="Rearrange Widgets">
+                <TooltipWrapper text={t('Dashboard.ImportantInformation.TT.RearrangeWidgets')}>
                     <PencilFill
                         className={`transition duration-100 ${reorderMode && 'text-theme-highlight'}`}
                         size={25}

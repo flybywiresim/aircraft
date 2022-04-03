@@ -71,7 +71,7 @@ export const ChecklistsReminder = () => {
     }, [flightPhase]);
 
     return (
-        <RemindersSection title={t('Dashboard.Checklists')} pageLinkPath="/checklists">
+        <RemindersSection title={t('Dashboard.ImportantInformation.Checklists.Title')} pageLinkPath="/checklists">
             {relevantChecklists.length ? (
                 <div className="grid grid-cols-2">
                     {relevantChecklists.map((checklist, index) => (
@@ -83,7 +83,7 @@ export const ChecklistsReminder = () => {
                     ))}
                 </div>
             ) : (
-                <h1 className="m-auto my-4 font-bold text-center opacity-60">{t('Dashboard.NoRelevantChecklists')}</h1>
+                <h1 className="m-auto my-4 font-bold text-center opacity-60">{t('Dashboard.ImportantInformation.Checklists.NoRelevantChecklists')}</h1>
             )}
         </RemindersSection>
     );

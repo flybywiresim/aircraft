@@ -9,7 +9,7 @@ export const PinnedChartsReminder = () => {
     const { t } = useTranslation();
 
     return (
-        <RemindersSection title={t('Dashboard.PinnedCharts')} pageLinkPath="/navigation">
+        <RemindersSection title={t('Dashboard.ImportantInformation.PinnedCharts.Title')} pageLinkPath="/navigation">
             <div className="grid grid-cols-2">
                 {[...pinnedCharts].sort((a, b) => b.timeAccessed - a.timeAccessed).map((pinnedChart, index) => (
                     <PinnedChartCard pinnedChart={pinnedChart} className={`${index && index % 2 !== 0 && 'ml-4'} mt-4`} />
@@ -17,7 +17,7 @@ export const PinnedChartsReminder = () => {
             </div>
 
             {!pinnedCharts.length && (
-                <h1 className="m-auto my-4 font-bold text-center opacity-60">{t('Dashboard.NoPinnedCharts')}</h1>
+                <h1 className="m-auto my-4 font-bold text-center opacity-60">{t('Dashboard.ImportantInformation.PinnedCharts.NoPinnedCharts')}</h1>
             )}
         </RemindersSection>
     );

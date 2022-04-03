@@ -5,6 +5,7 @@ import { usePersistentProperty, usePersistentNumberProperty } from '@instruments
 import { useLongPress } from 'use-long-press';
 import { useHistory } from 'react-router-dom';
 import useInterval from '@instruments/common/useInterval';
+import { useTranslation } from 'react-i18next';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { usePower, PowerStates } from '../Efb';
 
@@ -27,14 +28,37 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
 
     const history = useHistory();
 
+    const { t } = useTranslation();
+
     const [timeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
     const [timeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');
 
     const power = usePower();
 
-    const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thurs', 'Fri', 'Sat'][dayOfWeek];
+    const dayName = [
+        t('StatusBar.Sun'),
+        t('StatusBar.Mon'),
+        t('StatusBar.Tue'),
+        t('StatusBar.Wed'),
+        t('StatusBar.Thu'),
+        t('StatusBar.Fri'),
+        t('StatusBar.Sat'),
+    ][dayOfWeek];
 
-    const monthName = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][monthOfYear - 1];
+    const monthName = [
+        t('StatusBar.Jan'),
+        t('StatusBar.Feb'),
+        t('StatusBar.Mar'),
+        t('StatusBar.Apr'),
+        t('StatusBar.May'),
+        t('StatusBar.Jun'),
+        t('StatusBar.Jun'),
+        t('StatusBar.Aug'),
+        t('StatusBar.Sep'),
+        t('StatusBar.Oct'),
+        t('StatusBar.Nov'),
+        t('StatusBar.Dec'),
+    ][monthOfYear - 1];
 
     const getZuluFormattedTime = (seconds: number) => `${Math.floor(seconds / 3600).toString().padStart(2, '0')}${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}Z`;
     const getLocalFormattedTime = (seconds: number) => {
@@ -172,7 +196,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                     </div>
                 )}
 
-                <TooltipWrapper text={`${localApiConnected ? 'Connected to' : 'Disconnected from'} Local API`}>
+                <TooltipWrapper text={localApiConnected ? t('StatusBar.TT.ConnectedToLocalApi') : t('StatusBar.TT.DisconnectedFromLocalApi')}>
                     {localApiConnected ? (
                         <Wifi size={26} />
                     ) : (
@@ -182,7 +206,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
 
                 <BatteryStatus batteryLevel={batteryLevel} isCharging={isCharging} />
 
-                <TooltipWrapper text="Turn off or Shutdown EFB">
+                <TooltipWrapper text={t('StatusBar.TT.TurnOffOrShutdownEfb')}>
                     <Power size={26} {...bind} />
                 </TooltipWrapper>
             </div>
