@@ -1,0 +1,360 @@
+{
+    "accessors": [
+        {
+            "bufferView": 1,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 186,
+            "type": "VEC4",
+            "name": "CH_Static_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 186,
+            "type": "VEC4",
+            "name": "CH_Static_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 186,
+            "min": [
+                -2.011044502258301,
+                0.9277960658073425,
+                -9.976093292236328
+            ],
+            "max": [
+                -1.9378710985183716,
+                1.1400318145751953,
+                6.422991752624512
+            ],
+            "type": "VEC3",
+            "name": "CH_Static_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 186,
+            "type": "VEC2",
+            "name": "CH_Static_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 186,
+            "type": "VEC2",
+            "name": "CH_Static_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "componentType": 5123,
+            "count": 510,
+            "type": "SCALAR",
+            "name": "CH_Static_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 6724,
+            "componentType": 5123,
+            "count": 46,
+            "type": "VEC4",
+            "name": "CH_Moving_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 6712,
+            "componentType": 5120,
+            "count": 46,
+            "type": "VEC4",
+            "name": "CH_Moving_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 6696,
+            "componentType": 5126,
+            "count": 46,
+            "min": [
+                0.009634613990783691,
+                -0.1026926040649414,
+                -0.9236702919006348
+            ],
+            "max": [
+                0.04364454746246338,
+                -0.007972657680511475,
+                0.9254698753356934
+            ],
+            "type": "VEC3",
+            "name": "CH_Moving_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 6716,
+            "componentType": 5122,
+            "count": 46,
+            "type": "VEC2",
+            "name": "CH_Moving_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 6720,
+            "componentType": 5122,
+            "count": 46,
+            "type": "VEC2",
+            "name": "CH_Moving_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 1020,
+            "componentType": 5123,
+            "count": 102,
+            "type": "SCALAR",
+            "name": "CH_Moving_indices#0"
+        },
+        {
+            "bufferView": 2,
+            "componentType": 5126,
+            "count": 81,
+            "min": [
+                0.041666666666666664
+            ],
+            "max": [
+                3.375
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 3,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC4"
+        }
+    ],
+    "animations": [
+        {
+            "name": "CH_Moving_Anim",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 1,
+                        "path": "rotation"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 12,
+                    "output": 13,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.7.5",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.04364454746246338,
+                    1.1400318145751953,
+                    6.422991752624512
+                ],
+                "BoundingBoxMin": [
+                    -2.011044502258301,
+                    -0.1026926040649414,
+                    -9.976093292236328
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 1224,
+            "byteOffset": 0,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 8352,
+            "byteStride": 36,
+            "byteOffset": 1224,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 324,
+            "byteOffset": 9576
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1296,
+            "byteOffset": 9900
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_asset_optimized",
+        "ASOBO_normal_map_convention"
+    ],
+    "materials": [
+        {
+            "name": "CH_Mat",
+            "doubleSided": false,
+            "occlusionTexture": {
+                "index": 0
+            },
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    1,
+                    1,
+                    1,
+                    1
+                ],
+                "baseColorTexture": {
+                    "index": 1
+                },
+                "metallicRoughnessTexture": {
+                    "index": 0
+                }
+            },
+            "extensions": {
+                "ASOBO_material_blend_gbuffer": {
+                    "baseColorBlendFactor":1,
+                    "roughnessBlendFactor":1,
+                    "metallnesBlendFactor":1,
+                    "emissiveBlendFactor":0,
+                    "normalBlendFactor":0,
+                    "occlusionBlendFactor":1
+                },
+                "ASOBO_material_draw_order": {
+                    "drawOrderOffset": 1
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 0,
+                        "NORMAL": 1,
+                        "POSITION": 2,
+                        "TEXCOORD_0": 3,
+                        "TEXCOORD_1": 4
+                    },
+                    "indices": 5,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 170,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "CH_Static"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 6,
+                        "NORMAL": 7,
+                        "POSITION": 8,
+                        "TEXCOORD_0": 9,
+                        "TEXCOORD_1": 10
+                    },
+                    "indices": 11,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 34,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "CH_Moving"
+        }
+    ],
+    "nodes": [
+        {
+            "mesh": 0,
+            "name": "CH_Static"
+        },
+        {
+            "translation": [
+                -1.9689692258834839,
+                0.9521068930625916,
+                5.4972968101501465
+            ],
+            "mesh": 1,
+            "name": "CH_Moving"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "name": "Scene",
+            "nodes": [
+                0,
+                1
+            ]
+        }
+    ],
+    "textures": [
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 0
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 1
+                }
+            }
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 11196,
+            "uri": "cargo-hinge.bin"
+        }
+    ],
+    "images": [
+        {
+            "uri": "DECALS_DOOR_CARGO_HINGES_COMP.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "DECALS_DOOR_CARGO_HINGES_ALBD.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        }
+    ],
+    "samplers": [
+        {
+            "magFilter": 9729,
+            "minFilter": 9987
+        }
+    ]
+}
