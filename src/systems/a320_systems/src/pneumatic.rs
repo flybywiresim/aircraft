@@ -1038,9 +1038,13 @@ impl PneumaticContainer for EngineBleedAirSystem {
         &mut self,
         fluid_amount: Mass,
         fluid_temperature: ThermodynamicTemperature,
+        fluid_pressure: Pressure,
     ) {
-        self.precooler_outlet_pipe
-            .change_fluid_amount(fluid_amount, fluid_temperature)
+        self.precooler_outlet_pipe.change_fluid_amount(
+            fluid_amount,
+            fluid_temperature,
+            fluid_pressure,
+        )
     }
 
     fn update_temperature(&mut self, temperature: TemperatureInterval) {
@@ -1207,9 +1211,10 @@ impl PneumaticContainer for PackComplex {
         &mut self,
         fluid_amount: Mass,
         fluid_temperature: ThermodynamicTemperature,
+        fluid_pressure: Pressure,
     ) {
         self.pack_container
-            .change_fluid_amount(fluid_amount, fluid_temperature);
+            .change_fluid_amount(fluid_amount, fluid_temperature, fluid_pressure);
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {

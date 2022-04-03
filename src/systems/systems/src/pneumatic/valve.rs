@@ -241,13 +241,8 @@ impl PneumaticContainerConnector {
         let air_mass = container_one.get_mass_flow_for_equilibrium(container_two)
             * self.transfer_speed_factor
             * (1. - (-Self::TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
-        let air_temp = if air_mass.is_sign_positive() {
-            container_two.temperature()
-        } else {
-            container_one.temperature()
-        };
 
-        self.move_mass(container_one, container_two, air_mass, air_temp);
+        self.move_mass(container_one, container_two, air_mass);
 
         self.fluid_flow = -air_mass / context.delta_as_time();
     }
@@ -257,10 +252,11 @@ impl PneumaticContainerConnector {
         from: &mut impl PneumaticContainer,
         to: &mut impl PneumaticContainer,
         air_mass: Mass,
-        air_temp: ThermodynamicTemperature,
     ) {
-        from.change_fluid_amount(air_mass, air_temp);
-        to.change_fluid_amount(-air_mass, air_temp);
+        let from_temperature = from.temperature();
+        let from_pressure = from.pressure();
+        from.change_fluid_amount(air_mass, to.temperature(), to.pressure());
+        to.change_fluid_amount(-air_mass, from_temperature, from_pressure);
     }
 
     pub fn with_transfer_speed_factor(&mut self, new_transfer_speed_factor: Ratio) -> &mut Self {
@@ -315,13 +311,19 @@ impl PneumaticExhaust {
                 context.ambient_temperature(),
                 Ratio::new::<ratio>(1.),
             );
-            from.get_mass_flow_for_target_pressure(context.ambient_pressure())
-                * (1. - (-self.exhaust_speed * context.delta_as_secs_f64()).exp())
+            from.get_mass_flow_for_target_pressure(
+                context.ambient_pressure(),
+                context.ambient_temperature(),
+            ) * (1. - (-self.exhaust_speed * context.delta_as_secs_f64()).exp())
         } else {
             Mass::default()
         };
 
-        from.change_fluid_amount(mass_flow, context.ambient_temperature());
+        from.change_fluid_amount(
+            mass_flow,
+            context.ambient_temperature(),
+            context.ambient_pressure(),
+        );
 
         self.fluid_flow = -mass_flow / context.delta_as_time();
     }
@@ -693,7 +695,7 @@ mod tests {
             assert!(exhaust.fluid_flow().get::<kilogram_per_second>() == 0.);
         }
 
-        container.pressure = Pressure::new::<psi>(90.);
+        container.set_pressure(Pressure::new::<psi>(90.));
 
         for _ in 1..100 {
             exhaust.update_move_fluid(&context, &mut container);

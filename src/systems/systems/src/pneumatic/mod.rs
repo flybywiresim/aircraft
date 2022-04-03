@@ -53,6 +53,7 @@ pub trait PneumaticContainer {
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
     const HEAT_TRANSFER_SPEED: f64 = 2.5;
     const HEAT_TRANSFER_COEFF: f64 = 1e-2;
+    const GAS_CONSTANT_DRY_AIR: f64 = 287.057005; // J / (kg * K) = GAS_CONSTANT / MOL_MASS_DRY_AIR
 
     fn pressure(&self) -> Pressure;
     fn volume(&self) -> Volume; // Not the volume of gas, but the physical measurements
@@ -62,28 +63,78 @@ pub trait PneumaticContainer {
         &mut self,
         fluid_amount: Mass,
         fluid_temperature: ThermodynamicTemperature,
+        fluid_pressure: Pressure,
     );
     fn update_temperature(&mut self, temperature_change: TemperatureInterval);
 
-    fn get_mass_flow_for_target_pressure(&self, target_pressure: Pressure) -> Mass {
-        ((target_pressure.get::<pascal>() / self.pressure().get::<pascal>())
-            .powf(1. / Self::HEAT_CAPACITY_RATIO)
-            - 1.)
-            * self.mass()
+    fn get_mass_flow_for_target_pressure(
+        &self,
+        target_pressure: Pressure,
+        mass_temperature: ThermodynamicTemperature,
+    ) -> Mass {
+        // Since the pressure change is not linear but is nearly linear we simply approximate it via linear interpolation
+        if self.pressure() <= target_pressure {
+            let pressure_diff = target_pressure - self.pressure();
+            let mut mass_aproximation = self.mass() / 2.;
+            for _ in 0..3 {
+                let (self_aprox_pressure, _) = self
+                    .calc_new_pressure_and_temperature_for_mass_flow(
+                        mass_aproximation,
+                        mass_temperature,
+                        target_pressure,
+                    );
+                let approx_pressure_diff = target_pressure - self_aprox_pressure;
+                if approx_pressure_diff.get::<pascal>().abs() < 1e-6 {
+                    break;
+                }
+
+                let pressure_gradient =
+                    (pressure_diff - approx_pressure_diff).get::<pascal>() / -mass_aproximation;
+                mass_aproximation = -pressure_diff.get::<pascal>() / pressure_gradient;
+            }
+            mass_aproximation
+        } else {
+            ((target_pressure.get::<pascal>() / self.pressure().get::<pascal>())
+                .powf(1. / Self::HEAT_CAPACITY_RATIO)
+                - 1.)
+                * self.mass()
+        }
     }
 
-    fn get_mass_flow_for_equilibrium(&self, other: &impl PneumaticContainer) -> Mass {
-        let p1 = self
-            .pressure()
-            .get::<pascal>()
-            .powf(1. / Self::HEAT_CAPACITY_RATIO);
-        let p2 = other
-            .pressure()
-            .get::<pascal>()
-            .powf(1. / Self::HEAT_CAPACITY_RATIO);
-        let m1 = self.mass().get::<kilogram>();
-        let m2 = other.mass().get::<kilogram>();
-        Mass::new::<kilogram>(m1 * m2 * (p2 - p1) / (m2 * p1 + m1 * p2))
+    fn get_mass_flow_for_equilibrium(&self, other: &impl PneumaticContainer) -> Mass
+    where
+        Self: Sized,
+    {
+        // Since the pressure change is not linear but is nearly linear we simply approximate it via linear interpolation
+        if self.pressure() <= other.pressure() {
+            let pressure_diff = other.pressure() - self.pressure();
+            let mut mass_aproximation = other.mass() / 2.;
+            for _ in 0..3 {
+                let (self_aprox_pressure, _) = self
+                    .calc_new_pressure_and_temperature_for_mass_flow(
+                        mass_aproximation,
+                        other.temperature(),
+                        other.pressure(),
+                    );
+                let (other_aprox_pressure, _) = other
+                    .calc_new_pressure_and_temperature_for_mass_flow(
+                        -mass_aproximation,
+                        self.temperature(),
+                        self.pressure(),
+                    );
+                let approx_pressure_diff = other_aprox_pressure - self_aprox_pressure;
+                if approx_pressure_diff.get::<pascal>().abs() < 1e-2 {
+                    break;
+                }
+
+                let pressure_gradient =
+                    (pressure_diff - approx_pressure_diff).get::<pascal>() / -mass_aproximation;
+                mass_aproximation = -pressure_diff.get::<pascal>() / pressure_gradient;
+            }
+            mass_aproximation
+        } else {
+            -other.get_mass_flow_for_equilibrium(self)
+        }
     }
 
     /// Transfer heat between two containers depending on the temperature difference
@@ -119,6 +170,43 @@ pub trait PneumaticContainer {
         self.update_temperature(-temperature_change);
         temperature_change
     }
+
+    fn calc_new_pressure_and_temperature_for_mass_flow(
+        &self,
+        fluid_amount: Mass,
+        fluid_temperature: ThermodynamicTemperature,
+        fluid_pressure: Pressure,
+    ) -> (Pressure, ThermodynamicTemperature) {
+        let mass = self.mass();
+        let new_mass = mass + fluid_amount;
+
+        if fluid_amount.get::<kilogram>() > 0. {
+            let fluid_volume = fluid_amount.get::<kilogram>()
+                * Self::GAS_CONSTANT_DRY_AIR
+                * fluid_temperature.get::<kelvin>()
+                / fluid_pressure.get::<pascal>();
+            let tmp = mass.get::<kilogram>() * self.temperature().get::<kelvin>()
+                + fluid_amount.get::<kilogram>() * fluid_temperature.get::<kelvin>();
+            let volume_quotient = 1. + fluid_volume / self.volume().get::<cubic_meter>();
+            let temperature =
+                ThermodynamicTemperature::new::<kelvin>(tmp / new_mass.get::<kilogram>())
+                    * volume_quotient.powf(Self::HEAT_CAPACITY_RATIO - 1.);
+            let pressure = Pressure::new::<pascal>(
+                tmp * Self::GAS_CONSTANT_DRY_AIR
+                    / (self.volume().get::<cubic_meter>() + fluid_volume)
+                    * volume_quotient.powf(Self::HEAT_CAPACITY_RATIO),
+            );
+            (pressure, temperature)
+        } else {
+            let pressure = self.pressure()
+                * (new_mass.get::<kilogram>() / mass.get::<kilogram>())
+                    .powf(Self::HEAT_CAPACITY_RATIO);
+            let temperature = self.temperature()
+                * (new_mass.get::<kilogram>() / mass.get::<kilogram>())
+                    .powf(Self::HEAT_CAPACITY_RATIO - 1.);
+            (pressure, temperature)
+        }
+    }
 }
 
 /// The default container. Allows fluid to be added or removed and stored
@@ -126,6 +214,7 @@ pub struct PneumaticPipe {
     volume: Volume,
     pressure: Pressure,
     temperature: ThermodynamicTemperature,
+    mass: Mass,
 }
 impl PneumaticContainer for PneumaticPipe {
     fn pressure(&self) -> Pressure {
@@ -141,12 +230,7 @@ impl PneumaticContainer for PneumaticPipe {
     }
 
     fn mass(&self) -> Mass {
-        // We calculate the mass instead of storing it because floating points are
-        // not exact and after some time the true mass drifts from the calculated
-        // mass which then results in some negative pressures and temperatures
-        // when doing heat conduction. This later leads to NaNs.
-        // Another possibility would be to calculate the volume instead.
-        Self::calculate_mass(self.volume, self.pressure, self.temperature)
+        self.mass
     }
 
     // Adds or removes a certain amount of air
@@ -154,22 +238,16 @@ impl PneumaticContainer for PneumaticPipe {
         &mut self,
         fluid_amount: Mass,
         fluid_temperature: ThermodynamicTemperature,
+        fluid_pressure: Pressure,
     ) {
-        let mass = self.mass();
-        let new_mass = mass + fluid_amount;
-        let new_pressure = (new_mass.get::<kilogram>() / mass.get::<kilogram>())
-            .powf(Self::HEAT_CAPACITY_RATIO)
-            * self.pressure;
-
-        self.update_temperature_for_target_pressure(new_pressure);
-        self.pressure = new_pressure;
-        if fluid_amount.get::<kilogram>() > 0. {
-            self.temperature = ThermodynamicTemperature::new::<kelvin>(
-                (fluid_amount.get::<kilogram>() * fluid_temperature.get::<kelvin>()
-                    + mass.get::<kilogram>() * self.temperature.get::<kelvin>())
-                    / new_mass.get::<kilogram>(),
-            );
-        }
+        let (pressure, temperature) = self.calc_new_pressure_and_temperature_for_mass_flow(
+            fluid_amount,
+            fluid_temperature,
+            fluid_pressure,
+        );
+        self.temperature = temperature;
+        self.pressure = pressure;
+        self.mass += fluid_amount;
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
@@ -179,15 +257,19 @@ impl PneumaticContainer for PneumaticPipe {
     }
 }
 impl PneumaticPipe {
-    const HEAT_CAPACITY_RATIO: f64 = 1.4;
-    const GAS_CONSTANT_DRY_AIR: f64 = 287.057005; // J / (kg * K) = GAS_CONSTANT / MOL_MASS_DRY_AIR
-
     pub fn new(volume: Volume, pressure: Pressure, temperature: ThermodynamicTemperature) -> Self {
         PneumaticPipe {
             volume,
             pressure,
             temperature,
+            mass: Self::calculate_mass(volume, pressure, temperature),
         }
+    }
+
+    #[cfg(test)]
+    fn set_pressure(&mut self, new_pressure: Pressure) {
+        self.pressure = new_pressure;
+        self.mass = Self::calculate_mass(self.volume, self.pressure, self.temperature);
     }
 
     fn calculate_mass(
@@ -328,9 +410,10 @@ impl PneumaticContainer for CompressionChamber {
         &mut self,
         fluid_amount: Mass,
         fluid_temperature: ThermodynamicTemperature,
+        fluid_pressure: Pressure,
     ) {
         self.pipe
-            .change_fluid_amount(fluid_amount, fluid_temperature);
+            .change_fluid_amount(fluid_amount, fluid_temperature, fluid_pressure);
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
@@ -351,9 +434,12 @@ impl CompressionChamber {
     pub fn update(&mut self, controller: &impl ControllerSignal<TargetPressureTemperatureSignal>) {
         if let Some(signal) = controller.signal() {
             self.change_fluid_amount(
-                self.pipe
-                    .get_mass_flow_for_target_pressure(signal.target_pressure()),
+                self.pipe.get_mass_flow_for_target_pressure(
+                    signal.target_pressure(),
+                    signal.target_temperature(),
+                ),
                 signal.target_temperature(),
+                signal.target_pressure(),
             )
         }
     }
@@ -511,9 +597,10 @@ impl PneumaticContainer for VariableVolumeContainer {
         &mut self,
         fluid_amount: Mass,
         fluid_temperature: ThermodynamicTemperature,
+        fluid_pressure: Pressure,
     ) {
         self.pipe
-            .change_fluid_amount(fluid_amount, fluid_temperature);
+            .change_fluid_amount(fluid_amount, fluid_temperature, fluid_pressure);
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
@@ -829,7 +916,8 @@ mod tests {
         compression_chamber.update(&compression_chamber_controller);
         assert_about_eq!(
             compression_chamber.pressure().get::<psi>(),
-            target_pressure.get::<psi>()
+            target_pressure.get::<psi>(),
+            1e-2
         );
     }
 
@@ -946,7 +1034,8 @@ mod tests {
                 .unwrap()
                 .target_pressure()
                 .get::<psi>(),
-            compression_chamber.pressure().get::<psi>()
+            compression_chamber.pressure().get::<psi>(),
+            1e-1
         );
     }
 
@@ -1170,15 +1259,24 @@ mod tests {
         let mass_flow = pipe1.get_mass_flow_for_equilibrium(&pipe2);
 
         assert!(mass_flow.get::<kilogram>() < 0.);
-        assert!(mass_flow > pipe1.get_mass_flow_for_target_pressure(pipe2.pressure()));
-        assert!(mass_flow < pipe2.get_mass_flow_for_target_pressure(pipe1.pressure()));
+        assert!(
+            mass_flow
+                > pipe1.get_mass_flow_for_target_pressure(pipe2.pressure(), pipe2.temperature())
+        );
+        assert!(
+            mass_flow
+                < pipe2.get_mass_flow_for_target_pressure(pipe1.pressure(), pipe1.temperature())
+        );
 
-        pipe1.change_fluid_amount(mass_flow, pipe2.temperature());
-        pipe2.change_fluid_amount(-mass_flow, pipe1.temperature());
+        let pipe1_temperature = pipe1.temperature();
+        let pipe1_pressure = pipe1.pressure();
+        pipe1.change_fluid_amount(mass_flow, pipe2.temperature(), pipe2.pressure());
+        pipe2.change_fluid_amount(-mass_flow, pipe1_temperature, pipe1_pressure);
 
         assert_about_eq!(
             pipe1.pressure().get::<pascal>(),
-            pipe2.pressure().get::<pascal>()
+            pipe2.pressure().get::<pascal>(),
+            1e-2
         );
     }
 }
