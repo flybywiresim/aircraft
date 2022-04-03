@@ -4922,6 +4922,7 @@ struct A320GravityExtension {
 }
 impl A320GravityExtension {
     const INCREMENT_ANGLE_DEGREE_PER_SECOND: f64 = 120.;
+    const ALLOW_RETRACTION_DIRECTION: bool = false;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -4947,7 +4948,7 @@ impl A320GravityExtension {
             }
         }
 
-        if self.handle_angle.get::<degree>() > 360. * 3.3 {
+        if Self::ALLOW_RETRACTION_DIRECTION && self.handle_angle.get::<degree>() > 360. * 3.3 {
             self.is_extending_gear = false;
         } else if self.handle_angle.get::<degree>() < -0.2 {
             self.is_extending_gear = true;
