@@ -18,6 +18,8 @@ class FMCDataManager {
 
         this.storedWaypoints = [];
 
+        this.latLonExtendedFormat = false;
+
         // we keep these in localStorage so they live for the same length of time as the flightplan (that they could appear in)
         // if the f-pln is not stored there anymore we can delete this
         const stored = localStorage.getItem(FMCDataManager.STORED_WP_KEY);
@@ -30,6 +32,8 @@ class FMCDataManager {
                 }
             });
         }
+
+        NXDataStore.getAndSubscribe('LATLON_EXT_FMT', (_, value) => this.latLonExtendedFormat = value === '1', '0');
     }
     IsValidLatLon(latLong) {
         if (latLong[0] === "N" || latLong[0] === "S") {
@@ -270,7 +274,7 @@ class FMCDataManager {
         additionalData.storedIndex = index;
         additionalData.temporary = !stored;
 
-        const wp = Fmgc.WaypointBuilder.fromCoordinates(ident, coordinates, this.fmc.instrument, additionalData);
+        const wp = Fmgc.WaypointBuilder.fromCoordinates(ident, coordinates, this.fmc, additionalData);
 
         if (stored) {
             // we add the index to ensure the icao is unique, so it doesn't get de-duplicated on dup names page etc.
@@ -297,10 +301,10 @@ class FMCDataManager {
         }
 
         if (ident === undefined) {
-            if (false) { // opc or ami option... common on A330...
+            if (this.latLonExtendedFormat) { // opc or ami option... common on A330...
                 const latDeg = Math.abs(Math.trunc(coordinates.lat)).toFixed(0).padStart(2, '0');
                 const lonDeg = Math.abs(Math.trunc(coordinates.long)).toFixed(0).padStart(3, '0');
-                ident = `${coordinates.lat >= 0 ? 'N' : 'S'}${latDeg}${coordinates.long >= 0 ? 'E' : 'W'}${lonDeg}${(index + 1).toFixed(0).padStart(2, '0')}`;
+                ident = `${coordinates.lat >= 0 ? 'N' : 'S'}${latDeg}${coordinates.long >= 0 ? 'E' : 'W'}${lonDeg}`;
             } else {
                 ident = `LL${(index + 1).toFixed(0).padStart(2, '0')}`;
             }

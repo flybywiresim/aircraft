@@ -252,7 +252,7 @@ const uplinkRoute = async (mcdu) => {
             await addWaypointAsync(fix, mcdu, fix.ident);
             continue;
         } else {
-            if (fix.via_airway === 'DCT') {
+            if (fix.via_airway === 'DCT' || fix.via_airway.match(/^NAT[A-Z]$/)) {
                 if (fix.type === 'apt' && nextFix === undefined) {
                     break;
                 }
