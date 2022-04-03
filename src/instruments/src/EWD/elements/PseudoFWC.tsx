@@ -118,6 +118,7 @@ const PseudoFWC: React.FC = () => {
     const [engine2Generator] = useSimVar('L:A32NX_ELEC_ENG_GEN_2_POTENTIAL_NORMAL', 'bool', 500);
     const [emergencyElectricGeneratorPotential] = useSimVar('L:A32NX_ELEC_EMER_GEN_POTENTIAL', 'number', 500);
     const [dcESSBusPowered] = useSimVar('L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED', 'bool', 500);
+    const [dc2BusPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool', 500);
     const [ac1BusPowered] = useSimVar('L:A32NX_ELEC_AC_1_BUS_IS_POWERED', 'bool', 500);
     const [ac2BusPowered] = useSimVar('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool', 500);
     const emergencyGeneratorOn = emergencyElectricGeneratorPotential > 0 ? 1 : 0;
@@ -771,31 +772,31 @@ const PseudoFWC: React.FC = () => {
             sysPage: 9,
             side: 'LEFT',
         },
-        3200061: { // LGCIU1 flightPhaseInhib: [4, 5, 7, 8],
-            flightPhaseInhib: [],
-            simVarIsActive: lgciu1Fault && !(lgciu1Fault && lgciu2Fault),
-            whichCodeToReturn: [0],
-            codesToReturn: ['320006101'],
+        3200180: { // LGCIU1
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: lgciu1Fault && !(lgciu1Fault && lgciu2Fault) && dcESSBusPowered,
+            whichCodeToReturn: [0, 1],
+            codesToReturn: ['320018001', '320019503'],
             memoInhibit: false,
-            failure: 2,
-            sysPage: 9,
+            failure: 1,
+            sysPage: -1,
             side: 'LEFT',
         },
-        3200062: { // LGCIU2
-            flightPhaseInhib: [],
-            simVarIsActive: lgciu2Fault && !(lgciu1Fault && lgciu2Fault),
+        3200190: { // LGCIU2
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: lgciu2Fault && !(lgciu1Fault && lgciu2Fault) && dc2BusPowered,
             whichCodeToReturn: [0],
-            codesToReturn: ['320006201'],
+            codesToReturn: ['320019001'],
             memoInhibit: false,
-            failure: 2,
-            sysPage: 9,
+            failure: 1,
+            sysPage: -1,
             side: 'LEFT',
         },
-        3200063: { // LGCIU 1 + 2
-            flightPhaseInhib: [],
-            simVarIsActive: lgciu1Fault && lgciu2Fault,
-            whichCodeToReturn: [0],
-            codesToReturn: ['320006301'],
+        3200195: { // LGCIU 1 + 2
+            flightPhaseInhib: [4, 5, 7, 8],
+            simVarIsActive: lgciu1Fault && lgciu2Fault && dc2BusPowered && dcESSBusPowered,
+            whichCodeToReturn: [0, 1, 1],
+            codesToReturn: ['320019501', '320019502', '320019503'],
             memoInhibit: false,
             failure: 2,
             sysPage: 9,
