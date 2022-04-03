@@ -773,7 +773,7 @@ const PseudoFWC: React.FC = () => {
             sysPage: 9,
             side: 'LEFT',
         },
-        3200180: { // LGCIU1 gpwsOff
+        3200180: { // LGCIU 1 FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
             simVarIsActive: lgciu1Fault && !(lgciu1Fault && lgciu2Fault) && dcESSBusPowered,
             whichCodeToReturn: [0, !gpwsSysOff ? 1 : null],
@@ -783,7 +783,7 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'LEFT',
         },
-        3200190: { // LGCIU2
+        3200190: { // LGCIU 2 FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
             simVarIsActive: lgciu2Fault && !(lgciu1Fault && lgciu2Fault) && dc2BusPowered,
             whichCodeToReturn: [0],
@@ -793,7 +793,7 @@ const PseudoFWC: React.FC = () => {
             sysPage: -1,
             side: 'LEFT',
         },
-        3200195: { // LGCIU 1 + 2
+        3200195: { // LGCIU 1+2 FAULT
             flightPhaseInhib: [4, 5, 7, 8],
             simVarIsActive: lgciu1Fault && lgciu2Fault && dc2BusPowered && dcESSBusPowered,
             whichCodeToReturn: [0, 1, !gpwsSysOff ? 2 : null],
