@@ -115,6 +115,8 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_bx_deg;
   std::unique_ptr<LocalVariable> idDevelopmentAutoland_delta_Theta_beta_c_deg;
 
+  std::unique_ptr<LocalVariable> idDevelopmentUseDirectLaw;
+
   std::unique_ptr<LocalVariable> idLoggingFlightControlsEnabled;
   std::unique_ptr<LocalVariable> idLoggingThrottlesEnabled;
 
