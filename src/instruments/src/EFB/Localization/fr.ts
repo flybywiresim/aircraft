@@ -248,9 +248,11 @@ export const fr = {
             Data: {
                 Angle: 'Angle',
                 CurrentAltitude: 'Altitude actuelle',
+                Distance: 'Distance',
                 GroundSpeed: 'Vitesse au sol',
                 TargetAltitude: 'Altitude cible',
                 Title: 'Données',
+                VerticalSpeed: 'Vitesse verticale',
             },
             GroundSpeed: {
                 Add: 'Ajouter',
