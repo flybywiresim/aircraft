@@ -1,7 +1,6 @@
 import React, { FC, memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { Layer, getSmallestAngle } from '@instruments/common/utils';
-import { useFlightPlanManager } from '@instruments/common/flightplan';
 import { MathUtils } from '@shared/MathUtils';
 import { TuningMode } from '@fmgc/radionav';
 import { Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
@@ -26,8 +25,6 @@ export interface RoseModeProps {
 }
 
 export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting, mode, side, ppos, mapHidden }) => {
-    const flightPlanManager = useFlightPlanManager();
-
     const [magHeading] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees');
     const [magTrack] = useSimVar('GPS GROUND MAGNETIC TRACK', 'degrees');
     const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
@@ -35,8 +32,6 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [selectedHeading] = useSimVar('L:A32NX_AUTOPILOT_HEADING_SELECTED', 'degrees');
     const [lsCourse] = useSimVar('L:A32NX_FM_LS_COURSE', 'number');
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [showTmpFplan] = useSimVar('L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN', 'bool');
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
     const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
@@ -82,9 +77,8 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                                 debug={false}
                             />
 
-                            { (((fmaLatMode === LateralMode.NONE || fmaLatMode === LateralMode.HDG || fmaLatMode === LateralMode.TRACK)
-                                && !isArmed(armedLateralBitmask, ArmedLateralMode.NAV))
-                                || !flightPlanManager.getCurrentFlightPlan().length) && (
+                            { ((fmaLatMode === LateralMode.NONE || fmaLatMode === LateralMode.HDG || fmaLatMode === LateralMode.TRACK)
+                                && !isArmed(armedLateralBitmask, ArmedLateralMode.NAV)) && (
                                 <TrackLine x={384} y={384} heading={heading} track={track} />
                             )}
                         </g>
