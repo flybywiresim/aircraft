@@ -4,6 +4,7 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { useSimVar } from '@instruments/common/simVars';
 
 import Slider from 'rc-slider';
+import { useTranslation } from 'react-i18next';
 import { languageOptions } from '../../i18n';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
@@ -25,21 +26,23 @@ export const FlyPadPage = () => {
     const [language, setLanguage] = usePersistentProperty('EFB_LANGUAGE', 'en');
     const [keyboardLayout, setKeyboardLayout] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');
 
+    const { t } = useTranslation();
+
     const themeButtons: ButtonType[] = [
-        { name: 'Blue', setting: 'blue' },
-        { name: 'Dark', setting: 'dark' },
-        { name: 'Light', setting: 'light' },
+        { name: t('Settings.flyPad.Blue'), setting: 'blue' },
+        { name: t('Settings.flyPad.Dark'), setting: 'dark' },
+        { name: t('Settings.flyPad.Light'), setting: 'light' },
     ];
 
     const timeDisplayButtons: ButtonType[] = [
-        { name: 'UTC', setting: 'utc' },
-        { name: 'Local', setting: 'local' },
-        { name: 'UTC and Local', setting: 'both' },
+        { name: t('Settings.flyPad.Utc'), setting: 'utc' },
+        { name: t('Settings.flyPad.Local'), setting: 'local' },
+        { name: t('Settings.flyPad.UtcAndLocal'), setting: 'both' },
     ];
 
     const timeFormatButtons: ButtonType[] = [
-        { name: '12 Hour', setting: '12' },
-        { name: '24 Hour', setting: '24' },
+        { name: t('Settings.flyPad.12Hour'), setting: '12' },
+        { name: t('Settings.flyPad.24Hour'), setting: '24' },
     ];
 
     const handleThemeSelect = (theme: string) => {
@@ -53,8 +56,8 @@ export const FlyPadPage = () => {
     };
 
     return (
-        <SettingsPage name="flyPad">
-            <SettingItem name="Brightness" disabled={!!usingAutobrightness}>
+        <SettingsPage name={t('Settings.flyPad.Title')}>
+            <SettingItem name={t('Settings.flyPad.Brightness')} disabled={!!usingAutobrightness}>
                 <div className="flex flex-row items-center space-x-8">
                     <Slider
                         style={{ width: '24rem' }}
@@ -73,11 +76,11 @@ export const FlyPadPage = () => {
                 </div>
             </SettingItem>
 
-            <SettingItem name="Auto Brightness">
+            <SettingItem name={t('Settings.flyPad.AutoBrightness')}>
                 <Toggle value={!!usingAutobrightness} onToggle={(value) => setUsingAutobrightness(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name="Theme">
+            <SettingItem name={t('Settings.flyPad.Theme')}>
                 <SelectGroup>
                     {themeButtons.map((button) => (
                         <SelectItem
@@ -90,11 +93,11 @@ export const FlyPadPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="Automatically Show Onscreen Keyboard">
+            <SettingItem name={t('Settings.flyPad.AutomaticallyShowOnscreenKeyboard')}>
                 <Toggle value={!!autoOSK} onToggle={(value) => setAutoOSK(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name="Time Displayed">
+            <SettingItem name={t('Settings.flyPad.TimeDisplayed')}>
                 <SelectGroup>
                     {timeDisplayButtons.map((button) => (
                         <SelectItem
@@ -107,7 +110,7 @@ export const FlyPadPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="Local Time Format" disabled={timeDisplayed === 'utc'}>
+            <SettingItem name={t('Settings.flyPad.LocalTimeFormat')} disabled={timeDisplayed === 'utc'}>
                 <SelectGroup>
                     {timeFormatButtons.map((button) => (
                         <SelectItem
@@ -120,15 +123,15 @@ export const FlyPadPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="Show Status Bar Flight Progress">
+            <SettingItem name={t('Settings.flyPad.ShowStatusBarFlightProgressIndicator')}>
                 <Toggle value={!!showStatusBarFlightProgress} onToggle={(value) => setShowStatusBarFlightProgress(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name="Show Colored Raw Metar">
+            <SettingItem name={t('Settings.flyPad.ShowColoredRawMetar')}>
                 <Toggle value={!!usingColoredMetar} onToggle={(value) => setUsingColoredMetar(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name="Language">
+            <SettingItem name={t('Settings.flyPad.Language')}>
                 <SelectInput
                     className="w-64"
                     value={language}
@@ -137,7 +140,7 @@ export const FlyPadPage = () => {
                 />
             </SettingItem>
 
-            <SettingItem name="Onscreen Keyboard Layout">
+            <SettingItem name={t('Settings.flyPad.OnscreenKeyboardLayout')}>
                 <SelectInput
                     className="w-64"
                     value={keyboardLayout}

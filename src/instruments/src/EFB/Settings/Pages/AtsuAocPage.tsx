@@ -5,6 +5,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 
 import { Hoppie } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 import { useModals, PromptModal } from '../../UtilComponents/Modals/Modals';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
@@ -29,6 +30,8 @@ export const AtsuAocPage = () => {
     const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
 
     const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
+
+    const { t } = useTranslation();
 
     const getSimbriefUserData = (value: string): Promise<any> => {
         const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
@@ -73,13 +76,13 @@ export const AtsuAocPage = () => {
 
     const handleUsernameInput = (value: string) => {
         getSimbriefUserId(value).then((response) => {
-            toast.success(`Your SimBrief PilotID has been validated and updated to ${response}`);
+            toast.success(`${t('Settings.AtsuAoc.YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo')} ${response}`);
 
             setSimbriefUserId(response);
             setSimbriefDisplay(response);
         }).catch(() => {
             setSimbriefDisplay(simbriefUserId);
-            toast.error('Please check that you have correctly entered your SimBrief username or pilot ID.');
+            toast.error(t('Settings.AtsuAoc.PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId'));
         });
     };
 
@@ -115,7 +118,7 @@ export const AtsuAocPage = () => {
             validateHoppieUserId(value).then((response) => {
                 setHoppieUserId(response);
             }).catch(() => {
-                toast.error('There was an error encountered when validating your Hoppie username.');
+                toast.error(t('Settings.AtsuAoc.ThereWasAnErrorEncounteredWhenValidatingYourHoppieUsername'));
             });
         }
     };
@@ -145,10 +148,10 @@ export const AtsuAocPage = () => {
         if (toggleValue) {
             showModal(
                 <PromptModal
-                    title="TELEX Warning"
-                    bodyText="TELEX enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE THIS FEATURE AT YOUR OWN RISK. To learn more about TELEX and the features it enables, please go to https://docs.flybywiresim.com/telex."
+                    title={t('Settings.AtsuAoc.TelexWarning')}
+                    bodyText={t('Settings.AtsuAoc.TelexEnablesFreeTextAndLiveMap')}
                     onConfirm={() => setTelexEnabled('ENABLED')}
-                    confirmText="Enable TELEX"
+                    confirmText={t('Settings.AtsuAoc.EnableTelex')}
                 />,
             );
         } else {
@@ -160,11 +163,11 @@ export const AtsuAocPage = () => {
         if (toggleValue) {
             showModal(
                 <PromptModal
-                    title="Optional A32NX Error Reporting"
-                    bodyText="You are able to opt into anonymous error reporting that will allow us to diagnose, monitor, and take care of issues at a faster rate. This feature is completely optional and we will never collect your personal data, but may allow you to more easily get support and have the issues you encounter fixed at a faster rate."
+                    title={t('Settings.AtsuAoc.OptionalA32nxErrorReporting')}
+                    bodyText={t('Settings.AtsuAoc.YouAreAbleToOptIntoAnonymousErrorReporting')}
                     onConfirm={() => setSentryEnabled(SentryConsentState.Given)}
                     onCancel={() => setSentryEnabled(SentryConsentState.Refused)}
-                    confirmText="Enable"
+                    confirmText={t('Settings.AtsuAoc.Enable')}
                 />,
             );
         } else {
@@ -173,8 +176,8 @@ export const AtsuAocPage = () => {
     };
 
     return (
-        <SettingsPage name="ATSU / AOC">
-            <SettingItem name="ATIS/ATC Source">
+        <SettingsPage name={t('Settings.AtsuAoc.Title')}>
+            <SettingItem name={t('Settings.AtsuAoc.AtisAtcSource')}>
                 <SelectGroup>
                     {atisSourceButtons.map((button) => (
                         <SelectItem
@@ -187,7 +190,7 @@ export const AtsuAocPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="METAR Source">
+            <SettingItem name={t('Settings.AtsuAoc.MetarSource')}>
                 <SelectGroup>
                     {metarSourceButtons.map((button) => (
                         <SelectItem
@@ -200,7 +203,7 @@ export const AtsuAocPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="TAF Source">
+            <SettingItem name={t('Settings.AtsuAoc.TafSource')}>
                 <SelectGroup>
                     {tafSourceButtons.map((button) => (
                         <SelectItem
@@ -213,11 +216,11 @@ export const AtsuAocPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="TELEX">
+            <SettingItem name={t('Settings.AtsuAoc.Telex')}>
                 <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
             </SettingItem>
 
-            <SettingItem name="SimBrief Username/Pilot ID">
+            <SettingItem name={t('Settings.AtsuAoc.SimBriefUsernamePilotId')}>
                 <SimpleInput
                     className="text-center w-30"
                     value={simbriefDisplay}
@@ -226,11 +229,11 @@ export const AtsuAocPage = () => {
                 />
             </SettingItem>
 
-            <SettingItem name="Automatically Import SimBrief Data">
+            <SettingItem name={t('Settings.AtsuAoc.AutomaticallyImportSimBriefData')}>
                 <Toggle value={autoSimbriefImport === 'ENABLED'} onToggle={(toggleValue) => setAutoSimbriefImport(toggleValue ? 'ENABLED' : 'DISABLED')} />
             </SettingItem>
 
-            <SettingItem name="Hoppie User ID">
+            <SettingItem name={t('Settings.AtsuAoc.HoppieUserId')}>
                 <SimpleInput
                     className="w-30"
                     value={hoppieUserId}
@@ -239,7 +242,7 @@ export const AtsuAocPage = () => {
                 />
             </SettingItem>
 
-            <SettingItem name="Error Reporting">
+            <SettingItem name={t('Settings.AtsuAoc.ErrorReporting')}>
                 <Toggle value={sentryEnabled === SentryConsentState.Given} onToggle={(toggleValue) => handleSentryToggle(toggleValue)} />
             </SettingItem>
         </SettingsPage>

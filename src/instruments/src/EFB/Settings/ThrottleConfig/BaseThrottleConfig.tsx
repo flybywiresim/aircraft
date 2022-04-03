@@ -1,6 +1,7 @@
 import React, { FC, useState } from 'react';
 import { PencilSquare } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
+import { useTranslation } from 'react-i18next';
 import DetentConfig from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 
@@ -25,6 +26,8 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${throttleNumber}`, 'number', 30);
     const [expertMode, setExpertMode] = useState(false);
 
+    const { t } = useTranslation();
+
     const currentDetent = (
         <DetentConfig
             key={activeIndex}
@@ -48,14 +51,15 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     return (
         <div className="w-50">
             <h1 className="mb-4 text-center">
-                Axis
+                {t('Settings.ThrottleConfig.Axis')}
                 {' '}
                 {throttleCount === 1 ? throttleNumber : '1 & 2'}
             </h1>
             <div className="px-4 pt-5 mt-4 rounded-lg border-2 border-theme-accent">
                 <div className="flex flex-row justify-center items-center space-x-2">
                     <p>
-                        Current Value:
+                        {t('Settings.ThrottleConfig.CurrentValue')}
+                        :
                         {' '}
                         {throttlePosition.toFixed(2)}
                     </p>

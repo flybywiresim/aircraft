@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 import { ExclamationCircleFill } from 'react-bootstrap-icons';
+import { useTranslation } from 'react-i18next';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
 
@@ -29,6 +30,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const [, defaultsToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_SET_DEFAULTS', 'number', 100);
     const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 100);
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
+
+    const { t } = useTranslation();
 
     const mappingsAxisOne: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 1),
@@ -109,7 +112,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 }}
                 selected={selectedIndex === 1}
             >
-                Reverse Idle
+                {t('Settings.ThrottleConfig.ReverseIdle')}
             </SelectItem>
             <SelectItem
                 disabled={!reverserOnAxis1}
@@ -121,7 +124,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 }}
                 selected={selectedIndex === 0}
             >
-                Reverse Full
+                {t('Settings.ThrottleConfig.ReverseFull')}
             </SelectItem>
         </VerticalSelectGroup>
     );
@@ -134,11 +137,11 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 <div>
                     <div className="flex flex-row justify-center p-4 mt-auto mb-8 space-x-16 w-full rounded-lg border-2 border-theme-accent">
                         <div className="flex flex-row space-x-4">
-                            <div>Reverser On Axis</div>
+                            <div>{t('Settings.ThrottleConfig.ReverserOnAxis')}</div>
                             <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversersOnAxis(value ? 1 : 0)} />
                         </div>
                         <div className="flex flex-row space-x-4">
-                            <div>Independent Axis</div>
+                            <div>{t('Settings.ThrottleConfig.IndependentAxis')}</div>
                             <Toggle
                                 value={!!isDualAxis}
                                 onToggle={(value) => {
@@ -204,7 +207,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         onClick={onClose}
                         className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
-                        Back
+                        {t('Settings.ThrottleConfig.Back')}
                     </button>
                 </div>
                 <div className="flex flex-row space-x-3">
@@ -213,8 +216,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         onClick={() => {
                             showModal(
                                 <PromptModal
-                                    title="Throttle Configuration Reset"
-                                    bodyText="Are you sure that you want to reset your current throttle configuration settings to their default states? This action is irreversible."
+                                    title={t('Settings.ThrottleConfig.ThrottleConfigurationReset')}
+                                    bodyText={t('Settings.ThrottleConfig.AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates')}
                                     onConfirm={() => {
                                         defaultsToThrottle(1);
                                     }}
@@ -223,7 +226,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         }}
                         className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
-                        Reset to Defaults
+                        {t('Settings.ThrottleConfig.ResetToDefaults')}
                     </button>
                     <button
                         type="button"
@@ -232,7 +235,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         }}
                         className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
-                        Load from File
+                        {t('Settings.ThrottleConfig.LoadFromFile')}
                     </button>
                     <button
                         type="button"
@@ -241,7 +244,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                             ? 'text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight'
                             : 'bg-theme-accent border-theme-accent opacity-30'}`}
                     >
-                        Apply
+                        {t('Settings.ThrottleConfig.Apply')}
                     </button>
                     <button
                         type="button"
@@ -256,7 +259,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                             ? 'bg-green-400 text-theme-body hover:text-green-400 hover:bg-theme-body border-green-400'
                             : 'bg-theme-accent border-theme-accent opacity-30'}`}
                     >
-                        Save and Apply
+                        {t('Settings.ThrottleConfig.SaveAndApply')}
                     </button>
                 </div>
             </div>

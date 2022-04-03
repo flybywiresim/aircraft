@@ -1,5 +1,6 @@
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
@@ -18,6 +19,8 @@ export const AircraftOptionsPinProgramsPage = () => {
     const [isisBaro, setIsisBaro] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
     const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentNumberProperty('ISIS_METRIC_ALTITUDE', 0);
     const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
+
+    const { t } = useTranslation();
 
     const handleSetThrustReductionAlt = (value: string) => {
         setThrustReductionHeightSetting(value);
@@ -70,8 +73,8 @@ export const AircraftOptionsPinProgramsPage = () => {
     ];
 
     return (
-        <SettingsPage name="Aircraft Options / Pin Programs">
-            <SettingItem name="Thrust Reduction Height (ft)">
+        <SettingsPage name={t('Settings.AircraftOptionsPinPrograms.Title')}>
+            <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.ThrustReductionHeight')} (ft)`}>
                 <SimpleInput
                     className="text-center w-30"
                     placeholder={thrustReductionHeight}
@@ -81,7 +84,7 @@ export const AircraftOptionsPinProgramsPage = () => {
                     onChange={(event) => handleSetThrustReductionAlt(event)}
                 />
             </SettingItem>
-            <SettingItem name="Acceleration Height (ft)">
+            <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.AccelerationHeight')} (ft)`}>
                 <SimpleInput
                     className="text-center w-30"
                     placeholder={accelerationHeight}
@@ -91,7 +94,7 @@ export const AircraftOptionsPinProgramsPage = () => {
                     onChange={(event) => handleSetAccelerationAlt(event)}
                 />
             </SettingItem>
-            <SettingItem name="Engine-Out Acceleration Height (ft)">
+            <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.EngineOutAccelerationHeight')} (ft)`}>
                 <SimpleInput
                     className="text-center w-30"
                     placeholder={accelerationOutHeight}
@@ -101,7 +104,7 @@ export const AircraftOptionsPinProgramsPage = () => {
                     onChange={(event) => handleSetAccelerationOutAlt(event)}
                 />
             </SettingItem>
-            <SettingItem name="Weight Unit">
+            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.WeightUnit')}>
                 <SelectGroup>
                     {weightUnitButtons.map((button) => (
                         <SelectItem
@@ -114,7 +117,7 @@ export const AircraftOptionsPinProgramsPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="PAX Signs">
+            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.PaxSigns')}>
                 <SelectGroup>
                     {paxSignsButtons.map((button) => (
                         <SelectItem
@@ -127,7 +130,7 @@ export const AircraftOptionsPinProgramsPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="ISIS Baro Unit">
+            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.IsisBaroUnit')}>
                 <SelectGroup>
                     {isisBaroButtons.map((button) => (
                         <SelectItem
@@ -140,11 +143,11 @@ export const AircraftOptionsPinProgramsPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="ISIS Metric Altitude">
+            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.IsisMetricAltitude')}>
                 <Toggle value={!!isisMetricAltitude} onToggle={(value) => setIsisMetricAltitude(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name="RMP VHF Spacing">
+            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.RmpVhfSpacing')}>
                 <SelectGroup>
                     {vhfSpacingButtons.map((button) => (
                         <SelectItem

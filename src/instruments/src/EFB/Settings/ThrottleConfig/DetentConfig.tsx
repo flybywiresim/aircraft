@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ProgressBar } from '../../UtilComponents/Progress/Progress';
@@ -34,6 +35,8 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
         setPreviousMode(props.expertMode);
     }, [props.expertMode]);
 
+    const { t } = useTranslation();
+
     return (
         <div className="flex overflow-hidden flex-row flex-shrink-0 justify-between items-center p-2 h-96 text-white mb-2w-full">
             {props.barPosition === 'left'
@@ -63,7 +66,11 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                 {!props.expertMode
                     && (
                         <div className="flex flex-col w-full">
-                            <p>Deadband +/-</p>
+                            <p>
+                                {t('Settings.ThrottleConfig.Deadband')}
+                                {' '}
+                                +/-
+                            </p>
                             <SimpleInput
                                 className="mb-4 w-52"
                                 value={deadZone.toFixed(2)}
@@ -86,14 +93,14 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                                 }}
                                 type="button"
                             >
-                                Set From Throttle
+                                {t('Settings.ThrottleConfig.SetFromThrottle')}
                             </button>
                         </div>
                     )}
                 {props.expertMode
                     && (
                         <div>
-                            <p>Configure End</p>
+                            <p>{t('Settings.ThrottleConfig.ConfigureEnd')}</p>
                             <SimpleInput
                                 reverse
                                 className="mr-0 w-36"
@@ -122,8 +129,9 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                     )}
 
                 <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="mt-4 w-48 h-12 text-xl text-utility-red">
-                    Please enter a
-                    valid deadzone (&gt; 0.05)
+                    {t('Settings.ThrottleConfig.PleaseEnterAValidDeadzone')}
+                    {' '}
+                    (&gt; 0.05)
                 </h2>
 
             </div>

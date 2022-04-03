@@ -219,7 +219,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                         >
                                             <div className="flex flex-col items-center space-y-1">
                                                 <Speedometer2 size={35} />
-                                                <p>{t('Dashboard.ImportantInformation.Weather.AirPressure')}</p>
+                                                <p className="text-center">{t('Dashboard.ImportantInformation.Weather.AirPressure')}</p>
                                                 {metar.raw_text ? (
                                                     <>
                                                         {metar.barometer ? <BaroValue /> : 'N/A'}
@@ -232,7 +232,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                             </div>
                                             <div className="flex flex-col items-center space-y-1">
                                                 <Wind size={35} />
-                                                <p>{t('Dashboard.ImportantInformation.Weather.WindSpeed')}</p>
+                                                <p className="text-center">{t('Dashboard.ImportantInformation.Weather.WindSpeed')}</p>
                                                 {metar.raw_text
                                                     ? (
                                                         <>
@@ -249,7 +249,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                             </div>
                                             <div className="flex flex-col items-center space-y-1">
                                                 <ThermometerHalf size={35} />
-                                                <p>{t('Dashboard.ImportantInformation.Weather.Temperature')}</p>
+                                                <p className="text-center">{t('Dashboard.ImportantInformation.Weather.Temperature')}</p>
                                                 {metar.raw_text
                                                     ? (
                                                         <>
@@ -261,7 +261,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                             </div>
                                             <div className="flex flex-col items-center space-y-1">
                                                 <Droplet size={35} />
-                                                <p>{t('Dashboard.ImportantInformation.Weather.DewPoint')}</p>
+                                                <p className="text-center">{t('Dashboard.ImportantInformation.Weather.DewPoint')}</p>
                                                 {metar.raw_text
                                                     ? (
                                                         <>

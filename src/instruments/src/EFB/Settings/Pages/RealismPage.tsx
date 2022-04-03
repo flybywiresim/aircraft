@@ -2,6 +2,7 @@ import React from 'react';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 
+import { useTranslation } from 'react-i18next';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
@@ -25,33 +26,35 @@ export const RealismPage = () => {
     const [, setDatalinkTransmissionTimeSimVar] = useSimVar('L:A32NX_CONFIG_DATALINK_TIME', 'number', 0);
     const [autoFillChecklists, setAutoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
 
+    const { t } = useTranslation();
+
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
-        { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
-        { name: 'Fast', setting: 'FAST', simVarValue: 2 },
-        { name: 'Real', setting: 'REAL', simVarValue: 0 },
+        { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },
+        { name: t('Settings.Fast'), setting: 'FAST', simVarValue: 2 },
+        { name: t('Settings.Real'), setting: 'REAL', simVarValue: 0 },
     ];
 
     const dmcSelfTestTimeButtons: ButtonType[] = [
-        { name: 'Instant', setting: '0' },
-        { name: 'Fast', setting: '5' },
-        { name: 'Real', setting: '12' },
+        { name: t('Settings.Instant'), setting: '0' },
+        { name: t('Settings.Fast'), setting: '5' },
+        { name: t('Settings.Real'), setting: '12' },
     ];
 
     const boardingRateButtons: ButtonType[] = [
-        { name: 'Instant', setting: 'INSTANT' },
-        { name: 'Fast', setting: 'FAST' },
-        { name: 'Real', setting: 'REAL' },
+        { name: t('Settings.Instant'), setting: 'INSTANT' },
+        { name: t('Settings.Fast'), setting: 'FAST' },
+        { name: t('Settings.Real'), setting: 'REAL' },
     ];
 
     const datalinkTransmissionTimeButtons: (ButtonType & SimVarButton)[] = [
-        { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
-        { name: 'Fast', setting: 'FAST', simVarValue: 2 },
-        { name: 'Real', setting: 'REAL', simVarValue: 0 },
+        { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },
+        { name: t('Settings.Fast'), setting: 'FAST', simVarValue: 2 },
+        { name: t('Settings.Real'), setting: 'REAL', simVarValue: 0 },
     ];
 
     return (
-        <SettingsPage name="Realism">
-            <SettingItem name="ADIRS Align Time">
+        <SettingsPage name={t('Settings.Realism.Title')}>
+            <SettingItem name={t('Settings.Realism.AdirsAlignTime')}>
                 <SelectGroup>
                     {adirsAlignTimeButtons.map((button) => (
                         <SelectItem
@@ -67,7 +70,7 @@ export const RealismPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="DMC Self Test Time">
+            <SettingItem name={t('Settings.Realism.DmcSelfTestTime')}>
                 <SelectGroup>
                     {dmcSelfTestTimeButtons.map((button) => (
                         <SelectItem
@@ -80,7 +83,7 @@ export const RealismPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="Boarding Time">
+            <SettingItem name={t('Settings.Realism.BoardingTime')}>
                 <SelectGroup>
                     {boardingRateButtons.map((button) => (
                         <SelectItem
@@ -93,11 +96,11 @@ export const RealismPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="MCDU Keyboard Input" unrealistic>
+            <SettingItem name={t('Settings.Realism.McduKeyboardInput')} unrealistic>
                 <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
             </SettingItem>
 
-            <SettingItem name="MCDU Focus Timeout (seconds)">
+            <SettingItem name={t('Settings.Realism.McduFocusTimeout')}>
                 <SimpleInput
                     className="text-center w-30"
                     value={mcduTimeout}
@@ -112,15 +115,15 @@ export const RealismPage = () => {
                 />
             </SettingItem>
 
-            <SettingItem name="Separate Tiller from Rudder Inputs">
+            <SettingItem name={t('Settings.Realism.SeparateTillerFromRudderInputs')}>
                 <Toggle value={!!realisticTiller} onToggle={(value) => setRealisticTiller(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name="Cockpit Mode">
+            <SettingItem name={t('Settings.Realism.HomeCockpitMode')}>
                 <Toggle value={homeCockpit === '1'} onToggle={(value) => setHomeCockpit(value ? '1' : '0')} />
             </SettingItem>
 
-            <SettingItem name="DATALINK Transmission Time">
+            <SettingItem name={t('Settings.Realism.DatalinkTransmissionTime')}>
                 <SelectGroup>
                     {datalinkTransmissionTimeButtons.map((button) => (
                         <SelectItem
@@ -136,7 +139,7 @@ export const RealismPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name="Autofill Checklists" unrealistic>
+            <SettingItem name={t('Settings.Realism.AutofillChecklists')} unrealistic>
                 <Toggle value={!!autoFillChecklists} onToggle={(value) => setAutoFillChecklists(value ? 1 : 0)} />
             </SettingItem>
 

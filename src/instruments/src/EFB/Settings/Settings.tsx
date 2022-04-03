@@ -4,6 +4,7 @@ import { Route, Switch } from 'react-router';
 import { Link } from 'react-router-dom';
 
 import { ArrowLeft, ChevronRight } from 'react-bootstrap-icons';
+import { useTranslation } from 'react-i18next';
 import { AboutPage } from './Pages/AboutPage';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { pathify, TabRoutes, PageLink } from '../Utils/routing';
@@ -40,21 +41,23 @@ export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
 );
 
 export const Settings = () => {
+    const { t } = useTranslation();
+
     const tabs: PageLink[] = [
-        { name: 'Aircraft Options / Pin Programs', component: <AircraftOptionsPinProgramsPage /> },
-        { name: 'Sim Options', component: <SimOptionsPage /> },
-        { name: 'Realism', component: <RealismPage /> },
-        { name: 'ATSU / AOC', component: <AtsuAocPage /> },
-        { name: 'Audio', component: <AudioPage /> },
-        { name: 'flyPad', component: <FlyPadPage /> },
-        { name: 'About', component: <AboutPage /> },
+        { alias: t('Settings.AircraftOptionsPinPrograms.Title'), name: 'Aircraft Options / Pin Programs', component: <AircraftOptionsPinProgramsPage /> },
+        { alias: t('Settings.SimOptions.Title'), name: 'Sim Options', component: <SimOptionsPage /> },
+        { alias: t('Settings.Realism.Title'), name: 'Realism', component: <RealismPage /> },
+        { alias: t('Settings.AtsuAoc.Title'), name: 'ATSU / AOC', component: <AtsuAocPage /> },
+        { alias: t('Settings.Audio.Title'), name: 'Audio', component: <AudioPage /> },
+        { alias: t('Settings.flyPad.Title'), name: 'flyPad', component: <FlyPadPage /> },
+        { alias: t('Settings.About.Title'), name: 'About', component: <AboutPage /> },
     ];
 
     return (
         <div className="w-full h-content-section-reduced">
             <Switch>
                 <Route exact path="/settings">
-                    <h1 className="mb-4 font-bold">Settings</h1>
+                    <h1 className="mb-4 font-bold">{t('Settings.Title')}</h1>
                     <SelectionTabs tabs={tabs} />
                 </Route>
                 <TabRoutes basePath="/settings" tabs={tabs} />
@@ -67,27 +70,31 @@ type SettingsPageProps = {
     name: string,
 }
 
-export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => (
-    <div>
-        <Link to="/settings" className="inline-block mb-4">
-            <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
-                <ArrowLeft size={30} />
-                <h1 className="font-bold text-current">
-                    Settings
-                    {' - '}
-                    {name}
-                </h1>
-            </div>
-        </Link>
-        <div className="py-2 px-6 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
-            <ScrollableContainer height={53}>
-                <div className="h-full divide-y-2 divide-theme-accent">
-                    {children}
+export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => {
+    const { t } = useTranslation();
+
+    return (
+        <div>
+            <Link to="/settings" className="inline-block mb-4">
+                <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
+                    <ArrowLeft size={30} />
+                    <h1 className="font-bold text-current">
+                        {t('Settings.Title')}
+                        {' - '}
+                        {name}
+                    </h1>
                 </div>
-            </ScrollableContainer>
+            </Link>
+            <div className="py-2 px-6 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
+                <ScrollableContainer height={53}>
+                    <div className="h-full divide-y-2 divide-theme-accent">
+                        {children}
+                    </div>
+                </ScrollableContainer>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 type SettingItemProps = {
     name: string,
@@ -95,15 +102,26 @@ type SettingItemProps = {
     disabled?: boolean,
 }
 
-export const SettingItem: FC<SettingItemProps> = ({ name, unrealistic, disabled, children }) => (
-    <div className="flex flex-row justify-between items-center py-4">
-        <p>
-            {name}
-            {unrealistic && <span className="ml-2 text-theme-highlight"> (Unrealistic)</span>}
-        </p>
+export const SettingItem: FC<SettingItemProps> = ({ name, unrealistic, disabled, children }) => {
+    const { t } = useTranslation();
 
-        <div className={`${disabled && 'pointer-events-none filter grayscale'}`}>
-            {children}
+    return (
+        <div className="flex flex-row justify-between items-center py-4">
+            <p>
+                {name}
+                {unrealistic && (
+                    <span className="ml-2 text-theme-highlight">
+                        {' '}
+                        (
+                        {t('Settings.Unrealistic')}
+                        )
+                    </span>
+                )}
+            </p>
+
+            <div className={`${disabled && 'pointer-events-none filter grayscale'}`}>
+                {children}
+            </div>
         </div>
-    </div>
-);
+    );
+};

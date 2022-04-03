@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
 import { useSimVar } from '@instruments/common/simVars';
+import { useTranslation } from 'react-i18next';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
@@ -22,6 +23,8 @@ export const SimOptionsPage = () => {
     const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
 
+    const { t } = useTranslation();
+
     const defaultBaroButtons: ButtonType[] = [
         { name: 'Auto', setting: 'AUTO' },
         { name: 'in Hg', setting: 'IN HG' },
@@ -29,18 +32,17 @@ export const SimOptionsPage = () => {
     ];
 
     const fpSyncButtons: ButtonType[] = [
-        { name: 'None', setting: 'NONE' },
-        { name: 'Load Only', setting: 'LOAD' },
-        { name: 'Save', setting: 'SAVE' },
+        { name: t('Settings.SimOptions.None'), setting: 'NONE' },
+        { name: t('Settings.SimOptions.LoadOnly'), setting: 'LOAD' },
+        { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
     ];
 
     return (
         <>
             {!showThrottleSettings
             && (
-                <SettingsPage name="Sim Options">
-
-                    <SettingItem name="Default Barometer Unit">
+                <SettingsPage name={t('Settings.SimOptions.Title')}>
+                    <SettingItem name={t('Settings.SimOptions.DefaultBarometerUnit')}>
                         <SelectGroup>
                             {defaultBaroButtons.map((button) => (
                                 <SelectItem
@@ -53,7 +55,7 @@ export const SimOptionsPage = () => {
                         </SelectGroup>
                     </SettingItem>
 
-                    <SettingItem name="Sync MSFS Flight Plan">
+                    <SettingItem name={t('Settings.SimOptions.SyncMsfsFlightPlan')}>
                         <SelectGroup>
                             {fpSyncButtons.map((button) => (
                                 <SelectItem
@@ -66,7 +68,7 @@ export const SimOptionsPage = () => {
                         </SelectGroup>
                     </SettingItem>
 
-                    <SettingItem name="External MCDU Server Port">
+                    <SettingItem name={t('Settings.SimOptions.ExternalMcduServerPort')}>
                         <SimpleInput
                             className="text-center w-30"
                             value={mcduServerPort}
@@ -76,7 +78,7 @@ export const SimOptionsPage = () => {
                         />
                     </SettingItem>
 
-                    <SettingItem name="Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)">
+                    <SettingItem name={t('Settings.SimOptions.EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection')}>
                         <SelectGroup>
                             <SelectItem
                                 className="text-center color-red"
@@ -98,11 +100,11 @@ export const SimOptionsPage = () => {
                         </div>
                     </SettingItem>
 
-                    <SettingItem name="Dynamic Registration Decal">
+                    <SettingItem name={t('Settings.SimOptions.DynamicRegistrationDecal')}>
                         <Toggle value={dynamicRegistration === 'ENABLED'} onToggle={(value) => setDynamicRegistration(value ? 'ENABLED' : 'DISABLED')} />
                     </SettingItem>
 
-                    <SettingItem name="Use Calculated ILS Signals">
+                    <SettingItem name={t('Settings.SimOptions.UseCalculatedIlsSignals')}>
                         <Toggle
                             value={radioReceiverUsage === '1'}
                             onToggle={(value) => {
@@ -112,13 +114,13 @@ export const SimOptionsPage = () => {
                         />
                     </SettingItem>
 
-                    <SettingItem name="Throttle Detents">
+                    <SettingItem name={t('Settings.SimOptions.ThrottleDetents')}>
                         <button
                             type="button"
-                            className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                            className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                             onClick={() => setShowThrottleSettings(true)}
                         >
-                            Calibrate
+                            {t('Settings.SimOptions.Calibrate')}
                         </button>
                     </SettingItem>
 

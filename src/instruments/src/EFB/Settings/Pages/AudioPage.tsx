@@ -2,6 +2,7 @@ import React from 'react';
 
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import Slider from 'rc-slider';
+import { useTranslation } from 'react-i18next';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SettingItem, SettingsPage } from '../Settings';
@@ -15,13 +16,15 @@ export const AudioPage = () => {
     const [announcementsEnabled, setAnnouncementsEnabled] = usePersistentNumberProperty('SOUND_ANNOUNCEMENTS_ENABLED', 1);
     const [boardingMusicEnabled, setBoardingMusicEnabled] = usePersistentNumberProperty('SOUND_BOARDING_MUSIC_ENABLED', 1);
 
+    const { t } = useTranslation();
+
     return (
-        <SettingsPage name="Audio">
-            <SettingItem name="PTU Audible in Cockpit" unrealistic>
+        <SettingsPage name={t('Settings.Audio.Title')}>
+            <SettingItem name={t('Settings.Audio.PtuAudibleInCockpit')} unrealistic>
                 <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name="Exterior Master Volume">
+            <SettingItem name={t('Settings.Audio.ExteriorMasterVolume')}>
                 <div className="flex flex-row items-center space-x-8">
                     <Slider
                         style={{ width: '24rem' }}
@@ -39,7 +42,7 @@ export const AudioPage = () => {
                 </div>
             </SettingItem>
 
-            <SettingItem name="Engine Interior Volume">
+            <SettingItem name={t('Settings.Audio.EngineInteriorVolume')}>
                 <div className="flex flex-row items-center space-x-8">
                     <Slider
                         style={{ width: '24rem' }}
@@ -57,7 +60,7 @@ export const AudioPage = () => {
                 </div>
             </SettingItem>
 
-            <SettingItem name="Wind Interior Volume">
+            <SettingItem name={t('Settings.Audio.WindInteriorVolume')}>
                 <div className="flex flex-row items-center space-x-8">
                     <Slider
                         style={{ width: '24rem' }}
@@ -75,15 +78,15 @@ export const AudioPage = () => {
                 </div>
             </SettingItem>
 
-            <SettingItem name="Passenger Ambience">
+            <SettingItem name={t('Settings.Audio.PassengerAmbience')}>
                 <Toggle value={!!passengerAmbienceEnabled} onToggle={(value) => setPassengerAmbienceEnabled(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name="Announcements">
+            <SettingItem name={t('Settings.Audio.Announcements')}>
                 <Toggle value={!!announcementsEnabled} onToggle={(value) => setAnnouncementsEnabled(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name="Boarding Music">
+            <SettingItem name={t('Settings.Audio.BoardingMusic')}>
                 <Toggle value={!!boardingMusicEnabled} onToggle={(value) => setBoardingMusicEnabled(value ? 1 : 0)} />
             </SettingItem>
         </SettingsPage>

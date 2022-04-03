@@ -197,7 +197,7 @@ export const ATC = () => {
                     showModal(
                         <AlertModal
                             title={t('AirTrafficControl.HoppieError')}
-                            bodyText="Invalid logon code used."
+                            bodyText={t('AirTrafficControl.InvalidLogonCodeUsed')}
                             onAcknowledge={() => {
                                 setHoppieActive(0);
                             }}
@@ -218,7 +218,7 @@ export const ATC = () => {
                         showModal(
                             <AlertModal
                                 title={t('AirTrafficControl.HoppieError')}
-                                bodyText="Flightnumber is already in use."
+                                bodyText={t('AirTrafficControl.FlightnumberIsAlreadyInUse')}
                                 onAcknowledge={() => {
                                     setHoppieActive(0);
                                 }}
