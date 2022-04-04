@@ -26,7 +26,9 @@ export class FlowEventSync {
         this.dataPackageQueue = [];
         this.isRunning = true;
         this.recvEventCb = recvEventCb;
-        Coherent.on('OnInteractionEvent', this.processEventsReceived.bind(this));
+        if (topic) {
+            Coherent.on('OnInteractionEvent', this.processEventsReceived.bind(this));
+        }
         /** Sends the queued up data packages */
         const sendFn = () => {
             if (this.dataPackageQueue.length > 0) {
