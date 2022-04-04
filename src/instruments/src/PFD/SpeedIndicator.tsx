@@ -418,7 +418,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
             this.onGround = g;
         });
 
-        sub.on('speedAr').withArinc429Precision(2).handle((speed) => {
+        sub.on('speedAr').handle((speed) => {
             let airspeedValue: number;
             if (speed.isFailureWarning() || (speed.isNoComputedData() && !this.onGround)) {
                 airspeedValue = NaN;
