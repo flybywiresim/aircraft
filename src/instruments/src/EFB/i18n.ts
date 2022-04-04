@@ -5,11 +5,13 @@ import { NXDataStore } from '@shared/persistence';
 import { en } from './Localization/en';
 import { es } from './Localization/es';
 import { fr } from './Localization/fr';
+import { de } from './Localization/de';
 
 export const resources = {
     en: { translation: en },
     es: { translation: es },
     fr: { translation: fr },
+    de: { translation: de },
 };
 
 interface LanguageOption {
