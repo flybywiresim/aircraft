@@ -223,6 +223,10 @@
 1. [EICAS] Fixed issue where CRUISE page was viewable on ground. - @patmack14 (Patrick Macken)
 1. [EWD] Rewritten EWD in React - @RichardPilbery (tricky_dicky#3571) & @beheh (Benedict Etzel)
 1. [EWD] Rewritten logic for FWC into React - @RichardPilbery (tricky_dicky#3571) & @beheh (Benedict Etzel)
+1. [MODEL] Add new decal mesh next to fwd doors - @bouveng (Johan Bouveng)
+1. [MODEL] Add bandit/window mask + ext door decals & tail details - @bouveng (Johan Bouveng)
+1. [MCUD] Add LSK for vert rev at destination - @tracernz (Mike)
+1. [MODEL] Add detailed rivet mesh to allow for ALDB+COMP+NORM ribbons - @bouveng (Johan Bouveng)
 1. [BLEED] Converted bleed system to you mass flow instead of volume flow - @Gurgel100 (Pascal)
 
 ## 0.7.0
