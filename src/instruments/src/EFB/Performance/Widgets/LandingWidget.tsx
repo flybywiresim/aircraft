@@ -400,12 +400,12 @@ export const LandingWidget = () => {
         switch (autoFillSource) {
         case 'METAR':
             if (!isAutoFillIcaoValid()) {
-                return 'You need to enter an ICAO code in order to make a METAR request.';
+                return t('Performance.Landing.TT.YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest');
             }
             break;
         case 'OFP':
             if (!isAutoFillIcaoValid()) {
-                return 'You need to load SimBrief data in order to autofill data.';
+                return t('Performance.Landing.TT.YouNeedToLoadSimBriefDataInOrderToAutofillData');
             }
             break;
         default: return undefined;
