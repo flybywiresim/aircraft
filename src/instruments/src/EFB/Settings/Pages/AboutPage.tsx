@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { usePersistentProperty } from '@instruments/common/persistence';
+import { SentryConsentState, SENTRY_CONSENT_KEY } from '../../../../../sentry-client/src/FbwAircraftSentryClient';
 import { SettingsPage } from '../Settings';
 
+// @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
 
 interface BuildInfo {
@@ -25,9 +28,9 @@ const BuildInfoEntry = ({ title, value, underline = 0 }: BuildInfoEntryProps) =>
 
     return (
         <div className="flex flex-row mt-2 font-mono">
-            <p>{title + '\u00A0'.repeat(SPACE_BETWEEN - title.length)}</p>
+            <p>{title + '\u00A0'.repeat(Math.abs(SPACE_BETWEEN - title.length))}</p>
             <p className="ml-4">
-                <span className="text-theme-highlight underline">{first}</span>
+                <span className="underline text-theme-highlight">{first}</span>
                 {last}
             </p>
         </div>
@@ -36,6 +39,8 @@ const BuildInfoEntry = ({ title, value, underline = 0 }: BuildInfoEntryProps) =>
 
 export const AboutPage = () => {
     const [buildInfo, setBuildInfo] = useState<BuildInfo | undefined>(undefined);
+    const [sessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
+    const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
     useEffect(() => {
         fetch('/VFS/build_info.json').then((response) => response.json()).then((json) => setBuildInfo({
@@ -75,6 +80,9 @@ export const AboutPage = () => {
                         <BuildInfoEntry title="Ref" value={buildInfo?.ref} />
                         <BuildInfoEntry title="SHA" value={buildInfo?.sha} underline={8} />
                         <BuildInfoEntry title="Event Name" value={buildInfo?.eventName} />
+                        {sentryEnabled === SentryConsentState.Given && (
+                            <BuildInfoEntry title="Sentry Session ID" value={sessionId} />
+                        )}
                     </div>
                 </div>
             </div>

@@ -7,7 +7,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 import { Provider } from 'react-redux';
 import { render } from '@instruments/common/index';
 import { ErrorBoundary } from 'react-error-boundary';
-import { SentryConsentState, SENTRY_CONSENT_KEY } from 'sentry-client/src/FbwAircraftSentryClient';
+import { SentryConsentState, SENTRY_CONSENT_KEY } from '../../../sentry-client/src/FbwAircraftSentryClient';
 import { ModalProvider } from './UtilComponents/Modals/Modals';
 import { FailuresOrchestratorProvider } from './failures-orchestrator-provider';
 import Efb from './Efb';
