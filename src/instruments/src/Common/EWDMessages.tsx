@@ -190,7 +190,7 @@ const EWDMessages = {
     '320001009': '\x1b<5m MAX SPEED.......220/.54',
     '320005001': '\x1b<2m\x1b4mCONFIG\x1bm PARK BRK ON',
     '320006001': '\x1b<4m\x1b4mBRAKES\x1bm A/SKID N/WS FAULT',
-    '320006002': '\x1b<5mMAX BRK PR......1000 PSI',
+    '320006002': '\x1b<5m MAX BRK PR......1000 PSI',
     '340014001': '\x1b<4m\x1b4mNAV\x1bm RA 1 FAULT',
     '340015001': '\x1b<4m\x1b4mNAV\x1bm RA 2 FAULT',
     '340050001': '\x1b<4m\x1b4mNAV\x1bm TCAS FAULT',
