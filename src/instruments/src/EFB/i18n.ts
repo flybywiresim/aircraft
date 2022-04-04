@@ -51,12 +51,15 @@ i18n
         supportedLngs: languageOptions.map((option) => option.langCode),
         interpolation: { escapeValue: false },
         resources,
+        react: { bindI18nStore: false, bindI18n: 'languageChanged' },
     });
 
 const watchLanguageChanges = () => {
     NXDataStore.getAndSubscribe(
         'EFB_LANGUAGE',
         (_, value) => {
+            console.log(`language changed to ${value}`);
+
             i18n.changeLanguage(value);
         },
         'en',
