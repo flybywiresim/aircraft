@@ -18,6 +18,13 @@ const REMINDERS = new Map<ReminderKey, JSX.Element>([
     ['Checklists', <ChecklistsReminder />],
 ]);
 
+const TRANSLATIONS = new Map<ReminderKey, string>([
+    ['Weather', 'Dashboard.ImportantInformation.Weather.Title'],
+    ['Pinned Charts', 'Dashboard.ImportantInformation.PinnedCharts.Title'],
+    ['Maintenance', 'Dashboard.ImportantInformation.Maintenance.Title'],
+    ['Checklists', 'Dashboard.ImportantInformation.Checklists.Title'],
+]);
+
 interface ReminderKeyEditCardProps {
     reminderKey: ReminderKey;
     index: number;
@@ -111,7 +118,7 @@ export const RemindersWidget = () => {
                         <ScrollableContainer innerClassName="p-6 space-y-4" height={51}>
                             {reminderKeyArr.map((key, index) => (
                                 <ReminderKeyEditCard
-                                    reminderKey={key}
+                                    reminderKey={t(TRANSLATIONS.get(key)!)}
                                     keyArrLen={reminderKeyArr.length}
                                     setter={(index) => setOrderedReminderKeys(arrayMove(key, index))}
                                     index={index}
