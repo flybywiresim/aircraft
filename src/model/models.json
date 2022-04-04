@@ -932,6 +932,10 @@
         "bin": "./bandit-extras/bandit_window_extras.bin"
       },
       {
+        "gltf": "./rivet-mesh/rivet-mesh.gltf",
+        "bin": "./rivet-mesh/rivet-mesh.bin"
+      },
+      {
         "combineFiles": ["./a320-exterior/A320_NEO_LOD00.gltf"],
         "nodes": [
           {
