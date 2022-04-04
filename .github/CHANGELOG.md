@@ -226,6 +226,7 @@
 1. [MODEL] Add new decal mesh next to fwd doors - @bouveng (Johan Bouveng)
 1. [MODEL] Add bandit/window mask + ext door decals & tail details - @bouveng (Johan Bouveng)
 1. [MCUD] Add LSK for vert rev at destination - @tracernz (Mike)
+1. [SD] Rewrite Bleed page to React - @RichardPilbery (tricky_dicky#3571)
 
 ## 0.7.0
 
