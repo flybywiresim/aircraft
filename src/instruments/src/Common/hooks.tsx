@@ -86,11 +86,9 @@ export const useFlowSyncEvent = (event: string, handler: (topic: string, data: a
     }, [handler]);
 
     React.useEffect(() => {
-        console.log('hooking coherent event', event);
-        const coherentHandler = new FlowEventSync(savedHandler.current, 2);
-        console.log(coherentHandler);
-        /*    return () => {
-            coherentHandler.();
-        }; */
+        const flowEventHandler = new FlowEventSync(savedHandler.current, event);
+        return () => {
+            flowEventHandler.stop();
+        };
     }, [event]);
 };

@@ -10,37 +10,39 @@ export class FlowEventSync {
      * @param busId The ID of the bus.
      */
 
-    private evtNum;
+    private evtNum: number;
 
-    private lastEventSynced;
+    private dataPackageQueue: any[];
 
-    private dataPackageQueue;
+    private topic: string;
 
-    private recvEventCb;
+    private isRunning: boolean;
 
-    private busId;
+    private recvEventCb: (topic: string, data: any) => {};
 
-    constructor(recvEventCb, busId) {
+    constructor(recvEventCb, topic: string) {
         this.evtNum = 0;
-        this.lastEventSynced = -1;
+        this.topic = topic;
         this.dataPackageQueue = [];
+        this.isRunning = true;
         this.recvEventCb = recvEventCb;
-        this.busId = busId;
         Coherent.on('OnInteractionEvent', this.processEventsReceived.bind(this));
         /** Sends the queued up data packages */
         const sendFn = () => {
             if (this.dataPackageQueue.length > 0) {
-                // console.log(`Sending ${this.dataPackageQueue.length} packages`);
-                const syncDataPackage = {
-                    busId: this.busId,
-                    data: this.dataPackageQueue,
-                };
-                LaunchFlowEvent('ON_MOUSERECT_HTMLEVENT', FlowEventSync.EB_LISTENER_KEY, this.busId.toString(), stringify(syncDataPackage));
+                const syncDataPackage = { data: this.dataPackageQueue };
+                LaunchFlowEvent('ON_MOUSERECT_HTMLEVENT', FlowEventSync.EB_LISTENER_KEY, stringify(syncDataPackage));
                 this.dataPackageQueue.length = 0;
             }
-            requestAnimationFrame(sendFn);
+            if (this.isRunning) {
+                requestAnimationFrame(sendFn);
+            }
         };
         requestAnimationFrame(sendFn);
+    }
+
+    public stop() {
+        this.isRunning = false;
     }
 
     /**
@@ -53,26 +55,19 @@ export class FlowEventSync {
         if (args.length === 0 || args[0] !== FlowEventSync.EB_LISTENER_KEY) {
             return;
         }
-        // not coming from this bus?
-        if (this.busId !== Number(args[1])) {
-            const syncDataPackage = JSON.parse(args[2]);
-            syncDataPackage.data.forEach((data) => {
+        const syncDataPackage = JSON.parse(args[1]);
+        syncDataPackage.data.forEach((data) => {
+            if (data.topic === this.topic) {
                 try {
-                    // not entirely sure if this check is still needed
-                    if (this.lastEventSynced !== data.evtNum) {
-                        this.lastEventSynced = data.evtNum;
-                        this.recvEventCb(data.topic, data.data !== undefined ? JSON.parse(data.data) : undefined, false, data.isCached);
-                    } else {
-                        console.warn('Same event received twice');
-                    }
+                    this.recvEventCb(data.topic, data.data !== undefined ? JSON.parse(data.data) : undefined);
                 } catch (e) {
                     console.error(e);
                     if (e instanceof Error) {
                         console.error(e.stack);
                     }
                 }
-            });
-        }
+            }
+        });
     }
 
     /**
@@ -81,10 +76,10 @@ export class FlowEventSync {
      * @param data The data to send.
      * @param isCached Whether or not this event is cached.
      */
-    sendEvent(topic, data, isCached) {
+    sendEvent(topic: string, data: any, isCached: boolean) {
         // HERE WE QUEUE STUFF TO SEND IT LATER
         // stringify data
-        const dataObj = JSON.stringify(data);
+        const dataObj = stringify(data);
         // build a data package
         const dataPackage = {
             evtNum: this.evtNum++,

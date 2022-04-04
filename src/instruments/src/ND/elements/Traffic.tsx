@@ -39,7 +39,7 @@ const useAirTraffic = (mapParams, mode) : NdTraffic[] => {
     const [airTraffic, setAirTraffic] = useState<NdTraffic[]>([]);
     const tcasMask = (mode === Mode.ARC ? TCAS_MASK_ARC : TCAS_MASK_ROSE);
     useFlowSyncEvent('A32NX_TCAS_TRAFFIC', (topic, data) => {
-        if (topic === 'A32NX_TCAS_TRAFFIC') {
+        if (data) {
             setAirTraffic(trafficToDisplay(data, mapParams, tcasMask));
         }
     });

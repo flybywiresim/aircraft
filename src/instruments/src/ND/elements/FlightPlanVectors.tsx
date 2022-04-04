@@ -20,13 +20,11 @@ export interface FlightPlanVectorsProps {
  */
 export const FlightPlanVectors: FC<FlightPlanVectorsProps> = memo(({ x, y, mapParams, side, group }) => {
     const [vectors, setVectors] = useState<PathVector[]>([]);
-    const [, setStagingVectors] = useState<PathVector[]>([]);
 
     const lineStyle = vectorsGroupLineStyle(group);
 
     useFlowSyncEvent(`A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[group]}`, useCallback((topic, data) => {
-        if (data && topic === `A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[group]}`) {
-            setStagingVectors(data);
+        if (data) {
             setVectors(data);
         } else if (LnavConfig.DEBUG_PATH_DRAWING) {
             console.warn(`[ND/Vectors] Received falsy vectors on event '${EfisVectorsGroup[group]}'.`);
