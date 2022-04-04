@@ -18,9 +18,9 @@ export class FlowEventSync {
 
     private isRunning: boolean;
 
-    private recvEventCb: (topic: string, data: any) => {};
+    private recvEventCb: (topic: string, data: any) => void;
 
-    constructor(recvEventCb, topic: string) {
+    constructor(recvEventCb?: (topic: string, data: any) => void, topic?: string) {
         this.evtNum = 0;
         this.topic = topic;
         this.dataPackageQueue = [];

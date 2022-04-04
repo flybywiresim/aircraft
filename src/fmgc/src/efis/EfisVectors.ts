@@ -13,7 +13,7 @@ import { FlowEventSync } from '@shared/FlowEventSync';
 const UPDATE_TIMER = 2_500;
 
 export class EfisVectors {
-    private syncer: FlowEventSync = new FlowEventSync(() => {}, 1);
+    private syncer: FlowEventSync = new FlowEventSync();
 
     constructor(
         private guidanceController: GuidanceController,

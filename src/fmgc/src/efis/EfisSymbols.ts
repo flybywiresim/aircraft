@@ -27,7 +27,7 @@ export class EfisSymbols {
 
     private nearby: NearbyFacilities;
 
-    private syncer: FlowEventSync = new FlowEventSync(() => {}, 1);
+    private syncer: FlowEventSync = new FlowEventSync();
 
     private static sides = ['L', 'R'];
 

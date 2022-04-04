@@ -158,7 +158,7 @@ export class TcasComputer implements TcasComponent {
 
     private debug: boolean; // TCAS_DEBUG on/off
 
-    private syncer: FlowEventSync = new FlowEventSync(() => {}, 1);
+    private syncer: FlowEventSync = new FlowEventSync();
 
     private updateThrottler: UpdateThrottler; // Utility to restrict updates
 
