@@ -216,5 +216,12 @@ export class FbwAircraftSentryClient {
         });
 
         console.log('[SentryClient] Sentry initialized');
+
+        NXDataStore.getAndSubscribe('A32NX_SENTRY_SESSION_ID', (_, value) => {
+            if (value) {
+                Sentry.setTag('session_id', value);
+                console.log('[SentryClient] Sentry tag "session_id" set to', value);
+            }
+        });
     }
 }
