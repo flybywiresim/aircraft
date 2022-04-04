@@ -6,12 +6,14 @@ import { en } from './Localization/en';
 import { es } from './Localization/es';
 import { fr } from './Localization/fr';
 import { de } from './Localization/de';
+import { ru } from './Localization/ru';
 
 export const resources = {
     en: { translation: en },
     es: { translation: es },
     fr: { translation: fr },
     de: { translation: de },
+    ru: { translation: ru },
 };
 
 interface LanguageOption {
@@ -35,6 +37,10 @@ export const languageOptions: LanguageOption[] = [
     {
         langCode: 'de',
         alias: 'Deutsch',
+    },
+    {
+        langCode: 'ru',
+        alias: 'Русский',
     },
 ];
 
