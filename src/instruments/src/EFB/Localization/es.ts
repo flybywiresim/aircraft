@@ -13,9 +13,7 @@ export const es = {
         Standby: 'En espera',
         Title: 'Control de tráfico aéreo',
     },
-    Checklist: {
-        ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Quedan elementos de la lista de verificación de autocompletar que aún no se han completado',
-    },
+    Checklist: { ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Quedan elementos de la lista de verificación de autocompletar que aún no se han completado' },
     Checklists: {
         AreYouSureYouWantToResetAllChecklists: '¿Estás seguro de que quieres restablecer todas las listas de verificación?',
         AreYouSureYouWantToResetChecklists: '¿Estás seguro de que quieres restablecer todas las listas de verificación?',
@@ -44,9 +42,7 @@ export const es = {
                 NoPinnedCharts: 'Sin gráficos anclados',
                 Title: 'Cartas Anclados',
             },
-            TT: {
-                RearrangeWidgets: 'Reorganizar widgets',
-            },
+            TT: { RearrangeWidgets: 'Reorganizar widgets' },
             Title: 'Información importante',
             Weather: {
                 AirPressure: 'Presión de aire',
@@ -55,12 +51,12 @@ export const es = {
                 Raw: 'Sin procesar',
                 TT: {
                     SwitchToIconView: 'Cambiar a vista de iconos',
-                    SwitchToRawMetarView: 'Cambiar a la vista de Raw Metar',
+                    SwitchToRawMetarView: 'Cambiar a la vista de Raw METAR',
                 },
                 Temperature: 'Temperatura',
                 Title: 'Clima',
                 WindSpeed: 'Velocidad del viento',
-            }
+            },
         },
         Title: 'Tablero',
         YourFlight: {
@@ -74,7 +70,7 @@ export const es = {
             SimBriefDataNotYetLoaded: 'Los datos de SimBrief aún no se han cargado.',
             Title: 'Tu vuelo',
             ZFW: 'ZFW',
-        }
+        },
     },
     Dispatch: {
         Ofp: {
@@ -102,12 +98,8 @@ export const es = {
         Title: 'Envío',
     },
     Failures: {
-        Comfort: {
-            Title: 'Confort',
-        },
-        Compact: {
-            Title: 'Compacto',
-        },
+        Comfort: { Title: 'Confort' },
+        Compact: { Title: 'Compacto' },
         FullSimulationOfTheFailuresBelowIsntYetGuaranteed: 'La simulación completa de las fallas a continuación aún no está garantizada.',
         Search: 'Buscar',
         Title: 'Fallas',
@@ -134,9 +126,7 @@ export const es = {
             TotalFuel: 'Combustible Total',
             Unavailable: 'No disponible',
         },
-        Pushback: {
-            Title: 'Retroceso',
-        },
+        Pushback: { Title: 'Retroceso' },
         Services: {
             CallBaggageTruck: 'Llame a Camión de Equipaje',
             CallCateringTruck: 'Llame a Camión de Catering',
@@ -205,8 +195,8 @@ export const es = {
             FitChartToHeight: 'Ajustar tabla a altura',
             FitChartToWidth: 'Ajustar la tabla a la anchura',
             ResetMovement: 'Reiniciar movimiento',
-            'RotateLeft45Degrees': 'Girar 45 grados a la izquierda',
-            'RotateRight45Degrees': 'Girar 45 grados a la derecha',
+            RotateLeft45Degrees: 'Girar 45 grados a la izquierda',
+            RotateRight45Degrees: 'Girar 45 grados a la derecha',
             ZoomIn: 'Acercar',
             ZoomOut: 'Alejar',
         },
@@ -236,6 +226,10 @@ export const es = {
             RunwayHeading: 'Encabezado de pista',
             RunwayLda: 'Pista LDA',
             RunwaySlope: 'Pendiente de pista',
+            TT: {
+                YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest: 'Debe introducir un código de la OACI para realizar una solicitud METAR',
+                YouNeedToLoadSimBriefDataInOrderToAutofillData: 'Debe cargar datos de SimBrief para completar automáticamente los datos',
+            },
             Temperature: 'Temperatura',
             Title: 'El Aterrizaje',
             Weight: 'Peso',
@@ -275,7 +269,7 @@ export const es = {
                 SynchronizeInputWithAircraftsCurrentAltitude: 'Sincronizar la entrada con la altitud actual de la aeronave',
             },
             Title: 'Cima del descenso',
-        }
+        },
     },
     Presets: {
         AircraftStates: {
@@ -322,9 +316,7 @@ export const es = {
         TugSpeed: 'Velocidad del remolcador',
     },
     Settings: {
-        About: {
-            Title: 'Sobre',
-        },
+        About: { Title: 'Sobre' },
         AircraftOptionsPinPrograms: {
             AccelerationHeight: 'Altura de aceleración',
             EngineOutAccelerationHeight: 'Altura de aceleración del motor fuera',
@@ -344,7 +336,7 @@ export const es = {
             ErrorReporting: 'Informe de errores',
             HoppieUserId: 'ID de usuario de Hoppie',
             MetarSource: 'Fuente METAR',
-            'OptionalA32nxErrorReporting': 'Informe de errores A32NX opcional',
+            OptionalA32nxErrorReporting: 'Informe de errores A32NX opcional',
             PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId: 'Compruebe que ha introducido correctamente su nombre de usuario o identificador de piloto de SimBrief.',
             SimBriefUsernamePilotId: 'Nombre de usuario/ID de piloto de SimBrief',
             TafSource: 'Fuente TAF',
@@ -367,7 +359,7 @@ export const es = {
         },
         Fast: 'Rápido',
         Instant: 'Instante',
-        Real: 'Reales',
+        Real: 'Real',
         Realism: {
             AdirsAlignTime: 'Tiempo de alineación de ADIRS',
             AutofillChecklists: 'Listas de verificación de autocompletar',
@@ -384,7 +376,7 @@ export const es = {
             Calibrate: 'Calibrar',
             DefaultBarometerUnit: 'Unidad de barómetro predeterminada',
             DynamicRegistrationDecal: 'Calcomanía de registro dinámico',
-            'EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection': 'Habilitar la conexión del servidor MCDU (se desactiva automáticamente después de 5 minutos si la conexión no se realiza correctamente)',
+            EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection: 'Habilitar la conexión del servidor MCDU (se desactiva automáticamente después de 5 minutos si la conexión no se realiza correctamente)',
             ExternalMcduServerPort: 'Puerto de servidor MCDU externo',
             LoadOnly: 'Solo carga',
             None: 'Ninguno',
@@ -418,24 +410,24 @@ export const es = {
         flyPad: {
             '12Hour': '12 horas',
             '24Hour': '24 horas',
-            AutoBrightness: 'Brillo automático',
-            AutomaticallyShowOnscreenKeyboard: 'Mostrar teclado en pantalla automáticamente',
-            Blue: 'Azul',
-            Brightness: 'Brillo',
-            Dark: 'Oscuro',
-            Language: 'Idioma',
-            Light: 'Claro',
-            Local: 'Local',
-            LocalTimeFormat: 'Formato de hora local',
-            OnscreenKeyboardLayout: 'Distribución del teclado en pantalla',
-            ShowColoredRawMetar: 'Mostrar metar crudo coloreado',
-            ShowStatusBarFlightProgressIndicator: 'Mostrar indicador de progreso de vuelo en la barra',
-            Theme: 'Tema',
-            TimeDisplayed: 'Tiempo que se muestra',
-            Title: 'flyPad',
-            Utc: 'UTC',
-            UtcAndLocal: 'UTC y local',
-        }
+            'AutoBrightness': 'Brillo automático',
+            'AutomaticallyShowOnscreenKeyboard': 'Mostrar teclado en pantalla automáticamente',
+            'Blue': 'Azul',
+            'Brightness': 'Brillo',
+            'Dark': 'Oscuro',
+            'Language': 'Idioma',
+            'Light': 'Claro',
+            'Local': 'Local',
+            'LocalTimeFormat': 'Formato de hora local',
+            'OnscreenKeyboardLayout': 'Distribución del teclado en pantalla',
+            'ShowColoredRawMetar': 'Mostrar METAR sin procesar coloreado',
+            'ShowStatusBarFlightProgressIndicator': 'Mostrar indicador de progreso de vuelo en la barra',
+            'Theme': 'Tema',
+            'TimeDisplayed': 'Tiempo que se muestra',
+            'Title': 'flyPad',
+            'Utc': 'UTC',
+            'UtcAndLocal': 'UTC y local',
+        },
     },
     StatusBar: {
         Apr: 'Abr',
@@ -450,7 +442,7 @@ export const es = {
         Mon: 'Lun',
         Nov: 'Nov',
         Oct: 'Oct',
-        Sat: 'Sábado',
+        Sat: 'Sáb',
         Sep: 'Sep',
         Sun: 'Dom',
         TT: {
@@ -461,5 +453,5 @@ export const es = {
         Thu: 'Jue',
         Tue: 'Mar',
         Wed: 'Mié',
-    }
+    },
 };

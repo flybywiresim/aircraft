@@ -30,13 +30,16 @@ export const languageOptions: LanguageOption[] = [
         langCode: 'fr',
         alias: 'Français',
     },
+    {
+        langCode: 'de',
+        alias: 'Deutsch',
+    },
 ];
 
 i18n
     .use(initReactI18next)
     .init({
         fallbackLng: 'en',
-        debug: true,
         supportedLngs: languageOptions.map((option) => option.langCode),
         interpolation: { escapeValue: false },
         resources,

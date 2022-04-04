@@ -51,7 +51,7 @@ export const en = {
                 Raw: 'Raw',
                 TT: {
                     SwitchToIconView: 'Switch to Icon View',
-                    SwitchToRawMetarView: 'Switch to Raw Metar View',
+                    SwitchToRawMetarView: 'Switch to Raw METAR View',
                 },
                 Temperature: 'Temperature',
                 Title: 'Weather',
@@ -226,6 +226,10 @@ export const en = {
             RunwayHeading: 'Runway Heading',
             RunwayLda: 'Runway LDA',
             RunwaySlope: 'Runway Slope',
+            TT: {
+                YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest: 'You need to enter an ICAO code in order to make a METAR request',
+                YouNeedToLoadSimBriefDataInOrderToAutofillData: 'You need to load SimBrief data in order to autofill data',
+            },
             Temperature: 'Temperature',
             Title: 'Landing',
             Weight: 'Weight',
@@ -416,7 +420,7 @@ export const en = {
             'Local': 'Local',
             'LocalTimeFormat': 'Local Time Format',
             'OnscreenKeyboardLayout': 'Onscreen Keyboard Layout',
-            'ShowColoredRawMetar': 'Show Colored Raw Metar',
+            'ShowColoredRawMetar': 'Show Colored Raw METAR',
             'ShowStatusBarFlightProgressIndicator': 'Show Status Bar Flight Progress Indicator',
             'Theme': 'Theme',
             'TimeDisplayed': 'Time Displayed',
@@ -438,7 +442,7 @@ export const en = {
         Mon: 'Mon',
         Nov: 'Nov',
         Oct: 'Oct',
-        Sat: 'Saturday',
+        Sat: 'Sat',
         Sep: 'Sep',
         Sun: 'Sun',
         TT: {
