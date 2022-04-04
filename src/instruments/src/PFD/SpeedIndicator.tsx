@@ -172,7 +172,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             this.failedGroup.instance.classList.add('HiddenElement');
         }
 
-        const length = 42.9 + Math.max(Math.max(Math.min(airspeedValue, 72.1), 30) - 30, 0);
+        const length = 42.9 + Math.max(Math.max(Math.min(Number.isNaN(airspeedValue) ? 100 : airspeedValue, 72.1), 30) - 30, 0);
         this.speedTapeOutlineRef.instance.setAttribute('d', `m19.031 38.086v${length}`);
     }
 
@@ -418,7 +418,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
             this.onGround = g;
         });
 
-        sub.on('speedAr').handle((speed) => {
+        sub.on('speedAr').withArinc429Precision(2).handle((speed) => {
             let airspeedValue: number;
             if (speed.isFailureWarning() || (speed.isNoComputedData() && !this.onGround)) {
                 airspeedValue = NaN;

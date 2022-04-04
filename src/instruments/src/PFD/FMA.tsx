@@ -757,6 +757,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         default:
             text = '';
             this.isShown = false;
+            this.displayModeChangedPath(true);
         }
 
         const inSpeedProtection = this.inSpeedProtection && (this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15);
@@ -791,7 +792,6 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         sub.on('activeVerticalMode').whenChanged().handle((activeVerticalMode) => {
             this.activeVerticalModeSub.set(activeVerticalMode);
             this.getText();
-
             this.displayModeChangedPath();
         });
 
