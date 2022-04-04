@@ -20,7 +20,7 @@ interface BuildInfoEntryProps {
     underline?: number;
 }
 
-const SPACE_BETWEEN = 14;
+const SPACE_BETWEEN = 28;
 
 const BuildInfoEntry = ({ title, value, underline = 0 }: BuildInfoEntryProps) => {
     const first = value?.substring(0, underline);
