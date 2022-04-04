@@ -1,0 +1,772 @@
+{
+    "accessors": [
+        {
+            "bufferView": 1,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 224,
+            "type": "VEC4",
+            "name": "Ribbons_Door-Cargo_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 224,
+            "type": "VEC4",
+            "name": "Ribbons_Door-Cargo_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 224,
+            "min": [
+                0.008991837501525879,
+                -1.5466933250427246,
+                -0.9427003860473633
+            ],
+            "max": [
+                1.377565622329712,
+                0.006518661975860596,
+                0.9398369789123535
+            ],
+            "type": "VEC3",
+            "name": "Ribbons_Door-Cargo_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 224,
+            "type": "VEC4",
+            "name": "Ribbons_Door-Cargo_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 224,
+            "type": "VEC2",
+            "name": "Ribbons_Door-Cargo_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 224,
+            "type": "VEC2",
+            "name": "Ribbons_Door-Cargo_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "componentType": 5123,
+            "count": 462,
+            "type": "SCALAR",
+            "name": "Ribbons_Door-Cargo_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 8092,
+            "componentType": 5123,
+            "count": 42468,
+            "type": "VEC4",
+            "name": "Ribbons_Fuse_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 8080,
+            "componentType": 5120,
+            "count": 42468,
+            "type": "VEC4",
+            "name": "Ribbons_Fuse_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 8064,
+            "componentType": 5126,
+            "count": 42468,
+            "min": [
+                -2.3947887420654297,
+                -0.8506920337677002,
+                -24.07511329650879
+            ],
+            "max": [
+                2.370842218399048,
+                9.477267265319824,
+                12.860241889953613
+            ],
+            "type": "VEC3",
+            "name": "Ribbons_Fuse_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 8076,
+            "componentType": 5120,
+            "count": 42468,
+            "type": "VEC4",
+            "name": "Ribbons_Fuse_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 8084,
+            "componentType": 5122,
+            "count": 42468,
+            "type": "VEC2",
+            "name": "Ribbons_Fuse_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 8088,
+            "componentType": 5122,
+            "count": 42468,
+            "type": "VEC2",
+            "name": "Ribbons_Fuse_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 924,
+            "componentType": 5123,
+            "count": 93810,
+            "type": "SCALAR",
+            "name": "Ribbons_Fuse_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1536940,
+            "componentType": 5123,
+            "count": 424,
+            "type": "VEC4",
+            "name": "Ribbbons_Door-Fwd_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1536928,
+            "componentType": 5120,
+            "count": 424,
+            "type": "VEC4",
+            "name": "Ribbbons_Door-Fwd_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1536912,
+            "componentType": 5126,
+            "count": 424,
+            "min": [
+                -0.37354576587677,
+                -0.9423351287841797,
+                -0.4523811340332031
+            ],
+            "max": [
+                0.44688880443573,
+                0.975322961807251,
+                0.4512367248535156
+            ],
+            "type": "VEC3",
+            "name": "Ribbbons_Door-Fwd_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1536924,
+            "componentType": 5120,
+            "count": 424,
+            "type": "VEC4",
+            "name": "Ribbbons_Door-Fwd_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1536932,
+            "componentType": 5122,
+            "count": 424,
+            "type": "VEC2",
+            "name": "Ribbbons_Door-Fwd_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1536936,
+            "componentType": 5122,
+            "count": 424,
+            "type": "VEC2",
+            "name": "Ribbbons_Door-Fwd_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 188544,
+            "componentType": 5123,
+            "count": 954,
+            "type": "SCALAR",
+            "name": "Ribbbons_Door-Fwd_indices#0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1552204,
+            "componentType": 5123,
+            "count": 560,
+            "type": "VEC4",
+            "name": "Ribbons_Door-Rear_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1552192,
+            "componentType": 5120,
+            "count": 560,
+            "type": "VEC4",
+            "name": "Ribbons_Door-Rear_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1552176,
+            "componentType": 5126,
+            "count": 560,
+            "min": [
+                -0.3676888942718506,
+                -0.9885760545730591,
+                -0.4858570098876953
+            ],
+            "max": [
+                0.3135366439819336,
+                0.9996170997619629,
+                0.48383045196533203
+            ],
+            "type": "VEC3",
+            "name": "Ribbons_Door-Rear_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1552188,
+            "componentType": 5120,
+            "count": 560,
+            "type": "VEC4",
+            "name": "Ribbons_Door-Rear_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1552196,
+            "componentType": 5122,
+            "count": 560,
+            "type": "VEC2",
+            "name": "Ribbons_Door-Rear_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 1552200,
+            "componentType": 5122,
+            "count": 560,
+            "type": "VEC2",
+            "name": "Ribbons_Door-Rear_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 190452,
+            "componentType": 5123,
+            "count": 1230,
+            "type": "SCALAR",
+            "name": "Ribbons_Door-Rear_indices#0"
+        },
+        {
+            "bufferView": 2,
+            "componentType": 5126,
+            "count": 81,
+            "min": [
+                0.041666666666666664
+            ],
+            "max": [
+                3.375
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 3,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 4,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 5,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 6,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 7,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 8,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 9,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 10,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 11,
+            "componentType": 5126,
+            "count": 81,
+            "type": "VEC3"
+        }
+    ],
+    "animations": [
+        {
+            "name": "Ribbons_Cargo-Anim",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 0,
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": 0,
+                        "path": "rotation"
+                    }
+                },
+                {
+                    "sampler": 2,
+                    "target": {
+                        "node": 0,
+                        "path": "scale"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 28,
+                    "output": 29,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 28,
+                    "output": 30,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 28,
+                    "output": 31,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        },
+        {
+            "name": "Ribbbons_Door-Fwd-Anim",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 2,
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": 2,
+                        "path": "rotation"
+                    }
+                },
+                {
+                    "sampler": 2,
+                    "target": {
+                        "node": 2,
+                        "path": "scale"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 28,
+                    "output": 32,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 28,
+                    "output": 33,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 28,
+                    "output": 34,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        },
+        {
+            "name": "Ribbons_Door-Rear-Anim",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 3,
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": 3,
+                        "path": "rotation"
+                    }
+                },
+                {
+                    "sampler": 2,
+                    "target": {
+                        "node": 3,
+                        "path": "scale"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 28,
+                    "output": 35,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 28,
+                    "output": 36,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 28,
+                    "output": 37,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.7.5",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    2.370842218399048,
+                    9.477267265319824,
+                    12.860241889953613
+                ],
+                "BoundingBoxMin": [
+                    -2.3947887420654297,
+                    -1.5466933250427246,
+                    -24.07511329650879
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 2
+            },
+            "ASOBO_normal_map_convention": {
+                "tangent_space_convention": "DirectX"
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 192912,
+            "byteOffset": 0,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1572336,
+            "byteStride": 36,
+            "byteOffset": 192912,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 324,
+            "byteOffset": 1765248
+        },
+        {
+            "buffer": 0,
+            "byteLength": 972,
+            "byteOffset": 1765572
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1296,
+            "byteOffset": 1766544
+        },
+        {
+            "buffer": 0,
+            "byteLength": 972,
+            "byteOffset": 1767840
+        },
+        {
+            "buffer": 0,
+            "byteLength": 972,
+            "byteOffset": 1768812
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1296,
+            "byteOffset": 1769784
+        },
+        {
+            "buffer": 0,
+            "byteLength": 972,
+            "byteOffset": 1771080
+        },
+        {
+            "buffer": 0,
+            "byteLength": 972,
+            "byteOffset": 1772052
+        },
+        {
+            "buffer": 0,
+            "byteLength": 1296,
+            "byteOffset": 1773024
+        },
+        {
+            "buffer": 0,
+            "byteLength": 972,
+            "byteOffset": 1774320
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_asset_optimized",
+        "ASOBO_normal_map_convention"
+    ],
+    "materials": [
+        {
+            "name": "Ribbon2",
+            "alphaMode": "BLEND",
+            "occlusionTexture": {
+                "index": 1
+            },
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 0
+                },
+                "metallicRoughnessTexture": {
+                    "index": 1
+                }
+            },
+            "extensions": {
+                "ASOBO_material_blend_gbuffer": {
+                    "baseColorBlendFactor": 1,
+                    "emissiveBlendFactor": 0,
+                    "metallicBlendFactor": 1,
+                    "occlusionBlendFactor": 0.6,
+                    "roughnessBlendFactor": 0.75,
+                    "normalBlendFactor":0
+                },
+                "ASOBO_material_draw_order": {
+                    "drawOrderOffset": 12
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 0,
+                        "NORMAL": 1,
+                        "POSITION": 2,
+                        "TANGENT": 3,
+                        "TEXCOORD_0": 4,
+                        "TEXCOORD_1": 5
+                    },
+                    "indices": 6,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 154,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Ribbons_Door-Cargo"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 7,
+                        "NORMAL": 8,
+                        "POSITION": 9,
+                        "TANGENT": 10,
+                        "TEXCOORD_0": 11,
+                        "TEXCOORD_1": 12
+                    },
+                    "indices": 13,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 31270,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Ribbons_Fuse"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 14,
+                        "NORMAL": 15,
+                        "POSITION": 16,
+                        "TANGENT": 17,
+                        "TEXCOORD_0": 18,
+                        "TEXCOORD_1": 19
+                    },
+                    "indices": 20,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 318,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Ribbbons_Door-Fwd"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 21,
+                        "NORMAL": 22,
+                        "POSITION": 23,
+                        "TANGENT": 24,
+                        "TEXCOORD_0": 25,
+                        "TEXCOORD_1": 26
+                    },
+                    "indices": 27,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 410,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "Ribbons_Door-Rear"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                -1.9689691066741943,
+                0.9521071314811707,
+                5.4972968101501465
+            ],
+            "mesh": 0,
+            "name": "Ribbons_Cargo"
+        },
+        {
+            "mesh": 1,
+            "name": "Ribbons_Fuse"
+        },
+        {
+            "translation": [
+                1.521816611289978,
+                1.9051718711853027,
+                8.474589347839355
+            ],
+            "mesh": 2,
+            "name": "Ribbbons_Door-Fwd"
+        },
+        {
+            "translation": [
+                -1.489198088645935,
+                2.0375592708587646,
+                -16.10403060913086
+            ],
+            "mesh": 3,
+            "name": "Ribbons_Door-Rear"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "name": "Scene",
+            "nodes": [
+                0,
+                1,
+                2,
+                3
+            ]
+        }
+    ],
+    "textures": [
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 0
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 1
+                }
+            }
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 1775292,
+            "uri": "rivet-mesh.bin"
+        }
+    ],
+    "images": [
+        {
+            "uri": "A320NEO_AIRFRAME_RIBBONS2_ALBD.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "A320NEO_AIRFRAME_RIBBONS2_COMP.PNG.DDS",
+            "extras": "ASOBO_image_converted_meta"
+        }
+    ],
+    "samplers": [
+        {
+            "magFilter": 9729,
+            "minFilter": 9987
+        }
+    ]
+}
