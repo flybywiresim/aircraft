@@ -1,7 +1,7 @@
 import EWDMessages from '@instruments/common/EWDMessages';
 import { useSimVar } from '@instruments/common/simVars';
 import React from 'react';
-import FormattedFwcText from './MessageParser';
+import FormattedFwcText from './FormattedFwcText';
 import padCode from './PadCode';
 
 interface DisplayProps {
