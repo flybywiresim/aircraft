@@ -108,7 +108,7 @@ const PseudoFWC: React.FC = () => {
     /* ANTI-ICE */
     const [eng1AntiIce] = useSimVar('ENG ANTI ICE:1', 'bool', 500);
     const [eng2AntiIce] = useSimVar('ENG ANTI ICE:2', 'bool', 500);
-    const [wingAntiIce] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_WING_Pressed', 'bool', 500);
+    const [wingAntiIce] = useSimVar('STRUCTURAL DEICE SWITCH', 'bool', 500);
     const [icePercentage] = useSimVar('STRUCTURAL ICE PCT', 'percent over 100', 500);
     const [tat] = useSimVar('TOTAL AIR TEMPERATURE', 'celsius', 1000);
     const [inCloud] = useSimVar('AMBIENT IN CLOUD', 'boolean', 1000);
@@ -941,7 +941,7 @@ const PseudoFWC: React.FC = () => {
             flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
             simVarIsActive: !!(adirsRemainingAlignTime >= 240 && [adiru1State, adiru2State, adiru3State].every((a) => a === 1)),
             whichCodeToReturn: [
-                adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
+                adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 && engine1State < 4) || (engine2State > 0 && engine2State < 4)),
             ],
             codesToReturn: ['000003001', '000003002', '000003003', '000003004', '000003005', '000003006', '000003007', '000003008'],
             memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
@@ -953,7 +953,7 @@ const PseudoFWC: React.FC = () => {
             flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
             simVarIsActive: !!(adirsRemainingAlignTime > 0 && adirsRemainingAlignTime < 240 && [adiru1State, adiru2State, adiru3State].every((a) => a === 1)),
             whichCodeToReturn: [
-                adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
+                adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 && engine1State < 4) || (engine2State > 0 && engine2State < 4)),
             ],
             codesToReturn: ['000003101', '000003102', '000003103', '000003104', '000003105', '000003106', '000003107', '000003108'],
             memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
