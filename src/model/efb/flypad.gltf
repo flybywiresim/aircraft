@@ -505,7 +505,10 @@
             "alphaMode": "BLEND",
             "normalTexture": { "index": 0 },
             "occlusionTexture": { "index": 2 },
-            "pbrMetallicRoughness": { "baseColorTexture": { "index": 1 }, "metallicRoughnessTexture": { "index": 2 } }
+            "pbrMetallicRoughness": {
+                "baseColorTexture": { "index": 1 },
+                "metallicRoughnessTexture": { "index": 2 }
+            }
         },
         { "name": "$EFB" },
         {
