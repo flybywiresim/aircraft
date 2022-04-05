@@ -941,7 +941,7 @@ const PseudoFWC: React.FC = () => {
             flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
             simVarIsActive: !!(adirsRemainingAlignTime >= 240 && [adiru1State, adiru2State, adiru3State].every((a) => a === 1)),
             whichCodeToReturn: [
-                adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
+                adirsMessage1(adirsRemainingAlignTime, (engine1State > 0 && engine1State < 4) || (engine2State > 0 && engine2State < 4)),
             ],
             codesToReturn: ['000003001', '000003002', '000003003', '000003004', '000003005', '000003006', '000003007', '000003008'],
             memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
@@ -953,7 +953,7 @@ const PseudoFWC: React.FC = () => {
             flightPhaseInhib: [3, 4, 5, 6, 7, 8, 9, 10],
             simVarIsActive: !!(adirsRemainingAlignTime > 0 && adirsRemainingAlignTime < 240 && [adiru1State, adiru2State, adiru3State].every((a) => a === 1)),
             whichCodeToReturn: [
-                adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 || engine2State > 0)),
+                adirsMessage2(adirsRemainingAlignTime, (engine1State > 0 && engine1State < 4) || (engine2State > 0 && engine2State < 4)),
             ],
             codesToReturn: ['000003101', '000003102', '000003103', '000003104', '000003105', '000003106', '000003107', '000003108'],
             memoInhibit: !!(tomemo === 1 || ldgmemo === 1),
