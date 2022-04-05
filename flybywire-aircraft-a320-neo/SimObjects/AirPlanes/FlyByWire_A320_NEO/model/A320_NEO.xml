@@ -247,6 +247,18 @@
                 <ID>8</ID>
                 <NODE_ID>GROUND_GPUPIPE</NODE_ID>
             </UseTemplate>
+            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+                <ID>0</ID>
+                <ANIM_NAME>Ribbbons_Door-Fwd-Anim</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+                <ID>3</ID>
+                <ANIM_NAME>Ribbons_Door-Rear-Anim</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+                <ID>5</ID>
+                <ANIM_NAME>Ribbons_Cargo-Anim</ANIM_NAME>
+            </UseTemplate>
         </Component>
         <Component ID="LANDING_FX">
 			<UseTemplate Name="ASOBO_WET_LG_GR_LANDING_FX">
