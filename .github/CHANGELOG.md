@@ -235,6 +235,7 @@
 1. [EIS] Implement display switching - @tracernz (Mike)
 1. [FMGC] Automatic airway waypoint intersection - @tracernz (Mike)
 1. [FMGC] Add runway-by-itself approaches - @tracernz (Mike)
+1. [EFB] Presets for Lighting and Aircraft states - @frankkopp (Frank Kopp)
 
 ## 0.7.0
 

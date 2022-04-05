@@ -1,0 +1,167 @@
+$button-spacing: 7px;
+
+.simple-keyboard {
+  @apply text-theme-text;
+}
+.hg-rows {
+  height: 420px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  overflow: hidden;
+}
+.hg-theme-default {
+  @apply bg-theme-body;
+  border-radius: 5px;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 5px;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  width: 100%;
+}
+.hg-theme-default .hg-button span {
+  pointer-events: none;
+  @apply text-2xl;
+}
+.hg-theme-default button.hg-button {
+  border-width: 0;
+  font-size: inherit;
+  outline: 0;
+}
+.hg-theme-default .hg-button {
+  display: inline-block;
+  flex-grow: 1;
+}
+.hg-theme-default .hg-row {
+  display: flex;
+}
+.hg-theme-default .hg-row:not(:last-child) {
+  margin-bottom: $button-spacing;
+}
+.hg-theme-default .hg-row .hg-button:not(:last-child) {
+  margin-right: $button-spacing;
+}
+.hg-theme-default .hg-row .hg-button-container {
+  margin-right: $button-spacing;
+}
+.hg-theme-default .hg-row > div:last-child {
+  margin-right: 0;
+}
+.hg-theme-default .hg-row .hg-button-container {
+  display: flex;
+}
+.hg-row {
+    height: 80px;
+}
+.hg-row:first-child {
+    height: 70px;
+}
+.hg-theme-default .hg-button {
+  @apply bg-theme-accent;
+  align-items: center;
+  border-radius: 7px;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  padding: 5px;
+}
+.hg-theme-default .hg-button.hg-standardBtn {
+  width: 20px;
+}
+.hg-theme-default .hg-button.hg-activeButton {
+  @apply bg-theme-highlight;
+}
+.hg-theme-default.hg-layout-numeric .hg-button {
+  align-items: center;
+  display: flex;
+  height: 60px;
+  justify-content: center;
+  width: 33.3%;
+}
+.hg-theme-default .hg-button.hg-button-numpadadd,
+.hg-theme-default .hg-button.hg-button-numpadenter {
+  height: 85px;
+}
+.hg-theme-default .hg-button.hg-button-numpad0 {
+  width: 105px;
+}
+.hg-theme-default .hg-button.hg-button-com {
+  max-width: 85px;
+}
+.hg-theme-default .hg-button.hg-standardBtn.hg-button-at {
+  max-width: 45px;
+}
+.hg-theme-default .hg-button.hg-selectedButton {
+  //   background: rgba(5, 25, 70, 0.53);
+  //   color: #00ff2a;
+}
+.hg-theme-default .hg-button.hg-standardBtn[data-skbtn=".com"] {
+  max-width: 90px;
+}
+.hg-theme-default .hg-button.hg-standardBtn[data-skbtn="@"] {
+  max-width: 90px;
+}
+.hg-candidate-box {
+  @apply bg-theme-accent;
+  @apply border-2 border-theme-highlight;
+  border-radius: 5px;
+  display: inline-flex;
+  margin-top: -10px;
+  max-width: 100vw;
+  position: absolute;
+  transform: translateY(-100%);
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+ul.hg-candidate-box-list {
+  @apply text-4xl text-theme-text;
+  display: flex;
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+li.hg-candidate-box-list-item {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+li.hg-candidate-box-list-item:hover {
+  background: rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+li.hg-candidate-box-list-item:active {
+  background: rgba(0, 0, 0, 0.2);
+}
+.hg-candidate-box-prev:before {
+  content: "◄";
+}
+.hg-candidate-box-next:before {
+  content: "►";
+}
+.hg-candidate-box-next,
+.hg-candidate-box-prev {
+  @apply bg-theme-highlight text-theme-unselected;
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  padding: 0 10px;
+}
+.hg-candidate-box-next {
+  border-bottom-right-radius: 5px;
+  border-top-right-radius: 5px;
+}
+.hg-candidate-box-prev {
+  border-bottom-left-radius: 5px;
+  border-top-left-radius: 5px;
+}
+.hg-candidate-box-btn-active {
+  @apply text-theme-text;
+}
