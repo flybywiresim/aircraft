@@ -1,0 +1,509 @@
+{
+  "AirTrafficControl": {
+    "Active": "Aktywny",
+    "ChangeATISATCSourceButton": "Change ATIS/ATC source",
+    "ConnectHoppieACARS": "Połącz Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "Brak dostępnej informacji dla tej częstotliwości",
+    "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
+    "SetActive": "Ustaw jako aktywną",
+    "SetStandby": "Ustaw jako Oczekującą",
+    "Standby": "Oczekująca",
+    "Title": "Kontrola Ruchu Lotniczego"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Czy na pewno chcesz zresetować wszystkie checklisty?",
+    "AreYouSureYouWantToResetChecklists": "Czy na pewno chcesz zresetować wszystkie checklisty?",
+    "ChecklistResetWarning": "Ostrzeżenie o resecie checklisty",
+    "MarkChecklistAsComplete": "Oznacz checklistę jako ukończoną",
+    "MarkItemAsComplete": "Oznacz element jako ukończony",
+    "ProceedToNextChecklist": "Przejdź do następnej checklisty",
+    "ResetAll": "Zresetuj Wszystko",
+    "ResetChecklist": "Zresetuj Checklistę",
+    "TheLastChecklistIsComplete": "Ostatnia checklista została ukończona",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Istnieją pozostałe elementy samo wypełniającej się checklisty, które nie zostały jeszcze ukończone",
+    "Title": "Checklisty"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Brak Odpowiednich Checklist",
+        "Title": "Checklisty"
+      },
+      "GoToPage": "Idź do strony",
+      "Maintenance": {
+        "NoActiveFailures": "Brak Aktywnych Awarii",
+        "Title": "Obsługa techniczna"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Brak Przypiętych Chartów",
+        "Title": "Przypięte Charty"
+      },
+      "TT": {
+        "RearrangeWidgets": "Zmień Rozmieszczenie Widżetów"
+      },
+      "Title": "Istotne Informacje",
+      "Weather": {
+        "AirPressure": "Ciśnienie Atmosferyczne",
+        "DewPoint": "Punkt Rosy",
+        "IcaoInvalid": "Błędny kod ICAO lub brak dostępnych danych METAR",
+        "Loading": "Wczytywanie",
+        "MetarParsingError": "Odebrany METAR nie może zostać przetworzony",
+        "NoIcaoProvided": "Nie podano kodu ICAO",
+        "Raw": "Źródłowy",
+        "TT": {
+          "SwitchToIconView": "Przełącz do Widoku Ikon",
+          "SwitchToRawMetarView": "Przełącz do Widoku Źródłowego METAR"
+        },
+        "Temperature": "Temperatura",
+        "Title": "Pogoda",
+        "WindSpeed": "Prędkość Wiatru"
+      }
+    },
+    "Title": "Ekran Główny",
+    "YourFlight": {
+      "Alternate": "Lotnisko Zapasowe",
+      "AverageWind": "Średni Wiatr",
+      "CompanyRoute": "Trasa Przewoźnika",
+      "CostIndex": "Cost Index",
+      "CruiseAlt": "Wysokość Przelotowa",
+      "ImportSimBriefData": "Importuj Dane z SimBrief",
+      "Route": "Trasa",
+      "SimBriefDataNotYetLoaded": "Dane z SimBrief nie zostały jeszcze załadowane.",
+      "Title": "Twój Lot",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "Importuj Dane z SimBrief",
+      "TT": {
+        "IncreaseFontSize": "Zwiększ Rozmiar Czcionki",
+        "ReduceFontSize": "Zmniejsz Rozmiar Czcionki"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Nie zaimportowałeś jeszcze żadnych danych SimBrief."
+    },
+    "Overview": {
+      "Engines": "Silniki",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "Maksymalna Ilość Ładunku",
+      "MaximumFuelCapacity": "Maksymalna Ilość Paliwa",
+      "MaximumPassengers": "Maksymalna Liczba Pasażerów",
+      "Model": "Model",
+      "Range": "Zasięg",
+      "Title": "Przegląd Danych"
+    },
+    "Title": "Odprawa"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Komfort"
+    },
+    "Compact": {
+      "Title": "Zwarty"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Pełna symulacja poniższych awarii nie jest jeszcze gwarantowana.",
+    "Search": "Szukaj",
+    "Title": "Awarie"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Zbiornik Środkowy",
+      "Completed": "Ukończono",
+      "Defueling": "Usuwanie Paliwa",
+      "EstimatedDuration": "Szacowany czas trwania (minuty)",
+      "EstimatedTime": "Estimated Time",
+      "LeftInnerTank": "Lewy Wewnętrzny Zbiornik",
+      "LeftOuterTank": "Lewy Zewnętrzny Zbiornik",
+      "ReadyToStart": "Gotowe Do Rozpoczęcia",
+      "Refuel": "Tankowanie",
+      "RefuelTime": "Czas Tankowania",
+      "Refueling": "Tankowanie",
+      "RightInnerTank": "Prawy Wewnętrzny Zbiornik",
+      "RightOuterTank": "Prawy Zewnętrzny Zbiornik",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Samolot musi być całkowicie wyłączony, by móc zmienić tempo tankowania.",
+        "FillBlockFuelFromSimBrief": "Zatankuj Ilość Paliwa z Simbrief"
+      },
+      "Title": "Paliwo",
+      "TotalFuel": "Paliwo Łącznie",
+      "Unavailable": "Niedostępny"
+    },
+    "Pushback": {
+      "Title": "Wypychanie"
+    },
+    "Services": {
+      "BaggageTruck": "Ciężarówka Bagażowa",
+      "CateringTruck": "Ciężarówka Gastronomiczna",
+      "DoorAft": "Drzwi Rufowe",
+      "DoorFwd": "Przednie Drzwi",
+      "ExternalPower": "Zewnętrzne Zasilanie",
+      "FuelTruck": "Cysterna z Paliwem",
+      "JetBridge": "Rękaw",
+      "Title": "Obsługa"
+    },
+    "Title": "Obsługa Naziemna"
+  },
+  "Modals": {
+    "Cancel": "Anuluj",
+    "Confirm": "Potwierdź",
+    "Okay": "OK"
+  },
+  "NavigationAndCharts": {
+    "All": "Wszystkie",
+    "Altn": "Zapasowe",
+    "ExitFullscreenMode": "Wyłącz Tryb Pełnoekranowy",
+    "From": "Z",
+    "LocalFiles": {
+      "Both": "Obydwa",
+      "EstablishingConnection": "Łączenie",
+      "FailedToEstablishConnection": "Nie udało się nawiązać połączenia.",
+      "FileName": "Nazwa Pliku",
+      "Image": "Zdjęcie",
+      "Pdf": "PDF",
+      "Retry": "Ponów",
+      "Title": "Pliki Lokalne"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Lotnisko Nie Istnieje",
+      "AuthenticateWithNavigraph": "Uwierzytelnij za pomocą Navigraph",
+      "InsufficientEnv": "Niewłaściwy Plik .env",
+      "IntoYourBrowserAndEnterTheCodeBelow": "w twojej przeglądarce i wprowadź poniższy kod\n",
+      "NoAirportSelected": "Nie Wybrano Lotniska",
+      "ResetNavigraphAuthentication": "Resetuj Uwierzytelnienie Navigraph",
+      "ScanTheQrCodeOrOpen": "Zeskanuj kod QR lub Otwórz",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Usuń",
+      "Edit": "Edytuj",
+      "NoItemsFound": "Nie Znaleziono Elementów",
+      "SearchPlaceholder": "Szukaj",
+      "ShowingChartsFromAllProviders": "Wyświetlanie Map od Wszystkich Dostawców",
+      "SortMethods": {
+        "AlphabeticalAZ": "Alfabetycznie - A -> Z",
+        "AlphabeticalZA": "Alfabetycznie - Z -> A",
+        "FirstAccessed": "Pierwszy Dostęp",
+        "LastAccessed": "Ostatnio Używane",
+        "None": "Brak"
+      },
+      "TT": {
+        "ChangeChartProvider": "Zmień Dostawcę Map",
+        "ChangeChartSortMethod": "Zmień Metodę Sortowania Map",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+      },
+      "Title": "Przypięte Charty",
+      "View": "Widok"
+    },
+    "PleaseWait": "Proszę Czekać",
+    "ShowingAllItems": "Wyświetlanie Wszystkich Pozycji",
+    "TT": {
+      "FitChartToHeight": "Dopasuj do Wysokości",
+      "FitChartToWidth": "Dopasuj do Szerokości",
+      "ResetMovement": "Zresetuj Ruch",
+      "RotateLeft45Degrees": "Obróć w Lewo o 45 Stopni",
+      "RotateRight45Degrees": "Obróć w Prawo o 45 Stopni",
+      "ZoomIn": "Przybliż",
+      "ZoomOut": "Oddal"
+    },
+    "ThereAreNoChartsToDisplay": "Brak Map do Wyświetlenia",
+    "ThereIsNoChartToDisplay": "Brak Map do Wyświetlenia",
+    "Title": "Nawigacja i Mapy",
+    "To": "Do"
+  },
+  "Performance": {
+    "Data": "Dane",
+    "Landing": {
+      "AirportIcao": "Kod ICAO Lotniska",
+      "ApproachSpeed": "Prędkość Podejścia",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "Autoland",
+      "Calculate": "Oblicz",
+      "Clear": "Wyczyść",
+      "DropDownNo": "Nie",
+      "DropDownYes": "Tak",
+      "FillDataFrom": "Wypełnij dane z",
+      "FlapsConfiguration": "Konfiguracja Klap",
+      "Low": "Nisko",
+      "MaximumManual": "Maksymalnie Manualne",
+      "Medium": "Średnio",
+      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
+      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
+      "OverweightProcedure": "Procedura Overweight",
+      "Qnh": "QNH",
+      "ReverseThrust": "Ciąg Wsteczny",
+      "RunwayAltitude": "Wysokość Pasa",
+      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayCondition": "Stan Pasa",
+      "RunwayHeading": "Kierunek Pasa",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "LDA Pasa",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "Nachylenie Pasa",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Musisz wprowadzić kod ICAO, aby pobrać dane METAR",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Musisz wczytać dane SimBrief, aby móc automatycznie wypełnić pola"
+      },
+      "Temperature": "Temperatura",
+      "Title": "Lądowanie",
+      "UnitFt": "ft",
+      "UnitMeter": "m",
+      "Weight": "Masa",
+      "WindDirection": "Kierunek Wiatru",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Siła Wiatru",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "Synchronizacja",
+    "Title": "Kalkulator",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Kąt",
+        "CurrentAltitude": "Obecna Wysokość",
+        "Distance": "Dystans",
+        "GroundSpeed": "Prędkość Względem Ziemi",
+        "TargetAltitude": "Wysokość Docelowa",
+        "Title": "Dane",
+        "UnitAngleDegrees": "stopni",
+        "UnitFeet": "stóp",
+        "UnitFtMin": "stóp/min",
+        "UnitNM": "NM",
+        "VerticalSpeed": "Prędkość Wznoszenia/Opadania"
+      },
+      "GroundSpeed": {
+        "Add": "Dodaj",
+        "FetchingSpeedFromSimulator": "Pobieranie Prędkości z Symulatora",
+        "GroundSpeed": "Prędkość Względem Ziemi",
+        "ManualInput": "Ręczne Wprowadzenie",
+        "MinAltitude": "Wysokość Minimalna",
+        "RemoveLast": "Usuń Ostatni",
+        "Sync": "Synchronizuj",
+        "Title": "Prędkość Względem Ziemi",
+        "UnitKnots": "węzłów",
+        "UnitKt": "kt"
+      },
+      "Result": {
+        "BeforeTarget": "przed celem",
+        "DesiredDescentAngle": "Pożądany Kąt Opadania",
+        "DesiredVerticalSpeed": "Pożądana Prędkość Opadania",
+        "StartYourDescentAbout": "Rozpocznij zniżanie około",
+        "Title": "Wynik"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Desynchronizuj dane wejściowe z aktualną wysokością samolotu",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Synchronizuj Dane Wejściowe z Aktualną Wysokością Samolotu"
+      },
+      "Title": "Top of Descent"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Anuluj",
+      "ColdDark": "Cold & Dark",
+      "ConfirmationDialogMsg": "Please confirm loading of preset.",
+      "CurrentProcedureStep": "Current Procedure Step",
+      "PleaseConfirmLoadingOfPreset": "Please confirm loading of preset.",
+      "ReadyPushback": "Ready for Pushback",
+      "ReadyTakeoff": "Ready for Takeoff",
+      "ReadyTaxi": "Ready for Taxi",
+      "SelectAPresetToLoad": "Select a Preset to Load",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "The aircraft must be on the ground to load a preset.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "The aircraft must be on the ground to load a preset.",
+      "Title": "Aircraft States",
+      "Turnaround": "Turnaround"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Aircraft Needs to be Powered to Load Presets",
+      "AircraftNeedsToBePoweredToSavePresets": "Aircraft Needs to Be Powered to Save Presets",
+      "LoadPreset": "Load Preset",
+      "LoadingPreset": "Loading Preset",
+      "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
+      "NoName": "No Name",
+      "PleaseConfirmSavingPreset": "Please Confirm Saving Preset",
+      "SavePreset": "Save Preset",
+      "SavingPreset": "Saving Preset",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Select an interior lighting preset to load or save.",
+      "TT": {
+        "AircraftMustBePowered": "Aircraft Must be Powered",
+        "ClickTextToChangeThePresetsName": "Click Text to Change the Preset's Name",
+        "LoadThisPreset": "Load This Preset",
+        "SaveTheCurrentLightingLevels": "Save the Current Lighting Levels"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "The aircraft must be powered for interior lighting presets.",
+      "Title": "Interior Lighting"
+    },
+    "Title": "Presets"
+  },
+  "Pushback": {
+    "Backward": "Backward",
+    "CallTug": "Call Tug",
+    "Forward": "Forward",
+    "Halt": "Halt",
+    "ParkingBrake": {
+      "Off": "Off",
+      "On": "On",
+      "Title": "Parking Brake"
+    },
+    "TugDirection": "Tug Direction",
+    "TugSpeed": "Tug Speed"
+  },
+  "Settings": {
+    "About": {
+      "Title": "About"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Acceleration Height (ft)",
+      "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
+      "IsisBaroUnit": "ISIS Baro Unit",
+      "IsisMetricAltitude": "ISIS Metric Altitude",
+      "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
+      "PaxSigns": "PAX Signs",
+      "RmpVhfSpacing": "RMP VHF Spacing",
+      "ThrustReductionHeight": "Thrust Reduction Height (ft)",
+      "Title": "Aircraft Options / Pin Programs",
+      "WeightUnit": "Weight Unit"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC Source",
+      "AutomaticallyImportSimBriefData": "Automatically Import SimBrief Data",
+      "Enable": "Enable",
+      "EnableTelex": "Enable TELEX",
+      "ErrorReporting": "Error Reporting",
+      "HoppieEnabled": "Hoppie enabled",
+      "HoppieUserId": "Hoppie User ID",
+      "MetarSource": "METAR Source",
+      "OptionalA32nxErrorReporting": "Optional A32NX Error Reporting",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "SimBriefUsernamePilotId": "SimBrief Username/Pilot ID",
+      "TafSource": "TAF Source",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE THIS FEATURE AT YOUR OWN RISK. To learn more about TELEX and the features it enables, please go to https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "TELEX Warning",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "There was an error validating your Hoppie-ID",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "You are able to opt into anonymous error reporting that will allow us to diagnose, monitor, and take care of issues at a faster rate. This feature is completely optional and we will never collect your personal data, but may allow you to more easily get support and have the issues you encounter fixed at a faster rate.",
+      "YourHoppieIdHasBeenRemoved": "Your Hoppie-ID has been removed",
+      "YourHoppieIdHasBeenValidated": "Your Hoppie-ID has been validated",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Your SimBrief PilotID has been validated and updated to"
+    },
+    "Audio": {
+      "Announcements": "Announcements",
+      "BoardingMusic": "Boarding Music",
+      "EngineInteriorVolume": "Engine Interior Volume",
+      "ExteriorMasterVolume": "Exterior Master Volume",
+      "PassengerAmbience": "Passenger Ambience",
+      "PtuAudibleInCockpit": "PTU Audible in Cockpit",
+      "Title": "Audio",
+      "WindInteriorVolume": "Wind Interior Volume"
+    },
+    "Fast": "Fast",
+    "Instant": "Instant",
+    "Real": "Real",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS Align Time",
+      "AutofillChecklists": "Autofill Checklists",
+      "BoardingTime": "Boarding Time",
+      "DmcSelfTestTime": "DMC Self Test Time",
+      "HomeCockpitMode": "Home Cockpit Mode",
+      "McduFocusTimeout": "MCDU Focus Timeout (seconds)",
+      "McduKeyboardInput": "MCDU Keyboard Input",
+      "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
+      "Title": "Realism"
+    },
+    "SimOptions": {
+      "Active": "Active",
+      "Auto": "Auto",
+      "Calibrate": "Calibrate",
+      "DefaultBarometerUnit": "Default Barometer Unit",
+      "DynamicRegistrationDecal": "Dynamic Registration Decal",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
+      "ExternalMcduServerPort": "External MCDU Server Port",
+      "Hpa": "hPa",
+      "Inactive": "Inactive",
+      "LoadOnly": "Load Only",
+      "None": "None",
+      "Off": "Off",
+      "Save": "Save",
+      "SyncMsfsFlightPlan": "Sync MSFS Flight Plan",
+      "ThrottleDetents": "Throttle Detents",
+      "Title": "Sim Options",
+      "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Apply",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Are you sure that you want to reset your current throttle configuration settings to their default states? This action is irreversible.",
+      "Axis": "Axis",
+      "Back": "Back",
+      "ConfigureEnd": "Configure End",
+      "ConfigureStart": "Configure Start",
+      "CurrentValue": "Current Value",
+      "Deadband": "Deadband",
+      "ErrorOverlapMsg": "overlaps with",
+      "IndependentAxis": "Independent Axis",
+      "LoadFromFile": "Load from File",
+      "PleaseEnterAValidDeadzone": "Please enter a valid deadzone",
+      "ResetToDefaults": "Reset to Defaults",
+      "ReverseFull": "Reverse Full",
+      "ReverseIdle": "Reverse Idle",
+      "ReverserOnAxis": "Reverser On Axis",
+      "SaveAndApply": "Save and Apply",
+      "SetFromThrottle": "Set from Throttle",
+      "ThrottleConfigurationReset": "Throttle Configuration Reset"
+    },
+    "Title": "Settings",
+    "Unrealistic": "Unrealistic",
+    "flyPad": {
+      "AutoBrightness": "Auto Brightness",
+      "AutomaticallyShowOnscreenKeyboard": "Automatically Show Onscreen Keyboard",
+      "Blue": "Blue",
+      "Brightness": "Brightness",
+      "Dark": "Dark",
+      "Language": "Language",
+      "Light": "Light",
+      "Local": "Local",
+      "LocalTimeFormat": "Local Time Format",
+      "OnscreenKeyboardLayout": "Onscreen Keyboard Layout",
+      "ShowColoredRawMetar": "Show Colored Raw METAR",
+      "ShowStatusBarFlightProgressIndicator": "Show Status Bar Flight Progress Indicator",
+      "Theme": "Theme",
+      "TimeDisplayed": "Time Displayed",
+      "Title": "flyPad",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24h",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC and Local"
+    }
+  },
+  "Settings.flyPad.BatteryLifeEnabled": "Battery Life Simulated",
+  "StatusBar": {
+    "Apr": "Apr",
+    "Aug": "Aug",
+    "Dec": "Dec",
+    "Feb": "Feb",
+    "Fri": "Fri",
+    "Jan": "Jan",
+    "Jul": "Jul",
+    "Jun": "Jun",
+    "Mar": "Mar",
+    "May": "May",
+    "Mon": "Mon",
+    "Nov": "Nov",
+    "Oct": "Oct",
+    "Sat": "Sat",
+    "Sep": "Sep",
+    "Sun": "Sun",
+    "TT": {
+      "ConnectedToLocalApi": "Connected to Local API",
+      "DisconnectedFromLocalApi": "Disconnected from Local API",
+      "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB"
+    },
+    "Thu": "Thu",
+    "Tue": "Tue",
+    "Wed": "Wed"
+  }
+}
