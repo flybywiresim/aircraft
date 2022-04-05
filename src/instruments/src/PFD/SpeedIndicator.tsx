@@ -153,6 +153,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     private airSpeed = new Arinc429Word(0);
 
+    private vMax = 0;
+
     private setOutline() {
         let airspeedValue: number;
         if (this.airSpeed.isFailureWarning() || (this.airSpeed.isNoComputedData() && !this.onGround)) {
@@ -212,6 +214,24 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         pf.on('speedAr').handle((airSpeed) => {
             this.airSpeed = airSpeed;
             this.setOutline();
+            this.vMaxRef.forEach((el, index) => {
+                const isInRange = this.vMax <= this.speedSub.get() + DisplayRange;
+                if (isInRange) {
+                    let elementValue = this.vMax + 5.040 * index;
+
+                    let offset = -elementValue * DistanceSpacing / ValueSpacing;
+                    // if the lowest bug is below the speedtape place it on top again
+                    if (-offset < this.speedSub.get() - 45) {
+                        elementValue = (this.vMax + 5.040 * (index + 30));
+
+                        offset = -elementValue * DistanceSpacing / ValueSpacing;
+                    }
+                    el.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
+                    el.instance.style.visibility = 'visible';
+                } else {
+                    el.instance.style.visibility = 'hidden';
+                }
+            });
         });
 
         pf.on('alphaProt').withPrecision(2).handle((a) => {
@@ -224,12 +244,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             this.lastAlphaProtSub.set(a);
         });
 
-        pf.on('vMax').withPrecision(2).handle((vMax) => {
-            this.vMaxRef.forEach((el, index) => {
-                const elementValue = vMax + 5.040 * index;
-                const offset = -elementValue * DistanceSpacing / ValueSpacing;
-                el.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-            });
+        pf.on('vMax').whenChanged().handle((vMax) => {
+            this.vMax = vMax;
         });
 
         // showBars replacement
@@ -266,7 +282,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     private createVMaxBarberPole() {
         const path: SVGGElement[] = [];
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < 30; i++) {
             const vMaxRef = FSComponent.createRef<SVGPathElement>();
             path.push(
                 <path ref={vMaxRef} class="BarRed" d="m22.053 78.381v-2.6206m-3.022 5.0397h3.022v-2.4191h-3.022z" />,
