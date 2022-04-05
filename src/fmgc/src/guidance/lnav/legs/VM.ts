@@ -8,7 +8,6 @@ import { SegmentType } from '@fmgc/wtsdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 
 /**
@@ -53,14 +52,7 @@ export class VMLeg extends Leg {
         );
     }
 
-    private inboundGuidable: Guidable | undefined;
-
-    private outboundGuidable: Guidable | undefined;
-
-    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue, _previousGuidable: Guidable, _nextGuidable: Guidable) {
-        this.inboundGuidable = _previousGuidable;
-        this.outboundGuidable = _nextGuidable;
-
+    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
         this.predictedPath.length = 0;
         this.predictedPath.push(
             {

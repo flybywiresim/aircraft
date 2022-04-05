@@ -13,7 +13,6 @@ import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { GuidanceParameters, LateralPathGuidance } from '@fmgc/guidance/ControlLaws';
 import { ControlLaw } from '@shared/autopilot';
 import { Geometry } from '@fmgc/guidance/Geometry';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
@@ -70,11 +69,7 @@ export class HoldEntryTransition extends Transition {
         public nextLeg: HALeg | HFLeg | HMLeg,
         _predictWithCurrentSpeed: boolean = true, // TODO we don't need this?
     ) {
-        super();
-    }
-
-    get isNull(): boolean {
-        return this.entry === EntryType.Null;
+        super(previousLeg, nextLeg);
     }
 
     get distance(): NauticalMiles {
@@ -789,7 +784,7 @@ export class HoldEntryTransition extends Transition {
         });
     }
 
-    recomputeWithParameters(isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable): void {
+    recomputeWithParameters(isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue): void {
         // TODO only HX leg drives this
 
         const hxInbound = this.outboundCourse;
@@ -802,9 +797,6 @@ export class HoldEntryTransition extends Transition {
             return;
         }
 
-        this.previousLeg = previousGuidable as any;
-        this.nextLeg = nextGuidable as any;
-
         if (isActive && !this.frozen) {
             this.frozen = true;
         }
@@ -816,8 +808,11 @@ export class HoldEntryTransition extends Transition {
         if (!this.previousLeg || entryAngle >= -3 && entryAngle <= 3) {
             this.computeNullEntry();
             this.setHxEntry();
+            this.isNull = true;
             return;
         }
+
+        this.isNull = false;
 
         // parallel entry is always used when entering from opposite of hold course...
         // we give a 3 degree tolerance to allow for mag var, calculation errors etc.

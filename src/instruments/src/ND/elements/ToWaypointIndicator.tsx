@@ -53,14 +53,14 @@ export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ side })
                 <text x={-9} y={0} fontSize={25} className="White" textAnchor="end">{ident}</text>
             )}
 
-            {bearing && Number.isFinite(bearing) && (
+            {bearing && bearing !== -1 && Number.isFinite(bearing) && (
                 <>
                     <text x={54} y={0} fontSize={25} className="Green" textAnchor="end">{(Math.round(bearing)).toString().padStart(3, '0')}</text>
                     <text x={73} y={2} fontSize={25} className="Cyan" textAnchor="end">&deg;</text>
                 </>
             )}
 
-            {distance && Number.isFinite(distance) && (
+            {distance && distance !== -1 && Number.isFinite(distance) && (
                 <>
                     {distance < 20 ? (
                         <>
@@ -78,7 +78,7 @@ export const ToWaypointIndicator: FC<ToWaypointIndicatorProps> = memo(({ side })
                 </>
             )}
 
-            {utc && (
+            {eta !== -1 && utc && (
                 <text x={72} y={62} fontSize={25} className="Green" textAnchor="end">{utc}</text>
             )}
         </Layer>
