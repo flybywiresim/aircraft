@@ -1,0 +1,118 @@
+@import "../../style";
+@import "../../../Common/definitions";
+
+#main-bleed {
+
+    .PageTitle {
+        font-size: 28px !important;
+    }
+
+    text, tspan {
+        fill: $display-white;
+        stroke: none !important;
+
+        &.Small {
+            font-size:14px;
+        }
+
+        &.Standard {
+            font-size: 17px;
+        }
+
+        &.Medium {
+            font-size: 18px;
+        }
+
+        &.Large {
+            font-size: 20px;
+        }
+
+        &.Huge {
+            font-size: 26px;
+        }
+
+        &.Cyan {
+            fill: $display-cyan !important;
+        }
+
+        &.Green {
+            fill: $display-green !important;
+        }
+
+        &.Amber {
+            fill: $display-amber;
+        }
+
+        &.Red {
+            fill: $display-red;
+        }
+
+        &.Magenta {
+            fill: $display-magenta;
+        }
+
+        &.Center {
+            text-anchor: middle !important;
+        }
+
+        &.End {
+            text-anchor: end !important;
+        }
+    }
+
+    .GreyStroke {
+        fill: none;
+        stroke: $display-light-grey;
+    }
+
+    .WhiteStroke {
+        fill: none;
+        stroke: $display-white;
+    }
+
+    .Stroke1 {
+        stroke-width: 1;
+    }
+
+    .Stroke2 {
+        stroke-width: 2;
+    }
+
+    .Stroke3 {
+        stroke-width: 3 !important;
+    }
+
+    .LineCapRound {
+        stroke-linecap: round;
+    }
+
+    .GreenLine {
+        stroke: $display-green !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .AmberLine {
+        stroke: $display-amber !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .WhiteLine {
+        stroke: $display-white !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .BackgroundFill {
+        fill: $display-background !important;
+    }
+
+    .Show {
+        display: block;
+    }
+
+    .Hide {
+        display: none;
+    }
+}
