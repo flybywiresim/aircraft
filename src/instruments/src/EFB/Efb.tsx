@@ -109,7 +109,7 @@ const Efb = () => {
     const { showModal } = useModals();
 
     useEffect(() => {
-        document.documentElement.classList.add(`theme-${theme}`);
+        document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
     }, []);
 
     useEffect(() => {
