@@ -34,7 +34,7 @@ export const BleedPage: FC = () => {
     const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 1000);
     const aircraftOnGround: boolean = left1LandingGear === 1 || right1LandingGear === 1;
 
-    const [wingAntiIceOn] = useSimVar('L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_WING_Pressed', 'bool', 500);
+    const [wingAntiIceOn] = useSimVar('STRUCTURAL DEICE SWITCH', 'bool', 500);
 
     const groundAirSupplied = false;
 
