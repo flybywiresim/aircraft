@@ -52,7 +52,7 @@ export class FlowEventSync {
      * @param target always empty
      * @param args [0] the bus id [1] SyncDataPackage
      */
-    processEventsReceived(target, args) {
+    processEventsReceived(_target, args) {
         // identify if its a busevent
         if (args.length === 0 || args[0] !== FlowEventSync.EB_LISTENER_KEY) {
             return;

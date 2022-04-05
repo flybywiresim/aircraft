@@ -91,7 +91,7 @@ const NavigationDisplay: React.FC = () => {
 
     const [symbols, setSymbols] = useState<NdSymbol[]>([]);
 
-    useFlowSyncEvent(`A32NX_EFIS_${side}_SYMBOLS`, useCallback((topic, data) => {
+    useFlowSyncEvent(`A32NX_EFIS_${side}_SYMBOLS`, useCallback((_topic, data) => {
         if (data) {
             setSymbols(data);
         }
