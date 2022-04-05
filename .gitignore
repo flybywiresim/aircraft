@@ -60,6 +60,7 @@ node_modules
 /src/fdr2csv/*.exe
 /src/fbw/obj/
 /src/fdr2csv/build/
+/src/presets/obj/
 .env
 src/instruments/buildSrc/custom/*
 /flybywire-aircraft-a320-neo/MCDU SERVER/
