@@ -108,6 +108,8 @@ export interface PFDSimvars {
     autoBrakeDecel: boolean;
     fpaRaw: number;
     daRaw: number;
+    ls1Button: boolean;
+    ls2Button: boolean;
   }
 
 export enum PFDVars {
@@ -218,7 +220,8 @@ export enum PFDVars {
     autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
     fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
     daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
-
+    ls1Button = 'L:BTN_LS_1_FILTER_ACTIVE',
+    ls2Button = 'L:BTN_LS_2_FILTER_ACTIVE',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -265,6 +268,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['fdBank', { name: PFDVars.fdBank, type: SimVarValueType.Number }],
         ['fdPitch', { name: PFDVars.fdPitch, type: SimVarValueType.Number }],
         ['v1', { name: PFDVars.v1, type: SimVarValueType.Knots }],
+        ['vr', { name: PFDVars.vr, type: SimVarValueType.Knots }],
         ['fwcFlightPhase', { name: PFDVars.fwcFlightPhase, type: SimVarValueType.Number }],
         ['fmgcFlightPhase', { name: PFDVars.fmgcFlightPhase, type: SimVarValueType.Enum }],
         ['hasLoc', { name: PFDVars.hasLoc, type: SimVarValueType.Bool }],
@@ -276,7 +280,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['hasGlideslope', { name: PFDVars.hasGlideslope, type: SimVarValueType.Bool }],
         ['glideSlopeError', { name: PFDVars.glideSlopeError, type: SimVarValueType.Degree }],
         ['markerBeacon', { name: PFDVars.markerBeacon, type: SimVarValueType.Enum }],
-        ['vr', { name: PFDVars.vr, type: SimVarValueType.Knots }],
         ['isAltManaged', { name: PFDVars.isAltManaged, type: SimVarValueType.Bool }],
         ['targetSpeedManaged', { name: PFDVars.targetSpeedManaged, type: SimVarValueType.Knots }],
         ['vMax', { name: PFDVars.vMax, type: SimVarValueType.Number }],
@@ -331,7 +334,8 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['autoBrakeDecel', { name: PFDVars.autoBrakeDecel, type: SimVarValueType.Bool }],
         ['fpaRaw', { name: PFDVars.fpaRaw, type: SimVarValueType.Number }],
         ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
-
+        ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
+        ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
     ])
 
     public constructor(bus: EventBus) {

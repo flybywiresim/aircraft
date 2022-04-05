@@ -178,6 +178,8 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('autoBrakeDecel');
         this.simVarPublisher.subscribe('fpaRaw');
         this.simVarPublisher.subscribe('daRaw');
+        this.simVarPublisher.subscribe('ls1Button');
+        this.simVarPublisher.subscribe('ls2Button');
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
     }
