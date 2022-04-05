@@ -9,6 +9,8 @@ use uom::si::{
     f64::*,
     pressure::psi,
     ratio::{percent, ratio},
+    temperature_interval,
+    thermodynamic_temperature::kelvin,
 };
 
 use super::{ControllablePneumaticValve, PneumaticContainer, PneumaticValveSignal};
@@ -221,6 +223,8 @@ pub struct PneumaticContainerConnector {
 }
 impl PneumaticContainerConnector {
     const TRANSFER_SPEED: f64 = 5.;
+    const HEAT_TRANSFER_SPEED: f64 = 2.5;
+    const HEAT_TRANSFER_COEFF: f64 = 1e-2;
 
     pub fn new() -> Self {
         Self {
@@ -236,7 +240,7 @@ impl PneumaticContainerConnector {
         container_one: &mut impl PneumaticContainer,
         container_two: &mut impl PneumaticContainer,
     ) {
-        container_one.heat_conduction(context, container_two, self.transfer_speed_factor);
+        self.heat_conduction(context, container_one, container_two);
 
         let air_mass = container_one.get_mass_flow_for_equilibrium(container_two)
             * self.transfer_speed_factor
@@ -245,6 +249,26 @@ impl PneumaticContainerConnector {
         self.move_mass(container_one, container_two, air_mass);
 
         self.fluid_flow = -air_mass / context.delta_as_time();
+    }
+
+    /// Transfer heat between two containers depending on the temperature difference
+    fn heat_conduction(
+        &self,
+        context: &UpdateContext,
+        container_one: &mut impl PneumaticContainer,
+        container_two: &mut impl PneumaticContainer,
+    ) {
+        let temperature_gradient = TemperatureInterval::new::<temperature_interval::kelvin>(
+            container_one.temperature().get::<kelvin>()
+                - container_two.temperature().get::<kelvin>(),
+        );
+
+        let temperature_change = Self::HEAT_TRANSFER_COEFF
+            * temperature_gradient
+            * self.transfer_speed_factor
+            * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
+        container_one.update_temperature(-temperature_change);
+        container_two.update_temperature(temperature_change);
     }
 
     fn move_mass(
@@ -285,6 +309,9 @@ pub struct PneumaticExhaust {
     nominal_preload: Pressure,
 }
 impl PneumaticExhaust {
+    const HEAT_TRANSFER_SPEED: f64 = 2.5;
+    const HEAT_TRANSFER_COEFF: f64 = 1e-2;
+
     pub fn new(
         nominal_exhaust_speed: f64,
         leaking_exhaust_speed: f64,
@@ -306,11 +333,7 @@ impl PneumaticExhaust {
         from: &mut impl PneumaticContainer,
     ) {
         let mass_flow = if from.pressure() > self.pressure_preload {
-            from.heat_conduction_single(
-                context,
-                context.ambient_temperature(),
-                Ratio::new::<ratio>(1.),
-            );
+            Self::heat_conduction(context, from);
             from.get_mass_flow_for_target_pressure(
                 context.ambient_pressure(),
                 context.ambient_temperature(),
@@ -326,6 +349,18 @@ impl PneumaticExhaust {
         );
 
         self.fluid_flow = -mass_flow / context.delta_as_time();
+    }
+
+    /// Transfer heat to the container depending on the temperature difference.
+    fn heat_conduction(context: &UpdateContext, container: &mut impl PneumaticContainer) {
+        let temperature_gradient = TemperatureInterval::new::<temperature_interval::kelvin>(
+            container.temperature().get::<kelvin>() - context.ambient_temperature().get::<kelvin>(),
+        );
+
+        let temperature_change = Self::HEAT_TRANSFER_COEFF
+            * temperature_gradient
+            * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
+        container.update_temperature(-temperature_change);
     }
 
     pub fn fluid_flow(&self) -> MassRate {

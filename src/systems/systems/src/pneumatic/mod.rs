@@ -51,8 +51,6 @@ pub trait ControllablePneumaticValve: PneumaticValve {
 
 pub trait PneumaticContainer {
     const HEAT_CAPACITY_RATIO: f64 = 1.4;
-    const HEAT_TRANSFER_SPEED: f64 = 2.5;
-    const HEAT_TRANSFER_COEFF: f64 = 1e-2;
     const GAS_CONSTANT_DRY_AIR: f64 = 287.057005; // J / (kg * K) = GAS_CONSTANT / MOL_MASS_DRY_AIR
 
     fn pressure(&self) -> Pressure;
@@ -135,40 +133,6 @@ pub trait PneumaticContainer {
         } else {
             -other.get_mass_flow_for_equilibrium(self)
         }
-    }
-
-    /// Transfer heat between two containers depending on the temperature difference
-    fn heat_conduction(
-        &mut self,
-        context: &UpdateContext,
-        other: &mut impl PneumaticContainer,
-        transfer_factor: Ratio,
-    ) {
-        other.update_temperature(self.heat_conduction_single(
-            context,
-            other.temperature(),
-            transfer_factor,
-        ));
-    }
-
-    /// Transfer heat to the container depending on the temperature difference.
-    /// Returns the temperature difference which would be applied to the opposite container.
-    fn heat_conduction_single(
-        &mut self,
-        context: &UpdateContext,
-        temperature: ThermodynamicTemperature,
-        transfer_factor: Ratio,
-    ) -> TemperatureInterval {
-        let temperature_gradient = TemperatureInterval::new::<temperature_interval::kelvin>(
-            self.temperature().get::<kelvin>() - temperature.get::<kelvin>(),
-        );
-
-        let temperature_change = Self::HEAT_TRANSFER_COEFF
-            * temperature_gradient
-            * transfer_factor
-            * (1. - (-Self::HEAT_TRANSFER_SPEED * context.delta_as_secs_f64()).exp());
-        self.update_temperature(-temperature_change);
-        temperature_change
     }
 
     fn calc_new_pressure_and_temperature_for_mass_flow(
