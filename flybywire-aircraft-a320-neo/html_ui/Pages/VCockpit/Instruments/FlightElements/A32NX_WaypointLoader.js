@@ -96,6 +96,10 @@ class FacilityLoader {
 
         _data.icaoTrimed = _data.icao.trim();
 
+        if (type === 'A') {
+            this.addRunwayByItselfApproaches(_data);
+        }
+
         // After a "Coherent.call('LOAD_*', icao)" we get many responses received by "Coherent.on('Send*'") for the same facility.
         // The assumption is: The data is the same across the multiple receptions. If this does not hold, this approach needs to be reconsidered.
         // The idea is to
@@ -144,7 +148,11 @@ class FacilityLoader {
             case 'A':
                 return queueRawLoad('LOAD_AIRPORT', icao, 'A');
             case 'W':
-                return queueRawLoad('LOAD_INTERSECTION', icao, 'W');
+                if (icao.match(/^WXX[A-Z0-9]{4}CF[0-9]{2}[LCRT]?\s*$/)) {
+                    return this.loadRunwayCfFix(icao);
+                } else {
+                    return queueRawLoad('LOAD_INTERSECTION', icao, 'W');
+                }
             case 'V':
                 return Promise.all([queueRawLoad('LOAD_VOR', icao, 'V'), queueRawLoad('LOAD_INTERSECTION', icao, 'W')])
                     .then(facilities => {
@@ -1131,6 +1139,126 @@ class FacilityLoader {
                 console.log(elevation);
                 resolve(elevation * 3.2808);
             });
+        });
+    }
+
+    /**
+     *
+     * @param {RawAirport} rawAirport
+     */
+    addRunwayByItselfApproaches(rawAirport) {
+        const airportIdent = rawAirport.icao.substring(7, 11);
+        const airportRegion = 'XX';
+        /** @type {OneWayRunway[]} */
+        const runways = [];
+        rawAirport.runways.forEach((rawRunway) => {
+            const runway = Object.assign(new Runway, rawRunway);
+            runways.push(...runway.splitIfTwoWays());
+        });
+
+        runways.forEach((runway) => {
+            /** @type {RawProcedureLeg[]} */
+            const legs = [
+                {
+                    altDesc: 0,
+                    altitude1: 0,
+                    altitude2: 0,
+                    arcCenterFixIcao: '',
+                    course: runway.direction,
+                    distance: 0,
+                    distanceMinutes: false,
+                    fixIcao: `W${airportRegion}${airportIdent}CF${runway.designation}`, // TODO we have to make this fetchable! has to be a fix 5 NM before runway on runway course
+                    fixTypeFlags: 2 | 8, // IF, FAF
+                    flyOver: false,
+                    originIcao: '',
+                    rho: 0,
+                    speedRestriction: 0,
+                    theta: 0,
+                    trueDegrees: true,
+                    turnDirection: 0,
+                    type: 15, // IF
+                },
+                {
+                    altDesc: 0,
+                    altitude1: 0,
+                    altitude2: 0,
+                    arcCenterFixIcao: '',
+                    course: runway.direction,
+                    distance: 5,
+                    distanceMinutes: false,
+                    fixIcao: `R${airportRegion}${airportIdent}RW${runway.designation}`, // TODO we have to make this fetchable, but we don't have the region!
+                    fixTypeFlags: 4, // MAP
+                    flyOver: true,
+                    originIcao: '',
+                    rho: 0,
+                    speedRestriction: 0,
+                    theta: 0,
+                    trueDegrees: true,
+                    turnDirection: 0,
+                    type: 4, // CF
+                },
+            ];
+            /** @type {RawApproach} */
+            const approach = {
+                approachSuffix: '',
+                approachType: ApproachType.APPROACH_TYPE_UNKNOWN,
+                finalLegs: legs,
+                icaos: [],
+                missedLegs: [],
+                name: runway.designation,
+                rnavTypeFlags: 0,
+                runway: runway.designation,
+                runwayDesignator: runway.designator,
+                runwayNumber: runway.number,
+                transitions: [],
+            };
+
+            rawAirport.approaches.push(approach);
+        });
+    }
+
+    /** @param {string} icao */
+    loadRunwayCfFix(icao) {
+        return new Promise((resolve, reject) => {
+            const airportIcao = `A      ${icao.substring(3, 7)} `;
+            const runwayDesignation = icao.substring(9, 12).trim();
+            this.getFacilityRaw(airportIcao).then((rawAirport) => {
+                if (rawAirport) {
+                    const runways = [];
+                    rawAirport.runways.forEach((rawRunway) => {
+                        const runway = Object.assign(new Runway, rawRunway);
+                        runways.push(...runway.splitIfTwoWays());
+                    });
+                    /** @type {OneWayRunway} */
+                    const runway = runways.find((rw) => rw.designation === runwayDesignation);
+                    if (runway) {
+                        const cfFix = Avionics.Utils.bearingDistanceToCoordinates((runway.direction + 180) % 360, 5, runway.thresholdCoordinates.lat, runway.thresholdCoordinates.long);
+                        /** @type {RawIntersection} */
+                        const intersection = {
+                            city: rawAirport.city,
+                            icao: icao,
+                            lat: cfFix.lat,
+                            lon: cfFix.long,
+                            name: '',
+                            nearestVorDistance: 0,
+                            nearestVorFrequencyBCD16: 0,
+                            nearestVorFrequencyMHz: 0,
+                            nearestVorICAO: '',
+                            nearestVorMagneticRadial: 0,
+                            nearestVorTrueRadial: 0,
+                            nearestVorType: 0,
+                            region: '',
+                            routes: [],
+                            __Type: 'JS_FacilityIntersection',
+                        };
+                        resolve(intersection);
+                    } else {
+                        reject();
+                    }
+                } else {
+                    reject();
+                }
+            }).catch((reason) => reject(reason));
         });
     }
 }
