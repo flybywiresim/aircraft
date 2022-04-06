@@ -79,7 +79,7 @@ class CDUIdentPage {
             ["\xa0ACTIVE NAV DATA BASE"],
             ["\xa0" + calculateActiveDate(date) + "[color]cyan", "AIRAC[color]green"],
             ["\xa0SECOND NAV DATA BASE"],
-            ["{small}{" + calculateSecDate(date) + "{end}[color]inop"],
+            ["{small}{" + calculateSecDate(date) + "{end}[color]cyan"],
             ["", "STORED\xa0\xa0\xa0\xa0"],
             ["", `{green}${stored.routes.toFixed(0).padStart(2, '0')}{end}{small}RTES{end}\xa0{green}${stored.runways.toFixed(0).padStart(2, '0')}{end}{small}RWYS{end}`],
             ["CHG CODE", `{green}{big}${stored.waypoints.toFixed(0).padStart(2, '0')}{end}{end}{small}WPTS{end}\xa0{green}{big}${stored.navaids.toFixed(0).padStart(2, '0')}{end}{end}{small}NAVS{end}`],
@@ -99,6 +99,12 @@ class CDUIdentPage {
             } else {
                 CDUIdentPage.ShowPage(mcdu, true);
             }
+        };
+
+        // CHOOSE SECONDARY NAV DATABASE
+        mcdu.onLeftInput[2] = () => {
+            //INOP Primary Nav Date
+            //Figure out how to clear/reset flightplan
         };
     }
 }
