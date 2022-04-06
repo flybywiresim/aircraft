@@ -1,16 +1,16 @@
 export const de = {
     AirTrafficControl: {
-        Active: 'Aktiv',
+        Active: 'Aktive Frequenz',
         ConnectHoppieACARS: 'Hoppie ACARS verbinden',
-        DisconnectHoppieACARS: 'Hoppie ACARS Verbindung trennen',
+        DisconnectHoppieACARS: 'Hoppie ACARS trennen',
         FlightnumberIsAlreadyInUse: 'Flugnummer wird schon verwendet',
         HoppieError: 'Hoppie Fehler',
         HoppieSystemRequiresAUserIdWhichNeedsToBeSetInSettings: 'Das Hoppie-System benötigt eine Benutzer ID, welche in den Einstellungen unter ATSU / AOC festgelegt wird.',
         InvalidLogonCodeUsed: 'Es wurde ein ungültiger Anmeldecode verwendet.',
         NoInformationAvailableForThisFrequency: 'FÜR DIESE FREQUENZ SIND KEINE INFORMATIONEN VERFÜGBAR',
-        SetActive: 'Aktivieren',
-        SetStandby: 'Standby einstellen',
-        Standby: 'Standby',
+        SetActive: 'Als Aktiv',
+        SetStandby: 'Als Bereitschaft',
+        Standby: 'Bereitschaftsfrequenz',
         Title: 'Flugsicherung',
     },
     Checklist: { ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Es sind noch nicht abgeschlossene Checklist-Aufgaben vorhanden' },
@@ -33,7 +33,7 @@ export const de = {
                 NoRelevantChecklists: 'Keine relevanten Checklisten',
                 Title: 'Checklisten',
             },
-            GoToPage: 'Gehe zu Seite',
+            GoToPage: 'Gehe zur Seite',
             Maintenance: {
                 NoActiveFailures: 'Keine aktiven Ausfälle',
                 Title: 'Wartung',
@@ -60,8 +60,8 @@ export const de = {
         },
         Title: 'Dashboard',
         YourFlight: {
-            Alternate: 'Alternative',
-            AverageWind: 'Durchschnittlicher Wind',
+            Alternate: 'Ausweichflugplatz',
+            AverageWind: 'Ø Wind',
             CompanyRoute: 'Unternehmensroute',
             CostIndex: 'Kostenindex',
             CruiseAlt: 'Reiseflughöhe',
@@ -123,7 +123,7 @@ export const de = {
                 FillBlockFuelFromSimBrief: 'Tankmenge gemäß SimBrief verwenden',
             },
             Title: 'Treibstoff',
-            TotalFuel: 'Treibstoff insgesamt',
+            TotalFuel: 'Treibstoff gesamt',
             Unavailable: 'Nicht verfügbar',
         },
         Pushback: { Title: 'Pushback' },
@@ -147,7 +147,7 @@ export const de = {
     },
     NavigationAndCharts: {
         All: 'Alle',
-        Altn: 'Alternative',
+        Altn: 'ALTN',
         ExitFullscreenMode: 'Vollbildmodus beenden',
         From: 'Von',
         LocalFiles: {
@@ -261,7 +261,7 @@ export const de = {
             Result: {
                 BeforeTarget: 'vor dem Ziel',
                 DesiredDescentAngle: 'Gewünschter Sinkwinkel',
-                StartYourDescentAbout: 'Beginnen Sie Ihren Sinkflug ungefähr',
+                StartYourDescentAbout: 'Beginne Deinen Sinkflug ca.',
                 Title: 'Ergebnis',
             },
             TT: {
