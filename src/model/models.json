@@ -102,8 +102,8 @@
         "maxLod": 0
       },
       {
-        "gltf": "./post-it/post-it.gltf",
-        "bin": "./post-it/post-it.bin"
+        "gltf": "./post-it/postit.gltf",
+        "bin": "./post-it/postit.bin"
       }
     ],
     "modifications": [

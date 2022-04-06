@@ -1,4 +1,4 @@
-class PostIT extends BaseInstrument {
+class PostIT_Edit extends BaseInstrument {
     constructor() {
         super();
         this.curTime = 0.0;
@@ -14,12 +14,15 @@ class PostIT extends BaseInstrument {
     connectedCallback() {
         super.connectedCallback();
 
-        this.textElem = document.getElementById("text");
-        this.invisElem = document.getElementById("invis");
-        this.taskbar = document.getElementById("taskbar");
-        this.typographyIcon = document.getElementById("typography");
-        this.paletteIcon = document.getElementById("palette");
-        this.pencilIcon = document.getElementById("pencil");
+        const doc = document;
+
+        this.textElem = doc.getElementById("text");
+        this.invisElem = doc.getElementById("invis");
+        this.taskbar = doc.getElementById("taskbar");
+        this.typographyIcon = doc.getElementById("typography");
+        this.closeIcon = doc.getElementById("close");
+        this.paletteIcon = doc.getElementById("palette");
+        this.pencilIcon = doc.getElementById("pencil");
 
         this.fonts = ['Caveat', 'Marker', 'Gochi', 'RockSalt', 'Kalam'];
         // IMPORTANT NOTE: The formatting of these strings is very important. (They MUST be defined as 'rgb(xxx, xxx, xxx)')
@@ -78,6 +81,14 @@ class PostIT extends BaseInstrument {
             this.invisElem.style.fontFamily = this.textElem.style.fontFamily;
         });
 
+        this.closeIcon.addEventListener("click", () => {
+            console.log('close edit mode');
+            this.textElem.blur();
+            NXDataStore.set("POSTIT_CONTENT", this.textElem.value.substring(this.splitIndex));
+            Coherent.trigger("UNFOCUS_INPUT_FIELD");
+            SimVar.SetSimVarValue("L:A32NX_MODEL_POSTIT_EDIT", "Bool", 0);
+        });
+
         this.textElem.addEventListener("input", (e) => {
             // The character being replaced is U+007f (DELETE Character)
             this.textElem.value = this.textElem.value.replace(/\u007f/g, '');
@@ -95,26 +106,11 @@ class PostIT extends BaseInstrument {
             }
         });
 
-        this.textElem.addEventListener("click", () => {
-            this.textFocused = !this.textFocused;
+        this.textElem.addEventListener("focus", () => {
 
-            this.taskbar.style.display = this.textFocused ? "flex" : "none";
+            //Coherent.trigger("FOCUS_INPUT_FIELD");
+            this.textElem.focus();
 
-            if (this.textFocused) {
-                Coherent.trigger("FOCUS_INPUT_FIELD");
-                this.textElem.focus();
-            } else {
-                Coherent.trigger("UNFOCUS_INPUT_FIELD");
-                this.textElem.blur();
-
-                setTimeout(() => {
-                    Coherent.trigger("UNFOCUS_INPUT_FIELD");
-                    this.textFocused = false;
-                }, 30000);
-
-                NXDataStore.set("POSTIT_CONTENT", this.textElem.value.substring(this.splitIndex));
-
-            };
         });
     }
 
@@ -190,4 +186,4 @@ class PostIT extends BaseInstrument {
     disconnectedCallback() {}
 }
 
-registerInstrument("postit-element", PostIT);
+registerInstrument("postit_edit-element", PostIT_Edit);

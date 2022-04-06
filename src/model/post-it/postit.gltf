@@ -1,0 +1,413 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 2,
+            "min": [
+                0.041666666666666664
+            ],
+            "max": [
+                0.08333333333333333
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5126,
+            "count": 2,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 2,
+            "componentType": 5126,
+            "count": 2,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 3,
+            "componentType": 5126,
+            "count": 2,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 4,
+            "componentType": 5126,
+            "count": 2,
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 5,
+            "componentType": 5126,
+            "count": 128,
+            "min": [
+                -0.023906603455543518,
+                -0.023862242698669434,
+                -0.010480880737304688
+            ],
+            "max": [
+                0.024320349097251892,
+                0.023364901542663574,
+                0.007578849792480469
+            ],
+            "type": "VEC3",
+            "name": "POSTIT_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 128,
+            "type": "VEC4",
+            "name": "POSTIT_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 128,
+            "type": "VEC4",
+            "name": "POSTIT_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 128,
+            "type": "VEC2",
+            "name": "POSTIT_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 128,
+            "type": "VEC2",
+            "name": "POSTIT_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 128,
+            "type": "VEC4",
+            "name": "POSTIT_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 6,
+            "componentType": 5123,
+            "count": 462,
+            "type": "SCALAR",
+            "name": "POSTIT_indices#0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 4608,
+            "componentType": 5126,
+            "count": 4,
+            "min": [
+                -0.034999996423721313,
+                -0.032910823822021484,
+                -0.011911392211914062
+            ],
+            "max": [
+                0.034999996423721313,
+                0.03291058540344238,
+                0.011911392211914062
+            ],
+            "type": "VEC3",
+            "name": "POSTIT_EDIT_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 4620,
+            "componentType": 5120,
+            "count": 4,
+            "type": "VEC4",
+            "name": "POSTIT_EDIT_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 4624,
+            "componentType": 5120,
+            "count": 4,
+            "type": "VEC4",
+            "name": "POSTIT_EDIT_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 4628,
+            "componentType": 5122,
+            "count": 4,
+            "type": "VEC2",
+            "name": "POSTIT_EDIT_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 4632,
+            "componentType": 5122,
+            "count": 4,
+            "type": "VEC2",
+            "name": "POSTIT_EDIT_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 4636,
+            "componentType": 5123,
+            "count": 4,
+            "type": "VEC4",
+            "name": "POSTIT_EDIT_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 6,
+            "byteOffset": 924,
+            "componentType": 5123,
+            "count": 6,
+            "type": "SCALAR",
+            "name": "POSTIT_EDIT_indices#0"
+        }
+    ],
+    "animations": [
+        {
+            "name": "POSTIT_ANIM",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 0,
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": 0,
+                        "path": "scale"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 0,
+                    "output": 1,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 0,
+                    "output": 2,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        },
+        {
+            "name": "POSTIT_EDIT_ANIM",
+            "channels": [
+                {
+                    "sampler": 0,
+                    "target": {
+                        "node": 1,
+                        "path": "translation"
+                    }
+                },
+                {
+                    "sampler": 1,
+                    "target": {
+                        "node": 1,
+                        "path": "scale"
+                    }
+                }
+            ],
+            "samplers": [
+                {
+                    "input": 0,
+                    "output": 3,
+                    "interpolation": "LINEAR"
+                },
+                {
+                    "input": 0,
+                    "output": 4,
+                    "interpolation": "LINEAR"
+                }
+            ]
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.6.16",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.034999996423721313,
+                    0.03291058540344238,
+                    0.011911392211914062
+                ],
+                "BoundingBoxMin": [
+                    -0.034999996423721313,
+                    -0.032910823822021484,
+                    -0.011911392211914062
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 3,
+                "UseCheckerboardMaterialForMissingTextures": true
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 8
+        },
+        {
+            "buffer": 0,
+            "byteLength": 24,
+            "byteOffset": 8
+        },
+        {
+            "buffer": 0,
+            "byteLength": 24,
+            "byteOffset": 32
+        },
+        {
+            "buffer": 0,
+            "byteLength": 24,
+            "byteOffset": 56
+        },
+        {
+            "buffer": 0,
+            "byteLength": 24,
+            "byteOffset": 80
+        },
+        {
+            "buffer": 0,
+            "byteLength": 4752,
+            "byteStride": 36,
+            "byteOffset": 104,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 936,
+            "byteOffset": 4856,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        }
+    ],
+    "materials": [
+        {
+            "name": "$POSTIT",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.800000011920929,
+                    0.800000011920929,
+                    0.800000011920929,
+                    1
+                ],
+                "metallicFactor": 0
+            }
+        },
+        {
+            "name": "$POSTIT_EDIT",
+            "pbrMetallicRoughness": {
+                "baseColorFactor": [
+                    0.800000011920929,
+                    0.800000011920929,
+                    0.800000011920929,
+                    1
+                ],
+                "metallicFactor": 0
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 10,
+                        "NORMAL": 7,
+                        "POSITION": 5,
+                        "TANGENT": 6,
+                        "TEXCOORD_0": 8,
+                        "TEXCOORD_1": 9
+                    },
+                    "indices": 11,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 154,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "POSTIT"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 17,
+                        "NORMAL": 14,
+                        "POSITION": 12,
+                        "TANGENT": 13,
+                        "TEXCOORD_0": 15,
+                        "TEXCOORD_1": 16
+                    },
+                    "indices": 18,
+                    "material": 1,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 2,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "POSTIT_EDIT"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [
+                0.22044022381305697,
+                1.6806243658065796,
+                11.888059616088867
+            ],
+            "mesh": 0,
+            "name": "POSTIT"
+        },
+        {
+            "translation": [
+                0.2207007110118866,
+                1.68705952167511,
+                11.872513771057127
+            ],
+            "mesh": 1,
+            "name": "POSTIT_EDIT"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [
+                0,
+                1
+            ],
+            "name": "Scene"
+        }
+    ],
+    "extensionsUsed": [
+        "ASOBO_asset_optimized"
+    ],
+    "buffers": [
+        {
+            "byteLength": 5792,
+            "uri": "postit.bin"
+        }
+    ]
+}
