@@ -103,6 +103,7 @@ class CDUIdentPage {
 
         // CHOOSE SECONDARY NAV DATABASE
         mcdu.onLeftInput[2] = () => {
+            mcdu.addNewMessage(NXFictionalMessages.navDbRecycled);
             //INOP Primary Nav Date
             //Figure out how to clear/reset flightplan
         };
