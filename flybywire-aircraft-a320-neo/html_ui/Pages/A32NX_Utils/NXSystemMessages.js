@@ -93,6 +93,5 @@ const NXFictionalMessages = {
     noAtc:                  new McduMessage("NO ACTIVE ATC", false, false),
     noHoppieConnection:     new McduMessage("NO HOPPIE CONNECTION", false, false),
     unknownAtsuMessage:     new McduMessage("UNKNOWN ATSU MESSAGE", false, false),
-    reverseProxy:           new McduMessage("REVERSE PROXY ERROR", false, false),
-    navDbRecycled:          new McduMessage("NAVDB RECYCLED", true, true)
+    reverseProxy:           new McduMessage("REVERSE PROXY ERROR", false, false)
 };
