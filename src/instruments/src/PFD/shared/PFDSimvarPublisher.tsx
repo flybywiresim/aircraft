@@ -91,18 +91,18 @@ export interface PFDSimvars {
     setHoldSpeed: boolean;
     vls: number;
     alphaLim: number;
-    trkFpaDeselectedTCAS: boolean,
-    tcasRaInhibited: boolean,
-    groundSpeed: number,
-    radioAltitude1: number,
-    radioAltitude2: number,
-    beta: number,
-    betaTargetActive: number,
-    betaTarget: number,
-    latAcc: number,
-    crzAltMode: boolean,
-    tcasModeDisarmed: boolean,
-    flexTemp: number,
+    trkFpaDeselectedTCAS: boolean;
+    tcasRaInhibited: boolean;
+    groundSpeed: number;
+    radioAltitude1: number;
+    radioAltitude2: number;
+    beta: number;
+    betaTargetActive: number;
+    betaTarget: number;
+    latAcc: number;
+    crzAltMode: boolean;
+    tcasModeDisarmed: boolean;
+    flexTemp: number;
     autoBrakeMode: number;
     autoBrakeActive: boolean;
     autoBrakeDecel: boolean;
