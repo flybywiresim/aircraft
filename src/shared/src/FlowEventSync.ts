@@ -1,14 +1,7 @@
 import stringify from 'safe-stable-stringify';
 
-// TODO replace this with the class from the actual source once the repo is updated
 export class FlowEventSync {
     static EB_LISTENER_KEY = 'EB_EVENTS';
-
-    /**
-     * Creates an instance of EventBusFlowEventSync.
-     * @param recvEventCb A callback to execute when an event is received on the bus.
-     * @param busId The ID of the bus.
-     */
 
     private evtNum: number;
 
@@ -29,7 +22,7 @@ export class FlowEventSync {
         if (topic) {
             Coherent.on('OnInteractionEvent', this.processEventsReceived.bind(this));
         }
-        /** Sends the queued up data packages */
+
         const sendFn = () => {
             if (this.dataPackageQueue.length > 0) {
                 const syncDataPackage = { data: this.dataPackageQueue };
@@ -48,12 +41,12 @@ export class FlowEventSync {
     }
 
     /**
-     * Processes events received from onInteractionEvent and sends them onto the local bus.
+     * Processes events received from onInteractionEvent and executes the configured callback.
      * @param target always empty
-     * @param args [0] the bus id [1] SyncDataPackage
+     * @param args [0] the eventlistener key [1] SyncDataPackage
      */
     processEventsReceived(_target, args) {
-        // identify if its a busevent
+        // identify if its a flowsyncevent
         if (args.length === 0 || args[0] !== FlowEventSync.EB_LISTENER_KEY) {
             return;
         }
@@ -76,22 +69,19 @@ export class FlowEventSync {
      * Sends an event via flow events.
      * @param topic The topic to send data on.
      * @param data The data to send.
-     * @param isCached Whether or not this event is cached.
      */
-    sendEvent(topic: string, data: any, isCached: boolean) {
+    sendEvent(topic: string, data: any) {
         const dataObj = stringify(data);
 
         const dataPackage = {
             evtNum: this.evtNum++,
             topic,
             data: dataObj,
-            isCached,
         };
 
         this.dataPackageQueue.push(dataPackage);
     }
 
-    /** @inheritdoc */
     receiveEvent() {
         // noop
     }

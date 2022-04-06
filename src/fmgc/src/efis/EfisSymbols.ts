@@ -130,7 +130,7 @@ export class EfisSymbols {
             }
 
             if (mode === Mode.PLAN && !planCentre) {
-                this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, [], false);
+                this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, []);
                 return;
             }
 
@@ -436,7 +436,7 @@ export class EfisSymbols {
                 this.guidanceController.efisStateForSide[side].dataLimitReached = false;
             }
 
-            this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, symbols, false);
+            this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, symbols);
 
             // make sure we don't run too often
             this.blockUpdate = true;

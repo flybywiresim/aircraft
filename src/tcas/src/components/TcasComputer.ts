@@ -1120,7 +1120,7 @@ export class TcasComputer implements TcasComponent {
             }
         });
 
-        this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic, false);
+        this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);
     }
 
     /**
@@ -1147,7 +1147,7 @@ export class TcasComputer implements TcasComponent {
             SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:2', 'Number', 0);
             if (this.sendAirTraffic.length !== 0) {
                 this.sendAirTraffic.length = 0;
-                this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic, false);
+                this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);
             }
             return;
         }
