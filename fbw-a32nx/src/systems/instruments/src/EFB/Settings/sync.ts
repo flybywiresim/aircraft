@@ -45,6 +45,7 @@ const settingsToSync: Map<string, SimVar> = new Map([
     ['GSX_PAYLOAD_SYNC', ['L:A32NX_GSX_PAYLOAD_SYNC_ENABLED', 'bool', '0']],
     ['CONFIG_USING_METRIC_UNIT', ['L:A32NX_EFB_USING_METRIC_UNIT', 'bool', '1']],
     ['POSTIT_ENABLED', ['L:A32NX_MODEL_POSTIT_ENABLED', 'bool', '0']],
+    ['POSTIT_EDIT', ['L:A32NX_MODEL_POSTIT_EDIT', 'bool', '0']],
     ['POSTIT_USE_SIMBRIEF', ['L:A32NX_MODEL_POSTIT_SIMBRIEF', 'bool', '0']],
 ]);
 

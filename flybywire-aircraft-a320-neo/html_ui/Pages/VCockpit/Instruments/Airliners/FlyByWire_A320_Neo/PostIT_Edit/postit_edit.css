@@ -34,7 +34,6 @@
 }
 
 #text {
-  /* 1, smaller than mesh to avoid whack anti-aliasing */
   padding: 3.5rem;
   background-image: url("/Images/PostIT/postit-bg.png");
   background-color: rgb(255,255,151);
@@ -45,12 +44,11 @@
   background-size: cover;
   font-size: 100px;
   color: #000;
-  width: 1022px; /* 1 */
-  height: 1022px;  /* 1 */
-  top:1px;  /* 1 */
-  left:1px;  /* 1 */
-  position: relative; /* 1 */
+  width: 1022px;
+  height: 1022px;
+  margin: 1px;
   overflow-wrap: break-word;
+  overflow: hidden;
 }
 
 #invis {
@@ -74,7 +72,7 @@
 
 #taskbar {
     position: absolute;
-    display: none;
+    display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
@@ -84,8 +82,13 @@
     z-index: 120;
 }
 
-#typography, #palette, #pencil {
+#typography, #palette, #pencil, #close {
   width: 75px;
   height: 75px;
   stroke: black;
+}
+
+#close {
+  position: absolute;
+  transform: translate(70px, -900px);
 }
