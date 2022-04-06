@@ -17,7 +17,7 @@ interface InformationEntryProps {
 }
 
 const InformationEntry = ({ title, info }: InformationEntryProps) => (
-    <div className="flex flex-col items-center justify-content">
+    <div className="flex flex-col items-center my-4">
         <h3 className="font-light">{title}</h3>
         <h2 className="font-bold">{info}</h2>
     </div>
@@ -177,21 +177,22 @@ export const FlightWidget = () => {
                                 </p>
                             </div>
                         </div>
-                        >
+                        <div>
                             <div className="flex flex-row justify-around mb-4">
-                                <InformationEntry title={t('Dashboard.YourFlight.Alternate')} info={altIcao ?? 'NONE'} />
-                                <div className="my-auto mx-4 w-1 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.YourFlight.CompanyRoute')} info={departingIata + arrivingIata} />
-                                <div className="my-auto mx-4 w-1 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.YourFlight.ZFW')} info={estimatedZfw} />
-                            </div>
-                            <div className="my-auto w-full h-0.5 bg-theme-accent" />
-                            <div className="flex flex-row justify-around mt-4">
-                                <InformationEntry title={t('Dashboard.YourFlight.CostIndex')} info={costInd} />
-                                <div className="my-auto mx-4 w-1 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.YourFlight.AverageWind')} info={avgWind} />
-                                <div className="my-auto mx-4 w-1 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.YourFlight.CruiseAlt')} info={crzAlt} />
+                                <div>
+                                    <InformationEntry title={t('Dashboard.YourFlight.Alternate')} info={altIcao ?? 'NONE'} />
+                                    <InformationEntry title={t('Dashboard.YourFlight.CostIndex')} info={costInd} />
+                                </div>
+                                <div className="my-auto mx-4 w-1 h-24 bg-theme-accent" />
+                                <div>
+                                    <InformationEntry title={t('Dashboard.YourFlight.CompanyRoute')} info={departingIata + arrivingIata} />
+                                    <InformationEntry title={t('Dashboard.YourFlight.AverageWind')} info={avgWind} />
+                                </div>
+                                <div className="my-auto mx-4 w-1 h-24 bg-theme-accent" />
+                                <div>
+                                    <InformationEntry title={t('Dashboard.YourFlight.ZFW')} info={estimatedZfw} />
+                                    <InformationEntry title={t('Dashboard.YourFlight.CruiseAlt')} info={crzAlt} />
+                                </div>
                             </div>
                         </div>
                         <div>
