@@ -42,7 +42,7 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
     // Lacking a better event to bind to, we've picked a mixture axis for setting the
     // tiller handle position.
     builder.event_to_variable(
-        "AXIS_MIXTURE4_SET",
+        "AXIS_STEERING_SET",
         EventToVariableMapping::EventData32kPosition,
         Variable::aspect("RAW_TILLER_HANDLE_POSITION"),
         |options| options.mask(),
