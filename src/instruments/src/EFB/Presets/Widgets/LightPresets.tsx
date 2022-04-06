@@ -65,7 +65,7 @@ export const LightPresets = () => {
     }, []);
 
     return (
-        <div className="p-2 mt-2 mb-2 rounded-lg border-2 h-content-section-reduced border-theme-accent">
+        <div className="p-2 mt-2 mb-2 h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <div className="flex flex-row justify-center items-center p-2 mb-3 space-x-2 h-16 rounded-md border-2 border-theme-accent">
                 {isPowered
                     ? t('Presets.InteriorLighting.SelectAnInteriorLightingPresetToLoadOrSave')
@@ -187,7 +187,7 @@ const SinglePreset = (props: SinglePresetParams) => {
             </div>
 
             <TooltipWrapper text={t('Presets.InteriorLighting.TT.ClickTextToChangeThePresetsName')}>
-                <div className="flex justify-center items-center mx-4 w-full h-20 rounded-md border-2 text-theme-text bg-theme-accent border-theme-accent">
+                <div className="flex justify-center items-center mx-4 w-full h-20 text-theme-text bg-theme-accent rounded-md border-2 border-theme-accent">
                     <SimpleInput
                         className="w-80 text-2xl font-medium text-center"
                         placeholder="No Name"
@@ -198,7 +198,7 @@ const SinglePreset = (props: SinglePresetParams) => {
                 </div>
             </TooltipWrapper>
 
-            <TooltipWrapper text={isPowered ? 'Presets.InteriorLighting.TT.LoadThisPreset' : 'Presets.InteriorLighting.TT.AircraftMustBePowered'}>
+            <TooltipWrapper text={isPowered ? t('Presets.InteriorLighting.TT.LoadThisPreset') : t('Presets.InteriorLighting.TT.AircraftMustBePowered')}>
                 <div
                     className={`flex justify-center items-center mx-4 w-full h-20 text-theme-text hover:text-theme-body bg-theme-accent hover:bg-theme-highlight rounded-md border-2 border-theme-accent transition duration-100 ${!isPowered && 'opacity-50'}`}
                     onClick={() => handleLoad()}
@@ -207,7 +207,7 @@ const SinglePreset = (props: SinglePresetParams) => {
                 </div>
             </TooltipWrapper>
 
-            <TooltipWrapper text={isPowered ? 'Presets.InteriorLighting.TT.LoadThisPreset' : 'Presets.InteriorLighting.TT.SaveTheCurrentLightingLevels'}>
+            <TooltipWrapper text={isPowered ? t('Presets.InteriorLighting.TT.SaveTheCurrentLightingLevels') : t('Presets.InteriorLighting.TT.AircraftMustBePowered')}>
                 <div
                     className={`flex justify-center items-center mx-4 w-full h-20 text-white bg-green-700 hover:bg-green-500 rounded-md border-2 border-green-700 hover:border-green-800 transition duration-100 ${!isPowered && 'opacity-50'}`}
                     onClick={() => handleSave()}

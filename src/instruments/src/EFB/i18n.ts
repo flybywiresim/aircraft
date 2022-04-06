@@ -5,11 +5,13 @@ import { NXDataStore } from '@shared/persistence';
 import { en } from './Localization/en';
 import { es } from './Localization/es';
 import { fr } from './Localization/fr';
+import { de } from './Localization/de';
 
 export const resources = {
     en: { translation: en },
     es: { translation: es },
     fr: { translation: fr },
+    de: { translation: de },
 };
 
 interface LanguageOption {
@@ -39,7 +41,7 @@ export const languageOptions: LanguageOption[] = [
 i18n
     .use(initReactI18next)
     .init({
-        fallbackLng: 'en',
+        fallbackLng: 'de',
         supportedLngs: languageOptions.map((option) => option.langCode),
         interpolation: { escapeValue: false },
         resources,
@@ -51,7 +53,7 @@ const watchLanguageChanges = () => {
         (_, value) => {
             i18n.changeLanguage(value);
         },
-        'en',
+        'de',
     );
 };
 
