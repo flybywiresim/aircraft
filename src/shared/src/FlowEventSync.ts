@@ -79,17 +79,15 @@ export class FlowEventSync {
      * @param isCached Whether or not this event is cached.
      */
     sendEvent(topic: string, data: any, isCached: boolean) {
-        // HERE WE QUEUE STUFF TO SEND IT LATER
-        // stringify data
         const dataObj = stringify(data);
-        // build a data package
+
         const dataPackage = {
             evtNum: this.evtNum++,
             topic,
             data: dataObj,
             isCached,
         };
-        // queue data package
+
         this.dataPackageQueue.push(dataPackage);
     }
 
