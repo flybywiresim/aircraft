@@ -105,7 +105,7 @@ class CDUIdentPage {
         mcdu.onLeftInput[2] = () => {
             mcdu.addNewMessage(NXSystemMessages.pleaseWait);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active).then(
-                mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary).then(
+                () => mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary).then(
                     () => mcdu.tryRemoveMessage('PLEASE WAIT')
                 )
             );
