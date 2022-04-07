@@ -88,6 +88,7 @@ const Efb = () => {
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
     const [dayOfYear] = useSimVar('E:ZULU DAY OF YEAR', 'number');
     const [latitude] = useSimVar('PLANE LATITUDE', 'degree latitude');
+    const [batteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
 
     const [navigraph] = useState(() => new NavigraphClient());
 
@@ -129,7 +130,7 @@ const Efb = () => {
     }, [lat, long, arrivingPosLat, arrivingPosLong, departingPosLat, departingPosLong]);
 
     useEffect(() => {
-        if (powerState !== PowerStates.LOADED) return;
+        if (powerState !== PowerStates.LOADED || !batteryLifeEnabled) return;
 
         setBatteryLevel((oldLevel) => {
             const deltaTs = Math.max(absoluteTime - oldLevel.lastChangeTimestamp, 0);
