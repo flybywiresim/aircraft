@@ -212,6 +212,8 @@ class UpdateThrottler {
     }
 }
 
+A32NX_Util.UpdateThrottler = UpdateThrottler;
+
 /**
  * NotificationParams class container for popups to package popup metadata
  */
