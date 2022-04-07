@@ -652,6 +652,7 @@ impl A320RudderFactory {
 pub(super) struct A320Hydraulic {
     hyd_ptu_ecam_memo_id: VariableIdentifier,
     ptu_high_pitch_sound_id: VariableIdentifier,
+    ptu_continuous_mode_id: VariableIdentifier,
 
     nose_steering: SteeringActuator,
 
@@ -716,9 +717,12 @@ pub(super) struct A320Hydraulic {
     spoiler_computer: SpoilerComputer,
     left_spoilers: SpoilerGroup,
     right_spoilers: SpoilerGroup,
+
+    ptu_high_pitch_sound_active: DelayedFalseLogicGate,
 }
 impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
+    const HIGH_PITCH_PTU_SOUND_DURATION: Duration = Duration::from_millis(3000);
 
     const FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
         0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
@@ -776,6 +780,7 @@ impl A320Hydraulic {
         A320Hydraulic {
             hyd_ptu_ecam_memo_id: context.get_identifier("HYD_PTU_ON_ECAM_MEMO".to_owned()),
             ptu_high_pitch_sound_id: context.get_identifier("HYD_PTU_HIGH_PITCH_SOUND".to_owned()),
+            ptu_continuous_mode_id: context.get_identifier("HYD_PTU_CONTINUOUS_MODE".to_owned()),
 
             nose_steering: SteeringActuator::new(
                 context,
@@ -949,6 +954,10 @@ impl A320Hydraulic {
                 context,
                 ActuatorSide::Right,
             ),
+
+            ptu_high_pitch_sound_active: DelayedFalseLogicGate::new(
+                Self::HIGH_PITCH_PTU_SOUND_DURATION,
+            ),
         }
     }
 
@@ -1007,6 +1016,9 @@ impl A320Hydraulic {
                 reservoir_pneumatics,
             );
         }
+
+        self.ptu_high_pitch_sound_active
+            .update(context, self.is_ptu_running_high_pitch_sound());
     }
 
     fn ptu_has_fault(&self) -> bool {
@@ -1673,7 +1685,14 @@ impl SimulationElement for A320Hydraulic {
 
         writer.write(
             &self.ptu_high_pitch_sound_id,
-            self.is_ptu_running_high_pitch_sound(),
+            self.ptu_high_pitch_sound_active.output(),
+        );
+
+        // Two sound variables of ptu made exclusive with high pitch sound having priority
+        writer.write(
+            &self.ptu_continuous_mode_id,
+            self.power_transfer_unit.is_in_continuous_mode()
+                && !self.ptu_high_pitch_sound_active.output(),
         );
     }
 }
@@ -6020,7 +6039,7 @@ mod tests {
             // Yellow epump ON / Waiting 25s
             test_bed = test_bed
                 .set_yellow_e_pump(false)
-                .run_waiting_for(Duration::from_secs(55));
+                .run_waiting_for(Duration::from_secs(25));
 
             assert!(test_bed.is_ptu_enabled());
 
@@ -9017,12 +9036,12 @@ mod tests {
             test_bed = test_bed
                 .set_ptu_state(false)
                 .set_yellow_e_pump(true)
-                .run_waiting_for(Duration::from_secs_f64(70.));
+                .run_waiting_for(Duration::from_secs_f64(80.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.2);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.2);
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.3);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.3);
         }
 
         #[test]
