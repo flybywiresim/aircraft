@@ -170,11 +170,9 @@ pub trait PowerTransferUnitController {
 }
 
 pub struct PowerTransferUnit {
-    active_l2r_id: VariableIdentifier,
-    active_r2l_id: VariableIdentifier,
-    motor_flow_id: VariableIdentifier,
     valve_opened_id: VariableIdentifier,
     shaft_rpm_id: VariableIdentifier,
+    bark_strength_id: VariableIdentifier,
 
     is_enabled: bool,
     is_active_right: bool,
@@ -193,6 +191,9 @@ pub struct PowerTransferUnit {
 
     is_in_continuous_mode: bool,
     is_rotating_after_delay: DelayedTrueLogicGate,
+    duration_since_active: Duration,
+    speed_captured_at_active_duration: AngularVelocity,
+    bark_strength: u8,
 }
 impl PowerTransferUnit {
     const ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
@@ -231,14 +232,13 @@ impl PowerTransferUnit {
 
     const DELAY_TO_DECLARE_CONTINUOUS: Duration = Duration::from_millis(1500);
     const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 400.;
+    const DURATION_BEFORE_CAPTURING_BARK_STRENGHT_SPEED: Duration = Duration::from_millis(133);
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            active_l2r_id: context.get_identifier("HYD_PTU_ACTIVE_L2R".to_owned()),
-            active_r2l_id: context.get_identifier("HYD_PTU_ACTIVE_R2L".to_owned()),
-            motor_flow_id: context.get_identifier("HYD_PTU_MOTOR_FLOW".to_owned()),
             valve_opened_id: context.get_identifier("HYD_PTU_VALVE_OPENED".to_owned()),
             shaft_rpm_id: context.get_identifier("HYD_PTU_SHAFT_RPM".to_owned()),
+            bark_strength_id: context.get_identifier("HYD_PTU_BARK_STRENGTH".to_owned()),
 
             is_enabled: false,
             is_active_right: false,
@@ -261,6 +261,9 @@ impl PowerTransferUnit {
 
             is_in_continuous_mode: false,
             is_rotating_after_delay: DelayedTrueLogicGate::new(Self::DELAY_TO_DECLARE_CONTINUOUS),
+            duration_since_active: Duration::default(),
+            speed_captured_at_active_duration: AngularVelocity::default(),
+            bark_strength: 0,
         }
     }
 
@@ -292,7 +295,8 @@ impl PowerTransferUnit {
         self.update_displacement(context, loop_left_section, loop_right_section);
         self.update_shaft_physics(context, loop_left_section, loop_right_section);
         self.update_continuous_state(context);
-        self.update_active_state();
+        self.update_active_state(context);
+        self.capture_bark_strength();
         self.update_flows();
     }
 
@@ -331,9 +335,36 @@ impl PowerTransferUnit {
             .update(context.delta(), new_displacement);
     }
 
-    fn update_active_state(&mut self) {
+    fn capture_bark_strength(&mut self) {
+        if self.duration_since_active > Self::DURATION_BEFORE_CAPTURING_BARK_STRENGHT_SPEED
+            && self
+                .speed_captured_at_active_duration
+                .get::<revolution_per_minute>()
+                == 0.
+        {
+            self.speed_captured_at_active_duration = self.shaft_speed.abs();
+            self.bark_strength =
+                Self::speed_to_bark_strength(self.speed_captured_at_active_duration);
+
+            // println!(
+            //     "RPM CAPTURED {:.0}",
+            //     self.speed_captured_at_active_duration
+            //         .get::<revolution_per_minute>()
+            // );
+        }
+    }
+
+    fn update_active_state(&mut self, context: &UpdateContext) {
         let is_rotating =
             self.shaft_speed.get::<revolution_per_minute>().abs() > Self::MIN_SPEED_SIMULATION_RPM;
+
+        if is_rotating {
+            self.duration_since_active += context.delta();
+        } else {
+            self.duration_since_active = Duration::default();
+            self.speed_captured_at_active_duration = AngularVelocity::default();
+            self.bark_strength = 0;
+        }
 
         let active_direction = self.shaft_speed.get::<revolution_per_minute>().signum();
 
@@ -451,17 +482,32 @@ impl PowerTransferUnit {
     pub fn is_in_continuous_mode(&self) -> bool {
         self.is_in_continuous_mode
     }
+
+    fn speed_to_bark_strength(speed: AngularVelocity) -> u8 {
+        let rpm = speed.get::<revolution_per_minute>();
+
+        if rpm > 1700. {
+            5
+        } else if rpm > 1500. {
+            4
+        } else if rpm > 1400. {
+            3
+        } else if rpm > 1300. {
+            2
+        } else {
+            1
+        }
+    }
 }
 impl SimulationElement for PowerTransferUnit {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.active_l2r_id, self.is_active_left);
-        writer.write(&self.active_r2l_id, self.is_active_right);
-        writer.write(&self.motor_flow_id, self.flow());
         writer.write(&self.valve_opened_id, self.is_enabled());
         writer.write(
             &self.shaft_rpm_id,
             (self.shaft_speed_filtered.output()).abs(),
         );
+        writer.write(&self.shaft_rpm_id, self.shaft_speed);
+        writer.write(&self.bark_strength_id, self.bark_strength);
     }
 }
 

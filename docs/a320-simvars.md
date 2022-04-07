@@ -881,17 +881,6 @@
     - Bool
     - Power Transfer Unit can receive fluid from yellow and green circuits
 
-- A32NX_HYD_PTU_ACTIVE_{motor_side}
-    - Bool
-    - Power Transfer Unit is trying to transfer hydraulic power from either yellow to green (R2L) or green to yellow (L2R) circuits
-    - {motor_side}
-        - L2R
-        - R2L
-
-- A32NX_HYD_PTU_MOTOR_FLOW
-    - Gallon per second
-    - Power Transfer Unit instantaneous flow in motor side
-
 - A32NX_HYD_PTU_SHAFT_RPM
     - Revolutions per minute
     - Power Transfer Unit shaft rpm
