@@ -885,6 +885,10 @@
     - Revolutions per minute
     - Power Transfer Unit shaft rpm
 
+- A32NX_HYD_PTU_BARK_STRENGTH
+    - Number
+    - 0 no PTU. 1 to 5 indicates barking sound power level.
+
 - A32NX_HYD_PTU_CONTINUOUS_MODE
     - Bool
     - Power Transfer Unit is rotating continuously
