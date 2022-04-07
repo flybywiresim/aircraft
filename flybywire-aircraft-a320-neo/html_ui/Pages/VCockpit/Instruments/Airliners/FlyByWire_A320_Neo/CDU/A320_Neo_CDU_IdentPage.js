@@ -119,9 +119,7 @@ class CDUIdentPage {
                 ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"]
             ]);
 
-            //INOP Primary Nav Date
-            //Figure out how to clear/reset flightplan
-
+            //Clear/reset flightplan
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary);
 
