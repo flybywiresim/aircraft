@@ -120,9 +120,10 @@ class CDUIdentPage {
             ]);
 
             //Clear/reset flightplan
+            mcdu.addNewMessage(NXFictionalMessages.reSyncInProgress);
             setTimeout(() => {
-                mcdu.addNewMessage(NXFictionalMessages.reSyncInProgress);
-            }, 1000);
+                mcdu.tryRemoveMessage(NXFictionalMessages.reSyncInProgress);
+            }, 2000);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary);
 
