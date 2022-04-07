@@ -49,7 +49,7 @@ const NXSystemMessages = {
     notAllowed:             new McduMessage("NOT ALLOWED", false, false),
     notAllowedInNav:        new McduMessage("NOT ALLOWED IN NAV", false, false),
     notInDatabase:          new McduMessage("NOT IN DATABASE", false, false),
-    pleaseWait:             new McduMessage("PLEASE WAIT", false, false),
+    pleaseWait:             new McduMessage("PLEASE WAIT", false, true),
     rwyLsMismatch:          new McduMessage("RWY/LS MISMATCH", true, true),
     selectDesiredSystem:    new McduMessage("SELECT DESIRED SYSTEM", false, false),
     setHoldSpeed:           new McduMessage("SET HOLD SPEED", false, true),
