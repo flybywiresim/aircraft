@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import {
@@ -44,10 +43,6 @@ export class CRLeg extends Leg {
         return this.origin.ident.substring(0, 3) + this.origin.theta.toFixed(0);
     }
 
-    private inboundGuidable: Guidable | undefined;
-
-    private outboundGuidable: Guidable | undefined;
-
     getPathStartPoint(): Coordinates | undefined {
         if (this.inboundGuidable && this.inboundGuidable.isComputed) {
             return this.inboundGuidable.getPathEndPoint();
@@ -64,10 +59,13 @@ export class CRLeg extends Leg {
         return this.computedPath;
     }
 
-    recomputeWithParameters(isActive: boolean, _tas: Knots, _gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
-        this.inboundGuidable = previousGuidable;
-        this.outboundGuidable = nextGuidable;
-
+    recomputeWithParameters(
+        _isActive: boolean,
+        _tas: Knots,
+        _gs: Knots,
+        _ppos: Coordinates,
+        _trueTrack: DegreesTrue,
+    ) {
         this.intercept = Geo.doublePlaceBearingIntercept(
             this.getPathStartPoint(),
             this.origin.coordinates,
@@ -75,27 +73,37 @@ export class CRLeg extends Leg {
             this.radial,
         );
 
-        this.computedPath = [{
-            type: PathVectorType.Line,
-            startPoint: this.getPathStartPoint(),
-            endPoint: this.intercept,
-        }];
+        const overshot = distanceTo(this.getPathStartPoint(), this.intercept) >= 5_000;
 
-        this.isComputed = true;
+        if (this.intercept && !overshot) {
+            this.computedPath = [{
+                type: PathVectorType.Line,
+                startPoint: this.getPathStartPoint(),
+                endPoint: this.intercept,
+            }];
 
-        if (LnavConfig.DEBUG_PREDICTED_PATH) {
-            this.computedPath.push(
-                {
-                    type: PathVectorType.DebugPoint,
-                    startPoint: this.getPathStartPoint(),
-                    annotation: 'CR START',
-                },
-                {
-                    type: PathVectorType.DebugPoint,
-                    startPoint: this.getPathEndPoint(),
-                    annotation: 'CR END',
-                },
-            );
+            this.isNull = false;
+            this.isComputed = true;
+
+            if (LnavConfig.DEBUG_PREDICTED_PATH) {
+                this.computedPath.push(
+                    {
+                        type: PathVectorType.DebugPoint,
+                        startPoint: this.getPathStartPoint(),
+                        annotation: 'CR START',
+                    },
+                    {
+                        type: PathVectorType.DebugPoint,
+                        startPoint: this.getPathEndPoint(),
+                        annotation: 'CR END',
+                    },
+                );
+            }
+        } else {
+            this.predictedPath.length = 0;
+
+            this.isNull = true;
+            this.isComputed = true;
         }
     }
 

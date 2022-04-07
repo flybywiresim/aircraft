@@ -4,10 +4,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { ControlLaw, GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { courseToFixDistanceToGo } from '@fmgc/guidance/lnav/CommonGeometry';
+import { courseToFixDistanceToGo, sideOfPointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
 import { Geo } from '@fmgc/utils/Geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
@@ -46,22 +45,20 @@ export class CILeg extends Leg {
         return 'INTCPT';
     }
 
-    private inboundGuidable: Guidable | undefined;
-
-    private outboundGuidable: Guidable | undefined;
-
     getPathStartPoint(): Coordinates | undefined {
         if (this.inboundGuidable instanceof IFLeg) {
             return this.inboundGuidable.fix.infos.coordinates;
-        } if (this.inboundGuidable && this.inboundGuidable.isComputed) {
+        }
+
+        if (this.inboundGuidable && this.inboundGuidable.isComputed) {
             return this.inboundGuidable.getPathEndPoint();
         }
 
-        throw new Error('[CRLeg] No computed inbound guidable.');
+        throw new Error('[CILeg] No computed inbound guidable.');
     }
 
     getPathEndPoint(): Coordinates | undefined {
-        if (this.outboundGuidable instanceof FixedRadiusTransition && !this.outboundGuidable.isReverted && this.outboundGuidable.isComputed) {
+        if (this.outboundGuidable instanceof FixedRadiusTransition && this.outboundGuidable.isComputed) {
             return this.outboundGuidable.getPathStartPoint();
         }
 
@@ -76,39 +73,52 @@ export class CILeg extends Leg {
         return this.computedPath;
     }
 
-    mustBeDeleted = false;
-
-    recomputeWithParameters(isActive: boolean, _tas: Knots, _gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
-        this.inboundGuidable = previousGuidable;
-        this.outboundGuidable = nextGuidable;
-
+    recomputeWithParameters(
+        _isActive: boolean,
+        _tas: Knots,
+        _gs: Knots,
+        _ppos: Coordinates,
+        _trueTrack: DegreesTrue,
+    ) {
         this.intercept = Geo.legIntercept(
             this.getPathStartPoint(),
             this.course,
             this.nextLeg,
         );
 
-        this.computedPath = [{
-            type: PathVectorType.Line,
-            startPoint: this.getPathStartPoint(),
-            endPoint: this.getPathEndPoint(),
-        }];
+        const side = sideOfPointOnCourseToFix(this.intercept, this.outboundCourse, this.getPathStartPoint());
+        const overshot = side === 1;
 
-        this.isComputed = true;
+        if (this.intercept && !overshot) {
+            this.isNull = false;
 
-        if (LnavConfig.DEBUG_PREDICTED_PATH) {
-            this.computedPath.push(
-                {
-                    type: PathVectorType.DebugPoint,
-                    startPoint: this.getPathStartPoint(),
-                    annotation: 'CI START',
-                },
-                {
-                    type: PathVectorType.DebugPoint,
-                    startPoint: this.getPathEndPoint(),
-                    annotation: 'CI END',
-                },
-            );
+            this.computedPath = [{
+                type: PathVectorType.Line,
+                startPoint: this.getPathStartPoint(),
+                endPoint: this.getPathEndPoint(),
+            }];
+
+            this.isComputed = true;
+
+            if (LnavConfig.DEBUG_PREDICTED_PATH) {
+                this.computedPath.push(
+                    {
+                        type: PathVectorType.DebugPoint,
+                        startPoint: this.getPathStartPoint(),
+                        annotation: 'CI START',
+                    },
+                    {
+                        type: PathVectorType.DebugPoint,
+                        startPoint: this.getPathEndPoint(),
+                        annotation: 'CI END',
+                    },
+                );
+            }
+        } else {
+            this.computedPath.length = 0;
+
+            this.isNull = true;
+            this.isComputed = true;
         }
     }
 

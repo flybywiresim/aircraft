@@ -19,8 +19,7 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { GuidanceController } from '../GuidanceController';
-import { GuidanceComponent } from '../GuidanceComponent';
+import { GuidanceController, GuidanceComponent } from '@fmgc/guidance';
 
 /**
  * Represents the current turn state of the LNAV driver
@@ -363,8 +362,7 @@ export class LnavDriver implements GuidanceComponent {
                 withinSequencingArea = Math.abs(params.crossTrackError) < 7 && Math.abs(params.trackAngleError) < 90;
             }
 
-            if (canSequence && withinSequencingArea && geometry.shouldSequenceLeg(activeLegIdx, this.ppos)) {
-                const currentLeg = activeLeg;
+            if ((canSequence && withinSequencingArea && geometry.shouldSequenceLeg(activeLegIdx, this.ppos)) || activeLeg.isNull) {
                 const outboundTransition = geometry.transitions.get(activeLegIdx);
                 const nextLeg = geometry.legs.get(activeLegIdx + 1);
                 const followingLeg = geometry.legs.get(activeLegIdx + 2);
@@ -373,15 +371,15 @@ export class LnavDriver implements GuidanceComponent {
                     // FIXME we should stop relying on discos in the wpt objects, but for now it's fiiiiiine
                     // Hard-coded check for TF leg after the disco for now - only case where we don't wanna
                     // sequence this way is VM
-                    if (currentLeg instanceof XFLeg && currentLeg.fix.endsInDiscontinuity) {
-                        this.sequenceDiscontinuity(currentLeg);
+                    if (activeLeg instanceof XFLeg && activeLeg.fix.endsInDiscontinuity) {
+                        this.sequenceDiscontinuity(activeLeg);
                     } else {
-                        this.sequenceLeg(currentLeg, outboundTransition);
+                        this.sequenceLeg(activeLeg, outboundTransition);
                     }
-                    geometry.onLegSequenced(currentLeg, nextLeg, followingLeg);
+                    geometry.onLegSequenced(activeLeg, nextLeg, followingLeg);
                 } else {
-                    this.sequenceDiscontinuity(currentLeg);
-                    geometry.onLegSequenced(currentLeg, nextLeg, followingLeg);
+                    this.sequenceDiscontinuity(activeLeg);
+                    geometry.onLegSequenced(activeLeg, nextLeg, followingLeg);
                 }
             }
         }
@@ -413,11 +411,11 @@ export class LnavDriver implements GuidanceComponent {
     private updateEfisData(activeLeg: Leg, gs: Knots) {
         const termination = activeLeg instanceof XFLeg ? activeLeg.fix.infos.coordinates : activeLeg.getPathEndPoint();
 
-        const efisBearing = Avionics.Utils.computeGreatCircleHeading(this.ppos, termination);
+        const efisBearing = termination ? Avionics.Utils.computeGreatCircleHeading(this.ppos, termination) : -1;
 
         // Don't compute distance and ETA for XM legs
-        const efisDistance = activeLeg instanceof VMLeg ? null : Avionics.Utils.computeGreatCircleDistance(this.ppos, termination);
-        const efisEta = activeLeg instanceof VMLeg ? null : LnavDriver.legEta(this.ppos, gs, termination);
+        const efisDistance = activeLeg instanceof VMLeg ? -1 : Avionics.Utils.computeGreatCircleDistance(this.ppos, termination);
+        const efisEta = activeLeg instanceof VMLeg ? -1 : LnavDriver.legEta(this.ppos, gs, termination);
 
         // FIXME should be NCD if no FM position
 
