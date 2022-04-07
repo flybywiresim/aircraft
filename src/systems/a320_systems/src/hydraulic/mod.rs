@@ -9036,12 +9036,12 @@ mod tests {
             test_bed = test_bed
                 .set_ptu_state(false)
                 .set_yellow_e_pump(true)
-                .run_waiting_for(Duration::from_secs_f64(70.));
+                .run_waiting_for(Duration::from_secs_f64(80.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.2);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.2);
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.3);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.3);
         }
 
         #[test]
