@@ -1,5 +1,7 @@
 use super::linear_actuator::Actuator;
-use crate::shared::{interpolation, low_pass_filter::LowPassFilter, FeedbackPositionPickoffUnit};
+use crate::shared::{
+    interpolation, low_pass_filter::LowPassFilter, FeedbackPositionPickoffUnit, SectionPressure,
+};
 use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
@@ -192,8 +194,8 @@ impl FlapSlatAssembly {
         context: &UpdateContext,
         sfcc1_surface_position_request: Option<Angle>,
         sfcc2_surface_position_request: Option<Angle>,
-        left_pressure: Pressure,
-        right_pressure: Pressure,
+        left_pressure: &impl SectionPressure,
+        right_pressure: &impl SectionPressure,
     ) {
         self.update_final_ffpu_angle_request(
             sfcc1_surface_position_request,
@@ -203,14 +205,14 @@ impl FlapSlatAssembly {
         self.update_current_max_speed(
             sfcc1_surface_position_request.is_some(),
             sfcc2_surface_position_request.is_some(),
-            left_pressure,
-            right_pressure,
+            left_pressure.pressure(),
+            right_pressure.pressure(),
             context,
         );
 
         self.update_speed_and_position(context);
 
-        self.update_motors_speed(left_pressure, right_pressure, context);
+        self.update_motors_speed(left_pressure.pressure(), right_pressure.pressure(), context);
 
         self.update_motors_flow(context);
     }
@@ -480,6 +482,29 @@ mod tests {
 
     use crate::simulation::test::{SimulationTestBed, TestBed};
 
+    #[derive(Default)]
+    struct TestHydraulicSection {
+        pressure: Pressure,
+    }
+    impl TestHydraulicSection {
+        fn set_pressure(&mut self, pressure: Pressure) {
+            self.pressure = pressure;
+        }
+    }
+    impl SectionPressure for TestHydraulicSection {
+        fn pressure(&self) -> Pressure {
+            self.pressure
+        }
+
+        fn pressure_downstream_leak_valve(&self) -> Pressure {
+            self.pressure
+        }
+
+        fn is_pressure_switch_pressurised(&self) -> bool {
+            self.pressure.get::<psi>() > 1700.
+        }
+    }
+
     struct TestAircraft {
         core_hydraulic_updater: FixedStepLoop,
 
@@ -488,8 +513,8 @@ mod tests {
         left_motor_angle_request: Option<Angle>,
         right_motor_angle_request: Option<Angle>,
 
-        left_motor_pressure: Pressure,
-        right_motor_pressure: Pressure,
+        left_motor_pressure: TestHydraulicSection,
+        right_motor_pressure: TestHydraulicSection,
     }
     impl TestAircraft {
         fn new(context: &mut InitContext, max_speed: AngularVelocity) -> Self {
@@ -498,8 +523,8 @@ mod tests {
                 flaps_slats: flap_system(context, max_speed),
                 left_motor_angle_request: None,
                 right_motor_angle_request: None,
-                left_motor_pressure: Pressure::new::<psi>(0.),
-                right_motor_pressure: Pressure::new::<psi>(0.),
+                left_motor_pressure: TestHydraulicSection::default(),
+                right_motor_pressure: TestHydraulicSection::default(),
             }
         }
 
@@ -508,8 +533,8 @@ mod tests {
             left_motor_pressure: Pressure,
             right_motor_pressure: Pressure,
         ) {
-            self.left_motor_pressure = left_motor_pressure;
-            self.right_motor_pressure = right_motor_pressure;
+            self.left_motor_pressure.set_pressure(left_motor_pressure);
+            self.right_motor_pressure.set_pressure(right_motor_pressure);
         }
 
         fn set_angle_request(&mut self, angle_request: Option<Angle>) {
@@ -535,8 +560,8 @@ mod tests {
                     &context.with_delta(cur_time_step),
                     self.left_motor_angle_request,
                     self.right_motor_angle_request,
-                    self.left_motor_pressure,
-                    self.right_motor_pressure,
+                    &self.left_motor_pressure,
+                    &self.right_motor_pressure,
                 );
             }
         }
