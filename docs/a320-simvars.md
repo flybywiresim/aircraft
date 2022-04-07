@@ -2514,7 +2514,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_PNEU_PACK_{number}_FLOW_VALVE_FLOW_RATE:
     - Indicates the flow rate through the pack flow valve
-    - Gallon per second
+    - Kilogram per second
     - {number}
         - 1
         - 2
