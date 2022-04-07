@@ -120,10 +120,9 @@ class CDUIdentPage {
             ]);
 
             // Clear active & temp flightplans
-            mcdu.addNewMessage(NXSystemMessages.reSyncInProgress);
+            mcdu.addNewMessage(NXSystemMessages.pleaseWait);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary);
-            mcdu.addNewMessage(NXSystemMessages.reSyncInProgress);
             setTimeout(() => {
                 this.tryRemoveMessage('PLEASE WAIT');
             }, 2000);
