@@ -554,8 +554,8 @@ export class FlightPlanManager {
     /**
      * Gets the destination airfield of the current flight plan, if any.
      */
-    public getDestination(): WayPoint | undefined {
-        return this._flightPlans[this._currentFlightPlanIndex].destinationAirfield;
+    public getDestination(flightPlanIndex = this._currentFlightPlanIndex): WayPoint | undefined {
+        return this._flightPlans[flightPlanIndex].destinationAirfield;
     }
 
     /**
@@ -675,11 +675,21 @@ export class FlightPlanManager {
     /**
      * Gets the index of the last waypoint in the enroute segment of the current flight plan.
      */
-    public getEnRouteWaypointsLastIndex(): number {
-        const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
-        const enrouteSegment = currentFlightPlan.enroute;
+     public getEnRouteWaypointsFirstIndex(flightPlanIndex = this._currentFlightPlanIndex): number | null {
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
+        const enrouteSegment = currentFlightPlan?.enroute;
 
-        return enrouteSegment.offset + (enrouteSegment.waypoints.length - 1);
+        return enrouteSegment?.offset;
+    }
+
+    /**
+     * Gets the index of the last waypoint in the enroute segment of the current flight plan.
+     */
+    public getEnRouteWaypointsLastIndex(flightPlanIndex = this._currentFlightPlanIndex): number | null {
+        const currentFlightPlan = this._flightPlans[flightPlanIndex];
+        const enrouteSegment = currentFlightPlan?.enroute;
+
+        return enrouteSegment ? enrouteSegment.offset + (enrouteSegment.waypoints.length - 1) : null;
     }
 
     /**
