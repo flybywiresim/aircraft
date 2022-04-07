@@ -129,6 +129,8 @@ const Efb = () => {
     }, [lat, long, arrivingPosLat, arrivingPosLong, departingPosLat, departingPosLong]);
 
     useEffect(() => {
+        if (powerState !== PowerStates.LOADED) return;
+
         setBatteryLevel((oldLevel) => {
             const deltaTs = Math.max(absoluteTime - oldLevel.lastChangeTimestamp, 0);
             const batteryDurationSec = oldLevel.isCharging ? BATTERY_DURATION_CHARGE_MIN * 60 : -BATTERY_DURATION_DISCHARGE_MIN * 60;
@@ -150,7 +152,7 @@ const Efb = () => {
 
             return { level, lastChangeTimestamp, isCharging };
         });
-    }, [absoluteTime]);
+    }, [absoluteTime, powerState]);
 
     useEffect(() => {
         setBatteryLevel((oldLevel) => {
