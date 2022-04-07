@@ -1,5 +1,5 @@
 use crate::hydraulic::linear_actuator::Actuator;
-use crate::shared::{interpolation, low_pass_filter::LowPassFilter};
+use crate::shared::{interpolation, low_pass_filter::LowPassFilter, SectionPressure};
 use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
@@ -150,12 +150,12 @@ impl SteeringActuator {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        current_pressure: Pressure,
+        section_pressure: &impl SectionPressure,
         steering_controller: &impl SteeringController,
         pushback_tug: &impl Pushback,
     ) {
         if !pushback_tug.is_nose_wheel_steering_pin_inserted() {
-            self.update_max_speed(context, current_pressure);
+            self.update_max_speed(context, section_pressure.pressure());
 
             let limited_requested_angle = steering_controller
                 .requested_position()
@@ -333,12 +333,35 @@ mod tests {
         }
     }
 
+    #[derive(Default)]
+    struct TestHydraulicSection {
+        pressure: Pressure,
+    }
+    impl TestHydraulicSection {
+        fn set_pressure(&mut self, pressure: Pressure) {
+            self.pressure = pressure;
+        }
+    }
+    impl SectionPressure for TestHydraulicSection {
+        fn pressure(&self) -> Pressure {
+            self.pressure
+        }
+
+        fn pressure_downstream_leak_valve(&self) -> Pressure {
+            self.pressure
+        }
+
+        fn is_pressure_switch_pressurised(&self) -> bool {
+            self.pressure.get::<psi>() > 1700.
+        }
+    }
+
     struct TestAircraft {
         steering_actuator: SteeringActuator,
 
         controller: TestSteeringController,
 
-        pressure: Pressure,
+        pressure: TestHydraulicSection,
 
         pushback: TestPushBack,
     }
@@ -349,14 +372,14 @@ mod tests {
 
                 controller: TestSteeringController::new(),
 
-                pressure: Pressure::new::<psi>(0.),
+                pressure: TestHydraulicSection::default(),
 
                 pushback: TestPushBack::new(),
             }
         }
 
         fn set_pressure(&mut self, pressure: Pressure) {
-            self.pressure = pressure;
+            self.pressure.set_pressure(pressure);
         }
 
         fn command_steer_angle(&mut self, angle: Angle) {
@@ -373,8 +396,12 @@ mod tests {
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.steering_actuator
-                .update(context, self.pressure, &self.controller, &self.pushback);
+            self.steering_actuator.update(
+                context,
+                &self.pressure,
+                &self.controller,
+                &self.pushback,
+            );
 
             println!(
                 "Steering feedback {:.3} deg, Norm pos {:.1}, Speed {:.3} rad/s, Target {:.1} deg , Pressure {:.0}",
@@ -384,7 +411,7 @@ mod tests {
                     .current_speed
                     .output().get::<radian_per_second>(),
                 self.controller.requested_position().get::<degree>(),
-                self.pressure.get::<psi>()
+                self.pressure.pressure(). get::<psi>()
             );
         }
     }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { getSimVar, useInteractionEvent } from '../util.js';
 import { EngPage } from './Pages/Eng/Eng.tsx';
-import { BleedPage } from './Pages/Bleed.jsx';
+import { BleedPage } from './Pages/Bleed/Bleed.tsx';
 import { PressPage } from './Pages/Press/Press.tsx';
 import { ElecPage } from './Pages/Elec/Elec.tsx';
 import { HydPage } from './Pages/Hyd/Hyd.tsx';
