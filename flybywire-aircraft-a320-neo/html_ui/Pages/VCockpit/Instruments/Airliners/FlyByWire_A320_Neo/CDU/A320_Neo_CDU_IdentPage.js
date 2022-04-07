@@ -119,7 +119,7 @@ class CDUIdentPage {
                 ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"]
             ]);
 
-            //Clear/reset flightplan
+            // Clear active & temp flightplans
             mcdu.addNewMessage(NXFictionalMessages.reSyncInProgress);
             setTimeout(() => {
                 mcdu.tryRemoveMessage(NXFictionalMessages.reSyncInProgress);
