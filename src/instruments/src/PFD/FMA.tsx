@@ -770,9 +770,6 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
         const tcasModeDisarmedMessage = this.tcasModeDisarmed;
 
-        const boxclass = inSpeedProtection ? 'NormalStroke None' : 'NormalStroke White';
-        this.boxClassSub.set(boxclass);
-
         const boxPathString = this.activeVerticalModeSub.get() === 50 && tcasModeDisarmedMessage ? 'm34.656 1.8143h29.918v13.506h-29.918z' : 'm34.656 1.8143h29.918v6.0476h-29.918z';
 
         this.boxPathStringSub.set(boxPathString);
@@ -819,12 +816,14 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
         sub.on('fmaSpeedProtection').whenChanged().handle((protection) => {
             this.inSpeedProtection = protection;
-            if (!protection) {
-                this.displayModeChangedPath(true);
-                this.speedProtectionPathRef.instance.setAttribute('visibility', 'hidden');
-            } else {
-                this.displayModeChangedPath();
+            if (protection) {
                 this.speedProtectionPathRef.instance.setAttribute('visibility', 'visible');
+                this.boxClassSub.set('NormalStroke None');
+                this.displayModeChangedPath();
+            } else {
+                this.speedProtectionPathRef.instance.setAttribute('visibility', 'hidden');
+                this.boxClassSub.set('NormalStroke White');
+                this.displayModeChangedPath(true);
             }
             this.getText();
         });
