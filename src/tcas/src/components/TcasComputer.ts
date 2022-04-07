@@ -9,7 +9,7 @@ import { TcasComponent } from '@tcas/lib/TcasComponent';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
 import { LocalSimVar } from '@shared/simvar';
 import { NXDataStore } from '@shared/persistence';
-import stringify from 'safe-stable-stringify';
+import { FlowEventSync } from '@shared/FlowEventSync';
 import {
     TCAS_CONST as TCAS, JS_NPCPlane,
     TcasState, TcasMode, XpdrMode, TcasThreat,
@@ -158,7 +158,7 @@ export class TcasComputer implements TcasComponent {
 
     private debug: boolean; // TCAS_DEBUG on/off
 
-    private sendListener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true); // send event listener
+    private syncer: FlowEventSync = new FlowEventSync();
 
     private updateThrottler: UpdateThrottler; // Utility to restrict updates
 
@@ -467,7 +467,7 @@ export class TcasComputer implements TcasComponent {
             // information, we need to rely on the fallback method
             // this also leads to problems above 1750 ft (the threshold for ground detection), since the aircraft on ground are then shown again.
             // Currently just hide all above currently ground alt (of ppos) + 380, not ideal but works better than other solutions.
-            const groundAlt = this.planeAlt - this.radioAlt; // altitude of the terrain
+            const groundAlt = this.planeAlt - this.radioAlt.value; // altitude of the terrain
             const onGround = traffic.alt < (groundAlt + 360) || traffic.groundSpeed < 30;
             traffic.onGround = onGround;
             let isDisplayed = false;
@@ -1120,7 +1120,7 @@ export class TcasComputer implements TcasComponent {
             }
         });
 
-        this.sendListener.triggerToAllSubscribers('A32NX_TCAS_TRAFFIC', stringify(this.sendAirTraffic));
+        this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);
     }
 
     /**
@@ -1138,9 +1138,16 @@ export class TcasComputer implements TcasComponent {
         this.updateInhibitions();
         this.updateStatusFaults();
         if (this.tcasMode.getVar() === TcasMode.STBY) {
+            this.advisoryState = TcasState.NONE;
+            this.tcasState.setVar(TcasState.NONE);
+            this.correctiveRa.setVar(false);
+            SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:1', 'Number', 0);
+            SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_RED:2', 'Number', 0);
+            SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:1', 'Number', 0);
+            SimVar.SetSimVarValue('L:A32NX_TCAS_VSPEED_GREEN:2', 'Number', 0);
             if (this.sendAirTraffic.length !== 0) {
                 this.sendAirTraffic.length = 0;
-                this.sendListener.triggerToAllSubscribers('A32NX_TCAS_TRAFFIC', stringify(this.sendAirTraffic));
+                this.syncer.sendEvent('A32NX_TCAS_TRAFFIC', this.sendAirTraffic);
             }
             return;
         }

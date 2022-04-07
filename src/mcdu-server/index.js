@@ -270,6 +270,7 @@ function start() {
                 serverRunning = true;
                 console.clear();
                 console.log('External MCDU server started.\n');
+                console.log(`Listening for websocket connections on port ${websocketPort}... this should match the EFB settings page.\n`);
                 console.log('Waiting for simulator...');
             });
 
@@ -344,7 +345,9 @@ function start() {
                 ws.on('close', () => {
                     if (isMcdu) {
                         console.clear();
-                        console.log('\x1b[31mLost connection to simulator.\x1b[0m\n\nWaiting for simulator...');
+                        console.log('\x1b[31mLost connection to simulator.\x1b[0m\n');
+                        console.log(`Listening for websocket connections on port ${websocketPort}... this should match the EFB settings page.\n`);
+                        console.log('Waiting for simulator...');
                     }
                 });
             });
