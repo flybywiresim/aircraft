@@ -201,7 +201,7 @@
     - Bool
     - True if "BLUE PUMP OVRD" switch is off
 
-- A32NX_OVHD_HYD_LEAK_MEASUREMENT_G
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_G_PB_IS_AUTO
     - Bool
     - True if "HYD LEAK MEASUREMENT G" switch is on
 
@@ -209,7 +209,7 @@
     - Bool
     - True if "HYD LEAK MEASUREMENT G" switch lock is down
 
-- A32NX_OVHD_HYD_LEAK_MEASUREMENT_B
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_B_PB_IS_AUTO
     - Bool
     - True if "HYD LEAK MEASUREMENT B" switch is on
 
@@ -217,7 +217,7 @@
     - Bool
     - True if "HYD LEAK MEASUREMENT B" switch lock is down
 
-- A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y_PB_IS_AUTO
     - Bool
     - True if "HYD LEAK MEASUREMENT Y" switch is on
 
@@ -756,6 +756,14 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_SYSTEM_1_SECTION_PRESSURE_SWITCH
+    - Boolean
+    - Current pressure switch state in {loop_name} hydraulic circuit downstream of leak valve
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_PUMP_1_SECTION_PRESSURE
     - Psi
     - Current pressure in the pump section of the {loop_name} hydraulic circuit
@@ -775,6 +783,14 @@
 - A32NX_HYD_{loop_name}_RESERVOIR_LEVEL_IS_LOW
     - Boolean
     - Low level switch of {loop_name} hydraulic circuit reservoir indicates low state
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_RESERVOIR_AIR_PRESSURE_IS_LOW
+    - Boolean
+    - Low air pressure switch of {loop_name} hydraulic circuit reservoir indicates low state
     - {loop_name}
         - GREEN
         - BLUE
