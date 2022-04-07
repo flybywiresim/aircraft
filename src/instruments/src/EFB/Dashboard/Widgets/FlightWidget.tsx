@@ -17,7 +17,7 @@ interface InformationEntryProps {
 }
 
 const InformationEntry = ({ title, info }: InformationEntryProps) => (
-    <div className="flex flex-col items-center w-full">
+    <div className="flex flex-col items-center my-4">
         <h3 className="font-light">{title}</h3>
         <h2 className="font-bold">{info}</h2>
     </div>
@@ -51,7 +51,7 @@ const NoSimBriefDataOverlay = ({ simbriefDataLoaded, simbriefDataPending, fetchD
                                 <button
                                     type="button"
                                     onClick={fetchData}
-                                    className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                                    className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
                                 >
                                     <CloudArrowDown size={26} />
                                     <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
@@ -141,7 +141,7 @@ export const FlightWidget = () => {
                     </h1>
                 )}
             </div>
-            <div className="overflow-hidden relative p-6 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
+            <div className="overflow-hidden relative p-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
                 <div className="flex flex-col justify-between h-full">
                     <div className="space-y-8">
                         <div className="flex flex-row justify-between">
@@ -160,12 +160,12 @@ export const FlightWidget = () => {
                                     {schedOutParsed}
                                 </p>
                                 <div className="flex relative flex-row mx-6 w-full h-1">
-                                    <div className="absolute inset-x-0 border-b-4 border-dashed border-theme-text" />
+                                    <div className="absolute inset-x-0 border-b-4 border-theme-text border-dashed" />
 
                                     <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
                                         {!!flightPlanProgress && (
                                             <IconPlane
-                                                className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
+                                                className="absolute right-0 text-theme-highlight transform translate-x-1/2 -translate-y-1/2 fill-current"
                                                 size={50}
                                                 strokeLinejoin="miter"
                                             />
@@ -178,20 +178,21 @@ export const FlightWidget = () => {
                             </div>
                         </div>
                         <div>
-                            <div className="flex flex-row mb-4">
-                                <InformationEntry title={t('Dashboard.YourFlight.Alternate')} info={altIcao ?? 'NONE'} />
-                                <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.YourFlight.CompanyRoute')} info={departingIata + arrivingIata} />
-                                <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.YourFlight.ZFW')} info={estimatedZfw} />
-                            </div>
-                            <div className="my-auto w-full h-0.5 bg-theme-accent" />
-                            <div className="flex flex-row mt-4">
-                                <InformationEntry title={t('Dashboard.YourFlight.CostIndex')} info={costInd} />
-                                <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.YourFlight.AverageWind')} info={avgWind} />
-                                <div className="my-auto w-2 h-8 bg-theme-accent" />
-                                <InformationEntry title={t('Dashboard.YourFlight.CruiseAlt')} info={crzAlt} />
+                            <div className="flex flex-row justify-around mb-4">
+                                <div>
+                                    <InformationEntry title={t('Dashboard.YourFlight.Alternate')} info={altIcao ?? 'NONE'} />
+                                    <InformationEntry title={t('Dashboard.YourFlight.CostIndex')} info={costInd} />
+                                </div>
+                                <div className="my-auto mx-4 w-1 h-24 bg-theme-accent" />
+                                <div>
+                                    <InformationEntry title={t('Dashboard.YourFlight.CompanyRoute')} info={departingIata + arrivingIata} />
+                                    <InformationEntry title={t('Dashboard.YourFlight.AverageWind')} info={avgWind} />
+                                </div>
+                                <div className="my-auto mx-4 w-1 h-24 bg-theme-accent" />
+                                <div>
+                                    <InformationEntry title={t('Dashboard.YourFlight.ZFW')} info={estimatedZfw} />
+                                    <InformationEntry title={t('Dashboard.YourFlight.CruiseAlt')} info={crzAlt} />
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -218,7 +219,7 @@ export const FlightWidget = () => {
                     <button
                         type="button"
                         onClick={fetchData}
-                        className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                        className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-lg border-2 border-theme-highlight transition duration-100"
                     >
                         <CloudArrowDown size={26} />
                         <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>

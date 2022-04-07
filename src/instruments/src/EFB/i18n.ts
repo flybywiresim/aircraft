@@ -59,7 +59,6 @@ const watchLanguageChanges = () => {
         'EFB_LANGUAGE',
         (_, value) => {
             console.log(`language changed to ${value}`);
-
             i18n.changeLanguage(value);
         },
         'en',

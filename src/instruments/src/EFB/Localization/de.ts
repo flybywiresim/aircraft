@@ -1,30 +1,30 @@
 export const de = {
     AirTrafficControl: {
-        Active: 'Aktiv',
+        Active: 'Aktive Frequenz',
         ConnectHoppieACARS: 'Hoppie ACARS verbinden',
-        DisconnectHoppieACARS: 'Hoppie ACARS Verbindung trennen',
+        DisconnectHoppieACARS: 'Hoppie ACARS trennen',
         FlightnumberIsAlreadyInUse: 'Flugnummer wird schon verwendet',
         HoppieError: 'Hoppie Fehler',
-        HoppieSystemRequiresAUserIdWhichNeedsToBeSetInSettings: 'Das Hoppie-System benötigt eine Benutzer ID, welche in den Einstellungen unter ATSU / AOC festgelegt wird',
+        HoppieSystemRequiresAUserIdWhichNeedsToBeSetInSettings: 'Das Hoppie-System benötigt eine Benutzer ID, welche in den Einstellungen unter ATSU / AOC festgelegt wird.',
         InvalidLogonCodeUsed: 'Es wurde ein ungültiger Anmeldecode verwendet.',
         NoInformationAvailableForThisFrequency: 'FÜR DIESE FREQUENZ SIND KEINE INFORMATIONEN VERFÜGBAR',
-        SetActive: 'Aktivieren',
-        SetStandby: 'Standby einstellen',
-        Standby: 'Standby',
+        SetActive: 'Als Aktiv',
+        SetStandby: 'Als Bereitschaft',
+        Standby: 'Bereitschaftsfrequenz',
         Title: 'Flugsicherung',
     },
     Checklist: { ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Es sind noch nicht abgeschlossene Checklist-Aufgaben vorhanden' },
     Checklists: {
         AreYouSureYouWantToResetAllChecklists: 'Bist du sicher, dass du alle Checklisten zurücksetzen möchtest?',
         AreYouSureYouWantToResetChecklists: 'Bist du sicher, dass du alle Checklisten zurücksetzen möchtest?',
-        ChecklistResetWarning: 'Bist du sicher, dass du die Checkliste zurücksetzen möchtest',
+        ChecklistResetWarning: 'Bist du sicher, dass du die Checklisten zurücksetzen möchtest',
         MarkChecklistAsComplete: 'Checkliste als abgeschlossen markieren',
-        MarkItemAsComplete: 'Checklist-Aufgabe als abgeschlossen markieren',
+        MarkItemAsComplete: 'Checklisten-Aufgabe als abgeschlossen markieren',
         ProceedToNextChecklist: 'Fahren Sie mit der nächsten Checkliste fort',
         ResetAll: 'Alles zurücksetzen',
         ResetChecklist: 'Checkliste zurücksetzen',
         TheLastChecklistIsComplete: 'Die letzte Checkliste ist abgeschlossen',
-        ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Es sind noch nicht abgeschlossene Checklist-Aufgaben vorhanden',
+        ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Es sind noch nicht abgeschlossene Checklisten-Aufgaben vorhanden',
         Title: 'Checklisten',
     },
     Dashboard: {
@@ -33,7 +33,7 @@ export const de = {
                 NoRelevantChecklists: 'Keine relevanten Checklisten',
                 Title: 'Checklisten',
             },
-            GoToPage: 'Gehe zu Seite',
+            GoToPage: 'Gehe zur Seite',
             Maintenance: {
                 NoActiveFailures: 'Keine aktiven Ausfälle',
                 Title: 'Wartung',
@@ -60,8 +60,8 @@ export const de = {
         },
         Title: 'Dashboard',
         YourFlight: {
-            Alternate: 'Alternative',
-            AverageWind: 'Durchschnittlicher Wind',
+            Alternate: 'Ausweichflugplatz',
+            AverageWind: 'Ø Wind',
             CompanyRoute: 'Unternehmensroute',
             CostIndex: 'Kostenindex',
             CruiseAlt: 'Reiseflughöhe',
@@ -95,7 +95,7 @@ export const de = {
             Range: 'Reichweite',
             Title: 'Übersicht',
         },
-        Title: 'Dispatch',
+        Title: 'Flugplan',
     },
     Failures: {
         Comfort: { Title: 'Komfort' },
@@ -106,7 +106,7 @@ export const de = {
     },
     Ground: {
         Fuel: {
-            CenterTank: 'Tank in der Mitte',
+            CenterTank: 'Mittlerer Tank',
             Completed: 'Abgeschlossen',
             Defueling: 'Enttanken',
             EstimatedTime: 'Geschätzte Dauer',
@@ -123,7 +123,7 @@ export const de = {
                 FillBlockFuelFromSimBrief: 'Tankmenge gemäß SimBrief verwenden',
             },
             Title: 'Treibstoff',
-            TotalFuel: 'Treibstoff insgesamt',
+            TotalFuel: 'Treibstoff gesamt',
             Unavailable: 'Nicht verfügbar',
         },
         Pushback: { Title: 'Pushback' },
@@ -138,7 +138,7 @@ export const de = {
             DoorFwd: 'Vordere Tür',
             Title: 'Bodendienste',
         },
-        Title: 'Boden',
+        Title: 'Bodendienste',
     },
     Modals: {
         Cancel: 'Abbrechen',
@@ -147,7 +147,7 @@ export const de = {
     },
     NavigationAndCharts: {
         All: 'Alle',
-        Altn: 'Alternative',
+        Altn: 'ALTN',
         ExitFullscreenMode: 'Vollbildmodus beenden',
         From: 'Von',
         LocalFiles: {
@@ -164,10 +164,10 @@ export const de = {
             AirportDoesNotExist: 'Der Flughafen existiert nicht',
             AuthenticateWithNavigraph: 'Authentifiziere dich mit Navigraph',
             InsufficientEnv: 'Keine oder unzureichende .env Datei',
-            IntoYourBrowserAndEnterTheCodeBelow: 'Gib folgenden Code in Deinen Browser ein',
+            IntoYourBrowserAndEnterTheCodeBelow: 'mit Deinem Browser und gib folgenden Code ein:',
             NoAirportSelected: 'Kein Flughafen ausgewählt',
             ResetNavigraphAuthentication: 'Navigraph-Authentifizierung zurücksetzen',
-            ScanTheQrCodeOrOpen: 'Den QR-Code scannen oder öffne',
+            ScanTheQrCodeOrOpen: 'Scanne den QR-Code unten oder öffne',
             Title: 'Navigraph',
         },
         PinnedCharts: {
@@ -209,7 +209,7 @@ export const de = {
         Data: 'Daten',
         Landing: {
             AirportIcao: 'Flughafen ICAO',
-            ApproachSpeed: 'Anflugsgeschwindigkeit',
+            ApproachSpeed: 'Anfluggeschwindigkeit',
             AutoLand: 'Automatische Landung',
             Calculate: 'Berechnen',
             Clear: 'Löschen',
@@ -222,8 +222,8 @@ export const de = {
             Qnh: 'QNH',
             ReverseThrust: 'Schubumkehr',
             RunwayAltitude: 'Landebahnhöhenlage',
-            RunwayCondition: 'Zustand der Startbahn',
-            RunwayHeading: 'LandebahnrIchtung',
+            RunwayCondition: 'Zustand der Landebahn',
+            RunwayHeading: 'Landebahnrichtung',
             RunwayLda: 'Landebahn LDA',
             RunwaySlope: 'Landebahnneigung',
             TT: {
@@ -237,7 +237,7 @@ export const de = {
             WindMagnitude: 'Windstärke',
         },
         SYNC: 'SYNC',
-        Title: 'Performance',
+        Title: 'Leistungsberechnungen',
         TopOfDescent: {
             Data: {
                 Angle: 'Winkel',
@@ -261,7 +261,7 @@ export const de = {
             Result: {
                 BeforeTarget: 'vor dem Ziel',
                 DesiredDescentAngle: 'Gewünschter Sinkwinkel',
-                StartYourDescentAbout: 'Beginnen Sie Ihren Sinkflug ungefähr',
+                StartYourDescentAbout: 'Beginne Deinen Sinkflug ca.',
                 Title: 'Ergebnis',
             },
             TT: {
@@ -275,10 +275,10 @@ export const de = {
         AircraftStates: {
             Cancel: 'Abbrechen',
             CurrentProcedureStep: 'Aktueller Verfahrensschritt',
-            PleaseConfirmLoadingOfPreset: 'Bitte bestätigen Sie das Laden der Voreinstellung.',
-            SelectAPresetToLoad: 'Wählen Sie eine Voreinstellung zum Laden',
-            TheAircraftMustBeOnTheGroundToLoadAPreset: 'Das Flugzeug muss am Boden sein, um eine Voreinstellung zu laden.',
-            TheAircraftMustBeOntheGroundToLoadAPreset: 'Das Flugzeug muss am Boden sein, um eine Voreinstellung zu laden.',
+            PleaseConfirmLoadingOfPreset: 'Bitte bestätigen Sie das Laden eines Flugzeugzustands.',
+            SelectAPresetToLoad: 'Wählen Sie einen Flugzeugzustand zum Laden',
+            TheAircraftMustBeOnTheGroundToLoadAPreset: 'Das Flugzeug muss am Boden sein, um einen Flugzeugzustand zu laden.',
+            TheAircraftMustBeOntheGroundToLoadAPreset: 'Das Flugzeug muss am Boden sein, um einen Flugzeugzustand zu laden.',
             Title: 'Flugzeugzustände',
         },
         InteriorLighting: {
@@ -293,7 +293,7 @@ export const de = {
             SelectAnInteriorLightingPresetToLoadOrSave: 'Wähle eine Voreinstellung für die Innenbeleuchtung zum Laden oder Speichern aus.',
             TT: {
                 AircraftMustBePowered: 'Flugzeug muss mit Strom versorgt sein',
-                ClickTextToChangeThePresetsName: 'Klicken Sie auf den Text, um den Namen der Voreinstellung zu ändern',
+                ClickTextToChangeThePresetsName: 'Klicke auf den Text, um den Namen der Voreinstellung zu ändern',
                 LoadThisPreset: 'Diese Voreinstellung laden',
                 SaveTheCurrentLightingLevels: 'Speichere die aktuellen Beleuchtungseinstellungen',
             },
@@ -304,7 +304,7 @@ export const de = {
     },
     Pushback: {
         Backward: 'Rückwärts',
-        CallTug: 'Rufe Flugzeugschleppfahrzeug',
+        CallTug: 'Rufe Flugzeugschlepper',
         Forward: 'Vorwärts',
         Halt: 'Halt',
         ParkingBrake: {
@@ -355,7 +355,7 @@ export const de = {
             PassengerAmbience: 'Passagier-Ambiente',
             PtuAudibleInCockpit: 'PTU im Cockpit hörbar',
             Title: 'Audio',
-            WindInteriorVolume: 'Lautstärke Windgeräusche im Innern',
+            WindInteriorVolume: 'Windgeräuschlautstärke im Innern',
         },
         Fast: 'Schnell',
         Instant: 'Sofort',
@@ -369,7 +369,7 @@ export const de = {
             HomeCockpitMode: 'Home-Cockpitmodus',
             McduFocusTimeout: 'MCDU Fokusdauer (Sekunden)',
             McduKeyboardInput: 'MCDU-Tastatureingabe',
-            SeparateTillerFromRudderInputs: 'Trennung von Tiller und Querruder Eingaben',
+            SeparateTillerFromRudderInputs: 'Trennung von Tiller- und Querrudereingaben',
             Title: 'Realismus',
         },
         SimOptions: {
@@ -381,7 +381,7 @@ export const de = {
             LoadOnly: 'Einmaliges Laden',
             None: 'Keine',
             Save: 'Zurückspeichern bei Änderung',
-            SyncMsfsFlightPlan: 'MSFS-Flugplan synchronisieren',
+            SyncMsfsFlightPlan: 'MSFS-Flugplan Synchronization',
             ThrottleDetents: 'Schubhebelkalibrierung',
             Title: 'Sim-Optionen',
             UseCalculatedIlsSignals: 'Berechnete ILS-Signale verwenden',
@@ -446,8 +446,8 @@ export const de = {
         Sep: 'Sep',
         Sun: 'So',
         TT: {
-            ConnectedToLocalApi: 'Mit Local-API Server verbinden',
-            DisconnectedFromLocalApi: 'Vom Local-API Server trennen',
+            ConnectedToLocalApi: 'Mit Local-API Server verbunden',
+            DisconnectedFromLocalApi: 'Keine Verbindung zum Local-API Server',
             TurnOffOrShutdownEfb: 'EFB ausschalten oder herunterfahren',
         },
         Thu: 'Do',
