@@ -49,6 +49,7 @@ const NXSystemMessages = {
     notAllowed:             new McduMessage("NOT ALLOWED", false, false),
     notAllowedInNav:        new McduMessage("NOT ALLOWED IN NAV", false, false),
     notInDatabase:          new McduMessage("NOT IN DATABASE", false, false),
+    reSyncInProgress:       new McduMessage("PLEASE WAIT", false, false),
     rwyLsMismatch:          new McduMessage("RWY/LS MISMATCH", true, true),
     selectDesiredSystem:    new McduMessage("SELECT DESIRED SYSTEM", false, false),
     setHoldSpeed:           new McduMessage("SET HOLD SPEED", false, true),
@@ -93,7 +94,6 @@ const NXFictionalMessages = {
     noAtc:                  new McduMessage("NO ACTIVE ATC", false, false),
     noHoppieConnection:     new McduMessage("NO HOPPIE CONNECTION", false, false),
     unknownAtsuMessage:     new McduMessage("UNKNOWN ATSU MESSAGE", false, false),
-    reverseProxy:           new McduMessage("REVERSE PROXY ERROR", false, false),
-    reSyncInProgress:       new McduMessage("PLEASE WAIT", false, false)
+    reverseProxy:           new McduMessage("REVERSE PROXY ERROR", false, false)
 
 };

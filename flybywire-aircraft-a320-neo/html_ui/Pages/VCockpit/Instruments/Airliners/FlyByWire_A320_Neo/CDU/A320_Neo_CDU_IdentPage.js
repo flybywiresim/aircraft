@@ -31,10 +31,6 @@ function calculateActiveDate(date) {
     }
 }
 
-function clearMsg() {
-    return mcdu.tryRemoveMessage(NXFictionalMessages.reSyncInProgress);
-}
-
 // function calculateSecDate(date) {
 //     if (date.length === 13) {
 //         const primStartMonth = date.slice(0, 3);
@@ -124,9 +120,9 @@ class CDUIdentPage {
             ]);
 
             // Clear active & temp flightplans
-            mcdu.addNewMessage(NXFictionalMessages.reSyncInProgress);
+            mcdu.addNewMessage(NXSystemMessages.reSyncInProgress);
             setTimeout(() => {
-                clearMsg();
+                mcdu.tryRemoveMessage(NXSystemMessages.reSyncInProgress);
             }, 2000);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary);
