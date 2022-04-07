@@ -41,6 +41,16 @@ interface RunwayVisualizationProps {
     distanceUnit: 'ft' | 'm';
 }
 
+interface RunwayNumberProps {
+    heading?: number;
+}
+
+const RunwayNumber = ({ heading }: RunwayNumberProps) => (
+    <div className="mx-auto w-min text-4xl font-bold text-white">
+        {heading !== undefined ? Math.round((heading % 360 ?? 0) / 10).toString().padStart(2, '0') : '??'}
+    </div>
+);
+
 const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runwayHeading, toda = 0, distanceUnit }: RunwayVisualizationProps) => {
     const maxDist = () => {
         const distances = labels.map((label) => label.distance);
@@ -123,12 +133,6 @@ const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runw
         </div>
     );
 
-    const runwayNumber = (
-        <div className="mx-auto w-min text-4xl font-bold text-white">
-            {runwayHeading !== undefined ? Math.round((runwayHeading ?? 0) / 10).toString().padStart(2, '0') : '??'}
-        </div>
-    );
-
     return (
         <div className="flex h-full">
             <div className="flex relative flex-col h-full">
@@ -145,7 +149,7 @@ const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runw
                                 {runwayBoundMarkers}
                             </div>
                             <div className="transform rotate-180">
-                                {runwayNumber}
+                                <RunwayNumber heading={runwayHeading === undefined ? undefined : runwayHeading + 180} />
                             </div>
                         </div>
 
@@ -165,7 +169,7 @@ const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runw
                         </div>
 
                         <div>
-                            {runwayNumber}
+                            <RunwayNumber heading={runwayHeading} />
                             <div className="flex flex-row justify-between">
                                 {runwayBoundMarkers}
                                 {runwayBoundMarkers}
