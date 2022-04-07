@@ -231,6 +231,7 @@
 1. [MODEL] Add detailed rivet mesh to allow for ALDB+COMP+NORM ribbons - @bouveng (Johan Bouveng)
 1. [SD] Rewrite Bleed page to React - @RichardPilbery (tricky_dicky#3571)
 1. [FMGC] Implement "coarse" prediction system for turn speeds - @tracernz (Mike)
+1. [BLEED] Converted bleed system to use mass flow instead of volume flow - @Gurgel100 (Pascal)
 
 ## 0.7.0
 
