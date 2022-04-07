@@ -123,7 +123,6 @@ class CDUIdentPage {
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary);
 
-
         };
     }
 }
