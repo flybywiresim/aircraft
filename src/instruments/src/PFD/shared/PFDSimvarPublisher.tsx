@@ -15,8 +15,8 @@ export interface PFDSimvars {
     onGround: number;
     activeLateralMode: number;
     activeVerticalMode: number;
-    fmaModeReversion: number;
-    fmaSpeedProtection: number;
+    fmaModeReversion: boolean;
+    fmaSpeedProtection: boolean;
     AThrMode: number;
     apVsSelected: number;
     approachCapability: number;
@@ -127,8 +127,8 @@ export enum PFDVars {
     onGround = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
     activeLateralMode = 'L:A32NX_FMA_LATERAL_MODE',
     activeVerticalMode = 'L:A32NX_FMA_VERTICAL_MODE',
-    fmaModeReversion = 'L:A32NX_fmaModeReversion',
-    fmaSpeedProtection = 'L:A32NX_fmaSpeedProtection_MODE',
+    fmaModeReversion = 'L:A32NX_FMA_MODE_REVERSION',
+    fmaSpeedProtection = 'L:A32NX_FMA_SPEED_PROTECTION_MODE',
     AThrMode = 'L:A32NX_AUTOTHRUST_MODE',
     apVsSelected = 'L:A32NX_AUTOPILOT_VS_SELECTED',
     approachCapability = 'L:A32NX_ApproachCapability',
@@ -241,8 +241,8 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['onGround', { name: PFDVars.onGround, type: SimVarValueType.Number }],
         ['activeLateralMode', { name: PFDVars.activeLateralMode, type: SimVarValueType.Number }],
         ['activeVerticalMode', { name: PFDVars.activeVerticalMode, type: SimVarValueType.Number }],
-        ['fmaModeReversion', { name: PFDVars.fmaModeReversion, type: SimVarValueType.Number }],
-        ['fmaSpeedProtection', { name: PFDVars.fmaSpeedProtection, type: SimVarValueType.Number }],
+        ['fmaModeReversion', { name: PFDVars.fmaModeReversion, type: SimVarValueType.Bool }],
+        ['fmaSpeedProtection', { name: PFDVars.fmaSpeedProtection, type: SimVarValueType.Bool }],
         ['AThrMode', { name: PFDVars.AThrMode, type: SimVarValueType.Number }],
         ['apVsSelected', { name: PFDVars.apVsSelected, type: SimVarValueType.FPM }],
         ['approachCapability', { name: PFDVars.approachCapability, type: SimVarValueType.Number }],
