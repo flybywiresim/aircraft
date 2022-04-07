@@ -103,30 +103,13 @@ class CDUIdentPage {
 
         //Select secondary Nav DB, there is only one, so same one is used for primary and secondary. This just swops their positions and clears the active & temp FPL's
         mcdu.onLeftInput[2] = () => {
-            mcdu.setTemplate([
-                ["A320-200"],//This aircraft code is correct and does not include the engine type.
-                ["\xa0ENG"],
-                ["LEAP-1A26[color]green"],
-                ["\xa0ACTIVE NAV DATA BASE"],
-                ["\xa0" + calculateActiveDate(date) + "[color]cyan", "AIRAC[color]green"],
-                ["\xa0SECOND NAV DATA BASE"],
-                ["{small}{" + calculateActiveDate(date) + "{end}[color]cyan"],
-                ["", "STORED\xa0\xa0\xa0\xa0"],
-                ["", `{green}${stored.routes.toFixed(0).padStart(2, '0')}{end}{small}RTES{end}\xa0{green}${stored.runways.toFixed(0).padStart(2, '0')}{end}{small}RWYS{end}`],
-                ["CHG CODE", `{green}{big}${stored.waypoints.toFixed(0).padStart(2, '0')}{end}{end}{small}WPTS{end}\xa0{green}{big}${stored.navaids.toFixed(0).padStart(2, '0')}{end}{end}{small}NAVS{end}`],
-                ["{small}[  ]{end}[color]inop", confirmDeleteAll ? '{amber}CONFIRM DEL*{end}' : '{cyan}DELETE ALL}{end}'],
-                ["IDLE/PERF", "SOFTWARE"],
-                ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"]
-            ]);
-
             // Clear active & temp flightplans
             mcdu.addNewMessage(NXSystemMessages.pleaseWait);
-            mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active);
-            mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary);
-            setTimeout(() => {
-                this.tryRemoveMessage('PLEASE WAIT');
-            }, 2000);
-
+            mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active).then(
+                mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary).then(
+                    mcdu.tryRemoveMessage('PLEASE WAIT')
+                )
+            );
         };
     }
 }
