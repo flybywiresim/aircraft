@@ -175,12 +175,12 @@ class Row1 extends DisplayComponent<{bus:EventBus, isAttExcessive: Subscribable<
 
         this.props.isAttExcessive.sub((a) => {
             if (a) {
-                this.cellsToHide.instance.style.visibility = 'hidden';
+                this.cellsToHide.instance.style.display = 'none';
                 this.b1Cell.instance.displayModeChangedPath(true);
                 this.c1Cell.instance.displayModeChangedPath(true);
                 this.BC1Cell.instance.displayModeChangedPath(true);
             } else {
-                this.cellsToHide.instance.style.visibility = 'visible';
+                this.cellsToHide.instance.style.display = 'inline';
                 this.b1Cell.instance.displayModeChangedPath();
                 this.c1Cell.instance.displayModeChangedPath();
                 this.BC1Cell.instance.displayModeChangedPath();
@@ -213,9 +213,9 @@ class Row2 extends DisplayComponent<{bus:EventBus, isAttExcessive: Subscribable<
 
         this.props.isAttExcessive.sub((a) => {
             if (a) {
-                this.cellsToHide.instance.style.visibility = 'hidden';
+                this.cellsToHide.instance.style.display = 'none';
             } else {
-                this.cellsToHide.instance.style.visibility = 'visible';
+                this.cellsToHide.instance.style.display = 'inline';
             }
         });
     }
@@ -299,9 +299,9 @@ class Row3 extends DisplayComponent<{ bus:EventBus, isAttExcessive: Subscribable
 
         this.props.isAttExcessive.sub((a) => {
             if (a) {
-                this.cellsToHide.instance.style.visibility = 'hidden';
+                this.cellsToHide.instance.style.display = 'none';
             } else {
-                this.cellsToHide.instance.style.visibility = 'visible';
+                this.cellsToHide.instance.style.display = 'inline';
             }
         });
     }
@@ -946,7 +946,6 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
             this.activeLateralMode = lm;
 
             const isShown = this.updateText();
-            this.isShown = isShown;
 
             if (isShown) {
                 this.displayModeChangedPath();
@@ -959,7 +958,6 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
             this.activeVerticalMode = lm;
 
             const isShown = this.updateText();
-            this.isShown = isShown;
 
             if (isShown) {
                 this.displayModeChangedPath();
@@ -971,10 +969,9 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
         sub.on('fmaVerticalArmed').whenChanged().handle((va) => {
             this.armedVerticalMode = va;
 
-            const isShown = this.updateText();
-            this.isShown = isShown;
+            const hasChanged = this.updateText();
 
-            if (isShown) {
+            if (hasChanged) {
                 this.displayModeChangedPath();
             } else {
                 this.displayModeChangedPath(true);
@@ -986,6 +983,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
         const finalArmed = (this.armedVerticalMode >> 5) & 1;
 
         let text: string;
+        this.isShown = true;
         if (this.activeLateralMode === LateralMode.GA_TRACK) {
             text = 'GA TRK';
         } else if (this.activeLateralMode === LateralMode.LOC_CPT) {
@@ -1006,6 +1004,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
             text = 'APP NAV';
         } else {
             text = '';
+            this.isShown = false;
         }
 
         const hasChanged = text.length > 0 && text !== this.textSub.get();
