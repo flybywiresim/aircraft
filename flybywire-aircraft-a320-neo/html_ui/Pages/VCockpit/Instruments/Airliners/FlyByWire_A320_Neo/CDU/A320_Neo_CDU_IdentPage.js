@@ -101,7 +101,7 @@ class CDUIdentPage {
             }
         };
 
-        //Select secondary Nav DB, there is only one, so same one is used for primary and secondary. This just swops their positions and clears the active & temp FPL's
+        //Select secondary Nav DB, there is only one, so same one is used for primary and secondary. This clears the active & temp FPL's and shows please wait message briefly.
         mcdu.onLeftInput[2] = () => {
             mcdu.addNewMessage(NXSystemMessages.pleaseWait);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active).then(
