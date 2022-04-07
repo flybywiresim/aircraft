@@ -108,9 +108,9 @@ class CDUIdentPage {
                 ["\xa0ENG"],
                 ["LEAP-1A26[color]green"],
                 ["\xa0ACTIVE NAV DATA BASE"],
-                ["{small}" + calculateActiveDate(date) + "{end}[color]cyan", "AIRAC[color]green"],
-                ["\xa0SECOND NAV DATA BASE"],
                 ["\xa0" + calculateSecDate(date) + "[color]cyan"],
+                ["\xa0SECOND NAV DATA BASE"],
+                ["{small}" + calculateActiveDate(date) + "{end}[color]cyan", "AIRAC[color]green"],
                 ["", "STORED\xa0\xa0\xa0\xa0"],
                 ["", `{green}${stored.routes.toFixed(0).padStart(2, '0')}{end}{small}RTES{end}\xa0{green}${stored.runways.toFixed(0).padStart(2, '0')}{end}{small}RWYS{end}`],
                 ["CHG CODE", `{green}{big}${stored.waypoints.toFixed(0).padStart(2, '0')}{end}{end}{small}WPTS{end}\xa0{green}{big}${stored.navaids.toFixed(0).padStart(2, '0')}{end}{end}{small}NAVS{end}`],
@@ -119,10 +119,13 @@ class CDUIdentPage {
                 ["+0.0/+0.0[color]green", "STATUS/XLOAD>[color]inop"]
             ]);
 
-            mcdu.flightPhaseManager.changePhase(FmgcFlightPhases.PREFLIGHT);
-            //mcdu.addNewMessage(NXFictionalMessages.navDbRecycled);
             //INOP Primary Nav Date
             //Figure out how to clear/reset flightplan
+
+            mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active);
+            mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary);
+
+
         };
     }
 }
