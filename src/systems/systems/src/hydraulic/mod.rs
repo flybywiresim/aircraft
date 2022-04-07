@@ -4,7 +4,7 @@ use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::pneumatic::PressurizeableReservoir;
 use crate::shared::{
     interpolation, low_pass_filter::LowPassFilter, DelayedTrueLogicGate, ElectricalBusType,
-    ElectricalBuses, HydraulicColor,SectionPressure
+    ElectricalBuses, HydraulicColor, SectionPressure,
 };
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
