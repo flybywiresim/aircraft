@@ -8,15 +8,12 @@ import { EfisSide, EfisVectorsGroup } from '@shared/NavigationDisplay';
 import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
-import { TaskCategory } from '@fmgc/guidance/TaskQueue';
-import stringify from 'safe-stable-stringify';
-
-const TRANSMIT_GROUP_SIZE = 4;
+import { FlowEventSync } from '@shared/FlowEventSync';
 
 const UPDATE_TIMER = 2_500;
 
 export class EfisVectors {
-    private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
+    private syncer: FlowEventSync = new FlowEventSync();
 
     constructor(
         private guidanceController: GuidanceController,
@@ -143,41 +140,6 @@ export class EfisVectors {
     }
 
     private transmit(vectors: PathVector[], vectorsGroup: EfisVectorsGroup, side: EfisSide): void {
-        this.guidanceController.taskQueue.runStepTask({
-            category: TaskCategory.EfisVectors,
-            tag: EfisVectorsGroup[vectorsGroup],
-            executor: function* task() {
-                const numGroups = Math.floor(vectors.length / TRANSMIT_GROUP_SIZE);
-
-                if (LnavConfig.DEBUG_PATH_DRAWING) {
-                    console.log(`[FMS/Vectors/Transmit] Starting transmit: numVectors=${vectors.length} groupSize=${TRANSMIT_GROUP_SIZE} numGroups=${numGroups}`);
-                }
-
-                for (let i = 0; i < numGroups; i++) {
-                    this.listener.triggerToAllSubscribers(
-                        `A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[vectorsGroup]}`,
-                        stringify(vectors.slice(i * TRANSMIT_GROUP_SIZE, (i + 1) * TRANSMIT_GROUP_SIZE)),
-                        i * TRANSMIT_GROUP_SIZE,
-                    );
-                    if (LnavConfig.DEBUG_PATH_DRAWING) {
-                        console.log(`[FMS/Vectors/Transmit] Transmitted group #${i}...`);
-                    }
-                    yield;
-                }
-
-                const lastStartIndex = numGroups * TRANSMIT_GROUP_SIZE;
-
-                this.listener.triggerToAllSubscribers(
-                    `A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[vectorsGroup]}`,
-                    stringify(vectors.slice(lastStartIndex, vectors.length)),
-                    lastStartIndex,
-                    true,
-                );
-
-                if (LnavConfig.DEBUG_PATH_DRAWING) {
-                    console.log('[FMS/Vectors/Transmit] Done with transmit.');
-                }
-            }.bind(this),
-        });
+        this.syncer.sendEvent(`A32NX_EFIS_VECTORS_${side}_${EfisVectorsGroup[vectorsGroup]}`, vectors);
     }
 }
