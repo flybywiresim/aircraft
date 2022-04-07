@@ -121,8 +121,8 @@ class CDUIdentPage {
 
             // Clear active & temp flightplans
             mcdu.addNewMessage(NXFictionalMessages.reSyncInProgress);
-            setTimeout(() => {
-                mcdu.tryRemoveMessage(NXFictionalMessages.reSyncInProgress.text);
+            const tout = setTimeout(() => {
+                mcdu.tryRemoveMessage(NXFictionalMessages.reSyncInProgress);
             }, 2000);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary);
