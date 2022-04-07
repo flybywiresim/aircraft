@@ -123,7 +123,10 @@ class CDUIdentPage {
             mcdu.addNewMessage(NXSystemMessages.reSyncInProgress);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary);
-            mcdu.tryRemoveMessage(NXSystemMessages.reSyncInProgress);
+            mcdu.addNewMessage(NXSystemMessages.reSyncInProgress);
+            setTimeout(() => {
+                this.tryRemoveMessage('PLEASE WAIT');
+            }, 2000);
 
         };
     }
