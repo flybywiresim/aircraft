@@ -25,6 +25,7 @@ export const FlyPadPage = () => {
     const [usingColoredMetar, setUsingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
     const [language, setLanguage] = usePersistentProperty('EFB_LANGUAGE', 'en');
     const [keyboardLayout, setKeyboardLayout] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');
+    const [batteryLifeEnabled, setBatteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
 
     const { t } = useTranslation();
 
@@ -147,6 +148,11 @@ export const FlyPadPage = () => {
                     onChange={(value) => setKeyboardLayout(value as string)}
                     options={keyboardLayoutOptions.map((option) => ({ value: option.name, displayValue: option.alias }))}
                 />
+            </SettingItem>
+
+            {/* TODO: Add this key into localazy at some point */}
+            <SettingItem name={t('Settings.flyPad.BatteryLifeEnabled')}>
+                <Toggle value={!!batteryLifeEnabled} onToggle={(value) => setBatteryLifeEnabled(value ? 1 : 0)} />
             </SettingItem>
         </SettingsPage>
     );
