@@ -1406,13 +1406,18 @@ class FMCMainDisplay extends BaseAirliners {
     updateManagedProfile() {
         this.managedProfile.clear();
 
+        const origin = this.flightPlanManager.getPersistentOrigin(FlightPlans.Active);
+        const originElevation = origin ? origin.infos.coordinates.alt : 0;
+        const destination = this.flightPlanManager.getDestination(FlightPlans.Active);
+        const destinationElevation = destination ? destination.infos.coordinates.alt : 0;
+
         // TODO should we save a constraint already propagated to the current leg?
 
         // propagate descent speed constraints forward
         let currentSpeedConstraint = Infinity;
         let previousSpeedConstraint = Infinity;
-        for (let index = 0; index < this.flightPlanManager.getWaypointsCount(0); index++) {
-            const wp = this.flightPlanManager.getWaypoint(index, 0);
+        for (let index = 0; index < this.flightPlanManager.getWaypointsCount(FlightPlans.Active); index++) {
+            const wp = this.flightPlanManager.getWaypoint(index, FlightPlans.Active);
             if (wp.additionalData.constraintType === 2 /* DES */) {
                 if (wp.speedConstraint > 0) {
                     currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(wp.speedConstraint));
@@ -1435,8 +1440,8 @@ class FMCMainDisplay extends BaseAirliners {
         previousSpeedConstraint = Infinity;
         let currentDesConstraint = -Infinity;
         let currentClbConstraint = Infinity;
-        for (let index = this.flightPlanManager.getWaypointsCount(0) - 1; index >= 0; index--) {
-            const wp = this.flightPlanManager.getWaypoint(index, 0);
+        for (let index = this.flightPlanManager.getWaypointsCount(FlightPlans.Active) - 1; index >= 0; index--) {
+            const wp = this.flightPlanManager.getWaypoint(index, FlightPlans.Active);
             if (wp.additionalData.constraintType === 1 /* CLB */) {
                 if (wp.speedConstraint > 0) {
                     currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(wp.speedConstraint));
@@ -1469,6 +1474,32 @@ class FMCMainDisplay extends BaseAirliners {
             profilePoint.climbAltitude = currentClbConstraint;
             profilePoint.descentAltitude = currentDesConstraint;
             previousSpeedConstraint = currentSpeedConstraint;
+
+            // set some data for LNAV to use for coarse predictions while we lack vnav
+            if (wp.additionalData.constraintType === 1 /* CLB */) {
+                wp.additionalData.predictedSpeed = Math.min(profilePoint.climbSpeed, this.managedSpeedClimb);
+                if (this.climbSpeedLimitAlt && profilePoint.climbAltitude < this.climbSpeedLimitAlt) {
+                    wp.additionalData.predictedSpeed = Math.min(wp.additionalData.predictedSpeed, this.climbSpeedLimit);
+                }
+                wp.additionalData.predictedAltitude = Math.min(profilePoint.climbAltitude, this._cruiseFlightLevel * 100);
+            } else if (wp.additionalData.constraintType === 2 /* DES */) {
+                wp.additionalData.predictedSpeed = Math.min(profilePoint.descentSpeed, this.managedSpeedDescend);
+                if (this.descentSpeedLimitAlt && profilePoint.climbAltitude < this.descentSpeedLimitAlt) {
+                    wp.additionalData.predictedSpeed = Math.min(wp.additionalData.predictedSpeed, this.descentSpeedLimit);
+                }
+                wp.additionalData.predictedAltitude = Math.min(profilePoint.descentAltitude, this._cruiseFlightLevel * 100); ;
+            } else {
+                wp.additionalData.predictedSpeed = this.managedSpeedCruise;
+                wp.additionalData.predictedAltitude = this._cruiseFlightLevel * 100;
+            }
+            // small hack to ensure the terminal procedures and transitions to/from enroute look nice despite lack of altitude predictions
+            if (index <= this.flightPlanManager.getEnRouteWaypointsFirstIndex(FlightPlans.Active)) {
+                wp.additionalData.predictedAltitude = Math.min(originElevation + 10000, wp.additionalData.predictedAltitude);
+                wp.additionalData.predictedSpeed = Math.min(250, wp.additionalData.predictedSpeed);
+            } else if (index >= this.flightPlanManager.getEnRouteWaypointsLastIndex(FlightPlans.Active)) {
+                wp.additionalData.predictedAltitude = Math.min(destinationElevation + 10000, wp.additionalData.predictedAltitude);
+                wp.additionalData.predictedSpeed = Math.min(250, wp.additionalData.predictedSpeed);
+            }
         }
     }
 

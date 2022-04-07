@@ -725,6 +725,11 @@ class CDUFlightPlanPage {
                 () => {
                     CDULateralRevisionPage.ShowPage(mcdu, fpm.getDestination(), fpm.getWaypointsCount() - 1);
                 });
+
+            addRskAt(5, () => mcdu.getDelaySwitchPage(),
+                () => {
+                    CDUVerticalRevisionPage.ShowPage(mcdu, fpm.getDestination());
+                });
         }
 
         // scrollText pad to 9 rows
