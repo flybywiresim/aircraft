@@ -31,9 +31,8 @@ function calculateActiveDate(date) {
     }
 }
 
-function clearMsg(msg) {
-    const clr = mcdu.tryRemoveMessage(NXFictionalMessages.msg);
-    return clr;
+function clearMsg() {
+    return mcdu.tryRemoveMessage(NXFictionalMessages.reSyncInProgress);
 }
 
 // function calculateSecDate(date) {
@@ -127,7 +126,7 @@ class CDUIdentPage {
             // Clear active & temp flightplans
             mcdu.addNewMessage(NXFictionalMessages.reSyncInProgress);
             setTimeout(() => {
-                clearMsg(reSyncInProgress);
+                clearMsg();
             }, 2000);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active);
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Temporary);
