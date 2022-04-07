@@ -108,11 +108,6 @@ class FlyByWireInterface {
 
   RaBus raBusOutputs[2] = {};
 
-  // These are temporary, until the actual hydraulic switch simvars are implemented
-  HysteresisNode yellowHysteresis = HysteresisNode(1750, 1450);
-  HysteresisNode blueHysteresis = HysteresisNode(1750, 1450);
-  HysteresisNode greenHysteresis = HysteresisNode(1750, 1450);
-
   Elac elacs[2] = {Elac(true), Elac(false)};
   ElacDiscreteOutputs elacsDiscreteOutputs[2] = {};
   ElacAnalogOutputs elacsAnalogOutputs[2] = {};
@@ -479,6 +474,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idHydYellowSystemPressure;
   std::unique_ptr<LocalVariable> idHydGreenSystemPressure;
   std::unique_ptr<LocalVariable> idHydBlueSystemPressure;
+  std::unique_ptr<LocalVariable> idHydYellowPressurised;
+  std::unique_ptr<LocalVariable> idHydGreenPressurised;
+  std::unique_ptr<LocalVariable> idHydBluePressurised;
 
   std::unique_ptr<LocalVariable> idCaptPriorityButtonPressed;
   std::unique_ptr<LocalVariable> idFoPriorityButtonPressed;

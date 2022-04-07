@@ -623,6 +623,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idHydYellowSystemPressure = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
   idHydGreenSystemPressure = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
   idHydBlueSystemPressure = make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE");
+  idHydYellowPressurised = make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE_SWITCH");
+  idHydGreenPressurised = make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE_SWITCH");
+  idHydBluePressurised = make_unique<LocalVariable>("A32NX_HYD_BLUE_SYSTEM_1_SECTION_PRESSURE_SWITCH");
 
   idCaptPriorityButtonPressed = make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:1");
   idFoPriorityButtonPressed = make_unique<LocalVariable>("A32NX_PRIORITY_TAKEOVER:2");
@@ -933,11 +936,6 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
 
-  // These are temporary, until the actual hydraulic switch simvars are implemented
-  yellowHysteresis.update(idHydYellowSystemPressure->get());
-  blueHysteresis.update(idHydBlueSystemPressure->get());
-  greenHysteresis.update(idHydGreenSystemPressure->get());
-
   elacs[elacIndex].discreteInputs.groundSpoilersActive1 = secsDiscreteOutputs[0].groundSpoilerOut;
   elacs[elacIndex].discreteInputs.groundSpoilersActive2 =
       elacIndex == 0 ? secsDiscreteOutputs[1].groundSpoilerOut : secsDiscreteOutputs[2].groundSpoilerOut;
@@ -962,11 +960,11 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].discreteInputs.rAilServoFailed = idAilFaultRight[elacIndex]->get();
   elacs[elacIndex].discreteInputs.rElevServoFailed = idElevFaultRight[elacIndex]->get();
   elacs[elacIndex].discreteInputs.thsOverrideActive = false;
-  elacs[elacIndex].discreteInputs.yellowLowPressure = !yellowHysteresis.getOutput();
+  elacs[elacIndex].discreteInputs.yellowLowPressure = !idHydYellowPressurised->get();
   elacs[elacIndex].discreteInputs.captPriorityTakeoverPressed = idCaptPriorityButtonPressed->get();
   elacs[elacIndex].discreteInputs.foPriorityTakeoverPressed = idFoPriorityButtonPressed->get();
-  elacs[elacIndex].discreteInputs.blueLowPressure = !blueHysteresis.getOutput();
-  elacs[elacIndex].discreteInputs.greenLowPressure = !greenHysteresis.getOutput();
+  elacs[elacIndex].discreteInputs.blueLowPressure = !idHydBluePressurised->get();
+  elacs[elacIndex].discreteInputs.greenLowPressure = !idHydGreenPressurised->get();
   elacs[elacIndex].discreteInputs.elacEngagedFromSwitch = idElacPushbuttonStatus[elacIndex]->get();
   elacs[elacIndex].discreteInputs.normalPowersupplyLost = false;
 
@@ -1053,9 +1051,9 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].discreteInputs.thsOverrideActive = false;
   }
 
-  secs[secIndex].discreteInputs.greenLowPressure = !greenHysteresis.getOutput();
-  secs[secIndex].discreteInputs.blueLowPressure = !blueHysteresis.getOutput();
-  secs[secIndex].discreteInputs.yellowLowPressure = !yellowHysteresis.getOutput();
+  secs[secIndex].discreteInputs.greenLowPressure = !idHydGreenPressurised->get();
+  secs[secIndex].discreteInputs.blueLowPressure = !idHydBluePressurised->get();
+  secs[secIndex].discreteInputs.yellowLowPressure = !idHydYellowPressurised->get();
   secs[secIndex].discreteInputs.sfcc1SlatOut = false;
   secs[secIndex].discreteInputs.sfcc2SlatOut = false;
 
@@ -1220,7 +1218,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].discreteInputs.noseGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
   facs[facIndex].discreteInputs.ir3Switch = false;
   facs[facIndex].discreteInputs.adr3Switch = false;
-  facs[facIndex].discreteInputs.yawDamperHasHydPress = facIndex == 0 ? greenHysteresis.getOutput() : yellowHysteresis.getOutput();
+  facs[facIndex].discreteInputs.yawDamperHasHydPress = facIndex == 0 ? idHydGreenPressurised->get() : idHydYellowPressurised->get();
 
   facs[facIndex].analogInputs.yawDamperPosition = 0;
   facs[facIndex].analogInputs.rudderTrimPosition = 0;
