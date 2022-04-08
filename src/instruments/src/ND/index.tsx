@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { DisplayUnit } from '@instruments/common/displayUnit';
 import { FlightPlanProvider } from '@instruments/common/flightplan';
 import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { getSupplier } from '@instruments/common/utils';
-import { useCoherentEvent } from '@instruments/common/hooks';
+import { useFlowSyncEvent } from '@instruments/common/hooks';
 import { Mode, NdSymbol, rangeSettings } from '@shared/NavigationDisplay';
 import { render } from '../Common';
 import { ArcMode } from './pages/ArcMode';
@@ -91,9 +91,11 @@ const NavigationDisplay: React.FC = () => {
 
     const [symbols, setSymbols] = useState<NdSymbol[]>([]);
 
-    useCoherentEvent(`A32NX_EFIS_${side}_SYMBOLS`, (symbols) => {
-        setSymbols(symbols);
-    });
+    useFlowSyncEvent(`A32NX_EFIS_${side}_SYMBOLS`, useCallback((_topic, data) => {
+        if (data) {
+            setSymbols(data);
+        }
+    }, []));
 
     return (
         <DisplayUnit

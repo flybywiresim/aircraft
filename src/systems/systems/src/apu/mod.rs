@@ -8,7 +8,7 @@ use crate::{
         ProvideFrequency, ProvidePotential,
     },
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
-    pneumatic::{ControllablePneumaticValve, TargetPressureSignal},
+    pneumatic::{ControllablePneumaticValve, TargetPressureTemperatureSignal},
     shared::{
         ApuAvailable, ApuBleedAirValveSignal, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical,
         ContactorSignal, ControllerSignal, ElectricalBusType,
@@ -20,6 +20,7 @@ use crate::{
 #[cfg(test)]
 use std::time::Duration;
 use uom::si::f64::*;
+use uom::si::thermodynamic_temperature::degree_celsius;
 
 mod air_intake_flap;
 mod aps3200;
@@ -228,13 +229,18 @@ impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<ApuBleedAirValveSignal>
         self.ecb.signal()
     }
 }
-impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<TargetPressureSignal>
+impl<T: ApuGenerator, U: ApuStartMotor> ControllerSignal<TargetPressureTemperatureSignal>
     for AuxiliaryPowerUnit<T, U>
 {
-    fn signal(&self) -> Option<TargetPressureSignal> {
-        self.turbine
-            .as_ref()
-            .map(|s| TargetPressureSignal::new(s.bleed_air_pressure()))
+    fn signal(&self) -> Option<TargetPressureTemperatureSignal> {
+        // TODO: Calculate the temperature depending on environmental conditions.
+        // Currently the temperature is precalculated for a bleed pressure of 42 psi.
+        self.turbine.as_ref().map(|s| {
+            TargetPressureTemperatureSignal::new(
+                s.bleed_air_pressure(),
+                ThermodynamicTemperature::new::<degree_celsius>(390.),
+            )
+        })
     }
 }
 impl<T: ApuGenerator, U: ApuStartMotor> SimulationElement for AuxiliaryPowerUnit<T, U> {
