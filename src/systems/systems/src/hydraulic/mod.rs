@@ -345,12 +345,6 @@ impl PowerTransferUnit {
             self.speed_captured_at_active_duration = self.shaft_speed.abs();
             self.bark_strength =
                 Self::speed_to_bark_strength(self.speed_captured_at_active_duration);
-
-            // println!(
-            //     "RPM CAPTURED {:.0}",
-            //     self.speed_captured_at_active_duration
-            //         .get::<revolution_per_minute>()
-            // );
         }
     }
 
@@ -487,14 +481,12 @@ impl PowerTransferUnit {
         let rpm = speed.get::<revolution_per_minute>();
 
         if rpm > 1700. {
-            5
-        } else if rpm > 1500. {
             4
-        } else if rpm > 1400. {
+        } else if rpm > 1500. {
             3
         } else if rpm > 1300. {
             2
-        } else {
+        } else  {
             1
         }
     }
