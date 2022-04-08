@@ -513,7 +513,7 @@ class CDUFlightPlanPage {
                         if (value === "") {
                             CDUVerticalRevisionPage.ShowPage(mcdu, wp);
                         } else if (value === FMCMainDisplay.clrValue) {
-                            mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                         } else {
                             CDUVerticalRevisionPage.setConstraints(mcdu, wp, value, scratchpadCallback, offset);
                         }
@@ -771,7 +771,7 @@ class CDUFlightPlanPage {
             // 22-72-00:67
             // Stop clearing TO or FROM waypoints when NAV is engaged
             if (mcdu.navModeEngaged()) {
-                mcdu.addNewMessage(NXSystemMessages.notAllowedInNav);
+                mcdu.setScratchpadMessage(NXSystemMessages.notAllowedInNav);
                 scratchpadCallback();
                 return;
             }
