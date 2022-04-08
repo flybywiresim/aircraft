@@ -21,7 +21,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.leftInputDelay = [];
         this.rightInputDelay = [];
         this.activeSystem = 'FMGC';
-        this.messageQueue = [];
         this.inFocus = false;
         this.lastInput = 0;
         this.clrStop = false;

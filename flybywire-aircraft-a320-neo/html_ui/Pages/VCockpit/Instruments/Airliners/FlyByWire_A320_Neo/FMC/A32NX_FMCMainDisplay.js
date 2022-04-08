@@ -14,6 +14,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._pre2Frequency = 0;
         this._atc1Frequency = 0;
         this.lastFlightPlanVersion = 0;
+        this._messageQueue = new A32NX_MessageQueue(this);
 
         /** Declaration of every variable used (NOT initialization) */
         this.currentFlightPlanWaypointIndex = undefined;
@@ -510,6 +511,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.speedLimitExceeded = false;
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
+
+        // FMGC Message Queue
+        this._messageQueue.resetQueue();
 
         // ATSU data
         this.atsu = new Atsu.Atsu(this);
