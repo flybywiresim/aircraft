@@ -77,7 +77,7 @@ class CDUMenuPage {
             selectedFMGC = true;
             updateView();
             setTimeout(() => {
-                mcdu.removeScratchpadMessage(NXFictionalMessages.waitForSystemResponse.text);
+                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDUIdentPage.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 200);
         };
@@ -87,7 +87,7 @@ class CDUMenuPage {
             selectedATSU = true;
             updateView();
             setTimeout(() => {
-                mcdu.removeScratchpadMessage(NXFictionalMessages.waitForSystemResponse.text);
+                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDUAtsuMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 200);
         };
@@ -97,7 +97,7 @@ class CDUMenuPage {
             selectedAIDS = true;
             updateView();
             setTimeout(() => {
-                mcdu.removeScratchpadMessage(NXFictionalMessages.waitForSystemResponse.text);
+                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDU_AIDS_MainMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 400);
         };
@@ -107,7 +107,7 @@ class CDUMenuPage {
             selectedCFDS = true;
             updateView();
             setTimeout(() => {
-                mcdu.removeScratchpadMessage(NXFictionalMessages.waitForSystemResponse.text);
+                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDUCfdsMainMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 400);
         };
