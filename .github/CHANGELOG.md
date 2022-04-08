@@ -232,6 +232,7 @@
 1. [SD] Rewrite Bleed page to React - @RichardPilbery (tricky_dicky#3571)
 1. [FMGC] Implement "coarse" prediction system for turn speeds - @tracernz (Mike)
 1. [BLEED] Converted bleed system to use mass flow instead of volume flow - @Gurgel100 (Pascal)
+1. [FMGC] Add runway-by-itself approaches - @tracernz (Mike)
 
 ## 0.7.0
 

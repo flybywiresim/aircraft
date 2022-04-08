@@ -201,7 +201,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.dataManager = new FMCDataManager(this);
 
         this.guidanceManager = new Fmgc.GuidanceManager(this.flightPlanManager);
-        this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager);
+        this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager, this);
         this.navRadioManager = new Fmgc.NavRadioManager(this);
         this.efisSymbols = new Fmgc.EfisSymbols(this.flightPlanManager, this.guidanceController);
 
@@ -1050,17 +1050,13 @@ class FMCMainDisplay extends BaseAirliners {
                     break;
                 }
                 case FmgcFlightPhases.DESCENT: {
-                    let speed = this.managedSpeedDescend;
+                    // We fetch this data from VNAV
+                    vPfd = SimVar.GetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots");
+                    this.managedSpeedTarget = SimVar.GetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots");
 
-                    if (this.descentSpeedLimit !== undefined && Math.round(SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") / 10) * 10 < 20 * (speed - this.descentSpeedLimit) + 300 + this.descentSpeedLimitAlt) {
-                        speed = Math.min(speed, this.descentSpeedLimit);
-                    }
-
-                    // TODO we really need VNAV to predict where along the leg we should slow to the constraint
-                    speed = Math.min(speed, this.getSpeedConstraint());
-
-                    [this.managedSpeedTarget, isMach] = this.getManagedTargets(speed, this.managedSpeedDescendMach);
-                    vPfd = this.managedSpeedTarget;
+                    // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
+                    // Also, VNAV already does the conversion from Mach if necessary
+                    isMach = this.getManagedTargets(this.managedSpeedDescend, this.managedSpeedDescendMach)[1];
                     break;
                 }
                 case FmgcFlightPhases.APPROACH: {
@@ -1108,6 +1104,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         // Overspeed protection
         const Vtap = Math.min(this.managedSpeedTarget, SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number"));
+
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", vPfd);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", Vtap);
 
@@ -2108,7 +2105,7 @@ class FMCMainDisplay extends BaseAirliners {
                     SimVar.SetSimVarValue("L:A32NX_DEPARTURE_ELEVATION", "feet", A32NX_Util.meterToFeet(currentRunway.elevation));
                     const departure = this.flightPlanManager.getDeparture();
                     const departureRunwayIndex = departure.runwayTransitions.findIndex(t => {
-                        return t.name.indexOf(currentRunway.designation) !== -1;
+                        return t.runwayNumber === currentRunway.number && t.runwayDesignation === currentRunway.designator;
                     });
                     if (departureRunwayIndex >= -1) {
                         return this.flightPlanManager.setDepartureRunwayIndex(departureRunwayIndex, () => {
@@ -2454,7 +2451,15 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
-    async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, callback = EmptyCallback.Boolean) {
+    /**
+     *
+     * @param {string} lastWaypointIdent The waypoint along the airway to insert up to
+     * @param {number} index the flight plan index of the from waypoint
+     * @param {string} airwayName the name/ident of the airway
+     * @param {boolean} smartAirway true if the intersection is computed by the smart airways function
+     * @returns index of the last waypoint inserted or -1 on error
+     */
+    async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, smartAirway = false) {
         const referenceWaypoint = this.flightPlanManager.getWaypoint(index - 1);
         const lastWaypointIdentPadEnd = lastWaypointIdent.padEnd(5, " ");
         if (referenceWaypoint) {
@@ -2486,6 +2491,7 @@ class FMCMainDisplay extends BaseAirliners {
                                             if (i < count) {
                                                 waypoint.infos.airwayOut = airwayName;
                                             }
+                                            waypoint.additionalData.smartAirway = smartAirway;
                                             console.log("icao:" + icao + " added");
                                             resolve();
                                         }).catch(console.error);
@@ -2494,23 +2500,22 @@ class FMCMainDisplay extends BaseAirliners {
 
                                 await syncInsertWaypointByIcao(airway.icaos[firstIndex + i * inc], index + i).catch(console.error);
                             }
-                            callback(true);
-                            return;
+                            return index + count;
                         }
                         this.addNewMessage(NXFictionalMessages.secondIndexNotFound);
-                        return callback(false);
+                        return -1;
                     }
                     this.addNewMessage(NXFictionalMessages.firstIndexNotFound);
-                    return callback(false);
+                    return -1;
                 }
                 this.addNewMessage(NXFictionalMessages.noRefWpt);
-                return callback(false);
+                return -1;
             }
             this.addNewMessage(NXFictionalMessages.noWptInfos);
-            return callback(false);
+            return -1;
         }
         this.addNewMessage(NXFictionalMessages.noRefWpt);
-        return callback(false);
+        return -1;
     }
 
     // Copy airway selections from temporary to active flightplan
@@ -4804,6 +4809,111 @@ class FMCMainDisplay extends BaseAirliners {
     //TODO: Can this be util?
     representsDecimalNumber(str) {
         return /^[+-]?\d*(?:\.\d+)?$/.test(str);
+    }
+
+    getZeroFuelWeight() {
+        return this.zeroFuelWeight * 2204.625;
+    }
+
+    getV2Speed() {
+        return SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "knots");
+    }
+
+    getTropoPause() {
+        return this.tropo;
+    }
+
+    getManagedClimbSpeed() {
+        return this.managedSpeedClimb;
+    }
+
+    getManagedClimbSpeedMach() {
+        return this.managedSpeedClimbMach;
+    }
+
+    getManagedCruiseSpeed() {
+        return this.managedSpeedCruise;
+    }
+
+    getManagedCruiseSpeedMach() {
+        return this.managedSpeedCruiseMach;
+    }
+
+    getAccelerationAltitude() {
+        return this.accelerationAltitude;
+    }
+
+    getThrustReductionAltitude() {
+        return this.thrustReductionAltitude;
+    }
+
+    getCruiseAltitude() {
+        return this.cruiseFlightLevel * 100;
+    }
+
+    getFlightPhase() {
+        return this.flightPhaseManager.phase;
+    }
+    getClimbSpeedLimit() {
+        return {
+            speed: this.climbSpeedLimit,
+            underAltitude: this.climbSpeedLimitAlt,
+        };
+    }
+    getDescentSpeedLimit() {
+        return {
+            speed: this.descentSpeedLimit,
+            underAltitude: this.descentSpeedLimitAlt,
+        };
+    }
+    getPreSelectedClbSpeed() {
+        return this.preSelectedClbSpeed;
+    }
+    setClimbSpeedLimit(speedLimit, speedLimitAlt) {
+        this.climbSpeedLimit = speedLimit;
+        this.climbSpeedLimitAlt = speedLimitAlt;
+    }
+    setDescentSpeedLimit(speedLimit, speedLimitAlt) {
+        this.descentSpeedLimit = speedLimit;
+        this.descentSpeedLimitAlt = speedLimitAlt;
+    }
+    getTakeoffFlapsSetting() {
+        return this.flaps;
+    }
+    getManagedDescentSpeed() {
+        return this.managedSpeedDescend;
+    }
+    getManagedDescentSpeedMach() {
+        return this.managedSpeedDescendMach;
+    }
+    getApproachSpeed() {
+        return this.approachSpeeds && this.approachSpeeds.valid ? this.approachSpeeds.vapp : 0;
+    }
+    getFlapRetractionSpeed() {
+        return this.approachSpeeds && this.approachSpeeds.valid ? this.approachSpeeds.f : 0;
+    }
+    getSlatRetractionSpeed() {
+        return this.approachSpeeds && this.approachSpeeds.valid ? this.approachSpeeds.s : 0;
+    }
+    getCleanSpeed() {
+        return this.approachSpeeds && this.approachSpeeds.valid ? this.approachSpeeds.gd : 0;
+    }
+    getTripWind() {
+        return this.averageWind;
+    }
+    getWinds() {
+        return this.winds;
+    }
+    getApproachWind() {
+        const destination = this.flightPlanManager.getDestination();
+        if (!destination || !destination.infos && !destination.infos.coordinates || !isFinite(this.perfApprWindHeading)) {
+            return { direction: 0, speed: 0 };
+        }
+
+        const magVar = Facilities.getMagVar(destination.infos.coordinates.lat, destination.infos.coordinates.long);
+        const trueHeading = A32NX_Util.magneticToTrue(this.perfApprWindHeading, magVar);
+
+        return { direction: trueHeading, speed: this.perfApprWindSpeed };
     }
 }
 
