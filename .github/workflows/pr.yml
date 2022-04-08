@@ -15,7 +15,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v2
       - name: install
-        run: npm install --no-optional
+        run: ./scripts/dev-env/run.sh ./scripts/setup.sh
       - name: npm run lint
         run: ./scripts/dev-env/run.sh npm run lint
       - name: lint-rust.sh
@@ -37,7 +37,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v2
       - name: npm install
-        run: npm install --no-optional
+        run: ./scripts/dev-env/run.sh ./scripts/setup.sh
       - name: npm test
         run: npm test
   build:
