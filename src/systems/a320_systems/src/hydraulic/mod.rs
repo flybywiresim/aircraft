@@ -9067,7 +9067,7 @@ mod tests {
                 .set_yellow_e_pump(false)
                 .run_one_tick();
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(8.));
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.is_green_pressure_switch_pressurised());
