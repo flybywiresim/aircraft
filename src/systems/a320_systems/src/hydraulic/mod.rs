@@ -8941,7 +8941,7 @@ mod tests {
                 .set_yellow_e_pump(false)
                 .run_waiting_for(Duration::from_millis(8000));
 
-            assert!(test_bed.is_yellow_pressurised());
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(!test_bed.yellow_epump_has_fault());
         }
 
