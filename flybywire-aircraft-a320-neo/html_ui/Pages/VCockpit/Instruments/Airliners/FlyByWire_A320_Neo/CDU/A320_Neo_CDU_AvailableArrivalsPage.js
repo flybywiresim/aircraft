@@ -88,17 +88,13 @@ class CDUAvailableArrivalsPage {
                     const index = i + pageCurrent;
                     const approach = sortedApproaches[index];
                     if (approach) {
-                        const runways = airportInfo.oneWayRunways;
-                        const approachRunwayName = Avionics.Utils.formatRunway(approach.name.split(" ")[1] || "0");
-                        let runwayLength = 0;
-                        let runwayCourse = 0;
-                        for (const runway of runways) {
-                            const runwayName = Avionics.Utils.formatRunway(runway.designation);
-                            if (runwayName.match("^" + approachRunwayName + "C?$")) {
-                                runwayLength = runway.length.toFixed(0);
-                                const magVar = Facilities.getMagVar(runway.latitude, runway.longitude);
-                                runwayCourse = Utils.leadingZeros(Math.round(A32NX_Util.trueToMagnetic(runway.direction, magVar)), 3);
-                            }
+                        let runwayLength = '----';
+                        let runwayCourse = '---';
+                        const runway = airportInfo.oneWayRunways.find((rw) => rw.number === approach.runwayNumber && rw.designator === approach.runwayDesignator);
+                        if (runway) {
+                            runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
+                            const magVar = Facilities.getMagVar(runway.latitude, runway.longitude);
+                            runwayCourse = Utils.leadingZeros(Math.round(A32NX_Util.trueToMagnetic(runway.direction, magVar)), 3);
                         }
                         rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name.replace(/\s+/g, '')) + "[color]cyan", "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
                         rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
@@ -162,7 +158,7 @@ class CDUAvailableArrivalsPage {
                             mcdu.onLeftInput[i + 2] = () => {
                                 const destinationRunway = mcdu.flightPlanManager.getDestinationRunway();
                                 const arrivalRunwayIndex = destinationRunway ? star.runwayTransitions.findIndex(t => {
-                                    return t.name.indexOf("RW" + destinationRunway.designation) !== -1;
+                                    return t.runwayNumber === destinationRunway.number && t.runwayDesignation === destinationRunway.designator;
                                 }) : -1;
                                 if (arrivalRunwayIndex !== -1) {
                                     mcdu.flightPlanManager.setArrivalRunwayIndex(arrivalRunwayIndex);
