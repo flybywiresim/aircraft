@@ -166,16 +166,16 @@ class CDUAocRequestsAtis {
                 updateView();
             }, 1000);
 
-            mcdu.atsuManager.aoc.receiveAtis(store.selected, store.requestId).then((retval) => {
+            mcdu.atsu.aoc.receiveAtis(store.selected, store.requestId).then((retval) => {
                 if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
-                    mcdu.atsuManager.registerMessage(retval[1]);
+                    mcdu.atsu.registerMessage(retval[1]);
                     store.sendStatus = "";
                     updateView();
 
                     // print the message
                     if (store.formatID === 0) {
-                        mcdu.atsuManager.messageRead(retval[1].UniqueMessageID);
-                        mcdu.atsuManager.printMessage(retval[1]);
+                        mcdu.atsu.messageRead(retval[1].UniqueMessageID);
+                        mcdu.atsu.printMessage(retval[1]);
                     }
                 } else {
                     store.sendStatus = "FAILED";

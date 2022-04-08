@@ -23,7 +23,7 @@
  */
 
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
-import { AltitudeDescriptor, LegType, TurnDirection } from '../types/fstypes/FSEnums';
+import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
 import { FlightPlanSegment, SegmentType } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
 import { RawDataMapper } from './RawDataMapper';
@@ -448,12 +448,6 @@ export class ManagedFlightPlan {
                 } else if (this.activeWaypointIndex === 1 && waypoint.isRunway && segment.type === SegmentType.Departure) {
                     this.activeWaypointIndex = 2;
                 }
-
-                if (segment.type === SegmentType.Departure) {
-                    this.updateDepartureSpeeds();
-                } else if (segment.type === SegmentType.Arrival || segment.type === SegmentType.Approach) {
-                    this.updateArrivalApproachSpeeds();
-                }
             }
         }
     }
@@ -487,12 +481,6 @@ export class ManagedFlightPlan {
 
                 this.reflowSegments();
                 this.reflowDistances();
-
-                if (segment.type === SegmentType.Departure) {
-                    this.updateDepartureSpeeds();
-                } else if (segment.type === SegmentType.Arrival || segment.type === SegmentType.Approach) {
-                    this.updateArrivalApproachSpeeds();
-                }
             }
         }
 
@@ -932,23 +920,6 @@ export class ManagedFlightPlan {
     }
 
     /**
-     * basic speed prediction until VNAV is ready...
-     * helps us draw departure paths reasonably
-     * @todo replace with actual predictions from VNAV!
-     */
-    private updateDepartureSpeeds(): void {
-        let speed = 250; // initial guess...
-        const waypoints = this.getSegment(SegmentType.Departure).waypoints;
-        for (let i = waypoints.length - 1; i >= 0; i--) {
-            const wp = waypoints[i];
-            if ((wp.speedConstraint ?? -1) > 100) {
-                speed = wp.speedConstraint;
-            }
-            wp.additionalData.predictedSpeed = speed;
-        }
-    }
-
-    /**
      * Builds an arrival into the flight plan from indexes in the arrival airport information.
      */
     public async buildArrival(): Promise<void> {
@@ -1012,42 +983,17 @@ export class ManagedFlightPlan {
     }
 
     /**
-     * basic speed prediction until VNAV is ready...
-     * helps us draw arrival and approach paths reasonably during cruise
-     * @todo replace with actual predictions from VNAV!
-     */
-    private updateArrivalApproachSpeeds(): void {
-        let speed = 250; // initial guess...
-        this.getSegment(SegmentType.Arrival).waypoints.forEach((wp) => {
-            if ((wp.speedConstraint ?? -1) > 100) {
-                speed = wp.speedConstraint;
-            } else if (wp.icao.substring(3, 7).trim().length > 0) {
-                // terminal waypoint, we assume a reasonable approach transition speed
-                speed = Math.max(180, speed);
-            }
-            wp.additionalData.predictedSpeed = speed;
-        });
-        speed = Math.min(160, speed); // slow down a bit for approach
-        this.getSegment(SegmentType.Approach).waypoints.forEach((wp) => {
-            if ((wp.speedConstraint ?? -1) > 100) {
-                speed = wp.speedConstraint;
-            }
-            wp.additionalData.predictedSpeed = speed;
-        });
-    }
-
-    /**
      * Builds an approach into the flight plan from indexes in the arrival airport information.
      */
     public async buildApproach(): Promise<void> {
         const legs = [];
         const missedLegs = [];
         const destination = this.destinationAirfield;
+        this.procedureDetails.approachType = undefined;
 
         const { approachIndex } = this.procedureDetails;
         const { approachTransitionIndex } = this.procedureDetails;
         const { destinationRunwayIndex } = this.procedureDetails;
-        const { destinationRunwayExtension } = this.procedureDetails;
 
         const destinationInfo = destination.infos as AirportInfo;
 
@@ -1058,6 +1004,7 @@ export class ManagedFlightPlan {
         }
 
         if (approachIndex !== -1) {
+            this.procedureDetails.approachType = destinationInfo.approaches[approachIndex].approachType;
             legs.push(...destinationInfo.approaches[approachIndex].finalLegs);
             missedLegs.push(...destinationInfo.approaches[approachIndex].missedLegs);
         }
@@ -1081,7 +1028,7 @@ export class ManagedFlightPlan {
 
             const runway: OneWayRunway | null = this.getDestinationRunway();
 
-            const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument);
+            const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument, this.procedureDetails.approachType);
 
             if (runway) {
                 procedure.calculateApproachData(runway);
@@ -1462,5 +1409,23 @@ export class ManagedFlightPlan {
 
     get manualHoldActive(): boolean {
         return this.waypoints[this.activeWaypointIndex]?.additionalData?.legType === LegType.HM;
+    }
+
+    get glideslopeIntercept(): number | undefined {
+        const appr = this.getSegment(SegmentType.Approach);
+        for (const wp of appr.waypoints) {
+            if (wp.additionalData.fixTypeFlags & FixTypeFlags.FAF && (wp.legAltitudeDescription === AltitudeDescriptor.G || wp.legAltitudeDescription === AltitudeDescriptor.H)) {
+                return wp.legAltitude1;
+            }
+        }
+    }
+
+    get destinationIndex(): number {
+        const appr = this.getSegment(SegmentType.Approach);
+        const index = appr.offset + appr.waypoints.length;
+        if (this.destinationAirfield) {
+            return index + 1;
+        }
+        return -1;
     }
 }

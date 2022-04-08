@@ -68,8 +68,9 @@ export class LegsProcedure {
    * @param legs The legs that are part of the procedure.
    * @param startingPoint The starting point for the procedure.
    * @param instrument The instrument that is attached to the flight plan.
+   * @param approachType The approach type if this is an approach procedure
    */
-  constructor(private _legs: RawProcedureLeg[], private _previousFix: WayPoint, private _instrument: BaseInstrument) {
+  constructor(private _legs: RawProcedureLeg[], private _previousFix: WayPoint, private _instrument: BaseInstrument, private approachType?: ApproachType) {
       for (const leg of this._legs) {
           if (this.isIcaoValid(leg.fixIcao)) {
               this._facilitiesToLoad.set(leg.fixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.fixIcao, 2000));
@@ -177,7 +178,13 @@ export class LegsProcedure {
                       break;
                   case LegType.DF:
                   case LegType.TF:
-                      mappedLeg = this.mapExactFix(currentLeg);
+                      // Only map if the fix is itself not a runway fix to avoid double
+                      // adding runway fixes
+                      if (currentLeg.fixIcao === '' || currentLeg.fixIcao[0] !== 'R') {
+                          mappedLeg = this.mapExactFix(currentLeg);
+                      } else {
+                          isLegMappable = false;
+                      }
                       break;
                   case LegType.RF:
                       mappedLeg = this.mapRadiusToFix(currentLeg);
@@ -200,18 +207,26 @@ export class LegsProcedure {
               }
 
               if (mappedLeg !== undefined) {
-                  mappedLeg.legAltitudeDescription = currentLeg.altDesc;
+                  if (this.approachType === ApproachType.APPROACH_TYPE_ILS && (currentLeg.fixTypeFlags & FixTypeFlags.FAF) > 0) {
+                      if (currentLeg.altDesc === AltitudeDescriptor.At) {
+                          mappedLeg.legAltitudeDescription = AltitudeDescriptor.G;
+                      } else {
+                          mappedLeg.legAltitudeDescription = AltitudeDescriptor.H;
+                      }
+                  } else {
+                      mappedLeg.legAltitudeDescription = currentLeg.altDesc;
+                  }
                   mappedLeg.legAltitude1 = currentLeg.altitude1 * 3.28084;
                   mappedLeg.legAltitude2 = currentLeg.altitude2 * 3.28084;
                   mappedLeg.speedConstraint = currentLeg.speedRestriction;
                   mappedLeg.turnDirection = currentLeg.turnDirection;
                   mappedLeg.additionalData.legType = currentLeg.type;
                   mappedLeg.additionalData.overfly = currentLeg.flyOver;
+                  mappedLeg.additionalData.fixTypeFlags = currentLeg.fixTypeFlags;
 
                   mappedLeg.additionalData.distance = currentLeg.distanceMinutes ? undefined : currentLeg.distance / 1852;
                   mappedLeg.additionalData.distanceInMinutes = currentLeg.distanceMinutes ? currentLeg.distance : undefined;
                   mappedLeg.additionalData.course = currentLeg.trueDegrees ? currentLeg.course : A32NX_Util.magneticToTrue(currentLeg.course, Facilities.getMagVar(mappedLeg.infos.coordinates.lat, mappedLeg.infos.coordinates.long));
-                  mappedLeg.additionalData.overfly = currentLeg.flyOver;
               }
 
               this._currentIndex++;

@@ -65,7 +65,7 @@
             </UseTemplate>
         </Component>
         <Component ID="HANDLING">
-            <UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
+            <UseTemplate Name="FBW_HANDLING_Elevator_Template">
                 <ANIM_NAME>elevator_percent_key</ANIM_NAME>
             </UseTemplate>
             <UseTemplate Name="ASOBO_HANDLING_Slats_Template">
@@ -76,21 +76,26 @@
                 <TRIM_ONLY>True</TRIM_ONLY>
                 <ANIM_NAME_TRIM>trimtab_elevator_key</ANIM_NAME_TRIM>
             </UseTemplate>
+            <!-- TRIM MARKER L -->
+			<UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
+				<TRIM_ONLY>True</TRIM_ONLY>
+				<ANIM_NAME_TRIM>Trim-Marker_L-Anim</ANIM_NAME_TRIM>
+			</UseTemplate>
+            <!-- TRIM MARKER R -->
+			<UseTemplate Name="ASOBO_HANDLING_Elevator_Template">
+				<TRIM_ONLY>True</TRIM_ONLY>
+				<ANIM_NAME_TRIM>Trim-Marker_R-Anim</ANIM_NAME_TRIM>
+			</UseTemplate>
             <UseTemplate Name="FBW_HANDLING_Aileron_Template">
                 <ANIM_NAME_LEFT>l_aileron_percent_key</ANIM_NAME_LEFT>
                 <ANIM_NAME_RIGHT>r_aileron_percent_key</ANIM_NAME_RIGHT>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Rudder_Template">
+            <UseTemplate Name="FBW_HANDLING_Rudder_Template">
                 <ANIM_NAME>rudder_percent_key</ANIM_NAME>
-                <USE_INTEGRATED_TRIM>True</USE_INTEGRATED_TRIM>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Spoilers_Template">
+            <UseTemplate Name="FBW_HANDLING_Spoiler_Template">
                 <ANIM_NAME_LEFT>l_spoiler_key</ANIM_NAME_LEFT>
                 <ANIM_NAME_RIGHT>r_spoiler_key</ANIM_NAME_RIGHT>
-                <!-- ANIM_EVENTS -->
-                <ANIM_EVENT_EFFECT_NAME>CAM_SPOILERS</ANIM_EVENT_EFFECT_NAME>
-                <NORMALIZED_TIME>0.5</NORMALIZED_TIME>
-                <DIRECTION>Both</DIRECTION>
             </UseTemplate>
             <UseTemplate Name="ASOBO_HANDLING_Flaps_Template">
                 <ANIM_NAME_LEFT>l_flap_percent_key</ANIM_NAME_LEFT>
@@ -129,6 +134,10 @@
             <UseTemplate Name="ASOBO_GEAR_Center_Template">
                 <ANIM_NAME>c_gear</ANIM_NAME>
             </UseTemplate>
+			<!-- GEAR C DECALALS -->
+			<UseTemplate Name="ASOBO_GEAR_Center_Template">
+				<ANIM_NAME>C_WHEEL_BASE-DECAL-Anim</ANIM_NAME>
+			</UseTemplate>
             <UseTemplate Name="ASOBO_GEAR_Left_Template">
                 <ANIM_NAME>l_gear</ANIM_NAME>
             </UseTemplate>
@@ -190,8 +199,15 @@
             </UseTemplate>
         </Component>
         <Component ID="INTERACTIVE_POINTS">
+            <!-- CARGO DOOR -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>door_cargo</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_FWD_DOOR_CARGO_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
+            </UseTemplate>
+            <!-- CARGO DOOR HINGE -->
+            <UseTemplate Name="ASOBO_GT_Anim">
+                <ANIM_NAME>CH_Moving_Anim</ANIM_NAME>
                 <ANIM_CODE>(L:A32NX_FWD_DOOR_CARGO_POSITION)</ANIM_CODE>
                 <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
@@ -203,6 +219,26 @@
                 <ID>3</ID>
                 <ANIM_NAME>door_rear</ANIM_NAME>
             </UseTemplate>
+            <!-- CARGO DOOR DECALS -->
+			<UseTemplate Name="ASOBO_GT_Anim">
+				<ANIM_NAME>Decals_CargoDoor_Fwd</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_FWD_DOOR_CARGO_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_GT_Anim">
+				<ANIM_NAME>Decals_CargoDoor_FwdRidge</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_FWD_DOOR_CARGO_POSITION)</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
+			</UseTemplate>
+			<!-- DOOR DECALS -->
+			<UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+				<ID>0</ID>
+				<ANIM_NAME>Decals_Door_Fwd-Anim</ANIM_NAME>
+			</UseTemplate>
+			<UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+				<ID>3</ID>
+				<ANIM_NAME>Decals_Door_Rear</ANIM_NAME>
+			</UseTemplate>
             <UseTemplate Name="ASOBO_FuelHose_InteractivePoint_Template">
                 <ID>9</ID>
                 <NODE_ID>GROUND_FUELPIPE</NODE_ID>
@@ -210,6 +246,18 @@
             <UseTemplate Name="ASOBO_FuelHose_InteractivePoint_Template">
                 <ID>8</ID>
                 <NODE_ID>GROUND_GPUPIPE</NODE_ID>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+                <ID>0</ID>
+                <ANIM_NAME>Ribbbons_Door-Fwd-Anim</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+                <ID>3</ID>
+                <ANIM_NAME>Ribbons_Door-Rear-Anim</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
+                <ID>5</ID>
+                <ANIM_NAME>Ribbons_Cargo-Anim</ANIM_NAME>
             </UseTemplate>
         </Component>
         <Component ID="LANDING_FX">

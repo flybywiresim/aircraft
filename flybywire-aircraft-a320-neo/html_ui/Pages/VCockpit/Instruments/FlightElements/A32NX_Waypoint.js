@@ -109,7 +109,7 @@ class WayPoint {
             console.log(data);
             return;
         }
-        this.ident = this.icao.substring(7, 12).replace(new RegExp(" ", "g"), "");
+        this.ident = WayPoint.formatIdentFromIcao(this.icao);
         this.type = this.icao[0];
         if (this.type === "A") {
             this.infos = new AirportInfo(this.instrument);
@@ -125,6 +125,12 @@ class WayPoint {
             this.infos = new NDBInfo(this.instrument);
             this.infos.SetFromIFacilityNDB(data, callback, loadFacilitiesTransitively);
         }
+    }
+    static formatIdentFromIcao(icao) {
+        if (icao.match(/^WXX[A-Z0-9]{4}CF[0-9]{2}[LCRT]?\s*$/)) {
+            return 'CF';
+        }
+        return icao.substring(7, 12).trim();
     }
     imageFileName() {
         let fileName = "ICON_MAP_INTERSECTION";
@@ -219,7 +225,7 @@ class WayPointInfo {
     }
     SetFromIFacilityWaypoint(data) {
         this.icao = data.icao;
-        this.ident = this.icao.substring(7, 12).replace(new RegExp(" ", "g"), "");
+        this.ident = WayPoint.formatIdentFromIcao(data.icao);
         this.name = Utils.Translate(data.name);
         this.region = Utils.Translate(data.region);
         const separatedCity = data.city.split(", ");
@@ -407,6 +413,7 @@ class AirportInfo extends WayPointInfo {
     }
     SetFromIFacilityAirport(data, loadApproachesData = true) {
         super.SetFromIFacilityWaypoint(data);
+        this.coordinates.alt = 3.28084 * data.runways.reduce((sum, r) => sum + r.elevation, 0) / data.runways.length;
         this.privateType = data.airportPrivateType;
         this.fuel = data.fuel1 + " " + data.fuel2;
         this.bestApproach = data.bestApproach;
@@ -495,7 +502,7 @@ class AirportInfo extends WayPointInfo {
                     for (let j = 0; j < approachData.transitions[i].legs.length; j++) {
                         const wp = new WayPoint(this.instrument);
                         wp.icao = approachData.transitions[i].legs[j].fixIcao;
-                        wp.ident = wp.icao.substr(7, 5);
+                        wp.ident = WayPoint.formatIdentFromIcao(wp.icao);
                         wp.bearingInFP = approachData.transitions[i].legs[j].course;
                         wp.distanceInFP = approachData.transitions[i].legs[j].distance;
                         transition.waypoints.push(wp);
@@ -516,7 +523,7 @@ class AirportInfo extends WayPointInfo {
                     const waypoint = new ApproachWayPoint(this.instrument);
                     waypoint.icao = approachData.finalLegs[i].fixIcao;
                     waypoint.originIcao = approachData.finalLegs[i].originIcao;
-                    waypoint.ident = waypoint.icao.substr(7, 5);
+                    waypoint.ident = WayPoint.formatIdentFromIcao(waypoint.icao);
                     waypoint.bearingInFP = approachData.finalLegs[i].course;
                     waypoint.distanceInMinutes = approachData.finalLegs[i].distanceMinutes ? approachData.finalLegs[i].distance : 0;
                     waypoint.distanceInFP = waypoint.distanceInMinutes ? 0 : approachData.finalLegs[i].distance / 1852;
@@ -537,7 +544,7 @@ class AirportInfo extends WayPointInfo {
                     const waypoint = new ApproachWayPoint(this.instrument);
                     waypoint.icao = approachData.missedLegs[i].fixIcao;
                     waypoint.originIcao = approachData.missedLegs[i].originIcao;
-                    waypoint.ident = waypoint.icao.substr(7, 5);
+                    waypoint.ident = WayPoint.formatIdentFromIcao(waypoint.icao);
                     waypoint.bearingInFP = approachData.missedLegs[i].course;
                     waypoint.distanceInMinutes = approachData.missedLegs[i].distanceMinutes ? approachData.missedLegs[i].distance : 0;
                     waypoint.distanceInFP = waypoint.distanceInMinutes ? 0 : approachData.missedLegs[i].distance / 1852;
@@ -717,7 +724,6 @@ class VORInfo extends WayPointInfo {
         });
     }
 }
-VORInfo.readManager = new InstrumentDataReadManager();
 class NDBInfo extends WayPointInfo {
     constructor(_instrument) {
         super(_instrument);
@@ -795,7 +801,6 @@ class NDBInfo extends WayPointInfo {
         });
     }
 }
-NDBInfo.readManager = new InstrumentDataReadManager();
 class IntersectionInfo extends WayPointInfo {
     constructor(_instrument) {
         super(_instrument);
@@ -950,7 +955,6 @@ class IntersectionInfo extends WayPointInfo {
         }
     }
 }
-IntersectionInfo.readManager = new InstrumentDataReadManager();
 IntersectionInfo.longestAirway = 0;
 class Frequency {
     constructor(_name, _mhValue, _bcd16Value) {

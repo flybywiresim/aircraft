@@ -9,6 +9,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { RequestedVerticalMode, TargetAltitude, TargetVerticalSpeed } from '@fmgc/guidance/ControlLaws';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { VerticalMode } from '@shared/autopilot';
+import { CoarsePredictions } from '@fmgc/guidance/vnav/CoarsePredictions';
 import { Geometry } from '../Geometry';
 import { GuidanceComponent } from '../GuidanceComponent';
 import { ClimbPathBuilder } from './climb/ClimbPathBuilder';
@@ -29,6 +30,9 @@ export class VnavDriver implements GuidanceComponent {
 
     private targetAltitude: TargetAltitude;
 
+    // eslint-disable-next-line camelcase
+    private coarsePredictionsUpdate = new A32NX_Util.UpdateThrottler(5000);
+
     constructor(
         private readonly guidanceController: GuidanceController,
     ) {
@@ -44,8 +48,12 @@ export class VnavDriver implements GuidanceComponent {
 
     lastCruiseAltitude: Feet = 0;
 
-    update(_: number): void {
+    update(deltaTime: number): void {
         this.atmosphericConditions.update();
+
+        if (this.coarsePredictionsUpdate.canUpdate(deltaTime) !== -1) {
+            CoarsePredictions.updatePredictions(this.guidanceController, this.atmosphericConditions);
+        }
 
         const newCruiseAltitude = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number');
         if (newCruiseAltitude !== this.lastCruiseAltitude) {

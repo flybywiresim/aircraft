@@ -201,7 +201,7 @@
     - Bool
     - True if "BLUE PUMP OVRD" switch is off
 
-- A32NX_OVHD_HYD_LEAK_MEASUREMENT_G
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_G_PB_IS_AUTO
     - Bool
     - True if "HYD LEAK MEASUREMENT G" switch is on
 
@@ -209,7 +209,7 @@
     - Bool
     - True if "HYD LEAK MEASUREMENT G" switch lock is down
 
-- A32NX_OVHD_HYD_LEAK_MEASUREMENT_B
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_B_PB_IS_AUTO
     - Bool
     - True if "HYD LEAK MEASUREMENT B" switch is on
 
@@ -217,7 +217,7 @@
     - Bool
     - True if "HYD LEAK MEASUREMENT B" switch lock is down
 
-- A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y
+- A32NX_OVHD_HYD_LEAK_MEASUREMENT_Y_PB_IS_AUTO
     - Bool
     - True if "HYD LEAK MEASUREMENT Y" switch is on
 
@@ -756,6 +756,14 @@
         - BLUE
         - YELLOW
 
+- A32NX_HYD_{loop_name}_SYSTEM_1_SECTION_PRESSURE_SWITCH
+    - Boolean
+    - Current pressure switch state in {loop_name} hydraulic circuit downstream of leak valve
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
 - A32NX_HYD_{loop_name}_PUMP_1_SECTION_PRESSURE
     - Psi
     - Current pressure in the pump section of the {loop_name} hydraulic circuit
@@ -775,6 +783,14 @@
 - A32NX_HYD_{loop_name}_RESERVOIR_LEVEL_IS_LOW
     - Boolean
     - Low level switch of {loop_name} hydraulic circuit reservoir indicates low state
+    - {loop_name}
+        - GREEN
+        - BLUE
+        - YELLOW
+
+- A32NX_HYD_{loop_name}_RESERVOIR_AIR_PRESSURE_IS_LOW
+    - Boolean
+    - Low air pressure switch of {loop_name} hydraulic circuit reservoir indicates low state
     - {loop_name}
         - GREEN
         - BLUE
@@ -880,6 +896,10 @@
     - Revolutions per minute
     - Power Transfer Unit shaft rpm
 
+- A32NX_HYD_PTU_CONTINUOUS_MODE
+    - Bool
+    - Power Transfer Unit is rotating continuously
+
 - A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED
     - Bool
     - Deploys the RAT manually
@@ -940,6 +960,10 @@
         - 1: Autobrake in LOW
         - 2: Autobrake in MED
         - 3: Autobrake in MAX
+
+- A32NX_AUTOBRAKES_ACTIVE
+    - Bool
+    - Autobrakes are braking
 
 - A32NX_AUTOBRAKES_DECEL_LIGHT
     - Bool
@@ -1486,17 +1510,18 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ADIRS_ADR_{number}_STATIC_AIR_TEMPERATURE
     - Arinc429Word<Celsius>
     - The static air temperature (SAT).
-      {number}: 1 or 3
 
 - A32NX_ADIRS_ADR_{number}_TOTAL_AIR_TEMPERATURE
     - Arinc429Word<Celsius>
     - The total air temperature (TAT).
-      {number}: 1 or 3
 
 - A32NX_ADIRS_ADR_{number}_INTERNATIONAL_STANDARD_ATMOSPHERE_DELTA
     - Arinc429Word<Celsius>
     - The delta (deviation) from international standard atmosphere temperature.
-      {number}: 1 or 3
+
+- A32NX_ADIRS_ADR_{number}_ANGLE_OF_ATTACK
+    - Arinc429Word<Degrees>
+    - The angle of attack (α) of the aircraft
 
 - A32NX_ADIRS_IR_{number}_PITCH
     - Arinc429Word<Degrees>
@@ -1537,6 +1562,50 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_ADIRS_IR_{number}_LONGITUDE
     - Arinc429Word<Degrees>
     - The longitude of the aircraft.
+
+- A32NX_ADIRS_IR_{number}_DRIFT_ANGLE
+    - Arinc429Word<Degrees>
+    - The drift angle of the aircraft (drift angle = heading - track)
+
+- A32NX_ADIRS_IR_{number}_FLIGHT_PATH_ANGLE
+    - Arinc429Word<Degrees>
+    - The kinematic flight path angle (γ) (arctan(VS / GS))
+
+- A32NX_ADIRS_IR_{number}_BODY_PITCH_RATE
+    - Arinc429Word<Degrees per second>
+    - The body pitch rate (q) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_BODY_ROLL_RATE
+    - Arinc429Word<Degrees per second>
+    - The body roll rate (p) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_BODY_YAW_RATE
+    - Arinc429Word<Degrees per second>
+    - The body yaw rate (r) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_BODY_LONGITUDINAL_ACC
+    - Arinc429Word<g-Number>
+    - The longitudinal (forward/backward) acceleration of the aircraft
+
+- A32NX_ADIRS_IR_{number}_BODY_LATERAL_ACC
+    - Arinc429Word<g-Number>
+    - The lateral (left/right) acceleration of the aircraft
+
+- A32NX_ADIRS_IR_{number}_BODY_NORMAL_ACC
+    - Arinc429Word<g-Number>
+    - The normal acceleration (load factor) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_HEADING_RATE
+    - Arinc429Word<Degrees per second>
+    - The heading rate (ψ^dot) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_PITCH_ATT_RATE
+    - Arinc429Word<Degrees per second>
+    - The pitch rate (θ^dot) of the aircraft
+
+- A32NX_ADIRS_IR_{number}_ROLL_ATT_RATE
+    - Arinc429Word<Degrees per second>
+    - The roll rate (φ^dot) of the aircraft
 
 - A32NX_ADIRS_USES_GPS_AS_PRIMARY
     - Bool
@@ -2243,7 +2312,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Percentage
     - Percent rotation of the overhead temperature selectors for each of the cabin zones
-    - To transform the value into degree celsius use this formula: this * 0.12 + 18
+    - To transform the value into degree celsius use this formula: this * 0.04 + 18
     - {id}
         - CKPT
         - FWD
@@ -2445,7 +2514,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_PNEU_PACK_{number}_FLOW_VALVE_FLOW_RATE:
     - Indicates the flow rate through the pack flow valve
-    - Gallon per second
+    - Kilogram per second
     - {number}
         - 1
         - 2

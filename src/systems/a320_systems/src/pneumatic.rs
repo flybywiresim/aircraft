@@ -3,11 +3,11 @@ use std::{f64::consts::PI, time::Duration};
 
 use uom::si::{
     f64::*,
+    mass_rate::kilogram_per_second,
     pressure::psi,
     ratio::ratio,
     thermodynamic_temperature::degree_celsius,
     volume::{cubic_meter, gallon},
-    volume_rate::cubic_meter_per_second,
 };
 
 use systems::{
@@ -19,7 +19,7 @@ use systems::{
         CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
         EngineCompressionChamberController, EngineModeSelector, EngineState, PneumaticContainer,
         PneumaticPipe, PneumaticValveSignal, Precooler, PressurisedReservoirWithExhaustValve,
-        PressurizeableReservoir, TargetPressureSignal, VariableVolumeContainer,
+        PressurizeableReservoir, TargetPressureTemperatureSignal, VariableVolumeContainer,
     },
     shared::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
@@ -121,6 +121,9 @@ pub struct A320Pneumatic {
     apu_compression_chamber: CompressionChamber,
     apu_bleed_air_valve: DefaultValve,
 
+    hydraulic_reservoir_bleed_air_valves: [PurelyPneumaticValve; 2],
+    hydraulic_reservoir_bleed_air_pipe: PneumaticPipe,
+
     green_hydraulic_reservoir_with_valve:
         PressurisedReservoirWithExhaustValve<VariableVolumeContainer>,
     blue_hydraulic_reservoir_with_valve:
@@ -159,6 +162,15 @@ impl A320Pneumatic {
             ],
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
+            hydraulic_reservoir_bleed_air_valves: [
+                PurelyPneumaticValve::new(),
+                PurelyPneumaticValve::new(),
+            ],
+            hydraulic_reservoir_bleed_air_pipe: PneumaticPipe::new(
+                Volume::new::<cubic_meter>(0.2),
+                Pressure::new::<psi>(14.7),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
+            ),
             green_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
                 context,
                 HydraulicColor::Green,
@@ -202,7 +214,7 @@ impl A320Pneumatic {
         engines: [&(impl EngineCorrectedN1 + EngineCorrectedN2); 2],
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        apu: &impl ControllerSignal<TargetPressureSignal>,
+        apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
     ) {
         self.physics_updater.update(context);
 
@@ -223,7 +235,7 @@ impl A320Pneumatic {
         engines: [&(impl EngineCorrectedN1 + EngineCorrectedN2); 2],
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        apu: &impl ControllerSignal<TargetPressureSignal>,
+        apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
     ) {
         self.apu_compression_chamber.update(apu);
 
@@ -252,7 +264,11 @@ impl A320Pneumatic {
             controller.update(&self.fadec);
         }
 
-        for engine_system in self.engine_systems.iter_mut() {
+        for (engine_system, hydraulic_valve) in self
+            .engine_systems
+            .iter_mut()
+            .zip(&mut self.hydraulic_reservoir_bleed_air_valves)
+        {
             for bleed_monitoring_computer in self.bleed_monitoring_computers.iter() {
                 let index = engine_system.number - 1;
 
@@ -270,6 +286,12 @@ impl A320Pneumatic {
                     );
                 }
             }
+
+            hydraulic_valve.update_move_fluid(
+                context,
+                engine_system,
+                &mut self.hydraulic_reservoir_bleed_air_pipe,
+            );
         }
 
         let [left_system, right_system] = &mut self.engine_systems;
@@ -283,11 +305,11 @@ impl A320Pneumatic {
             .update_move_fluid(context, left_system, right_system);
 
         self.green_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, left_system);
+            .update_flow_through_valve(context, &mut self.hydraulic_reservoir_bleed_air_pipe);
         self.blue_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, left_system);
+            .update_flow_through_valve(context, &mut self.hydraulic_reservoir_bleed_air_pipe);
         self.yellow_hydraulic_reservoir_with_valve
-            .update_flow_through_valve(context, left_system);
+            .update_flow_through_valve(context, &mut self.hydraulic_reservoir_bleed_air_pipe);
 
         self.packs
             .iter_mut()
@@ -814,7 +836,7 @@ impl EngineBleedAirSystem {
             ),
             engine_starter_exhaust: PneumaticExhaust::new(3e-2, 3e-2, Pressure::new::<psi>(0.)),
             engine_starter_valve: DefaultValve::new_closed(),
-            precooler: Precooler::new(5.),
+            precooler: Precooler::new(180. * 2.),
         }
     }
 
@@ -1008,8 +1030,21 @@ impl PneumaticContainer for EngineBleedAirSystem {
         self.precooler_outlet_pipe.temperature()
     }
 
-    fn change_fluid_amount(&mut self, volume: Volume) {
-        self.precooler_outlet_pipe.change_fluid_amount(volume)
+    fn mass(&self) -> Mass {
+        self.precooler_outlet_pipe.mass()
+    }
+
+    fn change_fluid_amount(
+        &mut self,
+        fluid_amount: Mass,
+        fluid_temperature: ThermodynamicTemperature,
+        fluid_pressure: Pressure,
+    ) {
+        self.precooler_outlet_pipe.change_fluid_amount(
+            fluid_amount,
+            fluid_temperature,
+            fluid_pressure,
+        )
     }
 
     fn update_temperature(&mut self, temperature: TemperatureInterval) {
@@ -1168,8 +1203,18 @@ impl PneumaticContainer for PackComplex {
         self.pack_container.temperature()
     }
 
-    fn change_fluid_amount(&mut self, volume: Volume) {
-        self.pack_container.change_fluid_amount(volume);
+    fn mass(&self) -> Mass {
+        self.pack_container.mass()
+    }
+
+    fn change_fluid_amount(
+        &mut self,
+        fluid_amount: Mass,
+        fluid_temperature: ThermodynamicTemperature,
+        fluid_pressure: Pressure,
+    ) {
+        self.pack_container
+            .change_fluid_amount(fluid_amount, fluid_temperature, fluid_pressure);
     }
 
     fn update_temperature(&mut self, temperature_change: TemperatureInterval) {
@@ -1201,15 +1246,15 @@ impl PackFlowValveController {
     fn new(context: &mut InitContext, engine_number: usize) -> Self {
         Self {
             pack_toggle_pb_id: context
-                .get_identifier(format!("AIRCOND_PACK{}_TOGGLE", engine_number)),
+                .get_identifier(format!("OVHD_COND_PACK_{}_PB_IS_ON", engine_number)),
             pack_pb_is_auto: true,
             pid: PidController::new(0., 0.05, 0., 0., 1., 0.75, 1.),
         }
     }
 
-    fn update(&mut self, context: &UpdateContext, pack_flow_valve_flow_rate: VolumeRate) {
+    fn update(&mut self, context: &UpdateContext, pack_flow_valve_flow_rate: MassRate) {
         self.pid.next_control_output(
-            pack_flow_valve_flow_rate.get::<cubic_meter_per_second>(),
+            pack_flow_valve_flow_rate.get::<kilogram_per_second>(),
             Some(context.delta()),
         );
     }
@@ -1305,15 +1350,16 @@ mod tests {
     use systems::{
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
+        failures::FailureType,
         pneumatic::{
             BleedMonitoringComputerChannelOperationMode, ControllablePneumaticValve,
             CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
-            TargetPressureSignal,
+            TargetPressureTemperatureSignal,
         },
         shared::{
             ApuBleedAirValveSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            EmergencyElectricalState, EngineFirePushButtons, InternationalStandardAtmosphere,
-            MachNumber, PneumaticValve, PotentialOrigin,
+            EmergencyElectricalState, EngineFirePushButtons, HydraulicColor,
+            InternationalStandardAtmosphere, MachNumber, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{SimulationTestBed, TestBed, WriteByName},
@@ -1324,9 +1370,8 @@ mod tests {
     use std::{fs, fs::File, time::Duration};
 
     use uom::si::{
-        f64::*, length::foot, pressure::psi, ratio::ratio,
+        f64::*, length::foot, mass_rate::kilogram_per_second, pressure::psi, ratio::ratio,
         thermodynamic_temperature::degree_celsius, velocity::knot,
-        volume_rate::cubic_meter_per_second,
     };
 
     use super::{A320Pneumatic, A320PneumaticOverheadPanel};
@@ -1334,12 +1379,14 @@ mod tests {
     struct TestApu {
         bleed_air_valve_signal: ApuBleedAirValveSignal,
         bleed_air_pressure: Pressure,
+        bleed_air_temperature: ThermodynamicTemperature,
     }
     impl TestApu {
         fn new() -> Self {
             Self {
                 bleed_air_valve_signal: ApuBleedAirValveSignal::new_closed(),
                 bleed_air_pressure: Pressure::new::<psi>(14.7),
+                bleed_air_temperature: ThermodynamicTemperature::new::<degree_celsius>(15.),
             }
         }
 
@@ -1351,6 +1398,10 @@ mod tests {
             self.bleed_air_pressure = pressure;
         }
 
+        fn set_bleed_air_temperature(&mut self, temperature: ThermodynamicTemperature) {
+            self.bleed_air_temperature = temperature;
+        }
+
         fn set_bleed_air_valve_signal(&mut self, signal: ApuBleedAirValveSignal) {
             self.bleed_air_valve_signal = signal;
         }
@@ -1360,9 +1411,12 @@ mod tests {
             Some(self.bleed_air_valve_signal)
         }
     }
-    impl ControllerSignal<TargetPressureSignal> for TestApu {
-        fn signal(&self) -> Option<TargetPressureSignal> {
-            Some(TargetPressureSignal::new(self.bleed_air_pressure))
+    impl ControllerSignal<TargetPressureTemperatureSignal> for TestApu {
+        fn signal(&self) -> Option<TargetPressureTemperatureSignal> {
+            Some(TargetPressureTemperatureSignal::new(
+                self.bleed_air_pressure,
+                self.bleed_air_temperature,
+            ))
         }
     }
 
@@ -1784,6 +1838,12 @@ mod tests {
 
         fn set_bleed_air_running(mut self) -> Self {
             self.command(|a| a.apu.set_bleed_air_pressure(Pressure::new::<psi>(42.)));
+            self.command(|a| {
+                a.apu
+                    .set_bleed_air_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        250.,
+                    ))
+            });
 
             self.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_open())
                 .set_apu_bleed_air_pb(true)
@@ -1830,7 +1890,7 @@ mod tests {
         }
 
         fn set_pack_flow_pb_is_auto(mut self, number: usize, is_auto: bool) -> Self {
-            self.write_by_name(&format!("AIRCOND_PACK{}_TOGGLE", number), is_auto);
+            self.write_by_name(&format!("OVHD_COND_PACK_{}_PB_IS_ON", number), is_auto);
 
             self
         }
@@ -1882,7 +1942,7 @@ mod tests {
             self.query(|a| a.pneumatic.fadec.is_single_vs_dual_bleed_config())
         }
 
-        fn pack_flow_valve_flow(&self, engine_number: usize) -> VolumeRate {
+        fn pack_flow_valve_flow(&self, engine_number: usize) -> MassRate {
             self.query(|a| {
                 a.pneumatic.packs[engine_number - 1]
                     .pack_flow_valve
@@ -1923,8 +1983,8 @@ mod tests {
         Pressure::new::<psi>(0.5)
     }
 
-    fn flow_rate_tolerance() -> VolumeRate {
-        VolumeRate::new::<cubic_meter_per_second>(0.1)
+    fn flow_rate_tolerance() -> MassRate {
+        MassRate::new::<kilogram_per_second>(0.1)
     }
 
     // Just a way for me to plot some graphs
@@ -2597,6 +2657,56 @@ mod tests {
         assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
         assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
         assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(35.));
+    }
+
+    #[test]
+    fn hydraulic_reservoirs_is_pressurized_by_left_system() {
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .stop_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut);
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
+        test_bed
+            .test_bed
+            .run_multiple_frames(Duration::from_secs(16));
+
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
+        test_bed
+            .test_bed
+            .run_multiple_frames(Duration::from_secs(16));
+
+        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+    }
+
+    #[test]
+    fn hydraulic_reservoirs_is_pressurized_by_right_system() {
+        let mut test_bed = test_bed_with()
+            .stop_eng1()
+            .idle_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut);
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
+        test_bed.fail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
+        test_bed
+            .test_bed
+            .run_multiple_frames(Duration::from_secs(16));
+
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Green));
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Blue));
+        test_bed.unfail(FailureType::ReservoirAirLeak(HydraulicColor::Yellow));
+        test_bed
+            .test_bed
+            .run_multiple_frames(Duration::from_secs(16));
+
+        assert!(test_bed.green_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert!(test_bed.blue_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
+        assert!(test_bed.yellow_hydraulic_reservoir_pressure() > Pressure::new::<psi>(40.));
     }
 
     #[test]
