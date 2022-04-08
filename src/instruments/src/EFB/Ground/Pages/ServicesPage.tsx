@@ -24,14 +24,15 @@ import { applySelectedWithSync, StatefulButton } from '../Ground';
 
 interface ServiceButtonWrapperProps {
     className?: string,
-    x: number,
+    xl?: number,
+    xr?: number,
     y: number
 }
 
-const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, className, x, y }) => (
+const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, className, xl, xr, y }) => (
     <div
         className={`flex flex-col rounded-xl border-2 border-theme-accent divide-y-2 divide-theme-accent overflow-hidden ${className}`}
-        style={{ position: 'absolute', left: x, top: y }}
+        style={{ position: 'absolute', left: xl, right: xr, top: y }}
     >
         {children}
     </div>
@@ -113,7 +114,7 @@ export const ServicesPage = () => {
             {/* TODO: Replace with JIT value */}
             <UprightOutline className="inset-x-0 mx-auto w-full h-full text-theme-text" />
 
-            <ServiceButtonWrapper x={20} y={64}>
+            <ServiceButtonWrapper xr={880} y={64}>
                 <GroundServiceButton
                     name={t('Ground.Services.JetBridge')}
                     onClick={(e) => handleClick(() => {
@@ -144,7 +145,7 @@ export const ServicesPage = () => {
                 </GroundServiceButton>
             </ServiceButtonWrapper>
 
-            <ServiceButtonWrapper x={770} y={64} className="">
+            <ServiceButtonWrapper xl={770} y={64} className="">
                 <GroundServiceButton
                     name={t('Ground.Services.ExternalPower')}
                     onClick={(e) => handleClick(() => setPowerActive(1), e)}
@@ -163,7 +164,7 @@ export const ServicesPage = () => {
                 </GroundServiceButton>
             </ServiceButtonWrapper>
 
-            <ServiceButtonWrapper x={770} y={600} className="">
+            <ServiceButtonWrapper xl={770} y={600} className="">
                 <DoorToggle
                     tugActive={tugActive}
                     name={t('Ground.Services.DoorAft')}
