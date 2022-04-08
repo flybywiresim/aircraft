@@ -298,13 +298,18 @@ export const en = {
     'Presets': {
         AircraftStates: {
             Cancel: 'Cancel',
+            ColdDark: 'Cold & Dark',
             ConfirmationDialogMsg: 'Please confirm loading of preset.',
             CurrentProcedureStep: 'Current Procedure Step',
             PleaseConfirmLoadingOfPreset: 'Please confirm loading of preset.',
+            ReadyPushback: 'Ready for Pushback',
+            ReadyTakeoff: 'Ready for Takeoff',
+            ReadyTaxi: 'Ready for Taxi',
             SelectAPresetToLoad: 'Select a Preset to Load',
             TheAircraftMustBeOnTheGroundToLoadAPreset: 'The aircraft must be on the ground to load a preset.',
             TheAircraftMustBeOntheGroundToLoadAPreset: 'The aircraft must be on the ground to load a preset.',
             Title: 'Aircraft States',
+            Turnaround: 'Turnaround',
         },
         InteriorLighting: {
             AircraftNeedsToBePoweredToLoadPresets: 'Aircraft Needs to be Powered to Load Presets',

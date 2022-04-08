@@ -1,16 +1,6 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-// These need to align with the IDs in the Presets C++ WASM.
-// WASM: src/presets/src/Aircraft/AircraftProcedures.h
-export const AircraftPresetsList: { index: number, name: string }[] = [
-    { index: 1, name: 'Cold & Dark' },
-    { index: 2, name: 'Turnaround' },
-    { index: 3, name: 'Ready for Pushback' },
-    { index: 4, name: 'Ready for Taxi' },
-    { index: 5, name: 'Ready for Takeoff' },
-];
-
 // These are defined in the presets' wasm C++ code and can be
 // printed to the console by compiling the c++ with --debug
 // The console output can then be easily pasted here and transformed to

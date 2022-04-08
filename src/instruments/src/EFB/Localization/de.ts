@@ -298,13 +298,18 @@ export const de = {
     'Presets': {
         AircraftStates: {
             Cancel: 'Abbrechen',
+            ColdDark: 'Ausgeschalteter Zustand',
             ConfirmationDialogMsg: 'Bitte bestätige das Laden des Flugzeugzustandes.',
             CurrentProcedureStep: 'Aktueller Verfahrensschritt',
             PleaseConfirmLoadingOfPreset: 'Bitte bestätige das Laden eines Flugzeugzustandes.',
+            ReadyPushback: 'Bereit für Pushback',
+            ReadyTakeoff: 'Bereit zum Abflug',
+            ReadyTaxi: 'Bereit zum Rollen',
             SelectAPresetToLoad: 'Wähle eine Voreinstellung zum Laden',
             TheAircraftMustBeOnTheGroundToLoadAPreset: 'Das Flugzeug muss am Boden sein, um einen Flugzeugzustand zu laden.',
             TheAircraftMustBeOntheGroundToLoadAPreset: 'Das Flugzeug muss am Boden sein, um einen Flugzeugzustand zu laden.',
             Title: 'Flugzeugzustände',
+            Turnaround: 'Bereitschaft',
         },
         InteriorLighting: {
             AircraftNeedsToBePoweredToLoadPresets: 'Das Flugzeug muss mit Strom versorgt werden, um Voreinstellungen zu laden',

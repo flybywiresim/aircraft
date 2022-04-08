@@ -7,7 +7,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { useTranslation } from 'react-i18next';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
-import { AircraftPresetsList, StepDescription } from './Procedures';
+import { StepDescription } from './Procedures';
 
 export const AircraftPresets = () => {
     // Aircraft presets are handled by a backend WASM module. This frontend will
@@ -29,6 +29,16 @@ export const AircraftPresets = () => {
     const { showModal } = useModals();
 
     const { t } = useTranslation();
+
+    // These need to align with the IDs in the Presets C++ WASM.
+    // WASM: src/presets/src/Aircraft/AircraftProcedures.h
+    const AircraftPresetsList: { index: number, name: string }[] = [
+        { index: 1, name: `${t('Presets.AircraftStates.ColdDark')}` }, // 'Cold & Dark' },
+        { index: 2, name: `${t('Presets.AircraftStates.Turnaround')}` },
+        { index: 3, name: `${t('Presets.AircraftStates.ReadyPushback')}` },
+        { index: 4, name: `${t('Presets.AircraftStates.ReadyTaxi')}` },
+        { index: 5, name: `${t('Presets.AircraftStates.ReadyTakeoff')}` },
+    ];
 
     // Sets the LVAR to tell the wasm to load the preset into the aircraft
     const handleLoadPreset = (presetID: number) => {
