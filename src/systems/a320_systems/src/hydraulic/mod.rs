@@ -8933,6 +8933,19 @@ mod tests {
         }
 
         #[test]
+        fn no_yellow_epump_fault_after_brake_accumulator_is_filled() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_millis(8000));
+
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+            assert!(!test_bed.yellow_epump_has_fault());
+        }
+
+        #[test]
         fn ailerons_are_dropped_down_in_cold_and_dark() {
             let mut test_bed = test_bed_with()
                 .engines_off()
@@ -9026,7 +9039,7 @@ mod tests {
                 .set_yellow_e_pump(false)
                 .run_one_tick();
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(8.));
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.is_green_pressure_switch_pressurised());
@@ -9054,7 +9067,7 @@ mod tests {
                 .set_yellow_e_pump(false)
                 .run_one_tick();
 
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(5.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(8.));
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.is_green_pressure_switch_pressurised());
