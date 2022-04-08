@@ -233,6 +233,7 @@
 1. [FMGC] Implement "coarse" prediction system for turn speeds - @tracernz (Mike)
 1. [BLEED] Converted bleed system to use mass flow instead of volume flow - @Gurgel100 (Pascal)
 1. [FMGC] Add runway-by-itself approaches - @tracernz (Mike)
+1. [FMGC] Automatic airway waypoint intersection - @tracernz (Mike)
 
 ## 0.7.0
 
