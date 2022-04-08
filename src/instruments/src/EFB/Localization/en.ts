@@ -429,6 +429,7 @@ export const en = {
             ConfigureEnd: 'Configure End',
             CurrentValue: 'Current Value',
             Deadband: 'Deadband',
+            ErrorOverlapMsg: 'overlaps with',
             IndependentAxis: 'Independent Axis',
             LoadFromFile: 'Load from File',
             PleaseEnterAValidDeadzone: 'Please enter a valid deadzone',
