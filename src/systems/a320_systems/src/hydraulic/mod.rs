@@ -266,7 +266,7 @@ impl A320AileronFactory {
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
 
-    const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1500000.;
+    const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
 
     fn a320_aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let randomized_damping = random_from_range(
@@ -9036,12 +9036,12 @@ mod tests {
             test_bed = test_bed
                 .set_ptu_state(false)
                 .set_yellow_e_pump(true)
-                .run_waiting_for(Duration::from_secs_f64(30.));
+                .run_waiting_for(Duration::from_secs_f64(50.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.35);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.35);
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.42);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.42);
         }
 
         #[test]
