@@ -14,6 +14,9 @@ module.exports = {
         'tailwindcss',
     ],
     parser: '@typescript-eslint/parser',
+    ignorePatterns: [
+        'mcdu-server/client/build/**',
+    ],
     parserOptions: {
         ecmaVersion: 2021,
         sourceType: 'script',
