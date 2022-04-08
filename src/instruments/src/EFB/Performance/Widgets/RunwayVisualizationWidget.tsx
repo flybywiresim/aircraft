@@ -45,11 +45,15 @@ interface RunwayNumberProps {
     heading?: number;
 }
 
-const RunwayNumber = ({ heading }: RunwayNumberProps) => (
-    <div className="mx-auto w-min text-4xl font-bold text-white">
-        {heading !== undefined ? Math.round((heading % 360 ?? 0) / 10).toString().padStart(2, '0') : '??'}
-    </div>
-);
+const RunwayNumber = ({ heading }: RunwayNumberProps) => {
+    const displayedHeading = heading === 360 ? 360 : heading! % 360;
+
+    return (
+        <div className="mx-auto w-min text-4xl font-bold text-white">
+            {heading !== undefined ? Math.round(displayedHeading / 10).toString().padStart(2, '0') : '??'}
+        </div>
+    );
+};
 
 const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runwayHeading, toda = 0, distanceUnit }: RunwayVisualizationProps) => {
     const maxDist = () => {
