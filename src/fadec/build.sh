@@ -13,6 +13,10 @@ fi
 
 set -ex
 
+# create temporary folder for o files
+mkdir -p "${DIR}/obj"
+pushd "${DIR}/obj"
+
 # compile c++ code
 clang++ \
   -c \
@@ -38,6 +42,9 @@ clang++ \
   "${DIR}/src/FadecGauge.cpp" \
   -o fadec.o
 
+# restore directory
+popd
+
 wasm-ld \
   --no-entry \
   --allow-undefined \
@@ -53,5 +60,5 @@ wasm-ld \
   --gc-sections \
   -O3 --lto-O3 \
   -lc++ -lc++abi \
-   fadec.o \
+  ${DIR}/obj/*.o \
   -o $OUTPUT

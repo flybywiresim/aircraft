@@ -81,6 +81,8 @@ declare global {
         verticalAngle?: number;
 
         _svgElements: any;
+
+        static formatIdentFromIcao(icao: string): string;
     }
 
     class WayPointInfo {
@@ -144,11 +146,13 @@ declare global {
 
     interface OneWayRunway {
         designation: string;
+        designator: RunwayDesignatorChar;
         direction: number;
         beginningCoordinates: LatLongAlt;
         endCoordinates: LatLongAlt;
         elevation: number;
         length: number;
+        number: number;
         slope: number;
         thresholdCoordinates: LatLongAlt;
         thresholdLength: number;
