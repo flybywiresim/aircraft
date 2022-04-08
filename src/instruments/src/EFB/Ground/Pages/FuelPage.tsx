@@ -396,7 +396,7 @@ export const FuelPage = () => {
                                 <h2 className="font-medium">{t('Ground.Fuel.Refuel')}</h2>
                                 <p className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</p>
                             </div>
-                            <p>{`Estimated ${calculateEta()} minutes`}</p>
+                            <p>{`${t('Ground.Fuel.EstimatedDuration')}: ${calculateEta()}`}</p>
                         </div>
                         <div className="flex flex-row items-center space-x-6">
                             <Slider

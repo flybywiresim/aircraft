@@ -26,9 +26,9 @@ export const SimOptionsPage = () => {
     const { t } = useTranslation();
 
     const defaultBaroButtons: ButtonType[] = [
-        { name: 'Auto', setting: 'AUTO' },
-        { name: 'in Hg', setting: 'IN HG' },
-        { name: 'hPa', setting: 'HPA' },
+        { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
+        { name: t('Settings.SimOptions.inHg'), setting: 'IN HG' },
+        { name: t('Settings.SimOptions.Hpa'), setting: 'HPA' },
     ];
 
     const fpSyncButtons: ButtonType[] = [
@@ -86,17 +86,17 @@ export const SimOptionsPage = () => {
                                 selected={mcduServerEnabled === 'AUTO ON' || mcduServerEnabled === 'AUTO OFF'}
 
                             >
-                                Auto
+                                {t('Settings.SimOptions.Auto')}
                             </SelectItem>
                             <SelectItem
                                 onSelect={() => setMcduServerEnabled('PERM OFF')}
                                 selected={mcduServerEnabled === 'PERM OFF'}
                             >
-                                Off
+                                {t('Settings.SimOptions.Off')}
                             </SelectItem>
                         </SelectGroup>
                         <div className="pt-2 text-center">
-                            {mcduServerEnabled === 'AUTO ON' ? 'Active' : 'Inactive'}
+                            {mcduServerEnabled === 'AUTO ON' ? t('Settings.SimOptions.Active') : t('Settings.SimOptions.Inactive')}
                         </div>
                     </SettingItem>
 
@@ -117,7 +117,7 @@ export const SimOptionsPage = () => {
                     <SettingItem name={t('Settings.SimOptions.ThrottleDetents')}>
                         <button
                             type="button"
-                            className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                            className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
                             onClick={() => setShowThrottleSettings(true)}
                         >
                             {t('Settings.SimOptions.Calibrate')}

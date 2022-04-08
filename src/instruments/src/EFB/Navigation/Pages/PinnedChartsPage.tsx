@@ -189,12 +189,12 @@ export const PinnedChartUI = () => {
     });
 
     return (
-        <div className="p-4 space-y-4 rounded-lg border-2 h-content-section-reduced border-theme-accent">
+        <div className="p-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <div className="space-y-4">
                 {/* FIXME: The spacex4 is causing the keyboard to be shifted as well */}
                 <div className="flex flex-row items-center space-x-4">
                     <SimpleInput
-                        placeholder="SEARCH"
+                        placeholder={t('NavigationAndCharts.PinnedCharts.SearchPlaceholder')}
                         className="flex-grow uppercase"
                         value={searchQuery}
                         onChange={(value) => dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, searchQuery: value.toUpperCase() }))}
@@ -274,7 +274,7 @@ export const PinnedChartUI = () => {
                             <div className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} flex flex-col`}>
                                 {editMode && (
                                     <div
-                                        className="py-3 w-full font-bold text-center rounded-t-md border-2 transition duration-100 text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red"
+                                        className="py-3 w-full font-bold text-center text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-t-md border-2 border-utility-red transition duration-100"
                                         onClick={() => {
                                             dispatch(removedPinnedChart({ chartId: pinnedChart.chartId }));
                                         }}

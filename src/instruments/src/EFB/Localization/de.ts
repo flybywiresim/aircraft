@@ -1,5 +1,6 @@
+/* eslint-disable max-len */
 export const de = {
-    AirTrafficControl: {
+    'AirTrafficControl': {
         Active: 'Aktive Frequenz',
         ConnectHoppieACARS: 'Hoppie ACARS verbinden',
         DisconnectHoppieACARS: 'Hoppie ACARS trennen',
@@ -13,8 +14,8 @@ export const de = {
         Standby: 'Bereitschaftsfrequenz',
         Title: 'Flugsicherung',
     },
-    Checklist: { ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Es sind noch nicht abgeschlossene Checklist-Aufgaben vorhanden' },
-    Checklists: {
+    'Checklist': { ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Es sind noch nicht abgeschlossene Checklisten-Aufgaben vorhanden' },
+    'Checklists': {
         AreYouSureYouWantToResetAllChecklists: 'Bist du sicher, dass du alle Checklisten zurücksetzen möchtest?',
         AreYouSureYouWantToResetChecklists: 'Bist du sicher, dass du alle Checklisten zurücksetzen möchtest?',
         ChecklistResetWarning: 'Bist du sicher, dass du die Checklisten zurücksetzen möchtest',
@@ -27,7 +28,7 @@ export const de = {
         ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Es sind noch nicht abgeschlossene Checklisten-Aufgaben vorhanden',
         Title: 'Checklisten',
     },
-    Dashboard: {
+    'Dashboard': {
         ImportantInformation: {
             Checklists: {
                 NoRelevantChecklists: 'Keine relevanten Checklisten',
@@ -47,7 +48,10 @@ export const de = {
             Weather: {
                 AirPressure: 'Luftdruck',
                 DewPoint: 'Taupunkt',
+                IcaoInvalid: 'ICAO ungültig oder keine METAR Information verfügbar',
                 Loading: 'Wird geladen…',
+                MetarParsingError: 'Erhaltene METAR Information konnte nicht gelesen werden',
+                NoIcaoProvided: 'Kein ICAO angegeben',
                 Raw: 'Rohdaten',
                 TT: {
                     SwitchToIconView: 'Zur Icon-Ansicht wechseln',
@@ -72,7 +76,7 @@ export const de = {
             ZFW: 'ZFW',
         },
     },
-    Dispatch: {
+    'Dispatch': {
         Ofp: {
             ImportSimBriefData: 'Importieren von SimBrief-Daten',
             TT: {
@@ -97,18 +101,19 @@ export const de = {
         },
         Title: 'Flugplan',
     },
-    Failures: {
+    'Failures': {
         Comfort: { Title: 'Komfort' },
         Compact: { Title: 'Kompakt' },
         FullSimulationOfTheFailuresBelowIsntYetGuaranteed: 'Eine vollständige Simulation der folgenden Ausfälle ist noch nicht garantiert.',
         Search: 'Suchen',
         Title: 'Ausfälle',
     },
-    Ground: {
+    'Ground': {
         Fuel: {
             CenterTank: 'Mittlerer Tank',
             Completed: 'Abgeschlossen',
             Defueling: 'Enttanken',
+            EstimatedDuration: 'Geschätzte Dauer (Minuten)',
             EstimatedTime: 'Geschätzte Dauer',
             LeftInnerTank: 'Linker innerer Tank',
             LeftOuterTank: 'Linker äußerer Tank',
@@ -140,12 +145,12 @@ export const de = {
         },
         Title: 'Bodendienste',
     },
-    Modals: {
+    'Modals': {
         Cancel: 'Abbrechen',
         Confirm: 'Bestätigen',
         Okay: 'Okay',
     },
-    NavigationAndCharts: {
+    'NavigationAndCharts': {
         All: 'Alle',
         Altn: 'ALTN',
         ExitFullscreenMode: 'Vollbildmodus beenden',
@@ -174,6 +179,7 @@ export const de = {
             Delete: 'Löschen',
             Edit: 'Bearbeiten',
             NoItemsFound: 'Keine Elemente gefunden.',
+            SearchPlaceholder: 'Suche',
             ShowingChartsFromAllProviders: 'Karten von allen Anbietern anzeigen',
             SortMethods: {
                 AlphabeticalAZ: 'Alphabetisch - A -> Z',
@@ -205,14 +211,17 @@ export const de = {
         Title: 'Navigation & Karten',
         To: 'Nach',
     },
-    Performance: {
+    'Performance': {
         Data: 'Daten',
         Landing: {
             AirportIcao: 'Flughafen ICAO',
             ApproachSpeed: 'Anfluggeschwindigkeit',
+            ApproachSpeedUnit: 'kn',
             AutoLand: 'Automatische Landung',
             Calculate: 'Berechnen',
             Clear: 'Löschen',
+            DropDownNo: 'Nein',
+            DropDownYes: 'Ja',
             FillDataFrom: 'Ausfüllen von',
             FlapsConfiguration: 'Landeklappenkonfiguration',
             Low: 'Low',
@@ -222,9 +231,13 @@ export const de = {
             Qnh: 'QNH',
             ReverseThrust: 'Schubumkehr',
             RunwayAltitude: 'Landebahnhöhenlage',
+            RunwayAltitudeUnit: 'Fuß über Meereshöhe',
             RunwayCondition: 'Zustand der Landebahn',
             RunwayHeading: 'Landebahnrichtung',
+            RunwayHeadingUnit: '°',
             RunwayLda: 'Landebahn LDA',
+            RunwayLdaUnitFt: 'Fuß',
+            RunwayLdaUnitMeter: 'm',
             RunwaySlope: 'Landebahnneigung',
             TT: {
                 YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest: 'Du musst einen ICAO-Code eingeben, um eine METAR-Anfrage stellen zu können',
@@ -232,9 +245,13 @@ export const de = {
             },
             Temperature: 'Temperatur',
             Title: 'Landung',
+            UnitFt: 'Fuß',
+            UnitMeter: 'm',
             Weight: 'Gewicht',
             WindDirection: 'Windrichtung',
+            WindDirectionUnit: '°',
             WindMagnitude: 'Windstärke',
+            WindMagnitudeUnit: 'kn',
         },
         SYNC: 'SYNC',
         Title: 'Leistungsberechnungen',
@@ -246,6 +263,10 @@ export const de = {
                 GroundSpeed: 'Geschwindigkeit über Grund',
                 TargetAltitude: 'Zielflughöhe',
                 Title: 'Daten',
+                UnitAngleDegrees: 'Grad',
+                UnitFeet: 'Fuß',
+                UnitFtMin: 'Fuß pro Minute',
+                UnitNM: 'sm',
                 VerticalSpeed: 'Vertikale Geschwindigkeit',
             },
             GroundSpeed: {
@@ -257,10 +278,13 @@ export const de = {
                 RemoveLast: 'Letzte entfernen',
                 Sync: 'SYNC',
                 Title: 'Geschwindigkeit über Grund',
+                UnitKnots: 'Knoten',
+                UnitKt: 'kn',
             },
             Result: {
                 BeforeTarget: 'vor dem Ziel',
-                DesiredDescentAngle: 'Gewünschter Sinkwinkel',
+                DesiredDescentAngle: 'Benötigter Sinkwinkel',
+                DesiredVerticalSpeed: 'Benötigte vertikale Geschwindigkeit',
                 StartYourDescentAbout: 'Beginne Deinen Sinkflug ca.',
                 Title: 'Ergebnis',
             },
@@ -271,12 +295,13 @@ export const de = {
             Title: 'Top of Descent',
         },
     },
-    Presets: {
+    'Presets': {
         AircraftStates: {
             Cancel: 'Abbrechen',
+            ConfirmationDialogMsg: 'Bitte bestätige das Laden des Flugzeugzustandes.',
             CurrentProcedureStep: 'Aktueller Verfahrensschritt',
-            PleaseConfirmLoadingOfPreset: 'Bitte bestätigen Sie das Laden eines Flugzeugzustands.',
-            SelectAPresetToLoad: 'Wählen Sie einen Flugzeugzustand zum Laden',
+            PleaseConfirmLoadingOfPreset: 'Bitte bestätige das Laden eines Flugzeugzustandes.',
+            SelectAPresetToLoad: 'Wähle eine Voreinstellung zum Laden',
             TheAircraftMustBeOnTheGroundToLoadAPreset: 'Das Flugzeug muss am Boden sein, um einen Flugzeugzustand zu laden.',
             TheAircraftMustBeOntheGroundToLoadAPreset: 'Das Flugzeug muss am Boden sein, um einen Flugzeugzustand zu laden.',
             Title: 'Flugzeugzustände',
@@ -287,7 +312,7 @@ export const de = {
             LoadPreset: 'Voreinstellung laden',
             LoadingPreset: 'Voreinstellung wird geladen',
             NoName: 'Kein Name',
-            PleaseConfirmSavingPreset: 'Bitte bestätigen Sie das Speichern der Voreinstellung',
+            PleaseConfirmSavingPreset: 'Bitte bestätige das Speichern der Voreinstellung',
             SavePreset: 'Voreinstellung speichern',
             SavingPreset: 'Voreinstellung speichern',
             SelectAnInteriorLightingPresetToLoadOrSave: 'Wähle eine Voreinstellung für die Innenbeleuchtung zum Laden oder Speichern aus.',
@@ -302,7 +327,7 @@ export const de = {
         },
         Title: 'Voreinstellungen',
     },
-    Pushback: {
+    'Pushback': {
         Backward: 'Rückwärts',
         CallTug: 'Rufe Flugzeugschlepper',
         Forward: 'Vorwärts',
@@ -315,16 +340,16 @@ export const de = {
         TugDirection: 'Schlepprichtung',
         TugSpeed: 'Schleppgeschwindigkeit',
     },
-    Settings: {
+    'Settings': {
         About: { Title: 'Über' },
         AircraftOptionsPinPrograms: {
-            AccelerationHeight: 'Beschleunigungshöhe',
-            EngineOutAccelerationHeight: 'Beschleunigungshöhe bei Triebwerksausfall',
+            AccelerationHeight: 'Beschleunigungshöhe (Fuß)',
+            EngineOutAccelerationHeight: 'Beschleunigungshöhe bei Triebwerksausfall (Fuß)',
             IsisBaroUnit: 'ISIS-Baro-Einheit',
             IsisMetricAltitude: 'ISIS metrische Höhe',
             PaxSigns: 'Passagier-Anzeigen',
             RmpVhfSpacing: 'RMP VHF Kanalraster',
-            ThrustReductionHeight: 'Flughöhe für Schubreduzierung',
+            ThrustReductionHeight: 'Flughöhe für Schubreduzierung (Fuß)',
             Title: 'Flugzeug-Optionen/Pinprogramme',
             WeightUnit: 'Gewichtseinheit',
         },
@@ -341,7 +366,7 @@ export const de = {
             SimBriefUsernamePilotId: 'SimBrief Benutzername/Pilot-ID',
             TafSource: 'TAF-Quelle',
             Telex: 'TELEX',
-            TelexEnablesFreeTextAndLiveMap: 'TELEX ermöglicht das Versenden von Freitext    Nachrichten und das Erscheinen auf der FlyByWire Live-Map. Falls aktiviert, werden Flugzeug-Positionsdaten für die Dauer des Fluges veröffentlicht. Nachrichten sind öffentlich und werden nicht moderiert. NUTZUNG DIESER FUNKTION AUF EIGENES RISIKO. Um mehr über TELEX und die damit aktivierten Funktionen zu erfahren, besuche bitte https://docs.flybywiresim.com/telex.',
+            TelexEnablesFreeTextAndLiveMap: 'TELEX ermöglicht das Versenden von Freitext-Nachrichten und das Erscheinen auf der FlyByWire Live-Map. Falls aktiviert, werden Flugzeug-Positionsdaten für die Dauer des Fluges veröffentlicht. Nachrichten sind öffentlich und werden nicht moderiert. NUTZUNG DIESER FUNKTION AUF EIGENES RISIKO. Um mehr über TELEX und die damit aktivierten Funktionen zu erfahren, besuche bitte https://docs.flybywiresim.com/telex.',
             TelexWarning: 'TELEX-Warnung',
             Title: 'ATSU / AOC',
             YouAreAbleToOptIntoAnonymousErrorReporting: 'Du kannst eine anonyme Fehlerberichterstattung aktivieren, mit der wir Probleme schneller diagnostizieren, überwachen und beheben können. Diese Funktion ist freiwillig und es werden keine persönlichen Daten erfasst. Eventuell ermöglicht es Dir jedoch, einfacher Support zu erhalten und Deine Probleme schneller zu beheben.',
@@ -369,22 +394,28 @@ export const de = {
             HomeCockpitMode: 'Home-Cockpitmodus',
             McduFocusTimeout: 'MCDU Fokusdauer (Sekunden)',
             McduKeyboardInput: 'MCDU-Tastatureingabe',
-            SeparateTillerFromRudderInputs: 'Trennung von Tiller- und Querrudereingaben',
+            SeparateTillerFromRudderInputs: 'Trennung von Tiller und Querruder Eingaben',
             Title: 'Realismus',
         },
         SimOptions: {
+            Active: 'Aktiv',
+            Auto: 'Auto',
             Calibrate: 'Kalibrieren',
             DefaultBarometerUnit: 'Standard-Barometer-Einheit',
             DynamicRegistrationDecal: 'Dynamische Registrierungsbeschriftung',
             EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection: 'MCDU Serververbindung aktivieren (Wird nach 5 Minuten automatisch deaktiviert, wenn keine Verbindung zustande kommt)',
             ExternalMcduServerPort: 'Externer MCDU-Serverport',
+            Hpa: 'hPa',
+            Inactive: 'Inaktiv',
             LoadOnly: 'Einmaliges Laden',
             None: 'Keine',
+            Off: 'Aus',
             Save: 'Zurückspeichern bei Änderung',
-            SyncMsfsFlightPlan: 'MSFS-Flugplan Synchronization',
+            SyncMsfsFlightPlan: 'MSFS-Flugplan-Synchronization',
             ThrottleDetents: 'Schubhebelkalibrierung',
             Title: 'Sim-Optionen',
             UseCalculatedIlsSignals: 'Berechnete ILS-Signale verwenden',
+            inHg: 'in Hg',
         },
         ThrottleConfig: {
             Apply: 'Anwenden',
@@ -408,28 +439,29 @@ export const de = {
         Title: 'Einstellungen',
         Unrealistic: 'Unrealistisch',
         flyPad: {
-            '12Hour': '12h',
-            '24Hour': '24h',
-            'AutoBrightness': 'Automatische Helligkeit',
-            'AutomaticallyShowOnscreenKeyboard': 'Bildschirmtastatur automatisch anzeigen',
-            'Blue': 'Blau',
-            'Brightness': 'Helligkeit',
-            'Dark': 'Dunkel',
-            'Language': 'Sprache',
-            'Light': 'Hell',
-            'Local': 'Lokal',
-            'LocalTimeFormat': 'Lokales Zeitformat',
-            'OnscreenKeyboardLayout': 'Layout der Bildschirmtastatur',
-            'ShowColoredRawMetar': 'Rohdaten-METAR farbig anzeigen',
-            'ShowStatusBarFlightProgressIndicator': 'Flugfortschrittsanzeige in der Statusleiste anzeigen',
-            'Theme': 'Farbschema',
-            'TimeDisplayed': 'Zeitanzeige',
-            'Title': 'flyPad',
-            'Utc': 'UTC',
-            'UtcAndLocal': 'UTC und Lokal',
+            AutoBrightness: 'Automatische Helligkeit',
+            AutomaticallyShowOnscreenKeyboard: 'Bildschirmtastatur automatisch anzeigen',
+            Blue: 'Blau',
+            Brightness: 'Helligkeit',
+            Dark: 'Dunkel',
+            Language: 'Sprache',
+            Light: 'Hell',
+            Local: 'Lokal',
+            LocalTimeFormat: 'Lokales Zeitformat',
+            OnscreenKeyboardLayout: 'Layout der Bildschirmtastatur',
+            ShowColoredRawMetar: 'Rohdaten-METAR farbig anzeigen',
+            ShowStatusBarFlightProgressIndicator: 'Flugfortschrittsanzeige in der Statusleiste anzeigen',
+            Theme: 'Farbschema',
+            TimeDisplayed: 'Zeitanzeige',
+            Title: 'flyPad',
+            TwelveHours: '12h',
+            TwentyFourHours: '24h',
+            Utc: 'UTC',
+            UtcAndLocal: 'UTC und Lokal',
         },
     },
-    StatusBar: {
+    'Settings.flyPad.BatteryLifeEnabled': 'Batterieentladung simulieren',
+    'StatusBar': {
         Apr: 'Apr',
         Aug: 'Aug',
         Dec: 'Dez',
