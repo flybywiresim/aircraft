@@ -302,8 +302,13 @@ export class EfisSymbols {
                     const wp = activeFp.getWaypoint(i);
 
                     // Managed by legs
+                    // FIXME these should integrate with the normal algorithms to pick up contraints, not be drawn in enroute ranges, etc.
                     const legType = wp.additionalData.legType;
-                    if (legType === LegType.CA || legType === LegType.CR || legType === LegType.CI || legType === LegType.FM || legType === LegType.VI || legType === LegType.VM) {
+                    if (
+                        legType === LegType.CA || legType === LegType.CR || legType === LegType.CI
+                        || legType === LegType.FM
+                        || legType === LegType.VA || legType === LegType.VI || legType === LegType.VM
+                    ) {
                         continue;
                     }
 
