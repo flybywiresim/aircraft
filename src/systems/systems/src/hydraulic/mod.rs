@@ -208,8 +208,8 @@ impl PowerTransferUnit {
     const MEAN_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
     const STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
 
-    const MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 90.;
-    const STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 =20.;
+    const MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 95.;
+    const STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 =10.;
 
     const MIN_SPEED_SIMULATION_RPM: f64 = 50.;
 
@@ -331,9 +331,6 @@ impl PowerTransferUnit {
         } else {
             Pressure::new::<psi>(0.)
         };
-
-        println!("DELTA PTU {:.0}",delta_p.get::<psi>());
-
 
 
         if delta_p.abs()> self.activation_delta_pressure * self.shot_to_shot_activation_coefficient {
