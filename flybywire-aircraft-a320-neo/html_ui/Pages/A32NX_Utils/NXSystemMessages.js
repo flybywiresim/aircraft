@@ -1,15 +1,37 @@
 class McduMessage {
-    constructor(text, isTypeTwo = false, isAmber = false, replace = "", isResolved = () => false, onClear = () => {}) {
+    constructor(text, isAmber = false, replace = "") {
         this.text = text;
         this.isAmber = isAmber;
-        this.color = isAmber ? "amber" : "white";
-        this.isTypeTwo = isTypeTwo;
         this.replace = replace;
+        this.isTypeTwo = false;
+    }
+}
 
-        if (isTypeTwo) {
-            this.isResolved = isResolved;
-            this.onClear = onClear;
-        }
+class TypeIMessage extends McduMessage {
+    constructor(text, isAmber = false, replace = "") {
+        super(text, isAmber, replace);
+    }
+
+    /**
+     * Only returning a "copy" of the object to ensure thread safety when trying to edit the original message
+     * t {string} replaces defined elements, see this.replace
+     */
+    getModifiedMessage(t) {
+        return new McduMessage(
+            !!t ? this.text.replace(this.replace, "" + t) : this.text,
+            this.isAmber,
+            this.replace,
+        );
+    }
+}
+
+class TypeIIMessage extends McduMessage {
+    constructor(text, isAmber = false, replace = "", isResolved = () => false, onClear = () => {}) {
+        super(text, isAmber, replace);
+
+        this.isTypeTwo = true;
+        this.isResolved = isResolved;
+        this.onClear = onClear;
     }
 
     /**
@@ -19,26 +41,13 @@ class McduMessage {
      * onClear {function} overrides present function
      */
     getModifiedMessage(t, isResolved = undefined, onClear = undefined) {
-        return new McduMessage(
+        return new TypeIIMessage(
             !!t ? this.text.replace(this.replace, "" + t) : this.text,
-            this.isTypeTwo,
             this.isAmber,
             this.replace,
-            isResolved === undefined ? this.isResolved : isResolved,
-            onClear === undefined ? this.onClear : onClear
+            isResolved || this.isResolved,
+            onClear || this.onClear
         );
-    }
-}
-
-class TypeIMessage extends McduMessage {
-    constructor(text, isAmber = false, replace = "") {
-        super(text, false, isAmber, replace);
-    }
-}
-
-class TypeIIMessage extends McduMessage {
-    constructor(text, isAmber = false, replace = "", isResolved = () => false, onClear = () => {}) {
-        super(text, true, isAmber, replace, isResolved, onClear);
     }
 }
 
