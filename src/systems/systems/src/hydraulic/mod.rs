@@ -3,12 +3,13 @@ use crate::failures::{Failure, FailureType};
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::pneumatic::PressurizeableReservoir;
 use crate::shared::{
+    random_from_normal_distribution,random_from_range,
     interpolation, low_pass_filter::LowPassFilter, DelayedTrueLogicGate, ElectricalBusType,
     ElectricalBuses, HydraulicColor, SectionPressure,
 };
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-    VariableIdentifier, Write,
+    VariableIdentifier, Write,SimulatorReader,Read
 };
 
 use std::time::Duration;
@@ -176,6 +177,8 @@ pub struct PowerTransferUnit {
     valve_opened_id: VariableIdentifier,
     shaft_rpm_id: VariableIdentifier,
 
+    debug_id: VariableIdentifier,
+
     is_enabled: bool,
     is_active_right: bool,
     is_active_left: bool,
@@ -193,14 +196,23 @@ pub struct PowerTransferUnit {
 
     is_in_continuous_mode: bool,
     is_rotating_after_delay: DelayedTrueLogicGate,
+
+    activation_delta_pressure : Pressure,
+    desactivation_delta_pressure : Pressure,
+    shot_to_shot_activation_coefficient : f64,
+    shot_to_shot_desactivation_coefficient : f64,
 }
 impl PowerTransferUnit {
-    const ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
-    const DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 35.;
+    const MEAN_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
+    const STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+
+    const MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 90.;
+    const STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 =20.;
 
     const MIN_SPEED_SIMULATION_RPM: f64 = 50.;
-    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.85;
-    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.85;
+
+    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.89;
+    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.89;
 
     const DEFAULT_LEFT_DISPLACEMENT_CUBIC_INCH: f64 = 0.92;
     const MIN_RIGHT_DISPLACEMENT_CUBIC_INCH: f64 = 0.65;
@@ -233,12 +245,13 @@ impl PowerTransferUnit {
     const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 400.;
 
     pub fn new(context: &mut InitContext) -> Self {
-        Self {
+        let obj = Self {
             active_l2r_id: context.get_identifier("HYD_PTU_ACTIVE_L2R".to_owned()),
             active_r2l_id: context.get_identifier("HYD_PTU_ACTIVE_R2L".to_owned()),
             motor_flow_id: context.get_identifier("HYD_PTU_MOTOR_FLOW".to_owned()),
             valve_opened_id: context.get_identifier("HYD_PTU_VALVE_OPENED".to_owned()),
             shaft_rpm_id: context.get_identifier("HYD_PTU_SHAFT_RPM".to_owned()),
+            debug_id: context.get_identifier("HYD_PTU_DEBUG_DELTA".to_owned()),
 
             is_enabled: false,
             is_active_right: false,
@@ -261,7 +274,17 @@ impl PowerTransferUnit {
 
             is_in_continuous_mode: false,
             is_rotating_after_delay: DelayedTrueLogicGate::new(Self::DELAY_TO_DECLARE_CONTINUOUS),
-        }
+
+            activation_delta_pressure : Pressure::new::<psi>(random_from_normal_distribution(Self::MEAN_ACTIVATION_DELTA_PRESSURE_PSI,Self::STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI)),
+            desactivation_delta_pressure : Pressure::new::<psi>(random_from_normal_distribution(Self::MEAN_DEACTIVATION_DELTA_PRESSURE_PSI,Self::STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI)),
+            shot_to_shot_activation_coefficient : 1.,
+            shot_to_shot_desactivation_coefficient : 1.,
+        };
+
+        println!("NEW PTU: ACT {:.1} DELTA {:.1}",obj.activation_delta_pressure.get::<psi>(),
+        obj.desactivation_delta_pressure.get::<psi>());
+
+        obj
     }
 
     pub fn flow(&self) -> VolumeRate {
@@ -308,9 +331,15 @@ impl PowerTransferUnit {
             Pressure::new::<psi>(0.)
         };
 
-        if delta_p.abs().get::<psi>() > Self::ACTIVATION_DELTA_PRESSURE_PSI {
+        println!("DELTA PTU {:.0}",delta_p.get::<psi>());
+
+
+
+        if delta_p.abs()> self.activation_delta_pressure * self.shot_to_shot_activation_coefficient {
             self.control_valve_opened = true;
-        } else if delta_p.abs().get::<psi>() < Self::DEACTIVATION_DELTA_PRESSURE_PSI {
+            self.shot_to_shot_activation_coefficient = random_from_range(0.95,1.05);
+        } else if delta_p.abs()< self.desactivation_delta_pressure * self.shot_to_shot_desactivation_coefficient {
+            self.shot_to_shot_desactivation_coefficient = random_from_range(0.95,1.05);
             self.control_valve_opened = false;
         }
 
@@ -462,6 +491,14 @@ impl SimulationElement for PowerTransferUnit {
             &self.shaft_rpm_id,
             (self.shaft_speed_filtered.output()).abs(),
         );
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let delta = reader.read(&self.debug_id);
+
+        if delta != 0. {
+            self.desactivation_delta_pressure = Pressure::new::<psi>(delta);
+        }
     }
 }
 
