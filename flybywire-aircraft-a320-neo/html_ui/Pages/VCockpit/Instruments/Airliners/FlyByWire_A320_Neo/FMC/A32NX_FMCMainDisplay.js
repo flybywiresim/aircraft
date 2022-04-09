@@ -201,7 +201,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.dataManager = new FMCDataManager(this);
 
         this.guidanceManager = new Fmgc.GuidanceManager(this.flightPlanManager);
-        this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager);
+        this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager, this);
         this.navRadioManager = new Fmgc.NavRadioManager(this);
         this.efisSymbols = new Fmgc.EfisSymbols(this.flightPlanManager, this.guidanceController);
 
@@ -1108,6 +1108,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         // Overspeed protection
         const Vtap = Math.min(this.managedSpeedTarget, SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number"));
+
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", vPfd);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_ATHR", "knots", Vtap);
 
@@ -1406,13 +1407,18 @@ class FMCMainDisplay extends BaseAirliners {
     updateManagedProfile() {
         this.managedProfile.clear();
 
+        const origin = this.flightPlanManager.getPersistentOrigin(FlightPlans.Active);
+        const originElevation = origin ? origin.infos.coordinates.alt : 0;
+        const destination = this.flightPlanManager.getDestination(FlightPlans.Active);
+        const destinationElevation = destination ? destination.infos.coordinates.alt : 0;
+
         // TODO should we save a constraint already propagated to the current leg?
 
         // propagate descent speed constraints forward
         let currentSpeedConstraint = Infinity;
         let previousSpeedConstraint = Infinity;
-        for (let index = 0; index < this.flightPlanManager.getWaypointsCount(0); index++) {
-            const wp = this.flightPlanManager.getWaypoint(index, 0);
+        for (let index = 0; index < this.flightPlanManager.getWaypointsCount(FlightPlans.Active); index++) {
+            const wp = this.flightPlanManager.getWaypoint(index, FlightPlans.Active);
             if (wp.additionalData.constraintType === 2 /* DES */) {
                 if (wp.speedConstraint > 0) {
                     currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(wp.speedConstraint));
@@ -1435,8 +1441,8 @@ class FMCMainDisplay extends BaseAirliners {
         previousSpeedConstraint = Infinity;
         let currentDesConstraint = -Infinity;
         let currentClbConstraint = Infinity;
-        for (let index = this.flightPlanManager.getWaypointsCount(0) - 1; index >= 0; index--) {
-            const wp = this.flightPlanManager.getWaypoint(index, 0);
+        for (let index = this.flightPlanManager.getWaypointsCount(FlightPlans.Active) - 1; index >= 0; index--) {
+            const wp = this.flightPlanManager.getWaypoint(index, FlightPlans.Active);
             if (wp.additionalData.constraintType === 1 /* CLB */) {
                 if (wp.speedConstraint > 0) {
                     currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(wp.speedConstraint));
@@ -1469,6 +1475,32 @@ class FMCMainDisplay extends BaseAirliners {
             profilePoint.climbAltitude = currentClbConstraint;
             profilePoint.descentAltitude = currentDesConstraint;
             previousSpeedConstraint = currentSpeedConstraint;
+
+            // set some data for LNAV to use for coarse predictions while we lack vnav
+            if (wp.additionalData.constraintType === 1 /* CLB */) {
+                wp.additionalData.predictedSpeed = Math.min(profilePoint.climbSpeed, this.managedSpeedClimb);
+                if (this.climbSpeedLimitAlt && profilePoint.climbAltitude < this.climbSpeedLimitAlt) {
+                    wp.additionalData.predictedSpeed = Math.min(wp.additionalData.predictedSpeed, this.climbSpeedLimit);
+                }
+                wp.additionalData.predictedAltitude = Math.min(profilePoint.climbAltitude, this._cruiseFlightLevel * 100);
+            } else if (wp.additionalData.constraintType === 2 /* DES */) {
+                wp.additionalData.predictedSpeed = Math.min(profilePoint.descentSpeed, this.managedSpeedDescend);
+                if (this.descentSpeedLimitAlt && profilePoint.climbAltitude < this.descentSpeedLimitAlt) {
+                    wp.additionalData.predictedSpeed = Math.min(wp.additionalData.predictedSpeed, this.descentSpeedLimit);
+                }
+                wp.additionalData.predictedAltitude = Math.min(profilePoint.descentAltitude, this._cruiseFlightLevel * 100); ;
+            } else {
+                wp.additionalData.predictedSpeed = this.managedSpeedCruise;
+                wp.additionalData.predictedAltitude = this._cruiseFlightLevel * 100;
+            }
+            // small hack to ensure the terminal procedures and transitions to/from enroute look nice despite lack of altitude predictions
+            if (index <= this.flightPlanManager.getEnRouteWaypointsFirstIndex(FlightPlans.Active)) {
+                wp.additionalData.predictedAltitude = Math.min(originElevation + 10000, wp.additionalData.predictedAltitude);
+                wp.additionalData.predictedSpeed = Math.min(250, wp.additionalData.predictedSpeed);
+            } else if (index >= this.flightPlanManager.getEnRouteWaypointsLastIndex(FlightPlans.Active)) {
+                wp.additionalData.predictedAltitude = Math.min(destinationElevation + 10000, wp.additionalData.predictedAltitude);
+                wp.additionalData.predictedSpeed = Math.min(250, wp.additionalData.predictedSpeed);
+            }
         }
     }
 
@@ -2077,7 +2109,7 @@ class FMCMainDisplay extends BaseAirliners {
                     SimVar.SetSimVarValue("L:A32NX_DEPARTURE_ELEVATION", "feet", A32NX_Util.meterToFeet(currentRunway.elevation));
                     const departure = this.flightPlanManager.getDeparture();
                     const departureRunwayIndex = departure.runwayTransitions.findIndex(t => {
-                        return t.name.indexOf(currentRunway.designation) !== -1;
+                        return t.runwayNumber === currentRunway.number && t.runwayDesignation === currentRunway.designator;
                     });
                     if (departureRunwayIndex >= -1) {
                         return this.flightPlanManager.setDepartureRunwayIndex(departureRunwayIndex, () => {
@@ -2423,7 +2455,15 @@ class FMCMainDisplay extends BaseAirliners {
         });
     }
 
-    async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, callback = EmptyCallback.Boolean) {
+    /**
+     *
+     * @param {string} lastWaypointIdent The waypoint along the airway to insert up to
+     * @param {number} index the flight plan index of the from waypoint
+     * @param {string} airwayName the name/ident of the airway
+     * @param {boolean} smartAirway true if the intersection is computed by the smart airways function
+     * @returns index of the last waypoint inserted or -1 on error
+     */
+    async insertWaypointsAlongAirway(lastWaypointIdent, index, airwayName, smartAirway = false) {
         const referenceWaypoint = this.flightPlanManager.getWaypoint(index - 1);
         const lastWaypointIdentPadEnd = lastWaypointIdent.padEnd(5, " ");
         if (referenceWaypoint) {
@@ -2455,6 +2495,7 @@ class FMCMainDisplay extends BaseAirliners {
                                             if (i < count) {
                                                 waypoint.infos.airwayOut = airwayName;
                                             }
+                                            waypoint.additionalData.smartAirway = smartAirway;
                                             console.log("icao:" + icao + " added");
                                             resolve();
                                         }).catch(console.error);
@@ -2463,23 +2504,22 @@ class FMCMainDisplay extends BaseAirliners {
 
                                 await syncInsertWaypointByIcao(airway.icaos[firstIndex + i * inc], index + i).catch(console.error);
                             }
-                            callback(true);
-                            return;
+                            return index + count;
                         }
                         this.addNewMessage(NXFictionalMessages.secondIndexNotFound);
-                        return callback(false);
+                        return -1;
                     }
                     this.addNewMessage(NXFictionalMessages.firstIndexNotFound);
-                    return callback(false);
+                    return -1;
                 }
                 this.addNewMessage(NXFictionalMessages.noRefWpt);
-                return callback(false);
+                return -1;
             }
             this.addNewMessage(NXFictionalMessages.noWptInfos);
-            return callback(false);
+            return -1;
         }
         this.addNewMessage(NXFictionalMessages.noRefWpt);
-        return callback(false);
+        return -1;
     }
 
     // Copy airway selections from temporary to active flightplan

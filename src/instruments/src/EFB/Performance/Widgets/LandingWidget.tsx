@@ -454,7 +454,7 @@ export const LandingWidget = () => {
                                     <SimpleInput
                                         className="w-64"
                                         value={windDirection}
-                                        placeholder="&deg;"
+                                        placeholder={t('Performance.Landing.WindDirectionUnit')}
                                         min={0}
                                         max={360}
                                         padding={3}
@@ -467,7 +467,7 @@ export const LandingWidget = () => {
                                     <SimpleInput
                                         className="w-64"
                                         value={windMagnitude}
-                                        placeholder="kts"
+                                        placeholder={t('Performance.Landing.WindMagnitudeUnit')}
                                         min={0}
                                         decimalPrecision={1}
                                         onChange={handleWindMagnitudeChange}
@@ -524,7 +524,7 @@ export const LandingWidget = () => {
                                     <SimpleInput
                                         className="w-64"
                                         value={altitude}
-                                        placeholder="ft ASL"
+                                        placeholder={t('Performance.Landing.RunwayAltitudeUnit')}
                                         min={-2000}
                                         max={20000}
                                         decimalPrecision={0}
@@ -536,7 +536,7 @@ export const LandingWidget = () => {
                                     <SimpleInput
                                         className="w-64"
                                         value={runwayHeading}
-                                        placeholder="&deg;"
+                                        placeholder={t('Performance.Landing.RunwayHeadingUnit')}
                                         min={0}
                                         max={360}
                                         padding={3}
@@ -592,8 +592,8 @@ export const LandingWidget = () => {
                                             value={distanceUnit}
                                             className="w-20 rounded-l-none"
                                             options={[
-                                                { value: 'ft', displayValue: 'ft' },
-                                                { value: 'm', displayValue: 'm' },
+                                                { value: 'ft', displayValue: `${t('Performance.Landing.RunwayLdaUnitFt')}` },
+                                                { value: 'm', displayValue: `${t('Performance.Landing.RunwayLdaUnitMeter')}` },
                                             ]}
                                             onChange={(newValue: 'ft' | 'm') => setDistanceUnit(newValue)}
                                         />
@@ -603,7 +603,7 @@ export const LandingWidget = () => {
                                     <SimpleInput
                                         className="w-64"
                                         value={approachSpeed}
-                                        placeholder="kts"
+                                        placeholder={t('Performance.Landing.ApproachSpeedUnit')}
                                         min={90}
                                         max={350}
                                         decimalPrecision={0}
@@ -653,8 +653,8 @@ export const LandingWidget = () => {
                                         value={overweightProcedure}
                                         onChange={handleOverweightProcedureChange}
                                         options={[
-                                            { value: false, displayValue: 'No' },
-                                            { value: true, displayValue: 'Yes' },
+                                            { value: false, displayValue: `${t('Performance.Landing.DropDownNo')}` },
+                                            { value: true, displayValue: `${t('Performance.Landing.DropDownYes')}` },
                                         ]}
                                     />
                                 </Label>
@@ -665,8 +665,8 @@ export const LandingWidget = () => {
                                         value={reverseThrust}
                                         onChange={handleReverseThrustChange}
                                         options={[
-                                            { value: false, displayValue: 'No' },
-                                            { value: true, displayValue: 'Yes' },
+                                            { value: false, displayValue: `${t('Performance.Landing.DropDownNo')}` },
+                                            { value: true, displayValue: `${t('Performance.Landing.DropDownYes')}` },
                                         ]}
                                     />
                                 </Label>
@@ -677,8 +677,8 @@ export const LandingWidget = () => {
                                         value={reverseThrust}
                                         onChange={handleAutolandChange}
                                         options={[
-                                            { value: false, displayValue: 'No' },
-                                            { value: true, displayValue: 'Yes' },
+                                            { value: false, displayValue: `${t('Performance.Landing.DropDownNo')}` },
+                                            { value: true, displayValue: `${t('Performance.Landing.DropDownYes')}` },
                                         ]}
                                     />
                                 </Label>
@@ -696,7 +696,7 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={handleClearInputs}
-                                className="flex flex-row justify-center items-center py-2 space-x-4 w-full rounded-md border-2 outline-none text-theme-body bg-utility-red border-utility-red hover:bg-theme-body hover:text-utility-red"
+                                className="flex flex-row justify-center items-center py-2 space-x-4 w-full text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red outline-none"
                                 type="button"
                             >
                                 <Trash size={26} />
@@ -704,26 +704,26 @@ export const LandingWidget = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="flex overflow-hidden flex-row w-full rounded-lg border-2 divide-x-2 border-theme-accent divide-theme-accent">
+                    <div className="flex overflow-hidden flex-row w-full rounded-lg border-2 border-theme-accent divide-x-2 divide-theme-accent">
                         <OutputDisplay
                             label={t('Performance.Landing.MaximumManual')}
                             value={distanceUnit === 'ft'
-                                ? `${Math.round(Units.metreToFoot(maxAutobrakeLandingDist))}ft`
-                                : `${maxAutobrakeLandingDist}m`}
+                                ? `${Math.round(Units.metreToFoot(maxAutobrakeLandingDist))}${t('Performance.Landing.UnitFt')}`
+                                : `${maxAutobrakeLandingDist}${t('Performance.Landing.UnitMeter')}`}
                             error={maxAutobrakeLandingDist > (displayedRunwayLength ?? 0)}
                         />
                         <OutputDisplay
                             label={t('Performance.Landing.Medium')}
                             value={distanceUnit === 'ft'
-                                ? `${Math.round(Units.metreToFoot(mediumAutobrakeLandingDist))}ft`
-                                : `${mediumAutobrakeLandingDist}m`}
+                                ? `${Math.round(Units.metreToFoot(mediumAutobrakeLandingDist))}${t('Performance.Landing.UnitFt')}`
+                                : `${mediumAutobrakeLandingDist}${t('Performance.Landing.UnitMeter')}`}
                             error={mediumAutobrakeLandingDist > (displayedRunwayLength ?? 0)}
                         />
                         <OutputDisplay
                             label={t('Performance.Landing.Low')}
                             value={distanceUnit === 'ft'
-                                ? `${Math.round(Units.metreToFoot(lowAutobrakeLandingDist))}ft`
-                                : `${lowAutobrakeLandingDist}m`}
+                                ? `${Math.round(Units.metreToFoot(lowAutobrakeLandingDist))}${t('Performance.Landing.UnitFt')}`
+                                : `${lowAutobrakeLandingDist}${t('Performance.Landing.UnitMeter')}`}
                             error={lowAutobrakeLandingDist > (displayedRunwayLength ?? 0)}
                         />
                     </div>

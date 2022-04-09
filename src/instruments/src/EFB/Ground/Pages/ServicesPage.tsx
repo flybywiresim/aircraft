@@ -24,14 +24,15 @@ import { applySelectedWithSync, StatefulButton } from '../Ground';
 
 interface ServiceButtonWrapperProps {
     className?: string,
-    x: number,
+    xl?: number,
+    xr?: number,
     y: number
 }
 
-const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, className, x, y }) => (
+const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, className, xl, xr, y }) => (
     <div
         className={`flex flex-col rounded-xl border-2 border-theme-accent divide-y-2 divide-theme-accent overflow-hidden ${className}`}
-        style={{ position: 'absolute', left: x, top: y }}
+        style={{ position: 'absolute', left: xl, right: xr, top: y }}
     >
         {children}
     </div>
@@ -113,9 +114,9 @@ export const ServicesPage = () => {
             {/* TODO: Replace with JIT value */}
             <UprightOutline className="inset-x-0 mx-auto w-full h-full text-theme-text" />
 
-            <ServiceButtonWrapper x={0} y={64}>
+            <ServiceButtonWrapper xr={880} y={64}>
                 <GroundServiceButton
-                    name={t('Ground.Services.ConnectJetBridge')}
+                    name={t('Ground.Services.JetBridge')}
                     onClick={(e) => handleClick(() => {
                         setJetWayActive(1);
                         setRampActive(1);
@@ -135,7 +136,7 @@ export const ServicesPage = () => {
                     disabled={disabledButtons.includes('door-fwd-left')}
                 />
                 <GroundServiceButton
-                    name={t('Ground.Services.CallFuelTruck')}
+                    name={t('Ground.Services.FuelTruck')}
                     onClick={(e) => handleClick(() => setFuelingActive(1), e)}
                     className={applySelectedWithSync('', 'fuel', fuelingActive)}
                     id="fuel"
@@ -144,9 +145,9 @@ export const ServicesPage = () => {
                 </GroundServiceButton>
             </ServiceButtonWrapper>
 
-            <ServiceButtonWrapper x={750} y={64} className="">
+            <ServiceButtonWrapper xl={770} y={64} className="">
                 <GroundServiceButton
-                    name={powerActive ? t('Ground.Services.DisconnectExternalPower') : t('Ground.Services.ConnectExternalPower')}
+                    name={t('Ground.Services.ExternalPower')}
                     onClick={(e) => handleClick(() => setPowerActive(1), e)}
                     className={applySelectedWithSync('', 'power', powerActive)}
                     id="power"
@@ -154,7 +155,7 @@ export const ServicesPage = () => {
                     <PlugFill size={36} />
                 </GroundServiceButton>
                 <GroundServiceButton
-                    name={t('Ground.Services.CallBaggageTruck')}
+                    name={t('Ground.Services.BaggageTruck')}
                     onClick={(e) => handleClick(() => setCargoActive(1), e)}
                     className={applySelectedWithSync('', 'baggage', cargoActive)}
                     id="baggage"
@@ -163,7 +164,7 @@ export const ServicesPage = () => {
                 </GroundServiceButton>
             </ServiceButtonWrapper>
 
-            <ServiceButtonWrapper x={750} y={600} className="">
+            <ServiceButtonWrapper xl={770} y={600} className="">
                 <DoorToggle
                     tugActive={tugActive}
                     name={t('Ground.Services.DoorAft')}
@@ -174,7 +175,7 @@ export const ServicesPage = () => {
                     disabled={disabledButtons.includes('door-aft-right')}
                 />
                 <GroundServiceButton
-                    name={t('Ground.Services.CallCateringTruck')}
+                    name={t('Ground.Services.CateringTruck')}
                     onClick={(e) => handleClick(() => setCateringActive(1), e, 'door-aft-right')}
                     className={applySelectedWithSync('', 'catering', cateringActive, 'door-aft-right')}
                     id="catering"

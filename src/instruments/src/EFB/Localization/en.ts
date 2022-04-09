@@ -1,5 +1,6 @@
+/* eslint-disable max-len */
 export const en = {
-    AirTrafficControl: {
+    'AirTrafficControl': {
         Active: 'Active',
         ConnectHoppieACARS: 'Connect Hoppie ACARS',
         DisconnectHoppieACARS: 'Disconnect Hoppie ACARS',
@@ -13,8 +14,8 @@ export const en = {
         Standby: 'Standby',
         Title: 'Air Traffic Control',
     },
-    Checklist: { ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'There are remaining autofill checklist items that have not yet been completed' },
-    Checklists: {
+    'Checklist': { ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'There are remaining autofill checklist items that have not yet been completed' },
+    'Checklists': {
         AreYouSureYouWantToResetAllChecklists: 'Are you sure you want to reset all checklists?',
         AreYouSureYouWantToResetChecklists: 'Are you sure you want to reset all checklists?',
         ChecklistResetWarning: 'Checklist Reset Warning',
@@ -27,7 +28,7 @@ export const en = {
         ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'There are remaining autofill checklist items that have not yet been completed',
         Title: 'Checklists',
     },
-    Dashboard: {
+    'Dashboard': {
         ImportantInformation: {
             Checklists: {
                 NoRelevantChecklists: 'No Relevant Checklists',
@@ -47,7 +48,10 @@ export const en = {
             Weather: {
                 AirPressure: 'Air Pressure',
                 DewPoint: 'Dew Point',
+                IcaoInvalid: 'ICAO invalid or no METAR available',
                 Loading: 'Loading',
+                MetarParsingError: 'Received METAR could not be parsed',
+                NoIcaoProvided: 'No ICAO provided',
                 Raw: 'Raw',
                 TT: {
                     SwitchToIconView: 'Switch to Icon View',
@@ -72,7 +76,7 @@ export const en = {
             ZFW: 'ZFW',
         },
     },
-    Dispatch: {
+    'Dispatch': {
         Ofp: {
             ImportSimBriefData: 'Import SimBrief Data',
             TT: {
@@ -97,18 +101,19 @@ export const en = {
         },
         Title: 'Dispatch',
     },
-    Failures: {
+    'Failures': {
         Comfort: { Title: 'Comfort' },
         Compact: { Title: 'Compact' },
         FullSimulationOfTheFailuresBelowIsntYetGuaranteed: "Full simulation of the failures below isn't yet guaranteed.",
         Search: 'Search',
         Title: 'Failures',
     },
-    Ground: {
+    'Ground': {
         Fuel: {
             CenterTank: 'Center Tank',
             Completed: 'Completed',
             Defueling: 'Defueling',
+            EstimatedDuration: 'Estimated duration (minutes)',
             EstimatedTime: 'Estimated Time',
             LeftInnerTank: 'Left Inner Tank',
             LeftOuterTank: 'Left Outer Tank',
@@ -128,24 +133,23 @@ export const en = {
         },
         Pushback: { Title: 'Pushback' },
         Services: {
-            CallBaggageTruck: 'Call Baggage Truck',
-            CallCateringTruck: 'Call Catering Truck',
-            CallFuelTruck: 'Call Fuel Truck',
-            ConnectExternalPower: 'Connect External Power',
-            ConnectJetBridge: 'Connect Jet Bridge',
-            DisconnectExternalPower: 'Disconnect External Power',
+            BaggageTruck: 'Baggage Truck',
+            CateringTruck: 'Catering Truck',
             DoorAft: 'Door Aft',
             DoorFwd: 'Door Fwd',
+            ExternalPower: 'External Power',
+            FuelTruck: 'Fuel Truck',
+            JetBridge: 'Jet Bridge',
             Title: 'Services',
         },
         Title: 'Ground',
     },
-    Modals: {
+    'Modals': {
         Cancel: 'Cancel',
         Confirm: 'Confirm',
         Okay: 'Okay',
     },
-    NavigationAndCharts: {
+    'NavigationAndCharts': {
         All: 'All',
         Altn: 'Altn',
         ExitFullscreenMode: 'Exit Fullscreen Mode',
@@ -174,6 +178,7 @@ export const en = {
             Delete: 'Delete',
             Edit: 'Edit',
             NoItemsFound: 'No Items Found',
+            SearchPlaceholder: 'Search',
             ShowingChartsFromAllProviders: 'Showing Charts from All Providers',
             SortMethods: {
                 AlphabeticalAZ: 'Alphabetical - A -> Z',
@@ -205,14 +210,17 @@ export const en = {
         Title: 'Navigation & Charts',
         To: 'To',
     },
-    Performance: {
+    'Performance': {
         Data: 'Data',
         Landing: {
             AirportIcao: 'Airport ICAO',
             ApproachSpeed: 'Approach Speed',
+            ApproachSpeedUnit: 'kts',
             AutoLand: 'Auto Land',
             Calculate: 'Calculate',
             Clear: 'Clear',
+            DropDownNo: 'No',
+            DropDownYes: 'Yes',
             FillDataFrom: 'Fill data from',
             FlapsConfiguration: 'Flaps Configuration',
             Low: 'Low',
@@ -222,9 +230,13 @@ export const en = {
             Qnh: 'QNH',
             ReverseThrust: 'Reverse Thrust',
             RunwayAltitude: 'Runway Altitude',
+            RunwayAltitudeUnit: 'ft ASL',
             RunwayCondition: 'Runway Condition',
             RunwayHeading: 'Runway Heading',
+            RunwayHeadingUnit: '°',
             RunwayLda: 'Runway LDA',
+            RunwayLdaUnitFt: 'ft',
+            RunwayLdaUnitMeter: 'm',
             RunwaySlope: 'Runway Slope',
             TT: {
                 YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest: 'You need to enter an ICAO code in order to make a METAR request',
@@ -232,9 +244,13 @@ export const en = {
             },
             Temperature: 'Temperature',
             Title: 'Landing',
+            UnitFt: 'ft',
+            UnitMeter: 'm',
             Weight: 'Weight',
             WindDirection: 'Wind Direction',
+            WindDirectionUnit: '°',
             WindMagnitude: 'Wind Magnitude',
+            WindMagnitudeUnit: 'kts',
         },
         SYNC: 'SYNC',
         Title: 'Performance',
@@ -246,6 +262,10 @@ export const en = {
                 GroundSpeed: 'Ground Speed',
                 TargetAltitude: 'Target Altitude',
                 Title: 'Data',
+                UnitAngleDegrees: 'degrees',
+                UnitFeet: 'feet',
+                UnitFtMin: 'ft/min',
+                UnitNM: 'NM',
                 VerticalSpeed: 'Vertical Speed',
             },
             GroundSpeed: {
@@ -257,10 +277,13 @@ export const en = {
                 RemoveLast: 'Remove Last',
                 Sync: 'SYNC',
                 Title: 'Ground Speed',
+                UnitKnots: 'knots',
+                UnitKt: 'kt',
             },
             Result: {
                 BeforeTarget: 'before target',
                 DesiredDescentAngle: 'Desired Descent Angle',
+                DesiredVerticalSpeed: 'Desired Vertical Speed',
                 StartYourDescentAbout: 'Start your descent about',
                 Title: 'Result',
             },
@@ -271,15 +294,21 @@ export const en = {
             Title: 'Top of Descent',
         },
     },
-    Presets: {
+    'Presets': {
         AircraftStates: {
             Cancel: 'Cancel',
+            ColdDark: 'Cold & Dark',
+            ConfirmationDialogMsg: 'Please confirm loading of preset.',
             CurrentProcedureStep: 'Current Procedure Step',
             PleaseConfirmLoadingOfPreset: 'Please confirm loading of preset.',
+            ReadyPushback: 'Ready for Pushback',
+            ReadyTakeoff: 'Ready for Takeoff',
+            ReadyTaxi: 'Ready for Taxi',
             SelectAPresetToLoad: 'Select a Preset to Load',
             TheAircraftMustBeOnTheGroundToLoadAPreset: 'The aircraft must be on the ground to load a preset.',
             TheAircraftMustBeOntheGroundToLoadAPreset: 'The aircraft must be on the ground to load a preset.',
             Title: 'Aircraft States',
+            Turnaround: 'Turnaround',
         },
         InteriorLighting: {
             AircraftNeedsToBePoweredToLoadPresets: 'Aircraft Needs to be Powered to Load Presets',
@@ -302,7 +331,7 @@ export const en = {
         },
         Title: 'Presets',
     },
-    Pushback: {
+    'Pushback': {
         Backward: 'Backward',
         CallTug: 'Call Tug',
         Forward: 'Forward',
@@ -315,16 +344,16 @@ export const en = {
         TugDirection: 'Tug Direction',
         TugSpeed: 'Tug Speed',
     },
-    Settings: {
+    'Settings': {
         About: { Title: 'About' },
         AircraftOptionsPinPrograms: {
-            AccelerationHeight: 'Acceleration Height',
-            EngineOutAccelerationHeight: 'Engine-Out Acceleration Height',
+            AccelerationHeight: 'Acceleration Height (ft)',
+            EngineOutAccelerationHeight: 'Engine-Out Acceleration Height (ft)',
             IsisBaroUnit: 'ISIS Baro Unit',
             IsisMetricAltitude: 'ISIS Metric Altitude',
             PaxSigns: 'PAX Signs',
             RmpVhfSpacing: 'RMP VHF Spacing',
-            ThrustReductionHeight: 'Thrust Reduction Height',
+            ThrustReductionHeight: 'Thrust Reduction Height (ft)',
             Title: 'Aircraft Options / Pin Programs',
             WeightUnit: 'Weight Unit',
         },
@@ -373,18 +402,24 @@ export const en = {
             Title: 'Realism',
         },
         SimOptions: {
+            Active: 'Active',
+            Auto: 'Auto',
             Calibrate: 'Calibrate',
             DefaultBarometerUnit: 'Default Barometer Unit',
             DynamicRegistrationDecal: 'Dynamic Registration Decal',
             EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection: 'Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)',
             ExternalMcduServerPort: 'External MCDU Server Port',
+            Hpa: 'hPa',
+            Inactive: 'Inactive',
             LoadOnly: 'Load Only',
             None: 'None',
+            Off: 'Off',
             Save: 'Save',
             SyncMsfsFlightPlan: 'Sync MSFS Flight Plan',
             ThrottleDetents: 'Throttle Detents',
             Title: 'Sim Options',
             UseCalculatedIlsSignals: 'Use Calculated ILS Signals',
+            inHg: 'in Hg',
         },
         ThrottleConfig: {
             Apply: 'Apply',
@@ -394,6 +429,7 @@ export const en = {
             ConfigureEnd: 'Configure End',
             CurrentValue: 'Current Value',
             Deadband: 'Deadband',
+            ErrorOverlapMsg: 'overlaps with',
             IndependentAxis: 'Independent Axis',
             LoadFromFile: 'Load from File',
             PleaseEnterAValidDeadzone: 'Please enter a valid deadzone',
@@ -408,28 +444,29 @@ export const en = {
         Title: 'Settings',
         Unrealistic: 'Unrealistic',
         flyPad: {
-            '12Hour': '12 Hour',
-            '24Hour': '24 Hour',
-            'AutoBrightness': 'Auto Brightness',
-            'AutomaticallyShowOnscreenKeyboard': 'Automatically Show Onscreen Keyboard',
-            'Blue': 'Blue',
-            'Brightness': 'Brightness',
-            'Dark': 'Dark',
-            'Language': 'Language',
-            'Light': 'Light',
-            'Local': 'Local',
-            'LocalTimeFormat': 'Local Time Format',
-            'OnscreenKeyboardLayout': 'Onscreen Keyboard Layout',
-            'ShowColoredRawMetar': 'Show Colored Raw METAR',
-            'ShowStatusBarFlightProgressIndicator': 'Show Status Bar Flight Progress Indicator',
-            'Theme': 'Theme',
-            'TimeDisplayed': 'Time Displayed',
-            'Title': 'flyPad',
-            'Utc': 'UTC',
-            'UtcAndLocal': 'UTC and Local',
+            AutoBrightness: 'Auto Brightness',
+            AutomaticallyShowOnscreenKeyboard: 'Automatically Show Onscreen Keyboard',
+            Blue: 'Blue',
+            Brightness: 'Brightness',
+            Dark: 'Dark',
+            Language: 'Language',
+            Light: 'Light',
+            Local: 'Local',
+            LocalTimeFormat: 'Local Time Format',
+            OnscreenKeyboardLayout: 'Onscreen Keyboard Layout',
+            ShowColoredRawMetar: 'Show Colored Raw METAR',
+            ShowStatusBarFlightProgressIndicator: 'Show Status Bar Flight Progress Indicator',
+            Theme: 'Theme',
+            TimeDisplayed: 'Time Displayed',
+            Title: 'flyPad',
+            TwelveHours: '12h',
+            TwentyFourHours: '24h',
+            Utc: 'UTC',
+            UtcAndLocal: 'UTC and Local',
         },
     },
-    StatusBar: {
+    'Settings.flyPad.BatteryLifeEnabled': 'Battery Life Simulated',
+    'StatusBar': {
         Apr: 'Apr',
         Aug: 'Aug',
         Dec: 'Dec',

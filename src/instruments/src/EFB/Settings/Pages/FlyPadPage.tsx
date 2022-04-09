@@ -42,8 +42,8 @@ export const FlyPadPage = () => {
     ];
 
     const timeFormatButtons: ButtonType[] = [
-        { name: t('Settings.flyPad.12Hour'), setting: '12' },
-        { name: t('Settings.flyPad.24Hour'), setting: '24' },
+        { name: t('Settings.flyPad.TwelveHours'), setting: '12' },
+        { name: t('Settings.flyPad.TwentyFourHours'), setting: '24' },
     ];
 
     const handleThemeSelect = (theme: string) => {
@@ -58,6 +58,10 @@ export const FlyPadPage = () => {
 
     return (
         <SettingsPage name={t('Settings.flyPad.Title')}>
+            <SettingItem name={t('Settings.flyPad.BatteryLifeEnabled')}>
+                <Toggle value={!!batteryLifeEnabled} onToggle={(value) => setBatteryLifeEnabled(value ? 1 : 0)} />
+            </SettingItem>
+
             <SettingItem name={t('Settings.flyPad.Brightness')} disabled={!!usingAutobrightness}>
                 <div className="flex flex-row items-center space-x-8">
                     <Slider
@@ -150,10 +154,6 @@ export const FlyPadPage = () => {
                 />
             </SettingItem>
 
-            {/* TODO: Add this key into localazy at some point */}
-            <SettingItem name={t('Settings.flyPad.BatteryLifeEnabled')}>
-                <Toggle value={!!batteryLifeEnabled} onToggle={(value) => setBatteryLifeEnabled(value ? 1 : 0)} />
-            </SettingItem>
         </SettingsPage>
     );
 };

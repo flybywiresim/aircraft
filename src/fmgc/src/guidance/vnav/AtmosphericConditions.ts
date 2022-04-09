@@ -13,6 +13,12 @@ export class AtmosphericConditions {
 
     private casFromSim: Knots;
 
+    private tasFromSim: Knots;
+
+    private windSpeedFromSim: Knots;
+
+    private windDirectionFromSim: DegreesTrue;
+
     private computedIsaDeviation: Celcius;
 
     constructor() {
@@ -22,7 +28,11 @@ export class AtmosphericConditions {
     update() {
         this.ambientTemperatureFromSim = SimVar.GetSimVarValue('AMBIENT TEMPERATURE', 'celsius');
         this.altitudeFromSim = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
-        this.casFromSim = this.computeCasFromTas(this.altitudeFromSim, SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'));
+        this.tasFromSim = SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots');
+        this.casFromSim = this.computeCasFromTas(this.altitudeFromSim, this.tasFromSim);
+        // TODO filter?
+        this.windSpeedFromSim = SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'Knots');
+        this.windDirectionFromSim = SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'Degrees');
 
         this.computedIsaDeviation = this.ambientTemperatureFromSim - Common.getIsaTemp(this.altitudeFromSim);
     }
@@ -37,6 +47,22 @@ export class AtmosphericConditions {
 
     get currentAirspeed(): Knots {
         return this.casFromSim;
+    }
+
+    get currentTrueAirspeed(): Knots {
+        return this.tasFromSim;
+    }
+
+    get currentWindSpeed(): Knots {
+        return this.windSpeedFromSim;
+    }
+
+    get currentWindDirection(): DegreesTrue {
+        return this.windDirectionFromSim;
+    }
+
+    getCurrentWindVelocityComponent(direction: DegreesTrue): Knots {
+        return Math.cos(Avionics.Utils.diffAngle(direction, this.currentWindDirection)) * this.currentWindSpeed;
     }
 
     get isaDeviation(): Celcius {

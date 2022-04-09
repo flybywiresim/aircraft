@@ -27,13 +27,13 @@ export const Result = ({ className }: {className: string}) => {
             {
                 headerText: `${t('Performance.TopOfDescent.Result.DesiredVerticalSpeed')}`,
                 footerText: '',
-                unit: 'ft/min',
+                unit: `${t('Performance.TopOfDescent.Data.UnitFtMin')}`,
                 calculate: () => Math.round(todCalculator.calculateVS(calculationInput)),
             },
             {
                 headerText: `${t('Performance.TopOfDescent.Result.DesiredDescentAngle')}`,
                 footerText: '',
-                unit: 'degrees',
+                unit: `${t('Performance.TopOfDescent.Data.UnitAngleDegrees')}`,
                 calculate: () => -Math.round(todCalculator.calculateDegree(calculationInput)),
             },
         ],
@@ -81,7 +81,8 @@ export const Result = ({ className }: {className: string}) => {
 
                             <span className="text-6xl whitespace-nowrap">
                                 {calculation}
-                                {' '}
+                            </span>
+                            <span className="text-2xl whitespace-nowrap">
                                 {unit}
                             </span>
 

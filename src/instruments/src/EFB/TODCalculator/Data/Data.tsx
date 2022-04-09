@@ -67,9 +67,9 @@ export const Data = ({ className }: {className: string}) => {
     }, [calculationInputSyncEnabled, distance, verticalSpeed, pitchAngle]);
 
     const calculationTypes = [
-        { label: `${t('Performance.TopOfDescent.Data.Distance')}`, placeholder: 'NM', type: TOD_CALCULATION_TYPE.DISTANCE, syncValue: distance, negativeValue: false },
-        { label: `${t('Performance.TopOfDescent.Data.VerticalSpeed')}`, placeholder: 'ft/min', type: TOD_CALCULATION_TYPE.VERTICAL_SPEED, syncValue: verticalSpeed, negativeValue: true },
-        { label: `${t('Performance.TopOfDescent.Data.Angle')}`, placeholder: 'degrees', type: TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE, syncValue: pitchAngle, negativeValue: true },
+        { label: `${t('Performance.TopOfDescent.Data.Distance')}`, placeholder: `${t('Performance.TopOfDescent.Data.UnitNM')}`, type: TOD_CALCULATION_TYPE.DISTANCE, syncValue: distance, negativeValue: false },
+        { label: `${t('Performance.TopOfDescent.Data.VerticalSpeed')}`, placeholder: `${t('Performance.TopOfDescent.Data.UnitFtMin')}`, type: TOD_CALCULATION_TYPE.VERTICAL_SPEED, syncValue: verticalSpeed, negativeValue: true },
+        { label: `${t('Performance.TopOfDescent.Data.Angle')}`, placeholder: `${t('Performance.TopOfDescent.Data.UnitAngleDegrees')}`, type: TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE, syncValue: pitchAngle, negativeValue: true },
     ];
 
     return (
@@ -80,7 +80,7 @@ export const Data = ({ className }: {className: string}) => {
                 <div className="flex flex-row">
                     <SimpleInput
                         className="w-full rounded-r-none"
-                        placeholder="feet"
+                        placeholder={t('Performance.TopOfDescent.Data.UnitFeet')}
                         value={currentAltitude}
                         onChange={(value) => dispatch(setTodData({ currentAltitude: parseFloat(value) }))}
                         disabled={currentAltitudeSyncEnabled}
@@ -102,7 +102,7 @@ export const Data = ({ className }: {className: string}) => {
             <div>
                 <p>{t('Performance.TopOfDescent.Data.TargetAltitude')}</p>
                 <SimpleInput
-                    placeholder="feet"
+                    placeholder={t('Performance.TopOfDescent.Data.UnitFeet')}
                     className="w-full"
                     value={targetAltitude}
                     onChange={(targetAltitude) => dispatch(setTodData({ targetAltitude: parseFloat(targetAltitude) }))}
@@ -110,7 +110,7 @@ export const Data = ({ className }: {className: string}) => {
                 />
             </div>
 
-            <div className="w-full h-1 rounded-full bg-theme-accent" />
+            <div className="w-full h-1 bg-theme-accent rounded-full" />
 
             {calculationTypes.map(({ label, placeholder, type, syncValue }) => (!calculationInput || calculationType === type) && (
                 <div>
@@ -139,7 +139,7 @@ export const Data = ({ className }: {className: string}) => {
                         {!!calculationInput && !calculationInputSyncEnabled && (
                             <button
                                 type="button"
-                                className="flex items-center px-3 rounded-md rounded-l-none border-2 transition duration-100 border-utility-red text-utility-red hover:bg-utility-red hover:text-theme-body"
+                                className="flex items-center px-3 text-utility-red hover:text-theme-body hover:bg-utility-red rounded-md rounded-l-none border-2 border-utility-red transition duration-100"
                                 onClick={() => dispatch(setTodData({ calculation: { input: undefined, type: undefined } }))}
                             >
                                 X

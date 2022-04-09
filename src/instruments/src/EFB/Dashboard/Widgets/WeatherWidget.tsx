@@ -128,7 +128,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     function getMetar(icao: any, source: any) {
         if (icao.length !== 4 || icao === '----') {
             return new Promise(() => {
-                setErrorMetar('NO ICAO PROVIDED');
+                setErrorMetar(t('Dashboard.ImportantInformation.Weather.NoIcaoProvided').toUpperCase());
                 dispatch(setMetar(MetarParserTypeProp));
             });
         }
@@ -139,7 +139,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                 // For the other METAR sources an error is thrown (Request failed with status code 404)
                 // and caught in the catch clause.
                 if (!result.metar) {
-                    setErrorMetar('ICAO INVALID OR NO METAR AVAILABLE');
+                    setErrorMetar(t('Dashboard.ImportantInformation.Weather.IcaoInvalid').toUpperCase());
                     dispatch(setMetar(MetarParserTypeProp));
                     return;
                 }
@@ -149,7 +149,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                     dispatch(setMetar(metarParse));
                 } catch (err) {
                     console.log(`Error while parsing Metar ("${result.metar}"): ${err}`);
-                    setErrorMetar(`RECEIVED METAR COULD NOT BE PARSED: ${err.toString().replace(/^Error: /, '').toUpperCase()}`);
+                    setErrorMetar(`${t('Dashboard.ImportantInformation.Weather.MetarParsingError').toUpperCase()}: ${err.toString().replace(/^Error: /, '').toUpperCase()}`);
                     dispatch(setMetar(MetarParserTypeProp));
                 }
             })
@@ -158,7 +158,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                 console.log(`Error while retrieving Metar: ${err}`);
 
                 if (err.toString().match(/^Error:/)) {
-                    setErrorMetar('ICAO INVALID OR NO METAR AVAILABLE');
+                    setErrorMetar(t('Dashboard.ImportantInformation.Weather.IcaoInvalid').toUpperCase());
                 } else {
                     setErrorMetar(`${err.toString().replace(/^Error: /, '')}`);
                 }
@@ -193,7 +193,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                     <>
                         <div className="flex flex-row justify-between items-center">
                             <SimpleInput
-                                className="w-32 font-medium text-center uppercase !text-2xl"
+                                className="w-32 !text-2xl font-medium text-center uppercase"
                                 placeholder={simbriefIcao || 'ICAO'}
                                 value={userIcao ?? simbriefIcao}
                                 onChange={(value) => handleIcao(value)}

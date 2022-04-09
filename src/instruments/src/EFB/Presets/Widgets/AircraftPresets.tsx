@@ -7,7 +7,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { useTranslation } from 'react-i18next';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
-import { AircraftPresetsList, StepDescription } from './Procedures';
+import { StepDescription } from './Procedures';
 
 export const AircraftPresets = () => {
     // Aircraft presets are handled by a backend WASM module. This frontend will
@@ -30,12 +30,22 @@ export const AircraftPresets = () => {
 
     const { t } = useTranslation();
 
+    // These need to align with the IDs in the Presets C++ WASM.
+    // WASM: src/presets/src/Aircraft/AircraftProcedures.h
+    const AircraftPresetsList: { index: number, name: string }[] = [
+        { index: 1, name: `${t('Presets.AircraftStates.ColdDark')}` }, // 'Cold & Dark' },
+        { index: 2, name: `${t('Presets.AircraftStates.Turnaround')}` },
+        { index: 3, name: `${t('Presets.AircraftStates.ReadyPushback')}` },
+        { index: 4, name: `${t('Presets.AircraftStates.ReadyTaxi')}` },
+        { index: 5, name: `${t('Presets.AircraftStates.ReadyTakeoff')}` },
+    ];
+
     // Sets the LVAR to tell the wasm to load the preset into the aircraft
     const handleLoadPreset = (presetID: number) => {
         showModal(
             <PromptModal
                 title={`${AircraftPresetsList[presetID - 1].name}`}
-                bodyText="Please confirm loading of preset."
+                bodyText={t('Presets.AircraftStates.ConfirmationDialogMsg')}
                 onConfirm={() => setLoadPresetVar(presetID)}
             />,
         );
@@ -47,11 +57,11 @@ export const AircraftPresets = () => {
     };
 
     return (
-        <div className="p-4 mt-4 space-y-4 rounded-lg border-2 h-content-section-reduced border-theme-accent">
+        <div className="p-4 mt-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <div className="flex flex-row justify-center items-center p-2 space-x-2 h-20 rounded-md border-2 border-theme-accent">
                 {loadPresetVar ? (
                     <>
-                        <div className="overflow-hidden justify-center content-center w-full h-full rounded-md bg-theme-accent">
+                        <div className="overflow-hidden justify-center content-center w-full h-full bg-theme-accent rounded-md">
                             <span className="pt-1 pl-3 h-1/2 text-xl">
                                 {t('Presets.AircraftStates.CurrentProcedureStep')}
                                 :
@@ -65,7 +75,7 @@ export const AircraftPresets = () => {
                         </div>
 
                         <div
-                            className="flex items-center px-4 h-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                            className="flex items-center px-4 h-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
                             onClick={() => handleCancel()}
                         >
                             {t('Presets.AircraftStates.Cancel')}

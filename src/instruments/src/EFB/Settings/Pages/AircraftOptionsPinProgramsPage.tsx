@@ -74,7 +74,7 @@ export const AircraftOptionsPinProgramsPage = () => {
 
     return (
         <SettingsPage name={t('Settings.AircraftOptionsPinPrograms.Title')}>
-            <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.ThrustReductionHeight')} (ft)`}>
+            <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.ThrustReductionHeight')}`}>
                 <SimpleInput
                     className="text-center w-30"
                     placeholder={thrustReductionHeight}
@@ -84,7 +84,7 @@ export const AircraftOptionsPinProgramsPage = () => {
                     onChange={(event) => handleSetThrustReductionAlt(event)}
                 />
             </SettingItem>
-            <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.AccelerationHeight')} (ft)`}>
+            <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.AccelerationHeight')}`}>
                 <SimpleInput
                     className="text-center w-30"
                     placeholder={accelerationHeight}
@@ -94,7 +94,7 @@ export const AircraftOptionsPinProgramsPage = () => {
                     onChange={(event) => handleSetAccelerationAlt(event)}
                 />
             </SettingItem>
-            <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.EngineOutAccelerationHeight')} (ft)`}>
+            <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.EngineOutAccelerationHeight')}`}>
                 <SimpleInput
                     className="text-center w-30"
                     placeholder={accelerationOutHeight}

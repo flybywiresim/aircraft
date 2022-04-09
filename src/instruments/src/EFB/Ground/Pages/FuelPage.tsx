@@ -396,7 +396,7 @@ export const FuelPage = () => {
                                 <h2 className="font-medium">{t('Ground.Fuel.Refuel')}</h2>
                                 <p className={formatRefuelStatusClass()}>{formatRefuelStatusLabel()}</p>
                             </div>
-                            <p>{`Estimated ${calculateEta()} minutes`}</p>
+                            <p>{`${t('Ground.Fuel.EstimatedDuration')}: ${calculateEta()}`}</p>
                         </div>
                         <div className="flex flex-row items-center space-x-6">
                             <Slider
@@ -446,17 +446,17 @@ export const FuelPage = () => {
                     <h2 className="flex font-medium">{t('Ground.Fuel.RefuelTime')}</h2>
 
                     <SelectGroup>
-                        <SelectItem selected={isAirplaneCnD() ? refuelRate === '2' : !isAirplaneCnD()} onSelect={() => setRefuelRate('2')}>Instant</SelectItem>
+                        <SelectItem selected={isAirplaneCnD() ? refuelRate === '2' : !isAirplaneCnD()} onSelect={() => setRefuelRate('2')}>{t('Settings.Instant')}</SelectItem>
 
                         <TooltipWrapper text={`${!isAirplaneCnD() && t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes')}`}>
                             <div>
-                                <SelectItem className={`${!isAirplaneCnD() && 'opacity-20'}`} disabled={!isAirplaneCnD()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>Fast</SelectItem>
+                                <SelectItem className={`${!isAirplaneCnD() && 'opacity-20'}`} disabled={!isAirplaneCnD()} selected={refuelRate === '1'} onSelect={() => setRefuelRate('1')}>{t('Settings.Fast')}</SelectItem>
                             </div>
                         </TooltipWrapper>
 
                         <TooltipWrapper text={`${!isAirplaneCnD() && t('Ground.Fuel.TT.AircraftMustBeColdAndDarkToChangeRefuelTimes')}`}>
                             <div>
-                                <SelectItem className={`${!isAirplaneCnD() && 'opacity-20'}`} disabled={!isAirplaneCnD()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>Real</SelectItem>
+                                <SelectItem className={`${!isAirplaneCnD() && 'opacity-20'}`} disabled={!isAirplaneCnD()} selected={refuelRate === '0'} onSelect={() => setRefuelRate('0')}>{t('Settings.Real')}</SelectItem>
                             </div>
                         </TooltipWrapper>
                     </SelectGroup>
