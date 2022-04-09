@@ -245,7 +245,7 @@ impl PowerTransferUnit {
     const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 400.;
 
     pub fn new(context: &mut InitContext) -> Self {
-        let obj = Self {
+        Self {
             active_l2r_id: context.get_identifier("HYD_PTU_ACTIVE_L2R".to_owned()),
             active_r2l_id: context.get_identifier("HYD_PTU_ACTIVE_R2L".to_owned()),
             motor_flow_id: context.get_identifier("HYD_PTU_MOTOR_FLOW".to_owned()),
@@ -279,12 +279,7 @@ impl PowerTransferUnit {
             desactivation_delta_pressure : Pressure::new::<psi>(random_from_normal_distribution(Self::MEAN_DEACTIVATION_DELTA_PRESSURE_PSI,Self::STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI)),
             shot_to_shot_activation_coefficient : 1.,
             shot_to_shot_desactivation_coefficient : 1.,
-        };
-
-        println!("NEW PTU: ACT {:.1} DELTA {:.1}",obj.activation_delta_pressure.get::<psi>(),
-        obj.desactivation_delta_pressure.get::<psi>());
-
-        obj
+        }
     }
 
     pub fn flow(&self) -> VolumeRate {
