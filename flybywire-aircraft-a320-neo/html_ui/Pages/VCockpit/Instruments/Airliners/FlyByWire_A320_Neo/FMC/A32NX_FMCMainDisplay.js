@@ -4634,7 +4634,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Removes a message from the queue
-     * @param value {String|Integer}
+     * @param value {String}
      */
     removeMessageFromQueue(value) {
         this._messageQueue.removeMessage(value);

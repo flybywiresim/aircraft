@@ -21,7 +21,7 @@ class A32NX_MessageQueue {
     removeMessage(value) {
         for (let i = 0; i < this._queue.length; i++) {
             const message = this._queue[i];
-            if (typeof value === "number" ? message.id === value : message.text === value) {
+            if (message.text === value) {
                 message.onClear(this._fmgc);
                 this._queue.splice(i, 1);
                 if (i === 0) {
