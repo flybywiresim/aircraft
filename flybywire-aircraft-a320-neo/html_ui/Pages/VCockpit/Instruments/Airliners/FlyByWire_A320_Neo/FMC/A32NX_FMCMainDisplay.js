@@ -4620,7 +4620,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     /**
      * Add type 2 message to fmgc message queue
-     * @param _message {McduMessage} MessageObject
+     * @param _message {TypeIIMessage} MessageObject
      * @param _isResolvedOverride {function(*)} Function that determines if the error is resolved at this moment (type II only).
      * @param _onClearOverride {function(*)} Function that executes when the error is actively cleared by the pilot (type II only).
      */

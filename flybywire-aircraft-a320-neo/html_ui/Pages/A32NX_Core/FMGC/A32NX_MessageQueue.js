@@ -6,7 +6,7 @@ class A32NX_MessageQueue {
 
     /**
      * Fmgc messages enter the queue via this void
-     * @param message {McduMessage}
+     * @param message {TypeIIMessage}
      */
     addMessage(message) {
         if (message.isResolved(this._fmgc)) {
