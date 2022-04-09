@@ -80,6 +80,9 @@ declare global {
          * @return An object with a clear function to remove the handler for the event.
          */
         function on(name: string, callback: (...any: any[]) => void, context: any): { clear: () => void };
+        function on(name: string, callback: () => void, context: any): { clear: () => void };
+        function on(name: string, callback: (event, ...args) => void): { clear: () => void };
+
         /**
          * Remove a handler for an event.
          * @param name The event name.
