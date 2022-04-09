@@ -40,13 +40,13 @@ const FrequencyCard = ({ className, callsign, frequency, setActive, setCurrent, 
 
                 <div className="flex absolute inset-0 flex-row opacity-0 hover:opacity-100 transition duration-100">
                     <div
-                        className="flex justify-center items-center w-full font-bold text-center border-2 transition duration-100 bg-theme-highlight text-theme-body hover:text-theme-highlight hover:bg-theme-body border-theme-highlight"
+                        className="flex justify-center items-center px-2 w-full font-bold text-center border-2 transition duration-100 bg-theme-highlight text-theme-body hover:text-theme-highlight hover:bg-theme-body border-theme-highlight"
                         onClick={setActive}
                     >
                         <h2 className="text-current">{t('AirTrafficControl.SetActive')}</h2>
                     </div>
                     <div
-                        className="flex justify-center items-center w-full font-bold text-center border-2 transition duration-100 bg-utility-amber text-theme-body hover:text-utility-amber hover:bg-theme-body border-utility-amber"
+                        className="flex justify-center items-center px-2 w-full font-bold text-center border-2 transition duration-100 bg-utility-amber text-theme-body hover:text-utility-amber hover:bg-theme-body border-utility-amber"
                         onClick={setStandby}
                     >
                         <h2 className="text-current">{t('AirTrafficControl.SetStandby')}</h2>
@@ -266,7 +266,6 @@ export const ATC = () => {
                                     setActive={() => setActiveFrequency(toFrequency(controller.frequency))}
                                     setCurrent={() => setCurrentAtc(controllers?.find((c) => c.frequency === controller.frequency))}
                                     setStandby={() => setStandbyFrequency(toFrequency(controller.frequency))}
-                                    key={controller.frequency}
                                 />
                             ))}
                         </ScrollableContainer>
