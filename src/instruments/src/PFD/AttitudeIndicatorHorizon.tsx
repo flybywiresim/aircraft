@@ -1,312 +1,580 @@
-import React, { useState } from 'react';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
-import { useUpdate } from '@instruments/common/hooks';
+
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
-    HorizontalTape,
     LagFilter,
+    getSmallestAngle,
 } from './PFDUtils';
-import { getSimVar } from '../util.js';
+import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { Arinc429Values } from './shared/ArincValueProvider';
+import { HorizontalTape } from './HorizontalTape';
+import { SimplaneValues } from './shared/SimplaneValueProvider';
+import { getDisplayIndex } from './PFD';
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;
 const ValueSpacing = 10;
 
-const TickFunction = (_: any, offset: number) => (
-    <path transform={`translate(${offset} 0)`} className="NormalStroke White" d="m68.906 80.823v1.8" />
-);
+class HeadingBug extends DisplayComponent<{bus: EventBus, isCaptainSide: boolean, yOffset: Subscribable<number>}> {
+    private isActive = false;
 
-const HeadingBug = (offset: number) => (
-    <g id="HorizonHeadingBug" transform={`translate(${offset} 0)`}>
-        <path className="ThickOutline" d="m68.906 80.823v-9.0213" />
-        <path className="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
-    </g>
-);
+    private selectedHeading = 0;
+
+    private heading = new Arinc429Word(0);
+
+    private horizonHeadingBug = FSComponent.createRef<SVGGElement>();
+
+    private yOffset = 0;
+
+    private calculateAndSetOffset() {
+        const headingDelta = getSmallestAngle(this.selectedHeading, this.heading.value);
+
+        const offset = headingDelta * DistanceSpacing / ValueSpacing;
+
+        if (Math.abs(offset) <= DisplayRange + 10) {
+            this.horizonHeadingBug.instance.classList.remove('HiddenElement');
+            this.horizonHeadingBug.instance.style.transform = `translate3d(${offset}px, ${this.yOffset}px, 0px)`;
+        } else {
+            this.horizonHeadingBug.instance.classList.add('HiddenElement');
+        }
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars & SimplaneValues & Arinc429Values>();
+
+        sub.on('selectedHeading').whenChanged().handle((s) => {
+            this.selectedHeading = s;
+            if (this.isActive) {
+                this.calculateAndSetOffset();
+            }
+        });
+
+        sub.on('headingAr').handle((h) => {
+            this.heading = h;
+            if (this.isActive) {
+                this.calculateAndSetOffset();
+            }
+        });
+
+        sub.on(this.props.isCaptainSide ? 'fd1Active' : 'fd2Active').whenChanged().handle((fd) => {
+            this.isActive = !fd;
+            if (this.isActive) {
+                this.horizonHeadingBug.instance.classList.remove('HiddenElement');
+            } else {
+                this.horizonHeadingBug.instance.classList.add('HiddenElement');
+            }
+        });
+
+        this.props.yOffset.sub((yOffset) => {
+            this.yOffset = yOffset;
+            if (this.isActive) {
+                this.calculateAndSetOffset();
+            }
+        });
+    }
+
+    render(): VNode {
+        return (
+            <g ref={this.horizonHeadingBug} id="HorizonHeadingBug">
+                <path class="ThickOutline" d="m68.906 80.823v-9.0213" />
+                <path class="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
+            </g>
+        );
+    }
+}
 
 interface HorizonProps {
-    pitch: Arinc429Word;
-    roll: Arinc429Word;
-    heading: Arinc429Word;
-    isOnGround: boolean;
-    radioAltitude: Arinc429Word,
-    filteredRadioAltitude: number;
-    belowTransitionAltitude: boolean;
-    decisionHeight: number;
-    selectedHeading: number;
-    FDActive: boolean;
-    isAttExcessive: boolean;
+    bus: EventBus;
+    instrument: BaseInstrument;
+    isAttExcessive: Subscribable<boolean>;
+    filteredRadioAlt: Subscribable<number>;
+
 }
 
-export const Horizon = ({
-    pitch,
-    roll,
-    heading,
-    isOnGround,
-    radioAltitude,
-    filteredRadioAltitude,
-    belowTransitionAltitude,
-    decisionHeight,
-    selectedHeading,
-    FDActive,
-    isAttExcessive,
-}: HorizonProps) => {
-    if (!pitch.isNormalOperation() || !roll.isNormalOperation()) {
-        return null;
+export class Horizon extends DisplayComponent<HorizonProps> {
+    private pitchGroupRef = FSComponent.createRef<SVGGElement>();
+
+    private rollGroupRef = FSComponent.createRef<SVGGElement>();
+
+    private yOffset = Subject.create(0);
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const apfd = this.props.bus.getSubscriber<Arinc429Values>();
+
+        apfd.on('pitchAr').withArinc429Precision(3).handle((pitch) => {
+            const multiplier = 1000;
+            const currentValueAtPrecision = Math.round(pitch.value * multiplier) / multiplier;
+            if (pitch.isNormalOperation()) {
+                this.pitchGroupRef.instance.style.display = 'block';
+
+                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(-currentValueAtPrecision)}px, 0px)`;
+            } else {
+                this.pitchGroupRef.instance.style.display = 'none';
+            }
+            const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(-currentValueAtPrecision), 31.563), -31.563);
+            this.yOffset.set(yOffset);
+        });
+
+        apfd.on('rollAr').withArinc429Precision(2).handle((roll) => {
+            const multiplier = 100;
+            const currentValueAtPrecision = Math.round(roll.value * multiplier) / multiplier;
+            if (roll.isNormalOperation()) {
+                this.rollGroupRef.instance.style.display = 'block';
+
+                this.rollGroupRef.instance.setAttribute('transform', `rotate(${currentValueAtPrecision} 68.814 80.730)`);
+            } else {
+                this.rollGroupRef.instance.style.display = 'none';
+            }
+        });
     }
 
-    const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(-pitch.value), 31.563), -31.563);
+    render(): VNode {
+        return (
+            <g id="RollGroup" ref={this.rollGroupRef} style="display:none">
+                <g id="PitchGroup" ref={this.pitchGroupRef}>
+                    <path d="m23.906 80.823v-160h90v160z" class="SkyFill" />
+                    <path d="m113.91 223.82h-90v-143h90z" class="EarthFill" />
 
-    const bugs: [(offset: number) => JSX.Element, number][] = [];
-    if (!Number.isNaN(selectedHeading) && !FDActive) {
-        bugs.push([HeadingBug, selectedHeading]);
-    }
+                    {/* If you're wondering why some paths have an "h0" appended, it's to work around a
+                rendering bug in webkit, where paths with only one line is rendered blurry. */}
 
-    return (
-        <g id="RollGroup" transform={`rotate(${roll.value} 68.814 80.730)`}>
-            <g id="PitchGroup" transform={`translate(0 ${calculateHorizonOffsetFromPitch(-pitch.value)})`}>
-                <path d="m23.906 80.823v-160h90v160z" className="SkyFill" />
-                <path d="m113.91 223.82h-90v-143h90z" className="EarthFill" />
+                    <g class="NormalStroke White">
+                        <path d="m66.406 85.323h5h0" />
+                        <path d="m64.406 89.823h9h0" />
+                        <path d="m66.406 94.073h5h0" />
+                        <path d="m59.406 97.823h19h0" />
+                        <path d="m64.406 103.82h9h0" />
+                        <path d="m59.406 108.82h19h0" />
+                        <path d="m55.906 118.82h26h0" />
+                        <path d="m52.906 138.82h32h0" />
+                        <path d="m47.906 168.82h42h0" />
+                        <path d="m66.406 76.323h5h0" />
+                        <path d="m64.406 71.823h9h0" />
+                        <path d="m66.406 67.323h5h0" />
+                        <path d="m59.406 62.823h19h0" />
+                        <path d="m66.406 58.323h5h0" />
+                        <path d="m64.406 53.823h9h0" />
+                        <path d="m66.406 49.323h5h0" />
+                        <path d="m59.406 44.823h19h0" />
+                        <path d="m66.406 40.573h5h0" />
+                        <path d="m64.406 36.823h9h0" />
+                        <path d="m66.406 33.573h5h0" />
+                        <path d="m55.906 30.823h26h0" />
+                        <path d="m52.906 10.823h32h0" />
+                        <path d="m47.906-19.177h42h0" />
+                    </g>
 
-                {/* If you're wondering why some paths have an "h0" appended, it's to work around a
-            rendering bug in webkit, where paths with only one line is rendered blurry. */}
+                    <g id="PitchProtUpper" class="NormalStroke Green">
+                        <path d="m51.506 31.523h4m-4-1.4h4" />
+                        <path d="m86.306 31.523h-4m4-1.4h-4" />
+                    </g>
+                    <g id="PitchProtLostUpper" style="display: none" class="NormalStroke Amber">
+                        <path d="m52.699 30.116 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
+                        <path d="m85.114 31.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
+                    </g>
+                    <g id="PitchProtLower" class="NormalStroke Green">
+                        <path d="m59.946 104.52h4m-4-1.4h4" />
+                        <path d="m77.867 104.52h-4m4-1.4h-4" />
+                    </g>
+                    <g id="PitchProtLostLower" style="display: none" class="NormalStroke Amber">
+                        <path d="m61.199 103.12 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
+                        <path d="m76.614 104.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
+                    </g>
 
-                <g className="NormalStroke White">
-                    <path d="m66.406 85.323h5h0" />
-                    <path d="m64.406 89.823h9h0" />
-                    <path d="m66.406 94.073h5h0" />
-                    <path d="m59.406 97.823h19h0" />
-                    <path d="m64.406 103.82h9h0" />
-                    <path d="m59.406 108.82h19h0" />
-                    <path d="m55.906 118.82h26h0" />
-                    <path d="m52.906 138.82h32h0" />
-                    <path d="m47.906 168.82h42h0" />
-                    <path d="m66.406 76.323h5h0" />
-                    <path d="m64.406 71.823h9h0" />
-                    <path d="m66.406 67.323h5h0" />
-                    <path d="m59.406 62.823h19h0" />
-                    <path d="m66.406 58.323h5h0" />
-                    <path d="m64.406 53.823h9h0" />
-                    <path d="m66.406 49.323h5h0" />
-                    <path d="m59.406 44.823h19h0" />
-                    <path d="m66.406 40.573h5h0" />
-                    <path d="m64.406 36.823h9h0" />
-                    <path d="m66.406 33.573h5h0" />
-                    <path d="m55.906 30.823h26h0" />
-                    <path d="m52.906 10.823h32h0" />
-                    <path d="m47.906-19.177h42h0" />
+                    <path d="m68.906 121.82-8.0829 14h2.8868l5.1962-9 5.1962 9h2.8868z" class="NormalStroke Red" />
+                    <path d="m57.359 163.82 11.547-20 11.547 20h-4.0414l-7.5056-13-7.5056 13z" class="NormalStroke Red" />
+                    <path d="m71.906 185.32v3.5h15l-18-18-18 18h15v-3.5h-6.5l9.5-9.5 9.5 9.5z" class="NormalStroke Red" />
+                    <path d="m60.824 13.823h2.8868l5.1962 9 5.1962-9h2.8868l-8.0829 14z" class="NormalStroke Red" />
+                    <path d="m61.401-13.177h-4.0414l11.547 20 11.547-20h-4.0414l-7.5056 13z" class="NormalStroke Red" />
+                    <path d="m68.906-26.177-9.5-9.5h6.5v-3.5h-15l18 18 18-18h-15v3.5h6.5z" class="NormalStroke Red" />
+
+                    <TailstrikeIndicator bus={this.props.bus} />
+
+                    <path d="m23.906 80.823h90h0" class="NormalOutline" />
+                    <path d="m23.906 80.823h90h0" class="NormalStroke White" />
+
+                    <g class="FontSmall White Fill EndAlign">
+                        <text x="55.729935" y="64.812828">10</text>
+                        <text x="88.618317" y="64.812714">10</text>
+                        <text x="54.710766" y="46.931034">20</text>
+                        <text x="89.564583" y="46.930969">20</text>
+                        <text x="50.867237" y="32.910896">30</text>
+                        <text x="93.408119" y="32.910839">30</text>
+                        <text x="48.308414" y="12.690886">50</text>
+                        <text x="96.054962" y="12.690853">50</text>
+                        <text x="43.050652" y="-17.138285">80</text>
+                        <text x="101.48304" y="-17.138248">80</text>
+                        <text x="55.781109" y="99.81395">10</text>
+                        <text x="88.669487" y="99.813919">10</text>
+                        <text x="54.645519" y="110.8641">20</text>
+                        <text x="89.892426" y="110.86408">20</text>
+                        <text x="51.001217" y="120.96314">30</text>
+                        <text x="93.280037" y="120.96311">30</text>
+                        <text x="48.220913" y="140.69778">50</text>
+                        <text x="96.090324" y="140.69786">50</text>
+                        <text x="43.125065" y="170.80962">80</text>
+                        <text x="101.38947" y="170.80959">80</text>
+                    </g>
                 </g>
+                <path d="m40.952 49.249v-20.562h55.908v20.562z" class="NormalOutline SkyFill" />
+                <path d="m40.952 49.249v-20.562h55.908v20.562z" class="NormalStroke White" />
 
-                <g id="PitchProtUpper" className="NormalStroke Green">
-                    <path d="m51.506 31.523h4m-4-1.4h4" />
-                    <path d="m86.306 31.523h-4m4-1.4h-4" />
-                </g>
-                <g id="PitchProtLostUpper" style={{ display: 'none' }} className="NormalStroke Amber">
-                    <path d="m52.699 30.116 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
-                    <path d="m85.114 31.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
-                </g>
-                <g id="PitchProtLower" className="NormalStroke Green">
-                    <path d="m59.946 104.52h4m-4-1.4h4" />
-                    <path d="m77.867 104.52h-4m4-1.4h-4" />
-                </g>
-                <g id="PitchProtLostLower" style={{ display: 'none' }} className="NormalStroke Amber">
-                    <path d="m61.199 103.12 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
-                    <path d="m76.614 104.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
-                </g>
-
-                <path d="m68.906 121.82-8.0829 14h2.8868l5.1962-9 5.1962 9h2.8868z" className="NormalStroke Red" />
-                <path d="m57.359 163.82 11.547-20 11.547 20h-4.0414l-7.5056-13-7.5056 13z" className="NormalStroke Red" />
-                <path d="m71.906 185.32v3.5h15l-18-18-18 18h15v-3.5h-6.5l9.5-9.5 9.5 9.5z" className="NormalStroke Red" />
-                <path d="m60.824 13.823h2.8868l5.1962 9 5.1962-9h2.8868l-8.0829 14z" className="NormalStroke Red" />
-                <path d="m61.401-13.177h-4.0414l11.547 20 11.547-20h-4.0414l-7.5056 13z" className="NormalStroke Red" />
-                <path d="m68.906-26.177-9.5-9.5h6.5v-3.5h-15l18 18 18-18h-15v3.5h6.5z" className="NormalStroke Red" />
-
-                <TailstrikeIndicator />
-
-                <path d="m23.906 80.823h90h0" className="NormalOutline" />
-                <path d="m23.906 80.823h90h0" className="NormalStroke White" />
-
-                <g className="FontSmall White Fill EndAlign">
-                    <text x="55.729935" y="64.812828">10</text>
-                    <text x="88.618317" y="64.812714">10</text>
-                    <text x="54.710766" y="46.931034">20</text>
-                    <text x="89.564583" y="46.930969">20</text>
-                    <text x="50.867237" y="32.910896">30</text>
-                    <text x="93.408119" y="32.910839">30</text>
-                    <text x="48.308414" y="12.690886">50</text>
-                    <text x="96.054962" y="12.690853">50</text>
-                    <text x="43.050652" y="-17.138285">80</text>
-                    <text x="101.48304" y="-17.138248">80</text>
-                    <text x="55.781109" y="99.81395">10</text>
-                    <text x="88.669487" y="99.813919">10</text>
-                    <text x="54.645519" y="110.8641">20</text>
-                    <text x="89.892426" y="110.86408">20</text>
-                    <text x="51.001217" y="120.96314">30</text>
-                    <text x="93.280037" y="120.96311">30</text>
-                    <text x="48.220913" y="140.69778">50</text>
-                    <text x="96.090324" y="140.69786">50</text>
-                    <text x="43.125065" y="170.80962">80</text>
-                    <text x="101.38947" y="170.80959">80</text>
-                </g>
-            </g>
-            <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalOutline SkyFill" />
-            <path d="m40.952 49.249v-20.562h55.908v20.562z" className="NormalStroke White" />
-            <SideslipIndicator isOnGround={isOnGround} roll={roll} />
-            <RisingGround radioAltitude={radioAltitude} filteredRadioAltitude={filteredRadioAltitude} pitch={pitch} />
-            {heading.isNormalOperation()
-            && (
+                <SideslipIndicator bus={this.props.bus} instrument={this.props.instrument} />
+                <RisingGround bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAlt} />
                 <HorizontalTape
-                    graduationElementFunction={TickFunction}
-                    bugs={bugs}
-                    yOffset={yOffset}
+                    type="horizon"
+                    bus={this.props.bus}
                     displayRange={DisplayRange}
-                    distanceSpacing={DistanceSpacing}
                     valueSpacing={ValueSpacing}
-                    heading={heading}
+                    distanceSpacing={DistanceSpacing}
+                    yOffset={this.yOffset}
                 />
-            )}
-            {!isAttExcessive
-                && (
-                    <RadioAltAndDH
-                        radioAltitude={radioAltitude}
-                        filteredRadioAltitude={filteredRadioAltitude}
-                        belowTransitionAltitude={belowTransitionAltitude}
-                        decisionHeight={decisionHeight}
-                        roll={roll}
-                    />
-                )}
-        </g>
-    );
-};
-
-const TailstrikeIndicator = () => {
-    // should also not be displayed when thrust levers are at or above FLX/MCT, but I don't know if there is a simvar
-    // for that
-    if (getSimVar('PLANE ALT ABOVE GROUND MINUS CG', 'feet') > 400
-        || getSimVar('AIRSPEED INDICATED', 'knots') < 50
-        || getSimVar('L:A32NX_AUTOTHRUST_TLA:1', 'number') >= 35
-        || getSimVar('L:A32NX_AUTOTHRUST_TLA:2', 'number') >= 35) {
-        return null;
+                <HeadingBug bus={this.props.bus} isCaptainSide={getDisplayIndex() === 1} yOffset={this.yOffset} />
+                <RadioAltAndDH bus={this.props.bus} filteredRadioAltitude={this.props.filteredRadioAlt} attExcessive={this.props.isAttExcessive} />
+            </g>
+        );
     }
-
-    return (
-        <path id="TailstrikeWarning" d="m72.682 50.223h2.9368l-6.7128 8-6.7128-8h2.9368l3.7759 4.5z" className="NormalStroke Amber" />
-    );
-};
-
-interface RadioAltAndDHProps {
-    filteredRadioAltitude: number;
-    radioAltitude: Arinc429Word;
-    belowTransitionAltitude: boolean;
-    decisionHeight: number;
-    roll: Arinc429Word;
 }
 
-const RadioAltAndDH = ({ filteredRadioAltitude, radioAltitude, belowTransitionAltitude, decisionHeight, roll }: RadioAltAndDHProps) => {
-    const raValid = !radioAltitude.isFailureWarning();
-    const raValue = filteredRadioAltitude;
-    const verticalOffset = calculateVerticalOffsetFromRoll(roll.value);
-    let size = 'FontLarge';
-    const DHValid = decisionHeight >= 0;
+class TailstrikeIndicator extends DisplayComponent<{bus: EventBus}> {
+    private tailStrike = FSComponent.createRef<SVGPathElement>();
 
-    let text = '';
-    let color = 'Amber';
-    if (raValid) {
-        if (raValue < 2500) {
-            if (raValue > 400 || (raValue > decisionHeight + 100 && DHValid)) {
-                color = 'Green';
-            }
-            if (raValue < 400) {
-                size = 'FontLargest';
-            }
-            if (raValue < 5) {
-                text = Math.round(raValue).toString();
-            } else if (raValue <= 50) {
-                text = (Math.round(raValue / 5) * 5).toString();
-            } else if (raValue > 50 || (raValue > decisionHeight + 100 && DHValid)) {
-                text = (Math.round(raValue / 10) * 10).toString();
+    private needsUpdate = false;
+
+    private tailStrikeConditions = {
+        altitude: new Arinc429Word(0),
+        speed: 0,
+        tla1: 0,
+        tla2: 0,
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
+
+        sub.on('chosenRa').handle((ra) => {
+            this.tailStrikeConditions.altitude = ra;
+            this.needsUpdate = true;
+        });
+
+        sub.on('tla1').whenChanged().handle((tla) => {
+            this.tailStrikeConditions.tla1 = tla;
+            this.needsUpdate = true;
+        });
+        sub.on('tla2').whenChanged().handle((tla) => {
+            this.tailStrikeConditions.tla2 = tla;
+            this.needsUpdate = true;
+        });
+
+        sub.on('speedAr').whenChanged().handle((speed) => {
+            this.tailStrikeConditions.speed = speed.value;
+            this.needsUpdate = true;
+        });
+
+        sub.on('realTime').onlyAfter(2).handle(this.hideShow.bind(this));
+    }
+
+    private hideShow(_time: number) {
+        if (this.needsUpdate) {
+            this.needsUpdate = false;
+            if (this.tailStrikeConditions.altitude.value > 400 || this.tailStrikeConditions.speed < 50 || this.tailStrikeConditions.tla1 >= 35 || this.tailStrikeConditions.tla2 >= 35) {
+                this.tailStrike.instance.style.display = 'none';
+            } else {
+                this.tailStrike.instance.style.display = 'inline';
             }
         }
-    } else {
-        color = belowTransitionAltitude ? 'Red Blink9Seconds' : 'Red';
-        text = 'RA';
     }
 
-    return (
-        <g id="DHAndRAGroup" transform={`translate(0 ${-verticalOffset})`}>
-            {raValid && DHValid && raValue <= decisionHeight ? (
+    render(): VNode {
+        return (
+            <path ref={this.tailStrike} id="TailstrikeWarning" d="m72.682 50.223h2.9368l-6.7128 8-6.7128-8h2.9368l3.7759 4.5z" class="NormalStroke Amber" />
+        );
+    }
+}
+
+class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltitude: Subscribable<number>, attExcessive: Subscribable<boolean> }> {
+    private daRaGroup = FSComponent.createRef<SVGGElement>();
+
+    private roll = new Arinc429Word(0);
+
+    private dh = 0;
+
+    private filteredRadioAltitude = 0;
+
+    private radioAltitude = new Arinc429Word(0);
+
+    private transAlt = 0;
+
+    private transAltAppr = 0;
+
+    private fmgcFlightPhase = 0;
+
+    private altitude = new Arinc429Word(0);
+
+    private attDhText = FSComponent.createRef<SVGTextElement>();
+
+    private radioAltText = Subject.create('0')
+
+    private radioAlt = FSComponent.createRef<SVGTextElement>();
+
+    private classSub = Subject.create('');
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+
+        sub.on('rollAr').handle((roll) => {
+            this.roll = roll;
+        });
+
+        sub.on('dh').whenChanged().handle((dh) => {
+            this.dh = dh;
+        });
+
+        sub.on('transAlt').whenChanged().handle((ta) => {
+            this.transAlt = ta;
+        });
+
+        sub.on('transAltAppr').whenChanged().handle((ta) => {
+            this.transAltAppr = ta;
+        });
+
+        sub.on('fmgcFlightPhase').whenChanged().handle((fp) => {
+            this.fmgcFlightPhase = fp;
+        });
+
+        sub.on('altitudeAr').handle((a) => {
+            this.altitude = a;
+        });
+
+        sub.on('chosenRa').handle((ra) => {
+            if (!this.props.attExcessive.get()) {
+                this.radioAltitude = ra;
+                const raFailed = !this.radioAltitude.isFailureWarning();
+                const raHasData = !this.radioAltitude.isNoComputedData();
+                const raValue = this.filteredRadioAltitude;
+                const verticalOffset = calculateVerticalOffsetFromRoll(this.roll.value);
+                const chosenTransalt = this.fmgcFlightPhase <= 3 ? this.transAlt : this.transAltAppr;
+                const belowTransitionAltitude = chosenTransalt !== 0 && (!this.altitude.isNoComputedData() && !this.altitude.isNoComputedData()) && this.altitude.value < chosenTransalt;
+                let size = 'FontLarge';
+                const DHValid = this.dh >= 0;
+
+                let text = '';
+                let color = 'Amber';
+
+                if (raHasData) {
+                    if (raFailed) {
+                        if (raValue < 2500) {
+                            if (raValue > 400 || (raValue > this.dh + 100 && DHValid)) {
+                                color = 'Green';
+                            }
+                            if (raValue < 400) {
+                                size = 'FontLargest';
+                            }
+                            if (raValue < 5) {
+                                text = Math.round(raValue).toString();
+                            } else if (raValue <= 50) {
+                                text = (Math.round(raValue / 5) * 5).toString();
+                            } else if (raValue > 50 || (raValue > this.dh + 100 && DHValid)) {
+                                text = (Math.round(raValue / 10) * 10).toString();
+                            }
+                        }
+                    } else {
+                        color = belowTransitionAltitude ? 'Red Blink9Seconds' : 'Red';
+                        text = 'RA';
+                    }
+                }
+
+                this.daRaGroup.instance.style.transform = `translate3d(0px, ${-verticalOffset}px, 0px)`;
+                if (raFailed && DHValid && raValue <= this.dh) {
+                    this.attDhText.instance.style.visibility = 'visible';
+                } else {
+                    this.attDhText.instance.style.visibility = 'hidden';
+                }
+                this.radioAltText.set(text);
+                this.classSub.set(`${size} ${color} MiddleAlign TextOutline`);
+            }
+        });
+
+        this.props.filteredRadioAltitude.sub((fra) => {
+            this.filteredRadioAltitude = fra;
+        }, true);
+
+        this.props.attExcessive.sub((ae) => {
+            if (ae) {
+                this.radioAlt.instance.style.visibility = 'hidden';
+            } else {
+                this.radioAlt.instance.style.visibility = 'visible';
+            }
+        });
+    }
+
+    render(): VNode {
+        return (
+            <g ref={this.daRaGroup} id="DHAndRAGroup">
                 <text
+                    ref={this.attDhText}
                     id="AttDHText"
                     x="73.511879"
                     y="113.19068"
-                    className="FontLargest Amber EndAlign Blink9Seconds TextOutline"
+                    class="FontLargest Amber EndAlign Blink9Seconds TextOutline"
                 >
                     DH
                 </text>
-            )
-                : null}
-            <text id="RadioAlt" x="69.202454" y="119.76205" className={`${size} ${color} MiddleAlign TextOutline`}>{text}</text>
-        </g>
-    );
-};
-
-interface SideslipIndicatorProps {
-    isOnGround: boolean;
-    roll: Arinc429Word;
+                <text ref={this.radioAlt} id="RadioAlt" x="69.202454" y="119.76205" class={this.classSub}>{this.radioAltText}</text>
+            </g>
+        );
+    }
 }
 
-const SideslipIndicator = ({ isOnGround, roll }: SideslipIndicatorProps) => {
-    const [SIIndexOffset, setSIIndexOffset] = useState(0);
-    const [betaTargetActive, setBetaTargetActive] = useState(false);
-    const [sideslipIndicatorFilter] = useState(() => new LagFilter(0.8));
+interface SideslipIndicatorProps {
+    bus: EventBus;
+    instrument: BaseInstrument;
+}
 
-    const verticalOffset = calculateVerticalOffsetFromRoll(roll.value);
+class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
+    private sideslipIndicatorFilter = new LagFilter(0.8);
 
-    useUpdate((deltaTime) => {
+    private classNameSub = Subject.create('Yellow');
+
+    private rollTriangle = FSComponent.createRef<SVGPathElement>();
+
+    private slideSlip = FSComponent.createRef<SVGPathElement>();
+
+    private onGround = 1;
+
+    private roll = new Arinc429Word(0);
+
+    private betaTargetActive = 0;
+
+    private beta = 0;
+
+    private betaTarget = 0;
+
+    private latAcc = 0;
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+
+        sub.on('onGround').whenChanged().handle((og) => {
+            this.onGround = og;
+            this.determineSlideSlip();
+        });
+
+        sub.on('rollAr').withArinc429Precision(2).handle((roll) => {
+            this.roll = roll;
+            this.determineSlideSlip();
+        });
+
+        sub.on('beta').withPrecision(2).handle((beta) => {
+            this.beta = beta;
+            this.determineSlideSlip();
+        });
+
+        sub.on('betaTargetActive').whenChanged().handle((betaTargetActive) => {
+            this.betaTargetActive = betaTargetActive;
+            this.determineSlideSlip();
+        });
+
+        sub.on('betaTarget').withPrecision(2).handle((betaTarget) => {
+            this.betaTarget = betaTarget;
+            this.determineSlideSlip();
+        });
+
+        sub.on('latAcc').atFrequency(2).handle((latAcc) => {
+            this.latAcc = latAcc;
+            this.determineSlideSlip();
+        });
+    }
+
+    private determineSlideSlip() {
+        const multiplier = 100;
+        const currentValueAtPrecision = Math.round(this.roll.value * multiplier) / multiplier;
+        const verticalOffset = calculateVerticalOffsetFromRoll(currentValueAtPrecision);
         let offset = 0;
-        if (isOnGround) {
+
+        if (this.onGround) {
             // on ground, lateral g is indicated. max 0.3g, max deflection is 15mm
-            const latAcc = getSimVar('ACCELERATION BODY X', 'G Force');
+            const latAcc = Math.round(this.latAcc * multiplier) / multiplier;// SimVar.GetSimVarValue('ACCELERATION BODY X', 'G Force');
             const accInG = Math.min(0.3, Math.max(-0.3, latAcc));
             offset = -accInG * 15 / 0.3;
         } else {
-            const beta = getSimVar('INCIDENCE BETA', 'degrees');
-            const betaTarget = getSimVar('L:A32NX_BETA_TARGET', 'Number');
+            const beta = this.beta;
+            const betaTarget = this.betaTarget;
             offset = Math.max(Math.min(beta - betaTarget, 15), -15);
         }
 
-        setBetaTargetActive(getSimVar('L:A32NX_BETA_TARGET_ACTIVE', 'Number') === 1);
-        setSIIndexOffset(sideslipIndicatorFilter.step(offset, deltaTime / 1000));
-    });
+        const betaTargetActive = this.betaTargetActive === 1;
+        const SIIndexOffset = this.sideslipIndicatorFilter.step(offset, this.props.instrument.deltaTime / 1000);
 
-    return (
-        <g id="RollTriangleGroup" transform={`translate(0 ${verticalOffset})`} className="NormalStroke Yellow CornerRound">
-            <path d="m66.074 43.983 2.8604-4.2333 2.8604 4.2333z" />
-            <path
-                id="SideSlipIndicator"
-                transform={`translate(${SIIndexOffset} 0)`}
-                d="m73.974 47.208-1.4983-2.2175h-7.0828l-1.4983 2.2175z"
-                className={`${betaTargetActive ? 'Cyan' : 'Yellow'}`}
-            />
-        </g>
-    );
-};
+        this.rollTriangle.instance.style.transform = `translate3d(0px, ${verticalOffset.toFixed(2)}px, 0px)`;
+        this.classNameSub.set(`${betaTargetActive ? 'Cyan' : 'Yellow'}`);
+        this.slideSlip.instance.style.transform = `translate3d(${SIIndexOffset}px, 0px, 0px)`;
+    }
 
-interface RisingGroundProps {
-    radioAltitude: Arinc429Word;
-    filteredRadioAltitude: number;
-    pitch: Arinc429Word;
+    render(): VNode {
+        return (
+            <g id="RollTriangleGroup" ref={this.rollTriangle} class="NormalStroke Yellow CornerRound">
+                <path d="m66.074 43.983 2.8604-4.2333 2.8604 4.2333z" />
+                <path
+                    id="SideSlipIndicator"
+                    ref={this.slideSlip}
+                    d="m73.974 47.208-1.4983-2.2175h-7.0828l-1.4983 2.2175z"
+                />
+            </g>
+        );
+    }
 }
 
-const RisingGround = ({ radioAltitude, filteredRadioAltitude, pitch }: RisingGroundProps) => {
-    const targetPitch = (radioAltitude.isNoComputedData() || radioAltitude.isFailureWarning()) ? -200 : -0.1 * filteredRadioAltitude;
+class RisingGround extends DisplayComponent<{ bus: EventBus, filteredRadioAltitude: Subscribable<number> }> {
+    private radioAlt = new Arinc429Word(0);
 
-    const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch((-pitch.value) - targetPitch) - 31.563, 0), -63.093);
+    private lastPitch = new Arinc429Word(0);
 
-    return (
-        <g id="HorizonGroundRectangle" transform={`translate(0 ${targetOffset})`}>
-            <path d="m113.95 157.74h-90.08v-45.357h90.08z" className="NormalOutline EarthFill" />
-            <path d="m113.95 157.74h-90.08v-45.357h90.08z" className="NormalStroke White" />
-        </g>
-    );
-};
+    private horizonGroundRectangle = FSComponent.createRef<SVGGElement>();
+
+    private setOffset() {
+        const targetPitch = (this.radioAlt.isNoComputedData() || this.radioAlt.isFailureWarning()) ? -200 : -0.1 * this.props.filteredRadioAltitude.get();
+
+        const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch((-this.lastPitch.value) - targetPitch) - 31.563, 0), -63.093);
+        this.horizonGroundRectangle.instance.style.transform = `translate3d(0px, ${targetOffset.toFixed(2)}px, 0px)`;
+    }
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+
+        sub.on('pitchAr').handle((pitch) => {
+            this.lastPitch = pitch;
+        });
+
+        sub.on('chosenRa').handle((p) => {
+            this.radioAlt = p;
+            this.setOffset();
+        });
+
+        this.props.filteredRadioAltitude.sub((_fra) => {
+            this.setOffset();
+        });
+    }
+
+    render(): VNode {
+        return (
+            <g ref={this.horizonGroundRectangle} id="HorizonGroundRectangle">
+                <path d="m113.95 157.74h-90.08v-45.357h90.08z" class="NormalOutline EarthFill" />
+                <path d="m113.95 157.74h-90.08v-45.357h90.08z" class="NormalStroke White" />
+            </g>
+        );
+    }
+}

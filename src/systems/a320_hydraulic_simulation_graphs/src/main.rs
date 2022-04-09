@@ -45,6 +45,10 @@ impl HydraulicCircuitController for TestHydraulicCircuitController {
         // Pump index is one based, so we do - 1
         self.should_open_fire_shutoff_valve[pump_index - 1]
     }
+
+    fn should_open_leak_measurement_valve(&self) -> bool {
+        true
+    }
 }
 
 struct TestPumpController {
@@ -258,8 +262,8 @@ fn blue_circuit_epump(path: &str) {
             test_bed
                 .query(|a| a.hydraulic_circuit.pump_pressure(0))
                 .get::<psi>(),
-            test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>()),
-            test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>())
+            test_bed.query(|a| a.hydraulic_circuit.system_section_pressure().get::<psi>()),
+            test_bed.query(|a| a.hydraulic_circuit.system_section_pressure().get::<psi>())
                 - test_bed
                     .query(|a| a.hydraulic_circuit.pump_pressure(0))
                     .get::<psi>(),
@@ -278,7 +282,7 @@ fn blue_circuit_epump(path: &str) {
         vec![
             test_bed.query(|a| a.hydraulic_circuit.reservoir_level().get::<gallon>()),
             test_bed.query(|a| a.hydraulic_circuit.pump_pressure(0).get::<psi>()),
-            test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>()),
+            test_bed.query(|a| a.hydraulic_circuit.system_section_pressure().get::<psi>()),
         ],
     );
     pump_history.init(
@@ -301,8 +305,8 @@ fn blue_circuit_epump(path: &str) {
             step_duration.as_secs_f64(),
             vec![
                 test_bed.query(|a| a.hydraulic_circuit.pump_pressure(0).get::<psi>()),
-                test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>()),
-                test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>())
+                test_bed.query(|a| a.hydraulic_circuit.system_section_pressure().get::<psi>()),
+                test_bed.query(|a| a.hydraulic_circuit.system_section_pressure().get::<psi>())
                     - test_bed
                         .query(|a| a.hydraulic_circuit.pump_pressure(0))
                         .get::<psi>(),
@@ -320,7 +324,7 @@ fn blue_circuit_epump(path: &str) {
             vec![
                 test_bed.query(|a| a.hydraulic_circuit.reservoir_level().get::<gallon>()),
                 test_bed.query(|a| a.hydraulic_circuit.pump_pressure(0).get::<psi>()),
-                test_bed.query(|a| a.hydraulic_circuit.system_pressure().get::<psi>()),
+                test_bed.query(|a| a.hydraulic_circuit.system_section_pressure().get::<psi>()),
             ],
         );
 

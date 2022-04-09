@@ -199,6 +199,12 @@ pub enum GearWheel {
     RIGHT = 2,
 }
 
+pub trait SectionPressure {
+    fn pressure(&self) -> Pressure;
+    fn pressure_downstream_leak_valve(&self) -> Pressure;
+    fn is_pressure_switch_pressurised(&self) -> bool;
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum HydraulicColor {
     Green,
