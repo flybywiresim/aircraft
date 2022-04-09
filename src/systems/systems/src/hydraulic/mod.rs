@@ -481,12 +481,14 @@ impl PowerTransferUnit {
         let rpm = speed.get::<revolution_per_minute>();
 
         if rpm > 1700. {
+            5
+        } else if rpm > 1600. {
             4
         } else if rpm > 1500. {
             3
-        } else if rpm > 1300. {
+        } else if rpm > 1400. {
             2
-        } else  {
+        } else {
             1
         }
     }
