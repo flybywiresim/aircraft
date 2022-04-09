@@ -3,6 +3,7 @@ use crate::{
     landing_gear::GearSystemSensors,
     shared::{
         low_pass_filter::LowPassFilter, GearWheel, LgciuGearControl, LgciuId, ProximityDetectorId,
+        SectionPressure,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -156,13 +157,13 @@ impl HydraulicGearSystem {
         context: &UpdateContext,
         valves_controller: &impl GearSystemController,
         lgciu_controller: &impl LgciuGearControl,
-        main_hydraulic_circuit_pressure: Pressure,
+        main_hydraulic_circuit: &impl SectionPressure,
     ) {
         self.hydraulic_supply.update(
             context,
             valves_controller,
             lgciu_controller,
-            main_hydraulic_circuit_pressure,
+            main_hydraulic_circuit.pressure(),
         );
 
         let current_pressure = self.hydraulic_supply.gear_system_manifold_pressure();
