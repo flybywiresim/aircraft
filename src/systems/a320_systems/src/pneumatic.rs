@@ -176,10 +176,10 @@ impl A320Pneumatic {
                 HydraulicColor::Green,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(2.5),
-                    Pressure::new::<psi>(50.),
+                    Pressure::new::<psi>(52.),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
-                Pressure::new::<psi>(70.),
+                Pressure::new::<psi>(75.),
                 6e-2,
             ),
             blue_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
@@ -187,10 +187,10 @@ impl A320Pneumatic {
                 HydraulicColor::Blue,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.1),
-                    Pressure::new::<psi>(50.),
+                    Pressure::new::<psi>(55.),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
-                Pressure::new::<psi>(70.),
+                Pressure::new::<psi>(75.),
                 6e-2,
             ),
             yellow_hydraulic_reservoir_with_valve: PressurisedReservoirWithExhaustValve::new(
@@ -198,10 +198,10 @@ impl A320Pneumatic {
                 HydraulicColor::Yellow,
                 VariableVolumeContainer::new(
                     Volume::new::<gallon>(1.7),
-                    Pressure::new::<psi>(50.),
+                    Pressure::new::<psi>(65.),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
-                Pressure::new::<psi>(70.),
+                Pressure::new::<psi>(75.),
                 6e-2,
             ),
             packs: [PackComplex::new(context, 1), PackComplex::new(context, 2)],
