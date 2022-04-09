@@ -171,9 +171,6 @@ pub trait PowerTransferUnitController {
 }
 
 pub struct PowerTransferUnit {
-    active_l2r_id: VariableIdentifier,
-    active_r2l_id: VariableIdentifier,
-    motor_flow_id: VariableIdentifier,
     valve_opened_id: VariableIdentifier,
     shaft_rpm_id: VariableIdentifier,
 
@@ -246,9 +243,6 @@ impl PowerTransferUnit {
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            active_l2r_id: context.get_identifier("HYD_PTU_ACTIVE_L2R".to_owned()),
-            active_r2l_id: context.get_identifier("HYD_PTU_ACTIVE_R2L".to_owned()),
-            motor_flow_id: context.get_identifier("HYD_PTU_MOTOR_FLOW".to_owned()),
             valve_opened_id: context.get_identifier("HYD_PTU_VALVE_OPENED".to_owned()),
             shaft_rpm_id: context.get_identifier("HYD_PTU_SHAFT_RPM".to_owned()),
             debug_id: context.get_identifier("HYD_PTU_DEBUG_DELTA".to_owned()),
@@ -478,9 +472,6 @@ impl PowerTransferUnit {
 }
 impl SimulationElement for PowerTransferUnit {
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.active_l2r_id, self.is_active_left);
-        writer.write(&self.active_r2l_id, self.is_active_right);
-        writer.write(&self.motor_flow_id, self.flow());
         writer.write(&self.valve_opened_id, self.is_enabled());
         writer.write(
             &self.shaft_rpm_id,
