@@ -25,7 +25,7 @@ class McduMessage {
             this.isAmber,
             this.replace,
             isResolved === undefined ? this.isResolved : isResolved,
-            onClear === undefined ? this.isResolved : onClear
+            onClear === undefined ? this.onClear : onClear
         );
     }
 }
