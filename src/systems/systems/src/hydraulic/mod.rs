@@ -208,8 +208,8 @@ impl PowerTransferUnit {
     const MEAN_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
     const STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
 
-    const MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 95.;
-    const STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 =10.;
+    const MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 110.;
+    const STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 =25.;
 
     const MIN_SPEED_SIMULATION_RPM: f64 = 50.;
 
@@ -335,9 +335,9 @@ impl PowerTransferUnit {
 
         if delta_p.abs()> self.activation_delta_pressure * self.shot_to_shot_activation_coefficient {
             self.control_valve_opened = true;
-            self.shot_to_shot_activation_coefficient = random_from_range(0.95,1.05);
+            self.shot_to_shot_activation_coefficient = random_from_range(0.97,1.03);
         } else if delta_p.abs()< self.desactivation_delta_pressure * self.shot_to_shot_desactivation_coefficient {
-            self.shot_to_shot_desactivation_coefficient = random_from_range(0.95,1.05);
+            self.shot_to_shot_desactivation_coefficient = random_from_range(0.97,1.03);
             self.control_valve_opened = false;
         }
 
@@ -372,8 +372,8 @@ impl PowerTransferUnit {
     }
 
     fn update_active_state(&mut self, context: &UpdateContext) {
-        let is_rotating =
-            self.shaft_speed.get::<revolution_per_minute>().abs() > Self::MIN_SPEED_SIMULATION_RPM;
+
+        let is_rotating =  self.is_rotating();
 
         if is_rotating {
             self.duration_since_active += context.delta();
@@ -505,11 +505,11 @@ impl PowerTransferUnit {
 
         if rpm > 1700. {
             5
-        } else if rpm > 1600. {
+        } else if rpm > 1560. {
             4
-        } else if rpm > 1500. {
+        } else if rpm > 1470. {
             3
-        } else if rpm > 1400. {
+        } else if rpm > 1370. {
             2
         } else {
             1
@@ -523,7 +523,6 @@ impl SimulationElement for PowerTransferUnit {
             &self.shaft_rpm_id,
             (self.shaft_speed_filtered.output()).abs(),
         );
-        writer.write(&self.shaft_rpm_id, self.shaft_speed);
         writer.write(&self.bark_strength_id, self.bark_strength);
     }
 

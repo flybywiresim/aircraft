@@ -37,7 +37,7 @@ impl FlapSlatHydraulicMotor {
     const MIN_MOTOR_RPM: f64 = 20.;
 
     // Corrective factor to adjust final flow consumption to tune the model
-    const FLOW_CORRECTION_FACTOR: f64 = 0.85;
+    const FLOW_CORRECTION_FACTOR: f64 = 0.6;
 
     fn new(displacement: Volume) -> Self {
         Self {
@@ -307,7 +307,7 @@ impl FlapSlatAssembly {
         let press_corrected =
             current_pressure.get::<psi>() - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI;
         if current_pressure > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI) {
-            (0.00055 * (press_corrected * press_corrected)
+            (0.0004 * (press_corrected * press_corrected)
                 / (Self::MAX_CIRCUIT_PRESSURE_PSI - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI))
                 .min(1.)
                 .max(0.)
