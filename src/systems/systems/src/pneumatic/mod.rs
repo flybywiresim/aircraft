@@ -104,7 +104,9 @@ pub trait PneumaticContainer {
         Self: Sized,
     {
         // Since the pressure change is not linear but is nearly linear we simply approximate it via linear interpolation
-        if self.pressure() <= other.pressure() {
+        if self.pressure() > other.pressure() {
+            -other.get_mass_flow_for_equilibrium(self)
+        } else {
             let pressure_diff = other.pressure() - self.pressure();
             let mut mass_aproximation = other.mass() / 2.;
             for _ in 0..3 {
@@ -130,8 +132,6 @@ pub trait PneumaticContainer {
                 mass_aproximation = -pressure_diff.get::<pascal>() / pressure_gradient;
             }
             mass_aproximation
-        } else {
-            -other.get_mass_flow_for_equilibrium(self)
         }
     }
 
