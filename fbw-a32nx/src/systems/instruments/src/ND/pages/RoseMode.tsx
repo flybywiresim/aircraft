@@ -3,7 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Layer, getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
 import { TuningMode } from '@fmgc/radionav';
-import { Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
+import { EfisNdMode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { TopMessages } from '../elements/TopMessages';
@@ -20,7 +20,7 @@ export interface RoseModeProps {
     symbols: NdSymbol[],
     adirsAlign: boolean,
     rangeSetting: number,
-    mode: Mode.ROSE_ILS | Mode.ROSE_VOR | Mode.ROSE_NAV,
+    mode: EfisNdMode.ROSE_ILS | EfisNdMode.ROSE_VOR | EfisNdMode.ROSE_NAV,
     side: EfisSide,
     ppos: LatLongData,
     mapHidden: boolean,
@@ -44,13 +44,13 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
 
     const [mapParams] = useState(() => {
         const params = new MapParameters();
-        params.compute(ppos, rangeSetting / 2, 250, trueHeading.value);
+        params.compute(ppos, 0, rangeSetting / 2, 250, trueHeading.value);
 
         return params;
     });
 
     useEffect(() => {
-        mapParams.compute(ppos, rangeSetting / 2, 250, trueHeading.value);
+        mapParams.compute(ppos, 0, rangeSetting / 2, 250, trueHeading.value);
     }, [ppos.lat, ppos.long, trueHeading.value, rangeSetting].map((n) => MathUtils.fastToFixed(n, 6)));
 
     if (adirsAlign) {
@@ -63,7 +63,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                     tcasMode={tcasMode}
                 />
                 <g id="map" clipPath="url(#rose-mode-map-clip)">
-                    { mode === Mode.ROSE_NAV && (
+                    { mode === EfisNdMode.ROSE_NAV && (
                         <g visibility={mapHidden ? 'hidden' : 'visible'}>
                             <FlightPlan
                                 x={384}
@@ -86,21 +86,21 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                     <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} trueRef={trueRef} />
                 </g>
 
-                { mode === Mode.ROSE_VOR && <VorCaptureOverlay heading={heading} side={side} /> }
+                { mode === EfisNdMode.ROSE_VOR && <VorCaptureOverlay heading={heading} side={side} /> }
 
-                { mode === Mode.ROSE_ILS && <IlsCaptureOverlay heading={heading} _side={side} /> }
+                { mode === EfisNdMode.ROSE_ILS && <IlsCaptureOverlay heading={heading} _side={side} /> }
 
-                { mode === Mode.ROSE_NAV && <ToWaypointIndicator side={side} trueRef={trueRef} /> }
-                { mode === Mode.ROSE_VOR && <VorInfo side={side} /> }
-                { mode === Mode.ROSE_ILS && <IlsInfo /> }
+                { mode === EfisNdMode.ROSE_NAV && <ToWaypointIndicator side={side} trueRef={trueRef} /> }
+                { mode === EfisNdMode.ROSE_VOR && <VorInfo side={side} /> }
+                { mode === EfisNdMode.ROSE_ILS && <IlsInfo /> }
 
                 <TopMessages side={side} ppos={ppos} trueTrack={trueTrack} trueRef={trueRef} />
                 <TrackBug heading={heading} track={track} />
-                { mode === Mode.ROSE_NAV && lsDisplayed && <LsCourseBug heading={heading} lsCourse={lsCourse} /> }
+                { mode === EfisNdMode.ROSE_NAV && lsDisplayed && <LsCourseBug heading={heading} lsCourse={lsCourse} /> }
                 <SelectedHeadingBug heading={heading} selected={selectedHeading} />
-                { mode === Mode.ROSE_ILS && <GlideSlope /> }
+                { mode === EfisNdMode.ROSE_ILS && <GlideSlope /> }
                 <Plane />
-                {mode === Mode.ROSE_NAV && <CrossTrack x={390} y={407} side={side} />}
+                {mode === EfisNdMode.ROSE_NAV && <CrossTrack x={390} y={407} side={side} />}
                 <g clipPath="url(#rose-mode-tcas-clip)">
                     <Traffic mode={mode} mapParams={mapParams} />
                 </g>
@@ -135,51 +135,51 @@ const Overlay: FC<OverlayProps> = ({ heading, rangeSetting, tcasMode }) => (
             </g>
             {/* R = 125, middle range ring */}
             { (tcasMode === 0 || rangeSetting > 10)
-                    && (
-                        <path
-                            d="M 509 384 A 125 125 0 0 1 259 384 M 259 384 A 125 125 180 0 1 509 384"
-                            strokeDasharray="15 10"
-                            strokeDashoffset="-4.2"
-                        />
-                    )}
+                && (
+                    <path
+                        d="M 509 384 A 125 125 0 0 1 259 384 M 259 384 A 125 125 180 0 1 509 384"
+                        strokeDasharray="15 10"
+                        strokeDashoffset="-4.2"
+                    />
+                )}
 
             {/* middle range ring replaced with tcas range ticks */}
             { (tcasMode > 0 && rangeSetting === 10)
-                    && (
-                        <g>
-                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(0 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(30 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(60 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(90 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(120 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(150 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(180 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(210 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(240 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(270 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(300 384 384)" />
-                            <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(330 384 384)" />
-                        </g>
-                    )}
+                && (
+                    <g>
+                        <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(0 384 384)" />
+                        <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(30 384 384)" />
+                        <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(60 384 384)" />
+                        <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(90 384 384)" />
+                        <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(120 384 384)" />
+                        <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(150 384 384)" />
+                        <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(180 384 384)" />
+                        <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(210 384 384)" />
+                        <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(240 384 384)" />
+                        <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(270 384 384)" />
+                        <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(300 384 384)" />
+                        <line x1={384} x2={384} y1={264} y2={254} className="rounded White" transform="rotate(330 384 384)" />
+                    </g>
+                )}
 
             {/* R = 62, tcas range ticks */}
             { (tcasMode > 0 && rangeSetting === 20)
-                    && (
-                        <g>
-                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(0 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(30 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(60 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(90 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(120 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(150 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(180 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(210 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(240 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(270 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(300 384 384)" />
-                            <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(330 384 384)" />
-                        </g>
-                    )}
+                && (
+                    <g>
+                        <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(0 384 384)" />
+                        <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(30 384 384)" />
+                        <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(60 384 384)" />
+                        <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(90 384 384)" />
+                        <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(120 384 384)" />
+                        <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(150 384 384)" />
+                        <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(180 384 384)" />
+                        <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(210 384 384)" />
+                        <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(240 384 384)" />
+                        <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(270 384 384)" />
+                        <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(300 384 384)" />
+                        <line x1={384} x2={384} y1={327} y2={317} className="rounded White" transform="rotate(330 384 384)" />
+                    </g>
+                )}
 
             <text x={212} y={556} className="Cyan" fontSize={22}>{rangeSetting / 2}</text>
             <text x={310} y={474} className="Cyan" fontSize={22}>{rangeSetting / 4}</text>

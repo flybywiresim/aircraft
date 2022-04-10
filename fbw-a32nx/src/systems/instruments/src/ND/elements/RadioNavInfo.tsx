@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { TuningMode } from '@fmgc/radionav';
-import { EfisSide, Mode } from '@shared/NavigationDisplay';
-
-export enum NavAidMode {
-    Off = 0,
-    ADF,
-    VOR,
-}
+import { EfisSide, NavAidMode, EfisNDMode } from '@shared/NavigationDisplay';
 
 export type RadioNavInfoProps = {
     index: 1 | 2,

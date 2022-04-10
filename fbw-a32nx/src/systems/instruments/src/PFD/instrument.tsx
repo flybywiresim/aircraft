@@ -1,9 +1,9 @@
 import { DisplayManagementComputer } from 'instruments/src/PFD/shared/DisplayManagementComputer';
 import { Clock, FSComponent, EventBus, HEventPublisher } from 'msfssdk';
 import { PFDComponent } from './PFD';
-import { AdirsValueProvider } from './shared/AdirsValueProvider';
+import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
-import { PFDSimvarPublisher } from './shared/PFDSimvarPublisher';
+import { PFDSimvarPublisher, PFDSimvars } from './shared/PFDSimvarPublisher';
 import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
 
 import './style.scss';
@@ -21,7 +21,7 @@ class A32NX_PFD extends BaseInstrument {
 
     private readonly clock: Clock;
 
-    private readonly adirsValueProvider: AdirsValueProvider;
+    private readonly adirsValueProvider: AdirsValueProvider<PFDSimvars>;
 
     private readonly displayManagementComputer: DisplayManagementComputer;
 
@@ -41,7 +41,7 @@ class A32NX_PFD extends BaseInstrument {
         this.arincProvider = new ArincValueProvider(this.bus);
         this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
         this.clock = new Clock(this.bus);
-        this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher);
+        this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, 'L');
         this.displayManagementComputer = new DisplayManagementComputer(this.bus);
     }
 
