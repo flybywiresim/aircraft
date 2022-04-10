@@ -308,7 +308,7 @@ export const fr = {
             TheAircraftMustBeOnTheGroundToLoadAPreset: "L'avion doit être au sol pour charger un préréglage.",
             TheAircraftMustBeOntheGroundToLoadAPreset: "L'avion doit être au sol pour charger un préréglage.",
             Title: 'États des aéronefs',
-            Turnaround: 'Turnaround',
+            Turnaround: 'Disponibilité',
         },
         InteriorLighting: {
             AircraftNeedsToBePoweredToLoadPresets: "L'avion doit être alimenté pour charger des préréglages",
@@ -419,7 +419,7 @@ export const fr = {
             ThrottleDetents: "Détenteurs d'accélérateur",
             Title: 'Options de carte SIM',
             UseCalculatedIlsSignals: 'Utiliser des signaux ILS calculés',
-            inHg: 'en Hg',
+            inHg: 'inHg',
         },
         ThrottleConfig: {
             Apply: 'Appliquer',
@@ -429,6 +429,7 @@ export const fr = {
             ConfigureEnd: 'Configurer la fin',
             CurrentValue: 'Valeur actuelle',
             Deadband: 'Deadband',
+            ErrorOverlapMsg: 'se superpose à',
             IndependentAxis: 'Axe indépendant',
             LoadFromFile: 'Charger depuis un fichier',
             PleaseEnterAValidDeadzone: 'Veuillez saisir une zone morte valide',

@@ -419,7 +419,7 @@ export const en = {
             ThrottleDetents: 'Throttle Detents',
             Title: 'Sim Options',
             UseCalculatedIlsSignals: 'Use Calculated ILS Signals',
-            inHg: 'in Hg',
+            inHg: 'inHg',
         },
         ThrottleConfig: {
             Apply: 'Apply',

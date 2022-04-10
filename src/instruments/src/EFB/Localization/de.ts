@@ -419,7 +419,7 @@ export const de = {
             ThrottleDetents: 'Schubhebelkalibrierung',
             Title: 'Sim-Optionen',
             UseCalculatedIlsSignals: 'Berechnete ILS-Signale verwenden',
-            inHg: 'in Hg',
+            inHg: 'inHg',
         },
         ThrottleConfig: {
             Apply: 'Anwenden',
