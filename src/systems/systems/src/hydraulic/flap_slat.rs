@@ -652,13 +652,13 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.flaps_slats.left_motor.flow())
-                >= VolumeRate::new::<gallon_per_minute>(3.)
+                >= VolumeRate::new::<gallon_per_minute>(2.)
                 && test_bed.query(|a| a.flaps_slats.left_motor.flow())
                     <= VolumeRate::new::<gallon_per_minute>(8.)
         );
         assert!(
             test_bed.query(|a| a.flaps_slats.right_motor.flow())
-                >= VolumeRate::new::<gallon_per_minute>(3.)
+                >= VolumeRate::new::<gallon_per_minute>(2.)
                 && test_bed.query(|a| a.flaps_slats.right_motor.flow())
                     <= VolumeRate::new::<gallon_per_minute>(8.)
         );
@@ -703,13 +703,13 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.flaps_slats.left_motor.flow())
-                >= VolumeRate::new::<gallon_per_minute>(3.)
+                >= VolumeRate::new::<gallon_per_minute>(2.)
                 && test_bed.query(|a| a.flaps_slats.left_motor.flow())
                     <= VolumeRate::new::<gallon_per_minute>(8.)
         );
         assert!(
             test_bed.query(|a| a.flaps_slats.right_motor.flow())
-                >= VolumeRate::new::<gallon_per_minute>(3.)
+                >= VolumeRate::new::<gallon_per_minute>(2.)
                 && test_bed.query(|a| a.flaps_slats.right_motor.flow())
                     <= VolumeRate::new::<gallon_per_minute>(8.)
         );
@@ -753,7 +753,7 @@ mod tests {
         );
         assert!(
             test_bed.query(|a| a.flaps_slats.right_motor.flow())
-                >= VolumeRate::new::<gallon_per_minute>(3.)
+                >= VolumeRate::new::<gallon_per_minute>(2.)
                 && test_bed.query(|a| a.flaps_slats.right_motor.flow())
                     <= VolumeRate::new::<gallon_per_minute>(8.)
         );
@@ -797,7 +797,7 @@ mod tests {
         );
         assert!(
             test_bed.query(|a| a.flaps_slats.left_motor.flow())
-                >= VolumeRate::new::<gallon_per_minute>(3.)
+                >= VolumeRate::new::<gallon_per_minute>(2.)
                 && test_bed.query(|a| a.flaps_slats.left_motor.flow())
                     <= VolumeRate::new::<gallon_per_minute>(8.)
         );
