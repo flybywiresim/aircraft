@@ -58,6 +58,25 @@ export const FlyPadPage = () => {
 
     return (
         <SettingsPage name={t('Settings.flyPad.Title')}>
+
+            <SettingItem name={t('Settings.flyPad.Language')}>
+                <SelectInput
+                    className="w-64"
+                    value={language}
+                    onChange={(value) => setLanguage(value as string)}
+                    options={languageOptions.map((option) => ({ value: option.langCode, displayValue: option.alias }))}
+                />
+            </SettingItem>
+
+            <SettingItem name={t('Settings.flyPad.OnscreenKeyboardLayout')}>
+                <SelectInput
+                    className="w-64"
+                    value={keyboardLayout}
+                    onChange={(value) => setKeyboardLayout(value as string)}
+                    options={keyboardLayoutOptions.map((option) => ({ value: option.name, displayValue: option.alias }))}
+                />
+            </SettingItem>
+
             <SettingItem name={t('Settings.flyPad.BatteryLifeEnabled')}>
                 <Toggle value={!!batteryLifeEnabled} onToggle={(value) => setBatteryLifeEnabled(value ? 1 : 0)} />
             </SettingItem>
@@ -134,24 +153,6 @@ export const FlyPadPage = () => {
 
             <SettingItem name={t('Settings.flyPad.ShowColoredRawMetar')}>
                 <Toggle value={!!usingColoredMetar} onToggle={(value) => setUsingColoredMetar(value ? 1 : 0)} />
-            </SettingItem>
-
-            <SettingItem name={t('Settings.flyPad.Language')}>
-                <SelectInput
-                    className="w-64"
-                    value={language}
-                    onChange={(value) => setLanguage(value as string)}
-                    options={languageOptions.map((option) => ({ value: option.langCode, displayValue: option.alias }))}
-                />
-            </SettingItem>
-
-            <SettingItem name={t('Settings.flyPad.OnscreenKeyboardLayout')}>
-                <SelectInput
-                    className="w-64"
-                    value={keyboardLayout}
-                    onChange={(value) => setKeyboardLayout(value as string)}
-                    options={keyboardLayoutOptions.map((option) => ({ value: option.name, displayValue: option.alias }))}
-                />
             </SettingItem>
 
         </SettingsPage>
