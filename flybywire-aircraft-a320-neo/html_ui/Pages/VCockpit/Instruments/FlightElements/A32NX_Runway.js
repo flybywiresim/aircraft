@@ -28,21 +28,23 @@ class Runway {
         const designations = this.designation.split("-");
         for (let i = 0; i < designations.length; i++) {
             const newRunway = new Runway();
-            newRunway.designation = designations[i];
+            newRunway.designation = Avionics.Utils.formatRunway(designations[i]);
+            newRunway.number = parseInt(designations[i]);
             newRunway.slope = 100 * (this.secondaryElevation - this.primaryElevation) / (this.length - this.primaryThresholdLength - this.secondaryThresholdLength);
             if (i === 0) {
-                newRunway.designation += this.designatorChar(this.designatorCharPrimary);
+                newRunway.designator = this.designatorCharPrimary;
                 newRunway.direction = this.direction;
                 newRunway.thresholdLength = this.primaryThresholdLength;
                 newRunway.thresholdElevation = this.primaryElevation;
             }
             if (i === 1) {
-                newRunway.designation += this.designatorChar(this.designatorCharSecondary);
+                newRunway.designator = this.designatorCharSecondary;
                 newRunway.direction = Avionics.Utils.clampAngle(this.direction + 180);
                 newRunway.thresholdLength = this.secondaryThresholdLength;
                 newRunway.thresholdElevation = this.secondaryElevation;
                 newRunway.slope *= -1;
             }
+            newRunway.designation += this.designatorChar(newRunway.designator);
             newRunway.latitude = this.latitude;
             newRunway.longitude = this.longitude;
             newRunway.elevation = this.elevation;
