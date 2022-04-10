@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 export const ru = {
-    AirTrafficControl: {
+    'AirTrafficControl': {
         Active: 'Активная',
         ConnectHoppieACARS: 'Подключить Hoppie ACARS',
         DisconnectHoppieACARS: 'Отключить Hoppie ACARS',
@@ -14,8 +14,8 @@ export const ru = {
         Standby: 'Резервная',
         Title: 'Управление Воздушным Движением',
     },
-    Checklist: { ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Остались пункты контрольного списка автозаполнения, которые еще не завершены' },
-    Checklists: {
+    'Checklist': { ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Остались пункты контрольного списка автозаполнения, которые еще не завершены' },
+    'Checklists': {
         AreYouSureYouWantToResetAllChecklists: 'Вы уверены, что хотите сбросить все контрольные списки?',
         AreYouSureYouWantToResetChecklists: 'Вы уверены, что хотите сбросить все контрольные списки?',
         ChecklistResetWarning: 'Предупреждение сброса контрольного списка',
@@ -28,7 +28,7 @@ export const ru = {
         ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted: 'Остались пункты контрольного списка автозаполнения, которые еще не завершены',
         Title: 'Контрольные списки',
     },
-    Dashboard: {
+    'Dashboard': {
         ImportantInformation: {
             Checklists: {
                 NoRelevantChecklists: 'Нет соответствующих контрольных списков',
@@ -48,7 +48,10 @@ export const ru = {
             Weather: {
                 AirPressure: 'Атм. давление',
                 DewPoint: 'Точка росы',
+                IcaoInvalid: 'ICAO недействителен или отсутствует METAR',
                 Loading: 'Загрузка...',
+                MetarParsingError: 'Не удалось разобрать полученный METAR',
+                NoIcaoProvided: 'ИКАО не предоставленно',
                 Raw: 'Необработанный',
                 TT: {
                     SwitchToIconView: 'Переключиться в режим просмотра значков',
@@ -73,7 +76,7 @@ export const ru = {
             ZFW: 'ZFW',
         },
     },
-    Dispatch: {
+    'Dispatch': {
         Ofp: {
             ImportSimBriefData: 'Импорт данных simBrief',
             TT: {
@@ -98,18 +101,19 @@ export const ru = {
         },
         Title: 'Отправка',
     },
-    Failures: {
+    'Failures': {
         Comfort: { Title: 'Комфорт' },
         Compact: { Title: 'Компакт' },
         FullSimulationOfTheFailuresBelowIsntYetGuaranteed: 'Полная симуляция отказов, описанных ниже, пока не гарантируется.',
         Search: 'Поиск',
         Title: 'Отказы',
     },
-    Ground: {
+    'Ground': {
         Fuel: {
             CenterTank: 'Центральный бак',
             Completed: 'Завершено',
             Defueling: 'Слив топлива',
+            EstimatedDuration: 'Предполагаемая продолжительность (минуты)',
             EstimatedTime: 'Примерное время',
             LeftInnerTank: 'Левый внутренний бак',
             LeftOuterTank: 'Левый наружный бак',
@@ -129,24 +133,23 @@ export const ru = {
         },
         Pushback: { Title: 'Откат' },
         Services: {
-            CallBaggageTruck: 'Вызов багажной тележки',
-            CallCateringTruck: 'Вызов грузовика общественного питания',
-            CallFuelTruck: 'Вызов бензовоза',
-            ConnectExternalPower: 'Подключение внешнего источника питания',
-            ConnectJetBridge: 'Подключение трапа',
-            DisconnectExternalPower: 'Отключение внешнего источника питания',
+            BaggageTruck: 'Багажный грузовик',
+            CateringTruck: 'Кейтеринг грузовик',
             DoorAft: 'Задняя дверь',
             DoorFwd: 'Передняя дверь',
+            ExternalPower: 'Внешнее питание',
+            FuelTruck: 'Топливная тележка',
+            JetBridge: 'Джет Бридж',
             Title: 'Сервисы',
         },
         Title: 'Земля',
     },
-    Modals: {
+    'Modals': {
         Cancel: 'Отмена',
         Confirm: 'Подтвердить',
         Okay: 'ОК',
     },
-    NavigationAndCharts: {
+    'NavigationAndCharts': {
         All: 'Все',
         Altn: 'Алтн',
         ExitFullscreenMode: 'Выйти из полноэкранного режима',
@@ -175,6 +178,7 @@ export const ru = {
             Delete: 'Удалить',
             Edit: 'Изменить',
             NoItemsFound: 'Ничего не найдено',
+            SearchPlaceholder: 'Поиск',
             ShowingChartsFromAllProviders: 'Отображение карт от всех поставщиков',
             SortMethods: {
                 AlphabeticalAZ: 'По алфавиту - А -> Z',
@@ -206,14 +210,17 @@ export const ru = {
         Title: 'Навигация и карты',
         To: 'До',
     },
-    Performance: {
+    'Performance': {
         Data: 'Данные',
         Landing: {
             AirportIcao: 'Аэропорт ICAO',
             ApproachSpeed: 'Скорость подхода',
+            ApproachSpeedUnit: 'уз.',
             AutoLand: 'Автоматическая посадка',
             Calculate: 'Вычислить',
             Clear: 'Очистить',
+            DropDownNo: 'Нет',
+            DropDownYes: 'Да',
             FillDataFrom: 'Заполнить из данных',
             FlapsConfiguration: 'Конфигурация закрылков',
             Low: 'Низкий',
@@ -223,9 +230,13 @@ export const ru = {
             Qnh: 'QNH',
             ReverseThrust: 'Обратная тяга',
             RunwayAltitude: 'Высота ВПП',
+            RunwayAltitudeUnit: 'футов ASL',
             RunwayCondition: 'Состояние ВПП',
             RunwayHeading: 'Направление ВПП',
+            RunwayHeadingUnit: '°',
             RunwayLda: 'ВПП LDA',
+            RunwayLdaUnitFt: 'фут',
+            RunwayLdaUnitMeter: 'м',
             RunwaySlope: 'Наклон ВПП',
             TT: {
                 YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest: 'Вам необходимо ввести код ICAO, чтобы сделать запрос METAR',
@@ -233,9 +244,13 @@ export const ru = {
             },
             Temperature: 'Температура',
             Title: 'Посадка',
+            UnitFt: 'фут',
+            UnitMeter: 'м',
             Weight: 'Вес',
             WindDirection: 'Направление ветра',
+            WindDirectionUnit: '°',
             WindMagnitude: 'Скорость ветра',
+            WindMagnitudeUnit: 'уз.',
         },
         SYNC: 'СИНХРОНИЗИРОВАТЬ',
         Title: 'Характеристика',
@@ -247,6 +262,10 @@ export const ru = {
                 GroundSpeed: 'Скорость относительно земли',
                 TargetAltitude: 'Высота цели',
                 Title: 'Данные',
+                UnitAngleDegrees: 'градусов',
+                UnitFeet: 'футов',
+                UnitFtMin: 'фут/мин',
+                UnitNM: 'NM',
                 VerticalSpeed: 'Вертикальная скорость',
             },
             GroundSpeed: {
@@ -258,10 +277,13 @@ export const ru = {
                 RemoveLast: 'Удалить последнюю',
                 Sync: 'СИНХРОНИЗИРОВАТЬ',
                 Title: 'Скорость относительно земли',
+                UnitKnots: 'узлы',
+                UnitKt: 'уз',
             },
             Result: {
                 BeforeTarget: 'перед целью',
                 DesiredDescentAngle: 'Желаемый угол снижения',
+                DesiredVerticalSpeed: 'Желаемая вертикальная скорость',
                 StartYourDescentAbout: 'Начните своё снижения',
                 Title: 'Результат',
             },
@@ -272,16 +294,21 @@ export const ru = {
             Title: 'Вершина снижения',
         },
     },
-    Presets: {
+    'Presets': {
         AircraftStates: {
             Cancel: 'Отмена',
-            ConfirmationDialogMsg: 'Please confirm loading of preset.',
+            ColdDark: 'Выключенный',
+            ConfirmationDialogMsg: 'Подтвердите загрузку пресета.',
             CurrentProcedureStep: 'Текущий этап процедуры',
             PleaseConfirmLoadingOfPreset: 'Подтвердите загрузку пресета.',
+            ReadyPushback: 'Готов к откату',
+            ReadyTakeoff: 'Готов к взлету',
+            ReadyTaxi: 'Готов к такси',
             SelectAPresetToLoad: 'Выберите пресет для загрузки',
             TheAircraftMustBeOnTheGroundToLoadAPreset: 'Самолёт должен находиться на земле, чтобы загрузить пресет.',
             TheAircraftMustBeOntheGroundToLoadAPreset: 'Самолет должен находиться на земле, чтобы загрузить пресет.',
             Title: 'Состоянии самолёта',
+            Turnaround: 'Оборот',
         },
         InteriorLighting: {
             AircraftNeedsToBePoweredToLoadPresets: 'Самолёт должен иметь питание для загрузки пресетов',
@@ -304,7 +331,7 @@ export const ru = {
         },
         Title: 'Пресеты',
     },
-    Pushback: {
+    'Pushback': {
         Backward: 'Назад',
         CallTug: 'Вызов буксира',
         Forward: 'Вперёд',
@@ -317,16 +344,16 @@ export const ru = {
         TugDirection: 'Направление буксира',
         TugSpeed: 'Скорость буксира',
     },
-    Settings: {
+    'Settings': {
         About: { Title: 'Описание' },
         AircraftOptionsPinPrograms: {
-            AccelerationHeight: 'Высота ускорения',
-            EngineOutAccelerationHeight: 'Высота ускорения на выходе двигателя',
+            AccelerationHeight: 'Высота ускорения (фт)',
+            EngineOutAccelerationHeight: 'Высота ускорения на выходе двигателя (фт)',
             IsisBaroUnit: 'Единица измерения барометра на ISIS',
             IsisMetricAltitude: 'Метрическая высота на ISIS',
             PaxSigns: 'Табло салона',
             RmpVhfSpacing: 'Интервал RMP VHF',
-            ThrustReductionHeight: 'Высота уменьшения тяги',
+            ThrustReductionHeight: 'Высота уменьшения тяги (фт)',
             Title: 'Опции самолёта / Пин-программы',
             WeightUnit: 'Единицы измерения веса',
         },
@@ -375,18 +402,24 @@ export const ru = {
             Title: 'Реализм',
         },
         SimOptions: {
+            Active: 'Активная',
+            Auto: 'Авто',
             Calibrate: 'Калибровка',
             DefaultBarometerUnit: 'Единица измерения барометра по умолчанию',
             DynamicRegistrationDecal: 'Наклейка с динамической регистрацией',
             EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection: 'Подключение к серверу MCDU (автоматически деактивируется через 5 минут, если соединение не было успешным)',
             ExternalMcduServerPort: 'Порт внешнего сервера MCDU',
+            Hpa: 'гПа',
+            Inactive: 'Неактивно',
             LoadOnly: 'Только загрузка',
             None: 'Нет',
+            Off: 'Откл.',
             Save: 'Сохранить',
             SyncMsfsFlightPlan: 'Синхронизировать план полета MSFS',
             ThrottleDetents: 'Защелки рычагов',
             Title: 'Параметры симулятора',
             UseCalculatedIlsSignals: 'Использовать рассчитанные сигналы ILS',
+            inHg: 'дюйм. рт.ст.',
         },
         ThrottleConfig: {
             Apply: 'Применить',
@@ -396,6 +429,7 @@ export const ru = {
             ConfigureEnd: 'Настроить конец защелки',
             CurrentValue: 'Текущее значение',
             Deadband: 'Зона нечувствительности',
+            ErrorOverlapMsg: 'перекрывается',
             IndependentAxis: 'Отдельные оси',
             LoadFromFile: 'Загрузить из файла',
             PleaseEnterAValidDeadzone: 'Пожалуйста, введите действительную мертвую зону',
@@ -425,13 +459,14 @@ export const ru = {
             Theme: 'Тема',
             TimeDisplayed: 'Отображаемое время',
             Title: 'flyPad',
-            TwelveHours: '12h',
-            TwentyFourHours: '24h',
+            TwelveHours: '12 Часовой',
+            TwentyFourHours: '24 Часовой',
             Utc: 'UTC',
             UtcAndLocal: 'UTC и местное',
         },
     },
-    StatusBar: {
+    'Settings.flyPad.BatteryLifeEnabled': 'Имитация расхода батареи',
+    'StatusBar': {
         Apr: 'Апр',
         Aug: 'Авг',
         Dec: 'Дек',
