@@ -257,6 +257,10 @@ export namespace FSComponent {
     'text': true
   };
 
+  const mappedKeys: Record<string, string> = {
+      'fontSize': 'font-size',
+  }
+
   /**
    * A fragment of existing elements with no specific root.
    * @param props The fragment properties.
@@ -294,14 +298,16 @@ export namespace FSComponent {
 
       if (props !== null) {
         for (const key in props) {
+          const actualKey = mappedKeys[key] ?? key;
+
           if (key === 'ref' && props.ref !== undefined) {
             props.ref.instance = element;
           } else {
             const prop = (props as any)[key];
             if (prop instanceof Subject || prop instanceof MappedSubject || prop instanceof ComputedSubject) {
-              element.setAttribute(key, prop.get());
+              element.setAttribute(actualKey, prop.get());
               prop.sub((v) => {
-                element.setAttribute(key, v);
+                element.setAttribute(actualKey, v);
               });
             } else {
               element.setAttribute(key, prop);

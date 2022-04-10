@@ -1,15 +1,18 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from 'msfssdk';
+import { FSComponent, ClockEvents, DisplayComponent, EventBus, Subscribable, VNode } from 'msfssdk';
+import { NXDataStore } from '@shared/persistence';
+import { DisplayVars } from './SimVarTypes';
 
 import './common.scss';
 import './pixels.scss';
 
-import { NXDataStore } from '@shared/persistence';
-import { PFDSimvars } from './PFDSimvarPublisher';
-import { getDisplayIndex } from '../PFD';
+export const getDisplayIndex = () => {
+    const url = document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url');
+    return url ? parseInt(url.substring(url.length - 1), 10) : 0;
+};
 
 type DisplayUnitProps = {
     bus: EventBus,
-    failed: Subscribable<boolean>;
+    failed?: Subscribable<boolean>;
 }
 
 enum DisplayUnitState {
@@ -41,7 +44,7 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & ClockEvents>();
+        const sub = this.props.bus.getSubscriber<DisplayVars & ClockEvents>();
         const isCaptainSide = getDisplayIndex() === 1;
 
         sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
@@ -61,7 +64,7 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
             }
         });
 
-        this.props.failed.sub((f) => {
+        this.props.failed?.sub((f) => {
             this.failed = f;
             this.updateState();
         });
@@ -118,7 +121,6 @@ export class DisplayUnit extends DisplayComponent<DisplayUnitProps> {
 
     render(): VNode {
         return (
-
             <>
                 <div ref={this.backLightBleedRef} class="BacklightBleed" />
 

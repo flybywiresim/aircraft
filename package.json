@@ -19,6 +19,7 @@
     "build:fmgc": "rollup -c src/fmgc/rollup.config.js",
     "build:tcas": "rollup -c src/tcas/rollup.config.js",
     "build:pfd": "cd src/instruments/src/PFD && rollup -c",
+    "build:nd": "cd src/instruments/src/NDv2 && rollup -c",
     "build:simbridge-client": "rollup -c src/simbridge-client/rollup.config.js",
     "build:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -wc .\\src\\instruments\\buildSrc\\aceBuild.mjs"
   },
