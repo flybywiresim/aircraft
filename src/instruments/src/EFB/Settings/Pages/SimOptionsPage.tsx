@@ -68,16 +68,6 @@ export const SimOptionsPage = () => {
                         </SelectGroup>
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.ExternalMcduServerPort')}>
-                        <SimpleInput
-                            className="text-center w-30"
-                            value={mcduServerPort}
-                            onChange={(event) => {
-                                setMcduServerPort(event);
-                            }}
-                        />
-                    </SettingItem>
-
                     <SettingItem name={t('Settings.SimOptions.EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection')}>
                         <SelectGroup>
                             <SelectItem
@@ -98,6 +88,16 @@ export const SimOptionsPage = () => {
                         <div className="pt-2 text-center">
                             {mcduServerEnabled === 'AUTO ON' ? t('Settings.SimOptions.Active') : t('Settings.SimOptions.Inactive')}
                         </div>
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.SimOptions.ExternalMcduServerPort')}>
+                        <SimpleInput
+                            className="text-center w-30"
+                            value={mcduServerPort}
+                            onChange={(event) => {
+                                setMcduServerPort(event);
+                            }}
+                        />
                     </SettingItem>
 
                     <SettingItem name={t('Settings.SimOptions.DynamicRegistrationDecal')}>

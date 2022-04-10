@@ -20,9 +20,6 @@ export const AudioPage = () => {
 
     return (
         <SettingsPage name={t('Settings.Audio.Title')}>
-            <SettingItem name={t('Settings.Audio.PtuAudibleInCockpit')} unrealistic>
-                <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
-            </SettingItem>
 
             <SettingItem name={t('Settings.Audio.ExteriorMasterVolume')}>
                 <div className="flex flex-row items-center space-x-8">
@@ -76,6 +73,10 @@ export const AudioPage = () => {
                         number
                     />
                 </div>
+            </SettingItem>
+
+            <SettingItem name={t('Settings.Audio.PtuAudibleInCockpit')} unrealistic>
+                <Toggle value={!!ptuAudible} onToggle={(value) => setPtuAudible(value ? 1 : 0)} />
             </SettingItem>
 
             <SettingItem name={t('Settings.Audio.PassengerAmbience')}>

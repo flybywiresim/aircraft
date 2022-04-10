@@ -4,7 +4,7 @@ import { useSimVar } from '@instruments/common/simVars';
 
 import { useTranslation } from 'react-i18next';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
-import { ButtonType, SettingItem, SettingsPage } from '../Settings';
+import { ButtonType, SettingGroup, SettingItem, SettingsPage } from '../Settings';
 
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -96,33 +96,6 @@ export const RealismPage = () => {
                 </SelectGroup>
             </SettingItem>
 
-            <SettingItem name={t('Settings.Realism.McduKeyboardInput')} unrealistic>
-                <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
-            </SettingItem>
-
-            <SettingItem name={t('Settings.Realism.McduFocusTimeout')}>
-                <SimpleInput
-                    className="text-center w-30"
-                    value={mcduTimeout}
-                    min={5}
-                    max={120}
-                    disabled={(mcduInput !== 'ENABLED')}
-                    onChange={(event) => {
-                        if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
-                            setMcduTimeout(event.trim());
-                        }
-                    }}
-                />
-            </SettingItem>
-
-            <SettingItem name={t('Settings.Realism.SeparateTillerFromRudderInputs')}>
-                <Toggle value={!!realisticTiller} onToggle={(value) => setRealisticTiller(value ? 1 : 0)} />
-            </SettingItem>
-
-            <SettingItem name={t('Settings.Realism.HomeCockpitMode')}>
-                <Toggle value={homeCockpit === '1'} onToggle={(value) => setHomeCockpit(value ? '1' : '0')} />
-            </SettingItem>
-
             <SettingItem name={t('Settings.Realism.DatalinkTransmissionTime')}>
                 <SelectGroup>
                     {datalinkTransmissionTimeButtons.map((button) => (
@@ -142,6 +115,37 @@ export const RealismPage = () => {
             <SettingItem name={t('Settings.Realism.AutofillChecklists')} unrealistic>
                 <Toggle value={!!autoFillChecklists} onToggle={(value) => setAutoFillChecklists(value ? 1 : 0)} />
             </SettingItem>
+
+            <SettingItem name={t('Settings.Realism.HomeCockpitMode')}>
+                <Toggle value={homeCockpit === '1'} onToggle={(value) => setHomeCockpit(value ? '1' : '0')} />
+            </SettingItem>
+
+            <SettingItem name={t('Settings.Realism.SeparateTillerFromRudderInputs')}>
+                <Toggle value={!!realisticTiller} onToggle={(value) => setRealisticTiller(value ? 1 : 0)} />
+            </SettingItem>
+
+            <SettingGroup>
+                <SettingItem name={t('Settings.Realism.McduKeyboardInput')} unrealistic groupType="parent">
+                    <Toggle value={mcduInput === 'ENABLED'} onToggle={(value) => setMcduInput(value ? 'ENABLED' : 'DISABLED')} />
+                </SettingItem>
+
+                {mcduInput === 'ENABLED' && (
+                    <SettingItem name={t('Settings.Realism.McduFocusTimeout')} groupType="sub">
+                        <SimpleInput
+                            className="text-center w-30"
+                            value={mcduTimeout}
+                            min={5}
+                            max={120}
+                            disabled={(mcduInput !== 'ENABLED')}
+                            onChange={(event) => {
+                                if (!Number.isNaN(event) && parseInt(event) >= 5 && parseInt(event) <= 120) {
+                                    setMcduTimeout(event.trim());
+                                }
+                            }}
+                        />
+                    </SettingItem>
+                )}
+            </SettingGroup>
 
         </SettingsPage>
     );

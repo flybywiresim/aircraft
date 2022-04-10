@@ -7,7 +7,7 @@ import Slider from 'rc-slider';
 import { useTranslation } from 'react-i18next';
 import { languageOptions } from '../../i18n';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
-import { ButtonType, SettingItem, SettingsPage } from '../Settings';
+import { ButtonType, SettingItem, SettingsPage, SettingGroup } from '../Settings';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
@@ -77,32 +77,78 @@ export const FlyPadPage = () => {
                 />
             </SettingItem>
 
+            <SettingItem name={t('Settings.flyPad.AutomaticallyShowOnscreenKeyboard')}>
+                <Toggle value={!!autoOSK} onToggle={(value) => setAutoOSK(value ? 1 : 0)} />
+            </SettingItem>
+
+            <SettingGroup>
+                <SettingItem name={t('Settings.flyPad.AutoBrightness')} groupType="parent">
+                    <Toggle value={!!usingAutobrightness} onToggle={(value) => setUsingAutobrightness(value ? 1 : 0)} />
+                </SettingItem>
+                {!usingAutobrightness && (
+                    <SettingItem name={t('Settings.flyPad.Brightness')} disabled={!!usingAutobrightness} groupType="parent">
+                        <div className="flex flex-row items-center space-x-8">
+                            <>
+                                <Slider
+                                    style={{ width: '24rem' }}
+                                    value={usingAutobrightness ? brightness : brightnessSetting}
+                                    onChange={setBrightnessSetting}
+                                />
+                                <SimpleInput
+                                    min={1}
+                                    max={100}
+                                    value={usingAutobrightness ? brightness : brightnessSetting}
+                                    className="w-20 text-center"
+                                    onChange={(value) => setBrightnessSetting(parseInt(value))}
+                                    decimalPrecision={0}
+                                    number
+                                />
+                            </>
+                        </div>
+                    </SettingItem>
+                )}
+            </SettingGroup>
+
             <SettingItem name={t('Settings.flyPad.BatteryLifeEnabled')}>
                 <Toggle value={!!batteryLifeEnabled} onToggle={(value) => setBatteryLifeEnabled(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name={t('Settings.flyPad.Brightness')} disabled={!!usingAutobrightness}>
-                <div className="flex flex-row items-center space-x-8">
-                    <Slider
-                        style={{ width: '24rem' }}
-                        value={usingAutobrightness ? brightness : brightnessSetting}
-                        onChange={setBrightnessSetting}
-                    />
-                    <SimpleInput
-                        min={1}
-                        max={100}
-                        value={usingAutobrightness ? brightness : brightnessSetting}
-                        className="w-20 text-center"
-                        onChange={(value) => setBrightnessSetting(parseInt(value))}
-                        decimalPrecision={0}
-                        number
-                    />
-                </div>
+            <SettingItem name={t('Settings.flyPad.ShowStatusBarFlightProgressIndicator')}>
+                <Toggle value={!!showStatusBarFlightProgress} onToggle={(value) => setShowStatusBarFlightProgress(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name={t('Settings.flyPad.AutoBrightness')}>
-                <Toggle value={!!usingAutobrightness} onToggle={(value) => setUsingAutobrightness(value ? 1 : 0)} />
+            <SettingItem name={t('Settings.flyPad.ShowColoredRawMetar')}>
+                <Toggle value={!!usingColoredMetar} onToggle={(value) => setUsingColoredMetar(value ? 1 : 0)} />
             </SettingItem>
+
+            <SettingGroup>
+                <SettingItem name={t('Settings.flyPad.TimeDisplayed')} groupType="parent">
+                    <SelectGroup>
+                        {timeDisplayButtons.map((button) => (
+                            <SelectItem
+                                onSelect={() => setTimeDisplayed(button.setting)}
+                                selected={timeDisplayed === button.setting}
+                            >
+                                {button.name}
+                            </SelectItem>
+                        ))}
+                    </SelectGroup>
+                </SettingItem>
+                {timeDisplayed !== 'utc' && (
+                    <SettingItem name={t('Settings.flyPad.LocalTimeFormat')} groupType="sub" disabled={timeDisplayed === 'utc'}>
+                        <SelectGroup>
+                            {timeFormatButtons.map((button) => (
+                                <SelectItem
+                                    onSelect={() => setTimeFormat(button.setting)}
+                                    selected={timeFormat === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SettingItem>
+                )}
+            </SettingGroup>
 
             <SettingItem name={t('Settings.flyPad.Theme')}>
                 <SelectGroup>
@@ -115,44 +161,6 @@ export const FlyPadPage = () => {
                         </SelectItem>
                     ))}
                 </SelectGroup>
-            </SettingItem>
-
-            <SettingItem name={t('Settings.flyPad.AutomaticallyShowOnscreenKeyboard')}>
-                <Toggle value={!!autoOSK} onToggle={(value) => setAutoOSK(value ? 1 : 0)} />
-            </SettingItem>
-
-            <SettingItem name={t('Settings.flyPad.TimeDisplayed')}>
-                <SelectGroup>
-                    {timeDisplayButtons.map((button) => (
-                        <SelectItem
-                            onSelect={() => setTimeDisplayed(button.setting)}
-                            selected={timeDisplayed === button.setting}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SettingItem>
-
-            <SettingItem name={t('Settings.flyPad.LocalTimeFormat')} disabled={timeDisplayed === 'utc'}>
-                <SelectGroup>
-                    {timeFormatButtons.map((button) => (
-                        <SelectItem
-                            onSelect={() => setTimeFormat(button.setting)}
-                            selected={timeFormat === button.setting}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SettingItem>
-
-            <SettingItem name={t('Settings.flyPad.ShowStatusBarFlightProgressIndicator')}>
-                <Toggle value={!!showStatusBarFlightProgress} onToggle={(value) => setShowStatusBarFlightProgress(value ? 1 : 0)} />
-            </SettingItem>
-
-            <SettingItem name={t('Settings.flyPad.ShowColoredRawMetar')}>
-                <Toggle value={!!usingColoredMetar} onToggle={(value) => setUsingColoredMetar(value ? 1 : 0)} />
             </SettingItem>
 
         </SettingsPage>

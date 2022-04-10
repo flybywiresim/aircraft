@@ -104,31 +104,6 @@ export const AircraftOptionsPinProgramsPage = () => {
                     onChange={(event) => handleSetAccelerationOutAlt(event)}
                 />
             </SettingItem>
-            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.WeightUnit')}>
-                <SelectGroup>
-                    {weightUnitButtons.map((button) => (
-                        <SelectItem
-                            onSelect={() => setUsingMetric(button.setting)}
-                            selected={usingMetric === button.setting}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SettingItem>
-
-            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.PaxSigns')}>
-                <SelectGroup>
-                    {paxSignsButtons.map((button) => (
-                        <SelectItem
-                            onSelect={() => setPaxSigns(button.setting)}
-                            selected={paxSigns === button.setting}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SettingItem>
 
             <SettingItem name={t('Settings.AircraftOptionsPinPrograms.IsisBaroUnit')}>
                 <SelectGroup>
@@ -147,6 +122,19 @@ export const AircraftOptionsPinProgramsPage = () => {
                 <Toggle value={!!isisMetricAltitude} onToggle={(value) => setIsisMetricAltitude(value ? 1 : 0)} />
             </SettingItem>
 
+            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.PaxSigns')}>
+                <SelectGroup>
+                    {paxSignsButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => setPaxSigns(button.setting)}
+                            selected={paxSigns === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </SettingItem>
+
             <SettingItem name={t('Settings.AircraftOptionsPinPrograms.RmpVhfSpacing')}>
                 <SelectGroup>
                     {vhfSpacingButtons.map((button) => (
@@ -159,6 +147,20 @@ export const AircraftOptionsPinProgramsPage = () => {
                     ))}
                 </SelectGroup>
             </SettingItem>
+
+            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.WeightUnit')}>
+                <SelectGroup>
+                    {weightUnitButtons.map((button) => (
+                        <SelectItem
+                            onSelect={() => setUsingMetric(button.setting)}
+                            selected={usingMetric === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </SettingItem>
+
         </SettingsPage>
     );
 };

@@ -216,6 +216,14 @@ export const AtsuAocPage = () => {
                 </SelectGroup>
             </SettingItem>
 
+            <SettingItem name={t('Settings.AtsuAoc.AutomaticallyImportSimBriefData')}>
+                <Toggle value={autoSimbriefImport === 'ENABLED'} onToggle={(toggleValue) => setAutoSimbriefImport(toggleValue ? 'ENABLED' : 'DISABLED')} />
+            </SettingItem>
+
+            <SettingItem name={t('Settings.AtsuAoc.ErrorReporting')}>
+                <Toggle value={sentryEnabled === SentryConsentState.Given} onToggle={(toggleValue) => handleSentryToggle(toggleValue)} />
+            </SettingItem>
+
             <SettingItem name={t('Settings.AtsuAoc.Telex')}>
                 <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
             </SettingItem>
@@ -229,10 +237,6 @@ export const AtsuAocPage = () => {
                 />
             </SettingItem>
 
-            <SettingItem name={t('Settings.AtsuAoc.AutomaticallyImportSimBriefData')}>
-                <Toggle value={autoSimbriefImport === 'ENABLED'} onToggle={(toggleValue) => setAutoSimbriefImport(toggleValue ? 'ENABLED' : 'DISABLED')} />
-            </SettingItem>
-
             <SettingItem name={t('Settings.AtsuAoc.HoppieUserId')}>
                 <SimpleInput
                     className="w-30"
@@ -240,10 +244,6 @@ export const AtsuAocPage = () => {
                     onBlur={(value) => handleHoppieUsernameInput(value.replace(/\s/g, ''))}
                     onChange={(value) => setHoppieUserId(value)}
                 />
-            </SettingItem>
-
-            <SettingItem name={t('Settings.AtsuAoc.ErrorReporting')}>
-                <Toggle value={sentryEnabled === SentryConsentState.Given} onToggle={(toggleValue) => handleSentryToggle(toggleValue)} />
             </SettingItem>
         </SettingsPage>
     );
