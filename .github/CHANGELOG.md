@@ -234,6 +234,7 @@
 1. [BLEED] Converted bleed system to use mass flow instead of volume flow - @Gurgel100 (Pascal)
 1. [FMGC] Add runway-by-itself approaches - @tracernz (Mike)
 1. [FMGC] Automatic airway waypoint intersection - @tracernz (Mike)
+1. [HYD] Adjusted droop characteristics and randomness of surfaces actuators - @Crocket63
 1. [PFD] Reimplement PFD with msfs-avionics framework for improved performance - @saschl (saschl#9432)
 
 ## 0.7.0
