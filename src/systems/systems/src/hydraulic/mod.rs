@@ -430,7 +430,7 @@ impl PowerTransferUnit {
     fn update_continuous_state(&mut self, context: &UpdateContext) {
         self.is_rotating_after_delay.update(
             context,
-            self.shaft_speed.get::<revolution_per_minute>()
+            self.shaft_speed.abs().get::<revolution_per_minute>()
                 > Self::THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM,
         );
 
