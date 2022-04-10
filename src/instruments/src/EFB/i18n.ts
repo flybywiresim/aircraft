@@ -7,6 +7,7 @@ import { es } from './Localization/es';
 import { fr } from './Localization/fr';
 import { de } from './Localization/de';
 import { ru } from './Localization/ru';
+import { zhHant } from './Localization/zhHant';
 
 export const resources = {
     en: { translation: en },
@@ -14,6 +15,7 @@ export const resources = {
     fr: { translation: fr },
     de: { translation: de },
     ru: { translation: ru },
+    zhHant: { translation: zhHant },
 };
 
 interface LanguageOption {
@@ -41,6 +43,10 @@ export const languageOptions: LanguageOption[] = [
     {
         langCode: 'ru',
         alias: 'Русский',
+    },
+    {
+        langCode: 'zhHant',
+        alias: '傳統的',
     },
 ];
 
