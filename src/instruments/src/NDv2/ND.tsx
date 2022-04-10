@@ -1,7 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { FSComponent, DisplayComponent, EventBus, VNode } from 'msfssdk';
-import React from 'react';
+import { Arinc429Word } from '@shared/arinc429';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
+import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 
 export interface NDProps {
     bus: EventBus,
@@ -60,17 +61,49 @@ class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
+    private readonly groundSpeedRef = FSComponent.createRef<SVGTextElement>();
+
+    private readonly trueAirSpeedRef = FSComponent.createRef<SVGTextElement>();
+
+    onAfterRender(node: VNode) {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<AdirsSimVars>();
+
+        sub.on('groundSpeed').whenChanged().handle((value) => {
+            const decodedValue = new Arinc429Word(value);
+
+            const element = this.groundSpeedRef.instance;
+
+            if (decodedValue.isNormalOperation()) {
+                element.style.visibility = 'visible';
+                element.textContent = Math.round(decodedValue.value).toString();
+            } else {
+                element.style.visibility = 'hidden';
+            }
+        });
+
+        sub.on('speed').whenChanged().handle((value) => {
+            const decodedValue = new Arinc429Word(value);
+
+            const element = this.trueAirSpeedRef.instance;
+
+            if (decodedValue.isNormalOperation()) {
+                element.style.visibility = 'visible';
+                element.textContent = Math.round(decodedValue.value).toString();
+            } else {
+                element.style.visibility = 'hidden';
+            }
+        });
+    }
+
     render(): VNode | null {
         return (
             <Layer x={2} y={25}>
                 <text x={0} y={0} class="White FontSmallest">GS</text>
-                <text x={89} y={0} class="Green FontIntermediate EndAlign">
-                    452
-                </text>
+                <text ref={this.groundSpeedRef} x={89} y={0} class="Green FontIntermediate EndAlign" />
                 <text x={95} y={0} class="White FontSmallest">TAS</text>
-                <text x={201} y={0} class="Green FontIntermediate EndAlign">
-                    453
-                </text>
+                <text ref={this.trueAirSpeedRef} x={201} y={0} class="Green FontIntermediate EndAlign" />
             </Layer>
         );
     }
