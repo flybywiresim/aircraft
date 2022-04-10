@@ -38,7 +38,7 @@ import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
-const BATTERY_DURATION_DISCHARGE_MIN = 120;
+const BATTERY_DURATION_DISCHARGE_MIN = 540;
 
 const LoadingScreen = () => (
     <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
