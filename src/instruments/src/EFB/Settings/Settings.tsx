@@ -127,8 +127,6 @@ export const SettingItem: FC<SettingItemProps> = ({ name, unrealistic, groupType
         <div className={`flex flex-row justify-between items-center ${groupType === undefined && 'py-4' || 'h-12'}`}>
             {groupType === 'sub' ? (
                 <span className="flex flex-row ml-6">
-                    {/* <ArrowReturnRight size={26} /> */}
-                    {/* {' '} */}
                     <span className="ml-2">
                         {name}
                         {unrealistic && (<UnrealisticHint />)}
@@ -136,7 +134,7 @@ export const SettingItem: FC<SettingItemProps> = ({ name, unrealistic, groupType
                 </span>
             ) : (
                 <span>
-                    { name }
+                    {name}
                     {unrealistic && (<UnrealisticHint />)}
                 </span>
             )}
