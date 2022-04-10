@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { levels } from '../common';
+import { levels } from '../utils';
 
 interface HydReservoirProps {
     system: string,

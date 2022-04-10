@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { render } from '@instruments/common/index';
 import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
 import { setIsEcamPage } from '@instruments/common/defaults';
-import { Triangle } from '../../Common/Shapes';
+import HydYellowElecPump from './elements/HydYellowElecPump';
 import HydSys from './elements/HydSys';
 import RAT from './elements/RAT';
 import PTU from './elements/PTU';
@@ -12,6 +12,7 @@ import './Hyd.scss';
 setIsEcamPage('hyd_page');
 
 export const HydPage = () => {
+    const [validSdacState] = useState(true);
     // The FADEC SimVars include a test for the fire button.
     const [Eng1N2] = useSimVar('TURB ENG N2:1', 'Percent', 1000);
     const [Eng2N2] = useSimVar('TURB ENG N2:2', 'Percent', 1000);
@@ -38,22 +39,6 @@ export const HydPage = () => {
 
     const [engine1Running, setEngine1Running] = useState(0);
     const [engine2Running, setEngine2Running] = useState(0);
-
-    const [elecRightFormat, setElecRightFormat] = useState('hide');
-    const [elecTriangleFill, setElecTriangleFill] = useState(0);
-    const [elecTriangleColour, setElecTriangleColour] = useState('white');
-
-    useEffect(() => {
-        if (yellowElectricPumpStatus) {
-            setElecTriangleFill(1);
-            setElecTriangleColour(yellowPressure <= 1450 ? 'Amber' : 'Green');
-            setElecRightFormat(yellowPressure <= 1450 ? 'AmberLine' : 'GreenLine');
-        } else {
-            setElecTriangleFill(0);
-            setElecTriangleColour('White');
-            setElecRightFormat('Hide');
-        }
-    }, [greenPressure, yellowPressure, yellowElectricPumpStatus]);
 
     useEffect(() => {
         setEngine1Running(Eng1N2 > 15 && greenFireValve);
@@ -101,7 +86,14 @@ export const HydPage = () => {
                     yellowElectricPumpStatus={yellowElectricPumpStatus}
                 />
 
-                {/* <PTU x={300} y={y + 126} /> */}
+                <PTU
+                    x={300}
+                    y={y + 126}
+                    greenPressure={greenPressure}
+                    yellowPressure={yellowPressure}
+                    yellowElectricPumpStatus={yellowElectricPumpStatus === 1}
+                    validSDAC={validSdacState}
+                />
 
                 <RAT x={290} y={y} />
 
@@ -116,18 +108,7 @@ export const HydPage = () => {
 
                 </text>
 
-                <text
-                    id="ELEC-right"
-                    className={!ACBus2IsPowered ? 'RatPtuElec FillAmber' : 'RatPtuElec FillWhite'}
-                    x={548}
-                    y={y + 180}
-                    alignmentBaseline="central"
-                >
-                    ELEC
-
-                </text>
-                <Triangle x={500} y={y + 180} colour={elecTriangleColour} fill={elecTriangleFill} orientation={-90} />
-                <line className={elecRightFormat} x1={490} y1={y + 180} x2={500} y2={y + 180} />
+                <HydYellowElecPump x={500} y={y + 180} yellowPressure={yellowPressure} yellowElectricPumpStatus={yellowElectricPumpStatus} ACBus2IsPowered={ACBus2IsPowered} />
 
                 <text className="Psi" x={205} y={y + 70} alignmentBaseline="central">PSI</text>
                 <text className="Psi" x={395} y={y + 70} alignmentBaseline="central">PSI</text>

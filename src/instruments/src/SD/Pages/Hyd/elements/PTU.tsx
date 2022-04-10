@@ -2,14 +2,37 @@ import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, useState } from 'react';
 import { Triangle } from '../../../Common/Shapes';
 
-import { ptuArray } from '../common';
+import { ptuArray } from '../utils';
+
+// Definition of low pressure in PSI
+const LOW_PRESSURE = 1450;
 
 interface PTUProps {
     x: number,
     y: number,
+    greenPressure: number,
+    yellowPressure: number,
+    yellowElectricPumpStatus: boolean,
+    validSDAC: boolean
 }
 
-const PTU = ({ x, y } : PTUProps) => {
+interface PressureChartType {
+    high: string,
+    low: string,
+    highValue: number,
+    lowValue: number,
+    ptuScenario: string
+}
+
+const PTU = ({ x, y, greenPressure, yellowPressure, yellowElectricPumpStatus, validSDAC } : PTUProps) => {
+    const [ptuActive, setPtuActive] = useState(false);
+    // PTU variables
+    const [ptuAvailable] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 500);
+    const [ptuFault] = useSimVar('L:A32NX_HYD_PTU_FAULT', 'boolean', 500);
+    const [ptuScenario, setPtuScenario] = useState('normal');
+
+    const [pressureChart, setPressureChart] = useState<PressureChartType>({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
+
     const semiCircleD = `M${x - 16},${y} C${x - 16},${y + 24} ${x + 16},${y + 24} ${x + 16},${y}`;
 
     const result: any = ptuArray.find(({ scenario }) => scenario === ptuScenario);
@@ -22,31 +45,7 @@ const PTU = ({ x, y } : PTUProps) => {
     const triangle2 = result.format.find(({ id }) => id === 'triangle2');
     const triangle3 = result.format.find(({ id }) => id === 'triangle3');
 
-    const [greenPressure] = useSimVar('L:A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE', 'psi', 500);
-    const [yellowPressure] = useSimVar('L:A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE', 'psi', 500);
-
-    const [yellowElectricPumpStatus] = useSimVar('L:A32NX_HYD_YELLOW_EPUMP_ACTIVE', 'boolean', 500);
-
-    const [ptuActive, setPtuActive] = useState(0);
-    // PTU variables
-    const [ptuAvailable] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 500);
-    const [ptuScenario, setPtuScenario] = useState('normal');
-
-    const [, setElecRightFormat] = useState('hide');
-    const [, setElecTriangleFill] = useState(0);
-    const [, setElecTriangleColour] = useState('white');
-
-    const [pressureChart, setPressureChart] = useState<PressureChartType>({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
-
-    type PressureChartType = {
-        high: string,
-        low: string,
-        highValue: number,
-        lowValue: number,
-        ptuScenario: string
-    }
-
-    function setPressures(clearState = false) {
+    const setPressures = (clearState = false) => {
         if (clearState) {
             setPressureChart({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
         } else if (yellowPressure > greenPressure) {
@@ -66,7 +65,7 @@ const PTU = ({ x, y } : PTUProps) => {
                 ptuScenario: 'left-to-right',
             });
         }
-    }
+    };
 
     useEffect(() => {
         setPtuScenario(pressureChart.ptuScenario);
@@ -74,39 +73,50 @@ const PTU = ({ x, y } : PTUProps) => {
 
     // PTU logic
     useEffect(() => {
-        if (yellowElectricPumpStatus) {
-            setElecTriangleFill(1);
-            setElecTriangleColour(yellowPressure <= 1450 ? 'Amber' : 'Green');
-            setElecRightFormat(yellowPressure <= 1450 ? 'AmberLine' : 'GreenLine');
-        } else {
-            setElecTriangleFill(0);
-            setElecTriangleColour('White');
-            setElecRightFormat('Hide');
+        console.log(`PTU avail is ${ptuAvailable}`);
+        if (ptuAvailable === 1) {
+            console.log('PTU avail');
+            setPtuActive(true);
         }
 
-        if (ptuAvailable && !yellowElectricPumpStatus) {
-            // The PTU valve has to be open and the yellow electric pump should not be on
+        if (ptuActive && (yellowPressure > LOW_PRESSURE || greenPressure > LOW_PRESSURE)) {
             const pressureDifferential = Math.abs(greenPressure - yellowPressure);
             const maxPressure = Math.max(yellowPressure, greenPressure);
-            // const minPressure = Math.min(yellowPressure, greenPressure);
-            const negativePressureDifferential = pressureChart.low === 'GREEN' ? pressureChart.lowValue - yellowPressure : pressureChart.lowValue - greenPressure;
-            if (maxPressure < 1450 || (greenPressure > 2990 && yellowPressure > 2990)) {
-                setPressures(true);
-                setPtuActive(0);
-            } else if (pressureDifferential > 200 && maxPressure > 1450 && !ptuActive) {
-                setPtuActive(1);
-                setPressures();
-            } else if (negativePressureDifferential <= -500 && ptuActive) {
-                setPressures(true);
-                setPtuActive(0);
+            let negativePressureDifferential = 0;
+
+            if (pressureChart.lowValue < 0) {
+                negativePressureDifferential = greenPressure > yellowPressure ? yellowPressure - greenPressure : greenPressure - yellowPressure;
+            } else {
+                negativePressureDifferential = pressureChart.lowValue - pressureChart.highValue;
             }
-        } else if (ptuAvailable && yellowElectricPumpStatus && greenPressure <= 2990) {
-            setPtuScenario('right-to-left');
-            setPtuActive(1);
+            console.log(`Negative diff is ${negativePressureDifferential}`);
+            if (greenPressure > yellowPressure && yellowElectricPumpStatus) {
+                // Check if yellow electric pump is on for pressure transfer from green to yellow only
+                setPtuScenario('PTU-off');
+                console.log('Green > Yellow and pump');
+            } else if (pressureDifferential > 200 && maxPressure > 1450 && ptuAvailable === 1) {
+                setPressures();
+                setPtuActive(true);
+                console.log('Show flow');
+            } else if (negativePressureDifferential <= -300 && ptuActive) {
+                setPressures(true);
+                setPtuActive(false);
+                console.log('PTU active and negative dif < -300');
+            } else if (ptuFault === 1 && !ptuAvailable) {
+                setPtuScenario('PTU-off');
+                console.log('Fault');
+            } else {
+                setPtuScenario('normal');
+                console.log('Situation normal');
+            }
+        } else if (ptuFault === 1 && !ptuAvailable) {
+            setPtuScenario('PTU-off');
+            console.log('Fault');
         } else {
-            setPtuScenario(ptuAvailable ? 'normal' : 'PTU-off');
+            setPtuScenario('normal');
+            console.log('Situation normal');
         }
-    }, [greenPressure, yellowPressure, yellowElectricPumpStatus, ptuAvailable]);
+    }, [greenPressure, yellowPressure, yellowElectricPumpStatus, ptuAvailable, ptuFault]);
 
     return (
         <>
@@ -115,7 +125,7 @@ const PTU = ({ x, y } : PTUProps) => {
             <path id="ptu3" className={ptu3.className} d={semiCircleD} />
             <line id="ptu4" className={ptu4.className} x1={x + 16} y1={y} x2={x + 50} y2={y} />
             <line id="ptu5" className={ptu5.className} x1={x + 135} y1={y} x2={x + 190} y2={y} />
-            <text className="RatPtuElec FillWhite" x={x + 92} y={y} alignmentBaseline="central">PTU</text>
+            <text className={`RatPtuElec ${validSDAC ? 'FillWhite' : 'FillAmber'}`} x={x + 92} y={y} alignmentBaseline="central">{validSDAC ? 'PTU' : 'XX'}</text>
             <Triangle x={triangle1.orientation < 0 ? x - 100 : x - 82} y={y} colour={triangle1.colour} fill={triangle1.fill} orientation={triangle1.orientation} />
             <Triangle x={triangle2.orientation > 0 ? x + 70 : x + 50} y={y} colour={triangle2.colour} fill={triangle2.fill} orientation={triangle2.orientation} />
             <Triangle x={triangle3.orientation > 0 ? x + 135 : x + 117} y={y} colour={triangle3.colour} fill={triangle3.fill} orientation={triangle3.orientation} />
