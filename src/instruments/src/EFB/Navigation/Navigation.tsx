@@ -110,7 +110,7 @@ export const ChartViewer = () => {
     useEffect(() => {
         let visible = false;
 
-        console.log(boundingBox, aircraftLatitude, aircraftLongitude);
+        // console.log(boundingBox, aircraftLatitude, aircraftLongitude);
 
         if (boundingBox
             && aircraftLatitude >= boundingBox.bottomLeft.lat
