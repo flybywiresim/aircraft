@@ -1,14 +1,12 @@
 import React from 'react';
 
-import { useTranslation } from 'react-i18next';
+import { t } from '../translation';
 import { OverviewPage } from './Pages/OverviewPage';
 import { LoadSheetWidget } from './Pages/LoadsheetPage';
 import { Navbar } from '../UtilComponents/Navbar';
 import { TabRoutes, PageLink, PageRedirect } from '../Utils/routing';
 
 export const Dispatch = () => {
-    const { t } = useTranslation();
-
     const tabs: PageLink[] = [
         { name: 'OFP', alias: t('Dispatch.Ofp.Title'), component: <LoadSheetWidget /> },
         { name: 'Overview', alias: t('Dispatch.Overview.Title'), component: <OverviewPage /> },

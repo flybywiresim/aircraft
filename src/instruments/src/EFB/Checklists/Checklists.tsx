@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { Link45deg } from 'react-bootstrap-icons';
-import { useTranslation } from 'react-i18next';
+import { t } from '../translation';
 import { ChecklistPage } from './ChecklistsPage';
 import { CHECKLISTS } from './Lists';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
@@ -81,8 +81,6 @@ export const Checklists = () => {
     const handleClick = (index: number) => {
         dispatch(setSelectedChecklistIndex(index));
     };
-
-    const { t } = useTranslation();
 
     const { selectedChecklistIndex, checklists } = useAppSelector((state) => state.trackingChecklists);
 
@@ -174,7 +172,7 @@ export const Checklists = () => {
 
                     <button
                         type="button"
-                        className="flex justify-center items-center h-12 font-bold rounded-md border-2 transition duration-100 text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red border-utility-red"
+                        className="flex justify-center items-center h-12 font-bold text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red rounded-md border-2 border-utility-red transition duration-100"
                         onClick={handleResetConfirmation}
                     >
                         {t('Checklists.ResetAll')}
@@ -182,7 +180,7 @@ export const Checklists = () => {
 
                     <button
                         type="button"
-                        className="flex justify-center items-center h-12 font-bold rounded-md border-2 transition duration-100 text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red border-utility-red"
+                        className="flex justify-center items-center h-12 font-bold text-utility-red hover:text-theme-body bg-theme-body hover:bg-utility-red rounded-md border-2 border-utility-red transition duration-100"
                         onClick={handleResetChecklist}
                     >
                         {t('Checklists.ResetChecklist')}

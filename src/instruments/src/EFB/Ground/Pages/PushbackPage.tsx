@@ -11,7 +11,7 @@ import {
 import Slider from 'rc-slider';
 import { useUpdate } from '@instruments/common/hooks';
 import { toast } from 'react-toastify';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { removeDisabledButton, setActiveButtons, setTugRequestOnly, setPushbackWaitTimerHandle } from '../../Store/features/buttons';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { applySelected, applySelectedWithSync, StatefulButton } from '../Ground';
@@ -27,8 +27,6 @@ export const PushbackPage = () => {
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 1000);
     const [tugActive, setTugActive] = useState(false);
     const [noseWheelPos, setNoseWheelPos] = useSimVar('L:A32NX_NOSE_WHEEL_POSITION', 'percent over 100');
-
-    const { t } = useTranslation();
 
     const getTugHeading = (value: number): number => (tugHeading + value) % 360;
 

@@ -1,14 +1,12 @@
 import React from 'react';
 
-import { useTranslation } from 'react-i18next';
+import { t } from '../translation';
 import { Navbar } from '../UtilComponents/Navbar';
 import { TODCalculator } from '../TODCalculator/TODCalculator';
 import { LandingWidget } from './Widgets/LandingWidget';
 import { TabRoutes, PageLink, PageRedirect } from '../Utils/routing';
 
 export const Performance = () => {
-    const { t } = useTranslation();
-
     const tabs: PageLink[] = [
         { name: 'Top of Descent', alias: t('Performance.TopOfDescent.Title'), component: <TODCalculator /> },
         { name: 'Landing', alias: t('Performance.Landing.Title'), component: <LandingWidget /> },

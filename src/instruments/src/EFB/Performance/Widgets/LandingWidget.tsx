@@ -22,7 +22,7 @@ import { Units } from '@shared/units';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { LandingCalculator, LandingFlapsConfig, LandingRunwayConditions } from '../Calculators/LandingCalculator';
@@ -413,8 +413,6 @@ export const LandingWidget = () => {
 
         return undefined;
     };
-
-    const { t } = useTranslation();
 
     return (
         <div className="flex overflow-hidden flex-row justify-between space-x-10 h-content-section-reduced">

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../../translation';
 import { NavigraphChartSelector, OrganizedChart } from './NavigraphChartSelector';
 import { NavigationTab, editTabProperty } from '../../../Store/features/navigationPage';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
@@ -28,8 +28,6 @@ export const NavigraphChartUI = () => {
         departure: [],
         reference: [],
     });
-
-    const { t } = useTranslation();
 
     const [organizedCharts, setOrganizedCharts] = useState<OrganizedChart[]>([
         { name: 'STAR', charts: charts.arrival },
@@ -119,7 +117,7 @@ export const NavigraphChartUI = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-content-section-reduced">
+        <div className="flex overflow-x-hidden flex-row w-full h-content-section-reduced rounded-lg">
             <>
                 {!isFullScreen && (
                     <div className="flex-shrink-0" style={{ width: '450px' }}>

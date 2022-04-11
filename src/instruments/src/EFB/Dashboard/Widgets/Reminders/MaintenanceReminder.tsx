@@ -2,7 +2,7 @@ import { AtaChapterNumber } from '@shared/ata';
 import React, { FC } from 'react';
 import { ArrowRight } from 'react-bootstrap-icons';
 import { useHistory } from 'react-router';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../../translation';
 import { RemindersSection } from './RemindersSection';
 import { useFailuresOrchestrator } from '../../../failures-orchestrator-provider';
 import { findLatestSeenPathname } from '../../../Utils/routing';
@@ -20,7 +20,7 @@ const ActiveFailureCard: FC<ActiveFailureCardProps> = ({ ata, name }) => {
 
     return (
         <div
-            className="flex flex-col flex-wrap p-2 mt-4 mr-4 rounded-md border-2 bg-theme-accent border-theme-accent hover:border-theme-highlight"
+            className="flex flex-col flex-wrap p-2 mt-4 mr-4 bg-theme-accent rounded-md border-2 border-theme-accent hover:border-theme-highlight"
             onClick={() => {
                 dispatch(setSearchQuery(name.toUpperCase()));
 
@@ -46,7 +46,6 @@ const ActiveFailureCard: FC<ActiveFailureCardProps> = ({ ata, name }) => {
 
 export const MaintenanceReminder = () => {
     const { allFailures, activeFailures } = useFailuresOrchestrator();
-    const { t } = useTranslation();
 
     return (
         <RemindersSection title={t('Dashboard.ImportantInformation.Maintenance.Title')} pageLinkPath="/failures">

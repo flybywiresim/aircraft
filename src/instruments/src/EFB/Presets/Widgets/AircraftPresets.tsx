@@ -4,7 +4,7 @@
 /* eslint-disable max-len */
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { StepDescription } from './Procedures';
@@ -27,8 +27,6 @@ export const AircraftPresets = () => {
     const [loadPresetProgress] = useSimVar('L:A32NX_LOAD_AIRCRAFT_PRESET_PROGRESS', 'number', 100);
     const [loadPresetCurrentId] = useSimVar('L:A32NX_LOAD_AIRCRAFT_PRESET_CURRENT_ID', 'number', 100);
     const { showModal } = useModals();
-
-    const { t } = useTranslation();
 
     // These need to align with the IDs in the Presets C++ WASM.
     // WASM: src/presets/src/Aircraft/AircraftProcedures.h

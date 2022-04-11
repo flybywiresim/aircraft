@@ -5,7 +5,7 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 
 import { Hoppie } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { useModals, PromptModal } from '../../UtilComponents/Modals/Modals';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
@@ -30,8 +30,6 @@ export const AtsuAocPage = () => {
     const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
 
     const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
-
-    const { t } = useTranslation();
 
     const getSimbriefUserData = (value: string): Promise<any> => {
         const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';

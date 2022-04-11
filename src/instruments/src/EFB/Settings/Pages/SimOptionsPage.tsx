@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 
 import { useSimVar } from '@instruments/common/simVars';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 
@@ -22,8 +22,6 @@ export const SimOptionsPage = () => {
     const [mcduServerEnabled, setMcduServerEnabled] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_SERVER_ENABLED', 'AUTO ON');
     const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
-
-    const { t } = useTranslation();
 
     const defaultBaroButtons: ButtonType[] = [
         { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },

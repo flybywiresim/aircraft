@@ -2,7 +2,7 @@ import React from 'react';
 import { AtaChaptersTitle } from '@shared/ata';
 import { Route } from 'react-router-dom';
 import { InfoCircleFill } from 'react-bootstrap-icons';
-import { useTranslation } from 'react-i18next';
+import { t } from '../translation';
 import { CompactUI } from './Pages/Compact';
 import { ComfortUI } from './Pages/Comfort';
 import { Navbar } from '../UtilComponents/Navbar';
@@ -18,8 +18,6 @@ export const Failures = () => {
 
     const dispatch = useAppDispatch();
     const { searchQuery } = useAppSelector((state) => state.failuresPage);
-
-    const { t } = useTranslation();
 
     const filteredFailures = allFailures.filter((failure) => {
         if (searchQuery === '') {
@@ -51,7 +49,7 @@ export const Failures = () => {
                 </div>
             </div>
 
-            <div className="p-4 mt-4 space-y-4 rounded-lg border-2 border-theme-accent h-content-section-reduced">
+            <div className="p-4 mt-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
                 <div className="flex flex-row space-x-4">
                     <SimpleInput
                         placeholder={t('Failures.Search')}

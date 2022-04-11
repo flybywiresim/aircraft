@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../../translation';
 import { LocalFileChart, LocalFileChartSelector, LocalFileOrganizedCharts } from './LocalFileChartSelector';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -18,8 +18,6 @@ interface LocalFileCharts {
 
 export const LocalFileChartUI = () => {
     const dispatch = useAppDispatch();
-
-    const { t } = useTranslation();
 
     const [statusBarInfo, setStatusBarInfo] = useState('');
 
@@ -149,7 +147,7 @@ export const LocalFileChartUI = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-content-section-reduced">
+        <div className="flex overflow-x-hidden flex-row w-full h-content-section-reduced rounded-lg">
             <>
                 {!isFullScreen && (
                     <div className="overflow-hidden flex-shrink-0" style={{ width: '450px' }}>

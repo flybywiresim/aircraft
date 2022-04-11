@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ProgressBar } from '../../UtilComponents/Progress/Progress';
@@ -34,8 +34,6 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
     useEffect(() => {
         setPreviousMode(props.expertMode);
     }, [props.expertMode]);
-
-    const { t } = useTranslation();
 
     return (
         <div className="flex overflow-hidden flex-row flex-shrink-0 justify-between items-center p-2 h-96 text-white mb-2w-full">
@@ -87,7 +85,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                                 }}
                             />
                             <button
-                                className="py-3 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                                className="py-3 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
                                 onClick={() => {
                                     setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter, deadZone);
                                 }}

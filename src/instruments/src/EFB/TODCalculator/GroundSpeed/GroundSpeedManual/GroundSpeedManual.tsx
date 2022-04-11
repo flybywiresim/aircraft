@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import React from 'react';
 
-import { useTranslation } from 'react-i18next';
+import { t } from '../../../translation';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 
 import { setTodGroundSpeed, removeTodGroundSpeed, setTodGroundSpeedMode, addTodGroundSpeed } from '../../../Store/features/todCalculator';
@@ -12,7 +12,6 @@ import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInpu
 export const GroundSpeedManual = () => {
     const dispatch = useAppDispatch();
     const groundSpeed = useAppSelector((state) => state.todCalculator.groundSpeed);
-    const { t } = useTranslation();
 
     return (
         <div className="flex flex-col justify-between space-y-12 h-full">

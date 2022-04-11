@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { t } from '../translation';
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { ServicesPage } from './Pages/ServicesPage';
@@ -46,8 +46,6 @@ export const applySelected = (className: string, id?: string) => {
 };
 
 export const Ground = () => {
-    const { t } = useTranslation();
-
     const tabs: PageLink[] = [
         { name: 'Services', alias: t('Ground.Services.Title'), component: <ServicesPage /> },
         { name: 'Pushback', alias: t('Ground.Pushback.Title'), component: <PushbackPage /> },

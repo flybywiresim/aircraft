@@ -2,7 +2,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, Check } from 'react-bootstrap-icons';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../../translation';
 import { areAllChecklistItemsCompleted, getChecklistCompletion, setSelectedChecklistIndex, TrackingChecklist } from '../../../Store/features/checklists';
 import { RemindersSection } from './RemindersSection';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
@@ -63,8 +63,6 @@ export const ChecklistsReminder = () => {
     const [relevantChecklists, setRelevantChecklists] = useState([...checklists].filter((_, clIndex) => relevantChecklistIndices.includes(clIndex)));
 
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'Enum', 1000);
-
-    const { t } = useTranslation();
 
     useEffect(() => {
         setRelevantChecklists([...checklists].filter((_, clIndex) => relevantChecklistIndices.includes(clIndex)));

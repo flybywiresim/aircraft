@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import Card from '../../UtilComponents/Card/Card';
 import { TOD_INPUT_MODE } from '../../Enum/TODInputMode';
 import { useAppSelector } from '../../Store/store';
@@ -8,7 +8,6 @@ import { GroundSpeedManual } from './GroundSpeedManual/GroundSpeedManual';
 
 export const GroundSpeed = ({ className }: {className: string}) => {
     const groundSpeedMode = useAppSelector((state) => state.todCalculator.groundSpeedMode);
-    const { t } = useTranslation();
 
     const groundSpeedComponent = {
         [TOD_INPUT_MODE.AUTO]: {

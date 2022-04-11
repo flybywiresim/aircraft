@@ -1,7 +1,7 @@
 import React, { FC, useState } from 'react';
 import { PencilSquare } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import DetentConfig from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 
@@ -25,8 +25,6 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
 }) => {
     const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${throttleNumber}`, 'number', 30);
     const [expertMode, setExpertMode] = useState(false);
-
-    const { t } = useTranslation();
 
     const currentDetent = (
         <DetentConfig

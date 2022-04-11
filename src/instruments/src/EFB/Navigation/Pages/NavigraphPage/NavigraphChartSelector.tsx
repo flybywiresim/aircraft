@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CloudArrowDown, PinFill, Pin } from 'react-bootstrap-icons';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../../translation';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import {
     NavigationTab,
@@ -35,8 +35,6 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
     const NO_RUNWAY_NAME = 'NONE';
     const [runwaySet, setRunwaySet] = useState<Set<string>>(new Set());
     const [organizedCharts, setOrganizedCharts] = useState<RunwayOrganizedChart[]>([]);
-
-    const { t } = useTranslation();
 
     const dispatch = useAppDispatch();
 
@@ -127,7 +125,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                     <>
                         {organizedCharts.map((item) => (
                             <div className="flex overflow-hidden flex-col w-full rounded-md divide-y-2 divide-gray-700" key={item.name}>
-                                <span className="p-1 text-center rounded-t-lg bg-theme-secondary">{item.name}</span>
+                                <span className="p-1 text-center bg-theme-secondary rounded-t-lg">{item.name}</span>
                                 {item.charts.map((chart) => (
                                     <div
                                         className="flex flex-row bg-theme-accent"
@@ -140,7 +138,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                                 : 'bg-theme-secondary'}`}
                                             />
                                             <div
-                                                className="flex items-center px-2 h-full transition duration-100 hover:text-theme-body hover:bg-theme-highlight"
+                                                className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
                                                 onClick={(event) => {
                                                     event.stopPropagation();
 
@@ -172,7 +170,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                         </div>
                                         <div className="flex flex-col m-2">
                                             <span>{chart.procedureIdentifier}</span>
-                                            <span className="px-2 mt-0.5 mr-auto text-sm rounded-md text-theme-text bg-theme-secondary">
+                                            <span className="px-2 mt-0.5 mr-auto text-sm text-theme-text bg-theme-secondary rounded-md">
                                                 {chart.indexNumber}
                                             </span>
                                         </div>
@@ -186,7 +184,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                     <>
                         {selectedTab.charts.map((chart) => (
                             <div
-                                className="flex overflow-hidden flex-row w-full rounded-md bg-theme-accent"
+                                className="flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
                                 onClick={() => handleChartClick(chart)}
                                 key={chart.id}
                             >
@@ -196,7 +194,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                         : 'bg-theme-secondary'}`}
                                     />
                                     <div
-                                        className="flex items-center px-2 h-full transition duration-100 hover:text-theme-body hover:bg-theme-highlight"
+                                        className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
                                         onClick={(event) => {
                                             event.stopPropagation();
 
@@ -229,7 +227,7 @@ export const NavigraphChartSelector = ({ selectedTab, loading }: NavigraphChartS
                                 <div className="flex flex-col m-2">
                                     <span>{chart.procedureIdentifier}</span>
                                     <span
-                                        className="px-2 mr-auto text-sm rounded-sm text-theme-text bg-theme-secondary"
+                                        className="px-2 mr-auto text-sm text-theme-text bg-theme-secondary rounded-sm"
                                     >
                                         {chart.indexNumber}
                                     </span>

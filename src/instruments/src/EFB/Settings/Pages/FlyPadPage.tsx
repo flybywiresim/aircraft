@@ -4,14 +4,13 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { useSimVar } from '@instruments/common/simVars';
 
 import Slider from 'rc-slider';
-import { useTranslation } from 'react-i18next';
-import { languageOptions } from '../../i18n';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingItem, SettingsPage, SettingGroup } from '../Settings';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { keyboardLayoutOptions } from '../../UtilComponents/KeyboardWrapper';
+import { languageOptions, t } from '../../translation';
 
 export const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
@@ -26,8 +25,6 @@ export const FlyPadPage = () => {
     const [language, setLanguage] = usePersistentProperty('EFB_LANGUAGE', 'en');
     const [keyboardLayout, setKeyboardLayout] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');
     const [batteryLifeEnabled, setBatteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
-
-    const { t } = useTranslation();
 
     const themeButtons: ButtonType[] = [
         { name: t('Settings.flyPad.Blue'), setting: 'blue' },

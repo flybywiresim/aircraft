@@ -4,7 +4,7 @@ import { CheckLg, Link45deg } from 'react-bootstrap-icons';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
 import { useSimVar } from '@instruments/common/simVars';
-import { useTranslation } from 'react-i18next';
+import { t } from '../translation';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import {
     areAllChecklistItemsCompleted,
@@ -133,8 +133,6 @@ const CompletionButton = () => {
         return !item.completed;
     });
 
-    const { t } = useTranslation();
-
     useEffect(() => {
         setCompleteItemVar(false);
     }, []);
@@ -161,7 +159,7 @@ const CompletionButton = () => {
         if (selectedChecklistIndex < checklists.length - 1) {
             return (
                 <div
-                    className="flex justify-center items-center py-2 w-full text-center rounded-md border-2 transition duration-100 text-theme-highlight hover:text-theme-body bg-theme-body hover:bg-theme-highlight border-theme-highlight"
+                    className="flex justify-center items-center py-2 w-full text-center text-theme-highlight hover:text-theme-body bg-theme-body hover:bg-theme-highlight rounded-md border-2 border-theme-highlight transition duration-100"
                     onClick={() => {
                         dispatch(setSelectedChecklistIndex(selectedChecklistIndex + 1));
                     }}
@@ -172,7 +170,7 @@ const CompletionButton = () => {
         }
 
         return (
-            <div className="flex justify-center items-center py-2 w-full text-center rounded-md border-2 text-theme-highlight bg-theme-body border-theme-highlight">
+            <div className="flex justify-center items-center py-2 w-full text-center text-theme-highlight bg-theme-body rounded-md border-2 border-theme-highlight">
                 {t('Checklists.TheLastChecklistIsComplete')}
             </div>
         );
@@ -181,7 +179,7 @@ const CompletionButton = () => {
     if (firstIncompleteIdx !== -1) {
         return (
             <div
-                className="flex justify-center items-center py-2 w-full font-bold text-center rounded-md border-2 transition duration-100 text-utility-green hover:text-theme-body bg-theme-body hover:bg-utility-green border-utility-green"
+                className="flex justify-center items-center py-2 w-full font-bold text-center text-utility-green hover:text-theme-body bg-theme-body hover:bg-utility-green rounded-md border-2 border-utility-green transition duration-100"
                 onClick={() => {
                     dispatch(setChecklistItemCompletion({
                         checklistIndex: selectedChecklistIndex,
@@ -198,7 +196,7 @@ const CompletionButton = () => {
     if (areAllChecklistItemsCompleted(selectedChecklistIndex)) {
         return (
             <div
-                className="flex justify-center items-center py-2 w-full text-center rounded-md border-2 transition duration-100 text-utility-green hover:text-theme-body bg-theme-body hover:bg-utility-green border-utility-green"
+                className="flex justify-center items-center py-2 w-full text-center text-utility-green hover:text-theme-body bg-theme-body hover:bg-utility-green rounded-md border-2 border-utility-green transition duration-100"
                 onClick={() => {
                     dispatch(setChecklistCompletion({ checklistIndex: selectedChecklistIndex, completion: true }));
                 }}
@@ -209,7 +207,7 @@ const CompletionButton = () => {
     }
 
     return (
-        <div className="flex justify-center items-center py-2 w-full text-center rounded-md border-2 text-utility-green bg-theme-body border-utility-green">
+        <div className="flex justify-center items-center py-2 w-full text-center text-utility-green bg-theme-body rounded-md border-2 border-utility-green">
             {t('Checklists.ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted')}
         </div>
     );

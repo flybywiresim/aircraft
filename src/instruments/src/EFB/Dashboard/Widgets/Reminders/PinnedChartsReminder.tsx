@@ -1,12 +1,11 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../../translation';
 import { useAppSelector } from '../../../Store/store';
 import { PinnedChartCard } from '../../../Navigation/Pages/PinnedChartsPage';
 import { RemindersSection } from './RemindersSection';
 
 export const PinnedChartsReminder = () => {
     const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
-    const { t } = useTranslation();
 
     return (
         <RemindersSection title={t('Dashboard.ImportantInformation.PinnedCharts.Title')} pageLinkPath="/navigation">

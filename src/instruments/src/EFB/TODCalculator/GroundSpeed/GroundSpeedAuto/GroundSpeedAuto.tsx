@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../../translation';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { removeTodGroundSpeed, setTodGroundSpeed, setTodGroundSpeedMode } from '../../../Store/features/todCalculator';
 import { TOD_INPUT_MODE } from '../../../Enum/TODInputMode';
@@ -11,7 +11,6 @@ export const GroundSpeedAuto = () => {
     const currentAltitude = useAppSelector((state) => state.todCalculator.currentAltitude);
     const groundSpeedData = useAppSelector((state) => state.todCalculator.groundSpeed);
     const { groundSpeed } = groundSpeedData[groundSpeedData.length - 1];
-    const { t } = useTranslation();
 
     let [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 1_000);
     simGroundSpeed = Math.round(simGroundSpeed);
