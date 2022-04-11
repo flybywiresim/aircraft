@@ -7,6 +7,7 @@ import { es } from './Localization/es';
 import { fr } from './Localization/fr';
 import { de } from './Localization/de';
 import { ru } from './Localization/ru';
+import { sl } from './Localization/sl';
 import { zhHant } from './Localization/zhHant';
 
 export const resources = {
@@ -15,6 +16,7 @@ export const resources = {
     fr: { translation: fr },
     de: { translation: de },
     ru: { translation: ru },
+    sl: { translation: sl },
     zhHant: { translation: zhHant },
 };
 
@@ -43,6 +45,10 @@ export const languageOptions: LanguageOption[] = [
     {
         langCode: 'ru',
         alias: 'Русский',
+    },
+    {
+        langCode: 'sl',
+        alias: 'Slovenščina',
     },
     {
         langCode: 'zhHant',
