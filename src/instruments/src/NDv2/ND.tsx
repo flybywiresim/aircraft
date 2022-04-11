@@ -1,8 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { FSComponent, DisplayComponent, EventBus, VNode } from 'msfssdk';
+import { FSComponent, DisplayComponent, EventBus, VNode, ClockEvents } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
+import { SimVarString } from '@shared/simvar';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
+import { NDSimvars } from './NDSimvarPublisher';
 
 export interface NDProps {
     bus: EventBus,
@@ -16,6 +18,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <WindIndicator bus={this.props.bus} />
                     <SpeedIndicator bus={this.props.bus} />
                     <ApproachIndicator bus={this.props.bus} />
+                    <ToWaypointIndicator bus={this.props.bus} />
                 </svg>
             </DisplayUnit>
         );
@@ -37,7 +40,7 @@ class Layer extends DisplayComponent<{ x: number, y: number }> {
 class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
     render(): VNode | null {
         return (
-            <Layer x={23} y={57}>
+            <Layer x={23} y={58}>
                 <text x={25} y={0} class="Green FontSmall EndAlign">
                     356
                 </text>
@@ -45,10 +48,10 @@ class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
                 <text x={50} y={0} class="Green FontSmall">
                     11
                 </text>
-                <Layer x={5} y={8}>
+                <Layer x={3} y={10}>
                     <path
                         class="Green"
-                        strokeWidth={2.25}
+                        strokeWidth={2.5}
                         strokeLinecap="round"
                         d="M 0 30 v -30 m -6.5 12 l 6.5 -12 l 6.5 12"
                         transform={`rotate(${270} 0 15)`}
@@ -114,6 +117,72 @@ class ApproachIndicator extends DisplayComponent<{ bus: EventBus }> {
         return (
             <Layer x={384} y={26}>
                 <text class="Green FontMedium MiddleAlign">ILS18-Y</text>
+            </Layer>
+        );
+    }
+}
+
+class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
+    private topWptIdent0: number;
+
+    private topWptIdent1: number;
+
+    private readonly identRef = FSComponent.createRef<SVGTextElement>();
+
+    private readonly bearingContainerRef = FSComponent.createRef<SVGGElement>();
+
+    private readonly bearingRwf = FSComponent.createRef<SVGTextElement>();
+
+    onAfterRender(node: VNode) {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<NDSimvars & ClockEvents>();
+
+        sub.on('toWptIdent0Captain').whenChanged().handle((value) => {
+            this.topWptIdent0 = value;
+        });
+
+        sub.on('toWptIdent1Captain').whenChanged().handle((value) => {
+            this.topWptIdent1 = value;
+        });
+
+        sub.on('toWptBearingCaptain').whenChanged().handle((value) => {
+            if (value && Number.isFinite(value)) {
+                this.bearingContainerRef.instance.style.visibility = 'visible';
+                this.bearingRwf.instance.textContent = (Math.round(value)).toString().padStart(3, '0');
+            } else {
+                this.bearingContainerRef.instance.style.visibility = 'hidden';
+            }
+        });
+
+        sub.on('realTime').whenChangedBy(100).handle(() => {
+            this.refreshToWptIdent();
+        });
+    }
+
+    private refreshToWptIdent(): void {
+        const ident = SimVarString.unpack([this.topWptIdent0, this.topWptIdent1]);
+
+        this.identRef.instance.textContent = ident;
+    }
+
+    render(): VNode | null {
+        return (
+            <Layer x={690} y={25}>
+                <text ref={this.identRef} x={-13} y={0} class="White FontIntermediate EndAlign" />
+
+                <g ref={this.bearingContainerRef}>
+                    <text ref={this.bearingRwf} x={54} y={0} class="Green FontIntermediate EndAlign" />
+                    <text x={73} y={2} class="Cyan FontIntermediate EndAlign">&deg;</text>
+                </g>
+
+                <text x={6} y={32} class="Green FontIntermediate EndAlign">1</text>
+                <text x={3} y={32} class="Green FontSmallest StartAlign">.</text>
+                <text x={20} y={32} class="Green FontSmallest StartAlign">8</text>
+
+                <text x={72} y={32} class="Cyan FontSmallest EndAlign">NM</text>
+
+                <text x={72} y={66} class="Green FontIntermediate EndAlign">17:52</text>
             </Layer>
         );
     }

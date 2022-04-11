@@ -58,6 +58,9 @@ class A32NX_ND extends BaseInstrument {
 
         this.simVarPublisher.subscribe('groundSpeed');
         this.simVarPublisher.subscribe('speed');
+        this.simVarPublisher.subscribe('toWptIdent0Captain');
+        this.simVarPublisher.subscribe('toWptIdent1Captain');
+        this.simVarPublisher.subscribe('toWptBearingCaptain');
 
         FSComponent.render(<NDComponent bus={this.bus} />, document.getElementById('ND_CONTENT'));
     }
