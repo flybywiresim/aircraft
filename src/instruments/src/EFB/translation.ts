@@ -8,19 +8,17 @@ import { es } from './Localization/es';
 import { fr } from './Localization/fr';
 import { de } from './Localization/de';
 import { ru } from './Localization/ru';
+import { sl } from './Localization/sl';
 import { zhHant } from './Localization/zhHant';
 
-// export const resources = {
-//     en: { translation: en },
-//     es: { translation: es },
-//     fr: { translation: fr },
-//     de: { translation: de },
-//     ru: { translation: ru },
-//     zhHant: { translation: zhHant },
-// };
+console.log('Initializing Translation');
 
-console.log('Init Translation');
+// map of maps to hold key-value maps for each language
+const langMap = new Map<string, Map<string, string>>();
 
+// Recursively iterates though a language data structure and creates a map with keys based on the
+// property names of the children:
+// "Dashboard.ImportantInformation.GoToPage" ==> "Go to Page"
 const initMap = (map, ln, path: Array<string>) => {
     const props = Object.getOwnPropertyNames(ln);
     if (typeof ln !== 'object') {
@@ -34,8 +32,7 @@ const initMap = (map, ln, path: Array<string>) => {
     });
 };
 
-const langMap = new Map<string, Map<string, string>>();
-
+// adds a key-value map to langMap and initializes the map
 const init = (lang:string, data) => {
     langMap.set(lang, new Map<string, string>());
     initMap(langMap.get(lang), data, []);
@@ -46,15 +43,15 @@ init('es', es);
 init('fr', fr);
 init('de', de);
 init('ru', ru);
+init('sl', sl);
 init('zhHant', zhHant);
-
-console.log('Init Translation done.');
 
 interface LanguageOption {
     langCode: string;
     alias: string;
 }
 
+// used for the dropdown in the flyPad settings page
 export const languageOptions: LanguageOption[] = [
     {
         langCode: 'en',
@@ -75,6 +72,10 @@ export const languageOptions: LanguageOption[] = [
     {
         langCode: 'ru',
         alias: 'Русский',
+    },
+    {
+        langCode: 'sl',
+        alias: 'Slovenščina',
     },
     {
         langCode: 'zhHant',
@@ -99,23 +100,26 @@ if (process.env.VITE_BUILD) {
     watchLanguageChanges();
 }
 
+// // version without initialization into map
 // const resolve = (path, obj, separator = '.') => {
 //     const properties = Array.isArray(path) ? path : path.split(separator);
 //     return properties.reduce((prev, curr) => prev && prev[curr], obj);
 // };
+//
+// export function t(key: string): string {
+// return resolve(key, resources[NXDataStore.get('EFB_LANGUAGE', 'en')].translation);
+// }
 
 // Returns localized string in the currently configured language when provided with
 // correct identifier key.
 // Otherwise, returns the key itself.
 export function t(key: string): string {
     try { // prevents a timing error when loading in ACE/vite
-        const efbLanguage: string = NXDataStore.get('EFB_LANGUAGE', 'en');
-        const lMap = langMap.get(efbLanguage);
+        const lMap = langMap.get(NXDataStore.get('EFB_LANGUAGE', 'en'));
         if (lMap === undefined) return key;
         const s = lMap.get(key);
         if (s === undefined) return key;
         return s.trim();
-        // return resolve(key, resources[efbLanguage].translation);
     } catch (e) {
         return '';
     }
