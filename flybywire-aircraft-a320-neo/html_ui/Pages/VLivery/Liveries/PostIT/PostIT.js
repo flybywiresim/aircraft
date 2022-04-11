@@ -1,10 +1,8 @@
+const DEFAULT_TEXT = "\nCLICK TO ADD!";
+
 class PostIT extends TemplateElement {
     constructor() {
         super();
-        this.curTime = 0.0;
-        this.needUpdate = false;
-        this.frameCount = 0;
-        this._isConnected = false;
     }
 
     get templateID() {
@@ -16,30 +14,26 @@ class PostIT extends TemplateElement {
         this.postit = this.querySelector("#postit");
 
         if (this.postit) {
+            NXDataStore.getAndSubscribe('POSTIT_CONTENT', (_, text) => {
+                this.updateText(text);
+            }, DEFAULT_TEXT);
 
-            this.initMainLoop();
+            NXDataStore.getAndSubscribe('POSTIT_FONT', (_, font) => {
+                this.postit.style.fontFamily = font;
+            }, 'Caveat');
 
+            NXDataStore.getAndSubscribe('POSTIT_PAGE_COLOR', (_, color) => {
+                this.postit.style.backgroundColor = color;
+            }, 'yellow');
+
+            NXDataStore.getAndSubscribe('POSTIT_PEN_COLOR', (_, color) => {
+                this.postit.style.color = color;
+            }, 'black');
         }
     }
 
-    initMainLoop() {
-        const updateLoop = () => {
-            if (!this._isConnected) {
-                return;
-            }
-            this.Update();
-            requestAnimationFrame(updateLoop);
-        };
-        this._isConnected = true;
-        requestAnimationFrame(updateLoop);
-    }
-
-    disconnectedCallback() {}
-
-    Update() {
-
-        this.postsit.innerHTML = NXDataStore.get("POSTIT_CONTENT", "\nCLICK TO ADD!");
-
+    updateText(text) {
+        this.postit.innerHTML = text;
     }
 }
 
