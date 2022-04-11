@@ -28,6 +28,8 @@ export class ArcModeOverlay extends DisplayComponent<{ bus: EventBus }> {
 
     private readonly trackFlagRef = FSComponent.createRef<SVGTextElement>();
 
+    private readonly mapFlagRef = FSComponent.createRef<SVGTextElement>();
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
@@ -36,13 +38,13 @@ export class ArcModeOverlay extends DisplayComponent<{ bus: EventBus }> {
         sub.on('heading').whenChanged().handle((value) => {
             this.headingWord.set(new Arinc429Word(value));
             this.handleRingRotation();
-            // this.handleHeadingFlagVisibility();
+            this.handleHeadingFlagVisibility();
         });
 
         sub.on('groundTrack').whenChanged().handle((value) => {
             this.trackWord.set(new Arinc429Word(value));
             this.handleRingRotation();
-            // this.handleTrackFlagVisibility();
+            this.handleTrackFlagVisibility();
         });
 
         sub.on('rangeSettingCaptain').whenChanged().handle((value) => {
@@ -58,7 +60,9 @@ export class ArcModeOverlay extends DisplayComponent<{ bus: EventBus }> {
         const rotationWord = isUsingTrackUpMode ? this.trackWord.get() : this.headingWord.get();
 
         if (rotationWord.isNormalOperation()) {
-            this.ringRotation.set(rotationWord.value);
+            if (Math.abs(rotationWord.value - this.ringRotation.get()) > 0.01) {
+                this.ringRotation.set(rotationWord.value);
+            }
         }
     }
 
@@ -82,6 +86,10 @@ export class ArcModeOverlay extends DisplayComponent<{ bus: EventBus }> {
         } else {
             flag.style.visibility = 'hidden';
         }
+    }
+
+    private handleMapFlagVisibility() {
+        // noop
     }
 
     private handleRingVisibilities() {
@@ -117,10 +125,15 @@ export class ArcModeOverlay extends DisplayComponent<{ bus: EventBus }> {
                     </clipPath>
                 </defs>
 
+                {/* Flags */}
+                <text ref={this.trackFlagRef} x={381} y={204} class="Red FontSmallest MiddleAlign">TRK</text>
+                <text ref={this.headingFlagRef} x={384} y={241} class="Red FontLarge MiddleAlign">HDG</text>
+                <text ref={this.mapFlagRef} x={384} y={320.6} class="Red FontLarge MiddleAlign">MAP NOT AVAIL</text>
+
                 {/* C = 384,620 */}
                 <g transform="rotateX(0deg)" stroke="white" strokeWidth={2} fill="none">
                     <g clipPath="url(#arc-mode-overlay-clip-4)">
-                        <g transform={this.ringRotation.map((rotation) => `rotate(${MathUtils.diffAngle(rotation, 60)} 384 620)`)}>
+                        <g transform={this.ringRotation.map((rotation) => `rotate(${MathUtils.diffAngle((rotation), 60).toFixed(2)} 384 620)`)}>
                             <ArcModeOverlayHeadingRing />
                         </g>
                     </g>
