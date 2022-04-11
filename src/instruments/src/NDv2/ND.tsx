@@ -5,6 +5,7 @@ import { SimVarString } from '@shared/simvar';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { NDSimvars } from './NDSimvarPublisher';
+import { ArcModeOverlay } from './pages/Arc';
 
 export interface NDProps {
     bus: EventBus,
@@ -19,6 +20,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <SpeedIndicator bus={this.props.bus} />
                     <ApproachIndicator bus={this.props.bus} />
                     <ToWaypointIndicator bus={this.props.bus} />
+
+                    <ArcModeOverlay bus={this.props.bus} />
                 </svg>
             </DisplayUnit>
         );

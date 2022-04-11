@@ -14,6 +14,7 @@ export type NDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     toWptIdent0Captain: number;
     toWptIdent1Captain: number;
     toWptBearingCaptain: Degrees;
+    rangeSettingCaptain: number;
   }
 
 export enum NDVars {
@@ -24,6 +25,7 @@ export enum NDVars {
     toWptIdent0Captain = 'L:A32NX_EFIS_L_TO_WPT_IDENT_0',
     toWptIdent1Captain = 'L:A32NX_EFIS_L_TO_WPT_IDENT_1',
     toWptBearingCaptain = 'L:A32NX_EFIS_L_TO_WPT_BEARING',
+    rangeSettingCaptain = 'L:A32NX_EFIS_L_ND_RANGE',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -38,6 +40,7 @@ export class NDSimvarPublisher extends SimVarPublisher<NDSimvars> {
         ['toWptIdent0Captain', { name: NDVars.toWptIdent0Captain, type: SimVarValueType.Number }],
         ['toWptIdent1Captain', { name: NDVars.toWptIdent1Captain, type: SimVarValueType.Number }],
         ['toWptBearingCaptain', { name: NDVars.toWptBearingCaptain, type: SimVarValueType.Degree }],
+        ['rangeSettingCaptain', { name: NDVars.rangeSettingCaptain, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

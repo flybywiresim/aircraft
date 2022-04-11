@@ -257,8 +257,14 @@ export namespace FSComponent {
     'text': true
   };
 
+
   const mappedKeys: Record<string, string> = {
       'fontSize': 'font-size',
+      'strokeWidth': 'stroke-width',
+      'textAnchor': 'text-anchor',
+      'strokeDasharray': 'stroke-dasharray',
+      'strokeDashoffset': 'stroke-dashoffset',
+      'clipPath': 'clip-path',
   }
 
   /**
@@ -310,7 +316,7 @@ export namespace FSComponent {
                 element.setAttribute(actualKey, v);
               });
             } else {
-              element.setAttribute(key, prop);
+              element.setAttribute(actualKey, prop);
             }
           }
         }
