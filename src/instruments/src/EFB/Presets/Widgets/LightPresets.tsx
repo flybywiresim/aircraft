@@ -70,7 +70,7 @@ export const LightPresets = () => {
                     : t('Presets.InteriorLighting.TheAircraftMustBePoweredForInteriorLightingPresets')}
             </div>
             <ScrollableContainer height={48}>
-                <div className="grid grid-cols-1 grid-rows-5 grid-flow-row gap-4">
+                <div className="grid grid-cols-1 grid-rows-5 grid-flow-row gap-0">
                     {/* These the IDs for each row of presets. Add or remove numbers to add or remove rows */}
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                         <SinglePreset
