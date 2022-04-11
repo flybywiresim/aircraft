@@ -183,7 +183,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
 
     useInterval(() => {
         handleIcao(userIcao ?? simbriefIcao);
-    }, 5_000);
+    }, 60_000);
 
     return (
         <div>
