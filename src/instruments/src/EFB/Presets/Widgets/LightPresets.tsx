@@ -6,15 +6,13 @@ import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { toast } from 'react-toastify';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 
 export const LightPresets = () => {
-    const { t } = useTranslation();
-
     // Manage names for presets in EFB only and always map them to the
     // preset IDs used in the WASM implementation.
     const [storedNames, setStoredNames] = usePersistentProperty('LIGHT_PRESET_NAMES', '');
@@ -72,7 +70,7 @@ export const LightPresets = () => {
                     : t('Presets.InteriorLighting.TheAircraftMustBePoweredForInteriorLightingPresets')}
             </div>
             <ScrollableContainer height={48}>
-                <div className="grid grid-cols-1 grid-rows-5 grid-flow-row gap-4">
+                <div className="grid grid-cols-1 grid-rows-5 grid-flow-row gap-0">
                     {/* These the IDs for each row of presets. Add or remove numbers to add or remove rows */}
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                         <SinglePreset
@@ -98,8 +96,6 @@ type SinglePresetParams = {
 // One single row of preset with ID, name, load and save
 const SinglePreset = (props: SinglePresetParams) => {
     const { showModal } = useModals();
-
-    const { t } = useTranslation();
 
     // Light presets are handled in a wasm module as setting the indexed "LIGHT POTENTIOMETER"
     // variable didn't work in Javascript.

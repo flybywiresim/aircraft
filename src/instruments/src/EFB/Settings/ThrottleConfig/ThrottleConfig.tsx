@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 import { ExclamationCircleFill } from 'react-bootstrap-icons';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
 
@@ -30,8 +30,6 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const [, defaultsToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_SET_DEFAULTS', 'number', 100);
     const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 100);
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
-
-    const { t } = useTranslation();
 
     const mappingsAxisOne: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 1),

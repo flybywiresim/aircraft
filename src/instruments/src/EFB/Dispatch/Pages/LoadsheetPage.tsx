@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { CloudArrowDown, ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
@@ -16,8 +16,6 @@ const NoSimBriefDataOverlay = () => {
 
     const [simbriefDataPending, setSimbriefDataPending] = useState(false);
     const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
-
-    const { t } = useTranslation();
 
     const fetchData = async () => {
         setSimbriefDataPending(true);
@@ -47,7 +45,7 @@ const NoSimBriefDataOverlay = () => {
                                 <button
                                     type="button"
                                     onClick={fetchData}
-                                    className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                                    className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
                                 >
                                     <CloudArrowDown size={26} />
                                     <p className="text-current">{t('Dispatch.Ofp.ImportSimBriefData')}</p>
@@ -71,8 +69,6 @@ export const LoadSheetWidget = () => {
     const [imageSize, setImageSize] = useState(60);
 
     const dispatch = useAppDispatch();
-
-    const { t } = useTranslation();
 
     useEffect(() => {
         const pImages = ref.current?.getElementsByTagName('img');
@@ -121,14 +117,14 @@ export const LoadSheetWidget = () => {
     const { ofpScroll } = useAppSelector((state) => state.dispatchPage);
 
     return (
-        <div className="overflow-hidden relative p-6 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
+        <div className="overflow-hidden relative p-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <>
-                <div className="overflow-hidden absolute top-6 right-16 rounded-md bg-theme-secondary">
+                <div className="overflow-hidden absolute top-6 right-16 bg-theme-secondary rounded-md">
                     <TooltipWrapper text={t('Dispatch.Ofp.TT.ReduceFontSize')}>
                         <button
                             type="button"
                             onClick={handleFontDecrease}
-                            className="py-2 px-3 bg-opacity-50 hover:bg-opacity-100 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                            className="py-2 px-3 hover:text-theme-body hover:bg-theme-highlight bg-opacity-50 hover:bg-opacity-100 transition duration-100"
                         >
                             <ZoomOut size={30} />
                         </button>
@@ -138,7 +134,7 @@ export const LoadSheetWidget = () => {
                         <button
                             type="button"
                             onClick={handleFontIncrease}
-                            className="py-2 px-3 bg-opacity-50 hover:bg-opacity-100 transition duration-100 hover:bg-theme-highlight hover:text-theme-body"
+                            className="py-2 px-3 hover:text-theme-body hover:bg-theme-highlight bg-opacity-50 hover:bg-opacity-100 transition duration-100"
                         >
                             <ZoomIn size={30} />
                         </button>

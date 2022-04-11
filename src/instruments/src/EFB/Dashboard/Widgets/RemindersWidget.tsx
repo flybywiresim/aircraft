@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { ArrowDown, ArrowUp, PencilFill } from 'react-bootstrap-icons';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { WeatherReminder } from './Reminders/WeatherReminder';
 import { PinnedChartsReminder } from './Reminders/PinnedChartsReminder';
@@ -33,7 +33,7 @@ interface ReminderKeyEditCardProps {
 }
 
 const ReminderKeyEditCard = ({ reminderKey, setter, index, keyArrLen }: ReminderKeyEditCardProps) => (
-    <div className="flex flex-row justify-between items-center p-4 w-full rounded-md bg-theme-accent">
+    <div className="flex flex-row justify-between items-center p-4 w-full bg-theme-accent rounded-md">
         <h1>{reminderKey}</h1>
         <div className="flex flex-row">
             <div className="w-10">
@@ -91,10 +91,8 @@ export const RemindersWidget = () => {
         return reminderKeyArr.toString();
     };
 
-    const { t } = useTranslation();
-
     return (
-        <div className="w-full">
+        <div className="w-1/2">
             <div className="flex flex-row justify-between items-center space-x-3">
                 <h1 className="font-bold">{t('Dashboard.ImportantInformation.Title')}</h1>
 
@@ -106,14 +104,14 @@ export const RemindersWidget = () => {
                     />
                 </TooltipWrapper>
             </div>
-            <div className="relative p-6 mt-4 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
+            <div className="relative p-6 mt-4 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
                 <ScrollableContainer height={51}>
                     <div className="flex flex-col space-y-4">
                         {reminderKeyArr.map((key) => REMINDERS.get(key))}
                     </div>
                 </ScrollableContainer>
                 <div className={`absolute inset-0 z-30 transition duration-100 ${reorderMode ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <div className="absolute inset-0 opacity-80 bg-theme-body" />
+                    <div className="absolute inset-0 bg-theme-body opacity-80" />
                     <div className="absolute inset-0">
                         <ScrollableContainer innerClassName="p-6 space-y-4" height={51}>
                             {reminderKeyArr.map((key, index) => (

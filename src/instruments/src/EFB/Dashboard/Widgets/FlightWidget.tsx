@@ -4,12 +4,11 @@ import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { toast } from 'react-toastify';
-
-import { useTranslation } from 'react-i18next';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
+import { t } from '../../translation';
 
 interface InformationEntryProps {
     title: string;
@@ -29,41 +28,37 @@ interface NoSimBriefDataOverlayProps {
     fetchData: () => void;
 }
 
-const NoSimBriefDataOverlay = ({ simbriefDataLoaded, simbriefDataPending, fetchData }: NoSimBriefDataOverlayProps) => {
-    const { t } = useTranslation();
+const NoSimBriefDataOverlay = ({ simbriefDataLoaded, simbriefDataPending, fetchData }: NoSimBriefDataOverlayProps) => (
+    <div className={`absolute inset-0 transition duration-200 bg-theme-body ${simbriefDataLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <h1 className="flex justify-center items-center w-full h-full">
+            {simbriefDataPending ? (
+                <CloudArrowDown className="animate-bounce" size={40} />
+            ) : (
+                <>
+                    {!simbriefDataLoaded && (
+                        <div className="space-y-4">
+                            <h1
+                                className="text-center"
+                                style={{ maxWidth: '18em' }}
+                            >
+                                {t('Dashboard.YourFlight.SimBriefDataNotYetLoaded')}
+                            </h1>
 
-    return (
-        <div className={`absolute inset-0 transition duration-200 bg-theme-body ${simbriefDataLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-            <h1 className="flex justify-center items-center w-full h-full">
-                {simbriefDataPending ? (
-                    <CloudArrowDown className="animate-bounce" size={40} />
-                ) : (
-                    <>
-                        {!simbriefDataLoaded && (
-                            <div className="space-y-4">
-                                <h1
-                                    className="text-center"
-                                    style={{ maxWidth: '18em' }}
-                                >
-                                    {t('Dashboard.YourFlight.SimBriefDataNotYetLoaded')}
-                                </h1>
-
-                                <button
-                                    type="button"
-                                    onClick={fetchData}
-                                    className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
-                                >
-                                    <CloudArrowDown size={26} />
-                                    <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
-                                </button>
-                            </div>
-                        )}
-                    </>
-                )}
-            </h1>
-        </div>
-    );
-};
+                            <button
+                                type="button"
+                                onClick={fetchData}
+                                className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                            >
+                                <CloudArrowDown size={26} />
+                                <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
+                            </button>
+                        </div>
+                    )}
+                </>
+            )}
+        </h1>
+    </div>
+);
 
 export const FlightWidget = () => {
     const { data } = useAppSelector((state) => state.simbrief);
@@ -93,8 +88,6 @@ export const FlightWidget = () => {
     const { flightPlanProgress } = useAppSelector((state) => state.flightProgress);
 
     const dispatch = useAppDispatch();
-
-    const { t } = useTranslation();
 
     const sta = new Date(parseInt(schedIn) * 1000);
     const schedInParsed = `${sta.getUTCHours().toString().padStart(2, '0')}${sta.getUTCMinutes().toString().padStart(2, '0')}Z`;
@@ -128,7 +121,7 @@ export const FlightWidget = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
-        <div className="w-full">
+        <div className="w-1/2">
             <div className="flex flex-row justify-between items-center mb-4">
                 <h1 className="font-bold">{t('Dashboard.YourFlight.Title')}</h1>
                 {simbriefDataLoaded && (

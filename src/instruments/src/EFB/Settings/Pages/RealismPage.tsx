@@ -2,7 +2,7 @@ import React from 'react';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
 
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ButtonType, SettingGroup, SettingItem, SettingsPage } from '../Settings';
 
@@ -25,8 +25,6 @@ export const RealismPage = () => {
     const [datalinkTransmissionTime, setDatalinkTransmissionTime] = usePersistentProperty('CONFIG_DATALINK_TRANSMISSION_TIME', 'FAST');
     const [, setDatalinkTransmissionTimeSimVar] = useSimVar('L:A32NX_CONFIG_DATALINK_TIME', 'number', 0);
     const [autoFillChecklists, setAutoFillChecklists] = usePersistentNumberProperty('EFB_AUTOFILL_CHECKLISTS', 0);
-
-    const { t } = useTranslation();
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },

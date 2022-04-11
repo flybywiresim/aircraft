@@ -1,6 +1,6 @@
 import React from 'react';
 import { toNumber, last } from 'lodash';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { TODCalculator } from '../../Service/TODCalculator';
 import Card from '../../UtilComponents/Card/Card';
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType';
@@ -12,8 +12,6 @@ export const Result = ({ className }: {className: string}) => {
     const targetAltitude = useAppSelector((state) => state.todCalculator.targetAltitude) ?? 0;
     const groundSpeed = useAppSelector((state) => state.todCalculator.groundSpeed) ?? 0;
     const currentAltitude = useAppSelector((state) => state.todCalculator.currentAltitude) ?? 0;
-
-    const { t } = useTranslation();
 
     const todCalculator = new TODCalculator(toNumber(currentAltitude), toNumber(targetAltitude), groundSpeed);
     const currentGroundSpeed = last(groundSpeed).groundSpeed;

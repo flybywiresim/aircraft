@@ -1,6 +1,6 @@
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
@@ -19,8 +19,6 @@ export const AircraftOptionsPinProgramsPage = () => {
     const [isisBaro, setIsisBaro] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
     const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentNumberProperty('ISIS_METRIC_ALTITUDE', 0);
     const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
-
-    const { t } = useTranslation();
 
     const handleSetThrustReductionAlt = (value: string) => {
         setThrustReductionHeightSetting(value);

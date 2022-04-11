@@ -3,7 +3,7 @@ import { IconPlane } from '@tabler/icons';
 import { Box, LightningFill, PeopleFill, Rulers, Speedometer2 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { Units } from '@shared/units';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { NoseOutline } from '../../Assets/NoseOutline';
 
 interface InformationEntryProps {
@@ -24,8 +24,6 @@ const InformationEntry: FC<InformationEntryProps> = ({ children, title, info }) 
 export const OverviewPage = () => {
     let [airline] = useSimVar('ATC AIRLINE', 'String', 1_000);
 
-    const { t } = useTranslation();
-
     airline ||= 'FlyByWire Simulations';
 
     const getConvertedInfo = (metricValue: number, unitType: 'weight' |'volume' |'distance') => {
@@ -43,7 +41,7 @@ export const OverviewPage = () => {
     };
 
     return (
-        <div className="overflow-hidden p-6 mr-3 w-min rounded-lg border-2 h-content-section-reduced border-theme-accent">
+        <div className="overflow-hidden p-6 mr-3 w-min h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <h1 className="font-bold">Airbus A320neo</h1>
             <p>{airline}</p>
 

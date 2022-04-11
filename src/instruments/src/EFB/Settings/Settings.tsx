@@ -4,7 +4,7 @@ import { Route, Switch } from 'react-router';
 import { Link } from 'react-router-dom';
 
 import { ArrowLeft, ChevronRight } from 'react-bootstrap-icons';
-import { useTranslation } from 'react-i18next';
+import { t } from '../translation';
 import { AboutPage } from './Pages/AboutPage';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 import { PageLink, pathify, TabRoutes } from '../Utils/routing';
@@ -41,8 +41,6 @@ export const SelectionTabs = ({ tabs }: SelectionTabsProps) => (
 );
 
 export const Settings = () => {
-    const { t } = useTranslation();
-
     const tabs: PageLink[] = [
         { alias: t('Settings.AircraftOptionsPinPrograms.Title'), name: 'Aircraft Options / Pin Programs', component: <AircraftOptionsPinProgramsPage /> },
         { alias: t('Settings.SimOptions.Title'), name: 'Sim Options', component: <SimOptionsPage /> },
@@ -70,31 +68,27 @@ type SettingsPageProps = {
     name: string,
 }
 
-export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => {
-    const { t } = useTranslation();
-
-    return (
-        <div>
-            <Link to="/settings" className="inline-block mb-4">
-                <div className="flex flex-row items-center space-x-3 hover:text-theme-highlight transition duration-100">
-                    <ArrowLeft size={30} />
-                    <h1 className="font-bold text-current">
-                        {t('Settings.Title')}
-                        {' - '}
-                        {name}
-                    </h1>
-                </div>
-            </Link>
-            <div className="py-2 px-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
-                <ScrollableContainer height={53}>
-                    <div className="h-full divide-y-2 divide-theme-accent">
-                        {children}
-                    </div>
-                </ScrollableContainer>
+export const SettingsPage: FC<SettingsPageProps> = ({ name, children }) => (
+    <div>
+        <Link to="/settings" className="inline-block mb-4">
+            <div className="flex flex-row items-center space-x-3 hover:text-theme-highlight transition duration-100">
+                <ArrowLeft size={30} />
+                <h1 className="font-bold text-current">
+                    {t('Settings.Title')}
+                    {' - '}
+                    {name}
+                </h1>
             </div>
+        </Link>
+        <div className="py-2 px-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
+            <ScrollableContainer height={53}>
+                <div className="h-full divide-y-2 divide-theme-accent">
+                    {children}
+                </div>
+            </ScrollableContainer>
         </div>
-    );
-};
+    </div>
+);
 
 // SettingsGroup wraps several SettingsItems into a group (no divider and closer together).<br/>
 // The parent SettingItem should have groupType="parent", any dependent setting should have groupType="sub".
@@ -112,8 +106,6 @@ type SettingItemProps = {
 }
 
 export const SettingItem: FC<SettingItemProps> = ({ name, unrealistic, groupType, disabled, children }) => {
-    const { t } = useTranslation();
-
     const UnrealisticHint = () => (
         <span className="ml-2 text-theme-highlight">
             {' '}

@@ -1,7 +1,7 @@
 import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
 import React from 'react';
 import { Failure } from '@flybywiresim/failures';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { FailureButton } from '../FailureButton';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { useAppSelector } from '../../Store/store';
@@ -60,7 +60,6 @@ interface CompactUIProps {
 export const CompactUI = ({ chapters, failures }: CompactUIProps) => {
     const { allFailures, activeFailures } = useFailuresOrchestrator();
     const { searchQuery } = useAppSelector((state) => state.failuresPage);
-    const { t } = useTranslation();
 
     return (
         <ScrollableContainer height={48}>

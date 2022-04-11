@@ -9,7 +9,7 @@ import {
     ArchiveFill,
 } from 'react-bootstrap-icons';
 
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { UprightOutline } from '../../Assets/UprightOutline';
 
 import { useAppDispatch, useAppSelector } from '../../Store/store';
@@ -73,8 +73,6 @@ export const ServicesPage = () => {
     const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 'K:REQUEST_POWER_SUPPLY', 'bool', 1000);
 
     const [tugActive] = useState(false);
-
-    const { t } = useTranslation();
 
     const STATE_WAITING = 'WAITING';
 

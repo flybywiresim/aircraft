@@ -2,7 +2,7 @@ import React from 'react';
 
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import Slider from 'rc-slider';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SettingItem, SettingsPage } from '../Settings';
@@ -15,8 +15,6 @@ export const AudioPage = () => {
     const [passengerAmbienceEnabled, setPassengerAmbienceEnabled] = usePersistentNumberProperty('SOUND_PASSENGER_AMBIENCE_ENABLED', 1);
     const [announcementsEnabled, setAnnouncementsEnabled] = usePersistentNumberProperty('SOUND_ANNOUNCEMENTS_ENABLED', 1);
     const [boardingMusicEnabled, setBoardingMusicEnabled] = usePersistentNumberProperty('SOUND_BOARDING_MUSIC_ENABLED', 1);
-
-    const { t } = useTranslation();
 
     return (
         <SettingsPage name={t('Settings.Audio.Title')}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { t } from '../translation';
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { AircraftPresets } from './Widgets/AircraftPresets';
@@ -7,8 +7,6 @@ import { LightPresets } from './Widgets/LightPresets';
 import { PresetsHelp } from './Widgets/PresetsHelp';
 
 export const Presets = () => {
-    const { t } = useTranslation();
-
     const tabs: PageLink[] = [
         { name: 'Interior Lighting', alias: t('Presets.InteriorLighting.Title'), component: <LightPresets /> },
         { name: 'Aircraft States', alias: t('Presets.AircraftStates.Title'), component: <AircraftPresets /> },

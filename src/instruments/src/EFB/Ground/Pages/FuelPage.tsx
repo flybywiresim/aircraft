@@ -6,7 +6,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import Slider from 'rc-slider';
 import { Units } from '@shared/units';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
 import { useAppSelector } from '../../Store/store';
@@ -90,8 +90,6 @@ export const FuelPage = () => {
     const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons', 1_000);
     const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 1_000);
     const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 1_000);
-
-    const { t } = useTranslation();
 
     const { units } = useAppSelector((state) => state.simbrief.data);
     const { planRamp } = useAppSelector((state) => state.simbrief.data.fuels);

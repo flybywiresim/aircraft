@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { round } from 'lodash';
 import { useSimVar } from '@instruments/common/simVars';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import Card from '../../UtilComponents/Card/Card';
 import { TOD_CALCULATION_TYPE } from '../../Enum/TODCalculationType';
@@ -25,8 +25,6 @@ export const Data = ({ className }: {className: string}) => {
     const calculationInput = useAppSelector((state) => state.todCalculator.calculation.input);
     const targetAltitude = useAppSelector((state) => state.todCalculator.targetAltitude);
     const currentAltitude = useAppSelector((state) => state.todCalculator.currentAltitude);
-
-    const { t } = useTranslation();
 
     altitude = round(altitude, -1);
     distance = round(distance, 1);

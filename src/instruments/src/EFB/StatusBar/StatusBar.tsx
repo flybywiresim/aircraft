@@ -5,7 +5,7 @@ import { usePersistentProperty, usePersistentNumberProperty } from '@instruments
 import { useLongPress } from 'use-long-press';
 import { useHistory } from 'react-router-dom';
 import useInterval from '@instruments/common/useInterval';
-import { useTranslation } from 'react-i18next';
+import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { usePower, PowerStates } from '../Efb';
 
@@ -27,8 +27,6 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const [showStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
 
     const history = useHistory();
-
-    const { t } = useTranslation();
 
     const [timeDisplayed] = usePersistentProperty('EFB_TIME_DISPLAYED', 'utc');
     const [timeFormat] = usePersistentProperty('EFB_TIME_FORMAT', '24');

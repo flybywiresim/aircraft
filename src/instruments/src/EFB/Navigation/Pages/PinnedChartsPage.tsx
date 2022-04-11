@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { IconArrowRight } from '@tabler/icons';
-import { useTranslation } from 'react-i18next';
+import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
@@ -101,8 +101,6 @@ export enum PinSort {
 
 export const PinnedChartUI = () => {
     const dispatch = useAppDispatch();
-
-    const { t } = useTranslation();
 
     const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
     const { searchQuery, chartTypeIndex, selectedProvider, sortTypeIndex, editMode } = useAppSelector((state) => state.navigationTab[NavigationTab.PINNED_CHARTS]);

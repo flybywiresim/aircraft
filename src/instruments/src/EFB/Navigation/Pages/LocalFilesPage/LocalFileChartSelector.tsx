@@ -1,7 +1,7 @@
 import React from 'react';
 import { CloudArrowDown, PinFill, Pin } from 'react-bootstrap-icons';
-import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
+import { t } from '../../../translation';
 import {
     NavigationTab,
     editTabProperty,
@@ -33,8 +33,6 @@ interface LocalFileChartSelectorProps {
 
 export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartSelectorProps) => {
     const dispatch = useAppDispatch();
-
-    const { t } = useTranslation();
 
     const { chartId, selectedTabIndex } = useAppSelector((state) => state.navigationTab[NavigationTab.LOCAL_FILES]);
     const { pinnedCharts } = useAppSelector((state) => state.navigationTab);
@@ -116,7 +114,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
         <div className="space-y-4">
             {selectedTab.charts.map((chart) => (
                 <div
-                    className="flex overflow-hidden flex-row w-full rounded-md bg-theme-accent"
+                    className="flex overflow-hidden flex-row w-full bg-theme-accent rounded-md"
                     onClick={() => handleChartClick(chart)}
                     key={chart.fileName}
                 >
@@ -126,7 +124,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
                             : 'bg-theme-secondary'}`}
                         />
                         <div
-                            className="flex items-center px-2 h-full transition duration-100 hover:text-theme-body hover:bg-theme-highlight"
+                            className="flex items-center px-2 h-full hover:text-theme-body hover:bg-theme-highlight transition duration-100"
                             onClick={(event) => {
                                 event.stopPropagation();
 
@@ -173,7 +171,7 @@ export const LocalFileChartSelector = ({ selectedTab, loading }: LocalFileChartS
                     <div className="flex flex-col m-2">
                         <span>{chart.fileName}</span>
                         <span
-                            className="px-2 mr-auto text-sm rounded-sm text-theme-text bg-theme-secondary"
+                            className="px-2 mr-auto text-sm text-theme-text bg-theme-secondary rounded-sm"
                         >
                             {chart.type}
                         </span>
