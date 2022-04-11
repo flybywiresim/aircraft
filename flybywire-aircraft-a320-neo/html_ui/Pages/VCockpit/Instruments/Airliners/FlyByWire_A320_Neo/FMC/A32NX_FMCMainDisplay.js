@@ -675,7 +675,7 @@ class FMCMainDisplay extends BaseAirliners {
                 // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
                 if (this.cruiseFlightLevel !== this._cruiseFlightLevel) {
                     this._cruiseFlightLevel = this.cruiseFlightLevel;
-                    this.addNewMessage(NXSystemMessages.newCrzAlt.modifyMessage(this._cruiseFlightLevel * 100));
+                    this.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(this._cruiseFlightLevel * 100));
                 }
 
                 break;
@@ -1689,7 +1689,7 @@ class FMCMainDisplay extends BaseAirliners {
                             this.flightPhaseManager.phase === FmgcFlightPhases.CRUISE && fcuFl !== this.cruiseFlightLevel
                         )
                     ) {
-                        this.addNewMessage(NXSystemMessages.newCrzAlt.modifyMessage(fcuFl * 100));
+                        this.addNewMessage(NXSystemMessages.newCrzAlt.getSetMessage(fcuFl * 100));
                         this.cruiseFlightLevel = fcuFl;
                         this._cruiseFlightLevel = fcuFl;
                         if (this.page.Current === this.page.ProgressPage) {
