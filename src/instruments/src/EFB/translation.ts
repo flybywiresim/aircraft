@@ -104,17 +104,20 @@ if (process.env.VITE_BUILD) {
 //     return properties.reduce((prev, curr) => prev && prev[curr], obj);
 // };
 
+// Returns localized string in the currently configured language when provided with
+// correct identifier key.
+// Otherwise, returns the key itself.
 export function t(key: string): string {
-    // try { // prevents a timing error when loading
-    const efbLanguage: string = NXDataStore.get('EFB_LANGUAGE', 'en');
+    try { // prevents a timing error when loading
+        const efbLanguage: string = NXDataStore.get('EFB_LANGUAGE', 'en');
 
-    const lMap = langMap.get(efbLanguage);
-    if (lMap === undefined) return key;
-    const s = lMap.get(key);
-    if (s === undefined) return key;
-    return s.trim();
+        const lMap = langMap.get(efbLanguage);
+        if (lMap === undefined) return key;
+        const s = lMap.get(key);
+        if (s === undefined) return key;
+        return s.trim();
     // return resolve(key, resources[efbLanguage].translation);
-    // } catch (e) {
-    //     return '';
-    // }
+    } catch (e) {
+        return '';
+    }
 }
