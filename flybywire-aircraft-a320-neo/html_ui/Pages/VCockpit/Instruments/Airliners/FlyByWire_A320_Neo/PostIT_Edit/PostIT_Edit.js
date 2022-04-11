@@ -14,6 +14,8 @@ class PostIT_Edit extends BaseInstrument {
     connectedCallback() {
         super.connectedCallback();
 
+        this.unlockControls();
+
         const doc = document;
 
         this.textElem = doc.getElementById("text");
@@ -32,7 +34,6 @@ class PostIT_Edit extends BaseInstrument {
         this.splitIndex = 0;
 
         if (this.textElem) {
-
             NXDataStore.getAndSubscribe('POSTIT_ENABLED', (key, value) => {
                 console.log("reloading postit!");
                 super.reboot();
@@ -82,10 +83,9 @@ class PostIT_Edit extends BaseInstrument {
         });
 
         this.closeIcon.addEventListener("click", () => {
-            console.log('close edit mode');
             this.textElem.blur();
+            this.unlockControls();
             NXDataStore.set("POSTIT_CONTENT", this.textElem.value.substring(this.splitIndex));
-            Coherent.trigger("UNFOCUS_INPUT_FIELD");
             SimVar.SetSimVarValue("L:A32NX_MODEL_POSTIT_EDIT", "Bool", 0);
         });
 
@@ -107,11 +107,19 @@ class PostIT_Edit extends BaseInstrument {
         });
 
         this.textElem.addEventListener("focus", () => {
-
-            //Coherent.trigger("FOCUS_INPUT_FIELD");
+            this.lockControls();
             this.textElem.focus();
-
         });
+    }
+
+    lockControls() {
+        Coherent.call("FOCUS_INPUT_FIELD");
+        Coherent.trigger("FOCUS_INPUT_FIELD");
+    }
+
+    unlockControls() {
+        Coherent.call("UNFOCUS_INPUT_FIELD");
+        Coherent.trigger("UNFOCUS_INPUT_FIELD");
     }
 
     get isInteractive() {
@@ -183,7 +191,9 @@ class PostIT_Edit extends BaseInstrument {
         requestAnimationFrame(updateLoop);
     }
 
-    disconnectedCallback() {}
+    disconnectedCallback() {
+        this.unlockControls();
+    }
 }
 
 registerInstrument("postit_edit-element", PostIT_Edit);

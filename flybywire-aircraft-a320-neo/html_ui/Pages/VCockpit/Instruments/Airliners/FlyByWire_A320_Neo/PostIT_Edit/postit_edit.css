@@ -38,10 +38,10 @@
   background-image: url("/Images/PostIT/postit-bg.png");
   background-color: rgb(255,255,151);
   background-blend-mode: multiply;
-  font-family: "Caveat";
-  line-height: 1.1;
   background-repeat: no-repeat;
   background-size: cover;
+  font-family: "Caveat";
+  line-height: 1.1;
   font-size: 100px;
   color: #000;
   width: 1022px;
