@@ -109,7 +109,7 @@ const Efb = () => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
     }, []);
 
-    useEffect(() => {
+    useInterval(() => {
         const remainingDistance = distanceTo(
             { lat, long },
             { lat: arrivingPosLat, long: arrivingPosLong },
@@ -119,11 +119,10 @@ const Efb = () => {
             { lat: departingPosLat, long: departingPosLong },
             { lat: arrivingPosLat, long: arrivingPosLong },
         );
-
         const flightPlanProgress = totalDistance ? Math.max(((totalDistance - remainingDistance) / totalDistance) * 100, 0) : 0;
 
         dispatch(setFlightPlanProgress(flightPlanProgress));
-    }, [lat, long, arrivingPosLat, arrivingPosLong, departingPosLat, departingPosLong]);
+    }, 5000);
 
     useEffect(() => {
         if (powerState !== PowerStates.LOADED || !batteryLifeEnabled) return;
