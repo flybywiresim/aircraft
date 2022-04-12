@@ -129,7 +129,7 @@ export const ChartViewer = () => {
         }
 
         setAircraftIconVisible(visible);
-    }, [boundingBox, chartLinks, aircraftLatitude.toFixed(2), aircraftLongitude.toFixed(2), aircraftTrueHeading]);
+    }, [boundingBox, chartLinks, aircraftLatitude.toFixed(2), aircraftLongitude.toFixed(2), aircraftTrueHeading.toFixed(1)]);
 
     useEffect(() => {
         const { width, height } = chartDimensions;

@@ -109,7 +109,7 @@ const Efb = () => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
     }, []);
 
-    useInterval(() => {
+    useEffect(() => {
         const remainingDistance = distanceTo(
             { lat, long },
             { lat: arrivingPosLat, long: arrivingPosLong },
@@ -122,7 +122,7 @@ const Efb = () => {
         const flightPlanProgress = totalDistance ? Math.max(((totalDistance - remainingDistance) / totalDistance) * 100, 0) : 0;
 
         dispatch(setFlightPlanProgress(flightPlanProgress));
-    }, 5000);
+    }, [lat.toFixed(2), long.toFixed(2), arrivingPosLat, arrivingPosLong, departingPosLat, departingPosLong]);
 
     useEffect(() => {
         if (powerState !== PowerStates.LOADED || !batteryLifeEnabled) return;
@@ -248,7 +248,7 @@ const Efb = () => {
             const localTime = currentLocalTime / 3600;
             setBrightness((calculateBrightness(latitude, dayOfYear, localTime)));
         }
-    }, [currentLocalTime, usingAutobrightness]);
+    }, [Math.ceil(currentLocalTime / 5), usingAutobrightness]);
 
     useEffect(() => {
         setBrightness(brightnessSetting);
