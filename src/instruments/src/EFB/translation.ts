@@ -4,11 +4,12 @@
 
 import { NXDataStore } from '@shared/persistence';
 import { en } from './Localization/en';
+import { de } from './Localization/de';
 import { es } from './Localization/es';
 import { fr } from './Localization/fr';
-import { de } from './Localization/de';
 import { ru } from './Localization/ru';
 import { sl } from './Localization/sl';
+import { th } from './Localization/th';
 import { zhHant } from './Localization/zhHant';
 
 console.log('Initializing Translation');
@@ -39,11 +40,12 @@ const init = (lang:string, data) => {
 };
 
 init('en', en);
+init('de', de);
 init('es', es);
 init('fr', fr);
-init('de', de);
 init('ru', ru);
 init('sl', sl);
+init('th', th);
 // zhHant is actually the translation for zh-HK due to a mistake on Localazy
 init('zh-HK', zhHant);
 
@@ -59,6 +61,10 @@ export const languageOptions: LanguageOption[] = [
         alias: 'English',
     },
     {
+        langCode: 'de',
+        alias: 'Deutsch',
+    },
+    {
         langCode: 'es',
         alias: 'Español',
     },
@@ -67,16 +73,16 @@ export const languageOptions: LanguageOption[] = [
         alias: 'Français',
     },
     {
-        langCode: 'de',
-        alias: 'Deutsch',
-    },
-    {
         langCode: 'ru',
         alias: 'Русский',
     },
     {
         langCode: 'sl',
         alias: 'Slovenščina',
+    },
+    {
+        langCode: 'th',
+        alias: 'ภาษาไทย',
     },
     {
         langCode: 'zh-HK',
