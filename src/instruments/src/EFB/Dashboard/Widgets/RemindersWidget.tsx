@@ -116,7 +116,7 @@ export const RemindersWidget = () => {
                         <ScrollableContainer innerClassName="p-6 space-y-4" height={51}>
                             {reminderKeyArr.map((key, index) => (
                                 <ReminderKeyEditCard
-                                    reminderKey={t(TRANSLATIONS.get(key)!)}
+                                    reminderKey={key}
                                     keyArrLen={reminderKeyArr.length}
                                     setter={(index) => setOrderedReminderKeys(arrayMove(key, index))}
                                     index={index}
