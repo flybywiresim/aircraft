@@ -251,6 +251,12 @@ const Efb = () => {
     }, [Math.ceil(currentLocalTime / 5), usingAutobrightness]);
 
     useEffect(() => {
+        if (!usingAutobrightness) {
+            setBrightness(brightnessSetting);
+        }
+    }, [usingAutobrightness]);
+
+    useEffect(() => {
         setBrightness(brightnessSetting);
     }, [powerState]);
 
