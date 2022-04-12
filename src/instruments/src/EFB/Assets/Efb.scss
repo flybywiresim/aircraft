@@ -60,7 +60,7 @@
   @font-face {
     font-family: "NotoSansKR";
     font-weight: 300;
-    src: url("/Fonts/NotoSansKR-Regular.otf") format("truetype");
+    src: url("/Fonts/NotoSansKR-Light.otf") format("truetype");
   }
   @font-face {
     font-family: "NotoSansKR";
@@ -70,19 +70,24 @@
   @font-face {
     font-family: "NotoSansKR";
     font-weight: 500;
-    src: url("/Fonts/NotoSansKR-Regular.otf") format("truetype");
+    src: url("/Fonts/NotoSansKR-Medium.otf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansKR";
+    font-weight: 600;
+    src: url("/Fonts/NotoSansKR-Bold.otf") format("truetype");
   }
   @font-face {
     font-family: "NotoSansKR";
     font-weight: 700;
-    src: url("/Fonts/NotoSansKR-Regular.otf") format("truetype");
+    src: url("/Fonts/NotoSansKR-Bold.otf") format("truetype");
   }
 
   // Japanese
   @font-face {
     font-family: "NotoSansJP";
     font-weight: 300;
-    src: url("/Fonts/NotoSansJP-Regular.otf") format("truetype");
+    src: url("/Fonts/NotoSansJP-Light.otf") format("truetype");
   }
   @font-face {
     font-family: "NotoSansJP";
@@ -92,19 +97,24 @@
   @font-face {
     font-family: "NotoSansJP";
     font-weight: 500;
-    src: url("/Fonts/NotoSansJP-Regular.otf") format("truetype");
+    src: url("/Fonts/NotoSansJP-Medium.otf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansJP";
+    font-weight: 600;
+    src: url("/Fonts/NotoSansJP-Bold.otf") format("truetype");
   }
   @font-face {
     font-family: "NotoSansJP";
     font-weight: 700;
-    src: url("/Fonts/NotoSansJP-Regular.otf") format("truetype");
+    src: url("/Fonts/NotoSansJP-Bold.otf") format("truetype");
   }
 
   // Simplified Chinese
   @font-face {
     font-family: "NotoSansSC";
     font-weight: 300;
-    src: url("/Fonts/NotoSansSC-Regular.otf") format("truetype");
+    src: url("/Fonts/NotoSansSC-Light.otf") format("truetype");
   }
   @font-face {
     font-family: "NotoSansSC";
@@ -114,19 +124,24 @@
   @font-face {
     font-family: "NotoSansSC";
     font-weight: 500;
-    src: url("/Fonts/NotoSansSC-Regular.otf") format("truetype");
+    src: url("/Fonts/NotoSansSC-Medium.otf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansSC";
+    font-weight: 600;
+    src: url("/Fonts/NotoSansSC-Bold.otf") format("truetype");
   }
   @font-face {
     font-family: "NotoSansSC";
     font-weight: 700;
-    src: url("/Fonts/NotoSansSC-Regular.otf") format("truetype");
+    src: url("/Fonts/NotoSansSC-Bold.otf") format("truetype");
   }
 
   // Arabic
   @font-face {
     font-family: "NotoSansArabic";
     font-weight: 300;
-    src: url("/Fonts/NotoSansArabic-Regular.ttf") format("truetype");
+    src: url("/Fonts/NotoSansArabic-Light.ttf") format("truetype");
   }
   @font-face {
     font-family: "NotoSansArabic";
@@ -136,24 +151,24 @@
   @font-face {
     font-family: "NotoSansArabic";
     font-weight: 500;
-    src: url("/Fonts/NotoSansArabic-Regular.ttf") format("truetype");
+    src: url("/Fonts/NotoSansArabic-Medium.ttf") format("truetype");
   }
   @font-face {
     font-family: "NotoSansArabic";
     font-weight: 600;
-    src: url("/Fonts/NotoSansArabic-Regular.ttf") format("truetype");
+    src: url("/Fonts/NotoSansArabic-SemiBold.ttf") format("truetype");
   }
   @font-face {
     font-family: "NotoSansArabic";
     font-weight: 700;
-    src: url("/Fonts/NotoSansArabic-Regular.ttf") format("truetype");
+    src: url("/Fonts/NotoSansArabic-Bold.ttf") format("truetype");
   }
 
   // Thai
   @font-face {
     font-family: "NotoSansThai";
     font-weight: 300;
-    src: url("/Fonts/NotoSansThai-Regular.ttf") format("truetype");
+    src: url("/Fonts/NotoSansThai-Light.ttf") format("truetype");
   }
   @font-face {
     font-family: "NotoSansThai";
@@ -163,19 +178,18 @@
   @font-face {
     font-family: "NotoSansThai";
     font-weight: 500;
-    src: url("/Fonts/NotoSansThai-Regular.ttf") format("truetype");
+    src: url("/Fonts/NotoSansThai-Medium.ttf") format("truetype");
   }
   @font-face {
     font-family: "NotoSansThai";
     font-weight: 600;
-    src: url("/Fonts/NotoSansThai-Regular.ttf") format("truetype");
+    src: url("/Fonts/NotoSansThai-SemiBold.ttf") format("truetype");
   }
   @font-face {
     font-family: "NotoSansThai";
     font-weight: 700;
-    src: url("/Fonts/NotoSansThai-Regular.ttf") format("truetype");
+    src: url("/Fonts/NotoSansThai-Bold.ttf") format("truetype");
   }
-
 
   html body {
     @apply font-body;
