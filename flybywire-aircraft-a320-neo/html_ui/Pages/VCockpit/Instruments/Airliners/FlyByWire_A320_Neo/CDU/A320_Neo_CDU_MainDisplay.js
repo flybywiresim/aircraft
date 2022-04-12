@@ -1481,10 +1481,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.socket = new WebSocket(url);
 
         this.socket.onerror = () => {
+            // Check this to only log possible errors once connected.
+            // Otherwise, it just spams the log when attempting to connect.
+            if (this.socketConnectionAttempts > 0) {
+                return;
+            }
             console.log(`WebSocket connection error. Maybe MCDU Server disconnected? (${url})`);
         };
 
         this.socket.onclose = () => {
+            // Check this to only log possible errors once connected.
+            // Otherwise, it just spams the log when attempting to connect.
+            if (this.socketConnectionAttempts > 0) {
+                return;
+            }
             console.log(`Websocket connection to MCDU Server closed. (${url})`);
         };
 

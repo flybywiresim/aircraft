@@ -143,7 +143,7 @@ class A32NX_GPWS {
 
         this.GPWSComputeLightsAndCallouts();
 
-        if ((mda !== 0 || dh !== -1) && phase === FmgcFlightPhases.APPROACH) {
+        if ((mda !== 0 || (dh !== -1 && dh !== -2) && phase === FmgcFlightPhases.APPROACH)) {
             let minimumsDA; //MDA or DH
             let minimumsIA; //radio or baro altitude
             const baroAlt = SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet");
