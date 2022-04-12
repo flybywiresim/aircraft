@@ -44,7 +44,8 @@ init('fr', fr);
 init('de', de);
 init('ru', ru);
 init('sl', sl);
-init('zhHant', zhHant);
+// zhHant is actually the translation for zh-HK due to a mistake on Localazy
+init('zh-HK', zhHant);
 
 interface LanguageOption {
     langCode: string;
@@ -78,8 +79,8 @@ export const languageOptions: LanguageOption[] = [
         alias: 'Slovenščina',
     },
     {
-        langCode: 'zhHant',
-        alias: '傳統的',
+        langCode: 'zh-HK',
+        alias: '中文(繁體)',
     },
 ];
 
