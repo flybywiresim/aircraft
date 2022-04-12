@@ -121,13 +121,9 @@ if (process.env.VITE_BUILD) {
 // correct identifier key.
 // Otherwise, returns the key itself.
 export function t(key: string): string {
-    try { // prevents a timing error when loading in ACE/vite
-        const lMap = langMap.get(NXDataStore.get('EFB_LANGUAGE', 'en'));
-        if (lMap === undefined) return key;
-        const s = lMap.get(key);
-        if (s === undefined) return key;
-        return s.trim();
-    } catch (e) {
-        return '';
-    }
+    const lMap = langMap.get(NXDataStore.get('EFB_LANGUAGE', 'en'));
+    if (lMap === undefined) return key;
+    const s = lMap.get(key);
+    if (s === undefined) return key;
+    return s;
 }

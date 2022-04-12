@@ -36,13 +36,19 @@ import { getPdfUrl, LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
-    { name: 'Navigraph', alias: t('NavigationAndCharts.Navigraph.Title'), component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
-    { name: 'Local Files', alias: t('NavigationAndCharts.LocalFiles.Title'), component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
-    { name: 'Pinned Charts', alias: t('NavigationAndCharts.PinnedCharts.Title'), component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
+    { name: 'Navigraph', alias: '', component: <NavigraphPage />, associatedTab: NavigationTab.NAVIGRAPH },
+    { name: 'Local Files', alias: '', component: <LocalFilesPage />, associatedTab: NavigationTab.LOCAL_FILES },
+    { name: 'Pinned Charts', alias: '', component: <PinnedChartUI />, associatedTab: NavigationTab.PINNED_CHARTS },
 ];
 
 export const Navigation = () => {
     const dispatch = useAppDispatch();
+
+    if (navigationTabs) {
+        navigationTabs[0].alias = t('NavigationAndCharts.Navigraph.Title');
+        navigationTabs[1].alias = t('NavigationAndCharts.LocalFiles.Title');
+        navigationTabs[2].alias = t('NavigationAndCharts.PinnedCharts.Title');
+    }
 
     return (
         <div className="w-full h-full">
