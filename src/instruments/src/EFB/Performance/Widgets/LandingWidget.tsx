@@ -588,7 +588,7 @@ export const LandingWidget = () => {
                                         />
                                         <SelectInput
                                             value={distanceUnit}
-                                            className="w-20 rounded-l-none"
+                                            className="w-28 rounded-l-none"
                                             options={[
                                                 { value: 'ft', displayValue: `${t('Performance.Landing.RunwayLdaUnitFt')}` },
                                                 { value: 'm', displayValue: `${t('Performance.Landing.RunwayLdaUnitMeter')}` },
@@ -694,7 +694,7 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={handleClearInputs}
-                                className="flex flex-row justify-center items-center py-2 space-x-4 w-full text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red outline-none"
+                                className="flex flex-row justify-center items-center py-2 space-x-4 w-full rounded-md border-2 outline-none text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red"
                                 type="button"
                             >
                                 <Trash size={26} />
@@ -702,7 +702,7 @@ export const LandingWidget = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="flex overflow-hidden flex-row w-full rounded-lg border-2 border-theme-accent divide-x-2 divide-theme-accent">
+                    <div className="flex overflow-hidden flex-row w-full rounded-lg border-2 divide-x-2 border-theme-accent divide-theme-accent">
                         <OutputDisplay
                             label={t('Performance.Landing.MaximumManual')}
                             value={distanceUnit === 'ft'
