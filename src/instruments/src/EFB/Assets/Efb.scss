@@ -56,6 +56,7 @@
     src: url("/Fonts/AirbusRMP.ttf") format("truetype");
   }
 
+  // Korean
   @font-face {
     font-family: "NotoSansKR";
     font-weight: 300;
@@ -77,6 +78,7 @@
     src: url("/Fonts/NotoSansKR-Regular.otf") format("truetype");
   }
 
+  // Japanese
   @font-face {
     font-family: "NotoSansJP";
     font-weight: 300;
@@ -98,6 +100,7 @@
     src: url("/Fonts/NotoSansJP-Regular.otf") format("truetype");
   }
 
+  // Simplified Chinese
   @font-face {
     font-family: "NotoSansSC";
     font-weight: 300;
@@ -119,6 +122,7 @@
     src: url("/Fonts/NotoSansSC-Regular.otf") format("truetype");
   }
 
+  // Arabic
   @font-face {
     font-family: "NotoSansArabic";
     font-weight: 300;
@@ -145,6 +149,33 @@
     src: url("/Fonts/NotoSansArabic-Regular.ttf") format("truetype");
   }
 
+  // Thai
+  @font-face {
+    font-family: "NotoSansThai";
+    font-weight: 300;
+    src: url("/Fonts/NotoSansThai-Regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansThai";
+    font-weight: 400;
+    src: url("/Fonts/NotoSansThai-Regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansThai";
+    font-weight: 500;
+    src: url("/Fonts/NotoSansThai-Regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansThai";
+    font-weight: 600;
+    src: url("/Fonts/NotoSansThai-Regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansThai";
+    font-weight: 700;
+    src: url("/Fonts/NotoSansThai-Regular.ttf") format("truetype");
+  }
+
 
   html body {
     @apply font-body;
@@ -167,11 +198,11 @@
   }
 
   p, div, a, span, button {
-      @apply text-xl text-theme-text;
+    @apply text-xl text-theme-text;
   }
 
   ul {
-      @apply list-disc pl-12;
+    @apply list-disc pl-12;
   }
 }
 
@@ -189,7 +220,7 @@
   @apply rounded-md bg-theme-accent;
 
   &:hover {
-      @apply bg-theme-highlight;
+    @apply bg-theme-highlight;
   }
 }
 
