@@ -143,7 +143,7 @@ export class GuidanceController {
     private updateEfisApproachMessage() {
         let apprMsg = '';
         const appr = this.flightPlanManager.getApproach(FlightPlans.Active);
-        if (appr) {
+        if (appr && appr.approachType !== ApproachType.APPROACH_TYPE_UNKNOWN) {
             const phase = getFlightPhaseManager().phase;
             if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250)) {
                 apprMsg = normaliseApproachName(appr.name);

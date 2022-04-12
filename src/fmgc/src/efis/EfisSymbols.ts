@@ -12,6 +12,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { SegmentType } from '@fmgc/wtsdk';
 import { distanceTo } from 'msfs-geo';
+import { FlowEventSync } from '@shared/FlowEventSync';
 import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes/FSEnums';
 import { NearbyFacilities } from './NearbyFacilities';
 
@@ -26,7 +27,7 @@ export class EfisSymbols {
 
     private nearby: NearbyFacilities;
 
-    private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
+    private syncer: FlowEventSync = new FlowEventSync();
 
     private static sides = ['L', 'R'];
 
@@ -129,7 +130,7 @@ export class EfisSymbols {
             }
 
             if (mode === Mode.PLAN && !planCentre) {
-                this.listener.triggerToAllSubscribers(`A32NX_EFIS_${side}_SYMBOLS`, []);
+                this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, []);
                 return;
             }
 
@@ -435,7 +436,7 @@ export class EfisSymbols {
                 this.guidanceController.efisStateForSide[side].dataLimitReached = false;
             }
 
-            this.listener.triggerToAllSubscribers(`A32NX_EFIS_${side}_SYMBOLS`, symbols);
+            this.syncer.sendEvent(`A32NX_EFIS_${side}_SYMBOLS`, symbols);
 
             // make sure we don't run too often
             this.blockUpdate = true;

@@ -3,7 +3,7 @@ import { getInstrumentsIgniterTasks } from './src/instruments/buildSrc/igniter/t
 
 export default new TaskOfTasks('a32nx', [
     new TaskOfTasks('build', [
-        new TaskOfTasks('instruments', getInstrumentsIgniterTasks(), true),
+        new TaskOfTasks('instruments', [...getInstrumentsIgniterTasks(), new ExecTask('pfd','npm run build:pfd', ['src/instruments/src/PFD','flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD'])], true),
         new ExecTask('atsu','npm run build:atsu', ['src/atsu', 'flybywire-aircraft-a320-neo/html_ui/JS/atsu']),
         new ExecTask('sentry-client','npm run build:sentry-client', ['src/sentry-client', 'flybywire-aircraft-a320-neo/html_ui/JS/sentry-client']),
         new ExecTask('failures','npm run build:failures', ['src/failures', 'flybywire-aircraft-a320-neo/html_ui/JS/generated/failures.js']),

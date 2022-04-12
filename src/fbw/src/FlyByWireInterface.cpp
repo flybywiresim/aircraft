@@ -1633,7 +1633,8 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     idAutothrustDisabled->set(autoThrust.getExternalOutputs().out.data_computed.ATHR_disabled);
 
     // write output to sim --------------------------------------------------------------------------------------------
-    SimOutputThrottles simOutputThrottles = {autoThrustOutput.sim_throttle_lever_1_pos, autoThrustOutput.sim_throttle_lever_2_pos,
+    SimOutputThrottles simOutputThrottles = {fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_1_pos),
+                                             fmin(99.9999999999999, autoThrustOutput.sim_throttle_lever_2_pos),
                                              autoThrustOutput.sim_thrust_mode_1, autoThrustOutput.sim_thrust_mode_2};
     if (!simConnectInterface.sendData(simOutputThrottles)) {
       cout << "WASM: Write data failed!" << endl;

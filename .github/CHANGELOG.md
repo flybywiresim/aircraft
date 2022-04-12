@@ -182,6 +182,7 @@
 1. [MCDU] Fix crash when clearing DIR TO waypoint - @tracernz (Mike)
 1. [HYD] Improved hydraulic valves stability - @Crocket63
 1. [ATHR] Fix Speed/Mach Idle transition in strong headwind - @IbrahimK42 (IbrahimK42)
+1. [HYD] Added variables for sound update - @Crocket63
 1. [SOUNDS] Add rain sounds in cockpit - @Mico975 (Mico)
 1. [SOUNDS] Add passenger announcements and ambience - @hotshotp (Boris)
 1. [EFB] Added setting for colored METAR in EFB weather widget - @frankkopp (Frank Kopp)
@@ -223,8 +224,19 @@
 1. [EICAS] Fixed issue where CRUISE page was viewable on ground. - @patmack14 (Patrick Macken)
 1. [EWD] Rewritten EWD in React - @RichardPilbery (tricky_dicky#3571) & @beheh (Benedict Etzel)
 1. [EWD] Rewritten logic for FWC into React - @RichardPilbery (tricky_dicky#3571) & @beheh (Benedict Etzel)
+1. [HYD] Removed ground spoiler group until animations are modified - @Crocket63
 1. [MODEL] Add new decal mesh next to fwd doors - @bouveng (Johan Bouveng)
 1. [MODEL] Add bandit/window mask + ext door decals & tail details - @bouveng (Johan Bouveng)
+1. [MCUD] Add LSK for vert rev at destination - @tracernz (Mike)
+1. [MODEL] Add detailed rivet mesh to allow for ALDB+COMP+NORM ribbons - @bouveng (Johan Bouveng)
+1. [SD] Rewrite Bleed page to React - @RichardPilbery (tricky_dicky#3571)
+1. [FMGC] Implement "coarse" prediction system for turn speeds - @tracernz (Mike)
+1. [BLEED] Converted bleed system to use mass flow instead of volume flow - @Gurgel100 (Pascal)
+1. [FMGC] Add runway-by-itself approaches - @tracernz (Mike)
+1. [FMGC] Automatic airway waypoint intersection - @tracernz (Mike)
+1. [HYD] Adjusted droop characteristics and randomness of surfaces actuators - @Crocket63
+1. [PFD] Reimplement PFD with msfs-avionics framework for improved performance - @saschl (saschl#9432)
+1. [GPWS] Mute "100 above" callout during autoland - @patmack14 (Patrick Macken)
 1. [MCDU] Support coroute loading and viewing - @lucky38i (Alex)
 
 ## 0.7.0
