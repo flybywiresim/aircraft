@@ -133,7 +133,9 @@ class CDUNavRadioPage {
                 if (lsCourse >= 0) {
                     ilsCourseCell = `{${mcdu.ilsCourse !== undefined ? 'big' : 'small'}}F${lsCourse.toFixed(0).padStart(3, "0")}{end}`;
                 } else {
-                    ilsCourseCell = "{amber}____{end}";
+                    if (mcdu._ilsFrequencyPilotEntered) {
+                        ilsCourseCell = "{amber}____{end}";
+                    }
                 }
             }
             mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
