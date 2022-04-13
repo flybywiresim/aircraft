@@ -4,30 +4,30 @@
 /* eslint-disable no-console */
 
 import { NXDataStore } from '@shared/persistence';
-import { ar } from './Localization/ar';
-import { cs } from './Localization/cs';
-import { de } from './Localization/de';
-import { el } from './Localization/el';
-import { en } from './Localization/en';
-import { es } from './Localization/es';
-import { fi } from './Localization/fi';
-import { fr } from './Localization/fr';
-import { he } from './Localization/he';
-import { id } from './Localization/id';
-import { it } from './Localization/it';
-import { ja } from './Localization/ja';
-import { ko } from './Localization/ko';
-import { nb } from './Localization/nb';
-import { nl } from './Localization/nl';
-import { pl } from './Localization/pl';
-import { pt } from './Localization/pt';
-import { ru } from './Localization/ru';
-import { sl } from './Localization/sl';
-import { sv } from './Localization/sv';
-import { th } from './Localization/th';
-import { tr } from './Localization/tr';
-import { vi } from './Localization/vi';
-import { zhHantHK } from './Localization/zh-Hant-HK';
+import ar from './Localization/ar.json';
+import cs from './Localization/cs.json';
+import de from './Localization/de.json';
+import el from './Localization/el.json';
+import en from './Localization/en.json';
+import es from './Localization/es.json';
+import fi from './Localization/fi.json';
+import fr from './Localization/fr.json';
+import he from './Localization/he.json';
+import id from './Localization/id.json';
+import it from './Localization/it.json';
+import ja from './Localization/ja.json';
+import ko from './Localization/ko.json';
+import nb from './Localization/nb.json';
+import nl from './Localization/nl.json';
+import pl from './Localization/pl.json';
+import pt from './Localization/pt.json';
+import ru from './Localization/ru.json';
+import sl from './Localization/sl.json';
+import sv from './Localization/sv.json';
+import th from './Localization/th.json';
+import tr from './Localization/tr.json';
+import vi from './Localization/vi.json';
+import zhHantHK from './Localization/zh-Hant-HK.json';
 
 console.log('Initializing Translation');
 
@@ -56,64 +56,45 @@ const init = (lang:string, data) => {
     initMap(langMap.get(lang), data, []);
 };
 
-init('ar', ar);
-init('cs', cs);
-init('de', de);
-init('el', el);
-init('en', en);
-init('es', es);
-init('fi', fi);
-init('fr', fr);
-init('he', he);
-init('id', id);
-init('it', it);
-init('ja', ja);
-init('ko', ko);
-init('nb', nb);
-init('nl', nl);
-init('pl', pl);
-init('pt', pt);
-init('ru', ru);
-init('sl', sl);
-init('sv', sv);
-init('th', th);
-init('tr', tr);
-init('vi', vi);
-init('zh-HK', zhHantHK);
-
 interface LanguageOption {
     langCode: string;
+    langData: any;
     langName: string;
     alias: string;
 }
 
 // used for the dropdown in the flyPad settings page
 export const languageOptions: LanguageOption[] = [
-    { langCode: 'ar', langName: 'Arabic', alias: 'اَلْعَرَبِيَّةُ' },
-    { langCode: 'cs', langName: 'Czech', alias: 'Čeština' },
-    { langCode: 'de', langName: 'German', alias: 'Deutsch' },
-    { langCode: 'el', langName: 'Greek', alias: 'Ελληνικά' },
-    { langCode: 'en', langName: 'English', alias: 'English' },
-    { langCode: 'es', langName: 'Spanish', alias: 'Español' },
-    { langCode: 'fi', langName: 'Finnish', alias: 'Suomen kieli' },
-    { langCode: 'fr', langName: 'French', alias: 'Français' },
-    { langCode: 'he', langName: 'Hebrew', alias: 'עִבְרִית' },
-    { langCode: 'id', langName: 'Indonesian', alias: 'Bahasa Indonesia' },
-    { langCode: 'it', langName: 'Italian', alias: 'Italiano' },
-    { langCode: 'jp', langName: 'Japanese', alias: '日本語' },
-    { langCode: 'ko', langName: 'Korean', alias: '한국어' },
-    { langCode: 'nb', langName: 'Norwegian', alias: 'Norsk' },
-    { langCode: 'nl', langName: 'Dutch', alias: 'Nederlands' },
-    { langCode: 'pl', langName: 'Polish', alias: 'Polski' },
-    { langCode: 'pt', langName: 'Portuguese', alias: 'Português' },
-    { langCode: 'ru', langName: 'Russian', alias: 'Русский' },
-    { langCode: 'sl', langName: 'Slovenian', alias: 'Slovenščina' },
-    { langCode: 'sv', langName: 'Swedish', alias: 'Svenska' },
-    { langCode: 'th', langName: 'Thai', alias: 'ภาษาไทย' },
-    { langCode: 'tr', langName: 'Turkish', alias: 'Türkçe' },
-    { langCode: 'vi', langName: 'Vietnamese', alias: 'Tiếng Việt' },
-    { langCode: 'zh-HK', langName: 'Chinese HK', alias: '正體字' },
+    { langCode: 'ar', langData: ar, langName: 'Arabic', alias: 'اَلْعَرَبِيَّةُ' },
+    { langCode: 'cs', langData: cs, langName: 'Czech', alias: 'Čeština' },
+    { langCode: 'de', langData: de, langName: 'German', alias: 'Deutsch' },
+    { langCode: 'el', langData: el, langName: 'Greek', alias: 'Ελληνικά' },
+    { langCode: 'en', langData: en, langName: 'English', alias: 'English' },
+    { langCode: 'es', langData: es, langName: 'Spanish', alias: 'Español' },
+    { langCode: 'fi', langData: fi, langName: 'Finnish', alias: 'Suomen kieli' },
+    { langCode: 'fr', langData: fr, langName: 'French', alias: 'Français' },
+    { langCode: 'he', langData: he, langName: 'Hebrew', alias: 'עִבְרִית' },
+    { langCode: 'id', langData: id, langName: 'Indonesian', alias: 'Bahasa Indonesia' },
+    { langCode: 'it', langData: it, langName: 'Italian', alias: 'Italiano' },
+    { langCode: 'ja', langData: ja, langName: 'Japanese', alias: '日本語' },
+    { langCode: 'ko', langData: ko, langName: 'Korean', alias: '한국어' },
+    { langCode: 'nb', langData: nb, langName: 'Norwegian', alias: 'Norsk' },
+    { langCode: 'nl', langData: nl, langName: 'Dutch', alias: 'Nederlands' },
+    { langCode: 'pl', langData: pl, langName: 'Polish', alias: 'Polski' },
+    { langCode: 'pt', langData: pt, langName: 'Portuguese', alias: 'Português' },
+    { langCode: 'ru', langData: ru, langName: 'Russian', alias: 'Русский' },
+    { langCode: 'sl', langData: sl, langName: 'Slovenian', alias: 'Slovenščina' },
+    { langCode: 'sv', langData: sv, langName: 'Swedish', alias: 'Svenska' },
+    { langCode: 'th', langData: th, langName: 'Thai', alias: 'ภาษาไทย' },
+    { langCode: 'tr', langData: tr, langName: 'Turkish', alias: 'Türkçe' },
+    { langCode: 'vi', langData: vi, langName: 'Vietnamese', alias: 'Tiếng Việt' },
+    { langCode: 'zh-HK', langData: zhHantHK, langName: 'Chinese HK', alias: '正體字' },
 ];
+
+// Initialize all languages
+languageOptions.forEach((ln) => {
+    init(ln.langCode, ln.langData);
+});
 
 const watchLanguageChanges = () => {
     NXDataStore.getAndSubscribe(

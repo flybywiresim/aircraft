@@ -1,0 +1,505 @@
+{
+  "AirTrafficControl": {
+    "Active": "פעיל",
+    "ConnectHoppieACARS": "לְחַבֵּר Hoppie ACARS",
+    "DisconnectHoppieACARS": "לְנַתֵק Hoppie ACARS",
+    "FlightnumberIsAlreadyInUse": "מספר טיסה כבר בשימוש",
+    "HoppieError": "שגיאה Hoppie",
+    "HoppieSystemRequiresAUserIdWhichNeedsToBeSetInSettings": "מערכת Hoppie דורשת מזהה משתמש אשר חייב להיות מוגדר בהגדרות: ATSU / AOC.",
+    "InvalidLogonCodeUsed": "נעשה שימוש בקוד כניסה לא חוקי",
+    "NoInformationAvailableForThisFrequency": "אין מידע זמין עבור זה תדר רדיו",
+    "SetActive": "הגדר פעיל",
+    "SetStandby": "להגדיר המתנה",
+    "Standby": "המתנה",
+    "Title": "בקרת תנועה אווירית"
+  },
+  "Checklist": {
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Are you sure you want to reset all checklists?",
+    "AreYouSureYouWantToResetChecklists": "Are you sure you want to reset all checklists?",
+    "ChecklistResetWarning": "אזהרת איפוס צ'ק ליסט",
+    "MarkChecklistAsComplete": "Mark checklist as complete",
+    "MarkItemAsComplete": "Mark item as complete",
+    "ProceedToNextChecklist": "Proceed to next checklist",
+    "ResetAll": "לאפס הכל",
+    "ResetChecklist": "אפס צ'ק ליסט",
+    "TheLastChecklistIsComplete": "The last checklist is complete",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed",
+    "Title": "רשימת תיוג"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "אין רשימות ביקורת רלוונטיות",
+        "Title": "רשימת תיוג"
+      },
+      "GoToPage": "עבור לעמוד",
+      "Maintenance": {
+        "NoActiveFailures": "אין כשלים נוכחיים",
+        "Title": "תחזוקה"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "No Pinned Charts",
+        "Title": "תרשימים שמורים"
+      },
+      "TT": {
+        "RearrangeWidgets": "Rearrange Widgets"
+      },
+      "Title": "מידע חשוב",
+      "Weather": {
+        "AirPressure": "לחץ אוויר",
+        "DewPoint": "נקודת רוויה",
+        "IcaoInvalid": "ICAO לא חוקי או לא METAR זמין",
+        "Loading": "טעינה",
+        "MetarParsingError": "Received METAR could not be parsed",
+        "NoIcaoProvided": "לא סיפק ICAO",
+        "Raw": "גלם",
+        "TT": {
+          "SwitchToIconView": "Switch to Icon View",
+          "SwitchToRawMetarView": "Switch to Raw METAR View"
+        },
+        "Temperature": "טֶמפֶּרָטוּרָה",
+        "Title": "מזג אוויר",
+        "WindSpeed": "מהירות הרוח"
+      }
+    },
+    "Title": "לוּחַ מַחווָנִים",
+    "YourFlight": {
+      "Alternate": "חלופי",
+      "AverageWind": "Average Wind",
+      "CompanyRoute": "מסלול חברה",
+      "CostIndex": "מדד עלויות",
+      "CruiseAlt": "גובה שיוט",
+      "ImportSimBriefData": "ייבוא נתוני SimBrief",
+      "Route": "מַסלוּל",
+      "SimBriefDataNotYetLoaded": "הנתונים עדיין לא נטענו SimBrief",
+      "Title": "הטיסה שלך",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "ייבוא נתוני SimBrief",
+      "TT": {
+        "IncreaseFontSize": "הגדלת גודל הפונט",
+        "ReduceFontSize": "להקטין גודל גופן"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
+    },
+    "Overview": {
+      "Engines": "מנועים",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "טעינה מקסימלית",
+      "MaximumFuelCapacity": "Maximum Fuel Capacity",
+      "MaximumPassengers": "מקסימום נוסעים",
+      "Model": "דֶגֶם",
+      "Range": "Range",
+      "Title": "סקירה כללית"
+    },
+    "Title": "שֶׁדֶר"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Comfort"
+    },
+    "Compact": {
+      "Title": "Compact"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "סימולציה מלאה של הכשלים שלהלן עדיין אינה מובטחת.",
+    "Search": "לחפש",
+    "Title": "כשלים"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "טנק אֶמצַע",
+      "Completed": "הושלם",
+      "Defueling": "ניקוי דלק",
+      "EstimatedDuration": "זמן משוער (דקות)",
+      "EstimatedTime": "זמן משוער",
+      "LeftInnerTank": "מיכל פנימי שמאל",
+      "LeftOuterTank": "מיכל חיצוני שמאל",
+      "ReadyToStart": "מוכן להתחיל",
+      "Refuel": "לְתַדְלֵק",
+      "RefuelTime": "זמן תדלוק",
+      "Refueling": "תִדלוּק",
+      "RightInnerTank": "מיכל פנימי ימני",
+      "RightOuterTank": "מיכל חיצוני ימני",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aircraft Must Be Cold and Dark to Change Refuel Times",
+        "FillBlockFuelFromSimBrief": "Fill Block Fuel from SimBrief"
+      },
+      "Title": "דֶלֶק",
+      "TotalFuel": "סְכוּם של דלק",
+      "Unavailable": "לא זמין"
+    },
+    "Pushback": {
+      "Title": "התנגדות"
+    },
+    "Services": {
+      "BaggageTruck": "Baggage Truck",
+      "CateringTruck": "Catering Truck",
+      "DoorAft": "דלת אחורית",
+      "DoorFwd": "דלת קדמית",
+      "ExternalPower": "כוח חיצוני",
+      "FuelTruck": "משאית דלק",
+      "JetBridge": "גשר ג'ט",
+      "Title": "שירותים"
+    },
+    "Title": "אדמה"
+  },
+  "Modals": {
+    "Cancel": "ביטול",
+    "Confirm": "לְאַשֵׁר",
+    "Okay": "אִשׁוּר"
+  },
+  "NavigationAndCharts": {
+    "All": "All",
+    "Altn": "תחליף",
+    "ExitFullscreenMode": "צא ממסך מלא",
+    "From": "מִן",
+    "LocalFiles": {
+      "Both": "שניהם",
+      "EstablishingConnection": "מתחיל חיבור",
+      "FailedToEstablishConnection": "Failed to Establish Connection.",
+      "FileName": "שם קובץ",
+      "Image": "תמונה",
+      "Pdf": "PDF",
+      "Retry": "נסה שוב",
+      "Title": "תיקים מקומיים"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "שדה תעופה לא קיים",
+      "AuthenticateWithNavigraph": "לאמת עם Navigraph",
+      "InsufficientEnv": "Insufficient .env File",
+      "IntoYourBrowserAndEnterTheCodeBelow": "into your browser and enter the code below\n",
+      "NoAirportSelected": "לא נבחר שדה תעופה",
+      "ResetNavigraphAuthentication": "אפס את אימות Navigraph",
+      "ScanTheQrCodeOrOpen": "סרוק קוד QR או פתח",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "מחק",
+      "Edit": "ערוך",
+      "NoItemsFound": "No Items Found",
+      "SearchPlaceholder": "לחפש",
+      "ShowingChartsFromAllProviders": "Showing Charts from All Providers",
+      "SortMethods": {
+        "AlphabeticalAZ": "אָלֶף בֵּיתִי - א -> ז",
+        "AlphabeticalZA": "אָלֶף בֵּיתִי - ז -> א",
+        "FirstAccessed": "הוערך בתחילה",
+        "LastAccessed": "Last Accessed",
+        "None": "ללא"
+      },
+      "TT": {
+        "ChangeChartProvider": "שנה ספק התרשים",
+        "ChangeChartSortMethod": "Change Chart Sort Method"
+      },
+      "Title": "תרשימים שמורים",
+      "View": "לִרְאוֹת"
+    },
+    "PleaseWait": "חכה בבקשה",
+    "ShowingAllItems": "Showing All Items",
+    "TT": {
+      "FitChartToHeight": "Fit Chart to Height",
+      "FitChartToWidth": "Fit Chart to Width",
+      "ResetMovement": "Reset Movement",
+      "RotateLeft45Degrees": "Rotate Left 45 Degrees",
+      "RotateRight45Degrees": "Rotate Right 45 Degrees",
+      "ZoomIn": "לְהִתְמַקֵד",
+      "ZoomOut": "להקטין את התצוגה"
+    },
+    "ThereAreNoChartsToDisplay": "There are no charts to display.",
+    "ThereIsNoChartToDisplay": "There is no chart to display.",
+    "Title": "ניווט ותרשימים",
+    "To": "אֶל"
+  },
+  "Performance": {
+    "Data": "נתונים",
+    "Landing": {
+      "AirportIcao": "שדה תעופה ICAO",
+      "ApproachSpeed": "Approach Speed",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "אוֹטוֹמָטִי לִנְחוֹת",
+      "Calculate": "לחשב",
+      "Clear": "נקה",
+      "DropDownNo": "לא",
+      "DropDownYes": "כן",
+      "FillDataFrom": "Fill data from",
+      "FlapsConfiguration": "Flaps Configuration",
+      "Low": "נָמוּך",
+      "MaximumManual": "Maximum Manual",
+      "Medium": "בינוני",
+      "OverweightProcedure": "Overweight Procedure",
+      "Qnh": "QNH",
+      "ReverseThrust": "Reverse Thrust",
+      "RunwayAltitude": "Runway Altitude",
+      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayCondition": "Runway Condition",
+      "RunwayHeading": "Runway Heading",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "Runway LDA",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "מטרים",
+      "RunwaySlope": "Runway Slope",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "You need to enter an ICAO code in order to make a METAR request",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "You need to load SimBrief data in order to autofill data"
+      },
+      "Temperature": "טֶמפֶּרָטוּרָה",
+      "Title": "Landing",
+      "UnitFt": "רגל",
+      "UnitMeter": "מטרים",
+      "Weight": "Weight",
+      "WindDirection": "Wind Direction",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Wind Magnitude",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "SYNC",
+    "Title": "Performance",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Angle",
+        "CurrentAltitude": "Current Altitude",
+        "Distance": "מֶרְחָק",
+        "GroundSpeed": "Ground Speed",
+        "TargetAltitude": "Target Altitude",
+        "Title": "נתונים",
+        "UnitAngleDegrees": "degrees",
+        "UnitFeet": "רגל",
+        "UnitFtMin": "רגליים לדקה",
+        "UnitNM": "מיילים ימיים",
+        "VerticalSpeed": "Vertical Speed"
+      },
+      "GroundSpeed": {
+        "Add": "Add",
+        "FetchingSpeedFromSimulator": "Fetching speed from simulator",
+        "GroundSpeed": "Ground Speed",
+        "ManualInput": "Manual Input",
+        "MinAltitude": "Min. Altitude",
+        "RemoveLast": "Remove Last",
+        "Sync": "SYNC",
+        "Title": "Ground Speed",
+        "UnitKnots": "מיילים ימיים לשעה",
+        "UnitKt": "מייל ימי"
+      },
+      "Result": {
+        "BeforeTarget": "before target",
+        "DesiredDescentAngle": "Desired Descent Angle",
+        "DesiredVerticalSpeed": "Desired Vertical Speed",
+        "StartYourDescentAbout": "Start your descent about",
+        "Title": "Result"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Desynchronize Input with Aircraft's Current Altitude",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Synchronize Input with Aircraft's Current Altitude"
+      },
+      "Title": "Top of Descent"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "ביטול",
+      "ColdDark": "Cold & Dark",
+      "ConfirmationDialogMsg": "Please confirm loading of preset.",
+      "CurrentProcedureStep": "Current Procedure Step",
+      "PleaseConfirmLoadingOfPreset": "Please confirm loading of preset.",
+      "ReadyPushback": "Ready for Pushback",
+      "ReadyTakeoff": "Ready for Takeoff",
+      "ReadyTaxi": "Ready for Taxi",
+      "SelectAPresetToLoad": "Select a Preset to Load",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "The aircraft must be on the ground to load a preset.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "The aircraft must be on the ground to load a preset.",
+      "Title": "Aircraft States",
+      "Turnaround": "Turnaround"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Aircraft Needs to be Powered to Load Presets",
+      "AircraftNeedsToBePoweredToSavePresets": "Aircraft Needs to Be Powered to Save Presets",
+      "LoadPreset": "Load Preset",
+      "LoadingPreset": "Loading Preset",
+      "NoName": "ללא שם",
+      "PleaseConfirmSavingPreset": "Please Confirm Saving Preset",
+      "SavePreset": "Save Preset",
+      "SavingPreset": "Saving Preset",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Select an interior lighting preset to load or save.",
+      "TT": {
+        "AircraftMustBePowered": "Aircraft Must be Powered",
+        "ClickTextToChangeThePresetsName": "Click Text to Change the Preset's Name",
+        "LoadThisPreset": "Load This Preset",
+        "SaveTheCurrentLightingLevels": "Save the Current Lighting Levels"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "The aircraft must be powered for interior lighting presets.",
+      "Title": "Interior Lighting"
+    },
+    "Title": "Presets"
+  },
+  "Pushback": {
+    "Backward": "Backward",
+    "CallTug": "Call Tug",
+    "Forward": "Forward",
+    "Halt": "Halt",
+    "ParkingBrake": {
+      "Off": "כבוי",
+      "On": "פועל",
+      "Title": "בלם חניה"
+    },
+    "TugDirection": "Tug Direction",
+    "TugSpeed": "Tug Speed"
+  },
+  "Settings": {
+    "About": {
+      "Title": "About"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Acceleration Height (ft)",
+      "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
+      "IsisBaroUnit": "ISIS Baro Unit",
+      "IsisMetricAltitude": "ISIS Metric Altitude",
+      "PaxSigns": "PAX Signs",
+      "RmpVhfSpacing": "RMP VHF Spacing",
+      "ThrustReductionHeight": "Thrust Reduction Height (ft)",
+      "Title": "Aircraft Options / Pin Programs",
+      "WeightUnit": "Weight Unit"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC Source",
+      "AutomaticallyImportSimBriefData": "Automatically Import SimBrief Data",
+      "Enable": "Enable",
+      "EnableTelex": "Enable TELEX",
+      "ErrorReporting": "Error Reporting",
+      "HoppieUserId": "זיהוי משתמש של Hoppie",
+      "MetarSource": "METAR Source",
+      "OptionalA32nxErrorReporting": "Optional A32NX Error Reporting",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "SimBriefUsernamePilotId": "SimBrief Username/Pilot ID",
+      "TafSource": "TAF Source",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE THIS FEATURE AT YOUR OWN RISK. To learn more about TELEX and the features it enables, please go to https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "TELEX Warning",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "You are able to opt into anonymous error reporting that will allow us to diagnose, monitor, and take care of issues at a faster rate. This feature is completely optional and we will never collect your personal data, but may allow you to more easily get support and have the issues you encounter fixed at a faster rate.",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Your SimBrief PilotID has been validated and updated to"
+    },
+    "Audio": {
+      "Announcements": "Announcements",
+      "BoardingMusic": "Boarding Music",
+      "EngineInteriorVolume": "Engine Interior Volume",
+      "ExteriorMasterVolume": "Exterior Master Volume",
+      "PassengerAmbience": "Passenger Ambience",
+      "PtuAudibleInCockpit": "PTU Audible in Cockpit",
+      "Title": "Audio",
+      "WindInteriorVolume": "Wind Interior Volume"
+    },
+    "Fast": "Fast",
+    "Instant": "Instant",
+    "Real": "Real",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS Align Time",
+      "AutofillChecklists": "Autofill Checklists",
+      "BoardingTime": "Boarding Time",
+      "DatalinkTransmissionTime": "DATALINK Transmission Time",
+      "DmcSelfTestTime": "DMC Self Test Time",
+      "HomeCockpitMode": "Home Cockpit Mode",
+      "McduFocusTimeout": "MCDU Focus Timeout (seconds)",
+      "McduKeyboardInput": "MCDU Keyboard Input",
+      "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
+      "Title": "Realism"
+    },
+    "SimOptions": {
+      "Active": "פעיל",
+      "Auto": "Auto",
+      "Calibrate": "Calibrate",
+      "DefaultBarometerUnit": "Default Barometer Unit",
+      "DynamicRegistrationDecal": "Dynamic Registration Decal",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
+      "ExternalMcduServerPort": "External MCDU Server Port",
+      "Hpa": "hPa",
+      "Inactive": "Inactive",
+      "LoadOnly": "Load Only",
+      "None": "ללא",
+      "Off": "כבוי",
+      "Save": "Save",
+      "SyncMsfsFlightPlan": "Sync MSFS Flight Plan",
+      "ThrottleDetents": "Throttle Detents",
+      "Title": "Sim Options",
+      "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Apply",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Are you sure that you want to reset your current throttle configuration settings to their default states? This action is irreversible.",
+      "Axis": "Axis",
+      "Back": "Back",
+      "ConfigureEnd": "Configure End",
+      "CurrentValue": "Current Value",
+      "Deadband": "Deadband",
+      "ErrorOverlapMsg": "overlaps with",
+      "IndependentAxis": "Independent Axis",
+      "LoadFromFile": "Load from File",
+      "PleaseEnterAValidDeadzone": "Please enter a valid deadzone",
+      "ResetToDefaults": "Reset to Defaults",
+      "ReverseFull": "Reverse Full",
+      "ReverseIdle": "Reverse Idle",
+      "ReverserOnAxis": "Reverser On Axis",
+      "SaveAndApply": "Save and Apply",
+      "SetFromThrottle": "Set from Throttle",
+      "ThrottleConfigurationReset": "Throttle Configuration Reset"
+    },
+    "Title": "Settings",
+    "Unrealistic": "Unrealistic",
+    "flyPad": {
+      "AutoBrightness": "Auto Brightness",
+      "AutomaticallyShowOnscreenKeyboard": "Automatically Show Onscreen Keyboard",
+      "Blue": "Blue",
+      "Brightness": "Brightness",
+      "Dark": "Dark",
+      "Language": "Language",
+      "Light": "Light",
+      "Local": "Local",
+      "LocalTimeFormat": "Local Time Format",
+      "OnscreenKeyboardLayout": "Onscreen Keyboard Layout",
+      "ShowColoredRawMetar": "Show Colored Raw METAR",
+      "ShowStatusBarFlightProgressIndicator": "Show Status Bar Flight Progress Indicator",
+      "Theme": "Theme",
+      "TimeDisplayed": "Time Displayed",
+      "Title": "flyPad",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24h",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC and Local"
+    }
+  },
+  "Settings.flyPad.BatteryLifeEnabled": "Battery Life Simulated",
+  "StatusBar": {
+    "Apr": "Apr",
+    "Aug": "Aug",
+    "Dec": "Dec",
+    "Feb": "Feb",
+    "Fri": "Fri",
+    "Jan": "Jan",
+    "Jun": "Jun",
+    "Mar": "Mar",
+    "May": "May",
+    "Mon": "Mon",
+    "Nov": "Nov",
+    "Oct": "Oct",
+    "Sat": "Sat",
+    "Sep": "Sep",
+    "Sun": "Sun",
+    "TT": {
+      "ConnectedToLocalApi": "Connected to Local API",
+      "DisconnectedFromLocalApi": "Disconnected from Local API",
+      "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB"
+    },
+    "Thu": "Thu",
+    "Tue": "Tue",
+    "Wed": "Wed"
+  }
+}

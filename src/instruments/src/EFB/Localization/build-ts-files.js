@@ -6,24 +6,18 @@
 
 const fs = require('fs');
 const path = require('path');
-const eslint = require('eslint');
 const { exec } = require('child_process');
-
-const linter = new eslint.ESLint({ fix: true });
 
 const langFilesPath = path.resolve('downloaded/');
 const convertedFilesPath = path.resolve('./');
 
-const prefix = '// Created automatically\n\nexport const';
-
 async function processFile(dirent) {
     const name = dirent.name.replace('.json', '');
 
-    console.log(`Starting reading to JSON and writing linted ts file: ${name}.ts ...`);
+    console.log(`Processing file: ${name}.ts ...`);
 
     // Read Localazy json file
     let content;
-    let json;
     try {
         content = fs.readFileSync(path.join(langFilesPath, dirent.name));
     } catch (e) {
@@ -32,34 +26,23 @@ async function processFile(dirent) {
     }
 
     // Parse JSON to check if file syntax is correct
+    let json;
     try {
         json = JSON.parse(content);
     } catch (e) {
-        console.log(`Error while converting language file "${dirent.name}": ${e}`);
+        console.log(`Error while checking json language file "${dirent.name}": ${e}`);
         return;
     }
-
-    // Make TypeScript file from JSON
-    const output = `${prefix} ${name.replaceAll('-', '')} = ${JSON.stringify(json, null, 2)}`;
 
     // Write ts file to filesystem
     try {
-        fs.writeFileSync(path.join(convertedFilesPath, `${name}.ts`), output);
+        fs.writeFileSync(path.join(convertedFilesPath, `${name}.json`), JSON.stringify(json, null, 2));
     } catch (e) {
-        console.log(`Error while writing ts file "${dirent.name}": ${e}`);
+        console.log(`Error while writing file "${dirent.name}": ${e}`);
         return;
     }
 
-    // Use ESLint to "fix" files
-    const results = await linter.lintFiles(path.join(convertedFilesPath, `${name}.ts`));
-    await eslint.ESLint.outputFixes(results)
-        .then(() => {
-            console.log(`Successfully completed ts file: ${name}.ts`);
-        })
-        .catch((e) => {
-            console.log(`Error while linting ts file "${dirent.name}": ${e}`);
-            console.log(`Completed ts file with linting error: ${name}.ts`);
-        });
+    console.log(`Successfully completed file: ${name}.json`);
 }
 
 console.log('Downloading language files from Localazy');

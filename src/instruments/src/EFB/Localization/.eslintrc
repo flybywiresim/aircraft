@@ -1,5 +1,8 @@
 {
-  "ignorePatterns": [
-    "web/**"
-  ]
+  "rules": {
+    "max-len": "off"
+  },
+  "parserOptions": {
+    "warnOnUnsupportedTypeScriptVersion": false
+  }
 }
