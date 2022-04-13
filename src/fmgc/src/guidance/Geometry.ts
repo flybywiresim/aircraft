@@ -125,13 +125,54 @@ export class Geometry {
                 continue;
             }
 
-            this.computeLeg(i, activeLegIdx, ppos, trueTrack, tas, gs);
-
-            const leg = this.legs.get(i);
+            const predictedLegTas = Math.max(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, Geometry.getLegPredictedTas(leg) ?? tas);
+            const predictedLegGs = Math.max(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, Geometry.getLegPredictedGs(leg) ?? gs);
 
             if (leg?.isNull) {
                 this.computeLeg(i, activeLegIdx, ppos, trueTrack, tas, gs);
             }
+
+            if (inboundTransition && prevLeg) {
+                if (LnavConfig.DEBUG_GEOMETRY) {
+                    console.log(`[FMS/Geometry/Recompute] Recomputing inbound transition (${inboundTransition.repr ?? '<unknown>'}) for leg (${leg?.repr ?? '<none>'})`);
+                }
+
+                const prevLegPredictedLegTas = Math.max(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, Geometry.getLegPredictedTas(prevLeg) ?? tas);
+                const prevLegPredictedLegGs = Math.max(LnavConfig.DEFAULT_MIN_PREDICTED_TAS, Geometry.getLegPredictedGs(prevLeg) ?? gs);
+
+                inboundTransition.recomputeWithParameters(
+                    activeTransIdx === i - 1,
+                    prevLegPredictedLegTas,
+                    prevLegPredictedLegGs,
+                    ppos,
+                    trueTrack,
+                    prevLeg,
+                    leg,
+                );
+
+                // Recompute previous leg if inbound is an FXR, since we want it to end at the FXR transition path start
+                if (inboundTransition instanceof FixedRadiusTransition) {
+                    prevLeg.recomputeWithParameters(
+                        activeLegIdx === i - 1,
+                        prevLegPredictedLegTas,
+                        prevLegPredictedLegGs,
+                        ppos,
+                        trueTrack,
+                        prevLegInbound,
+                        inboundTransition ?? leg,
+                    );
+                }
+            }
+
+            leg.recomputeWithParameters(
+                activeLegIdx === i,
+                predictedLegTas,
+                predictedLegGs,
+                ppos,
+                trueTrack,
+                inboundTransition ?? prevLeg,
+                outboundTransition ?? nextLeg,
+            );
         }
 
         if (LnavConfig.DEBUG_GEOMETRY) {
@@ -140,11 +181,11 @@ export class Geometry {
     }
 
     static getLegPredictedTas(leg: Leg) {
-        if (leg instanceof TFLeg) {
-            return leg.to?.additionalData?.predictedSpeed;
-        }
+        return leg.predictedTas;
+    }
 
-        return undefined;
+    static getLegPredictedGs(leg: Leg) {
+        return leg.predictedGs;
     }
 
     private computeLeg(index: number, activeLegIdx: number, ppos: Coordinates, trueTrack: DegreesTrue, tas: Knots, gs: Knots) {

@@ -29,6 +29,10 @@ export abstract class Leg extends Guidable {
 
     displayedOnMap = true
 
+    predictedTas: Knots
+
+    predictedGs: Knots
+
     get disableAutomaticSequencing(): boolean {
         return false;
     }

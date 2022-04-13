@@ -6,32 +6,8 @@ import { DescentPathBuilder } from '@fmgc/guidance/vnav/descent/DescentPathBuild
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { RequestedVerticalMode, TargetAltitude, TargetVerticalSpeed } from '@fmgc/guidance/ControlLaws';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
-import { VerticalMode, ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode } from '@shared/autopilot';
-import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
-import { PseudoWaypointFlightPlanInfo } from '@fmgc/guidance/PseudoWaypoint';
-import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
-import { CruisePathBuilder } from '@fmgc/guidance/vnav/cruise/CruisePathBuilder';
-import { CruiseToDescentCoordinator } from '@fmgc/guidance/vnav/CruiseToDescentCoordinator';
-import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
-import { McduSpeedProfile, ExpediteSpeedProfile, NdSpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
-import { SelectedGeometryProfile } from '@fmgc/guidance/vnav/profile/SelectedGeometryProfile';
-import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
-import { StepCoordinator } from '@fmgc/guidance/vnav/StepCoordinator';
-import { TakeoffPathBuilder } from '@fmgc/guidance/vnav/takeoff/TakeoffPathBuilder';
-import { ClimbThrustClimbStrategy, VerticalSpeedStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
-import { ConstraintReader } from '@fmgc/guidance/vnav/ConstraintReader';
-import { FmgcFlightPhase } from '@shared/flightphase';
-import { TacticalDescentPathBuilder } from '@fmgc/guidance/vnav/descent/TacticalDescentPathBuilder';
-import { IdleDescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
-import { LatchedDescentGuidance } from '@fmgc/guidance/vnav/descent/LatchedDescentGuidance';
-import { DescentGuidance } from '@fmgc/guidance/vnav/descent/DescentGuidance';
-import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileInterceptCalculator';
-import { ApproachPathBuilder } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
-import { FlapConf } from '@fmgc/guidance/vnav/common';
-import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
-import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
-import { NavHeadingProfile } from '@fmgc/guidance/vnav/wind/AircraftHeadingProfile';
-import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
+import { VerticalMode } from '@shared/autopilot';
+import { CoarsePredictions } from '@fmgc/guidance/vnav/CoarsePredictions';
 import { Geometry } from '../Geometry';
 import { GuidanceComponent } from '../GuidanceComponent';
 import { NavGeometryProfile, VerticalCheckpointReason } from './profile/NavGeometryProfile';
@@ -70,19 +46,8 @@ export class VnavDriver implements GuidanceComponent {
 
     private targetAltitude: TargetAltitude;
 
-    currentMcduSpeedProfile: McduSpeedProfile;
-
-    timeMarkers = new Map<Seconds, PseudoWaypointFlightPlanInfo | undefined>()
-
-    stepCoordinator: StepCoordinator;
-
-    private constraintReader: ConstraintReader;
-
-    private aircraftToDescentProfileRelation: AircraftToDescentProfileRelation;
-
-    private descentGuidance: DescentGuidance | LatchedDescentGuidance;
-
-    private headingProfile: NavHeadingProfile;
+    // eslint-disable-next-line camelcase
+    private coarsePredictionsUpdate = new A32NX_Util.UpdateThrottler(5000);
 
     constructor(
         private readonly guidanceController: GuidanceController,
@@ -133,12 +98,16 @@ export class VnavDriver implements GuidanceComponent {
 
     lastCruiseAltitude: Feet = 0;
 
-    update(_: number): void {
-        try {
-            const newCruiseAltitude = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number');
+    update(deltaTime: number): void {
+        this.atmosphericConditions.update();
 
-            if (newCruiseAltitude !== this.lastCruiseAltitude) {
-                this.lastCruiseAltitude = newCruiseAltitude;
+        if (this.coarsePredictionsUpdate.canUpdate(deltaTime) !== -1) {
+            CoarsePredictions.updatePredictions(this.guidanceController, this.atmosphericConditions);
+        }
+
+        const newCruiseAltitude = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number');
+        if (newCruiseAltitude !== this.lastCruiseAltitude) {
+            this.lastCruiseAltitude = newCruiseAltitude;
 
                 if (DEBUG) {
                     console.log('[FMS/VNAV] Computed new vertical profile because of new cruise altitude.');

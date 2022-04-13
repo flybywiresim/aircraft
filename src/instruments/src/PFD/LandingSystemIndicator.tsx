@@ -16,7 +16,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<HEvent & Arinc429Values>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & HEvent & Arinc429Values>();
 
         sub.on('hEvent').handle((eventName) => {
             if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
@@ -26,6 +26,12 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
                 this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
                 this.gsReferenceLine.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
             }
+        });
+
+        sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button').whenChanged().handle((lsButton) => {
+            this.lsButtonPressedVisibility = lsButton;
+            this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
+            this.gsReferenceLine.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
         });
     }
 
