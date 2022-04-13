@@ -15,8 +15,8 @@ export interface PFDSimvars {
     onGround: number;
     activeLateralMode: number;
     activeVerticalMode: number;
-    fmaModeReversion: number;
-    fmaSpeedProtection: number;
+    fmaModeReversion: boolean;
+    fmaSpeedProtection: boolean;
     AThrMode: number;
     apVsSelected: number;
     approachCapability: number;
@@ -89,40 +89,35 @@ export interface PFDSimvars {
     engTwoRunning: boolean;
     expediteMode: boolean;
     setHoldSpeed: boolean;
-    tdReached: boolean;
     vls: number;
     alphaLim: number;
-    trkFpaDeselectedTCAS: boolean,
-    tcasRaInhibited: boolean,
-    groundSpeed: number,
-    radioAltitude1: number,
-    radioAltitude2: number,
-    beta: number,
-    betaTargetActive: number,
-    betaTarget: number,
-    latAcc: number,
-    crzAltMode: boolean,
-    tcasModeDisarmed: boolean,
-    flexTemp: number,
+    trkFpaDeselectedTCAS: boolean;
+    tcasRaInhibited: boolean;
+    groundSpeed: number;
+    radioAltitude1: number;
+    radioAltitude2: number;
+    beta: number;
+    betaTargetActive: number;
+    betaTarget: number;
+    latAcc: number;
+    crzAltMode: boolean;
+    tcasModeDisarmed: boolean;
+    flexTemp: number;
     autoBrakeMode: number;
     autoBrakeActive: boolean;
     autoBrakeDecel: boolean;
     fpaRaw: number;
     daRaw: number;
-    linearDeviationActive: boolean,
-    targetAltitude: number,
-    verticalProfileLatched: boolean,
-    showSpeedMargins: boolean,
-    upperSpeedMargin: number,
-    lowerSpeedMargin: number,
+    ls1Button: boolean;
+    ls2Button: boolean;
   }
 
 export enum PFDVars {
     coldDark = 'L:A32NX_COLD_AND_DARK_SPAWN',
     elec = 'L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED',
     elecFo = 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED',
-    potentiometerCaptain= 'LIGHT POTENTIOMETER:88',
-    potentiometerFo= 'LIGHT POTENTIOMETER:90',
+    potentiometerCaptain = 'LIGHT POTENTIOMETER:88',
+    potentiometerFo = 'LIGHT POTENTIOMETER:90',
     pitch = 'L:A32NX_ADIRS_IR_1_PITCH',
     roll = 'L:A32NX_ADIRS_IR_1_ROLL',
     heading = 'L:A32NX_ADIRS_IR_1_HEADING',
@@ -132,8 +127,8 @@ export enum PFDVars {
     onGround = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
     activeLateralMode = 'L:A32NX_FMA_LATERAL_MODE',
     activeVerticalMode = 'L:A32NX_FMA_VERTICAL_MODE',
-    fmaModeReversion = 'L:A32NX_fmaModeReversion',
-    fmaSpeedProtection = 'L:A32NX_fmaSpeedProtection_MODE',
+    fmaModeReversion = 'L:A32NX_FMA_MODE_REVERSION',
+    fmaSpeedProtection = 'L:A32NX_FMA_SPEED_PROTECTION_MODE',
     AThrMode = 'L:A32NX_AUTOTHRUST_MODE',
     apVsSelected = 'L:A32NX_AUTOPILOT_VS_SELECTED',
     approachCapability = 'L:A32NX_ApproachCapability',
@@ -206,7 +201,6 @@ export enum PFDVars {
     engTwoRunning = 'GENERAL ENG COMBUSTION:2',
     expediteMode = 'L:A32NX_FMA_EXPEDITE_MODE',
     setHoldSpeed = 'L:A32NX_PFD_MSG_SET_HOLD_SPEED',
-    tdReached = 'L:A32NX_PFD_MSG_TD_REACHED',
     vls = 'L:A32NX_SPEEDS_VLS',
     alphaLim = 'L:A32NX_SPEEDS_ALPHA_MAX',
     trkFpaDeselectedTCAS= 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',
@@ -226,12 +220,8 @@ export enum PFDVars {
     autoBrakeDecel = 'L:A32NX_AUTOBRAKES_DECEL_LIGHT',
     fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
     daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
-    linearDeviationActive = 'L:A32NX_PFD_LINEAR_DEVIATION_ACTIVE',
-    targetAltitude = 'L:A32NX_PFD_TARGET_ALTITUDE',
-    verticalProfileLatched = 'L:A32NX_PFD_VERTICAL_PROFILE_LATCHED',
-    showSpeedMargins = 'L:A32NX_PFD_SHOW_SPEED_MARGINS',
-    upperSpeedMargin = 'L:A32NX_PFD_UPPER_SPEED_MARGIN',
-    lowerSpeedMargin = 'L:A32NX_PFD_LOWER_SPEED_MARGIN',
+    ls1Button = 'L:BTN_LS_1_FILTER_ACTIVE',
+    ls2Button = 'L:BTN_LS_2_FILTER_ACTIVE',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -251,8 +241,8 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['onGround', { name: PFDVars.onGround, type: SimVarValueType.Number }],
         ['activeLateralMode', { name: PFDVars.activeLateralMode, type: SimVarValueType.Number }],
         ['activeVerticalMode', { name: PFDVars.activeVerticalMode, type: SimVarValueType.Number }],
-        ['fmaModeReversion', { name: PFDVars.fmaModeReversion, type: SimVarValueType.Number }],
-        ['fmaSpeedProtection', { name: PFDVars.fmaSpeedProtection, type: SimVarValueType.Number }],
+        ['fmaModeReversion', { name: PFDVars.fmaModeReversion, type: SimVarValueType.Bool }],
+        ['fmaSpeedProtection', { name: PFDVars.fmaSpeedProtection, type: SimVarValueType.Bool }],
         ['AThrMode', { name: PFDVars.AThrMode, type: SimVarValueType.Number }],
         ['apVsSelected', { name: PFDVars.apVsSelected, type: SimVarValueType.FPM }],
         ['approachCapability', { name: PFDVars.approachCapability, type: SimVarValueType.Number }],
@@ -278,6 +268,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['fdBank', { name: PFDVars.fdBank, type: SimVarValueType.Number }],
         ['fdPitch', { name: PFDVars.fdPitch, type: SimVarValueType.Number }],
         ['v1', { name: PFDVars.v1, type: SimVarValueType.Knots }],
+        ['vr', { name: PFDVars.vr, type: SimVarValueType.Knots }],
         ['fwcFlightPhase', { name: PFDVars.fwcFlightPhase, type: SimVarValueType.Number }],
         ['fmgcFlightPhase', { name: PFDVars.fmgcFlightPhase, type: SimVarValueType.Enum }],
         ['hasLoc', { name: PFDVars.hasLoc, type: SimVarValueType.Bool }],
@@ -289,7 +280,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['hasGlideslope', { name: PFDVars.hasGlideslope, type: SimVarValueType.Bool }],
         ['glideSlopeError', { name: PFDVars.glideSlopeError, type: SimVarValueType.Degree }],
         ['markerBeacon', { name: PFDVars.markerBeacon, type: SimVarValueType.Enum }],
-        ['vr', { name: PFDVars.vr, type: SimVarValueType.Knots }],
         ['isAltManaged', { name: PFDVars.isAltManaged, type: SimVarValueType.Bool }],
         ['targetSpeedManaged', { name: PFDVars.targetSpeedManaged, type: SimVarValueType.Knots }],
         ['vMax', { name: PFDVars.vMax, type: SimVarValueType.Number }],
@@ -325,7 +315,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['engTwoRunning', { name: PFDVars.engTwoRunning, type: SimVarValueType.Bool }],
         ['expediteMode', { name: PFDVars.expediteMode, type: SimVarValueType.Bool }],
         ['setHoldSpeed', { name: PFDVars.setHoldSpeed, type: SimVarValueType.Bool }],
-        ['tdReached', { name: PFDVars.tdReached, type: SimVarValueType.Bool }],
         ['vls', { name: PFDVars.vls, type: SimVarValueType.Number }],
         ['alphaLim', { name: PFDVars.alphaLim, type: SimVarValueType.Number }],
         ['trkFpaDeselectedTCAS', { name: PFDVars.trkFpaDeselectedTCAS, type: SimVarValueType.Bool }],
@@ -345,12 +334,8 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['autoBrakeDecel', { name: PFDVars.autoBrakeDecel, type: SimVarValueType.Bool }],
         ['fpaRaw', { name: PFDVars.fpaRaw, type: SimVarValueType.Number }],
         ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
-        ['linearDeviationActive', { name: PFDVars.linearDeviationActive, type: SimVarValueType.Bool }],
-        ['targetAltitude', { name: PFDVars.targetAltitude, type: SimVarValueType.Feet }],
-        ['verticalProfileLatched', { name: PFDVars.verticalProfileLatched, type: SimVarValueType.Bool }],
-        ['showSpeedMargins', { name: PFDVars.showSpeedMargins, type: SimVarValueType.Bool }],
-        ['upperSpeedMargin', { name: PFDVars.upperSpeedMargin, type: SimVarValueType.Knots }],
-        ['lowerSpeedMargin', { name: PFDVars.lowerSpeedMargin, type: SimVarValueType.Knots }],
+        ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
+        ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
     ])
 
     public constructor(bus: EventBus) {

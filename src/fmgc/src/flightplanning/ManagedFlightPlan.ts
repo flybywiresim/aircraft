@@ -133,14 +133,16 @@ export class ManagedFlightPlan {
 
         this.waypoints.slice(0).forEach((waypoint, index) => {
             // TODO redo when we have a better solution for vector legs
-            const distPpos = (waypoint.isVectors) ? 1 : waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos;
+            const firstDistFromPpos = firstData?.distanceFromPpos ?? 0;
+            const activeWpCumulativeDist = this.activeWaypoint?.cumulativeDistanceInFP ?? 0;
+            const distPpos = (waypoint.isVectors) ? 1 : waypoint.cumulativeDistanceInFP - activeWpCumulativeDist + firstDistFromPpos;
             const data = {
                 ident: waypoint.ident,
                 bearingInFp: waypoint.bearingInFP,
                 distanceInFP: waypoint.distanceInFP,
                 distanceFromPpos: distPpos,
-                timeFromPpos: this.computeWaypointTime(waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos),
-                etaFromPpos: this.computeWaypointEta(waypoint.cumulativeDistanceInFP - this.activeWaypoint.cumulativeDistanceInFP + firstData.distanceFromPpos),
+                timeFromPpos: this.computeWaypointTime(waypoint.cumulativeDistanceInFP - activeWpCumulativeDist + firstDistFromPpos),
+                etaFromPpos: this.computeWaypointEta(waypoint.cumulativeDistanceInFP - activeWpCumulativeDist + firstDistFromPpos),
             };
             stats.set(index, data);
         });
@@ -448,12 +450,6 @@ export class ManagedFlightPlan {
                 } else if (this.activeWaypointIndex === 1 && waypoint.isRunway && segment.type === SegmentType.Departure) {
                     this.activeWaypointIndex = 2;
                 }
-
-                if (segment.type === SegmentType.Departure) {
-                    this.updateDepartureSpeeds();
-                } else if (segment.type === SegmentType.Arrival || segment.type === SegmentType.Approach) {
-                    this.updateArrivalApproachSpeeds();
-                }
             }
         }
     }
@@ -487,12 +483,6 @@ export class ManagedFlightPlan {
 
                 this.reflowSegments();
                 this.reflowDistances();
-
-                if (segment.type === SegmentType.Departure) {
-                    this.updateDepartureSpeeds();
-                } else if (segment.type === SegmentType.Arrival || segment.type === SegmentType.Approach) {
-                    this.updateArrivalApproachSpeeds();
-                }
             }
         }
 
@@ -934,23 +924,6 @@ export class ManagedFlightPlan {
     }
 
     /**
-     * basic speed prediction until VNAV is ready...
-     * helps us draw departure paths reasonably
-     * @todo replace with actual predictions from VNAV!
-     */
-    private updateDepartureSpeeds(): void {
-        let speed = 250; // initial guess...
-        const waypoints = this.getSegment(SegmentType.Departure).waypoints;
-        for (let i = waypoints.length - 1; i >= 0; i--) {
-            const wp = waypoints[i];
-            if ((wp.speedConstraint ?? -1) > 100) {
-                speed = wp.speedConstraint;
-            }
-            wp.additionalData.predictedSpeed = speed;
-        }
-    }
-
-    /**
      * Builds an arrival into the flight plan from indexes in the arrival airport information.
      */
     public async buildArrival(): Promise<void> {
@@ -1011,31 +984,6 @@ export class ManagedFlightPlan {
 
         this.restringSegmentBoundaries(SegmentType.Enroute, SegmentType.Arrival);
         this.restringSegmentBoundaries(SegmentType.Arrival, SegmentType.Approach);
-    }
-
-    /**
-     * basic speed prediction until VNAV is ready...
-     * helps us draw arrival and approach paths reasonably during cruise
-     * @todo replace with actual predictions from VNAV!
-     */
-    private updateArrivalApproachSpeeds(): void {
-        let speed = 250; // initial guess...
-        this.getSegment(SegmentType.Arrival).waypoints.forEach((wp) => {
-            if ((wp.speedConstraint ?? -1) > 100) {
-                speed = wp.speedConstraint;
-            } else if (wp.icao.substring(3, 7).trim().length > 0) {
-                // terminal waypoint, we assume a reasonable approach transition speed
-                speed = Math.max(180, speed);
-            }
-            wp.additionalData.predictedSpeed = speed;
-        });
-        speed = Math.min(160, speed); // slow down a bit for approach
-        this.getSegment(SegmentType.Approach).waypoints.forEach((wp) => {
-            if ((wp.speedConstraint ?? -1) > 100) {
-                speed = wp.speedConstraint;
-            }
-            wp.additionalData.predictedSpeed = speed;
-        });
     }
 
     /**

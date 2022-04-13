@@ -153,6 +153,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     private airSpeed = new Arinc429Word(0);
 
+    private vMax = 0;
+
     private setOutline() {
         let airspeedValue: number;
         if (this.airSpeed.isFailureWarning() || (this.airSpeed.isNoComputedData() && !this.onGround)) {
@@ -212,6 +214,24 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         pf.on('speedAr').handle((airSpeed) => {
             this.airSpeed = airSpeed;
             this.setOutline();
+            this.vMaxRef.forEach((el, index) => {
+                const isInRange = this.vMax <= this.speedSub.get() + DisplayRange;
+                if (isInRange) {
+                    let elementValue = this.vMax + 5.040 * index;
+
+                    let offset = -elementValue * DistanceSpacing / ValueSpacing;
+                    // if the lowest bug is below the speedtape place it on top again
+                    if (-offset < this.speedSub.get() - 45) {
+                        elementValue = (this.vMax + 5.040 * (index + 30));
+
+                        offset = -elementValue * DistanceSpacing / ValueSpacing;
+                    }
+                    el.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
+                    el.instance.style.visibility = 'visible';
+                } else {
+                    el.instance.style.visibility = 'hidden';
+                }
+            });
         });
 
         pf.on('alphaProt').withPrecision(2).handle((a) => {
@@ -224,12 +244,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             this.lastAlphaProtSub.set(a);
         });
 
-        pf.on('vMax').withPrecision(2).handle((vMax) => {
-            this.vMaxRef.forEach((el, index) => {
-                const elementValue = vMax + 5.040 * index;
-                const offset = -elementValue * DistanceSpacing / ValueSpacing;
-                el.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-            });
+        pf.on('vMax').whenChanged().handle((vMax) => {
+            this.vMax = vMax;
         });
 
         // showBars replacement
@@ -266,7 +282,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     private createVMaxBarberPole() {
         const path: SVGGElement[] = [];
-        for (let i = 0; i < 15; i++) {
+        for (let i = 0; i < 30; i++) {
             const vMaxRef = FSComponent.createRef<SVGPathElement>();
             path.push(
                 <path ref={vMaxRef} class="BarRed" d="m22.053 78.381v-2.6206m-3.022 5.0397h3.022v-2.4191h-3.022z" />,
@@ -834,65 +850,8 @@ class SpeedTarget extends DisplayComponent <{ bus: EventBus }> {
                 <text ref={this.upperBoundRef} id="SelectedSpeedLowerText" class="FontSmallest EndAlign Cyan" x="24.078989" y="128.27917">{this.textSub}</text>
                 <text ref={this.lowerBoundRef} id="SelectedSpeedLowerText" class="FontSmallest EndAlign Cyan" x="24.113895" y="36.670692">{this.textSub}</text>
                 <path ref={this.speedTargetRef} class="NormalStroke CornerRound Cyan" style="transform: translate3d(0px, 0px, 0px)" d="m19.274 81.895 5.3577 1.9512v-6.0476l-5.3577 1.9512" />
-                <SpeedMargins bus={this.props.bus} />
             </>
         );
-    }
-}
-
-class SpeedMargins extends DisplayComponent<{ bus: EventBus }> {
-    private entireComponentRef = FSComponent.createRef<SVGGElement>();
-
-    private upperSpeedMarginRef = FSComponent.createRef<SVGPathElement>();
-
-    private lowerSpeedMarginRef = FSComponent.createRef<SVGPathElement>();
-
-    private currentSpeed = new Arinc429Word(0);
-
-    onAfterRender(node: VNode): void {
-        super.onAfterRender(node);
-
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
-
-        sub.on('showSpeedMargins').handle(this.hideOrShow(this.entireComponentRef));
-
-        sub.on('speedAr').withArinc429Precision(2).handle((s) => this.currentSpeed = s);
-
-        sub.on('upperSpeedMargin').handle(this.moveToSpeed(this.upperSpeedMarginRef));
-
-        sub.on('lowerSpeedMargin').handle(this.moveToSpeed(this.lowerSpeedMarginRef));
-    }
-
-    render(): VNode {
-        return (
-            <g ref={this.entireComponentRef} id="SpeedMargins" style="display: none;">
-                <path ref={this.upperSpeedMarginRef} id="UpperSpeedMargin" class="Fill Magenta" d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z" />
-                <path ref={this.lowerSpeedMarginRef} id="LowerSpeedMargin" class="Fill Magenta" d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z" />
-            </g>
-        );
-    }
-
-    private moveToSpeed<T extends(HTMLElement | SVGElement)>(component: NodeReference<T>) {
-        return (speed: number) => {
-            const offset = (Math.round(100 * (this.currentSpeed.value - speed) * DistanceSpacing / ValueSpacing) / 100).toFixed(2);
-
-            const isInRange = Math.abs(this.currentSpeed.value - speed) < DisplayRange;
-            component.instance.style.visibility = isInRange ? 'visible' : 'hidden';
-
-            if (isInRange) {
-                component.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-            }
-        };
-    }
-
-    private hideOrShow<T extends(HTMLElement | SVGElement)>(component: NodeReference<T>) {
-        return (isActive: boolean) => {
-            if (isActive) {
-                component.instance.removeAttribute('style');
-            } else {
-                component.instance.setAttribute('style', 'display: none');
-            }
-        };
     }
 }
 

@@ -38,7 +38,7 @@ const TCAS_MASK_ROSE: TcasMask = [
 const useAirTraffic = (mapParams, mode) : NdTraffic[] => {
     const [airTraffic, setAirTraffic] = useState<NdTraffic[]>([]);
     const tcasMask = (mode === Mode.ARC ? TCAS_MASK_ARC : TCAS_MASK_ROSE);
-    useFlowSyncEvent('A32NX_TCAS_TRAFFIC', (topic, data) => {
+    useFlowSyncEvent('A32NX_TCAS_TRAFFIC', (_topic, data) => {
         if (data) {
             setAirTraffic(trafficToDisplay(data, mapParams, tcasMask));
         }

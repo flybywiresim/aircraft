@@ -718,20 +718,14 @@ class CDUFlightPlanPage {
 
             if (fpm.getDestination() && fmsGeometryProfile) {
                 const destStats = stats.get(fpm.getCurrentFlightPlan().waypoints.length - 1);
-                destDistCell = destStats.distanceFromPpos.toFixed(0);
-
-                const destEfob = fmsGeometryProfile.getRemainingFuelAtDestination();
-                if (isFinite(destEfob)) {
-                    destEFOBCell = (NXUnits.poundsToUser(destEfob) / 1000).toFixed(1);
-                }
-
-                const timeRemaining = fmsGeometryProfile.getTimeToDestination();
-                if (isFinite(timeRemaining)) {
-                    const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-
-                    destTimeCell = isFlying
-                        ? FMCMainDisplay.secondsToUTC(utcTime + timeRemaining)
-                        : FMCMainDisplay.secondsTohhmm(timeRemaining);
+                if (destStats) {
+                    destDistCell = destStats.distanceFromPpos.toFixed(0);
+                    destEFOBCell = (NXUnits.kgToUser(mcdu.getDestEFOB(isFlying))).toFixed(1);
+                    if (isFlying) {
+                        destTimeCell = FMCMainDisplay.secondsToUTC(destStats.etaFromPpos);
+                    } else {
+                        destTimeCell = FMCMainDisplay.secondsTohhmm(destStats.timeFromPpos);
+                    }
                 }
             }
 
