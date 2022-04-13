@@ -5,13 +5,21 @@
 
 import { NXDataStore } from '@shared/persistence';
 import { ar } from './Localization/ar';
+import { cs } from './Localization/cs';
 import { de } from './Localization/de';
 import { el } from './Localization/el';
 import { en } from './Localization/en';
 import { es } from './Localization/es';
+import { fi } from './Localization/fi';
 import { fr } from './Localization/fr';
 import { he } from './Localization/he';
+import { it } from './Localization/it';
+import { ja } from './Localization/ja';
 import { ko } from './Localization/ko';
+import { nb } from './Localization/nb';
+import { nl } from './Localization/nl';
+import { pl } from './Localization/pl';
+import { pt } from './Localization/pt';
 import { ru } from './Localization/ru';
 import { sl } from './Localization/sl';
 import { sv } from './Localization/sv';
@@ -47,13 +55,21 @@ const init = (lang:string, data) => {
 };
 
 init('ar', ar);
+init('cs', cs);
 init('de', de);
 init('el', el);
 init('en', en);
 init('es', es);
+init('fi', fi);
 init('fr', fr);
 init('he', he);
+init('it', it);
+init('ja', ja);
 init('ko', ko);
+init('nb', nb);
+init('nl', nl);
+init('pl', pl);
+init('pt', pt);
 init('ru', ru);
 init('sl', sl);
 init('sv', sv);
@@ -68,20 +84,28 @@ interface LanguageOption {
 
 // used for the dropdown in the flyPad settings page
 export const languageOptions: LanguageOption[] = [
-    { langCode: 'ar', alias: 'اَلْعَرَبِيَّةُ' },
-    { langCode: 'de', alias: 'Deutsch' },
-    { langCode: 'el', alias: 'Ελληνικά' },
+    { langCode: 'ar', alias: 'اَلْعَرَبِيَّةُ (Arabic)' },
+    { langCode: 'cs', alias: 'Čeština (Czech)' },
+    { langCode: 'de', alias: 'Deutsch (German)' },
+    { langCode: 'el', alias: 'Ελληνικά (Greek)' },
     { langCode: 'en', alias: 'English' },
-    { langCode: 'es', alias: 'Español' },
-    { langCode: 'fr', alias: 'Français' },
-    { langCode: 'he', alias: 'עִבְרִית' },
-    { langCode: 'ko', alias: '한국어' },
-    { langCode: 'ru', alias: 'Русский' },
-    { langCode: 'sl', alias: 'Slovenščina' },
-    { langCode: 'sv', alias: 'Svenska' },
-    { langCode: 'th', alias: 'ภาษาไทย' },
-    { langCode: 'vi', alias: 'Tiếng Việt' },
-    { langCode: 'zh-HK', alias: '中文(繁體)' },
+    { langCode: 'es', alias: 'Español (Spanish)' },
+    { langCode: 'fi', alias: 'Suomen kieli (Finnish)' },
+    { langCode: 'fr', alias: 'Français (French)' },
+    { langCode: 'he', alias: 'עִבְרִית (Hebrew)' },
+    { langCode: 'it', alias: 'Italiano (Italian)' },
+    { langCode: 'jp', alias: '日本語 (Japanese)' },
+    { langCode: 'ko', alias: '한국어 (Korean)' },
+    { langCode: 'nb', alias: 'Norsk (Norwegian)' },
+    { langCode: 'nl', alias: 'Nederlands (Dutch)' },
+    { langCode: 'pl', alias: 'Polski (Polish)' },
+    { langCode: 'pt', alias: 'Português (Portuguese)' },
+    { langCode: 'ru', alias: 'Русский (Russian)' },
+    { langCode: 'sl', alias: 'Slovenščina (Slovenian)' },
+    { langCode: 'sv', alias: 'Svenska (Swedish)' },
+    { langCode: 'th', alias: 'ภาษาไทย (Thai)' },
+    { langCode: 'vi', alias: 'Tiếng Việt (Vietnamese)' },
+    { langCode: 'zh-HK', alias: '正體字 (Chinese HK)' },
 ];
 
 const watchLanguageChanges = () => {
