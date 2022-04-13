@@ -31,39 +31,39 @@ function calculateActiveDate(date) {
     }
 }
 
-function calculateSecDate(date) {
-    if (date.length === 13) {
-        const primStartMonth = date.slice(0, 3);
-        const primStartDay = date.slice(3, 5);
+// function calculateSecDate(date) {
+//     if (date.length === 13) {
+//         const primStartMonth = date.slice(0, 3);
+//         const primStartDay = date.slice(3, 5);
 
-        const primStartMonthIndex = months.findIndex((item) => item === primStartMonth);
+//         const primStartMonthIndex = months.findIndex((item) => item === primStartMonth);
 
-        if (primStartMonthIndex === -1) {
-            return "ERR";
-        }
+//         if (primStartMonthIndex === -1) {
+//             return "ERR";
+//         }
 
-        let newEndMonth = primStartMonth;
-        let newEndDay = primStartDay - 1;
+//         let newEndMonth = primStartMonth;
+//         let newEndDay = primStartDay - 1;
 
-        let newStartDay = newEndDay - 27;
-        let newStartMonth = primStartMonth;
+//         let newStartDay = newEndDay - 27;
+//         let newStartMonth = primStartMonth;
 
-        if (newEndDay === 0) {
-            newEndMonth = months[findNewMonthIndex(primStartMonthIndex)];
-            newEndDay = monthLength[findNewMonthIndex(primStartMonthIndex)];
-        }
+//         if (newEndDay === 0) {
+//             newEndMonth = months[findNewMonthIndex(primStartMonthIndex)];
+//             newEndDay = monthLength[findNewMonthIndex(primStartMonthIndex)];
+//         }
 
-        if (newStartDay <= 0) {
-            newStartMonth = months[findNewMonthIndex(primStartMonthIndex)];
-            newStartDay = monthLength[findNewMonthIndex(primStartMonthIndex)] + newStartDay;
-        }
+//         if (newStartDay <= 0) {
+//             newStartMonth = months[findNewMonthIndex(primStartMonthIndex)];
+//             newStartDay = monthLength[findNewMonthIndex(primStartMonthIndex)] + newStartDay;
+//         }
 
-        return `${lessThan10(newStartDay)}${newStartMonth}-${lessThan10(newEndDay)}${newEndMonth}`;
-    } else {
-        return "ERR";
-    }
+//         return `${lessThan10(newStartDay)}${newStartMonth}-${lessThan10(newEndDay)}${newEndMonth}`;
+//     } else {
+//         return "ERR";
+//     }
 
-}
+// }
 
 class CDUIdentPage {
     static ShowPage(mcdu, confirmDeleteAll = false) {
@@ -79,7 +79,7 @@ class CDUIdentPage {
             ["\xa0ACTIVE NAV DATA BASE"],
             ["\xa0" + calculateActiveDate(date) + "[color]cyan", "AIRAC[color]green"],
             ["\xa0SECOND NAV DATA BASE"],
-            ["{small}{" + calculateSecDate(date) + "{end}[color]inop"],
+            ["{small}{" + calculateActiveDate(date) + "{end}[color]cyan"],
             ["", "STORED\xa0\xa0\xa0\xa0"],
             ["", `{green}${stored.routes.toFixed(0).padStart(2, '0')}{end}{small}RTES{end}\xa0{green}${stored.runways.toFixed(0).padStart(2, '0')}{end}{small}RWYS{end}`],
             ["CHG CODE", `{green}{big}${stored.waypoints.toFixed(0).padStart(2, '0')}{end}{end}{small}WPTS{end}\xa0{green}{big}${stored.navaids.toFixed(0).padStart(2, '0')}{end}{end}{small}NAVS{end}`],
@@ -99,6 +99,19 @@ class CDUIdentPage {
             } else {
                 CDUIdentPage.ShowPage(mcdu, true);
             }
+        };
+
+        //Select secondary Nav DB, there is only one, so same one is used for primary and secondary. This clears the active & temp FPL's and shows please wait message briefly.
+        mcdu.onLeftInput[2] = () => {
+            mcdu.addNewMessage(NXSystemMessages.pleaseWait);
+            mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active);
+            setTimeout(() => {
+                mcdu.tryRemoveMessage('PLEASE WAIT');
+                //to do:
+                //init fuel data
+                //init weights
+                //init FMS position
+            }, 2000);
         };
     }
 }
