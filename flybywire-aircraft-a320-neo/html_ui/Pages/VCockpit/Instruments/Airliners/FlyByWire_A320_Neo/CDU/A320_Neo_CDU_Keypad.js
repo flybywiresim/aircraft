@@ -2,11 +2,6 @@ class Keypad {
     constructor(mcdu) {
         this._mcdu = mcdu;
         this._keys = {
-            // "DEPARR": () => mcdu.onDepArr(),
-            // "FIX": () => mcdu.onFix(),
-            // "HOLD": () => mcdu.onHold(),
-            // "FMCCOMM": () => mcdu.onFmcComm(),
-            "NAVRAD": () => CDUNavRadioPage.ShowPage(mcdu),
             "PREVPAGE": () => mcdu.onPrevPage(),
             "NEXTPAGE": () => mcdu.onNextPage(),
             "SP": () => mcdu.onSp(),
@@ -16,7 +11,6 @@ class Keypad {
             "DIV": () => mcdu.onDiv(),
             "DOT": () => mcdu.onDot(),
             "PLUSMINUS": (defaultKey = "-") => mcdu.onPlusMinus(defaultKey),
-            // "Localizer": () => {},
             "DIR": () => {
                 mcdu.eraseTemporaryFlightPlan();
                 CDUDirectToPage.ShowPage(mcdu);
@@ -50,22 +44,20 @@ class Keypad {
         };
 
         for (const letter of FMCMainDisplay._AvailableKeys) {
-            this._keys[letter] = () => this._mcdu.scratchpad.addChar(letter);
+            this._keys[letter] = () => this._mcdu.onLetterInput(letter);
         }
     }
 
     onKeyPress(value) {
-        if (!value in this._keys) {
+        const action = this._keys[value];
+        if (!action) {
             return false;
         }
-
-        //TODO: remove log
-        console.log("Processed key event: " + value);
 
         const cur = this._mcdu.page.Current;
         setTimeout(() => {
             if (this._mcdu.page.Current === cur) {
-                this._keys[value]();
+                action();
             }
         }, this._mcdu.getDelaySwitchPage());
         return true;

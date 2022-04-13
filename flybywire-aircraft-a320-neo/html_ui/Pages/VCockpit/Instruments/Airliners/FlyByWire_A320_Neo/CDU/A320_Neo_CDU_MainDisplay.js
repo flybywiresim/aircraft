@@ -688,10 +688,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.page.Current = this.page.Clear;
         this.setArrows(false, false, false, false);
         this.tryDeleteTimeout();
-        this.onUp = undefined;
-        this.onDown = undefined;
-        this.onLeft = undefined;
-        this.onRight = undefined;
+        this.onUp = () => {};
+        this.onDown = () => {};
+        this.onLeft = () => {};
+        this.onRight = () => {};
         this.updateRequest = false;
     }
 
