@@ -79,33 +79,34 @@ init('zh-HK', zhHantHK);
 
 interface LanguageOption {
     langCode: string;
+    langName: string;
     alias: string;
 }
 
 // used for the dropdown in the flyPad settings page
 export const languageOptions: LanguageOption[] = [
-    { langCode: 'ar', alias: 'اَلْعَرَبِيَّةُ (Arabic)' },
-    { langCode: 'cs', alias: 'Čeština (Czech)' },
-    { langCode: 'de', alias: 'Deutsch (German)' },
-    { langCode: 'el', alias: 'Ελληνικά (Greek)' },
-    { langCode: 'en', alias: 'English' },
-    { langCode: 'es', alias: 'Español (Spanish)' },
-    { langCode: 'fi', alias: 'Suomen kieli (Finnish)' },
-    { langCode: 'fr', alias: 'Français (French)' },
-    { langCode: 'he', alias: 'עִבְרִית (Hebrew)' },
-    { langCode: 'it', alias: 'Italiano (Italian)' },
-    { langCode: 'jp', alias: '日本語 (Japanese)' },
-    { langCode: 'ko', alias: '한국어 (Korean)' },
-    { langCode: 'nb', alias: 'Norsk (Norwegian)' },
-    { langCode: 'nl', alias: 'Nederlands (Dutch)' },
-    { langCode: 'pl', alias: 'Polski (Polish)' },
-    { langCode: 'pt', alias: 'Português (Portuguese)' },
-    { langCode: 'ru', alias: 'Русский (Russian)' },
-    { langCode: 'sl', alias: 'Slovenščina (Slovenian)' },
-    { langCode: 'sv', alias: 'Svenska (Swedish)' },
-    { langCode: 'th', alias: 'ภาษาไทย (Thai)' },
-    { langCode: 'vi', alias: 'Tiếng Việt (Vietnamese)' },
-    { langCode: 'zh-HK', alias: '正體字 (Chinese HK)' },
+    { langCode: 'ar', langName: 'Arabic', alias: 'اَلْعَرَبِيَّةُ' },
+    { langCode: 'cs', langName: 'Czech', alias: 'Čeština' },
+    { langCode: 'de', langName: 'German', alias: 'Deutsch' },
+    { langCode: 'el', langName: 'Greek', alias: 'Ελληνικά' },
+    { langCode: 'en', langName: 'English', alias: 'English' },
+    { langCode: 'es', langName: 'Spanish', alias: 'Español' },
+    { langCode: 'fi', langName: 'Finnish', alias: 'Suomen kieli' },
+    { langCode: 'fr', langName: 'French', alias: 'Français' },
+    { langCode: 'he', langName: 'Hebrew', alias: 'עִבְרִית' },
+    { langCode: 'it', langName: 'Italian', alias: 'Italiano' },
+    { langCode: 'jp', langName: 'Japanese', alias: '日本語' },
+    { langCode: 'ko', langName: 'Korean', alias: '한국어' },
+    { langCode: 'nb', langName: 'Norwegian', alias: 'Norsk' },
+    { langCode: 'nl', langName: 'Dutch', alias: 'Nederlands' },
+    { langCode: 'pl', langName: 'Polish', alias: 'Polski' },
+    { langCode: 'pt', langName: 'Portuguese', alias: 'Português' },
+    { langCode: 'ru', langName: 'Russian', alias: 'Русский' },
+    { langCode: 'sl', langName: 'Slovenian', alias: 'Slovenščina' },
+    { langCode: 'sv', langName: 'Swedish', alias: 'Svenska' },
+    { langCode: 'th', langName: 'Thai', alias: 'ภาษาไทย' },
+    { langCode: 'vi', langName: 'Vietnamese', alias: 'Tiếng Việt' },
+    { langCode: 'zh-HK', langName: 'Chinese HK', alias: '正體字' },
 ];
 
 const watchLanguageChanges = () => {
