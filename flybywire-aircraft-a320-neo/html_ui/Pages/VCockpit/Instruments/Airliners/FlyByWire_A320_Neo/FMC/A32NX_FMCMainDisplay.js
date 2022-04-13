@@ -52,7 +52,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprFlaps3 = undefined;
         this._lockConnectIls = undefined;
         this._apNavIndex = undefined;
-        this._apLocalizerOn = undefined;
         this._canSwitchToNav = undefined;
         this._vhf1Frequency = undefined;
         this._vhf2Frequency = undefined;
@@ -334,7 +333,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfApprFlaps3 = false;
         this._lockConnectIls = false;
         this._apNavIndex = 1;
-        this._apLocalizerOn = false;
         this._canSwitchToNav = false;
         this._vor1Frequency = 0;
         this._vor1Course = 0;
