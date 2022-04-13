@@ -191,6 +191,33 @@
     src: url("/Fonts/NotoSansThai-Bold.ttf") format("truetype");
   }
 
+  // Hebrew
+  @font-face {
+    font-family: "NotoSansThai";
+    font-weight: 300;
+    src: url("/Fonts/NotoSansHebrew-Light.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansThai";
+    font-weight: 400;
+    src: url("/Fonts/NotoSansHebrew-Regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansThai";
+    font-weight: 500;
+    src: url("/Fonts/NotoSansHebrew-Medium.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansThai";
+    font-weight: 600;
+    src: url("/Fonts/NotoSansHebrew-SemiBold.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "NotoSansThai";
+    font-weight: 700;
+    src: url("/Fonts/NotoSansHebrew-Bold.ttf") format("truetype");
+  }
+
   html body {
     @apply font-body;
   }
