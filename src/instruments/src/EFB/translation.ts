@@ -1,6 +1,7 @@
-/* eslint-disable no-console */
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
+
+/* eslint-disable no-console */
 
 import { NXDataStore } from '@shared/persistence';
 import { ar } from './Localization/ar';
@@ -69,7 +70,7 @@ interface LanguageOption {
 export const languageOptions: LanguageOption[] = [
     { langCode: 'ar', alias: 'اَلْعَرَبِيَّةُ' },
     { langCode: 'de', alias: 'Deutsch' },
-    { langCode: 'el', alias: 'ελληνικά' },
+    { langCode: 'el', alias: 'Ελληνικά' },
     { langCode: 'en', alias: 'English' },
     { langCode: 'es', alias: 'Español' },
     { langCode: 'fr', alias: 'Français' },
