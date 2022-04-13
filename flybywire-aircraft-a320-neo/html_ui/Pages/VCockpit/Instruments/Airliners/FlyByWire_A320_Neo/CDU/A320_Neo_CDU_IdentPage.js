@@ -107,7 +107,10 @@ class CDUIdentPage {
             mcdu.flightPlanManager.clearFlightPlan(FlightPlans.Active);
             setTimeout(() => {
                 mcdu.tryRemoveMessage('PLEASE WAIT');
-                //to do: init fuel data
+                //to do:
+                //init fuel data
+                //init weights
+                //init FMS position
             }, 2000);
         };
     }
