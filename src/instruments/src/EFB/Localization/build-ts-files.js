@@ -26,16 +26,14 @@ async function processFile(dirent) {
     let json;
     try {
         content = fs.readFileSync(path.join(langFilesPath, dirent.name));
-        // console.log(`Successfully read file: "${dirent.name}"`);
     } catch (e) {
         console.log(`Error while reading language file "${dirent.name}": ${e}`);
         return;
     }
 
-    // Parse JSON to check if file format is correct
+    // Parse JSON to check if file syntax is correct
     try {
         json = JSON.parse(content);
-        // console.log(`Successfully converted to JSON: "${dirent.name}"`);
     } catch (e) {
         console.log(`Error while converting language file "${dirent.name}": ${e}`);
         return;
@@ -47,16 +45,21 @@ async function processFile(dirent) {
     // Write ts file to filesystem
     try {
         fs.writeFileSync(path.join(convertedFilesPath, `${name}.ts`), output);
-        // console.log(`Successfully written to ts file: ${name}.ts`);
     } catch (e) {
         console.log(`Error while writing ts file "${dirent.name}": ${e}`);
+        return;
     }
 
     // Use ESLint to "fix" files
     const results = await linter.lintFiles(path.join(convertedFilesPath, `${name}.ts`));
-    await eslint.ESLint.outputFixes(results);
-
-    console.log(`Successfully completed ts file: ${name}.ts`);
+    await eslint.ESLint.outputFixes(results)
+        .then(() => {
+            console.log(`Successfully completed ts file: ${name}.ts`);
+        })
+        .catch((e) => {
+            console.log(`Error while linting ts file "${dirent.name}": ${e}`);
+            console.log(`Completed ts file with linting error: ${name}.ts`);
+        });
 }
 
 console.log('Downloading language files from Localazy');
@@ -69,6 +72,11 @@ exec(`Localazy download -r ${process.env.LOCALAZY_READ_KEY}`, (error, stdout, st
         console.log(`stderr: ${stderr}`);
         return;
     }
+    stdout.split('\n').forEach((item) => {
+        if (item.startsWith('Writing')) {
+            console.log(item);
+        }
+    });
     console.log('Files successfully downloaded. Processing...');
     for (const dirent of fs.readdirSync(langFilesPath, { withFileTypes: true })) {
         if (dirent.isFile() && dirent.name.endsWith('.json')) {
