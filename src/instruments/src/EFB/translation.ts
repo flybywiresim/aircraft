@@ -13,6 +13,7 @@ import { es } from './Localization/es';
 import { fi } from './Localization/fi';
 import { fr } from './Localization/fr';
 import { he } from './Localization/he';
+import { id } from './Localization/id';
 import { it } from './Localization/it';
 import { ja } from './Localization/ja';
 import { ko } from './Localization/ko';
@@ -24,6 +25,7 @@ import { ru } from './Localization/ru';
 import { sl } from './Localization/sl';
 import { sv } from './Localization/sv';
 import { th } from './Localization/th';
+import { tr } from './Localization/tr';
 import { vi } from './Localization/vi';
 import { zhHantHK } from './Localization/zh-Hant-HK';
 
@@ -63,6 +65,7 @@ init('es', es);
 init('fi', fi);
 init('fr', fr);
 init('he', he);
+init('id', id);
 init('it', it);
 init('ja', ja);
 init('ko', ko);
@@ -74,6 +77,7 @@ init('ru', ru);
 init('sl', sl);
 init('sv', sv);
 init('th', th);
+init('tr', tr);
 init('vi', vi);
 init('zh-HK', zhHantHK);
 
@@ -94,6 +98,7 @@ export const languageOptions: LanguageOption[] = [
     { langCode: 'fi', langName: 'Finnish', alias: 'Suomen kieli' },
     { langCode: 'fr', langName: 'French', alias: 'Français' },
     { langCode: 'he', langName: 'Hebrew', alias: 'עִבְרִית' },
+    { langCode: 'id', langName: 'Indonesian', alias: 'Bahasa Indonesia' },
     { langCode: 'it', langName: 'Italian', alias: 'Italiano' },
     { langCode: 'jp', langName: 'Japanese', alias: '日本語' },
     { langCode: 'ko', langName: 'Korean', alias: '한국어' },
@@ -105,6 +110,7 @@ export const languageOptions: LanguageOption[] = [
     { langCode: 'sl', langName: 'Slovenian', alias: 'Slovenščina' },
     { langCode: 'sv', langName: 'Swedish', alias: 'Svenska' },
     { langCode: 'th', langName: 'Thai', alias: 'ภาษาไทย' },
+    { langCode: 'tr', langName: 'Turkish', alias: 'Türkçe' },
     { langCode: 'vi', langName: 'Vietnamese', alias: 'Tiếng Việt' },
     { langCode: 'zh-HK', langName: 'Chinese HK', alias: '正體字' },
 ];

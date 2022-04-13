@@ -58,7 +58,7 @@ export const FlyPadPage = () => {
 
             <SettingItem name={t('Settings.flyPad.Language')}>
                 <SelectInput
-                    className="w-72"
+                    className="w-80"
                     value={language}
                     onChange={(value) => setLanguage(value as string)}
                     options={languageOptions.map((option) => ({ value: option.langCode, displayValue: `${option.alias} (${option.langName})` }))}
