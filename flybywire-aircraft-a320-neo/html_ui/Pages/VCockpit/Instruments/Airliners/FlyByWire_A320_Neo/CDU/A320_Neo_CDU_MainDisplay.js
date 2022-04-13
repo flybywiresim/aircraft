@@ -198,9 +198,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         const display = new ScratchpadDisplay(this.getChildById("in-out"));
         this.scratchpad = new ScratchpadDataLink(this, display);
-        this.setupFmgcTriggers();
-        // TODO: why duplicate
-        this.setupFmgcTriggers();
 
         this.setTimeout = (func) => {
             setTimeout(() => {
@@ -220,9 +217,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRightFunction = (f) => this.onLsk(this.onRightInput[f], this.rightInputDelay[f]);
         this.onOvfy = () => this.scratchpad.addChar('Δ');
         this.onUnload = () => {};
-
-        //TODO: unused variable 'flightNo'
-        const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
 
         CDUMenuPage.ShowPage(this);
 
