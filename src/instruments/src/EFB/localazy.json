@@ -1,0 +1,24 @@
+{
+  "upload": {
+    "skipFailedAutodetection": true,
+    "importAsNew": false,
+    "forceCurrent": false,
+    "filterSource": true,
+    "keySeparator": ".",
+    "type": "json",
+    "folder": "Localization",
+    "files": {
+      "file": "flybywireos3.json",
+      "pattern": "trans/*.json",
+      "type": "json",
+      "lang": "${autodetectLang}"
+    }
+  },
+  "download": {
+    "folder": "Localization",
+    "includeSourceLang": true,
+    "files": {
+      "output": "trans/${lang}.json"
+    }
+  }
+}
