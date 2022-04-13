@@ -71,3 +71,4 @@ src/instruments/buildSrc/custom/*
 msfs-avionics-mirror/src/sdk/build/**
 *.tgz
 /src/instruments/src/EFB/Localization/downloaded/*.json
+/.ace/
