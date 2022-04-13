@@ -1,4 +1,5 @@
-/* eslint-disable max-len */
+// Created automatically
+
 export const th = {
     'AirTrafficControl': {
         Active: 'ใช้งานอยู่',

@@ -1,4 +1,5 @@
-/* eslint-disable max-len */
+// Created automatically
+
 export const de = {
     'AirTrafficControl': {
         Active: 'Aktive Frequenz',

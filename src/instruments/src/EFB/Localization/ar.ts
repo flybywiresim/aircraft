@@ -1,6 +1,6 @@
 // Created automatically
 
-export const en = {
+export const ar = {
     'AirTrafficControl': {
         Active: 'Active',
         ConnectHoppieACARS: 'Connect Hoppie ACARS',
@@ -119,8 +119,8 @@ export const en = {
             LeftInnerTank: 'Left Inner Tank',
             LeftOuterTank: 'Left Outer Tank',
             ReadyToStart: 'Ready to Start',
-            Refuel: 'Refuel',
-            RefuelTime: 'Refuel Time',
+            Refuel: 'التزود بالوقود',
+            RefuelTime: 'وقت التزود بالوقود',
             Refueling: 'Refueling',
             RightInnerTank: 'Right Inner Tank',
             RightOuterTank: 'Right Outer Tank',

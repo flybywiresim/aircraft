@@ -1,0 +1,9 @@
+{
+  "download": {
+    "folder": "downloaded",
+    "includeSourceLang": true,
+    "files": {
+      "output": "${lang}.json"
+    }
+  }
+}

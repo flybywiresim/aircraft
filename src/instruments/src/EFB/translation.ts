@@ -3,14 +3,20 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { NXDataStore } from '@shared/persistence';
-import { en } from './Localization/en';
+import { ar } from './Localization/ar';
 import { de } from './Localization/de';
+import { el } from './Localization/el';
+import { en } from './Localization/en';
 import { es } from './Localization/es';
 import { fr } from './Localization/fr';
+import { he } from './Localization/he';
+import { ko } from './Localization/ko';
 import { ru } from './Localization/ru';
 import { sl } from './Localization/sl';
+import { sv } from './Localization/sv';
 import { th } from './Localization/th';
-import { zhHant } from './Localization/zhHant';
+import { vi } from './Localization/vi';
+import { zhHantHK } from './Localization/zh-Hant-HK';
 
 console.log('Initializing Translation');
 
@@ -39,15 +45,20 @@ const init = (lang:string, data) => {
     initMap(langMap.get(lang), data, []);
 };
 
-init('en', en);
+init('ar', ar);
 init('de', de);
+init('el', el);
+init('en', en);
 init('es', es);
 init('fr', fr);
+init('he', he);
+init('ko', ko);
 init('ru', ru);
 init('sl', sl);
+init('sv', sv);
 init('th', th);
-// zhHant is actually the translation for zh-HK due to a mistake on Localazy
-init('zh-HK', zhHant);
+init('vi', vi);
+init('zh-HK', zhHantHK);
 
 interface LanguageOption {
     langCode: string;
@@ -56,38 +67,20 @@ interface LanguageOption {
 
 // used for the dropdown in the flyPad settings page
 export const languageOptions: LanguageOption[] = [
-    {
-        langCode: 'en',
-        alias: 'English',
-    },
-    {
-        langCode: 'de',
-        alias: 'Deutsch',
-    },
-    {
-        langCode: 'es',
-        alias: 'Español',
-    },
-    {
-        langCode: 'fr',
-        alias: 'Français',
-    },
-    {
-        langCode: 'ru',
-        alias: 'Русский',
-    },
-    {
-        langCode: 'sl',
-        alias: 'Slovenščina',
-    },
-    {
-        langCode: 'th',
-        alias: 'ภาษาไทย',
-    },
-    {
-        langCode: 'zh-HK',
-        alias: '中文(繁體)',
-    },
+    { langCode: 'ar', alias: 'اَلْعَرَبِيَّةُ' },
+    { langCode: 'de', alias: 'Deutsch' },
+    { langCode: 'el', alias: 'ελληνικά' },
+    { langCode: 'en', alias: 'English' },
+    { langCode: 'es', alias: 'Español' },
+    { langCode: 'fr', alias: 'Français' },
+    { langCode: 'he', alias: 'עִבְרִית' },
+    { langCode: 'ko', alias: '한국어' },
+    { langCode: 'ru', alias: 'Русский' },
+    { langCode: 'sl', alias: 'Slovenščina' },
+    { langCode: 'sv', alias: 'Svenska' },
+    { langCode: 'th', alias: 'ภาษาไทย' },
+    { langCode: 'vi', alias: 'Tiếng Việt' },
+    { langCode: 'zh-HK', alias: '中文(繁體)' },
 ];
 
 const watchLanguageChanges = () => {
