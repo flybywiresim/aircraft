@@ -199,7 +199,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const display = new ScratchpadDisplay(this.getChildById("in-out"));
         this.scratchpad = new ScratchpadDataLink(this, display);
         this.setupFmgcTriggers();
-
+        // TODO: why duplicate
         this.setupFmgcTriggers();
 
         this.setTimeout = (func) => {
@@ -211,7 +211,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         /** The following events remain due to shared use by the keypad and keyboard type entry */
         this.onLetterInput = (l) => this.scratchpad.addChar(l);
         this.onSp = () => this.scratchpad.addChar(" ");
-        this.onDel = () => this.scratchpad.delChar();
         this.onDiv = () => this.scratchpad.addChar("/");
         this.onDot = () => this.scratchpad.addChar(".");
         this.onClr = () => this.scratchpad.clear();
@@ -690,8 +689,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.tryDeleteTimeout();
         this.onUp = () => {};
         this.onDown = () => {};
-        this.onLeft = () => {};
-        this.onRight = () => {};
         this.updateRequest = false;
     }
 
