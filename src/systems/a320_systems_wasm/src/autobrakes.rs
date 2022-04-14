@@ -6,7 +6,7 @@ use systems_wasm::Variable;
 pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     let options = |options: EventToVariableOptions| {
         options
-            .leading_debounce(Duration::from_millis(1500))
+            .leading_debounce(Duration::from_millis(250))
             .afterwards_reset_to(0.)
     };
 
@@ -33,6 +33,13 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
         EventToVariableMapping::Value(1.),
         Variable::named("AUTOBRAKE_DISARM"),
         |options| options.afterwards_reset_to(0.),
+    )?;
+
+    builder.event_to_variable(
+        "A32NX.AUTOBRAKE_SET",
+        EventToVariableMapping::EventDataToValue(|event_data| event_data.into()),
+        Variable::named("AUTOBRAKES_ARMED_MODE_SET"),
+        |options| options.afterwards_reset_to(-1.),
     )?;
 
     Ok(())

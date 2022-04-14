@@ -154,3 +154,15 @@
 
 - A32NX.THROTTLE_MAPPING_SAVE_TO_FILE
     - When triggered the throttle mapping configuration is **saved** from **file**
+
+## Autobrake System
+
+- A32NX.AUTOBRAKE_SET
+  - When triggered the autobrake is set to the desired state
+  - Parameter value can be used to set the decrement:
+      Value | Meaning
+      --- | ---
+      0 | Disarm Autobrake
+      1 | Set Autobrake to LOW
+      2 | Set Autobrake to MED
+      3 | Set Autobrake to MAX (if allowed)

@@ -3235,6 +3235,7 @@ impl SimulationElement for PushbackTug {
 /// that we expect for the plane
 pub struct A320AutobrakeController {
     armed_mode_id: VariableIdentifier,
+    armed_mode_id_set: VariableIdentifier,
     decel_light_id: VariableIdentifier,
     active_id: VariableIdentifier,
     spoilers_ground_spoilers_active_id: VariableIdentifier,
@@ -3276,6 +3277,7 @@ impl A320AutobrakeController {
     fn new(context: &mut InitContext) -> A320AutobrakeController {
         A320AutobrakeController {
             armed_mode_id: context.get_identifier("AUTOBRAKES_ARMED_MODE".to_owned()),
+            armed_mode_id_set: context.get_identifier("AUTOBRAKES_ARMED_MODE_SET".to_owned()),
             decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
             active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
             spoilers_ground_spoilers_active_id: context
@@ -3385,6 +3387,7 @@ impl A320AutobrakeController {
             || self.spoilers_retracted_during_this_update()
             || self.should_disarm_after_time_in_flight.output()
             || self.external_disarm_event
+            || (self.mode == AutobrakeMode::MAX && self.should_reject_max_mode_after_time_in_flight.output())
     }
 
     fn calculate_target(&mut self) -> Acceleration {
@@ -3469,7 +3472,10 @@ impl SimulationElement for A320AutobrakeController {
         self.external_disarm_event = reader.read(&self.external_disarm_event_id);
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
-        self.mode = reader.read_f64(&self.armed_mode_id).into();
+        let readedMode = reader.read_f64(&self.armed_mode_id_set);
+        if (readedMode >= 0.0) {
+            self.mode = readedMode.into();
+        }
     }
 }
 
