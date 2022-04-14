@@ -21,7 +21,7 @@ import ko from './Localization/ko.json';
 import nb from './Localization/nb.json';
 import nl from './Localization/nl.json';
 import pl from './Localization/pl.json';
-import pt from './Localization/pt.json';
+import pt from './Localization/pt-PT.json';
 import ru from './Localization/ru.json';
 import sl from './Localization/sl.json';
 import sv from './Localization/sv.json';
@@ -75,7 +75,7 @@ export const languageOptions: LanguageOption[] = [
     { langCode: 'fi', langData: fi, langName: 'Finnish', alias: 'Suomen kieli' },
     { langCode: 'fr', langData: fr, langName: 'French', alias: 'Français' },
     { langCode: 'he', langData: he, langName: 'Hebrew', alias: 'עִבְרִית' },
-    { langCode: 'hi', langData: hi, langName: 'Hindi', alias: 'हिन्दी' },
+    { langCode: 'hi', langData: hi, langName: 'Hindi', alias: 'हिंदी' },
     { langCode: 'id', langData: id, langName: 'Indonesian', alias: 'Bahasa Indonesia' },
     { langCode: 'it', langData: it, langName: 'Italian', alias: 'Italiano' },
     { langCode: 'ja', langData: ja, langName: 'Japanese', alias: '日本語' },
