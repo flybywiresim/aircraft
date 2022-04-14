@@ -174,8 +174,9 @@ pub struct PowerTransferUnit {
     valve_opened_id: VariableIdentifier,
     shaft_rpm_id: VariableIdentifier,
     bark_strength_id: VariableIdentifier,
+    dev_efficiency_id:VariableIdentifier,
 
-    debug_id: VariableIdentifier,
+    dev_delta_pressure: VariableIdentifier,
 
     is_enabled: bool,
     is_active_right: bool,
@@ -204,18 +205,24 @@ pub struct PowerTransferUnit {
     speed_captured_at_active_duration: AngularVelocity,
     bark_strength: u8,
     has_stopped_since_last_write : bool,
+
+    efficiency : f64,
 }
 impl PowerTransferUnit {
     const MEAN_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
     const STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
 
-    const MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 110.;
-    const STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 =25.;
+    const MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 80.;
+    const STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 =30.;
+    const MIN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 =5.;
+    const MAX_DEACTIVATION_DELTA_PRESSURE_PSI: f64 =200.;
 
     const MIN_SPEED_SIMULATION_RPM: f64 = 50.;
 
-    const EFFICIENCY_LEFT_TO_RIGHT: f64 = 0.89;
-    const EFFICIENCY_RIGHT_TO_LEFT: f64 = 0.89;
+    const EFFICIENCY_MEAN: f64 = 0.83;
+    const EFFICIENCY_STD_DEV: f64 = 0.2;
+    const EFFICIENCY_MIN_ALLOWED: f64 = 0.5;
+    const EFFICIENCY_MAX: f64 = 0.9;
 
     const DEFAULT_LEFT_DISPLACEMENT_CUBIC_INCH: f64 = 0.92;
     const MIN_RIGHT_DISPLACEMENT_CUBIC_INCH: f64 = 0.65;
@@ -252,8 +259,9 @@ impl PowerTransferUnit {
         Self {
             valve_opened_id: context.get_identifier("HYD_PTU_VALVE_OPENED".to_owned()),
             shaft_rpm_id: context.get_identifier("HYD_PTU_SHAFT_RPM".to_owned()),
-            debug_id: context.get_identifier("HYD_PTU_DEBUG_DELTA".to_owned()),
+            dev_delta_pressure: context.get_identifier("HYD_PTU_DEV_DEACTIVATION_DELTA".to_owned()),
             bark_strength_id: context.get_identifier("HYD_PTU_BARK_STRENGTH".to_owned()),
+            dev_efficiency_id : context.get_identifier("HYD_PTU_DEV_EFFICIENCY".to_owned()),
 
             is_enabled: false,
             is_active_right: false,
@@ -278,7 +286,7 @@ impl PowerTransferUnit {
             is_rotating_after_delay: DelayedTrueLogicGate::new(Self::DELAY_TO_DECLARE_CONTINUOUS),
 
             activation_delta_pressure : Pressure::new::<psi>(random_from_normal_distribution(Self::MEAN_ACTIVATION_DELTA_PRESSURE_PSI,Self::STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI)),
-            desactivation_delta_pressure : Pressure::new::<psi>(random_from_normal_distribution(Self::MEAN_DEACTIVATION_DELTA_PRESSURE_PSI,Self::STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI)),
+            desactivation_delta_pressure : Pressure::new::<psi>(random_from_normal_distribution(Self::MEAN_DEACTIVATION_DELTA_PRESSURE_PSI,Self::STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI).min(Self::MAX_DEACTIVATION_DELTA_PRESSURE_PSI).max(Self::MIN_DEACTIVATION_DELTA_PRESSURE_PSI)),
             shot_to_shot_activation_coefficient : 1.,
             shot_to_shot_desactivation_coefficient : 1.,
 
@@ -286,6 +294,8 @@ impl PowerTransferUnit {
             speed_captured_at_active_duration: AngularVelocity::default(),
             bark_strength: 0,
             has_stopped_since_last_write:false,
+
+            efficiency : random_from_normal_distribution(Self::EFFICIENCY_MEAN,Self::EFFICIENCY_STD_DEV).max(Self::EFFICIENCY_MIN_ALLOWED).min(Self::EFFICIENCY_MAX),
         }
     }
 
@@ -474,12 +484,12 @@ impl PowerTransferUnit {
             // Left sends flow to right
             let flow = Self::calc_flow(self.shaft_speed.abs(), self.left_displacement);
             self.flow_to_left = -flow;
-            self.flow_to_right = flow * Self::EFFICIENCY_LEFT_TO_RIGHT;
+            self.flow_to_right = flow * self.efficiency;
             self.last_flow = flow;
         } else if shaft_rpm > Self::MIN_SPEED_SIMULATION_RPM {
             // Right sends flow to left
             let flow = Self::calc_flow(self.shaft_speed.abs(), self.right_displacement.output());
-            self.flow_to_left = flow * Self::EFFICIENCY_RIGHT_TO_LEFT;
+            self.flow_to_left = flow * self.efficiency;
             self.flow_to_right = -flow;
             self.last_flow = flow;
         } else {
@@ -537,13 +547,22 @@ impl SimulationElement for PowerTransferUnit {
         };
 
         writer.write(&self.bark_strength_id, refreshed_bark_strength);
+
+
+        println!("PTUGEN DELTA {:.0} EFF {:.2}",self.desactivation_delta_pressure.get::<psi>(),self.efficiency);
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        let delta = reader.read(&self.debug_id);
 
+        // Ensuring we take dev value into account only if not negative
+        let delta = reader.read(&self.dev_delta_pressure);
         if delta != 0. {
             self.desactivation_delta_pressure = Pressure::new::<psi>(delta);
+        }
+
+        let efficiency =reader.read(&self.dev_efficiency_id);
+        if efficiency != 0. {
+            self.efficiency = efficiency;
         }
 
         // As read/write can happen slower than ptu update, if we had ptu stopping between two writes
