@@ -16,7 +16,7 @@ require('dotenv').config({ path: '../../../../../.env' });
 const LocalazyReadKey = process.env.LOCALAZY_READ_KEY;
 
 // Quick exit with warning if .env is not set
-if (LocalazyReadKey === undefined) {
+if (LocalazyReadKey.length < 10) {
     console.warn('Warning: FlyPad translations couldn\'t be updated. Missing .env file with LOCALAZY_READ_KEY.');
     console.warn('         Build can continue without updating.');
     process.exit(1);
