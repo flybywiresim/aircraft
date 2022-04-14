@@ -2,7 +2,7 @@
 
 ## Build
 
-`node .\build-ts-files.js`
+`node .\build-translation.js`
 
 This downloads the latest translations directly from Localazy to the 'downloaded' folder, checks the JSON and writes
 JSON files for each language to this folder from there they can be imported.
