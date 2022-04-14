@@ -88,7 +88,7 @@ export const languageOptions: LanguageOption[] = [
     { langCode: 'th', langData: th, langName: 'Thai', alias: 'ภาษาไทย' },
     { langCode: 'tr', langData: tr, langName: 'Turkish', alias: 'Türkçe' },
     { langCode: 'vi', langData: vi, langName: 'Vietnamese', alias: 'Tiếng Việt' },
-    { langCode: 'zh-HK', langData: zhHantHK, langName: 'Chinese HK', alias: '正體字' },
+    { langCode: 'zh-HK', langData: zhHantHK, langName: 'Chinese - HK', alias: '香港繁體' },
 ];
 
 // Initialize all languages
