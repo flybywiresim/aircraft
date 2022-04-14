@@ -109,6 +109,7 @@
     "@sentry/tracing": "^6.17.7",
     "@tabler/icons": "^1.41.2",
     "@types/react-canvas-draw": "^1.1.1",
+    "@localazy/cli": "^1.6.0",
     "byte-data": "^19.0.1",
     "classnames": "^2.2.6",
     "geolib": "^3.3.3",
