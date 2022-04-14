@@ -645,8 +645,8 @@ class CDUFlightPlanPage {
 
             if (cHold) {
                 const { color, immExit, resumeHold, holdSpeed, turnDirection } = scrollWindow[rowI];
-                scrollText[(rowI * 2) - 1] = ['', `{amber}${immExit ? 'IMM\xa0\xa0' : ''}${resumeHold ? 'RESUME\xa0' : ''}{end}`, 'HOLD\xa0\xa0\xa0\xa0\xa0'];
-                scrollText[(rowI * 2)] = [`{${color}}HOLD ${turnDirection}{end}`, `{amber}${immExit ? 'EXIT*' : ''}${resumeHold ? 'HOLD*' : ''}{end}`, `{${color}}{small}{white}SPD{end}\xa0${holdSpeed}{end}{end}`];
+                scrollText[(rowI * 2)] = ['', `{amber}${immExit ? 'IMM\xa0\xa0' : ''}${resumeHold ? 'RESUME\xa0' : ''}{end}`, 'HOLD\xa0\xa0\xa0\xa0\xa0'];
+                scrollText[(rowI * 2) + 1] = [`{${color}}HOLD ${turnDirection}{end}`, `{amber}${immExit ? 'EXIT*' : ''}${resumeHold ? 'HOLD*' : ''}{end}`, `{${color}}{small}{white}SPD{end}\xa0${holdSpeed}{end}{end}`];
             } else if (!cMarker && !cPwp) { // Waypoint
                 if (rowI > 0) {
                     const { marker: pMarker, pwp: pPwp, holdResumeExit: pHold, speedConstraint: pSpd, altitudeConstraint: pAlt} = scrollWindow[rowI - 1];
@@ -671,13 +671,13 @@ class CDUFlightPlanPage {
                     }
                 }
 
-                scrollText[(rowI * 2) - 1] = renderFixHeader(scrollWindow[rowI], showNm, showDist, showFix);
-                scrollText[(rowI * 2)] = renderFixContent(scrollWindow[rowI], spdRpt, altRpt);
+                scrollText[(rowI * 2)] = renderFixHeader(scrollWindow[rowI], showNm, showDist, showFix);
+                scrollText[(rowI * 2) + 1] = renderFixContent(scrollWindow[rowI], spdRpt, altRpt);
 
             // Marker
             } else {
-                scrollText[(rowI * 2) - 1] = [];
-                scrollText[(rowI * 2)] = cMarker;
+                scrollText[(rowI * 2)] = [];
+                scrollText[(rowI * 2) + 1] = cMarker;
             }
         }
 
@@ -744,8 +744,8 @@ class CDUFlightPlanPage {
                 });
         }
 
-        // scrollText pad to 9 rows
-        while (scrollText.length < 9) {
+        // scrollText pad to 10 rows
+        while (scrollText.length < 10) {
             scrollText.push([""]);
         }
         const allowScroll = waypointsAndMarkers.length > 4;
@@ -768,9 +768,10 @@ class CDUFlightPlanPage {
             };
         }
         mcdu.setArrows(allowScroll, allowScroll, true, true);
+        scrollText[0][1] = "SPD/ALT\xa0\xa0\xa0";
+        scrollText[0][2] = isFlying ? "\xa0UTC{sp}" : "TIME{sp}{sp}";
         mcdu.setTemplate([
             [`{left}{small}{sp}${showFrom ? "FROM" : "{sp}{sp}{sp}{sp}"}{end}{yellow}{sp}${showTMPY ? "TMPY" : ""}{end}{end}{right}{small}${SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")}{sp}{sp}{sp}{end}{end}`],
-            ["", "SPD/ALT\xa0\xa0\xa0", isFlying ? "\xa0UTC{sp}" : "TIME{sp}{sp}"],
             ...scrollText,
             ...destText
         ]);
