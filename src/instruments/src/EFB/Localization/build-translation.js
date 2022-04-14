@@ -23,6 +23,7 @@ if (LocalazyReadKey === undefined || LocalazyReadKey.length < 10) {
     console.warn('         Build can continue without updating.');
     console.warn(`> ${LocalazyReadKey}`.slice(0, 20));
     console.warn(`CWD = ${process.cwd()}`);
+    console.warn(`TEST = ${process.env.SENTRY_DSN}`.slice(0, 20));
     process.exit(1);
 }
 
