@@ -180,7 +180,7 @@ class CDUFlightPlanPage {
                 }
 
                 // Fix Header
-                let fixAnnotation;
+                let fixAnnotation = "";
                 const currentApproach = fpm.getApproach();
                 if (fpm.getOriginRunway() && wpPrev === fpm.getOrigin() && prevFpIndex === 0) {
                     fixAnnotation = `${wpPrev.ident.substring(0,3)}${fpm.getOriginRunway().direction.toFixed(0)}`;
@@ -224,6 +224,7 @@ class CDUFlightPlanPage {
 
                 if (wp.additionalData) {
                     const magVar = Facilities.getMagVar(wp.infos.coordinates.lat, wp.infos.coordinates.long);
+                    const magCourse = A32NX_Util.trueToMagnetic(wp.additionalData.course, magVar).toFixed(0).padStart(3, '0');
                     // ARINC Leg Types - R1A 610
                     switch (wp.additionalData.legType) {
                         case 1: // AF
@@ -231,8 +232,20 @@ class CDUFlightPlanPage {
                             break;
                         case 2: // CA
                         case 3: // CD
+                        case 4: // CF
                         case 5: // CI
-                            fixAnnotation = `C${wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}\u00b0`;
+                        case 6: // CR
+                        case 9: // FC
+                        case 10: // FD
+                            fixAnnotation = `C${magCourse}\u00b0`;
+                            break;
+                        case 8: // FA
+                            fixAnnotation = `${wp.ident.substring(0, 3)}${magCourse}`;
+                            break;
+                        case 11: // FM
+                            if (wpPrev) {
+                                fixAnnotation = `${wpPrev.ident.substring(0,3)}${magCourse}`;
+                            }
                             break;
                         case 12: // HA
                             ident = wp.legAltitude1.toFixed(0);
@@ -241,33 +254,24 @@ class CDUFlightPlanPage {
                             fixAnnotation = `HOLD ${wp.turnDirection === 1 ? 'L' : 'R'}`;
                             break;
                         case 14: // HM
-                            const magCourse = A32NX_Util.trueToMagnetic(wp.additionalData.course, magVar);
-                            fixAnnotation = `C${magCourse.toFixed(0).padStart(3, '0')}°`;
+                            fixAnnotation = `C${magCourse}°`;
                             break;
-                        case 19: // VA
-                        case 20: // VD
-                        case 21: // VI
-                            fixAnnotation = `H${wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
-                            break;
-                        case 11: // FM
-                            if (wpPrev) {
-                                fixAnnotation = `${wpPrev.ident.substring(0,3)}${wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}`;
-                            }
+                        case 16: // PI
+                            fixAnnotation = `PROC ${wp.turnDirection === 1 ? 'L' : 'R'}`;
                             break;
                         case 17: // RF
                             fixAnnotation = `${("" + Math.round(wp.additionalData.radius)).padStart(2, "0")}\xa0ARC`;
                             break;
+                        case 19: // VA
+                        case 20: // VD
+                        case 21: // VI
+                        case 23: // VR
+                            fixAnnotation = `H${magCourse}\u00b0`;
+                            break;
                         case 22: // VM
-                            fixAnnotation = `H${wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
+                            fixAnnotation = `H${magCourse}`;
                             break;
                     }
-                }
-                // Approach Fix Headers
-                if (!fixAnnotation && wpPrev && fpIndex !== fpm.getDestinationIndex()) {
-                    const magVar = Facilities.getMagVar(wpPrev.infos.coordinates.lat, wpPrev.infos.coordinates.long);
-                    const courseBetween = Avionics.Utils.computeGreatCircleHeading(wpPrev.infos.coordinates, wp.infos.coordinates);
-                    const course = A32NX_Util.trueToMagnetic(courseBetween, magVar);
-                    fixAnnotation = `C${course.toFixed(0).padStart(3,"0")}\u00b0`;
                 }
 
                 // Bearing/Track
