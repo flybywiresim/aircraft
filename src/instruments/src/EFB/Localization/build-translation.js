@@ -15,20 +15,7 @@ const dotenv = require('dotenv');
 
 dotenv.config({ path: '../../../../../.env' });
 
-const LocalazyReadKey = process.env.LOCALAZY_READ_KEY;
-
-console.warn(`TEST1 = ${`${process.env.SENTRY_DSN}`.length}`);
-console.warn(`TEST2 = ${`${process.env.CLIENT_SECRET}`.length}`);
-console.warn(`TEST2 = ${`${LocalazyReadKey}`.length}`);
-
-// Quick exit with warning if .env is not set
-if (LocalazyReadKey === undefined || LocalazyReadKey.length < 10) {
-    console.warn('Warning: FlyPad translations couldn\'t be updated. Missing .env file with LOCALAZY_READ_KEY.');
-    console.warn('         Build can continue without updating.');
-    console.warn(`> ${LocalazyReadKey}`.slice(0, 20));
-    console.warn(`CWD = ${process.cwd()}`);
-    process.exit(1);
-}
+const LocalazyReadKey = 'a8263619487010799481-d63ff7f0aed9bf9e6c24d9878ca821c5a97fa77df75b0ce222aea98709900277';
 
 function processFile(dirent) {
     const name = dirent.name.replace('.json', '');
