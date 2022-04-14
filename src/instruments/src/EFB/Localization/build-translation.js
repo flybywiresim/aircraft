@@ -13,7 +13,8 @@ const convertedFilesPath = path.resolve('./');
 
 require('dotenv').config({ path: '../../../../../.env' });
 
-const LocalazyReadKey = process.env.LOCALAZY_READ_KEY;
+const LocalazyReadKey = 'a8263619487010799481-d63ff7f0aed9bf9e6c24d9878ca821c5a97fa77df75b0ce222aea98709900277';
+// const LocalazyReadKey = process.env.LOCALAZY_READ_KEY;
 
 // Quick exit with warning if .env is not set
 if (LocalazyReadKey === undefined) {
