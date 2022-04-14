@@ -11,9 +11,11 @@ const { exec } = require('child_process');
 const langFilesPath = path.resolve('downloaded/');
 const convertedFilesPath = path.resolve('./');
 
-const dotenv = require('dotenv');
+// const dotenv = require('dotenv');
+//
+// dotenv.config({ path: '../../../../../.env' });
 
-dotenv.config({ path: '../../../../../.env' });
+// console.log(process.env);
 
 const LocalazyReadKey = process.env.LOCALAZY_READ_KEY;
 

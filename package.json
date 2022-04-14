@@ -11,7 +11,7 @@
     "watch:instruments": "rollup -wc src/instruments/buildSrc/simulatorBuild.mjs",
     "build:atsu": "rollup -c src/atsu/rollup.config.js",
     "build:sentry-client": "rollup -c src/sentry-client/rollup.config.js",
-    "build:efb-translation": "cd src/instruments/src/EFB/Localization && node build-translation.js",
+    "build:efb-translation": "cd src/instruments/src/EFB/Localization &&node -r dotenv/config  build-translation.js dotenv_config_path=../../../../../.env",
     "build:fbw": "cd src/fbw && ./build.sh",
     "build:fadec": "cd src/fadec && ./build.sh",
     "build:presets": "cd src/presets && ./build.sh",
