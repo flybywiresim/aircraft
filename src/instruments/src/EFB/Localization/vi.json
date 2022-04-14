@@ -1,98 +1,98 @@
 {
   "AirTrafficControl": {
-    "Active": "Active",
-    "ConnectHoppieACARS": "Connect Hoppie ACARS",
-    "DisconnectHoppieACARS": "Disconnect Hoppie ACARS",
-    "FlightnumberIsAlreadyInUse": "Flightnumber is already in use.",
-    "HoppieError": "Hoppie Error",
-    "HoppieSystemRequiresAUserIdWhichNeedsToBeSetInSettings": "Hoppie system requires a user ID which needs to be set in Settings > ATSU / AOC.",
-    "InvalidLogonCodeUsed": "Invalid logon code used.",
-    "NoInformationAvailableForThisFrequency": "NO INFORMATION AVAILABLE FOR THIS FREQUENCY",
+    "Active": "Đang hoạt động",
+    "ConnectHoppieACARS": "Kết nối Hoppie ACARS",
+    "DisconnectHoppieACARS": "Ngắt kết nối Hoppie ACARS",
+    "FlightnumberIsAlreadyInUse": "Số đã được sử dụng.",
+    "HoppieError": "Lỗi Hoppie",
+    "HoppieSystemRequiresAUserIdWhichNeedsToBeSetInSettings": "Hệ thống Hoppie yêu cầu ID người dùng cần được đặt trong Cài đặt > ATSU/AOC.",
+    "InvalidLogonCodeUsed": "Mã đăng nhập không hợp lệ",
+    "NoInformationAvailableForThisFrequency": "KHÔNG CÓ THÔNG TIN CÓ SẴN CHO TẦN SỐ NÀY",
     "SetActive": "Set Active",
-    "SetStandby": "Set Standby",
-    "Standby": "Standby",
-    "Title": "Air Traffic Control"
+    "SetStandby": "Đặt chế độ chờ",
+    "Standby": "Chế độ chờ",
+    "Title": "Điều khiển không lưu"
   },
   "Checklist": {
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed"
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Vẫn còn các mục từ động đầy trong bản kiểm chưa được hoàn thành"
   },
   "Checklists": {
-    "AreYouSureYouWantToResetAllChecklists": "Are you sure you want to reset all checklists?",
+    "AreYouSureYouWantToResetAllChecklists": "Bạn có chắc chắn muốn đặt lại bảng kiểm không?",
     "AreYouSureYouWantToResetChecklists": "Are you sure you want to reset all checklists?",
-    "ChecklistResetWarning": "Checklist Reset Warning",
-    "MarkChecklistAsComplete": "Mark checklist as complete",
-    "MarkItemAsComplete": "Mark item as complete",
-    "ProceedToNextChecklist": "Proceed to next checklist",
-    "ResetAll": "Reset All",
-    "ResetChecklist": "Reset Checklist",
-    "TheLastChecklistIsComplete": "The last checklist is complete",
+    "ChecklistResetWarning": "Cảnh báo đặt lại bản kiểm",
+    "MarkChecklistAsComplete": "Đánh dấu bảng kiểm là hoàn tất",
+    "MarkItemAsComplete": "Đánh dấu mục là hoàn tất",
+    "ProceedToNextChecklist": "Tiến tới bảng kiểm tiếp theo",
+    "ResetAll": "Đặt lại tất cả",
+    "ResetChecklist": "Đặt lai bảng kiểm",
+    "TheLastChecklistIsComplete": "Bảng kiểm cuối cùng đã hoàn tất",
     "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed",
-    "Title": "Checklists"
+    "Title": "Các bảng kiểm"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "No Relevant Checklists",
+        "NoRelevantChecklists": "Không có bảng kiểm liên quan",
         "Title": "Checklists"
       },
-      "GoToPage": "Go to Page",
+      "GoToPage": "Đi tới trang",
       "Maintenance": {
-        "NoActiveFailures": "No Active Failures",
-        "Title": "Maintenance"
+        "NoActiveFailures": "Không có lỗi đang hoạt động",
+        "Title": "Bảo trì"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "No Pinned Charts",
-        "Title": "Pinned Charts"
+        "NoPinnedCharts": "Không có biểu đồ được ghim",
+        "Title": "Biểu đồ đã ghim"
       },
       "TT": {
-        "RearrangeWidgets": "Rearrange Widgets"
+        "RearrangeWidgets": "Sắp xếp lại widgets"
       },
-      "Title": "Important Information",
+      "Title": "Thông tin quan trọng",
       "Weather": {
-        "AirPressure": "Air Pressure",
-        "DewPoint": "Dew Point",
-        "IcaoInvalid": "ICAO invalid or no METAR available",
-        "Loading": "Loading",
-        "MetarParsingError": "Received METAR could not be parsed",
-        "NoIcaoProvided": "No ICAO provided",
-        "Raw": "Raw",
+        "AirPressure": "Áp suất không khí",
+        "DewPoint": "Điểm sương",
+        "IcaoInvalid": "ICAO không hợp lệ hoặc không có METAR",
+        "Loading": "Đang tải…",
+        "MetarParsingError": "METAR đã nhận không thể phân tích được",
+        "NoIcaoProvided": "Chưa cung cấp mã ICAO",
+        "Raw": "Nguyên",
         "TT": {
-          "SwitchToIconView": "Switch to Icon View",
-          "SwitchToRawMetarView": "Switch to Raw METAR View"
+          "SwitchToIconView": "Chuyển sang Chế độ biểu tượng",
+          "SwitchToRawMetarView": "Chuyển sang Chế độ xem METAR nguyên"
         },
-        "Temperature": "Temperature",
-        "Title": "Weather",
-        "WindSpeed": "Wind Speed"
+        "Temperature": "Nhiệt độ",
+        "Title": "Thời tiết",
+        "WindSpeed": "Tốc độ gió"
       }
     },
-    "Title": "Dashboard",
+    "Title": "Bảng điều khiển",
     "YourFlight": {
-      "Alternate": "Alternate",
-      "AverageWind": "Average Wind",
-      "CompanyRoute": "Company Route",
+      "Alternate": "Thay thế",
+      "AverageWind": "Gió trung bình",
+      "CompanyRoute": "Tuyến công ty",
       "CostIndex": "Cost Index",
-      "CruiseAlt": "Cruise Alt.",
-      "ImportSimBriefData": "Import SimBrief Data",
-      "Route": "Route",
-      "SimBriefDataNotYetLoaded": "SimBrief data not yet loaded.",
-      "Title": "Your Flight",
-      "ZFW": "ZFW"
+      "CruiseAlt": "Độ cao bay đường trường.",
+      "ImportSimBriefData": "Nhập dữ liệu SimBrief",
+      "Route": "Lộ trình",
+      "SimBriefDataNotYetLoaded": "Dữ liệu SimBrief chưa được tải.",
+      "Title": "Chuyến bay của bạn",
+      "ZFW": "Trọng lượng máy bay không kể nhiên liệu"
     }
   },
   "Dispatch": {
     "Ofp": {
       "ImportSimBriefData": "Import SimBrief Data",
       "TT": {
-        "IncreaseFontSize": "Increase Font Size",
-        "ReduceFontSize": "Reduce Font Size"
+        "IncreaseFontSize": "Tăng cỡ phông chữ",
+        "ReduceFontSize": "Giảm cỡ phông chữ"
       },
       "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
+      "YouHaveNotYetImportedAnySimBriefData": "Bạn chưa nhập bất kỳ dữ liệu SimBrief nào."
     },
     "Overview": {
       "Engines": "Động cơ",
-      "MMO": "MMO",
-      "MRW": "MRW",
+      "MMO": "Tốc độ vận hành tối đa theo số Mach",
+      "MRW": "Trong lượng bãi đậu tối đa",
       "MTOW": "Trọng lượng cất cánh tối đa",
       "MZFW": "Trọng lượng nhỏ nhất không có nhiên liệu",
       "MaximumCargo": "Hàng hóa tối đa",
@@ -100,41 +100,41 @@
       "MaximumPassengers": "Số hàng khách tối đa",
       "Model": "Mô hình",
       "Range": "Phạm vi",
-      "Title": "Overview"
+      "Title": "Tổng quan"
     },
     "Title": "Dispatch"
   },
   "Failures": {
     "Comfort": {
-      "Title": "Comfort"
+      "Title": "Sự thoải mái"
     },
     "Compact": {
-      "Title": "Compact"
+      "Title": "Nhỏ gọn"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Full simulation of the failures below isn't yet guaranteed.",
-    "Search": "Search",
-    "Title": "Failures"
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Mô phỏng đầy đủ các lỗi dưới đây vẫn chưa được đảm bảo.",
+    "Search": "Tìm kiếm",
+    "Title": "Lỗi"
   },
   "Ground": {
     "Fuel": {
       "CenterTank": "Bình chính giữa",
       "Completed": "Đã xong",
-      "Defueling": "Defueling",
-      "EstimatedDuration": "Estimated duration (minutes)",
+      "Defueling": "Khử nhiên liệu",
+      "EstimatedDuration": "Thời lượng ước tính (phút)",
       "EstimatedTime": "Thời gian dự tính",
       "LeftInnerTank": "Bình phía trái trong cùng",
       "LeftOuterTank": "Bình phía trái ngoài cùng",
       "ReadyToStart": "Sẵn sàng bắt đầu",
       "Refuel": "Đổ xăng",
       "RefuelTime": "Thời gian đổ xăng",
-      "Refueling": "Refueling",
+      "Refueling": "Tiếp nhiên liệu",
       "RightInnerTank": "Bình phía phải trong cùng",
       "RightOuterTank": "Bình phía phải ngoài cùng",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aircraft Must Be Cold and Dark to Change Refuel Times",
-        "FillBlockFuelFromSimBrief": "Fill Block Fuel from SimBrief"
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Máy bay phải ở trong chế độ lạnh và tối để thay đổi thời gian tiếp nhiên liệu",
+        "FillBlockFuelFromSimBrief": "Nạp nhiên liệu từ SimBrief"
       },
-      "Title": "Fuel",
+      "Title": "Nhiên liệu",
       "TotalFuel": "Tổng nhiên liệu",
       "Unavailable": "Không khả dụng"
     },
@@ -142,31 +142,31 @@
       "Title": "Pushback"
     },
     "Services": {
-      "BaggageTruck": "Baggage Truck",
-      "CateringTruck": "Catering Truck",
+      "BaggageTruck": "Xe tải chở hành lý",
+      "CateringTruck": "Xe cung cấp thức ăn",
       "DoorAft": "Cửa phía sau",
       "DoorFwd": "Cửa phía trước",
-      "ExternalPower": "External Power",
-      "FuelTruck": "Fuel Truck",
+      "ExternalPower": "Nguồn điện ngoài",
+      "FuelTruck": "Xe chở nhiên liệu",
       "JetBridge": "Jet Bridge",
-      "Title": "Services"
+      "Title": "Các dịch vụ"
     },
-    "Title": "Ground"
+    "Title": "Mặt đất"
   },
   "Modals": {
-    "Cancel": "Cancel",
-    "Confirm": "Confirm",
-    "Okay": "Okay"
+    "Cancel": "Hủy bỏ",
+    "Confirm": "Xác nhận",
+    "Okay": "OK"
   },
   "NavigationAndCharts": {
-    "All": "All",
-    "Altn": "Altn",
-    "ExitFullscreenMode": "Exit Fullscreen Mode",
-    "From": "From",
+    "All": "Tất cả",
+    "Altn": "Thay thế",
+    "ExitFullscreenMode": "Thoát chế độ toàn màn hình",
+    "From": "Từ",
     "LocalFiles": {
-      "Both": "Both",
-      "EstablishingConnection": "Establishing Connection",
-      "FailedToEstablishConnection": "Failed to Establish Connection.",
+      "Both": "Cả hai",
+      "EstablishingConnection": "Đang thiết lập kết nối",
+      "FailedToEstablishConnection": "Không thể thiết lập kết nối.",
       "FileName": "File Name",
       "Image": "Image",
       "Pdf": "Pdf",
