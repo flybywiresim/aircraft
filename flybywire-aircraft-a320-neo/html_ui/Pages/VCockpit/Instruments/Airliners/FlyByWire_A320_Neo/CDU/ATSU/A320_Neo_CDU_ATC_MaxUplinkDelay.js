@@ -33,7 +33,7 @@ class CDUAtcMaxUplinkDelay {
         };
         mcdu.onLeftInput[3] = (value) => {
             if (mcdu.atsu.atc.currentStation() === "") {
-                mcdu.addNewMessage(NXFictionalMessages.noAtc);
+                mcdu.addNewMessage(NXSystemMessages.noAtc);
             } else {
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.atsu.atc.maxUplinkDelay = -1;

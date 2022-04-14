@@ -57,7 +57,7 @@ class CDUAtcConnectionStatus {
         };
         mcdu.onRightInput[1] = () => {
             if (!store["disconnectAvail"]) {
-                mcdu.addNewMessage(NXFictionalMessages.noAtc);
+                mcdu.addNewMessage(NXSystemMessages.noAtc);
             } else {
                 store["disconnectAvail"] = false;
                 mcdu.atsu.atc.logoff().then((code) => {
