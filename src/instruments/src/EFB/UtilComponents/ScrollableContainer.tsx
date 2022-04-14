@@ -68,7 +68,7 @@ export const ScrollableContainer: FC<ScrollableContainerProps> = ({
     return (
         <div
             className={`w-full overflow-y-auto scrollbar ${className}`}
-            style={{ height: `${height}rem` }}
+            style={{ maxHeight: `${height}rem` }}
             ref={containerRef}
             onScroll={(event) => {
                 if (timeout.current) {

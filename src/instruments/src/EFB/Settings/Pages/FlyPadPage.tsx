@@ -62,6 +62,7 @@ export const FlyPadPage = () => {
                     value={language}
                     onChange={(value) => setLanguage(value as string)}
                     options={languageOptions.map((option) => ({ value: option.langCode, displayValue: `${option.alias} (${option.langName})` }))}
+                    maxHeight={32}
                 />
             </SettingItem>
 

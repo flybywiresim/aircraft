@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronDown } from 'react-bootstrap-icons';
+import { ScrollableContainer } from '../../ScrollableContainer';
 
 interface Option {
     value: any;
@@ -20,6 +21,7 @@ interface SelectInputProps {
     dropdownOnTop?: boolean; // Display dropdown above input instead of below
     className?: string;
     forceShowAll?: boolean; // Forces dropdown to show all options
+    maxHeight?: number; // max height before it becomes scrollable
 }
 
 const defaultOptionFallback: Option = { value: 0, displayValue: '' };
@@ -68,16 +70,18 @@ export const SelectInput = (props: SelectInputProps) => {
                         : 'bottom-0 translate-y-full rounded-b-md border-t-0 flex-col'}
                         `}
                     >
-                        {props.options.map((option) => (
-                            (value !== option.displayValue || props.forceShowAll) && (
-                                <div
-                                    className="py-1.5 px-3 hover:text-theme-body hover:bg-theme-highlight hover:bg-opacity-5 transition duration-300"
-                                    onClick={() => onOptionClicked(option)}
-                                >
-                                    {option.displayValue}
-                                </div>
-                            )
-                        ))}
+                        <ScrollableContainer height={props.maxHeight || 40}>
+                            {props.options.map((option) => (
+                                (value !== option.displayValue || props.forceShowAll) && (
+                                    <div
+                                        className="py-1.5 px-3 hover:text-theme-body hover:bg-theme-highlight hover:bg-opacity-5 transition duration-300"
+                                        onClick={() => onOptionClicked(option)}
+                                    >
+                                        {option.displayValue}
+                                    </div>
+                                )
+                            ))}
+                        </ScrollableContainer>
                     </div>
                 )}
             </div>
