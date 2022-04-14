@@ -11,7 +11,9 @@ const { exec } = require('child_process');
 const langFilesPath = path.resolve('downloaded/');
 const convertedFilesPath = path.resolve('./');
 
-require('dotenv').config({ path: '../../../../../.env' });
+const dotenv = require('dotenv');
+
+dotenv.config({ path: '../../../../../.env' });
 
 const LocalazyReadKey = process.env.LOCALAZY_READ_KEY;
 
@@ -19,6 +21,7 @@ const LocalazyReadKey = process.env.LOCALAZY_READ_KEY;
 if (LocalazyReadKey.length < 10) {
     console.warn('Warning: FlyPad translations couldn\'t be updated. Missing .env file with LOCALAZY_READ_KEY.');
     console.warn('         Build can continue without updating.');
+    console.warn(`> ${LocalazyReadKey}`.slice(0, 20));
     process.exit(1);
 }
 
