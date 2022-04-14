@@ -58,7 +58,7 @@ function processFile(dirent) {
 }
 
 console.log('Downloading language files from Localazy');
-exec(`Localazy download -r ${LocalazyReadKey}`, (error, stdout, stderr) => {
+exec(`localazy download -r ${LocalazyReadKey}`, (error, stdout, stderr) => {
     if (error) {
         console.warn(`error: ${error.message}`);
         process.exit(1);
