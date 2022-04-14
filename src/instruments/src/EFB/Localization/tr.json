@@ -154,60 +154,60 @@
     "Title": "Ground"
   },
   "Modals": {
-    "Cancel": "Cancel",
-    "Confirm": "Confirm",
-    "Okay": "Okay"
+    "Cancel": "İptal",
+    "Confirm": "Onayla",
+    "Okay": "Tamam"
   },
   "NavigationAndCharts": {
-    "All": "All",
-    "Altn": "Altn",
-    "ExitFullscreenMode": "Exit Fullscreen Mode",
-    "From": "From",
+    "All": "Tümü",
+    "Altn": "Alternatif",
+    "ExitFullscreenMode": "Tam Ekran Modundan Çık",
+    "From": "Kalkış",
     "LocalFiles": {
-      "Both": "Both",
-      "EstablishingConnection": "Establishing Connection",
-      "FailedToEstablishConnection": "Failed to Establish Connection.",
-      "FileName": "File Name",
-      "Image": "Image",
+      "Both": "İkisi de",
+      "EstablishingConnection": "Bağlantı kuruluyor…",
+      "FailedToEstablishConnection": "Bağlantı kurulamadı.",
+      "FileName": "Dosya adı",
+      "Image": "Görüntü",
       "Pdf": "Pdf",
-      "Retry": "Retry",
-      "Title": "Local Files"
+      "Retry": "Yeniden dene",
+      "Title": "Yerel Dosyalar"
     },
     "Navigraph": {
-      "AirportDoesNotExist": "Airport Does Not Exist",
-      "AuthenticateWithNavigraph": "Authenticate with Navigraph",
-      "InsufficientEnv": "Insufficient .env File",
-      "IntoYourBrowserAndEnterTheCodeBelow": "into your browser and enter the code below\n",
-      "NoAirportSelected": "No Airport Selected",
-      "ResetNavigraphAuthentication": "Reset Navigraph Authentication",
-      "ScanTheQrCodeOrOpen": "Scan the QR Code or Open",
+      "AirportDoesNotExist": "Havaalanı Mevcut Değil",
+      "AuthenticateWithNavigraph": "Navigraph ile Kimlik Doğrulama",
+      "InsufficientEnv": "Yetersiz .env dosyası",
+      "IntoYourBrowserAndEnterTheCodeBelow": "tarayıcınıza girin ve aşağıdaki kodu girin\n",
+      "NoAirportSelected": "Havaalanı Seçilmedi",
+      "ResetNavigraphAuthentication": "Navigasyon Kimlik Doğrulamasını Sıfırla",
+      "ScanTheQrCodeOrOpen": "QR Kodunu tarayın veya Açın",
       "Title": "Navigraph"
     },
     "PinnedCharts": {
-      "Delete": "Delete",
-      "Edit": "Edit",
-      "NoItemsFound": "No Items Found",
-      "SearchPlaceholder": "Search",
-      "ShowingChartsFromAllProviders": "Showing Charts from All Providers",
+      "Delete": "Sil",
+      "Edit": "Düzenle",
+      "NoItemsFound": "Hiçbir öğe bulunamadı.",
+      "SearchPlaceholder": "Ara",
+      "ShowingChartsFromAllProviders": "Tüm Sağlayıcılardan Haritalar Gösteriliyor",
       "SortMethods": {
-        "AlphabeticalAZ": "Alphabetical - A -> Z",
-        "AlphabeticalZA": "Alphabetical - Z -> A",
-        "FirstAccessed": "First Accessed",
-        "LastAccessed": "Last Accessed",
-        "None": "None"
+        "AlphabeticalAZ": "Alfabetik - A -> Z",
+        "AlphabeticalZA": "Alfabetik - Z -> A",
+        "FirstAccessed": "İlk Erişilen",
+        "LastAccessed": "Son Erişilen",
+        "None": "Hiçbiri"
       },
       "TT": {
-        "ChangeChartProvider": "Change Chart Provider",
-        "ChangeChartSortMethod": "Change Chart Sort Method"
+        "ChangeChartProvider": "Harita Sağlayıcısını Değiştir",
+        "ChangeChartSortMethod": "Harita Sıralama Yöntemini Değiştir"
       },
-      "Title": "Pinned Charts",
-      "View": "View"
+      "Title": "Sabitlenmiş Haritalar",
+      "View": "Görüntüle"
     },
-    "PleaseWait": "Please Wait",
-    "ShowingAllItems": "Showing All Items",
+    "PleaseWait": "Lütfen bekleyiniz...",
+    "ShowingAllItems": "Tüm Öğeler Gösteriliyor",
     "TT": {
-      "FitChartToHeight": "Fit Chart to Height",
-      "FitChartToWidth": "Fit Chart to Width",
+      "FitChartToHeight": "Haritayı Yüksekliğe Sığdır",
+      "FitChartToWidth": "Haritayı Genişliğe Sığdır",
       "ResetMovement": "Reset Movement",
       "RotateLeft45Degrees": "Rotate Left 45 Degrees",
       "RotateRight45Degrees": "Rotate Right 45 Degrees",

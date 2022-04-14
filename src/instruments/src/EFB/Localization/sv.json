@@ -26,7 +26,7 @@
     "ResetAll": "Återställ alla",
     "ResetChecklist": "Återställ checklista",
     "TheLastChecklistIsComplete": "Sista checklista komplett",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Det finns återstående punkter i checklistan för automatisk ifyllning som ännu inte har slutförts.",
     "Title": "Checklistor"
   },
   "Dashboard": {
