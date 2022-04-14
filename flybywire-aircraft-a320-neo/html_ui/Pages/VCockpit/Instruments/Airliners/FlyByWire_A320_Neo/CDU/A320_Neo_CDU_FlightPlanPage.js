@@ -149,6 +149,7 @@ class CDUFlightPlanPage {
                 }
 
                 const wpPrev = fpm.getWaypoint(fpIndex - 1);
+                const wpNext = fpm.getWaypoint(fpIndex + 1);
                 const wpActive = (fpIndex >= fpm.getActiveWaypointIndex());
                 let ident = wp.ident;
                 const isOverfly = wp.additionalData && wp.additionalData.overfly;
@@ -434,6 +435,15 @@ class CDUFlightPlanPage {
                     timeColor = color;
                 } else {
                     timeColor = "white";
+                }
+
+                // forced turn indication if next leg is not a course reversal
+                if (wpNext && legTurnIsForced(wpNext) && !legTypeIsCourseReversal(wpNext)) {
+                    if (wpNext.turnDirection === 1) {
+                        ident += "{";
+                    } else {
+                        ident += "}";
+                    }
                 }
 
                 scrollWindow[rowI] = {
@@ -825,4 +835,21 @@ function emptyFplnPage() {
         ["\xa0DEST", "DIST EFOB", "TIME{sp}{sp}"],
         ["------", "---- ----", "----{sp}{sp}"]
     ];
+}
+
+function legTypeIsCourseReversal(wp) {
+    switch (wp.additionalData.legType) {
+        case 12: // HA
+        case 13: // HF
+        case 14: // HM
+        case 16: // PI
+            return true;
+        default:
+    }
+    return false;
+}
+
+function legTurnIsForced(wp) {
+    // left || right
+    return wp.turnDirection === 1 || wp.turnDirection === 2;
 }
