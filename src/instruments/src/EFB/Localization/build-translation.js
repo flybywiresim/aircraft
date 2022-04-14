@@ -18,7 +18,7 @@ dotenv.config({ path: '../../../../../.env' });
 const LocalazyReadKey = process.env.LOCALAZY_READ_KEY;
 
 // Quick exit with warning if .env is not set
-if (LocalazyReadKey.length < 10) {
+if (LocalazyReadKey === undefined || LocalazyReadKey.length < 10) {
     console.warn('Warning: FlyPad translations couldn\'t be updated. Missing .env file with LOCALAZY_READ_KEY.');
     console.warn('         Build can continue without updating.');
     console.warn(`> ${LocalazyReadKey}`.slice(0, 20));
@@ -60,6 +60,20 @@ function processFile(dirent) {
     return true;
 }
 
+// Remove old files as otherwise disabled language files will remain in the folder and
+// copied to the main folder every time.
+console.log('Removing previous language files...');
+try {
+    for (const dirent of fs.readdirSync(langFilesPath, { withFileTypes: true })) {
+        if (dirent.isFile() && dirent.name.endsWith('.json')) {
+            fs.rmSync(path.join(langFilesPath, dirent.name));
+        }
+    }
+} catch (e) {
+    console.error(`Error while removing previous language files from folder "${langFilesPath}": ${e}`);
+    process.exit(1);
+}
+
 console.log('Downloading language files from Localazy');
 exec(`localazy download -r ${LocalazyReadKey}`, (error, stdout, stderr) => {
     if (error) {
@@ -70,11 +84,13 @@ exec(`localazy download -r ${LocalazyReadKey}`, (error, stdout, stderr) => {
         console.warn(`stderr: ${stderr}`);
         process.exit(1);
     }
+
     stdout.split('\n').forEach((item) => {
         if (item.startsWith('Writing')) {
             console.log(item);
         }
     });
+
     console.log('Files successfully downloaded. Processing...');
     let result = true;
     let readdirSync;
