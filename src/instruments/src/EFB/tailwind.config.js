@@ -68,8 +68,8 @@ module.exports = {
         },
         fontFamily: {
             mono: ['JetBrains Mono'],
-            body: ['Inter', 'NotoSansKR', 'NotoSansJP', 'NotoSansSC', 'NotoSansArabic', 'NotoSansThai', 'NotoSansHebrew'],
-            title: ['Manrope', 'NotoSansKR', 'NotoSansJP', 'NotoSansSC', 'NotoSansArabic', 'NotoSansThai', 'NotoSansHebrew'],
+            body: ['Inter', 'NotoSansKR', 'NotoSansJP', 'NotoSansSC', 'NotoSansArabic', 'NotoSansThai', 'NotoSansHebrew', 'NotoSansDevanagari'],
+            title: ['Manrope', 'NotoSansKR', 'NotoSansJP', 'NotoSansSC', 'NotoSansArabic', 'NotoSansThai', 'NotoSansHebrew', 'NotoSansDevanagari'],
             rmp: ['AirbusRMP'],
         },
     },
