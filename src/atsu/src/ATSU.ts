@@ -93,12 +93,12 @@ export class Atsu {
         if (Aoc.isRelevantMessage(message)) {
             retval = await this.aoc.sendMessage(message);
             if (retval === AtsuStatusCodes.Ok) {
-                this.registerMessage(message);
+                this.registerMessages([message]);
             }
         } else if (Atc.isRelevantMessage(message)) {
             retval = await this.atc.sendMessage(message);
             if (retval === AtsuStatusCodes.Ok) {
-                this.registerMessage(message);
+                this.registerMessages([message]);
             }
         }
 
@@ -113,14 +113,18 @@ export class Atsu {
         }
     }
 
-    public registerMessage(message: AtsuMessage): void {
-        message.UniqueMessageID = ++this.messageCounter;
-        message.Timestamp = new AtsuTimestamp();
+    public registerMessages(messages: AtsuMessage[]): void {
+        if (messages.length === 0) return;
 
-        if (Aoc.isRelevantMessage(message)) {
-            this.aoc.insertMessage(message);
-        } else if (Atc.isRelevantMessage(message)) {
-            this.atc.insertMessage(message);
+        messages.forEach((message) => {
+            message.UniqueMessageID = ++this.messageCounter;
+            message.Timestamp = new AtsuTimestamp();
+        });
+
+        if (Aoc.isRelevantMessage(messages[0])) {
+            this.aoc.insertMessages(messages);
+        } else if (Atc.isRelevantMessage(messages[0])) {
+            this.atc.insertMessages(messages);
         }
     }
 

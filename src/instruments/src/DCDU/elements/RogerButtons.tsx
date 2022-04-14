@@ -1,16 +1,16 @@
 import React from 'react';
 import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
+import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { useUpdate } from '@instruments/common/hooks.js';
 import { Button } from './Button';
 
 type RogerButtonsProps = {
     message: CpdlcMessage,
-    selectedResponse: CpdlcMessageResponse | undefined,
-    setMessageStatus(message: number, response: CpdlcMessageResponse | undefined),
+    selectedResponse: number,
+    setMessageStatus(message: number, response: number),
     setStatus: (sender: string, message: string) => void,
     isStatusAvailable: (sender: string) => boolean,
-    sendResponse: (message: number, response: CpdlcMessageResponse) => void,
+    sendResponse: (message: number, response: number) => void,
     closeMessage: (message: number) => void
 }
 
@@ -29,7 +29,7 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedRes
     let showAnswers = false;
     let showSend = false;
 
-    if (selectedResponse === undefined && message.Response === undefined) {
+    if (selectedResponse === -1 && message.Response === undefined) {
         showAnswers = true;
     } else if (message.Response === undefined) {
         showSend = true;
@@ -42,13 +42,13 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedRes
 
         if (showAnswers) {
             if (index === 'R2') {
-                setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Roger);
+                setMessageStatus(message.UniqueMessageID, 3);
             }
         } else if (showSend) {
             if (index === 'L1') {
-                setMessageStatus(message.UniqueMessageID, undefined);
+                setMessageStatus(message.UniqueMessageID, -1);
             } else if (index === 'R2') {
-                sendResponse(message.UniqueMessageID, selectedResponse as CpdlcMessageResponse);
+                sendResponse(message.UniqueMessageID, selectedResponse);
             }
         } else if (index === 'R2') {
             closeMessage(message.UniqueMessageID);
