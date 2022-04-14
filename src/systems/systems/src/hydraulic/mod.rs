@@ -203,6 +203,7 @@ pub struct PowerTransferUnit {
     duration_since_active: Duration,
     speed_captured_at_active_duration: AngularVelocity,
     bark_strength: u8,
+    has_stopped_since_last_write : bool,
 }
 impl PowerTransferUnit {
     const MEAN_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
@@ -284,6 +285,7 @@ impl PowerTransferUnit {
             duration_since_active: Duration::default(),
             speed_captured_at_active_duration: AngularVelocity::default(),
             bark_strength: 0,
+            has_stopped_since_last_write:false,
         }
     }
 
@@ -314,8 +316,8 @@ impl PowerTransferUnit {
 
         self.update_displacement(context, loop_left_section, loop_right_section);
         self.update_shaft_physics(context, loop_left_section, loop_right_section);
-        self.update_continuous_state(context);
         self.update_active_state(context);
+        self.update_continuous_state(context);
         self.capture_bark_strength();
         self.update_flows();
     }
@@ -381,6 +383,7 @@ impl PowerTransferUnit {
             self.duration_since_active = Duration::default();
             self.speed_captured_at_active_duration = AngularVelocity::default();
             self.bark_strength = 0;
+            self.has_stopped_since_last_write=true;
         }
 
         let active_direction = self.shaft_speed.get::<revolution_per_minute>().signum();
@@ -523,7 +526,17 @@ impl SimulationElement for PowerTransferUnit {
             &self.shaft_rpm_id,
             (self.shaft_speed_filtered.output()).abs(),
         );
-        writer.write(&self.bark_strength_id, self.bark_strength);
+
+        // As write can happen slower than ptu update, if we had ptu stopping between two writes
+        // we ensure here we send the 0 value for 1 tick at least
+        // This flag is reset in the read() to finish the handshake
+        let refreshed_bark_strength = if self.has_stopped_since_last_write {
+            0
+        } else {
+            self.bark_strength
+        };
+
+        writer.write(&self.bark_strength_id, refreshed_bark_strength);
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -532,6 +545,10 @@ impl SimulationElement for PowerTransferUnit {
         if delta != 0. {
             self.desactivation_delta_pressure = Pressure::new::<psi>(delta);
         }
+
+        // As read/write can happen slower than ptu update, if we had ptu stopping between two writes
+        // we ensure here to reset the flag indicating we missed a stop
+        self.has_stopped_since_last_write = false;
     }
 }
 
