@@ -182,6 +182,7 @@
 1. [MCDU] Fix crash when clearing DIR TO waypoint - @tracernz (Mike)
 1. [HYD] Improved hydraulic valves stability - @Crocket63
 1. [ATHR] Fix Speed/Mach Idle transition in strong headwind - @IbrahimK42 (IbrahimK42)
+1. [HYD] Added variables for sound update - @Crocket63
 1. [SOUNDS] Add rain sounds in cockpit - @Mico975 (Mico)
 1. [SOUNDS] Add passenger announcements and ambience - @hotshotp (Boris)
 1. [EFB] Added setting for colored METAR in EFB weather widget - @frankkopp (Frank Kopp)
@@ -230,6 +231,12 @@
 1. [MODEL] Add detailed rivet mesh to allow for ALDB+COMP+NORM ribbons - @bouveng (Johan Bouveng)
 1. [SD] Rewrite Bleed page to React - @RichardPilbery (tricky_dicky#3571)
 1. [FMGC] Implement "coarse" prediction system for turn speeds - @tracernz (Mike)
+1. [BLEED] Converted bleed system to use mass flow instead of volume flow - @Gurgel100 (Pascal)
+1. [FMGC] Add runway-by-itself approaches - @tracernz (Mike)
+1. [FMGC] Automatic airway waypoint intersection - @tracernz (Mike)
+1. [HYD] Adjusted droop characteristics and randomness of surfaces actuators - @Crocket63
+1. [PFD] Reimplement PFD with msfs-avionics framework for improved performance - @saschl (saschl#9432)
+1. [GPWS] Mute "100 above" callout during autoland - @patmack14 (Patrick Macken)
 
 ## 0.7.0
 

@@ -178,7 +178,13 @@ export class LegsProcedure {
                       break;
                   case LegType.DF:
                   case LegType.TF:
-                      mappedLeg = this.mapExactFix(currentLeg);
+                      // Only map if the fix is itself not a runway fix to avoid double
+                      // adding runway fixes
+                      if (currentLeg.fixIcao === '' || currentLeg.fixIcao[0] !== 'R') {
+                          mappedLeg = this.mapExactFix(currentLeg);
+                      } else {
+                          isLegMappable = false;
+                      }
                       break;
                   case LegType.RF:
                       mappedLeg = this.mapRadiusToFix(currentLeg);

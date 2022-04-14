@@ -67,7 +67,7 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
         this.createLowerScreenPage("DOOR", "BottomScreen", "a32nx-door-page-element");
         this.createLowerScreenPage("WHEEL", "BottomScreen", "a32nx-wheel-page-element");
         this.createLowerScreenPage("FTCL", "BottomScreen", "a32nx-fctl-page-element");
-        this.createLowerScreenPage("STS", "BottomScreen", "a320-neo-lower-ecam-status");
+        this.createLowerScreenPage("STS", "BottomScreen", "a32nx-status-page-element");
         this.createLowerScreenPage("CRZ", "BottomScreen", "a32nx-crz-page-element");
     }
 
