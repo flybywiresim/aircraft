@@ -3,10 +3,10 @@
     "Active": "Aktiv",
     "ConnectHoppieACARS": "Anslut Hoppie ACARS",
     "DisconnectHoppieACARS": "Koppla från Hoppie ACARS",
-    "FlightnumberIsAlreadyInUse": "Flightnumber is already in use.",
-    "HoppieError": "Hoppie Error",
-    "HoppieSystemRequiresAUserIdWhichNeedsToBeSetInSettings": "Hoppie system requires a user ID which needs to be set in Settings > ATSU / AOC.",
-    "InvalidLogonCodeUsed": "Invalid logon code used.",
+    "FlightnumberIsAlreadyInUse": "Flygnummer används redan.",
+    "HoppieError": "Hoppie fel",
+    "HoppieSystemRequiresAUserIdWhichNeedsToBeSetInSettings": "Hoppie-systemet kräver ett användar-ID som måste ställas in i Inställningar > ATSU/AOC.",
+    "InvalidLogonCodeUsed": "En ogiltig inloggningskod har använts.",
     "NoInformationAvailableForThisFrequency": "INFORMATION EJ TILLGÄNGLIG FÖR DENNA FREKVENS",
     "SetActive": "Sätt Aktiv",
     "SetStandby": "Sätt Standby",
@@ -14,7 +14,7 @@
     "Title": "Flygledning"
   },
   "Checklist": {
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed"
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Det finns återstående punkter i checklistan för automatisk ifyllning som ännu inte har slutförts."
   },
   "Checklists": {
     "AreYouSureYouWantToResetAllChecklists": "Är du säker på att du vill återställa alla checklistor?",
@@ -33,7 +33,7 @@
     "ImportantInformation": {
       "Checklists": {
         "NoRelevantChecklists": "Inga relevanta checklistor",
-        "Title": "Checklists"
+        "Title": "Checklistor"
       },
       "GoToPage": "Gå till sida",
       "Maintenance": {
@@ -187,14 +187,14 @@
       "Delete": "Radera",
       "Edit": "Redigera",
       "NoItemsFound": "No Items Found",
-      "SearchPlaceholder": "Search",
+      "SearchPlaceholder": "Sök",
       "ShowingChartsFromAllProviders": "Showing Charts from All Providers",
       "SortMethods": {
         "AlphabeticalAZ": "Alfabetisk - A -> Ö",
         "AlphabeticalZA": "Alfabetisk - Ö -> A",
         "FirstAccessed": "First Accessed",
         "LastAccessed": "Last Accessed",
-        "None": "None"
+        "None": "Ingen"
       },
       "TT": {
         "ChangeChartProvider": "Change Chart Provider",
@@ -413,7 +413,7 @@
       "Title": "Realism"
     },
     "SimOptions": {
-      "Active": "Active",
+      "Active": "Aktiv",
       "Auto": "Auto",
       "Calibrate": "Kalibrera",
       "DefaultBarometerUnit": "Default Barometer Unit",
@@ -424,7 +424,7 @@
       "Inactive": "Inactive",
       "LoadOnly": "Load Only",
       "None": "Ingen",
-      "Off": "Off",
+      "Off": "Av",
       "Save": "Spara",
       "SyncMsfsFlightPlan": "Sync MSFS Flight Plan",
       "ThrottleDetents": "Throttle Detents",

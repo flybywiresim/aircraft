@@ -26,128 +26,128 @@
     "ResetAll": "Tümünü Sıfırla",
     "ResetChecklist": "Kontrol Listesini Sıfırla",
     "TheLastChecklistIsComplete": "Son kontrol listesi tamamlandı",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed",
-    "Title": "Checklists"
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Henüz tamamlanmayan otomatik doldurma kontrol listesi öğeleri vardır",
+    "Title": "Kontrol Listeleri"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "No Relevant Checklists",
-        "Title": "Checklists"
+        "NoRelevantChecklists": "İlgili Kontrol Listeleri Yok",
+        "Title": "Kontrol Listeleri"
       },
-      "GoToPage": "Go to Page",
+      "GoToPage": "Sayfaya git",
       "Maintenance": {
-        "NoActiveFailures": "No Active Failures",
-        "Title": "Maintenance"
+        "NoActiveFailures": "Etkin Arıza Yok",
+        "Title": "Bakım"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "No Pinned Charts",
-        "Title": "Pinned Charts"
+        "NoPinnedCharts": "Sabitlenmiş Harita Yok",
+        "Title": "Sabitlenmiş Haritalar"
       },
       "TT": {
-        "RearrangeWidgets": "Rearrange Widgets"
+        "RearrangeWidgets": "Araçları Yeniden Düzenle"
       },
-      "Title": "Important Information",
+      "Title": "Önemli Bilgi",
       "Weather": {
-        "AirPressure": "Air Pressure",
-        "DewPoint": "Dew Point",
-        "IcaoInvalid": "ICAO invalid or no METAR available",
-        "Loading": "Loading",
-        "MetarParsingError": "Received METAR could not be parsed",
-        "NoIcaoProvided": "No ICAO provided",
-        "Raw": "Raw",
+        "AirPressure": "Hava Basıncı",
+        "DewPoint": "Çiy Noktası",
+        "IcaoInvalid": "ICAO geçersiz veya METAR mevcut değil",
+        "Loading": "Yükleniyor",
+        "MetarParsingError": "Alınan METAR ayrıştırılamadı",
+        "NoIcaoProvided": "ICAO sağlanmadı",
+        "Raw": "Ham",
         "TT": {
           "SwitchToIconView": "Switch to Icon View",
-          "SwitchToRawMetarView": "Switch to Raw METAR View"
+          "SwitchToRawMetarView": "Ham METAR Görünümüne Geç"
         },
-        "Temperature": "Temperature",
-        "Title": "Weather",
-        "WindSpeed": "Wind Speed"
+        "Temperature": "Sıcaklık",
+        "Title": "Hava Durumu",
+        "WindSpeed": "Rüzgar Hızı"
       }
     },
-    "Title": "Dashboard",
+    "Title": "Gösterge Paneli",
     "YourFlight": {
-      "Alternate": "Alternate",
-      "AverageWind": "Average Wind",
-      "CompanyRoute": "Company Route",
-      "CostIndex": "Cost Index",
+      "Alternate": "Alternatif",
+      "AverageWind": "Ortalama Rüzgar",
+      "CompanyRoute": "Şirket Rotası",
+      "CostIndex": "Maliyet Endeksi",
       "CruiseAlt": "Cruise Alt.",
-      "ImportSimBriefData": "Import SimBrief Data",
-      "Route": "Route",
-      "SimBriefDataNotYetLoaded": "SimBrief data not yet loaded.",
-      "Title": "Your Flight",
+      "ImportSimBriefData": "SimBrief Verilerini İçe Aktar",
+      "Route": "Rota",
+      "SimBriefDataNotYetLoaded": "SimBrief verileri henüz yüklenmedi.",
+      "Title": "Uçuşunuz",
       "ZFW": "ZFW"
     }
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Import SimBrief Data",
+      "ImportSimBriefData": "SimBrief Verilerini İçe Aktar",
       "TT": {
-        "IncreaseFontSize": "Increase Font Size",
-        "ReduceFontSize": "Reduce Font Size"
+        "IncreaseFontSize": "Yazı tipi boyutunu artır",
+        "ReduceFontSize": "Yazı Tipi Boyutunu Azalt"
       },
       "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
+      "YouHaveNotYetImportedAnySimBriefData": "Henüz herhangi bir SimBrief verisini içe aktarmadınız."
     },
     "Overview": {
-      "Engines": "Engines",
+      "Engines": "Motorlar",
       "MMO": "MMO",
       "MRW": "MRW",
       "MTOW": "MTOW",
       "MZFW": "MZFW",
-      "MaximumCargo": "Maximum Cargo",
-      "MaximumFuelCapacity": "Maximum Fuel Capacity",
-      "MaximumPassengers": "Maximum Passengers",
+      "MaximumCargo": "Maksimum Kargo",
+      "MaximumFuelCapacity": "Maksimum Yakıt Kapasitesi",
+      "MaximumPassengers": "Maksimum Yolcu",
       "Model": "Model",
-      "Range": "Range",
-      "Title": "Overview"
+      "Range": "Menzil",
+      "Title": "Genel Bakış"
     },
     "Title": "Dispatch"
   },
   "Failures": {
     "Comfort": {
-      "Title": "Comfort"
+      "Title": "Rahatlık"
     },
     "Compact": {
-      "Title": "Compact"
+      "Title": "Kompakt"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Full simulation of the failures below isn't yet guaranteed.",
-    "Search": "Search",
-    "Title": "Failures"
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Aşağıdaki arızaların tam simülasyonu henüz garanti edilmemiştir.",
+    "Search": "Ara",
+    "Title": "Arızalar"
   },
   "Ground": {
     "Fuel": {
-      "CenterTank": "Center Tank",
-      "Completed": "Completed",
-      "Defueling": "Defueling",
-      "EstimatedDuration": "Estimated duration (minutes)",
-      "EstimatedTime": "Estimated Time",
-      "LeftInnerTank": "Left Inner Tank",
-      "LeftOuterTank": "Left Outer Tank",
-      "ReadyToStart": "Ready to Start",
-      "Refuel": "Refuel",
-      "RefuelTime": "Refuel Time",
-      "Refueling": "Refueling",
-      "RightInnerTank": "Right Inner Tank",
-      "RightOuterTank": "Right Outer Tank",
+      "CenterTank": "Merkez Tank",
+      "Completed": "Tamamlandı",
+      "Defueling": "Yakıt Boşaltma",
+      "EstimatedDuration": "Tahmini süre (dakika)",
+      "EstimatedTime": "Tahmini süre",
+      "LeftInnerTank": "Sol İç Tank",
+      "LeftOuterTank": "Sol Dış Tank",
+      "ReadyToStart": "Başlamaya Hazır",
+      "Refuel": "Yakıt ikmali",
+      "RefuelTime": "Yakıt İkmal Süresi",
+      "Refueling": "Yakıt ikmali",
+      "RightInnerTank": "Sağ İç Tank",
+      "RightOuterTank": "Sağ Dış Tank",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aircraft Must Be Cold and Dark to Change Refuel Times",
-        "FillBlockFuelFromSimBrief": "Fill Block Fuel from SimBrief"
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Yakıt sürelerini değiştirmek için uçak Cold and Dark durumda olmalı",
+        "FillBlockFuelFromSimBrief": "SimBrief'ten Blok Yakıtı Doldur"
       },
-      "Title": "Fuel",
-      "TotalFuel": "Total Fuel",
-      "Unavailable": "Unavailable"
+      "Title": "Yakıt",
+      "TotalFuel": "Toplam Yakıt",
+      "Unavailable": "Kullanım Dışı"
     },
     "Pushback": {
       "Title": "Pushback"
     },
     "Services": {
-      "BaggageTruck": "Baggage Truck",
-      "CateringTruck": "Catering Truck",
-      "DoorAft": "Door Aft",
-      "DoorFwd": "Door Fwd",
-      "ExternalPower": "External Power",
-      "FuelTruck": "Fuel Truck",
+      "BaggageTruck": "Bagaj Kamyonu",
+      "CateringTruck": "Yemek Servis Aracı",
+      "DoorAft": "Arka Giriş Kapısı",
+      "DoorFwd": "Ön Giriş Kapısı",
+      "ExternalPower": "Harici Güç",
+      "FuelTruck": "Yakıt Kamyonu",
       "JetBridge": "Jet Bridge",
       "Title": "Services"
     },

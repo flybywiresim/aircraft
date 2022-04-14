@@ -358,13 +358,13 @@
       "Title": "有關"
     },
     "AircraftOptionsPinPrograms": {
-      "AccelerationHeight": "加速高度（英尺，ft）",
-      "EngineOutAccelerationHeight": "引擎死火加速度高度（英尺，ft）",
+      "AccelerationHeight": "加速高度 (英尺，ft)",
+      "EngineOutAccelerationHeight": "引擎死火加速度高度 (英尺，ft)",
       "IsisBaroUnit": "ISIS 氣壓單位",
-      "IsisMetricAltitude": "ISIS 公尺高度（米）",
+      "IsisMetricAltitude": "ISIS 公尺高度 (米)",
       "PaxSigns": "客倉標誌",
       "RmpVhfSpacing": "RMP 高頻間距",
-      "ThrustReductionHeight": "減油高度（英尺，ft）",
+      "ThrustReductionHeight": "減油高度 (英尺，ft)",
       "Title": "飛機選項/編上程式",
       "WeightUnit": "重量單位"
     },
