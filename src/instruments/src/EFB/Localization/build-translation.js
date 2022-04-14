@@ -11,6 +11,17 @@ const { exec } = require('child_process');
 const langFilesPath = path.resolve('downloaded/');
 const convertedFilesPath = path.resolve('./');
 
+require('dotenv').config({ path: '../../../../../.env' });
+
+const LocalazyReadKey = process.env.LOCALAZY_READ_KEY;
+
+// Quick exit with warning if .env is not set
+if (LocalazyReadKey === undefined) {
+    console.warn('Warning: FlyPad translations couldn\'t be updated. Missing .env file with LOCALAZY_READ_KEY.');
+    console.warn('         Build can continue without updating.');
+    process.exit(1);
+}
+
 function processFile(dirent) {
     const name = dirent.name.replace('.json', '');
 
@@ -21,7 +32,7 @@ function processFile(dirent) {
     try {
         content = fs.readFileSync(path.join(langFilesPath, dirent.name));
     } catch (e) {
-        console.log(`Error while reading language file "${dirent.name}": ${e}`);
+        console.error(`Error while reading language file "${dirent.name}": ${e}`);
         return false;
     }
 
@@ -30,7 +41,7 @@ function processFile(dirent) {
     try {
         json = JSON.parse(content);
     } catch (e) {
-        console.log(`Error while checking json language file "${dirent.name}": ${e}`);
+        console.error(`Error while checking json language file "${dirent.name}": ${e}`);
         return false;
     }
 
@@ -38,7 +49,7 @@ function processFile(dirent) {
     try {
         fs.writeFileSync(path.join(convertedFilesPath, `${name}.json`), JSON.stringify(json, null, 2));
     } catch (e) {
-        console.log(`Error while writing file "${dirent.name}": ${e}`);
+        console.error(`Error while writing file "${dirent.name}": ${e}`);
         return false;
     }
 
@@ -47,13 +58,13 @@ function processFile(dirent) {
 }
 
 console.log('Downloading language files from Localazy');
-exec(`Localazy download -r ${process.env.LOCALAZY_READ_KEY}`, (error, stdout, stderr) => {
+exec(`Localazy download -r ${LocalazyReadKey}`, (error, stdout, stderr) => {
     if (error) {
-        console.log(`error: ${error.message}`);
+        console.warn(`error: ${error.message}`);
         process.exit(1);
     }
     if (stderr) {
-        console.log(`stderr: ${stderr}`);
+        console.warn(`stderr: ${stderr}`);
         process.exit(1);
     }
     stdout.split('\n').forEach((item) => {
@@ -63,7 +74,14 @@ exec(`Localazy download -r ${process.env.LOCALAZY_READ_KEY}`, (error, stdout, st
     });
     console.log('Files successfully downloaded. Processing...');
     let result = true;
-    for (const dirent of fs.readdirSync(langFilesPath, { withFileTypes: true })) {
+    let readdirSync;
+    try {
+        readdirSync = fs.readdirSync(langFilesPath, { withFileTypes: true });
+    } catch (e) {
+        console.error(`Error while reading folder "${langFilesPath}": ${e}`);
+        process.exit(1);
+    }
+    for (const dirent of readdirSync) {
         if (dirent.isFile() && dirent.name.endsWith('.json')) {
             if (!processFile(dirent)) {
                 result = false;
