@@ -611,24 +611,19 @@ impl SimulationElement for PowerTransferUnit {
         };
 
         writer.write(&self.bark_strength_id, refreshed_bark_strength);
-
-        println!(
-            "PTUGEN DELTA {:.0} EFF {:.2}",
-            self.desactivation_delta_pressure.get::<psi>(),
-            self.efficiency
-        );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
-        // Ensuring we take dev value into account only if not negative
-        let delta = reader.read(&self.dev_delta_pressure);
-        if delta != 0. {
-            self.desactivation_delta_pressure = Pressure::new::<psi>(delta);
+        // Ensuring we take dev value into account only if not zero
+        let desactivation_delta_pressure_raw = reader.read(&self.dev_delta_pressure);
+        if desactivation_delta_pressure_raw != 0. {
+            self.desactivation_delta_pressure =
+                Pressure::new::<psi>(desactivation_delta_pressure_raw);
         }
 
-        let efficiency = reader.read(&self.dev_efficiency_id);
-        if efficiency != 0. {
-            self.efficiency = efficiency;
+        let efficiency_raw = reader.read(&self.dev_efficiency_id);
+        if efficiency_raw != 0. {
+            self.efficiency = efficiency_raw;
         }
 
         // As read/write can happen slower than ptu update, if we had ptu stopping between two writes
