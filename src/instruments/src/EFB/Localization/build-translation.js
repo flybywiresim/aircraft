@@ -22,6 +22,7 @@ if (LocalazyReadKey === undefined || LocalazyReadKey.length < 10) {
     console.warn('Warning: FlyPad translations couldn\'t be updated. Missing .env file with LOCALAZY_READ_KEY.');
     console.warn('         Build can continue without updating.');
     console.warn(`> ${LocalazyReadKey}`.slice(0, 20));
+    console.warn(`CWD = ${process.cwd()}`);
     process.exit(1);
 }
 
