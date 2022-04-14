@@ -64,7 +64,7 @@ export const SelectInput = (props: SelectInputProps) => {
                 </div>
                 {showDropdown && (
                     <div
-                        className={`z-10 absolute flex -inset-x-0.5 transform overflow-hidden bg-theme-body border-2 border-theme-accent${' '}
+                        className={`z-10 absolute flex -inset-x-0.5 transform overflow-hidden pb-2 pr-2 bg-theme-body border-2 border-theme-accent${' '}
                         ${props.dropdownOnTop
                         ? 'top-0 -translate-y-full rounded-t-md border-b-0 flex-col-reverse'
                         : 'bottom-0 translate-y-full rounded-b-md border-t-0 flex-col'}
