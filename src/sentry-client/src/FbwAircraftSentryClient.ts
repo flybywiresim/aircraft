@@ -213,6 +213,7 @@ export class FbwAircraftSentryClient {
             dsn: config.dsn,
             release,
             integrations,
+            sampleRate: 0.1,
         });
 
         console.log('[SentryClient] Sentry initialized');

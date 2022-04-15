@@ -57,7 +57,7 @@ export class Aoc {
 
     public messageRead(uid: number): boolean {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
-        if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Input) {
+        if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Uplink) {
             if (this.messageQueue[index].Confirmed === false) {
                 const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
                 SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt <= 1 ? 0 : cMsgCnt - 1);
@@ -74,24 +74,26 @@ export class Aoc {
     }
 
     public outputMessages(): AtsuMessage[] {
-        return this.messageQueue.filter((entry) => entry.Direction === AtsuMessageDirection.Output);
+        return this.messageQueue.filter((entry) => entry.Direction === AtsuMessageDirection.Downlink);
     }
 
     public inputMessages(): AtsuMessage[] {
-        return this.messageQueue.filter((entry) => entry.Direction === AtsuMessageDirection.Input);
+        return this.messageQueue.filter((entry) => entry.Direction === AtsuMessageDirection.Uplink);
     }
 
     public uidRegistered(uid: number): boolean {
         return this.messageQueue.findIndex((element) => uid === element.UniqueMessageID) !== -1;
     }
 
-    public insertMessage(message: AtsuMessage): void {
-        this.messageQueue.unshift(message);
+    public insertMessages(messages: AtsuMessage[]): void {
+        messages.forEach((message) => {
+            this.messageQueue.unshift(message);
 
-        if (message.Direction === AtsuMessageDirection.Input) {
+            if (message.Direction === AtsuMessageDirection.Uplink) {
             // increase the company message counter
-            const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
-            SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt + 1);
-        }
+                const cMsgCnt = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number');
+                SimVar.SetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'Number', cMsgCnt + 1);
+            }
+        });
     }
 }
