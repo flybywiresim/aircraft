@@ -35,7 +35,7 @@ export class RawDataMapper {
     public static toWaypoint(facility: any, instrument: BaseInstrument): WayPoint {
         const waypoint = new WayPoint(instrument);
 
-        waypoint.ident = facility.icao.substring(7, 12).trim();
+        waypoint.ident = WayPoint.formatIdentFromIcao(facility.icao);
         waypoint.icao = facility.icao;
         waypoint.type = facility.icao[0];
 

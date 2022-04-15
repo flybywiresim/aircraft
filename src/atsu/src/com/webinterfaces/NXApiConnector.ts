@@ -206,7 +206,7 @@ export class NXApiConnector {
                     for (const msg of data) {
                         const message = new FreetextMessage();
                         message.Network = AtsuMessageNetwork.FBW;
-                        message.Direction = AtsuMessageDirection.Input;
+                        message.Direction = AtsuMessageDirection.Uplink;
                         message.Station = msg.from.flight;
                         message.Message = msg.message.replace(/;/i, ' ');
 

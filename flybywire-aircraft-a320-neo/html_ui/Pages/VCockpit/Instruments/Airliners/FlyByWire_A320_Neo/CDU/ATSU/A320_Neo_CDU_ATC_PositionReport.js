@@ -49,7 +49,7 @@ class CDUAtcPositionReport {
             toWaypointUTCCell = FMCMainDisplay.secondsTohhmm(toWaypoint.infos.etaInFP);
             let nextWaypoint;
             if (mcdu.routeIndex + 1 === mcdu.flightPlanManager.getWaypointsCount()) {
-                nextWaypoint = mcdu.flightPlanManager.getDestination();
+                nextWaypoint = mcdu.flightPlanManager.getArrival();
             } else {
                 nextWaypoint = mcdu.flightPlanManager.getWaypoint(mcdu.routeIndex + 1);
             }
