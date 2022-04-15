@@ -2,8 +2,8 @@ name: release
 on:
   push:
     tags:
-      - 'v*'
-      - '!v*-rc*'
+      - "v*"
+      - "!v*-rc*"
 
 jobs:
   build:
@@ -31,6 +31,7 @@ jobs:
         run: |
           ./scripts/dev-env/run.sh node ./scripts/fragment.js
 
+          cp ./build-modules/modules.json ./flybywire-aircraft-a320-neo/install.json
           mkdir ./${{ env.BUILD_DIR_NAME }}
           zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
       - name: Create Release
