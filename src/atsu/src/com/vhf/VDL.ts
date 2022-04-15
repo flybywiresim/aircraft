@@ -141,8 +141,6 @@ export class Vdl {
                 // calculate the data rates and the time between two own packets
                 this.perPacketDelay[i] = Math.round(1000 / messageCountPerStation + 0.5);
             }
-
-            console.log(`Per aircraft (stations: ${relevantStations}) packet delay: ${this.perPacketDelay}`);
         }));
     }
 

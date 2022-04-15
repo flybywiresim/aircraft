@@ -287,8 +287,6 @@ export class Vhf {
         this.updatePresentPosition();
 
         return this.updateUsedVoiceFrequencies().then(() => this.updateRelevantAirports(flightPhase).then(() => {
-            console.log(`Relevant airports: ${JSON.stringify(this.relevantAirports)}`);
-
             // use the average over all reachable stations to estimate the datarate
             this.datarates = Array(DatalinkProviders.ProviderCount).fill(0.0);
             const stationCount = Array(DatalinkProviders.ProviderCount).fill(0);
