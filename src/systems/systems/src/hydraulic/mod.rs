@@ -1937,9 +1937,9 @@ pub struct EngineDrivenPump {
 }
 impl EngineDrivenPump {
     const DISPLACEMENT_BREAKPTS: [f64; 9] = [
-        0.0, 500.0, 1000.0, 1500.0, 2800.0, 2950.0, 3000.0, 3020.0, 3500.0,
+        0.0, 500.0, 1000.0, 1500.0, 2800.0, 2900.0, 3025.0, 3050.0, 3500.0,
     ];
-    const DISPLACEMENT_MAP: [f64; 9] = [2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 2.2, 1.0, 0.0];
+    const DISPLACEMENT_MAP: [f64; 9] = [2.4, 2.4, 2.4, 2.4, 2.4, 2.4, 0.0, 0.0, 0.0];
 
     pub fn new(context: &mut InitContext, id: &str) -> Self {
         Self {
@@ -1962,6 +1962,12 @@ impl EngineDrivenPump {
         self.pump
             .update(context, section, reservoir, pump_speed, controller);
         self.is_active = controller.should_pressurise();
+
+        println!(
+            "EDP DELIVERY {:.1} gpm, displacement {:.2}",
+            self.pump.current_flow.get::<gallon_per_minute>(),
+            self.pump.current_displacement.get::<cubic_inch>()
+        );
     }
 }
 impl PressureSource for EngineDrivenPump {
