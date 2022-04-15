@@ -8,7 +8,11 @@ import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
 
 class DcduMessage {
-    public MessageId: number;
+    public MessageId: number = 0;
+
+    public Station: string = '';
+
+    public MessageSent = false;
 
     public MessageRead = false;
 
@@ -216,6 +220,7 @@ export class DcduLink {
             const block = new DcduMessage();
             block.MessageId = message.UniqueMessageID;
             block.MessageRead = message.Direction === AtsuMessageDirection.Downlink;
+            block.Station = message.Station;
 
             if (this.messages.length < DcduLink.MaxDcduFileSize) {
                 this.messages[this.messages.length - 1].push(block);
@@ -250,5 +255,21 @@ export class DcduLink {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', uid);
             this.messages.splice(idx, 1);
         }
+    }
+
+    public openMessagesForStation(station: string): boolean {
+        let retval = false;
+
+        this.messages.forEach((block) => {
+            if (!block[0].MessageSent && block[0].Station === station) retval = true;
+        });
+
+        if (!retval) {
+            this.bufferedMessages.forEach((block) => {
+                if (!block[0].MessageSent && block[0].Station === station) retval = true;
+            });
+        }
+
+        return retval;
     }
 }
