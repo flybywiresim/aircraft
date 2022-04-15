@@ -152,10 +152,10 @@ export class Atc {
                                 this.handoverOngoing = true;
                                 this.logon(station).then((code) => resolve(code));
                             });
+                        } else {
+                            this.handoverOngoing = true;
+                            this.logon(station).then((code) => resolve(code));
                         }
-
-                        this.handoverOngoing = true;
-                        this.logon(station).then((code) => resolve(code));
                     }, 15000);
                 }
             }, 1000);
