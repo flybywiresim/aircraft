@@ -174,8 +174,8 @@ pub struct PowerTransferUnit {
     valve_opened_id: VariableIdentifier,
     shaft_rpm_id: VariableIdentifier,
     bark_strength_id: VariableIdentifier,
-    dev_efficiency_id: VariableIdentifier,
 
+    dev_efficiency_id: VariableIdentifier,
     dev_delta_pressure: VariableIdentifier,
 
     is_enabled: bool,
