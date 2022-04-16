@@ -3387,7 +3387,8 @@ impl A320AutobrakeController {
             || self.spoilers_retracted_during_this_update()
             || self.should_disarm_after_time_in_flight.output()
             || self.external_disarm_event
-            || (self.mode == AutobrakeMode::MAX && self.should_reject_max_mode_after_time_in_flight.output())
+            || (self.mode == AutobrakeMode::MAX
+                && self.should_reject_max_mode_after_time_in_flight.output())
     }
 
     fn calculate_target(&mut self) -> Acceleration {
