@@ -174,13 +174,16 @@ export class HoppieConnector {
     }
 
     private static levenshteinDistance(template: string, message: string, content: CpdlcMessageContent[]): number {
-        const elements = message.split(' ');
+        let elements = message.split(' ');
         let validContent = true;
 
         // try to match the content
         content.forEach((entry) => {
-            if (!entry.validateAndReplaceContent(elements)) {
+            const result = entry.validateAndReplaceContent(elements);
+            if (!result.matched) {
                 validContent = false;
+            } else {
+                elements = result.remaining;
             }
         });
         if (!validContent) return 100000;
@@ -231,6 +234,7 @@ export class HoppieConnector {
             }
         }
 
+        console.log(scores);
         // get all entries with the minimal score
         let matches: string[] = [];
         scores.forEach((elem) => {
@@ -271,11 +275,14 @@ export class HoppieConnector {
 
         // create a deep-copy of the message
         const retval: CpdlcMessageElement = CpdlcMessagesUplink[matches[0]][1].deepCopy();
-        const elements = message.split(' ');
+        let elements = message.split(' ');
         console.log(`Selected UM-ID: ${matches[0]}`);
 
         // parse the content and store it in the deep copy
-        retval.Content.forEach((entry) => entry.validateAndReplaceContent(elements));
+        retval.Content.forEach((entry) => {
+            const result = entry.validateAndReplaceContent(elements);
+            elements = result.remaining;
+        });
 
         return retval;
     }
