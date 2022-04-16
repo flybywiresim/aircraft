@@ -939,6 +939,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     /* END OF MCDU SCRATCHPAD */
     /* MCDU MESSAGE SYSTEM */
 
+    /**
+     * Display a type I message on the scratch pad
+     * @param message {TypeIMessage}
+     */
     setScratchpadMessage(message) {
         this.scratchpad.setMessage(message);
     }
