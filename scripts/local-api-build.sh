@@ -19,31 +19,37 @@ fi
 curl -fsSL $LOCAL_API_URL -O
 unzip FBW-local-api.zip -d ${GIT_DIR}
 
-# Hash Check or add exe if it doesn't exist
-if [ -f "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe" ]
+# Create fbw dispatch folder if it doesn't exist
+if [ ! -d "${DIR}/../flybywire-dispatch" ]
 then
-    LOCAL_HASH=$(md5sum "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe")
+    mkdir -p "${DIR}/../flybywire-dispatch"
+fi
+
+# Hash Check or add exe if it doesn't exist
+if [ -f "${DIR}/../flybywire-dispatch/local-server.exe" ]
+then
+    LOCAL_HASH=$(md5sum "${DIR}/../flybywire-dispatch/local-server.exe")
     NEW_HASH=$(md5sum ${GIT_DIR}/local-server.exe)
 
     if [ $LOCAL_HASH !== $NEW_HASH ]
     then
-        cp ${GIT_DIR}/local-server.exe "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe"
+        cp ${GIT_DIR}/local-server.exe "${DIR}/../flybywire-dispatch/local-server.exe"
     fi
 else
-    cp ${GIT_DIR}/local-server.exe "${DIR}/../flybywire-aircraft-a320-neo/local-server.exe"
+    cp ${GIT_DIR}/local-server.exe "${DIR}/../flybywire-dispatch/local-server.exe"
 fi
 
 # If properties file doesn't exist copy the default one
-if [ ! -f "${DIR}/../flybywire-aircraft-a320-neo/resources/properties.json" ]
+if [ ! -f "${DIR}/../flybywire-dispatch/resources/properties.json" ]
 then
-    mkdir -p "${DIR}/../flybywire-aircraft-a320-neo/resources"
-    cp ${GIT_DIR}/properties.json "${DIR}/../flybywire-aircraft-a320-neo/resources/properties.json"
+    mkdir -p "${DIR}/../flybywire-dispatch/resources"
+    cp ${GIT_DIR}/properties.json "${DIR}/../flybywire-dispatch/resources/properties.json"
 fi
 
 # Copy Sumatra
-if [ ! -f "${DIR}/../flybywire-aircraft-a320-neo/resources/SumatraPDF.exe" ]
+if [ ! -f "${DIR}/../flybywire-dispatch/resources/SumatraPDF.exe" ]
 then
-    cp ${GIT_DIR}/SumatraPDF.exe "${DIR}/../flybywire-aircraft-a320-neo/resources/SumatraPDF.exe"
+    cp ${GIT_DIR}/SumatraPDF.exe "${DIR}/../flybywire-dispatch/resources/SumatraPDF.exe"
 fi
 
 # Cleanup
