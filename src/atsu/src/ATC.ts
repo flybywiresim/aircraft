@@ -225,7 +225,7 @@ export class Atc {
                 return;
             }
 
-            message.Response = this.createCpdlcResponse(message, response);
+            message.Response = responseMsg;
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
             this.dcduLink.update(message);
 
