@@ -234,7 +234,6 @@ export class HoppieConnector {
             }
         }
 
-        console.log(scores);
         // get all entries with the minimal score
         let matches: string[] = [];
         scores.forEach((elem) => {
