@@ -6,7 +6,7 @@ import { Hoppie } from '@flybywiresim/api-client';
 import { AtsuStatusCodes } from '../../AtsuStatusCodes';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from '../../messages/AtsuMessage';
 import { CpdlcMessage } from '../../messages/CpdlcMessage';
-import { CpdlcMessagesUplink, CpdlcMessageElement, CpdlcMessageContent } from '../../messages/CpdlcMessageElements';
+import { CpdlcMessagesUplink, CpdlcMessageElement, CpdlcMessageContent, CpdlcMessageExpectedResponseType } from '../../messages/CpdlcMessageElements';
 import { FreetextMessage } from '../../messages/FreetextMessage';
 import { FansMode } from '../FutureAirNavigationSystem';
 
@@ -350,6 +350,9 @@ export class HoppieConnector {
                     cpdlc.PreviousTransmissionId = parseInt(elements[3]);
                 }
                 cpdlc.Content = HoppieConnector.cpdlcMessageClassification(elements[5]);
+                if ((elements[4] as CpdlcMessageExpectedResponseType) !== cpdlc.Content.ExpectedResponse) {
+                    cpdlc.Content.ExpectedResponse = (elements[4] as CpdlcMessageExpectedResponseType);
+                }
                 cpdlc.Message = elements[5];
 
                 retval.push(cpdlc);
