@@ -405,6 +405,8 @@ export const CpdlcMessagesUplink: { [identification: string]: [string[], CpdlcMe
     UM3: [['ROGER'], new CpdlcMessageElement('UM3', [FansMode.FansA, FansMode.FansB])],
     UM4: [['AFFIRM'], new CpdlcMessageElement('UM4', [FansMode.FansA, FansMode.FansB])],
     UM5: [['NEGATIVE'], new CpdlcMessageElement('UM5', [FansMode.FansA, FansMode.FansB])],
+    UM19: [['MAINTAIN %s'], new CpdlcMessageElement('UM19', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(1)],
+        CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM20: [['CLIMB TO %s', 'CLIMB TO AND MAINTAIN %s'], new CpdlcMessageElement('UM20', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(2, 4)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM23: [['DESCEND TO %s', 'DESCEND TO AND MAINTAIN %s'], new CpdlcMessageElement('UM23', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(2, 4)],
