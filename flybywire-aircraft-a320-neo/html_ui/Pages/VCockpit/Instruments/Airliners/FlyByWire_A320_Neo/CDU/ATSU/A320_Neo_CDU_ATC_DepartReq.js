@@ -262,9 +262,6 @@ class CDUAtcDepartReq {
             ["<RETURN"]
         ]);
 
-        // define the template
-        mcdu.setTemplate(addionalLineTemplate);
-
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
