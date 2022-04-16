@@ -3474,7 +3474,7 @@ impl SimulationElement for A320AutobrakeController {
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
         let readedMode = reader.read_f64(&self.armed_mode_id_set);
-        if (readedMode >= 0.0) {
+        if readedMode >= 0.0 {
             self.mode = readedMode.into();
         }
     }
