@@ -3461,7 +3461,6 @@ impl A320AutobrakeController {
             lgciu1,
             lgciu2,
         );
-        let previous_mode = self.mode;
         self.mode = self.determine_mode(context, autobrake_panel);
 
         self.deceleration_governor

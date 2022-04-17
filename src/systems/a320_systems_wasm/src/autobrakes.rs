@@ -37,7 +37,7 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
 
     let options_set = |options: EventToVariableOptions| {
         options
-            .leading_debounce(Duration::from_millis(250))
+            .leading_debounce(Duration::from_millis(125))
             .afterwards_reset_to(-1.)
     };
 
@@ -74,7 +74,7 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
 
     let options_buttons = |options: EventToVariableOptions| {
         options
-            .leading_debounce(Duration::from_millis(250))
+            .leading_debounce(Duration::from_millis(125))
             .afterwards_reset_to(0.)
     };
 
