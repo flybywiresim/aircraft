@@ -3310,8 +3310,12 @@ impl A320AutobrakeController {
         Ratio::new::<ratio>(self.deceleration_governor.output())
     }
 
-    fn determine_mode(&mut self, autobrake_panel: &AutobrakePanel) -> AutobrakeMode {
-        if self.should_disarm() {
+    fn determine_mode(
+        &mut self,
+        context: &UpdateContext,
+        autobrake_panel: &AutobrakePanel,
+    ) -> AutobrakeMode {
+        if self.should_disarm(context) {
             AutobrakeMode::NONE
         } else {
             match autobrake_panel.pressed_mode() {
@@ -3327,8 +3331,8 @@ impl A320AutobrakeController {
         }
     }
 
-    fn should_engage_deceleration_governor(&self) -> bool {
-        self.is_armed() && self.ground_spoilers_are_deployed && !self.should_disarm()
+    fn should_engage_deceleration_governor(&self, context: &UpdateContext) -> bool {
+        self.is_armed() && self.ground_spoilers_are_deployed && !self.should_disarm(context)
     }
 
     fn is_armed(&self) -> bool {
@@ -3381,11 +3385,14 @@ impl A320AutobrakeController {
         }
     }
 
-    fn should_disarm(&self) -> bool {
+    fn should_disarm(&self, context: &UpdateContext) -> bool {
+        // when a simulation is started in flight, some values need to be ignored for a certain time to ensure
+        // an unintended disarm is not happening
         (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
-            || !self.arming_is_allowed_by_bcu
+            || (context.simulation_time() > 2. && !self.arming_is_allowed_by_bcu)
             || self.spoilers_retracted_during_this_update()
-            || self.should_disarm_after_time_in_flight.output()
+            || (context.simulation_time() > Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS + 1.
+                && self.should_disarm_after_time_in_flight.output())
             || self.external_disarm_event
             || (self.mode == AutobrakeMode::MAX
                 && self.should_reject_max_mode_after_time_in_flight.output())
@@ -3451,10 +3458,11 @@ impl A320AutobrakeController {
             lgciu1,
             lgciu2,
         );
-        self.mode = self.determine_mode(autobrake_panel);
+        let previous_mode = self.mode;
+        self.mode = self.determine_mode(context, autobrake_panel);
 
         self.deceleration_governor
-            .engage_when(self.should_engage_deceleration_governor());
+            .engage_when(self.should_engage_deceleration_governor(context));
 
         self.target = self.calculate_target();
         self.deceleration_governor.update(context, self.target);
@@ -3463,7 +3471,7 @@ impl A320AutobrakeController {
 impl SimulationElement for A320AutobrakeController {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.armed_mode_id, self.mode as u8 as f64);
-        writer.write(&self.armed_mode_id_set, 0.);
+        writer.write(&self.armed_mode_id_set, -1.);
         writer.write(&self.decel_light_id, self.is_decelerating());
         writer.write(&self.active_id, self.deceleration_demanded());
     }
@@ -3475,8 +3483,8 @@ impl SimulationElement for A320AutobrakeController {
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
         let readed_mode = reader.read_f64(&self.armed_mode_id_set);
-        if readed_mode > 0.0 {
-            self.mode = (readed_mode - 1.0).into();
+        if readed_mode >= 0.0 {
+            self.mode = readed_mode.into();
         }
     }
 }

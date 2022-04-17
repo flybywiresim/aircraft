@@ -964,11 +964,11 @@
 - A32NX_AUTOBRAKES_ARMED_MODE_SET
     - Number
     - Requests an autobrake mode
-        -  0: (technical state not requesting anything)
-        -  1: Disarm Autobrake
-        -  2: Set Autobrake to LOW
-        -  3: Set Autobrake to MED
-        -  4: Set Autobrake to MAX (if allowed)
+        - -1: (technical state not requesting anything)
+        -  0: Disarm Autobrake
+        -  1: Set Autobrake to LOW
+        -  2: Set Autobrake to MED
+        -  3: Set Autobrake to MAX (if allowed)
 
 - A32NX_AUTOBRAKES_ACTIVE
     - Bool

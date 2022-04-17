@@ -37,8 +37,8 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
 
     let options_set = |options: EventToVariableOptions| {
         options
-            .leading_debounce(Duration::from_millis(250))
-            .afterwards_reset_to(0.)
+            .leading_debounce(Duration::from_millis(100))
+            .afterwards_reset_to(-1.)
     };
 
     builder.event_to_variable(
@@ -49,25 +49,25 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
     )?;
     builder.event_to_variable(
         "A32NX.AUTOBRAKE_SET_DISARM",
-        EventToVariableMapping::Value(1.),
+        EventToVariableMapping::Value(0.),
         Variable::named("AUTOBRAKES_ARMED_MODE_SET"),
         options_set,
     )?;
     builder.event_to_variable(
         "A32NX.AUTOBRAKE_SET_LO",
-        EventToVariableMapping::Value(2.),
+        EventToVariableMapping::Value(1.),
         Variable::named("AUTOBRAKES_ARMED_MODE_SET"),
         options_set,
     )?;
     builder.event_to_variable(
         "A32NX.AUTOBRAKE_SET_MED",
-        EventToVariableMapping::Value(3.),
+        EventToVariableMapping::Value(2.),
         Variable::named("AUTOBRAKES_ARMED_MODE_SET"),
         options_set,
     )?;
     builder.event_to_variable(
         "A32NX.AUTOBRAKE_SET_MAX",
-        EventToVariableMapping::Value(4.),
+        EventToVariableMapping::Value(3.),
         Variable::named("AUTOBRAKES_ARMED_MODE_SET"),
         options_set,
     )?;
@@ -76,19 +76,19 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
         "A32NX.AUTOBRAKE_BUTTON_LO",
         EventToVariableMapping::Value(1.),
         Variable::named("OVHD_AUTOBRK_LOW_ON_IS_PRESSED"),
-        |options| options.leading_debounce(Duration::from_millis(250)),
+        |options| options.leading_debounce(Duration::from_millis(100)),
     )?;
     builder.event_to_variable(
         "A32NX.AUTOBRAKE_BUTTON_MED",
         EventToVariableMapping::Value(1.),
         Variable::named("OVHD_AUTOBRK_MED_ON_IS_PRESSED"),
-        |options| options.leading_debounce(Duration::from_millis(250)),
+        |options| options.leading_debounce(Duration::from_millis(100)),
     )?;
     builder.event_to_variable(
         "A32NX.AUTOBRAKE_BUTTON_MAX",
         EventToVariableMapping::Value(1.),
         Variable::named("OVHD_AUTOBRK_MAX_ON_IS_PRESSED"),
-        |options| options.leading_debounce(Duration::from_millis(250)),
+        |options| options.leading_debounce(Duration::from_millis(100)),
     )?;
 
     Ok(())
