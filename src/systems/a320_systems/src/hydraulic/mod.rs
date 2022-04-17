@@ -3463,7 +3463,7 @@ impl A320AutobrakeController {
 impl SimulationElement for A320AutobrakeController {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.armed_mode_id, self.mode as u8 as f64);
-        writer.write(&self.armed_mode_id_set, -1.);
+        writer.write(&self.armed_mode_id_set, 0.);
         writer.write(&self.decel_light_id, self.is_decelerating());
         writer.write(&self.active_id, self.deceleration_demanded());
     }
@@ -3475,8 +3475,8 @@ impl SimulationElement for A320AutobrakeController {
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
         let readed_mode = reader.read_f64(&self.armed_mode_id_set);
-        if readed_mode >= 0.0 {
-            self.mode = readed_mode.into();
+        if readed_mode > 0.0 {
+            self.mode = (readed_mode - 1.0).into();
         }
     }
 }

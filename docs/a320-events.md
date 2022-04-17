@@ -162,10 +162,10 @@
   - Parameter value can be used to set the decrement:
       Value | Meaning
       --- | ---
-      0 | Disarm Autobrake
-      1 | Set Autobrake to LOW
-      2 | Set Autobrake to MED
-      3 | Set Autobrake to MAX (if allowed)
+      1 | Disarm Autobrake
+      2 | Set Autobrake to LOW
+      3 | Set Autobrake to MED
+      4 | Set Autobrake to MAX (if allowed)
 
 - A32NX.AUTOBRAKE_SET_DISARM
   - When triggered the autobrake is set to disarmed state

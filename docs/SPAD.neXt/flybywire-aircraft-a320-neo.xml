@@ -32,7 +32,7 @@
   <CustomClientEvent Name="FCU LOC PUSH" EventID="A32NX.FCU_LOC_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push LOC button on FCU</CustomClientEvent>
   <CustomClientEvent Name="FCU APPR PUSH" EventID="A32NX.FCU_APPR_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push APPR button on FCU</CustomClientEvent>
   <CustomClientEvent Name="FCU EXPED PUSH" EventID="A32NX.FCU_EXPED_PUSH" SubCategory="A32NX FCU" IsGlobal="true" >Push EXPED button on FCU</CustomClientEvent>
-  <CustomClientEvent Name="AUTOBRAKE SET" EventID="A32NX.AUTOBRAKE_SET" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to desired state</CustomClientEvent>
+  <CustomClientEvent Name="AUTOBRAKE SET" EventID="A32NX.AUTOBRAKE_SET" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to desired state (1=DISARM, 2=LO, 3=MED, 4=MAX)</CustomClientEvent>
   <CustomClientEvent Name="AUTOBRAKE SET DISARM" EventID="A32NX.AUTOBRAKE_SET_DISARM" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to disarmed state</CustomClientEvent>
   <CustomClientEvent Name="AUTOBRAKE SET LO" EventID="A32NX.AUTOBRAKE_SET_LO" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to LO state</CustomClientEvent>
   <CustomClientEvent Name="AUTOBRAKE SET MED" EventID="A32NX.AUTOBRAKE_SET_MED" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Set Autobrake to MED state</CustomClientEvent>
