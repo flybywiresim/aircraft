@@ -5156,7 +5156,7 @@ mod tests {
             },
             engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
             hydraulic::electrical_generator::TestGenerator,
-            landing_gear::{GearsSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
+            landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
             shared::{EmergencyElectricalState, HydraulicGeneratorControlUnit, PotentialOrigin},
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -6309,7 +6309,7 @@ mod tests {
                 self
             }
 
-            fn gear_system_state(&self) -> GearsSystemState {
+            fn gear_system_state(&self) -> GearSystemState {
                 self.query(|a| a.lgcius.active_lgciu().gear_system_state())
             }
 
@@ -9801,22 +9801,22 @@ mod tests {
         fn nominal_gear_retraction_extension_cycles_in_flight() {
             let mut test_bed = test_bed_with().set_cold_dark_inputs().in_flight();
 
-            assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
 
             test_bed = test_bed
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(25.));
-            assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
 
             test_bed = test_bed
                 .set_gear_lever_down()
                 .run_waiting_for(Duration::from_secs_f64(25.));
-            assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
 
             test_bed = test_bed
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(25.));
-            assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
         }
 
         #[test]
@@ -9831,12 +9831,12 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(15.));
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
-            assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
 
             test_bed = test_bed.set_gear_lever_up();
             test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(60.));
 
-            assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
         }
 
         #[test]
@@ -9885,14 +9885,14 @@ mod tests {
                 .set_gear_lever_down()
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
 
             let initial_fluid_quantity = test_bed.get_green_reservoir_volume();
 
             test_bed = test_bed
                 .set_gear_lever_up()
                 .run_waiting_for(Duration::from_secs_f64(20.));
-            assert!(test_bed.gear_system_state() == GearsSystemState::AllUpLocked);
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
             assert!(test_bed.is_all_doors_really_up());
 
             let uplocked_fluid_quantity = test_bed.get_green_reservoir_volume();
@@ -9903,7 +9903,7 @@ mod tests {
             test_bed = test_bed
                 .set_gear_lever_down()
                 .run_waiting_for(Duration::from_secs_f64(20.));
-            assert!(test_bed.gear_system_state() == GearsSystemState::AllDownLocked);
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
             assert!(test_bed.is_all_doors_really_up());
 
             let downlocked_fluid_quantity = test_bed.get_green_reservoir_volume();

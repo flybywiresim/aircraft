@@ -450,14 +450,14 @@ impl LandingGearControlInterfaceUnitSet {
     }
 
     #[cfg(test)]
-    fn gear_system_state(&self) -> GearsSystemState {
+    fn gear_system_state(&self) -> GearSystemState {
         self.active_lgciu().gear_system_state()
     }
 }
 impl SimulationElement for LandingGearControlInterfaceUnitSet {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.gear_handle_unit.accept(visitor);
-        accept_iterable!(self.lgcius, visitor)
+        accept_iterable!(self.lgcius, visitor);
 
         visitor.visit(self);
     }
@@ -680,14 +680,14 @@ impl LandingGearControlInterfaceUnit {
         gear_handle: &impl LandingGearHandle,
     ) {
         match self.gear_system_state() {
-            GearsSystemState::AllUpLocked | GearsSystemState::AllDownLocked => {
+            GearSystemState::AllUpLocked | GearSystemState::AllDownLocked => {
                 if self.status == LgciuStatus::Ok {
                     self.transition_duration = Duration::default()
                 } else {
                     self.transition_duration += context.delta()
                 }
             }
-            GearsSystemState::Extending | GearsSystemState::Retracting => {
+            GearSystemState::Extending | GearSystemState::Retracting => {
                 // If gear handle position is changed during transistion we reset transition timer
                 if self.gear_lever_position_is_down_previous_state
                     == gear_handle.gear_handle_is_down()
@@ -727,7 +727,7 @@ impl LandingGearControlInterfaceUnit {
         self.transition_duration = Duration::default();
     }
 
-    pub fn gear_system_state(&self) -> GearsSystemState {
+    pub fn gear_system_state(&self) -> GearSystemState {
         self.gear_system_control.state()
     }
 
@@ -845,19 +845,19 @@ impl LgciuDoorPosition for LandingGearControlInterfaceUnit {
 impl LgciuGearControl for LandingGearControlInterfaceUnit {
     fn should_open_doors(&self) -> bool {
         match self.gear_system_control.state() {
-            GearsSystemState::AllUpLocked => false,
-            GearsSystemState::Retracting => !self.all_up_and_locked(),
-            GearsSystemState::Extending => !self.all_down_and_locked(),
-            GearsSystemState::AllDownLocked => false,
+            GearSystemState::AllUpLocked => false,
+            GearSystemState::Retracting => !self.all_up_and_locked(),
+            GearSystemState::Extending => !self.all_down_and_locked(),
+            GearSystemState::AllDownLocked => false,
         }
     }
 
     fn should_extend_gears(&self) -> bool {
         match self.gear_system_control.state() {
-            GearsSystemState::AllUpLocked => false,
-            GearsSystemState::Retracting => !(self.all_fully_opened() || self.all_up_and_locked()),
-            GearsSystemState::Extending => self.all_fully_opened() || self.all_down_and_locked(),
-            GearsSystemState::AllDownLocked => true,
+            GearSystemState::AllUpLocked => false,
+            GearSystemState::Retracting => !(self.all_fully_opened() || self.all_up_and_locked()),
+            GearSystemState::Extending => self.all_fully_opened() || self.all_down_and_locked(),
+            GearSystemState::AllDownLocked => true,
         }
     }
 
@@ -884,7 +884,7 @@ impl LandingGearHandle for LandingGearControlInterfaceUnit {
 impl LgciuInterface for LandingGearControlInterfaceUnit {}
 
 #[derive(PartialEq, Clone, Copy, Debug)]
-pub enum GearsSystemState {
+pub enum GearSystemState {
     AllUpLocked,
     Retracting,
     Extending,
@@ -893,12 +893,12 @@ pub enum GearsSystemState {
 
 #[derive(Debug)]
 struct GearSystemStateMachine {
-    gears_state: GearsSystemState,
+    gears_state: GearSystemState,
 }
 impl GearSystemStateMachine {
     pub fn default() -> Self {
         Self {
-            gears_state: GearsSystemState::AllDownLocked,
+            gears_state: GearSystemState::AllDownLocked,
         }
     }
 
@@ -906,36 +906,36 @@ impl GearSystemStateMachine {
         &self,
         lgciu: &(impl LgciuGearExtension + LgciuDoorPosition),
         gear_handle_position_is_up: bool,
-    ) -> GearsSystemState {
+    ) -> GearSystemState {
         match self.gears_state {
-            GearsSystemState::AllUpLocked => {
+            GearSystemState::AllUpLocked => {
                 if !gear_handle_position_is_up {
-                    GearsSystemState::Extending
+                    GearSystemState::Extending
                 } else {
                     self.gears_state
                 }
             }
-            GearsSystemState::Retracting => {
+            GearSystemState::Retracting => {
                 if lgciu.all_up_and_locked() && lgciu.all_closed_and_locked() {
-                    GearsSystemState::AllUpLocked
+                    GearSystemState::AllUpLocked
                 } else if !gear_handle_position_is_up {
-                    GearsSystemState::Extending
+                    GearSystemState::Extending
                 } else {
                     self.gears_state
                 }
             }
-            GearsSystemState::Extending => {
+            GearSystemState::Extending => {
                 if lgciu.all_down_and_locked() && lgciu.all_closed_and_locked() {
-                    GearsSystemState::AllDownLocked
+                    GearSystemState::AllDownLocked
                 } else if gear_handle_position_is_up {
-                    GearsSystemState::Retracting
+                    GearSystemState::Retracting
                 } else {
                     self.gears_state
                 }
             }
-            GearsSystemState::AllDownLocked => {
+            GearSystemState::AllDownLocked => {
                 if gear_handle_position_is_up {
-                    GearsSystemState::Retracting
+                    GearSystemState::Retracting
                 } else {
                     self.gears_state
                 }
@@ -959,13 +959,13 @@ impl GearSystemStateMachine {
         }
 
         self.gears_state = if lgciu.all_up_and_locked() && lgciu.all_closed_and_locked() {
-            GearsSystemState::AllUpLocked
+            GearSystemState::AllUpLocked
         } else if lgciu.all_down_and_locked() && lgciu.all_closed_and_locked() {
-            GearsSystemState::AllDownLocked
+            GearSystemState::AllDownLocked
         } else if gear_handle_position_is_up {
-            GearsSystemState::Retracting
+            GearSystemState::Retracting
         } else {
-            GearsSystemState::Extending
+            GearSystemState::Extending
         };
 
         true
@@ -979,7 +979,7 @@ impl GearSystemStateMachine {
         self.gears_state = self.new_gear_state(lgciu, gear_handle_position_is_up);
     }
 
-    pub fn state(&self) -> GearsSystemState {
+    pub fn state(&self) -> GearSystemState {
         self.gears_state
     }
 }
@@ -1300,9 +1300,7 @@ mod tests {
     fn gear_state_downlock_on_init() {
         let test_bed = SimulationTestBed::new(|context| TestGearAircraft::new(context));
 
-        assert!(
-            test_bed.query(|a| a.lgcius.gear_system_state()) == GearsSystemState::AllDownLocked
-        );
+        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllDownLocked);
     }
 
     #[test]
@@ -1313,9 +1311,7 @@ mod tests {
             test_bed.run_without_delta();
         }
 
-        assert!(
-            test_bed.query(|a| a.lgcius.gear_system_state()) == GearsSystemState::AllDownLocked
-        );
+        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllDownLocked);
 
         println!("GEAR UP!!");
         test_bed = test_bed.set_gear_handle_up();
@@ -1324,7 +1320,7 @@ mod tests {
             test_bed.run_without_delta();
         }
 
-        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearsSystemState::AllUpLocked);
+        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllUpLocked);
 
         // Gear DOWN
         test_bed = test_bed.set_gear_handle_down();
@@ -1332,9 +1328,7 @@ mod tests {
             test_bed.run_without_delta();
         }
 
-        assert!(
-            test_bed.query(|a| a.lgcius.gear_system_state()) == GearsSystemState::AllDownLocked
-        );
+        assert!(test_bed.query(|a| a.lgcius.gear_system_state()) == GearSystemState::AllDownLocked);
     }
 
     #[test]
