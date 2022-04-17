@@ -1233,6 +1233,7 @@ impl A320Hydraulic {
 
         // Uses external conditions and momentary button: better to check each frame
         self.ram_air_turbine_controller.update(
+            context,
             overhead_panel,
             rat_and_emer_gen_man_on,
             emergency_elec_state,
@@ -2371,6 +2372,7 @@ impl A320RamAirTurbineController {
 
     fn update(
         &mut self,
+        context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
@@ -2381,9 +2383,10 @@ impl A320RamAirTurbineController {
         let solenoid_2_should_trigger_deployment_if_powered =
             emergency_elec_state.is_in_emergency_elec() || rat_and_emer_gen_man_on.is_pressed();
 
-        self.should_deploy = (self.is_solenoid_1_powered
-            && solenoid_1_should_trigger_deployment_if_powered)
-            || (self.is_solenoid_2_powered && solenoid_2_should_trigger_deployment_if_powered);
+        // due to initialization issues the RAT will not deployed in any case when simulation has just started
+        self.should_deploy = (context.simulation_time() >= 2.)
+            && ((self.is_solenoid_1_powered && solenoid_1_should_trigger_deployment_if_powered)
+                || (self.is_solenoid_2_powered && solenoid_2_should_trigger_deployment_if_powered));
     }
 }
 impl RamAirTurbineController for A320RamAirTurbineController {
