@@ -132,7 +132,7 @@ class CDUNavRadioPage {
                 const lsCourse = SimVar.GetSimVarValue('L:A32NX_FM_LS_COURSE', 'number');
                 if (lsCourse >= 0) {
                     ilsCourseCell = `{${mcdu.ilsCourse !== undefined ? 'big' : 'small'}}F${lsCourse.toFixed(0).padStart(3, "0")}{end}`;
-                } else {
+                } else if (mcdu._ilsFrequencyPilotEntered) {
                     ilsCourseCell = "{amber}____{end}";
                 }
             }

@@ -108,23 +108,28 @@ class CDUAocRequestsWeather {
             data.sendStatus = "SENDING";
             updateView();
 
-            setTimeout(() => {
+            const sentRequest = () => {
                 data.sendStatus = "SENT";
-                updateView();
-            }, 1000);
+                if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
+                    updateView();
+                }
+            };
 
-            mcdu.atsu.aoc.receiveWeather(data.requestId === 0, icaos).then((retval) => {
+            mcdu.atsu.aoc.receiveWeather(data.requestId === 0, icaos, sentRequest).then((retval) => {
                 if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
                     mcdu.atsu.registerMessages([retval[1]]);
                     data.sendStatus = "";
 
                     if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
-                        CDUAocRequestsWeather.ShowPage(mcdu, data);
+                        updateView();
                     }
                 } else {
                     mcdu.addNewAtsuMessage(retval[0]);
-                    data.sendStatus = "FAILED";
-                    updateView();
+
+                    if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
+                        data.sendStatus = "FAILED";
+                        updateView();
+                    }
                 }
             });
         };
