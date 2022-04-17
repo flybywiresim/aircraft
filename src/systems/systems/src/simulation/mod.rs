@@ -426,7 +426,7 @@ impl<T: Aircraft> Simulation<T> {
     /// let mut simulation = Simulation::new(Default::default(), MyAircraft::new, &mut registry);
     /// let mut reader_writer = MySimulatorReaderWriter::new();
     /// // For each frame, call the tick function.
-    /// simulation.tick(Duration::from_millis(50), &mut reader_writer)
+    /// simulation.tick(Duration::from_millis(50), 20., &mut reader_writer)
     /// ```
     /// [`tick`]: #method.tick
     pub fn tick(
@@ -438,7 +438,8 @@ impl<T: Aircraft> Simulation<T> {
         self.electricity.pre_tick();
 
         let mut reader = SimulatorReader::new(reader_writer);
-        self.update_context.update(&mut reader, delta, simulation_time);
+        self.update_context
+            .update(&mut reader, delta, simulation_time);
 
         let mut visitor = SimulatorToSimulationVisitor::new(&mut reader);
         self.aircraft.accept(&mut visitor);

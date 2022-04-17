@@ -37,7 +37,7 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
 
     let options_set = |options: EventToVariableOptions| {
         options
-            .leading_debounce(Duration::from_millis(100))
+            .leading_debounce(Duration::from_millis(250))
             .afterwards_reset_to(-1.)
     };
 
@@ -72,23 +72,29 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
         options_set,
     )?;
 
+    let options_buttons = |options: EventToVariableOptions| {
+        options
+            .leading_debounce(Duration::from_millis(250))
+            .afterwards_reset_to(0.)
+    };
+
     builder.event_to_variable(
         "A32NX.AUTOBRAKE_BUTTON_LO",
         EventToVariableMapping::Value(1.),
         Variable::named("OVHD_AUTOBRK_LOW_ON_IS_PRESSED"),
-        |options| options.leading_debounce(Duration::from_millis(100)),
+        options_buttons,
     )?;
     builder.event_to_variable(
         "A32NX.AUTOBRAKE_BUTTON_MED",
         EventToVariableMapping::Value(1.),
         Variable::named("OVHD_AUTOBRK_MED_ON_IS_PRESSED"),
-        |options| options.leading_debounce(Duration::from_millis(100)),
+        options_buttons,
     )?;
     builder.event_to_variable(
         "A32NX.AUTOBRAKE_BUTTON_MAX",
         EventToVariableMapping::Value(1.),
         Variable::named("OVHD_AUTOBRK_MAX_ON_IS_PRESSED"),
-        |options| options.leading_debounce(Duration::from_millis(100)),
+        options_buttons,
     )?;
 
     Ok(())

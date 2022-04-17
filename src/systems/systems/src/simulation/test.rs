@@ -289,7 +289,11 @@ impl<T: Aircraft> SimulationTestBed<T> {
                 );
                 break;
             } else {
-                self.simulation.tick(current_delta, 10. + executed_duration.as_secs_f64(), &mut self.reader_writer);
+                self.simulation.tick(
+                    current_delta,
+                    10. + executed_duration.as_secs_f64(),
+                    &mut self.reader_writer,
+                );
             }
             executed_duration += current_delta;
         }
