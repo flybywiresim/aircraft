@@ -37,7 +37,7 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
 
     builder.event_to_variable(
         "A32NX.AUTOBRAKE_SET",
-        EventToVariableMapping::EventDataToValue(|event_data| event_data.into()),
+        EventToVariableMapping::EventDataToValue(|event_data| event_data as f64),
         Variable::named("AUTOBRAKES_ARMED_MODE_SET"),
         options,
     )?;
