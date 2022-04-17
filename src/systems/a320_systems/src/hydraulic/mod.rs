@@ -3473,9 +3473,9 @@ impl SimulationElement for A320AutobrakeController {
         self.external_disarm_event = reader.read(&self.external_disarm_event_id);
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
-        let readedMode = reader.read_f64(&self.armed_mode_id_set);
-        if readedMode >= 0.0 {
-            self.mode = readedMode.into();
+        let readed_mode = reader.read_f64(&self.armed_mode_id_set);
+        if readed_mode >= 0.0 {
+            self.mode = readed_mode.into();
         }
     }
 }
