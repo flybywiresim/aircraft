@@ -60,8 +60,8 @@ class EngineControl {
   int engineImbalanced;
   double paramImbalance;
 
-  const double LBS_TO_KGS = 0.453592;
-  const double KGS_TO_LBS = 2.20462;
+  const double LBS_TO_KGS = 0.4535934000001;
+  const double KGS_TO_LBS = 2.2046176156881;
   const double FUEL_THRESHOLD = 661;  // lbs/sec
 
   bool isFlexActive = false;
@@ -638,27 +638,28 @@ class EngineControl {
   /// </summary>
   void checkPayload() {
     double fuelWeightGallon = simVars->getFuelWeightGallon();
+	double paxWeightLbs = simVars->getPaxWeightKgs() * KGS_TO_LBS;                            // in LBS
     double aircraftEmptyWeight = simVars->getEmptyWeight();                                   // in LBS
     double aircraftTotalWeight = simVars->getTotalWeight();                                   // in LBS
     double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;              // in LBS
     double payloadTotalWeight = aircraftTotalWeight - aircraftEmptyWeight - fuelTotalWeight;  // in LBS
 
-    double paxRows1to6Actual = simVars->getPaxRows1to6Actual() * 185;                       // in LBS
-    double paxRows7to13Actual = simVars->getPaxRows7to13Actual() * 185;                     // in LBS
-    double paxRows14to21Actual = simVars->getPaxRows14to21Actual() * 185;                   // in LBS
-    double paxRows22to29Actual = simVars->getPaxRows22to29Actual() * 185;                   // in LBS
-    double paxRows1to6Desired = simVars->getPaxRows1to6Desired() * 185;                     // in LBS
-    double paxRows7to13Desired = simVars->getPaxRows7to13Desired() * 185;                   // in LBS
-    double paxRows14to21Desired = simVars->getPaxRows14to21Desired() * 185;                 // in LBS
-    double paxRows22to29Desired = simVars->getPaxRows22to29Desired() * 185;                 // in LBS
-    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() * KGS_TO_LBS;    // in LBS
-    double cargoAftContainerActual = simVars->getCargoAftContainerActual() * KGS_TO_LBS;    // in LBS
-    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() * KGS_TO_LBS;        // in LBS
-    double cargoAftBulkActual = simVars->getCargoAftBulkActual() * KGS_TO_LBS;              // in LBS
-    double cargoFwdContainerDesired = simVars->getCargoFwdContainerDesired() * KGS_TO_LBS;  // in LBS
-    double cargoAftContainerDesired = simVars->getCargoAftContainerDesired() * KGS_TO_LBS;  // in LBS
-    double cargoAftBaggageDesired = simVars->getCargoAftBaggageDesired() * KGS_TO_LBS;      // in LBS
-    double cargoAftBulkDesired = simVars->getCargoAftBulkDesired() * KGS_TO_LBS;            // in LBS
+    double paxRows1to6Actual = simVars->getPaxRows1to6Actual() * paxWeightLbs;                // in LBS
+    double paxRows7to13Actual = simVars->getPaxRows7to13Actual() * paxWeightLbs;              // in LBS
+    double paxRows14to21Actual = simVars->getPaxRows14to21Actual() * paxWeightLbs;            // in LBS
+    double paxRows22to29Actual = simVars->getPaxRows22to29Actual() * paxWeightLbs;            // in LBS
+    double paxRows1to6Desired = simVars->getPaxRows1to6Desired() * paxWeightLbs;              // in LBS
+    double paxRows7to13Desired = simVars->getPaxRows7to13Desired() * paxWeightLbs;            // in LBS
+    double paxRows14to21Desired = simVars->getPaxRows14to21Desired() * paxWeightLbs;          // in LBS
+    double paxRows22to29Desired = simVars->getPaxRows22to29Desired() * paxWeightLbs;          // in LBS
+    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() * KGS_TO_LBS;      // in LBS
+    double cargoAftContainerActual = simVars->getCargoAftContainerActual() * KGS_TO_LBS;      // in LBS
+    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() * KGS_TO_LBS;          // in LBS
+    double cargoAftBulkActual = simVars->getCargoAftBulkActual() * KGS_TO_LBS;                // in LBS
+    double cargoFwdContainerDesired = simVars->getCargoFwdContainerDesired() * KGS_TO_LBS;    // in LBS
+    double cargoAftContainerDesired = simVars->getCargoAftContainerDesired() * KGS_TO_LBS;    // in LBS
+    double cargoAftBaggageDesired = simVars->getCargoAftBaggageDesired() * KGS_TO_LBS;        // in LBS
+    double cargoAftBulkDesired = simVars->getCargoAftBulkDesired() * KGS_TO_LBS;              // in LBS
     double paxTotalWeightActual = (paxRows1to6Actual + paxRows7to13Actual + paxRows14to21Actual + paxRows22to29Actual);
     double paxTotalWeightDesired = (paxRows1to6Desired + paxRows7to13Desired + paxRows14to21Desired + paxRows22to29Desired);
     double cargoTotalWeightActual = (cargoFwdContainerActual + cargoAftContainerActual + cargoAftBaggageActual + cargoAftBulkActual);

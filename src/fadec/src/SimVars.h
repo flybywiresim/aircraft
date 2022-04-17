@@ -164,6 +164,7 @@ class SimVars {
   ID CargoAftContainerDesired;
   ID CargoAftBaggageDesired;
   ID CargoAftBulkDesired;
+  ID PaxWeightKgs;
   ID ThrustLimitType;
   ID ThrustLimitIdle;
   ID ThrustLimitToga;
@@ -228,6 +229,7 @@ class SimVars {
     CargoAftContainerDesired = register_named_variable("A32NX_CARGO_AFT_CONTAINER_DESIRED");
     CargoAftBaggageDesired = register_named_variable("A32NX_CARGO_AFT_BAGGAGE_DESIRED");
     CargoAftBulkDesired = register_named_variable("A32NX_CARGO_AFT_BULK_LOOSE_DESIRED");
+    PaxWeightKgs = register_named_variable("A32NX_WB_PER_PAX_WEIGHT");
 
     ThrustLimitType = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
     ThrustLimitIdle = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE");
@@ -370,6 +372,7 @@ class SimVars {
   FLOAT64 getCargoAftContainerDesired() { return get_named_variable_value(CargoAftContainerDesired); }
   FLOAT64 getCargoAftBaggageDesired() { return get_named_variable_value(CargoAftBaggageDesired); }
   FLOAT64 getCargoAftBulkDesired() { return get_named_variable_value(CargoAftBulkDesired); }
+  FLOAT64 getPaxWeightKgs() { return get_named_variable_value(PaxWeightKgs); }
   FLOAT64 getPacksState1() { return get_named_variable_value(PacksState1); }
   FLOAT64 getPacksState2() { return get_named_variable_value(PacksState2); }
   FLOAT64 getThrustLimitType() { return get_named_variable_value(ThrustLimitType); }
