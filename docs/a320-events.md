@@ -166,3 +166,12 @@
       1 | Set Autobrake to LOW
       2 | Set Autobrake to MED
       3 | Set Autobrake to MAX (if allowed)
+
+- A32NX.AUTOBRAKE_BUTTON_LO
+  - When triggered the autobrake button LO is pressed (as if triggered in the cockpit)
+
+- A32NX.AUTOBRAKE_BUTTON_MED
+  - When triggered the autobrake button MED is pressed (as if triggered in the cockpit)
+
+- A32NX.AUTOBRAKE_BUTTON_MAX
+  - When triggered the autobrake button MAX is pressed (as if triggered in the cockpit)

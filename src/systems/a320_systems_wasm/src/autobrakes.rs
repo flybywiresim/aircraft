@@ -42,5 +42,24 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
         options,
     )?;
 
+    builder.event_to_variable(
+        "A32NX.AUTOBRAKE_BUTTON_LO",
+        EventToVariableMapping::Value(1.),
+        Variable::named("OVHD_AUTOBRK_LOW_ON_IS_PRESSED"),
+        |options| options.afterwards_reset_to(0.),
+    )?;
+    builder.event_to_variable(
+        "A32NX.AUTOBRAKE_BUTTON_MED",
+        EventToVariableMapping::Value(1.),
+        Variable::named("OVHD_AUTOBRK_MED_ON_IS_PRESSED"),
+        |options| options.afterwards_reset_to(0.),
+    )?;
+    builder.event_to_variable(
+        "A32NX.AUTOBRAKE_BUTTON_MAX",
+        EventToVariableMapping::Value(1.),
+        Variable::named("OVHD_AUTOBRK_MAX_ON_IS_PRESSED"),
+        |options| options.afterwards_reset_to(0.),
+    )?;
+
     Ok(())
 }
