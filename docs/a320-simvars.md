@@ -2545,7 +2545,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - RIGHT
 
 - A32NX_LGCIU_{number}_{gear}_GEAR_DOWNLOCKED
-    - True the gear is locked down.
+    - True if the gear is locked down.
     - Boolean
      - {number}
         - 1
