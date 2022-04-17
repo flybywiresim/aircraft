@@ -516,11 +516,7 @@ impl SimulationElement for LandingGearHandleUnit {
     fn read(&mut self, reader: &mut SimulatorReader) {
         let lever_down_raw: bool = reader.read(&self.gear_handle_position_requested_id);
 
-        if !lever_down_raw && (!self.lever_should_lock_down || !self.is_lever_down) {
-            self.is_lever_down = false;
-        } else {
-            self.is_lever_down = true;
-        }
+        self.is_lever_down = lever_down_raw || (self.lever_should_lock_down && self.is_lever_down);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
