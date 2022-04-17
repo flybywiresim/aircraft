@@ -167,6 +167,18 @@
       2 | Set Autobrake to MED
       3 | Set Autobrake to MAX (if allowed)
 
+- A32NX.AUTOBRAKE_SET_DISARM
+  - When triggered the autobrake is set to disarmed state
+
+- A32NX.AUTOBRAKE_SET_LO
+  - When triggered the autobrake is set to LO state (if allowed)
+
+- A32NX.AUTOBRAKE_SET_MED
+  - When triggered the autobrake is set to MED state (if allowed)
+
+- A32NX.AUTOBRAKE_SET_MAX
+  - When triggered the autobrake is set to MAX state (if allowed)
+
 - A32NX.AUTOBRAKE_BUTTON_LO
   - When triggered the autobrake button LO is pressed (as if triggered in the cockpit)
 
