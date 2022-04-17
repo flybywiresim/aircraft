@@ -167,6 +167,7 @@ pub struct UpdateContext {
     mach_number_id: VariableIdentifier,
 
     delta: Delta,
+    simulation_time: f64,
     indicated_airspeed: Velocity,
     true_airspeed: Velocity,
     indicated_altitude: Length,
@@ -212,6 +213,7 @@ impl UpdateContext {
     pub fn new(
         context: &mut InitContext,
         delta: Duration,
+        simulation_time: f64,
         indicated_airspeed: Velocity,
         true_airspeed: Velocity,
         indicated_altitude: Length,
@@ -252,6 +254,7 @@ impl UpdateContext {
             mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
 
             delta: delta.into(),
+            simulation_time,
             indicated_airspeed,
             true_airspeed,
             indicated_altitude,
@@ -311,6 +314,7 @@ impl UpdateContext {
             mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
 
             delta: Default::default(),
+            simulation_time: Default::default(),
             indicated_airspeed: Default::default(),
             true_airspeed: Default::default(),
             indicated_altitude: Default::default(),
@@ -342,7 +346,12 @@ impl UpdateContext {
     }
 
     /// Updates a context based on the data that was read from the simulator.
-    pub(super) fn update(&mut self, reader: &mut SimulatorReader, delta: Duration) {
+    pub(super) fn update(
+        &mut self,
+        reader: &mut SimulatorReader,
+        delta: Duration,
+        simulation_time: f64,
+    ) {
         self.ambient_temperature = reader.read(&self.ambient_temperature_id);
         self.indicated_airspeed = reader.read(&self.indicated_airspeed_id);
         self.true_airspeed = reader.read(&self.true_airspeed_id);
@@ -354,6 +363,7 @@ impl UpdateContext {
             Velocity::new::<foot_per_minute>(reader.read(&self.vertical_speed_id));
 
         self.delta = delta.into();
+        self.simulation_time = simulation_time;
 
         self.local_acceleration = LocalAcceleration::new(
             reader.read(&self.accel_body_x_id),
@@ -434,6 +444,10 @@ impl UpdateContext {
 
     pub fn delta_as_time(&self) -> Time {
         self.delta.into()
+    }
+
+    pub fn simulation_time(&self) -> f64 {
+        self.simulation_time
     }
 
     pub fn indicated_airspeed(&self) -> Velocity {

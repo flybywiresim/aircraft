@@ -266,7 +266,7 @@ impl<T: Aircraft> SimulationTestBed<T> {
     }
 
     pub fn run_with_delta(&mut self, delta: Duration) {
-        self.simulation.tick(delta, &mut self.reader_writer);
+        self.simulation.tick(delta, 100., &mut self.reader_writer);
     }
 
     /// Runs a multiple [Simulation] ticks by subdividing given delta on the contained [Aircraft].
@@ -284,11 +284,12 @@ impl<T: Aircraft> SimulationTestBed<T> {
             if executed_duration + current_delta > delta {
                 self.simulation.tick(
                     (executed_duration + current_delta) - delta,
+                    10. + executed_duration.as_secs_f64(),
                     &mut self.reader_writer,
                 );
                 break;
             } else {
-                self.simulation.tick(current_delta, &mut self.reader_writer);
+                self.simulation.tick(current_delta, 10. + executed_duration.as_secs_f64(), &mut self.reader_writer);
             }
             executed_duration += current_delta;
         }
