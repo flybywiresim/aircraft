@@ -740,6 +740,20 @@ class CDUFlightPlanPage {
         }
         const allowScroll = waypointsAndMarkers.length > 4;
         if (allowScroll) {//scroll only if there are more than 5 points
+            //Only need to call onAirport()if there are > waypoints
+        //since both origin and destination are already displayed on the same page if no
+            mcdu.onAirport = () => {
+                const isOnFlightPlanPage = mcdu.page.Current === mcdu.page.FlightPlanPage;
+                const destinationAirportOffset = waypointsAndMarkers.length - 5;
+                const allowCycleToOriginAirport = mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT;
+                if (offset === destinationAirportOffset && allowCycleToOriginAirport && isOnFlightPlanPage) {//only show origin if still on ground
+                    offset = 0; // Go back to top of flight plan page to show origin airport.
+                } else {
+                    offset = destinationAirportOffset;
+                }
+                CDUFlightPlanPage.ShowPage(mcdu, offset);
+            };
+            //call showPage() with
             mcdu.onDown = () => {//on page down decrement the page offset.
                 if (offset > 0) { // if page not on top
                     offset--;
