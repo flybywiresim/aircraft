@@ -532,6 +532,9 @@ struct SimulationTime {
     #[name = "SIMULATION TIME"]
     #[unit = "Number"]
     value: f64,
+    #[name = "CAMERA STATE"]
+    #[unit = "Number"]
+    camera_state: f64,
 }
 
 impl SimulationTime {
@@ -541,6 +544,7 @@ impl SimulationTime {
 struct Time {
     previous_simulation_time_value: f64,
     next_delta: f64,
+    camera_state: f64,
 }
 
 impl Time {
@@ -554,12 +558,14 @@ impl Time {
         Ok(Self {
             previous_simulation_time_value: 0.,
             next_delta: 0.,
+            camera_state: 0.,
         })
     }
 
     fn increment(&mut self, simulation_time: &SimulationTime) {
         self.next_delta += simulation_time.value - self.previous_simulation_time_value;
         self.previous_simulation_time_value = simulation_time.value;
+        self.camera_state = simulation_time.camera_state;
     }
 
     fn simulation_time(&self) -> f64 {
@@ -567,7 +573,7 @@ impl Time {
     }
 
     fn is_pausing(&self) -> bool {
-        self.next_delta == 0.
+        self.next_delta == 0. || self.camera_state >= 10.0
     }
 
     fn take(&mut self) -> Duration {
