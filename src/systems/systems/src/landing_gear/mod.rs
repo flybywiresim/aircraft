@@ -457,8 +457,7 @@ impl LandingGearControlInterfaceUnitSet {
 impl SimulationElement for LandingGearControlInterfaceUnitSet {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.gear_handle_unit.accept(visitor);
-        self.lgcius[LgciuId::Lgciu1 as usize].accept(visitor);
-        self.lgcius[LgciuId::Lgciu2 as usize].accept(visitor);
+        accept_iterable!(self.lgcius, visitor)
 
         visitor.visit(self);
     }
