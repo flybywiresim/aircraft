@@ -231,7 +231,6 @@
 1. [MODEL] Add detailed rivet mesh to allow for ALDB+COMP+NORM ribbons - @bouveng (Johan Bouveng)
 1. [SD] Rewrite Bleed page to React - @RichardPilbery (tricky_dicky#3571)
 1. [FMGC] Implement "coarse" prediction system for turn speeds - @tracernz (Mike)
-1. [HYD] PTU bark strength simvar added - @Crocket63
 1. [BLEED] Converted bleed system to use mass flow instead of volume flow - @Gurgel100 (Pascal)
 1. [FMGC] Add runway-by-itself approaches - @tracernz (Mike)
 1. [FMGC] Automatic airway waypoint intersection - @tracernz (Mike)
@@ -242,6 +241,7 @@
 1. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
 1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (donbikes#4084)
 1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
+1. [HYD] PTU model refinement and simulated potential wear state probabilities - @Crocket63
 
 
 ## 0.7.0
