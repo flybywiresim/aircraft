@@ -739,10 +739,8 @@ class CDUFlightPlanPage {
             scrollText.push([""]);
         }
         const allowScroll = waypointsAndMarkers.length > 4;
-        if (allowScroll) {//scroll only if there are more than 5 points
-            //Only need to call onAirport()if there are > waypoints
-        //since both origin and destination are already displayed on the same page if no
-            mcdu.onAirport = () => {
+        if (allowScroll) {
+            mcdu.onAirport = () => {// Only called if <4 waypoints
                 const isOnFlightPlanPage = mcdu.page.Current === mcdu.page.FlightPlanPage;
                 const destinationAirportOffset = waypointsAndMarkers.length - 5;
                 const allowCycleToOriginAirport = mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT;
