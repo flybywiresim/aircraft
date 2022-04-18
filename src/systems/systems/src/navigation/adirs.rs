@@ -1053,7 +1053,8 @@ impl InertialReference {
             SignStatus::NoComputedData
         };
 
-        self.true_heading.set_value(simulator_data.true_heading, ssm);
+        self.true_heading
+            .set_value(simulator_data.true_heading, ssm);
         self.heading.set_value(simulator_data.heading, ssm);
     }
 
@@ -2826,7 +2827,10 @@ mod tests {
                 ));
             test_bed.run();
 
-            assert_eq!(test_bed.true_track(adiru_number).normal_value().unwrap(), angle);
+            assert_eq!(
+                test_bed.true_track(adiru_number).normal_value().unwrap(),
+                angle
+            );
         }
 
         #[rstest]
@@ -2850,7 +2854,9 @@ mod tests {
         #[case(1)]
         #[case(2)]
         #[case(3)]
-        fn true_track_is_true_heading_when_ground_speed_less_than_50_knots(#[case] adiru_number: usize) {
+        fn true_track_is_true_heading_when_ground_speed_less_than_50_knots(
+            #[case] adiru_number: usize,
+        ) {
             let angle = Angle::new::<degree>(160.);
             let mut test_bed = all_adirus_aligned_test_bed_with()
                 .true_heading_of(angle)
@@ -2860,7 +2866,10 @@ mod tests {
                 ));
             test_bed.run();
 
-            assert_eq!(test_bed.true_track(adiru_number).normal_value().unwrap(), angle);
+            assert_eq!(
+                test_bed.true_track(adiru_number).normal_value().unwrap(),
+                angle
+            );
         }
 
         #[rstest]
