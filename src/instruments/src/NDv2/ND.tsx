@@ -1,41 +1,109 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { FSComponent, DisplayComponent, EventBus, VNode, ClockEvents } from 'msfssdk';
+import { FSComponent, DisplayComponent, EventBus, VNode, ClockEvents, Subject } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { SimVarString } from '@shared/simvar';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { NDSimvars } from './NDSimvarPublisher';
-import { ArcModeOverlay } from './pages/Arc';
+import { ArcModePage } from './pages/arc';
+import { Layer } from '../MsfsAvionicsCommon/Layer';
+import { FmMessages } from './FmMessages';
+import { Flag } from './shared/Flag';
+import { CanvasMap } from './shared/CanvasMap';
 
 export interface NDProps {
     bus: EventBus,
 }
 
 export class NDComponent extends DisplayComponent<NDProps> {
+    private readonly isUsingTrackUpMode = Subject.create(true);
+
+    private readonly lat = Subject.create(0);
+
+    private readonly lon = Subject.create(0);
+
+    private readonly magneticHeadingWord = Subject.create(Arinc429Word.empty());
+
+    private readonly trueHeading = Subject.create(0);
+
+    private readonly headingWord = Subject.create(Arinc429Word.empty());
+
+    private readonly trackWord = Subject.create(Arinc429Word.empty());
+
+    private readonly magVar = Subject.create(0);
+
+    private readonly mapRotation = Subject.create(0);
+
+    onAfterRender(node: VNode) {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<NDSimvars & ClockEvents>();
+
+        sub.on('heading').whenChanged().handle((value) => {
+            this.magneticHeadingWord.set(new Arinc429Word(value));
+            console.log(`${this.magneticHeadingWord.get().value}bruh`);
+            this.handleMapRotation();
+        });
+
+        // TODO use ADIRS for this
+        sub.on('trueHeading').whenChanged().handle((value) => {
+            this.trueHeading.set(value);
+            this.handleMapRotation();
+        });
+
+        sub.on('groundTrack').whenChanged().handle((value) => {
+            this.trackWord.set(new Arinc429Word(value));
+            this.handleMapRotation();
+        });
+    }
+
+    private handleMapRotation() {
+        const usingTrackUpMode = this.isUsingTrackUpMode.get();
+
+        if (usingTrackUpMode) {
+            const trackWord = this.trackWord.get();
+
+            if (trackWord.isNormalOperation()) {
+                const magVar = this.trueHeading.get() - this.magneticHeadingWord.get().value;
+
+                this.mapRotation.set(trackWord.value + magVar);
+            } else {
+                this.mapRotation.set(0);
+            }
+        } else {
+            const headingWord = this.headingWord.get();
+
+            if (headingWord.isNormalOperation()) {
+                this.mapRotation.set(this.trueHeading.get());
+            } else {
+                this.mapRotation.set(0);
+            }
+        }
+    }
+
     render(): VNode | null {
         return (
             <DisplayUnit bus={this.props.bus}>
                 <svg class="pfd-svg" viewBox="0 0 768 768">
                     <WindIndicator bus={this.props.bus} />
                     <SpeedIndicator bus={this.props.bus} />
-                    <ApproachIndicator bus={this.props.bus} />
                     <ToWaypointIndicator bus={this.props.bus} />
+                    <ApproachIndicator bus={this.props.bus} />
 
-                    <ArcModeOverlay bus={this.props.bus} />
+                    <Flag shown={Subject.create(false)} x={384} y={54} class="Cyan FontSmallest">TRUE</Flag>
+                    <Flag shown={Subject.create(false)} x={350} y={84} class="Amber FontSmall">DISPLAY SYSTEM VERSION INCONSISTENCY</Flag>
+                    <Flag shown={Subject.create(false)} x={384} y={170} class="Amber FontMedium">CHECK HDG</Flag>
+
+                    <ArcModePage
+                        bus={this.props.bus}
+                        isUsingTrackUpMode={this.isUsingTrackUpMode}
+                    />
+
+                    <FmMessages bus={this.props.bus} />
                 </svg>
+
+                <CanvasMap bus={this.props.bus} x={0} y={626} width={768} height={768} mapRotation={this.mapRotation} />
             </DisplayUnit>
-        );
-    }
-}
-
-class Layer extends DisplayComponent<{ x: number, y: number }> {
-    render(): VNode | null {
-        const { x, y } = this.props;
-
-        return (
-            <g transform={`translate(${x}, ${y})`}>
-                {this.props.children}
-            </g>
         );
     }
 }
@@ -132,6 +200,16 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     private readonly identRef = FSComponent.createRef<SVGTextElement>();
 
+    private readonly largeDistanceContainerRef = FSComponent.createRef<SVGGElement>();
+
+    private readonly largeDistanceNumberRef = FSComponent.createRef<SVGTextElement>();
+
+    private readonly smallDistanceContainerRef = FSComponent.createRef<SVGGElement>();
+
+    private readonly smallDistanceIntegerPartRef = FSComponent.createRef<SVGTextElement>();
+
+    private readonly smallDistanceDecimalPartRef = FSComponent.createRef<SVGTextElement>();
+
     private readonly bearingContainerRef = FSComponent.createRef<SVGGElement>();
 
     private readonly bearingRwf = FSComponent.createRef<SVGTextElement>();
@@ -158,9 +236,31 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
             }
         });
 
+        sub.on('toWptDistanceCaptain').whenChanged().handle((value) => {
+            this.handleToWptDistance(value);
+        });
+
         sub.on('realTime').whenChangedBy(100).handle(() => {
             this.refreshToWptIdent();
         });
+    }
+
+    private handleToWptDistance(value: number) {
+        if (value > 20) {
+            this.smallDistanceContainerRef.instance.style.visibility = 'hidden';
+            this.largeDistanceContainerRef.instance.style.visibility = 'visible';
+
+            this.largeDistanceNumberRef.instance.textContent = Math.round(value).toString();
+        } else {
+            const integerPart = Math.trunc(value);
+            const decimalPart = (value - integerPart).toString()[2];
+
+            this.largeDistanceContainerRef.instance.style.visibility = 'hidden';
+            this.smallDistanceContainerRef.instance.style.visibility = 'visible';
+
+            this.smallDistanceIntegerPartRef.instance.textContent = integerPart.toString();
+            this.smallDistanceDecimalPartRef.instance.textContent = decimalPart;
+        }
     }
 
     private refreshToWptIdent(): void {
@@ -179,9 +279,15 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
                     <text x={73} y={2} class="Cyan FontIntermediate EndAlign">&deg;</text>
                 </g>
 
-                <text x={6} y={32} class="Green FontIntermediate EndAlign">1</text>
-                <text x={3} y={32} class="Green FontSmallest StartAlign">.</text>
-                <text x={20} y={32} class="Green FontSmallest StartAlign">8</text>
+                <g ref={this.largeDistanceContainerRef}>
+                    <text ref={this.largeDistanceNumberRef} x={39} y={32} class="Green FontIntermediate EndAlign">50</text>
+                </g>
+
+                <g ref={this.smallDistanceContainerRef}>
+                    <text ref={this.smallDistanceIntegerPartRef} x={6} y={32} class="Green FontIntermediate EndAlign">1</text>
+                    <text x={3} y={32} class="Green FontSmallest StartAlign">.</text>
+                    <text ref={this.smallDistanceDecimalPartRef} x={20} y={32} class="Green FontSmallest StartAlign">8</text>
+                </g>
 
                 <text x={72} y={32} class="Cyan FontSmallest EndAlign">NM</text>
 

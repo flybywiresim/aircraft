@@ -5,14 +5,14 @@ import { Layer } from '@instruments/common/utils';
 import { TCAS_CONST as TCAS, TaRaIntrusion, TaRaIndex } from '@tcas/lib/TcasConstants';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { MathUtils } from '@shared/MathUtils';
-import { Mode, NdTraffic } from '@shared/NavigationDisplay';
+import { EfisNdMode, NdTraffic } from '@shared/NavigationDisplay';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useFlowSyncEvent } from '@instruments/common/hooks';
 import { MapParameters } from '../utils/MapParameters';
 
 export type TcasProps = {
     mapParams: MapParameters,
-    mode: Mode.ARC | Mode.ROSE_NAV | Mode.ROSE_ILS | Mode.ROSE_VOR,
+    mode: EfisNdMode.ARC | EfisNdMode.ROSE_NAV | EfisNdMode.ROSE_ILS | EfisNdMode.ROSE_VOR,
 }
 
 type TcasMask = [number, number][];
@@ -37,7 +37,7 @@ const TCAS_MASK_ROSE: TcasMask = [
 
 const useAirTraffic = (mapParams, mode) : NdTraffic[] => {
     const [airTraffic, setAirTraffic] = useState<NdTraffic[]>([]);
-    const tcasMask = (mode === Mode.ARC ? TCAS_MASK_ARC : TCAS_MASK_ROSE);
+    const tcasMask = (mode === EfisNdMode.ARC ? TCAS_MASK_ARC : TCAS_MASK_ROSE);
     useFlowSyncEvent('A32NX_TCAS_TRAFFIC', (_topic, data) => {
         if (data) {
             setAirTraffic(trafficToDisplay(data, mapParams, tcasMask));
@@ -81,7 +81,7 @@ export const Traffic: FC<TcasProps> = ({ mapParams, mode }) => {
     const [debug] = usePersistentProperty('TCAS_DEBUG', '0');
     const [sensitivity] = useSimVar('L:A32NX_TCAS_SENSITIVITY', 'number', 200);
     const x: number = 361.5;
-    const y: number = (mode === Mode.ARC) ? 606.5 : 368;
+    const y: number = (mode === EfisNdMode.ARC) ? 606.5 : 368;
 
     if (debug !== '0') {
         const dmodRa: number = mapParams.nmToPx * (TCAS.DMOD[sensitivity || 1][TaRaIndex.RA]);

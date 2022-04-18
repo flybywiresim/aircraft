@@ -5,7 +5,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { getSupplier } from '@instruments/common/utils';
 import { useFlowSyncEvent } from '@instruments/common/hooks';
-import { Mode, NdSymbol, rangeSettings } from '@shared/NavigationDisplay';
+import { EfisNdMode, NdSymbol, rangeSettings } from '@shared/NavigationDisplay';
 import { render } from '../Common';
 import { ArcMode } from './pages/ArcMode';
 import { WindIndicator } from './elements/WindIndicator';
@@ -111,7 +111,7 @@ const NavigationDisplay: React.FC = () => {
                         <LnavStatus />
                     )}
 
-                    {modeIndex === Mode.PLAN && (
+                    {modeIndex === EfisNdMode.PLAN && (
                         <PlanMode
                             adirsAlign={adirsAlign}
                             rangeSetting={rangeSettings[rangeIndex]}
@@ -121,7 +121,7 @@ const NavigationDisplay: React.FC = () => {
                             mapHidden={modeChangeShown || rangeChangeShown}
                         />
                     )}
-                    {modeIndex === Mode.ARC && (
+                    {modeIndex === EfisNdMode.ARC && (
                         <ArcMode
                             adirsAlign={adirsAlign}
                             rangeSetting={rangeSettings[rangeIndex]}
@@ -131,7 +131,7 @@ const NavigationDisplay: React.FC = () => {
                             mapHidden={modeChangeShown || rangeChangeShown}
                         />
                     )}
-                    {(modeIndex === Mode.ROSE_ILS || modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_NAV)
+                    {(modeIndex === EfisNdMode.ROSE_ILS || modeIndex === EfisNdMode.ROSE_VOR || modeIndex === EfisNdMode.ROSE_NAV)
                     && (
                         <RoseMode
                             adirsAlign={adirsAlign}
@@ -147,7 +147,7 @@ const NavigationDisplay: React.FC = () => {
                     <Chrono side={side} />
 
                     <NavigationDisplayMessages adirsAlign={adirsAlign} mode={modeIndex} modeChangeShown={modeChangeShown} rangeChangeShown={rangeChangeShown} />
-                    {(adirsAlign && modeIndex !== Mode.PLAN) && (
+                    {(adirsAlign && modeIndex !== EfisNdMode.PLAN) && (
                         <>
                             <RadioNavInfo index={1} side={side} />
                             <RadioNavInfo index={2} side={side} />

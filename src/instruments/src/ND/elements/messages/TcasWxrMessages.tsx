@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { Layer } from '@instruments/common/utils';
 import { useSimVar } from '@instruments/common/simVars';
-import { Mode } from '@shared/NavigationDisplay';
+import { EfisNdMode } from '@shared/NavigationDisplay';
 
 /*
 Messages in priority order, from 1-12 (full set with ATSAW and nice weather radar)
@@ -23,7 +23,7 @@ interface TcasWxrMessage {
     color: 'White' | 'Amber';
 }
 
-export const TcasWxrMessages: FC<{ modeIndex: Mode}> = ({ modeIndex }) => {
+export const TcasWxrMessages: FC<{ modeIndex: EfisNdMode}> = ({ modeIndex }) => {
     // TODO get data and decide what to display
 
     let leftMessage: TcasWxrMessage | undefined;
@@ -38,16 +38,16 @@ export const TcasWxrMessages: FC<{ modeIndex: Mode}> = ({ modeIndex }) => {
         leftMessage = { text: 'TA ONLY', color: 'White' };
     }
 
-    if (modeIndex !== Mode.ARC && modeIndex !== Mode.ROSE_NAV && modeIndex !== Mode.ROSE_VOR && modeIndex !== Mode.ROSE_ILS || (!leftMessage && !rightMessage)) {
+    if (modeIndex !== EfisNdMode.ARC && modeIndex !== EfisNdMode.ROSE_NAV && modeIndex !== EfisNdMode.ROSE_VOR && modeIndex !== EfisNdMode.ROSE_ILS || (!leftMessage && !rightMessage)) {
         return null;
     }
 
-    const y = (modeIndex === Mode.ROSE_VOR || modeIndex === Mode.ROSE_ILS) ? 713 : 684;
+    const y = (modeIndex === EfisNdMode.ROSE_VOR || modeIndex === EfisNdMode.ROSE_ILS) ? 713 : 684;
 
     return (
         <Layer x={164} y={y}>
             { /* we fill/mask the map under both message boxes, per IRL refs */ }
-            { (modeIndex === Mode.ARC || modeIndex === Mode.ROSE_NAV) && (
+            { (modeIndex === EfisNdMode.ARC || modeIndex === EfisNdMode.ROSE_NAV) && (
                 <rect x={0} y={0} width={440} height={59} className="BackgroundFill" stroke="none" />
             )}
 

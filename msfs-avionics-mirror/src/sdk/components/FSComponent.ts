@@ -264,7 +264,9 @@ export namespace FSComponent {
       'textAnchor': 'text-anchor',
       'strokeDasharray': 'stroke-dasharray',
       'strokeDashoffset': 'stroke-dashoffset',
+      'strokeLinecap': 'stroke-linecap',
       'clipPath': 'clip-path',
+      'xlinkHref': 'xlink:href',
   }
 
   /**

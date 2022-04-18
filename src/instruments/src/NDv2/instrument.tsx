@@ -1,14 +1,23 @@
-import { Clock, FSComponent, EventBus, HEventPublisher } from 'msfssdk';
+import { Clock, FSComponent, EventBus, HEventPublisher, Subject } from 'msfssdk';
 import { NDComponent } from './ND';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 
 import './style.scss';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
+import { EcpBusSimVarPublisher } from '../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
+import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { FmsSymbolsPublisher } from './FmsSymbolsPublisher';
 
 class A32NX_ND extends BaseInstrument {
-    private bus: EventBus;
+    private readonly bus: EventBus;
 
-    private simVarPublisher: NDSimvarPublisher;
+    private readonly simVarPublisher: NDSimvarPublisher;
+
+    private readonly ecpBusSimVarPublisher: EcpBusSimVarPublisher;
+
+    private readonly fmsDataPublisher: FmsDataPublisher;
+
+    private readonly fmsSymbolsPublisher: FmsSymbolsPublisher;
 
     private readonly hEventPublisher;
 
@@ -28,6 +37,9 @@ class A32NX_ND extends BaseInstrument {
         super();
         this.bus = new EventBus();
         this.simVarPublisher = new NDSimvarPublisher(this.bus);
+        this.ecpBusSimVarPublisher = new EcpBusSimVarPublisher(this.bus, Subject.create('L'));
+        this.fmsDataPublisher = new FmsDataPublisher(this.bus, Subject.create('L'));
+        this.fmsSymbolsPublisher = new FmsSymbolsPublisher(this.bus);
         this.hEventPublisher = new HEventPublisher(this.bus);
         this.clock = new Clock(this.bus);
         this.adirsValueProvider = new AdirsValueProvider(this.bus, this.simVarPublisher, 'L');
@@ -63,7 +75,16 @@ class A32NX_ND extends BaseInstrument {
         this.simVarPublisher.subscribe('toWptIdent0Captain');
         this.simVarPublisher.subscribe('toWptIdent1Captain');
         this.simVarPublisher.subscribe('toWptBearingCaptain');
-        this.simVarPublisher.subscribe('rangeSettingCaptain');
+        this.simVarPublisher.subscribe('toWptDistanceCaptain');
+        this.simVarPublisher.subscribe('selectedHeading');
+        this.simVarPublisher.subscribe('pposLat');
+        this.simVarPublisher.subscribe('pposLong');
+        this.simVarPublisher.subscribe('trueHeading');
+
+        this.ecpBusSimVarPublisher.subscribe('ndRangeSetting');
+        this.ecpBusSimVarPublisher.subscribe('ndMode');
+
+        this.fmsDataPublisher.subscribe('ndMessageFlags');
 
         FSComponent.render(<NDComponent bus={this.bus} />, document.getElementById('ND_CONTENT'));
     }
@@ -82,14 +103,20 @@ class A32NX_ND extends BaseInstrument {
             const gamestate = this.getGameState();
             if (gamestate === 3) {
                 this.simVarPublisher.startPublish();
+                this.ecpBusSimVarPublisher.startPublish();
+                this.fmsDataPublisher.startPublish();
+                this.fmsSymbolsPublisher.startPublish();
                 this.hEventPublisher.startPublish();
             }
             this.gameState = gamestate;
         } else {
             this.simVarPublisher.onUpdate();
+            this.ecpBusSimVarPublisher.onUpdate();
+            this.fmsDataPublisher.onUpdate();
+            this.fmsSymbolsPublisher.onUpdate();
             this.clock.onUpdate();
         }
     }
 }
 
-registerInstrument('a32nx-pfd', A32NX_ND);
+registerInstrument('a32nx-nd', A32NX_ND);

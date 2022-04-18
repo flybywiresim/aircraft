@@ -249,8 +249,15 @@ text.Red {
 }
 .BackgroundFill {
   fill: $display-background;
-  stroke: none;
   fill-rule: evenodd;
+}
+
+circle.shadow,
+line.shadow,
+path.shadow,
+rect.shadow {
+  stroke: $display-background;
+  fill: none;
 }
 
 .ModeChangedPath {

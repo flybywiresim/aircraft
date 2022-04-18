@@ -3,7 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Layer, getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
 import { TuningMode } from '@fmgc/radionav';
-import { Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
+import { EfisNdMode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
@@ -18,7 +18,7 @@ export interface RoseModeProps {
     symbols: NdSymbol[],
     adirsAlign: boolean,
     rangeSetting: number,
-    mode: Mode.ROSE_ILS | Mode.ROSE_VOR | Mode.ROSE_NAV,
+    mode: EfisNdMode.ROSE_ILS | EfisNdMode.ROSE_VOR | EfisNdMode.ROSE_NAV,
     side: EfisSide,
     ppos: LatLongData,
     mapHidden: boolean,
@@ -64,7 +64,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                     tcasMode={tcasMode}
                 />
                 <g id="map" clipPath="url(#rose-mode-map-clip)">
-                    { mode === Mode.ROSE_NAV && (
+                    { mode === EfisNdMode.ROSE_NAV && (
                         <g visibility={mapHidden ? 'hidden' : 'visible'}>
                             <FlightPlan
                                 x={384}
@@ -87,21 +87,21 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                     <RadioNeedle index={2} side={side} displayMode={mode} centreHeight={384} />
                 </g>
 
-                { mode === Mode.ROSE_VOR && <VorCaptureOverlay heading={magHeading} side={side} /> }
+                { mode === EfisNdMode.ROSE_VOR && <VorCaptureOverlay heading={magHeading} side={side} /> }
 
-                { mode === Mode.ROSE_ILS && <IlsCaptureOverlay heading={magHeading} _side={side} /> }
+                { mode === EfisNdMode.ROSE_ILS && <IlsCaptureOverlay heading={magHeading} _side={side} /> }
 
-                { mode === Mode.ROSE_NAV && <ToWaypointIndicator side={side} /> }
-                { mode === Mode.ROSE_VOR && <VorInfo side={side} /> }
-                { mode === Mode.ROSE_ILS && <IlsInfo /> }
+                { mode === EfisNdMode.ROSE_NAV && <ToWaypointIndicator side={side} /> }
+                { mode === EfisNdMode.ROSE_VOR && <VorInfo side={side} /> }
+                { mode === EfisNdMode.ROSE_ILS && <IlsInfo /> }
 
                 <ApproachMessage side={side} />
                 <TrackBug heading={heading} track={track} />
-                { mode === Mode.ROSE_NAV && lsDisplayed && <LsCourseBug heading={heading} lsCourse={lsCourse} /> }
+                { mode === EfisNdMode.ROSE_NAV && lsDisplayed && <LsCourseBug heading={heading} lsCourse={lsCourse} /> }
                 <SelectedHeadingBug heading={heading} selected={selectedHeading} />
-                { mode === Mode.ROSE_ILS && <GlideSlope /> }
+                { mode === EfisNdMode.ROSE_ILS && <GlideSlope /> }
                 <Plane />
-                {mode === Mode.ROSE_NAV && <CrossTrack x={390} y={407} side={side} />}
+                {mode === EfisNdMode.ROSE_NAV && <CrossTrack x={390} y={407} side={side} />}
                 <g clipPath="url(#rose-mode-tcas-clip)">
                     <Traffic mode={mode} mapParams={mapParams} />
                 </g>

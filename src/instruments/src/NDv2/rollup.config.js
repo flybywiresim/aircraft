@@ -3,6 +3,7 @@
 import ts from 'rollup-plugin-typescript2';
 import resolve from '@rollup/plugin-node-resolve';
 import scss from 'rollup-plugin-scss';
+import commonjs from '@rollup/plugin-commonjs';
 
 const { join } = require('path');
 
@@ -15,5 +16,5 @@ export default {
     plugins: [scss(
         { output: '../../../../flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ND/nd.css' },
     ),
-    resolve(), ts()],
+    resolve(), commonjs({ include: /node_modules/ }), ts()],
 };

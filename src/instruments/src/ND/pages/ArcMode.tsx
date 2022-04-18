@@ -2,8 +2,7 @@ import React, { memo, useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
-import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { RangeSetting, Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
+import { EfisNdRangeValue, EfisNdMode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { FlightPlan } from '../elements/FlightPlan';
 import { MapParameters } from '../utils/MapParameters';
@@ -17,7 +16,7 @@ import { Traffic } from '../elements/Traffic';
 export interface ArcModeProps {
     symbols: NdSymbol[],
     adirsAlign: boolean,
-    rangeSetting: RangeSetting,
+    rangeSetting: EfisNdRangeValue,
     side: EfisSide,
     ppos: LatLongData,
     mapHidden: boolean,
@@ -83,8 +82,8 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                             <TrackLine x={384} y={620} heading={heading} track={track} />
                         )}
                     </g>
-                    <RadioNeedle index={1} side={side} displayMode={Mode.ARC} centreHeight={620} />
-                    <RadioNeedle index={2} side={side} displayMode={Mode.ARC} centreHeight={620} />
+                    <RadioNeedle index={1} side={side} displayMode={EfisNdMode.ARC} centreHeight={620} />
+                    <RadioNeedle index={2} side={side} displayMode={EfisNdMode.ARC} centreHeight={620} />
                 </g>
 
                 <ToWaypointIndicator side={side} />
@@ -96,7 +95,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                 <Plane />
                 <CrossTrack x={390} y={646} side={side} />
                 <g clipPath="url(#arc-mode-tcas-clip)">
-                    <Traffic mode={Mode.ARC} mapParams={mapParams} />
+                    <Traffic mode={EfisNdMode.ARC} mapParams={mapParams} />
                 </g>
             </>
         );
@@ -508,7 +507,7 @@ const ArcModeOverlayHeadingRing = memo(() => (
 ));
 
 type MapFailOverlayProps = {
-    rangeSetting: RangeSetting,
+    rangeSetting: EfisNdRangeValue,
 }
 
 const MapFailOverlay: React.FC<MapFailOverlayProps> = memo(({ rangeSetting }) => (
