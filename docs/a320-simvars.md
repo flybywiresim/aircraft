@@ -2182,6 +2182,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates the low or high value to latch into the given detent
     - Range is from -1 to 1
 
+- A32NX_THROTTLE_MAPPING_INCREMENT_NORMAL
+  - Number
+  - Indicates the increment being used for normal key events
+
+- A32NX_THROTTLE_MAPPING_INCREMENT_SMALL
+  - Number
+  - Indicates the increment being used for small key events
+
 ## Engine and FADEC System
 
 - A32NX_ENGINE_CYCLE_TIME

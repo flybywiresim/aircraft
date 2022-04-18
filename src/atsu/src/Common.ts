@@ -1,4 +1,5 @@
-import { CpdlcMessageRequestedResponseType } from './messages/CpdlcMessage';
+//  Copyright (c) 2022 FlyByWire Simulations
+//  SPDX-License-Identifier: GPL-3.0
 
 export function wordWrap(text: string, maxLength: number) {
     const result = [];
@@ -19,40 +20,4 @@ export function wordWrap(text: string, maxLength: number) {
     }
 
     return result;
-}
-
-export function cpdlcToString(type: CpdlcMessageRequestedResponseType) {
-    switch (type) {
-    case CpdlcMessageRequestedResponseType.AffirmNegative:
-        return 'AN';
-    case CpdlcMessageRequestedResponseType.No:
-        return 'N';
-    case CpdlcMessageRequestedResponseType.Roger:
-        return 'R';
-    case CpdlcMessageRequestedResponseType.WilcoUnable:
-        return 'WU';
-    case CpdlcMessageRequestedResponseType.Yes:
-        return 'Y';
-    case CpdlcMessageRequestedResponseType.NotRequired:
-        return 'NE';
-    default:
-        return '';
-    }
-}
-
-export function stringToCpdlc(str: string) {
-    switch (str) {
-    case 'AN':
-        return CpdlcMessageRequestedResponseType.AffirmNegative;
-    case 'N':
-        return CpdlcMessageRequestedResponseType.No;
-    case 'R':
-        return CpdlcMessageRequestedResponseType.Roger;
-    case 'WU':
-        return CpdlcMessageRequestedResponseType.WilcoUnable;
-    case 'Y':
-        return CpdlcMessageRequestedResponseType.Yes;
-    default:
-        return CpdlcMessageRequestedResponseType.NotRequired;
-    }
 }

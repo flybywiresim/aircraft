@@ -60,6 +60,7 @@ const NXSystemMessages = {
     comUnavailable:         new McduMessage("COM UNAVAILABLE", false, false),
     dcduFileFull:           new McduMessage("DCDU FILE FULL", false, false),
     systemBusy:             new McduMessage("SYSTEM BUSY-TRY LATER", false, false),
+    noAtc:                  new McduMessage("NO ACTIVE ATC", false, false),
     newAtisReceived:        new McduMessage("NEW ATIS: READ AGAIN", false, false),
     noAtisReceived:         new McduMessage("NO ATIS REPORT RECEIVED", false, false),
     noPreviousAtis:         new McduMessage("NO PREVIOUS ATIS STORED", false, false),
@@ -89,7 +90,6 @@ const NXFictionalMessages = {
     noWptInfos:             new McduMessage("NO WAYPOINT INFOS", false, false),
     emptyMessage:           new McduMessage(""),
     reloadPlaneApply:       new McduMessage("RELOAD A/C TO APPLY", true, true),
-    noAtc:                  new McduMessage("NO ACTIVE ATC", false, false),
     noHoppieConnection:     new McduMessage("NO HOPPIE CONNECTION", false, false),
     unknownAtsuMessage:     new McduMessage("UNKNOWN ATSU MESSAGE", false, false),
     reverseProxy:           new McduMessage("REVERSE PROXY ERROR", false, false)
