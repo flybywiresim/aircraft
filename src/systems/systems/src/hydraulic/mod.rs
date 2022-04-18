@@ -266,7 +266,7 @@ impl PowerTransferUnit {
 
     const DELAY_TO_DECLARE_CONTINUOUS: Duration = Duration::from_millis(1500);
     const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 400.;
-    const DURATION_BEFORE_CAPTURING_BARK_STRENGHT_SPEED: Duration = Duration::from_millis(133);
+    const DURATION_BEFORE_CAPTURING_BARK_STRENGTH_SPEED: Duration = Duration::from_millis(133);
 
     pub fn new(context: &mut InitContext) -> Self {
         let randomized_is_ptu_worn_out = Self::randomized_is_ptu_worn_out();
@@ -391,8 +391,9 @@ impl PowerTransferUnit {
             .update(context.delta(), new_displacement);
     }
 
+    /// Snapshots the ptu rotational speed after a fixed time to measure its expected "sound power level"
     fn capture_bark_strength(&mut self) {
-        if self.duration_since_active > Self::DURATION_BEFORE_CAPTURING_BARK_STRENGHT_SPEED
+        if self.duration_since_active > Self::DURATION_BEFORE_CAPTURING_BARK_STRENGTH_SPEED
             && self
                 .speed_captured_at_active_duration
                 .get::<revolution_per_minute>()
