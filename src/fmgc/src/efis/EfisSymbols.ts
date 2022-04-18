@@ -267,7 +267,7 @@ export class EfisSymbols {
                 return `${prefix}${Math.round(alt)}`;
             };
 
-            const formatConstraintSpeed = (speed: number, prefix: string = '') => `${prefix}${Math.floor(speed)} KT`;
+            const formatConstraintSpeed = (speed: number, prefix: string = '') => `${prefix}${Math.floor(speed)}KT`;
 
             for (const [index, leg] of this.guidanceController.activeGeometry.legs.entries()) {
                 if (leg.terminationWaypoint && leg.displayedOnMap) {

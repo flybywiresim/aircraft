@@ -2,7 +2,6 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { InputValidation } from './InputValidation';
-import { HoppieConnector } from './com/HoppieConnector';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtisMessage, AtisType } from './messages/AtisMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
@@ -24,7 +23,9 @@ export class Atc {
 
     private dcduLink: DcduLink | undefined = undefined;
 
-    private cdplcResetRequired = false;
+    private handoverInterval: number | undefined = 0;
+
+    private handoverOngoing = false;
 
     private currentAtc = '';
 
@@ -52,33 +53,13 @@ export class Atc {
         this.dcduLink = new DcduLink(parent, this);
     }
 
-    public resetAtc() {
-        if (this.cdplcResetRequired) {
-            if (this.currentAtc !== '') {
-                this.logoff();
-            }
-            if (this.nextAtc !== '') {
-                this.resetLogon();
-            }
-
-            this.cdplcResetRequired = false;
-        }
-    }
-
-    public async connect(flightNo: string): Promise<AtsuStatusCodes> {
+    public async disconnect(): Promise<void> {
         if (this.currentAtc !== '') {
             await this.logoff();
         }
-        return HoppieConnector.connect(flightNo).then((code) => {
-            if (code === AtsuStatusCodes.Ok) {
-                this.cdplcResetRequired = true;
-            }
-            return code;
-        });
-    }
-
-    public async disconnect(): Promise<AtsuStatusCodes> {
-        return HoppieConnector.disconnect();
+        if (this.nextAtc !== '') {
+            this.resetLogon();
+        }
     }
 
     public currentStation(): string {
@@ -109,12 +90,13 @@ export class Atc {
             return AtsuStatusCodes.SystemBusy;
         }
 
-        if (this.currentAtc !== '') {
+        if (!this.handoverOngoing && this.currentAtc !== '') {
             const retval = await this.logoff();
             if (retval !== AtsuStatusCodes.Ok) {
                 return retval;
             }
         }
+        this.handoverOngoing = false;
 
         const message = new CpdlcMessage();
         message.Station = station;
@@ -152,14 +134,32 @@ export class Atc {
             return AtsuStatusCodes.SystemBusy;
         }
 
-        if (this.currentAtc !== '') {
-            const retval = await this.logoffWithoutReset();
-            if (retval !== AtsuStatusCodes.Ok) {
-                return retval;
-            }
-        }
+        return new Promise((resolve, _reject) => {
+            // add an interval to check if all messages are answered or sent to ATC
+            this.handoverInterval = setInterval(() => {
+                if (!this.dcduLink.openMessagesForStation(this.currentAtc)) {
+                    clearInterval(this.handoverInterval);
+                    this.handoverInterval = undefined;
 
-        return this.logon(station);
+                    // add a timer to ensure that the last transmission is already received to avoid ATC software warnings
+                    setTimeout(() => {
+                        if (this.currentAtc !== '') {
+                            this.logoffWithoutReset().then((code) => {
+                                if (code !== AtsuStatusCodes.Ok) {
+                                    resolve(code);
+                                }
+
+                                this.handoverOngoing = true;
+                                this.logon(station).then((code) => resolve(code));
+                            });
+                        } else {
+                            this.handoverOngoing = true;
+                            this.logon(station).then((code) => resolve(code));
+                        }
+                    }, 15000);
+                }
+            }, 1000);
+        });
     }
 
     private async logoffWithoutReset(): Promise<AtsuStatusCodes> {
@@ -182,6 +182,12 @@ export class Atc {
     }
 
     public async logoff(): Promise<AtsuStatusCodes> {
+        // abort a handover run
+        if (this.handoverInterval !== undefined) {
+            clearInterval(this.handoverInterval);
+            this.handoverInterval = undefined;
+        }
+
         return this.logoffWithoutReset().then((error) => {
             this.dcduLink.setAtcLogonMessage('');
             this.currentFansMode = FansMode.FansNone;
@@ -408,7 +414,7 @@ export class Atc {
     }
 
     private async updateAtis(icao: string, type: AtisType, overwrite: boolean): Promise<AtsuStatusCodes> {
-        return this.datalink.receiveAtis(icao, type).then((retval) => {
+        return this.datalink.receiveAtis(icao, type, () => { }).then((retval) => {
             if (retval[0] === AtsuStatusCodes.Ok) {
                 let code = AtsuStatusCodes.Ok;
                 const atis = retval[1] as AtisMessage;

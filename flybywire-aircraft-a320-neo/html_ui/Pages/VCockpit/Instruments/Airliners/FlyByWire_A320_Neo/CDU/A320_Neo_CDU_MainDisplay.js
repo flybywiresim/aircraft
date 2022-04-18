@@ -13,6 +13,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._pageCount = undefined;
         this._labels = [];
         this._lines = [];
+        this._keypad = new Keypad(this);
         this.scratchpad = null;
         this._arrows = [false, false, false, false];
         this.onLeftInput = [];
@@ -197,21 +198,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         const display = new ScratchpadDisplay(this.getChildById("in-out"));
         this.scratchpad = new ScratchpadDataLink(this, display);
-        this.setupFmgcTriggers();
-
-        this.setupFmgcTriggers();
 
         this.setTimeout = (func) => {
             setTimeout(() => {
                 func;
             }, this.getDelaySwitchPage());
         };
-        this.onMenu = () => {
-            FMCMainDisplayPages.MenuPage(this);
-        };
+
+        /** The following events remain due to shared use by the keypad and keyboard type entry */
         this.onLetterInput = (l) => this.scratchpad.addChar(l);
         this.onSp = () => this.scratchpad.addChar(" ");
-        this.onDel = () => this.scratchpad.delChar();
         this.onDiv = () => this.scratchpad.addChar("/");
         this.onDot = () => this.scratchpad.addChar(".");
         this.onClr = () => this.scratchpad.clear();
@@ -220,53 +216,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onLeftFunction = (f) => this.onLsk(this.onLeftInput[f], this.leftInputDelay[f]);
         this.onRightFunction = (f) => this.onLsk(this.onRightInput[f], this.rightInputDelay[f]);
         this.onOvfy = () => this.scratchpad.addChar('Δ');
-
-        const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
-
-        this.onDir = () => {
-            CDUDirectToPage.ShowPage(this);
-        };
-        this.onProg = () => {
-            CDUProgressPage.ShowPage(this);
-        };
-        this.onPerf = () => {
-            CDUPerformancePage.ShowPage(this);
-        };
-        this.onInit = () => {
-            CDUInitPage.ShowPage1(this);
-        };
-        this.onData = () => {
-            CDUDataIndexPage.ShowPage1(this);
-        };
-        this.onFpln = () => {
-            CDUFlightPlanPage.ShowPage(this);
-        };
-        this.onSec = () => {
-            CDUSecFplnMain.ShowPage(this);
-        };
-        this.onRad = () => {
-            CDUNavRadioPage.ShowPage(this);
-        };
-        this.onFuel = () => {
-            this.goToFuelPredPage();
-        };
-        this.onAtc = () => {
-            CDUAtcMenu.ShowPage1(this);
-        };
-        this.onMenu = () => {
-            const cur = this.page.Current;
-            setTimeout(() => {
-                if (this.page.Current === cur) {
-                    CDUMenuPage.ShowPage(this);
-                }
-            }, this.getDelaySwitchPage());
-        };
+        this.onUnload = () => {};
 
         CDUMenuPage.ShowPage(this);
-
-        this.onAirport = () => {
-            this.addNewMessage(NXFictionalMessages.notYetImplemented);
-        };
 
         // If the consent is not set, show telex page
         const onlineFeaturesStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "UNKNOWN");
@@ -702,6 +654,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     clearDisplay(webSocketDraw = false) {
+        this.onUnload();
+        this.onUnload = () => {};
         this.setTitle("");
         this.setTitleLeft("");
         this.setPageCurrent(0);
@@ -727,10 +681,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.page.Current = this.page.Clear;
         this.setArrows(false, false, false, false);
         this.tryDeleteTimeout();
-        this.onUp = undefined;
-        this.onDown = undefined;
-        this.onLeft = undefined;
-        this.onRight = undefined;
+        this.onUp = () => {};
+        this.onDown = () => {};
         this.updateRequest = false;
     }
 
@@ -1155,70 +1107,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         if (_event.indexOf("1_BTN_") !== -1 || _event.indexOf("2_BTN_") !== -1 || _event.indexOf("BTN_") !== -1) {
             const input = _event.replace("1_BTN_", "").replace("2_BTN_", "").replace("BTN_", "");
-            if (this.onInputAircraftSpecific(input)) {
+            if (this._keypad.onKeyPress(input)) {
                 return;
             }
-            if (input === "INIT") {
-                this.onInit();
-            } else if (input === "DEPARR") {
-                this.onDepArr();
-            } else if (input === "ATC") {
-                this.onAtc();
-            } else if (input === "FIX") {
-                this.onFix();
-            } else if (input === "HOLD") {
-                this.onHold();
-            } else if (input === "FMCCOMM") {
-                this.onFmcComm();
-            } else if (input === "PROG") {
-                this.onProg();
-            } else if (input === "MENU") {
-                this.onMenu();
-            } else if (input === "NAVRAD") {
-                this.onRad();
-            } else if (input === "PREVPAGE") {
-                const cur = this.page.Current;
-                setTimeout(() => {
-                    if (this.page.Current === cur) {
-                        this.onPrevPage();
-                    }
-                }, this.getDelaySwitchPage());
-            } else if (input === "NEXTPAGE") {
-                const cur = this.page.Current;
-                setTimeout(() => {
-                    if (this.page.Current === cur) {
-                        this.onNextPage();
-                    }
-                }, this.getDelaySwitchPage());
-            } else if (input === "SP") {
-                setTimeout(() => {
-                    this.onSp();
-                }, this.getDelaySwitchPage());
-            } else if (input === "DEL") {
-                setTimeout(() => {
-                    this.onDel();
-                }, this.getDelaySwitchPage());
-            } else if (input === "CLR") {
-                setTimeout(() => {
-                    this.onClr();
-                }, this.getDelaySwitchPage());
-            } else if (input === "CLR_Held") {
-                this.onClrHeld();
-            } else if (input === "DIV") {
-                setTimeout(() => {
-                    this.onDiv();
-                }, this.getDelaySwitchPage());
-            } else if (input === "DOT") {
-                setTimeout(() => {
-                    this.onDot();
-                }, this.getDelaySwitchPage());
-            } else if (input === "PLUSMINUS") {
-                setTimeout(() => {
-                    this.onPlusMinus("-");
-                }, this.getDelaySwitchPage());
-            } else if (input === "Localizer") {
-                this._apLocalizerOn = !this._apLocalizerOn;
-            } else if (input.length === 2 && input[0] === "L") {
+
+            if (input.length === 2 && input[0] === "L") {
                 const v = parseInt(input[1]) - 1;
                 if (isFinite(v)) {
                     this.onLeftFunction(v);
@@ -1228,114 +1121,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (isFinite(v)) {
                     this.onRightFunction(v);
                 }
-            } else if (input.length === 1 && FMCMainDisplay._AvailableKeys.indexOf(input) !== -1) {
-                setTimeout(() => {
-                    this.onLetterInput(input);
-                }, this.getDelaySwitchPage());
             } else {
                 console.log("'" + input + "'");
             }
         }
-    }
-
-    onInputAircraftSpecific(input) {
-        if (input === "DIR") {
-            if (this.onDir) {
-                this.onDir();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "PROG") {
-            if (this.onProg) {
-                this.onProg();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "PERF") {
-            if (this.onPerf) {
-                this.onPerf();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "INIT") {
-            if (this.onInit) {
-                this.onInit();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "DATA") {
-            if (this.onData) {
-                this.onData();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "FPLN") {
-            if (this.onFpln) {
-                this.onFpln();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "RAD") {
-            if (this.onRad) {
-                this.onRad();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "FUEL") {
-            if (this.onFuel) {
-                this.onFuel();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "SEC") {
-            if (this.onSec) {
-                this.onSec();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "ATC") {
-            if (this.onAtc) {
-                this.onAtc();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "MENU") {
-            if (this.onMenu) {
-                this.onMenu();
-            }
-            return true;
-        } else if (input === "AIRPORT") {
-            if (this.onAirport) {
-                this.onAirport();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "UP") {
-            if (this.onUp) {
-                this.onUp();
-            }
-            return true;
-        } else if (input === "DOWN") {
-            if (this.onDown) {
-                this.onDown();
-            }
-            return true;
-        } else if (input === "LEFT") {
-            if (this.onLeft) {
-                this.onLeft();
-            }
-            return true;
-        } else if (input === "RIGHT") {
-            if (this.onRight) {
-                this.onRight();
-            }
-        } else if (input === "OVFY") {
-            if (this.onOvfy) {
-                this.onOvfy();
-            }
-            return true;
-        }
-        return false;
     }
 
     onLsk(fncAction, fncActionDelay = this.getDelayBasic) {

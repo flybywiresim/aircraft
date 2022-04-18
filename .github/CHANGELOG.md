@@ -237,6 +237,10 @@
 1. [HYD] Adjusted droop characteristics and randomness of surfaces actuators - @Crocket63
 1. [PFD] Reimplement PFD with msfs-avionics framework for improved performance - @saschl (saschl#9432)
 1. [GPWS] Mute "100 above" callout during autoland - @patmack14 (Patrick Macken)
+1. [MCDU] Refactored mcdu key input events - @derl30n - (Leon)
+1. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
+1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (donbikes#4084)
+1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
 1. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
 
 ## 0.7.0
