@@ -243,7 +243,6 @@
 1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
 1. [HYD] PTU model refinement and simulated potential wear state probabilities - @Crocket63
 
-
 ## 0.7.0
 
 1. [HYD] First building block, more to come. Hydraulics do not impact the sim YET. - @crocket6 (crocket)
