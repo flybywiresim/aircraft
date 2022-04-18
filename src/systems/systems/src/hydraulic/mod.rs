@@ -1962,12 +1962,6 @@ impl EngineDrivenPump {
         self.pump
             .update(context, section, reservoir, pump_speed, controller);
         self.is_active = controller.should_pressurise();
-
-        println!(
-            "EDP DELIVERY {:.1} gpm, displacement {:.2}",
-            self.pump.current_flow.get::<gallon_per_minute>(),
-            self.pump.current_displacement.get::<cubic_inch>()
-        );
     }
 }
 impl PressureSource for EngineDrivenPump {
