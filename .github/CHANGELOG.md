@@ -239,6 +239,7 @@
 1. [GPWS] Mute "100 above" callout during autoland - @patmack14 (Patrick Macken)
 1. [MCDU] Refactored mcdu key input events - @derl30n - (Leon)
 1. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
+1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (donbikes#4084)
 
 ## 0.7.0
 
