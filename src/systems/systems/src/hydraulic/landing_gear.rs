@@ -357,7 +357,7 @@ enum GearSysComponentId {
 struct GearSystemComponentAssembly {
     component_id: GearSysComponentId,
     is_inverted_control: bool,
-    hydraulic_controller: GearDoorHydraulicController,
+    hydraulic_controller: GearSystemComponentHydraulicController,
     hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
     fully_opened_proximity_detectors: [ProximityDetector; 2],
     uplock_proximity_detectors: [ProximityDetector; 2],
@@ -382,7 +382,7 @@ impl GearSystemComponentAssembly {
         let mut obj = Self {
             component_id,
             is_inverted_control,
-            hydraulic_controller: GearDoorHydraulicController::new(
+            hydraulic_controller: GearSystemComponentHydraulicController::new(
                 is_inverted_control,
                 !has_hydraulic_downlock,
             ),
@@ -532,7 +532,7 @@ impl SimulationElement for GearSystemComponentAssembly {
     }
 }
 
-struct GearDoorHydraulicController {
+struct GearSystemComponentHydraulicController {
     is_inverted_control: bool,
     is_soft_downlock: bool,
     requested_position: Ratio,
@@ -541,7 +541,7 @@ struct GearDoorHydraulicController {
 
     actual_position: Ratio,
 }
-impl GearDoorHydraulicController {
+impl GearSystemComponentHydraulicController {
     fn new(is_inverted_control: bool, is_soft_downlock: bool) -> Self {
         Self {
             is_inverted_control,
@@ -579,7 +579,7 @@ impl GearDoorHydraulicController {
         };
     }
 }
-impl HydraulicAssemblyController for GearDoorHydraulicController {
+impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
     fn requested_mode(&self) -> LinearActuatorMode {
         // TODO if vent valve opened -> damping else -> valve closed mode
 
