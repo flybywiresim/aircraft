@@ -1,7 +1,7 @@
 class CDUSecFplnMain {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
-        mcdu.activeSystem = 'MAINT';
+        mcdu.activeSystem = 'FMGC';
 
         mcdu.setTemplate([
             ["SEC INDEX"],

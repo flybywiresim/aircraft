@@ -25,7 +25,7 @@ export class DclMessage extends CpdlcMessage {
     constructor() {
         super();
         this.Type = AtsuMessageType.DCL;
-        this.Direction = AtsuMessageDirection.Output;
+        this.Direction = AtsuMessageDirection.Downlink;
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {

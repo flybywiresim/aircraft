@@ -266,11 +266,11 @@ impl A320AileronFactory {
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
 
-    const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 800000.;
+    const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
 
     fn a320_aileron_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let randomized_damping = random_from_range(
-            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 10.,
+            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 3.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
         );
 
@@ -474,11 +474,11 @@ impl A320ElevatorFactory {
     const FLOW_CONTROL_INTEGRAL_GAIN: f64 = 5.;
     const FLOW_CONTROL_FORCE_GAIN: f64 = 450000.;
 
-    const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 10000000.;
+    const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 15000000.;
 
     fn a320_elevator_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let randomized_damping = random_from_range(
-            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 10.,
+            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 5.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
         );
 
@@ -565,7 +565,7 @@ impl A320RudderFactory {
 
     fn a320_rudder_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         let randomized_damping = random_from_range(
-            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 10.,
+            Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING / 4.,
             Self::MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING,
         );
 
@@ -9043,18 +9043,18 @@ mod tests {
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.4);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.4);
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.45);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.45);
 
             test_bed = test_bed
                 .set_ptu_state(false)
                 .set_yellow_e_pump(true)
-                .run_waiting_for(Duration::from_secs_f64(80.));
+                .run_waiting_for(Duration::from_secs_f64(50.));
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.3);
-            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.3);
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.42);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.42);
         }
 
         #[test]
@@ -9071,8 +9071,8 @@ mod tests {
 
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
             assert!(test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.4);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.4);
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.45);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.45);
 
             test_bed = test_bed
                 .set_ptu_state(false)
@@ -9081,8 +9081,8 @@ mod tests {
 
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
             assert!(!test_bed.is_green_pressure_switch_pressurised());
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.35);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.35);
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.4);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.4);
         }
 
         #[test]

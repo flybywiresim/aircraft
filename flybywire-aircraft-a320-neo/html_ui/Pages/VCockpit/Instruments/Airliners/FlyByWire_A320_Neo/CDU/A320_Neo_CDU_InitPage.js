@@ -296,6 +296,7 @@ class CDUInitPage {
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.InitPageB;
+        mcdu.activeSystem = 'FMGC';
         mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage2(mcdu);
 
         let zfwColor = "[color]amber";

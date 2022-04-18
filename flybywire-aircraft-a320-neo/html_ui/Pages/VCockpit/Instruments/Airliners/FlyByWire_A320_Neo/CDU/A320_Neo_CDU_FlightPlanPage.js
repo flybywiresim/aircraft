@@ -706,12 +706,14 @@ class CDUFlightPlanPage {
 
             if (fpm.getDestination()) {
                 const destStats = stats.get(fpm.getCurrentFlightPlan().waypoints.length - 1);
-                destDistCell = destStats.distanceFromPpos.toFixed(0);
-                destEFOBCell = (NXUnits.kgToUser(mcdu.getDestEFOB(isFlying))).toFixed(1);
-                if (isFlying) {
-                    destTimeCell = FMCMainDisplay.secondsToUTC(destStats.etaFromPpos);
-                } else {
-                    destTimeCell = FMCMainDisplay.secondsTohhmm(destStats.timeFromPpos);
+                if (destStats) {
+                    destDistCell = destStats.distanceFromPpos.toFixed(0);
+                    destEFOBCell = (NXUnits.kgToUser(mcdu.getDestEFOB(isFlying))).toFixed(1);
+                    if (isFlying) {
+                        destTimeCell = FMCMainDisplay.secondsToUTC(destStats.etaFromPpos);
+                    } else {
+                        destTimeCell = FMCMainDisplay.secondsTohhmm(destStats.timeFromPpos);
+                    }
                 }
             }
             if (!CDUInitPage.fuelPredConditionsMet(mcdu)) {

@@ -142,7 +142,7 @@ impl FlapSlatAssembly {
     const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
     const ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES: f64 = 6.69;
     const ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION: f64 = 0.5;
-    const MIN_TOTAL_MOTOR_RPM_TO_REPORT_MOVING: f64 = 20.;
+    const MIN_ANGULAR_SPEED_TO_REPORT_MOVING: f64 = 0.01;
 
     pub fn new(
         context: &mut InitContext,
@@ -435,8 +435,7 @@ impl FlapSlatAssembly {
     }
 
     fn is_surface_moving(&self) -> bool {
-        (self.left_motor_rpm() + self.right_motor_rpm()).abs()
-            > Self::MIN_TOTAL_MOTOR_RPM_TO_REPORT_MOVING
+        self.speed.abs().get::<radian_per_second>() > Self::MIN_ANGULAR_SPEED_TO_REPORT_MOVING
     }
 }
 impl SimulationElement for FlapSlatAssembly {
