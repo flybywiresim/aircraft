@@ -32,7 +32,7 @@ pub(super) fn autobrakes(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn 
         "AUTOBRAKE_DISARM",
         EventToVariableMapping::Value(1.),
         Variable::named("AUTOBRAKE_DISARM"),
-        options,
+        |options| options.afterwards_reset_to(0.),
     )?;
 
     let options_set = |options: EventToVariableOptions| {
