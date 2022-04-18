@@ -638,7 +638,7 @@ class EngineControl {
   /// </summary>
   void checkPayload() {
     double fuelWeightGallon = simVars->getFuelWeightGallon();
-	double paxWeightLbs = simVars->getPaxWeightKgs() * KGS_TO_LBS;                            // in LBS
+	  double paxWeightLbs = simVars->getPaxWeightKgs() * KGS_TO_LBS;                            // in LBS
     double aircraftEmptyWeight = simVars->getEmptyWeight();                                   // in LBS
     double aircraftTotalWeight = simVars->getTotalWeight();                                   // in LBS
     double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;              // in LBS
