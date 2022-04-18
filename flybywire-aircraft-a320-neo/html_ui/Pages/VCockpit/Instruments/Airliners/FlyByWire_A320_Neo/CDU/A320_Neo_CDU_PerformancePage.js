@@ -15,6 +15,7 @@ class CDUPerformancePage {
     static ShowTAKEOFFPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PerformancePageTakeoff;
+        //TODO: integrate performance page reload with new system
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
         mcdu.pageUpdate = () => {

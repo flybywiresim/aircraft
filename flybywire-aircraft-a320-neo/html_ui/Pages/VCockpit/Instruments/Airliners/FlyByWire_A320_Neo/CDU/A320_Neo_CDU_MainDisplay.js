@@ -118,6 +118,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             AOCSentMsgs: 74,
             AOCFreeText: 75,
         };
+        this.currentPage = undefined;
 
         // Handling of MCDU Sever connection attempts
         this.socket = undefined;
@@ -247,6 +248,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
 
+        this.currentPage.update(this, _deltaTime, this.updateRequest);
+        this.updateRequest = false;
+
+        //TODO: integrate the following page update/reload
+        // pageRedrawCallback
+        // pageUpdate
+        // returnPageCallback
+        // page.SelfPtr
+
+        //TODO: replace with new integration
         // every 100ms
         if (this.minPageUpdateThrottler.canUpdate(_deltaTime) !== -1 && this.updateRequest) {
             this.updateRequest = false;
@@ -303,6 +314,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
 
         // TODO these other mechanisms are replaced in the MCDU split PR
+        // TODO: replace with new integration
         if (this.pageUpdate) {
             this.pageUpdate();
         }
