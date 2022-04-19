@@ -740,14 +740,15 @@ class CDUFlightPlanPage {
         }
         const allowScroll = waypointsAndMarkers.length > 4;
         if (allowScroll) {
-            mcdu.onAirport = () => {// Only called if <4 waypoints
+            mcdu.onAirport = () => {// Only called if < 4 waypoints
                 const isOnFlightPlanPage = mcdu.page.Current === mcdu.page.FlightPlanPage;
                 const destinationAirportOffset = waypointsAndMarkers.length - 5;
                 const allowCycleToOriginAirport = mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT;
-                if (offset === destinationAirportOffset && allowCycleToOriginAirport && isOnFlightPlanPage) {//only show origin if still on ground
-                    offset = 0; // Go back to top of flight plan page to show origin airport.
+                if (offset === destinationAirportOffset && allowCycleToOriginAirport && isOnFlightPlanPage) {// only show origin if still on ground
+                    // Go back to top of flight plan page to show origin airport.
+                    offset = 0;
                 } else {
-                    offset = destinationAirportOffset;
+                    offset = destinationAirportOffset; // if in air only dest is available.
                 }
                 CDUFlightPlanPage.ShowPage(mcdu, offset);
             };
