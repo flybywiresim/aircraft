@@ -16,7 +16,7 @@ jobs:
       result: ${{ steps.should_run.outputs.result }}
     steps:
       - name: Shallow clone remote repo
-        run: git clone https://github.com/frankkopp/flybywire-a32nx-test -b master --depth 3 --bare --filter=blob:none -q .
+        run: git clone https://github.com/flybywiresim/a32nx -b master --depth 3 --bare --filter=blob:none -q .
       - name: Print latest_commit
         run: git log -1 --relative-date
       - id: should_run
