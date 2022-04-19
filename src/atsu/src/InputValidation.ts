@@ -395,7 +395,7 @@ export class InputValidation {
             left = offset[offset.length - 1] === 'L';
         }
 
-        return [left ? 'L' : 'R', distance.toString(), nmUnit ? 'NM' : 'KM'];
+        return [distance.toString(), nmUnit ? 'NM' : 'KM', left ? 'L' : 'R'];
     }
 
     /**
