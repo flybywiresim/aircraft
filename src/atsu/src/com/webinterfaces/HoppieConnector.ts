@@ -56,6 +56,10 @@ export class HoppieConnector {
         });
     }
 
+    public static deactivateHoppie(): void {
+        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
+    }
+
     public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
         if (SimVar.GetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number') !== 1) {
             HoppieConnector.flightNumber = flightNo;
