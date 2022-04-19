@@ -372,6 +372,48 @@ export class InputValidation {
     }
 
     /**
+     * Validates the persons on board
+     * @param {string} value The persons on board
+     * @returns AtsuStatusCodes.Ok if the value is valid
+     */
+    public static validateScratchpadPersonsOnBoard(value: string): AtsuStatusCodes {
+        if (/^[0-9]{1,4}$/.test(value)) {
+            const pob = parseInt(value.match(/([0-9]+)/)[0]);
+            if (pob >= 1 && pob <= 1024) {
+                return AtsuStatusCodes.Ok;
+            }
+            return AtsuStatusCodes.EntryOutOfRange;
+        }
+
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
+     * Validates the endurance
+     * @param {string} value The entered endurance
+     * @returns AtsuStatusCodes.Ok if the value is valid
+     */
+    public static validateScratchpadEndurance(value: string): AtsuStatusCodes {
+        if (/^([0-9]{1}H|[0-9]{2}(H)*)[0-9]{2}(M|MIN|MN)*$/.test(value)) {
+            const matches = value.match(/[0-9]{2}/g);
+
+            const hours = parseInt(matches[0]);
+            if (hours < 0 || hours >= 24) {
+                return AtsuStatusCodes.EntryOutOfRange;
+            }
+
+            const minutes = parseInt(matches[1]);
+            if (minutes < 0 || minutes >= 60) {
+                return AtsuStatusCodes.EntryOutOfRange;
+            }
+
+            return AtsuStatusCodes.Ok;
+        }
+
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
      * Converts an FCOM valid encoded offset string to a list of offset entries
      * @param {string} offset Valid encoded offset
      * @returns The decoded offset entries
@@ -418,6 +460,18 @@ export class InputValidation {
     public static formatScratchpadOffset(value: string): string {
         const entries = InputValidation.decodeOffsetString(value);
         return `${entries[0]}${entries[1]}${entries[2]}`;
+    }
+
+    /**
+     * Formats a valid scratchpad endurance entry to a normalized offset entry
+     * @param {string} value The scratchpad entry
+     * @returns The normalized offset entry
+     */
+    public static formatScratchpadEndurance(value: string): string {
+        const matches = value.match(/[0-9]{1,2}/g);
+        const hours = parseInt(matches[0]);
+        const minutes = parseInt(matches[1]);
+        return `${hours}H${minutes}`;
     }
 
     /**
