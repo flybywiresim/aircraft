@@ -32,6 +32,18 @@ export class InputValidation {
     }
 
     /**
+     * Checks if the value fits to a position format
+     * @param value The entered position candidate
+     * @returns AtsuStatusCodes.Ok if the format is valid
+     */
+    public static validateScratchpadPosition(value: string): AtsuStatusCodes {
+        if (/^[A-Z0-9]{1,5}$/.test(value)) {
+            return AtsuStatusCodes.Ok;
+        }
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
      * Checks if the value fits to a procedure format
      * @param value The entered procedure candidate
      * @returns AtsuStatusCodes.Ok if the format is valid
