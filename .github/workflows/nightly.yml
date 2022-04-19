@@ -28,7 +28,7 @@ jobs:
         run: echo "Should run = ${{ steps.should_run.outputs.result }}" && echo "Owner = ${{ github.repository_owner }}"
   build:
     # Prevent running this on forks
-    # Prevent this from running when there was no commits in the last 24h
+    # Prevent this from running when there was no commit in the last 24h
     needs: check_date
     if: ${{ (needs.check_date.outputs.result != '') && (github.repository_owner == 'flybywiresim') }}
     runs-on: ubuntu-latest
