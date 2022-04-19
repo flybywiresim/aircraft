@@ -217,6 +217,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onRightFunction = (f) => this.onLsk(this.onRightInput[f], this.rightInputDelay[f]);
         this.onOvfy = () => this.scratchpad.addChar('Δ');
         this.onUnload = () => {};
+        this.onAirport = () => {};
 
         CDUMenuPage.ShowPage(this);
 
