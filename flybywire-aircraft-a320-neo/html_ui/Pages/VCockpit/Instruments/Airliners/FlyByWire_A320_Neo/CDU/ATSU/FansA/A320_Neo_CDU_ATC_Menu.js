@@ -23,7 +23,7 @@ class CDUAtcMenuFansA {
             [""],
             ["<CONNECTION", ""],
             ["\xa0ATSU DLK"],
-            ["<RETURN", "EMERGENCY>[color]inop"]
+            ["<RETURN", "EMERGENCY>[color]amber"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {
@@ -93,7 +93,7 @@ class CDUAtcMenuFansA {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            //CDUAtcEmergency.ShowPage(mcdu);
+            CDUAtcEmergencyFansA.ShowPage1(mcdu);
         };
 
         mcdu.onPrevPage = () => {
