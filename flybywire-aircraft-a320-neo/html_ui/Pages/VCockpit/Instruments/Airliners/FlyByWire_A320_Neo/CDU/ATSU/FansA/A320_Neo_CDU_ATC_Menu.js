@@ -15,7 +15,7 @@ class CDUAtcMenuFansA {
             [""],
             ["<LAT REQ[color]white", "VERT REQ>[color]white"],
             [""],
-            ["<WHEN CAN WE[color]inop", "OTHER REQ>[color]inop"],
+            ["<WHEN CAN WE[color]white", "OTHER REQ>[color]inop"],
             [""],
             ["", "TEXT>[color]white"],
             [""],
@@ -31,6 +31,13 @@ class CDUAtcMenuFansA {
         };
         mcdu.onLeftInput[0] = () => {
             CDUAtcLatRequest.ShowPage(mcdu);
+        };
+
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[1] = () => {
+            CDUAtcWhenCanWe.ShowPage(mcdu);
         };
 
         mcdu.leftInputDelay[3] = () => {
