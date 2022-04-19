@@ -11,7 +11,7 @@ export class FreetextMessage extends AtsuMessage {
     constructor() {
         super();
         this.Type = AtsuMessageType.Freetext;
-        this.Direction = AtsuMessageDirection.Output;
+        this.Direction = AtsuMessageDirection.Downlink;
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {

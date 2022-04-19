@@ -131,6 +131,7 @@ const AircraftConfigurationPage = () => {
     const [isisBaro, setIsisBaro] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
     const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentProperty('ISIS_METRIC_ALTITUDE', '0');
     const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
+    const [latLonExtended, setLatLonExtended] = usePersistentProperty('LATLON_EXT_FMT', '0');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -155,6 +156,11 @@ const AircraftConfigurationPage = () => {
     const vhfSpacingButtons: ButtonType[] = [
         { name: '8.33 kHz', setting: '0' },
         { name: '25 kHz', setting: '1' },
+    ];
+
+    const latLonExtendedButtons: ButtonType[] = [
+        { name: 'LLnn', setting: '0' },
+        { name: 'AxxByyy', setting: '1' },
     ];
 
     return (
@@ -227,6 +233,21 @@ const AircraftConfigurationPage = () => {
                             enabled
                             onSelect={() => setVhfSpacing(button.setting)}
                             selected={vhfSpacing === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">FMGC Lat/Lon Waypoint Format</span>
+                <SelectGroup>
+                    {latLonExtendedButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setLatLonExtended(button.setting)}
+                            selected={latLonExtended === button.setting}
                         >
                             {button.name}
                         </SelectItem>
@@ -391,8 +412,6 @@ const RealismPage = () => {
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
     const [realisticTiller, setRealisticTiller] = usePersistentProperty('REALISTIC_TILLER_ENABLED', '0');
     const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
-    const [datalinkTransmissionTime, setDatalinkTransmissionTime] = usePersistentProperty('CONFIG_DATALINK_TRANSMISSION_TIME', 'FAST');
-    const [, setDatalinkTransmissionTimeSimVar] = useSimVar('L:A32NX_CONFIG_DATALINK_TIME', 'number', 0);
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -415,12 +434,6 @@ const RealismPage = () => {
     const steeringSeparationButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Disabled', setting: '0', simVarValue: 0 },
         { name: 'Enabled', setting: '1', simVarValue: 1 },
-    ];
-
-    const datalinkTransmissionTimeButtons: (ButtonType & SimVarButton)[] = [
-        { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
-        { name: 'Fast', setting: 'FAST', simVarValue: 2 },
-        { name: 'Real', setting: 'REAL', simVarValue: 0 },
     ];
 
     return (
@@ -523,24 +536,6 @@ const RealismPage = () => {
                     <div className="py-4 flex flex-row justify-between items-center">
                         <span className="text-lg text-gray-300 mr-1">Home Cockpit Mode</span>
                         <Toggle value={homeCockpit === '1'} onToggle={(value) => setHomeCockpit(value ? '1' : '0')} />
-                    </div>
-
-                    <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300">DATALINK transmission time</span>
-                        <SelectGroup>
-                            {datalinkTransmissionTimeButtons.map((button) => (
-                                <SelectItem
-                                    enabled
-                                    onSelect={() => {
-                                        setDatalinkTransmissionTime(button.setting);
-                                        setDatalinkTransmissionTimeSimVar(button.simVarValue);
-                                    }}
-                                    selected={datalinkTransmissionTime === button.setting}
-                                >
-                                    {button.name}
-                                </SelectItem>
-                            ))}
-                        </SelectGroup>
                     </div>
                 </div>
             </>

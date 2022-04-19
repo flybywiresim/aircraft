@@ -13,7 +13,7 @@ export const CrossTrack: React.FC<CrossTrackProps> = memo(({ x, y, isPlanMode })
     let crossTrackText = '';
     let crossTrackAnchor = 'start';
     let crossTrackX = x;
-    const crossTrackAbs = Math.abs(crossTrackError);
+    const crossTrackAbs = Math.min(99.9, Math.abs(crossTrackError));
 
     if (crossTrackAbs >= 0.1) {
         crossTrackText = crossTrackAbs.toFixed(1);
