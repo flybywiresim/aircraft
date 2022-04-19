@@ -481,6 +481,6 @@ export class InputValidation {
      */
     public static expandLateralOffset(offset: string): string {
         const entries = InputValidation.decodeOffsetString(offset);
-        return `${entries[1]}${entries[2]} ${entries[0] === 'L' ? 'LEFT' : 'RIGHT'}`;
+        return `${entries[0]}${entries[1]} ${entries[2] === 'L' ? 'LEFT' : 'RIGHT'}`;
     }
 }
