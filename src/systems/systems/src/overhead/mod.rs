@@ -501,7 +501,7 @@ impl FirePushButton {
     }
 
     pub fn set_released(&mut self, released: bool) {
-        self.is_released = self.is_released || released;
+        self.is_released = released;
     }
 
     pub fn is_released(&self) -> bool {
