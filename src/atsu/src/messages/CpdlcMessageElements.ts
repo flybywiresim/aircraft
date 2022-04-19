@@ -25,7 +25,14 @@ export enum CpdlcMessageContentType {
     Frequency,
     Procedure,
     Degree,
+    VerticalRate,
+    LegType,
+    LegTypeDistance,
+    LegTypeTime,
     AtcUnit,
+    Squawk,
+    Altimeter,
+    Atis,
     Freetext
 }
 
@@ -69,8 +76,22 @@ export abstract class CpdlcMessageContent {
             return new CpdlcMessageContentProcedure(0);
         case CpdlcMessageContentType.Degree:
             return new CpdlcMessageContentDegree(0);
+        case CpdlcMessageContentType.VerticalRate:
+            return new CpdlcMessageContentVerticalRate(0);
+        case CpdlcMessageContentType.LegType:
+            return new CpdlcMessageContentLegType(0);
+        case CpdlcMessageContentType.LegTypeDistance:
+            return new CpdlcMessageContentLegTypeDistance(0);
+        case CpdlcMessageContentType.LegTypeTime:
+            return new CpdlcMessageContentLegTypeTime(0);
         case CpdlcMessageContentType.AtcUnit:
             return new CpdlcMessageContentAtcUnit(0);
+        case CpdlcMessageContentType.Squawk:
+            return new CpdlcMessageContentSquawk(0);
+        case CpdlcMessageContentType.Altimeter:
+            return new CpdlcMessageContentAltimeter(0);
+        case CpdlcMessageContentType.Atis:
+            return new CpdlcMessageContentAtis(0);
         case CpdlcMessageContentType.Freetext:
             return new CpdlcMessageContentFreetext(0, 0);
         default:
@@ -259,6 +280,29 @@ export class CpdlcMessageContentDegree extends CpdlcMessageContent {
     }
 }
 
+export class CpdlcMessageContentVerticalRate extends CpdlcMessageContent {
+    public constructor(index: number) {
+        super(CpdlcMessageContentType.VerticalRate, index);
+    }
+
+    public validateAndReplaceContent(value: string[]): boolean {
+        if (this.IndexStart + 3 < value.length && this.IndexStart > -1) {
+            if (value[this.IndexStart + 1] !== 'FEET' || value[this.IndexStart + 2] !== 'PER' || value[this.IndexStart + 3] !== 'MINUTE') {
+                return false;
+            }
+
+            this.Value = `${value[this.IndexStart]} FEET PER MINUTE`;
+            value[this.IndexStart] = '%s';
+            value[this.IndexStart + 1] = '%s';
+            value[this.IndexStart + 2] = '%s';
+            value[this.IndexStart + 3] = '%s';
+
+            return true;
+        }
+        return false;
+    }
+}
+
 export class CpdlcMessageContentAtcUnit extends CpdlcMessageContent {
     public constructor(indexStart: number) {
         super(CpdlcMessageContentType.AtcUnit, indexStart);
@@ -272,6 +316,24 @@ export class CpdlcMessageContentAtcUnit extends CpdlcMessageContent {
             retval = true;
         }
         return { matched: retval, remaining: value };
+    }
+}
+
+export class CpdlcMessageContentSquawk extends CpdlcMessageContent {
+    public constructor(indexStart: number) {
+        super(CpdlcMessageContentType.Squawk, indexStart);
+    }
+
+    public validateAndReplaceContent(value: string[]): boolean {
+        if (this.IndexStart < value.length && this.IndexStart > -1 && /^[0-9]{4}$/.test(value[this.IndexStart])) {
+            const squawk = parseInt(value[this.IndexStart]);
+            if (squawk >= 0 && squawk < 7777) {
+                this.Value = value[this.IndexStart];
+                value[this.IndexStart] = '%s';
+                return true;
+            }
+        }
+        return false;
     }
 }
 
@@ -289,6 +351,109 @@ export class CpdlcMessageContentFreetext extends CpdlcMessageContent {
             retval = true;
         }
         return { matched: retval, remaining: value };
+    }
+}
+
+export class CpdlcMessageContentLegTypeDistance extends CpdlcMessageContent {
+    public constructor(index: number) {
+        super(CpdlcMessageContentType.LegTypeDistance, index);
+    }
+
+    public validateAndReplaceContent(value: string[]): boolean {
+        if (this.IndexStart < value.length && this.IndexStart > -1) {
+            if (/^[0-9]{1,2}$/.test(value[this.IndexStart])) {
+                const distance = parseInt(value[this.IndexStart]);
+                if (distance >= 1 && distance < 100) {
+                    this.Value = value[this.IndexStart];
+                    value[this.IndexStart] = '%s';
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}
+
+export class CpdlcMessageContentLegTypeTime extends CpdlcMessageContent {
+    public constructor(index: number) {
+        super(CpdlcMessageContentType.LegTypeTime, index);
+    }
+
+    public validateAndReplaceContent(value: string[]): boolean {
+        if (this.IndexStart + 1 < value.length && this.IndexStart > -1 && /^[0-9]{1}$/.test(value[this.IndexStart])) {
+            if (value[this.IndexStart + 1] === 'MIN' || value[this.IndexStart + 1] === 'MINS' || value[this.IndexStart + 1] === 'MINUTES') {
+                const minutes = parseInt(value[this.IndexStart]);
+                if (minutes >= 1 && minutes < 10) {
+                    this.Value = value[this.IndexStart];
+                    value[this.IndexStart] = '%s';
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}
+
+export class CpdlcMessageContentLegType extends CpdlcMessageContent {
+    private legDistance: CpdlcMessageContentLegTypeDistance;
+
+    private legTime: CpdlcMessageContentLegTypeTime;
+
+    public constructor(index: number) {
+        super(CpdlcMessageContentType.LegType, index);
+
+        this.legDistance = new CpdlcMessageContentLegTypeDistance(index);
+        this.legTime = new CpdlcMessageContentLegTypeTime(index);
+    }
+
+    public validateAndReplaceContent(value: string[]): boolean {
+        if (this.legTime.validateAndReplaceContent(value) === true) {
+            return true;
+        }
+        return this.legDistance.validateAndReplaceContent(value);
+    }
+}
+
+export class CpdlcMessageContentAltimeter extends CpdlcMessageContent {
+    public constructor(index: number) {
+        super(CpdlcMessageContentType.Altimeter, index);
+    }
+
+    public validateAndReplaceContent(value: string[]): boolean {
+        if (this.IndexStart >= 1 && this.IndexStart < value.length && this.IndexStart > -1) {
+            let retval = false;
+
+            if (value[this.IndexStart - 1] === 'ALTIMETER' && /^[0-9]{2}\.[0-9]{2}$/.test(value[this.IndexStart])) {
+                retval = true;
+            } else if (value[this.IndexStart - 1] === 'QNH' && /^[0-9]{3,4}$/.test(value[this.IndexStart])) {
+                retval = true;
+            }
+
+            if (retval === true) {
+                this.Value = value[this.IndexStart];
+                value[this.IndexStart] = '%s';
+            }
+
+            return retval;
+        }
+        return false;
+    }
+}
+
+export class CpdlcMessageContentAtis extends CpdlcMessageContent {
+    public constructor(index: number) {
+        super(CpdlcMessageContentType.Atis, index);
+    }
+
+    public validateAndReplaceContent(value: string[]): boolean {
+        if (this.IndexStart < value.length && this.IndexStart > -1) {
+            if (/^[A-Z]{1}$/.test(value[this.IndexStart])) {
+                this.Value = value[this.IndexStart];
+                value[this.IndexStart] = '%s';
+                return true;
+            }
+        }
+        return false;
     }
 }
 
