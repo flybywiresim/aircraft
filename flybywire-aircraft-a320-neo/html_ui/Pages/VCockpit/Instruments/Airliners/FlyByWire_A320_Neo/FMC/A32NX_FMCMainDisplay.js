@@ -188,6 +188,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.setHoldSpeedMessageActive = undefined;
         this.managedProfile = undefined;
         this.speedLimitExceeded = undefined;
+
+        this.onAirport = undefined;
     }
 
     Init() {
@@ -510,6 +512,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.speedLimitExceeded = false;
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
+
+        this.onAirport = () => { };
 
         // ATSU data
         this.atsu = new Atsu.Atsu(this);
