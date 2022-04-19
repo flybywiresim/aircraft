@@ -252,7 +252,7 @@ class CDUAtcLatRequest {
             } else if (value) {
                 const error = Atsu.InputValidation.validateScratchpadOffset(value);
                 if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.weatherDeviation = value;
+                    data.weatherDeviation = Atsu.InputValidation.formatScratchpadOffset(value);
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -276,7 +276,7 @@ class CDUAtcLatRequest {
                 const error = Atsu.InputValidation.validateScratchpadOffset(entries[0]);
                 if (error === Atsu.AtsuStatusCodes.Ok) {
                     updatedOffset = true;
-                    offset = entries[0];
+                    offset = Atsu.InputValidation.formatScratchpadOffset(entries[0]);
                     entries.shift();
                 }
 
