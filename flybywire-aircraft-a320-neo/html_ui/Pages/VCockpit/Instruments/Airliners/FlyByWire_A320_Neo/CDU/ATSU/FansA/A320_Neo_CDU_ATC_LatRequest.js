@@ -363,7 +363,7 @@ class CDUAtcLatRequest {
         mcdu.onRightInput[4] = () => {
             if (CDUAtcLatRequest.CanSendData(data)) {
                 const messages = CDUAtcLatRequest.CreateRequests(mcdu, data);
-                if (messages) {
+                if (messages.length !== 0) {
                     CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
                 }
             }
@@ -378,7 +378,7 @@ class CDUAtcLatRequest {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcLatRequest.CreateRequests(mcdu, data);
-                    if (messages) {
+                    if (messages.length !== 0) {
                         mcdu.atsu.registerMessages(messages);
                     }
                     CDUAtcLatRequest.ShowPage(mcdu);

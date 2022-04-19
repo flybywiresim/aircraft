@@ -149,7 +149,7 @@ class CDUAtcOtherRequest {
         mcdu.onRightInput[4] = () => {
             if (CDUAtcOtherRequest.CanSendData(data)) {
                 const messages = CDUAtcOtherRequest.CreateRequests(mcdu, data);
-                if (messages) {
+                if (messages.length !== 0) {
                     CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
                 }
             }
@@ -161,7 +161,7 @@ class CDUAtcOtherRequest {
         mcdu.onRightInput[5] = () => {
             if (CDUAtcOtherRequest.CanSendData(data)) {
                 const messages = CDUAtcOtherRequest.CreateRequests(mcdu, data);
-                if (messages) {
+                if (messages.length !== 0) {
                     mcdu.atsu.registerMessages(messages);
                 }
                 CDUAtcOtherRequest.ShowPage(mcdu);

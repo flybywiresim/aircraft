@@ -230,7 +230,9 @@ class CDUAtcWhenCanWe {
         mcdu.onRightInput[4] = () => {
             if (CDUAtcWhenCanWe.CanSendData(data)) {
                 const messages = CDUAtcWhenCanWe.CreateRequests(mcdu, data);
-                CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
+                if (messages.length !== 0) {
+                    CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
+                }
             }
         };
 
@@ -243,7 +245,7 @@ class CDUAtcWhenCanWe {
                     mcdu.addNewMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcWhenCanWe.CreateRequests(mcdu, data);
-                    if (messages) {
+                    if (messages.length !== 0) {
                         mcdu.atsu.registerMessages(messages);
                     }
                     CDUAtcWhenCanWe.ShowPage(mcdu);

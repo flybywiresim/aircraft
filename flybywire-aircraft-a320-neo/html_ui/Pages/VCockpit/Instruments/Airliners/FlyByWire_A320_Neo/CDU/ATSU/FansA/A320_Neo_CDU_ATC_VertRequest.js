@@ -339,7 +339,7 @@ class CDUAtcVertRequest {
         mcdu.onRightInput[4] = () => {
             if (CDUAtcVertRequest.CanSendData(data)) {
                 const messages = CDUAtcVertRequest.CreateRequests(mcdu, data);
-                if (messages) {
+                if (messages.length !== 0) {
                     CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
                 }
             }
@@ -354,7 +354,7 @@ class CDUAtcVertRequest {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcVertRequest.CreateRequests(mcdu, data);
-                    if (messages) {
+                    if (messages.length !== 0) {
                         mcdu.atsu.registerMessages(messages);
                     }
                     CDUAtcVertRequest.ShowPage1(mcdu);
@@ -567,7 +567,7 @@ class CDUAtcVertRequest {
         mcdu.onRightInput[4] = () => {
             if (CDUAtcVertRequest.CanSendData(data)) {
                 const messages = CDUAtcVertRequest.CreateRequests(mcdu, data);
-                if (messages) {
+                if (messages.length !== 0) {
                     CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
                 }
             }
@@ -582,7 +582,7 @@ class CDUAtcVertRequest {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcVertRequest.CreateRequests(mcdu, data);
-                    if (messages) {
+                    if (messages.length !== 0) {
                         mcdu.atsu.registerMessages(messages);
                     }
                     CDUAtcVertRequest.ShowPage2(mcdu);
