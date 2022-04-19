@@ -1289,7 +1289,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.arrivalIndex = index;
             currentFlightPlan.procedureDetails.approachTransitionIndex = -1;
 
-            await currentFlightPlan.buildArrival().catch(console.error);
+            await currentFlightPlan.rebuildArrivalApproach();
 
             this.updateFlightPlanVersion().catch(console.error);
         }
@@ -1359,7 +1359,7 @@ export class FlightPlanManager {
 
         if (currentFlightPlan.procedureDetails.arrivalTransitionIndex !== index) {
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = index;
-            await currentFlightPlan.buildArrival().catch(console.error);
+            await currentFlightPlan.rebuildArrivalApproach();
 
             this.updateFlightPlanVersion().catch(console.error);
         }
@@ -1383,7 +1383,7 @@ export class FlightPlanManager {
                 console.log('setArrivalRunwayIndex: Finishing at none');
             } */
             currentFlightPlan.procedureDetails.arrivalRunwayIndex = index;
-            await currentFlightPlan.buildArrival().catch(console.error);
+            await currentFlightPlan.rebuildArrivalApproach();
 
             this.updateFlightPlanVersion().catch(console.error);
         }
@@ -1451,7 +1451,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.approachTransitionIndex = -1;
             currentFlightPlan.procedureDetails.arrivalIndex = -1;
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = -1;
-            await currentFlightPlan.buildApproach().catch(console.error);
+            await currentFlightPlan.rebuildArrivalApproach();
 
             this.updateFlightPlanVersion().catch(console.error);
         }
@@ -1617,7 +1617,7 @@ export class FlightPlanManager {
         if (currentFlightPlan.procedureDetails.approachTransitionIndex !== index) {
             // console.log(`setApproachIndex: APPR TRANS ${currentFlightPlan.destinationAirfield.infos.approaches[currentFlightPlan.procedureDetails.approachIndex].transitions[index].name}`);
             currentFlightPlan.procedureDetails.approachTransitionIndex = index;
-            await currentFlightPlan.buildApproach().catch(console.error);
+            await currentFlightPlan.rebuildArrivalApproach();
 
             this.updateFlightPlanVersion().catch(console.error);
         }
