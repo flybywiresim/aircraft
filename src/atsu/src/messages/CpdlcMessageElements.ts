@@ -33,6 +33,8 @@ export enum CpdlcMessageContentType {
     Squawk,
     Altimeter,
     Atis,
+    Fuel,
+    PersonsOnBoard,
     Freetext
 }
 
@@ -92,6 +94,10 @@ export abstract class CpdlcMessageContent {
             return new CpdlcMessageContentAltimeter(0);
         case CpdlcMessageContentType.Atis:
             return new CpdlcMessageContentAtis(0);
+        case CpdlcMessageContentType.Fuel:
+            return new CpdlcMessageContentFuel(0);
+        case CpdlcMessageContentType.PersonsOnBoard:
+            return new CpdlcMessageContentPersonsOnBoard(0);
         case CpdlcMessageContentType.Freetext:
             return new CpdlcMessageContentFreetext(0, 0);
         default:
@@ -452,6 +458,40 @@ export class CpdlcMessageContentAtis extends CpdlcMessageContent {
             }
         }
         return { matched: retval, remaining: value };
+    }
+}
+
+export class CpdlcMessageContentFuel extends CpdlcMessageContent {
+    public constructor(index: number) {
+        super(CpdlcMessageContentType.Fuel, index);
+    }
+
+    public validateAndReplaceContent(value: string[]): boolean {
+        if (this.IndexStart < value.length && this.IndexStart > -1) {
+            if (/^[0-9]{1,6}$/.test(value[this.IndexStart])) {
+                this.Value = value[this.IndexStart];
+                value[this.IndexStart] = '%s';
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+export class CpdlcMessageContentPersonsOnBoard extends CpdlcMessageContent {
+    public constructor(index: number) {
+        super(CpdlcMessageContentType.PersonsOnBoard, index);
+    }
+
+    public validateAndReplaceContent(value: string[]): boolean {
+        if (this.IndexStart < value.length && this.IndexStart > -1) {
+            if (/^[0-9]{1,3}$/.test(value[this.IndexStart])) {
+                this.Value = value[this.IndexStart];
+                value[this.IndexStart] = '%s';
+                return true;
+            }
+        }
+        return false;
     }
 }
 
