@@ -1,13 +1,36 @@
-name: master
+name: nightly
 on:
-  push:
-    branches:
-      - master
+  schedule:
+    # https://crontab.guru/
+    # Every 24h at 12:00 am
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
+  # This checks if there has been any changes (commits) to master in the last 24 hours.
+  # If not the build and upload to CDN will be skipped.
+  check_date:
+    runs-on: ubuntu-latest
+    name: Check latest commit
+    outputs:
+      result: ${{ steps.should_run.outputs.result }}
+    steps:
+      - name: Shallow clone remote repo
+        run: git clone https://github.com/frankkopp/flybywire-a32nx-test -b master --depth 3 --bare --filter=blob:none -q .
+      - name: Print latest_commit
+        run: git log -1 --relative-date
+      - id: should_run
+        continue-on-error: true
+        name: Check latest commit is less than a day
+        if: ${{ github.event_name == 'schedule' }}
+        run: echo ::set-output name=result::$(git log -1 --since="24 hours")
+      - name: Result
+        run: echo "Should run = ${{ steps.should_run.outputs.result }}" && echo "Owner = ${{ github.repository_owner }}"
   build:
     # Prevent running this on forks
-    if: github.repository_owner == 'flybywiresim'
+    # Prevent this from running when there was no commits in the last 24h
+    needs: check_date
+    if: ${{ (needs.check_date.outputs.result != '') && (github.repository_owner == 'flybywiresim') }}
     runs-on: ubuntu-latest
     env:
       A32NX_PRODUCTION_BUILD: 1
@@ -18,7 +41,7 @@ jobs:
       BUILD_DIR_NAME: vmaster
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
@@ -28,6 +51,7 @@ jobs:
           echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
           echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
           echo SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> .env
+          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
@@ -73,22 +97,20 @@ jobs:
             --data-raw '{
               "body": "This pre-release has its ${{ env.MASTER_ZIP_NAME }} asset updated on every commit to the master branch\nDo not use the source code assets, they are never updated\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.MASTER_PRE_RELEASE_TAG }}/${{ env.MASTER_ZIP_NAME }}"
             }'
-
-      # Commented out in favor of nightly builds and CDN uploads
-      # - name: Upload to Bunny CDN
-      #   env:
-      #     BUNNY_BUCKET_PASSWORD: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
-      #     BUNNY_SECRET_TOKEN: ${{ secrets.BUNNY_SECRET_TOKEN }}
-      #     BUNNY_BUCKET_DESTINATION: addons/a32nx/master
-      #   run: ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION
-      # - name: Upload to DigitalOcean CDN
-      #   uses: LibreTexts/do-space-sync-action@master
-      #   with:
-      #     args: --acl public-read
-      #   env:
-      #     SOURCE_DIR: ./${{ env.BUILD_DIR_NAME }}
-      #     DEST_DIR: ${{ env.BUILD_DIR_NAME }}
-      #     SPACE_NAME: ${{ secrets.CDN_SPACE_NAME }}
-      #     SPACE_REGION: ${{ secrets.CDN_SPACE_REGION }}
-      #     SPACE_ACCESS_KEY_ID: ${{ secrets.CDN_SPACE_ACCESS_KEY_ID }}
-      #     SPACE_SECRET_ACCESS_KEY: ${{ secrets.CDN_SPACE_SECRET_ACCESS_KEY }}
+      - name: Upload to Bunny CDN
+        env:
+          BUNNY_BUCKET_PASSWORD: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
+          BUNNY_SECRET_TOKEN: ${{ secrets.BUNNY_SECRET_TOKEN }}
+          BUNNY_BUCKET_DESTINATION: addons/a32nx/master
+        run: ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION
+      - name: Upload to DigitalOcean CDN
+        uses: LibreTexts/do-space-sync-action@master
+        with:
+          args: --acl public-read
+        env:
+          SOURCE_DIR: ./${{ env.BUILD_DIR_NAME }}
+          DEST_DIR: ${{ env.BUILD_DIR_NAME }}
+          SPACE_NAME: ${{ secrets.CDN_SPACE_NAME }}
+          SPACE_REGION: ${{ secrets.CDN_SPACE_REGION }}
+          SPACE_ACCESS_KEY_ID: ${{ secrets.CDN_SPACE_ACCESS_KEY_ID }}
+          SPACE_SECRET_ACCESS_KEY: ${{ secrets.CDN_SPACE_SECRET_ACCESS_KEY }}
