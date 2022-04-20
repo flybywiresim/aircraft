@@ -466,25 +466,25 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, targetHeading);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, targetAltitude);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_SET, simData.H_ind_ft < targetAltitude ? 1000 : -1000);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_SET, simData.H_ind_ft < targetAltitude ? 1000 : -1000);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ATHR_PUSH);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_AP_1_PUSH);
   } else if (idStartState->get() == 4) {
     // init FCU for on runway -> ready for take-off
     double targetHeading = fmod(round(simData.Psi_magnetic_deg), 360.0);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PULL);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_SET, 150);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, targetHeading);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, 15000);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PULL);
   } else {
     // init FCU for on ground -> default FCU values after power-on
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PUSH);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PUSH);
-    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, 100);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_SET, 100);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, 0);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, 100);
   }
 
   // init was run
