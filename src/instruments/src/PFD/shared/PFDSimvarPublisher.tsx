@@ -124,7 +124,7 @@ export enum PFDVars {
     altitude = 'L:A32NX_ADIRS_ADR_1_ALTITUDE',
     speed = 'L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED',
     alphaProt = 'L:A32NX_SPEEDS_ALPHA_PROTECTION',
-    onGround = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
+    onGround = 'L:A32NX_LGCIU_1_CENTER_GEAR_COMPRESSED',
     activeLateralMode = 'L:A32NX_FMA_LATERAL_MODE',
     activeVerticalMode = 'L:A32NX_FMA_VERTICAL_MODE',
     fmaModeReversion = 'L:A32NX_FMA_MODE_REVERSION',
