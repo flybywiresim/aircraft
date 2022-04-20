@@ -2839,10 +2839,7 @@ mod tests {
                 test_bed.run();
             }
 
-            assert_eq!(
-                test_bed.true_heading(adiru_number).is_normal_operation(),
-                true
-            );
+            assert!(test_bed.true_heading(adiru_number).is_normal_operation());
         }
 
         #[rstest]
