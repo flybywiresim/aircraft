@@ -101,7 +101,7 @@ export class EfisSymbols {
                 case RunwaySurface.Bituminous:
                 case RunwaySurface.Concrete:
                 case RunwaySurface.Tarmac:
-                    if (runway.length >= 1300) {
+                    if (runway.length >= 1500 && runway.width >= 30) {
                         return true;
                     }
                     break;
