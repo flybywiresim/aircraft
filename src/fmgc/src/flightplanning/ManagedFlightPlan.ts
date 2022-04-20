@@ -922,6 +922,19 @@ export class ManagedFlightPlan {
     }
 
     /**
+     * Rebuilds the arrival and approach segment after a change of procedure
+     */
+    public async rebuildArrivalApproach(): Promise<void> {
+        // remove all legs from these segments to prevent weird stuff
+        this.truncateSegment(SegmentType.Arrival);
+        this.truncateSegment(SegmentType.Approach);
+        this.truncateSegment(SegmentType.Missed);
+
+        await this.buildArrival().catch(console.error);
+        await this.buildApproach().catch(console.error);
+    }
+
+    /**
      * Builds an arrival into the flight plan from indexes in the arrival airport information.
      */
     public async buildArrival(): Promise<void> {

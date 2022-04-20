@@ -95,7 +95,8 @@ export class GuidanceManager {
                 return new RFLeg(from, to, to.additionalData.center, metadata, segment);
             }
 
-            if (to.additionalData.legType === LegType.CA) {
+            // FIXME VALeg should be implemented to give proper heading guidance
+            if (to.additionalData.legType === LegType.CA || to.additionalData.legType === LegType.VA) {
                 const course = to.additionalData.vectorsCourse;
                 const altitude = to.additionalData.vectorsAltitude;
 
