@@ -460,9 +460,11 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
   // determine if we need to run init code
   if (idStartState->get() >= 5) {
     // init FCU for in flight configuration
-    double targetAltitude = round(simData.H_ind_ft / 1000) * 1000;
+    double targetAltitude = round(simData.H_ind_ft / 1000.0) * 1000.0;
+    double targetHeading = fmod(round(simData.Psi_magnetic_deg / 10.0) * 10.0, 360.0);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PUSH);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, targetHeading);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, targetAltitude);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_SET, simData.H_ind_ft < targetAltitude ? 1000 : -1000);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_PULL);
