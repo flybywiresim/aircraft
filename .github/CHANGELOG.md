@@ -241,6 +241,7 @@
 1. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
 1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (donbikes#4084)
 1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
+1. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
 
 ## 0.7.0
 
