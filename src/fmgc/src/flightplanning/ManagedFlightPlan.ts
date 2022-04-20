@@ -33,7 +33,6 @@ import { DirectTo } from './DirectTo';
 import { GeoMath } from './GeoMath';
 import { WaypointBuilder } from './WaypointBuilder';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
-import { normaliseApproachName } from '@shared/flightplan';
 
 /**
  * A flight plan managed by the FlightPlanManager.
@@ -1018,7 +1017,6 @@ export class ManagedFlightPlan {
         const missedLegs = [];
         const destination = this.destinationAirfield;
         this.procedureDetails.approachType = undefined;
-        let approachName = undefined;
 
         const { approachIndex } = this.procedureDetails;
         const { approachTransitionIndex } = this.procedureDetails;
@@ -1035,10 +1033,9 @@ export class ManagedFlightPlan {
 
         if (approachIndex !== -1) {
             const approach: RawApproach = destinationInfo.approaches[approachIndex];
-            approachName = normaliseApproachName(approach.name);
             this.procedureDetails.approachType = approach.approachType;
             legs.push(...approach.finalLegs);
-            legAnnotations.push(...approach.finalLegs.map(_ => approachName));
+            legAnnotations.push(...approach.finalLegs.map(_ => approach.name));
             missedLegs.push(...approach.missedLegs);
         }
 
@@ -1112,7 +1109,7 @@ export class ManagedFlightPlan {
                         const magCourse = lastLeg.trueDegrees ? A32NX_Util.trueToMagnetic(lastLeg.course, Facilities.getMagVar(runway.beginningCoordinates.lat, runway.beginningCoordinates.long)) : lastLeg.course;
                         this.destinationAirfield.additionalData.annotation = `C${magCourse.toFixed(0).padStart(3, '0')}°`;
                     } else {
-                        this.destinationAirfield.additionalData.annotation = approachName;
+                        this.destinationAirfield.additionalData.annotation = approach.name;
                     }
                 }
 
