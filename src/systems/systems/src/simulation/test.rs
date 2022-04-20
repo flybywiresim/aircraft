@@ -239,6 +239,7 @@ impl<T: Aircraft> SimulationTestBed<T> {
         test_bed.set_ambient_pressure(Pressure::new::<inch_of_mercury>(29.92));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
         test_bed.set_on_ground(false);
+        test_bed.set_is_ready(true);
         test_bed.seed();
 
         test_bed
@@ -332,6 +333,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
         func: U,
     ) -> Ref<'a, Potential> {
         (func)(self.simulation.aircraft(), self.simulation.electricity())
+    }
+
+    fn set_is_ready(&mut self, is_ready: bool) {
+        self.write_by_name(UpdateContext::IS_READY_KEY, is_ready);
     }
 
     fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity) {
