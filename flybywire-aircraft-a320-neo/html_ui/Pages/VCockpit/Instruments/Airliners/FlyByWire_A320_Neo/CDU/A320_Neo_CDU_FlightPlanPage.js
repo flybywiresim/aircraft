@@ -140,7 +140,6 @@ class CDUFlightPlanPage {
             winI = winI % (waypointsAndMarkers.length);
 
             const {wp, pwp, marker, holdResumeExit, fpIndex} = waypointsAndMarkers[winI];
-            const {fpIndex: prevFpIndex} = (winI > 0) ? waypointsAndMarkers[winI - 1] : { fpIndex: null};
 
             if (wp) {
                 // Waypoint
@@ -180,47 +179,7 @@ class CDUFlightPlanPage {
                 }
 
                 // Fix Header
-                let fixAnnotation = "";
-                const currentApproach = fpm.getApproach();
-                if (fpm.getOriginRunway() && wpPrev === fpm.getOrigin() && prevFpIndex === 0) {
-                    fixAnnotation = `${wpPrev.ident.substring(0,3)}${fpm.getOriginRunway().direction.toFixed(0)}`;
-                } else if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === wp)) {
-                    const departureName = fpm.getDepartureName();
-                    fixAnnotation = departureName ? departureName : undefined;
-                } else if (fpm.getArrivalProcIndex() !== -1 && fpm.getArrivalWaypoints().some(fix => fix === wp)) {
-                    const arrival = fpm.getArrival();
-                    fixAnnotation = arrival ? arrival.name : undefined;
-                } else if (currentApproach !== undefined && fpm.getApproachWaypoints().some(fix => fix === wp)) {
-                    const finalLegs = currentApproach.finalLegs;
-                    if (finalLegs.length > 0) {
-                        const finalLegIdents = finalLegs.map(fl => fl.fixIcao.substring(7, 12).trim());
-                        const validFinalWaypoints = fpm.getApproachWaypoints().filter(wp => finalLegIdents.includes(wp.ident));
-                        if (validFinalWaypoints.length > 0) {
-                            if (fpIndex === fpm.getLastIndexBeforeApproach() + 1 && validFinalWaypoints[0] === wp) {
-                                fixAnnotation = Avionics.Utils.formatRunway(currentApproach.name.replace(/\s+/g, ''));
-                            } else if (fpm.getArrivalProcIndex() !== -1
-                                    && !validFinalWaypoints.some(fix => fpIndex > fpm.getLastIndexBeforeApproach() && fix === wp)) {
-                                const arrival = fpm.getArrival();
-                                fixAnnotation = arrival ? arrival.name : undefined;
-                            }
-                        }
-                    }
-                } else {
-                    // Show airway
-                    let airwayName = "";
-                    if (wpPrev) {
-                        let airway = undefined;
-                        if (wpPrev.infos.airwayOut && wpPrev.infos.airwayOut === wp.infos.airwayIn) {
-                            airway = {name: wpPrev.infos.airwayOut };
-                        } else if (wp.infos.airwayIn && wpPrev.infos.airwayOut === undefined) {
-                            airway = {name: wp.infos.airwayIn };
-                        }
-                        if (airway) {
-                            airwayName = airway.name;
-                        }
-                    }
-                    fixAnnotation = airwayName;
-                }
+                let fixAnnotation = wp.additionalData.annotation;
 
                 if (wp.additionalData) {
                     const magVar = Facilities.getMagVar(wp.infos.coordinates.lat, wp.infos.coordinates.long);
@@ -462,7 +421,7 @@ class CDUFlightPlanPage {
                     altitudeConstraint: { alt: altitudeConstraint, altPrefix: altPrefix },
                     timeCell: timeCell,
                     timeColor: timeColor,
-                    fixAnnotation: fixAnnotation,
+                    fixAnnotation: fixAnnotation ? fixAnnotation : "",
                     bearingTrack: bearingTrack,
                     isOverfly: isOverfly,
                 };

@@ -2498,6 +2498,7 @@ class FMCMainDisplay extends BaseAirliners {
                                                 waypoint.infos.airwayOut = airwayName;
                                             }
                                             waypoint.additionalData.smartAirway = smartAirway;
+                                            waypoint.additionalData.annotation = airwayName;
                                             console.log("icao:" + icao + " added");
                                             resolve();
                                         }).catch(console.error);
