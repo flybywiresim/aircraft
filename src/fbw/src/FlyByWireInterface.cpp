@@ -472,7 +472,7 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_AP_1_PUSH);
   } else if (idStartState->get() == 4) {
     // init FCU for on runway -> ready for take-off
-    double targetHeading = fmod(round(simData.Psi_magnetic_deg / 10.0) * 10.0, 360.0);
+    double targetHeading = fmod(round(simData.Psi_magnetic_deg), 360.0);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PUSH);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_SET, 150);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
