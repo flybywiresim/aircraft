@@ -144,6 +144,7 @@ impl Default for Velocity3D {
 /// for the purpose of handling a simulation tick.
 #[derive(Clone, Copy, Debug)]
 pub struct UpdateContext {
+    is_ready_id: VariableIdentifier,
     ambient_temperature_id: VariableIdentifier,
     indicated_airspeed_id: VariableIdentifier,
     true_airspeed_id: VariableIdentifier,
@@ -168,6 +169,7 @@ pub struct UpdateContext {
 
     delta: Delta,
     simulation_time: f64,
+    is_ready: bool,
     indicated_airspeed: Velocity,
     true_airspeed: Velocity,
     indicated_altitude: Length,
@@ -185,6 +187,7 @@ pub struct UpdateContext {
     true_heading: Angle,
 }
 impl UpdateContext {
+    pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
     pub(crate) const AMBIENT_DENSITY_KEY: &'static str = "AMBIENT DENSITY";
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
@@ -227,6 +230,7 @@ impl UpdateContext {
         mach_number: MachNumber,
     ) -> UpdateContext {
         UpdateContext {
+            is_ready_id: context.get_identifier(Self::IS_READY_KEY.to_owned()),
             ambient_temperature_id: context
                 .get_identifier(Self::AMBIENT_TEMPERATURE_KEY.to_owned()),
             indicated_airspeed_id: context.get_identifier(Self::INDICATED_AIRSPEED_KEY.to_owned()),
@@ -255,6 +259,7 @@ impl UpdateContext {
 
             delta: delta.into(),
             simulation_time,
+            is_ready: true,
             indicated_airspeed,
             true_airspeed,
             indicated_altitude,
@@ -291,6 +296,7 @@ impl UpdateContext {
 
     pub(super) fn new_for_simulation(context: &mut InitContext) -> UpdateContext {
         UpdateContext {
+            is_ready_id: context.get_identifier("IS_READY".to_owned()),
             ambient_temperature_id: context.get_identifier("AMBIENT TEMPERATURE".to_owned()),
             indicated_airspeed_id: context.get_identifier("AIRSPEED INDICATED".to_owned()),
             true_airspeed_id: context.get_identifier("AIRSPEED TRUE".to_owned()),
@@ -315,6 +321,7 @@ impl UpdateContext {
 
             delta: Default::default(),
             simulation_time: Default::default(),
+            is_ready: Default::default(),
             indicated_airspeed: Default::default(),
             true_airspeed: Default::default(),
             indicated_altitude: Default::default(),
@@ -364,6 +371,7 @@ impl UpdateContext {
 
         self.delta = delta.into();
         self.simulation_time = simulation_time;
+        self.is_ready = reader.read(&self.is_ready_id);
 
         self.local_acceleration = LocalAcceleration::new(
             reader.read(&self.accel_body_x_id),
@@ -454,14 +462,14 @@ impl UpdateContext {
         // this needs to be further improved, for example by having a variable
         // that determines if the sim is really ready, including the JS part
         // because the number is right now just best guess
-        self.simulation_time >= 2.0
+        self.simulation_time >= 2.0 && self.is_ready
     }
 
     pub fn is_sim_initialiazing(&self) -> bool {
         // this needs to be further improved, for example by having a variable
         // that determines if the sim is really ready, including the JS part
         // because the number is right now just best guess
-        self.simulation_time < 2.0
+        self.simulation_time < 2.0 || !self.is_ready
     }
 
     pub fn indicated_airspeed(&self) -> Velocity {
