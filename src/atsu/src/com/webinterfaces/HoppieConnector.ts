@@ -6,7 +6,7 @@ import { Hoppie } from '@flybywiresim/api-client';
 import { AtsuStatusCodes } from '../../AtsuStatusCodes';
 import { AtsuMessage, AtsuMessageNetwork, AtsuMessageDirection, AtsuMessageComStatus, AtsuMessageSerializationFormat } from '../../messages/AtsuMessage';
 import { CpdlcMessage } from '../../messages/CpdlcMessage';
-import { CpdlcMessagesUplink, CpdlcMessageElement, CpdlcMessageContent } from '../../messages/CpdlcMessageElements';
+import { CpdlcMessagesUplink, CpdlcMessageElement, CpdlcMessageContent, CpdlcMessageExpectedResponseType } from '../../messages/CpdlcMessageElements';
 import { FreetextMessage } from '../../messages/FreetextMessage';
 import { FansMode } from '../FutureAirNavigationSystem';
 
@@ -54,6 +54,10 @@ export class HoppieConnector {
                 console.log('Invalid Hoppie-ID set');
             }
         });
+    }
+
+    public static deactivateHoppie(): void {
+        SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
     }
 
     public static async connect(flightNo: string): Promise<AtsuStatusCodes> {
@@ -174,13 +178,16 @@ export class HoppieConnector {
     }
 
     private static levenshteinDistance(template: string, message: string, content: CpdlcMessageContent[]): number {
-        const elements = message.split(' ');
+        let elements = message.split(' ');
         let validContent = true;
 
         // try to match the content
         content.forEach((entry) => {
-            if (!entry.validateAndReplaceContent(elements)) {
+            const result = entry.validateAndReplaceContent(elements);
+            if (!result.matched) {
                 validContent = false;
+            } else {
+                elements = result.remaining;
             }
         });
         if (!validContent) return 100000;
@@ -271,11 +278,14 @@ export class HoppieConnector {
 
         // create a deep-copy of the message
         const retval: CpdlcMessageElement = CpdlcMessagesUplink[matches[0]][1].deepCopy();
-        const elements = message.split(' ');
+        let elements = message.split(' ');
         console.log(`Selected UM-ID: ${matches[0]}`);
 
         // parse the content and store it in the deep copy
-        retval.Content.forEach((entry) => entry.validateAndReplaceContent(elements));
+        retval.Content.forEach((entry) => {
+            const result = entry.validateAndReplaceContent(elements);
+            elements = result.remaining;
+        });
 
         return retval;
     }
@@ -287,73 +297,81 @@ export class HoppieConnector {
             return [AtsuStatusCodes.NoHoppieConnection, retval];
         }
 
-        const body = {
-            logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
-            from: HoppieConnector.flightNumber,
-            to: HoppieConnector.flightNumber,
-            type: 'poll',
-        };
-        const text = await Hoppie.sendRequest(body).then((resp) => resp.response).catch(() => 'proxy');
+        try {
+            const body = {
+                logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
+                from: HoppieConnector.flightNumber,
+                to: HoppieConnector.flightNumber,
+                type: 'poll',
+            };
+            const text = await Hoppie.sendRequest(body).then((resp) => resp.response).catch(() => 'proxy');
 
-        // proxy error during request
-        if (text === 'proxy') {
-            return [AtsuStatusCodes.ProxyError, retval];
-        }
-
-        // something went wrong
-        if (!text.startsWith('ok')) {
-            return [AtsuStatusCodes.ComFailed, retval];
-        }
-
-        // split up the received data into multiple messages
-        let messages = text.split(/({.*?})/gm);
-        messages = messages.filter((elem) => elem !== 'ok' && elem !== 'ok ' && elem !== '} ' && elem !== '}' && elem !== '');
-
-        // create the messages
-        messages.forEach((element) => {
-            // get the single entries of the message
-            // example: [CALLSIGN telex, {Hello world!}]
-            const entries = element.substring(1).split(/({.*?})/gm);
-
-            // get all relevant information
-            const metadata = entries[0].split(' ');
-            const sender = metadata[0].toUpperCase();
-            const type = metadata[1].toLowerCase();
-            const content = entries[1].replace(/{/, '').replace(/}/, '').toUpperCase();
-
-            switch (type) {
-            case 'telex':
-                const freetext = new FreetextMessage();
-                freetext.Network = AtsuMessageNetwork.Hoppie;
-                freetext.Station = sender;
-                freetext.Direction = AtsuMessageDirection.Uplink;
-                freetext.ComStatus = AtsuMessageComStatus.Received;
-                freetext.Message = content.replace(/\n/i, ' ');
-                retval.push(freetext);
-                break;
-            case 'cpdlc':
-                const cpdlc = new CpdlcMessage();
-                cpdlc.Station = sender;
-                cpdlc.Direction = AtsuMessageDirection.Uplink;
-                cpdlc.ComStatus = AtsuMessageComStatus.Received;
-
-                // split up the data
-                const elements = content.split('/');
-                cpdlc.CurrentTransmissionId = parseInt(elements[2]);
-                if (elements[3] !== '') {
-                    cpdlc.PreviousTransmissionId = parseInt(elements[3]);
-                }
-                cpdlc.Content = HoppieConnector.cpdlcMessageClassification(elements[5]);
-                cpdlc.Message = elements[5];
-
-                retval.push(cpdlc);
-                break;
-            default:
-                break;
+            // proxy error during request
+            if (text === 'proxy') {
+                return [AtsuStatusCodes.ProxyError, retval];
             }
-        });
 
-        return [AtsuStatusCodes.Ok, retval];
+            // something went wrong
+            if (!text.startsWith('ok')) {
+                return [AtsuStatusCodes.ComFailed, retval];
+            }
+
+            // split up the received data into multiple messages
+            let messages = text.split(/({.*?})/gm);
+            messages = messages.filter((elem) => elem !== 'ok' && elem !== 'ok ' && elem !== '} ' && elem !== '}' && elem !== '');
+
+            // create the messages
+            messages.forEach((element) => {
+                // get the single entries of the message
+                // example: [CALLSIGN telex, {Hello world!}]
+                const entries = element.substring(1).split(/({.*?})/gm);
+
+                // get all relevant information
+                const metadata = entries[0].split(' ');
+                const sender = metadata[0].toUpperCase();
+                const type = metadata[1].toLowerCase();
+                const content = entries[1].replace(/{/, '').replace(/}/, '').toUpperCase();
+
+                switch (type) {
+                case 'telex':
+                    const freetext = new FreetextMessage();
+                    freetext.Network = AtsuMessageNetwork.Hoppie;
+                    freetext.Station = sender;
+                    freetext.Direction = AtsuMessageDirection.Uplink;
+                    freetext.ComStatus = AtsuMessageComStatus.Received;
+                    freetext.Message = content.replace(/\n/i, ' ');
+                    retval.push(freetext);
+                    break;
+                case 'cpdlc':
+                    const cpdlc = new CpdlcMessage();
+                    cpdlc.Station = sender;
+                    cpdlc.Direction = AtsuMessageDirection.Uplink;
+                    cpdlc.ComStatus = AtsuMessageComStatus.Received;
+
+                    // split up the data
+                    const elements = content.split('/');
+                    cpdlc.CurrentTransmissionId = parseInt(elements[2]);
+                    if (elements[3] !== '') {
+                        cpdlc.PreviousTransmissionId = parseInt(elements[3]);
+                    }
+                    cpdlc.Content = HoppieConnector.cpdlcMessageClassification(elements[5]);
+                    if ((elements[4] as CpdlcMessageExpectedResponseType) !== cpdlc.Content.ExpectedResponse) {
+                        cpdlc.Content.ExpectedResponse = (elements[4] as CpdlcMessageExpectedResponseType);
+                    }
+                    cpdlc.Message = elements[5];
+
+                    retval.push(cpdlc);
+                    break;
+                default:
+                    break;
+                }
+            });
+
+            return [AtsuStatusCodes.Ok, retval];
+        } catch (_err) {
+            console.log('ERROR IN POLL');
+            return [AtsuStatusCodes.NoHoppieConnection, []];
+        }
     }
 
     public static pollInterval(): number {
