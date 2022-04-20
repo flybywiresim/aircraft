@@ -19,6 +19,10 @@
 
 ## Uncategorized
 
+- A32NX_IS_READY
+  - Bool
+  - Indicates that the JavaScript part is ready
+
 - A32NX_START_STATE
   - Enum
   - Indicates the state in which MSFS started
