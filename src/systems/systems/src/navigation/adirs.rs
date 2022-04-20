@@ -10,7 +10,7 @@ use crate::{
         SimulatorWriter, UpdateContext, Write, Writer,
     },
 };
-use std::{fmt::Debug, fmt::Display, time::Duration};
+use std::{fmt::Display, time::Duration};
 use uom::si::acceleration::meter_per_second_squared;
 use uom::si::{
     angle::degree,
@@ -100,7 +100,7 @@ impl SimulationElement for AirDataInertialReferenceSystemOverheadPanel {
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 enum InertialReferenceMode {
     Off = 0,
     Navigation = 1,
@@ -108,16 +108,6 @@ enum InertialReferenceMode {
 }
 
 read_write_enum!(InertialReferenceMode);
-
-impl Debug for InertialReferenceMode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            InertialReferenceMode::Off => write!(f, "Off"),
-            InertialReferenceMode::Navigation => write!(f, "Navigation"),
-            InertialReferenceMode::Attitude => write!(f, "Attitude"),
-        }
-    }
-}
 
 impl From<f64> for InertialReferenceMode {
     fn from(value: f64) -> Self {
