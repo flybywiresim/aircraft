@@ -10,7 +10,7 @@ use crate::{
         SimulatorWriter, UpdateContext, Write, Writer,
     },
 };
-use std::{fmt::Display, time::Duration};
+use std::{fmt::Debug, fmt::Display, time::Duration};
 use uom::si::acceleration::meter_per_second_squared;
 use uom::si::{
     angle::degree,
@@ -108,6 +108,16 @@ enum InertialReferenceMode {
 }
 
 read_write_enum!(InertialReferenceMode);
+
+impl Debug for InertialReferenceMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            InertialReferenceMode::Off => write!(f, "Off"),
+            InertialReferenceMode::Navigation => write!(f, "Navigation"),
+            InertialReferenceMode::Attitude => write!(f, "Attitude"),
+        }
+    }
+}
 
 impl From<f64> for InertialReferenceMode {
     fn from(value: f64) -> Self {
@@ -1053,8 +1063,19 @@ impl InertialReference {
             SignStatus::NoComputedData
         };
 
+        let true_heading_ssm = if self.is_on
+            && (self.is_fully_aligned()
+                || (overhead.mode_of(self.number) == InertialReferenceMode::Navigation
+                    && self.remaining_align_duration.is_some()
+                    && self.remaining_align_duration.unwrap().as_secs() < 120))
+        {
+            SignStatus::NormalOperation
+        } else {
+            SignStatus::NoComputedData
+        };
+
         self.true_heading
-            .set_value(simulator_data.true_heading, ssm);
+            .set_value(simulator_data.true_heading, true_heading_ssm);
         self.heading.set_value(simulator_data.heading, ssm);
     }
 
@@ -1087,7 +1108,11 @@ impl InertialReference {
             } else {
                 simulator_data.true_heading
             },
-            ssm,
+            if ground_speed_above_minimum_threshold {
+                ssm
+            } else {
+                self.true_heading.ssm
+            },
         );
 
         self.drift_angle.set_value(
@@ -2789,6 +2814,34 @@ mod tests {
             assert_eq!(
                 test_bed.true_heading(adiru_number).normal_value().unwrap(),
                 angle
+            );
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn true_heading_is_normal_when_remaining_align_is_less_than_two_minutes(
+            #[case] adiru_number: usize,
+        ) {
+            let angle = Angle::new::<degree>(160.);
+
+            let mut test_bed = test_bed_with()
+                .true_heading_of(angle)
+                .and()
+                .align_time_configured_as(AlignTime::Realistic)
+                .and()
+                .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
+
+            test_bed.run_with_delta(Duration::from_secs(0));
+
+            while test_bed.remaining_alignment_time() > Duration::from_secs(119) {
+                test_bed.run();
+            }
+
+            assert_eq!(
+                test_bed.true_heading(adiru_number).is_normal_operation(),
+                true
             );
         }
 
