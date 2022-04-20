@@ -818,7 +818,7 @@ class CDUPerformancePage {
         };
 
         const approach = mcdu.flightPlanManager.getApproach();
-        const isILS = approach && approach.name && approach.name.indexOf("ILS") !== -1;
+        const isILS = approach && approach.approachType === ApproachType.APPROACH_TYPE_ILS;
         let radioLabel = "";
         let radioCell = "";
         if (isILS) {
