@@ -450,15 +450,23 @@ void FlyByWireInterface::setupLocalVariables() {
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
   // init should be run only once and only when is ready is signaled
-  if (previousIsReady || !idIsReady->get()) {
+  if (wasFcuInitialized || !idIsReady->get()) {
     return true;
   }
 
   // get sim data
   auto simData = simConnectInterface.getSimData();
 
+  // remember simulation of ready signal
+  if (simulationTimeReady == 0.0) {
+    simulationTimeReady = simData.simulationTime;
+  }
+
+  // time since ready
+  auto timeSinceReady = simData.simulationTime - simulationTimeReady;
+
   // determine if we need to run init code
-  if (idStartState->get() >= 5) {
+  if (idStartState->get() >= 5 && timeSinceReady > 3.0) {
     // init FCU for in flight configuration
     double targetAltitude = round(simData.H_ind_ft / 1000.0) * 1000.0;
     double targetHeading = fmod(round(simData.Psi_magnetic_deg / 10.0) * 10.0, 360.0);
@@ -470,7 +478,8 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_SET, simData.H_ind_ft < targetAltitude ? 1000 : -1000);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ATHR_PUSH);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_AP_1_PUSH);
-  } else if (idStartState->get() == 4) {
+    wasFcuInitialized = true;
+  } else if (idStartState->get() == 4 && timeSinceReady > 1.0) {
     // init FCU for on runway -> ready for take-off
     double targetHeading = fmod(round(simData.Psi_magnetic_deg), 360.0);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PULL);
@@ -478,17 +487,16 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, targetHeading);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, 15000);
-  } else {
+    wasFcuInitialized = true;
+  } else if (idStartState->get() < 4 && timeSinceReady > 1.0) {
     // init FCU for on ground -> default FCU values after power-on
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PULL);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_SET, 100);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, 0);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, 100);
+    wasFcuInitialized = true;
   }
-
-  // init was run
-  previousIsReady = true;
 
   // success
   return true;

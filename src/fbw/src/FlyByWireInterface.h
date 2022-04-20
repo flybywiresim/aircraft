@@ -101,7 +101,8 @@ class FlyByWireInterface {
 
   RadioReceiver radioReceiver;
 
-  bool previousIsReady = false;
+  bool wasFcuInitialized = false;
+  double simulationTimeReady = 0.0;
   std::unique_ptr<LocalVariable> idIsReady;
   std::unique_ptr<LocalVariable> idStartState;
 
