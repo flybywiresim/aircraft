@@ -323,6 +323,18 @@ impl DelayedTrueLogicGate {
         }
     }
 
+    pub fn new_with_init_state(delay: Duration, initial_state: bool) -> DelayedTrueLogicGate {
+        DelayedTrueLogicGate {
+            delay,
+            expression_result: initial_state,
+            true_duration: if initial_state {
+                delay
+            } else {
+                Duration::from_millis(0)
+            },
+        }
+    }
+
     pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {
         if expression_result {
             self.true_duration += context.delta();
@@ -352,6 +364,14 @@ impl DelayedPulseTrueLogicGate {
             output: false,
             last_gate_output: false,
             true_delayed_gate: DelayedTrueLogicGate::new(delay),
+        }
+    }
+
+    pub fn new_with_init_state(delay: Duration, init_state: bool) -> DelayedPulseTrueLogicGate {
+        DelayedPulseTrueLogicGate {
+            output: init_state,
+            last_gate_output: init_state,
+            true_delayed_gate: DelayedTrueLogicGate::new_with_init_state(delay, init_state),
         }
     }
 

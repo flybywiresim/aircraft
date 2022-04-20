@@ -2384,7 +2384,7 @@ impl A320RamAirTurbineController {
             emergency_elec_state.is_in_emergency_elec() || rat_and_emer_gen_man_on.is_pressed();
 
         // due to initialization issues the RAT will not deployed in any case when simulation has just started
-        self.should_deploy = (context.simulation_time() >= 2.)
+        self.should_deploy = context.is_sim_ready()
             && ((self.is_solenoid_1_powered && solenoid_1_should_trigger_deployment_if_powered)
                 || (self.is_solenoid_2_powered && solenoid_2_should_trigger_deployment_if_powered));
     }
@@ -3295,11 +3295,13 @@ impl A320AutobrakeController {
             right_brake_pedal_input: Ratio::new::<percent>(0.),
             ground_spoilers_are_deployed: false,
             last_ground_spoilers_are_deployed: false,
-            should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new(
+            should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new_with_init_state(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
+                context.is_in_flight(),
             ),
-            should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
+            should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new_with_init_state(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
+                context.is_in_flight(),
             ),
             external_disarm_event: false,
         }
@@ -3392,10 +3394,9 @@ impl A320AutobrakeController {
         // when a simulation is started in flight, some values need to be ignored for a certain time to ensure
         // an unintended disarm is not happening
         (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
-            || (context.simulation_time() > 2. && !self.arming_is_allowed_by_bcu)
+            || (context.is_sim_ready() && !self.arming_is_allowed_by_bcu)
             || self.spoilers_retracted_during_this_update()
-            || (context.simulation_time() > Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS + 1.
-                && self.should_disarm_after_time_in_flight.output())
+            || self.should_disarm_after_time_in_flight.output()
             || self.external_disarm_event
             || (self.mode == AutobrakeMode::MAX
                 && self.should_reject_max_mode_after_time_in_flight.output())

@@ -450,6 +450,20 @@ impl UpdateContext {
         self.simulation_time
     }
 
+    pub fn is_sim_ready(&self) -> bool {
+        // this needs to be further improved, for example by having a variable
+        // that determines if the sim is really ready, including the JS part
+        // because the number is right now just best guess
+        self.simulation_time >= 2.0
+    }
+
+    pub fn is_sim_initialiazing(&self) -> bool {
+        // this needs to be further improved, for example by having a variable
+        // that determines if the sim is really ready, including the JS part
+        // because the number is right now just best guess
+        self.simulation_time < 2.0
+    }
+
     pub fn indicated_airspeed(&self) -> Velocity {
         self.indicated_airspeed
     }
