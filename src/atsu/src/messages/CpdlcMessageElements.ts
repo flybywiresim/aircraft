@@ -466,15 +466,16 @@ export class CpdlcMessageContentFuel extends CpdlcMessageContent {
         super(CpdlcMessageContentType.Fuel, index);
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
+        let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             if (/^[0-9]{1,6}$/.test(value[this.IndexStart])) {
                 this.Value = value[this.IndexStart];
                 value[this.IndexStart] = '%s';
-                return true;
+                retval = true;
             }
         }
-        return false;
+        return { matched: retval, remaining: value };
     }
 }
 
@@ -483,15 +484,16 @@ export class CpdlcMessageContentPersonsOnBoard extends CpdlcMessageContent {
         super(CpdlcMessageContentType.PersonsOnBoard, index);
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
+        let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             if (/^[0-9]{1,3}$/.test(value[this.IndexStart])) {
                 this.Value = value[this.IndexStart];
                 value[this.IndexStart] = '%s';
-                return true;
+                retval = true;
             }
         }
-        return false;
+        return { matched: retval, remaining: value };
     }
 }
 
