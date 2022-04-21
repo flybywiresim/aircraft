@@ -20,7 +20,14 @@ const translateResponseId = (response: number, message: CpdlcMessage): string =>
             return 'SENT';
         }
     } else if (`DM${response}` in CpdlcMessagesDownlink) {
-        return CpdlcMessagesDownlink[`DM${response}`][0][0];
+        const text = CpdlcMessagesDownlink[`DM${response}`][0][0];
+        if (text === 'STANDBY') {
+            return 'STBY';
+        }
+        if (text === 'NEGATIVE') {
+            return 'NEGATV';
+        }
+        return text;
     }
 
     return 'UKN';
@@ -37,7 +44,14 @@ const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage 
             return 'SENT';
         }
     } else if (response.Content !== undefined && response.Content.TypeId in CpdlcMessagesDownlink) {
-        return CpdlcMessagesDownlink[response.Content.TypeId][0][0];
+        const text = CpdlcMessagesDownlink[response.Content.TypeId][0][0];
+        if (text === 'STANDBY') {
+            return 'STBY';
+        }
+        if (text === 'NEGATIVE') {
+            return 'NEGATV';
+        }
+        return text;
     }
 
     return 'UKN';
