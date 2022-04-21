@@ -466,7 +466,7 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
   auto timeSinceReady = simData.simulationTime - simulationTimeReady;
 
   // determine if we need to run init code
-  if (idStartState->get() >= 5 && timeSinceReady > 3.0) {
+  if (idStartState->get() >= 5 && timeSinceReady > 6.0) {
     // init FCU for in flight configuration
     double targetAltitude = round(simData.H_ind_ft / 1000.0) * 1000.0;
     double targetHeading = fmod(round(simData.Psi_magnetic_deg / 10.0) * 10.0, 360.0);
@@ -478,6 +478,9 @@ bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_PULL);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ATHR_PUSH);
     simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_AP_1_PUSH);
+    idFcuHeadingSync->set(0);
+    idFcuModeReversionActive->set(0);
+    idFcuModeReversionTargetFpm->set(simData.H_ind_ft < targetAltitude ? 1000 : -1000);
     wasFcuInitialized = true;
   } else if (idStartState->get() == 4 && timeSinceReady > 1.0) {
     // init FCU for on runway -> ready for take-off
