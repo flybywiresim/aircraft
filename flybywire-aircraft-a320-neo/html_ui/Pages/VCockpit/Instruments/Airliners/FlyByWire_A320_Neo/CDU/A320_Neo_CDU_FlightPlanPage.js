@@ -49,8 +49,8 @@ class CDUFlightPlanPage {
             }
         }, mcdu.PageTimeout.Medium);
 
-        const flightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
-        const isFlying = flightPhase >= 5 && flightPhase <= 7;
+        const flightPhase = mcdu.flightPhaseManager.phase;
+        const isFlying = flightPhase >= FmgcFlightPhases.TAKEOFF && flightPhase != FmgcFlightPhases.DONE;
 
         let showFrom = false;
         let showTMPY = false;
@@ -141,15 +141,37 @@ class CDUFlightPlanPage {
 
             const {wp, pwp, marker, holdResumeExit, fpIndex} = waypointsAndMarkers[winI];
 
+            const wpPrev = fpm.getWaypoint(fpIndex - 1);
+            const wpNext = fpm.getWaypoint(fpIndex + 1);
+            const wpActive = (fpIndex >= fpm.getActiveWaypointIndex());
+
+            // Bearing/Track
+            let bearingTrack = "";
+            const bearingTrackTo = wp ? wp : wpNext;
+            if (wpPrev && bearingTrackTo && bearingTrackTo.additionalData.legType !== 14 /* HM */) {
+                const magVar = Facilities.getMagVar(wpPrev.infos.coordinates.lat, wpPrev.infos.coordinates.long);
+                switch (rowI) {
+                    case 1:
+                        if (fpm.getActiveWaypointIndex() === fpIndex) {
+                            const br = fpm.getBearingToActiveWaypoint();
+                            const bearing = A32NX_Util.trueToMagnetic(br, magVar);
+                            bearingTrack = `BRG${bearing.toFixed(0).toString().padStart(3,"0")}\u00b0`;
+                        }
+                        break;
+                    case 2:
+                        const tr = Avionics.Utils.computeGreatCircleHeading(wpPrev.infos.coordinates, bearingTrackTo.infos.coordinates);
+                        const track = A32NX_Util.trueToMagnetic(tr, magVar);
+                        bearingTrack = `{${fpm.isCurrentFlightPlanTemporary() ? "yellow" : "green"}}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
+                        break;
+                }
+            }
+
             if (wp) {
                 // Waypoint
                 if (offset === 0) {
                     showFrom = true;
                 }
 
-                const wpPrev = fpm.getWaypoint(fpIndex - 1);
-                const wpNext = fpm.getWaypoint(fpIndex + 1);
-                const wpActive = (fpIndex >= fpm.getActiveWaypointIndex());
                 let ident = wp.ident;
                 const isOverfly = wp.additionalData && wp.additionalData.overfly;
 
@@ -233,25 +255,6 @@ class CDUFlightPlanPage {
                     }
                 }
 
-                // Bearing/Track
-                let bearingTrack = "";
-                if (wpPrev && wp.additionalData.legType !== 14 /* HM */) {
-                    const magVar = Facilities.getMagVar(wpPrev.infos.coordinates.lat, wpPrev.infos.coordinates.long);
-                    switch (rowI) {
-                        case 1:
-                            if (fpm.getActiveWaypointIndex() === fpIndex) {
-                                const br = fpm.getBearingToActiveWaypoint();
-                                const bearing = A32NX_Util.trueToMagnetic(br, magVar);
-                                bearingTrack = `BRG${bearing.toFixed(0).toString().padStart(3,"0")}\u00b0`;
-                            }
-                            break;
-                        case 2:
-                            const tr = Avionics.Utils.computeGreatCircleHeading(wpPrev.infos.coordinates, wp.infos.coordinates);
-                            const track = A32NX_Util.trueToMagnetic(tr, magVar);
-                            bearingTrack = `{${fpm.isCurrentFlightPlanTemporary() ? "yellow" : "green"}}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
-                            break;
-                    }
-                }
                 // Distance
                 let distance = "";
 
@@ -506,7 +509,7 @@ class CDUFlightPlanPage {
                     timeCell: "----[s-text]",
                     timeColor: "white",
                     fixAnnotation: "",
-                    bearingTrack: pwp.stats.bearingInFp,
+                    bearingTrack: "",
                     isOverfly: false,
                 };
             } else if (marker) {
@@ -693,8 +696,8 @@ class CDUFlightPlanPage {
                 destEFOBCell = "---";
             }
 
-            destText[0] = ["\xa0DEST", "DIST EFOB", isFlying ? "UTC{sp}" : "TIME{sp}{sp}"];
-            destText[1] = [destCell, `${destDistCell} ${destEFOBCell}`, `${destTimeCell}{sp}{sp}`];
+            destText[0] = ["\xa0DEST", "DIST EFOB", isFlying ? "\xa0UTC{sp}{sp}{sp}{sp}" : "TIME{sp}{sp}{sp}{sp}"];
+            destText[1] = [destCell, `{small}${destDistCell}\xa0${destEFOBCell.padStart(4, '\xa0')}{end}`, `{small}${destTimeCell}{end}{sp}{sp}{sp}{sp}`];
 
             addLskAt(5, () => mcdu.getDelaySwitchPage(),
                 () => {
@@ -732,7 +735,7 @@ class CDUFlightPlanPage {
         }
         mcdu.setArrows(allowScroll, allowScroll, true, true);
         scrollText[0][1] = "SPD/ALT\xa0\xa0\xa0";
-        scrollText[0][2] = isFlying ? "\xa0UTC{sp}" : "TIME{sp}{sp}";
+        scrollText[0][2] = isFlying ? "\xa0UTC{sp}{sp}{sp}{sp}" : "TIME{sp}{sp}{sp}{sp}";
         mcdu.setTemplate([
             [`{left}{small}{sp}${showFrom ? "FROM" : "{sp}{sp}{sp}{sp}"}{end}{yellow}{sp}${showTMPY ? "TMPY" : ""}{end}{end}{right}{small}${SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")}{sp}{sp}{sp}{end}{end}`],
             ...scrollText,
@@ -761,16 +764,16 @@ function renderFixTableHeader(isFlying) {
     return [
         `{sp}\xa0FROM`,
         "SPD/ALT\xa0\xa0\xa0",
-        isFlying ? "\xa0UTC{sp}" : "TIME{sp}{sp}"
+        isFlying ? "\xa0UTC{sp}{sp}{sp}{sp}" : "TIME{sp}{sp}{sp}{sp}"
     ];
 }
 
 function renderFixHeader(rowObj, showNm = false, showDist = true, showFix = true) {
     const { fixAnnotation, color, distance, bearingTrack } = rowObj;
     return [
-        `{sp}${(showFix) ? fixAnnotation : ""}`,
-        `${ showDist ? (showNm ? distance + "NM" : distance).padEnd(8, '\xa0') : ""}[color]${color}`,
-        bearingTrack,
+        `${(showFix) ? fixAnnotation.padEnd(7, "\xa0").padStart(8, "\xa0") : ""}`,
+        `${ showDist ? (showNm ? distance + "NM" : distance) : ''}${'\xa0'.repeat(showNm ? 3 : 5)}[color]${color}`,
+        `${bearingTrack}\xa0`,
     ];
 }
 
@@ -780,14 +783,14 @@ function renderFixContent(rowObj, spdRepeat = false, altRepeat = false) {
     return [
         `${ident}${isOverfly ? FMCMainDisplay.ovfyValue : ""}[color]${color}`,
         `{${spdColor}}${spdRepeat ? "\xa0\"\xa0" : speedConstraint}{end}{${altColor}}/${altRepeat ? "\xa0\xa0\xa0\"\xa0\xa0" : altitudeConstraint.altPrefix + altitudeConstraint.alt}{end}[s-text]`,
-        `${timeCell}{sp}{sp}[color]${timeColor}`
+        `${timeCell}{sp}{sp}{sp}{sp}[color]${timeColor}`
     ];
 }
 
 function emptyFplnPage() {
     return [
-        ["", "SPD/ALT", "TIME{sp}{sp}"],
-        ["PPOS[color]green", "---/ -----", "----{sp}{sp}"],
+        ["", "SPD/ALT", "TIME{sp}{sp}{sp}{sp}"],
+        ["PPOS[color]green", "---/ -----", "----{sp}{sp}{sp}{sp}"],
         [""],
         ["---F-PLN DISCONTINUITY---"],
         [""],
@@ -796,8 +799,8 @@ function emptyFplnPage() {
         ["-----NO ALTN F-PLN-------"],
         [""],
         [""],
-        ["\xa0DEST", "DIST EFOB", "TIME{sp}{sp}"],
-        ["------", "---- ----", "----{sp}{sp}"]
+        ["\xa0DEST", "DIST EFOB", "TIME{sp}{sp}{sp}{sp}"],
+        ["------", "---- ----", "----{sp}{sp}{sp}{sp}"]
     ];
 }
 
