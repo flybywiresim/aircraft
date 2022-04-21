@@ -397,7 +397,7 @@ class CDUFlightPlanPage {
                     altColor = "white";
                 }
 
-                if (fpIndex === fpm.getDestinationIndex()) {
+                if (fpIndex !== fpm.getDestinationIndex()) {
                     timeColor = color;
                 } else {
                     timeColor = "white";
