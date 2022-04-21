@@ -70,12 +70,7 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
         const rotationWord = isUsingTrackUpMode ? this.trackWord.get() : this.headingWord.get();
 
         if (rotationWord.isNormalOperation()) {
-            const currentValue = this.ringRotation.get();
-            const newValue = rotationWord.value;
-
-            if (Math.abs(currentValue - newValue) > 0.01) {
-                this.ringRotation.set(newValue);
-            }
+            this.ringRotation.set(rotationWord.value);
         }
     }
 

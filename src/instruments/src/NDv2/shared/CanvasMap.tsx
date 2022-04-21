@@ -2,6 +2,7 @@ import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscrib
 import { EfisVectorsGroup, NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import type { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { distanceTo } from 'msfs-geo';
+import { MathUtils } from '@shared/MathUtils';
 import { FmsSymbolsData } from '../FmsSymbolsPublisher';
 import { MapParameters } from '../../ND/utils/MapParameters';
 import { NDSimvars } from '../NDSimvarPublisher';
@@ -37,12 +38,12 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private setupCallbacks() {
         const sub = this.props.bus.getSubscriber<NDSimvars & FmsSymbolsData & ClockEvents>();
 
-        sub.on('pposLat').whenChangedBy(0.00001).handle((value) => {
+        sub.on('pposLat').whenChanged().handle((value) => {
             this.latitude.set(value);
             this.handleRecomputeMapParameters();
         });
 
-        sub.on('pposLong').whenChangedBy(0.00001).handle((value) => {
+        sub.on('pposLong').whenChanged().handle((value) => {
             this.longitude.set(value);
             this.handleRecomputeMapParameters();
         });
@@ -59,13 +60,13 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             this.handleNewVectors(data);
         });
 
-        sub.on('realTime').whenChangedBy(25).handle(() => {
+        sub.on('realTime').whenChangedBy(16).handle(() => {
             this.handleFrame();
         });
     }
 
     private handleRecomputeMapParameters() {
-        this.mapParams.compute({ lat: this.latitude.get(), long: this.longitude.get() }, 20, 768, this.props.mapRotation.get());
+        this.mapParams.compute({ lat: this.latitude.get(), long: this.longitude.get() }, 20, this.props.width, this.props.mapRotation.get());
     }
 
     private handleNewSymbols(symbols: NdSymbol[]) {
@@ -98,8 +99,23 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         const rx = x + this.props.width / 2;
         const ry = y + this.props.width / 2;
 
-        if (symbol.type & NdSymbolTypeFlags.FlightPlan) {
+        if (symbol.type & NdSymbolTypeFlags.Runway) {
+            this.drawScaledRunway(context, rx, ry, symbol);
+        } else if (symbol.type & (NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.FixInfo)) {
             this.drawWaypoint(context, rx, ry, symbol);
+
+            if (symbol.type & NdSymbolTypeFlags.FixInfo) {
+                if (symbol.radii) {
+                    for (const radius of symbol.radii) {
+                        this.drawFixInfoRadius(context, rx, ry, this.mapParams.nmToPx * radius);
+                    }
+                }
+                if (symbol.radials) {
+                    for (const radial of symbol.radials) {
+                        this.drawFixInfoRadial(context, rx, ry, this.mapParams.rotation(radial));
+                    }
+                }
+            }
         }
     }
 
@@ -120,6 +136,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         drawShape('#000', 3.25);
         drawShape('#0f0', 1.75);
 
+        context.font = '23px Ecam';
+
         if (symbol.constraints) {
             // Circle
 
@@ -138,18 +156,96 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
             // Text
             context.fillStyle = '#ff94ff';
-
             for (let i = 0; i < symbol.constraints.length; i++) {
                 const line = symbol.constraints[i];
 
-                this.drawText(context, x + 13, y + 36 + (19 * i), line, '#ff94ff');
+                this.drawText(context, x + 13, y + 37 + (19 * i), line, '#ff94ff');
             }
         }
 
+        context.lineWidth = 0;
         context.fillStyle = '#0f0';
-        context.font = '23px Ecam';
-        this.drawText(context, x + 13, y + 17, symbol.ident, '#0f0', true);
-        context.fillText(symbol.ident, x + 13, y + 17);
+        // context.fillRect(x + 13, y + 18, 15, 15);
+        // context.translate(x + 13, y + 18);
+        // context.fillText(symbol.ident, 0, 0);
+        // context.resetTransform();
+        // this.drawText(context, Math.round(x + 13), Math.round(y + 18), symbol.databaseId, symbol.ident, '#0f0', true);
+        this.drawText(context, x + 13, y + 18, symbol.ident, '#0f0', true);
+    }
+
+    private drawScaledRunway(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
+        const identIcao = symbol.ident.substring(0, 4);
+        const identRwy = symbol.ident.substring(4);
+
+        // Runway shape
+        const length = symbol.length * this.mapParams.nmToPx;
+        const rotation = this.mapParams.rotation(symbol.direction);
+
+        function drawShape(color: string, lineWidth: number) {
+            context.lineWidth = lineWidth;
+            context.strokeStyle = color;
+            context.beginPath();
+            context.moveTo(x - 5, y);
+            context.lineTo(x - 5, y - length);
+            context.moveTo(x + 5, y);
+            context.lineTo(x + 5, y - length);
+            context.stroke();
+            context.closePath();
+            context.rotate(0);
+        }
+
+        context.translate(x, y);
+        context.rotate(rotation * MathUtils.DEGREES_TO_RADIANS);
+        context.translate(-x, -y);
+
+        drawShape('#000', 3.25);
+        drawShape('#fff', 1.75);
+
+        context.resetTransform();
+    }
+
+    private drawFixInfoRadius(context: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+        context.setLineDash([15, 12]);
+
+        function drawShape(color: string, lineWidth: number) {
+            context.strokeStyle = color;
+            context.lineWidth = lineWidth;
+
+            context.ellipse(cx, cy, r, r, 0, 0, Math.PI * 2);
+
+            context.stroke();
+        }
+
+        drawShape('#000', 3.25);
+        drawShape('#0ff', 1.75);
+
+        context.setLineDash([]);
+    }
+
+    private drawFixInfoRadial(context: CanvasRenderingContext2D, cx: number, cy: number, bearing: number) {
+        context.setLineDash([15, 12]);
+
+        const rotation = this.mapParams.rotation(bearing) * Math.PI / 180;
+        // TODO how long should a piece of string be?
+        const x2 = Math.sin(rotation) * 300;
+        const y2 = -Math.cos(rotation) * 300;
+
+        function drawShape(color: string, lineWidth: number) {
+            context.strokeStyle = color;
+            context.lineWidth = lineWidth;
+
+            context.beginPath();
+            context.moveTo(cx, cy);
+            context.lineTo(x2, y2);
+            context.closePath();
+
+            context.stroke();
+        }
+
+        drawShape('#000', 3.25);
+        drawShape('#0ff', 1.75);
+
+        context.setLineDash([]);
     }
 
     private drawVector(context: CanvasRenderingContext2D, vector: PathVector, group: EfisVectorsGroup) {
@@ -204,14 +300,18 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     }
 
     private drawText(context: CanvasRenderingContext2D, x: number, y: number, text: string, color: string, shadow = false) {
+        context.translate(x, y);
+
         if (shadow) {
             context.strokeStyle = '#000';
             context.lineWidth = 2.25;
-            context.strokeText(text, x, y);
+            context.strokeText(text, 0, 0);
         }
 
         context.fillStyle = color;
-        context.fillText(text, x, y);
+        context.fillText(text, 0, 0);
+
+        context.resetTransform();
     }
 
     render(): VNode | null {
@@ -220,7 +320,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
                 ref={this.canvasRef}
                 width={this.props.width}
                 height={this.props.height}
-                style={`position: absolute; transform: translate(${this.props.x}px, ${this.props.y - this.props.height / 2}px) rotateX(0deg)`}
+                style={`width: ${this.props.width}px; height: ${this.props.height}px; position: absolute; top: 0; left: 0; transform: translate(${-(this.props.width / 2) + this.props.x}px, ${-(this.props.height / 2) + this.props.y}px)`}
             />
         );
     }

@@ -102,7 +102,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <FmMessages bus={this.props.bus} />
                 </svg>
 
-                <CanvasMap bus={this.props.bus} x={0} y={626} width={768} height={768} mapRotation={this.mapRotation} />
+                <CanvasMap bus={this.props.bus} x={384} y={626} width={768} height={768} mapRotation={this.mapRotation} />
             </DisplayUnit>
         );
     }
@@ -139,34 +139,38 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     private readonly trueAirSpeedRef = FSComponent.createRef<SVGTextElement>();
 
+    private readonly groundSpeedVisible = Subject.create(false)
+
+    private readonly trueAirSpeedVisible = Subject.create(false);
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<AdirsSimVars>();
 
-        sub.on('groundSpeed').whenChanged().handle((value) => {
+        sub.on('groundSpeed').whenChangedBy(0.5).handle((value) => {
             const decodedValue = new Arinc429Word(value);
 
             const element = this.groundSpeedRef.instance;
 
             if (decodedValue.isNormalOperation()) {
-                element.style.visibility = 'visible';
+                this.groundSpeedVisible.set(true);
                 element.textContent = Math.round(decodedValue.value).toString();
             } else {
-                element.style.visibility = 'hidden';
+                this.groundSpeedVisible.set(false);
             }
         });
 
-        sub.on('speed').whenChanged().handle((value) => {
+        sub.on('speed').whenChangedBy(0.5).handle((value) => {
             const decodedValue = new Arinc429Word(value);
 
             const element = this.trueAirSpeedRef.instance;
 
             if (decodedValue.isNormalOperation()) {
-                element.style.visibility = 'visible';
+                this.trueAirSpeedVisible.set(true);
                 element.textContent = Math.round(decodedValue.value).toString();
             } else {
-                element.style.visibility = 'hidden';
+                this.trueAirSpeedVisible.set(false);
             }
         });
     }
@@ -213,6 +217,8 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
     private readonly bearingContainerRef = FSComponent.createRef<SVGGElement>();
 
     private readonly bearingRwf = FSComponent.createRef<SVGTextElement>();
+
+    private readonly toWptIdentValue = Subject.create('');
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -266,13 +272,13 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
     private refreshToWptIdent(): void {
         const ident = SimVarString.unpack([this.topWptIdent0, this.topWptIdent1]);
 
-        this.identRef.instance.textContent = ident;
+        this.toWptIdentValue.set(ident);
     }
 
     render(): VNode | null {
         return (
             <Layer x={690} y={25}>
-                <text ref={this.identRef} x={-13} y={0} class="White FontIntermediate EndAlign" />
+                <text ref={this.identRef} x={-13} y={0} class="White FontIntermediate EndAlign">{this.toWptIdentValue}</text>
 
                 <g ref={this.bearingContainerRef}>
                     <text ref={this.bearingRwf} x={54} y={0} class="Green FontIntermediate EndAlign" />
