@@ -267,7 +267,7 @@ class CDUAtcTextFansA {
         mcdu.onRightInput[5] = () => {
             if (CDUAtcTextFansA.CanSendData(messages, data)) {
                 if (mcdu.atsu.atc.currentStation() === "") {
-                    mcdu.addNewMessage(NXSystemMessages.noAtc);
+                    mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const prepMessages = CDUAtcTextFansA.CreateMessages(mcdu, messages, data);
                     if (prepMessages) {
@@ -396,7 +396,7 @@ class CDUAtcTextFansA {
         mcdu.onRightInput[5] = () => {
             if (CDUAtcTextFansA.CanSendData(messages, data)) {
                 if (mcdu.atsu.atc.currentStation() === "") {
-                    mcdu.addNewMessage(NXSystemMessages.noAtc);
+                    mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const prepMessages = CDUAtcTextFansA.CreateMessages(mcdu, messages, data);
                     if (prepMessages) {

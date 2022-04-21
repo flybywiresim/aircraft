@@ -825,6 +825,7 @@ export class ManagedFlightPlan {
      */
     public async buildDeparture(): Promise<void> {
         const legs = [];
+        const legAnnotations = [];
         const origin = this.originAirfield;
 
         const { departureIndex } = this.procedureDetails;
@@ -840,6 +841,12 @@ export class ManagedFlightPlan {
             origin.additionalData.legType = LegType.IF;
             origin.endsInDiscontinuity = true;
             origin.discontinuityCanBeCleared = true;
+            const departure: RawDeparture = airportInfo.departures[departureIndex];
+            if (departure) {
+                origin.additionalData.annotation = departure.name;
+            } else {
+                origin.additionalData.annotation = '';
+            }
         }
 
         // Set origin fix coordinates to runway beginning coordinates
@@ -850,23 +857,27 @@ export class ManagedFlightPlan {
         }
 
         if (departureIndex !== -1 && runwayIndex !== -1) {
-            const runwayTransition = airportInfo.departures[departureIndex].runwayTransitions[runwayIndex];
+            const runwayTransition: RawRunwayTransition = airportInfo.departures[departureIndex].runwayTransitions[runwayIndex];
+            const departure: RawDeparture = airportInfo.departures[departureIndex];
             if (runwayTransition) {
                 legs.push(...runwayTransition.legs);
+                legAnnotations.push(...runwayTransition.legs.map(_ => departure.name));
                 origin.endsInDiscontinuity = false;
                 origin.discontinuityCanBeCleared = undefined;
             }
         }
 
         if (departureIndex !== -1) {
-            legs.push(...airportInfo.departures[departureIndex].commonLegs);
+            const departure: RawDeparture = airportInfo.departures[departureIndex];
+            legs.push(...departure.commonLegs);
+            legAnnotations.push(...departure.commonLegs.map(_ => departure.name));
         }
 
         if (transitionIndex !== -1 && departureIndex !== -1) {
-            // TODO: are enroutetransitions working?
             if (airportInfo.departures[departureIndex].enRouteTransitions.length > 0) {
-                const transition = airportInfo.departures[departureIndex].enRouteTransitions[transitionIndex].legs;
-                legs.push(...transition);
+                const transition: RawEnRouteTransition = airportInfo.departures[departureIndex].enRouteTransitions[transitionIndex];
+                legs.push(...transition.legs);
+                legAnnotations.push(...transition.legs.map(_ => transition.name));
             }
         }
 
@@ -881,7 +892,7 @@ export class ManagedFlightPlan {
 
         if (legs.length > 0 || selectedOriginRunwayIndex !== -1 || (departureIndex !== -1 && runwayIndex !== -1)) {
             segment = this.addSegment(SegmentType.Departure);
-            let procedure = new LegsProcedure(legs, origin, this._parentInstrument);
+            let procedure = new LegsProcedure(legs, origin, this._parentInstrument, undefined, legAnnotations);
 
             const runway: OneWayRunway | null = this.getOriginRunway();
 
@@ -904,8 +915,6 @@ export class ManagedFlightPlan {
 
                     this.addWaypoint(faLeg, undefined, segment.type);
                 }
-
-                procedure = new LegsProcedure(legs, origin, this._parentInstrument);
             }
 
             let waypointIndex = segment.offset;
@@ -941,6 +950,7 @@ export class ManagedFlightPlan {
      */
     public async buildArrival(): Promise<void> {
         const legs = [];
+        const legAnnotations = [];
         const destination = this.destinationAirfield;
 
         const { arrivalIndex } = this.procedureDetails;
@@ -951,22 +961,27 @@ export class ManagedFlightPlan {
         const destinationInfo = destination.infos as AirportInfo;
 
         if (arrivalIndex !== -1 && arrivalTransitionIndex !== -1) {
-            const transition = destinationInfo.arrivals[arrivalIndex].enRouteTransitions[arrivalTransitionIndex];
+            const transition: RawEnRouteTransition = destinationInfo.arrivals[arrivalIndex].enRouteTransitions[arrivalTransitionIndex];
             if (transition !== undefined) {
                 legs.push(...transition.legs);
+                legAnnotations.push(...transition.legs.map(_ => transition.name));
                 // console.log('MFP: buildArrival - pushing transition legs ->', legs);
             }
         }
 
         if (arrivalIndex !== -1) {
-            legs.push(...destinationInfo.arrivals[arrivalIndex].commonLegs);
+            const arrival: RawArrival = destinationInfo.arrivals[arrivalIndex];
+            legs.push(...arrival.commonLegs);
+            legAnnotations.push(...arrival.commonLegs.map(_ => arrival.name));
             // console.log('MFP: buildArrival - pushing STAR legs ->', legs);
         }
 
         if (arrivalIndex !== -1 && arrivalRunwayIndex !== -1) {
-            const runwayTransition = destinationInfo.arrivals[arrivalIndex].runwayTransitions[arrivalRunwayIndex];
+            const arrival: RawArrival = destinationInfo.arrivals[arrivalIndex];
+            const runwayTransition: RawRunwayTransition = destinationInfo.arrivals[arrivalIndex].runwayTransitions[arrivalRunwayIndex];
             if (runwayTransition) {
                 legs.push(...runwayTransition.legs);
+                legAnnotations.push(...runwayTransition.legs.map(_ => arrival.name));
             }
             // console.log('MFP: buildArrival - pushing VIA legs ->', legs);
         }
@@ -979,7 +994,7 @@ export class ManagedFlightPlan {
                 _startIndex = segment.offset;
             }
 
-            const procedure = new LegsProcedure(legs, this.getWaypoint(segment.offset - 1), this._parentInstrument);
+            const procedure = new LegsProcedure(legs, this.getWaypoint(segment.offset - 1), this._parentInstrument, undefined, legAnnotations);
 
             let waypointIndex = segment.offset;
             // console.log('MFP: buildArrival - ADDING WAYPOINTS ------------------------');
@@ -1004,6 +1019,7 @@ export class ManagedFlightPlan {
      */
     public async buildApproach(): Promise<void> {
         const legs = [];
+        const legAnnotations = [];
         const missedLegs = [];
         const destination = this.destinationAirfield;
         this.procedureDetails.approachType = undefined;
@@ -1014,16 +1030,21 @@ export class ManagedFlightPlan {
 
         const destinationInfo = destination.infos as AirportInfo;
 
+        const approach: RawApproach = destinationInfo.approaches[approachIndex];
+        const approachName = approach && approach.approachType !== ApproachType.APPROACH_TYPE_UNKNOWN ? approach.name : '';
+
         if (approachIndex !== -1 && approachTransitionIndex !== -1) {
-            const transition = destinationInfo.approaches[approachIndex].transitions[approachTransitionIndex];
+            const transition: RawApproachTransition = destinationInfo.approaches[approachIndex].transitions[approachTransitionIndex];
             legs.push(...transition.legs);
+            legAnnotations.push(...transition.legs.map(_ => transition.name));
             // console.log('MFP: buildApproach - pushing approachTransition legs ->', legs);
         }
 
         if (approachIndex !== -1) {
-            this.procedureDetails.approachType = destinationInfo.approaches[approachIndex].approachType;
-            legs.push(...destinationInfo.approaches[approachIndex].finalLegs);
-            missedLegs.push(...destinationInfo.approaches[approachIndex].missedLegs);
+            this.procedureDetails.approachType = approach.approachType;
+            legs.push(...approach.finalLegs);
+            legAnnotations.push(...approach.finalLegs.map(_ => approachName));
+            missedLegs.push(...approach.missedLegs);
         }
 
         let { _startIndex, segment } = this.truncateSegment(SegmentType.Approach);
@@ -1045,7 +1066,7 @@ export class ManagedFlightPlan {
 
             const runway: OneWayRunway | null = this.getDestinationRunway();
 
-            const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument, this.procedureDetails.approachType);
+            const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument, this.procedureDetails.approachType, legAnnotations);
 
             if (runway) {
                 procedure.calculateApproachData(runway);
@@ -1089,6 +1110,15 @@ export class ManagedFlightPlan {
                 this.destinationAirfield.legAltitudeDescription = 1;
                 this.destinationAirfield.legAltitude1 = Math.round((runway.elevation * 3.28084 + 50) / 10) * 10;
                 this.destinationAirfield.isRunway = true;
+                if (approachIndex !== -1) {
+                    const lastLeg = approach.finalLegs[approach.finalLegs.length - 1];
+                    if (lastLeg.type === LegType.CF) {
+                        const magCourse = lastLeg.trueDegrees ? A32NX_Util.trueToMagnetic(lastLeg.course, Facilities.getMagVar(runway.beginningCoordinates.lat, runway.beginningCoordinates.long)) : lastLeg.course;
+                        this.destinationAirfield.additionalData.annotation = `C${magCourse.toFixed(0).padStart(3, '0')}°`;
+                    } else {
+                        this.destinationAirfield.additionalData.annotation = approachName;
+                    }
+                }
 
                 // Clear discontinuity before destination, if any
                 const wpBeforeDestIdx = this.waypoints.indexOf(this.destinationAirfield) - 1;

@@ -101,7 +101,7 @@ class CDUAocRequestsAtis {
                             CDUAocRequestsAtis.ShowPage(mcdu, store);
                         }
                     } else {
-                        mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                        mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                     }
                 });
             }
