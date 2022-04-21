@@ -1030,6 +1030,9 @@ export class ManagedFlightPlan {
 
         const destinationInfo = destination.infos as AirportInfo;
 
+        const approach: RawApproach = destinationInfo.approaches[approachIndex];
+        const approachName = approach && approach.approachType !== ApproachType.APPROACH_TYPE_UNKNOWN ? approach.name : '';
+
         if (approachIndex !== -1 && approachTransitionIndex !== -1) {
             const transition: RawApproachTransition = destinationInfo.approaches[approachIndex].transitions[approachTransitionIndex];
             legs.push(...transition.legs);
@@ -1038,10 +1041,9 @@ export class ManagedFlightPlan {
         }
 
         if (approachIndex !== -1) {
-            const approach: RawApproach = destinationInfo.approaches[approachIndex];
             this.procedureDetails.approachType = approach.approachType;
             legs.push(...approach.finalLegs);
-            legAnnotations.push(...approach.finalLegs.map(_ => approach.name));
+            legAnnotations.push(...approach.finalLegs.map(_ => approachName));
             missedLegs.push(...approach.missedLegs);
         }
 
@@ -1109,13 +1111,12 @@ export class ManagedFlightPlan {
                 this.destinationAirfield.legAltitude1 = Math.round((runway.elevation * 3.28084 + 50) / 10) * 10;
                 this.destinationAirfield.isRunway = true;
                 if (approachIndex !== -1) {
-                    const approach = destinationInfo.approaches[approachIndex];
                     const lastLeg = approach.finalLegs[approach.finalLegs.length - 1];
                     if (lastLeg.type === LegType.CF) {
                         const magCourse = lastLeg.trueDegrees ? A32NX_Util.trueToMagnetic(lastLeg.course, Facilities.getMagVar(runway.beginningCoordinates.lat, runway.beginningCoordinates.long)) : lastLeg.course;
                         this.destinationAirfield.additionalData.annotation = `C${magCourse.toFixed(0).padStart(3, '0')}°`;
                     } else {
-                        this.destinationAirfield.additionalData.annotation = approach.name;
+                        this.destinationAirfield.additionalData.annotation = approachName;
                     }
                 }
 
