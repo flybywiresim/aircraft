@@ -27,7 +27,7 @@ class CDUFuelPredPage {
         let zfwColor = "[color]amber";
         mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
             if (value === "") {
-                mcdu.scratchpad.setText(
+                mcdu.setScratchpadText(
                     (isFinite(getZfw()) ? (NXUnits.kgToUser(getZfw() / 1000)).toFixed(1) : "") +
                     "/" +
                     (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));

@@ -41,7 +41,7 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
     const simBriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
     if (!simBriefUserId) {
-        mcdu.addNewMessage(NXFictionalMessages.noSimBriefUser);
+        mcdu.setScratchpadMessage(NXFictionalMessages.noSimBriefUser);
         throw new Error("No SimBrief pilot ID provided");
     }
 
@@ -120,7 +120,7 @@ const insertUplink = (mcdu) => {
 
     const fromTo = `${originIcao}/${destinationIcao}`;
 
-    mcdu.addNewMessage(NXSystemMessages.uplinkInsertInProg);
+    mcdu.setScratchpadMessage(NXSystemMessages.uplinkInsertInProg);
 
     /**
      * AOC ACT F-PLN UPLINK
@@ -141,7 +141,7 @@ const insertUplink = (mcdu) => {
 
             setTimeout(async () => {
                 await uplinkRoute(mcdu);
-                mcdu.addNewMessage(NXSystemMessages.aocActFplnUplink);
+                mcdu.setScratchpadMessage(NXSystemMessages.aocActFplnUplink);
             }, mcdu.getDelayRouteChange());
 
             if (mcdu.page.Current === mcdu.page.InitPageA) {
@@ -180,7 +180,7 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
                     res(true);
                 } else {
                     console.log('AWY/WPT MISMATCH ' + routeIdent + " via " + via);
-                    mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
+                    mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
                     res(false);
                 }
             });
@@ -199,7 +199,7 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
                     }).catch(console.error);
                 } else {
                     console.log('NOT IN DATABASE ' + routeIdent);
-                    mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                    mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                     res(false);
                 }
             });
@@ -213,7 +213,7 @@ const addLatLonWaypoint = async (mcdu, lat, lon) => {
         await mcdu.flightPlanManager.addUserWaypoint(wp);
     } catch (err) {
         if (err instanceof McduMessage) {
-            mcdu.addNewMessage(err);
+            mcdu.setScratchpadMessage(err);
         } else {
             console.error(err);
         }
