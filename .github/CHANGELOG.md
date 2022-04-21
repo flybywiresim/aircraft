@@ -243,6 +243,7 @@
 1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
 1. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
 1. [FMGC] Implemented Airport Button - @patmack14 (Patrick Macken)
+1. [EFB] Presets for Lighting and Aircraft states - @frankkopp (Frank Kopp)
 
 ## 0.7.0
 
