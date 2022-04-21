@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2022 FlyByWire Simulations
+// Copyright (c) 2021-2022 Synaptic Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { GuidanceComponent } from '@fmgc/guidance/GuidanceComponent';
 import { PseudoWaypoint, PseudoWaypointSequencingAction } from '@fmgc/guidance/PsuedoWaypoint';
 import { VnavConfig, VnavDescentMode } from '@fmgc/guidance/vnav/VnavConfig';
@@ -243,7 +248,7 @@ export class PseudoWaypoints implements GuidanceComponent {
         for (let i = wptCount - 1; i > 0; i--) {
             const leg = path.legs.get(i);
 
-            if (!leg) {
+            if (!leg || leg.isNull) {
                 continue;
             }
 
