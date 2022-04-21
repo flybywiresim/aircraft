@@ -1,11 +1,10 @@
 import { NXDataStore } from '@shared/persistence';
-import { setSimVar } from '../../util.js';
 
 type SimVar = [name: string, type: string, defaultValue: string];
 
 function syncSetting(simVar: SimVar, propertyName: string) {
     NXDataStore.getAndSubscribe(propertyName, (prop, value) => {
-        setSimVar(simVar[0], parseInt(value), simVar[1]).catch((e) => console.log(propertyName, e));
+        SimVar.SetSimVarValue(simVar[0], simVar[1], parseInt(value)).catch((e) => console.log(propertyName, e));
     }, simVar[2]);
 }
 
