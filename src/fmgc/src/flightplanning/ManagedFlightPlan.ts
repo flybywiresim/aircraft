@@ -841,6 +841,12 @@ export class ManagedFlightPlan {
             origin.additionalData.legType = LegType.IF;
             origin.endsInDiscontinuity = true;
             origin.discontinuityCanBeCleared = true;
+            const departure: RawDeparture = airportInfo.departures[departureIndex];
+            if (departure) {
+                origin.additionalData.annotation = departure.name;
+            } else {
+                origin.additionalData.annotation = '';
+            }
         }
 
         // Set origin fix coordinates to runway beginning coordinates
