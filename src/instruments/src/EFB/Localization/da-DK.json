@@ -1,0 +1,504 @@
+{
+  "AirTrafficControl": {
+    "Active": "Aktiv",
+    "ChangeATISATCSourceButton": "Skift ATIS/ATC-kilde",
+    "ConnectHoppieACARS": "Forbind Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "Ingen information tilgængelig for denne frekvens",
+    "SelectCorrectATISATCSource": "Denne side er kun tilgængelig, når IVAO eller VATSIM er valgt som ATIS/ATC kilde på indstillingssiden.",
+    "SetActive": "Sæt Aktiv",
+    "SetStandby": "Sæt Standby",
+    "Standby": "Standby",
+    "Title": "Lufttrafik Kontrol"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Er du sikker på, at du vil nulstille alle tjeklister?",
+    "AreYouSureYouWantToResetChecklists": "Er du sikker på, at du vil nulstille alle tjeklister?",
+    "ChecklistResetWarning": "Tjekliste nulstillingsadvarsel",
+    "MarkChecklistAsComplete": "Marker tjekliste som fuldført",
+    "MarkItemAsComplete": "Marker elementet som færdigt",
+    "ProceedToNextChecklist": "Fortsæt til næste tjekliste",
+    "ResetAll": "Nulstil Alle",
+    "ResetChecklist": "Nulstil Tjekliste",
+    "TheLastChecklistIsComplete": "Den sidste tjekliste er færdig",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Der er resterende autofyld tjekliste elementer, der endnu ikke er fuldført",
+    "Title": "Tjeklister"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Ingen relevante tjeklister",
+        "Title": "Tjeklister"
+      },
+      "GoToPage": "Gå til side",
+      "Maintenance": {
+        "NoActiveFailures": "Ingen aktive fejl",
+        "Title": "Vedligeholdelse"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Ingen fastgjorte charts",
+        "Title": "Fastgjorte charts"
+      },
+      "TT": {
+        "RearrangeWidgets": "Omarranger widgets"
+      },
+      "Title": "Vigtig Information",
+      "Weather": {
+        "AirPressure": "Lufttryk",
+        "DewPoint": "Dugpunkt",
+        "IcaoInvalid": "ICAO ugyldig eller ingen METAR tilgængelig",
+        "Loading": "Indlæser",
+        "MetarParsingError": "Modtaget METAR kunne ikke analyseres",
+        "NoIcaoProvided": "Ingen ICAO givet ",
+        "Raw": "Rå",
+        "TT": {
+          "SwitchToIconView": "Skift til Ikonvisning",
+          "SwitchToRawMetarView": "Skift til rå METAR visning"
+        },
+        "Temperature": "Temperatur",
+        "Title": "Vejr",
+        "WindSpeed": "Vindhastighed"
+      }
+    },
+    "Title": "Dashboard",
+    "YourFlight": {
+      "Alternate": "Alternativ",
+      "AverageWind": "Gennemsnitlig vind",
+      "CompanyRoute": "Firma Route",
+      "CostIndex": "Omkostningsindeks",
+      "CruiseAlt": "Cruise Alt.",
+      "ImportSimBriefData": "Importér SimBrief data",
+      "Route": "Rute",
+      "SimBriefDataNotYetLoaded": "SimBrief data endnu ikke indlæst.",
+      "Title": "Din flyvetur",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "Importér SimBrief data",
+      "TT": {
+        "IncreaseFontSize": "Forøg skriftstørrelsen",
+        "ReduceFontSize": "Reducér skriftstørrelsen"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Du har endnu ikke importeret nogen SimBrief data."
+    },
+    "Overview": {
+      "Engines": "Motorer",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "Maksimal Last",
+      "MaximumFuelCapacity": "Maksimal brændstofkapacitet",
+      "MaximumPassengers": "Maksimal Antal Passagerer",
+      "Model": "Model",
+      "Range": "Rækkevidde",
+      "Title": "Oversigt"
+    },
+    "Title": "Dispatch"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Komfort"
+    },
+    "Compact": {
+      "Title": "Kompakt"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Fuld simulering af fejlene nedenfor er endnu ikke garanteret.",
+    "Search": "Søg",
+    "Title": "Fejl"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Midtertank",
+      "Completed": "Gennemført",
+      "Defueling": "Aftankning",
+      "EstimatedDuration": "Estimeret varighed (minutter)",
+      "EstimatedTime": "Estimeret tid",
+      "LeftInnerTank": "Venstre Indvendig tank",
+      "LeftOuterTank": "Venstre Ydre tank",
+      "ReadyToStart": "Klar til start",
+      "Refuel": "Optank",
+      "RefuelTime": "Tankningstid",
+      "Refueling": "Tankning",
+      "RightInnerTank": "Højre Indvendig tank",
+      "RightOuterTank": "Højre Ydre tank",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Flyet skal være \"Cold And Dark\" for at ændre tankningstider",
+        "FillBlockFuelFromSimBrief": "Fyld \"Block Fuel\" fra SimBrief"
+      },
+      "Title": "Brændstof",
+      "TotalFuel": "Total brændstof",
+      "Unavailable": "Ikke tilgængelig"
+    },
+    "Pushback": {
+      "Title": "Pushback"
+    },
+    "Services": {
+      "BaggageTruck": "Bagage Truck",
+      "CateringTruck": "Catering Truck",
+      "DoorAft": "Bagdør",
+      "DoorFwd": "Front Dør",
+      "ExternalPower": "Ekstern Strøm",
+      "FuelTruck": "Brændstof Lastbil",
+      "JetBridge": "Jet Bridge",
+      "Title": "Tjenester"
+    },
+    "Title": "Ground"
+  },
+  "Modals": {
+    "Cancel": "Annuller",
+    "Confirm": "Bekræft ",
+    "Okay": "okay"
+  },
+  "NavigationAndCharts": {
+    "All": "Alle",
+    "Altn": "Altn",
+    "ExitFullscreenMode": "Afslut fuldskærmstilstand",
+    "From": "Fra",
+    "LocalFiles": {
+      "Both": "Begge",
+      "EstablishingConnection": "Opretter forbindelse",
+      "FailedToEstablishConnection": "Det lykkedes ikke at oprette forbindelse.",
+      "FileName": "Filnavn",
+      "Image": "Billede",
+      "Pdf": "PDF",
+      "Retry": "Prøv igen",
+      "Title": "Lokale filer"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Lufthavn findes ikke",
+      "AuthenticateWithNavigraph": "Godkend med Navigraph",
+      "InsufficientEnv": "Utilstrækkelig .env-fil",
+      "IntoYourBrowserAndEnterTheCodeBelow": "ind i din browser og indtast koden nedenfor\n",
+      "NoAirportSelected": "Ingen lufthavn valgt",
+      "ResetNavigraphAuthentication": "Nulstil Navigraph-godkendelse",
+      "ScanTheQrCodeOrOpen": "Scan QR-koden eller Åbn",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Slet",
+      "Edit": "Ændre",
+      "NoItemsFound": "Intet fundet",
+      "SearchPlaceholder": "Søg",
+      "ShowingChartsFromAllProviders": "Viser charts fra alle udbydere",
+      "SortMethods": {
+        "AlphabeticalAZ": "Alfabetisk - A -> Z",
+        "AlphabeticalZA": "Alfabetisk - Z -> A",
+        "FirstAccessed": "Først adgang",
+        "LastAccessed": "Sidst adgang",
+        "None": "Ingen"
+      },
+      "TT": {
+        "ChangeChartProvider": "Skift diagram udbyder",
+        "ChangeChartSortMethod": "Skift diagram sorteringsmetode"
+      },
+      "Title": "Fastgjorte diagrammer",
+      "View": "Visning "
+    },
+    "PleaseWait": "Vent venligst ",
+    "ShowingAllItems": "Viser alle elementer",
+    "TT": {
+      "FitChartToHeight": "Tilpas diagram til højde",
+      "FitChartToWidth": "Tilpas diagram til bredde",
+      "ResetMovement": "Nulstil bevægelse",
+      "RotateLeft45Degrees": "Drej til venstre 45 grader",
+      "RotateRight45Degrees": "Roter højre 45 grader",
+      "ZoomIn": "Zoom ind",
+      "ZoomOut": "Zoom ud"
+    },
+    "ThereAreNoChartsToDisplay": "Der er ingen diagrammer at vise.",
+    "ThereIsNoChartToDisplay": "Der er ikke noget chart at vise",
+    "Title": "Navigation & Charts",
+    "To": "Til"
+  },
+  "Performance": {
+    "Data": "Data",
+    "Landing": {
+      "AirportIcao": "Lufthavn ICAO",
+      "ApproachSpeed": "Approach hastighed",
+      "ApproachSpeedUnit": "kts",
+      "AutoLand": "Autoland",
+      "Calculate": "Beregn",
+      "Clear": "Ryd",
+      "DropDownNo": "Nej",
+      "DropDownYes": "Ja",
+      "FillDataFrom": "Udfyld data fra",
+      "FlapsConfiguration": "Flaps configuration ",
+      "Low": "Lav",
+      "MaximumManual": "Maksimum Manual",
+      "Medium": "Mellem",
+      "OverweightProcedure": "Overvægt Procedure",
+      "Qnh": "QNH",
+      "ReverseThrust": "Reversetrust",
+      "RunwayAltitude": "Højde Runway",
+      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayCondition": "Landingsbane tilstand",
+      "RunwayHeading": "Baneretning",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "Landingsbane LDA",
+      "RunwayLdaUnitFt": "ft",
+      "RunwayLdaUnitMeter": "M",
+      "RunwaySlope": "Landingsbane hældning",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Du skal indtaste en ICAO-kode for at kunne fremsætte en METAR anmodning",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Du skal indlæse SimBrief data for at autoudfylde data"
+      },
+      "Temperature": "Temperatur",
+      "Title": "Landing ",
+      "UnitFt": "ft",
+      "UnitMeter": "M",
+      "Weight": "vægt",
+      "WindDirection": "Vindretning",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Vind størrelsesorden",
+      "WindMagnitudeUnit": "kts"
+    },
+    "SYNC": "Sync",
+    "Title": "Ydelse",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Vinkel",
+        "CurrentAltitude": "Aktuel højde",
+        "Distance": "Afstand",
+        "GroundSpeed": "Ground Speed ",
+        "TargetAltitude": "Target Højde",
+        "Title": "Data",
+        "UnitAngleDegrees": "Grader",
+        "UnitFeet": "Fod",
+        "UnitFtMin": "ft/min",
+        "UnitNM": "NM",
+        "VerticalSpeed": "Lodret hastighed"
+      },
+      "GroundSpeed": {
+        "Add": "Tilføj",
+        "FetchingSpeedFromSimulator": "Henter hastighed fra simulator",
+        "GroundSpeed": "Ground Speed ",
+        "ManualInput": "Manuel input",
+        "MinAltitude": "Min. Højde",
+        "RemoveLast": "Fjern sidste",
+        "Sync": "Sync",
+        "Title": "Ground Speed",
+        "UnitKnots": "knob",
+        "UnitKt": "Kt"
+      },
+      "Result": {
+        "BeforeTarget": "før mål",
+        "DesiredDescentAngle": "Ønsket nedstigning vinkel",
+        "DesiredVerticalSpeed": "Ønsket lodret hastighed",
+        "StartYourDescentAbout": "Start din descend om",
+        "Title": "Resultat"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Desynkroniser input med flyets aktuelle højde",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Synkroniser input med flyets aktuelle højde"
+      },
+      "Title": "Top of descend "
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Annuller",
+      "ColdDark": "Cold & Dark",
+      "ConfirmationDialogMsg": "Bekræft indlæsning af forudindstillet.",
+      "CurrentProcedureStep": "Nuværende Procedure Trin",
+      "PleaseConfirmLoadingOfPreset": "Bekræft indlæsning af forudindstillet.",
+      "ReadyPushback": "Klar til Pushback",
+      "ReadyTakeoff": "Klar til afgang ",
+      "ReadyTaxi": "Klar til taxi",
+      "SelectAPresetToLoad": "Vælg en forudindstilling, der skal indlæses",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Flyet skal være på jorden for at indlæse en forudindstillet.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Flyet skal være på jorden for at indlæse en forudindstillet.",
+      "Title": "Flyets oplysninger ",
+      "Turnaround": "Turnaround"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Flyet skal tændt for at indlæse forudindstillinger",
+      "AircraftNeedsToBePoweredToSavePresets": "Flyet skal være tændt for at gemme forudindstillinger",
+      "LoadPreset": "Indlæs forudindstilling",
+      "LoadingPreset": "Indlæsning af forudindstilling",
+      "NewNameConfirmationDialogMsg": "Bekræft venligst det nye navn for lysforindstillingen",
+      "NoName": "Intet navn",
+      "PleaseConfirmSavingPreset": "Bekræft venligst lagring af forudindstilling",
+      "SavePreset": "Gem forudindstilling",
+      "SavingPreset": "Lagring af forudindstilling",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Vælg en forudindstillet indvendig belysning for at indlæse eller gemme.",
+      "TT": {
+        "AircraftMustBePowered": "Flyet skal være tændt",
+        "ClickTextToChangeThePresetsName": "Klik på Tekst for at ændre forudindstillingsnavnet",
+        "LoadThisPreset": "Indlæs denne forudindstilling",
+        "SaveTheCurrentLightingLevels": "Gem de aktuelle lysniveauer"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "Flyet skal være tændt for at benytte forudindstilling af indvendig belysning",
+      "Title": "Indvendig belysning"
+    },
+    "Title": "Forudindstillinger"
+  },
+  "Pushback": {
+    "Backward": "Bagud",
+    "CallTug": "Kald skubber",
+    "Forward": "Fremad",
+    "Halt": "Stop",
+    "ParkingBrake": {
+      "Off": "Fra",
+      "On": "Til",
+      "Title": "Parkeringsbremse"
+    },
+    "TugDirection": "Skubber Retning",
+    "TugSpeed": "Skubber hastighed"
+  },
+  "Settings": {
+    "About": {
+      "Title": "Om"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Acceleration Højde (ft)",
+      "EngineOutAccelerationHeight": "Accelerationshøjde for motorfejl (ft)",
+      "IsisBaroUnit": "ISIS Baro Unit",
+      "IsisMetricAltitude": "Højde ISIS Metric",
+      "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
+      "PaxSigns": "Passager skilte",
+      "RmpVhfSpacing": "RMP VHF Afstand",
+      "ThrustReductionHeight": "Thrustreduktionshøjde (ft)",
+      "Title": "Muligheder for fly / Pin programmer",
+      "WeightUnit": "Vægt enhed"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC Kilde",
+      "AutomaticallyImportSimBriefData": "Importer SimBrief Data automatisk",
+      "Enable": "Aktiver",
+      "EnableTelex": "Aktiver TELEX",
+      "ErrorReporting": "Fejl Rapportering",
+      "HoppieUserId": "Hoppie-bruger-id",
+      "MetarSource": "METAR Kilde",
+      "OptionalA32nxErrorReporting": "Valgfri A32NX-fejlrapportering",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Kontroller, at du har indtastet dit SimBrief-brugernavn eller pilot-id korrekt.",
+      "SimBriefUsernamePilotId": "SimBrief-brugernavn/pilot-id",
+      "TafSource": "TAF Kilde",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX gør det muligt at sende gratis tekstbeskeder, som vises på FlyByWire live-kortet. Hvis den er aktiveret, offentliggøres flyets positionsdata i hele flyvningens varighed. Meddelelser er offentlige og bliver ikke modereret. DU BRUGER DENNE FUNKTION PÅ EGET ANSVAR. Hvis du vil vide mere om TELEX og de funktioner, det gør det muligt, skal du gå til https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "TELEX Advarsel",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Der opstod en fejl ved validering af dit Hoppie-id",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Du er i stand til at vælge anonym fejlrapportering, der giver os mulighed for at diagnosticere, monitorere og tage os af problemer i et hurtigere tempo. Denne funktion er helt valgfri, og vi vil aldrig indsamle dine personlige data, men kan give dig mulighed for lettere at få support og få de problemer, du støder på rettet til en hurtigere hastighed.",
+      "YourHoppieIdHasBeenRemoved": "Dit Hoppie-ID er blevet fjernet",
+      "YourHoppieIdHasBeenValidated": "Dit Hoppie-ID er blevet valideret",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Din SimBrief PilotID er blevet valideret og opdateret til"
+    },
+    "Audio": {
+      "Announcements": "Meddelelser",
+      "BoardingMusic": "Boarding Musik",
+      "EngineInteriorVolume": "Motor indvendig lydstyrke",
+      "ExteriorMasterVolume": "Udvendig Master lydstyrke",
+      "PassengerAmbience": "Passagerlyde",
+      "PtuAudibleInCockpit": "PTU Hørbar i Cockpittet",
+      "Title": "Lyd",
+      "WindInteriorVolume": "Vind indvendig lydstyrke"
+    },
+    "Fast": "Hurtig",
+    "Instant": "Øjeblikkeligt",
+    "Real": "Rigtig",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS Justerings Tid",
+      "AutofillChecklists": "Tjeklister til autoudfyldning",
+      "BoardingTime": "Boarding tid",
+      "DmcSelfTestTime": "DMC Selv Test Tid",
+      "HomeCockpitMode": "Hjemmecockpit tilstand",
+      "McduFocusTimeout": "MCDU Fokus Timeout (sekunder)",
+      "McduKeyboardInput": "MCDU Tastatur Input",
+      "SeparateTillerFromRudderInputs": "Separat Tiller fra Rudder Inputs",
+      "Title": "Realisme"
+    },
+    "SimOptions": {
+      "Active": "Aktiv",
+      "Auto": "Automatisk",
+      "Calibrate": "Kalibrering",
+      "DefaultBarometerUnit": "Standard Barometer enhed",
+      "DynamicRegistrationDecal": "Dynamisk registrerings mærke",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktiver MCDU Server Forbindelse (Deaktiveres automatisk efter 5 minutter, hvis der ikke oprettes succesfuld forbindelse)",
+      "ExternalMcduServerPort": "Ekstern MCDU serverport",
+      "Hpa": "hPa",
+      "Inactive": "Inaktiv",
+      "LoadOnly": "Indlæs kun",
+      "None": "Ingen",
+      "Off": "Fra",
+      "Save": "Gem",
+      "SyncMsfsFlightPlan": "Synkroniser MSFS-flyveplan",
+      "ThrottleDetents": "Gashåndtagspositioner",
+      "Title": "Sim-instillinger",
+      "UseCalculatedIlsSignals": "Brug beregnede ILS-signaler",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Anvend",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Er du sikker på, at du vil nulstille dine aktuelle throttle indstillinger til deres standardtilstande? Denne handling er irreversibel.",
+      "Axis": "Akse",
+      "Back": "Tilbage",
+      "ConfigureEnd": "Toleranceområde slut",
+      "ConfigureStart": "Toleranceområde start",
+      "CurrentValue": "Aktuel værdi",
+      "Deadband": "Toleranceområde",
+      "ErrorOverlapMsg": "overlapper med",
+      "IndependentAxis": "Uafhængig akse",
+      "LoadFromFile": "Indlæs fra fil",
+      "PleaseEnterAValidDeadzone": "Indtast en gyldig toleranceområde",
+      "ResetToDefaults": "Nulstil til standardindstillinger",
+      "ReverseFull": "Reverse Full",
+      "ReverseIdle": "Reverse Idle",
+      "ReverserOnAxis": "Baglæns på akse",
+      "SaveAndApply": "Gem og anvend",
+      "SetFromThrottle": "Sæt fra throttle",
+      "ThrottleConfigurationReset": "Nulstilling af throttle indstillinger"
+    },
+    "Title": "Indstillinger",
+    "Unrealistic": "Urealistisk",
+    "flyPad": {
+      "AutoBrightness": "Automatisk lysstyrke",
+      "AutomaticallyShowOnscreenKeyboard": "Vis automatisk tastatur på skærmen",
+      "Blue": "Blå",
+      "Brightness": "Lysstyrke",
+      "Dark": "Mørk",
+      "Language": "Sprog",
+      "Light": "Lys",
+      "Local": "Lokal",
+      "LocalTimeFormat": "Lokalt tidsformat",
+      "OnscreenKeyboardLayout": "Tastaturlayout på skærmen",
+      "ShowColoredRawMetar": "Vis farvet rå METAR",
+      "ShowStatusBarFlightProgressIndicator": "Vis statuslinje for flyvningen",
+      "Theme": "Tema",
+      "TimeDisplayed": "Tid vist",
+      "Title": "flyPad",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24h",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC og Lokal"
+    }
+  },
+  "Settings.flyPad.BatteryLifeEnabled": "Batterilevetid simuleret",
+  "StatusBar": {
+    "Apr": "Apr",
+    "Aug": "Aug",
+    "Dec": "Dec",
+    "Feb": "Feb",
+    "Fri": "Fre",
+    "Jan": "Jan",
+    "Jun": "Jun",
+    "Mar": "Mar",
+    "May": "Maj",
+    "Mon": "Man",
+    "Nov": "Nov",
+    "Oct": "Okt",
+    "Sat": "Lør",
+    "Sep": "Sep",
+    "Sun": "Søn",
+    "TT": {
+      "ConnectedToLocalApi": "Tilsluttet til Local-API",
+      "DisconnectedFromLocalApi": "Afbrudt fra Local-API",
+      "TurnOffOrShutdownEfb": "Slå EFB fra eller luk ned"
+    },
+    "Thu": "Tor",
+    "Tue": "Tir",
+    "Wed": "Ons"
+  }
+}
