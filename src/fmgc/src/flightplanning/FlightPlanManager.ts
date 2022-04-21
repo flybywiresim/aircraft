@@ -1523,28 +1523,6 @@ export class FlightPlanManager {
     }
 
     /**
-     * Get the nav frequency for the selected approach in the current flight plan.
-     * @returns The approach nav frequency, if an ILS approach.
-     */
-    public getApproachNavFrequency(): number {
-        const approach = this.getApproach();
-
-        if (approach && approach.name.includes('ILS')) {
-            const destination = this.getDestination();
-            const approachRunway = this.getApproach().runway.trim();
-
-            const aptInfo = destination.infos as AirportInfo;
-            const frequency = aptInfo.namedFrequencies.find((f) => f.name.replace('RW0', '').replace('RW', '').indexOf(approachRunway) !== -1);
-
-            if (frequency) {
-                return frequency.value;
-            }
-        }
-
-        return NaN;
-    }
-
-    /**
      * Gets the index of the approach transition in the current flight plan.
      */
     public getApproachTransitionIndex(): number {

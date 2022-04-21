@@ -15,7 +15,6 @@ import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 import { SimVarString } from '@shared/simvar';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { normaliseApproachName } from '@shared/flightplan';
 import { LnavDriver } from './lnav/LnavDriver';
 import { FlightPlanManager, FlightPlans } from '../flightplanning/FlightPlanManager';
 import { GuidanceManager } from './GuidanceManager';
@@ -145,7 +144,7 @@ export class GuidanceController {
         if (appr && appr.approachType !== ApproachType.APPROACH_TYPE_UNKNOWN) {
             const phase = getFlightPhaseManager().phase;
             if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250)) {
-                apprMsg = normaliseApproachName(appr.name);
+                apprMsg = appr.name;
             }
         }
 

@@ -70,7 +70,7 @@ export class LegsProcedure {
    * @param instrument The instrument that is attached to the flight plan.
    * @param approachType The approach type if this is an approach procedure
    */
-  constructor(private _legs: RawProcedureLeg[], private _previousFix: WayPoint, private _instrument: BaseInstrument, private approachType?: ApproachType) {
+  constructor(private _legs: RawProcedureLeg[], private _previousFix: WayPoint, private _instrument: BaseInstrument, private approachType?: ApproachType, private legAnnotations?: string[]) {
       for (const leg of this._legs) {
           if (this.isIcaoValid(leg.fixIcao)) {
               this._facilitiesToLoad.set(leg.fixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.fixIcao, 2000));
@@ -117,6 +117,7 @@ export class LegsProcedure {
 
       while (!isLegMappable && this._currentIndex < this._legs.length) {
           const currentLeg = this._legs[this._currentIndex];
+          const currentAnnotation = this.legAnnotations[this._currentIndex];
           isLegMappable = true;
 
           // Some procedures don't start with 15 (initial fix) but instead start with a heading and distance from
@@ -227,6 +228,7 @@ export class LegsProcedure {
                   mappedLeg.additionalData.distance = currentLeg.distanceMinutes ? undefined : currentLeg.distance / 1852;
                   mappedLeg.additionalData.distanceInMinutes = currentLeg.distanceMinutes ? currentLeg.distance : undefined;
                   mappedLeg.additionalData.course = currentLeg.trueDegrees ? currentLeg.course : A32NX_Util.magneticToTrue(currentLeg.course, Facilities.getMagVar(mappedLeg.infos.coordinates.lat, mappedLeg.infos.coordinates.long));
+                  mappedLeg.additionalData.annotation = currentAnnotation;
               }
 
               this._currentIndex++;

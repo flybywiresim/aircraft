@@ -818,7 +818,7 @@ class CDUPerformancePage {
         };
 
         const approach = mcdu.flightPlanManager.getApproach();
-        const isILS = approach && approach.name && approach.name.indexOf("ILS") !== -1;
+        const isILS = approach && approach.approachType === ApproachType.APPROACH_TYPE_ILS;
         let radioLabel = "";
         let radioCell = "";
         if (isILS) {
@@ -877,8 +877,7 @@ class CDUPerformancePage {
 
         let titleCell = `${"\xa0".repeat(5)}{${titleColor}}APPR{end}\xa0`;
         if (approach && approach.name) {
-            const apprName = Avionics.Utils.formatRunway(approach.name).replace(/ /g, "");
-            titleCell += `{green}${apprName}{end}` + "\xa0".repeat(24 - 10 - apprName.length);
+            titleCell += `{green}${approach.name}{end}` + "\xa0".repeat(24 - 10 - approach.name.length);
         } else {
             titleCell += "\xa0".repeat(24 - 10);
         }

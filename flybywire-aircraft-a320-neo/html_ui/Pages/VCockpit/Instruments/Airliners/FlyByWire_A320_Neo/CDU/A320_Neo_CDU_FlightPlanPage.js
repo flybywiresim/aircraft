@@ -49,8 +49,8 @@ class CDUFlightPlanPage {
             }
         }, mcdu.PageTimeout.Medium);
 
-        const flightPhase = SimVar.GetSimVarValue("L:A32NX_FWC_FLIGHT_PHASE", "Enum");
-        const isFlying = flightPhase >= 5 && flightPhase <= 7;
+        const flightPhase = mcdu.flightPhaseManager.phase;
+        const isFlying = flightPhase >= FmgcFlightPhases.TAKEOFF && flightPhase != FmgcFlightPhases.DONE;
 
         let showFrom = false;
         let showTMPY = false;
@@ -140,7 +140,31 @@ class CDUFlightPlanPage {
             winI = winI % (waypointsAndMarkers.length);
 
             const {wp, pwp, marker, holdResumeExit, fpIndex} = waypointsAndMarkers[winI];
-            const {fpIndex: prevFpIndex} = (winI > 0) ? waypointsAndMarkers[winI - 1] : { fpIndex: null};
+
+            const wpPrev = fpm.getWaypoint(fpIndex - 1);
+            const wpNext = fpm.getWaypoint(fpIndex + 1);
+            const wpActive = (fpIndex >= fpm.getActiveWaypointIndex());
+
+            // Bearing/Track
+            let bearingTrack = "";
+            const bearingTrackTo = wp ? wp : wpNext;
+            if (wpPrev && bearingTrackTo && bearingTrackTo.additionalData.legType !== 14 /* HM */) {
+                const magVar = Facilities.getMagVar(wpPrev.infos.coordinates.lat, wpPrev.infos.coordinates.long);
+                switch (rowI) {
+                    case 1:
+                        if (fpm.getActiveWaypointIndex() === fpIndex) {
+                            const br = fpm.getBearingToActiveWaypoint();
+                            const bearing = A32NX_Util.trueToMagnetic(br, magVar);
+                            bearingTrack = `BRG${bearing.toFixed(0).toString().padStart(3,"0")}\u00b0`;
+                        }
+                        break;
+                    case 2:
+                        const tr = Avionics.Utils.computeGreatCircleHeading(wpPrev.infos.coordinates, bearingTrackTo.infos.coordinates);
+                        const track = A32NX_Util.trueToMagnetic(tr, magVar);
+                        bearingTrack = `{${fpm.isCurrentFlightPlanTemporary() ? "yellow" : "green"}}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
+                        break;
+                }
+            }
 
             if (wp) {
                 // Waypoint
@@ -148,8 +172,6 @@ class CDUFlightPlanPage {
                     showFrom = true;
                 }
 
-                const wpPrev = fpm.getWaypoint(fpIndex - 1);
-                const wpActive = (fpIndex >= fpm.getActiveWaypointIndex());
                 let ident = wp.ident;
                 const isOverfly = wp.additionalData && wp.additionalData.overfly;
 
@@ -179,50 +201,11 @@ class CDUFlightPlanPage {
                 }
 
                 // Fix Header
-                let fixAnnotation;
-                const currentApproach = fpm.getApproach();
-                if (fpm.getOriginRunway() && wpPrev === fpm.getOrigin() && prevFpIndex === 0) {
-                    fixAnnotation = `${wpPrev.ident.substring(0,3)}${fpm.getOriginRunway().direction.toFixed(0)}`;
-                } else if (fpm.getDepartureProcIndex() !== -1 && fpm.getDepartureWaypoints().some(fix => fix === wp)) {
-                    const departureName = fpm.getDepartureName();
-                    fixAnnotation = departureName ? departureName : undefined;
-                } else if (fpm.getArrivalProcIndex() !== -1 && fpm.getArrivalWaypoints().some(fix => fix === wp)) {
-                    const arrival = fpm.getArrival();
-                    fixAnnotation = arrival ? arrival.name : undefined;
-                } else if (currentApproach !== undefined && fpm.getApproachWaypoints().some(fix => fix === wp)) {
-                    const finalLegs = currentApproach.finalLegs;
-                    if (finalLegs.length > 0) {
-                        const finalLegIdents = finalLegs.map(fl => fl.fixIcao.substring(7, 12).trim());
-                        const validFinalWaypoints = fpm.getApproachWaypoints().filter(wp => finalLegIdents.includes(wp.ident));
-                        if (validFinalWaypoints.length > 0) {
-                            if (fpIndex === fpm.getLastIndexBeforeApproach() + 1 && validFinalWaypoints[0] === wp) {
-                                fixAnnotation = Avionics.Utils.formatRunway(currentApproach.name.replace(/\s+/g, ''));
-                            } else if (fpm.getArrivalProcIndex() !== -1
-                                    && !validFinalWaypoints.some(fix => fpIndex > fpm.getLastIndexBeforeApproach() && fix === wp)) {
-                                const arrival = fpm.getArrival();
-                                fixAnnotation = arrival ? arrival.name : undefined;
-                            }
-                        }
-                    }
-                } else {
-                    // Show airway
-                    let airwayName = "";
-                    if (wpPrev) {
-                        let airway = undefined;
-                        if (wpPrev.infos.airwayOut && wpPrev.infos.airwayOut === wp.infos.airwayIn) {
-                            airway = {name: wpPrev.infos.airwayOut };
-                        } else if (wp.infos.airwayIn && wpPrev.infos.airwayOut === undefined) {
-                            airway = {name: wp.infos.airwayIn };
-                        }
-                        if (airway) {
-                            airwayName = airway.name;
-                        }
-                    }
-                    fixAnnotation = airwayName;
-                }
+                let fixAnnotation = wp.additionalData.annotation;
 
                 if (wp.additionalData) {
                     const magVar = Facilities.getMagVar(wp.infos.coordinates.lat, wp.infos.coordinates.long);
+                    const magCourse = A32NX_Util.trueToMagnetic(wp.additionalData.course, magVar).toFixed(0).padStart(3, '0');
                     // ARINC Leg Types - R1A 610
                     switch (wp.additionalData.legType) {
                         case 1: // AF
@@ -230,8 +213,20 @@ class CDUFlightPlanPage {
                             break;
                         case 2: // CA
                         case 3: // CD
+                        case 4: // CF
                         case 5: // CI
-                            fixAnnotation = `C${wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}\u00b0`;
+                        case 6: // CR
+                        case 9: // FC
+                        case 10: // FD
+                            fixAnnotation = `C${magCourse}\u00b0`;
+                            break;
+                        case 8: // FA
+                            fixAnnotation = `${wp.ident.substring(0, 3)}${magCourse}`;
+                            break;
+                        case 11: // FM
+                            if (wpPrev) {
+                                fixAnnotation = `${wpPrev.ident.substring(0,3)}${magCourse}`;
+                            }
                             break;
                         case 12: // HA
                             ident = wp.legAltitude1.toFixed(0);
@@ -240,54 +235,26 @@ class CDUFlightPlanPage {
                             fixAnnotation = `HOLD ${wp.turnDirection === 1 ? 'L' : 'R'}`;
                             break;
                         case 14: // HM
-                            const magCourse = A32NX_Util.trueToMagnetic(wp.additionalData.course, magVar);
-                            fixAnnotation = `C${magCourse.toFixed(0).padStart(3, '0')}°`;
+                            fixAnnotation = `C${magCourse}°`;
                             break;
-                        case 19: // VA
-                        case 20: // VD
-                        case 21: // VI
-                            fixAnnotation = `H${wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
-                            break;
-                        case 11: // FM
-                            if (wpPrev) {
-                                fixAnnotation = `${wpPrev.ident.substring(0,3)}${wp.additionalData.vectorsCourse.toFixed(0).padStart(3,"0")}`;
-                            }
+                        case 16: // PI
+                            fixAnnotation = `PROC ${wp.turnDirection === 1 ? 'L' : 'R'}`;
                             break;
                         case 17: // RF
                             fixAnnotation = `${("" + Math.round(wp.additionalData.radius)).padStart(2, "0")}\xa0ARC`;
                             break;
+                        case 19: // VA
+                        case 20: // VD
+                        case 21: // VI
+                        case 23: // VR
+                            fixAnnotation = `H${magCourse}\u00b0`;
+                            break;
                         case 22: // VM
-                            fixAnnotation = `H${wp.additionalData.vectorsHeading.toFixed(0).padStart(3,"0")}\u00b0`;
+                            fixAnnotation = `H${magCourse}`;
                             break;
                     }
-                }
-                // Approach Fix Headers
-                if (!fixAnnotation && wpPrev && fpIndex !== fpm.getDestinationIndex()) {
-                    const magVar = Facilities.getMagVar(wpPrev.infos.coordinates.lat, wpPrev.infos.coordinates.long);
-                    const courseBetween = Avionics.Utils.computeGreatCircleHeading(wpPrev.infos.coordinates, wp.infos.coordinates);
-                    const course = A32NX_Util.trueToMagnetic(courseBetween, magVar);
-                    fixAnnotation = `C${course.toFixed(0).padStart(3,"0")}\u00b0`;
                 }
 
-                // Bearing/Track
-                let bearingTrack = "";
-                if (wpPrev && wp.additionalData.legType !== 14 /* HM */) {
-                    const magVar = Facilities.getMagVar(wpPrev.infos.coordinates.lat, wpPrev.infos.coordinates.long);
-                    switch (rowI) {
-                        case 1:
-                            if (fpm.getActiveWaypointIndex() === fpIndex) {
-                                const br = fpm.getBearingToActiveWaypoint();
-                                const bearing = A32NX_Util.trueToMagnetic(br, magVar);
-                                bearingTrack = `BRG${bearing.toFixed(0).toString().padStart(3,"0")}\u00b0`;
-                            }
-                            break;
-                        case 2:
-                            const tr = Avionics.Utils.computeGreatCircleHeading(wpPrev.infos.coordinates, wp.infos.coordinates);
-                            const track = A32NX_Util.trueToMagnetic(tr, magVar);
-                            bearingTrack = `{${fpm.isCurrentFlightPlanTemporary() ? "yellow" : "green"}}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
-                            break;
-                    }
-                }
                 // Distance
                 let distance = "";
 
@@ -430,10 +397,19 @@ class CDUFlightPlanPage {
                     altColor = "white";
                 }
 
-                if (fpIndex === fpm.getDestinationIndex()) {
+                if (fpIndex !== fpm.getDestinationIndex()) {
                     timeColor = color;
                 } else {
                     timeColor = "white";
+                }
+
+                // forced turn indication if next leg is not a course reversal
+                if (wpNext && legTurnIsForced(wpNext) && !legTypeIsCourseReversal(wpNext)) {
+                    if (wpNext.turnDirection === 1) {
+                        ident += "{";
+                    } else {
+                        ident += "}";
+                    }
                 }
 
                 scrollWindow[rowI] = {
@@ -448,7 +424,7 @@ class CDUFlightPlanPage {
                     altitudeConstraint: { alt: altitudeConstraint, altPrefix: altPrefix },
                     timeCell: timeCell,
                     timeColor: timeColor,
-                    fixAnnotation: fixAnnotation,
+                    fixAnnotation: fixAnnotation ? fixAnnotation : "",
                     bearingTrack: bearingTrack,
                     isOverfly: isOverfly,
                 };
@@ -533,7 +509,7 @@ class CDUFlightPlanPage {
                     timeCell: "----[s-text]",
                     timeColor: "white",
                     fixAnnotation: "",
-                    bearingTrack: pwp.stats.bearingInFp,
+                    bearingTrack: "",
                     isOverfly: false,
                 };
             } else if (marker) {
@@ -635,8 +611,8 @@ class CDUFlightPlanPage {
 
             if (cHold) {
                 const { color, immExit, resumeHold, holdSpeed, turnDirection } = scrollWindow[rowI];
-                scrollText[(rowI * 2) - 1] = ['', `{amber}${immExit ? 'IMM\xa0\xa0' : ''}${resumeHold ? 'RESUME\xa0' : ''}{end}`, 'HOLD\xa0\xa0\xa0\xa0\xa0'];
-                scrollText[(rowI * 2)] = [`{${color}}HOLD ${turnDirection}{end}`, `{amber}${immExit ? 'EXIT*' : ''}${resumeHold ? 'HOLD*' : ''}{end}`, `{${color}}{small}{white}SPD{end}\xa0${holdSpeed}{end}{end}`];
+                scrollText[(rowI * 2)] = ['', `{amber}${immExit ? 'IMM\xa0\xa0' : ''}${resumeHold ? 'RESUME\xa0' : ''}{end}`, 'HOLD\xa0\xa0\xa0\xa0\xa0'];
+                scrollText[(rowI * 2) + 1] = [`{${color}}HOLD ${turnDirection}{end}`, `{amber}${immExit ? 'EXIT*' : ''}${resumeHold ? 'HOLD*' : ''}{end}`, `{${color}}{small}{white}SPD{end}\xa0${holdSpeed}{end}{end}`];
             } else if (!cMarker && !cPwp) { // Waypoint
                 if (rowI > 0) {
                     const { marker: pMarker, pwp: pPwp, holdResumeExit: pHold, speedConstraint: pSpd, altitudeConstraint: pAlt} = scrollWindow[rowI - 1];
@@ -661,13 +637,13 @@ class CDUFlightPlanPage {
                     }
                 }
 
-                scrollText[(rowI * 2) - 1] = renderFixHeader(scrollWindow[rowI], showNm, showDist, showFix);
-                scrollText[(rowI * 2)] = renderFixContent(scrollWindow[rowI], spdRpt, altRpt);
+                scrollText[(rowI * 2)] = renderFixHeader(scrollWindow[rowI], showNm, showDist, showFix);
+                scrollText[(rowI * 2) + 1] = renderFixContent(scrollWindow[rowI], spdRpt, altRpt);
 
             // Marker
             } else {
-                scrollText[(rowI * 2) - 1] = [];
-                scrollText[(rowI * 2)] = cMarker;
+                scrollText[(rowI * 2)] = [];
+                scrollText[(rowI * 2) + 1] = cMarker;
             }
         }
 
@@ -720,8 +696,8 @@ class CDUFlightPlanPage {
                 destEFOBCell = "---";
             }
 
-            destText[0] = ["\xa0DEST", "DIST EFOB", isFlying ? "UTC{sp}" : "TIME{sp}{sp}"];
-            destText[1] = [destCell, `${destDistCell} ${destEFOBCell}`, `${destTimeCell}{sp}{sp}`];
+            destText[0] = ["\xa0DEST", "DIST EFOB", isFlying ? "\xa0UTC{sp}{sp}{sp}{sp}" : "TIME{sp}{sp}{sp}{sp}"];
+            destText[1] = [destCell, `{small}${destDistCell}\xa0${destEFOBCell.padStart(4, '\xa0')}{end}`, `{small}${destTimeCell}{end}{sp}{sp}{sp}{sp}`];
 
             addLskAt(5, () => mcdu.getDelaySwitchPage(),
                 () => {
@@ -734,8 +710,8 @@ class CDUFlightPlanPage {
                 });
         }
 
-        // scrollText pad to 9 rows
-        while (scrollText.length < 9) {
+        // scrollText pad to 10 rows
+        while (scrollText.length < 10) {
             scrollText.push([""]);
         }
         const allowScroll = waypointsAndMarkers.length > 4;
@@ -758,9 +734,10 @@ class CDUFlightPlanPage {
             };
         }
         mcdu.setArrows(allowScroll, allowScroll, true, true);
+        scrollText[0][1] = "SPD/ALT\xa0\xa0\xa0";
+        scrollText[0][2] = isFlying ? "\xa0UTC{sp}{sp}{sp}{sp}" : "TIME{sp}{sp}{sp}{sp}";
         mcdu.setTemplate([
             [`{left}{small}{sp}${showFrom ? "FROM" : "{sp}{sp}{sp}{sp}"}{end}{yellow}{sp}${showTMPY ? "TMPY" : ""}{end}{end}{right}{small}${SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC")}{sp}{sp}{sp}{end}{end}`],
-            ["", "SPD/ALT\xa0\xa0\xa0", isFlying ? "\xa0UTC{sp}" : "TIME{sp}{sp}"],
             ...scrollText,
             ...destText
         ]);
@@ -787,16 +764,16 @@ function renderFixTableHeader(isFlying) {
     return [
         `{sp}\xa0FROM`,
         "SPD/ALT\xa0\xa0\xa0",
-        isFlying ? "\xa0UTC{sp}" : "TIME{sp}{sp}"
+        isFlying ? "\xa0UTC{sp}{sp}{sp}{sp}" : "TIME{sp}{sp}{sp}{sp}"
     ];
 }
 
 function renderFixHeader(rowObj, showNm = false, showDist = true, showFix = true) {
     const { fixAnnotation, color, distance, bearingTrack } = rowObj;
     return [
-        `{sp}${(showFix) ? fixAnnotation : ""}`,
-        `${ showDist ? (showNm ? distance + "NM" : distance).padEnd(8, '\xa0') : ""}[color]${color}`,
-        bearingTrack,
+        `${(showFix) ? fixAnnotation.padEnd(7, "\xa0").padStart(8, "\xa0") : ""}`,
+        `${ showDist ? (showNm ? distance + "NM" : distance) : ''}${'\xa0'.repeat(showNm ? 3 : 5)}[color]${color}`,
+        `{${color}}${bearingTrack}{end}\xa0`,
     ];
 }
 
@@ -806,14 +783,14 @@ function renderFixContent(rowObj, spdRepeat = false, altRepeat = false) {
     return [
         `${ident}${isOverfly ? FMCMainDisplay.ovfyValue : ""}[color]${color}`,
         `{${spdColor}}${spdRepeat ? "\xa0\"\xa0" : speedConstraint}{end}{${altColor}}/${altRepeat ? "\xa0\xa0\xa0\"\xa0\xa0" : altitudeConstraint.altPrefix + altitudeConstraint.alt}{end}[s-text]`,
-        `${timeCell}{sp}{sp}[color]${timeColor}`
+        `${timeCell}{sp}{sp}{sp}{sp}[color]${timeColor}`
     ];
 }
 
 function emptyFplnPage() {
     return [
-        ["", "SPD/ALT", "TIME{sp}{sp}"],
-        ["PPOS[color]green", "---/ -----", "----{sp}{sp}"],
+        ["", "SPD/ALT", "TIME{sp}{sp}{sp}{sp}"],
+        ["PPOS[color]green", "---/ -----", "----{sp}{sp}{sp}{sp}"],
         [""],
         ["---F-PLN DISCONTINUITY---"],
         [""],
@@ -822,7 +799,24 @@ function emptyFplnPage() {
         ["-----NO ALTN F-PLN-------"],
         [""],
         [""],
-        ["\xa0DEST", "DIST EFOB", "TIME{sp}{sp}"],
-        ["------", "---- ----", "----{sp}{sp}"]
+        ["\xa0DEST", "DIST EFOB", "TIME{sp}{sp}{sp}{sp}"],
+        ["------", "---- ----", "----{sp}{sp}{sp}{sp}"]
     ];
+}
+
+function legTypeIsCourseReversal(wp) {
+    switch (wp.additionalData.legType) {
+        case 12: // HA
+        case 13: // HF
+        case 14: // HM
+        case 16: // PI
+            return true;
+        default:
+    }
+    return false;
+}
+
+function legTurnIsForced(wp) {
+    // left || right
+    return wp.turnDirection === 1 || wp.turnDirection === 2;
 }

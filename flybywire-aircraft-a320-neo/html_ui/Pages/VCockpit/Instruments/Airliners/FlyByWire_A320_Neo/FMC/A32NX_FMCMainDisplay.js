@@ -2233,7 +2233,7 @@ class FMCMainDisplay extends BaseAirliners {
             // for unknown reasons, the approach returned here doesn't have the approach waypoints which we need
             const appr = this.flightPlanManager.getApproach();
             if (appr) {
-                if (appr.name && appr.name.indexOf('ILS') === -1 && appr.name.indexOf('LOC') === -1) {
+                if (appr.approachType !== ApproachType.APPROACH_TYPE_ILS && appr.approachType !== ApproachType.APPROACH_TYPE_LOC) {
                     return;
                 }
                 airport = this.flightPlanManager.getDestination();
@@ -2267,11 +2267,11 @@ class FMCMainDisplay extends BaseAirliners {
                 // L(eft), C(entre), R(ight), T(true North) are the possible runway designators (ARINC424)
                 // If there are multiple procedures for the same type of approach, an alphanumeric suffix is added to their names (last subpattern)
                 // We are a little more lenient than ARINC424 in an effort to match non-perfect navdata, so we allow dashes, spaces, or nothing before the suffix
-                if (appr && appr.name && appr.finalLegs) {
-                    const match = appr.name.trim().match(/^(ILS|LOC) (RW)?([0-9]{1,2}[LCRT]?)([\s\-]*[A-Z0-9])?$/);
+                if (appr && appr.finalLegs) {
                     if (
-                        match !== null
-                        && Avionics.Utils.formatRunway(match[3]) === Avionics.Utils.formatRunway(runway.designation)
+                        (appr.approachType === ApproachType.APPROACH_TYPE_ILS || appr.approachType === ApproachType.APPROACH_TYPE_LOC)
+                        && appr.runwayNumber === runway.number
+                        && appr.runwayDesignator === runway.designator
                         && appr.finalLegs.length > 0
                     ) {
                         await this.tuneIlsFromApproach(appr);
@@ -2498,6 +2498,7 @@ class FMCMainDisplay extends BaseAirliners {
                                                 waypoint.infos.airwayOut = airwayName;
                                             }
                                             waypoint.additionalData.smartAirway = smartAirway;
+                                            waypoint.additionalData.annotation = airwayName;
                                             console.log("icao:" + icao + " added");
                                             resolve();
                                         }).catch(console.error);

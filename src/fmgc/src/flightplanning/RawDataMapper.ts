@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+import { normaliseApproachName } from '@shared/flightplan';
+
 /**
  * A class for mapping raw facility data to WayPoints.
  */
@@ -50,6 +52,7 @@ export class RawDataMapper {
             alt = 3.28084 * facility.runways.reduce((sum, r) => sum + r.elevation, 0) / facility.runways.length;
 
             info.approaches = facility.approaches;
+            info.approaches.forEach((approach) => approach.name = normaliseApproachName(approach.name));
             info.approaches.forEach((approach) => approach.transitions.forEach((trans) => trans.name = trans.legs[0].fixIcao.substring(7, 12).trim()));
             info.approaches.forEach((approach) => approach.runway = approach.runway.trim());
 

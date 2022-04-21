@@ -52,7 +52,7 @@ class CDUAvailableArrivalsPage {
             let selectedTransitionCellColor = "white";
             const selectedApproach = mcdu.flightPlanManager.getApproach();
             if (selectedApproach && selectedApproach.name) {
-                selectedApproachCell = Avionics.Utils.formatRunway(selectedApproach.name);
+                selectedApproachCell = selectedApproach.name;
                 selectedApproachCellColor = mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1 ? "yellow" : "green";
                 const selectedApproachTransition = selectedApproach.transitions[mcdu.flightPlanManager.getApproachTransitionIndex()];
                 if (selectedApproachTransition) {
@@ -96,7 +96,7 @@ class CDUAvailableArrivalsPage {
                             const magVar = Facilities.getMagVar(runway.latitude, runway.longitude);
                             runwayCourse = Utils.leadingZeros(Math.round(A32NX_Util.trueToMagnetic(runway.direction, magVar)), 3);
                         }
-                        rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name.replace(/\s+/g, '')) + "[color]cyan", "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                        rows[2 * i] = [`{cyan}{${approach.name}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
                         rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(approach.index, () => {
@@ -285,7 +285,7 @@ class CDUAvailableArrivalsPage {
             let selectedViasCellColor = "white";
             const selectedApproach = mcdu.flightPlanManager.getApproach();
             if (selectedApproach) {
-                selectedApproachCell = Avionics.Utils.formatRunway(selectedApproach.name);
+                selectedApproachCell = selectedApproach.name;
                 selectedApproachCellColor = mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1 ? "yellow" : "green";
                 const selectedApproachTransition = selectedApproach.transitions[mcdu.flightPlanManager.getApproachTransitionIndex()];
                 if (selectedApproachTransition) {
