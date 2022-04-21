@@ -2,7 +2,7 @@ class Keypad {
     constructor(mcdu) {
         this._mcdu = mcdu;
         this._keys = {
-            "AIRPORT": () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented),
+            "AIRPORT": () => mcdu.onAirport(),
             "ATC": () => CDUAtcMenu.ShowPage1(mcdu),
             "DATA": () => CDUDataIndexPage.ShowPage1(mcdu),
             "DIR": () => {

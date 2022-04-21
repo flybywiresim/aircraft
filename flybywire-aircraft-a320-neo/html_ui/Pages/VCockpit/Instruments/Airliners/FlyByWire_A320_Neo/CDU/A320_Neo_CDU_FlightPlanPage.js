@@ -715,8 +715,20 @@ class CDUFlightPlanPage {
             scrollText.push([""]);
         }
         const allowScroll = waypointsAndMarkers.length > 4;
-        if (allowScroll) {//scroll only if there are more than 5 points
-            mcdu.onDown = () => {//on page down decrement the page offset.
+        if (allowScroll) {
+            mcdu.onAirport = () => { // Only called if > 4 waypoints
+                const isOnFlightPlanPage = mcdu.page.Current === mcdu.page.FlightPlanPage;
+                const destinationAirportOffset = waypointsAndMarkers.length - 5;
+                const allowCycleToOriginAirport = mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT;
+                if (offset === destinationAirportOffset && allowCycleToOriginAirport && isOnFlightPlanPage) { // only show origin if still on ground
+                    // Go back to top of flight plan page to show origin airport.
+                    offset = 0;
+                } else {
+                    offset = destinationAirportOffset; // if in air only dest is available.
+                }
+                CDUFlightPlanPage.ShowPage(mcdu, offset);
+            };
+            mcdu.onDown = () => { // on page down decrement the page offset.
                 if (offset > 0) { // if page not on top
                     offset--;
                 } else { // else go to the bottom

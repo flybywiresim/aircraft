@@ -189,6 +189,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.setHoldSpeedMessageActive = undefined;
         this.managedProfile = undefined;
         this.speedLimitExceeded = undefined;
+
+        this.onAirport = undefined;
     }
 
     Init() {
@@ -511,6 +513,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.speedLimitExceeded = false;
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
+        this.onAirport = () => { };
 
         // FMGC Message Queue
         this._messageQueue.resetQueue();
