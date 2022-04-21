@@ -11,22 +11,22 @@ interface FailuresOrchestratorContext {
 }
 
 const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
-    [A320Failure.LeftPfdDisplay, 'Captain PFD display'],
-    [A320Failure.RightPfdDisplay, 'F/O PFD display'],
-    [A320Failure.TransformerRectifier1, 'TR 1'],
-    [A320Failure.TransformerRectifier2, 'TR 2'],
-    [A320Failure.TransformerRectifierEssential, 'ESS TR'],
-    [A320Failure.GreenReservoirLeak, 'Green reservoir leak'],
-    [A320Failure.BlueReservoirLeak, 'Blue reservoir leak'],
-    [A320Failure.YellowReservoirLeak, 'Yellow reservoir leak'],
-    [A320Failure.GreenReservoirAirLeak, 'Green reservoir air leak'],
-    [A320Failure.BlueReservoirAirLeak, 'Blue reservoir air leak'],
-    [A320Failure.YellowReservoirAirLeak, 'Yellow reservoir air leak'],
-    [A320Failure.GreenReservoirReturnLeak, 'Green reservoir return leak'],
-    [A320Failure.BlueReservoirReturnLeak, 'Blue reservoir return leak'],
-    [A320Failure.YellowReservoirReturnLeak, 'Yellow reservoir return leak'],
-    [A320Failure.RadioAltimeter1, 'RA 1'],
-    [A320Failure.RadioAltimeter2, 'RA 2'],
+    [31, A320Failure.LeftPfdDisplay, 'Captain PFD display'],
+    [31, A320Failure.RightPfdDisplay, 'F/O PFD display'],
+    [24, A320Failure.TransformerRectifier1, 'TR 1'],
+    [24, A320Failure.TransformerRectifier2, 'TR 2'],
+    [24, A320Failure.TransformerRectifierEssential, 'ESS TR'],
+    [29, A320Failure.GreenReservoirLeak, 'Green reservoir leak'],
+    [29, A320Failure.BlueReservoirLeak, 'Blue reservoir leak'],
+    [29, A320Failure.YellowReservoirLeak, 'Yellow reservoir leak'],
+    [29, A320Failure.GreenReservoirAirLeak, 'Green reservoir air leak'],
+    [29, A320Failure.BlueReservoirAirLeak, 'Blue reservoir air leak'],
+    [29, A320Failure.YellowReservoirAirLeak, 'Yellow reservoir air leak'],
+    [29, A320Failure.GreenReservoirReturnLeak, 'Green reservoir return leak'],
+    [29, A320Failure.BlueReservoirReturnLeak, 'Blue reservoir return leak'],
+    [29, A320Failure.YellowReservoirReturnLeak, 'Yellow reservoir return leak'],
+    [34, A320Failure.RadioAltimeter1, 'RA 1'],
+    [34, A320Failure.RadioAltimeter2, 'RA 2'],
 ]);
 
 const Context = React.createContext<FailuresOrchestratorContext>({

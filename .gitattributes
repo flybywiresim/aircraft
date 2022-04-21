@@ -1,4 +1,9 @@
+
 * text=auto
 
 # Ensure LF for shell files, even on Windows, so that bash inside Docker does not panic
 *.sh text eol=lf
+
+# Ensure the language files update during build are not marked as changed due to different
+# line endings.
+/src/instruments/src/EFB/Localization/*.json text eol=lf

@@ -61,6 +61,7 @@ node_modules
 /src/fdr2csv/*.exe
 /src/fbw/obj/
 /src/fdr2csv/build/
+/src/presets/obj/
 /src/fadec/obj/
 .env
 src/instruments/buildSrc/custom/*
@@ -70,3 +71,5 @@ src/instruments/buildSrc/custom/*
 /flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds
 msfs-avionics-mirror/src/sdk/build/**
 *.tgz
+/src/instruments/src/EFB/Localization/downloaded/*.json
+/.ace/
