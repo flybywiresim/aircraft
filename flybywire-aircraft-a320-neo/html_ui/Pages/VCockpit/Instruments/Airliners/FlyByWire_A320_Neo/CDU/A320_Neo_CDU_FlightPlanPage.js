@@ -773,7 +773,7 @@ function renderFixHeader(rowObj, showNm = false, showDist = true, showFix = true
     return [
         `${(showFix) ? fixAnnotation.padEnd(7, "\xa0").padStart(8, "\xa0") : ""}`,
         `${ showDist ? (showNm ? distance + "NM" : distance) : ''}${'\xa0'.repeat(showNm ? 3 : 5)}[color]${color}`,
-        `${bearingTrack}\xa0`,
+        `{${color}}${bearingTrack}{end}\xa0`,
     ];
 }
 
