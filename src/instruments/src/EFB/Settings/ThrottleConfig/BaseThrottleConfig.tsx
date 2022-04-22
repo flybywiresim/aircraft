@@ -11,7 +11,6 @@ interface BaseThrottleConfigProps {
     mappingsAxisOne: ThrottleSimvar[];
     mappingsAxisTwo?: ThrottleSimvar[];
     activeIndex: number;
-    disabled?: boolean;
 }
 
 export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
@@ -20,8 +19,6 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     mappingsAxisOne,
     mappingsAxisTwo,
     activeIndex,
-    // TODO: Address this unused property
-    disabled,
 }) => {
     const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${throttleNumber}`, 'number', 30);
     const [expertMode, setExpertMode] = useState(false);

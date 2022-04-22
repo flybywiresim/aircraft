@@ -42,12 +42,6 @@ export const RealismPage = () => {
         { name: t('Settings.Real'), setting: 'REAL' },
     ];
 
-    const datalinkTransmissionTimeButtons: (ButtonType & SimVarButton)[] = [
-        { name: t('Settings.Instant'), setting: 'INSTANT', simVarValue: 1 },
-        { name: t('Settings.Fast'), setting: 'FAST', simVarValue: 2 },
-        { name: t('Settings.Real'), setting: 'REAL', simVarValue: 0 },
-    ];
-
     return (
         <SettingsPage name={t('Settings.Realism.Title')}>
             <SettingItem name={t('Settings.Realism.AdirsAlignTime')}>

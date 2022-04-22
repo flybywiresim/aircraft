@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ReactZoomPanPinchState } from 'react-zoom-pan-pinch';
 import { NavigraphBoundingBox } from '../../ChartsApi/Navigraph';
 import { store, RootState } from '../store';
 import { PinSort } from '../../Navigation/Pages/PinnedChartsPage';

@@ -5,13 +5,13 @@ import { usePersistentProperty } from '@instruments/common/persistence';
 
 import { Hoppie } from '@flybywiresim/api-client';
 import { toast } from 'react-toastify';
+import { HoppieConnector } from '@atsu/com/webinterfaces/HoppieConnector';
 import { t } from '../../translation';
 import { useModals, PromptModal } from '../../UtilComponents/Modals/Modals';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
-import { HoppieConnector } from '@atsu/com/webinterfaces/HoppieConnector';
 import {
     SENTRY_CONSENT_KEY,
     SentryConsentState,
