@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { IconArrowRight } from '@tabler/icons';
+import { IconArrowRight, IconTrash } from '@tabler/icons';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
@@ -35,9 +35,10 @@ const getTagColor = (tagName?: string) => {
 interface PinnedChartCardProps {
     pinnedChart: PinnedChart;
     className: string;
+    showDelete: boolean;
 }
 
-export const PinnedChartCard = ({ pinnedChart, className } : PinnedChartCardProps) => {
+export const PinnedChartCard = ({ pinnedChart, className, showDelete } : PinnedChartCardProps) => {
     const dispatch = useAppDispatch();
 
     const {
@@ -56,38 +57,63 @@ export const PinnedChartCard = ({ pinnedChart, className } : PinnedChartCardProp
     const tab = NavigationTab[provider];
 
     return (
-        <Link
-            to={`/navigation/${pathify(provider)}`}
-            className={`relative flex flex-col flex-wrap px-2 pt-3 pb-2 bg-theme-accent rounded-md overflow-hidden ${className}`}
-            onClick={() => {
-                dispatch(editTabProperty({ tab, chartDimensions: { width: undefined, height: undefined } }));
-                dispatch(editTabProperty({ tab, chartLinks: { light: '', dark: '' } }));
-                dispatch(editTabProperty({ tab, chartName }));
-                dispatch(editTabProperty({ tab, chartId }));
-                dispatch(editTabProperty({ tab, searchQuery: title }));
-                dispatch(editTabProperty({ tab, selectedTabIndex: tabIndex }));
-                dispatch(editTabProperty({ tab, chartRotation: 0 }));
-                dispatch(editTabProperty({ tab, currentPage: 1 }));
-                dispatch(setBoundingBox(undefined));
-                dispatch(editPinnedChart({
-                    chartId,
-                    timeAccessed: Date.now(),
-                }));
-                dispatch(editTabProperty({ tab, pagesViewable }));
-                dispatch(setBoundingBox(boundingBox));
-                dispatch(setSelectedNavigationTabIndex(pageIndex));
-                dispatch(setProvider(provider));
-            }}
-        >
-            <div className={`${getTagColor(tag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
-            <h2 className="font-bold break-all">
-                {title}
-                {' '}
-                <div className="inline-block text-theme-unselected">{tag}</div>
-            </h2>
-            <p className="mt-2 font-inter">{subTitle}</p>
-            <IconArrowRight className={`mt-auto ml-auto ${getTagColor(tag)}`} />
-        </Link>
+        <>
+            {showDelete ? (
+                <div
+                    className={`relative cursor-pointer flex flex-col flex-wrap px-2 pt-3 pb-2 rounded-md overflow-hidden ${className}`}
+                    onClick={() => dispatch(removedPinnedChart({ chartId: pinnedChart.chartId }))}
+                >
+                    <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.Delete')}>
+                        <div className="absolute right-0 bottom-0 z-10 text-utility-red ">
+                            <IconTrash className="z-10" size={48} />
+                        </div>
+                    </TooltipWrapper>
+                    <div className="opacity-70">
+                        <div className={`${getTagColor(tag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
+                        <h2 className="font-bold break-all">
+                            {title}
+                            {' '}
+                            <div className="inline-block text-theme-unselected">{tag}</div>
+                        </h2>
+                        <p className="mt-2 font-inter">{subTitle}</p>
+                        <IconArrowRight className={`opacity-0 mt-auto ml-auto ${getTagColor(tag)}`} />
+                    </div>
+                </div>
+            ) : (
+                <Link
+                    to={`/navigation/${pathify(provider)}`}
+                    className={`${showDelete && 'rounded-t-none'} relative flex flex-col flex-wrap px-2 pt-3 pb-2 bg-theme-accent rounded-md overflow-hidden ${className}`}
+                    onClick={() => {
+                        dispatch(editTabProperty({ tab, chartDimensions: { width: undefined, height: undefined } }));
+                        dispatch(editTabProperty({ tab, chartLinks: { light: '', dark: '' } }));
+                        dispatch(editTabProperty({ tab, chartName }));
+                        dispatch(editTabProperty({ tab, chartId }));
+                        dispatch(editTabProperty({ tab, searchQuery: title }));
+                        dispatch(editTabProperty({ tab, selectedTabIndex: tabIndex }));
+                        dispatch(editTabProperty({ tab, chartRotation: 0 }));
+                        dispatch(editTabProperty({ tab, currentPage: 1 }));
+                        dispatch(setBoundingBox(undefined));
+                        dispatch(editPinnedChart({
+                            chartId,
+                            timeAccessed: Date.now(),
+                        }));
+                        dispatch(editTabProperty({ tab, pagesViewable }));
+                        dispatch(setBoundingBox(boundingBox));
+                        dispatch(setSelectedNavigationTabIndex(pageIndex));
+                        dispatch(setProvider(provider));
+                    }}
+                >
+                    <div className={`${getTagColor(tag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
+                    <h2 className="font-bold break-all">
+                        {title}
+                        {' '}
+                        <div className="inline-block text-theme-unselected">{tag}</div>
+                    </h2>
+                    <p className="mt-2 font-inter">{subTitle}</p>
+                    <IconArrowRight className={`mt-auto ml-auto ${getTagColor(tag)}`} />
+                </Link>
+            )}
+        </>
     );
 };
 
@@ -187,6 +213,12 @@ export const PinnedChartUI = () => {
         }
     });
 
+    const removeAll = () => {
+        sortedCharts.forEach((item) => {
+            dispatch(removedPinnedChart({ chartId: item.chartId }));
+        });
+    };
+
     return (
         <div className="p-4 space-y-4 h-content-section-reduced rounded-lg border-2 border-theme-accent">
             <div className="space-y-4">
@@ -243,9 +275,23 @@ export const PinnedChartUI = () => {
                             ))}
                         </SelectGroup>
                     ) : (
-                        <div className="flex flex-grow justify-center items-center py-2 px-6 rounded-md border border-theme-accent">
-                            {t('NavigationAndCharts.PinnedCharts.ShowingChartsFromAllProviders')}
-                        </div>
+                        <>
+                            <div
+                                className="flex flex-grow justify-center items-center py-2 px-6 rounded-md border border-theme-accent"
+                            >
+                                {t('NavigationAndCharts.PinnedCharts.ShowingChartsFromAllProviders')}
+                            </div>
+                            {editMode && (
+                                <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.TT.RemoveAllPinnedCharts')}>
+                                    <div
+                                        className="flex flex-shrink justify-center items-center py-2 px-2 w-min text-center text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red transition duration-100"
+                                        onClick={removeAll}
+                                    >
+                                        <IconTrash />
+                                    </div>
+                                </TooltipWrapper>
+                            )}
+                        </>
                     )}
 
                     <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.TT.ChangeChartSortMethod')}>
@@ -271,19 +317,10 @@ export const PinnedChartUI = () => {
                     <div className="grid grid-cols-4 auto-rows-auto">
                         {sortedCharts.map((pinnedChart, index) => (
                             <div className={`${index && index % 4 !== 0 && 'ml-4'} ${index >= 4 && 'mt-4'} flex flex-col`}>
-                                {editMode && (
-                                    <div
-                                        className="py-3 w-full font-bold text-center text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-t-md border-2 border-utility-red transition duration-100"
-                                        onClick={() => {
-                                            dispatch(removedPinnedChart({ chartId: pinnedChart.chartId }));
-                                        }}
-                                    >
-                                        {t('NavigationAndCharts.PinnedCharts.Delete')}
-                                    </div>
-                                )}
                                 <PinnedChartCard
                                     pinnedChart={pinnedChart}
-                                    className={`${editMode && 'rounded-t-none'} h-full`}
+                                    className="h-full"
+                                    showDelete={editMode}
                                 />
                             </div>
                         ))}

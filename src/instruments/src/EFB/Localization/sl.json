@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "Spremeni ponudnika kart",
-        "ChangeChartSortMethod": "Spreminjanje načina razvrščanja kart"
+        "ChangeChartSortMethod": "Spreminjanje načina razvrščanja kart",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "Pripete karte",
       "View": "Pogled"
