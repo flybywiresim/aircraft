@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "更换航图来源",
-        "ChangeChartSortMethod": "更改航图排序方式"
+        "ChangeChartSortMethod": "更改航图排序方式",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "固定的航图",
       "View": "浏览"

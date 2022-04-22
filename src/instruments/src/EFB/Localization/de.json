@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "Kartenanbieter wechseln",
-        "ChangeChartSortMethod": "Sortiermethode für Karten ändern"
+        "ChangeChartSortMethod": "Sortiermethode für Karten ändern",
+        "RemoveAllPinnedCharts": "Alle angehefteten Karten entfernen"
       },
       "Title": "Angeheftete Karten",
       "View": "Ansicht"

@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "Αλλαγή Παροχέα Γραφήματος",
-        "ChangeChartSortMethod": "Αλλαγή Μεθόδου Ταξινόμησης Γραφήματος"
+        "ChangeChartSortMethod": "Αλλαγή Μεθόδου Ταξινόμησης Γραφήματος",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "Καρφιτσωμένοι Χάρτες",
       "View": "Προβολή"
