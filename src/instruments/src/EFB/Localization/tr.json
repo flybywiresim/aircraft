@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "Harita Sağlayıcısını Değiştir",
-        "ChangeChartSortMethod": "Harita Sıralama Yöntemini Değiştir"
+        "ChangeChartSortMethod": "Harita Sıralama Yöntemini Değiştir",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "Sabitlenmiş Haritalar",
       "View": "Görüntüle"

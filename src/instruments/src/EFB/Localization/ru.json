@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "Изменить поставщика порта",
-        "ChangeChartSortMethod": "Изменить метод сортировки карт"
+        "ChangeChartSortMethod": "Изменить метод сортировки карт",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "Закрепленные карты",
       "View": "Посмотреть"

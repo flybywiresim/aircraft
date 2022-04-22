@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "เปลี่ยนผู้ให้บริการ Chart",
-        "ChangeChartSortMethod": "เปลี่ยนวิธีการจัดเรียง Chart"
+        "ChangeChartSortMethod": "เปลี่ยนวิธีการจัดเรียง Chart",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "Chart ที่ปักหมุด",
       "View": "ดู"
