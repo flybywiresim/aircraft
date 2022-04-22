@@ -815,6 +815,8 @@ class AutopilotLawsModelClass
     real_T kn2ms_Gain;
     real_T Gain_Gain_gn;
     real_T Gain4_Gain_j;
+    real_T Saturation_UpperSat_e5;
+    real_T Saturation_LowerSat_kp;
     real_T Gain3_Gain_c;
     real_T Saturation_UpperSat_e0;
     real_T Saturation_LowerSat_ph;
