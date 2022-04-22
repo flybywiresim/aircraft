@@ -123,14 +123,26 @@ export class DescentPhase extends Phase {
 export class ApproachPhase extends Phase {
     landingConfirmation = new ConfirmationNode(30 * 1000);
 
+    initialCruiseFl = 0;
+
     init() {
         SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0);
+        this.initialCruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
         this.nextPhase = FmgcFlightPhase.Done;
     }
 
     shouldActivateNextPhase(_deltaTime) {
+        const currentCruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
+
         if (SimVar.GetSimVarValue('L:A32NX_FMA_VERTICAL_MODE', 'number') === 41) {
             this.nextPhase = FmgcFlightPhase.GoAround;
+            return true;
+        }
+
+        // this for now only covers the case when a different cruise altitude is
+        // entered and not when the same is entered again
+        if (currentCruiseFl !== this.initialCruiseFl) {
+            this.nextPhase = FmgcFlightPhase.Climb;
             return true;
         }
 
