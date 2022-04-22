@@ -326,7 +326,7 @@
       "SelectAnInteriorLightingPresetToLoadOrSave": "Vælg en forudindstillet indvendig belysning for at indlæse eller gemme.",
       "TT": {
         "AircraftMustBePowered": "Flyet skal være tændt",
-        "ClickTextToChangeThePresetsName": "Klik på Tekst for at ændre forudindstillingsnavnet",
+        "ClickTextToChangeThePresetsName": "Klik på tekst for at ændre det forudindstillede navn",
         "LoadThisPreset": "Indlæs denne forudindstilling",
         "SaveTheCurrentLightingLevels": "Gem de aktuelle lysniveauer"
       },

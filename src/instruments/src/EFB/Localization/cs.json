@@ -1,10 +1,10 @@
 {
   "AirTrafficControl": {
     "Active": "Aktivní",
-    "ChangeATISATCSourceButton": "Change ATIS/ATC source",
+    "ChangeATISATCSourceButton": "Změnit zdroj ATIS/ATC",
     "ConnectHoppieACARS": "Připojit ACARS Hoppie",
     "NoInformationAvailableForThisFrequency": "Pro tuto frekvenci nejsou dostupné žádné informace",
-    "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
+    "SelectCorrectATISATCSource": "Tato stránka je dostupná pouze pokud je v nastavení jako zdroj ATIS/ATC vybrána možnost IVAO nebo VATSIM.",
     "SetActive": "Nastavit aktivní",
     "SetStandby": "Nastavit standby",
     "Standby": "Standby",
@@ -318,7 +318,7 @@
       "AircraftNeedsToBePoweredToSavePresets": "K uložení předvoleb musí být letadlo napájené",
       "LoadPreset": "Načíst předvolbu",
       "LoadingPreset": "Načítání předvolby",
-      "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
+      "NewNameConfirmationDialogMsg": "Prosím potvrďte změnu názvu předvolby osvětlení",
       "NoName": "Bez názvu",
       "PleaseConfirmSavingPreset": "Prosím potvrďte uložení předvolby",
       "SavePreset": "Uložit předvolbu",
@@ -357,7 +357,7 @@
       "EngineOutAccelerationHeight": "Akcelerační výška s vysazeným motorem - EO ACC (ft AGL)",
       "IsisBaroUnit": "ISIS jednotky tlaku",
       "IsisMetricAltitude": "ISIS metrická nadmořská výška",
-      "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
+      "LatLonExtendedFormat": "Formát FMGC Lat/Lon Waypointů",
       "PaxSigns": "Transparenty",
       "RmpVhfSpacing": "RMP VHF rozteč",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
@@ -436,7 +436,7 @@
       "Axis": "Osa",
       "Back": "Zpět",
       "ConfigureEnd": "Horní hranice",
-      "ConfigureStart": "Configure Start",
+      "ConfigureStart": "Spodní hranice",
       "CurrentValue": "Současná hodnota",
       "Deadband": "Rozsah",
       "ErrorOverlapMsg": "se překrývá s",
@@ -495,7 +495,7 @@
     "TT": {
       "ConnectedToLocalApi": "Připojeno k místnímu API",
       "DisconnectedFromLocalApi": "Odpojeno od místního API",
-      "TurnOffOrShutdownEfb": "Vypnout EFB"
+      "TurnOffOrShutdownEfb": "Uspat nebo vypnout EFB"
     },
     "Thu": "Čt",
     "Tue": "Út",
