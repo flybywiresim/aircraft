@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "轉換航圖提供商",
-        "ChangeChartSortMethod": "轉換航圖排序方法"
+        "ChangeChartSortMethod": "轉換航圖排序方法",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "編上航圖",
       "View": "檢視"

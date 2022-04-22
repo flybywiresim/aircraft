@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "Skift diagram udbyder",
-        "ChangeChartSortMethod": "Skift diagram sorteringsmetode"
+        "ChangeChartSortMethod": "Skift diagram sorteringsmetode",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "Fastgjorte diagrammer",
       "View": "Visning "
