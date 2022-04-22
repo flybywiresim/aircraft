@@ -108,6 +108,8 @@ class FlyByWireInterface {
 
   RaBus raBusOutputs[2] = {};
 
+  AdirsBusses adirsBusOutputs[3] = {};
+
   Elac elacs[2] = {Elac(true), Elac(false)};
   ElacDiscreteOutputs elacsDiscreteOutputs[2] = {};
   ElacAnalogOutputs elacsAnalogOutputs[2] = {};
@@ -353,6 +355,37 @@ class FlyByWireInterface {
   // RA bus inputs
   std::unique_ptr<LocalVariable> idRadioAltimeterHeight[2];
 
+  // ADR bus inputs
+  std::unique_ptr<LocalVariable> idAdrAltitudeCorrected[3];
+  std::unique_ptr<LocalVariable> idAdrMach[3];
+  std::unique_ptr<LocalVariable> idAdrAirspeedComputed[3];
+  std::unique_ptr<LocalVariable> idAdrAirspeedTrue[3];
+  std::unique_ptr<LocalVariable> idAdrVerticalSpeed[3];
+  std::unique_ptr<LocalVariable> idAdrAoaCorrected[3];
+
+  // IR bus inputs
+  std::unique_ptr<LocalVariable> idIrLatitude[3];
+  std::unique_ptr<LocalVariable> idIrLongitude[3];
+  std::unique_ptr<LocalVariable> idIrGroundSpeed[3];
+  std::unique_ptr<LocalVariable> idIrWindSpeed[3];
+  std::unique_ptr<LocalVariable> idIrWindDirectionTrue[3];
+  std::unique_ptr<LocalVariable> idIrTrackAngleMagnetic[3];
+  std::unique_ptr<LocalVariable> idIrHeadingMagnetic[3];
+  std::unique_ptr<LocalVariable> idIrDriftAngle[3];
+  std::unique_ptr<LocalVariable> idIrFlightPathAngle[3];
+  std::unique_ptr<LocalVariable> idIrPitchAngle[3];
+  std::unique_ptr<LocalVariable> idIrRollAngle[3];
+  std::unique_ptr<LocalVariable> idIrBodyPitchRate[3];
+  std::unique_ptr<LocalVariable> idIrBodyRollRate[3];
+  std::unique_ptr<LocalVariable> idIrBodyYawRate[3];
+  std::unique_ptr<LocalVariable> idIrBodyLongAccel[3];
+  std::unique_ptr<LocalVariable> idIrBodyLatAccel[3];
+  std::unique_ptr<LocalVariable> idIrBodyNormalAccel[3];
+  std::unique_ptr<LocalVariable> idIrTrackAngleRate[3];
+  std::unique_ptr<LocalVariable> idIrPitchAttRate[3];
+  std::unique_ptr<LocalVariable> idIrRollAttRate[3];
+  std::unique_ptr<LocalVariable> idIrInertialVerticalSpeed[3];
+
   // FCDC bus label Lvars
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord1[2];
   std::unique_ptr<LocalVariable> idFcdcDiscreteWord2[2];
@@ -500,6 +533,8 @@ class FlyByWireInterface {
   bool updateAutothrust(double sampleTime);
 
   bool updateRa(int raIndex);
+
+  bool updateAdirs(int adirsIndex);
 
   bool updateElac(double sampleTime, int elacIndex);
 

@@ -107,6 +107,10 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateRa(i);
   }
 
+  for (int i = 0; i < 3; i++) {
+    result &= updateAdirs(i);
+  }
+
   for (int i = 0; i < 2; i++) {
     result &= updateElac(calculatedSampleTime, i);
   }
@@ -471,6 +475,38 @@ void FlyByWireInterface::setupLocalVariables() {
   for (int i = 0; i < 2; i++) {
     string idString = std::to_string(i + 1);
     idRadioAltimeterHeight[i] = make_unique<LocalVariable>("A32NX_RA_" + idString + "_RADIO_ALTITUDE");
+  }
+
+  for (int i = 0; i < 3; i++) {
+    string idString = std::to_string(i + 1);
+    idAdrAltitudeCorrected[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_ALTITUDE");
+    idAdrMach[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_MACH");
+    idAdrAirspeedComputed[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_COMPUTED_AIRSPEED");
+    idAdrAirspeedTrue[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_TRUE_AIRSPEED");
+    idAdrVerticalSpeed[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_BAROMETRIC_VERTICAL_SPEED");
+    idAdrAoaCorrected[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_ANGLE_OF_ATTACK");
+
+    idIrLatitude[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LATITUDE");
+    idIrLongitude[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_LONGITUDE");
+    idIrGroundSpeed[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_GROUND_SPEED");
+    idIrWindSpeed[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_VELOCITY");
+    idIrWindDirectionTrue[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_WIND_DIRECTION");
+    idIrTrackAngleMagnetic[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_TRACK");
+    idIrHeadingMagnetic[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_HEADING");
+    idIrDriftAngle[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_DRIFT_ANGLE");
+    idIrFlightPathAngle[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_FLIGHT_PATH_ANGLE");
+    idIrPitchAngle[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_PITCH");
+    idIrRollAngle[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_ROLL");
+    idIrBodyPitchRate[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_PITCH_RATE");
+    idIrBodyRollRate[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_ROLL_RATE");
+    idIrBodyYawRate[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_YAW_RATE");
+    idIrBodyLongAccel[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_LONGITUDINAL_ACC");
+    idIrBodyLatAccel[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_LATERAL_ACC");
+    idIrBodyNormalAccel[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_BODY_NORMAL_ACC");
+    idIrTrackAngleRate[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_HEADING_RATE");
+    idIrPitchAttRate[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_PITCH_ATT_RATE");
+    idIrRollAttRate[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_ROLL_ATT_RATE");
+    idIrInertialVerticalSpeed[i] = make_unique<LocalVariable>("A32NX_ADIRS_IR_" + idString + "_VERTICAL_SPEED");
   }
 
   for (int i = 0; i < 2; i++) {
@@ -927,6 +963,39 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
 
 bool FlyByWireInterface::updateRa(int raIndex) {
   raBusOutputs[raIndex].radioHeight.setFromSimVar(idRadioAltimeterHeight[raIndex]->get());
+
+  return true;
+}
+
+bool FlyByWireInterface::updateAdirs(int adirsIndex) {
+  adirsBusOutputs[adirsIndex].adrBus.altitudeCorrected.setFromSimVar(idAdrAltitudeCorrected[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].adrBus.mach.setFromSimVar(idAdrMach[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].adrBus.airspeedComputed.setFromSimVar(idAdrAirspeedComputed[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].adrBus.airspeedTrue.setFromSimVar(idAdrAirspeedTrue[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].adrBus.verticalSpeed.setFromSimVar(idAdrVerticalSpeed[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].adrBus.aoaCorrected.setFromSimVar(idAdrAoaCorrected[adirsIndex]->get());
+
+  adirsBusOutputs[adirsIndex].irsBus.latitude.setFromSimVar(idIrLatitude[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.longitude.setFromSimVar(idIrLongitude[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.groundspeed.setFromSimVar(idIrGroundSpeed[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.windspeed.setFromSimVar(idIrWindSpeed[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.windDirectionTrue.setFromSimVar(idIrWindDirectionTrue[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.trackAngleMagnetic.setFromSimVar(idIrTrackAngleMagnetic[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.headingMagnetic.setFromSimVar(idIrHeadingMagnetic[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.driftAngle.setFromSimVar(idIrDriftAngle[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.flightPathAngle.setFromSimVar(idIrFlightPathAngle[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.pitchAngle.setFromSimVar(idIrPitchAngle[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.rollAngle.setFromSimVar(idIrRollAngle[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.bodyPitchRate.setFromSimVar(idIrBodyPitchRate[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.bodyRollRate.setFromSimVar(idIrBodyRollRate[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.bodyYawRate.setFromSimVar(idIrBodyYawRate[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.bodyLongAccel.setFromSimVar(idIrBodyLongAccel[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.bodyLatAccel.setFromSimVar(idIrBodyLatAccel[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.bodyNormalAccel.setFromSimVar(idIrBodyNormalAccel[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.trackAngleRate.setFromSimVar(idIrTrackAngleRate[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.pitchAttRate.setFromSimVar(idIrPitchAttRate[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.rollAttRate.setFromSimVar(idIrRollAttRate[adirsIndex]->get());
+  adirsBusOutputs[adirsIndex].irsBus.inertialVerticalSpeed.setFromSimVar(idIrInertialVerticalSpeed[adirsIndex]->get());
 
   return true;
 }
