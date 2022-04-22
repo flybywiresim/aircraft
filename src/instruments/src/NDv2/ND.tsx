@@ -2,6 +2,7 @@
 import { FSComponent, DisplayComponent, EventBus, VNode, ClockEvents, Subject } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { SimVarString } from '@shared/simvar';
+import { rangeSettings } from '@shared/NavigationDisplay';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { NDSimvars } from './NDSimvarPublisher';
@@ -10,6 +11,7 @@ import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { FmMessages } from './FmMessages';
 import { Flag } from './shared/Flag';
 import { CanvasMap } from './shared/CanvasMap';
+import { EcpSimVars } from '../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 
 export interface NDProps {
     bus: EventBus,
@@ -34,10 +36,12 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
     private readonly mapRotation = Subject.create(0);
 
+    private readonly mapRangeRadius = Subject.create(0);
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<NDSimvars & ClockEvents>();
+        const sub = this.props.bus.getSubscriber<NDSimvars & EcpSimVars & ClockEvents>();
 
         sub.on('heading').whenChanged().handle((value) => {
             this.magneticHeadingWord.set(new Arinc429Word(value));
@@ -54,6 +58,10 @@ export class NDComponent extends DisplayComponent<NDProps> {
         sub.on('groundTrack').whenChanged().handle((value) => {
             this.trackWord.set(new Arinc429Word(value));
             this.handleMapRotation();
+        });
+
+        sub.on('ndRangeSetting').whenChanged().handle((value) => {
+            this.mapRangeRadius.set(rangeSettings[value]);
         });
     }
 
@@ -102,7 +110,15 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <FmMessages bus={this.props.bus} />
                 </svg>
 
-                <CanvasMap bus={this.props.bus} x={384} y={626} width={768} height={768} mapRotation={this.mapRotation} />
+                <CanvasMap
+                    bus={this.props.bus}
+                    x={384}
+                    y={626}
+                    width={1240}
+                    height={1240}
+                    mapRotation={this.mapRotation}
+                    mapRangeRadius={this.mapRangeRadius}
+                />
             </DisplayUnit>
         );
     }
@@ -188,10 +204,40 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 }
 
 class ApproachIndicator extends DisplayComponent<{ bus: EventBus }> {
+    private apprMessage0: number;
+
+    private apprMessage1: number;
+
+    private readonly approachMessageValue = Subject.create('');
+
+    onAfterRender(node: VNode) {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<NDSimvars & ClockEvents>();
+
+        sub.on('apprMessage0Captain').whenChanged().handle((value) => {
+            this.apprMessage0 = value;
+        });
+
+        sub.on('toWptIdent1Captain').whenChanged().handle((value) => {
+            this.apprMessage1 = value;
+        });
+
+        sub.on('realTime').whenChangedBy(100).handle(() => {
+            this.refreshToWptIdent();
+        });
+    }
+
+    private refreshToWptIdent(): void {
+        const ident = SimVarString.unpack([this.apprMessage0, this.apprMessage1]);
+
+        this.approachMessageValue.set(ident);
+    }
+
     render(): VNode | null {
         return (
             <Layer x={384} y={26}>
-                <text class="Green FontMedium MiddleAlign">ILS18-Y</text>
+                <text class="Green FontMedium MiddleAlign">{this.approachMessageValue}</text>
             </Layer>
         );
     }

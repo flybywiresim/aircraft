@@ -13,6 +13,8 @@ export type NDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     potentiometerFo: number;
     toWptIdent0Captain: number;
     toWptIdent1Captain: number;
+    apprMessage0Captain: number;
+    apprMessage1Captain: number;
     toWptBearingCaptain: Degrees;
     toWptDistanceCaptain: Degrees;
     selectedHeading: Degrees;
@@ -28,6 +30,8 @@ export enum NDVars {
     potentiometerFo = 'LIGHT POTENTIOMETER:91',
     toWptIdent0Captain = 'L:A32NX_EFIS_L_TO_WPT_IDENT_0',
     toWptIdent1Captain = 'L:A32NX_EFIS_L_TO_WPT_IDENT_1',
+    apprMessage0Captain = 'L:A32NX_EFIS_L_APPR_MSG_0',
+    apprMessage1Captain = 'L:A32NX_EFIS_L_APPR_MSG_1',
     toWptBearingCaptain = 'L:A32NX_EFIS_L_TO_WPT_BEARING',
     toWptDistanceCaptain = 'L:A32NX_EFIS_L_TO_WPT_DISTANCE',
     selectedHeading = 'L:A32NX_AUTOPILOT_HEADING_SELECTED',
@@ -47,6 +51,8 @@ export class NDSimvarPublisher extends SimVarPublisher<NDSimvars> {
         ['potentiometerFo', { name: NDVars.potentiometerFo, type: SimVarValueType.Number }],
         ['toWptIdent0Captain', { name: NDVars.toWptIdent0Captain, type: SimVarValueType.Number }],
         ['toWptIdent1Captain', { name: NDVars.toWptIdent1Captain, type: SimVarValueType.Number }],
+        ['apprMessage0Captain', { name: NDVars.apprMessage0Captain, type: SimVarValueType.Number }],
+        ['apprMessage1Captain', { name: NDVars.apprMessage1Captain, type: SimVarValueType.Number }],
         ['toWptBearingCaptain', { name: NDVars.toWptBearingCaptain, type: SimVarValueType.Degree }],
         ['toWptDistanceCaptain', { name: NDVars.toWptDistanceCaptain, type: SimVarValueType.Number }],
         ['selectedHeading', { name: NDVars.selectedHeading, type: SimVarValueType.Degree }],

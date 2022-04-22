@@ -14,6 +14,7 @@ export interface CanvasMapProps {
     width: number,
     height: number,
     mapRotation: Subscribable<number>,
+    mapRangeRadius: Subscribable<number>,
 }
 
 export class CanvasMap extends DisplayComponent<CanvasMapProps> {
@@ -52,6 +53,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             this.handleRecomputeMapParameters();
         });
 
+        this.props.mapRangeRadius.sub(() => {
+            this.handleRecomputeMapParameters();
+        });
+
         sub.on('symbols').handle((data: NdSymbol[]) => {
             this.handleNewSymbols(data);
         });
@@ -66,7 +71,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     }
 
     private handleRecomputeMapParameters() {
-        this.mapParams.compute({ lat: this.latitude.get(), long: this.longitude.get() }, 20, this.props.width, this.props.mapRotation.get());
+        this.mapParams.compute({ lat: this.latitude.get(), long: this.longitude.get() }, this.props.mapRangeRadius.get() * 2, this.props.width, this.props.mapRotation.get());
     }
 
     private handleNewSymbols(symbols: NdSymbol[]) {
@@ -116,6 +121,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
                     }
                 }
             }
+        } else if (symbol.type & NdSymbolTypeFlags.Airport) {
+            this.drawAirport(context, rx, ry, symbol);
         }
     }
 
@@ -133,8 +140,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             context.stroke();
         }
 
+        const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#fff' : '#0f0';
+
         drawShape('#000', 3.25);
-        drawShape('#0f0', 1.75);
+        drawShape(mainColor, 1.75);
 
         context.font = '23px Ecam';
 
@@ -163,14 +172,38 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             }
         }
 
-        context.lineWidth = 0;
-        context.fillStyle = '#0f0';
-        // context.fillRect(x + 13, y + 18, 15, 15);
-        // context.translate(x + 13, y + 18);
-        // context.fillText(symbol.ident, 0, 0);
-        // context.resetTransform();
-        // this.drawText(context, Math.round(x + 13), Math.round(y + 18), symbol.databaseId, symbol.ident, '#0f0', true);
-        this.drawText(context, x + 13, y + 18, symbol.ident, '#0f0', true);
+        this.drawText(context, x + 13, y + 18, symbol.ident, mainColor, true);
+    }
+
+    private drawAirport(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
+        function drawShape(color: string, lineWidth: number) {
+            context.strokeStyle = color;
+            context.lineWidth = lineWidth;
+
+            context.beginPath();
+
+            function drawLine(rotation: number) {
+                context.translate(x, y);
+                context.rotate(rotation * MathUtils.DEGREES_TO_RADIANS);
+                context.translate(-x, -y);
+
+                context.moveTo(x - 12.5, y);
+                context.lineTo(x + 12.5, y);
+            }
+
+            drawLine(0);
+            drawLine(45);
+            drawLine(90);
+            drawLine(135);
+
+            context.resetTransform();
+            context.stroke();
+        }
+
+        drawShape('#000', 3.25);
+        drawShape('#ff94ff', 1.75);
+
+        this.drawText(context, x + 13, y + 18.5, symbol.ident, '#ff94ff', true);
     }
 
     private drawScaledRunway(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
