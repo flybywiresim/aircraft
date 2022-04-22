@@ -30,7 +30,7 @@ const BuildInfoEntry = ({ title, value, underline = 0 }: BuildInfoEntryProps) =>
         <div className="flex flex-row mt-2 font-mono">
             <p>{title + '\u00A0'.repeat(Math.abs(SPACE_BETWEEN - title.length))}</p>
             <p className="ml-4">
-                <span className="underline text-theme-highlight">{first}</span>
+                <span className="text-theme-highlight underline">{first}</span>
                 {last}
             </p>
         </div>
@@ -64,7 +64,9 @@ export const AboutPage = () => {
                         </div>
 
                         <p className="mt-3 text-2xl">
-                            Made with love by contributors in Québec, Germany, the United States, Singapore, Indonesia, New Zealand, Australia, Spain, the United Kingdom, France, the Netherlands, Sweden, and Switzerland!
+                            Made with love by contributors in Québec, Germany, the United States, Singapore, Indonesia,
+                            New Zealand, Australia, Spain, the United Kingdom, France, the Netherlands, Sweden, and
+                            Switzerland!
                         </p>
                     </div>
                 </div>

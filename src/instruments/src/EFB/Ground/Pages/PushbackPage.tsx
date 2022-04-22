@@ -18,14 +18,17 @@ import { applySelected, applySelectedWithSync, StatefulButton } from '../Ground'
 
 export const PushbackPage = () => {
     const [tugDirection, setTugDirection] = useState(0);
-    const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
-    const [pushBackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
     const [planeHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
     const [tugHeading, setTugHeading] = useSplitSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 'K:KEY_TUG_HEADING', 'UINT32', 1000);
     const [pushBack, setPushBack] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 1000);
     const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 1000);
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 1000);
     const [tugActive, setTugActive] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [pushBackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [noseWheelPos, setNoseWheelPos] = useSimVar('L:A32NX_NOSE_WHEEL_POSITION', 'percent over 100');
 
     const getTugHeading = (value: number): number => (tugHeading + value) % 360;
