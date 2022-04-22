@@ -1631,7 +1631,7 @@ void AutopilotLawsModelClass::step()
   Phi2 = AutopilotLaws_P.ktstomps_Gain_f * AutopilotLaws_U.in.data.V_gnd_kn;
   AutopilotLaws_WashoutFilter(AutopilotLaws_P._Gain_m * (AutopilotLaws_P.GStoGS_CAS_Gain_l * Phi2),
     AutopilotLaws_P.WashoutFilter_C1_k, AutopilotLaws_U.in.time.dt, &rtb_Gain1_pj,
-    &AutopilotLaws_DWork.sf_WashoutFilter_nq);
+    &AutopilotLaws_DWork.sf_WashoutFilter_n);
   rtb_Add3_j4 = AutopilotLaws_P.kntoms_Gain_a * AutopilotLaws_U.in.data.V_gnd_kn;
   if (rtb_Add3_j4 > AutopilotLaws_P.Saturation_UpperSat_f) {
     rtb_Add3_j4 = AutopilotLaws_P.Saturation_UpperSat_f;
@@ -2043,16 +2043,21 @@ void AutopilotLawsModelClass::step()
   AutopilotLaws_SpeedProtectionSignalSelection(&AutopilotLaws_Y.out, rtb_Add3_g, std::fmax(-rtb_Y_pf, std::fmin(rtb_Y_pf,
     AutopilotLaws_P.Gain_Gain_c3 * rtb_Add3_g)), rtb_Add3_i, AutopilotLaws_P.Gain_Gain_fnw * rtb_Add3_i, Phi2,
     AutopilotLaws_P.Gain_Gain_ko * Phi2, AutopilotLaws_P.Constant_Value_fov, &rtb_FD_h, &rtb_Cos1_j);
-  rtb_Add3_g = AutopilotLaws_P.Gain2_Gain_m * AutopilotLaws_U.in.data.H_dot_ft_min *
+  rtb_Add3_g = AutopilotLaws_P.Gain2_Gain_o * AutopilotLaws_U.in.data.H_dot_ft_min *
     AutopilotLaws_P.DiscreteDerivativeVariableTs1_Gain;
-  Phi2 = rtb_Add3_g - AutopilotLaws_DWork.Delay_DSTATE_hi;
-  AutopilotLaws_LagFilter(Phi2 / AutopilotLaws_U.in.time.dt, AutopilotLaws_P.LagFilter2_C1_k, AutopilotLaws_U.in.time.dt,
-    &Phi2, &AutopilotLaws_DWork.sf_LagFilter_b);
+  AutopilotLaws_LagFilter((rtb_Add3_g - AutopilotLaws_DWork.Delay_DSTATE_m) / AutopilotLaws_U.in.time.dt,
+    AutopilotLaws_P.LagFilter2_C1_p, AutopilotLaws_U.in.time.dt, &AutopilotLaws_DWork.DelayInput1_DSTATE,
+    &AutopilotLaws_DWork.sf_LagFilter_f);
+  Phi2 = AutopilotLaws_P.kn2ms_Gain * AutopilotLaws_U.in.data.V_gnd_kn;
+  AutopilotLaws_LagFilter(AutopilotLaws_P.Gain_Gain_gn * (std::tan(AutopilotLaws_P.Gain1_Gain_j2 * result[1]) * Phi2),
+    AutopilotLaws_P.LagFilter3_C1, AutopilotLaws_U.in.time.dt, &rtb_Gain1_pj, &AutopilotLaws_DWork.sf_LagFilter_an);
+  AutopilotLaws_LagFilter(AutopilotLaws_DWork.DelayInput1_DSTATE - rtb_Gain1_pj, AutopilotLaws_P.LagFilter4_C1,
+    AutopilotLaws_U.in.time.dt, &Phi2, &AutopilotLaws_DWork.sf_LagFilter_gg);
   AutopilotLaws_WashoutFilter(Phi2, AutopilotLaws_P.WashoutFilter1_C1, AutopilotLaws_U.in.time.dt, &rtb_Gain1_pj,
-    &AutopilotLaws_DWork.sf_WashoutFilter_n);
+    &AutopilotLaws_DWork.sf_WashoutFilter_e);
   rtb_Compare_l = ((AutopilotLaws_U.in.input.vertical_mode == AutopilotLaws_P.CompareGSTRACK_const) ||
                    (AutopilotLaws_U.in.input.vertical_mode == AutopilotLaws_P.CompareGSTRACK2_const));
-  AutopilotLaws_SignalEnablerGSTrack(AutopilotLaws_P.Gain4_Gain_g * rtb_Gain1_pj, rtb_Compare_l, &rtb_Gain1_pj);
+  AutopilotLaws_SignalEnablerGSTrack(AutopilotLaws_P.Gain4_Gain_j * rtb_Gain1_pj, rtb_Compare_l, &rtb_Gain1_pj);
   AutopilotLaws_LagFilter(AutopilotLaws_U.in.data.nav_gs_error_deg, AutopilotLaws_P.LagFilter1_C1_p,
     AutopilotLaws_U.in.time.dt, &rtb_Y_d, &AutopilotLaws_DWork.sf_LagFilter_cu);
   rtb_Add3_i = AutopilotLaws_P.DiscreteDerivativeVariableTs_Gain_o * rtb_Y_d;
@@ -2157,7 +2162,7 @@ void AutopilotLawsModelClass::step()
   }
 
   rtb_Sum1_g = AutopilotLaws_P.Gain_Gain_gr * std::asin(R) * AutopilotLaws_P.Gain1_Gain_ml +
-    AutopilotLaws_P.Gain_Gain_by * std::asin(rtb_Add3_j4) * AutopilotLaws_P.Gain2_Gain_mj;
+    AutopilotLaws_P.Gain_Gain_by * std::asin(rtb_Add3_j4) * AutopilotLaws_P.Gain2_Gain_m;
   rtb_uDLookupTable_m = look1_binlxpw(AutopilotLaws_U.in.data.total_weight_kg, AutopilotLaws_P.uDLookupTable_bp01Data,
     AutopilotLaws_P.uDLookupTable_tableData, 3U);
   rtb_Sum_es = AutopilotLaws_P.Constant1_Value_o0 - rtb_GainTheta;
@@ -2516,7 +2521,7 @@ void AutopilotLawsModelClass::step()
   AutopilotLaws_DWork.Delay_DSTATE_l[99] = rtb_valid;
   AutopilotLaws_DWork.Delay_DSTATE_h5[99] = rtb_valid_d;
   AutopilotLaws_DWork.icLoad = false;
-  AutopilotLaws_DWork.Delay_DSTATE_hi = rtb_Add3_g;
+  AutopilotLaws_DWork.Delay_DSTATE_m = rtb_Add3_g;
   AutopilotLaws_DWork.Delay_DSTATE_n = rtb_Add3_i;
   AutopilotLaws_DWork.icLoad_f = false;
 }
@@ -2535,7 +2540,7 @@ void AutopilotLawsModelClass::initialize()
     }
 
     AutopilotLaws_DWork.icLoad = true;
-    AutopilotLaws_DWork.Delay_DSTATE_hi = AutopilotLaws_P.DiscreteDerivativeVariableTs1_InitialCondition;
+    AutopilotLaws_DWork.Delay_DSTATE_m = AutopilotLaws_P.DiscreteDerivativeVariableTs1_InitialCondition;
     AutopilotLaws_DWork.Delay_DSTATE_n = AutopilotLaws_P.DiscreteDerivativeVariableTs_InitialCondition_c;
     AutopilotLaws_DWork.icLoad_f = true;
     AutopilotLaws_Chart_g_Init(&rtb_out_f);
