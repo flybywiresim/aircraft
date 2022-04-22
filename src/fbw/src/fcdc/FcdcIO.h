@@ -45,15 +45,15 @@ struct FcdcDiscreteOutputs {
 };
 
 struct FcdcBusInputs {
-  ElacOutBus elac1;
+  base_elac_out_bus elac1;
 
-  SecOutBus sec1;
+  base_sec_out_bus sec1;
 
   FcdcBus fcdcOpp;
 
-  ElacOutBus elac2;
+  base_elac_out_bus elac2;
 
-  SecOutBus sec2;
+  base_sec_out_bus sec2;
 
-  SecOutBus sec3;
+  base_sec_out_bus sec3;
 };

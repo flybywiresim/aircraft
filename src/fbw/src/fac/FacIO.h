@@ -85,9 +85,9 @@ struct FacBusInputs {
 
   AdirsBusses adirs3;
 
-  ElacOutBus elac1;
+  base_elac_out_bus elac1;
 
-  ElacOutBus elac2;
+  base_elac_out_bus elac2;
 
   SfccBus sfccOwn;
 

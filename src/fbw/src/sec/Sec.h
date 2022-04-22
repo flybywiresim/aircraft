@@ -3,6 +3,7 @@
 #include "SecIO.h"
 
 #include "../Arinc429.h"
+#include "../model/SecComputer.h"
 #include "../utils/ConfirmNode.h"
 #include "../utils/PulseNode.h"
 #include "../utils/SRFlipFlop.h"
@@ -11,19 +12,17 @@ class Sec {
  public:
   Sec(bool isUnit1, bool isUnit3);
 
-  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered, double surfaceCommands[4]);
+  Sec(const Sec&);
 
-  SecOutBus getBusOutputs();
+  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered);
 
-  SecDiscreteOutputs getDiscreteOutputs();
+  base_sec_out_bus getBusOutputs();
 
-  SecAnalogOutputs getAnalogOutputs();
+  base_sec_discrete_outputs getDiscreteOutputs();
 
-  SecDiscreteInputs discreteInputs;
+  base_sec_analog_outputs getAnalogOutputs();
 
-  SecAnalogInputs analogInputs;
-
-  SecBusInputs busInputs;
+  SecComputer::ExternalInputs_SecComputer_T modelInputs = {};
 
  private:
   void initSelfTests();
@@ -36,88 +35,9 @@ class Sec {
 
   void updateSelfTest(double deltaTime);
 
-  void computeComputerEngagementPitch();
-
-  void computeComputerEngagementRoll();
-
-  void computePitchLawCapability();
-
-  void computeActiveLawsAndFunctionStatus();
-
-  void computeSidestickPriorityLogic(double deltaTime);
-
-  void computeSurfaceSlaving(double surfaceCommands[4]);
-
-  void computeHydraulicSupplyStatus(double deltaTime);
-
-  // Axis engagement vars
-  bool isEngagedInPitch;
-
-  bool canEngageInPitch;
-
-  bool hasPriorityInPitch;
-
-  bool leftElevatorAvail;
-
-  bool rightElevatorAvail;
-
-  bool thsAvail;
-
-  bool isEngagedInRoll;
-
-  bool spoilerPair1Avail;
-
-  bool spoilerPair2Avail;
-
-  // Law capability vars
-  PitchLaw pitchLawCapability;
-
-  PitchLaw activePitchLaw;
-
-  // Sidestick priority
-  bool leftSidestickDisabled;
-
-  bool rightSidestickDisabled;
-
-  bool leftSidestickPriorityLocked;
-
-  bool rightSidestickPriorityLocked;
-
-  PulseNode leftTakeoverPulseNode = PulseNode(true);
-
-  PulseNode rightTakeoverPulseNode = PulseNode(true);
-
-  ConfirmNode leftPriorityLockConfirmNode = ConfirmNode(true, 30);
-
-  ConfirmNode rightPriorityLockConfirmNode = ConfirmNode(true, 30);
-
-  // Surface slaving vars
-  double leftElevPosCommand;
-
-  double rightElevPosCommand;
-
-  double thsPosCommand;
-
-  double leftSpoiler1PosCommand;
-
-  double rightSpoiler1PosCommand;
-
-  double leftSpoiler2PosCommand;
-
-  double rightSpoiler2PosCommand;
-
-  // Hydraulic supply data computation vars
-  bool isYellowHydraulicPowerAvail;
-
-  ConfirmNode yellowAvailConfirm = ConfirmNode(true, 0.5);
-
-  bool isBlueHydraulicPowerAvail;
-
-  ConfirmNode blueAvailConfirm = ConfirmNode(true, 0.5);
-
-  bool isGreenHydraulicPowerAvail;
-
-  ConfirmNode greenAvailConfirm = ConfirmNode(true, 0.5);
+  // Model
+  SecComputer secComputer;
+  sec_outputs modelOutputs;
 
   // Computer Self-monitoring vars
   bool monitoringHealthy;

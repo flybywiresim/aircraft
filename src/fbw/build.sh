@@ -100,6 +100,15 @@ clang++ \
   "${DIR}/src/model/Double2MultiWord.cpp" \
   "${DIR}/src/model/FlyByWire_data.cpp" \
   "${DIR}/src/model/FlyByWire.cpp" \
+  "${DIR}/src/model/ElacComputer_data.cpp" \
+  "${DIR}/src/model/ElacComputer.cpp" \
+  "${DIR}/src/model/SecComputer_data.cpp" \
+  "${DIR}/src/model/SecComputer.cpp" \
+  "${DIR}/src/model/PitchNormalLaw.cpp" \
+  "${DIR}/src/model/PitchAlternateLaw.cpp" \
+  "${DIR}/src/model/PitchDirectLaw.cpp" \
+  "${DIR}/src/model/LateralNormalLaw.cpp" \
+  "${DIR}/src/model/LateralDirectLaw.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
@@ -115,6 +124,7 @@ clang++ \
   "${DIR}/src/FlyByWireInterface.cpp" \
   "${DIR}/src/FlightDataRecorder.cpp" \
   "${DIR}/src/Arinc429.cpp" \
+  "${DIR}/src/Arinc429Utils.cpp" \
   "${DIR}/src/LocalVariable.cpp" \
   "${DIR}/src/InterpolatingLookupTable.cpp" \
   "${DIR}/src/RudderTrimHandler.cpp" \

@@ -132,13 +132,13 @@ struct SecBusInputs {
 
   AdirsBusses adirs2;
 
-  ElacOutBus elac1;
+  base_elac_out_bus elac1;
 
   FcdcBus fcdc1;
 
   FcdcBus fcdc2;
 
-  ElacOutBus elac2;
+  base_elac_out_bus elac2;
 
   SfccBus sfcc1;
 

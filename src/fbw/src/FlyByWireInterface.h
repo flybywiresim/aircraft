@@ -58,6 +58,7 @@ class FlyByWireInterface {
   bool autopilotStateMachineEnabled = false;
   bool autopilotLawsEnabled = false;
   bool flyByWireEnabled = false;
+  int elacDisabled = -1;
   bool autoThrustEnabled = false;
   bool tailstrikeProtectionEnabled = true;
 
@@ -111,14 +112,14 @@ class FlyByWireInterface {
   AdirsBusses adirsBusOutputs[3] = {};
 
   Elac elacs[2] = {Elac(true), Elac(false)};
-  ElacDiscreteOutputs elacsDiscreteOutputs[2] = {};
-  ElacAnalogOutputs elacsAnalogOutputs[2] = {};
-  ElacOutBus elacsBusOutputs[2] = {};
+  base_elac_discrete_outputs elacsDiscreteOutputs[2] = {};
+  base_elac_analog_outputs elacsAnalogOutputs[2] = {};
+  base_elac_out_bus elacsBusOutputs[2] = {};
 
   Sec secs[3] = {Sec(true, false), Sec(false, false), Sec(false, true)};
-  SecDiscreteOutputs secsDiscreteOutputs[3] = {};
-  SecAnalogOutputs secsAnalogOutputs[3] = {};
-  SecOutBus secsBusOutputs[3] = {};
+  base_sec_discrete_outputs secsDiscreteOutputs[3] = {};
+  base_sec_analog_outputs secsAnalogOutputs[3] = {};
+  base_sec_out_bus secsBusOutputs[3] = {};
 
   Fcdc fcdcs[2] = {Fcdc(true), Fcdc(false)};
   FcdcDiscreteOutputs fcdcsDiscreteOutputs[2] = {};

@@ -12,6 +12,8 @@
 #include "../ThrottleAxisMapping.h"
 #include "SimConnectData.h"
 
+#include "../model/ElacComputer_types.h"
+
 class SimConnectInterface {
  public:
   enum Events {
@@ -256,6 +258,18 @@ class SimConnectInterface {
   bool setClientDataFlyByWire(ClientDataFlyByWire output);
   ClientDataFlyByWire getClientDataFlyByWire();
 
+  bool setClientDataElacDiscretes(base_elac_discrete_inputs output);
+  bool setClientDataElacAnalog(base_elac_analog_inputs output);
+  bool setClientDataElacBusInput(base_elac_out_bus output);
+
+  base_elac_discrete_outputs getClientDataElacDiscretesOutput();
+  base_elac_analog_outputs getClientDataElacAnalogsOutput();
+  base_elac_out_bus getClientDataElacBusOutput();
+
+  bool setClientDataAdr(base_adr_bus output);
+  bool setClientDataIr(base_ir_bus output);
+  bool setClientDataRa(base_ra_bus output);
+
   void setLoggingFlightControlsEnabled(bool enabled);
   bool getLoggingFlightControlsEnabled();
 
@@ -274,6 +288,15 @@ class SimConnectInterface {
     AUTOTHRUST,
     FLY_BY_WIRE_INPUT,
     FLY_BY_WIRE,
+    ELAC_DISCRETE_INPUTS,
+    ELAC_ANALOG_INPUTS,
+    ELAC_DISCRETE_OUTPUTS,
+    ELAC_ANALOG_OUTPUTS,
+    ELAC_BUS_OUTPUT,
+    ADR_INPUTS,
+    IR_INPUTS,
+    RA_INPUTS,
+    ELAC_BUS_INPUTS,
     LOCAL_VARIABLES,
     LOCAL_VARIABLES_AUTOTHRUST,
   };
@@ -308,6 +331,10 @@ class SimConnectInterface {
   ClientDataAutopilotLaws clientDataAutopilotLaws = {};
   ClientDataAutothrust clientDataAutothrust = {};
   ClientDataFlyByWire clientDataFlyByWire = {};
+
+  base_elac_discrete_outputs clientDataElacDiscreteOutputs = {};
+  base_elac_analog_outputs clientDataElacAnalogOutputs = {};
+  base_elac_out_bus clientDataElacBusOutputs = {};
 
   // change to non-static when aileron events can be processed via SimConnect
   static double flightControlsKeyChangeAileron;

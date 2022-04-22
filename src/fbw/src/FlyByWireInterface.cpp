@@ -165,10 +165,12 @@ void FlyByWireInterface::loadConfiguration() {
   autopilotLawsEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOPILOT_LAWS_ENABLED", true);
   autoThrustEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOTHRUST_ENABLED", true);
   flyByWireEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "FLY_BY_WIRE_ENABLED", true);
+  elacDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "ELAC_DISABLED", -1);
   tailstrikeProtectionEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "TAILSTRIKE_PROTECTION_ENABLED", false);
 
   // if any model is deactivated we need to enable client data
-  clientDataEnabled = (!autopilotStateMachineEnabled || !autopilotLawsEnabled || !autoThrustEnabled || !flyByWireEnabled);
+  clientDataEnabled =
+      (elacDisabled != -1 || !autopilotStateMachineEnabled || !autopilotLawsEnabled || !autoThrustEnabled || !flyByWireEnabled);
 
   // print configuration into console
   cout << "WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = " << clientDataEnabled << endl;
@@ -964,6 +966,10 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
 bool FlyByWireInterface::updateRa(int raIndex) {
   raBusOutputs[raIndex].radioHeight.setFromSimVar(idRadioAltimeterHeight[raIndex]->get());
 
+  if (clientDataEnabled && raIndex == 0) {
+    simConnectInterface.setClientDataRa(raBusOutputs[raIndex]);
+  }
+
   return true;
 }
 
@@ -997,6 +1003,11 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   adirsBusOutputs[adirsIndex].irsBus.rollAttRate.setFromSimVar(idIrRollAttRate[adirsIndex]->get());
   adirsBusOutputs[adirsIndex].irsBus.inertialVerticalSpeed.setFromSimVar(idIrInertialVerticalSpeed[adirsIndex]->get());
 
+  if (clientDataEnabled && adirsIndex == 0) {
+    simConnectInterface.setClientDataAdr(adirsBusOutputs[adirsIndex].adrBus);
+    simConnectInterface.setClientDataIr(adirsBusOutputs[adirsIndex].irsBus);
+  }
+
   return true;
 }
 
@@ -1005,86 +1016,113 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
 
-  elacs[elacIndex].discreteInputs.groundSpoilersActive1 = secsDiscreteOutputs[0].groundSpoilerOut;
-  elacs[elacIndex].discreteInputs.groundSpoilersActive2 =
-      elacIndex == 0 ? secsDiscreteOutputs[1].groundSpoilerOut : secsDiscreteOutputs[2].groundSpoilerOut;
-  elacs[elacIndex].discreteInputs.oppPitchAxisFailure = !elacsDiscreteOutputs[oppElacIndex].pitchAxisOk;
-  elacs[elacIndex].discreteInputs.ap1Disengaged = true;
-  elacs[elacIndex].discreteInputs.ap2Disengaged = true;
-  elacs[elacIndex].discreteInputs.oppLeftAileronLost = !elacsDiscreteOutputs[oppElacIndex].leftAileronOk;
-  elacs[elacIndex].discreteInputs.oppRightAileronLost = !elacsDiscreteOutputs[oppElacIndex].rightAileronOk;
-  elacs[elacIndex].discreteInputs.fac1YawControlLost = !facsDiscreteOutputs[0].yawDamperNormalLawAvail;
-  elacs[elacIndex].discreteInputs.lgciu1NoseGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
-  elacs[elacIndex].discreteInputs.lgciu2NoseGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
-  elacs[elacIndex].discreteInputs.fac2YawControlLost = !facsDiscreteOutputs[1].yawDamperNormalLawAvail;
-  elacs[elacIndex].discreteInputs.lgciu1RightMainGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
-  elacs[elacIndex].discreteInputs.lgciu2RightMainGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
-  elacs[elacIndex].discreteInputs.lgciu1LeftMainGearPressed = flyByWireOutput.sim.data_computed.on_ground;   // TODO should come from LGCIU
-  elacs[elacIndex].discreteInputs.lgciu2LeftMainGearPressed = flyByWireOutput.sim.data_computed.on_ground;   // TODO should come from LGCIU
-  elacs[elacIndex].discreteInputs.thsMotorFault = false;
-  elacs[elacIndex].discreteInputs.sfcc1SlatsOut = false;
-  elacs[elacIndex].discreteInputs.sfcc2SlatsOut = false;
-  elacs[elacIndex].discreteInputs.lAilServoFailed = idAilFaultLeft[elacIndex]->get();
-  elacs[elacIndex].discreteInputs.lElevServoFailed = idElevFaultLeft[elacIndex]->get();
-  elacs[elacIndex].discreteInputs.rAilServoFailed = idAilFaultRight[elacIndex]->get();
-  elacs[elacIndex].discreteInputs.rElevServoFailed = idElevFaultRight[elacIndex]->get();
-  elacs[elacIndex].discreteInputs.thsOverrideActive = false;
-  elacs[elacIndex].discreteInputs.yellowLowPressure = !idHydYellowPressurised->get();
-  elacs[elacIndex].discreteInputs.captPriorityTakeoverPressed = idCaptPriorityButtonPressed->get();
-  elacs[elacIndex].discreteInputs.foPriorityTakeoverPressed = idFoPriorityButtonPressed->get();
-  elacs[elacIndex].discreteInputs.blueLowPressure = !idHydBluePressurised->get();
-  elacs[elacIndex].discreteInputs.greenLowPressure = !idHydGreenPressurised->get();
-  elacs[elacIndex].discreteInputs.elacEngagedFromSwitch = idElacPushbuttonStatus[elacIndex]->get();
-  elacs[elacIndex].discreteInputs.normalPowersupplyLost = false;
+  elacs[elacIndex].modelInputs.in.time.dt = sampleTime;
+  elacs[elacIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
+  elacs[elacIndex].modelInputs.in.time.monotonic_time = 0;
 
-  elacs[elacIndex].analogInputs.capPitchStickPos = simInput.inputs[0] * 15;
-  elacs[elacIndex].analogInputs.foPitchStickPos = 0;
-  elacs[elacIndex].analogInputs.capRollStickPos = simInput.inputs[1] * 19;
-  elacs[elacIndex].analogInputs.foRollStickPos = 0;
+  elacs[elacIndex].modelInputs.in.sim_data.slew_on = simData.slew_on;
+  elacs[elacIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
+  elacs[elacIndex].modelInputs.in.sim_data.tracking_mode_on_override = false;
+  elacs[elacIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
+
+  elacs[elacIndex].modelInputs.in.discrete_inputs.ground_spoilers_active_1 = secsDiscreteOutputs[0].ground_spoiler_out;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.ground_spoilers_active_2 =
+      elacIndex == 0 ? secsDiscreteOutputs[1].ground_spoiler_out : secsDiscreteOutputs[2].ground_spoiler_out;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.is_unit_1 = elacIndex == 0;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.is_unit_2 = elacIndex == 1;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.opp_axis_pitch_failure = !elacsDiscreteOutputs[oppElacIndex].pitch_axis_ok;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.ap_1_disengaged = true;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.ap_2_disengaged = true;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.opp_left_aileron_lost = !elacsDiscreteOutputs[oppElacIndex].left_aileron_ok;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.opp_right_aileron_lost = !elacsDiscreteOutputs[oppElacIndex].right_aileron_ok;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.fac_1_yaw_control_lost = !facsDiscreteOutputs[0].yawDamperNormalLawAvail;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_1_nose_gear_pressed =
+      flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_2_nose_gear_pressed =
+      flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  elacs[elacIndex].modelInputs.in.discrete_inputs.fac_2_yaw_control_lost = !facsDiscreteOutputs[1].yawDamperNormalLawAvail;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_1_right_main_gear_pressed =
+      flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_2_right_main_gear_pressed =
+      flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_1_left_main_gear_pressed =
+      flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_2_left_main_gear_pressed =
+      flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  elacs[elacIndex].modelInputs.in.discrete_inputs.ths_motor_fault = false;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.sfcc_1_slats_out = false;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.sfcc_2_slats_out = false;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.l_ail_servo_failed = idAilFaultLeft[elacIndex]->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.l_elev_servo_failed = idElevFaultLeft[elacIndex]->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.r_ail_servo_failed = idAilFaultRight[elacIndex]->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.r_elev_servo_failed = idElevFaultRight[elacIndex]->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.ths_override_active = false;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.blue_low_pressure = !idHydBluePressurised->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.elac_engaged_from_switch = idElacPushbuttonStatus[elacIndex]->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.normal_powersupply_lost = false;
+
+  elacs[elacIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
+  elacs[elacIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
+  elacs[elacIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
+  elacs[elacIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
   double leftElevPos = -idLeftElevatorPosition->get();
   double rightElevPos = -idRightElevatorPosition->get();
-  elacs[elacIndex].analogInputs.leftElevatorPos = leftElevPos > 0 ? leftElevPos * 17 : leftElevPos * 30;
-  elacs[elacIndex].analogInputs.rightElevatorPos = rightElevPos > 0 ? rightElevPos * 17 : rightElevPos * 30;
-  elacs[elacIndex].analogInputs.thsPos = 0;
-  elacs[elacIndex].analogInputs.leftAileronPos = idLeftAileronPosition->get() * 25;
-  elacs[elacIndex].analogInputs.rightAileronPos = -idRightAileronPosition->get() * 25;
-  elacs[elacIndex].analogInputs.rudderPedalPos = simInput.inputs[2] * 30;
-  elacs[elacIndex].analogInputs.loadFactorAcc1 = 0;
-  elacs[elacIndex].analogInputs.loadFactorAcc2 = 0;
-  elacs[elacIndex].analogInputs.blueHydPressure = idHydBlueSystemPressure->get();
-  elacs[elacIndex].analogInputs.greenHydPressure = idHydGreenSystemPressure->get();
-  elacs[elacIndex].analogInputs.yellowHydPressure = idHydYellowSystemPressure->get();
+  elacs[elacIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos > 0 ? leftElevPos * 17 : leftElevPos * 30;
+  elacs[elacIndex].modelInputs.in.analog_inputs.right_elevator_pos_deg = rightElevPos > 0 ? rightElevPos * 17 : rightElevPos * 30;
+  elacs[elacIndex].modelInputs.in.analog_inputs.ths_pos_deg = 0;
+  elacs[elacIndex].modelInputs.in.analog_inputs.left_aileron_pos_deg = idLeftAileronPosition->get() * 25;
+  elacs[elacIndex].modelInputs.in.analog_inputs.right_aileron_pos_deg = -idRightAileronPosition->get() * 25;
+  elacs[elacIndex].modelInputs.in.analog_inputs.rudder_pedal_pos = -simInput.inputs[2];
+  elacs[elacIndex].modelInputs.in.analog_inputs.load_factor_acc_1_g = 0;
+  elacs[elacIndex].modelInputs.in.analog_inputs.load_factor_acc_2_g = 0;
+  elacs[elacIndex].modelInputs.in.analog_inputs.blue_hyd_pressure_psi = idHydBlueSystemPressure->get();
+  elacs[elacIndex].modelInputs.in.analog_inputs.green_hyd_pressure_psi = idHydGreenSystemPressure->get();
+  elacs[elacIndex].modelInputs.in.analog_inputs.yellow_hyd_pressure_psi = idHydYellowSystemPressure->get();
 
-  elacs[elacIndex].busInputs.adirs1 = {};
-  elacs[elacIndex].busInputs.adirs2 = {};
-  elacs[elacIndex].busInputs.adirs3 = {};
-  elacs[elacIndex].busInputs.fmgc1 = {};
-  elacs[elacIndex].busInputs.fmgc2 = {};
-  elacs[elacIndex].busInputs.ra1 = raBusOutputs[0];
-  elacs[elacIndex].busInputs.ra2 = raBusOutputs[1];
-  elacs[elacIndex].busInputs.sfcc1 = {};
-  elacs[elacIndex].busInputs.sfcc2 = {};
-  elacs[elacIndex].busInputs.fcdc1 = fcdcsBusOutputs[0];
-  elacs[elacIndex].busInputs.fcdc2 = fcdcsBusOutputs[1];
-  elacs[elacIndex].busInputs.sec1 = secsBusOutputs[0];
-  elacs[elacIndex].busInputs.sec2 = secsBusOutputs[1];
-  elacs[elacIndex].busInputs.elacOpp = elacsBusOutputs[oppElacIndex];
+  elacs[elacIndex].modelInputs.in.bus_inputs.adr_1_bus = adirsBusOutputs[0].adrBus;
+  elacs[elacIndex].modelInputs.in.bus_inputs.adr_2_bus = adirsBusOutputs[1].adrBus;
+  elacs[elacIndex].modelInputs.in.bus_inputs.adr_3_bus = adirsBusOutputs[2].adrBus;
+  elacs[elacIndex].modelInputs.in.bus_inputs.ir_1_bus = adirsBusOutputs[0].irsBus;
+  elacs[elacIndex].modelInputs.in.bus_inputs.ir_2_bus = adirsBusOutputs[1].irsBus;
+  elacs[elacIndex].modelInputs.in.bus_inputs.ir_3_bus = adirsBusOutputs[2].irsBus;
+  // elacs[elacIndex].modelInputs.in.busInputs.fmgc1 = {};
+  // elacs[elacIndex].modelInputs.in.busInputs.fmgc2 = {};
+  elacs[elacIndex].modelInputs.in.bus_inputs.ra_1_bus = raBusOutputs[0];
+  elacs[elacIndex].modelInputs.in.bus_inputs.ra_2_bus = raBusOutputs[1];
+  elacs[elacIndex].modelInputs.in.bus_inputs.sfcc_1_bus = {};
+  elacs[elacIndex].modelInputs.in.bus_inputs.sfcc_2_bus = {};
+  elacs[elacIndex].modelInputs.in.bus_inputs.fcdc_1_bus = fcdcsBusOutputs[0];
+  elacs[elacIndex].modelInputs.in.bus_inputs.fcdc_2_bus = fcdcsBusOutputs[1];
+  elacs[elacIndex].modelInputs.in.bus_inputs.sec_1_bus = secsBusOutputs[0];
+  elacs[elacIndex].modelInputs.in.bus_inputs.sec_2_bus = secsBusOutputs[1];
+  elacs[elacIndex].modelInputs.in.bus_inputs.elac_opp_bus = elacsBusOutputs[oppElacIndex];
 
-  double surfaceCommands[4] = {
-      flyByWireOutput.output.eta_pos,
-      flyByWireOutput.output.eta_trim_deg,
-      animationAileronHandler->getPositionLeft(),
-      animationAileronHandler->getPositionRight(),
-  };
+  if (elacIndex == elacDisabled) {
+    simConnectInterface.setClientDataElacDiscretes(elacs[elacIndex].modelInputs.in.discrete_inputs);
+    simConnectInterface.setClientDataElacAnalog(elacs[elacIndex].modelInputs.in.analog_inputs);
 
-  elacs[elacIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(elacIndex == 0 ? Failures::Elac1 : Failures::Elac2),
-                          elacIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get(), surfaceCommands);
+    elacsDiscreteOutputs[elacIndex] = simConnectInterface.getClientDataElacDiscretesOutput();
+    elacsAnalogOutputs[elacIndex] = simConnectInterface.getClientDataElacAnalogsOutput();
+    elacsBusOutputs[elacIndex] = simConnectInterface.getClientDataElacBusOutput();
+  } else {
+    elacs[elacIndex].update(sampleTime, simData.simulationTime,
+                            failuresConsumer.isActive(elacIndex == 0 ? Failures::Elac1 : Failures::Elac2),
+                            elacIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get());
 
-  elacsDiscreteOutputs[elacIndex] = elacs[elacIndex].getDiscreteOutputs();
-  elacsAnalogOutputs[elacIndex] = elacs[elacIndex].getAnalogOutputs();
-  elacsBusOutputs[elacIndex] = elacs[elacIndex].getBusOutputs();
+    elacsDiscreteOutputs[elacIndex] = elacs[elacIndex].getDiscreteOutputs();
+    elacsAnalogOutputs[elacIndex] = elacs[elacIndex].getAnalogOutputs();
+    elacsBusOutputs[elacIndex] = elacs[elacIndex].getBusOutputs();
+  }
 
-  idElacFaultLightOn[elacIndex]->set(!elacsDiscreteOutputs[elacIndex].digitalOperationValidated);
+  if (oppElacIndex == elacDisabled) {
+    simConnectInterface.setClientDataElacBusInput(elacsBusOutputs[elacIndex]);
+  }
+
+  idElacFaultLightOn[elacIndex]->set(!elacsDiscreteOutputs[elacIndex].digital_output_validated);
 
   return true;
 }
@@ -1094,107 +1132,114 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   SimData simData = simConnectInterface.getSimData();
   SimInput simInput = simConnectInterface.getSimInput();
 
-  secs[secIndex].discreteInputs.secEngagedFromSwitch = idSecPushbuttonStatus[secIndex]->get();
-  secs[secIndex].discreteInputs.secInemergencyPwrSply = false;
+  secs[secIndex].modelInputs.in.time.dt = sampleTime;
+  secs[secIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
+  secs[secIndex].modelInputs.in.time.monotonic_time = 0;
+
+  secs[secIndex].modelInputs.in.sim_data.slew_on = simData.slew_on;
+  secs[secIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
+  secs[secIndex].modelInputs.in.sim_data.tracking_mode_on_override = false;
+  secs[secIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
+
+  secs[secIndex].modelInputs.in.discrete_inputs.sec_engaged_from_switch = idSecPushbuttonStatus[secIndex]->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.sec_in_emergency_powersupply = false;
+  secs[secIndex].modelInputs.in.discrete_inputs.is_unit_1 = secIndex == 0;
+  secs[secIndex].modelInputs.in.discrete_inputs.is_unit_2 = secIndex == 1;
+  secs[secIndex].modelInputs.in.discrete_inputs.is_unit_3 = secIndex == 2;
   if (secIndex < 2) {
-    secs[secIndex].discreteInputs.pitchNotAvailElac1 = !elacsDiscreteOutputs[0].pitchAxisOk;
-    secs[secIndex].discreteInputs.pitchNotAvailElac2 = !elacsDiscreteOutputs[1].pitchAxisOk;
-    secs[secIndex].discreteInputs.leftElevNotAvailSecOpp = !secsDiscreteOutputs[oppSecIndex].leftElevOk;
-    secs[secIndex].discreteInputs.rightElevNotAvailSecOpp = !secsDiscreteOutputs[oppSecIndex].rightElevOk;
-    secs[secIndex].discreteInputs.digitalOutputFailedElac1 = !elacsDiscreteOutputs[0].digitalOperationValidated;
-    secs[secIndex].discreteInputs.digitalOutputFailedElac2 = !elacsDiscreteOutputs[1].digitalOperationValidated;
-    secs[secIndex].discreteInputs.thsMotorFault = false;
-    secs[secIndex].discreteInputs.lElevServoFailed = idElevFaultLeft[secIndex]->get();
-    secs[secIndex].discreteInputs.rElevServoFailed = idElevFaultRight[secIndex]->get();
-    secs[secIndex].discreteInputs.thsOverrideActive = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.pitch_not_avail_elac_1 = !elacsDiscreteOutputs[0].pitch_axis_ok;
+    secs[secIndex].modelInputs.in.discrete_inputs.pitch_not_avail_elac_2 = !elacsDiscreteOutputs[1].pitch_axis_ok;
+    secs[secIndex].modelInputs.in.discrete_inputs.left_elev_not_avail_sec_opp = !secsDiscreteOutputs[oppSecIndex].left_elevator_ok;
+    secs[secIndex].modelInputs.in.discrete_inputs.right_elev_not_avail_sec_opp = !secsDiscreteOutputs[oppSecIndex].right_elevator_ok;
+    secs[secIndex].modelInputs.in.discrete_inputs.digital_output_failed_elac_1 = !elacsDiscreteOutputs[0].digital_output_validated;
+    secs[secIndex].modelInputs.in.discrete_inputs.digital_output_failed_elac_2 = !elacsDiscreteOutputs[1].digital_output_validated;
+    secs[secIndex].modelInputs.in.discrete_inputs.ths_motor_fault = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.l_elev_servo_failed = idElevFaultLeft[secIndex]->get();
+    secs[secIndex].modelInputs.in.discrete_inputs.r_elev_servo_failed = idElevFaultRight[secIndex]->get();
+    secs[secIndex].modelInputs.in.discrete_inputs.ths_override_active = false;
   } else {
-    secs[secIndex].discreteInputs.pitchNotAvailElac1 = false;
-    secs[secIndex].discreteInputs.pitchNotAvailElac2 = false;
-    secs[secIndex].discreteInputs.leftElevNotAvailSecOpp = false;
-    secs[secIndex].discreteInputs.rightElevNotAvailSecOpp = false;
-    secs[secIndex].discreteInputs.digitalOutputFailedElac1 = false;
-    secs[secIndex].discreteInputs.digitalOutputFailedElac2 = false;
-    secs[secIndex].discreteInputs.thsMotorFault = false;
-    secs[secIndex].discreteInputs.lElevServoFailed = false;
-    secs[secIndex].discreteInputs.rElevServoFailed = false;
-    secs[secIndex].discreteInputs.thsOverrideActive = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.pitch_not_avail_elac_1 = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.pitch_not_avail_elac_2 = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.left_elev_not_avail_sec_opp = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.right_elev_not_avail_sec_opp = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.digital_output_failed_elac_1 = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.digital_output_failed_elac_2 = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.ths_motor_fault = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.l_elev_servo_failed = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.r_elev_servo_failed = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.ths_override_active = false;
   }
 
-  secs[secIndex].discreteInputs.greenLowPressure = !idHydGreenPressurised->get();
-  secs[secIndex].discreteInputs.blueLowPressure = !idHydBluePressurised->get();
-  secs[secIndex].discreteInputs.yellowLowPressure = !idHydYellowPressurised->get();
-  secs[secIndex].discreteInputs.sfcc1SlatOut = false;
-  secs[secIndex].discreteInputs.sfcc2SlatOut = false;
+  secs[secIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.blue_low_pressure = !idHydBluePressurised->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.sfcc_1_slats_out = false;
+  secs[secIndex].modelInputs.in.discrete_inputs.sfcc_2_slats_out = false;
 
   int splrIndex = secIndex == 2 ? 0 : (secIndex == 0 ? 2 : 4);
 
-  secs[secIndex].discreteInputs.lSpoiler1ServoFailed = idSplrFaultLeft[splrIndex]->get();
-  secs[secIndex].discreteInputs.rSpoiler1ServoFailed = idSplrFaultRight[splrIndex]->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.l_spoiler_1_servo_failed = idSplrFaultLeft[splrIndex]->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.r_spoiler_1_servo_failed = idSplrFaultRight[splrIndex]->get();
   if (secIndex != 1) {
-    secs[secIndex].discreteInputs.lSpoiler2ServoFailed = idSplrFaultLeft[splrIndex + 1]->get();
-    secs[secIndex].discreteInputs.rSpoiler2ServoFailed = idSplrFaultRight[splrIndex + 1]->get();
+    secs[secIndex].modelInputs.in.discrete_inputs.l_spoiler_2_servo_failed = idSplrFaultLeft[splrIndex + 1]->get();
+    secs[secIndex].modelInputs.in.discrete_inputs.r_spoiler_2_servo_failed = idSplrFaultRight[splrIndex + 1]->get();
   } else {
-    secs[secIndex].discreteInputs.lSpoiler2ServoFailed = false;
-    secs[secIndex].discreteInputs.rSpoiler2ServoFailed = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.l_spoiler_2_servo_failed = false;
+    secs[secIndex].modelInputs.in.discrete_inputs.r_spoiler_2_servo_failed = false;
   }
 
-  secs[secIndex].discreteInputs.captPriorityTakeoverPressed = false;
-  secs[secIndex].discreteInputs.foPriorityTakeoverPressed = false;
+  secs[secIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = false;
+  secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = false;
 
   if (secIndex < 2) {
-    secs[secIndex].analogInputs.capPitchStickPos = simInput.inputs[0] * 15;
-    secs[secIndex].analogInputs.foPitchStickPos = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = simInput.inputs[0] * 15;
+    secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
     double leftElevPos = -idLeftElevatorPosition->get();
     double rightElevPos = -idRightElevatorPosition->get();
-    secs[secIndex].analogInputs.leftElevatorPos = leftElevPos > 0 ? leftElevPos * 17 : leftElevPos * 30;
-    secs[secIndex].analogInputs.rightElevatorPos = rightElevPos > 0 ? rightElevPos * 17 : rightElevPos * 30;
-    secs[secIndex].analogInputs.thsPos = 0;
-    secs[secIndex].analogInputs.loadFactorAcc1 = 0;
-    secs[secIndex].analogInputs.loadFactorAcc2 = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos > 0 ? leftElevPos * 17 : leftElevPos * 30;
+    secs[secIndex].modelInputs.in.analog_inputs.right_elevator_pos_deg = rightElevPos > 0 ? rightElevPos * 17 : rightElevPos * 30;
+    secs[secIndex].modelInputs.in.analog_inputs.ths_pos_deg = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_1_g = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_2_g = 0;
   } else {
-    secs[secIndex].analogInputs.capPitchStickPos = 0;
-    secs[secIndex].analogInputs.foPitchStickPos = 0;
-    secs[secIndex].analogInputs.leftElevatorPos = 0;
-    secs[secIndex].analogInputs.rightElevatorPos = 0;
-    secs[secIndex].analogInputs.thsPos = 0;
-    secs[secIndex].analogInputs.loadFactorAcc1 = 0;
-    secs[secIndex].analogInputs.loadFactorAcc2 = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.right_elevator_pos_deg = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.ths_pos_deg = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_1_g = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_2_g = 0;
   }
-  secs[secIndex].analogInputs.capRollStickPos = simInput.inputs[1] * 19;
-  secs[secIndex].analogInputs.foRollStickPos = 0;
-  secs[secIndex].analogInputs.spdBrkLeverPos = 0;
-  secs[secIndex].analogInputs.thrLever1Pos = 0;
-  secs[secIndex].analogInputs.thrLever2Pos = 0;
-  secs[secIndex].analogInputs.leftSpoiler1Pos = -idLeftSpoilerPosition[splrIndex]->get() * 50;
-  secs[secIndex].analogInputs.rightSpoiler1Pos = -idRightSpoilerPosition[splrIndex]->get() * 50;
-  secs[secIndex].analogInputs.leftSpoiler2Pos = -idLeftSpoilerPosition[splrIndex + 1]->get() * 50;
-  secs[secIndex].analogInputs.rightSpoiler2Pos = -idRightSpoilerPosition[splrIndex + 1]->get() * 50;
-  secs[secIndex].analogInputs.wheelSpeedLeft = 0;
-  secs[secIndex].analogInputs.wheelSpeedRight = 0;
+  secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = simInput.inputs[1] * 19;
+  secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
+  secs[secIndex].modelInputs.in.analog_inputs.spd_brk_lever_pos = 0;
+  secs[secIndex].modelInputs.in.analog_inputs.thr_lever_1_pos = 0;
+  secs[secIndex].modelInputs.in.analog_inputs.thr_lever_2_pos = 0;
+  secs[secIndex].modelInputs.in.analog_inputs.left_spoiler_1_pos_deg = -idLeftSpoilerPosition[splrIndex]->get() * 50;
+  secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_1_pos_deg = -idRightSpoilerPosition[splrIndex]->get() * 50;
+  secs[secIndex].modelInputs.in.analog_inputs.left_spoiler_2_pos_deg = -idLeftSpoilerPosition[splrIndex + 1]->get() * 50;
+  secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_2_pos_deg = -idRightSpoilerPosition[splrIndex + 1]->get() * 50;
+  secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_left = 0;
+  secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_right = 0;
 
-  secs[secIndex].busInputs.adirs1 = {};
-  secs[secIndex].busInputs.adirs2 = {};
-  secs[secIndex].busInputs.fcdc1 = fcdcsBusOutputs[0];
-  secs[secIndex].busInputs.fcdc2 = fcdcsBusOutputs[1];
-  secs[secIndex].busInputs.elac1 = elacsBusOutputs[0];
-  secs[secIndex].busInputs.elac2 = elacsBusOutputs[1];
-
-  double surfaceCommands[4] = {
-      flyByWireOutput.output.eta_pos,
-      flyByWireOutput.output.eta_trim_deg,
-      spoilersHandler->getLeftPosition() * 50,
-      spoilersHandler->getRightPosition() * 50,
-  };
+  secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = {};
+  secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = {};
+  secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = {};
+  secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = {};
+  secs[secIndex].modelInputs.in.bus_inputs.fcdc_1_bus = fcdcsBusOutputs[0];
+  secs[secIndex].modelInputs.in.bus_inputs.fcdc_2_bus = fcdcsBusOutputs[1];
+  secs[secIndex].modelInputs.in.bus_inputs.elac_1_bus = elacsBusOutputs[0];
+  secs[secIndex].modelInputs.in.bus_inputs.elac_2_bus = elacsBusOutputs[1];
 
   Failures failureIndex = secIndex == 0 ? Failures::Sec1 : (secIndex == 1 ? Failures::Sec2 : Failures::Sec3);
   secs[secIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex),
-                        secIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get(), surfaceCommands);
+                        secIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get());
 
   secsDiscreteOutputs[secIndex] = secs[secIndex].getDiscreteOutputs();
   secsAnalogOutputs[secIndex] = secs[secIndex].getAnalogOutputs();
   secsBusOutputs[secIndex] = secs[secIndex].getBusOutputs();
 
-  idSecFaultLightOn[secIndex]->set(secsDiscreteOutputs[secIndex].secFailed);
+  idSecFaultLightOn[secIndex]->set(secsDiscreteOutputs[secIndex].sec_failed);
 
   return true;
 }
@@ -1203,17 +1248,17 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   const int oppFcdcIndex = fcdcIndex == 0 ? 1 : 0;
 
   fcdcs[fcdcIndex].discreteInputs.elac1Off = idElacPushbuttonStatus[0]->get();
-  fcdcs[fcdcIndex].discreteInputs.elac1Valid = elacsDiscreteOutputs[0].digitalOperationValidated;
-  fcdcs[fcdcIndex].discreteInputs.elac2Valid = elacsDiscreteOutputs[1].digitalOperationValidated;
+  fcdcs[fcdcIndex].discreteInputs.elac1Valid = elacsDiscreteOutputs[0].digital_output_validated;
+  fcdcs[fcdcIndex].discreteInputs.elac2Valid = elacsDiscreteOutputs[1].digital_output_validated;
   fcdcs[fcdcIndex].discreteInputs.sec1Off = idSecPushbuttonStatus[0]->get();
-  fcdcs[fcdcIndex].discreteInputs.sec1Valid = !secsDiscreteOutputs[0].secFailed;
-  fcdcs[fcdcIndex].discreteInputs.sec2Valid = !secsDiscreteOutputs[1].secFailed;
+  fcdcs[fcdcIndex].discreteInputs.sec1Valid = !secsDiscreteOutputs[0].sec_failed;
+  fcdcs[fcdcIndex].discreteInputs.sec2Valid = !secsDiscreteOutputs[1].sec_failed;
   fcdcs[fcdcIndex].discreteInputs.eng1NotOnGroundAndNotLowOilPress = false;
   fcdcs[fcdcIndex].discreteInputs.eng2NotOnGroundAndNotLowOilPress = false;
   fcdcs[fcdcIndex].discreteInputs.noseGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
   fcdcs[fcdcIndex].discreteInputs.oppFcdcFailed = !fcdcsDiscreteOutputs[oppFcdcIndex].fcdcValid;
   fcdcs[fcdcIndex].discreteInputs.sec3Off = idSecPushbuttonStatus[3]->get();
-  fcdcs[fcdcIndex].discreteInputs.sec3Valid = !secsDiscreteOutputs[2].secFailed;
+  fcdcs[fcdcIndex].discreteInputs.sec3Valid = !secsDiscreteOutputs[2].sec_failed;
   fcdcs[fcdcIndex].discreteInputs.elac2Off = idElacPushbuttonStatus[1]->get();
   fcdcs[fcdcIndex].discreteInputs.sec2Off = idSecPushbuttonStatus[1]->get();
 
@@ -1273,8 +1318,8 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].discreteInputs.yawDamperOppEngaged = facsDiscreteOutputs[oppFacIndex].yawDamperEngaged;
   facs[facIndex].discreteInputs.rudderTrimOppEngaged = facsDiscreteOutputs[oppFacIndex].rudderTrimEngaged;
   facs[facIndex].discreteInputs.rudderTravelLimOppEngaged = facsDiscreteOutputs[oppFacIndex].rudderTravelLimEngaged;
-  facs[facIndex].discreteInputs.elac1Healthy = elacsDiscreteOutputs[0].digitalOperationValidated;
-  facs[facIndex].discreteInputs.elac2Healthy = elacsDiscreteOutputs[1].digitalOperationValidated;
+  facs[facIndex].discreteInputs.elac1Healthy = elacsDiscreteOutputs[0].digital_output_validated;
+  facs[facIndex].discreteInputs.elac2Healthy = elacsDiscreteOutputs[1].digital_output_validated;
   facs[facIndex].discreteInputs.engine1Stopped = true;
   facs[facIndex].discreteInputs.engine2Stopped = true;
   facs[facIndex].discreteInputs.rudderTrimSwitchLeft = false;
@@ -1348,45 +1393,45 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
 }
 
 bool FlyByWireInterface::updateServoSolenoidStatus() {
-  idLeftAileronSolenoidEnergized[0]->set(elacsDiscreteOutputs[0].leftAileronActiveMode);
-  idLeftAileronCommandedPosition[0]->set(elacsAnalogOutputs[0].leftAileronPosOrder);
-  idRightAileronSolenoidEnergized[0]->set(elacsDiscreteOutputs[0].rightAileronActiveMode);
-  idRightAileronCommandedPosition[0]->set(elacsAnalogOutputs[0].rightAileronPosOrder);
-  idLeftAileronSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].leftAileronActiveMode);
-  idLeftAileronCommandedPosition[1]->set(elacsAnalogOutputs[1].leftAileronPosOrder);
-  idRightAileronSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].rightAileronActiveMode);
-  idRightAileronCommandedPosition[1]->set(elacsAnalogOutputs[1].rightAileronPosOrder);
+  idLeftAileronSolenoidEnergized[0]->set(elacsDiscreteOutputs[0].left_aileron_active_mode);
+  idLeftAileronCommandedPosition[0]->set(elacsAnalogOutputs[0].left_aileron_pos_order);
+  idRightAileronSolenoidEnergized[0]->set(elacsDiscreteOutputs[0].right_aileron_active_mode);
+  idRightAileronCommandedPosition[0]->set(-elacsAnalogOutputs[0].right_aileron_pos_order);
+  idLeftAileronSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].left_aileron_active_mode);
+  idLeftAileronCommandedPosition[1]->set(elacsAnalogOutputs[1].left_aileron_pos_order);
+  idRightAileronSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].right_aileron_active_mode);
+  idRightAileronCommandedPosition[1]->set(-elacsAnalogOutputs[1].left_aileron_pos_order);
 
-  idLeftSpoilerCommandedPosition[0]->set(secsAnalogOutputs[2].leftSpoiler1Order);
-  idRightSpoilerCommandedPosition[0]->set(secsAnalogOutputs[2].rightSpoiler1Order);
-  idLeftSpoilerCommandedPosition[1]->set(secsAnalogOutputs[2].leftSpoiler2Order);
-  idRightSpoilerCommandedPosition[1]->set(secsAnalogOutputs[2].rightSpoiler2Order);
-  idLeftSpoilerCommandedPosition[2]->set(secsAnalogOutputs[0].leftSpoiler1Order);
-  idRightSpoilerCommandedPosition[2]->set(secsAnalogOutputs[0].rightSpoiler1Order);
-  idLeftSpoilerCommandedPosition[3]->set(secsAnalogOutputs[0].leftSpoiler2Order);
-  idRightSpoilerCommandedPosition[3]->set(secsAnalogOutputs[0].rightSpoiler2Order);
-  idLeftSpoilerCommandedPosition[4]->set(secsAnalogOutputs[1].leftSpoiler1Order);
-  idRightSpoilerCommandedPosition[4]->set(secsAnalogOutputs[1].rightSpoiler1Order);
+  idLeftSpoilerCommandedPosition[0]->set(secsAnalogOutputs[2].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[0]->set(secsAnalogOutputs[2].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[1]->set(secsAnalogOutputs[2].left_spoiler_2_pos_order_deg);
+  idRightSpoilerCommandedPosition[1]->set(secsAnalogOutputs[2].right_spoiler_2_pos_order_deg);
+  idLeftSpoilerCommandedPosition[2]->set(secsAnalogOutputs[0].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[2]->set(secsAnalogOutputs[0].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[3]->set(secsAnalogOutputs[0].left_spoiler_2_pos_order_deg);
+  idRightSpoilerCommandedPosition[3]->set(secsAnalogOutputs[0].right_spoiler_2_pos_order_deg);
+  idLeftSpoilerCommandedPosition[4]->set(secsAnalogOutputs[1].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[4]->set(secsAnalogOutputs[1].right_spoiler_1_pos_order_deg);
 
-  idLeftElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[1].leftElevatorDampingMode ||
-                                          secsDiscreteOutputs[1].leftElevatorDampingMode);
-  idLeftElevatorCommandedPosition[0]->set(elacsAnalogOutputs[0].leftElevPosOrder + secsAnalogOutputs[0].leftElevPosOrder);
-  idRightElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[1].rightElevatorDampingMode ||
-                                           secsDiscreteOutputs[1].rightElevatorDampingMode);
-  idRightElevatorCommandedPosition[0]->set(elacsAnalogOutputs[0].rightElevPosOrder + secsAnalogOutputs[0].rightElevPosOrder);
-  idLeftElevatorSolenoidEnergized[1]->set(elacsDiscreteOutputs[0].leftElevatorDampingMode ||
-                                          secsDiscreteOutputs[0].leftElevatorDampingMode);
-  idLeftElevatorCommandedPosition[1]->set(elacsAnalogOutputs[1].leftElevPosOrder + secsAnalogOutputs[1].leftElevPosOrder);
-  idRightElevatorSolenoidEnergized[1]->set(elacsDiscreteOutputs[0].rightElevatorDampingMode ||
-                                           secsDiscreteOutputs[0].rightElevatorDampingMode);
-  idRightElevatorCommandedPosition[1]->set(elacsAnalogOutputs[1].rightElevPosOrder + secsAnalogOutputs[1].rightElevPosOrder);
+  idLeftElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[1].left_elevator_damping_mode ||
+                                          secsDiscreteOutputs[1].left_elevator_damping_mode);
+  idLeftElevatorCommandedPosition[0]->set(elacsAnalogOutputs[0].left_elev_pos_order_deg + secsAnalogOutputs[0].left_elev_pos_order_deg);
+  idRightElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[1].right_elevator_damping_mode ||
+                                           secsDiscreteOutputs[1].right_elevator_damping_mode);
+  idRightElevatorCommandedPosition[0]->set(elacsAnalogOutputs[0].right_elev_pos_order_deg + secsAnalogOutputs[0].right_elev_pos_order_deg);
+  idLeftElevatorSolenoidEnergized[1]->set(elacsDiscreteOutputs[0].left_elevator_damping_mode ||
+                                          secsDiscreteOutputs[0].left_elevator_damping_mode);
+  idLeftElevatorCommandedPosition[1]->set(elacsAnalogOutputs[1].left_elev_pos_order_deg + secsAnalogOutputs[1].left_elev_pos_order_deg);
+  idRightElevatorSolenoidEnergized[1]->set(elacsDiscreteOutputs[0].right_elevator_damping_mode ||
+                                           secsDiscreteOutputs[0].right_elevator_damping_mode);
+  idRightElevatorCommandedPosition[1]->set(elacsAnalogOutputs[1].right_elev_pos_order_deg + secsAnalogOutputs[1].right_elev_pos_order_deg);
 
-  idTHSActiveModeCommanded[0]->set(elacsDiscreteOutputs[1].thsActive);
-  idTHSCommandedPosition[0]->set(elacsAnalogOutputs[1].thsPosOrder);
-  idTHSActiveModeCommanded[1]->set(elacsDiscreteOutputs[0].thsActive || secsDiscreteOutputs[0].thsActive);
-  idTHSCommandedPosition[1]->set(elacsAnalogOutputs[0].thsPosOrder + secsAnalogOutputs[0].thsPosOrder);
-  idTHSActiveModeCommanded[2]->set(secsDiscreteOutputs[1].thsActive);
-  idTHSCommandedPosition[2]->set(secsAnalogOutputs[1].thsPosOrder);
+  idTHSActiveModeCommanded[0]->set(elacsDiscreteOutputs[1].ths_active);
+  idTHSCommandedPosition[0]->set(-elacsAnalogOutputs[1].ths_pos_order);
+  idTHSActiveModeCommanded[1]->set(elacsDiscreteOutputs[0].ths_active || secsDiscreteOutputs[0].ths_active);
+  idTHSCommandedPosition[1]->set(-elacsAnalogOutputs[0].ths_pos_order - secsAnalogOutputs[0].ths_pos_order_deg);
+  idTHSActiveModeCommanded[2]->set(secsDiscreteOutputs[1].ths_active);
+  idTHSCommandedPosition[2]->set(-secsAnalogOutputs[1].ths_pos_order_deg);
 
   idYawDamperSolenoidEnergized[0]->set(facsDiscreteOutputs[0].yawDamperEngaged);
   idYawDamperCommandedPosition[0]->set(facsAnalogOutputs[0].yawDamperOrder);
@@ -1400,6 +1445,40 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRudderTravelLimCommandedPosition[0]->set(facsAnalogOutputs[0].rudderTravelLimOrder);
   idRudderTravelLimitActiveModeCommanded[1]->set(facsDiscreteOutputs[1].rudderTravelLimEngaged);
   idRudderTravelLimCommandedPosition[1]->set(facsAnalogOutputs[1].rudderTravelLimOrder);
+
+  // set outputs
+  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
+    // object to write with trim
+    double leftAileronCommand = elacsAnalogOutputs[0].left_aileron_pos_order + elacsAnalogOutputs[1].left_aileron_pos_order;
+    double rightAileronCommand = elacsAnalogOutputs[0].right_aileron_pos_order + elacsAnalogOutputs[1].right_aileron_pos_order;
+
+    double leftElevatorCommand = elacsAnalogOutputs[0].left_elev_pos_order_deg + secsAnalogOutputs[0].left_elev_pos_order_deg +
+                                 elacsAnalogOutputs[1].left_elev_pos_order_deg + secsAnalogOutputs[1].left_elev_pos_order_deg;
+    double rightElevatorCommand = elacsAnalogOutputs[0].right_elev_pos_order_deg + secsAnalogOutputs[0].right_elev_pos_order_deg +
+                                  elacsAnalogOutputs[1].right_elev_pos_order_deg + secsAnalogOutputs[1].right_elev_pos_order_deg;
+
+    SimInput simInput = simConnectInterface.getSimInput();
+    SimOutput output = {(-leftElevatorCommand - rightElevatorCommand) / (2 * 30), (leftAileronCommand - rightAileronCommand) / (2 * 25),
+                        simInput.inputs[2]};
+
+    // send data via sim connect
+    if (!simConnectInterface.sendData(output)) {
+      cout << "WASM: Write data failed!" << endl;
+      return false;
+    }
+  }
+
+  // set trim values
+  SimOutputEtaTrim outputEtaTrim = {};
+  outputEtaTrim.eta_trim_deg = elacsAnalogOutputs[1].ths_pos_order + elacsAnalogOutputs[0].ths_pos_order +
+                               secsAnalogOutputs[0].ths_pos_order_deg + secsAnalogOutputs[1].ths_pos_order_deg;
+
+  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
+    if (!simConnectInterface.sendData(outputEtaTrim)) {
+      cout << "WASM: Write data failed!" << endl;
+      return false;
+    }
+  }
 
   return true;
 }
@@ -2081,38 +2160,11 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]))));
   idRudderPedalAnimationPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
 
-  // set outputs
-  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
-    // object to write with trim
-    SimOutput output = {flyByWireOutput.output.eta_pos, flyByWireOutput.output.xi_pos, flyByWireOutput.output.zeta_pos};
-
-    // send data via sim connect
-    if (!simConnectInterface.sendData(output)) {
-      cout << "WASM: Write data failed!" << endl;
-      return false;
-    }
-  }
-
   // determine if nosewheel demand shall be set
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
     idAutopilotNosewheelDemand->set(autopilotLawsOutput.Nosewheel_c);
   } else {
     idAutopilotNosewheelDemand->set(0);
-  }
-
-  // set trim values
-  SimOutputEtaTrim outputEtaTrim = {};
-  if (flyByWireOutput.output.eta_trim_deg_should_write) {
-    outputEtaTrim.eta_trim_deg = flyByWireOutput.output.eta_trim_deg;
-    elevatorTrimHandler->synchronizeValue(outputEtaTrim.eta_trim_deg);
-  } else {
-    outputEtaTrim.eta_trim_deg = elevatorTrimHandler->getPosition();
-  }
-  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
-    if (!simConnectInterface.sendData(outputEtaTrim)) {
-      cout << "WASM: Write data failed!" << endl;
-      return false;
-    }
   }
 
   SimOutputZetaTrim outputZetaTrim = {};

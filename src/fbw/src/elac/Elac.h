@@ -3,6 +3,7 @@
 #include "ElacIO.h"
 
 #include "../Arinc429.h"
+#include "../model/ElacComputer.h"
 #include "../utils/ConfirmNode.h"
 #include "../utils/HysteresisNode.h"
 #include "../utils/PulseNode.h"
@@ -12,19 +13,17 @@ class Elac {
  public:
   Elac(bool isUnit1);
 
-  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered, double surfaceCommands[4]);
+  Elac(const Elac&);
 
-  ElacOutBus getBusOutputs();
+  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered);
 
-  ElacDiscreteOutputs getDiscreteOutputs();
+  base_elac_out_bus getBusOutputs();
 
-  ElacAnalogOutputs getAnalogOutputs();
+  base_elac_discrete_outputs getDiscreteOutputs();
 
-  ElacDiscreteInputs discreteInputs;
+  base_elac_analog_outputs getAnalogOutputs();
 
-  ElacAnalogInputs analogInputs;
-
-  ElacBusInputs busInputs;
+  ElacComputer::ExternalInputs_ElacComputer_T modelInputs = {};
 
  private:
   void initSelfTests(bool viaPushButton);
@@ -39,123 +38,9 @@ class Elac {
 
   void updateSelfTest(double deltaTime);
 
-  void monitorHydraulicData(double deltaTime);
-
-  void monitorRa(double deltaTime);
-
-  void computeComputerEngagementPitch();
-
-  void computeComputerEngagementRoll();
-
-  void computeLateralLawCapability();
-
-  void computePitchLawCapability();
-
-  void computeActiveLawsAndFunctionStatus();
-
-  void computeSidestickPriorityLogic(double deltaTime);
-
-  void computeSurfaceSlaving(double surfaceCommands[4]);
-
-  // RA monitoring vars
-  bool ra1Invalid;
-
-  bool ra2Invalid;
-
-  ConfirmNode ra1CoherenceConfirmNode = ConfirmNode(true, 1);
-
-  ConfirmNode ra2CoherenceConfirmNode = ConfirmNode(true, 1);
-
-  bool ra1CoherenceRejected;
-
-  bool ra2CoherenceRejected;
-
-  const double raMaxDifference = 50;
-
-  ConfirmNode raDifferenceConfirmNode = ConfirmNode(true, 1);
-
-  double raValueForComputation;
-
-  // Axis engagement vars
-  bool isEngagedInPitch;
-
-  bool canEngageInPitch;
-
-  bool hasPriorityInPitch;
-
-  bool leftElevatorAvail;
-
-  bool rightElevatorAvail;
-
-  bool isEngagedInRoll;
-
-  bool canEngageInRoll;
-
-  bool hasPriorityInRoll;
-
-  bool leftAileronCrossCommandActive;
-
-  bool rightAileronCrossCommandActive;
-
-  bool leftAileronAvail;
-
-  bool rightAileronAvail;
-
-  // Law capability vars
-  LateralLaw lateralLawCapability;
-
-  LateralLaw activeLateralLaw;
-
-  PitchLaw pitchLawCapability;
-
-  PitchLaw activePitchLaw;
-
-  // Hydraulic supply sensor monitoring
-  bool isYellowHydraulicPowerAvail;
-
-  HysteresisNode yellowAvailHysteresis = HysteresisNode(1750, 1450);
-
-  ConfirmNode yellowAvailConfirm = ConfirmNode(true, 0.5);
-
-  bool isBlueHydraulicPowerAvail;
-
-  HysteresisNode blueAvailHysteresis = HysteresisNode(1750, 1450);
-
-  ConfirmNode blueAvailConfirm = ConfirmNode(true, 0.5);
-
-  bool isGreenHydraulicPowerAvail;
-
-  HysteresisNode greenAvailHysteresis = HysteresisNode(1750, 1450);
-
-  ConfirmNode greenAvailConfirm = ConfirmNode(true, 0.5);
-
-  // Sidestick priority
-  bool leftSidestickDisabled;
-
-  bool rightSidestickDisabled;
-
-  bool leftSidestickPriorityLocked;
-
-  bool rightSidestickPriorityLocked;
-
-  PulseNode leftTakeoverPulseNode = PulseNode(true);
-
-  PulseNode rightTakeoverPulseNode = PulseNode(true);
-
-  ConfirmNode leftPriorityLockConfirmNode = ConfirmNode(true, 30);
-
-  ConfirmNode rightPriorityLockConfirmNode = ConfirmNode(true, 30);
-
-  // Surface slaving vars
-  double leftElevPosCommand;
-
-  double rightElevPosCommand;
-
-  double thsPosCommand;
-
-  double leftAileronPosCommand;
-
-  double rightAileronPosCommand;
+  // Model
+  ElacComputer elacComputer;
+  elac_outputs modelOutputs;
 
   // Computer Self-monitoring vars
   bool monitoringHealthy;
