@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "チャートの提供元を変更",
-        "ChangeChartSortMethod": "チャートの並び替えを変更"
+        "ChangeChartSortMethod": "チャートの並び替えを変更",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "ピン留めしたチャート",
       "View": "閲覧"

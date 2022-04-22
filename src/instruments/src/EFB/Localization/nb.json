@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "Bytt diagramleverandør",
-        "ChangeChartSortMethod": "Endre diagramsorteringsmetode"
+        "ChangeChartSortMethod": "Endre diagramsorteringsmetode",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "Festede kart",
       "View": "Vis"

@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "Change Chart Provider",
-        "ChangeChartSortMethod": "Change Chart Sort Method"
+        "ChangeChartSortMethod": "Change Chart Sort Method",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "Pinned Charts",
       "View": "View"

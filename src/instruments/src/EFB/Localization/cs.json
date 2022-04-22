@@ -192,7 +192,8 @@
       },
       "TT": {
         "ChangeChartProvider": "Změnit poskytovatele map",
-        "ChangeChartSortMethod": "Změna metody řazení map"
+        "ChangeChartSortMethod": "Změna metody řazení map",
+        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "Připnuté mapy",
       "View": "Zobrazit"
