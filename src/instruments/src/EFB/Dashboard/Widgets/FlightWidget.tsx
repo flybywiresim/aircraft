@@ -16,8 +16,8 @@ interface InformationEntryProps {
 }
 
 const InformationEntry = ({ title, info }: InformationEntryProps) => (
-    <div className="flex flex-col items-center justify-content">
-        <h3 className="font-light">{title}</h3>
+    <div className="flex flex-col items-center w-full justify-content">
+        <h3 className="font-light text-center">{title}</h3>
         <h2 className="font-bold">{info}</h2>
     </div>
 );
