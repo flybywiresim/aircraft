@@ -193,7 +193,7 @@
       "TT": {
         "ChangeChartProvider": "Aanbieder van charts wijzigen",
         "ChangeChartSortMethod": "Sorteermethode voor charts wijzigen",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "Verwijder alle vastgezette charts"
       },
       "Title": "Vastgezette Charts",
       "View": "Weergeven"

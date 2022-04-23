@@ -193,7 +193,7 @@
       "TT": {
         "ChangeChartProvider": "Ändra chartsleverantör",
         "ChangeChartSortMethod": "Ändra sorteringsmetod för charts",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "Ta bort alla fästa diagram"
       },
       "Title": "Fästa charts",
       "View": "Visa"

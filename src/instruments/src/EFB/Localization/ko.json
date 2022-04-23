@@ -193,7 +193,7 @@
       "TT": {
         "ChangeChartProvider": "차트 출처 변경",
         "ChangeChartSortMethod": "차트 정렬 방법 변경",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "고정된 차트 모두 제거"
       },
       "Title": "고정된 차트",
       "View": "보기"

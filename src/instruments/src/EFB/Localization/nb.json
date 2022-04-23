@@ -193,7 +193,7 @@
       "TT": {
         "ChangeChartProvider": "Bytt diagramleverandør",
         "ChangeChartSortMethod": "Endre diagramsorteringsmetode",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "Fjern alle låste kart"
       },
       "Title": "Festede kart",
       "View": "Vis"
