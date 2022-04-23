@@ -193,7 +193,7 @@
       "TT": {
         "ChangeChartProvider": "Thay đổi nhà cung cấp biểu đồ",
         "ChangeChartSortMethod": "Thay đổi phương pháp sắp xếp biểu đồ",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "Xóa tất cả các biểu đồ đã ghim"
       },
       "Title": "Biểu đồ đã ghim",
       "View": "Xem"
