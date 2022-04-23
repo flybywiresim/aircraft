@@ -562,6 +562,10 @@ impl<T: Copy + Default + PartialOrd> AdirsData<T> {
         self.ssm = ssm;
     }
 
+    fn set_from(&mut self, other: &AdirsData<T>) {
+        self.set_value(other.value, other.ssm);
+    }
+
     /// Sets failure warning with the default (0.0) value.
     fn set_failure_warning(&mut self) {
         self.value = Default::default();
@@ -1093,18 +1097,11 @@ impl InertialReference {
             ssm,
         );
 
-        self.true_track.set_value(
-            if ground_speed_above_minimum_threshold {
-                simulator_data.true_track
-            } else {
-                simulator_data.true_heading
-            },
-            if ground_speed_above_minimum_threshold {
-                ssm
-            } else {
-                self.true_heading.ssm
-            },
-        );
+        if ground_speed_above_minimum_threshold {
+            self.true_track.set_value(simulator_data.true_track, ssm);
+        } else {
+            self.true_track.set_from(&self.true_heading);
+        }
 
         self.drift_angle.set_value(
             if ground_speed_above_minimum_threshold {
