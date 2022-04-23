@@ -112,11 +112,18 @@ class ElacComputer final
     real_T Constant_Value_c;
     real_T Gain_Gain_m;
     real_T Gain4_Gain;
+    real_T Bias_Bias;
     real_T Gain_Gain_a;
     real_T Gain1_Gain_p;
     real_T Gain2_Gain_c;
     real_T Gain3_Gain;
+    real_T Gain4_Gain_o;
+    real_T Bias_Bias_m;
+    real_T Gain_Gain_ab;
+    real_T Gain1_Gain_n;
+    real_T Gain3_Gain_n;
     real_T Constant_Value_a;
+    real_T Gain2_Gain_d;
     real32_T Gain_Gain_b;
     real32_T Gain1_Gain_f;
     real32_T Gain2_Gain_cb;

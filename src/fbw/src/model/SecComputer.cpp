@@ -70,9 +70,14 @@ void SecComputer::step()
   real_T rtb_eta_trim_deg_j;
   real_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_right_aileron_command_deg;
   real_T rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_yaw_damper_command_deg;
+  real_T rtb_DataTypeConversion3;
+  real_T rtb_DataTypeConversion5;
+  real_T rtb_DataTypeConversion6;
+  real_T rtb_DataTypeConversion7;
   real_T rtb_Gain;
+  real_T rtb_Gain1;
+  real_T rtb_Gain3;
   real_T rtb_Saturation;
-  real_T rtb_eta_deg_a;
   real_T rtb_eta_trim_deg_i;
   real_T rtb_logic_crg_total_sidestick_roll_command;
   real32_T rtb_y_l;
@@ -82,7 +87,7 @@ void SecComputer::step()
   boolean_T rtb_AND1;
   boolean_T rtb_AND3;
   boolean_T rtb_NOT_k;
-  boolean_T rtb_OR_p;
+  boolean_T rtb_OR_b;
   boolean_T rtb_isEngagedInPitch;
   boolean_T rtb_isEngagedInRoll;
   boolean_T rtb_logic_crg1_is_blue_hydraulic_power_avail;
@@ -154,18 +159,18 @@ void SecComputer::step()
     SecComputer_U.in.time.dt, SecComputer_P.ConfirmNode_isRisingEdge_j, SecComputer_P.ConfirmNode_timeDelay_a,
     &SecComputer_DWork.Delay1_DSTATE, &SecComputer_DWork.sf_MATLABFunction_g2);
   if (!SecComputer_DWork.pRightStickDisabled) {
-    rtb_eta_trim_deg_i = SecComputer_U.in.analog_inputs.fo_pitch_stick_pos;
+    rtb_logic_crg_total_sidestick_roll_command = SecComputer_U.in.analog_inputs.fo_pitch_stick_pos;
   } else {
-    rtb_eta_trim_deg_i = SecComputer_P.Constant_Value_p;
+    rtb_logic_crg_total_sidestick_roll_command = SecComputer_P.Constant_Value_p;
   }
 
   if (SecComputer_DWork.pLeftStickDisabled) {
-    rtb_logic_crg_total_sidestick_roll_command = SecComputer_P.Constant_Value_p;
+    rtb_Gain = SecComputer_P.Constant_Value_p;
   } else {
-    rtb_logic_crg_total_sidestick_roll_command = SecComputer_U.in.analog_inputs.capt_pitch_stick_pos;
+    rtb_Gain = SecComputer_U.in.analog_inputs.capt_pitch_stick_pos;
   }
 
-  rtb_Saturation = rtb_eta_trim_deg_i + rtb_logic_crg_total_sidestick_roll_command;
+  rtb_Saturation = rtb_logic_crg_total_sidestick_roll_command + rtb_Gain;
   if (rtb_Saturation > SecComputer_P.Saturation_UpperSat) {
     rtb_Saturation = SecComputer_P.Saturation_UpperSat;
   } else if (rtb_Saturation < SecComputer_P.Saturation_LowerSat) {
@@ -173,18 +178,18 @@ void SecComputer::step()
   }
 
   if (!SecComputer_DWork.pRightStickDisabled) {
-    rtb_eta_trim_deg_i = SecComputer_U.in.analog_inputs.fo_roll_stick_pos;
+    rtb_logic_crg_total_sidestick_roll_command = SecComputer_U.in.analog_inputs.fo_roll_stick_pos;
   } else {
-    rtb_eta_trim_deg_i = SecComputer_P.Constant1_Value_p;
+    rtb_logic_crg_total_sidestick_roll_command = SecComputer_P.Constant1_Value_p;
   }
 
   if (SecComputer_DWork.pLeftStickDisabled) {
-    rtb_logic_crg_total_sidestick_roll_command = SecComputer_P.Constant1_Value_p;
+    rtb_Gain = SecComputer_P.Constant1_Value_p;
   } else {
-    rtb_logic_crg_total_sidestick_roll_command = SecComputer_U.in.analog_inputs.capt_roll_stick_pos;
+    rtb_Gain = SecComputer_U.in.analog_inputs.capt_roll_stick_pos;
   }
 
-  rtb_eta_trim_deg_i += rtb_logic_crg_total_sidestick_roll_command;
+  rtb_eta_trim_deg_i = rtb_logic_crg_total_sidestick_roll_command + rtb_Gain;
   if (rtb_eta_trim_deg_i > SecComputer_P.Saturation1_UpperSat) {
     rtb_eta_trim_deg_i = SecComputer_P.Saturation1_UpperSat;
   } else if (rtb_eta_trim_deg_i < SecComputer_P.Saturation1_LowerSat) {
@@ -239,19 +244,19 @@ void SecComputer::step()
     (&SecComputer_RGND)), &rtb_eta_trim_deg_i, &rtb_on_ground, &rtb_xi_deg, &rtb_zeta_deg);
   switch (static_cast<int32_T>(SecComputer_P.Constant1_Value_a)) {
    case 0:
-    rtb_eta_deg_a = 0.0;
+    rtb_DataTypeConversion3 = 0.0;
     break;
 
    case 1:
-    rtb_eta_deg_a = rtb_xi_deg;
+    rtb_DataTypeConversion3 = rtb_xi_deg;
     break;
 
    default:
-    rtb_eta_deg_a = SecComputer_P.Constant_Value_c;
+    rtb_DataTypeConversion3 = SecComputer_P.Constant_Value_c;
     break;
   }
 
-  rtb_Gain = SecComputer_P.Gain_Gain * rtb_eta_deg_a;
+  rtb_Gain = SecComputer_P.Gain_Gain * rtb_DataTypeConversion3;
   switch (static_cast<int32_T>(SecComputer_P.Constant1_Value_a)) {
    case 0:
     rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_yaw_damper_command_deg = 0.0;
@@ -267,41 +272,49 @@ void SecComputer::step()
     break;
   }
 
-  rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_right_aileron_command_deg = rtb_eta_deg_a;
-  rtb_OR_p = (rtb_logic_crg1_tracking_mode_on || ((static_cast<real_T>(rtb_activePitchLaw) !=
+  rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_right_aileron_command_deg =
+    rtb_DataTypeConversion3;
+  rtb_eta_trim_deg_i = SecComputer_P.Gain4_Gain * SecComputer_U.in.bus_inputs.ir_1_bus.body_normal_accel_g.Data +
+    SecComputer_P.Bias_Bias;
+  rtb_DataTypeConversion3 = SecComputer_P.Gain_Gain_p * SecComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data;
+  rtb_Gain1 = SecComputer_P.Gain1_Gain * SecComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.Data;
+  rtb_Gain3 = SecComputer_P.Gain3_Gain * SecComputer_U.in.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data;
+  rtb_DataTypeConversion5 = SecComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
+  rtb_DataTypeConversion6 = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_computed_kn.Data;
+  rtb_DataTypeConversion7 = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
+  rtb_OR_b = (rtb_logic_crg1_tracking_mode_on || ((static_cast<real_T>(rtb_activePitchLaw) !=
     SecComputer_P.CompareToConstant2_const) && (static_cast<real_T>(rtb_activePitchLaw) !=
     SecComputer_P.CompareToConstant3_const)));
-  LawMDLOBJ2.step(&SecComputer_U.in.time.dt, &SecComputer_U.in.time.simulation_time, (const_cast<real_T*>
-    (&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (
+  LawMDLOBJ2.step(&SecComputer_U.in.time.dt, &SecComputer_U.in.time.simulation_time, &rtb_eta_trim_deg_i,
+                  &rtb_DataTypeConversion3, &rtb_Gain1, &rtb_Gain3, (const_cast<real_T*>(&SecComputer_RGND)), (
+    const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), &rtb_DataTypeConversion5,
+                  &rtb_DataTypeConversion6, &rtb_DataTypeConversion7, (const_cast<real_T*>(&SecComputer_RGND)), (
     const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>
-    (&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (
-    const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>
-    (&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (
-    const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>
-    (&SecComputer_RGND)), &rtb_Saturation, &rtb_on_ground, &rtb_OR_p, (const_cast<boolean_T*>(&SecComputer_BGND)), (
-    const_cast<boolean_T*>(&SecComputer_BGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>
     (&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)),
-                  &rtb_eta_deg, &rtb_eta_trim_deg);
-  rtb_OR_p = (rtb_logic_crg1_tracking_mode_on || (static_cast<real_T>(rtb_activePitchLaw) !=
+                  &rtb_Saturation, &rtb_on_ground, &rtb_OR_b, (const_cast<boolean_T*>(&SecComputer_BGND)),
+                  (const_cast<boolean_T*>(&SecComputer_BGND)), (const_cast<real_T*>(&SecComputer_RGND)),
+                  (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>
+    (&SecComputer_RGND)), &rtb_eta_deg, &rtb_eta_trim_deg);
+  rtb_OR_b = (rtb_logic_crg1_tracking_mode_on || (static_cast<real_T>(rtb_activePitchLaw) !=
     SecComputer_P.CompareToConstant1_const));
   LawMDLOBJ3.step(&SecComputer_U.in.time.dt, &SecComputer_U.in.time.simulation_time, (const_cast<real_T*>
     (&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (
     const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>
     (&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (
-    const_cast<real_T*>(&SecComputer_RGND)), &rtb_Saturation, &rtb_on_ground, &rtb_OR_p, (const_cast<boolean_T*>
+    const_cast<real_T*>(&SecComputer_RGND)), &rtb_Saturation, &rtb_on_ground, &rtb_OR_b, (const_cast<boolean_T*>
     (&SecComputer_BGND)), (const_cast<boolean_T*>(&SecComputer_BGND)), &rtb_eta_deg_o, &rtb_eta_trim_deg_j);
   switch (static_cast<int32_T>(rtb_activePitchLaw)) {
    case 1:
    case 2:
-    rtb_eta_deg_a = rtb_eta_deg;
+    rtb_DataTypeConversion3 = rtb_eta_deg;
     break;
 
    case 3:
-    rtb_eta_deg_a = rtb_eta_deg_o;
+    rtb_DataTypeConversion3 = rtb_eta_deg_o;
     break;
 
    default:
-    rtb_eta_deg_a = SecComputer_P.Constant_Value_a;
+    rtb_DataTypeConversion3 = SecComputer_P.Constant_Value_a;
     break;
   }
 
@@ -325,13 +338,13 @@ void SecComputer::step()
   SecComputer_Y.out.discrete_outputs.right_elevator_ok = rtb_NOT_k;
   SecComputer_Y.out.discrete_outputs.ground_spoiler_out = SecComputer_P.Constant_Value_i;
   SecComputer_Y.out.discrete_outputs.sec_failed = SecComputer_P.Constant2_Value_n;
-  rtb_OR_p = (rtb_isEngagedInPitch && rtb_AND1);
-  SecComputer_Y.out.discrete_outputs.left_elevator_damping_mode = rtb_OR_p;
-  SecComputer_Y.out.discrete_outputs.right_elevator_damping_mode = rtb_OR_p;
+  rtb_OR_b = (rtb_isEngagedInPitch && rtb_AND1);
+  SecComputer_Y.out.discrete_outputs.left_elevator_damping_mode = rtb_OR_b;
+  SecComputer_Y.out.discrete_outputs.right_elevator_damping_mode = rtb_OR_b;
   SecComputer_Y.out.discrete_outputs.ths_active = (rtb_isEngagedInPitch &&
     (!SecComputer_U.in.discrete_inputs.ths_motor_fault));
-  SecComputer_Y.out.analog_outputs.left_elev_pos_order_deg = rtb_eta_deg_a;
-  SecComputer_Y.out.analog_outputs.right_elev_pos_order_deg = rtb_eta_deg_a;
+  SecComputer_Y.out.analog_outputs.left_elev_pos_order_deg = rtb_DataTypeConversion3;
+  SecComputer_Y.out.analog_outputs.right_elev_pos_order_deg = rtb_DataTypeConversion3;
   SecComputer_Y.out.analog_outputs.ths_pos_order_deg = rtb_eta_trim_deg_i;
   SecComputer_Y.out.analog_outputs.left_spoiler_1_pos_order_deg = SecComputer_P.Constant_Value_o;
   SecComputer_Y.out.analog_outputs.right_spoiler_1_pos_order_deg = SecComputer_P.Constant_Value_o;
@@ -418,20 +431,20 @@ void SecComputer::step()
     (SecComputer_U.in.analog_inputs.capt_pitch_stick_pos);
   SecComputer_Y.out.bus_outputs.left_sidestick_pitch_command_deg.SSM = static_cast<uint32_T>
     (SecComputer_P.EnumeratedConstant1_Value);
-  SecComputer_Y.out.bus_outputs.right_sidestick_pitch_command_deg.Data = SecComputer_P.Gain1_Gain * static_cast<real32_T>
-    (SecComputer_U.in.analog_inputs.fo_pitch_stick_pos);
+  SecComputer_Y.out.bus_outputs.right_sidestick_pitch_command_deg.Data = SecComputer_P.Gain1_Gain_f *
+    static_cast<real32_T>(SecComputer_U.in.analog_inputs.fo_pitch_stick_pos);
   SecComputer_Y.out.bus_outputs.right_sidestick_pitch_command_deg.SSM = static_cast<uint32_T>
     (SecComputer_P.EnumeratedConstant1_Value);
-  SecComputer_Y.out.bus_outputs.left_sidestick_roll_command_deg.Data = SecComputer_P.Gain2_Gain * static_cast<real32_T>
+  SecComputer_Y.out.bus_outputs.left_sidestick_roll_command_deg.Data = SecComputer_P.Gain2_Gain_c * static_cast<real32_T>
     (SecComputer_U.in.analog_inputs.capt_roll_stick_pos);
   SecComputer_Y.out.bus_outputs.left_sidestick_roll_command_deg.SSM = static_cast<uint32_T>
     (SecComputer_P.EnumeratedConstant1_Value);
-  SecComputer_Y.out.bus_outputs.right_sidestick_roll_command_deg.Data = SecComputer_P.Gain3_Gain * static_cast<real32_T>
-    (SecComputer_U.in.analog_inputs.fo_roll_stick_pos);
+  SecComputer_Y.out.bus_outputs.right_sidestick_roll_command_deg.Data = SecComputer_P.Gain3_Gain_g *
+    static_cast<real32_T>(SecComputer_U.in.analog_inputs.fo_roll_stick_pos);
   SecComputer_Y.out.bus_outputs.right_sidestick_roll_command_deg.SSM = static_cast<uint32_T>
     (SecComputer_P.EnumeratedConstant1_Value);
   rtb_y_l = static_cast<real32_T>(SecComputer_U.in.analog_inputs.spd_brk_lever_pos);
-  SecComputer_Y.out.bus_outputs.speed_brake_lever_command_deg.Data = SecComputer_P.Gain4_Gain * static_cast<real32_T>
+  SecComputer_Y.out.bus_outputs.speed_brake_lever_command_deg.Data = SecComputer_P.Gain4_Gain_l * static_cast<real32_T>
     (SecComputer_U.in.analog_inputs.spd_brk_lever_pos);
   SecComputer_Y.out.bus_outputs.speed_brake_lever_command_deg.SSM = static_cast<uint32_T>
     (SecComputer_P.EnumeratedConstant1_Value);
@@ -488,7 +501,7 @@ void SecComputer::step()
     rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_right_aileron_command_deg;
   SecComputer_Y.out.laws.lateral_law_outputs.yaw_damper_command_deg =
     rtb_BusConversion_InsertedFor_BusAssignment_at_inport_1_BusCreator1_g_yaw_damper_command_deg;
-  SecComputer_Y.out.laws.pitch_law_outputs.elevator_command_deg = rtb_eta_deg_a;
+  SecComputer_Y.out.laws.pitch_law_outputs.elevator_command_deg = rtb_DataTypeConversion3;
   SecComputer_Y.out.laws.pitch_law_outputs.ths_command_deg = rtb_eta_trim_deg_i;
   SecComputer_Y.out.logic.on_ground = rtb_on_ground;
   SecComputer_Y.out.logic.tracking_mode_on = rtb_logic_crg1_tracking_mode_on;

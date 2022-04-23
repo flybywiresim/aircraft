@@ -394,9 +394,21 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   -1.0,
 
+  0.01,
+
+  1.0,
+
+  -1.0,
+
+  -1.0,
+
+  -6.0,
+
   0.0,
 
   0.0,
+
+  -6.0,
 
   15.0F,
 

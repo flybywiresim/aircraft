@@ -1459,7 +1459,7 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
 
     SimInput simInput = simConnectInterface.getSimInput();
     SimOutput output = {(-leftElevatorCommand - rightElevatorCommand) / (2 * 30), (leftAileronCommand - rightAileronCommand) / (2 * 25),
-                        simInput.inputs[2]};
+                        -simInput.inputs[2]};
 
     // send data via sim connect
     if (!simConnectInterface.sendData(output)) {
@@ -1470,8 +1470,8 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
 
   // set trim values
   SimOutputEtaTrim outputEtaTrim = {};
-  outputEtaTrim.eta_trim_deg = elacsAnalogOutputs[1].ths_pos_order + elacsAnalogOutputs[0].ths_pos_order +
-                               secsAnalogOutputs[0].ths_pos_order_deg + secsAnalogOutputs[1].ths_pos_order_deg;
+  outputEtaTrim.eta_trim_deg = -elacsAnalogOutputs[1].ths_pos_order - elacsAnalogOutputs[0].ths_pos_order +
+                               -secsAnalogOutputs[0].ths_pos_order_deg - secsAnalogOutputs[1].ths_pos_order_deg;
 
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
     if (!simConnectInterface.sendData(outputEtaTrim)) {

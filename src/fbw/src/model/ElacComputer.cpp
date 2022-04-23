@@ -122,7 +122,6 @@ void ElacComputer::step()
   real_T rtb_eta_deg_od;
   real_T rtb_eta_trim_deg_j;
   real_T rtb_DataTypeConversion4_tmp;
-  real_T rtb_DataTypeConversion5_a;
   real_T rtb_DataTypeConversion5_tmp;
   real_T rtb_DataTypeConversion6_tmp;
   real_T rtb_Gain;
@@ -130,6 +129,7 @@ void ElacComputer::step()
   real_T rtb_Gain1_m;
   real_T rtb_Gain2;
   real_T rtb_Gain3;
+  real_T rtb_Gain_k;
   real_T rtb_Gain_m;
   real_T rtb_Saturation;
   real_T rtb_eta_trim_deg_i;
@@ -439,38 +439,43 @@ void ElacComputer::step()
   }
 
   rtb_Gain2 = rtb_Gain1;
-  rtb_eta_trim_deg_i = ElacComputer_P.Gain4_Gain * ElacComputer_U.in.bus_inputs.ir_1_bus.body_normal_accel_g.Data;
-  rtb_Gain1 = ElacComputer_P.Gain_Gain_a * ElacComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data;
+  rtb_Gain1 = ElacComputer_P.Gain4_Gain * ElacComputer_U.in.bus_inputs.ir_1_bus.body_normal_accel_g.Data +
+    ElacComputer_P.Bias_Bias;
+  rtb_Gain_k = ElacComputer_P.Gain_Gain_a * ElacComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data;
   rtb_Gain1_m = ElacComputer_P.Gain1_Gain_p * ElacComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.Data;
   rtb_Gain3 = ElacComputer_P.Gain3_Gain * ElacComputer_U.in.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data;
-  rtb_DataTypeConversion5_a = ElacComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
+  rtb_eta_trim_deg_i = ElacComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
   rtb_OR = (rtb_logic_crg1_tracking_mode_on || (static_cast<real_T>(priorityPitchPitchLawCap) !=
              ElacComputer_P.CompareToConstant_const_f));
-  LawMDLOBJ5.step(&ElacComputer_U.in.time.dt, &ElacComputer_U.in.time.simulation_time, &rtb_eta_trim_deg_i, &rtb_Gain1,
+  LawMDLOBJ5.step(&ElacComputer_U.in.time.dt, &ElacComputer_U.in.time.simulation_time, &rtb_Gain1, &rtb_Gain_k,
                   &rtb_Gain1_m, &rtb_Gain3, (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>
-    (&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), &rtb_DataTypeConversion5_a,
-                  &rtb_DataTypeConversion4_tmp, &rtb_DataTypeConversion5_tmp, &rtb_DataTypeConversion6_tmp, (const_cast<
-    real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)),
+    (&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), &rtb_eta_trim_deg_i, &rtb_DataTypeConversion4_tmp,
+                  &rtb_DataTypeConversion5_tmp, &rtb_DataTypeConversion6_tmp, (const_cast<real_T*>(&ElacComputer_RGND)),
+                  (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)),
                   (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)),
                   (const_cast<boolean_T*>(&ElacComputer_BGND)), (const_cast<real_T*>(&ElacComputer_RGND)),
                   &rtb_Saturation, &rtb_OR2, &rtb_OR, (const_cast<boolean_T*>(&ElacComputer_BGND)),
                   (const_cast<boolean_T*>(&ElacComputer_BGND)), (const_cast<real_T*>(&ElacComputer_RGND)),
                   (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)),
                   (const_cast<real_T*>(&ElacComputer_RGND)), &rtb_eta_deg, &rtb_eta_trim_deg);
+  rtb_Gain1 = ElacComputer_P.Gain4_Gain_o * ElacComputer_U.in.bus_inputs.ir_1_bus.body_normal_accel_g.Data +
+    ElacComputer_P.Bias_Bias_m;
+  rtb_Gain_k = ElacComputer_P.Gain_Gain_ab * ElacComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data;
+  rtb_Gain1_m = ElacComputer_P.Gain1_Gain_n * ElacComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.Data;
+  rtb_Gain3 = ElacComputer_P.Gain3_Gain_n * ElacComputer_U.in.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data;
   rtb_OR = (rtb_logic_crg1_tracking_mode_on || ((static_cast<real_T>(priorityPitchPitchLawCap) !=
               ElacComputer_P.CompareToConstant2_const) && (static_cast<real_T>(priorityPitchPitchLawCap) !=
               ElacComputer_P.CompareToConstant3_const)));
-  LawMDLOBJ3.step(&ElacComputer_U.in.time.dt, &ElacComputer_U.in.time.simulation_time, (const_cast<real_T*>
-    (&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (
-    const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>
-    (&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (
-    const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>
-    (&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (
-    const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>
-    (&ElacComputer_RGND)), &rtb_Saturation, &rtb_OR2, &rtb_OR, (const_cast<boolean_T*>(&ElacComputer_BGND)), (
-    const_cast<boolean_T*>(&ElacComputer_BGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>
-    (&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)),
-                  &rtb_eta_deg_o, &rtb_eta_trim_deg_b);
+  LawMDLOBJ3.step(&ElacComputer_U.in.time.dt, &ElacComputer_U.in.time.simulation_time, &rtb_Gain1, &rtb_Gain_k,
+                  &rtb_Gain1_m, &rtb_Gain3, (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>
+    (&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), &rtb_eta_trim_deg_i, &rtb_DataTypeConversion4_tmp,
+                  &rtb_DataTypeConversion5_tmp, &rtb_DataTypeConversion6_tmp, (const_cast<real_T*>(&ElacComputer_RGND)),
+                  (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)),
+                  (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), &rtb_Saturation,
+                  &rtb_OR2, &rtb_OR, (const_cast<boolean_T*>(&ElacComputer_BGND)), (const_cast<boolean_T*>
+    (&ElacComputer_BGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (
+    const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), &rtb_eta_deg_o,
+                  &rtb_eta_trim_deg_b);
   rtb_OR = (rtb_logic_crg1_tracking_mode_on || (static_cast<real_T>(priorityPitchPitchLawCap) !=
              ElacComputer_P.CompareToConstant1_const));
   LawMDLOBJ4.step(&ElacComputer_U.in.time.dt, &ElacComputer_U.in.time.simulation_time, (const_cast<real_T*>

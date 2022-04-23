@@ -442,15 +442,29 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   0.01,
 
+  1.0,
+
   -1.0,
 
   -1.0,
 
   -6.0,
+
+  -6.0,
+
+  0.01,
+
+  1.0,
+
+  -1.0,
+
+  -1.0,
 
   -6.0,
 
   0.0,
+
+  -6.0,
 
   15.0F,
 
