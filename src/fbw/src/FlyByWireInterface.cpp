@@ -1073,7 +1073,7 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   double rightElevPos = -idRightElevatorPosition->get();
   elacs[elacIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos > 0 ? leftElevPos * 17 : leftElevPos * 30;
   elacs[elacIndex].modelInputs.in.analog_inputs.right_elevator_pos_deg = rightElevPos > 0 ? rightElevPos * 17 : rightElevPos * 30;
-  elacs[elacIndex].modelInputs.in.analog_inputs.ths_pos_deg = 0;
+  elacs[elacIndex].modelInputs.in.analog_inputs.ths_pos_deg = -simData.eta_trim_deg;
   elacs[elacIndex].modelInputs.in.analog_inputs.left_aileron_pos_deg = idLeftAileronPosition->get() * 25;
   elacs[elacIndex].modelInputs.in.analog_inputs.right_aileron_pos_deg = -idRightAileronPosition->get() * 25;
   elacs[elacIndex].modelInputs.in.analog_inputs.rudder_pedal_pos = -simInput.inputs[2];
@@ -1192,13 +1192,13 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = false;
 
   if (secIndex < 2) {
-    secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = simInput.inputs[0] * 15;
+    secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0] * 15;
     secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
     double leftElevPos = -idLeftElevatorPosition->get();
     double rightElevPos = -idRightElevatorPosition->get();
     secs[secIndex].modelInputs.in.analog_inputs.left_elevator_pos_deg = leftElevPos > 0 ? leftElevPos * 17 : leftElevPos * 30;
     secs[secIndex].modelInputs.in.analog_inputs.right_elevator_pos_deg = rightElevPos > 0 ? rightElevPos * 17 : rightElevPos * 30;
-    secs[secIndex].modelInputs.in.analog_inputs.ths_pos_deg = 0;
+    secs[secIndex].modelInputs.in.analog_inputs.ths_pos_deg = -simData.eta_trim_deg;
     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_1_g = 0;
     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_2_g = 0;
   } else {
@@ -1210,7 +1210,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_1_g = 0;
     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_2_g = 0;
   }
-  secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = simInput.inputs[1] * 19;
+  secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1] * 19;
   secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
   secs[secIndex].modelInputs.in.analog_inputs.spd_brk_lever_pos = 0;
   secs[secIndex].modelInputs.in.analog_inputs.thr_lever_1_pos = 0;
@@ -1222,10 +1222,23 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_left = 0;
   secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_right = 0;
 
-  secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = {};
-  secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = {};
-  secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = {};
-  secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = {};
+  if (secIndex == 0) {
+    secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adirsBusOutputs[0].adrBus;
+    secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adirsBusOutputs[2].adrBus;
+    secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = adirsBusOutputs[0].irsBus;
+    secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = adirsBusOutputs[2].irsBus;
+  } else if (secIndex == 1) {
+    secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adirsBusOutputs[0].adrBus;
+    secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adirsBusOutputs[1].adrBus;
+    secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = adirsBusOutputs[0].irsBus;
+    secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = adirsBusOutputs[1].irsBus;
+  } else if (secIndex == 2) {
+    secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adirsBusOutputs[1].adrBus;
+    secs[secIndex].modelInputs.in.bus_inputs.adr_2_bus = adirsBusOutputs[2].adrBus;
+    secs[secIndex].modelInputs.in.bus_inputs.ir_1_bus = adirsBusOutputs[1].irsBus;
+    secs[secIndex].modelInputs.in.bus_inputs.ir_2_bus = adirsBusOutputs[2].irsBus;
+  }
+
   secs[secIndex].modelInputs.in.bus_inputs.fcdc_1_bus = fcdcsBusOutputs[0];
   secs[secIndex].modelInputs.in.bus_inputs.fcdc_2_bus = fcdcsBusOutputs[1];
   secs[secIndex].modelInputs.in.bus_inputs.elac_1_bus = elacsBusOutputs[0];
@@ -1400,7 +1413,7 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idLeftAileronSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].left_aileron_active_mode);
   idLeftAileronCommandedPosition[1]->set(elacsAnalogOutputs[1].left_aileron_pos_order);
   idRightAileronSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].right_aileron_active_mode);
-  idRightAileronCommandedPosition[1]->set(-elacsAnalogOutputs[1].left_aileron_pos_order);
+  idRightAileronCommandedPosition[1]->set(-elacsAnalogOutputs[1].right_aileron_pos_order);
 
   idLeftSpoilerCommandedPosition[0]->set(secsAnalogOutputs[2].left_spoiler_1_pos_order_deg);
   idRightSpoilerCommandedPosition[0]->set(secsAnalogOutputs[2].right_spoiler_1_pos_order_deg);
@@ -1473,7 +1486,8 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   outputEtaTrim.eta_trim_deg = -elacsAnalogOutputs[1].ths_pos_order - elacsAnalogOutputs[0].ths_pos_order +
                                -secsAnalogOutputs[0].ths_pos_order_deg - secsAnalogOutputs[1].ths_pos_order_deg;
 
-  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
+  if (elacsDiscreteOutputs[0].ths_active || elacsDiscreteOutputs[1].ths_active || secsDiscreteOutputs[0].ths_active ||
+      secsDiscreteOutputs[1].ths_active) {
     if (!simConnectInterface.sendData(outputEtaTrim)) {
       cout << "WASM: Write data failed!" << endl;
       return false;
