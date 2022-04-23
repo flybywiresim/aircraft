@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { IconArrowRight, IconTrash } from '@tabler/icons';
 import { t } from '../../translation';
@@ -28,6 +28,7 @@ const getTagColor = (tagName?: string) => {
     case 'TAXI': return 'text-[#5280EA]';
     case 'SID': return 'text-utility-pink';
     case 'REF': return 'text-utility-purple';
+    case 'DEL': return 'text-utility-red';
     default: return 'text-theme-text';
     }
 };
@@ -54,22 +55,25 @@ export const PinnedChartCard = ({ pinnedChart, className, showDelete } : PinnedC
         pageIndex,
     } = pinnedChart;
 
+    const [currentTag, setCurrentTag] = useState(tag);
     const tab = NavigationTab[provider];
 
     return (
         <>
             {showDelete ? (
                 <div
-                    className={`relative cursor-pointer flex flex-col flex-wrap px-2 pt-3 pb-2 rounded-md overflow-hidden ${className}`}
+                    className={`relative cursor-pointer flex flex-col flex-wrap px-2 pt-3 pb-2 rounded-md rounded-md overflow-hidden ${className}`}
                     onClick={() => dispatch(removedPinnedChart({ chartId: pinnedChart.chartId }))}
+                    onMouseEnter={() => setCurrentTag('DEL')}
+                    onMouseLeave={() => setCurrentTag(tag)}
                 >
                     <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.Delete')}>
-                        <div className="absolute right-0 bottom-0 z-10 text-utility-red ">
+                        <div className="absolute right-0 bottom-0 z-10 text-utility-red">
                             <IconTrash className="z-10" size={48} />
                         </div>
                     </TooltipWrapper>
                     <div className="opacity-70">
-                        <div className={`${getTagColor(tag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
+                        <div className={`${getTagColor(currentTag)} bg-current h-1.5 w-full inset-x-0 absolute top-0`} />
                         <h2 className="font-bold break-all">
                             {title}
                             {' '}
