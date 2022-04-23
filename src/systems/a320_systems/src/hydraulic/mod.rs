@@ -3290,7 +3290,7 @@ impl A320AutobrakeController {
             deceleration_governor: AutobrakeDecelerationGovernor::new(),
             target: Acceleration::new::<meter_per_second_squared>(0.),
             mode: AutobrakeMode::NONE,
-            arming_is_allowed_by_bcu: false,
+            arming_is_allowed_by_bcu: if context.is_in_flight() { true } else { false },
             left_brake_pedal_input: Ratio::new::<percent>(0.),
             right_brake_pedal_input: Ratio::new::<percent>(0.),
             ground_spoilers_are_deployed: false,
