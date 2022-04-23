@@ -1,71 +1,71 @@
 {
   "AirTrafficControl": {
     "Active": "Attivo",
-    "ChangeATISATCSourceButton": "Change ATIS/ATC source",
-    "ConnectHoppieACARS": "Connect Hoppie ACARS",
-    "NoInformationAvailableForThisFrequency": "No information available for this frequency",
+    "ChangeATISATCSourceButton": "Cambia fonte ATIS/ATC",
+    "ConnectHoppieACARS": "Connetti Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "Nessuna informazione disponibile per questa frequenza",
     "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
-    "SetActive": "Set Active",
-    "SetStandby": "Set Standby",
+    "SetActive": "Imposta attivo",
+    "SetStandby": "Imposta standby",
     "Standby": "Standby",
-    "Title": "Air Traffic Control"
+    "Title": "Controllo Traffico Aereo"
   },
   "Checklists": {
-    "AreYouSureYouWantToResetAllChecklists": "Are you sure you want to reset all checklists?",
-    "AreYouSureYouWantToResetChecklists": "Are you sure you want to reset all checklists?",
-    "ChecklistResetWarning": "Checklist Reset Warning",
-    "MarkChecklistAsComplete": "Mark checklist as complete",
-    "MarkItemAsComplete": "Mark item as complete",
-    "ProceedToNextChecklist": "Proceed to next checklist",
-    "ResetAll": "Reset All",
-    "ResetChecklist": "Reset Checklist",
-    "TheLastChecklistIsComplete": "The last checklist is complete",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed",
+    "AreYouSureYouWantToResetAllChecklists": "Sei sicuro di voler ripristinare tutte le checklist?",
+    "AreYouSureYouWantToResetChecklists": "Sei sicuro di voler ripristinare tutte le checklist?",
+    "ChecklistResetWarning": "Avviso reimpostazione checklist",
+    "MarkChecklistAsComplete": "Segna la checklist come completata",
+    "MarkItemAsComplete": "Segna elemento come completato",
+    "ProceedToNextChecklist": "Procedi alla prossima checklist",
+    "ResetAll": "Reimposta tutto",
+    "ResetChecklist": "Reimposta checklist",
+    "TheLastChecklistIsComplete": "L'ultima checklist è completa",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Ci sono voci rimanenti per il completamento automatico della checklist, che non sono ancora state completate",
     "Title": "Checklists"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "No Relevant Checklists",
+        "NoRelevantChecklists": "Nessuna checklist pertinente",
         "Title": "Checklists"
       },
-      "GoToPage": "Go to Page",
+      "GoToPage": "Vai a pagina",
       "Maintenance": {
-        "NoActiveFailures": "No Active Failures",
-        "Title": "Maintenance"
+        "NoActiveFailures": "Nessun guasto attivo",
+        "Title": "Manutenzione"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "No Pinned Charts",
-        "Title": "Pinned Charts"
+        "NoPinnedCharts": "Nessun carta fissata",
+        "Title": "Grafici appuntati"
       },
       "TT": {
-        "RearrangeWidgets": "Rearrange Widgets"
+        "RearrangeWidgets": "Riorganizza i widget"
       },
-      "Title": "Important Information",
+      "Title": "Informazione importante",
       "Weather": {
-        "AirPressure": "Air Pressure",
-        "DewPoint": "Dew Point",
-        "IcaoInvalid": "ICAO invalid or no METAR available",
-        "Loading": "Loading",
-        "MetarParsingError": "Received METAR could not be parsed",
-        "NoIcaoProvided": "No ICAO provided",
-        "Raw": "Raw",
+        "AirPressure": "Pressione dell'aria",
+        "DewPoint": "Punto di rugiada",
+        "IcaoInvalid": "ICAO non valido o nessun METAR disponibile",
+        "Loading": "Caricamento",
+        "MetarParsingError": "Il METAR ricevuto non può essere analizzato",
+        "NoIcaoProvided": "Nessun ICAO fornito",
+        "Raw": "Grezzo",
         "TT": {
-          "SwitchToIconView": "Switch to Icon View",
-          "SwitchToRawMetarView": "Switch to Raw METAR View"
+          "SwitchToIconView": "Passa alla vista a icone",
+          "SwitchToRawMetarView": "Passa alla vista del METAR grezzo"
         },
-        "Temperature": "Temperature",
-        "Title": "Weather",
-        "WindSpeed": "Wind Speed"
+        "Temperature": "Temperatura",
+        "Title": "Meteo",
+        "WindSpeed": "Velocità Vento"
       }
     },
     "Title": "Dashboard",
     "YourFlight": {
-      "Alternate": "Alternate",
-      "AverageWind": "Average Wind",
-      "CompanyRoute": "Company Route",
+      "Alternate": "Alternato",
+      "AverageWind": "Velocità Media Vento",
+      "CompanyRoute": "Rotta Compagnia",
       "CostIndex": "Cost Index",
-      "CruiseAlt": "Cruise Alt.",
+      "CruiseAlt": "Alt. Crociera",
       "ImportSimBriefData": "Import SimBrief Data",
       "Route": "Route",
       "SimBriefDataNotYetLoaded": "SimBrief data not yet loaded.",
@@ -358,7 +358,7 @@
       "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
       "IsisBaroUnit": "ISIS Baro Unit",
       "IsisMetricAltitude": "ISIS Metric Altitude",
-      "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
+      "LatLonExtendedFormat": "Formato Waypoint Lat/Lon FMGC",
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "RMP VHF Spacing",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",

@@ -193,7 +193,7 @@
       "TT": {
         "ChangeChartProvider": "Changer le fournisseur de cartes",
         "ChangeChartSortMethod": "Modifier la méthode de tri des cartes",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "Supprimer toutes les cartes épinglées"
       },
       "Title": "Cartes épinglées",
       "View": "Afficher"
