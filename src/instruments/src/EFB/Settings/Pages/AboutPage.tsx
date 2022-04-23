@@ -42,7 +42,7 @@ const BuildInfoEntry = ({ title, value, underline = 0 }: BuildInfoEntryProps) =>
         <div className="flex flex-row mt-2 font-mono">
             <p>{title + '\u00A0'.repeat(Math.abs(SPACE_BETWEEN - title.length))}</p>
             <p className="ml-4">
-                <span className="underline text-theme-highlight">{first}</span>
+                <span className="text-theme-highlight underline">{first}</span>
                 {last}
             </p>
         </div>
@@ -62,7 +62,7 @@ export const AboutPage = () => {
 
     useEffect(() => {
         listener.on('SetGamercardInfo', onSetPlayerData, null);
-        
+
         fetch('/VFS/build_info.json').then((response) => response.json()).then((json) => setBuildInfo({
             built: json.built,
             ref: json.ref,
@@ -85,7 +85,7 @@ export const AboutPage = () => {
 
                     <div className="flex flex-col">
                         <div className="flex flex-row items-center">
-                            <img className="w-[36px]" src={FbwTail} />
+                            <img className="w-[36px]" src={FbwTail} alt="" />
                             <h1 className="ml-4 text-4xl font-bold font-manrope">flyPadOS 3</h1>
                         </div>
 
