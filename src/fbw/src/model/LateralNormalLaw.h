@@ -4,7 +4,6 @@
 #include "LateralNormalLaw_types.h"
 #include <cstring>
 
-extern lateral_normal_output rtP_lateral_normal_law_output_MATLABStruct;
 class LateralNormalLaw final
 {
  public:
@@ -33,38 +32,45 @@ class LateralNormalLaw final
     real_T ScheduledGain1_BreakpointsForDimension1[7];
     real_T DiscreteTimeIntegratorVariableTs_Gain;
     real_T RateLimiterVariableTs_InitialCondition;
+    real_T RateLimiterVariableTs1_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition_m;
     real_T RateLimiterVariableTs_InitialCondition_k;
-    real_T RateLimiterVariableTs1_InitialCondition;
-    real_T RateLimiterVariableTs1_InitialCondition_o;
+    real_T RateLimiterVariableTs1_InitialCondition_m;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit;
     real_T ScheduledGain_Table[5];
     real_T ScheduledGain_Table_e[7];
     real_T ScheduledGain1_Table[7];
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T RateLimiterVariableTs_lo;
+    real_T RateLimiterVariableTs1_lo;
     real_T RateLimiterVariableTs_lo_k;
     real_T RateLimiterVariableTs_lo_b;
-    real_T RateLimiterVariableTs1_lo;
-    real_T RateLimiterVariableTs1_lo_c;
+    real_T RateLimiterVariableTs1_lo_n;
     real_T RateLimiterVariableTs_up;
+    real_T RateLimiterVariableTs1_up;
     real_T RateLimiterVariableTs_up_m;
     real_T RateLimiterVariableTs_up_d;
-    real_T RateLimiterVariableTs1_up;
-    real_T RateLimiterVariableTs1_up_p;
+    real_T RateLimiterVariableTs1_up_j;
     real_T BankAngleProtection2_tableData[5];
     real_T BankAngleProtection2_bp01Data[5];
     real_T BankAngleProtection_tableData[9];
     real_T BankAngleProtection_bp01Data[9];
     real_T BankAngleProtection1_tableData[9];
     real_T BankAngleProtection1_bp01Data[9];
-    real_T Gain_Gain;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
-    real_T Gain1_Gain;
-    real_T Saturation_UpperSat_a;
+    real_T Gain_Gain;
+    real_T Constant_Value;
+    real_T Constant_Value_m;
+    real_T Constant_Value_l;
+    real_T Saturation1_UpperSat;
+    real_T Saturation1_LowerSat;
+    real_T Saturation_UpperSat_l;
     real_T Saturation_LowerSat_o;
     real_T Delay_InitialCondition;
+    real_T Gain1_Gain;
+    real_T Saturation_UpperSat_a;
+    real_T Saturation_LowerSat_ov;
     real_T Saturation_UpperSat_g;
     real_T Saturation_LowerSat_e;
     real_T Gain1_Gain_n;
@@ -73,25 +79,20 @@ class LateralNormalLaw final
     real_T Gain_Gain_p;
     real_T Limiterxi_UpperSat;
     real_T Limiterxi_LowerSat;
-    real_T Constant2_Value;
     real_T Gain1_Gain_f;
+    real_T Constant2_Value;
     real_T Gain1_Gain_l;
     real_T Saturation_UpperSat_e;
     real_T Saturation_LowerSat_j;
     real_T Gain6_Gain;
     real_T Gain_Gain_i;
-    real_T Saturation1_UpperSat;
-    real_T Saturation1_LowerSat;
+    real_T Saturation1_UpperSat_j;
+    real_T Saturation1_LowerSat_a;
     real_T Saturation_UpperSat_n;
     real_T Saturation_LowerSat_b;
-    real_T Constant_Value;
     real_T Saturation2_UpperSat;
     real_T Saturation2_LowerSat;
-    real_T Saturation1_UpperSat_e;
-    real_T Saturation1_LowerSat_l;
-    real_T Saturation_UpperSat_l;
-    real_T Saturation_LowerSat_og;
-    real_T Constant_Value_l;
+    real_T Constant_Value_k;
   };
 
   void init();
@@ -110,8 +111,8 @@ class LateralNormalLaw final
  private:
   D_Work_LateralNormalLaw_T LateralNormalLaw_DWork;
   static Parameters_LateralNormalLaw_T LateralNormalLaw_rtP;
-  static void LateralNormalLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
-    real_T *rty_Y, rtDW_RateLimiter_LateralNormalLaw_T *localDW);
+  static void LateralNormalLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts, real_T
+    rtu_init, real_T *rty_Y, rtDW_RateLimiter_LateralNormalLaw_T *localDW);
 };
 
 extern LateralNormalLaw::Parameters_LateralNormalLaw_T LateralNormalLaw_rtP;

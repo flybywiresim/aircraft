@@ -4,7 +4,6 @@
 #include "LateralDirectLaw_types.h"
 #include <cstring>
 
-extern lateral_normal_output rtP_lateral_normal_law_output_MATLABStruct;
 class LateralDirectLaw final
 {
  public:
@@ -27,17 +26,16 @@ class LateralDirectLaw final
     real_T RateLimiterVariableTs_lo_b;
     real_T RateLimiterVariableTs_up;
     real_T RateLimiterVariableTs_up_d;
-    real_T Gain_Gain;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
-    real_T Gain1_Gain;
-    real_T Constant_Value;
-    real_T Constant1_Value;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
     real_T Saturation_UpperSat_l;
     real_T Saturation_LowerSat_o;
-    real_T Constant_Value_l;
+    real_T Gain1_Gain;
+    real_T Gain_Gain;
+    real_T Constant_Value;
+    real_T Constant1_Value;
   };
 
   LateralDirectLaw(LateralDirectLaw const&) = delete;
@@ -51,8 +49,8 @@ class LateralDirectLaw final
  private:
   D_Work_LateralDirectLaw_T LateralDirectLaw_DWork;
   static Parameters_LateralDirectLaw_T LateralDirectLaw_rtP;
-  static void LateralDirectLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
-    real_T *rty_Y, rtDW_RateLimiter_LateralDirectLaw_T *localDW);
+  static void LateralDirectLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts, real_T
+    rtu_init, real_T *rty_Y, rtDW_RateLimiter_LateralDirectLaw_T *localDW);
 };
 
 extern LateralDirectLaw::Parameters_LateralDirectLaw_T LateralDirectLaw_rtP;

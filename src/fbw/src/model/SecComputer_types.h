@@ -241,25 +241,15 @@ struct base_sfcc_bus
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
-#define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
+#ifndef DEFINED_TYPEDEF_FOR_base_lgciu_bus_
+#define DEFINED_TYPEDEF_FOR_base_lgciu_bus_
 
-struct base_sec_out_bus
+struct base_lgciu_bus
 {
-  base_arinc_429 left_spoiler_1_position_deg;
-  base_arinc_429 right_spoiler_1_position_deg;
-  base_arinc_429 left_spoiler_2_position_deg;
-  base_arinc_429 right_spoiler_2_position_deg;
-  base_arinc_429 left_elevator_position_deg;
-  base_arinc_429 right_elevator_position_deg;
-  base_arinc_429 ths_position_deg;
-  base_arinc_429 left_sidestick_pitch_command_deg;
-  base_arinc_429 right_sidestick_pitch_command_deg;
-  base_arinc_429 left_sidestick_roll_command_deg;
-  base_arinc_429 right_sidestick_roll_command_deg;
-  base_arinc_429 speed_brake_lever_command_deg;
-  base_arinc_429 discrete_status_word_1;
-  base_arinc_429 discrete_status_word_2;
+  base_arinc_429 discrete_word_1;
+  base_arinc_429 discrete_word_2;
+  base_arinc_429 discrete_word_3;
+  base_arinc_429 discrete_word_4;
 };
 
 #endif
@@ -279,8 +269,8 @@ struct base_sec_bus_inputs
   base_elac_out_bus elac_2_bus;
   base_sfcc_bus sfcc_1_bus;
   base_sfcc_bus sfcc_2_bus;
-  base_sec_out_bus lgciu_1_bus;
-  real_T lgciu_2_bus;
+  base_lgciu_bus lgciu_1_bus;
+  base_lgciu_bus lgciu_2_bus;
 };
 
 #endif
@@ -412,6 +402,29 @@ struct base_sec_analog_outputs
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_out_bus_
+#define DEFINED_TYPEDEF_FOR_base_sec_out_bus_
+
+struct base_sec_out_bus
+{
+  base_arinc_429 left_spoiler_1_position_deg;
+  base_arinc_429 right_spoiler_1_position_deg;
+  base_arinc_429 left_spoiler_2_position_deg;
+  base_arinc_429 right_spoiler_2_position_deg;
+  base_arinc_429 left_elevator_position_deg;
+  base_arinc_429 right_elevator_position_deg;
+  base_arinc_429 ths_position_deg;
+  base_arinc_429 left_sidestick_pitch_command_deg;
+  base_arinc_429 right_sidestick_pitch_command_deg;
+  base_arinc_429 left_sidestick_roll_command_deg;
+  base_arinc_429 right_sidestick_roll_command_deg;
+  base_arinc_429 speed_brake_lever_command_deg;
+  base_arinc_429 discrete_status_word_1;
+  base_arinc_429 discrete_status_word_2;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_sec_outputs_
 #define DEFINED_TYPEDEF_FOR_sec_outputs_
 
@@ -486,19 +499,6 @@ struct base_roll_normal
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_lateral_normal_output_
-#define DEFINED_TYPEDEF_FOR_lateral_normal_output_
-
-struct lateral_normal_output
-{
-  lateral_normal_input input;
-  base_roll_data_computed data_computed;
-  base_roll_normal law_normal;
-  base_roll_output output;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_pitch_normal_input_
 #define DEFINED_TYPEDEF_FOR_pitch_normal_input_
 
@@ -551,41 +551,6 @@ struct base_pitch_output
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_rotation_
-#define DEFINED_TYPEDEF_FOR_base_pitch_rotation_
-
-struct base_pitch_rotation
-{
-  real_T qk_c_deg_s;
-  real_T eta_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_integrated_
-#define DEFINED_TYPEDEF_FOR_base_pitch_integrated_
-
-struct base_pitch_integrated
-{
-  real_T eta_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_normal_
-#define DEFINED_TYPEDEF_FOR_base_pitch_normal_
-
-struct base_pitch_normal
-{
-  real_T nz_c_g;
-  real_T Cstar_g;
-  real_T protection_alpha_c_deg;
-  real_T protection_V_c_kn;
-  real_T eta_dot_deg_s;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
 #define DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
 
@@ -614,6 +579,31 @@ struct base_pitch_data_computed
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_pitch_rotation_
+#define DEFINED_TYPEDEF_FOR_base_pitch_rotation_
+
+struct base_pitch_rotation
+{
+  real_T qk_c_deg_s;
+  real_T eta_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_pitch_normal_
+#define DEFINED_TYPEDEF_FOR_base_pitch_normal_
+
+struct base_pitch_normal
+{
+  real_T nz_c_g;
+  real_T Cstar_g;
+  real_T protection_alpha_c_deg;
+  real_T protection_V_c_kn;
+  real_T eta_dot_deg_s;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_pitch_law_output_
 #define DEFINED_TYPEDEF_FOR_base_pitch_law_output_
 
@@ -624,18 +614,12 @@ struct base_pitch_law_output
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_pitch_normal_output_
-#define DEFINED_TYPEDEF_FOR_pitch_normal_output_
+#ifndef DEFINED_TYPEDEF_FOR_base_pitch_integrated_
+#define DEFINED_TYPEDEF_FOR_base_pitch_integrated_
 
-struct pitch_normal_output
+struct base_pitch_integrated
 {
-  pitch_normal_input input;
-  base_pitch_data_computed data_computed;
-  base_pitch_rotation law_rotation;
-  base_pitch_normal law_normal;
-  base_pitch_law_output vote;
-  base_pitch_integrated integrated;
-  base_pitch_output output;
+  real_T eta_deg;
 };
 
 #endif

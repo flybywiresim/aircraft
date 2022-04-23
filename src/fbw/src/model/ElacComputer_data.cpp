@@ -1,135 +1,5 @@
 #include "ElacComputer.h"
 
-pitch_normal_output rtP_pitch_normal_law_output_MATLABStruct{
-  {
-    {
-      0.0,
-      0.0,
-      0.0
-    },
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    false,
-    0.0,
-    0.0,
-    false,
-    false,
-    false,
-    false,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  },
-
-  {
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    false,
-    false,
-    0.0,
-    false,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  },
-
-  {
-    0.0,
-    0.0
-  },
-
-  {
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  },
-
-  {
-    0.0
-  },
-
-  {
-    0.0
-  },
-
-  {
-    0.0,
-    0.0
-  }
-} ;
-
-lateral_normal_output rtP_lateral_normal_law_output_MATLABStruct{
-  {
-    {
-      0.0,
-      0.0,
-      0.0
-    },
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    false,
-    false,
-    false,
-    false
-  },
-
-  {
-    0.0,
-    0.0,
-    0.0
-  },
-
-  {
-    0.0,
-    0.0,
-    0.0,
-    0.0
-  },
-
-  {
-    0.0,
-    0.0
-  }
-} ;
-
 base_elac_laws_outputs rtP_elac_laws_output_MATLABStruct{
   {
     0.0,
@@ -177,8 +47,6 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   0.0,
 
-  1.0,
-
   0.0,
 
   1.0,
@@ -187,6 +55,8 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   3.0,
 
+  1.0,
+
   1750.0,
 
   1750.0,
@@ -198,6 +68,12 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   1450.0,
 
   1450.0,
+
+  0.5,
+
+  0.5,
+
+  0.5,
 
   30.0,
 
@@ -208,6 +84,12 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   SignStatusMatrix::NormalOperation,
 
   lateral_efcs_law::NormalLaw,
+
+  true,
+
+  true,
+
+  true,
 
   true,
 
@@ -583,6 +465,8 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   false,
 
   false,
+
+  true,
 
   false,
 

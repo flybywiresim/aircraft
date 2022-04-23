@@ -4,7 +4,6 @@
 #include "PitchDirectLaw_types.h"
 #include <cstring>
 
-extern pitch_normal_output rtP_pitch_normal_law_output_MATLABStruct;
 class PitchDirectLaw final
 {
  public:
@@ -20,12 +19,9 @@ class PitchDirectLaw final
 
   struct BlockIO_PitchDirectLaw_T {
     real_T in_flight;
-    real_T flare_Theta_c_deg;
-    real_T flare_Theta_c_rate_deg_s;
   };
 
   struct D_Work_PitchDirectLaw_T {
-    real_T Delay_DSTATE;
     real_T pY;
     real_T pU;
     real_T on_ground_time;
@@ -59,7 +55,6 @@ class PitchDirectLaw final
     real_T RateLimiterVariableTs1_InitialCondition;
     real_T RateLimiterVariableTs2_InitialCondition;
     real_T RateLimiterVariableTs3_InitialCondition;
-    real_T RateLimiterDynamicVariableTs_InitialCondition;
     real_T RateLimitereta_InitialCondition;
     real_T ScheduledGain_Table[5];
     real_T RateLimiterVariableTs_lo;
@@ -72,24 +67,18 @@ class PitchDirectLaw final
     real_T RateLimiterVariableTs2_up;
     real_T RateLimiterVariableTs3_up;
     real_T RateLimitereta_up;
-    real_T Constant2_Value;
-    real_T Constant3_Value;
-    real_T Gain_Gain;
+    real_T Constant_Value;
+    real_T Constant1_Value;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
-    real_T Constant1_Value;
-    real_T Constant_Value;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
-    real_T Gain_Gain_b;
-    real_T Constant_Value_f;
-    real_T Constant_Value_j;
     real_T Constant_Value_d;
+    real_T Gain_Gain;
     uint8_T ManualSwitch_CurrentSetting;
     uint8_T ManualSwitch1_CurrentSetting;
   };
 
-  void init();
   PitchDirectLaw(PitchDirectLaw const&) = delete;
   PitchDirectLaw& operator= (PitchDirectLaw const&) & = delete;
   PitchDirectLaw(PitchDirectLaw &&) = delete;
@@ -107,10 +96,10 @@ class PitchDirectLaw final
   BlockIO_PitchDirectLaw_T PitchDirectLaw_B;
   D_Work_PitchDirectLaw_T PitchDirectLaw_DWork;
   static Parameters_PitchDirectLaw_T PitchDirectLaw_rtP;
-  static void PitchDirectLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
-    real_T *rty_Y, rtDW_RateLimiter_PitchDirectLaw_T *localDW);
-  static void PitchDirectLaw_eta_trim_limit_lofreeze(real_T rtu_eta_trim, boolean_T rtu_trigger, real_T *rty_y,
-    rtDW_eta_trim_limit_lofreeze_PitchDirectLaw_T *localDW);
+  static void PitchDirectLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts, real_T
+    rtu_init, real_T *rty_Y, rtDW_RateLimiter_PitchDirectLaw_T *localDW);
+  static void PitchDirectLaw_eta_trim_limit_lofreeze(const real_T *rtu_eta_trim, const boolean_T *rtu_trigger, real_T
+    *rty_y, rtDW_eta_trim_limit_lofreeze_PitchDirectLaw_T *localDW);
 };
 
 extern PitchDirectLaw::Parameters_PitchDirectLaw_T PitchDirectLaw_rtP;
