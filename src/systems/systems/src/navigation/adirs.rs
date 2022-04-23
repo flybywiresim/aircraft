@@ -1056,8 +1056,9 @@ impl InertialReference {
         let true_heading_ssm = if self.is_on
             && (self.is_fully_aligned()
                 || (overhead.mode_of(self.number) == InertialReferenceMode::Navigation
-                    && self.remaining_align_duration.is_some()
-                    && self.remaining_align_duration.unwrap().as_secs() < 120))
+                    && self
+                        .remaining_align_duration
+                        .map_or(false, |duration| duration.as_secs() < 120)))
         {
             SignStatus::NormalOperation
         } else {
@@ -1926,6 +1927,26 @@ mod tests {
                     .get::<knot>(),
                 0.
             );
+        }
+
+        fn realistic_navigation_align_until(
+            mut self,
+            adiru_number: usize,
+            duration: Duration,
+        ) -> Self {
+            self = self
+                .align_time_configured_as(AlignTime::Realistic)
+                .and()
+                .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
+
+            // Run once to let the simulation write the remaining alignment time.
+            self.run_with_delta(Duration::from_secs(0));
+
+            let remaining_alignment_time = self.remaining_alignment_time();
+            self.run_with_delta(remaining_alignment_time - duration);
+
+            println!("{:?}", self.remaining_alignment_time());
+            self
         }
     }
     impl TestBed for AdirsTestBed {
@@ -2814,22 +2835,23 @@ mod tests {
         fn true_heading_is_normal_when_remaining_align_is_less_than_two_minutes(
             #[case] adiru_number: usize,
         ) {
-            let angle = Angle::new::<degree>(160.);
-
             let mut test_bed = test_bed_with()
-                .true_heading_of(angle)
-                .and()
-                .align_time_configured_as(AlignTime::Realistic)
-                .and()
-                .ir_mode_selector_set_to(adiru_number, InertialReferenceMode::Navigation);
-
-            test_bed.run_with_delta(Duration::from_secs(0));
-
-            while test_bed.remaining_alignment_time() > Duration::from_secs(119) {
-                test_bed.run();
-            }
+                .realistic_navigation_align_until(adiru_number, Duration::from_millis(119999));
 
             assert!(test_bed.true_heading(adiru_number).is_normal_operation());
+        }
+
+        #[rstest]
+        #[case(1)]
+        #[case(2)]
+        #[case(3)]
+        fn true_heading_is_not_normal_when_remaining_align_is_equal_to_two_minutes(
+            #[case] adiru_number: usize,
+        ) {
+            let mut test_bed = test_bed_with()
+                .realistic_navigation_align_until(adiru_number, Duration::from_millis(120000));
+
+            assert!(!test_bed.true_heading(adiru_number).is_normal_operation());
         }
 
         #[rstest]
