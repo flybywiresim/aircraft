@@ -21,17 +21,25 @@ interface PressureChartType {
     low: string,
     highValue: number,
     lowValue: number,
+    lowReservoir: number,
+    highReservoir: number,
     ptuScenario: string
 }
 
 const PTU = ({ x, y, greenPressure, yellowPressure, yellowElectricPumpStatus, validSDAC } : PTUProps) => {
     const [ptuActive, setPtuActive] = useState(false);
     // PTU variables
-    const [ptuAvailable] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 500);
+    const [ptuValveOpen] = useSimVar('L:A32NX_HYD_PTU_VALVE_OPENED', 'boolean', 500);
     const [ptuFault] = useSimVar('L:A32NX_HYD_PTU_FAULT', 'boolean', 500);
     const [ptuScenario, setPtuScenario] = useState('normal');
+    const [showPTUFlow, setShowPTUFlow] = useState(false);
+    const [greenReservoirLevel] = useSimVar('L:A32NX_HYD_GREEN_RESERVOIR_LEVEL', 'gallon', 1000);
+    const [yellowReservoirLevel] = useSimVar('L:A32NX_HYD_YELLOW_RESERVOIR_LEVEL', 'gallon', 1000);
 
-    const [pressureChart, setPressureChart] = useState<PressureChartType>({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
+    const greenReservoirL = greenReservoirLevel * 3.79;
+    const yellowReservoirL = yellowReservoirLevel * 3.79;
+
+    const [pressureChart, setPressureChart] = useState<PressureChartType>({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal', lowReservoir: -1, highReservoir: -1 });
 
     const semiCircleD = `M${x - 16},${y} C${x - 16},${y + 24} ${x + 16},${y + 24} ${x + 16},${y}`;
 
@@ -45,78 +53,78 @@ const PTU = ({ x, y, greenPressure, yellowPressure, yellowElectricPumpStatus, va
     const triangle2 = result.format.find(({ id }) => id === 'triangle2');
     const triangle3 = result.format.find(({ id }) => id === 'triangle3');
 
-    const setPressures = (clearState = false) => {
-        if (clearState) {
-            setPressureChart({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal' });
-        } else if (yellowPressure > greenPressure) {
-            setPressureChart({
-                high: 'YELLOW',
-                low: 'GREEN',
-                highValue: yellowPressure,
-                lowValue: greenPressure,
-                ptuScenario: 'right-to-left',
-            });
+    useEffect(() => {
+        // Determine high/low pressure when PTU flow is inactive
+        if (ptuActive && showPTUFlow) {
+            if (yellowPressure > greenPressure) {
+                setPressureChart({
+                    high: 'YELLOW',
+                    low: 'GREEN',
+                    highValue: yellowPressure,
+                    lowValue: greenPressure,
+                    highReservoir: yellowReservoirL,
+                    lowReservoir: greenReservoirL,
+                    ptuScenario: 'right-to-left',
+                });
+            } else {
+                setPressureChart({
+                    high: 'GREEN',
+                    low: 'YELLOW',
+                    highValue: greenPressure,
+                    lowValue: yellowPressure,
+                    highReservoir: greenReservoirL,
+                    lowReservoir: yellowReservoirL,
+                    ptuScenario: 'left-to-right',
+                });
+            }
         } else {
-            setPressureChart({
-                high: 'GREEN',
-                low: 'YELLOW',
-                highValue: greenPressure,
-                lowValue: yellowPressure,
-                ptuScenario: 'left-to-right',
-            });
+            setPressureChart({ high: '', low: '', highValue: -1, lowValue: -1, ptuScenario: 'normal', lowReservoir: -1, highReservoir: -1 });
         }
-    };
+        console.log(`Reset pressure chart scenario is ${pressureChart.ptuScenario}`);
+    }, [ptuActive]);
 
     useEffect(() => {
+        console.log('Pressure chart updated so checking flow scenarios');
         setPtuScenario(pressureChart.ptuScenario);
+        if (pressureChart.highValue - pressureChart.lowValue > 200) {
+            console.log('Start showing');
+            // Flow direction has occured
+            setShowPTUFlow(true);
+        }
+        if (ptuActive && pressureChart.highValue - pressureChart.lowValue > -300) {
+            console.log('Stop showing');
+            // Flow direction has occured
+            setShowPTUFlow(false);
+            setPtuScenario('normal');
+        }
     }, [pressureChart]);
 
-    // PTU logic
     useEffect(() => {
-        console.log(`PTU avail is ${ptuAvailable}`);
-        if (ptuAvailable === 1) {
-            console.log('PTU avail');
+        // Check if PTU flow should be displayed
+        console.log(`Current scenario is ${ptuScenario}`);
+        if (
+            ptuValveOpen === 1
+            && pressureChart.lowValue < LOW_PRESSURE
+            && (pressureChart.ptuScenario === 'right-to-left' ? !yellowElectricPumpStatus : true)
+            && (
+                (pressureChart.highValue > 1450
+                    && pressureChart.lowReservoir < 2.5
+                    && validSDAC // TODO pressure of lower pressure system is valid
+                )
+                || (
+                    pressureChart.lowValue > 1500
+                    && pressureChart.lowReservoir > 2.5
+                    && validSDAC // TODO pressure of larger pressure system is valid
+                )
+            )
+        ) {
+            console.log('PTU active');
             setPtuActive(true);
-        }
-
-        if (ptuActive && (yellowPressure > LOW_PRESSURE || greenPressure > LOW_PRESSURE)) {
-            const pressureDifferential = Math.abs(greenPressure - yellowPressure);
-            const maxPressure = Math.max(yellowPressure, greenPressure);
-            let negativePressureDifferential = 0;
-
-            if (pressureChart.lowValue < 0) {
-                negativePressureDifferential = greenPressure > yellowPressure ? yellowPressure - greenPressure : greenPressure - yellowPressure;
-            } else {
-                negativePressureDifferential = pressureChart.lowValue - pressureChart.highValue;
-            }
-            console.log(`Negative diff is ${negativePressureDifferential}`);
-            if (greenPressure > yellowPressure && yellowElectricPumpStatus) {
-                // Check if yellow electric pump is on for pressure transfer from green to yellow only
-                setPtuScenario('PTU-off');
-                console.log('Green > Yellow and pump');
-            } else if (pressureDifferential > 200 && maxPressure > 1450 && ptuAvailable === 1) {
-                setPressures();
-                setPtuActive(true);
-                console.log('Show flow');
-            } else if (negativePressureDifferential <= -300 && ptuActive) {
-                setPressures(true);
-                setPtuActive(false);
-                console.log('PTU active and negative dif < -300');
-            } else if (ptuFault === 1 && !ptuAvailable) {
-                setPtuScenario('PTU-off');
-                console.log('Fault');
-            } else {
-                setPtuScenario('normal');
-                console.log('Situation normal');
-            }
-        } else if (ptuFault === 1 && !ptuAvailable) {
-            setPtuScenario('PTU-off');
-            console.log('Fault');
         } else {
-            setPtuScenario('normal');
-            console.log('Situation normal');
+            console.log('PTU inactive');
+            setPtuActive(false);
         }
-    }, [greenPressure, yellowPressure, yellowElectricPumpStatus, ptuAvailable, ptuFault]);
+    }, [greenPressure, yellowPressure, yellowElectricPumpStatus]);
 
     return (
         <>
