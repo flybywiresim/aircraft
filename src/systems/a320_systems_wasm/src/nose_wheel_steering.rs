@@ -39,8 +39,6 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
     // The tiller handle should start in a centered position.
     builder.init_variable(Variable::aspect("RAW_TILLER_HANDLE_POSITION"), 0.5);
 
-    // Lacking a better event to bind to, we've picked a mixture axis for setting the
-    // tiller handle position.
     builder.event_to_variable(
         "AXIS_STEERING_SET",
         EventToVariableMapping::EventData32kPosition,
