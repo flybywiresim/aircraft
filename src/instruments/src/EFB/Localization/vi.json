@@ -371,7 +371,7 @@
       "Enable": "Kích hoạt",
       "EnableTelex": "Kích hoạt TELEX",
       "ErrorReporting": "Báo cáo lỗi",
-      "HoppieEnabled": "Hoppie enabled",
+      "HoppieEnabled": "Hoppie đã được kích hoạt",
       "HoppieUserId": "ID người dùng Hoppie",
       "MetarSource": "Nguồn METAR",
       "OptionalA32nxErrorReporting": "Tuỳ chọn báo cáo lỗi A32NX",
@@ -383,7 +383,7 @@
       "TelexWarning": "Cảnh báo TELEX",
       "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Có lỗi xảy ra trong khi xác nhận ID Hoppie của bạn",
       "Title": "ATSU / AOC",
-      "YouAreAbleToOptIntoAnonymousErrorReporting": "Bạn có thể chọn báo cáo lỗi ẩn danh cho phép chúng tôi chẩn đoán, theo dõi và xử lý các vấn đề với mức độ nhanh hơn. Tính năng này hoàn toàn là tùy chọn và chúng tôi sẽ không bao giờ thu thập dữ liệu cá nhân của bạn, nhưng có thể giúp bạn dễ dàng nhận được hỗ trợ hơn và có các vấn đề bạn gặp phải khắc phục với mức độ nhanh hơn.",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Bạn có thể chọn báo cáo lỗi ẩn danh cho phép chúng tôi chẩn đoán, theo dõi và xử lý các vấn đề nhanh hơn. Tính năng này hoàn toàn không bắt buộc và chúng tôi sẽ không bao giờ thu thập dữ liệu cá nhân của bạn, nhưng có thể giúp bạn dễ dàng nhận được hỗ trợ hơn và có các vấn đề bạn gặp phải khắc phục nhanh hơn.",
       "YourHoppieIdHasBeenRemoved": "ID Hoppie của bạn đã được gỡ bỏ",
       "YourHoppieIdHasBeenValidated": "ID Hoppie của bạn đã được xác thực",
       "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "ID phi công SimBrief của bạn đã được xác thực và cập nhật thành"

@@ -19,6 +19,7 @@ import id from './Localization/id.json';
 import it from './Localization/it.json';
 import ja from './Localization/ja.json';
 import ko from './Localization/ko.json';
+import lt from './Localization/lt.json';
 import nb from './Localization/nb.json';
 import nl from './Localization/nl.json';
 import pl from './Localization/pl.json';
@@ -86,6 +87,7 @@ export const languageOptions: LanguageOption[] = [
     { langCode: 'it', langData: it, langName: 'Italian', alias: 'Italiano' },
     { langCode: 'ja', langData: ja, langName: 'Japanese', alias: '日本語' },
     { langCode: 'ko', langData: ko, langName: 'Korean', alias: '한국어' },
+    { langCode: 'lt', langData: lt, langName: 'Lithuanian', alias: 'Lietuvių kalba' },
     { langCode: 'nb', langData: nb, langName: 'Norwegian', alias: 'Norsk' },
     { langCode: 'nl', langData: nl, langName: 'Dutch', alias: 'Nederlands' },
     { langCode: 'pl', langData: pl, langName: 'Polish', alias: 'Polski' },
