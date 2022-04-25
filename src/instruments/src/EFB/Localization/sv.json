@@ -371,6 +371,7 @@
       "Enable": "Aktivera",
       "EnableTelex": "Aktivera TELEX",
       "ErrorReporting": "Felrapportering",
+      "HoppieEnabled": "Hoppie enabled",
       "HoppieUserId": "Hoppie användar-ID",
       "MetarSource": "METAR-källa",
       "OptionalA32nxErrorReporting": "Frivillig felrapportering för A32NX",

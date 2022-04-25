@@ -371,6 +371,7 @@
       "Enable": "Включить",
       "EnableTelex": "Включить TELEX",
       "ErrorReporting": "Отчеты об ошибках",
+      "HoppieEnabled": "Hoppie enabled",
       "HoppieUserId": "Идентификатор пользователя Hoppie (ID)",
       "MetarSource": "Источник METAR",
       "OptionalA32nxErrorReporting": "Необязательные отчеты об ошибках A32NX",
