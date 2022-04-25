@@ -18,7 +18,6 @@ import { Geometry } from '@fmgc/guidance/Geometry';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { CILeg } from '../legs/CI';
 import {
@@ -29,8 +28,9 @@ import {
     courseToFixGuidance,
     maxBank,
 } from '../CommonGeometry';
+import { CRLeg } from '../legs/CR';
 
-type PrevLeg = CALeg | /* CDLeg | */ CFLeg | CILeg | /* CRLeg | */ DFLeg | /* FALeg | FMLeg | */ HALeg | HFLeg | HMLeg | TFLeg | /* VALeg | VILeg | VDLeg | */ VMLeg; /* | VRLeg */
+type PrevLeg = CALeg | /* CDLeg | */ CFLeg | CILeg | CRLeg | DFLeg | /* FALeg | FMLeg | */ HALeg | HFLeg | HMLeg | TFLeg | /* VALeg | VILeg | VDLeg | */ VMLeg; /* | VRLeg */
 type NextLeg = CFLeg | DFLeg /* | FALeg | FMLeg */
 
 const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));
@@ -49,11 +49,8 @@ export class DirectToFixTransition extends Transition {
 
     private straightCourse: Degrees;
 
-    constructor(
-        public previousLeg: PrevLeg,
-        public nextLeg: NextLeg,
-    ) {
-        super();
+    constructor(public previousLeg: PrevLeg, public nextLeg: NextLeg) {
+        super(previousLeg, nextLeg);
     }
 
     private terminator: Coordinates | undefined;
@@ -83,8 +80,6 @@ export class DirectToFixTransition extends Transition {
 
     public clockwise: boolean;
 
-    public revertedTransition: Transition | null = null;
-
     public lineStartPoint: Coordinates;
 
     public lineEndPoint: Coordinates;
@@ -103,21 +98,12 @@ export class DirectToFixTransition extends Transition {
         return this.computedPath;
     }
 
-    get isNull(): boolean {
-        return Math.abs(this.arcSweepAngle) < 3;
-    }
-
-    recomputeWithParameters(_isActive: boolean, tas: Knots, gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
+    recomputeWithParameters(_isActive: boolean, tas: Knots, gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
         if (this.isFrozen) {
             return;
         }
 
-        this.previousLeg = previousGuidable as PrevLeg;
-        this.nextLeg = nextGuidable as NextLeg;
-
         const termFix = this.previousLeg.getPathEndPoint();
-
-        // TODO revert to type 1 for CI/VI legs
 
         // FIXME fix for FX legs
         const nextFix = this.nextLeg.fix.infos.coordinates;
@@ -125,8 +111,12 @@ export class DirectToFixTransition extends Transition {
         this.radius = (gs ** 2 / (Constants.G * tan(maxBank(tas, true))) / 6997.84) * LnavConfig.TURN_RADIUS_FACTOR;
 
         let trackChange = MathUtils.diffAngle(this.previousLeg.outboundCourse, bearingTo(this.previousLeg.getPathEndPoint(), nextFix), this.nextLeg.metadata.turnDirection);
+
         if (Math.abs(trackChange) < 3) {
-            this.revertedTransition = null;
+            this.isNull = true;
+            this.isComputed = true;
+
+            return;
         }
 
         const turnDirectionSign = trackChange > 0 ? 1 : -1;
@@ -143,8 +133,6 @@ export class DirectToFixTransition extends Transition {
 
         if (distanceToFix < this.radius) {
             if (Math.abs(MathUtils.diffAngle(this.previousLeg.outboundCourse, bearingTo(termFix, nextFix), this.nextLeg.metadata.turnDirection)) < 60) {
-                this.revertedTransition = null;
-
                 this.hasArc = false;
                 this.lineStartPoint = termFix;
                 this.lineEndPoint = termFix;
@@ -163,6 +151,7 @@ export class DirectToFixTransition extends Transition {
 
                 this.straightCourse = bearingTo(this.lineStartPoint, this.lineEndPoint);
 
+                this.isNull = true;
                 this.isComputed = true;
 
                 return;
@@ -215,6 +204,7 @@ export class DirectToFixTransition extends Transition {
 
         this.straightCourse = bearingTo(this.lineStartPoint, this.lineEndPoint);
 
+        this.isNull = false;
         this.isComputed = true;
     }
 
@@ -261,6 +251,10 @@ export class DirectToFixTransition extends Transition {
     }
 
     isAbeam(ppos: LatLongData): boolean {
+        if (this.isNull) {
+            return false;
+        }
+
         let dtg = 0;
 
         if (this.state === DirectToFixTransitionGuidanceState.Straight) {
@@ -288,6 +282,10 @@ export class DirectToFixTransition extends Transition {
     }
 
     get distance(): NauticalMiles {
+        if (this.isNull) {
+            return 0;
+        }
+
         const straightDistance = distanceTo(this.lineStartPoint, this.lineEndPoint);
 
         if (this.hasArc) {

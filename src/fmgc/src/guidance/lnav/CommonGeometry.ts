@@ -175,11 +175,11 @@ export function maxTad(tas: Knots | undefined): NauticalMiles {
     }
 
     if (tas <= 100) {
-        return 5;
+        return 4;
     } if (tas >= 100 && tas <= 400) {
-        return (tas / 100) * 5;
+        return (tas / 100) * 4;
     }
-    return 20;
+    return 16;
 }
 
 export function courseToFixDistanceToGo(ppos: Coordinates, course: Degrees, fix: Coordinates): NauticalMiles {
@@ -209,8 +209,14 @@ export function courseToFixGuidance(ppos: Coordinates, trueTrack: Degrees, cours
     };
 }
 
+export enum PointSide {
+    Before,
+    After,
+}
+
 /**
- * Returns the side of a fix (considering a course inbound to that fix) a point is lying on
+ * Returns the side of a fix (considering a course inbound to that fix) a point is lying on, assuming they lie on the same
+ * great circle.
  *
  * @param fix    destination fix
  * @param course course to the fix
@@ -218,16 +224,16 @@ export function courseToFixGuidance(ppos: Coordinates, trueTrack: Degrees, cours
  *
  * @returns `-1` if the point is before the fix, `1` if the point is after the fix
  */
-export function sideOfPointOnCourseToFix(fix: Coordinates, course: DegreesTrue, point: Coordinates): -1 | 1 {
+export function sideOfPointOnCourseToFix(fix: Coordinates, course: DegreesTrue, point: Coordinates): PointSide {
     const bearingFixPoint = bearingTo(fix, point);
 
     const onOtherSide = Math.abs(MathUtils.diffAngle(bearingFixPoint, course)) < 3;
 
     if (onOtherSide) {
-        return 1;
+        return PointSide.After;
     }
 
-    return -1;
+    return PointSide.Before;
 }
 
 function getAlongTrackDistanceTo(start: Coordinates, end: Coordinates, ppos: Coordinates): number {
@@ -308,4 +314,8 @@ export function arcLength(radius: NauticalMiles, sweepAngle: Degrees): NauticalM
     const circumference = 2 * Math.PI * radius;
 
     return circumference / 360 * Math.abs(sweepAngle);
+}
+
+export function reciprocal(course: Degrees): Degrees {
+    return Avionics.Utils.clampAngle(course + 180);
 }

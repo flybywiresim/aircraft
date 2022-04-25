@@ -104,7 +104,7 @@ class CDUAocFreeText {
             const sendValid = oneLineFilled === true && store["msg_to"] !== "";
 
             if (sendValid === false) {
-                mcdu.addNewMessage(NXSystemMessages.mandatoryFields);
+                mcdu.setScratchpadMessage(NXSystemMessages.mandatoryFields);
                 return;
             }
 

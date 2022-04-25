@@ -70,44 +70,44 @@ class CDUMenuPage {
 
         updateView();
 
-        mcdu.addNewMessage(NXSystemMessages.selectDesiredSystem);
+        mcdu.setScratchpadMessage(NXSystemMessages.selectDesiredSystem);
 
         mcdu.onLeftInput[0] = () => {
-            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
+            mcdu.setScratchpadMessage(NXSystemMessages.waitForSystemResponse);
             selectedFMGC = true;
             updateView();
             setTimeout(() => {
-                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
+                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDUIdentPage.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 200);
         };
 
         mcdu.onLeftInput[1] = () => {
-            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
+            mcdu.setScratchpadMessage(NXSystemMessages.waitForSystemResponse);
             selectedATSU = true;
             updateView();
             setTimeout(() => {
-                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
+                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDUAtsuMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 200);
         };
 
         mcdu.onLeftInput[2] = () => {
-            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
+            mcdu.setScratchpadMessage(NXSystemMessages.waitForSystemResponse);
             selectedAIDS = true;
             updateView();
             setTimeout(() => {
-                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
+                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDU_AIDS_MainMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 400);
         };
 
         mcdu.onLeftInput[3] = () => {
-            mcdu.addNewMessage(NXSystemMessages.waitForSystemResponse);
+            mcdu.setScratchpadMessage(NXSystemMessages.waitForSystemResponse);
             selectedCFDS = true;
             updateView();
             setTimeout(() => {
-                mcdu.addNewMessage(NXFictionalMessages.emptyMessage);
+                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDUCfdsMainMenu.ShowPage(mcdu);
             }, Math.floor(Math.random() * 400) + 400);
         };
