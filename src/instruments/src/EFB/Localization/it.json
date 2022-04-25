@@ -4,7 +4,7 @@
     "ChangeATISATCSourceButton": "Cambia fonte ATIS/ATC",
     "ConnectHoppieACARS": "Connetti Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Nessuna informazione disponibile per questa frequenza",
-    "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
+    "SelectCorrectATISATCSource": "Questa pagina è disponibile solo quando IVAO o VATSIM sono selezionati come fonte ATIS/ATC nella pagina delle impostazioni",
     "SetActive": "Imposta attivo",
     "SetStandby": "Imposta standby",
     "Standby": "Standby",
@@ -13,35 +13,35 @@
   "Checklists": {
     "AreYouSureYouWantToResetAllChecklists": "Sei sicuro di voler ripristinare tutte le checklist?",
     "AreYouSureYouWantToResetChecklists": "Sei sicuro di voler ripristinare tutte le checklist?",
-    "ChecklistResetWarning": "Avviso reimpostazione checklist",
-    "MarkChecklistAsComplete": "Segna la checklist come completata",
+    "ChecklistResetWarning": "Avviso ripristino checklist",
+    "MarkChecklistAsComplete": "Segna checklist come completata",
     "MarkItemAsComplete": "Segna elemento come completato",
     "ProceedToNextChecklist": "Procedi alla prossima checklist",
-    "ResetAll": "Reimposta tutto",
-    "ResetChecklist": "Reimposta checklist",
+    "ResetAll": "Ripristina tutto",
+    "ResetChecklist": "Ripristina checklist",
     "TheLastChecklistIsComplete": "L'ultima checklist è completa",
     "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Ci sono voci rimanenti per il completamento automatico della checklist, che non sono ancora state completate",
-    "Title": "Checklists"
+    "Title": "Checklist"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "Nessuna checklist pertinente",
+        "NoRelevantChecklists": "Nessuna Checklist Pertinente",
         "Title": "Checklists"
       },
-      "GoToPage": "Vai a pagina",
+      "GoToPage": "Vai alla Pagina",
       "Maintenance": {
-        "NoActiveFailures": "Nessun guasto attivo",
+        "NoActiveFailures": "Nessun Guasto Attivo",
         "Title": "Manutenzione"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "Nessun carta fissata",
-        "Title": "Grafici appuntati"
+        "NoPinnedCharts": "Nessuna Cartina Affissata",
+        "Title": "Cartine Affissate"
       },
       "TT": {
-        "RearrangeWidgets": "Riorganizza i widget"
+        "RearrangeWidgets": "Riordina Widget"
       },
-      "Title": "Informazione importante",
+      "Title": "Informazioni importanti",
       "Weather": {
         "AirPressure": "Pressione dell'aria",
         "DewPoint": "Punto di rugiada",
@@ -49,10 +49,10 @@
         "Loading": "Caricamento",
         "MetarParsingError": "Il METAR ricevuto non può essere analizzato",
         "NoIcaoProvided": "Nessun ICAO fornito",
-        "Raw": "Grezzo",
+        "Raw": "Tecnica",
         "TT": {
-          "SwitchToIconView": "Passa alla vista a icone",
-          "SwitchToRawMetarView": "Passa alla vista del METAR grezzo"
+          "SwitchToIconView": "Passa alla Visualizzazione a Icone",
+          "SwitchToRawMetarView": "Passa alla Visualizzazione Tecnica del METAR"
         },
         "Temperature": "Temperatura",
         "Title": "Meteo",
@@ -66,35 +66,35 @@
       "CompanyRoute": "Rotta Compagnia",
       "CostIndex": "Cost Index",
       "CruiseAlt": "Alt. Crociera",
-      "ImportSimBriefData": "Import SimBrief Data",
-      "Route": "Route",
-      "SimBriefDataNotYetLoaded": "SimBrief data not yet loaded.",
-      "Title": "Your Flight",
+      "ImportSimBriefData": "Importa Dati SimBrief",
+      "Route": "Rotta",
+      "SimBriefDataNotYetLoaded": "Dati SiemBrief non ancora caricati.",
+      "Title": "Il tuo Volo",
       "ZFW": "ZFW"
     }
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Import SimBrief Data",
+      "ImportSimBriefData": "Importa Dati SimBrief",
       "TT": {
-        "IncreaseFontSize": "Increase Font Size",
-        "ReduceFontSize": "Reduce Font Size"
+        "IncreaseFontSize": "Aumenta Dimensione Carattere",
+        "ReduceFontSize": "Riduci Dimensione Carattere"
       },
       "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
+      "YouHaveNotYetImportedAnySimBriefData": "Non hai ancora importato alcun dato da SimBrief."
     },
     "Overview": {
-      "Engines": "Engines",
+      "Engines": "Motori",
       "MMO": "MMO",
       "MRW": "MRW",
       "MTOW": "MTOW",
       "MZFW": "MZFW",
-      "MaximumCargo": "Maximum Cargo",
-      "MaximumFuelCapacity": "Maximum Fuel Capacity",
-      "MaximumPassengers": "Maximum Passengers",
-      "Model": "Model",
-      "Range": "Range",
-      "Title": "Overview"
+      "MaximumCargo": "Carico Massimo",
+      "MaximumFuelCapacity": "Capacità Massima Carburante",
+      "MaximumPassengers": "Passeggeri Massimi",
+      "Model": "Modello",
+      "Range": "Autonomia",
+      "Title": "Sommario"
     },
     "Title": "Dispatch"
   },
@@ -103,222 +103,222 @@
       "Title": "Comfort"
     },
     "Compact": {
-      "Title": "Compact"
+      "Title": "Compatto"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Full simulation of the failures below isn't yet guaranteed.",
-    "Search": "Search",
-    "Title": "Failures"
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "La simulazione completa dei guasti riportati di seguito non è ancora garantita.",
+    "Search": "Cerca",
+    "Title": "Guasti"
   },
   "Ground": {
     "Fuel": {
-      "CenterTank": "Center Tank",
-      "Completed": "Completed",
-      "Defueling": "Defueling",
-      "EstimatedDuration": "Estimated duration (minutes)",
+      "CenterTank": "Serbatoio Centrale",
+      "Completed": "Completato",
+      "Defueling": "Scarico Carburante",
+      "EstimatedDuration": "Durata stimata (minuti)",
       "EstimatedTime": "Estimated Time",
-      "LeftInnerTank": "Left Inner Tank",
-      "LeftOuterTank": "Left Outer Tank",
-      "ReadyToStart": "Ready to Start",
-      "Refuel": "Refuel",
-      "RefuelTime": "Refuel Time",
-      "Refueling": "Refueling",
-      "RightInnerTank": "Right Inner Tank",
-      "RightOuterTank": "Right Outer Tank",
+      "LeftInnerTank": "Serbatoio Interno Sinistro",
+      "LeftOuterTank": "Serbatoio Esterno Sinistro",
+      "ReadyToStart": "Pronto per l'Avvio",
+      "Refuel": "Rifornimento Carburante",
+      "RefuelTime": "Tempo di Rifornimento",
+      "Refueling": "Rifornimento in corso",
+      "RightInnerTank": "Serbatoio Interno Destro",
+      "RightOuterTank": "Serbatoio Esterno Destro",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aircraft Must Be Cold and Dark to Change Refuel Times",
-        "FillBlockFuelFromSimBrief": "Fill Block Fuel from SimBrief"
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "L'Aereo Deve Essere Spento per Cambiare i Tempi di Rifornimento",
+        "FillBlockFuelFromSimBrief": "Inserisci il Block Fuel da SimBrief"
       },
-      "Title": "Fuel",
-      "TotalFuel": "Total Fuel",
-      "Unavailable": "Unavailable"
+      "Title": "Carburante",
+      "TotalFuel": "Carburante Totale",
+      "Unavailable": "Non Disponibile"
     },
     "Pushback": {
       "Title": "Pushback"
     },
     "Services": {
-      "BaggageTruck": "Baggage Truck",
-      "CateringTruck": "Catering Truck",
-      "DoorAft": "Door Aft",
-      "DoorFwd": "Door Fwd",
-      "ExternalPower": "External Power",
-      "FuelTruck": "Fuel Truck",
-      "JetBridge": "Jet Bridge",
-      "Title": "Services"
+      "BaggageTruck": "Carrello Portabagagli",
+      "CateringTruck": "Catering-truck",
+      "DoorAft": "Porta Posteriore",
+      "DoorFwd": "Porta Anteriore",
+      "ExternalPower": "Alimentazione Esterna",
+      "FuelTruck": "Autocarro Carburante",
+      "JetBridge": "Ponte di Imbarco",
+      "Title": "Servizi"
     },
-    "Title": "Ground"
+    "Title": "Terra"
   },
   "Modals": {
-    "Cancel": "Cancel",
-    "Confirm": "Confirm",
-    "Okay": "Okay"
+    "Cancel": "Annulla",
+    "Confirm": "Conferma",
+    "Okay": "Ok"
   },
   "NavigationAndCharts": {
-    "All": "All",
+    "All": "Tutti",
     "Altn": "Altn",
-    "ExitFullscreenMode": "Exit Fullscreen Mode",
-    "From": "From",
+    "ExitFullscreenMode": "Esci dalla Modalità Schermo Intero",
+    "From": "Da",
     "LocalFiles": {
-      "Both": "Both",
-      "EstablishingConnection": "Establishing Connection",
-      "FailedToEstablishConnection": "Failed to Establish Connection.",
-      "FileName": "File Name",
-      "Image": "Image",
-      "Pdf": "Pdf",
-      "Retry": "Retry",
-      "Title": "Local Files"
+      "Both": "Entrambi",
+      "EstablishingConnection": "Connessione in Corso",
+      "FailedToEstablishConnection": "Connessione Fallita",
+      "FileName": "Nome File",
+      "Image": "Immagine",
+      "Pdf": "PDF",
+      "Retry": "Riprova",
+      "Title": "File locali"
     },
     "Navigraph": {
-      "AirportDoesNotExist": "Airport Does Not Exist",
-      "AuthenticateWithNavigraph": "Authenticate with Navigraph",
-      "InsufficientEnv": "Insufficient .env File",
-      "IntoYourBrowserAndEnterTheCodeBelow": "into your browser and enter the code below\n",
-      "NoAirportSelected": "No Airport Selected",
-      "ResetNavigraphAuthentication": "Reset Navigraph Authentication",
-      "ScanTheQrCodeOrOpen": "Scan the QR Code or Open",
+      "AirportDoesNotExist": "Aeroporto Inesistente",
+      "AuthenticateWithNavigraph": "Autenticazione con Navigraph",
+      "InsufficientEnv": "File .env Insufficiente",
+      "IntoYourBrowserAndEnterTheCodeBelow": "nel tuo browser e inserisci il codice qui sotto",
+      "NoAirportSelected": "Nessun Aeroporto Selezionato",
+      "ResetNavigraphAuthentication": "Ripristina Autenticazione Navigraph",
+      "ScanTheQrCodeOrOpen": "Scansiona il Codice QR o Apri",
       "Title": "Navigraph"
     },
     "PinnedCharts": {
-      "Delete": "Delete",
-      "Edit": "Edit",
-      "NoItemsFound": "No Items Found",
-      "SearchPlaceholder": "Search",
-      "ShowingChartsFromAllProviders": "Showing Charts from All Providers",
+      "Delete": "Elimina",
+      "Edit": "Modifica",
+      "NoItemsFound": "Nessun Elemento Trovato",
+      "SearchPlaceholder": "Cerca",
+      "ShowingChartsFromAllProviders": "Visualizzazione delle Cartine da tutti i Fornitori",
       "SortMethods": {
-        "AlphabeticalAZ": "Alphabetical - A -> Z",
-        "AlphabeticalZA": "Alphabetical - Z -> A",
-        "FirstAccessed": "First Accessed",
-        "LastAccessed": "Last Accessed",
-        "None": "None"
+        "AlphabeticalAZ": "Alfabetico - A -> Z",
+        "AlphabeticalZA": "Alfabetico - Z -> A",
+        "FirstAccessed": "Primo Accesso",
+        "LastAccessed": "Ultimo Accesso",
+        "None": "Nessuno"
       },
       "TT": {
-        "ChangeChartProvider": "Change Chart Provider",
-        "ChangeChartSortMethod": "Change Chart Sort Method",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "ChangeChartProvider": "Cambia Fornitore Cartine",
+        "ChangeChartSortMethod": "Cambia Metodo di Ordinamento Cartine",
+        "RemoveAllPinnedCharts": "Rimuovi Tutte le Cartine Affissate"
       },
-      "Title": "Pinned Charts",
-      "View": "View"
+      "Title": "Cartine Affissate",
+      "View": "Visualizza"
     },
-    "PleaseWait": "Please Wait",
-    "ShowingAllItems": "Showing All Items",
+    "PleaseWait": "Attendere Prego",
+    "ShowingAllItems": "Visualizzazione di Tutti gli Elementi",
     "TT": {
-      "FitChartToHeight": "Fit Chart to Height",
-      "FitChartToWidth": "Fit Chart to Width",
-      "ResetMovement": "Reset Movement",
-      "RotateLeft45Degrees": "Rotate Left 45 Degrees",
-      "RotateRight45Degrees": "Rotate Right 45 Degrees",
-      "ZoomIn": "Zoom In",
-      "ZoomOut": "Zoom Out"
+      "FitChartToHeight": "Adatta Cartina all'Altezza",
+      "FitChartToWidth": "Adatta Cartina alla Larghezza",
+      "ResetMovement": "Ripristina Movimento",
+      "RotateLeft45Degrees": "Ruota a Sinistra di 45 Gradi",
+      "RotateRight45Degrees": "Ruota a Destra di 45 Gradi",
+      "ZoomIn": "Ingrandisci",
+      "ZoomOut": "Rimpicciolisci"
     },
-    "ThereAreNoChartsToDisplay": "There are no charts to display.",
-    "ThereIsNoChartToDisplay": "There is no chart to display.",
-    "Title": "Navigation & Charts",
-    "To": "To"
+    "ThereAreNoChartsToDisplay": "Non ci sono cartine da visualizzare.",
+    "ThereIsNoChartToDisplay": "Non c'è nessuna cartina da visualizzare",
+    "Title": "Navigazione & Cartine",
+    "To": "A"
   },
   "Performance": {
-    "Data": "Data",
+    "Data": "Dati",
     "Landing": {
-      "AirportIcao": "Airport ICAO",
-      "ApproachSpeed": "Approach Speed",
+      "AirportIcao": "ICAO Aeroporto",
+      "ApproachSpeed": "Velocità Avvicinamento",
       "ApproachSpeedUnit": "kts",
       "AutoLand": "Autoland",
-      "Calculate": "Calculate",
-      "Clear": "Clear",
+      "Calculate": "Calcola",
+      "Clear": "Cancella",
       "DropDownNo": "No",
-      "DropDownYes": "Yes",
-      "FillDataFrom": "Fill data from",
-      "FlapsConfiguration": "Flaps Configuration",
-      "Low": "Low",
-      "MaximumManual": "Maximum Manual",
-      "Medium": "Medium",
-      "OverweightProcedure": "Overweight Procedure",
+      "DropDownYes": "Sì",
+      "FillDataFrom": "Inserisci i dati da",
+      "FlapsConfiguration": "Configurazione Flaps",
+      "Low": "Basso",
+      "MaximumManual": "Massima Manuale",
+      "Medium": "Medio",
+      "OverweightProcedure": "Procedura Peso Eccessivo",
       "Qnh": "QNH",
-      "ReverseThrust": "Reverse Thrust",
-      "RunwayAltitude": "Runway Altitude",
+      "ReverseThrust": "Inversori di Spinta",
+      "RunwayAltitude": "Altitudine Pista",
       "RunwayAltitudeUnit": "ft ASL",
-      "RunwayCondition": "Runway Condition",
-      "RunwayHeading": "Runway Heading",
+      "RunwayCondition": "Condizioni Pista",
+      "RunwayHeading": "Orientamento Pista",
       "RunwayHeadingUnit": "°",
-      "RunwayLda": "Runway LDA",
+      "RunwayLda": "LDA Pista",
       "RunwayLdaUnitFt": "ft",
       "RunwayLdaUnitMeter": "m",
-      "RunwaySlope": "Runway Slope",
+      "RunwaySlope": "Pendenza Pista",
       "TT": {
-        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "You need to enter an ICAO code in order to make a METAR request",
-        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "You need to load SimBrief data in order to autofill data"
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Devi inserire un codice ICAO in modo da effettuare una richiesta METAR",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Devi caricare i dati SimBrief per l'autoriempimento dei dati"
       },
-      "Temperature": "Temperature",
-      "Title": "Landing",
+      "Temperature": "Temperatura",
+      "Title": "Atterraggio",
       "UnitFt": "ft",
       "UnitMeter": "m",
-      "Weight": "Weight",
-      "WindDirection": "Wind Direction",
+      "Weight": "Peso",
+      "WindDirection": "Direzione Vento",
       "WindDirectionUnit": "°",
-      "WindMagnitude": "Wind Magnitude",
+      "WindMagnitude": "Magnitudine Vento",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "SYNC",
-    "Title": "Performance",
+    "Title": "Prestazioni",
     "TopOfDescent": {
       "Data": {
-        "Angle": "Angle",
-        "CurrentAltitude": "Current Altitude",
-        "Distance": "Distance",
-        "GroundSpeed": "Ground Speed",
-        "TargetAltitude": "Target Altitude",
-        "Title": "Data",
-        "UnitAngleDegrees": "degrees",
-        "UnitFeet": "feet",
+        "Angle": "Angolo",
+        "CurrentAltitude": "Altitudine Attuale",
+        "Distance": "Distanza",
+        "GroundSpeed": "Velocità al Suolo",
+        "TargetAltitude": "Altitudine da Raggiungere",
+        "Title": "Dati",
+        "UnitAngleDegrees": "Gradi",
+        "UnitFeet": "Piedi",
         "UnitFtMin": "ft/min",
         "UnitNM": "NM",
-        "VerticalSpeed": "Vertical Speed"
+        "VerticalSpeed": "Velocità Verticale"
       },
       "GroundSpeed": {
-        "Add": "Add",
-        "FetchingSpeedFromSimulator": "Fetching speed from simulator",
-        "GroundSpeed": "Ground Speed",
-        "ManualInput": "Manual Input",
-        "MinAltitude": "Min. Altitude",
-        "RemoveLast": "Remove Last",
+        "Add": "Aggiungi",
+        "FetchingSpeedFromSimulator": "Acquisizione velocità dal simulatore",
+        "GroundSpeed": "Velocità al Suolo",
+        "ManualInput": "Inserimento Manuale",
+        "MinAltitude": "Altitudine Min.",
+        "RemoveLast": "Rimuovi Ultimo",
         "Sync": "SYNC",
-        "Title": "Ground Speed",
-        "UnitKnots": "knots",
+        "Title": "Velocità al Suolo",
+        "UnitKnots": "nodi",
         "UnitKt": "kt"
       },
       "Result": {
-        "BeforeTarget": "before target",
-        "DesiredDescentAngle": "Desired Descent Angle",
-        "DesiredVerticalSpeed": "Desired Vertical Speed",
-        "StartYourDescentAbout": "Start your descent about",
-        "Title": "Result"
+        "BeforeTarget": "Prima del Raggiungimento",
+        "DesiredDescentAngle": "Angolo Discesa Desiderato",
+        "DesiredVerticalSpeed": "Velocità Verticale Desiderata",
+        "StartYourDescentAbout": "Inizia la tua discesa circa",
+        "Title": "Risultato"
       },
       "TT": {
-        "DesynchronizeInputWithAircraftsCurrentAltitude": "Desynchronize Input with Aircraft's Current Altitude",
-        "SynchronizeInputWithAircraftsCurrentAltitude": "Synchronize Input with Aircraft's Current Altitude"
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "De-sincronizza immissione con l'Altitudine Attuale dell'Aeromobile",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Sincronizza Immissione con l'Altitudine Attuale dell' Aeromobile"
       },
-      "Title": "Top of Descent"
+      "Title": "Inizio della Discesa"
     }
   },
   "Presets": {
     "AircraftStates": {
-      "Cancel": "Cancel",
-      "ColdDark": "Cold & Dark",
-      "ConfirmationDialogMsg": "Please confirm loading of preset.",
-      "CurrentProcedureStep": "Current Procedure Step",
-      "PleaseConfirmLoadingOfPreset": "Please confirm loading of preset.",
-      "ReadyPushback": "Ready for Pushback",
-      "ReadyTakeoff": "Ready for Takeoff",
-      "ReadyTaxi": "Ready for Taxi",
-      "SelectAPresetToLoad": "Select a Preset to Load",
-      "TheAircraftMustBeOnTheGroundToLoadAPreset": "The aircraft must be on the ground to load a preset.",
-      "TheAircraftMustBeOntheGroundToLoadAPreset": "The aircraft must be on the ground to load a preset.",
-      "Title": "Aircraft States",
+      "Cancel": "Annulla",
+      "ColdDark": "Spento",
+      "ConfirmationDialogMsg": "Prego confermare il caricamento del preset.",
+      "CurrentProcedureStep": "Fase Attuale della Procedura",
+      "PleaseConfirmLoadingOfPreset": "Prego confermare il caricamento del preset.",
+      "ReadyPushback": "Pronto per il Pushback",
+      "ReadyTakeoff": "Pronto al Decollo",
+      "ReadyTaxi": "Pronto al Rullaggio",
+      "SelectAPresetToLoad": "Seleziona un Preset da Caricare",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "L' Aereo deve essere a terra per caricare un preset",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "L' Aereo deve essere a terra per caricare un preset.",
+      "Title": "Stati Aeromobile",
       "Turnaround": "Turnaround"
     },
     "InteriorLighting": {
-      "AircraftNeedsToBePoweredToLoadPresets": "Aircraft Needs to be Powered to Load Presets",
-      "AircraftNeedsToBePoweredToSavePresets": "Aircraft Needs to Be Powered to Save Presets",
-      "LoadPreset": "Load Preset",
-      "LoadingPreset": "Loading Preset",
+      "AircraftNeedsToBePoweredToLoadPresets": "L' Aereo deve essere Alimentato per Caricare i Preset",
+      "AircraftNeedsToBePoweredToSavePresets": "L' Aereo deve essere Alimentato per Salvare i Preset",
+      "LoadPreset": "Carica Preset",
+      "LoadingPreset": "Caricamento Preset",
       "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
       "NoName": "No Name",
       "PleaseConfirmSavingPreset": "Please Confirm Saving Preset",

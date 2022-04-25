@@ -193,7 +193,7 @@
       "TT": {
         "ChangeChartProvider": "Cambiar proveedor de Cartas",
         "ChangeChartSortMethod": "Cambiar método de clasificación de Cartas",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "Eliminar todos los gráficos anclados"
       },
       "Title": "Cartas ancladas",
       "View": "Ver"
