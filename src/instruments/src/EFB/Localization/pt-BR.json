@@ -3,7 +3,7 @@
     "Active": "Ativo",
     "ChangeATISATCSourceButton": "Alterar fonte dos dados ATIS/ATC",
     "ConnectHoppieACARS": "Conectar Hoppie ACARS",
-    "NoInformationAvailableForThisFrequency": "NENHUMA INFORMAÇÃO DISPONÍVEL PARA ESSA FREQUÊNCIA",
+    "NoInformationAvailableForThisFrequency": "Nenhuma informação disponível para essa frequência",
     "SelectCorrectATISATCSource": "Esta página só está disponível quando a opção IVAO ou VATSIM é selecionada como fonte de dados ATIS/ATC na página de configurações.",
     "SetActive": "Definir ativo",
     "SetStandby": "Setar Standby",
@@ -52,7 +52,7 @@
         "Raw": "Tempo ruim",
         "TT": {
           "SwitchToIconView": "Mudar para a visualização de ícones",
-          "SwitchToRawMetarView": "Switch to Raw METAR View"
+          "SwitchToRawMetarView": "Mudar para a visualização bruta do METAR"
         },
         "Temperature": "Temperatura",
         "Title": "Clima",
@@ -150,7 +150,7 @@
   "Modals": {
     "Cancel": "Cancelar",
     "Confirm": "Confirmar",
-    "Okay": "OK"
+    "Okay": "Ok"
   },
   "NavigationAndCharts": {
     "All": "Todos",
@@ -163,7 +163,7 @@
       "FailedToEstablishConnection": "Falha ao estabelecer a conexão.",
       "FileName": "Nome do arquivo",
       "Image": "Imagem",
-      "Pdf": "PDF",
+      "Pdf": "Pdf",
       "Retry": "Tentar novamente",
       "Title": "Arquivos locais"
     },
@@ -234,11 +234,11 @@
       "Qnh": "QNH",
       "ReverseThrust": "Reverso",
       "RunwayAltitude": "Altitude da pista",
-      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayAltitudeUnit": "pés ASL",
       "RunwayCondition": "Condição da pista",
       "RunwayHeading": "Direção da pista",
       "RunwayHeadingUnit": "°",
-      "RunwayLda": "Runway LDA",
+      "RunwayLda": "Pista LDA",
       "RunwayLdaUnitFt": "pés",
       "RunwayLdaUnitMeter": "m",
       "RunwaySlope": "Inclinação da pista",
@@ -301,8 +301,8 @@
   "Presets": {
     "AircraftStates": {
       "Cancel": "Cancelar",
-      "ColdDark": "Cold & Dark",
-      "ConfirmationDialogMsg": "Confirme o carregamento da predefinição.",
+      "ColdDark": "Frio e escuro",
+      "ConfirmationDialogMsg": "Por favor, confirme o carregamento da predefinição.",
       "CurrentProcedureStep": "Etapa do procedimento atual",
       "PleaseConfirmLoadingOfPreset": "Confirme o carregamento da predefinição.",
       "ReadyPushback": "Pronto para o pushback",
@@ -312,7 +312,7 @@
       "TheAircraftMustBeOnTheGroundToLoadAPreset": "A aeronave deve estar no solo para carregar uma predefinição.",
       "TheAircraftMustBeOntheGroundToLoadAPreset": "A aeronave deve estar no solo para carregar uma predefinição.",
       "Title": "Estados da aeronave",
-      "Turnaround": "Turnaround"
+      "Turnaround": "Em trânsito"
     },
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "A aeronave precisa ser energizada para carregar predefinições",
@@ -337,7 +337,7 @@
     "Title": "Predefinições"
   },
   "Pushback": {
-    "Backward": "Backward",
+    "Backward": "Para trás",
     "CallTug": "Chamar reboque",
     "Forward": "Para frente",
     "Halt": "Parar",
@@ -362,7 +362,7 @@
       "PaxSigns": "Aviso de Passageiros",
       "RmpVhfSpacing": "Espaçamento RMP VHF",
       "ThrustReductionHeight": "Altura de redução de empuxo (ft)",
-      "Title": "Aircraft Options / Pin Programs",
+      "Title": "Opções da aeronave / Programas fixados",
       "WeightUnit": "Unidade de peso"
     },
     "AtsuAoc": {
@@ -405,7 +405,7 @@
       "AdirsAlignTime": "Tempo de alinhamento dos ADIRS",
       "AutofillChecklists": "Preenchimento automático dos Checklists",
       "BoardingTime": "Tempo de embarque",
-      "DmcSelfTestTime": "DMC Self Test Time",
+      "DmcSelfTestTime": "Tempo de auto teste do DMC",
       "HomeCockpitMode": "Modo Home Cockpit",
       "McduFocusTimeout": "Tempo limite de foco da MCDU (segundos)",
       "McduKeyboardInput": "Entrada de teclado MCDU",
@@ -424,7 +424,7 @@
       "Inactive": "Inativo",
       "LoadOnly": "Carregar somente",
       "None": "Nenhum",
-      "Off": "Desligado",
+      "Off": "Desativado",
       "Save": "Salvar",
       "SyncMsfsFlightPlan": "Sincronizar plano de voo do MSFS",
       "ThrottleDetents": "Manetes de potência",
@@ -450,7 +450,7 @@
       "ReverseIdle": "Reverso marcha lenta",
       "ReverserOnAxis": "Eixo de reverso",
       "SaveAndApply": "Salvar e aplicar",
-      "SetFromThrottle": "Set from Throttle",
+      "SetFromThrottle": "Definir através do acelerador",
       "ThrottleConfigurationReset": "Redefinir configuração do acelerador"
     },
     "Title": "Configurações",
@@ -466,7 +466,7 @@
       "Local": "Local",
       "LocalTimeFormat": "Formato de hora local",
       "OnscreenKeyboardLayout": "Layout de teclado na tela",
-      "ShowColoredRawMetar": "Show Colored Raw METAR",
+      "ShowColoredRawMetar": "Mostrar METAR bruto colorido",
       "ShowStatusBarFlightProgressIndicator": "Mostrar indicador de progresso de voo da barra de status",
       "Theme": "Tema",
       "TimeDisplayed": "Hora exibida",
