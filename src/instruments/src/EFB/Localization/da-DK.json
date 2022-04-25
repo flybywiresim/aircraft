@@ -169,7 +169,7 @@
     },
     "Navigraph": {
       "AirportDoesNotExist": "Lufthavn findes ikke",
-      "AuthenticateWithNavigraph": "Godkend med Navigraph",
+      "AuthenticateWithNavigraph": "Autentificering med Navigraph",
       "InsufficientEnv": "Utilstrækkelig .env-fil",
       "IntoYourBrowserAndEnterTheCodeBelow": "ind i din browser og indtast koden nedenfor\n",
       "NoAirportSelected": "Ingen lufthavn valgt",
@@ -191,27 +191,27 @@
         "None": "Ingen"
       },
       "TT": {
-        "ChangeChartProvider": "Skift diagram udbyder",
-        "ChangeChartSortMethod": "Skift diagram sorteringsmetode",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "ChangeChartProvider": "Skift kort udbyder",
+        "ChangeChartSortMethod": "Skift kort sorteringsmetode",
+        "RemoveAllPinnedCharts": "Fjern alle fastgjorte kort"
       },
-      "Title": "Fastgjorte diagrammer",
+      "Title": "Fastgjorte kort",
       "View": "Visning "
     },
     "PleaseWait": "Vent venligst ",
     "ShowingAllItems": "Viser alle elementer",
     "TT": {
-      "FitChartToHeight": "Tilpas diagram til højde",
-      "FitChartToWidth": "Tilpas diagram til bredde",
+      "FitChartToHeight": "Tilpas kort til højde",
+      "FitChartToWidth": "Tilpas kort til bredde",
       "ResetMovement": "Nulstil bevægelse",
-      "RotateLeft45Degrees": "Drej til venstre 45 grader",
+      "RotateLeft45Degrees": "Rotere 45 grader til venstre",
       "RotateRight45Degrees": "Roter højre 45 grader",
       "ZoomIn": "Zoom ind",
       "ZoomOut": "Zoom ud"
     },
-    "ThereAreNoChartsToDisplay": "Der er ingen diagrammer at vise.",
-    "ThereIsNoChartToDisplay": "Der er ikke noget chart at vise",
-    "Title": "Navigation & Charts",
+    "ThereAreNoChartsToDisplay": "Der er ingen kort tilgængelig",
+    "ThereIsNoChartToDisplay": "Der er ikke noget kort at vise",
+    "Title": "Navigation & Kort",
     "To": "Til"
   },
   "Performance": {
@@ -226,7 +226,7 @@
       "DropDownNo": "Nej",
       "DropDownYes": "Ja",
       "FillDataFrom": "Udfyld data fra",
-      "FlapsConfiguration": "Flaps configuration ",
+      "FlapsConfiguration": "Flaps konfiguration ",
       "Low": "Lav",
       "MaximumManual": "Maksimum Manual",
       "Medium": "Mellem",
@@ -253,18 +253,18 @@
       "Weight": "vægt",
       "WindDirection": "Vindretning",
       "WindDirectionUnit": "°",
-      "WindMagnitude": "Vind størrelsesorden",
+      "WindMagnitude": "Vindhastighed",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "Sync",
-    "Title": "Ydelse",
+    "Title": "Ydeevne",
     "TopOfDescent": {
       "Data": {
         "Angle": "Vinkel",
         "CurrentAltitude": "Aktuel højde",
         "Distance": "Afstand",
-        "GroundSpeed": "Ground Speed ",
-        "TargetAltitude": "Target Højde",
+        "GroundSpeed": "Hastighed på jorden",
+        "TargetAltitude": "Målhøjde",
         "Title": "Data",
         "UnitAngleDegrees": "Grader",
         "UnitFeet": "Fod",
@@ -280,7 +280,7 @@
         "MinAltitude": "Min. Højde",
         "RemoveLast": "Fjern sidste",
         "Sync": "Sync",
-        "Title": "Ground Speed",
+        "Title": "Fart over jorden",
         "UnitKnots": "knob",
         "UnitKt": "Kt"
       },
