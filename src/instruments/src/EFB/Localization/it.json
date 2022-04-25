@@ -35,8 +35,8 @@
         "Title": "Manutenzione"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "Nessuna Cartina Affissata",
-        "Title": "Cartine Affissate"
+        "NoPinnedCharts": "Nessuna Carta Fissata",
+        "Title": "Carte Fissate"
       },
       "TT": {
         "RearrangeWidgets": "Riordina Widget"
@@ -69,7 +69,7 @@
       "ImportSimBriefData": "Importa Dati SimBrief",
       "Route": "Rotta",
       "SimBriefDataNotYetLoaded": "Dati SiemBrief non ancora caricati.",
-      "Title": "Il tuo Volo",
+      "Title": "Il Tuo Volo",
       "ZFW": "ZFW"
     }
   },
@@ -105,7 +105,7 @@
     "Compact": {
       "Title": "Compatto"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "La completa simulazione dei guasti riportati di seguito non è ancora garantita.",
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "La totale simulazione dei guasti riportati di seguito non è ancora garantita.",
     "Search": "Cerca",
     "Title": "Guasti"
   },
@@ -136,13 +136,13 @@
       "Title": "Pushback"
     },
     "Services": {
-      "BaggageTruck": "Carrello Portabagagli",
-      "CateringTruck": "Catering-truck",
-      "DoorAft": "Porta Posteriore",
-      "DoorFwd": "Porta Anteriore",
+      "BaggageTruck": "Veicolo Bagagli",
+      "CateringTruck": "Veicolo Bagagli",
+      "DoorAft": "Porta Post.",
+      "DoorFwd": "Porta Ant.",
       "ExternalPower": "Alimentazione Esterna",
-      "FuelTruck": "Autocarro Carburante",
-      "JetBridge": "Ponte di Imbarco",
+      "FuelTruck": "Veicolo Carburante",
+      "JetBridge": "Ponte d'Imbarco",
       "Title": "Servizi"
     },
     "Title": "Terra"
@@ -182,7 +182,7 @@
       "Edit": "Modifica",
       "NoItemsFound": "Nessun Elemento Trovato",
       "SearchPlaceholder": "Cerca",
-      "ShowingChartsFromAllProviders": "Visualizzazione delle Cartine da tutti i Fornitori",
+      "ShowingChartsFromAllProviders": "Visualizzazione delle Carte da tutti i Fornitori",
       "SortMethods": {
         "AlphabeticalAZ": "Alfabetico - A -> Z",
         "AlphabeticalZA": "Alfabetico - Z -> A",
@@ -191,27 +191,27 @@
         "None": "Nessuno"
       },
       "TT": {
-        "ChangeChartProvider": "Cambia Fornitore Cartine",
-        "ChangeChartSortMethod": "Cambia Metodo di Ordinamento Cartine",
-        "RemoveAllPinnedCharts": "Rimuovi Tutte le Cartine Affissate"
+        "ChangeChartProvider": "Cambia Fornitore Carte",
+        "ChangeChartSortMethod": "Cambia Metodo di Ordinamento delle Carte",
+        "RemoveAllPinnedCharts": "Rimuovi Tutte le Carte Fissate"
       },
-      "Title": "Cartine Affissate",
+      "Title": "Carte Fissate",
       "View": "Visualizza"
     },
     "PleaseWait": "Attendere Prego",
     "ShowingAllItems": "Visualizzazione di Tutti gli Elementi",
     "TT": {
-      "FitChartToHeight": "Adatta Cartina all'Altezza",
-      "FitChartToWidth": "Adatta Cartina alla Larghezza",
+      "FitChartToHeight": "Adatta Carta all'Altezza",
+      "FitChartToWidth": "Adatta Carta alla Larghezza",
       "ResetMovement": "Ripristina Movimento",
       "RotateLeft45Degrees": "Ruota a Sinistra di 45 Gradi",
       "RotateRight45Degrees": "Ruota a Destra di 45 Gradi",
       "ZoomIn": "Ingrandisci",
       "ZoomOut": "Rimpicciolisci"
     },
-    "ThereAreNoChartsToDisplay": "Non ci sono cartine da visualizzare.",
-    "ThereIsNoChartToDisplay": "Non c'è nessuna cartina da visualizzare",
-    "Title": "Navigazione & Cartine",
+    "ThereAreNoChartsToDisplay": "Non ci sono carte da visualizzare.",
+    "ThereIsNoChartToDisplay": "Non c'è nessuna carta da visualizzare",
+    "Title": "Navigazione e Carte",
     "To": "A"
   },
   "Performance": {
@@ -264,7 +264,7 @@
         "CurrentAltitude": "Altitudine Attuale",
         "Distance": "Distanza",
         "GroundSpeed": "Velocità al Suolo",
-        "TargetAltitude": "Altitudine da Raggiungere",
+        "TargetAltitude": "Altitudine Target",
         "Title": "Dati",
         "UnitAngleDegrees": "Gradi",
         "UnitFeet": "Piedi",
@@ -305,9 +305,9 @@
       "ConfirmationDialogMsg": "Prego conferma caricamento del preset.",
       "CurrentProcedureStep": "Fase Attuale della Procedura",
       "PleaseConfirmLoadingOfPreset": "Prego conferma caricamento del preset.",
-      "ReadyPushback": "Pronto per il Pushback",
-      "ReadyTakeoff": "Pronto al Decollo",
-      "ReadyTaxi": "Pronto al Rullaggio",
+      "ReadyPushback": "Pronto per Pushback",
+      "ReadyTakeoff": "Pronto per Decollo",
+      "ReadyTaxi": "Pronto per Rullaggio",
       "SelectAPresetToLoad": "Seleziona un Preset da Caricare",
       "TheAircraftMustBeOnTheGroundToLoadAPreset": "L' Aereo deve essere a terra per caricare un preset",
       "TheAircraftMustBeOntheGroundToLoadAPreset": "L' Aereo deve essere a terra per caricare un preset.",
@@ -338,16 +338,16 @@
   },
   "Pushback": {
     "Backward": "Indietro",
-    "CallTug": "Chiama Rimorchiatore",
+    "CallTug": "Chiama Tug",
     "Forward": "Avanti",
     "Halt": "Fermo",
     "ParkingBrake": {
       "Off": "Off",
       "On": "On",
-      "Title": "Freni di Parcheggio"
+      "Title": "Parking Brake"
     },
-    "TugDirection": "Direzione Rimorchiatore",
-    "TugSpeed": "Velocità Rimorchiatore"
+    "TugDirection": "Direzione Tug",
+    "TugSpeed": "Velocità Tug"
   },
   "Settings": {
     "About": {
@@ -360,8 +360,8 @@
       "IsisMetricAltitude": "Altitudine Metrica ISIS",
       "LatLonExtendedFormat": "Formato Waypoint Lat/Lon FMGC",
       "PaxSigns": "PAX Sign",
-      "RmpVhfSpacing": "RMP VHF Spacing",
-      "ThrustReductionHeight": "Thrust Reduction Height (ft)",
+      "RmpVhfSpacing": "Spaziatura VHF RMP",
+      "ThrustReductionHeight": "Altezza Riduzione Spinta (ft)",
       "Title": "Opzioni Aeromobile / Programmi Fissati",
       "WeightUnit": "Unità Peso"
     },
@@ -394,7 +394,7 @@
       "EngineInteriorVolume": "Volume Motori all'Interno",
       "ExteriorMasterVolume": "Volume Generale all'Esterno",
       "PassengerAmbience": "Brusio Passeggeri",
-      "PtuAudibleInCockpit": "PTU Udibile nella Cabina di Pilotaggio",
+      "PtuAudibleInCockpit": "PTU Udibile nel Cockpit",
       "Title": "Audio",
       "WindInteriorVolume": "Volume Vento all'Interno"
     },
@@ -409,7 +409,7 @@
       "HomeCockpitMode": "Modalità Home Cockpit",
       "McduFocusTimeout": "Timeout Puntatore su MCDU (secondi)",
       "McduKeyboardInput": "Input Tastiera MCDU",
-      "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
+      "SeparateTillerFromRudderInputs": "Separa Input del Tiller da quello dei Pedali",
       "Title": "Realismo"
     },
     "SimOptions": {
@@ -427,7 +427,7 @@
       "Off": "Off",
       "Save": "Salva",
       "SyncMsfsFlightPlan": "Sincronizza Piano di Volo MSFS",
-      "ThrottleDetents": "Punti Manetta",
+      "ThrottleDetents": "Scalini Manetta",
       "Title": "Opzioni Simulatore",
       "UseCalculatedIlsSignals": "Usa Segnali ILS Calcolati",
       "inHg": "inHg"
@@ -440,15 +440,15 @@
       "ConfigureEnd": "Configura Fine",
       "ConfigureStart": "Configura Inizio",
       "CurrentValue": "Valore Corrente",
-      "Deadband": "Deadband",
-      "ErrorOverlapMsg": "overlaps with",
+      "Deadband": "Zona Morta",
+      "ErrorOverlapMsg": "Conflitto con",
       "IndependentAxis": "Asse Unica",
       "LoadFromFile": "Carica da File",
       "PleaseEnterAValidDeadzone": "Prego inserisci una zona morta valida",
       "ResetToDefaults": "Ripristina Predefiniti",
       "ReverseFull": "Reverse Full",
       "ReverseIdle": "Reverse Idle",
-      "ReverserOnAxis": "Inversore sull'Asse",
+      "ReverserOnAxis": "Reverser su Asse/i",
       "SaveAndApply": "Salva e Applica",
       "SetFromThrottle": "Imposta dalla Manetta",
       "ThrottleConfigurationReset": "Ripristina Configurazione Manetta"
@@ -497,7 +497,7 @@
     "TT": {
       "ConnectedToLocalApi": "Connesso ad API Locali",
       "DisconnectedFromLocalApi": "Sconnesso da API Locali",
-      "TurnOffOrShutdownEfb": "Spegni o Arresta EFB"
+      "TurnOffOrShutdownEfb": "Spegni o Arresta l'EFB"
     },
     "Thu": "Gio",
     "Tue": "Mar",
