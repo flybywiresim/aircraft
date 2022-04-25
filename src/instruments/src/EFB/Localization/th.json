@@ -36,7 +36,7 @@
       },
       "PinnedCharts": {
         "NoPinnedCharts": "ไม่มี Charts ที่ปักหมุดไว้",
-        "Title": "Chart ที่ปักหมุดไว้"
+        "Title": "Charts ที่ปักหมุดไว้"
       },
       "TT": {
         "RearrangeWidgets": "จัดเรียงวิดเจ็ตใหม่"
@@ -193,9 +193,9 @@
       "TT": {
         "ChangeChartProvider": "เปลี่ยนผู้ให้บริการ Chart",
         "ChangeChartSortMethod": "เปลี่ยนวิธีการจัดเรียง Chart",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "ลบ Chart ที่ปักหมุดไว้ทั้งหมด"
       },
-      "Title": "Chart ที่ปักหมุด",
+      "Title": "Charts ที่ปักหมุดไว้",
       "View": "ดู"
     },
     "PleaseWait": "กรุณารอสักครู่",
