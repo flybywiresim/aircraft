@@ -11,6 +11,7 @@ import da from './Localization/da-DK.json';
 import el from './Localization/el.json';
 import en from './Localization/en.json';
 import es from './Localization/es.json';
+import eu from './Localization/eu.json';
 import fi from './Localization/fi.json';
 import fr from './Localization/fr.json';
 import he from './Localization/he.json';
@@ -26,6 +27,7 @@ import nl from './Localization/nl.json';
 import pl from './Localization/pl.json';
 import pt from './Localization/pt-PT.json';
 import ru from './Localization/ru.json';
+import sk from './Localization/sk.json';
 import sl from './Localization/sl.json';
 import sv from './Localization/sv.json';
 import th from './Localization/th.json';
@@ -75,10 +77,11 @@ interface LanguageOption {
 export const languageOptions: LanguageOption[] = [
     { langCode: 'ar', langData: ar, langName: 'Arabic', alias: 'اَلْعَرَبِيَّةُ' },
     { langCode: 'cs', langData: cs, langName: 'Czech', alias: 'Čeština' },
-    { langCode: 'de', langData: de, langName: 'German', alias: 'Deutsch' },
     { langCode: 'da', langData: da, langName: 'Dansk', alias: 'Dansk' },
+    { langCode: 'de', langData: de, langName: 'German', alias: 'Deutsch' },
     { langCode: 'el', langData: el, langName: 'Greek', alias: 'Ελληνικά' },
     { langCode: 'en', langData: en, langName: 'English', alias: 'English' },
+    { langCode: 'eu', langData: eu, langName: 'Basque', alias: 'Euskara' },
     { langCode: 'es', langData: es, langName: 'Spanish', alias: 'Español' },
     { langCode: 'fi', langData: fi, langName: 'Finnish', alias: 'Suomen kieli' },
     { langCode: 'fr', langData: fr, langName: 'French', alias: 'Français' },
@@ -95,6 +98,7 @@ export const languageOptions: LanguageOption[] = [
     { langCode: 'pl', langData: pl, langName: 'Polish', alias: 'Polski' },
     { langCode: 'pt', langData: pt, langName: 'Portuguese', alias: 'Português' },
     { langCode: 'ru', langData: ru, langName: 'Russian', alias: 'Русский' },
+    { langCode: 'sk', langData: sk, langName: 'Slovak', alias: 'Slovenčina' },
     { langCode: 'sl', langData: sl, langName: 'Slovenian', alias: 'Slovenščina' },
     { langCode: 'sv', langData: sv, langName: 'Swedish', alias: 'Svenska' },
     { langCode: 'th', langData: th, langName: 'Thai', alias: 'ภาษาไทย' },

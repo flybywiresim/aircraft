@@ -81,75 +81,75 @@
         "ReduceFontSize": "Reduzir o tamanho da letra"
       },
       "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
+      "YouHaveNotYetImportedAnySimBriefData": "Ainda não importou nenhuns dados do SimBrief"
     },
     "Overview": {
-      "Engines": "Engines",
+      "Engines": "Motores",
       "MMO": "MMO",
       "MRW": "MRW",
       "MTOW": "MTOW",
       "MZFW": "MZFW",
-      "MaximumCargo": "Maximum Cargo",
-      "MaximumFuelCapacity": "Maximum Fuel Capacity",
-      "MaximumPassengers": "Maximum Passengers",
-      "Model": "Model",
-      "Range": "Range",
-      "Title": "Overview"
+      "MaximumCargo": "Carga Máxima",
+      "MaximumFuelCapacity": "Capacidade Máxima de Combustível",
+      "MaximumPassengers": "Lotação Máxima",
+      "Model": "Modelo",
+      "Range": "Alcance",
+      "Title": "Vista Geral"
     },
     "Title": "Dispatch"
   },
   "Failures": {
     "Comfort": {
-      "Title": "Comfort"
+      "Title": "Conforto"
     },
     "Compact": {
-      "Title": "Compact"
+      "Title": "Compacto"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Full simulation of the failures below isn't yet guaranteed.",
-    "Search": "Search",
-    "Title": "Failures"
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Simulação total das falhas abaixo ainda não está garantida.",
+    "Search": "Pesquisa",
+    "Title": "Falhas"
   },
   "Ground": {
     "Fuel": {
-      "CenterTank": "Center Tank",
-      "Completed": "Completed",
-      "Defueling": "Defueling",
-      "EstimatedDuration": "Estimated duration (minutes)",
+      "CenterTank": "Tanque Central",
+      "Completed": "Concluído",
+      "Defueling": "Desabastecer",
+      "EstimatedDuration": "Duração estimada (minutos)",
       "EstimatedTime": "Estimated Time",
-      "LeftInnerTank": "Left Inner Tank",
-      "LeftOuterTank": "Left Outer Tank",
-      "ReadyToStart": "Ready to Start",
-      "Refuel": "Refuel",
-      "RefuelTime": "Refuel Time",
-      "Refueling": "Refueling",
-      "RightInnerTank": "Right Inner Tank",
-      "RightOuterTank": "Right Outer Tank",
+      "LeftInnerTank": "Tanque Interno Esquerdo",
+      "LeftOuterTank": "Tanque Externo Esquerdo",
+      "ReadyToStart": "Pronto para Iniciar",
+      "Refuel": "Reabastecer",
+      "RefuelTime": "Tempo de Reabastecimento",
+      "Refueling": "Reabastecimento",
+      "RightInnerTank": "Tanque Interno Direito",
+      "RightOuterTank": "Tanque Externo Direito",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aircraft Must Be Cold and Dark to Change Refuel Times",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "A aeronave deve estar totalmente desligada para mudar os tempos de reabastecimento",
         "FillBlockFuelFromSimBrief": "Fill Block Fuel from SimBrief"
       },
-      "Title": "Fuel",
-      "TotalFuel": "Total Fuel",
-      "Unavailable": "Unavailable"
+      "Title": "Combustível",
+      "TotalFuel": "Combustível Total",
+      "Unavailable": "Indisponível"
     },
     "Pushback": {
       "Title": "Pushback"
     },
     "Services": {
-      "BaggageTruck": "Baggage Truck",
-      "CateringTruck": "Catering Truck",
-      "DoorAft": "Door Aft",
-      "DoorFwd": "Door Fwd",
-      "ExternalPower": "External Power",
-      "FuelTruck": "Fuel Truck",
-      "JetBridge": "Jet Bridge",
-      "Title": "Services"
+      "BaggageTruck": "Veículo de Bagagem",
+      "CateringTruck": "Veículo de Catering",
+      "DoorAft": "Porta Traseira",
+      "DoorFwd": "Porta Dianteira",
+      "ExternalPower": "Alimentação Externa",
+      "FuelTruck": "Camião de Combustível",
+      "JetBridge": "Manga de Embarque",
+      "Title": "Serviços"
     },
-    "Title": "Ground"
+    "Title": "Terra"
   },
   "Modals": {
-    "Cancel": "Cancel",
-    "Confirm": "Confirm",
+    "Cancel": "Cancelar",
+    "Confirm": "Confirmar",
     "Okay": "Okay"
   },
   "NavigationAndCharts": {
