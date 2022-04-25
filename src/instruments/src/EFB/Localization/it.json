@@ -409,7 +409,7 @@
       "HomeCockpitMode": "Modalità Home Cockpit",
       "McduFocusTimeout": "Timeout Puntatore su MCDU (secondi)",
       "McduKeyboardInput": "Input Tastiera MCDU",
-      "SeparateTillerFromRudderInputs": "Separa gli input del Tiller e dei Pedali",
+      "SeparateTillerFromRudderInputs": "Separa gli Input del Tiller e dei Pedali",
       "Title": "Realismo"
     },
     "SimOptions": {
@@ -428,7 +428,7 @@
       "Save": "Salva",
       "SyncMsfsFlightPlan": "Sincronizza Piano di Volo MSFS",
       "ThrottleDetents": "Posizioni Manetta",
-      "Title": "Opzioni Simulatore",
+      "Title": "Opzioni Sim",
       "UseCalculatedIlsSignals": "Usa Segnali ILS Calcolati",
       "inHg": "inHg"
     },
