@@ -4,12 +4,15 @@
 /* eslint-disable no-console */
 
 import { NXDataStore } from '@shared/persistence';
+
+// source language
+import en from './Localization/en.json';
+// translations
 import ar from './Localization/ar.json';
 import cs from './Localization/cs.json';
 import de from './Localization/de.json';
 import da from './Localization/da-DK.json';
 import el from './Localization/el.json';
-import en from './Localization/en.json';
 import es from './Localization/es.json';
 import eu from './Localization/eu.json';
 import fi from './Localization/fi.json';
@@ -75,12 +78,14 @@ interface LanguageOption {
 
 // used for the dropdown in the flyPad settings page
 export const languageOptions: LanguageOption[] = [
+    // Source language first
+    { langCode: 'en', langData: en, langName: 'English', alias: 'English' },
+    // translations sorted by language code
     { langCode: 'ar', langData: ar, langName: 'Arabic', alias: 'اَلْعَرَبِيَّةُ' },
     { langCode: 'cs', langData: cs, langName: 'Czech', alias: 'Čeština' },
     { langCode: 'da', langData: da, langName: 'Dansk', alias: 'Dansk' },
     { langCode: 'de', langData: de, langName: 'German', alias: 'Deutsch' },
     { langCode: 'el', langData: el, langName: 'Greek', alias: 'Ελληνικά' },
-    { langCode: 'en', langData: en, langName: 'English', alias: 'English' },
     { langCode: 'eu', langData: eu, langName: 'Basque', alias: 'Euskara' },
     { langCode: 'es', langData: es, langName: 'Spanish', alias: 'Español' },
     { langCode: 'fi', langData: fi, langName: 'Finnish', alias: 'Suomen kieli' },
