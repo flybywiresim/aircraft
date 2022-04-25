@@ -113,7 +113,7 @@ pub trait LgciuInterface:
 {
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 #[repr(usize)]
 pub enum LgciuId {
     Lgciu1 = 0,

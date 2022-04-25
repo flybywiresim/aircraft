@@ -627,7 +627,7 @@ impl LandingGearControlInterfaceUnit {
         gear_system_sensors: &impl GearSystemSensors,
         external_power_available: bool,
         gear_handle: &impl LandingGearHandle,
-        is_active_computer: bool,
+        is_master_computer: bool,
     ) {
         self.is_gear_lever_down = gear_handle.gear_handle_is_down();
         self.external_power_available = external_power_available;
@@ -639,22 +639,26 @@ impl LandingGearControlInterfaceUnit {
             self.is_powered,
         );
 
-        if is_active_computer && !self.is_active_computer_previous_state {
+        if is_master_computer && !self.is_active_computer_previous_state {
             self.actions_when_becoming_master();
+        }
+
+        if !is_master_computer {
+            self.actions_when_slave();
         }
 
         if self.is_powered && !self.is_powered_previous_state {
             self.actions_when_startup();
         }
 
-        if is_active_computer {
+        if is_master_computer {
             self.gear_system_control
                 .update(&self.sensor_inputs, !self.is_gear_lever_down);
         }
 
         self.update_monitoring(context, gear_handle);
 
-        self.is_active_computer_previous_state = is_active_computer;
+        self.is_active_computer_previous_state = is_master_computer;
         self.is_powered_previous_state = self.is_powered;
     }
 
@@ -703,12 +707,16 @@ impl LandingGearControlInterfaceUnit {
     }
 
     fn actions_when_becoming_master(&mut self) {
-        self.reset_faults();
+        self.reset_fault_timers();
         self.compute_init_gear_state();
     }
 
+    fn actions_when_slave(&mut self) {
+        self.reset_fault_timers();
+    }
+
     fn actions_when_startup(&mut self) {
-        self.reset_faults();
+        self.reset_fault_timers();
         self.compute_init_gear_state();
     }
 
@@ -723,7 +731,7 @@ impl LandingGearControlInterfaceUnit {
         };
     }
 
-    fn reset_faults(&mut self) {
+    fn reset_fault_timers(&mut self) {
         self.transition_duration = Duration::default();
     }
 
