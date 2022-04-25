@@ -371,6 +371,7 @@
       "Enable": "Kích hoạt",
       "EnableTelex": "Kích hoạt TELEX",
       "ErrorReporting": "Báo cáo lỗi",
+      "HoppieEnabled": "Hoppie enabled",
       "HoppieUserId": "ID người dùng Hoppie",
       "MetarSource": "Nguồn METAR",
       "OptionalA32nxErrorReporting": "Tuỳ chọn báo cáo lỗi A32NX",
