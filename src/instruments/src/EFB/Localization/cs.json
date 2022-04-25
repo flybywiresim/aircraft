@@ -141,7 +141,7 @@
       "DoorAft": "Zadní dveře",
       "DoorFwd": "Přední dveře",
       "ExternalPower": "Externí napájení",
-      "FuelTruck": "Palivová cisterna",
+      "FuelTruck": "Cisterna",
       "JetBridge": "Nástupní most",
       "Title": "Služby"
     },
@@ -301,7 +301,7 @@
   "Presets": {
     "AircraftStates": {
       "Cancel": "Zrušit",
-      "ColdDark": "Studené letadlo (všechno vypnuté - C&D)",
+      "ColdDark": "Vše vypnuto (Cold & Dark)",
       "ConfirmationDialogMsg": "Potvrďte prosím načtení přednastaveného stavu.",
       "CurrentProcedureStep": "Aktuální krok v postupu",
       "PleaseConfirmLoadingOfPreset": "Potvrďte prosím načtení přednastaveného stavu.",
@@ -312,7 +312,7 @@
       "TheAircraftMustBeOnTheGroundToLoadAPreset": "K načtení přednastaveného stavu musí být letadlo na zemi.",
       "TheAircraftMustBeOntheGroundToLoadAPreset": "K načtení přednastaveného stavu musí být letadlo na zemi.",
       "Title": "Stavy letadla",
-      "Turnaround": "Spuštěné systémy (Turnaround)"
+      "Turnaround": "Otočení (Turnaround)"
     },
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "K načtení předvoleb musí být letadlo napájené",
@@ -338,7 +338,7 @@
   },
   "Pushback": {
     "Backward": "Vzad",
-    "CallTug": "Přivolat tahač",
+    "CallTug": "Přivolat pushback",
     "Forward": "Vpřed",
     "Halt": "Zastavit",
     "ParkingBrake": {
@@ -346,8 +346,8 @@
       "On": "Zapnuto",
       "Title": "Parkovací brzda"
     },
-    "TugDirection": "Směr jízdy tahače",
-    "TugSpeed": "Rychlost jízdy tahače"
+    "TugDirection": "Směr vytlačení",
+    "TugSpeed": "Rychlost vytlačení"
   },
   "Settings": {
     "About": {
@@ -360,9 +360,9 @@
       "IsisMetricAltitude": "ISIS metrická nadmořská výška",
       "LatLonExtendedFormat": "Formát FMGC Lat/Lon Waypointů",
       "PaxSigns": "Znamení cestujícím",
-      "RmpVhfSpacing": "RMP VHF rozteč",
+      "RmpVhfSpacing": "RMP VHF řádkování",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
-      "Title": "Možnosti letadla / Pin programy",
+      "Title": "Možnosti letadla / Připnout programy",
       "WeightUnit": "Jednotky hmotnosti"
     },
     "AtsuAoc": {
@@ -371,7 +371,7 @@
       "Enable": "Povolit",
       "EnableTelex": "Povolit TELEX",
       "ErrorReporting": "Hlášení chyb",
-      "HoppieEnabled": "Hoppie enabled",
+      "HoppieEnabled": "Hoppie povoleno",
       "HoppieUserId": "Hoppie uživatelské ID",
       "MetarSource": "Zdroj METAR",
       "OptionalA32nxErrorReporting": "Volitelné hlášení chyb A32NX",
@@ -402,14 +402,14 @@
     "Instant": "Okamžitý",
     "Real": "Reálný",
     "Realism": {
-      "AdirsAlignTime": "Čas zarovnání ADIRS",
+      "AdirsAlignTime": "Čas zaměření ADIRS",
       "AutofillChecklists": "Automaticky vyplňovat checklisty",
       "BoardingTime": "Čas nastupování cestujících",
       "DmcSelfTestTime": "Inicializační test DMC",
       "HomeCockpitMode": "Režim domácího kokpitu",
       "McduFocusTimeout": "Časový limit vstupu MCDU z klávesnice (sekundy)",
       "McduKeyboardInput": "MCDU zadávání pomocí klávesnice",
-      "SeparateTillerFromRudderInputs": "Oddělit vstupy pro Tiller a směrovku",
+      "SeparateTillerFromRudderInputs": "Oddělit vstupy pro tiller a směrovku",
       "Title": "Realismus"
     },
     "SimOptions": {
@@ -425,7 +425,7 @@
       "LoadOnly": "Pouze při načtení",
       "None": "Žádné",
       "Off": "Vypnuto",
-      "Save": "Vždy",
+      "Save": "Uložit",
       "SyncMsfsFlightPlan": "Synchronizace letového plánu MSFS",
       "ThrottleDetents": "Zarážky plynu",
       "Title": "Možnosti simulace",
@@ -439,7 +439,7 @@
       "Back": "Zpět",
       "ConfigureEnd": "Horní hranice",
       "ConfigureStart": "Spodní hranice",
-      "CurrentValue": "Současná hodnota",
+      "CurrentValue": "Aktuální hodnota",
       "Deadband": "Rozsah",
       "ErrorOverlapMsg": "se překrývá s",
       "IndependentAxis": "Nezávislé osy",
