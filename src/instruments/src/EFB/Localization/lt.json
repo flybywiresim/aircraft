@@ -1,0 +1,506 @@
+{
+  "AirTrafficControl": {
+    "Active": "Aktyvus",
+    "ChangeATISATCSourceButton": "Pakeisti ATIS/ATC šaltinį",
+    "ConnectHoppieACARS": "Prijungti Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "Jokia informacija nėra pasiekiama šiame dažnyje",
+    "SelectCorrectATISATCSource": "Šis puslapis pasiekiamas tik pasirinkus IVAO arba VATSIM kaip ATIS/ATC šaltinį nustatymų puslapyje.",
+    "SetActive": "Nustatyti kaip aktyvų",
+    "SetStandby": "Nustatyti kaip atsarginį",
+    "Standby": "Atsarginis",
+    "Title": "Oro Erdvės Kontrolė"
+  },
+  "Checklists": {
+    "AreYouSureYouWantToResetAllChecklists": "Ar tikrai norite atstatyti visus patikrinimo sąrašus?",
+    "AreYouSureYouWantToResetChecklists": "Ar tikrai norite atstatyti visus patikrinimo sąrašus?",
+    "ChecklistResetWarning": "Patikrinimų sąrašo atstatymo perspėjimas",
+    "MarkChecklistAsComplete": "Pažymėti patikrinimų sąrašą baigtu",
+    "MarkItemAsComplete": "Pažymėti punktą atliktu",
+    "ProceedToNextChecklist": "Pereiti į kitą patikrinimų sąrašą",
+    "ResetAll": "Viską atstatyti",
+    "ResetChecklist": "Atstatyti sąrašą",
+    "TheLastChecklistIsComplete": "Paskutinis patikrinimų sąrašas baigtas",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Yra nebaigtų automatinio patikrinimų sąrašo punktų",
+    "Title": "Patikrinimų sąrašai"
+  },
+  "Dashboard": {
+    "ImportantInformation": {
+      "Checklists": {
+        "NoRelevantChecklists": "Nėra tinkamų patikrinimų sąrašų",
+        "Title": "Patikrinimų sąrašai"
+      },
+      "GoToPage": "Eiti į puslapį",
+      "Maintenance": {
+        "NoActiveFailures": "Nėra aktyvių gedimų",
+        "Title": "Aptarnavimas"
+      },
+      "PinnedCharts": {
+        "NoPinnedCharts": "Jokių prisegtų dokumentų",
+        "Title": "Prisegti dokumentai"
+      },
+      "TT": {
+        "RearrangeWidgets": "Pertvarkyti valdiklius"
+      },
+      "Title": "Svarbi Informacija",
+      "Weather": {
+        "AirPressure": "Oro slėgis",
+        "DewPoint": "Rasos taškas",
+        "IcaoInvalid": "ICAO oro uosto kodas netinkamas arba nėra prieinamos METAR informacijos",
+        "Loading": "Kraunama",
+        "MetarParsingError": "Gauta METAR informacija negalėjo buti išanalizuota",
+        "NoIcaoProvided": "ICAO kodas nepateiktas",
+        "Raw": "Neapdorotas",
+        "TT": {
+          "SwitchToIconView": "Pereiti į ikonų vaizdą",
+          "SwitchToRawMetarView": "Pereiti į neapdorotų METAR peržiūrą"
+        },
+        "Temperature": "Temperatūra",
+        "Title": "Oras",
+        "WindSpeed": "Vėjo greitis"
+      }
+    },
+    "Title": "Prietaisų skydelis",
+    "YourFlight": {
+      "Alternate": "Alternatyvus",
+      "AverageWind": "Vidutinis vėjas",
+      "CompanyRoute": "Kompanijos maršrutas",
+      "CostIndex": "Kainos indeksas",
+      "CruiseAlt": "Kreiserinis aukštis",
+      "ImportSimBriefData": "Įkelti SimBrief duomenis",
+      "Route": "Maršrutas",
+      "SimBriefDataNotYetLoaded": "SimBrief duomenys dar neužkrauti.",
+      "Title": "Tavo Skrydis",
+      "ZFW": "ZFW"
+    }
+  },
+  "Dispatch": {
+    "Ofp": {
+      "ImportSimBriefData": "Įkelti SimBrief duomenis",
+      "TT": {
+        "IncreaseFontSize": "Padidinti šrifto dydį",
+        "ReduceFontSize": "Sumažinti šrifto dydį"
+      },
+      "Title": "OFP",
+      "YouHaveNotYetImportedAnySimBriefData": "Jūs dar neįkėlėte SimBrief duomenų"
+    },
+    "Overview": {
+      "Engines": "Varikliai",
+      "MMO": "MMO",
+      "MRW": "MRW",
+      "MTOW": "MTOW",
+      "MZFW": "MZFW",
+      "MaximumCargo": "Maksimalus krovinys",
+      "MaximumFuelCapacity": "Maksimali kuro talpa",
+      "MaximumPassengers": "Maksimalus keleivių skaičius",
+      "Model": "Modelis",
+      "Range": "Atstumas",
+      "Title": "Apžvalga"
+    },
+    "Title": "Išsiuntimas"
+  },
+  "Failures": {
+    "Comfort": {
+      "Title": "Komfortas"
+    },
+    "Compact": {
+      "Title": "Kompaktinis"
+    },
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Pilna gedimų simuliacija dar negali būti užtikrinta",
+    "Search": "Paieška",
+    "Title": "Gedimai"
+  },
+  "Ground": {
+    "Fuel": {
+      "CenterTank": "Centrinis kuro bakas",
+      "Completed": "Užbaigta",
+      "Defueling": "Kuro išpylimas",
+      "EstimatedDuration": "Numatoma trukmė (minutėmis)",
+      "EstimatedTime": "Estimated Time",
+      "LeftInnerTank": "Kairysis vidinis kuro bakas",
+      "LeftOuterTank": "Kairysis išorinis kuro bakas",
+      "ReadyToStart": "Pasiruošę Pradėti",
+      "Refuel": "Kuro pildymas",
+      "RefuelTime": "Kuro pildymo trukmė",
+      "Refueling": "Kuro pildymas",
+      "RightInnerTank": "Dešinysis vidinis kuro bakas",
+      "RightOuterTank": "Dešinysis išorinis kuro bakas",
+      "TT": {
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Norint pakeisti kuro pildymo laiką, orlaivis turi būti pilnai išjungtas",
+        "FillBlockFuelFromSimBrief": "Įkelti bendrą kurą iš SimBrief"
+      },
+      "Title": "Kuras",
+      "TotalFuel": "Bendras kuras",
+      "Unavailable": "Nepasiekiama"
+    },
+    "Pushback": {
+      "Title": "Išstumimas"
+    },
+    "Services": {
+      "BaggageTruck": "Bagažo sunkvežimis",
+      "CateringTruck": "Maitinimo sunkvežimis",
+      "DoorAft": "Galinės durys",
+      "DoorFwd": "Priekinės durys",
+      "ExternalPower": "Išorinė energija",
+      "FuelTruck": "Kuro cisterna",
+      "JetBridge": "Rankovė",
+      "Title": "Aptarnavimas"
+    },
+    "Title": "Žemė"
+  },
+  "Modals": {
+    "Cancel": "Atšaukti",
+    "Confirm": "Patvirtinti",
+    "Okay": "Gerai"
+  },
+  "NavigationAndCharts": {
+    "All": "Visi",
+    "Altn": "Altn",
+    "ExitFullscreenMode": "Išeiti iš pilno ekrano režimo",
+    "From": "Iš",
+    "LocalFiles": {
+      "Both": "Abu",
+      "EstablishingConnection": "Nustatomas ryšys",
+      "FailedToEstablishConnection": "Nepavyko užmegzti ryšio.",
+      "FileName": "Failo pavadinimas",
+      "Image": "Paveikslėlis",
+      "Pdf": "PDF",
+      "Retry": "Bandyti dar kartą",
+      "Title": "Vietiniai failai"
+    },
+    "Navigraph": {
+      "AirportDoesNotExist": "Oro uostas neegzistuoja",
+      "AuthenticateWithNavigraph": "Autentifikuoti su Navigraph",
+      "InsufficientEnv": "Insufficient .env File",
+      "IntoYourBrowserAndEnterTheCodeBelow": "į savo naršyklę ir įveskite žemiau esantį kodą\n",
+      "NoAirportSelected": "Oro uostas nepasirinktas",
+      "ResetNavigraphAuthentication": "Atstatyti Navigraph autentifikaciją",
+      "ScanTheQrCodeOrOpen": "Nuskanuoti ar atidaryti QR kodą",
+      "Title": "Navigraph"
+    },
+    "PinnedCharts": {
+      "Delete": "Ištrinti",
+      "Edit": "Redaguoti",
+      "NoItemsFound": "Nerasta",
+      "SearchPlaceholder": "Paieška",
+      "ShowingChartsFromAllProviders": "Rodomi dokumentai iš visų tiekėjų",
+      "SortMethods": {
+        "AlphabeticalAZ": "Alfabetiškai - A -> Z",
+        "AlphabeticalZA": "Alfabetiškai - Z -> A",
+        "FirstAccessed": "Pirmą kartą prisijungta",
+        "LastAccessed": "Paskutinį kartą prisijungta",
+        "None": "Nėra"
+      },
+      "TT": {
+        "ChangeChartProvider": "Pakeisti dokumentų tiekėją",
+        "ChangeChartSortMethod": "Pakeisti dokumentų rūšiavimą",
+        "RemoveAllPinnedCharts": "Pašalinti visus prisegtus dokumentus"
+      },
+      "Title": "Prisegti dokumentai",
+      "View": "Peržiūrėti"
+    },
+    "PleaseWait": "Prašome palaukti",
+    "ShowingAllItems": "Rodomi visi punktai",
+    "TT": {
+      "FitChartToHeight": "Pritaikyti dokumentą aukščiu",
+      "FitChartToWidth": "Pritaikyti dokumentą pločiu",
+      "ResetMovement": "Atstatyti judėjimą",
+      "RotateLeft45Degrees": "Pasukti kairėn 45 laipsniais",
+      "RotateRight45Degrees": "Pasukti dešinėn 45 laipsniais",
+      "ZoomIn": "Priartinti",
+      "ZoomOut": "Nutolinti"
+    },
+    "ThereAreNoChartsToDisplay": "Nėra jokių dokumentų.",
+    "ThereIsNoChartToDisplay": "Nėra jokių dokumentų.",
+    "Title": "Navigacija ir dokumentai",
+    "To": "Į"
+  },
+  "Performance": {
+    "Data": "Duomenys",
+    "Landing": {
+      "AirportIcao": "Oro uosto ICAO",
+      "ApproachSpeed": "Priartėjimo greitis",
+      "ApproachSpeedUnit": "kns",
+      "AutoLand": "Automatinis nusileidimas",
+      "Calculate": "Apskaičiuoti",
+      "Clear": "Išvalyti",
+      "DropDownNo": "Ne",
+      "DropDownYes": "Taip",
+      "FillDataFrom": "Įvesti duomenis iš",
+      "FlapsConfiguration": "Posparnių konfiguracija",
+      "Low": "Žemas",
+      "MaximumManual": "Maksimalus rankinis",
+      "Medium": "Vidutinis",
+      "OverweightProcedure": "Antsvorio procedūra",
+      "Qnh": "QNH",
+      "ReverseThrust": "Atbulinė trauka",
+      "RunwayAltitude": "Pakilimo tako aukštis",
+      "RunwayAltitudeUnit": "pėdos virš jūros lygio",
+      "RunwayCondition": "Pakilimo tako kondicija",
+      "RunwayHeading": "Pakilimo tako kryptis",
+      "RunwayHeadingUnit": "°",
+      "RunwayLda": "Galimas nusileidimo tako nuotolis",
+      "RunwayLdaUnitFt": "pėdų",
+      "RunwayLdaUnitMeter": "m",
+      "RunwaySlope": "Pakilimo tako nuolydis",
+      "TT": {
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Turite įvesti ICAO kodą norint prašyti METAR",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Jūs turite įkelti SimBrief duomenis norint automatiškai suvesti duomenis"
+      },
+      "Temperature": "Temperatūra",
+      "Title": "Nusileidimas",
+      "UnitFt": "pėdų",
+      "UnitMeter": "m",
+      "Weight": "Svoris",
+      "WindDirection": "Vėjo kryptis",
+      "WindDirectionUnit": "°",
+      "WindMagnitude": "Vėjo stipris",
+      "WindMagnitudeUnit": "kns"
+    },
+    "SYNC": "Sinchr.",
+    "Title": "Našumas",
+    "TopOfDescent": {
+      "Data": {
+        "Angle": "Kampas",
+        "CurrentAltitude": "Dabartinis aukštis",
+        "Distance": "Atstumas",
+        "GroundSpeed": "Greitis žemės atžvilgiu",
+        "TargetAltitude": "Numatomas aukštis",
+        "Title": "Duomenys",
+        "UnitAngleDegrees": "laipsniai",
+        "UnitFeet": "pėdos",
+        "UnitFtMin": "pėdų/min",
+        "UnitNM": "Jūrmylių",
+        "VerticalSpeed": "Vertikalus greitis"
+      },
+      "GroundSpeed": {
+        "Add": "Pridėti",
+        "FetchingSpeedFromSimulator": "Greitis gaunamas iš simuliatoriaus",
+        "GroundSpeed": "Greitis žemės atžvilgiu",
+        "ManualInput": "Įvedimas rankiniu būdu",
+        "MinAltitude": "Minimalus aukštis",
+        "RemoveLast": "Pašalinti paskutinį",
+        "Sync": "Sinchr.",
+        "Title": "Greitis žemės atžvilgiu",
+        "UnitKnots": "mazgai",
+        "UnitKt": "kn"
+      },
+      "Result": {
+        "BeforeTarget": "prieš taikinį",
+        "DesiredDescentAngle": "Norimas nusileidimo kampas",
+        "DesiredVerticalSpeed": "Norimas vertikalus greitis",
+        "StartYourDescentAbout": "Pradėkite nusileidimą maždaug",
+        "Title": "Rezultatas"
+      },
+      "TT": {
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Desynchronize Input with Aircraft's Current Altitude",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Synchronize Input with Aircraft's Current Altitude"
+      },
+      "Title": "Nusileidimo pradžia"
+    }
+  },
+  "Presets": {
+    "AircraftStates": {
+      "Cancel": "Atšaukti",
+      "ColdDark": "Visiškai išjungtas",
+      "ConfirmationDialogMsg": "Patvirtinkite išankstinio nustatymo įkėlimą.",
+      "CurrentProcedureStep": "Dabartinis procedūros žingsnis",
+      "PleaseConfirmLoadingOfPreset": "Patvirtinkite išankstinio nustatymo įkėlimą.",
+      "ReadyPushback": "Paruoštas išstumimui",
+      "ReadyTakeoff": "Paruoštas pakilimui",
+      "ReadyTaxi": "Paruoštas riedėjimui",
+      "SelectAPresetToLoad": "Pasirinkite išankstinį nustatymą",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Norint įkelti išankstinius nustatymus, orlaivis turi būti ant žemės",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Norint įkelti išankstinius nustatymus, orlaivis turi būti ant žemės",
+      "Title": "Lėktuvo būsenos",
+      "Turnaround": "Turnaround"
+    },
+    "InteriorLighting": {
+      "AircraftNeedsToBePoweredToLoadPresets": "Norint įkelti išankstinius nustatymus, orlaivis turi būti įjungtas",
+      "AircraftNeedsToBePoweredToSavePresets": "Norint išsaugoti išankstinius nustatymus, orlaivis turi būti įjungtas",
+      "LoadPreset": "Įkelti išankstinį nustatymą",
+      "LoadingPreset": "Išankstinis nustatymas įkeliamas",
+      "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
+      "NoName": "Nėra pavadinimo",
+      "PleaseConfirmSavingPreset": "Patvirtinkite išankstinio nustatymo išsaugojimą",
+      "SavePreset": "Išsaugoti išankstinį nustatymą",
+      "SavingPreset": "Išankstinis nustatymas išsaugomas",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Pasirinkite iš anksto nustatytą vidaus apšvietimo nustatymą, kurį norite įkelti arba išsaugoti.",
+      "TT": {
+        "AircraftMustBePowered": "Orlaivis turi būti įjungtas",
+        "ClickTextToChangeThePresetsName": "Paspauskite norint pakeisti išansktinio nustatymo pavadinimą",
+        "LoadThisPreset": "Įkelti šį išankstinį nustatymą",
+        "SaveTheCurrentLightingLevels": "Išsaugoti esamus apšvietimo lygius"
+      },
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "Orlaivis turi būti maitinamas norint iš anksto nustatyti vidaus apšvietimą.",
+      "Title": "Vidaus apšvietimas"
+    },
+    "Title": "Išankstiniai nustatymai"
+  },
+  "Pushback": {
+    "Backward": "Atgal",
+    "CallTug": "Iškviesti vilkiką",
+    "Forward": "Pirmyn",
+    "Halt": "Sustabdyti",
+    "ParkingBrake": {
+      "Off": "Išjungta",
+      "On": "Įjungta",
+      "Title": "Stovėjimo stabdys"
+    },
+    "TugDirection": "Vilkiko kryptis",
+    "TugSpeed": "Vilkiko greitis"
+  },
+  "Settings": {
+    "About": {
+      "Title": "Apie"
+    },
+    "AircraftOptionsPinPrograms": {
+      "AccelerationHeight": "Pagreitėjimo aukštis (pėdos)",
+      "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
+      "IsisBaroUnit": "ISIS Baro Unit",
+      "IsisMetricAltitude": "ISIS Metric Altitude",
+      "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
+      "PaxSigns": "PAX Signs",
+      "RmpVhfSpacing": "RMP VHF Spacing",
+      "ThrustReductionHeight": "Thrust Reduction Height (ft)",
+      "Title": "Aircraft Options / Pin Programs",
+      "WeightUnit": "Weight Unit"
+    },
+    "AtsuAoc": {
+      "AtisAtcSource": "ATIS/ATC Source",
+      "AutomaticallyImportSimBriefData": "Automatically Import SimBrief Data",
+      "Enable": "Enable",
+      "EnableTelex": "Enable TELEX",
+      "ErrorReporting": "Error Reporting",
+      "HoppieEnabled": "Hoppie sistema įjungta",
+      "HoppieUserId": "Hoppie User ID",
+      "MetarSource": "METAR Source",
+      "OptionalA32nxErrorReporting": "Optional A32NX Error Reporting",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "SimBriefUsernamePilotId": "SimBrief Username/Pilot ID",
+      "TafSource": "TAF Source",
+      "Telex": "TELEX",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE THIS FEATURE AT YOUR OWN RISK. To learn more about TELEX and the features it enables, please go to https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "TELEX Warning",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "There was an error validating your Hoppie-ID",
+      "Title": "ATSU / AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "You are able to opt into anonymous error reporting that will allow us to diagnose, monitor, and take care of issues at a faster rate. This feature is completely optional and we will never collect your personal data, but may allow you to more easily get support and have the issues you encounter fixed at a faster rate.",
+      "YourHoppieIdHasBeenRemoved": "Your Hoppie-ID has been removed",
+      "YourHoppieIdHasBeenValidated": "Your Hoppie-ID has been validated",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Your SimBrief PilotID has been validated and updated to"
+    },
+    "Audio": {
+      "Announcements": "Announcements",
+      "BoardingMusic": "Boarding Music",
+      "EngineInteriorVolume": "Engine Interior Volume",
+      "ExteriorMasterVolume": "Exterior Master Volume",
+      "PassengerAmbience": "Passenger Ambience",
+      "PtuAudibleInCockpit": "PTU Audible in Cockpit",
+      "Title": "Audio",
+      "WindInteriorVolume": "Wind Interior Volume"
+    },
+    "Fast": "Fast",
+    "Instant": "Instant",
+    "Real": "Real",
+    "Realism": {
+      "AdirsAlignTime": "ADIRS Align Time",
+      "AutofillChecklists": "Autofill Checklists",
+      "BoardingTime": "Boarding Time",
+      "DmcSelfTestTime": "DMC Self Test Time",
+      "HomeCockpitMode": "Home Cockpit Mode",
+      "McduFocusTimeout": "MCDU Focus Timeout (seconds)",
+      "McduKeyboardInput": "MCDU Keyboard Input",
+      "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
+      "Title": "Realism"
+    },
+    "SimOptions": {
+      "Active": "Active",
+      "Auto": "Auto",
+      "Calibrate": "Calibrate",
+      "DefaultBarometerUnit": "Default Barometer Unit",
+      "DynamicRegistrationDecal": "Dynamic Registration Decal",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
+      "ExternalMcduServerPort": "External MCDU Server Port",
+      "Hpa": "hPa",
+      "Inactive": "Inactive",
+      "LoadOnly": "Load Only",
+      "None": "None",
+      "Off": "Off",
+      "Save": "Save",
+      "SyncMsfsFlightPlan": "Sync MSFS Flight Plan",
+      "ThrottleDetents": "Throttle Detents",
+      "Title": "Sim Options",
+      "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
+      "inHg": "inHg"
+    },
+    "ThrottleConfig": {
+      "Apply": "Apply",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Are you sure that you want to reset your current throttle configuration settings to their default states? This action is irreversible.",
+      "Axis": "Axis",
+      "Back": "Back",
+      "ConfigureEnd": "Configure End",
+      "ConfigureStart": "Configure Start",
+      "CurrentValue": "Current Value",
+      "Deadband": "Deadband",
+      "ErrorOverlapMsg": "overlaps with",
+      "IndependentAxis": "Independent Axis",
+      "LoadFromFile": "Load from File",
+      "PleaseEnterAValidDeadzone": "Please enter a valid deadzone",
+      "ResetToDefaults": "Reset to Defaults",
+      "ReverseFull": "Reverse Full",
+      "ReverseIdle": "Reverse Idle",
+      "ReverserOnAxis": "Reverser On Axis",
+      "SaveAndApply": "Save and Apply",
+      "SetFromThrottle": "Set from Throttle",
+      "ThrottleConfigurationReset": "Throttle Configuration Reset"
+    },
+    "Title": "Settings",
+    "Unrealistic": "Unrealistic",
+    "flyPad": {
+      "AutoBrightness": "Auto Brightness",
+      "AutomaticallyShowOnscreenKeyboard": "Automatically Show Onscreen Keyboard",
+      "Blue": "Blue",
+      "Brightness": "Brightness",
+      "Dark": "Dark",
+      "Language": "Language",
+      "Light": "Light",
+      "Local": "Local",
+      "LocalTimeFormat": "Local Time Format",
+      "OnscreenKeyboardLayout": "Onscreen Keyboard Layout",
+      "ShowColoredRawMetar": "Show Colored Raw METAR",
+      "ShowStatusBarFlightProgressIndicator": "Show Status Bar Flight Progress Indicator",
+      "Theme": "Theme",
+      "TimeDisplayed": "Time Displayed",
+      "Title": "flyPad",
+      "TwelveHours": "12h",
+      "TwentyFourHours": "24h",
+      "Utc": "UTC",
+      "UtcAndLocal": "UTC and Local"
+    }
+  },
+  "Settings.flyPad.BatteryLifeEnabled": "Battery Life Simulated",
+  "StatusBar": {
+    "Apr": "Apr",
+    "Aug": "Aug",
+    "Dec": "Dec",
+    "Feb": "Feb",
+    "Fri": "Fri",
+    "Jan": "Jan",
+    "Jun": "Jun",
+    "Mar": "Mar",
+    "May": "May",
+    "Mon": "Mon",
+    "Nov": "Nov",
+    "Oct": "Oct",
+    "Sat": "Sat",
+    "Sep": "Sep",
+    "Sun": "Sun",
+    "TT": {
+      "ConnectedToLocalApi": "Connected to Local API",
+      "DisconnectedFromLocalApi": "Disconnected from Local API",
+      "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB"
+    },
+    "Thu": "Thu",
+    "Tue": "Tue",
+    "Wed": "Wed"
+  }
+}
