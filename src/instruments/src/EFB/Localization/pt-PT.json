@@ -155,10 +155,10 @@
   "NavigationAndCharts": {
     "All": "All",
     "Altn": "Altn",
-    "ExitFullscreenMode": "Exit Fullscreen Mode",
-    "From": "From",
+    "ExitFullscreenMode": "Sair do modo de tela cheia",
+    "From": "De",
     "LocalFiles": {
-      "Both": "Both",
+      "Both": "Ambos",
       "EstablishingConnection": "Establishing Connection",
       "FailedToEstablishConnection": "Failed to Establish Connection.",
       "FileName": "File Name",
