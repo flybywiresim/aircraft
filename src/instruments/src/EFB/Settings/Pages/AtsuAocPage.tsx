@@ -28,6 +28,7 @@ export const AtsuAocPage = () => {
 
     const [autoSimbriefImport, setAutoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT', 'DISABLED');
 
+    const [hoppieEnabled, setHoppieEnabled] = usePersistentProperty('CONFIG_HOPPIE_ENABLED', 'DISABLED');
     const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
 
     const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
@@ -119,6 +120,16 @@ export const AtsuAocPage = () => {
                 toast.error(t('Settings.AtsuAoc.ThereWasAnErrorEncounteredWhenValidatingYourHoppieID'));
             });
     };
+
+    const handleHoppieEnabled = (toggleValue: boolean) => {
+        if (toggleValue) {
+            setHoppieEnabled('ENABLED');
+            HoppieConnector.activateHoppie();
+        } else {
+            setHoppieEnabled('DISABLED');
+            HoppieConnector.deactivateHoppie();
+        }
+    }
 
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
@@ -259,6 +270,10 @@ export const AtsuAocPage = () => {
                     onBlur={(value) => handleHoppieUsernameInput(value.replace(/\s/g, ''))}
                     onChange={(value) => setHoppieUserId(value)}
                 />
+            </SettingItem>
+
+            <SettingItem name={t('Settings.AtsuAoc.HoppieEnabled')}>
+                <Toggle value={hoppieEnabled === 'ENABLED'} onToggle={(toggleValue) => handleHoppieEnabled(toggleValue)} />
             </SettingItem>
         </SettingsPage>
     );
