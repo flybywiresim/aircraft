@@ -3233,13 +3233,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.cruiseTemperature = undefined;
         this.updateConstraints();
 
-        const acFl = Math.floor(Simplane.getAltitude() / 100);
-
-        if (acFl > fl && (phase === FmgcFlightPhases.CLIMB || phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH)) {
-            this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.CRUISE);
-        } else if (acFl < fl && (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH)) {
-            this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.CLIMB);
-        }
+        this.flightPhaseManager.handleNewCruiseAltitudeEntered(fl);
 
         return true;
     }
