@@ -3,8 +3,8 @@ use crate::failures::{Failure, FailureType};
 use crate::hydraulic::electrical_pump_physics::ElectricalPumpPhysics;
 use crate::pneumatic::PressurizeableReservoir;
 use crate::shared::{
-    interpolation, low_pass_filter::LowPassFilter, ElectricalBusType, ElectricalBuses,
-    HydraulicColor, SectionPressure,
+    interpolation, low_pass_filter::LowPassFilter, DelayedTrueLogicGate, ElectricalBusType,
+    ElectricalBuses, HydraulicColor, SectionPressure,
 };
 use crate::simulation::{
     InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -188,6 +188,11 @@ pub struct PowerTransferUnit {
     control_valve_opened: bool,
 
     shaft_speed: AngularVelocity,
+
+    shaft_speed_filtered: LowPassFilter<AngularVelocity>,
+
+    is_in_continuous_mode: bool,
+    is_rotating_after_delay: DelayedTrueLogicGate,
 }
 impl PowerTransferUnit {
     const ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
@@ -222,6 +227,11 @@ impl PowerTransferUnit {
     const BREAKOUT_TORQUE_NM: f64 = 2.;
     const SHAFT_INERTIA: f64 = 0.0055;
 
+    const SHAFT_SPEED_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
+
+    const DELAY_TO_DECLARE_CONTINUOUS: Duration = Duration::from_millis(1500);
+    const THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM: f64 = 400.;
+
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             active_l2r_id: context.get_identifier("HYD_PTU_ACTIVE_L2R".to_owned()),
@@ -244,6 +254,13 @@ impl PowerTransferUnit {
             control_valve_opened: false,
 
             shaft_speed: AngularVelocity::new::<radian_per_second>(0.),
+
+            shaft_speed_filtered: LowPassFilter::<AngularVelocity>::new(
+                Self::SHAFT_SPEED_FILTER_TIME_CONSTANT,
+            ),
+
+            is_in_continuous_mode: false,
+            is_rotating_after_delay: DelayedTrueLogicGate::new(Self::DELAY_TO_DECLARE_CONTINUOUS),
         }
     }
 
@@ -274,6 +291,7 @@ impl PowerTransferUnit {
 
         self.update_displacement(context, loop_left_section, loop_right_section);
         self.update_shaft_physics(context, loop_left_section, loop_right_section);
+        self.update_continuous_state(context);
         self.update_active_state();
         self.update_flows();
     }
@@ -348,15 +366,29 @@ impl PowerTransferUnit {
         );
         let total_torque = friction_torque + left_side_torque + right_side_torque;
 
-        if self.shaft_speed.abs().get::<revolution_per_minute>() > Self::MIN_SPEED_SIMULATION_RPM
-            || total_torque.abs().get::<newton_meter>() > Self::BREAKOUT_TORQUE_NM
+        if self.is_rotating() || total_torque.abs().get::<newton_meter>() > Self::BREAKOUT_TORQUE_NM
         {
             let acc = total_torque.get::<newton_meter>() / Self::SHAFT_INERTIA;
             self.shaft_speed +=
                 AngularVelocity::new::<radian_per_second>(acc * context.delta_as_secs_f64());
+            self.shaft_speed_filtered
+                .update(context.delta(), self.shaft_speed);
         } else {
-            self.shaft_speed = AngularVelocity::new::<radian_per_second>(0.);
+            self.shaft_speed = AngularVelocity::default();
+            self.shaft_speed_filtered.reset(AngularVelocity::default());
         }
+    }
+
+    fn update_continuous_state(&mut self, context: &UpdateContext) {
+        self.is_rotating_after_delay.update(
+            context,
+            self.shaft_speed.get::<revolution_per_minute>()
+                > Self::THRESHOLD_DELTA_TO_DECLARE_CONTINUOUS_RPM,
+        );
+
+        self.is_in_continuous_mode = (self.is_in_continuous_mode
+            || self.is_rotating_after_delay.output())
+            && self.is_rotating();
     }
 
     fn calc_generated_torque(pressure: Pressure, displacement: Volume) -> Torque {
@@ -411,6 +443,14 @@ impl PowerTransferUnit {
             speed.get::<revolution_per_minute>() * displacement.get::<cubic_inch>() / 231. / 60.,
         )
     }
+
+    fn is_rotating(&self) -> bool {
+        self.shaft_speed.abs().get::<revolution_per_minute>() > Self::MIN_SPEED_SIMULATION_RPM
+    }
+
+    pub fn is_in_continuous_mode(&self) -> bool {
+        self.is_in_continuous_mode
+    }
 }
 impl SimulationElement for PowerTransferUnit {
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -418,7 +458,10 @@ impl SimulationElement for PowerTransferUnit {
         writer.write(&self.active_r2l_id, self.is_active_right);
         writer.write(&self.motor_flow_id, self.flow());
         writer.write(&self.valve_opened_id, self.is_enabled());
-        writer.write(&self.shaft_rpm_id, self.shaft_speed);
+        writer.write(
+            &self.shaft_rpm_id,
+            (self.shaft_speed_filtered.output()).abs(),
+        );
     }
 }
 

@@ -10,6 +10,7 @@ use crate::{
     shared::{to_bool, ConsumePower, ElectricalBuses, MachNumber, PowerConsumptionReport},
 };
 
+use uom::si::mass_rate::kilogram_per_second;
 use uom::si::{
     acceleration::foot_per_second_squared, angle::degree, angular_velocity::revolution_per_minute,
     electric_current::ampere, electric_potential::volt, f64::*, frequency::hertz, length::foot,
@@ -761,6 +762,7 @@ read_write_uom!(Pressure, psi);
 read_write_uom!(Volume, gallon);
 read_write_uom!(VolumeRate, gallon_per_second);
 read_write_uom!(Mass, pound);
+read_write_uom!(MassRate, kilogram_per_second);
 read_write_uom!(Angle, degree);
 read_write_uom!(AngularVelocity, revolution_per_minute);
 read_write_uom!(MassDensity, slug_per_cubic_foot);
