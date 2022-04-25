@@ -9,7 +9,6 @@ import {
     TruckFlatbed,
 } from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
-import { useUpdate } from '@instruments/common/hooks';
 import { toast } from 'react-toastify';
 import { t } from '../../translation';
 import { removeDisabledButton, setActiveButtons, setTugRequestOnly, setPushbackWaitTimerHandle } from '../../Store/features/buttons';
@@ -28,17 +27,17 @@ export const PushbackPage = () => {
     const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [pushBackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [noseWheelPos, setNoseWheelPos] = useSimVar('L:A32NX_NOSE_WHEEL_POSITION', 'percent over 100');
+    const [commandedTugHeadingFactor, setCommandedTugHeadingFactor] = useSimVar('L:A32NX_PUSHBACK_TUG_HEADING_FACTOR', 'number');
 
     const getTugHeading = (value: number): number => (tugHeading + value) % 360;
 
+    useEffect(() => {
+        setCommandedTugHeadingFactor(rudderPosition);
+    }, [rudderPosition]);
+
     const dispatch = useAppDispatch();
 
-    const tugRequestOnly = useAppSelector((state) => state.buttons.tugRequestOnly);
-    const disabledButtons = useAppSelector((state) => state.buttons.disabledButtons);
-    const activeButtons = useAppSelector((state) => state.buttons.activeButtons);
-    const pushBackWaitTimerHandle = useAppSelector((state) => state.buttons.pushBackWaitTimerHandle);
+    const { tugRequestOnly, disabledButtons, activeButtons, pushBackWaitTimerHandle } = useAppSelector((state) => state.buttons);
 
     useInterval(() => {
         if (activeButtons.find((button) => button.id === 'tug-request') && tugRequestOnly) {
@@ -117,23 +116,11 @@ export const PushbackPage = () => {
         }
     };
 
-    const [commandedTugHeadingFactor, setCommandedTugHeadingFactor] = useState(0);
-    const [tugSpeed, setTugSpeed] = useState(0);
+    const [, setTugSpeed] = useSimVar('L:A32NX_TUG_SPEED', 'number');
 
-    const [commandedTugDirectionFactor, setCommandedTugDirectionFactor] = useState(-1);
-
-    const [, setVelX] = useSimVar('VELOCITY BODY X', 'Number');
-    const [, setVelY] = useSimVar('VELOCITY BODY Y', 'Number');
-    const [, setVelZ] = useSimVar('VELOCITY BODY Z', 'Number');
-
-    const [, setRotVelX] = useSimVar('ROTATION VELOCITY BODY X', 'Number');
-    const [, setRotVelY] = useSimVar('ROTATION VELOCITY BODY Y', 'Number');
-    const [, setRotVelZ] = useSimVar('ROTATION VELOCITY BODY Z', 'Number');
+    const [commandedTugDirectionFactor, setCommandedTugDirectionFactor] = useSimVar('L:A32NX_PUSHBACK_TUG_DIRECTION_FACTOR', 'number');
 
     useEffect(() => {
-        const newNoseWheelPos = commandedTugDirectionFactor / 2 + 0.5;
-        setNoseWheelPos(newNoseWheelPos);
-
         const angle = commandedTugHeadingFactor <= 0 ? Math.abs(commandedTugHeadingFactor) * 90 : 270 + (1 - Math.abs(commandedTugHeadingFactor)) * 90;
 
         const newTugHeading = getTugHeading(angle);
@@ -147,17 +134,6 @@ export const PushbackPage = () => {
             setPushbackWait(1);
         }
     }, []);
-
-    useUpdate(() => {
-        if (!pushBackAttached) return;
-        setVelX(0);
-        setVelY(0);
-        setVelZ(tugSpeed * (parkingBrakeEngaged ? 0.75 : 8) * commandedTugDirectionFactor);
-
-        setRotVelX(0);
-        setRotVelY(tugSpeed * (parkingBrakeEngaged ? 0.015 : 0.16) * commandedTugHeadingFactor * commandedTugDirectionFactor);
-        setRotVelZ(0);
-    });
 
     return (
         <div className="flex relative flex-col space-y-4 h-content-section-reduced">
@@ -175,7 +151,7 @@ export const PushbackPage = () => {
                                 handlePushBackClick(() => togglePushback(true), e);
                             }}
                             className={`${applySelectedWithSync(
-                                'border-2 border-theme-accent rounded-md w-full h-20 rounded-md transition duration-100 flex items-center justify-center',
+                                'border-2 border-theme-accent w-full h-20 rounded-md transition duration-100 flex items-center justify-center',
                                 'tug-request',
                                 pushBackAttached,
                             )}`}
@@ -261,7 +237,6 @@ export const PushbackPage = () => {
                         max={1}
                         onChange={(value) => {
                             setTugSpeed(value);
-                            // TODO Value should be stored into redux as tug heading
                         }}
                     />
                 </div>
