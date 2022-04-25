@@ -100,7 +100,7 @@
   },
   "Failures": {
     "Comfort": {
-      "Title": "Comfort"
+      "Title": "Comodo"
     },
     "Compact": {
       "Title": "Compatto"
@@ -116,14 +116,14 @@
       "Defueling": "Scaricamento",
       "EstimatedDuration": "Durata stimata (minuti)",
       "EstimatedTime": "Estimated Time",
-      "LeftInnerTank": "Serbatoio Interno Sinistro",
-      "LeftOuterTank": "Serbatoio Esterno Sinistro",
-      "ReadyToStart": "Pronto per l'Avvio",
+      "LeftInnerTank": "Serbatoio Sinistro Interno",
+      "LeftOuterTank": "Serbatoio Sinistro Esterno",
+      "ReadyToStart": "Pronto a Iniziare",
       "Refuel": "Rifornimento Carburante",
       "RefuelTime": "Tempo di Rifornimento",
       "Refueling": "Caricamento",
-      "RightInnerTank": "Serbatoio Interno Destro",
-      "RightOuterTank": "Serbatoio Esterno Destro",
+      "RightInnerTank": "Serbatoio Destro Interno",
+      "RightOuterTank": "Serbatoio Destro Esterno",
       "TT": {
         "AircraftMustBeColdAndDarkToChangeRefuelTimes": "L'Aereo Deve Essere Spento per Cambiare i Tempi di Rifornimento",
         "FillBlockFuelFromSimBrief": "Inserisci Block Fuel da SimBrief"
@@ -137,7 +137,7 @@
     },
     "Services": {
       "BaggageTruck": "Veicolo Bagagli",
-      "CateringTruck": "Veicolo Bagagli",
+      "CateringTruck": "Veicolo Catering",
       "DoorAft": "Porta Post.",
       "DoorFwd": "Porta Ant.",
       "ExternalPower": "Alimentazione Esterna",
@@ -192,7 +192,7 @@
       },
       "TT": {
         "ChangeChartProvider": "Cambia Fornitore Carte",
-        "ChangeChartSortMethod": "Cambia Metodo di Ordinamento delle Carte",
+        "ChangeChartSortMethod": "Cambia Modalità di Ordinamento delle Carte",
         "RemoveAllPinnedCharts": "Rimuovi Tutte le Carte Fissate"
       },
       "Title": "Carte Fissate",
@@ -203,7 +203,7 @@
     "TT": {
       "FitChartToHeight": "Adatta Carta all'Altezza",
       "FitChartToWidth": "Adatta Carta alla Larghezza",
-      "ResetMovement": "Ripristina Movimento",
+      "ResetMovement": "Ripristina Posizione",
       "RotateLeft45Degrees": "Ruota a Sinistra di 45 Gradi",
       "RotateRight45Degrees": "Ruota a Destra di 45 Gradi",
       "ZoomIn": "Ingrandisci",
@@ -225,16 +225,16 @@
       "Clear": "Cancella",
       "DropDownNo": "No",
       "DropDownYes": "Sì",
-      "FillDataFrom": "Inserisci i dati da",
+      "FillDataFrom": "Riempi dati da",
       "FlapsConfiguration": "Configurazione Flap",
-      "Low": "Basso",
-      "MaximumManual": "Massima Manuale",
-      "Medium": "Medio",
+      "Low": "Low",
+      "MaximumManual": "Max Manuale",
+      "Medium": "Medium",
       "OverweightProcedure": "Procedura in Sovraccarico",
       "Qnh": "QNH",
       "ReverseThrust": "Inversori di Spinta",
       "RunwayAltitude": "Altitudine Pista",
-      "RunwayAltitudeUnit": "ft ASL",
+      "RunwayAltitudeUnit": "ASL ft",
       "RunwayCondition": "Condizioni Pista",
       "RunwayHeading": "Orientamento Pista",
       "RunwayHeadingUnit": "°",
@@ -253,7 +253,7 @@
       "Weight": "Peso",
       "WindDirection": "Direzione Vento",
       "WindDirectionUnit": "°",
-      "WindMagnitude": "Magnitudine Vento",
+      "WindMagnitude": "Magnitudo Vento",
       "WindMagnitudeUnit": "kts"
     },
     "SYNC": "SINC",
@@ -285,17 +285,17 @@
         "UnitKt": "kt"
       },
       "Result": {
-        "BeforeTarget": "Prima del Raggiungimento",
+        "BeforeTarget": "Prima del Target",
         "DesiredDescentAngle": "Angolo Discesa Desiderato",
         "DesiredVerticalSpeed": "Velocità Verticale Desiderata",
         "StartYourDescentAbout": "Inizia la tua discesa a circa",
         "Title": "Risultato"
       },
       "TT": {
-        "DesynchronizeInputWithAircraftsCurrentAltitude": "De-sincronizza immissione con l'Altitudine Attuale dell'Aeromobile",
-        "SynchronizeInputWithAircraftsCurrentAltitude": "Sincronizza Immissione con l'Altitudine Attuale dell' Aeromobile"
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Non sincronizzare inserimento con Altitudine Attuale dell'Aeromobile",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Sincronizzare inserimento con Altitudine Attuale dell'Aeromobile"
       },
-      "Title": "Inizio della Discesa"
+      "Title": "Top of Descent"
     }
   },
   "Presets": {
@@ -309,14 +309,14 @@
       "ReadyTakeoff": "Pronto per Decollo",
       "ReadyTaxi": "Pronto per Rullaggio",
       "SelectAPresetToLoad": "Seleziona un Preset da Caricare",
-      "TheAircraftMustBeOnTheGroundToLoadAPreset": "L' Aereo deve essere a terra per caricare un preset",
-      "TheAircraftMustBeOntheGroundToLoadAPreset": "L' Aereo deve essere a terra per caricare un preset.",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "L'Aeromobile deve essere a terra per caricare un preset",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "L'Aeromobile deve essere a terra per caricare un preset.",
       "Title": "Stati Aeromobile",
       "Turnaround": "Turnaround"
     },
     "InteriorLighting": {
-      "AircraftNeedsToBePoweredToLoadPresets": "L' Aereo deve essere Alimentato per Caricare i Preset",
-      "AircraftNeedsToBePoweredToSavePresets": "L' Aereo deve essere Alimentato per Salvare i Preset",
+      "AircraftNeedsToBePoweredToLoadPresets": "L'Aeromobile deve essere Alimentato per Caricare i Preset",
+      "AircraftNeedsToBePoweredToSavePresets": "L'Aeromobile deve essere Alimentato per Salvare i Preset",
       "LoadPreset": "Carica Preset",
       "LoadingPreset": "Caricamento Preset",
       "NewNameConfirmationDialogMsg": "Conferma nuovo nome per il preset di illuminazione",
@@ -331,7 +331,7 @@
         "LoadThisPreset": "Carica Questo Preset",
         "SaveTheCurrentLightingLevels": "Salva Livelli di Illuminazione Correnti"
       },
-      "TheAircraftMustBePoweredForInteriorLightingPresets": "L'aeromobile deve essere alimentato per i preset di illuminazione interna.",
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "L’aeromobile deve essere alimentato per i preset di illuminazione interna.",
       "Title": "Illuminazione Interna"
     },
     "Title": "Preset"
@@ -340,7 +340,7 @@
     "Backward": "Indietro",
     "CallTug": "Chiama Tug",
     "Forward": "Avanti",
-    "Halt": "Fermo",
+    "Halt": "Ferma",
     "ParkingBrake": {
       "Off": "Off",
       "On": "On",
@@ -374,8 +374,8 @@
       "HoppieEnabled": "Hoppie Abilitato",
       "HoppieUserId": "ID Utente Hoppie",
       "MetarSource": "Fonte METAR",
-      "OptionalA32nxErrorReporting": "Segnalazione Errori Opzionale A32NX ",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Verifica di aver inserito correttamente il tuo nome utente o pilota ID SimBrief",
+      "OptionalA32nxErrorReporting": "Segnalazione Opzionale Errori A32NX ",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Verifica di aver inserito correttamente il tuo nome utente o ID pilota SimBrief",
       "SimBriefUsernamePilotId": "Nome Utente/ID Pilota SimBrief",
       "TafSource": "Fonte TAF",
       "Telex": "TELEX",
@@ -383,7 +383,7 @@
       "TelexWarning": "Avviso TELEX",
       "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "C'è stato un errore con la convalidazione del tuo Hoppie-ID",
       "Title": "ATSU / AOC",
-      "YouAreAbleToOptIntoAnonymousErrorReporting": "Puoi attivare la segnalazione anonima degli errori, che ci consentirà di diagnosticare, monitorare e occuparci dei problemi più velocemente. Questa funzione è completamente facoltativa e non raccoglieremo mai i tuoi dati personali, ma potrebbe consentirti di ricevere supporto più facilmente e risolvere i problemi che incontri più rapidamente.",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Puoi attivare la segnalazione anonima degli errori, che ci consentirà di diagnosticare, monitorare e occuparci dei problemi più velocemente. Questa funzione è completamente facoltativa e non raccoglieremo mai i tuoi dati personali, ma potrebbe consentirti di ricevere supporto più facilmente e avere risolti i problemi che incontri più rapidamente.",
       "YourHoppieIdHasBeenRemoved": "Il tuo Hoppie-ID è stato rimosso",
       "YourHoppieIdHasBeenValidated": "Il tuo Hoppie-ID è stato convalidato",
       "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Il tuo ID Pilota SimBrief è stato convalidato e aggiornato"
@@ -404,12 +404,12 @@
     "Realism": {
       "AdirsAlignTime": "Tempo Allineamento ADIRS",
       "AutofillChecklists": "Autoriempi Checklist",
-      "BoardingTime": "Tempo Imbarco",
+      "BoardingTime": "Tempo d'Imbarco",
       "DmcSelfTestTime": "Tempo Autotest DMC",
       "HomeCockpitMode": "Modalità Home Cockpit",
       "McduFocusTimeout": "Timeout Puntatore su MCDU (secondi)",
       "McduKeyboardInput": "Input Tastiera MCDU",
-      "SeparateTillerFromRudderInputs": "Separa Input del Tiller da quello dei Pedali",
+      "SeparateTillerFromRudderInputs": "Separa gli input del Tiller e dei Pedali",
       "Title": "Realismo"
     },
     "SimOptions": {
@@ -427,7 +427,7 @@
       "Off": "Off",
       "Save": "Salva",
       "SyncMsfsFlightPlan": "Sincronizza Piano di Volo MSFS",
-      "ThrottleDetents": "Scalini Manetta",
+      "ThrottleDetents": "Posizioni Manetta",
       "Title": "Opzioni Simulatore",
       "UseCalculatedIlsSignals": "Usa Segnali ILS Calcolati",
       "inHg": "inHg"
@@ -439,7 +439,7 @@
       "Back": "Indietro",
       "ConfigureEnd": "Configura Fine",
       "ConfigureStart": "Configura Inizio",
-      "CurrentValue": "Valore Corrente",
+      "CurrentValue": "Valore Attuale",
       "Deadband": "Zona Morta",
       "ErrorOverlapMsg": "Conflitto con",
       "IndependentAxis": "Asse Unica",
@@ -448,7 +448,7 @@
       "ResetToDefaults": "Ripristina Predefiniti",
       "ReverseFull": "Reverse Full",
       "ReverseIdle": "Reverse Idle",
-      "ReverserOnAxis": "Reverser su Asse/i",
+      "ReverserOnAxis": "Inversori Su Asse/i",
       "SaveAndApply": "Salva e Applica",
       "SetFromThrottle": "Imposta dalla Manetta",
       "ThrottleConfigurationReset": "Ripristina Configurazione Manetta"
@@ -457,7 +457,7 @@
     "Unrealistic": "Irrealistico",
     "flyPad": {
       "AutoBrightness": "Luminosità Automatica",
-      "AutomaticallyShowOnscreenKeyboard": "Mostra Automaticamente Tastiera a Schermo",
+      "AutomaticallyShowOnscreenKeyboard": "Visualizza Automaticamente Tastiera a Schermo",
       "Blue": "Blu",
       "Brightness": "Luminosità",
       "Dark": "Scuro",
