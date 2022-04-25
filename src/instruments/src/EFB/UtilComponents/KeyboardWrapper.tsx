@@ -14,42 +14,27 @@ interface KeyboardWrapperProps {
 }
 
 export const keyboardLayoutOptions = [
-    {
-        name: 'english',
-        alias: 'English',
-    },
-    {
-        name: 'spanish',
-        alias: 'Español',
-    },
-    {
-        name: 'german',
-        alias: 'Deutsch',
-    },
-    {
-        name: 'french',
-        alias: 'Français',
-    },
-    {
-        name: 'arabic',
-        alias: 'العربية',
-    },
-    {
-        name: 'italian',
-        alias: 'Italiano',
-    },
-    {
-        name: 'korean',
-        alias: '한국어',
-    },
-    {
-        name: 'japanese',
-        alias: '日本語',
-    },
-    {
-        name: 'thai',
-        alias: 'ไทย',
-    },
+    // Standard
+    { name: 'english', alias: 'English' },
+    // Alternatives
+    { name: 'arabic', alias: 'العربية' },
+    { name: 'chinese', alias: '中文键盘' },
+    { name: 'czech', alias: 'Čeština' },
+    { name: 'french', alias: 'Français' },
+    { name: 'german', alias: 'Deutsch' },
+    { name: 'greek', alias: 'Ελληνικά' },
+    { name: 'hebrew', alias: 'עִבְרִית' },
+    { name: 'hindi', alias: 'हिंदी' },
+    { name: 'italian', alias: 'Italiano' },
+    { name: 'japanese', alias: '日本語' },
+    { name: 'korean', alias: '한국어' },
+    { name: 'norwegian', alias: 'Norsk' },
+    { name: 'polish', alias: 'Polski' },
+    { name: 'russian', alias: 'Русский' },
+    { name: 'spanish', alias: 'Español' },
+    { name: 'swedish', alias: 'Svenska' },
+    { name: 'thai', alias: 'ไทย' },
+    { name: 'turkish', alias: 'Türkçe' },
 ];
 
 export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput, onKeyDown }: KeyboardWrapperProps) => {
