@@ -371,6 +371,7 @@
       "Enable": "활성화",
       "EnableTelex": "TELEX 활성화",
       "ErrorReporting": "오류 보고",
+      "HoppieEnabled": "Hoppie enabled",
       "HoppieUserId": "Hoppie 사용자 ID",
       "MetarSource": "METAR 출처",
       "OptionalA32nxErrorReporting": "선택적으로 A32NX 오류 보고",

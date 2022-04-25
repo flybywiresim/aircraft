@@ -371,6 +371,7 @@
       "Enable": "Enable",
       "EnableTelex": "Enable TELEX",
       "ErrorReporting": "Error Reporting",
+      "HoppieEnabled": "Hoppie enabled",
       "HoppieUserId": "Hoppie User ID",
       "MetarSource": "METAR Source",
       "OptionalA32nxErrorReporting": "Optional A32NX Error Reporting",

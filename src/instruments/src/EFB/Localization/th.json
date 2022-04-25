@@ -371,6 +371,7 @@
       "Enable": "เปิดใช้งาน",
       "EnableTelex": "เปิดใช้งาน TELEX",
       "ErrorReporting": "การรายงานข้อผิดพลาด",
+      "HoppieEnabled": "Hoppie enabled",
       "HoppieUserId": "รหัสผู้ใช้ Hoppie",
       "MetarSource": "แหล่งที่มา METAR",
       "OptionalA32nxErrorReporting": "การรายงานข้อผิดผลาดของ A32NX แบบไม่บังคับ",
