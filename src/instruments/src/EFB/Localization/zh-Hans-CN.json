@@ -371,6 +371,7 @@
       "Enable": "启用",
       "EnableTelex": "启用电传 (TELEX)",
       "ErrorReporting": "报告错误",
+      "HoppieEnabled": "Hoppie enabled",
       "HoppieUserId": "Hoppie 用户代码",
       "MetarSource": "METAR 来源",
       "OptionalA32nxErrorReporting": "自愿发送 A32NX 错误报告",

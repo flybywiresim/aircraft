@@ -262,9 +262,9 @@
       "Data": {
         "Angle": "Angle",
         "CurrentAltitude": "Current Altitude",
-        "Distance": "Distance",
+        "Distance": "Jarak",
         "GroundSpeed": "Ground Speed",
-        "TargetAltitude": "Target Altitude",
+        "TargetAltitude": "Target Ketinggian",
         "Title": "Data",
         "UnitAngleDegrees": "derajat",
         "UnitFeet": "kaki",
@@ -288,7 +288,7 @@
         "BeforeTarget": "sebelum target",
         "DesiredDescentAngle": "Desired Descent Angle",
         "DesiredVerticalSpeed": "Desired Vertical Speed",
-        "StartYourDescentAbout": "Start your descent about",
+        "StartYourDescentAbout": "Mulai turunkan ketinggian sekitar",
         "Title": "Result"
       },
       "TT": {
@@ -300,8 +300,8 @@
   },
   "Presets": {
     "AircraftStates": {
-      "Cancel": "Cancel",
-      "ColdDark": "Cold & Dark",
+      "Cancel": "Batal",
+      "ColdDark": "Keadaan Mati",
       "ConfirmationDialogMsg": "Please confirm loading of preset.",
       "CurrentProcedureStep": "Current Procedure Step",
       "PleaseConfirmLoadingOfPreset": "Please confirm loading of preset.",
@@ -371,6 +371,7 @@
       "Enable": "Enable",
       "EnableTelex": "Enable TELEX",
       "ErrorReporting": "Error Reporting",
+      "HoppieEnabled": "Hoppie enabled",
       "HoppieUserId": "Hoppie User ID",
       "MetarSource": "METAR Source",
       "OptionalA32nxErrorReporting": "Optional A32NX Error Reporting",
@@ -378,7 +379,7 @@
       "SimBriefUsernamePilotId": "Username/Pilot ID SimBrief",
       "TafSource": "TAF Source",
       "Telex": "TELEX",
-      "TelexEnablesFreeTextAndLiveMap": "TELEX enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE THIS FEATURE AT YOUR OWN RISK. To learn more about TELEX and the features it enables, please go to https://docs.flybywiresim.com/telex.",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX mengaktifkan fitur free text dan live map. Jika diaktifkan, maka posisi pesawat secara terkini akan disiarkan di live map. Pesan free text tidak dimoderasi dan dapat dilihat oleh umum. DENGAN MENGGUNAKAN FITUR INI, ANDA MEMAHAMI RESIKO YANG DAPAT DITIMBULKAN. Untuk memahami lebih lanjut tentang fitur ini, kunjungi https://docs.flybywiresim.com/telex.",
       "TelexWarning": "Peringatan TELEX",
       "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Validasi ID Hoppie anda gagal.",
       "Title": "ATSU / AOC",
