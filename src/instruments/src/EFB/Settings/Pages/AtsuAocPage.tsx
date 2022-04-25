@@ -129,7 +129,7 @@ export const AtsuAocPage = () => {
             setHoppieEnabled('DISABLED');
             HoppieConnector.deactivateHoppie();
         }
-    }
+    };
 
     const atisSourceButtons: ButtonType[] = [
         { name: 'FAA (US)', setting: 'FAA' },
