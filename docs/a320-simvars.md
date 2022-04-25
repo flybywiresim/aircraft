@@ -1535,9 +1535,17 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429Word<Degrees>
     - The inertial heading of the aircraft.
 
+- A32NX_ADIRS_IR_{number}_TRUE_HEADING
+    - Arinc429Word<Degrees>
+    - The true inertial heading of the aircraft.
+
 - A32NX_ADIRS_IR_{number}_TRACK
     - Arinc429Word<Degrees>
     - The inertial track of the aircraft.
+
+- A32NX_ADIRS_IR_{number}_TRUE_TRACK
+    - Arinc429Word<Degrees>
+    - The true inertial track of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_VERTICAL_SPEED
     - Arinc429Word<Feet per minute>
