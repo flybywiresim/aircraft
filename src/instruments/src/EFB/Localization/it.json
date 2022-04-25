@@ -17,8 +17,8 @@
     "MarkChecklistAsComplete": "Segna completamento checklist",
     "MarkItemAsComplete": "Segna completamento campo",
     "ProceedToNextChecklist": "Procedi alla prossima checklist",
-    "ResetAll": "Ripristina tutto",
-    "ResetChecklist": "Ripristina checklist",
+    "ResetAll": "Ripristina Tutto",
+    "ResetChecklist": "Ripristina Checklist",
     "TheLastChecklistIsComplete": "L'ultima checklist è completa",
     "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Ci sono campi rimanenti per l'autoriempimento della checklist, che non sono ancora stati completati",
     "Title": "Checklist"
@@ -94,7 +94,7 @@
       "MaximumPassengers": "Passeggeri Massimi",
       "Model": "Modello",
       "Range": "Autonomia",
-      "Title": "Sommario"
+      "Title": "Panoramica"
     },
     "Title": "Dispatch"
   },
@@ -121,7 +121,7 @@
       "ReadyToStart": "Pronto per l'Avvio",
       "Refuel": "Rifornimento Carburante",
       "RefuelTime": "Tempo di Rifornimento",
-      "Refueling": "Rifornimento",
+      "Refueling": "Caricamento",
       "RightInnerTank": "Serbatoio Interno Destro",
       "RightOuterTank": "Serbatoio Esterno Destro",
       "TT": {
@@ -155,7 +155,7 @@
   "NavigationAndCharts": {
     "All": "Tutti",
     "Altn": "Altn",
-    "ExitFullscreenMode": "Esci dalla Modalità Schermo Intero",
+    "ExitFullscreenMode": "Esci dalla Modalità a Schermo Intero",
     "From": "Da",
     "LocalFiles": {
       "Both": "Entrambi",
@@ -173,7 +173,7 @@
       "InsufficientEnv": "File .env Insufficiente",
       "IntoYourBrowserAndEnterTheCodeBelow": "nel tuo browser e inserisci il codice qui sotto",
       "NoAirportSelected": "Nessun Aeroporto Selezionato",
-      "ResetNavigraphAuthentication": "Ripristina Autenticazione Navigraph",
+      "ResetNavigraphAuthentication": "Rimuovi Autenticazione con Navigraph",
       "ScanTheQrCodeOrOpen": "Scansiona il Codice QR o Apri",
       "Title": "Navigraph"
     },
@@ -226,11 +226,11 @@
       "DropDownNo": "No",
       "DropDownYes": "Sì",
       "FillDataFrom": "Inserisci i dati da",
-      "FlapsConfiguration": "Configurazione Flaps",
+      "FlapsConfiguration": "Configurazione Flap",
       "Low": "Basso",
       "MaximumManual": "Massima Manuale",
       "Medium": "Medio",
-      "OverweightProcedure": "Procedura Peso Eccessivo",
+      "OverweightProcedure": "Procedura in Sovraccarico",
       "Qnh": "QNH",
       "ReverseThrust": "Inversori di Spinta",
       "RunwayAltitude": "Altitudine Pista",
@@ -256,7 +256,7 @@
       "WindMagnitude": "Magnitudine Vento",
       "WindMagnitudeUnit": "kts"
     },
-    "SYNC": "SYNC",
+    "SYNC": "SINC",
     "Title": "Prestazioni",
     "TopOfDescent": {
       "Data": {
@@ -279,7 +279,7 @@
         "ManualInput": "Inserimento Manuale",
         "MinAltitude": "Altitudine Min.",
         "RemoveLast": "Rimuovi Ultimo",
-        "Sync": "SYNC",
+        "Sync": "SINC",
         "Title": "Velocità al Suolo",
         "UnitKnots": "nodi",
         "UnitKt": "kt"
@@ -288,7 +288,7 @@
         "BeforeTarget": "Prima del Raggiungimento",
         "DesiredDescentAngle": "Angolo Discesa Desiderato",
         "DesiredVerticalSpeed": "Velocità Verticale Desiderata",
-        "StartYourDescentAbout": "Inizia la tua discesa circa",
+        "StartYourDescentAbout": "Inizia la tua discesa a circa",
         "Title": "Risultato"
       },
       "TT": {
@@ -302,9 +302,9 @@
     "AircraftStates": {
       "Cancel": "Annulla",
       "ColdDark": "Spento",
-      "ConfirmationDialogMsg": "Prego confermare il caricamento del preset.",
+      "ConfirmationDialogMsg": "Prego conferma caricamento del preset.",
       "CurrentProcedureStep": "Fase Attuale della Procedura",
-      "PleaseConfirmLoadingOfPreset": "Prego confermare il caricamento del preset.",
+      "PleaseConfirmLoadingOfPreset": "Prego conferma caricamento del preset.",
       "ReadyPushback": "Pronto per il Pushback",
       "ReadyTakeoff": "Pronto al Decollo",
       "ReadyTaxi": "Pronto al Rullaggio",
@@ -319,7 +319,7 @@
       "AircraftNeedsToBePoweredToSavePresets": "L' Aereo deve essere Alimentato per Salvare i Preset",
       "LoadPreset": "Carica Preset",
       "LoadingPreset": "Caricamento Preset",
-      "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
+      "NewNameConfirmationDialogMsg": "Conferma nuovo nome per il preset di illuminazione",
       "NoName": "Nessun Nome",
       "PleaseConfirmSavingPreset": "Conferma Salvataggio Preset",
       "SavePreset": "Salva Preset",
@@ -329,7 +329,7 @@
         "AircraftMustBePowered": "L'Aeromobile deve essere Alimentato",
         "ClickTextToChangeThePresetsName": "Clicca il Testo per Cambiare Nome Preset",
         "LoadThisPreset": "Carica Questo Preset",
-        "SaveTheCurrentLightingLevels": "Save the Current Lighting Levels"
+        "SaveTheCurrentLightingLevels": "Salva Livelli di Illuminazione Correnti"
       },
       "TheAircraftMustBePoweredForInteriorLightingPresets": "L'aeromobile deve essere alimentato per i preset di illuminazione interna.",
       "Title": "Illuminazione Interna"
@@ -338,28 +338,28 @@
   },
   "Pushback": {
     "Backward": "Indietro",
-    "CallTug": "Call Tug",
+    "CallTug": "Chiama Rimorchiatore",
     "Forward": "Avanti",
     "Halt": "Fermo",
     "ParkingBrake": {
       "Off": "Off",
       "On": "On",
-      "Title": "Parking Brake"
+      "Title": "Freni di Parcheggio"
     },
-    "TugDirection": "Tug Direction",
-    "TugSpeed": "Tug Speed"
+    "TugDirection": "Direzione Rimorchiatore",
+    "TugSpeed": "Velocità Rimorchiatore"
   },
   "Settings": {
     "About": {
       "Title": "Informazioni"
     },
     "AircraftOptionsPinPrograms": {
-      "AccelerationHeight": "Acceleration Height (ft)",
-      "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
-      "IsisBaroUnit": "ISIS Baro Unit",
+      "AccelerationHeight": "Accelerazione in Altezza (ft)",
+      "EngineOutAccelerationHeight": "Accelerazione in Altezza Senza Motore (ft)",
+      "IsisBaroUnit": "Unità ISIS Baro",
       "IsisMetricAltitude": "Altitudine Metrica ISIS",
       "LatLonExtendedFormat": "Formato Waypoint Lat/Lon FMGC",
-      "PaxSigns": "PAX Signs",
+      "PaxSigns": "PAX Sign",
       "RmpVhfSpacing": "RMP VHF Spacing",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "Opzioni Aeromobile / Programmi Fissati",
@@ -371,10 +371,10 @@
       "Enable": "Abilita",
       "EnableTelex": "Abilita TELEX",
       "ErrorReporting": "Segnalazione Errori",
-      "HoppieEnabled": "Hoppie enabled",
+      "HoppieEnabled": "Hoppie Abilitato",
       "HoppieUserId": "ID Utente Hoppie",
       "MetarSource": "Fonte METAR",
-      "OptionalA32nxErrorReporting": "Optional A32NX Error Reporting",
+      "OptionalA32nxErrorReporting": "Segnalazione Errori Opzionale A32NX ",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Verifica di aver inserito correttamente il tuo nome utente o pilota ID SimBrief",
       "SimBriefUsernamePilotId": "Nome Utente/ID Pilota SimBrief",
       "TafSource": "Fonte TAF",
@@ -390,25 +390,25 @@
     },
     "Audio": {
       "Announcements": "Annunci",
-      "BoardingMusic": "Boarding Music",
-      "EngineInteriorVolume": "Engine Interior Volume",
-      "ExteriorMasterVolume": "Exterior Master Volume",
+      "BoardingMusic": "Musica d'Imbarco",
+      "EngineInteriorVolume": "Volume Motori all'Interno",
+      "ExteriorMasterVolume": "Volume Generale all'Esterno",
       "PassengerAmbience": "Brusio Passeggeri",
-      "PtuAudibleInCockpit": "PTU Audible in Cockpit",
+      "PtuAudibleInCockpit": "PTU Udibile nella Cabina di Pilotaggio",
       "Title": "Audio",
-      "WindInteriorVolume": "Wind Interior Volume"
+      "WindInteriorVolume": "Volume Vento all'Interno"
     },
     "Fast": "Veloce",
     "Instant": "Istantaneo",
     "Real": "Reale",
     "Realism": {
       "AdirsAlignTime": "Tempo Allineamento ADIRS",
-      "AutofillChecklists": "Autofill Checklists",
+      "AutofillChecklists": "Autoriempi Checklist",
       "BoardingTime": "Tempo Imbarco",
       "DmcSelfTestTime": "Tempo Autotest DMC",
       "HomeCockpitMode": "Modalità Home Cockpit",
-      "McduFocusTimeout": "MCDU Focus Timeout (seconds)",
-      "McduKeyboardInput": "MCDU Keyboard Input",
+      "McduFocusTimeout": "Timeout Puntatore su MCDU (secondi)",
+      "McduKeyboardInput": "Input Tastiera MCDU",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
       "Title": "Realismo"
     },
@@ -427,37 +427,37 @@
       "Off": "Off",
       "Save": "Salva",
       "SyncMsfsFlightPlan": "Sincronizza Piano di Volo MSFS",
-      "ThrottleDetents": "Throttle Detents",
+      "ThrottleDetents": "Punti Manetta",
       "Title": "Opzioni Simulatore",
-      "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
+      "UseCalculatedIlsSignals": "Usa Segnali ILS Calcolati",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
       "Apply": "Applica",
-      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Are you sure that you want to reset your current throttle configuration settings to their default states? This action is irreversible.",
-      "Axis": "Axis",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Sei sicuro di voler ripristinare la tua configurazione attuale della manetta a quella predefinita? Questa azione è irreversibile.",
+      "Axis": "Asse",
       "Back": "Indietro",
-      "ConfigureEnd": "Configure End",
-      "ConfigureStart": "Configure Start",
+      "ConfigureEnd": "Configura Fine",
+      "ConfigureStart": "Configura Inizio",
       "CurrentValue": "Valore Corrente",
       "Deadband": "Deadband",
       "ErrorOverlapMsg": "overlaps with",
-      "IndependentAxis": "Independent Axis",
+      "IndependentAxis": "Asse Unica",
       "LoadFromFile": "Carica da File",
-      "PleaseEnterAValidDeadzone": "Please enter a valid deadzone",
+      "PleaseEnterAValidDeadzone": "Prego inserisci una zona morta valida",
       "ResetToDefaults": "Ripristina Predefiniti",
       "ReverseFull": "Reverse Full",
       "ReverseIdle": "Reverse Idle",
-      "ReverserOnAxis": "Reverser On Axis",
+      "ReverserOnAxis": "Inversore sull'Asse",
       "SaveAndApply": "Salva e Applica",
-      "SetFromThrottle": "Set from Throttle",
-      "ThrottleConfigurationReset": "Throttle Configuration Reset"
+      "SetFromThrottle": "Imposta dalla Manetta",
+      "ThrottleConfigurationReset": "Ripristina Configurazione Manetta"
     },
     "Title": "Impostazioni",
     "Unrealistic": "Irrealistico",
     "flyPad": {
       "AutoBrightness": "Luminosità Automatica",
-      "AutomaticallyShowOnscreenKeyboard": "Imposta Automaticamente Tastiera a Schermo",
+      "AutomaticallyShowOnscreenKeyboard": "Mostra Automaticamente Tastiera a Schermo",
       "Blue": "Blu",
       "Brightness": "Luminosità",
       "Dark": "Scuro",
@@ -467,9 +467,9 @@
       "LocalTimeFormat": "Formato Ora Locale",
       "OnscreenKeyboardLayout": "Layout Tastiera a Schermo",
       "ShowColoredRawMetar": "Mostra METAR Tecnico Colorato",
-      "ShowStatusBarFlightProgressIndicator": "Show Status Bar Flight Progress Indicator",
+      "ShowStatusBarFlightProgressIndicator": "Mostra Indicatore Avanzamento Volo nella Barra di Stato",
       "Theme": "Tema",
-      "TimeDisplayed": "Time Displayed",
+      "TimeDisplayed": "Ora Visualizzata",
       "Title": "flyPad",
       "TwelveHours": "12h",
       "TwentyFourHours": "24h",
@@ -477,7 +477,7 @@
       "UtcAndLocal": "UTC e Locale"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Battery Life Simulated",
+  "Settings.flyPad.BatteryLifeEnabled": "Durata Batteria Simulata",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Ago",
@@ -495,9 +495,9 @@
     "Sep": "Set",
     "Sun": "Dom",
     "TT": {
-      "ConnectedToLocalApi": "Connected to Local API",
-      "DisconnectedFromLocalApi": "Disconnected from Local API",
-      "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB"
+      "ConnectedToLocalApi": "Connesso ad API Locali",
+      "DisconnectedFromLocalApi": "Sconnesso da API Locali",
+      "TurnOffOrShutdownEfb": "Spegni o Arresta EFB"
     },
     "Thu": "Gio",
     "Tue": "Mar",
