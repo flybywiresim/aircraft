@@ -28,7 +28,8 @@ import lt from './Localization/lt.json';
 import nb from './Localization/nb.json';
 import nl from './Localization/nl.json';
 import pl from './Localization/pl.json';
-import pt from './Localization/pt-PT.json';
+import ptBR from './Localization/pt-BR.json';
+import ptPT from './Localization/pt-PT.json';
 import ru from './Localization/ru.json';
 import sk from './Localization/sk.json';
 import sl from './Localization/sl.json';
@@ -101,7 +102,8 @@ export const languageOptions: LanguageOption[] = [
     { langCode: 'nb', langData: nb, langName: 'Norwegian', alias: 'Norsk' },
     { langCode: 'nl', langData: nl, langName: 'Dutch', alias: 'Nederlands' },
     { langCode: 'pl', langData: pl, langName: 'Polish', alias: 'Polski' },
-    { langCode: 'pt', langData: pt, langName: 'Portuguese', alias: 'Português' },
+    { langCode: 'pt-BR', langData: ptBR, langName: 'Portuguese', alias: 'Português brasileiro' },
+    { langCode: 'pt-PT', langData: ptPT, langName: 'Portuguese', alias: 'Português' },
     { langCode: 'ru', langData: ru, langName: 'Russian', alias: 'Русский' },
     { langCode: 'sk', langData: sk, langName: 'Slovak', alias: 'Slovenčina' },
     { langCode: 'sl', langData: sl, langName: 'Slovenian', alias: 'Slovenščina' },
