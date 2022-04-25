@@ -5,13 +5,13 @@
     "ConnectHoppieACARS": "Подключить Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Нет доступной информации по этой частоте",
     "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
-    "SetActive": "Установить активную",
-    "SetStandby": "Установить резервную",
+    "SetActive": "Установить активной",
+    "SetStandby": "Установить резервной",
     "Standby": "Резервная",
     "Title": "Управление Воздушным Движением"
   },
   "Checklists": {
-    "AreYouSureYouWantToResetAllChecklists": "Вы уверены, что хотите сбросить все контрольные списки?",
+    "AreYouSureYouWantToResetAllChecklists": "Вы уверены, что хотите сбросить все чек-листы?",
     "AreYouSureYouWantToResetChecklists": "Вы уверены, что хотите сбросить все контрольные списки?",
     "ChecklistResetWarning": "Предупреждение сброса контрольного списка",
     "MarkChecklistAsComplete": "Отметить контрольный список как завершенный",

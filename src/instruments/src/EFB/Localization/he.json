@@ -1,10 +1,10 @@
 {
   "AirTrafficControl": {
     "Active": "פעיל",
-    "ChangeATISATCSourceButton": "Change ATIS/ATC source",
-    "ConnectHoppieACARS": "לְחַבֵּר Hoppie ACARS",
+    "ChangeATISATCSourceButton": "שינוי מקור ATIS/ATC",
+    "ConnectHoppieACARS": "חבר Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "אין מידע זמין עבור תדר רדיו זה",
-    "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
+    "SelectCorrectATISATCSource": "הדף יהיה זמין רק לאחר ש-VATSIM או IVAO נבחרו כמקור ATIS/ATC בדף ההגדרות. ",
     "SetActive": "הגדר כתדר פעיל",
     "SetStandby": "הגדר כתדר בהמתנה",
     "Standby": "תדר בהמתנה",
@@ -14,24 +14,24 @@
     "AreYouSureYouWantToResetAllChecklists": "האם אתה בטוח שברצונך לאפס את כל רשימות הבדיקה?",
     "AreYouSureYouWantToResetChecklists": "האם אתה בטוח שברצונך לאפס את כל רשימות הבדיקה?",
     "ChecklistResetWarning": "אזהרת איפוס רשימות הבדיקה",
-    "MarkChecklistAsComplete": "סמן את רשימת תיוג כהשלמה",
-    "MarkItemAsComplete": "סמן פריט כהשלם",
+    "MarkChecklistAsComplete": "סמן את רשימת הבדיקה כהושלמה",
+    "MarkItemAsComplete": "סמן פריט כהושלם",
     "ProceedToNextChecklist": "המשך לרשימת הבדיקה הבאה",
     "ResetAll": "אפס הכל",
-    "ResetChecklist": "אפס צ'ק ליסט",
+    "ResetChecklist": "אפס רשימת בדיקה",
     "TheLastChecklistIsComplete": "רשימת הבדיקה האחרונה הושלמה",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "נותרו פריטי רשימת תיוג של מילוי אוטומטי שעדיין לא הושלמו",
-    "Title": "רשימת תיוג"
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "נותרו פריטי רשימת בדיקה אוטומטיים שלא הושלמו",
+    "Title": "רשימות בדיקה"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "אין רשימות ביקורת רלוונטיות",
-        "Title": "רשימת תיוג"
+        "NoRelevantChecklists": "אין רשימות בדיקה רלוונטיות",
+        "Title": "רשימות בדיקה"
       },
       "GoToPage": "עבור לעמוד",
       "Maintenance": {
-        "NoActiveFailures": "אין כשלים נוכחיים",
+        "NoActiveFailures": "אין כשלים פעילים",
         "Title": "תחזוקה"
       },
       "PinnedCharts": {
@@ -39,49 +39,49 @@
         "Title": "תרשימים שמורים"
       },
       "TT": {
-        "RearrangeWidgets": "סידור מחדש של ווידג'טים"
+        "RearrangeWidgets": "סדר מחדש ווידג'טים"
       },
       "Title": "מידע חשוב",
       "Weather": {
         "AirPressure": "לחץ אוויר",
         "DewPoint": "נקודת רוויה",
-        "IcaoInvalid": "ICAO לא חוקי או לא METAR זמין",
-        "Loading": "טעינה",
-        "MetarParsingError": "לא ניתן היה לנתח את METAR שהתקבל",
-        "NoIcaoProvided": "לא סיפק ICAO",
+        "IcaoInvalid": "ICAO לא חוקי או שאין METAR זמין",
+        "Loading": "טוען",
+        "MetarParsingError": "לא ניתן היה לנתח את ה-METAR שהתקבל",
+        "NoIcaoProvided": "ICAO לא סופק",
         "Raw": "גלם",
         "TT": {
           "SwitchToIconView": "עבור לתצוגת אייקונים",
           "SwitchToRawMetarView": "עבור לתצוגת METAR גולמית"
         },
-        "Temperature": "טֶמפֶּרָטוּרָה",
+        "Temperature": "טמפרטורה",
         "Title": "מזג אוויר",
         "WindSpeed": "מהירות הרוח"
       }
     },
-    "Title": "לוּחַ מַחווָנִים",
+    "Title": "לוח מחוונים",
     "YourFlight": {
       "Alternate": "חלופי",
       "AverageWind": "רוח ממוצעת",
       "CompanyRoute": "מסלול חברה",
       "CostIndex": "מדד עלויות",
       "CruiseAlt": "גובה שיוט",
-      "ImportSimBriefData": "ייבוא נתוני SimBrief",
-      "Route": "מַסלוּל",
-      "SimBriefDataNotYetLoaded": "הנתונים עדיין לא נטענו SimBrief",
+      "ImportSimBriefData": "ייבא נתוני SimBrief",
+      "Route": "מסלול",
+      "SimBriefDataNotYetLoaded": "נתוני SimBrief טרם נטענו",
       "Title": "הטיסה שלך",
       "ZFW": "ZFW"
     }
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "ייבוא נתוני SimBrief",
+      "ImportSimBriefData": "ייבא נתוני SimBrief",
       "TT": {
-        "IncreaseFontSize": "הגדלת גודל הפונט",
-        "ReduceFontSize": "להקטין גודל גופן"
+        "IncreaseFontSize": "הגדל גודל הפונט",
+        "ReduceFontSize": "הקטן גודל הפונט"
       },
       "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "עדיין לא ייבאת נתונים של SimBrief."
+      "YouHaveNotYetImportedAnySimBriefData": "עדיין לא ייבאת נתוני SimBrief."
     },
     "Overview": {
       "Engines": "מנועים",
@@ -89,88 +89,88 @@
       "MRW": "MRW",
       "MTOW": "MTOW",
       "MZFW": "MZFW",
-      "MaximumCargo": "טעינה מקסימלית",
+      "MaximumCargo": "מטען מקסימלי",
       "MaximumFuelCapacity": "קיבולת דלק מקסימלית",
       "MaximumPassengers": "מקסימום נוסעים",
-      "Model": "דֶגֶם",
+      "Model": "דגם",
       "Range": "טווח",
       "Title": "סקירה כללית"
     },
-    "Title": "שֶׁדֶר"
+    "Title": "שילוח"
   },
   "Failures": {
     "Comfort": {
       "Title": "נוחות"
     },
     "Compact": {
-      "Title": "קוֹמפָּקטִי"
+      "Title": "תצוגה קומפקטית"
     },
     "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "סימולציה מלאה של הכשלים שלהלן עדיין אינה מובטחת.",
-    "Search": "לחפש",
+    "Search": "חיפוש",
     "Title": "כשלים"
   },
   "Ground": {
     "Fuel": {
-      "CenterTank": "טנק אֶמצַע",
+      "CenterTank": "מיכל אמצעי",
       "Completed": "הושלם",
-      "Defueling": "ניקוי דלק",
+      "Defueling": "ריקון דלק",
       "EstimatedDuration": "זמן משוער (דקות)",
       "EstimatedTime": "זמן משוער",
-      "LeftInnerTank": "מיכל פנימי שמאל",
-      "LeftOuterTank": "מיכל חיצוני שמאל",
+      "LeftInnerTank": "מיכל פנימי שמאלי",
+      "LeftOuterTank": "מיכל חיצוני שמאלי",
       "ReadyToStart": "מוכן להתחיל",
-      "Refuel": "לְתַדְלֵק",
+      "Refuel": "תדלק",
       "RefuelTime": "זמן תדלוק",
-      "Refueling": "תִדלוּק",
+      "Refueling": "מתדלק",
       "RightInnerTank": "מיכל פנימי ימני",
       "RightOuterTank": "מיכל חיצוני ימני",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "מטוסים חייבים להיות קרים וחשוכים כדי לשנות את זמני התדלוק",
-        "FillBlockFuelFromSimBrief": "מילוי בלוק דלק מ-SimBrief"
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "המטוס חייב להיות במצב Cold and Dark בכדי לשנות את זמני תדלוק",
+        "FillBlockFuelFromSimBrief": "מילוי דלק מ-SimBrief"
       },
-      "Title": "דֶלֶק",
-      "TotalFuel": "סְכוּם של דלק",
+      "Title": "דלק",
+      "TotalFuel": "סך הדלק",
       "Unavailable": "לא זמין"
     },
     "Pushback": {
-      "Title": "התנגדות"
+      "Title": "דחיפה"
     },
     "Services": {
       "BaggageTruck": "משאית כבודה",
       "CateringTruck": "משאית קייטרינג",
       "DoorAft": "דלת אחורית",
       "DoorFwd": "דלת קדמית",
-      "ExternalPower": "כוח חיצוני",
+      "ExternalPower": "מתח חיצוני",
       "FuelTruck": "משאית דלק",
-      "JetBridge": "גשר ג'ט",
+      "JetBridge": "שרוול",
       "Title": "שירותים"
     },
-    "Title": "אדמה"
+    "Title": "קרקע"
   },
   "Modals": {
     "Cancel": "ביטול",
-    "Confirm": "לְאַשֵׁר",
-    "Okay": "אִשׁוּר"
+    "Confirm": "אישור",
+    "Okay": "אישור"
   },
   "NavigationAndCharts": {
     "All": "הכל",
-    "Altn": "תחליף",
+    "Altn": "חלופי",
     "ExitFullscreenMode": "צא ממסך מלא",
-    "From": "מִן",
+    "From": "מוצא",
     "LocalFiles": {
       "Both": "שניהם",
-      "EstablishingConnection": "מתחיל חיבור",
+      "EstablishingConnection": "מייצר חיבור",
       "FailedToEstablishConnection": "יצירת חיבור נכשלה",
-      "FileName": "שם קובץ",
+      "FileName": "שם הקובץ",
       "Image": "תמונה",
       "Pdf": "PDF",
       "Retry": "נסה שוב",
-      "Title": "תיקים מקומיים"
+      "Title": "קבצים מקומיים"
     },
     "Navigraph": {
       "AirportDoesNotExist": "שדה תעופה לא קיים",
-      "AuthenticateWithNavigraph": "לאמת עם Navigraph",
-      "InsufficientEnv": "קובץ .env לא מספיק",
+      "AuthenticateWithNavigraph": "אמת עם Navigraph",
+      "InsufficientEnv": "קובץ env. לא מספיק",
       "IntoYourBrowserAndEnterTheCodeBelow": "לדפדפן שלך והזן את הקוד שלהלן",
       "NoAirportSelected": "לא נבחר שדה תעופה",
       "ResetNavigraphAuthentication": "אפס את אימות Navigraph",
@@ -181,80 +181,80 @@
       "Delete": "מחק",
       "Edit": "ערוך",
       "NoItemsFound": "לא נמצאו פריטים",
-      "SearchPlaceholder": "לחפש",
+      "SearchPlaceholder": "חיפוש",
       "ShowingChartsFromAllProviders": "מציג תרשימים מכל הספקים",
       "SortMethods": {
-        "AlphabeticalAZ": "אָלֶף בֵּיתִי - א -> ז",
-        "AlphabeticalZA": "אָלֶף בֵּיתִי - ז -> א",
-        "FirstAccessed": "הוערך בתחילה",
-        "LastAccessed": "נפתח לאחרונה",
+        "AlphabeticalAZ": "אלפאביתי - A -> Z",
+        "AlphabeticalZA": "אלפאבתי - A -> Z",
+        "FirstAccessed": "נפתח ראשון",
+        "LastAccessed": "נפתח אחרון",
         "None": "ללא"
       },
       "TT": {
-        "ChangeChartProvider": "שנה ספק התרשים",
-        "ChangeChartSortMethod": "שנה את שיטת מיון התרשים",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "ChangeChartProvider": "שנה ספק התרשימים",
+        "ChangeChartSortMethod": "שנה את שיטת מיון התרשימים",
+        "RemoveAllPinnedCharts": "הסר את כל התרשימים השמורים"
       },
       "Title": "תרשימים שמורים",
-      "View": "לִרְאוֹת"
+      "View": "הצג"
     },
-    "PleaseWait": "חכה בבקשה",
+    "PleaseWait": "אנא המתן",
     "ShowingAllItems": "מציג את כל הפריטים",
     "TT": {
       "FitChartToHeight": "התאם תרשים לגובה",
       "FitChartToWidth": "התאם תרשים לרוחב",
-      "ResetMovement": "אִתחוּל נוֹעַ",
-      "RotateLeft45Degrees": "סובב שמאלה 45 מעלות",
-      "RotateRight45Degrees": "סובב ימינה 45 מעלות",
-      "ZoomIn": "לְהִתְמַקֵד",
-      "ZoomOut": "להקטין את התצוגה"
+      "ResetMovement": "אתחל תנועה",
+      "RotateLeft45Degrees": "סובב שמאלה ב-45 מעלות",
+      "RotateRight45Degrees": "סובב ימינה ב-45 מעלות",
+      "ZoomIn": "הגדל",
+      "ZoomOut": "הקטן"
     },
     "ThereAreNoChartsToDisplay": "אין תרשימים להצגה.",
     "ThereIsNoChartToDisplay": "אין תרשים להצגה.",
     "Title": "ניווט ותרשימים",
-    "To": "אֶל"
+    "To": "יעד"
   },
   "Performance": {
     "Data": "נתונים",
     "Landing": {
-      "AirportIcao": "שדה תעופה ICAO",
-      "ApproachSpeed": "בִּיאָה מְהִירוּת",
-      "ApproachSpeedUnit": "kts",
-      "AutoLand": "אוֹטוֹמָטִי לִנְחוֹת",
-      "Calculate": "לחשב",
+      "AirportIcao": "קוד ICAO של שדה התעופה",
+      "ApproachSpeed": "מהירות גישה",
+      "ApproachSpeedUnit": "קשר",
+      "AutoLand": "נחיתה אוטומטית",
+      "Calculate": "חשב",
       "Clear": "נקה",
       "DropDownNo": "לא",
       "DropDownYes": "כן",
-      "FillDataFrom": "מילוי נתונים מ",
-      "FlapsConfiguration": "תְצוּרָה כָּנָף",
-      "Low": "נָמוּך",
+      "FillDataFrom": "מלא נתונים מ-",
+      "FlapsConfiguration": "תצורת מדפים",
+      "Low": "נמוך",
       "MaximumManual": "מקסימום ידני",
       "Medium": "בינוני",
-      "OverweightProcedure": "הליך של עודף משקל",
+      "OverweightProcedure": "הליך משקל חריג",
       "Qnh": "QNH",
       "ReverseThrust": "דחף הפוך",
-      "RunwayAltitude": "מסלול המראה גוֹבַה",
+      "RunwayAltitude": "גובה המסלול",
       "RunwayAltitudeUnit": "ft ASL",
-      "RunwayCondition": "מסלול המראה מַצָב",
-      "RunwayHeading": "כִּווּן מסלול המראה",
+      "RunwayCondition": "מצב המסלול",
+      "RunwayHeading": "כיוון המסלול",
       "RunwayHeadingUnit": "°",
-      "RunwayLda": "מסלול המראה LDA",
-      "RunwayLdaUnitFt": "ft",
-      "RunwayLdaUnitMeter": "מטרים",
-      "RunwaySlope": "מסלול המראה מִדרוֹן",
+      "RunwayLda": "מרחק נחיתה זמין (LDA)",
+      "RunwayLdaUnitFt": "רגל",
+      "RunwayLdaUnitMeter": "מטר",
+      "RunwaySlope": "שיפוע המסלול",
       "TT": {
         "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "עליך להזין קוד ICAO על מנת להגיש בקשת METAR",
         "YouNeedToLoadSimBriefDataInOrderToAutofillData": "עליך לטעון נתוני SimBrief כדי למלא נתונים אוטומטית"
       },
-      "Temperature": "טֶמפֶּרָטוּרָה",
-      "Title": "נְחִיתָה",
+      "Temperature": "טמפרטורה",
+      "Title": "נחיתה",
       "UnitFt": "רגל",
-      "UnitMeter": "מטרים",
+      "UnitMeter": "מטר",
       "Weight": "משקל",
       "WindDirection": "כיוון הרוח",
       "WindDirectionUnit": "°",
       "WindMagnitude": "עוצמת הרוח",
-      "WindMagnitudeUnit": "kts"
+      "WindMagnitudeUnit": "קשר"
     },
     "SYNC": "סינכרון",
     "Title": "ביצועים",
@@ -262,69 +262,69 @@
       "Data": {
         "Angle": "זווית",
         "CurrentAltitude": "גובה נוכחי",
-        "Distance": "מֶרְחָק",
+        "Distance": "מרחק",
         "GroundSpeed": "מהירות קרקע",
-        "TargetAltitude": "גובה מסלול",
+        "TargetAltitude": "גובה המטרה",
         "Title": "נתונים",
         "UnitAngleDegrees": "מעלות",
         "UnitFeet": "רגל",
-        "UnitFtMin": "רגליים לדקה",
-        "UnitNM": "מיילים ימיים",
+        "UnitFtMin": "רגל/דקה",
+        "UnitNM": "מייל",
         "VerticalSpeed": "מהירות אנכית"
       },
       "GroundSpeed": {
         "Add": "הוסף",
-        "FetchingSpeedFromSimulator": "קבלת מהירות בסימולטור",
+        "FetchingSpeedFromSimulator": "קרא מהירות מהסימולטור",
         "GroundSpeed": "מהירות קרקע",
         "ManualInput": "קלט ידני",
         "MinAltitude": "גובה מינימלי",
-        "RemoveLast": "להסיר את הקודם",
+        "RemoveLast": "הסר את הקודם",
         "Sync": "סינכרון",
         "Title": "מהירות קרקע",
-        "UnitKnots": "מיילים ימיים לשעה",
-        "UnitKt": "מייל ימי"
+        "UnitKnots": "קשר",
+        "UnitKt": "קשר"
       },
       "Result": {
         "BeforeTarget": "לפני המטרה",
-        "DesiredDescentAngle": "זווית ירידה רצויה",
+        "DesiredDescentAngle": "זווית הנמכה רצויה",
         "DesiredVerticalSpeed": "מהירות אנכית רצויה",
-        "StartYourDescentAbout": "להתחיל את הירידה שלך בערך",
-        "Title": "תוֹצָאָה"
+        "StartYourDescentAbout": "התחל את ההנמכה בערך",
+        "Title": "תוצאה"
       },
       "TT": {
         "DesynchronizeInputWithAircraftsCurrentAltitude": "בטל סנכרון קלט עם הגובה הנוכחי של המטוס",
         "SynchronizeInputWithAircraftsCurrentAltitude": "סנכרן את הקלט עם הגובה הנוכחי של המטוס"
       },
-      "Title": "העליון של הירידה"
+      "Title": "Top of Descent"
     }
   },
   "Presets": {
     "AircraftStates": {
       "Cancel": "ביטול",
-      "ColdDark": "קר וחשוך",
-      "ConfirmationDialogMsg": "אנא אשר את טעינת קביעה מוגדרת מראש.",
-      "CurrentProcedureStep": "שלב הנוהל הנוכחי",
-      "PleaseConfirmLoadingOfPreset": "אנא אשר את טעינת קביעה מוגדרת מראש.",
-      "ReadyPushback": "מוכן להתנגדות",
+      "ColdDark": "Cold & Dark",
+      "ConfirmationDialogMsg": "אנא אשר טעינת תבנית שמורה",
+      "CurrentProcedureStep": "צעד הפעולה הנוכחי",
+      "PleaseConfirmLoadingOfPreset": "אנא אשר טעינת תבנית שמורה",
+      "ReadyPushback": "מוכן לדחיפה",
       "ReadyTakeoff": "מוכן להמריא",
-      "ReadyTaxi": "מוכן למונית",
-      "SelectAPresetToLoad": "בחר הגדרה מראש לטעינה",
-      "TheAircraftMustBeOnTheGroundToLoadAPreset": "המטוס חייב להיות על הקרקע כדי לטעון הגדרה מראש.",
-      "TheAircraftMustBeOntheGroundToLoadAPreset": "המטוס חייב להיות על הקרקע כדי לטעון הגדרה מראש.",
-      "Title": "מַצָב כְּלִי טַיִס",
+      "ReadyTaxi": "מוכן להסעה",
+      "SelectAPresetToLoad": "בחר תבנית לטעינה",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "המטוס חייב להיות על הקרקע בשביל לטעון תבנית.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "המטוס חייב להיות על הקרקע בשביל לטעון תבנית.",
+      "Title": "מצבי המטוס",
       "Turnaround": "תסתובב"
     },
     "InteriorLighting": {
-      "AircraftNeedsToBePoweredToLoadPresets": "יש להפעיל את המטוס כדי לטעון הגדרות קבועות מראש",
-      "AircraftNeedsToBePoweredToSavePresets": "מטוס צריך להיות מופעל כדי לשמור הגדרות קבועות מראש",
-      "LoadPreset": "טען הגדרה מראש",
-      "LoadingPreset": "טעינה מוגדר מראש",
-      "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
+      "AircraftNeedsToBePoweredToLoadPresets": "יש לספק מתח למטוס בכדי לטעון תבניות",
+      "AircraftNeedsToBePoweredToSavePresets": "יש לספק מתח למטוס בכדי לשמור תבניות",
+      "LoadPreset": "טען תבנית",
+      "LoadingPreset": "טוען תבנית",
+      "NewNameConfirmationDialogMsg": "אנא אשר את שם תבנית התאורה",
       "NoName": "ללא שם",
-      "PleaseConfirmSavingPreset": "נא אשר את שמירת ההגדרה המוגדרת מראש",
-      "SavePreset": "שמור על הגדרה מראש",
-      "SavingPreset": "שמירת קביעה מוגדרת מראש",
-      "SelectAnInteriorLightingPresetToLoadOrSave": "בחר הגדרה מראש של תאורת פנים לטעינה או שמירה.",
+      "PleaseConfirmSavingPreset": "אנא אשר שמירת התבנית",
+      "SavePreset": "שמור תבנית",
+      "SavingPreset": "שומר תבנית",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "בחר תבנית תאורה פנימית בכדי לטעון או לשמור",
       "TT": {
         "AircraftMustBePowered": "מטוס צריך להיות מופעל",
         "ClickTextToChangeThePresetsName": "לחץ על טקסט כדי לשנות את השם המוגדר מראש",
