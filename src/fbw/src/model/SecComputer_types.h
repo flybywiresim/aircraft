@@ -294,9 +294,10 @@ struct sec_inputs
 
 struct base_sec_lateral_law_outputs
 {
-  real_T left_aileron_command_deg;
-  real_T right_aileron_command_deg;
-  real_T yaw_damper_command_deg;
+  real_T left_spoiler_1_command_deg;
+  real_T right_spoiler_1_command_deg;
+  real_T left_spoiler_2_command_deg;
+  real_T right_spoiler_2_command_deg;
 };
 
 #endif
@@ -363,6 +364,9 @@ struct base_sec_logic_outputs
   boolean_T right_sidestick_priority_locked;
   real_T total_sidestick_pitch_command;
   real_T total_sidestick_roll_command;
+  boolean_T ground_spoilers_armed;
+  boolean_T ground_spoilers_out;
+  boolean_T partial_lift_dumping_active;
   base_adr_bus adr_computation_data;
   base_ir_bus ir_computation_data;
 };
@@ -440,17 +444,6 @@ struct sec_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_roll_output_
-#define DEFINED_TYPEDEF_FOR_base_roll_output_
-
-struct base_roll_output
-{
-  real_T xi_deg;
-  real_T zeta_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_lateral_normal_input_
 #define DEFINED_TYPEDEF_FOR_lateral_normal_input_
 
@@ -470,6 +463,17 @@ struct lateral_normal_input
   boolean_T tracking_mode_on;
   boolean_T high_aoa_prot_active;
   boolean_T high_speed_prot_active;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_roll_output_
+#define DEFINED_TYPEDEF_FOR_base_roll_output_
+
+struct base_roll_output
+{
+  real_T xi_deg;
+  real_T zeta_deg;
 };
 
 #endif
@@ -691,10 +695,10 @@ struct struct_0c3ss1QuY6KtuadlqfvlrE
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_m0JoRkq1zCY4FCtAHfbtAG_
-#define DEFINED_TYPEDEF_FOR_struct_m0JoRkq1zCY4FCtAHfbtAG_
+#ifndef DEFINED_TYPEDEF_FOR_struct_nu5JKWPKjcWouTrFXSVJgG_
+#define DEFINED_TYPEDEF_FOR_struct_nu5JKWPKjcWouTrFXSVJgG_
 
-struct struct_m0JoRkq1zCY4FCtAHfbtAG
+struct struct_nu5JKWPKjcWouTrFXSVJgG
 {
   boolean_T on_ground;
   boolean_T tracking_mode_on;
@@ -717,6 +721,9 @@ struct struct_m0JoRkq1zCY4FCtAHfbtAG
   boolean_T right_sidestick_priority_locked;
   real_T total_sidestick_pitch_command;
   real_T total_sidestick_roll_command;
+  boolean_T ground_spoilers_armed;
+  boolean_T ground_spoilers_out;
+  boolean_T partial_lift_dumping_active;
   struct_iYKtYvDSJGDKbsguW4EWaF adr_computation_data;
   struct_0c3ss1QuY6KtuadlqfvlrE ir_computation_data;
 };

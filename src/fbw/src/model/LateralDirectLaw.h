@@ -28,14 +28,8 @@ class LateralDirectLaw final
     real_T RateLimiterVariableTs_up_d;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
-    real_T Saturation1_UpperSat;
-    real_T Saturation1_LowerSat;
-    real_T Saturation_UpperSat_l;
-    real_T Saturation_LowerSat_o;
-    real_T Gain1_Gain;
-    real_T Gain_Gain;
-    real_T Constant_Value;
     real_T Constant1_Value;
+    real_T Gain1_Gain;
   };
 
   LateralDirectLaw(LateralDirectLaw const&) = delete;

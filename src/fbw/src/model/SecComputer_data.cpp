@@ -14,6 +14,7 @@ base_sec_laws_outputs rtP_sec_laws_output_MATLABStruct{
   {
     0.0,
     0.0,
+    0.0,
     0.0
   },
 
@@ -36,12 +37,62 @@ base_sec_discrete_outputs rtP_sec_discrete_output_MATLABStruct{
 
 SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
+  0.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
+
+  23.0,
+
+  23.0,
+
+  72.0,
+
+  72.0,
+
+  -0.02,
+
+  0.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
+
+  0.0,
+
   1.0,
 
   2.0,
 
   3.0,
 
+  -20.0,
+
+  -5.0,
+
+  -50.0,
+
+  -50.0,
+
+  -50.0,
+
+  -50.0,
+
   0.5,
 
   0.5,
@@ -51,11 +102,31 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   30.0,
 
   30.0,
+
+  20.0,
+
+  5.0,
+
+  50.0,
+
+  50.0,
+
+  50.0,
+
+  50.0,
 
   SignStatusMatrix::NoComputedData,
 
   SignStatusMatrix::NormalOperation,
 
+  false,
+
+  true,
+
+  true,
+
+  true,
+
   true,
 
   true,
@@ -65,6 +136,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   true,
 
   true,
+
+  false,
 
   true,
 
@@ -93,6 +166,9 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
     false,
     0.0,
     0.0,
+    false,
+    false,
+    false,
 
     {
       {
@@ -362,6 +438,12 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
     }
   },
 
+  -50.0,
+
+  -10.0,
+
+  0.0,
+
   0.0,
 
   0.0,
@@ -388,11 +470,27 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   -1.0,
 
-  0.0,
+
+  { 0.0, 0.0, -2.0, -25.0, -40.0 },
+
+
+  { 0.0, 0.05, 0.051, 0.5, 1.0 },
 
   0.0,
 
-  -1.0,
+  -50.0,
+
+  0.0,
+
+  -50.0,
+
+  0.0,
+
+  -50.0,
+
+  0.0,
+
+  -50.0,
 
   0.01,
 
@@ -403,8 +501,6 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   -1.0,
 
   -6.0,
-
-  0.0,
 
   0.0,
 
@@ -421,6 +517,13 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   30.0F,
 
   false,
+
+  false,
+
+  false,
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   false,
 

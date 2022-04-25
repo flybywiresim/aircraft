@@ -1212,9 +1212,9 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   }
   secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1] * 19;
   secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
-  secs[secIndex].modelInputs.in.analog_inputs.spd_brk_lever_pos = 0;
-  secs[secIndex].modelInputs.in.analog_inputs.thr_lever_1_pos = 0;
-  secs[secIndex].modelInputs.in.analog_inputs.thr_lever_2_pos = 0;
+  secs[secIndex].modelInputs.in.analog_inputs.spd_brk_lever_pos = simData.spoilers_handle_position;
+  secs[secIndex].modelInputs.in.analog_inputs.thr_lever_1_pos = thrustLeverAngle_1->get();
+  secs[secIndex].modelInputs.in.analog_inputs.thr_lever_2_pos = thrustLeverAngle_2->get();
   secs[secIndex].modelInputs.in.analog_inputs.left_spoiler_1_pos_deg = -idLeftSpoilerPosition[splrIndex]->get() * 50;
   secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_1_pos_deg = -idRightSpoilerPosition[splrIndex]->get() * 50;
   secs[secIndex].modelInputs.in.analog_inputs.left_spoiler_2_pos_deg = -idLeftSpoilerPosition[splrIndex + 1]->get() * 50;
@@ -1415,16 +1415,16 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idRightAileronSolenoidEnergized[1]->set(elacsDiscreteOutputs[1].right_aileron_active_mode);
   idRightAileronCommandedPosition[1]->set(-elacsAnalogOutputs[1].right_aileron_pos_order);
 
-  idLeftSpoilerCommandedPosition[0]->set(secsAnalogOutputs[2].left_spoiler_1_pos_order_deg);
-  idRightSpoilerCommandedPosition[0]->set(secsAnalogOutputs[2].right_spoiler_1_pos_order_deg);
-  idLeftSpoilerCommandedPosition[1]->set(secsAnalogOutputs[2].left_spoiler_2_pos_order_deg);
-  idRightSpoilerCommandedPosition[1]->set(secsAnalogOutputs[2].right_spoiler_2_pos_order_deg);
-  idLeftSpoilerCommandedPosition[2]->set(secsAnalogOutputs[0].left_spoiler_1_pos_order_deg);
-  idRightSpoilerCommandedPosition[2]->set(secsAnalogOutputs[0].right_spoiler_1_pos_order_deg);
-  idLeftSpoilerCommandedPosition[3]->set(secsAnalogOutputs[0].left_spoiler_2_pos_order_deg);
-  idRightSpoilerCommandedPosition[3]->set(secsAnalogOutputs[0].right_spoiler_2_pos_order_deg);
-  idLeftSpoilerCommandedPosition[4]->set(secsAnalogOutputs[1].left_spoiler_1_pos_order_deg);
-  idRightSpoilerCommandedPosition[4]->set(secsAnalogOutputs[1].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[0]->set(-secsAnalogOutputs[2].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[0]->set(-secsAnalogOutputs[2].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[1]->set(-secsAnalogOutputs[2].left_spoiler_2_pos_order_deg);
+  idRightSpoilerCommandedPosition[1]->set(-secsAnalogOutputs[2].right_spoiler_2_pos_order_deg);
+  idLeftSpoilerCommandedPosition[2]->set(-secsAnalogOutputs[0].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[2]->set(-secsAnalogOutputs[0].right_spoiler_1_pos_order_deg);
+  idLeftSpoilerCommandedPosition[3]->set(-secsAnalogOutputs[0].left_spoiler_2_pos_order_deg);
+  idRightSpoilerCommandedPosition[3]->set(-secsAnalogOutputs[0].right_spoiler_2_pos_order_deg);
+  idLeftSpoilerCommandedPosition[4]->set(-secsAnalogOutputs[1].left_spoiler_1_pos_order_deg);
+  idRightSpoilerCommandedPosition[4]->set(-secsAnalogOutputs[1].right_spoiler_1_pos_order_deg);
 
   idLeftElevatorSolenoidEnergized[0]->set(elacsDiscreteOutputs[1].left_elevator_damping_mode ||
                                           secsDiscreteOutputs[1].left_elevator_damping_mode);

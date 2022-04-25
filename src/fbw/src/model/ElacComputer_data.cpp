@@ -4,6 +4,7 @@ base_elac_laws_outputs rtP_elac_laws_output_MATLABStruct{
   {
     0.0,
     0.0,
+    0.0,
     0.0
   },
 
@@ -402,6 +403,16 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
     }
   },
 
+  -5.0,
+
+  40.0,
+
+  0.0,
+
+  1.1428571428571428,
+
+  -1.0,
+
   0.0,
 
   0.0,
@@ -438,7 +449,7 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   0.0,
 
-  -1.0,
+  1.6,
 
   0.01,
 
@@ -464,6 +475,10 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   0.0,
 
+  0.0,
+
+  0.0,
+
   -6.0,
 
   15.0F,
@@ -475,6 +490,8 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   19.0F,
 
   30.0F,
+
+  false,
 
   false,
 

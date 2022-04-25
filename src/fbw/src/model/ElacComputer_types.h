@@ -334,6 +334,7 @@ struct base_elac_lateral_law_outputs
 {
   real_T left_aileron_command_deg;
   real_T right_aileron_command_deg;
+  real_T roll_spoiler_command_deg;
   real_T yaw_damper_command_deg;
 };
 

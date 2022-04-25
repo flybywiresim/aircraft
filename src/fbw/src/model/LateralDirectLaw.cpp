@@ -24,21 +24,9 @@ LateralDirectLaw::Parameters_LateralDirectLaw_T LateralDirectLaw::LateralDirectL
 
   0.0,
 
-  1.0,
-
   0.0,
 
-  1.0,
-
-  0.0,
-
-  25.0,
-
-  -25.0,
-
-  1.0,
-
-  0.0
+  25.0
 };
 
 void LateralDirectLaw::LateralDirectLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts,
@@ -58,8 +46,7 @@ void LateralDirectLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   real_T *rty_Out_zeta_deg)
 {
   real_T rtb_Gain1;
-  real_T rtb_Saturation_f;
-  real_T rtb_Y;
+  real_T rtb_Y_i;
   int32_T rtb_in_flight;
   if (LateralDirectLaw_DWork.is_active_c5_LateralDirectLaw == 0U) {
     LateralDirectLaw_DWork.is_active_c5_LateralDirectLaw = 1U;
@@ -80,37 +67,22 @@ void LateralDirectLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   }
 
   if (rtb_in_flight > LateralDirectLaw_rtP.Saturation_UpperSat) {
-    rtb_Saturation_f = LateralDirectLaw_rtP.Saturation_UpperSat;
+    rtb_Gain1 = LateralDirectLaw_rtP.Saturation_UpperSat;
   } else if (rtb_in_flight < LateralDirectLaw_rtP.Saturation_LowerSat) {
-    rtb_Saturation_f = LateralDirectLaw_rtP.Saturation_LowerSat;
+    rtb_Gain1 = LateralDirectLaw_rtP.Saturation_LowerSat;
   } else {
-    rtb_Saturation_f = rtb_in_flight;
+    rtb_Gain1 = rtb_in_flight;
   }
 
-  LateralDirectLaw_RateLimiter(rtb_Saturation_f, LateralDirectLaw_rtP.RateLimiterVariableTs_up,
+  LateralDirectLaw_RateLimiter(rtb_Gain1, LateralDirectLaw_rtP.RateLimiterVariableTs_up,
     LateralDirectLaw_rtP.RateLimiterVariableTs_lo, rtu_In_time_dt,
-    LateralDirectLaw_rtP.RateLimiterVariableTs_InitialCondition, &rtb_Y, &LateralDirectLaw_DWork.sf_RateLimiter);
-  if (rtb_Y > LateralDirectLaw_rtP.Saturation1_UpperSat) {
-    rtb_Y = LateralDirectLaw_rtP.Saturation1_UpperSat;
-  } else if (rtb_Y < LateralDirectLaw_rtP.Saturation1_LowerSat) {
-    rtb_Y = LateralDirectLaw_rtP.Saturation1_LowerSat;
-  }
-
-  if (rtb_Y > LateralDirectLaw_rtP.Saturation_UpperSat_l) {
-    rtb_Saturation_f = LateralDirectLaw_rtP.Saturation_UpperSat_l;
-  } else if (rtb_Y < LateralDirectLaw_rtP.Saturation_LowerSat_o) {
-    rtb_Saturation_f = LateralDirectLaw_rtP.Saturation_LowerSat_o;
-  } else {
-    rtb_Saturation_f = rtb_Y;
-  }
-
+    LateralDirectLaw_rtP.RateLimiterVariableTs_InitialCondition, &rtb_Y_i, &LateralDirectLaw_DWork.sf_RateLimiter);
+  *rty_Out_zeta_deg = LateralDirectLaw_rtP.Constant1_Value;
   rtb_Gain1 = LateralDirectLaw_rtP.Gain1_Gain * *rtu_In_delta_xi_pos;
   LateralDirectLaw_RateLimiter(rtb_Gain1, LateralDirectLaw_rtP.RateLimiterVariableTs_up_d,
     LateralDirectLaw_rtP.RateLimiterVariableTs_lo_b, rtu_In_time_dt,
-    LateralDirectLaw_rtP.RateLimiterVariableTs_InitialCondition_k, &rtb_Y, &LateralDirectLaw_DWork.sf_RateLimiter_j);
-  rtb_Gain1 = LateralDirectLaw_rtP.Gain_Gain * *rtu_In_delta_xi_pos;
-  *rty_Out_xi_deg = (LateralDirectLaw_rtP.Constant_Value - rtb_Saturation_f) * rtb_Gain1 + rtb_Y * rtb_Saturation_f;
-  *rty_Out_zeta_deg = LateralDirectLaw_rtP.Constant1_Value;
+    LateralDirectLaw_rtP.RateLimiterVariableTs_InitialCondition_k, rty_Out_xi_deg,
+    &LateralDirectLaw_DWork.sf_RateLimiter_j);
 }
 
 LateralDirectLaw::LateralDirectLaw():

@@ -14,31 +14,49 @@ extern base_sec_discrete_outputs rtP_sec_discrete_output_MATLABStruct;
 class SecComputer final
 {
  public:
-  struct rtDW_MATLABFunction_SecComputer_T {
-    real_T timeSinceCondition;
-    boolean_T output;
+  struct rtDW_RateLimiter_SecComputer_T {
+    real_T pY;
+    boolean_T pY_not_empty;
   };
 
-  struct rtDW_MATLABFunction_SecComputer_b_T {
+  struct rtDW_MATLABFunction_SecComputer_T {
     boolean_T output;
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
   };
 
+  struct rtDW_MATLABFunction_SecComputer_o_T {
+    real_T timeSinceCondition;
+    boolean_T output;
+  };
+
   struct D_Work_SecComputer_T {
     boolean_T Delay_DSTATE;
     boolean_T Delay1_DSTATE;
+    boolean_T Delay1_DSTATE_i;
+    boolean_T Delay_DSTATE_n;
     uint8_T is_active_c8_SecComputer;
     uint8_T is_c8_SecComputer;
+    boolean_T Memory_PreviousInput;
     boolean_T pLeftStickDisabled;
     boolean_T pRightStickDisabled;
-    rtDW_MATLABFunction_SecComputer_b_T sf_MATLABFunction_n;
-    rtDW_MATLABFunction_SecComputer_b_T sf_MATLABFunction_g4;
-    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_j;
-    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_g2;
-    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_h;
+    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_nu;
+    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_g4;
+    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_j;
+    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_g2;
+    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_h;
+    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_gf;
+    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_ndv;
+    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_nd;
+    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_n;
+    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_a;
     rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_g;
-    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction;
+    rtDW_RateLimiter_SecComputer_T sf_RateLimiter_c;
+    rtDW_RateLimiter_SecComputer_T sf_RateLimiter_d;
+    rtDW_RateLimiter_SecComputer_T sf_RateLimiter_j;
+    rtDW_RateLimiter_SecComputer_T sf_RateLimiter_f;
+    rtDW_RateLimiter_SecComputer_T sf_RateLimiter_b;
+    rtDW_RateLimiter_SecComputer_T sf_RateLimiter;
   };
 
   struct ExternalInputs_SecComputer_T {
@@ -50,16 +68,48 @@ class SecComputer final
   };
 
   struct Parameters_SecComputer_T {
+    real_T RateLimiterVariableTs6_InitialCondition;
+    real_T RateLimiterVariableTs1_InitialCondition;
+    real_T RateLimiterVariableTs2_InitialCondition;
+    real_T RateLimiterVariableTs3_InitialCondition;
+    real_T RateLimiterVariableTs4_InitialCondition;
+    real_T RateLimiterVariableTs5_InitialCondition;
+    real_T CompareToConstant11_const;
+    real_T CompareToConstant12_const;
+    real_T CompareToConstant5_const;
+    real_T CompareToConstant6_const;
+    real_T CompareToConstant_const;
+    real_T CompareToConstant1_const;
     real_T CompareToConstant2_const;
     real_T CompareToConstant3_const;
-    real_T CompareToConstant1_const;
+    real_T CompareToConstant4_const;
+    real_T CompareToConstant7_const;
+    real_T CompareToConstant8_const;
+    real_T CompareToConstant9_const;
+    real_T CompareToConstant10_const;
+    real_T CompareToConstant2_const_f;
+    real_T CompareToConstant3_const_o;
+    real_T CompareToConstant1_const_p;
+    real_T RateLimiterVariableTs6_lo;
+    real_T RateLimiterVariableTs1_lo;
+    real_T RateLimiterVariableTs2_lo;
+    real_T RateLimiterVariableTs3_lo;
+    real_T RateLimiterVariableTs4_lo;
+    real_T RateLimiterVariableTs5_lo;
     real_T ConfirmNode_timeDelay;
     real_T ConfirmNode1_timeDelay;
     real_T ConfirmNode2_timeDelay;
     real_T ConfirmNode1_timeDelay_a;
     real_T ConfirmNode_timeDelay_a;
+    real_T RateLimiterVariableTs6_up;
+    real_T RateLimiterVariableTs1_up;
+    real_T RateLimiterVariableTs2_up;
+    real_T RateLimiterVariableTs3_up;
+    real_T RateLimiterVariableTs4_up;
+    real_T RateLimiterVariableTs5_up;
     SignStatusMatrix EnumeratedConstant_Value;
     SignStatusMatrix EnumeratedConstant1_Value;
+    boolean_T SRFlipFlop_initial_condition;
     boolean_T ConfirmNode_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge;
     boolean_T ConfirmNode2_isRisingEdge;
@@ -67,31 +117,44 @@ class SecComputer final
     boolean_T PulseNode1_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_j;
+    boolean_T PulseNode3_isRisingEdge;
+    boolean_T PulseNode2_isRisingEdge;
+    boolean_T PulseNode1_isRisingEdge_k;
+    boolean_T PulseNode_isRisingEdge_n;
     base_sec_logic_outputs Constant1_Value;
     base_sec_out_bus Constant4_Value;
+    real_T Constant_Value;
+    real_T Constant1_Value_i;
+    real_T Constant2_Value;
     real_T Constant5_Value;
     real_T Constant6_Value;
     real_T Constant1_Value_d;
-    real_T Constant2_Value;
+    real_T Constant2_Value_b;
     real_T Constant3_Value;
     real_T Constant4_Value_i;
-    real_T Constant_Value;
+    real_T Constant_Value_j;
     real_T Constant_Value_p;
     real_T Saturation_UpperSat;
     real_T Saturation_LowerSat;
     real_T Constant1_Value_p;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
-    real_T Constant1_Value_a;
-    real_T Constant_Value_c;
-    real_T Gain_Gain;
+    real_T uDLookupTable_tableData[5];
+    real_T uDLookupTable_bp01Data[5];
+    real_T Saturation_UpperSat_n;
+    real_T Saturation_LowerSat_n;
+    real_T Saturation1_UpperSat_e;
+    real_T Saturation1_LowerSat_f;
+    real_T Saturation2_UpperSat;
+    real_T Saturation2_LowerSat;
+    real_T Saturation3_UpperSat;
+    real_T Saturation3_LowerSat;
     real_T Gain4_Gain;
     real_T Bias_Bias;
-    real_T Gain_Gain_p;
+    real_T Gain_Gain;
     real_T Gain1_Gain;
     real_T Gain3_Gain;
     real_T Constant_Value_a;
-    real_T Constant_Value_o;
     real_T Gain2_Gain;
     real32_T Gain_Gain_b;
     real32_T Gain1_Gain_f;
@@ -101,6 +164,9 @@ class SecComputer final
     boolean_T Constant_Value_l;
     boolean_T Delay_InitialCondition;
     boolean_T Delay1_InitialCondition;
+    boolean_T Logic_table[16];
+    boolean_T Delay1_InitialCondition_l;
+    boolean_T Delay_InitialCondition_j;
     boolean_T Constant1_Value_g;
     boolean_T Constant_Value_i;
     boolean_T Constant2_Value_n;
@@ -133,10 +199,12 @@ class SecComputer final
   ExternalOutputs_SecComputer_T SecComputer_Y;
   D_Work_SecComputer_T SecComputer_DWork;
   static Parameters_SecComputer_T SecComputer_P;
-  static void SecComputer_MATLABFunction(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
-    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_SecComputer_T *localDW);
-  static void SecComputer_MATLABFunction_g(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
-    rtDW_MATLABFunction_SecComputer_b_T *localDW);
+  static void SecComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init, real_T
+    *rty_Y, rtDW_RateLimiter_SecComputer_T *localDW);
+  static void SecComputer_MATLABFunction(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
+    rtDW_MATLABFunction_SecComputer_T *localDW);
+  static void SecComputer_MATLABFunction_n(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
+    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_SecComputer_o_T *localDW);
   static void SecComputer_MATLABFunction_c(const boolean_T rtu_u[19], real32_T *rty_y);
   LateralDirectLaw LawMDLOBJ1;
   PitchAlternateLaw LawMDLOBJ2;

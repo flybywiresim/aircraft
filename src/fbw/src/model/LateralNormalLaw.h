@@ -20,9 +20,9 @@ class LateralNormalLaw final
     uint8_T is_c5_LateralNormalLaw;
     boolean_T icLoad;
     boolean_T pY_not_empty;
+    rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter_j;
     rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter_d;
     rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter_n;
-    rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter_j;
     rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter;
   };
 
@@ -62,11 +62,11 @@ class LateralNormalLaw final
     real_T Gain_Gain;
     real_T Constant_Value;
     real_T Constant_Value_m;
-    real_T Constant_Value_l;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
     real_T Saturation_UpperSat_l;
     real_T Saturation_LowerSat_o;
+    real_T Constant_Value_l;
     real_T Delay_InitialCondition;
     real_T Gain1_Gain;
     real_T Saturation_UpperSat_a;
