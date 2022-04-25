@@ -72,6 +72,7 @@ export const FlyPadPage = () => {
                     value={keyboardLayout}
                     onChange={(value) => setKeyboardLayout(value as string)}
                     options={keyboardLayoutOptions.map((option) => ({ value: option.name, displayValue: option.alias }))}
+                    maxHeight={32}
                 />
             </SettingItem>
 
