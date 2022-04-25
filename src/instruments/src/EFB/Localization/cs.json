@@ -61,7 +61,7 @@
     },
     "Title": "Hlavní panel",
     "YourFlight": {
-      "Alternate": "Záložní let.",
+      "Alternate": "Náhradní letiště",
       "AverageWind": "Průměrný vítr",
       "CompanyRoute": "Company Route",
       "CostIndex": "Cost Index",
@@ -100,7 +100,7 @@
   },
   "Failures": {
     "Comfort": {
-      "Title": "Příjemné"
+      "Title": "Komfort"
     },
     "Compact": {
       "Title": "Kompaktní"
@@ -129,15 +129,15 @@
         "FillBlockFuelFromSimBrief": "Načíst palivo (Block Fuel) ze SimBriefu"
       },
       "Title": "Palivo",
-      "TotalFuel": "Celkové palivo",
+      "TotalFuel": "Celkem paliva",
       "Unavailable": "Nedostupné"
     },
     "Pushback": {
       "Title": "Vytlačení"
     },
     "Services": {
-      "BaggageTruck": "Zavazadlové vozidlo",
-      "CateringTruck": "Cateringové vozidlo",
+      "BaggageTruck": "Zavazadlový vůz",
+      "CateringTruck": "Cateringový vůz",
       "DoorAft": "Zadní dveře",
       "DoorFwd": "Přední dveře",
       "ExternalPower": "Externí napájení",
@@ -154,12 +154,12 @@
   },
   "NavigationAndCharts": {
     "All": "Vše",
-    "Altn": "Altn",
+    "Altn": "Náhr.",
     "ExitFullscreenMode": "Ukončit režim celé obrazovky",
     "From": "Od",
     "LocalFiles": {
       "Both": "Obojí",
-      "EstablishingConnection": "Navazování spojení",
+      "EstablishingConnection": "Navazuji spojení",
       "FailedToEstablishConnection": "Nepodařilo se navázat spojení.",
       "FileName": "Název souboru",
       "Image": "Obrázek",
@@ -186,14 +186,14 @@
       "SortMethods": {
         "AlphabeticalAZ": "Abecedně - A -> Z",
         "AlphabeticalZA": "Abecedně - Z -> A",
-        "FirstAccessed": "Nejdříve otevřené",
-        "LastAccessed": "Nejpozději otevřené",
+        "FirstAccessed": "První otevřené",
+        "LastAccessed": "Poslední otevřené",
         "None": "Žádné"
       },
       "TT": {
         "ChangeChartProvider": "Změnit poskytovatele map",
-        "ChangeChartSortMethod": "Změna metody řazení map",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "ChangeChartSortMethod": "Změna metodu řazení map",
+        "RemoveAllPinnedCharts": "Odstranit všechny připnuté mapy"
       },
       "Title": "Připnuté mapy",
       "View": "Zobrazit"
@@ -238,7 +238,7 @@
       "RunwayCondition": "Stav dráhy",
       "RunwayHeading": "Směr dráhy",
       "RunwayHeadingUnit": "°",
-      "RunwayLda": "LDA dráhy",
+      "RunwayLda": "Použitelná délka přistání",
       "RunwayLdaUnitFt": "ft",
       "RunwayLdaUnitMeter": "m",
       "RunwaySlope": "Sklon dráhy",
@@ -359,7 +359,7 @@
       "IsisBaroUnit": "ISIS jednotky tlaku",
       "IsisMetricAltitude": "ISIS metrická nadmořská výška",
       "LatLonExtendedFormat": "Formát FMGC Lat/Lon Waypointů",
-      "PaxSigns": "Transparenty",
+      "PaxSigns": "Znamení cestujícím",
       "RmpVhfSpacing": "RMP VHF rozteč",
       "ThrustReductionHeight": "Výška snížení tahu (ft AGL)",
       "Title": "Možnosti letadla / Pin programy",
