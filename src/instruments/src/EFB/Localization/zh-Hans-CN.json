@@ -32,7 +32,7 @@
       "GoToPage": "跳转至此页面",
       "Maintenance": {
         "NoActiveFailures": "无故障",
-        "Title": "保养"
+        "Title": "维护"
       },
       "PinnedCharts": {
         "NoPinnedCharts": "没有固定的航图",
@@ -80,7 +80,7 @@
         "IncreaseFontSize": "增大字号",
         "ReduceFontSize": "减小字号"
       },
-      "Title": "运行飞行计划",
+      "Title": "运行飞行计划 (OFP)",
       "YouHaveNotYetImportedAnySimBriefData": "您尚未从 SimBrief 导入任何数据"
     },
     "Overview": {
@@ -105,7 +105,7 @@
     "Compact": {
       "Title": "紧凑"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "以下故障的模拟尚不能保证完全完整",
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "以下故障尚不能保证完整模拟",
     "Search": "搜索",
     "Title": "失效"
   },
@@ -193,7 +193,7 @@
       "TT": {
         "ChangeChartProvider": "更换航图来源",
         "ChangeChartSortMethod": "更改航图排序方式",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "移除所有固定的航图"
       },
       "Title": "固定的航图",
       "View": "浏览"
@@ -371,7 +371,7 @@
       "Enable": "启用",
       "EnableTelex": "启用电传 (TELEX)",
       "ErrorReporting": "报告错误",
-      "HoppieEnabled": "Hoppie enabled",
+      "HoppieEnabled": "Hoppie 已启用",
       "HoppieUserId": "Hoppie 用户代码",
       "MetarSource": "METAR 来源",
       "OptionalA32nxErrorReporting": "自愿发送 A32NX 错误报告",

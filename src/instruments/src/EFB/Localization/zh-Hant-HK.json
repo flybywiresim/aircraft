@@ -193,7 +193,7 @@
       "TT": {
         "ChangeChartProvider": "轉換航圖提供商",
         "ChangeChartSortMethod": "轉換航圖排序方法",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "移除所有編上航圖"
       },
       "Title": "編上航圖",
       "View": "檢視"
@@ -371,7 +371,7 @@
       "Enable": "啟用",
       "EnableTelex": "啟用 TELEX",
       "ErrorReporting": "報告錯誤",
-      "HoppieEnabled": "Hoppie enabled",
+      "HoppieEnabled": "Hoppie 已啟用",
       "HoppieUserId": "Hoppie 用戶編號",
       "MetarSource": "METAR 供應商",
       "OptionalA32nxErrorReporting": "志願 A32NX 錯誤報告",
