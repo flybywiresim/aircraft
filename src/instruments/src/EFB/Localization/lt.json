@@ -32,7 +32,7 @@
       "GoToPage": "Eiti į puslapį",
       "Maintenance": {
         "NoActiveFailures": "Nėra aktyvių gedimų",
-        "Title": "Aptarnavimas"
+        "Title": "Techninė priežiūra"
       },
       "PinnedCharts": {
         "NoPinnedCharts": "Jokių prisegtų dokumentų",
@@ -96,7 +96,7 @@
       "Range": "Atstumas",
       "Title": "Apžvalga"
     },
-    "Title": "Išsiuntimas"
+    "Title": "Skrydžio planas"
   },
   "Failures": {
     "Comfort": {

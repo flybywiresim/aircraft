@@ -14,7 +14,7 @@
     "AreYouSureYouWantToResetAllChecklists": "هل تريد بالتأكيد إعادة تعيين جميع قوائم التحقق؟",
     "AreYouSureYouWantToResetChecklists": "هل انت متأكد من انك تريد اعادة تعيين جميع قوائم التحقق؟ ",
     "ChecklistResetWarning": "إنذار إعادة تعيين قوائم التحقق",
-    "MarkChecklistAsComplete": "Mark checklist as complete",
+    "MarkChecklistAsComplete": "وضع علامة على قائمة التحقق كاملة",
     "MarkItemAsComplete": "اشر على العنصر على انه اكتمل",
     "ProceedToNextChecklist": "الانتقال الى قائمة التحقق التالية",
     "ResetAll": "إعادة تعيين الكل",
@@ -29,14 +29,14 @@
         "NoRelevantChecklists": "لا توجد قوائم مراجعة ذات صلة",
         "Title": "قوائم التحقق"
       },
-      "GoToPage": "Go to Page",
+      "GoToPage": "اذهب إلى صفحة",
       "Maintenance": {
-        "NoActiveFailures": "No Active Failures",
-        "Title": "Maintenance"
+        "NoActiveFailures": "لا توجد اعطال مفعلة",
+        "Title": "الصيانة"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "No Pinned Charts",
-        "Title": "Pinned Charts"
+        "NoPinnedCharts": "لا توجد خرائط مثبتة ",
+        "Title": "خرائط مثبتة "
       },
       "TT": {
         "RearrangeWidgets": "Rearrange Widgets"

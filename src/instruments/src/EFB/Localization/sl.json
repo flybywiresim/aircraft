@@ -193,7 +193,7 @@
       "TT": {
         "ChangeChartProvider": "Spremeni ponudnika kart",
         "ChangeChartSortMethod": "Spreminjanje načina razvrščanja kart",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "Odstrani vse pripete karte"
       },
       "Title": "Pripete karte",
       "View": "Pogled"
@@ -371,7 +371,7 @@
       "Enable": "Omogoči",
       "EnableTelex": "Omogoči TELEX",
       "ErrorReporting": "Poročanje napak",
-      "HoppieEnabled": "Hoppie enabled",
+      "HoppieEnabled": "Hoppie omogočen",
       "HoppieUserId": "Hoppie uporabniški ID",
       "MetarSource": "METAR vir",
       "OptionalA32nxErrorReporting": "Prostovoljno poročanje o napakah A32NX",
