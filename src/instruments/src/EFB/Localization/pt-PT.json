@@ -20,14 +20,14 @@
     "ResetAll": "Repor tudo",
     "ResetChecklist": "Repor Lista de Verificação",
     "TheLastChecklistIsComplete": "A última lista de verificação está concluída",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Existem itens na checklist de preenchimento automático que ainda não foram concluídos",
-    "Title": "Checklists"
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Existem itens na lista de verificação de preenchimento automático que ainda não foram concluídos",
+    "Title": "Listas de Verificação"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "Nenhuma checklist relevante",
-        "Title": "Checklists"
+        "NoRelevantChecklists": "Nenhuma lista de verificação relevante",
+        "Title": "Listas de Verificação"
       },
       "GoToPage": "Ir para a página",
       "Maintenance": {
@@ -39,7 +39,7 @@
         "Title": "Cartas fixadas"
       },
       "TT": {
-        "RearrangeWidgets": "Reorganizar widgets "
+        "RearrangeWidgets": "Reorganizar Dispositivos"
       },
       "Title": "Informação importante",
       "Weather": {
@@ -81,7 +81,7 @@
         "ReduceFontSize": "Reduzir o tamanho da letra"
       },
       "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "Ainda não importou nenhuns dados do SimBrief"
+      "YouHaveNotYetImportedAnySimBriefData": "Ainda não importou quaisquer dados do SimBrief"
     },
     "Overview": {
       "Engines": "Motores",
@@ -91,7 +91,7 @@
       "MZFW": "MZFW",
       "MaximumCargo": "Carga Máxima",
       "MaximumFuelCapacity": "Capacidade Máxima de Combustível",
-      "MaximumPassengers": "Lotação Máxima",
+      "MaximumPassengers": "Lotação Máxima de Passageiros",
       "Model": "Modelo",
       "Range": "Alcance",
       "Title": "Vista Geral"
@@ -105,7 +105,7 @@
     "Compact": {
       "Title": "Compacto"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Simulação total das falhas abaixo ainda não está garantida.",
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "A simulação completa das falhas abaixo ainda não está garantida.",
     "Search": "Pesquisa",
     "Title": "Falhas"
   },
@@ -125,7 +125,7 @@
       "RightInnerTank": "Tanque Interno Direito",
       "RightOuterTank": "Tanque Externo Direito",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "A aeronave deve estar totalmente desligada para mudar os tempos de reabastecimento",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "O avião deve estar totalmente desligado para mudar os tempos de reabastecimento",
         "FillBlockFuelFromSimBrief": "Preencher com o Combustível Bloco do SimBrief"
       },
       "Title": "Combustível",
@@ -141,7 +141,7 @@
       "DoorAft": "Porta Traseira",
       "DoorFwd": "Porta Dianteira",
       "ExternalPower": "Alimentação Externa",
-      "FuelTruck": "Camião de Combustível",
+      "FuelTruck": "Cisterna de Combustível",
       "JetBridge": "Manga de Embarque",
       "Title": "Serviços"
     },
@@ -405,7 +405,7 @@
     "Real": "Real",
     "Realism": {
       "AdirsAlignTime": "Tempo de alinhamento do ADIRS",
-      "AutofillChecklists": "Preencher Automáticamente Checklists",
+      "AutofillChecklists": "Preencher automaticamente as Listas de Verificação",
       "BoardingTime": "Horário de Embarque",
       "DmcSelfTestTime": "Tempo de autoteste DMC",
       "HomeCockpitMode": "Modo Cockpit em Casa",
@@ -481,12 +481,13 @@
   },
   "Settings.flyPad.BatteryLifeEnabled": "Duração da Bateria Simulada",
   "StatusBar": {
-    "Apr": "Apr",
+    "Apr": "Abr",
     "Aug": "Ago",
     "Dec": "Dez",
     "Feb": "Fev",
     "Fri": "Sex",
     "Jan": "Jan",
+    "Jul": "Jul",
     "Jun": "Jun",
     "Mar": "Mar",
     "May": "Mai",
