@@ -7,7 +7,7 @@
     "SelectCorrectATISATCSource": "Ez az oldal csak akkor érhető el, ha az IVAO vagy a VATSIM van kiválasztva ATIS/ATC forrásként a beállítások oldalon.",
     "SetActive": "Beállítás aktívként",
     "SetStandby": "Beállítás készenléti állapotba",
-    "Standby": "Készenléti állapot",
+    "Standby": "Készenléti ",
     "Title": "Légiforgalmi irányítás"
   },
   "Checklists": {
@@ -18,7 +18,7 @@
     "MarkItemAsComplete": "Elem megjelölése készként",
     "ProceedToNextChecklist": "Tovább a következő ellenörzőlistára",
     "ResetAll": "Összes alaphelyzetbe állítása",
-    "ResetChecklist": "Ellenőrzőlista alaphelyzetbe állítása",
+    "ResetChecklist": "Lista alaphelyzetbe állítása",
     "TheLastChecklistIsComplete": "Az utolsó ellenőrzőlista kész",
     "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Automatikusan kitöltött ellenörzőlista elemek vannak befejezetlenül",
     "Title": "Ellenőrzőlisták"
@@ -41,7 +41,7 @@
       "TT": {
         "RearrangeWidgets": "Alkalmazások átrendezése"
       },
-      "Title": "Fontos Információ",
+      "Title": "Fontos Információk",
       "Weather": {
         "AirPressure": "Légnyomás",
         "DewPoint": "Harmatpont",
@@ -52,7 +52,7 @@
         "Raw": "Raw",
         "TT": {
           "SwitchToIconView": "Váltás ikon nézetre",
-          "SwitchToRawMetarView": "Switch to Raw METAR View"
+          "SwitchToRawMetarView": "Váltás METAR kód nézetre"
         },
         "Temperature": "Hőmérséklet",
         "Title": "Időjárás",
@@ -69,7 +69,7 @@
       "ImportSimBriefData": "SimBrief adatok importálása",
       "Route": "Útvonal",
       "SimBriefDataNotYetLoaded": "SimBrief adatok még nincsenek betöltve.",
-      "Title": "Repülésed",
+      "Title": "A repülésed",
       "ZFW": "ZFW"
     }
   },
@@ -136,7 +136,7 @@
       "Title": "Hátratolás"
     },
     "Services": {
-      "BaggageTruck": "Poggyász kocsi",
+      "BaggageTruck": "Poggyászkocsi",
       "CateringTruck": "Catering Truck",
       "DoorAft": "Hátsó ajtó",
       "DoorFwd": "Első ajtó",
@@ -182,7 +182,7 @@
       "Edit": "Szerkesztés",
       "NoItemsFound": "Nem található elem",
       "SearchPlaceholder": "Keresés",
-      "ShowingChartsFromAllProviders": "Chartok megjelenítése az összes szolgáltatótól",
+      "ShowingChartsFromAllProviders": "Chart-ok megjelenítése az összes szolgáltatótól",
       "SortMethods": {
         "AlphabeticalAZ": "ABC sorrend - A->Z",
         "AlphabeticalZA": "ABC sorrend - Z->A",
@@ -283,14 +283,14 @@
         "RemoveLast": "Utolsó eltávolítása",
         "Sync": "Szinkronizálás",
         "Title": "Föld feletti sebesség",
-        "UnitKnots": "csomó",
+        "UnitKnots": "Csomó",
         "UnitKt": "kt"
       },
       "Result": {
-        "BeforeTarget": "cél előtt",
+        "BeforeTarget": "Cél előtt",
         "DesiredDescentAngle": "Kívánt süllyedési szög",
         "DesiredVerticalSpeed": "Kívánt függőleges sebesség",
-        "StartYourDescentAbout": "Kezdj süllyedni (körülbelül)",
+        "StartYourDescentAbout": "Süllyedés megkezdése",
         "Title": "Eredmény"
       },
       "TT": {
@@ -321,17 +321,17 @@
       "AircraftNeedsToBePoweredToSavePresets": "Helyezze áram alá a repülőgépet a beállítások mentéséhez",
       "LoadPreset": "Beállítás betöltése",
       "LoadingPreset": "Beállítás betöltée folyamatban",
-      "NewNameConfirmationDialogMsg": "Erősítse meg az új elnevezését a világítási beállításnak",
+      "NewNameConfirmationDialogMsg": "Új név megerősítése",
       "NoName": "Nincs név",
       "PleaseConfirmSavingPreset": "Erősítse meg a beállítás mentését",
       "SavePreset": "Beállítás mentése",
       "SavingPreset": "Beállítás mentése folyamatban",
-      "SelectAnInteriorLightingPresetToLoadOrSave": "Válasszon egy belső világítási beállítást betölteni vagy elmenteni",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Fedélzet világítás betöltés és mentése",
       "TT": {
         "AircraftMustBePowered": "A repülőnek áramellátás alatt kell lennie",
         "ClickTextToChangeThePresetsName": "Kattints a szövegre a beállítás nevének megváltozatásához",
         "LoadThisPreset": "Töltse be ezt a beállítást",
-        "SaveTheCurrentLightingLevels": "Az aktuális megvilágítási szintek mentése"
+        "SaveTheCurrentLightingLevels": "Jelenlegi világítási konfiguráció mentése"
       },
       "TheAircraftMustBePoweredForInteriorLightingPresets": "A repülőnek áramellátás alatt kell lennie a belső világítási beállításokhoz",
       "Title": "Belső világítás"
@@ -339,7 +339,7 @@
     "Title": "Beállítások"
   },
   "Pushback": {
-    "Backward": "Hátrafelé",
+    "Backward": "Hátra",
     "CallTug": "Vontató hívása",
     "Forward": "Előre",
     "Halt": "Állj",
@@ -486,10 +486,11 @@
     "Dec": "Dec",
     "Feb": "Feb",
     "Fri": "Pé",
-    "Jan": "Január",
-    "Jun": "Június",
+    "Jan": "Jan",
+    "Jul": "Júl",
+    "Jun": "Jún",
     "Mar": "Március",
-    "May": "Május",
+    "May": "Máj",
     "Mon": "Hé",
     "Nov": "Nov",
     "Oct": "Oct",

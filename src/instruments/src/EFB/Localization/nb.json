@@ -1,7 +1,7 @@
 {
   "AirTrafficControl": {
     "Active": "Aktiv",
-    "ChangeATISATCSourceButton": "Endre ATIS/ATC-kilde",
+    "ChangeATISATCSourceButton": "Endre ATIS/ATC kilde",
     "ConnectHoppieACARS": "Koble til Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Ingen informasjon er tilgjengelig for denne frekvensen",
     "SelectCorrectATISATCSource": "Denne siden er bare tilgjengelig når IVAO eller VATSIM er valgt som ATIS/ATC-kilde på innstillingssiden.",
@@ -230,8 +230,8 @@
       "Low": "Lav",
       "MaximumManual": "Maksimal manuell",
       "Medium": "Middels",
-      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
-      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
+      "MetarErrorDialogMessage": "METAR fra OFP kunne ikke bli parset vellykket. Ønsker du å fylle inn data automatisk fra en hentet METAR i stedet?",
+      "MetarErrorDialogTitle": "Feil med parsing av OFP METAR",
       "OverweightProcedure": "Overvektsprosedyre",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
@@ -322,7 +322,7 @@
       "LoadPreset": "Last inn forhåndsinnstilling",
       "LoadingPreset": "Laster inn forhåndsinnstilling",
       "NewNameConfirmationDialogMsg": "Bekreft det nye navnet på forhåndsinnstillingen for belysning",
-      "NoName": "Intet navn",
+      "NoName": "Ukjent navn",
       "PleaseConfirmSavingPreset": "Vennligst bekreft lagring av forhåndsinnstilling",
       "SavePreset": "Lagre forhåndsinnstilling",
       "SavingPreset": "Lagrer forhåndsinnstilling",
@@ -346,7 +346,7 @@
     "ParkingBrake": {
       "Off": "Av",
       "On": "På",
-      "Title": "Parkeringsbrems"
+      "Title": "Parkeringsbremse"
     },
     "TugDirection": "Pushbacktraktor-retning",
     "TugSpeed": "pushbacktraktor-hastighet"
@@ -487,6 +487,7 @@
     "Feb": "feb.",
     "Fri": "fre.",
     "Jan": "jan.",
+    "Jul": "Jul.",
     "Jun": "jun.",
     "Mar": "mar.",
     "May": "mai",
