@@ -221,7 +221,7 @@
       "ApproachSpeed": "Megközelítési sebesség",
       "ApproachSpeedUnit": "kts",
       "AutoLand": "Automata leszállás",
-      "Calculate": "Kiszámítás",
+      "Calculate": "Kiszámol",
       "Clear": "Törlés",
       "DropDownNo": "Nem",
       "DropDownYes": "Igen",
@@ -297,7 +297,7 @@
         "DesynchronizeInputWithAircraftsCurrentAltitude": "Desynchronize Input with Aircraft's Current Altitude",
         "SynchronizeInputWithAircraftsCurrentAltitude": "Synchronize Input with Aircraft's Current Altitude"
       },
-      "Title": "Sülyedés teteje"
+      "Title": "Sülyedés megkezdése"
     }
   },
   "Presets": {
@@ -353,7 +353,7 @@
   },
   "Settings": {
     "About": {
-      "Title": "About"
+      "Title": "Névjegy"
     },
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Gyorsulási magasság (ft)",
@@ -397,7 +397,7 @@
       "ExteriorMasterVolume": "Általános hangerő (külső)",
       "PassengerAmbience": "Utasok hangja",
       "PtuAudibleInCockpit": "PTU hallható a pilótafülkében",
-      "Title": "Hang",
+      "Title": "Audió",
       "WindInteriorVolume": "Szél hangerő (belső)"
     },
     "Fast": "Gyors",
@@ -485,24 +485,24 @@
     "Aug": "Aug",
     "Dec": "Dec",
     "Feb": "Feb",
-    "Fri": "Péntek",
+    "Fri": "Pé",
     "Jan": "Január",
     "Jun": "Június",
     "Mar": "Március",
     "May": "Május",
-    "Mon": "Hétfő",
+    "Mon": "Hé",
     "Nov": "Nov",
     "Oct": "Oct",
-    "Sat": "Sat",
+    "Sat": "Szo",
     "Sep": "Sep",
-    "Sun": "Sun",
+    "Sun": "Va",
     "TT": {
       "ConnectedToLocalApi": "Csatlakozva a helyi API-hoz",
       "DisconnectedFromLocalApi": "Leválasztva a helyi API-ról",
       "TurnOffOrShutdownEfb": "EFB leállítása vagy kikapcsolása"
     },
-    "Thu": "Thu",
-    "Tue": "Tue",
-    "Wed": "Wed"
+    "Thu": "Csüt",
+    "Tue": "Ke",
+    "Wed": "Sze"
   }
 }

@@ -1,57 +1,57 @@
 {
   "AirTrafficControl": {
     "Active": "Active",
-    "ChangeATISATCSourceButton": "Change ATIS/ATC source",
-    "ConnectHoppieACARS": "Connect Hoppie ACARS",
-    "NoInformationAvailableForThisFrequency": "No information available for this frequency",
+    "ChangeATISATCSourceButton": "Aldatu ATIS/ATC iturria",
+    "ConnectHoppieACARS": "Hoppie ACARS-ra konektatu",
+    "NoInformationAvailableForThisFrequency": "Informaziorik ez dago eskuragarri frekuentzia honetan",
     "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
-    "SetActive": "Set Active",
-    "SetStandby": "Set Standby",
+    "SetActive": "Aktibo bezala ezarri",
+    "SetStandby": "Ezarri Egonean",
     "Standby": "Egonean",
     "Title": "Air Traffic Control"
   },
   "Checklists": {
-    "AreYouSureYouWantToResetAllChecklists": "Are you sure you want to reset all checklists?",
-    "AreYouSureYouWantToResetChecklists": "Are you sure you want to reset all checklists?",
-    "ChecklistResetWarning": "Checklist Reset Warning",
-    "MarkChecklistAsComplete": "Mark checklist as complete",
-    "MarkItemAsComplete": "Mark item as complete",
-    "ProceedToNextChecklist": "Proceed to next checklist",
-    "ResetAll": "Reset All",
-    "ResetChecklist": "Reset Checklist",
-    "TheLastChecklistIsComplete": "The last checklist is complete",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed",
-    "Title": "Checklists"
+    "AreYouSureYouWantToResetAllChecklists": "Checklist guztiak berrabiarazteaz ziur zaude?",
+    "AreYouSureYouWantToResetChecklists": "Checklist guztiak berrabiarazteaz ziur zaude?",
+    "ChecklistResetWarning": "Checklist berrabiarazte abisua",
+    "MarkChecklistAsComplete": "Markatu Checklist-a osatuta bezala",
+    "MarkItemAsComplete": "Markatu puntua osatuta bezala",
+    "ProceedToNextChecklist": "Hurrengo checklist-era pasa",
+    "ResetAll": "Berrabiarazi guztiak",
+    "ResetChecklist": "Berrabiarazi checklist-a",
+    "TheLastChecklistIsComplete": "Azken checklist-a osatua dago",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Oraindik checklist-eko puntu hainbat daude osatu gabe",
+    "Title": "Checklist-ak"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "No Relevant Checklists",
-        "Title": "Checklists"
+        "NoRelevantChecklists": "Garrantzizko checklist-ik ez",
+        "Title": "Checklist-ak"
       },
-      "GoToPage": "Go to Page",
+      "GoToPage": "Joan orri honetara",
       "Maintenance": {
-        "NoActiveFailures": "No Active Failures",
-        "Title": "Maintenance"
+        "NoActiveFailures": "Arazo aktiborik ez",
+        "Title": "Mantentze-lanak"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "No Pinned Charts",
-        "Title": "Pinned Charts"
+        "NoPinnedCharts": "Finkatutako nabigazio-maparik ez",
+        "Title": "Finkatutako nabigazio-mapa"
       },
       "TT": {
-        "RearrangeWidgets": "Rearrange Widgets"
+        "RearrangeWidgets": "Berrantolatu widget-ak"
       },
-      "Title": "Important Information",
+      "Title": "Informazio garrantsitzua",
       "Weather": {
-        "AirPressure": "Air Pressure",
-        "DewPoint": "Dew Point",
-        "IcaoInvalid": "ICAO invalid or no METAR available",
-        "Loading": "Loading",
-        "MetarParsingError": "Received METAR could not be parsed",
-        "NoIcaoProvided": "No ICAO provided",
-        "Raw": "Raw",
+        "AirPressure": "Aire presioa",
+        "DewPoint": "Ihintz-puntua",
+        "IcaoInvalid": "Baliogabeko ICAO-a edo METAR-ik ez eskuragarri",
+        "Loading": "Kargatzen",
+        "MetarParsingError": "Jasotako METAR-a ezin izan da aztertu",
+        "NoIcaoProvided": "ICAO-rik ez da eman",
+        "Raw": "Prozesatu gabe",
         "TT": {
-          "SwitchToIconView": "Switch to Icon View",
+          "SwitchToIconView": "Ikono bistara aldatu",
           "SwitchToRawMetarView": "Switch to Raw METAR View"
         },
         "Temperature": "Temperature",

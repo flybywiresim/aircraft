@@ -1,65 +1,65 @@
 {
   "AirTrafficControl": {
-    "Active": "Active",
-    "ChangeATISATCSourceButton": "Change ATIS/ATC source",
-    "ConnectHoppieACARS": "Connect Hoppie ACARS",
-    "NoInformationAvailableForThisFrequency": "No information available for this frequency",
-    "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
-    "SetActive": "Set Active",
-    "SetStandby": "Set Standby",
+    "Active": "Activ",
+    "ChangeATISATCSourceButton": "Schimbați sursa ATIS/ATC",
+    "ConnectHoppieACARS": "Conectare la Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "Nicio informație disponibilă pentru această frecvență",
+    "SelectCorrectATISATCSource": "Această pagină este disponibilă doar când IVAO sau VATSIM este selectată ca sursă ATIS/ATC în această pagină.",
+    "SetActive": "Setare Activ",
+    "SetStandby": "Setare Standby",
     "Standby": "Standby",
-    "Title": "Air Traffic Control"
+    "Title": "Control de Trafic Aerian"
   },
   "Checklists": {
-    "AreYouSureYouWantToResetAllChecklists": "Are you sure you want to reset all checklists?",
-    "AreYouSureYouWantToResetChecklists": "Are you sure you want to reset all checklists?",
-    "ChecklistResetWarning": "Checklist Reset Warning",
-    "MarkChecklistAsComplete": "Mark checklist as complete",
-    "MarkItemAsComplete": "Mark item as complete",
-    "ProceedToNextChecklist": "Proceed to next checklist",
-    "ResetAll": "Reset All",
-    "ResetChecklist": "Reset Checklist",
-    "TheLastChecklistIsComplete": "The last checklist is complete",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed",
-    "Title": "Checklists"
+    "AreYouSureYouWantToResetAllChecklists": "Sigur doriți să resetați toate listele de verificare?",
+    "AreYouSureYouWantToResetChecklists": "Sigur doriți să resetați toate listele de verificare?",
+    "ChecklistResetWarning": "Avertisment privind resetarea listelor de verificare",
+    "MarkChecklistAsComplete": "Marcați lista drept completată",
+    "MarkItemAsComplete": "Marcați elementul ca fiind completat",
+    "ProceedToNextChecklist": "Treceți la următoarea listă de verificare",
+    "ResetAll": "Resetați tot",
+    "ResetChecklist": "Resetați lista de verificare",
+    "TheLastChecklistIsComplete": "Ultima listă de verificare este completă",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Există elemente rămase din lista de verificare automată care nu au fost încă finalizate",
+    "Title": "Liste de verificare"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "No Relevant Checklists",
-        "Title": "Checklists"
+        "NoRelevantChecklists": "Nu există liste de verificare relevante",
+        "Title": "Liste de verificare"
       },
-      "GoToPage": "Go to Page",
+      "GoToPage": "Accesează pagina",
       "Maintenance": {
-        "NoActiveFailures": "No Active Failures",
+        "NoActiveFailures": "Fără defecțiuni active",
         "Title": "Mentenanță"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "No Pinned Charts",
-        "Title": "Pinned Charts"
+        "NoPinnedCharts": "Nicio hartă fixată",
+        "Title": "Hărți fixate"
       },
       "TT": {
-        "RearrangeWidgets": "Rearrange Widgets"
+        "RearrangeWidgets": "Rearanjarea Widget-urilor"
       },
-      "Title": "Important Information",
+      "Title": "Informații importante",
       "Weather": {
-        "AirPressure": "Air Pressure",
-        "DewPoint": "Dew Point",
-        "IcaoInvalid": "ICAO invalid or no METAR available",
-        "Loading": "Loading",
-        "MetarParsingError": "Received METAR could not be parsed",
-        "NoIcaoProvided": "No ICAO provided",
-        "Raw": "Raw",
+        "AirPressure": "Presiunea aerului",
+        "DewPoint": "Punct de rouă",
+        "IcaoInvalid": "Cod ICAO invalid sau niciun METAR disponibil",
+        "Loading": "Se incarcă",
+        "MetarParsingError": "METAR-ul primit nu a putut fi analizat",
+        "NoIcaoProvided": "Niciun cod ICAO furnizat",
+        "Raw": "Brut",
         "TT": {
           "SwitchToIconView": "Switch to Icon View",
           "SwitchToRawMetarView": "Switch to Raw METAR View"
         },
         "Temperature": "Temperature",
         "Title": "Weather",
-        "WindSpeed": "Wind Speed"
+        "WindSpeed": "Viteza vântului"
       }
     },
-    "Title": "Dashboard",
+    "Title": "Meniu principal",
     "YourFlight": {
       "Alternate": "Alternate",
       "AverageWind": "Average Wind",
