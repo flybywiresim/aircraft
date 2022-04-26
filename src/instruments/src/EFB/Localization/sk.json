@@ -2,61 +2,61 @@
   "AirTrafficControl": {
     "Active": "Aktívne",
     "ChangeATISATCSourceButton": "Change ATIS/ATC source",
-    "ConnectHoppieACARS": "Connect Hoppie ACARS",
-    "NoInformationAvailableForThisFrequency": "No information available for this frequency",
+    "ConnectHoppieACARS": "Pripojiť Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "Nie sú k dispozícii žiadne informácie o tejto frekvencii",
     "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
-    "SetActive": "Set Active",
-    "SetStandby": "Set Standby",
-    "Standby": "Standby",
-    "Title": "Air Traffic Control"
+    "SetActive": "Nastaviť aktívnu",
+    "SetStandby": "Nastaviť pohotovostný režim",
+    "Standby": "Pohotovostný režim",
+    "Title": "Riadenie letovej prevádzky"
   },
   "Checklists": {
-    "AreYouSureYouWantToResetAllChecklists": "Are you sure you want to reset all checklists?",
-    "AreYouSureYouWantToResetChecklists": "Are you sure you want to reset all checklists?",
-    "ChecklistResetWarning": "Checklist Reset Warning",
-    "MarkChecklistAsComplete": "Mark checklist as complete",
-    "MarkItemAsComplete": "Mark item as complete",
-    "ProceedToNextChecklist": "Proceed to next checklist",
-    "ResetAll": "Reset All",
-    "ResetChecklist": "Reset Checklist",
-    "TheLastChecklistIsComplete": "The last checklist is complete",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed",
-    "Title": "Checklists"
+    "AreYouSureYouWantToResetAllChecklists": "Naozaj chcete obnoviť všetky kontrolné zoznamy?",
+    "AreYouSureYouWantToResetChecklists": "Naozaj chcete obnoviť všetky kontrolné zoznamy?",
+    "ChecklistResetWarning": "Upozornenie na obnovenie kontrolného zoznamu",
+    "MarkChecklistAsComplete": "Označiť kontrolný zoznam ako hotový",
+    "MarkItemAsComplete": "Označiť položku ako dokončenú",
+    "ProceedToNextChecklist": "Prejsť na ďalší kontrolný zoznam",
+    "ResetAll": "Resetovať všetko",
+    "ResetChecklist": "Resetovať kontrolný zoznam",
+    "TheLastChecklistIsComplete": "Posledný kontrolný zoznam je kompletný",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Existujú zostávajúce položky automatického dopĺňania kontrolného zoznamu, ktoré ešte neboli dokončené",
+    "Title": "Kontrolné zoznamy"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "No Relevant Checklists",
-        "Title": "Checklists"
+        "NoRelevantChecklists": "Žiadne relevantné kontrolné zoznamy",
+        "Title": "Kontrolné zoznamy"
       },
-      "GoToPage": "Go to Page",
+      "GoToPage": "Prejsť na stranu",
       "Maintenance": {
-        "NoActiveFailures": "No Active Failures",
-        "Title": "Maintenance"
+        "NoActiveFailures": "Žiadne aktívne poruchy",
+        "Title": "Údržba"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "No Pinned Charts",
-        "Title": "Pinned Charts"
+        "NoPinnedCharts": "Žiadne pripnuté grafy",
+        "Title": "Pripnuté grafy"
       },
       "TT": {
-        "RearrangeWidgets": "Rearrange Widgets"
+        "RearrangeWidgets": "Zmena usporiadania widgetov"
       },
-      "Title": "Important Information",
+      "Title": "Dôležité informácie",
       "Weather": {
-        "AirPressure": "Air Pressure",
-        "DewPoint": "Dew Point",
-        "IcaoInvalid": "ICAO invalid or no METAR available",
-        "Loading": "Loading",
-        "MetarParsingError": "Received METAR could not be parsed",
-        "NoIcaoProvided": "No ICAO provided",
-        "Raw": "Raw",
+        "AirPressure": "Tlak vzduchu",
+        "DewPoint": "Rosný bod",
+        "IcaoInvalid": "ICAO je neplatná alebo nie je k dispozícii METAR",
+        "Loading": "Načítava sa…",
+        "MetarParsingError": "Prijaté METAR nebolo možné analyzovať",
+        "NoIcaoProvided": "Neposkytnuty ICAO kód",
+        "Raw": "Hrubé",
         "TT": {
-          "SwitchToIconView": "Switch to Icon View",
-          "SwitchToRawMetarView": "Switch to Raw METAR View"
+          "SwitchToIconView": "Prepnúť do zobrazenia ikon",
+          "SwitchToRawMetarView": "Prepnúť na zobrazenie Raw METAR"
         },
-        "Temperature": "Temperature",
-        "Title": "Weather",
-        "WindSpeed": "Wind Speed"
+        "Temperature": "Teplota",
+        "Title": "Počasie",
+        "WindSpeed": "Rýchlosť vetra"
       }
     },
     "Title": "Dashboard",

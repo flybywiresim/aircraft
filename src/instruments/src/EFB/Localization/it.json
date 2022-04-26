@@ -20,7 +20,7 @@
     "ResetAll": "Ripristina Tutto",
     "ResetChecklist": "Ripristina Checklist",
     "TheLastChecklistIsComplete": "L'ultima checklist è completa",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Ci sono campi rimanenti per l'autoriempimento della checklist, che non sono ancora stati completati",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Ci sono campi rimanenti per l'autocompilazione della checklist, che non sono ancora stati completati",
     "Title": "Checklist"
   },
   "Dashboard": {
@@ -47,7 +47,7 @@
         "DewPoint": "Punto di rugiada",
         "IcaoInvalid": "ICAO non valido o nessun METAR disponibile",
         "Loading": "Caricamento",
-        "MetarParsingError": "Il METAR ricevuto non può essere analizzato",
+        "MetarParsingError": "Il METAR ricevuto non può essere elaborato",
         "NoIcaoProvided": "Nessun ICAO fornito",
         "Raw": "Tecnica",
         "TT": {
@@ -204,8 +204,8 @@
       "FitChartToHeight": "Adatta Carta all'Altezza",
       "FitChartToWidth": "Adatta Carta alla Larghezza",
       "ResetMovement": "Ripristina Posizione",
-      "RotateLeft45Degrees": "Ruota a Sinistra di 45 Gradi",
-      "RotateRight45Degrees": "Ruota a Destra di 45 Gradi",
+      "RotateLeft45Degrees": "Ruota 45 Gradi a Sinistra",
+      "RotateRight45Degrees": "Ruota 45 Gradi a Destra",
       "ZoomIn": "Ingrandisci",
       "ZoomOut": "Rimpicciolisci"
     },
@@ -225,13 +225,13 @@
       "Clear": "Cancella",
       "DropDownNo": "No",
       "DropDownYes": "Sì",
-      "FillDataFrom": "Riempi dati da",
+      "FillDataFrom": "Inserisci dati da",
       "FlapsConfiguration": "Configurazione Flap",
       "Low": "Low",
-      "MaximumManual": "Max Manuale",
+      "MaximumManual": "Maximum Manuale",
       "Medium": "Medium",
-      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
-      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
+      "MetarErrorDialogMessage": "Non è stato possibile elaborare con successo il METAR dal tuo OFP. Desideri inserire automaticamente i dati da un METAR recuperato altrove?",
+      "MetarErrorDialogTitle": "Errore Analisi METAR dell'OFP",
       "OverweightProcedure": "Procedura in Sovraccarico",
       "Qnh": "QNH",
       "ReverseThrust": "Inversori di Spinta",
@@ -246,7 +246,7 @@
       "RunwaySlope": "Pendenza Pista",
       "TT": {
         "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Devi inserire un codice ICAO in modo da effettuare una richiesta METAR",
-        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Devi caricare i dati SimBrief per l'autoriempimento dei dati"
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Devi caricare i dati SimBrief per l'inserimento automatico dei dati"
       },
       "Temperature": "Temperatura",
       "Title": "Atterraggio",
@@ -280,7 +280,7 @@
         "GroundSpeed": "Velocità al Suolo",
         "ManualInput": "Inserimento Manuale",
         "MinAltitude": "Altitudine Min.",
-        "RemoveLast": "Rimuovi Ultimo",
+        "RemoveLast": "Rimuovi l'Ultimo",
         "Sync": "SINC",
         "Title": "Velocità al Suolo",
         "UnitKnots": "nodi",
@@ -294,8 +294,8 @@
         "Title": "Risultato"
       },
       "TT": {
-        "DesynchronizeInputWithAircraftsCurrentAltitude": "Non sincronizzare inserimento con Altitudine Attuale dell'Aeromobile",
-        "SynchronizeInputWithAircraftsCurrentAltitude": "Sincronizzare inserimento con Altitudine Attuale dell'Aeromobile"
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Non Sincronizzare Inserimento con Altitudine Attuale dell'Aeromobile",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Sincronizzare Inserimento con Altitudine Attuale dell'Aeromobile"
       },
       "Title": "Top of Descent"
     }
@@ -346,7 +346,7 @@
     "ParkingBrake": {
       "Off": "Off",
       "On": "On",
-      "Title": "Parking Brake"
+      "Title": "Freni di Parcheggio"
     },
     "TugDirection": "Direzione Tug",
     "TugSpeed": "Velocità Tug"
@@ -405,8 +405,8 @@
     "Real": "Reale",
     "Realism": {
       "AdirsAlignTime": "Tempo Allineamento ADIRS",
-      "AutofillChecklists": "Autoriempi Checklist",
-      "BoardingTime": "Tempo d'Imbarco",
+      "AutofillChecklists": "Autocompila Checklist",
+      "BoardingTime": "Tempo Imbarco",
       "DmcSelfTestTime": "Tempo Autotest DMC",
       "HomeCockpitMode": "Modalità Home Cockpit",
       "McduFocusTimeout": "Rilascio Selezione su MCDU (secondi)",
@@ -436,7 +436,7 @@
     },
     "ThrottleConfig": {
       "Apply": "Applica",
-      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Sei sicuro di voler ripristinare la tua configurazione attuale della manetta a quella predefinita? Questa azione è irreversibile.",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Sei sicuro di voler ripristinare la tua attuale configurazione della manetta a quella predefinita? Questa azione è irreversibile.",
       "Axis": "Asse",
       "Back": "Indietro",
       "ConfigureEnd": "Configura Fine",
@@ -497,8 +497,8 @@
     "Sep": "Set",
     "Sun": "Dom",
     "TT": {
-      "ConnectedToLocalApi": "Connesso ad API Locali",
-      "DisconnectedFromLocalApi": "Sconnesso da API Locali",
+      "ConnectedToLocalApi": "Connesso all'API Locale",
+      "DisconnectedFromLocalApi": "Sconnesso dall'API Locale",
       "TurnOffOrShutdownEfb": "Spegni o Arresta l'EFB"
     },
     "Thu": "Gio",

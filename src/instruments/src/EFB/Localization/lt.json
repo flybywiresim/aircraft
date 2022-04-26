@@ -5,8 +5,8 @@
     "ConnectHoppieACARS": "Prijungti Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Jokia informacija nėra pasiekiama šiame dažnyje",
     "SelectCorrectATISATCSource": "Šis puslapis pasiekiamas tik pasirinkus IVAO arba VATSIM kaip ATIS/ATC šaltinį nustatymų puslapyje.",
-    "SetActive": "Nustatyti aktyviu",
-    "SetStandby": "Nustatyti atsarginiu",
+    "SetActive": "Aktyvus",
+    "SetStandby": "Atsarginis",
     "Standby": "Atsarginis",
     "Title": "Oro Erdvės Kontrolė"
   },
@@ -69,7 +69,7 @@
       "ImportSimBriefData": "Įkelti SimBrief duomenis",
       "Route": "Maršrutas",
       "SimBriefDataNotYetLoaded": "SimBrief duomenys dar neužkrauti.",
-      "Title": "Tavo Skrydis",
+      "Title": "Jūsų skrydis",
       "ZFW": "ZFW"
     }
   },
@@ -81,7 +81,7 @@
         "ReduceFontSize": "Sumažinti šrifto dydį"
       },
       "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "Jūs dar neįkėlėte SimBrief duomenų"
+      "YouHaveNotYetImportedAnySimBriefData": "Jūs dar neįkėlėte SimBrief duomenų."
     },
     "Overview": {
       "Engines": "Varikliai",
@@ -113,15 +113,15 @@
     "Fuel": {
       "CenterTank": "Centrinis kuro bakas",
       "Completed": "Užbaigta",
-      "Defueling": "Kuro išpylimas",
-      "EstimatedDuration": "Numatoma trukmė (minutėmis)",
+      "Defueling": "Kuras išpylamas",
+      "EstimatedDuration": "Numatoma trukmė (minutės)",
       "EstimatedTime": "Estimated Time",
       "LeftInnerTank": "Kairysis vidinis kuro bakas",
       "LeftOuterTank": "Kairysis išorinis kuro bakas",
-      "ReadyToStart": "Pasiruošę Pradėti",
+      "ReadyToStart": "Pasiruošę pradėti",
       "Refuel": "Kuro pildymas",
       "RefuelTime": "Kuro pildymo trukmė",
-      "Refueling": "Kuro pildymas",
+      "Refueling": "Kuras pildomas",
       "RightInnerTank": "Dešinysis vidinis kuro bakas",
       "RightOuterTank": "Dešinysis išorinis kuro bakas",
       "TT": {
@@ -145,7 +145,7 @@
       "JetBridge": "Rankovė",
       "Title": "Aptarnavimas"
     },
-    "Title": "Žemė"
+    "Title": "Paslaugos"
   },
   "Modals": {
     "Cancel": "Atšaukti",
@@ -171,10 +171,10 @@
       "AirportDoesNotExist": "Oro uostas neegzistuoja",
       "AuthenticateWithNavigraph": "Autentifikuoti su Navigraph",
       "InsufficientEnv": "Nepakankamas .env failas",
-      "IntoYourBrowserAndEnterTheCodeBelow": "į savo naršyklę ir įveskite žemiau esantį kodą\n",
+      "IntoYourBrowserAndEnterTheCodeBelow": "savo naršyklėje ir įveskite žemiau esantį kodą.",
       "NoAirportSelected": "Oro uostas nepasirinktas",
       "ResetNavigraphAuthentication": "Atstatyti Navigraph autentifikaciją",
-      "ScanTheQrCodeOrOpen": "Nuskanuoti ar atidaryti QR kodą",
+      "ScanTheQrCodeOrOpen": "Nuskanuokite QR kodą arba atidarykite",
       "Title": "Navigraph"
     },
     "PinnedCharts": {
@@ -230,8 +230,8 @@
       "Low": "Žemas",
       "MaximumManual": "Maksimalus rankinis",
       "Medium": "Vidutinis",
-      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
-      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
+      "MetarErrorDialogMessage": "Skrydžio plano METAR informacija negalėjo būti išanalizuota. Ar norėtumėte automatiškai užpildyti duomenis naudodami gautą METAR?",
+      "MetarErrorDialogTitle": "Įvyko klaida analizuojant OFP METAR",
       "OverweightProcedure": "Antsvorio procedūra",
       "Qnh": "QNH",
       "ReverseThrust": "Atbulinė trauka",
@@ -314,7 +314,7 @@
       "TheAircraftMustBeOnTheGroundToLoadAPreset": "Norint įkelti išankstinius nustatymus, orlaivis turi būti ant žemės",
       "TheAircraftMustBeOntheGroundToLoadAPreset": "Norint įkelti išankstinius nustatymus, orlaivis turi būti ant žemės",
       "Title": "Lėktuvo būsenos",
-      "Turnaround": "Apsisukimas"
+      "Turnaround": "Po skrydžio"
     },
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Norint įkelti išankstinius nustatymus, orlaivis turi būti įjungtas",
@@ -360,11 +360,11 @@
       "EngineOutAccelerationHeight": "Pagreitėjimo aukštis po variklio gėdimo (pėdos)",
       "IsisBaroUnit": "Atsarginio barometro vienetai",
       "IsisMetricAltitude": "Atsarginio altimetro aukščio rodymas metrais",
-      "LatLonExtendedFormat": "FMGC skrydžio taško koordinačių formatas",
+      "LatLonExtendedFormat": "FMGC skrydžio taškų koordinačių formatas",
       "PaxSigns": "Keleivių ženklai",
       "RmpVhfSpacing": "RMP VHF Spacing",
       "ThrustReductionHeight": "Traukos mažinimo aukštis (pėdos)",
-      "Title": "Lėktuvo parinktys / PIN programos",
+      "Title": "Lėktuvo parinktys",
       "WeightUnit": "Svorio vienetai"
     },
     "AtsuAoc": {
@@ -372,8 +372,8 @@
       "AutomaticallyImportSimBriefData": "Automatiškai įkelti SimBrief duomenis",
       "Enable": "Įjungti",
       "EnableTelex": "Įjungti TELEX",
-      "ErrorReporting": "Klaidos pranešimas",
-      "HoppieEnabled": "Hoppie sistema įjungta",
+      "ErrorReporting": "Klaidų pranešimas",
+      "HoppieEnabled": "Įjungti Hoppie sistemą",
       "HoppieUserId": "Hoppie naudotojo ID",
       "MetarSource": "METAR šaltinis",
       "OptionalA32nxErrorReporting": "Pasirinktinis A32NX klaidų pranešimas",
@@ -391,22 +391,22 @@
       "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Jūsų SimBrief piloto ID buvo patikrintas ir pakeistas į"
     },
     "Audio": {
-      "Announcements": "Pranešimai",
+      "Announcements": "Pranešimai keleiviams",
       "BoardingMusic": "Laipinimo muzika",
-      "EngineInteriorVolume": "Variklių garso lygis viduje",
-      "ExteriorMasterVolume": "Bendras garso lygis išorėje",
+      "EngineInteriorVolume": "Variklių garsumas viduje",
+      "ExteriorMasterVolume": "Bendras garsumas išorėje",
       "PassengerAmbience": "Keleivių aplinkos garsai",
       "PtuAudibleInCockpit": "PTU girdimas pilotų kabinoje",
-      "Title": "Garsas",
-      "WindInteriorVolume": "Vėjo garso lygis viduje"
+      "Title": "Garsai",
+      "WindInteriorVolume": "Vėjo garsumas viduje"
     },
-    "Fast": "Greitas",
-    "Instant": "Momentinis",
-    "Real": "Tikras",
+    "Fast": "Greita",
+    "Instant": "Momentinė",
+    "Real": "Tikra",
     "Realism": {
       "AdirsAlignTime": "ADIRS sulygiavimo trukmė",
       "AutofillChecklists": "Automatinis patikrinimų sąrašo pildymas",
-      "BoardingTime": "Laipinimo laikas",
+      "BoardingTime": "Laipinimo trukmė",
       "DmcSelfTestTime": "DMC automatinio patikrinimo trukmė",
       "HomeCockpitMode": "Namų kabinos režimas",
       "McduFocusTimeout": "MCDU fokuso praradimas (sekundės)",
@@ -431,7 +431,7 @@
       "SyncMsfsFlightPlan": "Sinchronizuoti MSFS Skrydžio Planą",
       "ThrottleDetents": "Droselio detentai",
       "Title": "Simuliatoriaus nustatymai",
-      "UseCalculatedIlsSignals": "Naudoti Apskaičiuotus ILS Signalus",
+      "UseCalculatedIlsSignals": "Naudoti apskaičiuotus ILS signalus",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
@@ -456,7 +456,7 @@
       "ThrottleConfigurationReset": "Droselio konfiguracijos atstatymas"
     },
     "Title": "Nustatymai",
-    "Unrealistic": "Nerealistiškas",
+    "Unrealistic": "Nerealistiška",
     "flyPad": {
       "AutoBrightness": "Automatinis ryškumas",
       "AutomaticallyShowOnscreenKeyboard": "Automatiškai rodyti ekrano klaviatūrą",
@@ -479,7 +479,7 @@
       "UtcAndLocal": "UTC ir vietinis"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Baterijos Veikla Simuliuota",
+  "Settings.flyPad.BatteryLifeEnabled": "Baterijos veikimo laikas simuliuotas",
   "StatusBar": {
     "Apr": "Bal",
     "Aug": "Rgp",
