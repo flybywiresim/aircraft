@@ -38,7 +38,6 @@ export const keyboardLayoutOptions = [
 ];
 
 export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput, onKeyDown }: KeyboardWrapperProps) => {
-    // TODO: Write to this property using a dropdown in settings later on
     const [currentLayoutIdentifier] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');
     const [currentLayout] = useState(() => new SimpleKeyboardLayouts().get(currentLayoutIdentifier));
     const [currentLayoutName, setCurrentLayoutName] = useState('default');

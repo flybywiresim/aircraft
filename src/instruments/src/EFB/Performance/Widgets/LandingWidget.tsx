@@ -361,8 +361,8 @@ export const LandingWidget = () => {
             } catch (err) {
                 showModal(
                     <PromptModal
-                        title="Error Parsing OFP METAR"
-                        bodyText="The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?"
+                        title={t('Performance.Landing.MetarErrorDialogTitle')}
+                        bodyText={t('Performance.Landing.MetarErrorDialogMessage')}
                         cancelText="No"
                         confirmText="Yes"
                         onConfirm={() => syncValuesWithApiMetar(arrivingAirport)}
@@ -694,7 +694,7 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={handleClearInputs}
-                                className="flex flex-row justify-center items-center py-2 space-x-4 w-full rounded-md border-2 outline-none text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red"
+                                className="flex flex-row justify-center items-center py-2 space-x-4 w-full text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red outline-none"
                                 type="button"
                             >
                                 <Trash size={26} />
@@ -702,7 +702,7 @@ export const LandingWidget = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="flex overflow-hidden flex-row w-full rounded-lg border-2 divide-x-2 border-theme-accent divide-theme-accent">
+                    <div className="flex overflow-hidden flex-row w-full rounded-lg border-2 border-theme-accent divide-x-2 divide-theme-accent">
                         <OutputDisplay
                             label={t('Performance.Landing.MaximumManual')}
                             value={distanceUnit === 'ft'

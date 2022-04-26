@@ -230,6 +230,8 @@
       "Low": "최저",
       "MaximumManual": "최대 수동",
       "Medium": "보통",
+      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
+      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
       "OverweightProcedure": "최대착륙중량 초과",
       "Qnh": "QNH",
       "ReverseThrust": "역추진 추력",

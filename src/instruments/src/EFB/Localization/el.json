@@ -3,7 +3,7 @@
     "Active": "Ενεργό",
     "ChangeATISATCSourceButton": "Αλλαγή πηγής ATIS/ATC",
     "ConnectHoppieACARS": "Σύνδεση Hoppie ACARS",
-    "NoInformationAvailableForThisFrequency": "ΔΕΝ ΥΠΑΡΧΟΥΝ ΔΙΑΘΕΣΙΜΕΣ ΠΛΗΡΟΦΟΡΙΕΣ ΓΙΑ ΑΥΤΗ ΤΗ ΣΥΧΝΟΤΗΤΑ",
+    "NoInformationAvailableForThisFrequency": "Δεν υπάρχουν διαθέσιμες πληροφορίες για αυτή τη συχνότητα",
     "SelectCorrectATISATCSource": "Αυτή η σελίδα είναι διαθέσιμη μόνο όταν έχει επιλεγεί το IVAO ή το VATSIM ως πηγή ATIS/ATC στη σελίδα ρυθμίσεων.",
     "SetActive": "Θέστε Ενεργό",
     "SetStandby": "Θέστε σε Αναμονή",
@@ -20,7 +20,7 @@
     "ResetAll": "Επαναφορά Όλων",
     "ResetChecklist": "Επαναφορά Λίστας Ελέγχου",
     "TheLastChecklistIsComplete": "Η τελευταία λίστα ελέγχου έχει ολοκληρωθεί",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Υπάρχουν υπόλοιπα στοιχεία της λίστας ελέγχου αυτόματης συμπλήρωσης που δεν έχουν ακόμη ολοκληρωθεί",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Υπάρχουν στοιχεία της λίστας ελέγχου αυτόματης συμπλήρωσης που δεν έχουν ακόμη ολοκληρωθεί",
     "Title": "Λίστες Ελέγχου"
   },
   "Dashboard": {
@@ -193,7 +193,7 @@
       "TT": {
         "ChangeChartProvider": "Αλλαγή Παροχέα Γραφήματος",
         "ChangeChartSortMethod": "Αλλαγή Μεθόδου Ταξινόμησης Γραφήματος",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "Αφαίρεση όλων των Καρφιτσωμένων Γραφημάτων"
       },
       "Title": "Καρφιτσωμένοι Χάρτες",
       "View": "Προβολή"
@@ -230,6 +230,8 @@
       "Low": "Χαμηλή",
       "MaximumManual": "Μέγιστο Τεχνικό Εγχειρίδιο ",
       "Medium": "Μεσαίο",
+      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
+      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
       "OverweightProcedure": "Διαδικασία Υπερβολικού Βάρους",
       "Qnh": "QNH",
       "ReverseThrust": "Ανάστροφη Ώση",
@@ -319,7 +321,7 @@
       "AircraftNeedsToBePoweredToSavePresets": "Το αεροσκάφος πρέπει να τροφοδοτείται για να εξοικονομήσει προεπιλογές",
       "LoadPreset": "Φόρτωση Προκαθορισμένης Ρύθμισης",
       "LoadingPreset": "Φόρτωση Προκαθορισμένης Ρύθμισης",
-      "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
+      "NewNameConfirmationDialogMsg": "Παρακαλώ επιβεβαιώστε το νέο όνομα για την προκαθορισμένη ρύθμιση φωτισμού",
       "NoName": "Χωρίς Όνομα",
       "PleaseConfirmSavingPreset": "Επιβεβαιώστε την προκαθορισμένη ρύθμιση αποθήκευσης",
       "SavePreset": "Αποθήκευση Προεπιλογής",
@@ -358,7 +360,7 @@
       "EngineOutAccelerationHeight": "Ύψος Επιτάχυνσης Εξερχόμενου Κινητήρα (ft)",
       "IsisBaroUnit": "Μονάδα ISIS Baro",
       "IsisMetricAltitude": "Μετρικό Υψόμετρο ISIS",
-      "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
+      "LatLonExtendedFormat": "Μορφή Σημείου Αναφοράς Lat/Lon FMGC",
       "PaxSigns": "Πινακίδες Επιβατών",
       "RmpVhfSpacing": "Απόσταση VHF RMP",
       "ThrustReductionHeight": "Ύψος Mείωσης Ώσης (ft)",
@@ -371,7 +373,7 @@
       "Enable": "Ενεργοποίηση",
       "EnableTelex": "Ενεργοποίηση TELEX",
       "ErrorReporting": "Αναφορά Σφαλμάτων",
-      "HoppieEnabled": "Hoppie enabled",
+      "HoppieEnabled": "Hoppie Ενεργό ",
       "HoppieUserId": "Αναγνωριστικό Χρήστη Hoppie",
       "MetarSource": "Πηγή METAR",
       "OptionalA32nxErrorReporting": "Προαιρετική Αναφορά Σφαλμάτων A32NX",
@@ -438,7 +440,7 @@
       "Axis": "Άξονας",
       "Back": "Προηγούμενο",
       "ConfigureEnd": "Ρύθμιση Τέλους",
-      "ConfigureStart": "Configure Start",
+      "ConfigureStart": "Ρύθμιση Παραμέτρων Έναρξης",
       "CurrentValue": "Τρέχουσα Τιμή",
       "Deadband": "Νεκρή ζώνη",
       "ErrorOverlapMsg": "επικαλύπτεται με",

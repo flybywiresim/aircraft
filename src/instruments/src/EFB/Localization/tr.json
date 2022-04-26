@@ -230,6 +230,8 @@
       "Low": "Alçak",
       "MaximumManual": "Maksimum Manuel",
       "Medium": "Orta",
+      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
+      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
       "OverweightProcedure": "Overweight Prosedürleri",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
