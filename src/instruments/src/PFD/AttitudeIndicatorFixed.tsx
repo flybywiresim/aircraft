@@ -430,7 +430,7 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     private handleSideStickIndication() {
         const oneEngineRunning = this.engOneRunning || this.engTwoRunning;
-        debugger;
+
         const showIndicator = this.onGround === 1 && oneEngineRunning
                         && !this.captPitchCommand.isFailureWarning()
                         && !this.captRollCommand.isFailureWarning()

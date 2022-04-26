@@ -178,49 +178,49 @@ export class ArincValueProvider {
         });
 
         subscriber.on('fcdc1CaptPitchCommand').handle((word) => {
-            if (this.fcdcToUse == 1) {
+            if (this.fcdcToUse === 1) {
                 publisher.pub('fcdcCaptPitchCommand', new Arinc429Word(word));
             }
         });
 
         subscriber.on('fcdc2CaptPitchCommand').handle((word) => {
-            if (this.fcdcToUse == 2) {
+            if (this.fcdcToUse === 2) {
                 publisher.pub('fcdcCaptPitchCommand', new Arinc429Word(word));
             }
         });
 
         subscriber.on('fcdc1FoPitchCommand').handle((word) => {
-            if (this.fcdcToUse == 1) {
+            if (this.fcdcToUse === 1) {
                 publisher.pub('fcdcCaptPitchCommand', new Arinc429Word(word));
             }
         });
 
         subscriber.on('fcdc2FoPitchCommand').handle((word) => {
-            if (this.fcdcToUse == 2) {
+            if (this.fcdcToUse === 2) {
                 publisher.pub('fcdcFoPitchCommand', new Arinc429Word(word));
             }
         });
 
         subscriber.on('fcdc1CaptRollCommand').handle((word) => {
-            if (this.fcdcToUse == 1) {
+            if (this.fcdcToUse === 1) {
                 publisher.pub('fcdcCaptRollCommand', new Arinc429Word(word));
             }
         });
 
         subscriber.on('fcdc2CaptRollCommand').handle((word) => {
-            if (this.fcdcToUse == 2) {
+            if (this.fcdcToUse === 2) {
                 publisher.pub('fcdcCaptRollCommand', new Arinc429Word(word));
             }
         });
 
         subscriber.on('fcdc1FoRollCommand').handle((word) => {
-            if (this.fcdcToUse == 1) {
+            if (this.fcdcToUse === 1) {
                 publisher.pub('fcdcCaptRollCommand', new Arinc429Word(word));
             }
         });
 
         subscriber.on('fcdc2FoRollCommand').handle((word) => {
-            if (this.fcdcToUse == 2) {
+            if (this.fcdcToUse === 2) {
                 publisher.pub('fcdcFoRollCommand', new Arinc429Word(word));
             }
         });

@@ -181,6 +181,20 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('ls1Button');
         this.simVarPublisher.subscribe('ls2Button');
 
+        this.simVarPublisher.subscribe('fcdc1DiscreteWord1');
+        this.simVarPublisher.subscribe('fcdc2DiscreteWord1');
+        this.simVarPublisher.subscribe('fcdc1DiscreteWord2');
+        this.simVarPublisher.subscribe('fcdc2DiscreteWord2');
+
+        this.simVarPublisher.subscribe('fcdc1CaptPitchCommand');
+        this.simVarPublisher.subscribe('fcdc2CaptPitchCommand');
+        this.simVarPublisher.subscribe('fcdc1FoPitchCommand');
+        this.simVarPublisher.subscribe('fcdc2FoPitchCommand');
+        this.simVarPublisher.subscribe('fcdc1CaptRollCommand');
+        this.simVarPublisher.subscribe('fcdc2CaptRollCommand');
+        this.simVarPublisher.subscribe('fcdc1FoRollCommand');
+        this.simVarPublisher.subscribe('fcdc2FoRollCommand');
+
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
     }
 
