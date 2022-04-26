@@ -1,27 +1,24 @@
 class CDUAtcConnectionStatus {
-    static ShowPage(mcdu, store = { "disconnectAvail": false }) {
+    static ShowPage(mcdu, store = { "disconnectInProgress": false, "disconnectAvail": false }) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCConnectionStatus;
 
-        function updateView() {
+        mcdu.page.SelfPtr = setTimeout(() => {
             if (mcdu.page.Current === mcdu.page.ATCConnectionStatus) {
-                CDUAtcConnectionStatus.ShowPage(mcdu);
+                CDUAtcConnectionStatus.ShowPage(mcdu, store);
             }
-        }
-
-        mcdu.refreshPageCallback = () => {
-            updateView();
-        };
-        SimVar.SetSimVarValue("L:FMC_UPDATE_CURRENT_PAGE", "number", 1);
+        }, mcdu.PageTimeout.Default);
 
         let currentStation = "-----------[color]white";
         let atcDisconnect = "DISCONNECT\xa0[color]cyan";
-        if (mcdu.atsu.atc.currentStation() !== "") {
-            currentStation = `${mcdu.atsu.atc.currentStation()}[color]green`;
-            atcDisconnect = "DISCONNECT*[color]cyan";
-            store["disconnectAvail"] = true;
-        } else {
-            store["disconnectAvail"] = false;
+        if (!store["disconnectInProgress"]) {
+            if (mcdu.atsu.atc.currentStation() !== "") {
+                currentStation = `${mcdu.atsu.atc.currentStation()}[color]green`;
+                atcDisconnect = "DISCONNECT*[color]cyan";
+                store["disconnectAvail"] = true;
+            } else {
+                store["disconnectAvail"] = false;
+            }
         }
 
         let nextStation = "-----------";
@@ -57,10 +54,14 @@ class CDUAtcConnectionStatus {
         };
         mcdu.onRightInput[1] = () => {
             if (!store["disconnectAvail"]) {
-                mcdu.addNewMessage(NXFictionalMessages.noAtc);
-            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
+            } else if (!store["disconnectInProgress"]) {
+                store["disconnectInProgress"] = true;
                 store["disconnectAvail"] = false;
+                CDUAtcConnectionStatus.ShowPage(mcdu, store);
+
                 mcdu.atsu.atc.logoff().then((code) => {
+                    store["disconnectInProgress"] = false;
                     if (code !== Atsu.AtsuStatusCodes.Ok) {
                         store["disconnectAvail"] = true;
                         mcdu.addNewAtsuMessage(code);
@@ -69,7 +70,6 @@ class CDUAtcConnectionStatus {
                     }
                 });
             }
-            CDUAtcConnectionStatus.ShowPage(mcdu, store);
         };
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();

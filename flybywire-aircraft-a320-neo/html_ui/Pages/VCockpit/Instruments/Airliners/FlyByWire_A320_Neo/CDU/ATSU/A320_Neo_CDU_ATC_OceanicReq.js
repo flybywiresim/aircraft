@@ -136,9 +136,9 @@ class CDUAtcOceanicReq {
             (value) => {
                 mcdu.waypointType(mcdu, value).then((type) => {
                     if (type[0] === -1) {
-                        mcdu.addNewMessage(type[1]);
+                        mcdu.setScratchpadMessage(type[1]);
                     } else if (type[0] === 1) {
-                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     } else {
                         store.entryPoint = value;
                         if (CDUAtcOceanicReq.WaypointOnRoute(mcdu, value)) {
@@ -285,7 +285,7 @@ class CDUAtcOceanicReq {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcOceanicReq.CanSendData(mcdu, store)) {
-                mcdu.atsu.registerMessage(CDUAtcOceanicReq.CreateMessage(mcdu, store));
+                mcdu.atsu.registerMessages([CDUAtcOceanicReq.CreateMessage(mcdu, store)]);
                 CDUAtcOceanicReq.ShowPage1(mcdu);
             }
         };

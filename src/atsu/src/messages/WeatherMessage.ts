@@ -12,7 +12,7 @@ export class WeatherMessage extends AtsuMessage {
 
     constructor() {
         super();
-        this.Direction = AtsuMessageDirection.Input;
+        this.Direction = AtsuMessageDirection.Uplink;
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {

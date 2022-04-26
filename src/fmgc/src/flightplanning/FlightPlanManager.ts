@@ -1289,7 +1289,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.arrivalIndex = index;
             currentFlightPlan.procedureDetails.approachTransitionIndex = -1;
 
-            await currentFlightPlan.buildArrival().catch(console.error);
+            await currentFlightPlan.rebuildArrivalApproach();
 
             this.updateFlightPlanVersion().catch(console.error);
         }
@@ -1359,7 +1359,7 @@ export class FlightPlanManager {
 
         if (currentFlightPlan.procedureDetails.arrivalTransitionIndex !== index) {
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = index;
-            await currentFlightPlan.buildArrival().catch(console.error);
+            await currentFlightPlan.rebuildArrivalApproach();
 
             this.updateFlightPlanVersion().catch(console.error);
         }
@@ -1383,7 +1383,7 @@ export class FlightPlanManager {
                 console.log('setArrivalRunwayIndex: Finishing at none');
             } */
             currentFlightPlan.procedureDetails.arrivalRunwayIndex = index;
-            await currentFlightPlan.buildArrival().catch(console.error);
+            await currentFlightPlan.rebuildArrivalApproach();
 
             this.updateFlightPlanVersion().catch(console.error);
         }
@@ -1451,7 +1451,7 @@ export class FlightPlanManager {
             currentFlightPlan.procedureDetails.approachTransitionIndex = -1;
             currentFlightPlan.procedureDetails.arrivalIndex = -1;
             currentFlightPlan.procedureDetails.arrivalTransitionIndex = -1;
-            await currentFlightPlan.buildApproach().catch(console.error);
+            await currentFlightPlan.rebuildArrivalApproach();
 
             this.updateFlightPlanVersion().catch(console.error);
         }
@@ -1520,28 +1520,6 @@ export class FlightPlanManager {
         }
 
         return undefined;
-    }
-
-    /**
-     * Get the nav frequency for the selected approach in the current flight plan.
-     * @returns The approach nav frequency, if an ILS approach.
-     */
-    public getApproachNavFrequency(): number {
-        const approach = this.getApproach();
-
-        if (approach && approach.name.includes('ILS')) {
-            const destination = this.getDestination();
-            const approachRunway = this.getApproach().runway.trim();
-
-            const aptInfo = destination.infos as AirportInfo;
-            const frequency = aptInfo.namedFrequencies.find((f) => f.name.replace('RW0', '').replace('RW', '').indexOf(approachRunway) !== -1);
-
-            if (frequency) {
-                return frequency.value;
-            }
-        }
-
-        return NaN;
     }
 
     /**
@@ -1617,7 +1595,7 @@ export class FlightPlanManager {
         if (currentFlightPlan.procedureDetails.approachTransitionIndex !== index) {
             // console.log(`setApproachIndex: APPR TRANS ${currentFlightPlan.destinationAirfield.infos.approaches[currentFlightPlan.procedureDetails.approachIndex].transitions[index].name}`);
             currentFlightPlan.procedureDetails.approachTransitionIndex = index;
-            await currentFlightPlan.buildApproach().catch(console.error);
+            await currentFlightPlan.rebuildArrivalApproach();
 
             this.updateFlightPlanVersion().catch(console.error);
         }

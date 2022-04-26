@@ -17,6 +17,7 @@
 !/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD
 /flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/*.js
 /flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/*.css
+/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/PFD/*.html
 /flybywire-aircraft-a320-neo/html_ui/JS/generated/**
 /flybywire-aircraft-a320-neo/ModelBehaviorDefs/A32NX/generated
 !/docs/**

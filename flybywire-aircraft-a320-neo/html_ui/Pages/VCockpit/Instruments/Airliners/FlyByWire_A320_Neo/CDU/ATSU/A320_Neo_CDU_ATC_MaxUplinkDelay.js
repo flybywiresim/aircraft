@@ -33,7 +33,7 @@ class CDUAtcMaxUplinkDelay {
         };
         mcdu.onLeftInput[3] = (value) => {
             if (mcdu.atsu.atc.currentStation() === "") {
-                mcdu.addNewMessage(NXFictionalMessages.noAtc);
+                mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
             } else {
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.atsu.atc.maxUplinkDelay = -1;
@@ -42,13 +42,13 @@ class CDUAtcMaxUplinkDelay {
                     if (/^[0-9]{3}(S)*$/.test(value)) {
                         const delay = parseInt(value.replace("S", ""));
                         if (delay < 5 || delay > 999) {
-                            mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                            mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                         } else {
                             mcdu.atsu.atc.maxUplinkDelay = delay;
                             CDUAtcMaxUplinkDelay.ShowPage(mcdu);
                         }
                     } else {
-                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     }
                 }
             }

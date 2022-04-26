@@ -312,9 +312,9 @@ const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, endX, endY, arc
     }
 
     if (constraints) {
-        let constraintY = 20;
+        let constraintY = 17;
         elements.push(...constraints.map((t) => (
-            <text x={15} y={constraintY += 17} className="Magenta shadow" fontSize={20}>{t}</text>
+            <text x={13.5} y={constraintY += 17} className="Magenta shadow" fontSize={20}>{t}</text>
         )));
     }
 
@@ -425,7 +425,7 @@ const SymbolMarker: FC<SymbolMarkerProps> = memo(({ ident, x, y, endX, endY, arc
 
     if (showIdent) {
         elements.push(
-            <text x={15} y={20 + identYOffset} fontSize={20} className={`${colour}${shadow ? ' shadow' : ''}`}>
+            <text x={13.5} y={17 + identYOffset} fontSize={20} className={`${colour}${shadow ? ' shadow' : ''}`}>
                 {ident}
             </text>,
         );
@@ -448,8 +448,8 @@ const ConstraintMarker: FC<ConstraintMarkerProps> = memo(({ x, y, type }) => {
     if (type & NdSymbolTypeFlags.ConstraintMet) {
         return (
             <Layer x={x} y={y}>
-                <circle r={12} className="shadow" strokeWidth={2.5} />
-                <circle r={12} className="Magenta" strokeWidth={2} />
+                <circle r={14} className="shadow" strokeWidth={2.5} />
+                <circle r={14} className="Magenta" strokeWidth={2} />
             </Layer>
         );
     }
@@ -457,16 +457,16 @@ const ConstraintMarker: FC<ConstraintMarkerProps> = memo(({ x, y, type }) => {
     if (type & NdSymbolTypeFlags.ConstraintMissed) {
         return (
             <Layer x={x} y={y}>
-                <circle r={12} className="shadow" strokeWidth={2.5} />
-                <circle r={12} className="Amber" strokeWidth={2} />
+                <circle r={14} className="shadow" strokeWidth={2.5} />
+                <circle r={14} className="Amber" strokeWidth={2} />
             </Layer>
         );
     }
 
     return (
         <Layer x={x} y={y}>
-            <circle r={12} className="shadow" strokeWidth={2.5} />
-            <circle r={12} className="White" strokeWidth={2} />
+            <circle r={14} className="shadow" strokeWidth={2.5} />
+            <circle r={14} className="White" strokeWidth={2} />
         </Layer>
     );
 });
