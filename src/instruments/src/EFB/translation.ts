@@ -94,7 +94,7 @@ export const languageOptions: LanguageOption[] = [
     { langCode: 'fr', langData: fr, langName: 'French', alias: 'Français' },
     { langCode: 'he', langData: he, langName: 'Hebrew', alias: 'עִבְרִית' },
     { langCode: 'hi', langData: hi, langName: 'Hindi', alias: 'हिंदी' },
-    { langCode: 'hu', langData: hu, langName: 'Hungarian', alias: 'Magyar nyelv' },
+    { langCode: 'hu', langData: hu, langName: 'Hungarian', alias: 'Magyar' },
     { langCode: 'id', langData: id, langName: 'Indonesian', alias: 'Bahasa Indonesia' },
     { langCode: 'it', langData: it, langName: 'Italian', alias: 'Italiano' },
     { langCode: 'ja', langData: ja, langName: 'Japanese', alias: '日本語' },
