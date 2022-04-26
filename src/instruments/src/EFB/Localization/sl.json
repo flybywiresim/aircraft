@@ -230,6 +230,8 @@
       "Low": "Nizko",
       "MaximumManual": "Ročni maksimum",
       "Medium": "Srednje",
+      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
+      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
       "OverweightProcedure": "Postopek ob prekomerni teži",
       "Qnh": "QNH",
       "ReverseThrust": "Vzvratni potisk",

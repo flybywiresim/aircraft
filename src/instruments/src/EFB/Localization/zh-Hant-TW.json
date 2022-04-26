@@ -2,70 +2,70 @@
   "AirTrafficControl": {
     "Active": "使用中",
     "ChangeATISATCSourceButton": "Change ATIS/ATC source",
-    "ConnectHoppieACARS": "Connect Hoppie ACARS",
-    "NoInformationAvailableForThisFrequency": "No information available for this frequency",
+    "ConnectHoppieACARS": "連接 Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "此頻率無可用信息",
     "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
-    "SetActive": "Set Active",
-    "SetStandby": "Set Standby",
-    "Standby": "Standby",
-    "Title": "Air Traffic Control"
+    "SetActive": "設定為啟用",
+    "SetStandby": "設定為待機",
+    "Standby": "待機",
+    "Title": "航空交通管制"
   },
   "Checklists": {
-    "AreYouSureYouWantToResetAllChecklists": "Are you sure you want to reset all checklists?",
-    "AreYouSureYouWantToResetChecklists": "Are you sure you want to reset all checklists?",
-    "ChecklistResetWarning": "Checklist Reset Warning",
-    "MarkChecklistAsComplete": "Mark checklist as complete",
-    "MarkItemAsComplete": "Mark item as complete",
-    "ProceedToNextChecklist": "Proceed to next checklist",
-    "ResetAll": "Reset All",
-    "ResetChecklist": "Reset Checklist",
-    "TheLastChecklistIsComplete": "The last checklist is complete",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed",
-    "Title": "Checklists"
+    "AreYouSureYouWantToResetAllChecklists": "是否確認重置所有檢查單？",
+    "AreYouSureYouWantToResetChecklists": "是否確認重置所有檢查單？",
+    "ChecklistResetWarning": "檢查單重置警告",
+    "MarkChecklistAsComplete": "將檢查單標記為完成",
+    "MarkItemAsComplete": "將項目標記為完成",
+    "ProceedToNextChecklist": "進入下一檢查單",
+    "ResetAll": "全部重設",
+    "ResetChecklist": "重置檢查單",
+    "TheLastChecklistIsComplete": "最後一個檢查單已完成",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "還有自動填充的檢查單項目未完成",
+    "Title": "檢查單"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "No Relevant Checklists",
-        "Title": "Checklists"
+        "NoRelevantChecklists": "沒有相關檢查單",
+        "Title": "檢查單"
       },
-      "GoToPage": "Go to Page",
+      "GoToPage": "前往頁面",
       "Maintenance": {
-        "NoActiveFailures": "No Active Failures",
-        "Title": "Maintenance"
+        "NoActiveFailures": "無生效的故障",
+        "Title": "維修"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "No Pinned Charts",
-        "Title": "Pinned Charts"
+        "NoPinnedCharts": "無固定的航圖",
+        "Title": "固定的航圖"
       },
       "TT": {
-        "RearrangeWidgets": "Rearrange Widgets"
+        "RearrangeWidgets": "重新排列模塊"
       },
-      "Title": "Important Information",
+      "Title": "重要訊息",
       "Weather": {
-        "AirPressure": "Air Pressure",
-        "DewPoint": "Dew Point",
-        "IcaoInvalid": "ICAO invalid or no METAR available",
-        "Loading": "Loading",
-        "MetarParsingError": "Received METAR could not be parsed",
-        "NoIcaoProvided": "No ICAO provided",
-        "Raw": "Raw",
+        "AirPressure": "氣壓",
+        "DewPoint": "露點",
+        "IcaoInvalid": "ICAO 代碼無效或無可用的 METAR",
+        "Loading": "載入中…",
+        "MetarParsingError": "無法解析收到的 METAR",
+        "NoIcaoProvided": "未填充 ICAO 代碼",
+        "Raw": "原始數據",
         "TT": {
-          "SwitchToIconView": "Switch to Icon View",
-          "SwitchToRawMetarView": "Switch to Raw METAR View"
+          "SwitchToIconView": "切換到圖標視圖",
+          "SwitchToRawMetarView": "切換到原始 METAR 視圖"
         },
-        "Temperature": "Temperature",
+        "Temperature": "溫度",
         "Title": "Weather",
-        "WindSpeed": "Wind Speed"
+        "WindSpeed": "風速"
       }
     },
-    "Title": "Dashboard",
+    "Title": "控制台",
     "YourFlight": {
-      "Alternate": "Alternate",
-      "AverageWind": "Average Wind",
-      "CompanyRoute": "Company Route",
-      "CostIndex": "Cost Index",
-      "CruiseAlt": "Cruise Alt.",
+      "Alternate": "備降機場",
+      "AverageWind": "平均風速",
+      "CompanyRoute": "公司航路",
+      "CostIndex": "成本指數",
+      "CruiseAlt": "巡航高度",
       "ImportSimBriefData": "Import SimBrief Data",
       "Route": "Route",
       "SimBriefDataNotYetLoaded": "SimBrief data not yet loaded.",
@@ -230,6 +230,8 @@
       "Low": "Low",
       "MaximumManual": "Maximum Manual",
       "Medium": "Medium",
+      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
+      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
       "OverweightProcedure": "Overweight Procedure",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",

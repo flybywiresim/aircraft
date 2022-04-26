@@ -100,10 +100,10 @@
   },
   "Failures": {
     "Comfort": {
-      "Title": "Comodo"
+      "Title": "Comoda"
     },
     "Compact": {
-      "Title": "Compatto"
+      "Title": "Compatta"
     },
     "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "La totale simulazione dei guasti riportati di seguito non è ancora garantita.",
     "Search": "Cerca",
@@ -125,7 +125,7 @@
       "RightInnerTank": "Serbatoio Destro Interno",
       "RightOuterTank": "Serbatoio Destro Esterno",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "L'Aereo Deve Essere Spento per Cambiare i Tempi di Rifornimento",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "L'Aereomobile Deve Essere Spento per Cambiare i Tempi di Rifornimento",
         "FillBlockFuelFromSimBrief": "Inserisci Block Fuel da SimBrief"
       },
       "Title": "Carburante",
@@ -171,7 +171,7 @@
       "AirportDoesNotExist": "Aeroporto Inesistente",
       "AuthenticateWithNavigraph": "Autenticazione con Navigraph",
       "InsufficientEnv": "File .env Insufficiente",
-      "IntoYourBrowserAndEnterTheCodeBelow": "nel tuo browser e inserisci il codice qui sotto",
+      "IntoYourBrowserAndEnterTheCodeBelow": "nel tuo browser e inserisci il codice riportato di seguito",
       "NoAirportSelected": "Nessun Aeroporto Selezionato",
       "ResetNavigraphAuthentication": "Rimuovi Autenticazione con Navigraph",
       "ScanTheQrCodeOrOpen": "Scansiona il Codice QR o Apri",
@@ -210,7 +210,7 @@
       "ZoomOut": "Rimpicciolisci"
     },
     "ThereAreNoChartsToDisplay": "Non ci sono carte da visualizzare.",
-    "ThereIsNoChartToDisplay": "Non c'è nessuna carta da visualizzare",
+    "ThereIsNoChartToDisplay": "Non c'è nessuna carta da visualizzare.",
     "Title": "Navigazione e Carte",
     "To": "A"
   },
@@ -230,6 +230,8 @@
       "Low": "Low",
       "MaximumManual": "Max Manuale",
       "Medium": "Medium",
+      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
+      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
       "OverweightProcedure": "Procedura in Sovraccarico",
       "Qnh": "QNH",
       "ReverseThrust": "Inversori di Spinta",
@@ -407,7 +409,7 @@
       "BoardingTime": "Tempo d'Imbarco",
       "DmcSelfTestTime": "Tempo Autotest DMC",
       "HomeCockpitMode": "Modalità Home Cockpit",
-      "McduFocusTimeout": "Timeout Puntatore su MCDU (secondi)",
+      "McduFocusTimeout": "Rilascio Selezione su MCDU (secondi)",
       "McduKeyboardInput": "Input Tastiera MCDU",
       "SeparateTillerFromRudderInputs": "Separa gli Input del Tiller e dei Pedali",
       "Title": "Realismo"
