@@ -16,7 +16,13 @@ export interface Arinc429Values {
     chosenRa: Arinc429Word;
     fpa: Arinc429Word;
     da: Arinc429Word;
-
+    fcdcDiscreteWord1: Arinc429Word;
+    fcdc1DiscreteWord2: Arinc429Word;
+    fcdc2DiscreteWord2: Arinc429Word;
+    fcdcCaptPitchCommand: Arinc429Word;
+    fcdcFoPitchCommand: Arinc429Word;
+    fcdcCaptRollCommand: Arinc429Word;
+    fcdcFoRollCommand: Arinc429Word;
 }
 export class ArincValueProvider {
     private roll = new Arinc429Word(0);
@@ -46,6 +52,16 @@ export class ArincValueProvider {
     private fpa = new Arinc429Word(0);
 
     private da = new Arinc429Word(0);
+
+    private fcdc1DiscreteWord1 = new Arinc429Word(0);
+
+    private fcdc2DiscreteWord1 = new Arinc429Word(0);
+
+    private fcdc1DiscreteWord2 = new Arinc429Word(0);
+
+    private fcdc2DiscreteWord2 = new Arinc429Word(0);
+
+    private fcdcToUse = 0;
 
     constructor(private readonly bus: EventBus) {
 
@@ -134,6 +150,80 @@ export class ArincValueProvider {
             this.da = new Arinc429Word(da);
             publisher.pub('da', this.da);
         });
+
+        subscriber.on('fcdc1DiscreteWord1').handle((discreteWord1) => {
+            this.fcdc1DiscreteWord1 = new Arinc429Word(discreteWord1);
+            this.fcdcToUse = this.determineFcdcToUse();
+            if (this.fcdcToUse === 1) {
+                publisher.pub('fcdcDiscreteWord1', this.fcdc1DiscreteWord1);
+            }
+        });
+
+        subscriber.on('fcdc2DiscreteWord1').handle((discreteWord1) => {
+            this.fcdc2DiscreteWord1 = new Arinc429Word(discreteWord1);
+            this.fcdcToUse = this.determineFcdcToUse();
+            if (this.fcdcToUse === 2) {
+                publisher.pub('fcdcDiscreteWord1', this.fcdc2DiscreteWord1);
+            }
+        });
+
+        subscriber.on('fcdc1DiscreteWord2').handle((discreteWord2) => {
+            this.fcdc1DiscreteWord2 = new Arinc429Word(discreteWord2);
+            publisher.pub('fcdc1DiscreteWord2', this.fcdc1DiscreteWord2);
+        });
+
+        subscriber.on('fcdc2DiscreteWord2').handle((discreteWord2) => {
+            this.fcdc2DiscreteWord2 = new Arinc429Word(discreteWord2);
+            publisher.pub('fcdc2DiscreteWord2', this.fcdc2DiscreteWord2);
+        });
+
+        subscriber.on('fcdc1CaptPitchCommand').handle((word) => {
+            if (this.fcdcToUse == 1) {
+                publisher.pub('fcdcCaptPitchCommand', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fcdc2CaptPitchCommand').handle((word) => {
+            if (this.fcdcToUse == 2) {
+                publisher.pub('fcdcCaptPitchCommand', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fcdc1FoPitchCommand').handle((word) => {
+            if (this.fcdcToUse == 1) {
+                publisher.pub('fcdcCaptPitchCommand', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fcdc2FoPitchCommand').handle((word) => {
+            if (this.fcdcToUse == 2) {
+                publisher.pub('fcdcFoPitchCommand', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fcdc1CaptRollCommand').handle((word) => {
+            if (this.fcdcToUse == 1) {
+                publisher.pub('fcdcCaptRollCommand', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fcdc2CaptRollCommand').handle((word) => {
+            if (this.fcdcToUse == 2) {
+                publisher.pub('fcdcCaptRollCommand', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fcdc1FoRollCommand').handle((word) => {
+            if (this.fcdcToUse == 1) {
+                publisher.pub('fcdcCaptRollCommand', new Arinc429Word(word));
+            }
+        });
+
+        subscriber.on('fcdc2FoRollCommand').handle((word) => {
+            if (this.fcdcToUse == 2) {
+                publisher.pub('fcdcFoRollCommand', new Arinc429Word(word));
+            }
+        });
     }
 
     private determineAndPublishChosenRadioAltitude(publisher: Publisher<Arinc429Values>) {
@@ -147,5 +237,21 @@ export class ArincValueProvider {
         ) ? this.oppRadioAltitude : this.ownRadioAltitude;
 
         publisher.pub('chosenRa', chosenRadioAltitude);
+    }
+
+    private determineFcdcToUse() {
+        if (getDisplayIndex() === 1) {
+            if (
+                (this.fcdc1DiscreteWord1.isFailureWarning() && !this.fcdc2DiscreteWord1.isFailureWarning())
+                || (!this.fcdc1DiscreteWord1.getBitValueOr(24, false) && this.fcdc2DiscreteWord1.getBitValueOr(24, false))) {
+                return 2;
+            }
+            return 1;
+        }
+        if (!((!this.fcdc1DiscreteWord1.isFailureWarning() && this.fcdc2DiscreteWord1.isFailureWarning())
+            || (this.fcdc1DiscreteWord1.getBitValueOr(24, false) && !this.fcdc2DiscreteWord1.getBitValueOr(24, false)))) {
+            return 2;
+        }
+        return 1;
     }
 }

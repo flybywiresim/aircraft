@@ -36,8 +36,6 @@ export interface PFDSimvars {
     airKnob: number;
     vsBaro: number;
     vsInert: number;
-    sideStickX: number;
-    sideStickY: number;
     fdYawCommand: number;
     fdBank: number;
     fdPitch: number;
@@ -110,6 +108,18 @@ export interface PFDSimvars {
     daRaw: number;
     ls1Button: boolean;
     ls2Button: boolean;
+    fcdc1DiscreteWord1: number;
+    fcdc2DiscreteWord1: number;
+    fcdc1DiscreteWord2: number;
+    fcdc2DiscreteWord2: number;
+    fcdc1CaptPitchCommand: number;
+    fcdc2CaptPitchCommand: number;
+    fcdc1FoPitchCommand: number;
+    fcdc2FoPitchCommand: number;
+    fcdc1CaptRollCommand: number;
+    fcdc2CaptRollCommand: number;
+    fcdc1FoRollCommand: number;
+    fcdc2FoRollCommand: number;
   }
 
 export enum PFDVars {
@@ -148,8 +158,6 @@ export enum PFDVars {
     airKnob = 'L:A32NX_AIR_DATA_SWITCHING_KNOB',
     vsBaro = 'L:A32NX_ADIRS_ADR_1_BAROMETRIC_VERTICAL_SPEED',
     vsInert = 'L:A32NX_ADIRS_IR_1_VERTICAL_SPEED',
-    sideStickX = 'L:A32NX_SIDESTICK_POSITION_X',
-    sideStickY = 'L:A32NX_SIDESTICK_POSITION_Y',
     fdYawCommand = 'L:A32NX_FLIGHT_DIRECTOR_YAW',
     fdBank = 'L:A32NX_FLIGHT_DIRECTOR_BANK',
     fdPitch = 'L:A32NX_FLIGHT_DIRECTOR_PITCH',
@@ -222,6 +230,18 @@ export enum PFDVars {
     daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
     ls1Button = 'L:BTN_LS_1_FILTER_ACTIVE',
     ls2Button = 'L:BTN_LS_2_FILTER_ACTIVE',
+    fcdc1DiscreteWord1 = 'L:A32NX_FCDC_1_DISCRETE_WORD_1',
+    fcdc2DiscreteWord1 = 'L:A32NX_FCDC_2_DISCRETE_WORD_1',
+    fcdc1DiscreteWord2 = 'L:A32NX_FCDC_1_DISCRETE_WORD_2',
+    fcdc2DiscreteWord2 = 'L:A32NX_FCDC_2_DISCRETE_WORD_2',
+    fcdc1CaptPitchCommand = 'L:A32NX_FCDC_1_CAPT_PITCH_COMMAND',
+    fcdc2CaptPitchCommand = 'L:A32NX_FCDC_2_CAPT_PITCH_COMMAND',
+    fcdc1FoPitchCommand = 'L:A32NX_FCDC_1_FO_PITCH_COMMAND',
+    fcdc2FoPitchCommand = 'L:A32NX_FCDC_2_FO_PITCH_COMMAND',
+    fcdc1CaptRollCommand = 'L:A32NX_FCDC_1_CAPT_ROLL_COMMAND',
+    fcdc2CaptRollCommand = 'L:A32NX_FCDC_2_CAPT_ROLL_COMMAND',
+    fcdc1FoRollCommand = 'L:A32NX_FCDC_1_FO_ROLL_COMMAND',
+    fcdc2FoRollCommand = 'L:A32NX_FCDC_2_FO_ROLL_COMMAND',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -262,8 +282,6 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['airKnob', { name: PFDVars.airKnob, type: SimVarValueType.Enum }],
         ['vsBaro', { name: PFDVars.vsBaro, type: SimVarValueType.Number }],
         ['vsInert', { name: PFDVars.vsInert, type: SimVarValueType.Number }],
-        ['sideStickX', { name: PFDVars.sideStickX, type: SimVarValueType.Number }],
-        ['sideStickY', { name: PFDVars.sideStickY, type: SimVarValueType.Number }],
         ['fdYawCommand', { name: PFDVars.fdYawCommand, type: SimVarValueType.Number }],
         ['fdBank', { name: PFDVars.fdBank, type: SimVarValueType.Number }],
         ['fdPitch', { name: PFDVars.fdPitch, type: SimVarValueType.Number }],
@@ -336,6 +354,18 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
         ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
         ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
+        ['fcdc1DiscreteWord1', { name: PFDVars.fcdc1DiscreteWord1, type: SimVarValueType.Number }],
+        ['fcdc2DiscreteWord1', { name: PFDVars.fcdc2DiscreteWord1, type: SimVarValueType.Number }],
+        ['fcdc1DiscreteWord2', { name: PFDVars.fcdc1DiscreteWord2, type: SimVarValueType.Number }],
+        ['fcdc2DiscreteWord2', { name: PFDVars.fcdc2DiscreteWord2, type: SimVarValueType.Number }],
+        ['fcdc1CaptPitchCommand', { name: PFDVars.fcdc1CaptPitchCommand, type: SimVarValueType.Number }],
+        ['fcdc2CaptPitchCommand', { name: PFDVars.fcdc2CaptPitchCommand, type: SimVarValueType.Number }],
+        ['fcdc1FoPitchCommand', { name: PFDVars.fcdc1FoPitchCommand, type: SimVarValueType.Number }],
+        ['fcdc2FoPitchCommand', { name: PFDVars.fcdc2FoPitchCommand, type: SimVarValueType.Number }],
+        ['fcdc1CaptRollCommand', { name: PFDVars.fcdc1CaptRollCommand, type: SimVarValueType.Number }],
+        ['fcdc2CaptRollCommand', { name: PFDVars.fcdc2CaptRollCommand, type: SimVarValueType.Number }],
+        ['fcdc1FoRollCommand', { name: PFDVars.fcdc1FoRollCommand, type: SimVarValueType.Number }],
+        ['fcdc2FoRollCommand', { name: PFDVars.fcdc2FoRollCommand, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

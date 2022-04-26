@@ -904,32 +904,63 @@ export class MachNumber extends DisplayComponent<{bus: EventBus}> {
 }
 
 class VProtBug extends DisplayComponent<{bus: EventBus}> {
-    private vMaxBug = FSComponent.createRef<SVGGElement>();
+    private vProtBug = FSComponent.createRef<SVGGElement>();
+
+    private vProtLostBug = FSComponent.createRef<SVGGElement>();
+
+    private fcdcWord1 = new Arinc429Word(0);
+
+    private showVprotBug = false;
+
+    private Vmax = 0;
+
+    private handleVProtBugDisplay() {
+        const showVProt = this.Vmax > 240;
+        const offset = -(this.Vmax + 6) * DistanceSpacing / ValueSpacing;
+
+        const isNormalLawActive = this.fcdcWord1.getBitValue(11) && !this.fcdcWord1.isFailureWarning();
+
+        if (showVProt && isNormalLawActive) {
+            this.vProtBug.instance.style.display = 'block';
+            this.vProtBug.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
+            this.vProtLostBug.instance.style.display = 'none';
+        } else if (showVProt && !isNormalLawActive) {
+            this.vProtBug.instance.style.display = 'none';
+            this.vProtLostBug.instance.style.display = 'block';
+            this.vProtLostBug.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
+        } else {
+            this.vProtBug.instance.style.display = 'none';
+            this.vProtLostBug.instance.style.display = 'none';
+        }
+    }
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
-        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('vMax').whenChanged().handle((vm) => {
-            const showVProt = vm > 240;
-            const offset = -(vm + 6) * DistanceSpacing / ValueSpacing;
+            this.Vmax = vm;
 
-            if (showVProt) {
-                this.vMaxBug.instance.classList.remove('HiddenElement');
-                this.vMaxBug.instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
-            } else {
-                this.vMaxBug.instance.classList.add('HiddenElement');
-            }
+            this.handleVProtBugDisplay();
+        });
+
+        sub.on('fcdcDiscreteWord1').whenChanged().handle((word) => {
+            this.fcdcWord1 = word;
+
+            this.handleVProtBugDisplay();
         });
     }
 
     render(): VNode {
         return (
-            <g id="SpeedProtSymbol" ref={this.vMaxBug}>
-                <path class="NormalOutline" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
-                <path class="NormalStroke Green" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
-                <path style="display: none" class="NormalStroke Amber" d="m14.615 79.915 1.7808 1.7818m-1.7808 0 1.7808-1.7818" />
-            </g>
+            <>
+                <path ref={this.vProtLostBug} style="display: none" class="NormalStroke Amber" d="m14.615 79.915 1.7808 1.7818m-1.7808 0 1.7808-1.7818" />
+                <g id="SpeedProtSymbol" ref={this.vProtBug} style="display: none">
+                    <path class="NormalOutline" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
+                    <path class="NormalStroke Green" d="m13.994 81.289h3.022m-3.022-1.0079h3.022" />
+                </g>
+            </>
+
         );
     }
 }
