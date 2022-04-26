@@ -30,6 +30,7 @@ import nl from './Localization/nl.json';
 import pl from './Localization/pl.json';
 import ptBR from './Localization/pt-BR.json';
 import ptPT from './Localization/pt-PT.json';
+import ro from './Localization/ro.json';
 import ru from './Localization/ru.json';
 import sk from './Localization/sk.json';
 import sl from './Localization/sl.json';
@@ -104,6 +105,7 @@ export const languageOptions: LanguageOption[] = [
     { langCode: 'pl', langData: pl, langName: 'Polish', alias: 'Polski' },
     { langCode: 'pt-BR', langData: ptBR, langName: 'Portuguese', alias: 'Português brasileiro' },
     { langCode: 'pt-PT', langData: ptPT, langName: 'Portuguese', alias: 'Português' },
+    { langCode: 'ro', langData: ro, langName: 'Romanian', alias: 'Românește' },
     { langCode: 'ru', langData: ru, langName: 'Russian', alias: 'Русский' },
     { langCode: 'sk', langData: sk, langName: 'Slovak', alias: 'Slovenčina' },
     { langCode: 'sl', langData: sl, langName: 'Slovenian', alias: 'Slovenščina' },
