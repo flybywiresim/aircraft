@@ -61,138 +61,138 @@
     },
     "Title": "Meniu principal",
     "YourFlight": {
-      "Alternate": "Alternate",
-      "AverageWind": "Average Wind",
-      "CompanyRoute": "Company Route",
-      "CostIndex": "Cost Index",
-      "CruiseAlt": "Cruise Alt.",
-      "ImportSimBriefData": "Import SimBrief Data",
-      "Route": "Route",
-      "SimBriefDataNotYetLoaded": "SimBrief data not yet loaded.",
-      "Title": "Your Flight",
+      "Alternate": "Alternativă",
+      "AverageWind": "Vânt mediu",
+      "CompanyRoute": "Ruta Companiei",
+      "CostIndex": "Indice de cost",
+      "CruiseAlt": "Altitudinea de croazieră",
+      "ImportSimBriefData": "Importă datele din SimBrief",
+      "Route": "Rută",
+      "SimBriefDataNotYetLoaded": "Datele din SimBrief nu au fost încă încărcate ",
+      "Title": "Zborul tău",
       "ZFW": "ZFW"
     }
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Import SimBrief Data",
+      "ImportSimBriefData": "Importa datele din SimBrief",
       "TT": {
-        "IncreaseFontSize": "Increase Font Size",
-        "ReduceFontSize": "Reduce Font Size"
+        "IncreaseFontSize": "Măriți dimensiunea fontului",
+        "ReduceFontSize": "Reduceți dimensiunea fontului"
       },
       "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
+      "YouHaveNotYetImportedAnySimBriefData": "Încă nu ați încărcat datele din SimBrief"
     },
     "Overview": {
-      "Engines": "Engines",
+      "Engines": "Motoare",
       "MMO": "MMO",
       "MRW": "MRW",
       "MTOW": "MTOW",
       "MZFW": "MZFW",
-      "MaximumCargo": "Maximum Cargo",
-      "MaximumFuelCapacity": "Maximum Fuel Capacity",
-      "MaximumPassengers": "Maximum Passengers",
+      "MaximumCargo": "Cargo Maxim",
+      "MaximumFuelCapacity": "Capacitate maximă de combustibil",
+      "MaximumPassengers": "Maxim pasageri",
       "Model": "Model",
-      "Range": "Range",
-      "Title": "Overview"
+      "Range": "Distanță",
+      "Title": "Prezentare generală"
     },
-    "Title": "Dispatch"
+    "Title": "Expediere"
   },
   "Failures": {
     "Comfort": {
-      "Title": "Comfort"
+      "Title": "Confort"
     },
     "Compact": {
       "Title": "Compact"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Full simulation of the failures below isn't yet guaranteed.",
-    "Search": "Search",
-    "Title": "Failures"
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Simularea completă a defecțiunilor de mai jos nu este încă garantată.",
+    "Search": "Căutare",
+    "Title": "Defecțiuni"
   },
   "Ground": {
     "Fuel": {
-      "CenterTank": "Center Tank",
-      "Completed": "Completed",
-      "Defueling": "Defueling",
-      "EstimatedDuration": "Estimated duration (minutes)",
+      "CenterTank": "Rezervor Central",
+      "Completed": "Completat",
+      "Defueling": "Dezalimentare",
+      "EstimatedDuration": "Durata estimată (minute)",
       "EstimatedTime": "Estimated Time",
-      "LeftInnerTank": "Left Inner Tank",
-      "LeftOuterTank": "Left Outer Tank",
-      "ReadyToStart": "Ready to Start",
-      "Refuel": "Refuel",
-      "RefuelTime": "Refuel Time",
-      "Refueling": "Refueling",
-      "RightInnerTank": "Right Inner Tank",
-      "RightOuterTank": "Right Outer Tank",
+      "LeftInnerTank": "Rezervor interior stânga",
+      "LeftOuterTank": "Rezervor exterior stânga",
+      "ReadyToStart": "Gata de pornire",
+      "Refuel": "Alimentare",
+      "RefuelTime": "Timp de alimentare",
+      "Refueling": "Realimentare",
+      "RightInnerTank": "Rezervor interior dreapta",
+      "RightOuterTank": "Rezervor exterior dreapta",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aircraft Must Be Cold and Dark to Change Refuel Times",
-        "FillBlockFuelFromSimBrief": "Fill Block Fuel from SimBrief"
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aeronava trebuie să fie in stadiul de \"Cold and Dark\" pentru a schimba timpii de alimentare",
+        "FillBlockFuelFromSimBrief": "Umpleți combustibilul necesar folosind datele din SimBrief"
       },
-      "Title": "Fuel",
-      "TotalFuel": "Total Fuel",
-      "Unavailable": "Unavailable"
+      "Title": "Combustibil",
+      "TotalFuel": "Combustibil total ",
+      "Unavailable": "Indisponibil"
     },
     "Pushback": {
       "Title": "Pushback"
     },
     "Services": {
-      "BaggageTruck": "Baggage Truck",
-      "CateringTruck": "Catering Truck",
-      "DoorAft": "Door Aft",
-      "DoorFwd": "Door Fwd",
-      "ExternalPower": "External Power",
-      "FuelTruck": "Fuel Truck",
-      "JetBridge": "Jet Bridge",
-      "Title": "Services"
+      "BaggageTruck": "Camion de bagaje",
+      "CateringTruck": "Camion de Catering",
+      "DoorAft": "Uşa din spate",
+      "DoorFwd": "Uşa din față",
+      "ExternalPower": "Unitate externă",
+      "FuelTruck": "Camion de combustibil",
+      "JetBridge": "Burduf de îmbarcare ",
+      "Title": "Servicii"
     },
-    "Title": "Ground"
+    "Title": "Sol"
   },
   "Modals": {
-    "Cancel": "Cancel",
-    "Confirm": "Confirm",
-    "Okay": "Okay"
+    "Cancel": "Anulare",
+    "Confirm": "Confirmare",
+    "Okay": "OK"
   },
   "NavigationAndCharts": {
-    "All": "All",
+    "All": "Toate",
     "Altn": "Altn",
-    "ExitFullscreenMode": "Exit Fullscreen Mode",
-    "From": "From",
+    "ExitFullscreenMode": "Ieșire din modul pe tot ecranul",
+    "From": "De la",
     "LocalFiles": {
-      "Both": "Both",
-      "EstablishingConnection": "Establishing Connection",
-      "FailedToEstablishConnection": "Failed to Establish Connection.",
-      "FileName": "File Name",
-      "Image": "Image",
-      "Pdf": "Pdf",
-      "Retry": "Retry",
-      "Title": "Local Files"
+      "Both": "Ambele",
+      "EstablishingConnection": "Stabilire conexiune",
+      "FailedToEstablishConnection": "Eșec în stabilirea conexiunii",
+      "FileName": "Nume fișier",
+      "Image": "Imagine",
+      "Pdf": "PDF",
+      "Retry": "Reîncercați",
+      "Title": "Fișiere locale"
     },
     "Navigraph": {
-      "AirportDoesNotExist": "Airport Does Not Exist",
-      "AuthenticateWithNavigraph": "Authenticate with Navigraph",
-      "InsufficientEnv": "Insufficient .env File",
-      "IntoYourBrowserAndEnterTheCodeBelow": "into your browser and enter the code below\n",
-      "NoAirportSelected": "No Airport Selected",
-      "ResetNavigraphAuthentication": "Reset Navigraph Authentication",
-      "ScanTheQrCodeOrOpen": "Scan the QR Code or Open",
+      "AirportDoesNotExist": "Aeroportul nu există",
+      "AuthenticateWithNavigraph": "Autentificare cu Navigraph",
+      "InsufficientEnv": "Fișier .env insuficient",
+      "IntoYourBrowserAndEnterTheCodeBelow": "în browser-ul dumneavoastră și introduceți codul de mai jos\n",
+      "NoAirportSelected": "Niciun aeroport selectat",
+      "ResetNavigraphAuthentication": "Resetare autentificare Navigraph",
+      "ScanTheQrCodeOrOpen": "Scanați codul QR sau Deschideti",
       "Title": "Navigraph"
     },
     "PinnedCharts": {
-      "Delete": "Delete",
-      "Edit": "Edit",
-      "NoItemsFound": "No Items Found",
-      "SearchPlaceholder": "Search",
-      "ShowingChartsFromAllProviders": "Showing Charts from All Providers",
+      "Delete": "Șterge",
+      "Edit": "Editează",
+      "NoItemsFound": "Niciun element găsit",
+      "SearchPlaceholder": "Căutați",
+      "ShowingChartsFromAllProviders": "Afișarea hărților de la toţi furnizorii",
       "SortMethods": {
-        "AlphabeticalAZ": "Alphabetical - A -> Z",
-        "AlphabeticalZA": "Alphabetical - Z -> A",
-        "FirstAccessed": "First Accessed",
-        "LastAccessed": "Last Accessed",
-        "None": "None"
+        "AlphabeticalAZ": "În ordine alfabetică - A -> Z",
+        "AlphabeticalZA": "În ordine alfabetică - Z -> A",
+        "FirstAccessed": "Prima accesare",
+        "LastAccessed": "Ultima accesare",
+        "None": "Niciunul"
       },
       "TT": {
-        "ChangeChartProvider": "Change Chart Provider",
-        "ChangeChartSortMethod": "Change Chart Sort Method",
+        "ChangeChartProvider": "Schimbați furnizorul hărți",
+        "ChangeChartSortMethod": "Schimbați metoda de sortare a hărților",
         "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
       "Title": "Pinned Charts",
@@ -487,6 +487,7 @@
     "Feb": "Feb",
     "Fri": "Fri",
     "Jan": "Jan",
+    "Jul": "Jul",
     "Jun": "Jun",
     "Mar": "Mar",
     "May": "May",

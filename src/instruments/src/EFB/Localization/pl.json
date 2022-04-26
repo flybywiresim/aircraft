@@ -6,68 +6,68 @@
     "NoInformationAvailableForThisFrequency": "Brak dostępnej informacji dla tej częstotliwości",
     "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
     "SetActive": "Ustaw jako aktywną",
-    "SetStandby": "Ustaw jako nieaktywną",
+    "SetStandby": "Ustaw jako Oczekującą",
     "Standby": "Oczekująca",
     "Title": "Kontrola Ruchu Lotniczego"
   },
   "Checklists": {
     "AreYouSureYouWantToResetAllChecklists": "Czy na pewno chcesz zresetować wszystkie checklisty?",
     "AreYouSureYouWantToResetChecklists": "Czy na pewno chcesz zresetować wszystkie checklisty?",
-    "ChecklistResetWarning": "Checklist Reset Warning",
-    "MarkChecklistAsComplete": "Mark checklist as complete",
-    "MarkItemAsComplete": "Mark item as complete",
-    "ProceedToNextChecklist": "Proceed to next checklist",
-    "ResetAll": "Reset All",
-    "ResetChecklist": "Reset Checklist",
-    "TheLastChecklistIsComplete": "The last checklist is complete",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed",
-    "Title": "Checklists"
+    "ChecklistResetWarning": "Ostrzeżenie o resecie checklisty",
+    "MarkChecklistAsComplete": "Oznacz checklistę jako ukończoną",
+    "MarkItemAsComplete": "Oznacz element jako ukończony",
+    "ProceedToNextChecklist": "Przejdź do następnej checklisty",
+    "ResetAll": "Zresetuj Wszystko",
+    "ResetChecklist": "Zresetuj Checklistę",
+    "TheLastChecklistIsComplete": "Ostatnia checklista została ukończona",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "Istnieją pozostałe elementy samo wypełniającej się checklisty, które nie zostały jeszcze ukończone",
+    "Title": "Checklisty"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "No Relevant Checklists",
-        "Title": "Checklists"
+        "NoRelevantChecklists": "Brak Odpowiednich Checklist",
+        "Title": "Checklisty"
       },
-      "GoToPage": "Go to Page",
+      "GoToPage": "Idź do strony",
       "Maintenance": {
-        "NoActiveFailures": "No Active Failures",
-        "Title": "Maintenance"
+        "NoActiveFailures": "Brak Aktywnych Awarii",
+        "Title": "Obsługa techniczna"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "No Pinned Charts",
-        "Title": "Pinned Charts"
+        "NoPinnedCharts": "Brak Przypiętych Chartów",
+        "Title": "Przypięte Charty"
       },
       "TT": {
-        "RearrangeWidgets": "Rearrange Widgets"
+        "RearrangeWidgets": "Zmień Rozmieszczenie Widżetów"
       },
-      "Title": "Important Information",
+      "Title": "Istotne Informacje",
       "Weather": {
-        "AirPressure": "Air Pressure",
-        "DewPoint": "Dew Point",
-        "IcaoInvalid": "ICAO invalid or no METAR available",
-        "Loading": "Loading",
-        "MetarParsingError": "Received METAR could not be parsed",
-        "NoIcaoProvided": "No ICAO provided",
-        "Raw": "Raw",
+        "AirPressure": "Ciśnienie Atmosferyczne",
+        "DewPoint": "Punkt Rosy",
+        "IcaoInvalid": "Błędny kod ICAO lub brak dostępnych danych METAR",
+        "Loading": "Wczytywanie",
+        "MetarParsingError": "Odebrany METAR nie może zostać przetworzony",
+        "NoIcaoProvided": "Nie podano kodu ICAO",
+        "Raw": "Źródłowy",
         "TT": {
-          "SwitchToIconView": "Switch to Icon View",
-          "SwitchToRawMetarView": "Switch to Raw METAR View"
+          "SwitchToIconView": "Przełącz do Widoku Ikon",
+          "SwitchToRawMetarView": "Przełącz do Widoku Źródłowego METAR"
         },
-        "Temperature": "Temperature",
-        "Title": "Weather",
-        "WindSpeed": "Wind Speed"
+        "Temperature": "Temperatura",
+        "Title": "Pogoda",
+        "WindSpeed": "Prędkość Wiatru"
       }
     },
-    "Title": "Dashboard",
+    "Title": "Ekran Główny",
     "YourFlight": {
-      "Alternate": "Alternate",
-      "AverageWind": "Average Wind",
-      "CompanyRoute": "Company Route",
+      "Alternate": "Lotnisko Zapasowe",
+      "AverageWind": "Średni Wiatr",
+      "CompanyRoute": "Trasa Przewoźnika",
       "CostIndex": "Cost Index",
-      "CruiseAlt": "Cruise Alt.",
-      "ImportSimBriefData": "Import SimBrief Data",
-      "Route": "Route",
+      "CruiseAlt": "Wysokość Przelotowa",
+      "ImportSimBriefData": "Importuj Dane z SimBrief",
+      "Route": "Trasa",
       "SimBriefDataNotYetLoaded": "SimBrief data not yet loaded.",
       "Title": "Your Flight",
       "ZFW": "ZFW"
@@ -487,6 +487,7 @@
     "Feb": "Feb",
     "Fri": "Fri",
     "Jan": "Jan",
+    "Jul": "Jul",
     "Jun": "Jun",
     "Mar": "Mar",
     "May": "May",

@@ -50,7 +50,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
         t('StatusBar.Apr'),
         t('StatusBar.May'),
         t('StatusBar.Jun'),
-        t('StatusBar.Jun'),
+        t('StatusBar.Jul'),
         t('StatusBar.Aug'),
         t('StatusBar.Sep'),
         t('StatusBar.Oct'),
