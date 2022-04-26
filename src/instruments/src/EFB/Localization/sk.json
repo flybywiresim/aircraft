@@ -1,57 +1,57 @@
 {
   "AirTrafficControl": {
-    "Active": "فعال",
+    "Active": "Aktívne",
     "ChangeATISATCSourceButton": "Change ATIS/ATC source",
-    "ConnectHoppieACARS": "قم بتوصيل لHoppie ACARS",
-    "NoInformationAvailableForThisFrequency": "لا توجد معلومات متاحة لهذا التردد",
+    "ConnectHoppieACARS": "Connect Hoppie ACARS",
+    "NoInformationAvailableForThisFrequency": "No information available for this frequency",
     "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
-    "SetActive": "شغل",
-    "SetStandby": "تعيين الاستعداد",
-    "Standby": "الإستعداد",
-    "Title": "مراقبة الحركة الجوية"
+    "SetActive": "Set Active",
+    "SetStandby": "Set Standby",
+    "Standby": "Standby",
+    "Title": "Air Traffic Control"
   },
   "Checklists": {
-    "AreYouSureYouWantToResetAllChecklists": "هل تريد بالتأكيد إعادة تعيين جميع قوائم التحقق؟",
-    "AreYouSureYouWantToResetChecklists": "هل انت متأكد من انك تريد اعادة تعيين جميع قوائم التحقق؟ ",
-    "ChecklistResetWarning": "إنذار إعادة تعيين قوائم التحقق",
-    "MarkChecklistAsComplete": "وضع علامة على قائمة التحقق كاملة",
-    "MarkItemAsComplete": "اشر على العنصر على انه اكتمل",
-    "ProceedToNextChecklist": "الانتقال الى قائمة التحقق التالية",
-    "ResetAll": "إعادة تعيين الكل",
-    "ResetChecklist": "إعادة تعيين قائمة التحقق",
-    "TheLastChecklistIsComplete": "قائمة التحقق الاخيره اكتملت",
-    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "يوجد عناصر غير مكتملة في اللائحة التلقائية ",
-    "Title": "قوائم التحقق"
+    "AreYouSureYouWantToResetAllChecklists": "Are you sure you want to reset all checklists?",
+    "AreYouSureYouWantToResetChecklists": "Are you sure you want to reset all checklists?",
+    "ChecklistResetWarning": "Checklist Reset Warning",
+    "MarkChecklistAsComplete": "Mark checklist as complete",
+    "MarkItemAsComplete": "Mark item as complete",
+    "ProceedToNextChecklist": "Proceed to next checklist",
+    "ResetAll": "Reset All",
+    "ResetChecklist": "Reset Checklist",
+    "TheLastChecklistIsComplete": "The last checklist is complete",
+    "ThereAreRemainingAutofillChecklistItemsThatHaveNotYetBeenCompleted": "There are remaining autofill checklist items that have not yet been completed",
+    "Title": "Checklists"
   },
   "Dashboard": {
     "ImportantInformation": {
       "Checklists": {
-        "NoRelevantChecklists": "لا توجد قوائم مراجعة ذات صلة",
-        "Title": "قوائم التحقق"
+        "NoRelevantChecklists": "No Relevant Checklists",
+        "Title": "Checklists"
       },
-      "GoToPage": "اذهب إلى صفحة",
+      "GoToPage": "Go to Page",
       "Maintenance": {
-        "NoActiveFailures": "لا توجد اعطال مفعلة",
-        "Title": "الصيانة"
+        "NoActiveFailures": "No Active Failures",
+        "Title": "Maintenance"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "لا توجد خرائط مثبتة ",
-        "Title": "خرائط مثبتة "
+        "NoPinnedCharts": "No Pinned Charts",
+        "Title": "Pinned Charts"
       },
       "TT": {
-        "RearrangeWidgets": "إعادة ترتيب الأدوات "
+        "RearrangeWidgets": "Rearrange Widgets"
       },
-      "Title": "معلومات هامة",
+      "Title": "Important Information",
       "Weather": {
-        "AirPressure": "ضغط الهواء",
-        "DewPoint": "درجة الندى",
-        "IcaoInvalid": "رمز ال ICAO غير صحيح او لا يوجد نشرة METAR متاحة ",
-        "Loading": "جارٍ التحميل…",
-        "MetarParsingError": "لا يمكن تحليل الMETAR المستلم",
-        "NoIcaoProvided": "لم يتم توفير ICAO\n",
-        "Raw": "غير معالج",
+        "AirPressure": "Air Pressure",
+        "DewPoint": "Dew Point",
+        "IcaoInvalid": "ICAO invalid or no METAR available",
+        "Loading": "Loading",
+        "MetarParsingError": "Received METAR could not be parsed",
+        "NoIcaoProvided": "No ICAO provided",
+        "Raw": "Raw",
         "TT": {
-          "SwitchToIconView": "التبديل إلى عرض الأيقونة",
+          "SwitchToIconView": "Switch to Icon View",
           "SwitchToRawMetarView": "Switch to Raw METAR View"
         },
         "Temperature": "Temperature",
@@ -119,8 +119,8 @@
       "LeftInnerTank": "Left Inner Tank",
       "LeftOuterTank": "Left Outer Tank",
       "ReadyToStart": "Ready to Start",
-      "Refuel": "التزود بالوقود",
-      "RefuelTime": "وقت التزود بالوقود",
+      "Refuel": "Refuel",
+      "RefuelTime": "Refuel Time",
       "Refueling": "Refueling",
       "RightInnerTank": "Right Inner Tank",
       "RightOuterTank": "Right Outer Tank",

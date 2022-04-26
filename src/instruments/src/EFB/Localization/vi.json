@@ -230,6 +230,8 @@
       "Low": "Thấp",
       "MaximumManual": "Mức độ tối đa khi lái tay",
       "Medium": "Trung bình",
+      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
+      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
       "OverweightProcedure": "Thủ tục quá trọng lượng",
       "Qnh": "QNH",
       "ReverseThrust": "Lực đẩy ngược",
