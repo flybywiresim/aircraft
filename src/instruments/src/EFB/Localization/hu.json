@@ -49,7 +49,7 @@
         "Loading": "Betöltés",
         "MetarParsingError": "A kapott METAR nem értelmezhető",
         "NoIcaoProvided": "Nincs ICAO megadva",
-        "Raw": "Raw",
+        "Raw": "Kód",
         "TT": {
           "SwitchToIconView": "Váltás ikon nézetre",
           "SwitchToRawMetarView": "Váltás METAR kód nézetre"
@@ -63,7 +63,7 @@
     "YourFlight": {
       "Alternate": "Kitérő reptér",
       "AverageWind": "Átlagos szél",
-      "CompanyRoute": "Légitársasági útvonal",
+      "CompanyRoute": "Vállalati útvonal",
       "CostIndex": "Költség index",
       "CruiseAlt": "Utazómagasság",
       "ImportSimBriefData": "SimBrief adatok importálása",
@@ -90,13 +90,13 @@
       "MTOW": "MTOW",
       "MZFW": "MZFW",
       "MaximumCargo": "Maximális rakomány",
-      "MaximumFuelCapacity": "Maximális üzemanyag kapacitás",
+      "MaximumFuelCapacity": "Maximális üzemanyag ",
       "MaximumPassengers": "Maximális utaslétszám",
       "Model": "Típus",
       "Range": "Hatótávolság",
       "Title": "Áttekintés"
     },
-    "Title": "Dispatch"
+    "Title": "Útvonal eligazítás"
   },
   "Failures": {
     "Comfort": {
@@ -125,7 +125,7 @@
       "RightInnerTank": "Jobb belső tartály",
       "RightOuterTank": "Jobb külső tartály",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "A repülőgépnek Cold & Dark állapotban kell lennie a tankolási időtartam megváltoztatásához",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "A repülőgépnek áramtalanított állapotban kell lennie a tankolási időtartam megváltoztatásához",
         "FillBlockFuelFromSimBrief": "(block) üzemanyag kitöltése SimBrief-ből"
       },
       "Title": "Üzemanyag",
@@ -137,7 +137,7 @@
     },
     "Services": {
       "BaggageTruck": "Poggyászkocsi",
-      "CateringTruck": "Catering Truck",
+      "CateringTruck": "Utasellátó",
       "DoorAft": "Hátsó ajtó",
       "DoorFwd": "Első ajtó",
       "ExternalPower": "Külső áramforrás",
@@ -145,7 +145,7 @@
       "JetBridge": "Utashíd",
       "Title": "Szolgáltatások"
     },
-    "Title": "Földi kiszolgálók"
+    "Title": "Földi kiszolgálás"
   },
   "Modals": {
     "Cancel": "Mégse",
@@ -156,7 +156,7 @@
     "All": "Mind",
     "Altn": "Kitérő reptér",
     "ExitFullscreenMode": "Kilépés teljes képernyős üzemmódból",
-    "From": "Honnan",
+    "From": "Induló",
     "LocalFiles": {
       "Both": "Mindkettő",
       "EstablishingConnection": "Kapcsolat létrehozása",
@@ -173,7 +173,7 @@
       "InsufficientEnv": "Nem megfelelő .env fájl",
       "IntoYourBrowserAndEnterTheCodeBelow": "a böngészőbe, és írja be a kódot lentebb\n",
       "NoAirportSelected": "Nincs repülőtér kiválasztva",
-      "ResetNavigraphAuthentication": "Reset Navigraph Authentication",
+      "ResetNavigraphAuthentication": "Navigraph hitelesítés visszaállítása",
       "ScanTheQrCodeOrOpen": "Szkennelje be a QR-kódot vagy Megnyitás",
       "Title": "Navigraph"
     },
@@ -186,8 +186,8 @@
       "SortMethods": {
         "AlphabeticalAZ": "ABC sorrend - A->Z",
         "AlphabeticalZA": "ABC sorrend - Z->A",
-        "FirstAccessed": "First Accessed",
-        "LastAccessed": "Last Accessed",
+        "FirstAccessed": "Először használt",
+        "LastAccessed": "Legutóbb használt",
         "None": "Egyik sem"
       },
       "TT": {
@@ -212,7 +212,7 @@
     "ThereAreNoChartsToDisplay": "Nincsenek megjeleníthető Chart-ok",
     "ThereIsNoChartToDisplay": "Nincs megjeleníthető Chart",
     "Title": "Navigáció és Térképek",
-    "To": "Hova"
+    "To": "Érkező"
   },
   "Performance": {
     "Data": "Adatok",
@@ -230,8 +230,8 @@
       "Low": "Alacsony",
       "MaximumManual": "Maximális manuális",
       "Medium": "Közepes",
-      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
-      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
+      "MetarErrorDialogMessage": "Az OFP-ből származó METAR nem sikerült sikeresen elemezni. Szeretné automatikusan kitölteni az adatokat egy lekért METAR használatával?",
+      "MetarErrorDialogTitle": "Hiba az OFP METAR elemzésekor",
       "OverweightProcedure": "Túlsúlyos eljárás",
       "Qnh": "QNH",
       "ReverseThrust": "Sugárfordító",
@@ -240,7 +240,7 @@
       "RunwayCondition": "Futópálya állapota",
       "RunwayHeading": "Futópálya iránya",
       "RunwayHeadingUnit": "°",
-      "RunwayLda": "Kifutópálya hossza",
+      "RunwayLda": "Futópálya hossza",
       "RunwayLdaUnitFt": "ft",
       "RunwayLdaUnitMeter": "m",
       "RunwaySlope": "Futópálya lejtése",
@@ -270,7 +270,7 @@
         "Title": "Adatok",
         "UnitAngleDegrees": "fok",
         "UnitFeet": "láb",
-        "UnitFtMin": "láb/perc",
+        "UnitFtMin": "ft/perc",
         "UnitNM": "NM",
         "VerticalSpeed": "Függőleges sebesség"
       },
@@ -294,8 +294,8 @@
         "Title": "Eredmény"
       },
       "TT": {
-        "DesynchronizeInputWithAircraftsCurrentAltitude": "Desynchronize Input with Aircraft's Current Altitude",
-        "SynchronizeInputWithAircraftsCurrentAltitude": "Synchronize Input with Aircraft's Current Altitude"
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Adat szinkronizálása a repülőgép jelenlegi magasságával",
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Adat szinkronizálása a perülőgép jelenlegi magasságával"
       },
       "Title": "Sülyedés megkezdése"
     }
@@ -303,9 +303,9 @@
   "Presets": {
     "AircraftStates": {
       "Cancel": "Mégse",
-      "ColdDark": "Cold & Dark állapot",
+      "ColdDark": "Áramtalanított ",
       "ConfirmationDialogMsg": "Kérem erősítse meg a beállítás betöltését",
-      "CurrentProcedureStep": "Current Procedure Step",
+      "CurrentProcedureStep": "Aktuális részfolyamat",
       "PleaseConfirmLoadingOfPreset": "Kérem erősítse meg a beállítás betöltését",
       "ReadyPushback": "Hátratolásra kész",
       "ReadyTakeoff": "Felszállásra kész",
@@ -326,15 +326,15 @@
       "PleaseConfirmSavingPreset": "Erősítse meg a beállítás mentését",
       "SavePreset": "Beállítás mentése",
       "SavingPreset": "Beállítás mentése folyamatban",
-      "SelectAnInteriorLightingPresetToLoadOrSave": "Fedélzet világítás betöltés és mentése",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Fedélzeti világítás betöltés és mentése",
       "TT": {
         "AircraftMustBePowered": "A repülőnek áramellátás alatt kell lennie",
-        "ClickTextToChangeThePresetsName": "Kattints a szövegre a beállítás nevének megváltozatásához",
+        "ClickTextToChangeThePresetsName": "Kattintson a szövegre a beállítás nevének megváltozatásához",
         "LoadThisPreset": "Töltse be ezt a beállítást",
-        "SaveTheCurrentLightingLevels": "Jelenlegi világítási konfiguráció mentése"
+        "SaveTheCurrentLightingLevels": "Jelenlegi fedélzet világítási konfiguráció mentése"
       },
       "TheAircraftMustBePoweredForInteriorLightingPresets": "A repülőnek áramellátás alatt kell lennie a belső világítási beállításokhoz",
-      "Title": "Belső világítás"
+      "Title": "Kabin világítás"
     },
     "Title": "Beállítások"
   },
@@ -407,7 +407,7 @@
       "AdirsAlignTime": "ADIRS kalibrációs idő",
       "AutofillChecklists": "Ellenörző listák automatikus kitöltése",
       "BoardingTime": "Beszállási idő",
-      "DmcSelfTestTime": "DMC Önteszt idő",
+      "DmcSelfTestTime": "DMC Öntesztelési idő",
       "HomeCockpitMode": "Épített kabin mód",
       "McduFocusTimeout": "MCDU Fókusz időtúllépés (másodperc)",
       "McduKeyboardInput": "MCDU Billentyűzet bevitel",
@@ -424,7 +424,7 @@
       "ExternalMcduServerPort": "Külső MCDU szerver port",
       "Hpa": "hPa",
       "Inactive": "Inaktív",
-      "LoadOnly": "Load Only",
+      "LoadOnly": "Betöltés",
       "None": "Nincs",
       "Off": "Ki",
       "Save": "Mentés",
@@ -481,21 +481,21 @@
   },
   "Settings.flyPad.BatteryLifeEnabled": "Akkumlátor élettartam szimulálva",
   "StatusBar": {
-    "Apr": "Ápr",
-    "Aug": "Aug",
-    "Dec": "Dec",
-    "Feb": "Feb",
+    "Apr": "Ápr.",
+    "Aug": "Aug.",
+    "Dec": "Dec.",
+    "Feb": "Feb.",
     "Fri": "Pé",
-    "Jan": "Jan",
-    "Jul": "Júl",
-    "Jun": "Jún",
-    "Mar": "Március",
-    "May": "Máj",
-    "Mon": "Hé",
-    "Nov": "Nov",
-    "Oct": "Oct",
+    "Jan": "Jan.",
+    "Jul": "Júl.",
+    "Jun": "Jún.",
+    "Mar": "Már.",
+    "May": "Máj.",
+    "Mon": "Hét",
+    "Nov": "Nov.",
+    "Oct": "Okt.",
     "Sat": "Szo",
-    "Sep": "Sep",
+    "Sep": "Szept.",
     "Sun": "Va",
     "TT": {
       "ConnectedToLocalApi": "Csatlakozva a helyi API-hoz",
