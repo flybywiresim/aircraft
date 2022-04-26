@@ -92,9 +92,9 @@ class CDUAtcWhenCanWe {
 
         let text = "ADD TEXT\xa0";
         let erase = "\xa0ERASE";
-        let reqDisplay = "REQ DISPLAY\xa0[color]cyan";
+        let reqDisplay = "DCDU\xa0[color]cyan";
         if (CDUAtcWhenCanWe.CanSendData(data)) {
-            reqDisplay = "REQ DISPLAY*[color]cyan";
+            reqDisplay = "DCDU*[color]cyan";
             text = "ADD TEXT>";
         }
         if (CDUAtcWhenCanWe.CanEraseData(data)) {
@@ -113,7 +113,7 @@ class CDUAtcWhenCanWe {
             ["", backOnRoute],
             ["\xa0ALL FIELDS"],
             [erase, text],
-            ["\xa0ATC MENU", "ATC\xa0[color]cyan"],
+            ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
             ["<RETURN", reqDisplay]
         ]);
 
@@ -231,7 +231,7 @@ class CDUAtcWhenCanWe {
             if (CDUAtcWhenCanWe.CanSendData(data)) {
                 const messages = CDUAtcWhenCanWe.CreateRequests(mcdu, data);
                 if (messages.length !== 0) {
-                    CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
+                    CDUAtcTextFansA.ShowPage1(mcdu, messages);
                 }
             }
         };

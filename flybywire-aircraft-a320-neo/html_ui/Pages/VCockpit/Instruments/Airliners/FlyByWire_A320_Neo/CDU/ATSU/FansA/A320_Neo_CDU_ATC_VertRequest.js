@@ -204,9 +204,9 @@ class CDUAtcVertRequest {
 
         let text = "ADD TEXT\xa0";
         let erase = "\xa0ERASE";
-        let reqDisplay = "REQ DISPLAY\xa0[color]cyan";
+        let reqDisplay = "DCDU\xa0[color]cyan";
         if (CDUAtcVertRequest.CanSendData(data)) {
-            reqDisplay = "REQ DISPLAY*[color]cyan";
+            reqDisplay = "DCDU*[color]cyan";
             text = "ADD TEXT>";
             erase = "*ERASE";
         }
@@ -223,7 +223,7 @@ class CDUAtcVertRequest {
             ["", speedWhen],
             ["\xa0ALL FIELDS"],
             [erase, text],
-            ["\xa0ATC MENU", "ATC\xa0[color]cyan"],
+            ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
             ["<RETURN", reqDisplay]
         ]);
 
@@ -340,7 +340,7 @@ class CDUAtcVertRequest {
             if (CDUAtcVertRequest.CanSendData(data)) {
                 const messages = CDUAtcVertRequest.CreateRequests(mcdu, data);
                 if (messages.length !== 0) {
-                    CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
+                    CDUAtcTextFansA.ShowPage1(mcdu, messages);
                 }
             }
         };
@@ -400,9 +400,9 @@ class CDUAtcVertRequest {
 
         let text = "ADD TEXT\xa0";
         let erase = "\xa0ERASE";
-        let reqDisplay = "REQ DISPLAY\xa0[color]cyan";
+        let reqDisplay = "DCDU\xa0[color]cyan";
         if (CDUAtcVertRequest.CanSendData(data)) {
-            reqDisplay = "REQ DISPLAY*[color]cyan";
+            reqDisplay = "DCDU*[color]cyan";
             text = "ADD TEXT>";
             erase = "*ERASE";
         }
@@ -419,7 +419,7 @@ class CDUAtcVertRequest {
             [crzClimbWhen, speedRangeWhen],
             ["\xa0ALL FIELDS"],
             [erase, text],
-            ["\xa0ATC MENU", "ATC\xa0[color]cyan"],
+            ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
             ["<RETURN", reqDisplay]
         ]);
 
@@ -568,7 +568,7 @@ class CDUAtcVertRequest {
             if (CDUAtcVertRequest.CanSendData(data)) {
                 const messages = CDUAtcVertRequest.CreateRequests(mcdu, data);
                 if (messages.length !== 0) {
-                    CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
+                    CDUAtcTextFansA.ShowPage1(mcdu, messages);
                 }
             }
         };

@@ -82,13 +82,13 @@ class CDUAtcTextFansA {
         return messages;
     }
 
-    static ShowPage1(mcdu, parent = null, messages = [], data = CDUAtcTextFansA.CreateDataBlock()) {
+    static ShowPage1(mcdu, messages = [], data = CDUAtcTextFansA.CreateDataBlock()) {
         mcdu.clearDisplay();
 
         let erase = "\xa0ERASE";
-        let reqDisplay = `${parent ? parent : "TEXT"} DISPL\xa0[color]cyan`;
+        let reqDisplay = "DCDU\xa0[color]cyan";
         if (CDUAtcTextFansA.CanSendData(messages, data)) {
-            reqDisplay = `${parent ? parent : "TEXT"} DISPL*[color]cyan`;
+            reqDisplay = "DCDU*[color]cyan";
         }
         if (CDUAtcTextFansA.CanEraseData(data)) {
             erase = "*ERASE";
@@ -140,8 +140,8 @@ class CDUAtcTextFansA {
             ["---------FREE TEXT---------"],
             [freetext],
             ["\xa0ALL FIELDS"],
-            [erase, "ADD TEXT\xa0[color]cyan"],
-            ["\xa0ATC MENU", `ATC\xa0[color]cyan`],
+            [erase],
+            ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
             ["<RETURN", reqDisplay]
         ]);
 
@@ -157,7 +157,7 @@ class CDUAtcTextFansA {
                 data.performance = true;
                 data.freetext = oldFreetext;
             }
-            CDUAtcTextFansA.ShowPage1(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[1] = () => {
@@ -172,7 +172,7 @@ class CDUAtcTextFansA {
                 data.weather = true;
                 data.freetext = oldFreetext;
             }
-            CDUAtcTextFansA.ShowPage1(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[2] = () => {
@@ -187,7 +187,7 @@ class CDUAtcTextFansA {
                 data.turbulence = true;
                 data.freetext = oldFreetext;
             }
-            CDUAtcTextFansA.ShowPage1(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[3] = () => {
@@ -199,14 +199,14 @@ class CDUAtcTextFansA {
             } else if (value) {
                 data.freetext[0] = value;
             }
-            CDUAtcTextFansA.ShowPage1(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcTextFansA.ShowPage1(mcdu, parent, messages);
+            CDUAtcTextFansA.ShowPage1(mcdu, messages);
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -228,7 +228,7 @@ class CDUAtcTextFansA {
                 data.medical = true;
                 data.freetext = oldFreetext;
             }
-            CDUAtcTextFansA.ShowPage1(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
         };
 
         mcdu.rightInputDelay[1] = () => {
@@ -243,7 +243,7 @@ class CDUAtcTextFansA {
                 data.technical = true;
                 data.freetext = oldFreetext;
             }
-            CDUAtcTextFansA.ShowPage1(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
         };
 
         mcdu.rightInputDelay[2] = () => {
@@ -258,7 +258,7 @@ class CDUAtcTextFansA {
                 data.discretion = true;
                 data.freetext = oldFreetext;
             }
-            CDUAtcTextFansA.ShowPage1(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
         };
 
         mcdu.rightInputDelay[5] = () => {
@@ -278,12 +278,15 @@ class CDUAtcTextFansA {
             }
         };
 
+        mcdu.onPrevPage = () => {
+            CDUAtcTextFansA.ShowPage2(mcdu, messages, data);
+        };
         mcdu.onNextPage = () => {
-            CDUAtcTextFansA.ShowPage2(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage2(mcdu, messages, data);
         };
     }
 
-    static ShowPage2(mcdu, parent, messages = [], data = CDUAtcTextFansA.CreateDataBlock()) {
+    static ShowPage2(mcdu, messages = [], data = CDUAtcTextFansA.CreateDataBlock()) {
         mcdu.clearDisplay();
 
         let freetext1 = "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan";
@@ -304,9 +307,9 @@ class CDUAtcTextFansA {
         }
 
         let erase = "\xa0ERASE";
-        let reqDisplay = `${parent ? parent : "TEXT"} DISPL\xa0[color]cyan`;
+        let reqDisplay = "DCDU\xa0[color]cyan";
         if (CDUAtcTextFansA.CanSendData(messages, data)) {
-            reqDisplay = `${parent ? parent : "TEXT"} DISPL*[color]cyan`;
+            reqDisplay = "DCDU*[color]cyan";
         }
         if (CDUAtcTextFansA.CanEraseData(data)) {
             erase = "*ERASE";
@@ -324,7 +327,7 @@ class CDUAtcTextFansA {
             [freetext4],
             ["\xa0ALL FIELDS"],
             [erase],
-            ["\xa0ATC MENU", "ATC\xa0[color]cyan"],
+            ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
             ["<RETURN", reqDisplay]
         ]);
 
@@ -337,7 +340,7 @@ class CDUAtcTextFansA {
             } else if (value) {
                 data.freetext[1] = value;
             }
-            CDUAtcTextFansA.ShowPage2(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage2(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[1] = () => {
@@ -349,7 +352,7 @@ class CDUAtcTextFansA {
             } else if (value) {
                 data.freetext[2] = value;
             }
-            CDUAtcTextFansA.ShowPage2(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage2(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[2] = () => {
@@ -361,7 +364,7 @@ class CDUAtcTextFansA {
             } else if (value) {
                 data.freetext[3] = value;
             }
-            CDUAtcTextFansA.ShowPage2(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage2(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[3] = () => {
@@ -373,14 +376,14 @@ class CDUAtcTextFansA {
             } else if (value) {
                 data.freetext[4] = value;
             }
-            CDUAtcTextFansA.ShowPage2(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage2(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcTextFansA.ShowPage2(mcdu, parent, messages);
+            CDUAtcTextFansA.ShowPage2(mcdu, messages);
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -408,7 +411,10 @@ class CDUAtcTextFansA {
         };
 
         mcdu.onPrevPage = () => {
-            CDUAtcTextFansA.ShowPage1(mcdu, parent, messages, data);
+            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
+        };
+        mcdu.onNextPage = () => {
+            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
         };
     }
 }

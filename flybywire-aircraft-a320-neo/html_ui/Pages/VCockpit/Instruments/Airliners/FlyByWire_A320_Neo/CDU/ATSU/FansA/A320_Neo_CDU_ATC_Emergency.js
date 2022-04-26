@@ -103,13 +103,13 @@ class CDUAtcEmergencyFansA {
 
         let addText = "ADD TEXT\xa0";
         let eraseData = "\xa0ERASE";
-        let sendData = "REQ DISPL\xa0[color]cyan";
+        let sendData = "DCDU\xa0[color]cyan";
         if (CDUAtcEmergencyFansA.CanEraseData(data)) {
             eraseData = "*ERASE";
             addText = "ADD TEXT>";
         }
         if (CDUAtcEmergencyFansA.CanSendData(data)) {
-            sendData = "REQ DISPL*[color]cyan";
+            sendData = "DCDU*[color]cyan";
         }
 
         mcdu.setTemplate([
@@ -124,7 +124,7 @@ class CDUAtcEmergencyFansA {
             ["", cancelEmergency],
             ["\xa0ALL FIELDS"],
             [eraseData, addText],
-            ["\xa0ATC MENU", "ATC\xa0[color]cyan"],
+            ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
             ["<RETURN", sendData]
         ]);
 
@@ -238,7 +238,7 @@ class CDUAtcEmergencyFansA {
             if (CDUAtcEmergencyFansA.CanSendData(data)) {
                 const messages = CDUAtcEmergencyFansA.CreateRequests(mcdu, data);
                 if (messages.length !== 0) {
-                    CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
+                    CDUAtcTextFansA.ShowPage1(mcdu, messages);
                 }
             }
         };
@@ -292,13 +292,13 @@ class CDUAtcEmergencyFansA {
 
         let addText = "ADD TEXT\xa0";
         let eraseData = "\xa0ERASE";
-        let sendData = "REQ DISPL\xa0[color]cyan";
+        let sendData = "DCDU\xa0[color]cyan";
         if (CDUAtcEmergencyFansA.CanEraseData(data)) {
             eraseData = "*ERASE";
             addText = "ADD TEXT>";
         }
         if (CDUAtcEmergencyFansA.CanSendData(data)) {
-            sendData = "REQ DISPL*[color]cyan";
+            sendData = "DCDU*[color]cyan";
         }
 
         mcdu.setTemplate([
@@ -313,7 +313,7 @@ class CDUAtcEmergencyFansA {
             [""],
             ["\xa0ALL FIELDS"],
             [eraseData, addText],
-            ["\xa0ATC MENU", "ATC\xa0[color]cyan"],
+            ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
             ["<RETURN", sendData]
         ]);
 
@@ -429,7 +429,7 @@ class CDUAtcEmergencyFansA {
             if (CDUAtcEmergencyFansA.CanSendData(data)) {
                 const messages = CDUAtcEmergencyFansA.CreateRequests(mcdu, data);
                 if (messages.length !== 0) {
-                    CDUAtcTextFansA.ShowPage1(mcdu, "REQ", messages);
+                    CDUAtcTextFansA.ShowPage1(mcdu, messages);
                 }
             }
         };

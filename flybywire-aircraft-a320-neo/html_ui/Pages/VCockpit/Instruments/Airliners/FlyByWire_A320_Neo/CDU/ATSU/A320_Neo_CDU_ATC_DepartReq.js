@@ -128,9 +128,9 @@ class CDUAtcDepartReq {
         }
 
         // check if all required information are available to prepare the PDC message
-        let reqDisplButton = "{cyan}REQ DISPL\xa0{end}";
+        let reqDisplButton = "{cyan}DCDU\xa0{end}";
         if (CDUAtcDepartReq.CanSendData(store)) {
-            reqDisplButton = "{cyan}REQ DISPL*{end}";
+            reqDisplButton = "{cyan}DCDU*{end}";
         }
 
         mcdu.setTemplate([
@@ -145,7 +145,7 @@ class CDUAtcDepartReq {
             [freetext],
             ["", "MORE\xa0"],
             ["", "FREE TEXT>"],
-            ["\xa0ATC MENU", "{cyan}ATC DEPART\xa0{end}"],
+            ["\xa0ATC MENU", "{cyan}XFR TO\xa0{end}"],
             ["<RETURN", reqDisplButton]
         ]);
 
