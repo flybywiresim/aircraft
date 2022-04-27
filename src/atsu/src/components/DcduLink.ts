@@ -189,14 +189,14 @@ export class DcduLink {
     }
 
     private estimateRingInterval() {
-        let interval = 10000;
+        let interval = 15000;
 
         this.messages.forEach((elem) => {
             if (!elem[0].MessageRead) {
                 if (elem[0].EmergencyMessage) {
                     interval = Math.min(interval, 5000);
                 } else {
-                    interval = Math.min(interval, 10000);
+                    interval = Math.min(interval, 15000);
                 }
             }
         });
