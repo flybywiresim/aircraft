@@ -43,13 +43,13 @@ class CDUAocRequestsWeather {
             }
         }
 
-        let sendMessage = "SEND\xa0[color]cyan";
-        if (data.airports.filter((n) => n).length !== 0) {
-            sendMessage = "SEND*[color]cyan";
-        }
-
         const updateView = () => {
             if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
+                let sendMessage = "SEND\xa0[color]cyan";
+                if (data.airports.filter((n) => n).length !== 0 && data.sendStatus !== "SENDING") {
+                    sendMessage = "SEND*[color]cyan";
+                }
+
                 mcdu.setTemplate([
                     ["AOC WEATHER REQUEST"],
                     ["\xa0WX TYPE", "AIRPORTS\xa0"],

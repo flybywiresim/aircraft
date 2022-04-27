@@ -21,6 +21,11 @@ export class HoppieConnector {
     public static async activateHoppie() {
         SimVar.SetSimVarValue('L:A32NX_HOPPIE_ACTIVE', 'number', 0);
 
+        if (NXDataStore.get('CONFIG_HOPPIE_ENABLED', 'DISABLED') === 'DISABLED') {
+            console.log('Hoppie deactivated in EFB');
+            return;
+        }
+
         if (NXDataStore.get('CONFIG_HOPPIE_USERID', '') === '') {
             console.log('No Hoppie-ID set');
             return;

@@ -557,6 +557,7 @@ const ATSUAOCPage = () => {
     const { simbriefUserId, setSimbriefUserId } = useContext(SimbriefUserIdContext);
     const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
 
+    const [hoppieEnabled, setHoppieEnabled] = usePersistentProperty('CONFIG_HOPPIE_ENABLED', 'DISABLED');
     const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
     const [hoppieError, setHoppieError] = useState(false);
 
@@ -725,6 +726,16 @@ const ATSUAOCPage = () => {
         }
     }
 
+    function handleHoppieEnabled(toggleValue: boolean) {
+        if (toggleValue) {
+            setHoppieEnabled('ENABLED');
+            HoppieConnector.activateHoppie();
+        } else {
+            setHoppieEnabled('DISABLED');
+            HoppieConnector.deactivateHoppie();
+        }
+    }
+
     return (
         <div className="bg-navy-lighter rounded-xl px-6 divide-y divide-gray-700 flex flex-col">
             <div className="py-4 flex flex-row justify-between items-center">
@@ -815,6 +826,10 @@ const ATSUAOCPage = () => {
                         onChange={(value) => setHoppieUserId(value)}
                     />
                 </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Hoppie enabled</span>
+                <Toggle value={hoppieEnabled === 'ENABLED'} onToggle={(toggleValue) => handleHoppieEnabled(toggleValue)} />
             </div>
         </div>
     );
