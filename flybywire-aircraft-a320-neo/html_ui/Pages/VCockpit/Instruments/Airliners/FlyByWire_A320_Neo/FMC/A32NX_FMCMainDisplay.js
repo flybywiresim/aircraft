@@ -2452,14 +2452,6 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    activateDirectToWaypoint(waypoint, callback = EmptyCallback.Void) {
-        const waypoints = this.flightPlanManager.getWaypoints();
-        this.flightPlanManager.activateDirectTo(waypoint.infos.icao, () => {
-            SimVar.SetSimVarValue("K:A32NX.FMGC_DIR_TO_TRIGGER", "number", 0);
-            callback();
-        });
-    }
-
     /**
      *
      * @param {string} lastWaypointIdent The waypoint along the airway to insert up to

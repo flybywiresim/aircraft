@@ -39,7 +39,7 @@ class CDUDirectToPage {
             };
             mcdu.onRightInput[5] = () => {
                 mcdu.insertTemporaryFlightPlan(() => {
-                    SimVar.SetSimVarValue('K:A32NX.FCU_HDG_PUSH', 'boolean', true);
+                    SimVar.SetSimVarValue("K:A32NX.FMGC_DIR_TO_TRIGGER", "number", 0);
                     CDUFlightPlanPage.ShowPage(mcdu);
                 });
             };
@@ -57,7 +57,7 @@ class CDUDirectToPage {
                 if (w) {
                     mcdu.eraseTemporaryFlightPlan(() => {
                         mcdu.ensureCurrentFlightPlanIsTemporary(() => {
-                            mcdu.activateDirectToWaypoint(w, () => {
+                            mcdu.flightPlanManager.insertDirectTo(w.infos.icao).then(() => {
                                 CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex);
                             });
                         });
@@ -92,7 +92,7 @@ class CDUDirectToPage {
                     mcdu.onLeftInput[cellIter + 1] = () => {
                         mcdu.eraseTemporaryFlightPlan(() => {
                             mcdu.ensureCurrentFlightPlanIsTemporary(() => {
-                                mcdu.activateDirectToWaypoint(waypoint, () => {
+                                mcdu.flightPlanManager.insertDirectTo(waypoint.infos.icao).then(() => {
                                     CDUDirectToPage.ShowPage(mcdu, waypoint, wptsListIndex);
                                 });
                             });

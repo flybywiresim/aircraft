@@ -1624,18 +1624,16 @@ export class FlightPlanManager {
     }
 
     /**
-     * Activates direct-to an ICAO designated fix.
+     * Inserts direct-to an ICAO designated fix.
      *
      * @param icao The ICAO designation for the fix to fly direct-to.
-     * @param callback A callback to call when the operation completes.
      */
-    public async activateDirectTo(icao: string, callback = EmptyCallback.Void): Promise<void> {
+    public async insertDirectTo(icao: string): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
 
         await currentFlightPlan.addDirectTo(icao);
 
         this.updateFlightPlanVersion().catch(console.error);
-        callback();
     }
 
     /**
