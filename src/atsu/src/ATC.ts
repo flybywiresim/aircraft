@@ -10,7 +10,7 @@ import { CpdlcMessagesDownlink, CpdlcMessageExpectedResponseType } from './messa
 import { CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
 import { Atsu } from './ATSU';
-import { DcduLink } from './components/DcduLink';
+import { DcduStatusMessage, DcduLink } from './components/DcduLink';
 import { FansMode, FutureAirNavigationSystem } from './com/FutureAirNavigationSystem';
 
 /*
@@ -227,14 +227,22 @@ export class Atc {
 
             message.Response = responseMsg;
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
+            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sending);
             this.dcduLink.update(message);
 
             if (message.Response !== undefined) {
                 this.datalink.sendMessage(message.Response, false).then((code) => {
                     if (code === AtsuStatusCodes.Ok) {
                         message.Response.ComStatus = AtsuMessageComStatus.Sent;
+                        this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sent);
+                        setTimeout(() => {
+                            if (this.dcduLink.currentDcduStatusMessage(message.UniqueMessageID) === DcduStatusMessage.Sent) {
+                                this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.NoMessage);
+                            }
+                        }, 5000);
                     } else {
                         message.Response.ComStatus = AtsuMessageComStatus.Failed;
+                        this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.SendFailed);
                     }
                     this.dcduLink.update(message);
                 });
@@ -268,6 +276,15 @@ export class Atc {
 
             if ((message as CpdlcMessage).DcduRelevantMessage) {
                 this.dcduLink.update(message as CpdlcMessage);
+
+                this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, code === AtsuStatusCodes.Ok ? DcduStatusMessage.Sent : DcduStatusMessage.SendFailed);
+                if (code === AtsuStatusCodes.Ok) {
+                    setTimeout(() => {
+                        if (this.dcduLink.currentDcduStatusMessage(message.UniqueMessageID) === DcduStatusMessage.Sent) {
+                            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.NoMessage);
+                        }
+                    }, 5000);
+                }
             }
 
             return code;

@@ -121,7 +121,14 @@ export class DcduLink {
         Coherent.on('A32NX_ATSU_PRINT_MESSAGE', (uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
+                this.updateDcduStatusMessage(uid, DcduStatusMessage.Printing);
                 this.atsu.printMessage(message);
+                setTimeout(() => {
+                    const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
+                    if (idx !== -1 && this.currentDcduStatusMessage(uid) === DcduStatusMessage.Printing) {
+                        this.updateDcduStatusMessage(uid, DcduStatusMessage.NoMessage);
+                    }
+                }, 7000);
             }
         });
 
