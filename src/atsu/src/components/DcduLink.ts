@@ -53,6 +53,8 @@ class DcduMessage {
     public MessageRead = false;
 
     public EmergencyMessage = false;
+
+    public Status: DcduStatusMessage = DcduStatusMessage.NoMessage;
 }
 
 export class DcduLink {
@@ -291,6 +293,22 @@ export class DcduLink {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', uid);
             this.messages.splice(idx, 1);
         }
+    }
+
+    public updateDcduStatusMessage(uid: number, status: DcduStatusMessage): void {
+        // the assumption is that the first message in the block is the UID for the complete block
+        const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
+        if (idx !== -1) {
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_ATSU_STATUS', uid, status);
+        }
+    }
+
+    public currentDcduStatusMessage(uid: number): DcduStatusMessage {
+        const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
+        if (idx !== -1) {
+            return this.messages[idx][0].Status;
+        }
+        return DcduStatusMessage.NoMessage;
     }
 
     public openMessagesForStation(station: string): boolean {
