@@ -1354,7 +1354,7 @@ const PseudoFWC: React.FC = () => {
         '0000690': // VHF 3 VOICE
         {
             flightPhaseInhib: [],
-            simVarIsActive: voiceVHF3 !== 0,
+            simVarIsActive: voiceVHF3 !== 0 && [1, 2, 6, 9, 10].includes(flightPhase),
             whichCodeToReturn: [0],
             codesToReturn: ['000069001'],
             memoInhibit: false,
