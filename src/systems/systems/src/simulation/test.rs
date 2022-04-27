@@ -108,6 +108,10 @@ pub trait TestBed {
         self.test_bed_mut().ambient_temperature()
     }
 
+    fn set_sim_is_ready(&mut self, is_ready: bool) {
+        self.test_bed_mut().set_is_ready(is_ready);
+    }
+
     fn set_on_ground(&mut self, on_ground: bool) {
         self.test_bed_mut().set_on_ground(on_ground);
     }
