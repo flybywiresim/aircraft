@@ -9,7 +9,6 @@ import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 
 export class IFLeg extends XFLeg {
     constructor(
