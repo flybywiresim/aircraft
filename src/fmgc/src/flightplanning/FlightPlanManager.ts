@@ -73,6 +73,8 @@ export class FlightPlanManager {
 
     private _fixInfos: FixInfo[] = [];
 
+    private updateThrottler = new A32NX_Util.UpdateThrottler(2000);
+
     /**
      * Constructs an instance of the FlightPlanManager with the provided
      * parent instrument attached.
@@ -112,13 +114,13 @@ export class FlightPlanManager {
         this.__currentFlightPlanIndex = value;
     }
 
-    public update(_: number): void {
-        const tmpy = this._flightPlans[FlightPlans.Temporary];
-        if (tmpy) {
-            const wp = tmpy.getWaypoint(1);
-            if (wp?.additionalData?.dynamicPpos) {
-                wp.infos.coordinates.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
-                wp.infos.coordinates.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+    public update(deltaTime: number): void {
+        if (this.updateThrottler.canUpdate(deltaTime) !== -1) {
+            const tmpy = this._flightPlans[FlightPlans.Temporary];
+            if (tmpy && this.__currentFlightPlanIndex === FlightPlans.Temporary) {
+                if (tmpy.updateTurningPoint()) {
+                    this.updateFlightPlanVersion();
+                }
             }
         }
     }
@@ -1630,20 +1632,7 @@ export class FlightPlanManager {
     public async activateDirectTo(icao: string, callback = EmptyCallback.Void): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
 
-        // TODO allow dir TO out of hold etc...
-        let waypointIndex = currentFlightPlan.waypoints.findIndex((w) => w.icao === icao);
-        if (waypointIndex === -1) {
-            // string, to the start of the flight plan, then direct to
-            const waypoint = await this._parentInstrument.facilityLoader.getFacilityRaw(icao).catch(console.error);
-            waypoint.endsInDiscontinuity = true;
-            waypoint.discontinuityCanBeCleared = true;
-            // TODO fix discontinuity
-            currentFlightPlan.addWaypoint(waypoint, currentFlightPlan.activeWaypointIndex);
-            waypointIndex = currentFlightPlan.waypoints.findIndex((w) => w.icao === icao);
-            currentFlightPlan.activeWaypointIndex = waypointIndex;
-        }
-
-        currentFlightPlan.addDirectTo(waypointIndex);
+        await currentFlightPlan.addDirectTo(icao);
 
         this.updateFlightPlanVersion().catch(console.error);
         callback();

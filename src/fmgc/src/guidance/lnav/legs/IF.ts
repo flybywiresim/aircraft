@@ -35,19 +35,15 @@ export class IFLeg extends XFLeg {
     }
 
     recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
-        if (!(this.outboundGuidable instanceof Leg)) {
-            throw new Error(`IF outboundGuidable must be a leg (is ${this.outboundGuidable?.constructor})`);
-        }
-
         this.isComputed = true;
     }
 
     get inboundCourse(): Degrees | undefined {
-        return undefined;
+        return this.fix?.additionalData.course;
     }
 
     get outboundCourse(): Degrees | undefined {
-        return undefined;
+        return this.fix?.additionalData.course;
     }
 
     get distance(): NauticalMiles {
