@@ -95,11 +95,13 @@ export class GuidanceManager {
                 return new RFLeg(from, to, to.additionalData.center, metadata, segment);
             }
 
-            if (to.additionalData.legType === LegType.CA) {
+            // FIXME VALeg should be implemented to give proper heading guidance
+            if (to.additionalData.legType === LegType.CA || to.additionalData.legType === LegType.VA) {
                 const course = to.additionalData.vectorsCourse;
                 const altitude = to.additionalData.vectorsAltitude;
+                const extraLength = (from.additionalData.runwayLength ?? 0) / (2 * 1852);
 
-                return new CALeg(course, altitude, metadata, segment);
+                return new CALeg(course, altitude, metadata, segment, extraLength);
             }
 
             if (to.additionalData.legType === LegType.CI || to.additionalData.legType === LegType.VI) {

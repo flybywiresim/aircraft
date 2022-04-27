@@ -54,7 +54,7 @@ class CDUAtcConnectionStatus {
         };
         mcdu.onRightInput[1] = () => {
             if (!store["disconnectAvail"]) {
-                mcdu.addNewMessage(NXSystemMessages.noAtc);
+                mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
             } else if (!store["disconnectInProgress"]) {
                 store["disconnectInProgress"] = true;
                 store["disconnectAvail"] = false;

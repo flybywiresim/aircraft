@@ -76,7 +76,7 @@ class CDUAocRequestsWeather {
                     CDUAocRequestsWeather.ShowPage(mcdu, data);
                 } else {
                     if (!/^[A-Z0-9]{4}$/.test(value)) {
-                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     } else {
                         mcdu.dataManager.GetAirportByIdent(value).then((airport) => {
                             if (airport) {
@@ -87,7 +87,7 @@ class CDUAocRequestsWeather {
                                     CDUAocRequestsWeather.ShowPage(mcdu, data);
                                 }
                             } else {
-                                mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                                mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                             }
                         });
                     }
@@ -102,7 +102,7 @@ class CDUAocRequestsWeather {
         mcdu.onRightInput[5] = async () => {
             const icaos = data.airports.filter((n) => n);
             if (icaos.length === 0) {
-                mcdu.addNewMessage(NXFictionalMessages.noAirportSpecified);
+                mcdu.setScratchpadMessage(NXFictionalMessages.noAirportSpecified);
                 return;
             }
             data.sendStatus = "SENDING";

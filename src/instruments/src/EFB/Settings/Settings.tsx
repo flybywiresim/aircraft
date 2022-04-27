@@ -4,6 +4,7 @@ import { Hoppie } from '@flybywiresim/api-client';
 import { useSimVar } from '@instruments/common/simVars';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
 import { PopUp } from '@shared/popup';
+import { HoppieConnector } from '@atsu/com/webinterfaces/HoppieConnector';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
@@ -131,6 +132,7 @@ const AircraftConfigurationPage = () => {
     const [isisBaro, setIsisBaro] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
     const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentProperty('ISIS_METRIC_ALTITUDE', '0');
     const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
+    const [latLonExtended, setLatLonExtended] = usePersistentProperty('LATLON_EXT_FMT', '0');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -155,6 +157,11 @@ const AircraftConfigurationPage = () => {
     const vhfSpacingButtons: ButtonType[] = [
         { name: '8.33 kHz', setting: '0' },
         { name: '25 kHz', setting: '1' },
+    ];
+
+    const latLonExtendedButtons: ButtonType[] = [
+        { name: 'LLnn', setting: '0' },
+        { name: 'AxxByyy', setting: '1' },
     ];
 
     return (
@@ -227,6 +234,21 @@ const AircraftConfigurationPage = () => {
                             enabled
                             onSelect={() => setVhfSpacing(button.setting)}
                             selected={vhfSpacing === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">FMGC Lat/Lon Waypoint Format</span>
+                <SelectGroup>
+                    {latLonExtendedButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setLatLonExtended(button.setting)}
+                            selected={latLonExtended === button.setting}
                         >
                             {button.name}
                         </SelectItem>
@@ -685,6 +707,24 @@ const ATSUAOCPage = () => {
         }
     }
 
+    function handleWeatherSource(source: string, type: string) {
+        if (type !== 'TAF') {
+            HoppieConnector.deactivateHoppie();
+        }
+
+        if (type === 'ATIS') {
+            setAtisSource(source);
+        } else if (type === 'METAR') {
+            setMetarSource(source);
+        } else if (type === 'TAF') {
+            setTafSource(source);
+        }
+
+        if (type !== 'TAF') {
+            HoppieConnector.activateHoppie();
+        }
+    }
+
     return (
         <div className="bg-navy-lighter rounded-xl px-6 divide-y divide-gray-700 flex flex-col">
             <div className="py-4 flex flex-row justify-between items-center">
@@ -693,7 +733,7 @@ const ATSUAOCPage = () => {
                     {atisSourceButtons.map((button) => (
                         <SelectItem
                             enabled
-                            onSelect={() => setAtisSource(button.setting)}
+                            onSelect={() => handleWeatherSource(button.setting, 'ATIS')}
                             selected={atisSource === button.setting}
                         >
                             {button.name}
@@ -707,7 +747,7 @@ const ATSUAOCPage = () => {
                     {metarSourceButtons.map((button) => (
                         <SelectItem
                             enabled
-                            onSelect={() => setMetarSource(button.setting)}
+                            onSelect={() => handleWeatherSource(button.setting, 'METAR')}
                             selected={metarSource === button.setting}
                         >
                             {button.name}
@@ -721,7 +761,7 @@ const ATSUAOCPage = () => {
                     {tafSourceButtons.map((button) => (
                         <SelectItem
                             enabled
-                            onSelect={() => setTafSource(button.setting)}
+                            onSelect={() => handleWeatherSource(button.setting, 'TAF')}
                             selected={tafSource === button.setting}
                         >
                             {button.name}

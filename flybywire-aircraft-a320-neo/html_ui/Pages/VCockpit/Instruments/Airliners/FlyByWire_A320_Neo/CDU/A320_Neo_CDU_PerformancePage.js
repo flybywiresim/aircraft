@@ -68,14 +68,14 @@ class CDUPerformancePage {
                     if (mcdu._v1Checked) {
                         // not real: v-speed helper
                         if (mcdu.flaps) {
-                            mcdu.scratchpad.setText(mcdu._getV1Speed().toString());
+                            mcdu.setScratchpadText(mcdu._getV1Speed().toString());
                         } else {
-                            mcdu.addNewMessage(NXSystemMessages.formatError);
+                            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                             scratchpadCallback();
                         }
                     } else {
                         mcdu._v1Checked = true;
-                        mcdu.tryRemoveMessage(NXSystemMessages.checkToData.text);
+                        mcdu.removeMessageFromQueue(NXSystemMessages.checkToData.text);
                         mcdu.vSpeedDisagreeCheck();
                     }
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
@@ -99,14 +99,14 @@ class CDUPerformancePage {
                 if (value === "") {
                     if (mcdu._vRChecked) {
                         if (mcdu.flaps) {
-                            mcdu.scratchpad.setText(mcdu._getVRSpeed().toString());
+                            mcdu.setScratchpadText(mcdu._getVRSpeed().toString());
                         } else {
-                            mcdu.addNewMessage(NXSystemMessages.formatError);
+                            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                             scratchpadCallback();
                         }
                     } else {
                         mcdu._vRChecked = true;
-                        mcdu.tryRemoveMessage(NXSystemMessages.checkToData.text);
+                        mcdu.removeMessageFromQueue(NXSystemMessages.checkToData.text);
                         mcdu.vSpeedDisagreeCheck();
                     }
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
@@ -130,14 +130,14 @@ class CDUPerformancePage {
                 if (value === "") {
                     if (mcdu._v2Checked) {
                         if (mcdu.flaps) {
-                            mcdu.scratchpad.setText(mcdu._getV2Speed().toString());
+                            mcdu.setScratchpadText(mcdu._getV2Speed().toString());
                         } else {
-                            mcdu.addNewMessage(NXSystemMessages.formatError);
+                            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                             scratchpadCallback();
                         }
                     } else {
                         mcdu._v2Checked = true;
-                        mcdu.tryRemoveMessage(NXSystemMessages.checkToData.text);
+                        mcdu.removeMessageFromQueue(NXSystemMessages.checkToData.text);
                         mcdu.vSpeedDisagreeCheck();
                     }
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
@@ -164,19 +164,19 @@ class CDUPerformancePage {
             }
             mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
                 if (value !== "") {
-                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                    mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     scratchpadCallback();
                 }
             };
             mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
                 if (value !== "") {
-                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                    mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     scratchpadCallback();
                 }
             };
             mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
                 if (value !== "") {
-                    mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                    mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     scratchpadCallback();
                 }
             };
@@ -818,7 +818,7 @@ class CDUPerformancePage {
         };
 
         const approach = mcdu.flightPlanManager.getApproach();
-        const isILS = approach && approach.name && approach.name.indexOf("ILS") !== -1;
+        const isILS = approach && approach.approachType === ApproachType.APPROACH_TYPE_ILS;
         let radioLabel = "";
         let radioCell = "";
         if (isILS) {
@@ -877,8 +877,7 @@ class CDUPerformancePage {
 
         let titleCell = `${"\xa0".repeat(5)}{${titleColor}}APPR{end}\xa0`;
         if (approach && approach.name) {
-            const apprName = Avionics.Utils.formatRunway(approach.name).replace(/ /g, "");
-            titleCell += `{green}${apprName}{end}` + "\xa0".repeat(24 - 10 - apprName.length);
+            titleCell += `{green}${approach.name}{end}` + "\xa0".repeat(24 - 10 - approach.name.length);
         } else {
             titleCell += "\xa0".repeat(24 - 10);
         }

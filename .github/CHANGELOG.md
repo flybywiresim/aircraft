@@ -237,6 +237,13 @@
 1. [HYD] Adjusted droop characteristics and randomness of surfaces actuators - @Crocket63
 1. [PFD] Reimplement PFD with msfs-avionics framework for improved performance - @saschl (saschl#9432)
 1. [GPWS] Mute "100 above" callout during autoland - @patmack14 (Patrick Macken)
+1. [MCDU] Refactored mcdu key input events - @derl30n - (Leon)
+1. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
+1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (donbikes#4084)
+1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
+1. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
+1. [FMGC] Implemented Airport Button - @patmack14 (Patrick Macken)
+1. [RMP] Fixed colour of SEL indicator - @tracernz (Mike)
 1. [ADDON] Local-api integration - @lucky38i (Alex)
 
 ## 0.7.0
@@ -1020,3 +1027,4 @@
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
 1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
+1. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)

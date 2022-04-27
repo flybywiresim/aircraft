@@ -93,7 +93,7 @@ class CDUIdentPage {
             if (confirmDeleteAll) {
                 const allDeleted = mcdu.dataManager.deleteAllStoredWaypoints();
                 if (!allDeleted) {
-                    mcdu.addNewMessage(NXSystemMessages.fplnElementRetained);
+                    mcdu.setScratchpadMessage(NXSystemMessages.fplnElementRetained);
                 }
                 CDUIdentPage.ShowPage(mcdu);
             } else {
