@@ -7683,7 +7683,7 @@ mod tests {
                 .set_cold_dark_inputs()
                 .in_flight()
                 .sim_not_ready()
-                .set_gear_lever_up()
+                .set_gear_up()
                 .run_waiting_for(Duration::from_secs(12));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
