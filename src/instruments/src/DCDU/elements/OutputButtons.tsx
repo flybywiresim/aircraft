@@ -1,28 +1,17 @@
 import React from 'react';
 import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
-import { useUpdate } from '@instruments/common/hooks.js';
 import { Button } from './Button';
 
 type OutputButtonsProps = {
     message: CpdlcMessage,
-    setStatus: (sender: string, message: string) => void,
-    isStatusAvailable: (sender: string) => boolean,
     sendMessage: (message: number) => void,
     deleteMessage: (message: number) => void,
     closeMessage: (message: number) => void
 }
 
-export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus, isStatusAvailable, sendMessage, deleteMessage, closeMessage }) => {
+export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, sendMessage, deleteMessage, closeMessage }) => {
     const buttonsBlocked = message.ComStatus === AtsuMessageComStatus.Sending;
-
-    useUpdate(() => {
-        if (buttonsBlocked) {
-            if (isStatusAvailable('Buttons') === true) {
-                setStatus('Buttons', 'SENDING');
-            }
-        }
-    });
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;

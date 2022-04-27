@@ -1,16 +1,15 @@
 import React from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
+import { DcduStatusMessage } from '@atsu/components/DcduLink';
 import { MessageVisualization } from './MessageVisualization';
 
 type DatalinkMessageProps = {
     messages: CpdlcMessage[],
-    isStatusAvailable: (sender: string) => boolean,
-    setStatus: (sender: string, message: string) => void,
-    resetStatus: (sender: string) => void
+    updateSystemStatusMessage: (status: DcduStatusMessage) => void
 }
 
-export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, isStatusAvailable, setStatus, resetStatus }) => {
+export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, updateSystemStatusMessage }) => {
     // define the correct background color
     let backgroundColor: [number, number, number] = [0, 0, 0];
     if (messages[0].Direction === AtsuMessageDirection.Downlink) {
@@ -66,9 +65,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, isSt
                 cssClass={messageClass}
                 yStart={720}
                 deltaY={240}
-                isStatusAvailable={isStatusAvailable}
-                setStatus={setStatus}
-                resetStatus={resetStatus}
+                updateSystemStatusMessage={updateSystemStatusMessage}
             />
         </g>
     );

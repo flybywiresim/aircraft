@@ -1,29 +1,18 @@
 import React from 'react';
 import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
-import { useUpdate } from '@instruments/common/hooks.js';
 import { Button } from './Button';
 
 type WilcoUnableButtonsProps = {
     message: CpdlcMessage,
     selectedResponse: number,
     setMessageStatus(message: number, response: number),
-    setStatus: (sender: string, message: string) => void,
-    isStatusAvailable: (sender: string) => boolean,
     sendResponse: (message: number, response: number) => void,
     closeMessage: (message: number) => void
 }
 
-export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message, selectedResponse, setMessageStatus, setStatus, isStatusAvailable, sendResponse, closeMessage }) => {
+export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message, selectedResponse, setMessageStatus, sendResponse, closeMessage }) => {
     const buttonsBlocked = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending;
-
-    useUpdate(() => {
-        if (buttonsBlocked) {
-            if (isStatusAvailable('Buttons')) {
-                setStatus('Buttons', 'SENDING');
-            }
-        }
-    });
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;

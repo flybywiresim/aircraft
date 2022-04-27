@@ -7,6 +7,7 @@ import { CpdlcMessageExpectedResponseType } from '@atsu/messages/CpdlcMessageEle
 import { RequestMessage } from '@atsu/messages/RequestMessage';
 import { DclMessage } from '@atsu/messages/DclMessage';
 import { OclMessage } from '@atsu/messages/OclMessage';
+import { DcduStatusMessage } from '@atsu/components/DcduLink';
 import { OutputButtons } from './elements/OutputButtons';
 import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';
 import { WilcoUnableButtons } from './elements/WilcoUnableButtons';
@@ -14,6 +15,7 @@ import { RogerButtons } from './elements/RogerButtons';
 import { CloseButtons } from './elements/CloseButtons';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
+import { AtsuStatusMessage } from './elements/AtsuStatusMessage';
 import { WaitingForData } from './pages/WaitingForData';
 import { DcduLines } from './elements/DcduLines';
 import { DatalinkMessage } from './elements/DatalinkMessage';
@@ -31,41 +33,40 @@ enum DcduState {
     Standby
 }
 
-const sortedMessageArray = (messages: Map<number, [CpdlcMessage[], number, number]>): [CpdlcMessage[], number, number][] => {
+export class DcduMessageBlock {
+    public messages: CpdlcMessage[] = [];
+
+    public timestamp: number = 0;
+
+    public response: number = -1;
+
+    public statusMessage: DcduStatusMessage = DcduStatusMessage.NoMessage;
+}
+
+const sortedMessageArray = (messages: Map<number, DcduMessageBlock>): DcduMessageBlock[] => {
     const arrMessages = Array.from(messages.values());
-    arrMessages.sort((a, b) => a[1] - b[1]);
+    arrMessages.sort((a, b) => a.timestamp - b.timestamp);
     return arrMessages;
 };
+
+const DcduSystemStatusDuration = 5000;
 
 const DCDU: React.FC = () => {
     const [electricityState] = useSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'bool', 200);
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState((isColdAndDark) ? DcduState.Off : DcduState.On);
-    const [messages, setMessages] = useState(new Map<number, [CpdlcMessage[], number, number]>());
-    const [statusMessage, setStatusMessage] = useState({ sender: '', message: '', remainingMilliseconds: 0 });
     const [events] = useState(RegisterViewListener('JS_LISTENER_SIMVARS', undefined, true));
-    const [messageUid, setMessageUid] = useState(-1);
-    const [atcMessage, setAtcMessage] = useState('');
     const [timer, setTimer] = useState<number | null>(null);
 
-    // functions to handle the status area
-    const isStatusAvailable = (sender: string) => statusMessage.sender === sender || statusMessage.message.length === 0;
-    const resetStatus = (sender: string) => {
-        const state = statusMessage;
+    const [systemStatusMessage, setSystemStatusMessage] = useState(DcduStatusMessage.NoMessage);
+    const [systemStatusTimer, setSystemStatusTimer] = useState<number | null>(null);
+    const [messages, setMessages] = useState(new Map<number, DcduMessageBlock>());
+    const [messageUid, setMessageUid] = useState(-1);
+    const [atcMessage, setAtcMessage] = useState('');
 
-        if (sender.length === 0 || sender === statusMessage.sender) {
-            state.sender = '';
-            state.message = '';
-            state.remainingMilliseconds = 0;
-            setStatusMessage(state);
-        }
-    };
-    const setStatus = (sender: string, message: string) => {
-        const state = statusMessage;
-        state.sender = sender;
-        state.message = message;
-        state.remainingMilliseconds = 5000;
-        setStatusMessage(state);
+    const updateSystemStatusMessage = (status: DcduStatusMessage) => {
+        setSystemStatusMessage(status);
+        setSystemStatusTimer(5000);
     };
 
     const setMessageStatus = (uid: number, response: number) => {
@@ -74,7 +75,7 @@ const DCDU: React.FC = () => {
         const entry = updateMap.get(uid);
         if (entry !== undefined) {
             events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_READ', uid);
-            entry[2] = response;
+            entry.response = response;
             updateMap.set(uid, entry);
         }
 
@@ -88,12 +89,13 @@ const DCDU: React.FC = () => {
     // functions to handle the internal queue
     const closeMessage = (uid: number) => {
         const sortedMessages = sortedMessageArray(messages);
-        const index = sortedMessages.findIndex((element) => element[0][0].UniqueMessageID === uid);
+        const index = sortedMessages.findIndex((element) => element.messages[0].UniqueMessageID === uid);
 
         events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_CLOSED', uid);
 
         if (index !== -1) {
-            resetStatus('');
+            setSystemStatusMessage(DcduStatusMessage.NoMessage);
+            setSystemStatusTimer(null);
 
             // define the next visible message
             if (index + 1 < sortedMessages.length) {
@@ -120,19 +122,19 @@ const DCDU: React.FC = () => {
         const sortedMessages = sortedMessageArray(messages);
         let index = 0;
         if (messageUid !== -1) {
-            index = sortedMessages.findIndex((element) => messageUid === element[0][0].UniqueMessageID);
+            index = sortedMessages.findIndex((element) => messageUid === element.messages[0].UniqueMessageID);
         }
 
         if (index === 0) {
-            if (isStatusAvailable('Mainpage') === true) {
-                setStatus('Mainpage', 'NO MORE MSG');
-            }
+            setSystemStatusMessage(DcduStatusMessage.NoMoreMessages);
+            setSystemStatusTimer(DcduSystemStatusDuration);
         } else {
-            resetStatus('');
+            setSystemStatusMessage(DcduStatusMessage.NoMessage);
+            setSystemStatusTimer(null);
             index -= 1;
         }
 
-        setMessageUid(sortedMessages[index][0][0].UniqueMessageID);
+        setMessageUid(sortedMessages[index].messages[0].UniqueMessageID);
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0PLUS', 'A32NX_DCDU_BTN_MPR_MS0PLUS'], () => {
         if (messages.size === 0) {
@@ -142,19 +144,19 @@ const DCDU: React.FC = () => {
         const sortedMessages = sortedMessageArray(messages);
         let index = 0;
         if (messageUid !== -1) {
-            index = sortedMessages.findIndex((element) => messageUid === element[0][0].UniqueMessageID);
+            index = sortedMessages.findIndex((element) => messageUid === element.messages[0].UniqueMessageID);
         }
 
         if (index + 1 >= sortedMessages.length) {
-            if (isStatusAvailable('Mainpage') === true) {
-                setStatus('Mainpage', 'NO MORE MSG');
-            }
+            setSystemStatusMessage(DcduStatusMessage.NoMoreMessages);
+            setSystemStatusTimer(DcduSystemStatusDuration);
         } else {
-            resetStatus('');
+            setSystemStatusMessage(DcduStatusMessage.NoMessage);
+            setSystemStatusTimer(null);
             index += 1;
         }
 
-        setMessageUid(sortedMessages[index][0][0].UniqueMessageID);
+        setMessageUid(sortedMessages[index].messages[0].UniqueMessageID);
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_PRINT', 'A32NX_DCDU_BTN_MPR_PRINT'], () => {
         if (messageUid !== -1) {
@@ -164,9 +166,10 @@ const DCDU: React.FC = () => {
 
     useCoherentEvent('A32NX_DCDU_RESET', () => {
         setMessageUid(-1);
-        setMessages(new Map<number, [CpdlcMessage[], number, number]>());
+        setMessages(new Map<number, DcduMessageBlock>());
         setAtcMessage('');
-        resetStatus('');
+        setSystemStatusMessage(DcduStatusMessage.NoMessage);
+        setSystemStatusTimer(null);
     });
 
     // resynchronization with ATSU
@@ -196,34 +199,8 @@ const DCDU: React.FC = () => {
         if (cpdlcMessages.length !== 0) {
             const dcduBlock = messages.get(cpdlcMessages[0].UniqueMessageID);
             if (dcduBlock !== undefined) {
-                // update the status entry
-                if (dcduBlock[0][0].Direction === AtsuMessageDirection.Downlink) {
-                    if (dcduBlock[0][0].ComStatus !== cpdlcMessages[0].ComStatus) {
-                        if (cpdlcMessages[0].ComStatus === AtsuMessageComStatus.Failed) {
-                            setStatus('Mainpage', 'COM FAILED');
-                        } else if (cpdlcMessages[0].ComStatus === AtsuMessageComStatus.Sent) {
-                            setStatus('Mainpage', 'SENT');
-                        }
-                    }
-                } else if (cpdlcMessages[0].Response !== undefined) {
-                    // received an update for a response
-                    if (dcduBlock[0][0].Response !== undefined) {
-                        if (dcduBlock[0][0].Response.ComStatus !== cpdlcMessages[0].Response.ComStatus) {
-                            if (cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Failed) {
-                                setStatus('Mainpage', 'COM FAILED');
-                            } else if (cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Sent) {
-                                setStatus('Mainpage', 'SENT');
-                            }
-                        }
-                    } else if (cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Failed) {
-                        setStatus('Mainpage', 'COM FAILED');
-                    } else if (cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Sent) {
-                        setStatus('Mainpage', 'SENT');
-                    }
-                }
-
                 // update the communication states and response
-                dcduBlock[0].forEach((message) => {
+                dcduBlock.messages.forEach((message) => {
                     if (cpdlcMessages[0].ComStatus !== undefined) {
                         message.ComStatus = cpdlcMessages[0].ComStatus;
                     }
@@ -232,12 +209,15 @@ const DCDU: React.FC = () => {
 
                 // response sent
                 if (cpdlcMessages[0].Response !== undefined && cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Sent) {
-                    dcduBlock[2] = -1;
+                    dcduBlock.response = -1;
                 }
 
                 setMessages(messages.set(cpdlcMessages[0].UniqueMessageID, dcduBlock));
             } else {
-                setMessages(messages.set(cpdlcMessages[0].UniqueMessageID, [cpdlcMessages, new Date().getTime(), -1]));
+                const message = new DcduMessageBlock();
+                message.messages = cpdlcMessages;
+                message.timestamp = new Date().getTime();
+                setMessages(messages.set(cpdlcMessages[0].UniqueMessageID, message));
             }
 
             if (messageUid === -1) {
@@ -268,12 +248,12 @@ const DCDU: React.FC = () => {
             }
         }
 
-        // check if the status is outdated
-        const status = statusMessage;
-        if (status.message !== '') {
-            status.remainingMilliseconds -= deltaTime;
-            if (status.remainingMilliseconds <= 0) {
-                resetStatus('');
+        if (systemStatusTimer !== null) {
+            if (systemStatusTimer > 0) {
+                setSystemStatusTimer(systemStatusTimer - deltaTime);
+            } else {
+                setSystemStatusMessage(DcduStatusMessage.NoMessage);
+                setSystemStatusTimer(null);
             }
         }
     });
@@ -296,15 +276,17 @@ const DCDU: React.FC = () => {
     // prepare the data
     let messageIndex = -1;
     let visibleMessages: CpdlcMessage[] | undefined = undefined;
+    let visibleMessageStatus: DcduStatusMessage = DcduStatusMessage.NoMessage;
     let response: number = -1;
     if (state === DcduState.On && messages.size !== 0) {
         const arrMessages = sortedMessageArray(messages);
 
         if (messageUid !== -1) {
-            messageIndex = arrMessages.findIndex((element) => messageUid === element[0][0].UniqueMessageID);
+            messageIndex = arrMessages.findIndex((element) => messageUid === element.messages[0].UniqueMessageID);
             if (messageIndex !== -1) {
-                visibleMessages = arrMessages[messageIndex][0];
-                response = arrMessages[messageIndex][2];
+                visibleMessages = arrMessages[messageIndex].messages;
+                visibleMessageStatus = arrMessages[messageIndex].statusMessage;
+                response = arrMessages[messageIndex].response;
             }
         }
     }
@@ -351,9 +333,7 @@ const DCDU: React.FC = () => {
                             />
                             <DatalinkMessage
                                 messages={visibleMessages}
-                                setStatus={setStatus}
-                                isStatusAvailable={isStatusAvailable}
-                                resetStatus={resetStatus}
+                                updateSystemStatusMessage={updateSystemStatusMessage}
                             />
                         </>
                     ))}
@@ -362,8 +342,6 @@ const DCDU: React.FC = () => {
                             message={visibleMessages[0]}
                             selectedResponse={response}
                             setMessageStatus={setMessageStatus}
-                            setStatus={setStatus}
-                            isStatusAvailable={isStatusAvailable}
                             sendResponse={sendResponse}
                             closeMessage={closeMessage}
                         />
@@ -373,8 +351,6 @@ const DCDU: React.FC = () => {
                             message={visibleMessages[0]}
                             selectedResponse={response}
                             setMessageStatus={setMessageStatus}
-                            setStatus={setStatus}
-                            isStatusAvailable={isStatusAvailable}
                             sendResponse={sendResponse}
                             closeMessage={closeMessage}
                         />
@@ -384,8 +360,6 @@ const DCDU: React.FC = () => {
                             message={visibleMessages[0]}
                             selectedResponse={response}
                             setMessageStatus={setMessageStatus}
-                            setStatus={setStatus}
-                            isStatusAvailable={isStatusAvailable}
                             sendResponse={sendResponse}
                             closeMessage={closeMessage}
                         />
@@ -393,8 +367,6 @@ const DCDU: React.FC = () => {
                     {(visibleMessages !== undefined && !answerRequired && visibleMessages[0].Direction === AtsuMessageDirection.Downlink && (
                         <OutputButtons
                             message={visibleMessages[0]}
-                            setStatus={setStatus}
-                            isStatusAvailable={isStatusAvailable}
                             sendMessage={sendMessage}
                             deleteMessage={deleteMessage}
                             closeMessage={closeMessage}
@@ -406,13 +378,7 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {statusMessage.message.length !== 0 && (
-                        <>
-                            <g>
-                                <text className="status-atsu" x="50%" y="2160">{statusMessage.message}</text>
-                            </g>
-                        </>
-                    )}
+                    <AtsuStatusMessage visibleMessage={visibleMessageStatus} systemMessage={systemStatusMessage} />
                     <DcduLines />
                     {
                         (messages.size > 1

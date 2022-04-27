@@ -1,29 +1,18 @@
 import React from 'react';
 import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
-import { useUpdate } from '@instruments/common/hooks.js';
 import { Button } from './Button';
 
 type AffirmNegativeButtonsProps = {
     message: CpdlcMessage,
     selectedResponse: number,
     setMessageStatus(message: number, response: number),
-    setStatus: (sender: string, message: string) => void,
-    isStatusAvailable: (sender: string) => boolean,
     sendResponse: (message: number, response: number) => void,
     closeMessage: (message: number) => void
 }
 
-export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ message, selectedResponse, setMessageStatus, setStatus, isStatusAvailable, sendResponse, closeMessage }) => {
+export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ message, selectedResponse, setMessageStatus, sendResponse, closeMessage }) => {
     const buttonsBlocked = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending;
-
-    useUpdate(() => {
-        if (buttonsBlocked) {
-            if (isStatusAvailable('Buttons') === true) {
-                setStatus('Buttons', 'SENDING');
-            }
-        }
-    });
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;

@@ -1,5 +1,6 @@
 import React, { useState, memo } from 'react';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
+import { DcduStatusMessage } from '@atsu/components/DcduLink';
 import { Checkerboard } from './Checkerboard';
 
 interface ColorizedWord {
@@ -20,9 +21,7 @@ type MessageVisualizationProps = {
     cssClass: string,
     yStart: number,
     deltaY: number,
-    isStatusAvailable: ((sender: string) => boolean) | undefined,
-    setStatus: ((sender: string, message: string) => void) | undefined,
-    resetStatus: ((sender: string) => void) | undefined,
+    updateSystemStatusMessage: (status: DcduStatusMessage) => void
 }
 
 function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, deltaY: number, useDeltaY: boolean, ignoreHighlight: boolean) {
@@ -187,10 +186,7 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
     return lines;
 }
 
-export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
-    message, backgroundColor, keepNewlines, ignoreHighlight, cssClass, yStart, deltaY,
-    isStatusAvailable, setStatus, resetStatus,
-}) => {
+export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({ message, backgroundColor, keepNewlines, ignoreHighlight, cssClass, yStart, deltaY, updateSystemStatusMessage }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
     const maxLines = 5;
@@ -201,12 +197,10 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
         }
 
         if (pageIndex > 0) {
-            if (resetStatus !== undefined) {
-                resetStatus('DatalinkMessage');
-            }
+            updateSystemStatusMessage(DcduStatusMessage.NoMessage);
             setPageIndex(pageIndex - 1);
-        } else if (isStatusAvailable !== undefined && setStatus !== undefined && isStatusAvailable('DatalinkMessage') === true) {
-            setStatus('DatalinkMessage', 'NO MORE PGE');
+        } else {
+            updateSystemStatusMessage(DcduStatusMessage.NoMorePages);
         }
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_POEPLUS', 'A32NX_DCDU_BTN_MPR_POEPLUS'], () => {
@@ -215,12 +209,10 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
         }
 
         if (pageCount > pageIndex + 1) {
-            if (resetStatus !== undefined) {
-                resetStatus('DatalinkMessage');
-            }
+            updateSystemStatusMessage(DcduStatusMessage.NoMessage);
             setPageIndex(pageIndex + 1);
-        } else if (isStatusAvailable !== undefined && setStatus !== undefined && isStatusAvailable('DatalinkMessage') === true) {
-            setStatus('DatalinkMessage', 'NO MORE PGE');
+        } else {
+            updateSystemStatusMessage(DcduStatusMessage.NoMorePages);
         }
     });
 
