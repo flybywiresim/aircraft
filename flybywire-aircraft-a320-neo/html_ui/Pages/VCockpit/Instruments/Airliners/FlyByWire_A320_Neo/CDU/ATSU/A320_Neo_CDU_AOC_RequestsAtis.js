@@ -50,11 +50,6 @@ class CDUAocRequestsAtis {
             enrouteText = "ENROUTE[color]cyan";
         }
 
-        let sendMessage = "SEND*[color]cyan";
-        if (store.selected !== "") {
-            sendMessage = "SEND\xa0[color]cyan";
-        }
-
         let arrText = "[ ]";
         if (store.selected !== "") {
             arrText = store.selected;
@@ -65,6 +60,11 @@ class CDUAocRequestsAtis {
 
         const updateView = () => {
             if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
+                let sendMessage = "SEND*[color]cyan";
+                if (store.selected === "" || store.sendStatus === "SENDING") {
+                    sendMessage = "SEND\xa0[color]cyan";
+                }
+
                 mcdu.setTemplate([
                     ["AOC ATIS REQUEST"],
                     ["\xa0AIRPORT", "↓FORMAT FOR\xa0"],
@@ -101,7 +101,7 @@ class CDUAocRequestsAtis {
                             CDUAocRequestsAtis.ShowPage(mcdu, store);
                         }
                     } else {
-                        mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                        mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                     }
                 });
             }

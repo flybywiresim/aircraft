@@ -9,7 +9,7 @@ export class EfisLabels implements FmgcComponent {
 
     private flightPlanManager: FlightPlanManager;
 
-    init(flightPlanManager: FlightPlanManager): void {
+    init(_baseInstrument: BaseInstrument, flightPlanManager: FlightPlanManager): void {
         this.flightPlanManager = flightPlanManager;
     }
 

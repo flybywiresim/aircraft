@@ -39,8 +39,8 @@ export const parseApproachName = (name: string): ApproachNameComponents | undefi
 export const normaliseApproachName = (name: string): string => {
     const appr = parseApproachName(name);
     if (!appr) {
-        return '';
+        return name;
     }
     const suffix = appr.designator ? `-${appr.designator}` : '';
-    return `${appr.type}${Avionics.Utils.formatRunway(appr.runway)}${suffix}`;
+    return `${appr.type.replace('RNAV', 'RNV')}${Avionics.Utils.formatRunway(appr.runway)}${suffix}`;
 };

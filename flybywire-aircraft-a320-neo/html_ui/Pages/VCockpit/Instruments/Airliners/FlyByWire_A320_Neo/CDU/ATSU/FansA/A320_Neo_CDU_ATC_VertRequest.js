@@ -351,7 +351,7 @@ class CDUAtcVertRequest {
         mcdu.onRightInput[5] = () => {
             if (CDUAtcVertRequest.CanSendData(data)) {
                 if (mcdu.atsu.atc.currentStation() === "") {
-                    mcdu.addNewMessage(NXSystemMessages.noAtc);
+                    mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcVertRequest.CreateRequests(mcdu, data);
                     if (messages) {
@@ -433,7 +433,7 @@ class CDUAtcVertRequest {
             } else if (value) {
                 const entries = value.split("/");
                 if (entries.length !== 2) {
-                    mcdu.addNewMessage(NXSystemMessages.formatError);
+                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 } else {
                     const error = Atsu.InputValidation.validateAltitudeRange(entries[0], entries[1]);
                     if (error !== Atsu.AtsuStatusCodes.Ok) {
@@ -579,7 +579,7 @@ class CDUAtcVertRequest {
         mcdu.onRightInput[5] = () => {
             if (CDUAtcVertRequest.CanSendData(data)) {
                 if (mcdu.atsu.atc.currentStation() === "") {
-                    mcdu.addNewMessage(NXSystemMessages.noAtc);
+                    mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcVertRequest.CreateRequests(mcdu, data);
                     if (messages) {

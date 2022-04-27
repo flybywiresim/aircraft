@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { courseToFixDistanceToGo, courseToFixGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
@@ -15,6 +14,7 @@ import { Geo } from '@fmgc/utils/Geo';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class CFLeg extends XFLeg {
@@ -32,6 +32,10 @@ export class CFLeg extends XFLeg {
     }
 
     getPathStartPoint(): Coordinates | undefined {
+        if (this.inboundGuidable instanceof IFLeg) {
+            return this.inboundGuidable.fix.infos.coordinates;
+        }
+
         if (this.inboundGuidable instanceof Transition && this.inboundGuidable.isComputed) {
             return this.inboundGuidable.getPathEndPoint();
         }
@@ -81,10 +85,13 @@ export class CFLeg extends XFLeg {
         return this.computedPath;
     }
 
-    recomputeWithParameters(isActive: boolean, _tas: Knots, _gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
-        this.inboundGuidable = previousGuidable;
-        this.outboundGuidable = nextGuidable;
-
+    recomputeWithParameters(
+        _isActive: boolean,
+        _tas: Knots,
+        _gs: Knots,
+        _ppos: Coordinates,
+        _trueTrack: DegreesTrue,
+    ) {
         // Is start point after the fix ?
         if (this.overshot) {
             this.computedPath = [{

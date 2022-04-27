@@ -83,7 +83,7 @@ export class ClimbPhase extends Phase {
             return true;
         }
 
-        return Math.round(Simplane.getAltitude() / 100) >= cruiseFl;
+        return Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100) >= cruiseFl;
     }
 }
 
@@ -101,7 +101,7 @@ export class DescentPhase extends Phase {
     }
 
     shouldActivateNextPhase(_deltaTime) {
-        const fl = Math.round(Simplane.getAltitude() / 100);
+        const fl = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
         const fcuSelFl = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
         const cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
 

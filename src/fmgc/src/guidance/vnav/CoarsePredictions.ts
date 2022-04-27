@@ -1,6 +1,11 @@
+// Copyright (c) 2022 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { FlightPlans } from '@fmgc/flightplanning/FlightPlanManager';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
+import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 
 /**
  * This class exists to provide very coarse predictions for
@@ -14,6 +19,12 @@ export class CoarsePredictions {
             const wp = flightPlanManager.getWaypoint(i, FlightPlans.Active, true);
             const leg = guidanceController.activeGeometry.legs.get(i);
             if (!wp || !leg) {
+                continue;
+            }
+
+            if (LnavConfig.DEBUG_USE_SPEED_LVARS) {
+                leg.predictedTas = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_TAS', 'knots');
+                leg.predictedGs = SimVar.GetSimVarValue('L:A32NX_DEBUG_FM_GS', 'knots');
                 continue;
             }
 
