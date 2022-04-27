@@ -231,6 +231,13 @@ const DCDU: React.FC = () => {
     useCoherentEvent('A32NX_DCDU_ATC_LOGON_MSG', (message: string) => {
         setAtcMessage(message);
     });
+    useCoherentEvent('A32NX_DCDU_MSG_ATSU_STATUS', (uid: number, status: DcduStatusMessage) => {
+        const dcduBlock = messages.get(uid);
+        if (dcduBlock !== undefined) {
+            dcduBlock.statusMessage = status;
+            setMessages(messages.set(uid, dcduBlock));
+        }
+    });
 
     useUpdate((deltaTime) => {
         if (timer !== null) {
