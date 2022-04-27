@@ -1233,6 +1233,7 @@ impl A320Hydraulic {
 
         // Uses external conditions and momentary button: better to check each frame
         self.ram_air_turbine_controller.update(
+            context,
             overhead_panel,
             rat_and_emer_gen_man_on,
             emergency_elec_state,
@@ -2371,6 +2372,7 @@ impl A320RamAirTurbineController {
 
     fn update(
         &mut self,
+        context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
@@ -2381,9 +2383,10 @@ impl A320RamAirTurbineController {
         let solenoid_2_should_trigger_deployment_if_powered =
             emergency_elec_state.is_in_emergency_elec() || rat_and_emer_gen_man_on.is_pressed();
 
-        self.should_deploy = (self.is_solenoid_1_powered
-            && solenoid_1_should_trigger_deployment_if_powered)
-            || (self.is_solenoid_2_powered && solenoid_2_should_trigger_deployment_if_powered);
+        // due to initialization issues the RAT will not deployed in any case when simulation has just started
+        self.should_deploy = context.is_sim_ready()
+            && ((self.is_solenoid_1_powered && solenoid_1_should_trigger_deployment_if_powered)
+                || (self.is_solenoid_2_powered && solenoid_2_should_trigger_deployment_if_powered));
     }
 }
 impl RamAirTurbineController for A320RamAirTurbineController {
@@ -3235,6 +3238,7 @@ impl SimulationElement for PushbackTug {
 /// that we expect for the plane
 pub struct A320AutobrakeController {
     armed_mode_id: VariableIdentifier,
+    armed_mode_id_set: VariableIdentifier,
     decel_light_id: VariableIdentifier,
     active_id: VariableIdentifier,
     spoilers_ground_spoilers_active_id: VariableIdentifier,
@@ -3276,6 +3280,7 @@ impl A320AutobrakeController {
     fn new(context: &mut InitContext) -> A320AutobrakeController {
         A320AutobrakeController {
             armed_mode_id: context.get_identifier("AUTOBRAKES_ARMED_MODE".to_owned()),
+            armed_mode_id_set: context.get_identifier("AUTOBRAKES_ARMED_MODE_SET".to_owned()),
             decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
             active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
             spoilers_ground_spoilers_active_id: context
@@ -3285,17 +3290,19 @@ impl A320AutobrakeController {
             deceleration_governor: AutobrakeDecelerationGovernor::new(),
             target: Acceleration::new::<meter_per_second_squared>(0.),
             mode: AutobrakeMode::NONE,
-            arming_is_allowed_by_bcu: false,
+            arming_is_allowed_by_bcu: context.is_in_flight(),
             left_brake_pedal_input: Ratio::new::<percent>(0.),
             right_brake_pedal_input: Ratio::new::<percent>(0.),
             ground_spoilers_are_deployed: false,
             last_ground_spoilers_are_deployed: false,
             should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
-            ),
+            )
+            .starting_as(context.is_in_flight(), false),
             should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
-            ),
+            )
+            .starting_as(context.is_in_flight()),
             external_disarm_event: false,
         }
     }
@@ -3308,8 +3315,12 @@ impl A320AutobrakeController {
         Ratio::new::<ratio>(self.deceleration_governor.output())
     }
 
-    fn determine_mode(&mut self, autobrake_panel: &AutobrakePanel) -> AutobrakeMode {
-        if self.should_disarm() {
+    fn determine_mode(
+        &mut self,
+        context: &UpdateContext,
+        autobrake_panel: &AutobrakePanel,
+    ) -> AutobrakeMode {
+        if self.should_disarm(context) {
             AutobrakeMode::NONE
         } else {
             match autobrake_panel.pressed_mode() {
@@ -3325,8 +3336,8 @@ impl A320AutobrakeController {
         }
     }
 
-    fn should_engage_deceleration_governor(&self) -> bool {
-        self.is_armed() && self.ground_spoilers_are_deployed && !self.should_disarm()
+    fn should_engage_deceleration_governor(&self, context: &UpdateContext) -> bool {
+        self.is_armed() && self.ground_spoilers_are_deployed && !self.should_disarm(context)
     }
 
     fn is_armed(&self) -> bool {
@@ -3379,12 +3390,16 @@ impl A320AutobrakeController {
         }
     }
 
-    fn should_disarm(&self) -> bool {
+    fn should_disarm(&self, context: &UpdateContext) -> bool {
+        // when a simulation is started in flight, some values need to be ignored for a certain time to ensure
+        // an unintended disarm is not happening
         (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
-            || !self.arming_is_allowed_by_bcu
+            || (context.is_sim_ready() && !self.arming_is_allowed_by_bcu)
             || self.spoilers_retracted_during_this_update()
             || self.should_disarm_after_time_in_flight.output()
             || self.external_disarm_event
+            || (self.mode == AutobrakeMode::MAX
+                && self.should_reject_max_mode_after_time_in_flight.output())
     }
 
     fn calculate_target(&mut self) -> Acceleration {
@@ -3447,10 +3462,10 @@ impl A320AutobrakeController {
             lgciu1,
             lgciu2,
         );
-        self.mode = self.determine_mode(autobrake_panel);
+        self.mode = self.determine_mode(context, autobrake_panel);
 
         self.deceleration_governor
-            .engage_when(self.should_engage_deceleration_governor());
+            .engage_when(self.should_engage_deceleration_governor(context));
 
         self.target = self.calculate_target();
         self.deceleration_governor.update(context, self.target);
@@ -3459,6 +3474,7 @@ impl A320AutobrakeController {
 impl SimulationElement for A320AutobrakeController {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.armed_mode_id, self.mode as u8 as f64);
+        writer.write(&self.armed_mode_id_set, -1.);
         writer.write(&self.decel_light_id, self.is_decelerating());
         writer.write(&self.active_id, self.deceleration_demanded());
     }
@@ -3469,7 +3485,10 @@ impl SimulationElement for A320AutobrakeController {
         self.external_disarm_event = reader.read(&self.external_disarm_event_id);
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
-        self.mode = reader.read_f64(&self.armed_mode_id).into();
+        let readed_mode = reader.read_f64(&self.armed_mode_id_set);
+        if readed_mode >= 0.0 {
+            self.mode = readed_mode.into();
+        }
     }
 }
 
@@ -5418,6 +5437,16 @@ mod tests {
                     .external_power(false)
             }
 
+            fn sim_not_ready(mut self) -> Self {
+                self.set_sim_is_ready(false);
+                self
+            }
+
+            fn sim_ready(mut self) -> Self {
+                self.set_sim_is_ready(true);
+                self
+            }
+
             fn set_tiller_demand(mut self, steering_ratio: Ratio) -> Self {
                 self.write_by_name("TILLER_HANDLE_POSITION", steering_ratio.get::<ratio>());
                 self
@@ -5694,6 +5723,26 @@ mod tests {
 
             fn set_right_brake(mut self, position: Ratio) -> Self {
                 self.write_by_name("RIGHT_BRAKE_PEDAL_INPUT", position);
+                self
+            }
+
+            fn set_autobrake_disarmed_with_set_variable(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_ARMED_MODE_SET", 0);
+                self
+            }
+
+            fn set_autobrake_low_with_set_variable(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_ARMED_MODE_SET", 1);
+                self
+            }
+
+            fn set_autobrake_med_with_set_variable(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_ARMED_MODE_SET", 2);
+                self
+            }
+
+            fn set_autobrake_max_with_set_variable(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_ARMED_MODE_SET", 3);
                 self
             }
 
@@ -7561,6 +7610,50 @@ mod tests {
         }
 
         #[test]
+        fn autobrakes_arming_according_to_set_variable() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            // set autobrake to LOW
+            test_bed = test_bed
+                .set_autobrake_low_with_set_variable()
+                .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
+
+            // using the set variable again is still resulting in LOW
+            // and not disarming
+            test_bed = test_bed
+                .set_autobrake_low_with_set_variable()
+                .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
+
+            // set autobrake to MED
+            test_bed = test_bed
+                .set_autobrake_med_with_set_variable()
+                .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            // set autobrake to MAX
+            test_bed = test_bed
+                .set_autobrake_max_with_set_variable()
+                .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            // set autobrake to DISARMED
+            test_bed = test_bed
+                .set_autobrake_disarmed_with_set_variable()
+                .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
         fn autobrakes_disarms_if_green_pressure_low() {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
@@ -7580,6 +7673,36 @@ mod tests {
                 .set_ptu_state(false)
                 .stop_eng1()
                 .run_waiting_for(Duration::from_secs(20));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn autobrakes_does_not_disarm_if_askid_off_but_sim_not_ready() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .sim_not_ready()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(12));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            // sim is not ready --> no disarm
+            test_bed = test_bed
+                .set_anti_skid(false)
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            // sim is now ready --> disarm expected
+            test_bed = test_bed.sim_ready().run_waiting_for(Duration::from_secs(1));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
         }
@@ -7619,6 +7742,13 @@ mod tests {
 
             test_bed = test_bed
                 .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            // using the set variable should also not work
+            test_bed = test_bed
+                .set_autobrake_max_with_set_variable()
                 .run_waiting_for(Duration::from_secs(1));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
@@ -7915,6 +8045,28 @@ mod tests {
             test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn autobrakes_does_not_disarm_after_10s_when_started_in_flight() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs(1));
+
+            test_bed = test_bed
+                .set_autobrake_med_with_set_variable()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
         }
 
         #[test]
@@ -8229,6 +8381,30 @@ mod tests {
             // RAT has not deployed
             assert!(test_bed.get_rat_position() <= 0.);
             assert!(test_bed.get_rat_rpm() <= 1.);
+        }
+
+        #[test]
+        fn rat_does_not_deploy_when_sim_not_ready() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .sim_not_ready()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            // AC off, sim not ready -> RAT should not deploy
+            test_bed = test_bed
+                .ac_bus_1_lost()
+                .ac_bus_2_lost()
+                .run_waiting_for(Duration::from_secs(2));
+
+            assert!(!test_bed.rat_deploy_commanded());
+
+            // AC off, sim ready -> RAT should deploy
+            test_bed = test_bed.sim_ready().run_waiting_for(Duration::from_secs(2));
+
+            assert!(test_bed.rat_deploy_commanded());
         }
 
         #[test]

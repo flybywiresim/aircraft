@@ -19,6 +19,10 @@
 
 ## Uncategorized
 
+- A32NX_IS_READY
+  - Bool
+  - Indicates that the JavaScript part is ready
+
 - A32NX_START_STATE
   - Enum
   - Indicates the state in which MSFS started
@@ -960,6 +964,15 @@
         - 1: Autobrake in LOW
         - 2: Autobrake in MED
         - 3: Autobrake in MAX
+
+- A32NX_AUTOBRAKES_ARMED_MODE_SET
+    - Number
+    - Requests an autobrake mode
+        - -1: (technical state not requesting anything)
+        -  0: Disarm Autobrake
+        -  1: Set Autobrake to LOW
+        -  2: Set Autobrake to MED
+        -  3: Set Autobrake to MAX (if allowed)
 
 - A32NX_AUTOBRAKES_ACTIVE
     - Bool
