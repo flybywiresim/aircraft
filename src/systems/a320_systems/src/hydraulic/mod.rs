@@ -3295,14 +3295,14 @@ impl A320AutobrakeController {
             right_brake_pedal_input: Ratio::new::<percent>(0.),
             ground_spoilers_are_deployed: false,
             last_ground_spoilers_are_deployed: false,
-            should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new_with_init_state(
+            should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
-                context.is_in_flight(),
-            ),
-            should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new_with_init_state(
+            )
+            .starting_as(context.is_in_flight(), false),
+            should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
-                context.is_in_flight(),
-            ),
+            )
+            .starting_as(context.is_in_flight()),
             external_disarm_event: false,
         }
     }

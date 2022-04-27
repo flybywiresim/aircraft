@@ -323,15 +323,17 @@ impl DelayedTrueLogicGate {
         }
     }
 
-    pub fn new_with_init_state(delay: Duration, initial_state: bool) -> DelayedTrueLogicGate {
-        DelayedTrueLogicGate {
-            delay,
-            expression_result: initial_state,
-            true_duration: if initial_state {
-                delay
-            } else {
-                Duration::from_millis(0)
-            },
+    pub fn starting_as(mut self, state: bool) -> Self {
+        self.set_output(state);
+        self
+    }
+
+    fn set_output(&mut self, state: bool) {
+        self.expression_result = state;
+        if state {
+            self.true_duration = self.delay;
+        } else {
+            self.true_duration = Duration::from_millis(0)
         }
     }
 
@@ -367,12 +369,11 @@ impl DelayedPulseTrueLogicGate {
         }
     }
 
-    pub fn new_with_init_state(delay: Duration, init_state: bool) -> DelayedPulseTrueLogicGate {
-        DelayedPulseTrueLogicGate {
-            output: init_state,
-            last_gate_output: init_state,
-            true_delayed_gate: DelayedTrueLogicGate::new_with_init_state(delay, init_state),
-        }
+    pub fn starting_as(mut self, state: bool, output: bool) -> Self {
+        self.output = output;
+        self.last_gate_output = !output;
+        self.true_delayed_gate.set_output(state);
+        self
     }
 
     pub fn update(&mut self, context: &UpdateContext, expression_result: bool) {
@@ -677,6 +678,55 @@ mod delayed_true_logic_gate_tests {
 
         assert!(!test_bed.query(|a| a.gate_output()));
     }
+
+    #[test]
+    fn when_the_expression_is_true_and_delay_hasnt_passed_starting_as_true_returns_true() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                DelayedTrueLogicGate::new(Duration::from_millis(1_000)).starting_as(true),
+            )
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+
+        test_bed.run_with_delta(Duration::from_millis(0));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.gate_output()));
+    }
+
+    #[test]
+    fn when_the_expression_is_true_and_delay_has_passed_starting_as_true_returns_true() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                DelayedTrueLogicGate::new(Duration::from_millis(1_000)).starting_as(true),
+            )
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+
+        test_bed.run_with_delta(Duration::from_millis(1_500));
+        test_bed.run();
+
+        assert!(test_bed.query(|a| a.gate_output()));
+    }
+
+    #[test]
+    fn when_the_expression_is_true_and_becomes_false_before_delay_has_passed_returns_false_even_when_starting_as_true(
+    ) {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                DelayedTrueLogicGate::new(Duration::from_millis(1_000)).starting_as(true),
+            )
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+        test_bed.run_with_delta(Duration::from_millis(0));
+        test_bed.command(|a| a.set_expression(false));
+        test_bed.run();
+
+        assert!(!test_bed.query(|a| a.gate_output()));
+    }
 }
 
 #[cfg(test)]
@@ -896,6 +946,48 @@ mod delayed_pulse_true_logic_gate_tests {
 
         test_bed.run_with_delta(Duration::from_millis(1200));
 
+        assert!(!test_bed.query(|a| a.gate_output()));
+    }
+
+    #[test]
+    fn when_the_expression_is_true_and_starting_as_true_false_returns_false() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                DelayedPulseTrueLogicGate::new(Duration::from_millis(1_000))
+                    .starting_as(true, false),
+            )
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+
+        test_bed.run_with_delta(Duration::from_millis(0));
+        assert!(!test_bed.query(|a| a.gate_output()));
+
+        test_bed.run_with_delta(Duration::from_millis(500));
+        assert!(!test_bed.query(|a| a.gate_output()));
+
+        test_bed.run_with_delta(Duration::from_millis(1_200));
+        assert!(!test_bed.query(|a| a.gate_output()));
+    }
+
+    #[test]
+    fn when_the_expression_is_true_and_starting_as_true_true_returns_true_on_one_update_only() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                DelayedPulseTrueLogicGate::new(Duration::from_millis(1_000))
+                    .starting_as(true, true),
+            )
+        });
+
+        test_bed.command(|a| a.set_expression(true));
+
+        test_bed.run_with_delta(Duration::from_millis(0));
+        assert!(test_bed.query(|a| a.gate_output()));
+
+        test_bed.run_with_delta(Duration::from_millis(500));
+        assert!(!test_bed.query(|a| a.gate_output()));
+
+        test_bed.run_with_delta(Duration::from_millis(1_200));
         assert!(!test_bed.query(|a| a.gate_output()));
     }
 }
