@@ -176,7 +176,7 @@ impl MsfsHandler {
                         Self::read_failures_into_simulation(failures, simulation);
                     }
 
-                    simulation.tick(delta_time, self);
+                    simulation.tick(delta_time, self.time.simulation_time(), self);
                     self.post_tick(sim_connect)?;
                 }
             }
@@ -560,6 +560,10 @@ impl Time {
     fn increment(&mut self, simulation_time: &SimulationTime) {
         self.next_delta += simulation_time.value - self.previous_simulation_time_value;
         self.previous_simulation_time_value = simulation_time.value;
+    }
+
+    fn simulation_time(&self) -> f64 {
+        self.previous_simulation_time_value
     }
 
     fn is_pausing(&self) -> bool {

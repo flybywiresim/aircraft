@@ -1,3 +1,4 @@
+import { ReadySignal } from '@fmgc/components/ReadySignal';
 import { FlightPlanManager } from '@fmgc/wtsdk';
 import { EfisLabels } from './EfisLabels';
 import { FmgcComponent } from './FmgcComponent';
@@ -8,13 +9,11 @@ const fmsMessages = new FmsMessages();
 const components: FmgcComponent[] = [
     fmsMessages,
     new EfisLabels(),
+    new ReadySignal(),
 ];
 
-export function initComponents(): void {
-    // FIXME we need a better way to fetch this... maybe just make it a singleton
-    const flightPlanManager = FlightPlanManager.DEBUG_INSTANCE;
-
-    components.forEach((component) => component.init(flightPlanManager));
+export function initComponents(baseInstrument: BaseInstrument, flightPlanManager: FlightPlanManager): void {
+    components.forEach((component) => component.init(baseInstrument, flightPlanManager));
 }
 
 export function updateComponents(deltaTime: number): void {
