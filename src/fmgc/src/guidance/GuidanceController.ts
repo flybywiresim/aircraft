@@ -344,7 +344,7 @@ export class GuidanceController {
     recomputeGeometries() {
         const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
         const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
-        const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRACK', 'degrees');
+        const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
         if (this.activeGeometry) {
             this.activeGeometry.recomputeWithParameters(
