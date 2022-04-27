@@ -151,7 +151,7 @@ export class ArincValueProvider {
             publisher.pub('da', this.da);
         });
 
-        subscriber.on('fcdc1DiscreteWord1').handle((discreteWord1) => {
+        subscriber.on('fcdc1DiscreteWord1Raw').handle((discreteWord1) => {
             this.fcdc1DiscreteWord1 = new Arinc429Word(discreteWord1);
             this.fcdcToUse = this.determineFcdcToUse();
             if (this.fcdcToUse === 1) {
@@ -159,7 +159,7 @@ export class ArincValueProvider {
             }
         });
 
-        subscriber.on('fcdc2DiscreteWord1').handle((discreteWord1) => {
+        subscriber.on('fcdc2DiscreteWord1Raw').handle((discreteWord1) => {
             this.fcdc2DiscreteWord1 = new Arinc429Word(discreteWord1);
             this.fcdcToUse = this.determineFcdcToUse();
             if (this.fcdcToUse === 2) {
@@ -167,59 +167,59 @@ export class ArincValueProvider {
             }
         });
 
-        subscriber.on('fcdc1DiscreteWord2').handle((discreteWord2) => {
+        subscriber.on('fcdc1DiscreteWord2Raw').handle((discreteWord2) => {
             this.fcdc1DiscreteWord2 = new Arinc429Word(discreteWord2);
             publisher.pub('fcdc1DiscreteWord2', this.fcdc1DiscreteWord2);
         });
 
-        subscriber.on('fcdc2DiscreteWord2').handle((discreteWord2) => {
+        subscriber.on('fcdc2DiscreteWord2Raw').handle((discreteWord2) => {
             this.fcdc2DiscreteWord2 = new Arinc429Word(discreteWord2);
             publisher.pub('fcdc2DiscreteWord2', this.fcdc2DiscreteWord2);
         });
 
-        subscriber.on('fcdc1CaptPitchCommand').handle((word) => {
+        subscriber.on('fcdc1CaptPitchCommandRaw').handle((word) => {
             if (this.fcdcToUse === 1) {
                 publisher.pub('fcdcCaptPitchCommand', new Arinc429Word(word));
             }
         });
 
-        subscriber.on('fcdc2CaptPitchCommand').handle((word) => {
+        subscriber.on('fcdc2CaptPitchCommandRaw').handle((word) => {
             if (this.fcdcToUse === 2) {
                 publisher.pub('fcdcCaptPitchCommand', new Arinc429Word(word));
             }
         });
 
-        subscriber.on('fcdc1FoPitchCommand').handle((word) => {
+        subscriber.on('fcdc1FoPitchCommandRaw').handle((word) => {
             if (this.fcdcToUse === 1) {
                 publisher.pub('fcdcCaptPitchCommand', new Arinc429Word(word));
             }
         });
 
-        subscriber.on('fcdc2FoPitchCommand').handle((word) => {
+        subscriber.on('fcdc2FoPitchCommandRaw').handle((word) => {
             if (this.fcdcToUse === 2) {
                 publisher.pub('fcdcFoPitchCommand', new Arinc429Word(word));
             }
         });
 
-        subscriber.on('fcdc1CaptRollCommand').handle((word) => {
+        subscriber.on('fcdc1CaptRollCommandRaw').handle((word) => {
             if (this.fcdcToUse === 1) {
                 publisher.pub('fcdcCaptRollCommand', new Arinc429Word(word));
             }
         });
 
-        subscriber.on('fcdc2CaptRollCommand').handle((word) => {
+        subscriber.on('fcdc2CaptRollCommandRaw').handle((word) => {
             if (this.fcdcToUse === 2) {
                 publisher.pub('fcdcCaptRollCommand', new Arinc429Word(word));
             }
         });
 
-        subscriber.on('fcdc1FoRollCommand').handle((word) => {
+        subscriber.on('fcdc1FoRollCommandRaw').handle((word) => {
             if (this.fcdcToUse === 1) {
                 publisher.pub('fcdcCaptRollCommand', new Arinc429Word(word));
             }
         });
 
-        subscriber.on('fcdc2FoRollCommand').handle((word) => {
+        subscriber.on('fcdc2FoRollCommandRaw').handle((word) => {
             if (this.fcdcToUse === 2) {
                 publisher.pub('fcdcFoRollCommand', new Arinc429Word(word));
             }

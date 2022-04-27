@@ -95,8 +95,6 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('airKnob');
         this.simVarPublisher.subscribe('vsBaro');
         this.simVarPublisher.subscribe('vsInert');
-        this.simVarPublisher.subscribe('sideStickY');
-        this.simVarPublisher.subscribe('sideStickX');
         this.simVarPublisher.subscribe('fdYawCommand');
         this.simVarPublisher.subscribe('fdBank');
         this.simVarPublisher.subscribe('fdPitch');
@@ -181,19 +179,19 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('ls1Button');
         this.simVarPublisher.subscribe('ls2Button');
 
-        this.simVarPublisher.subscribe('fcdc1DiscreteWord1');
-        this.simVarPublisher.subscribe('fcdc2DiscreteWord1');
-        this.simVarPublisher.subscribe('fcdc1DiscreteWord2');
-        this.simVarPublisher.subscribe('fcdc2DiscreteWord2');
+        this.simVarPublisher.subscribe('fcdc1DiscreteWord1Raw');
+        this.simVarPublisher.subscribe('fcdc2DiscreteWord1Raw');
+        this.simVarPublisher.subscribe('fcdc1DiscreteWord2Raw');
+        this.simVarPublisher.subscribe('fcdc2DiscreteWord2Raw');
 
-        this.simVarPublisher.subscribe('fcdc1CaptPitchCommand');
-        this.simVarPublisher.subscribe('fcdc2CaptPitchCommand');
-        this.simVarPublisher.subscribe('fcdc1FoPitchCommand');
-        this.simVarPublisher.subscribe('fcdc2FoPitchCommand');
-        this.simVarPublisher.subscribe('fcdc1CaptRollCommand');
-        this.simVarPublisher.subscribe('fcdc2CaptRollCommand');
-        this.simVarPublisher.subscribe('fcdc1FoRollCommand');
-        this.simVarPublisher.subscribe('fcdc2FoRollCommand');
+        this.simVarPublisher.subscribe('fcdc1CaptPitchCommandRaw');
+        this.simVarPublisher.subscribe('fcdc2CaptPitchCommandRaw');
+        this.simVarPublisher.subscribe('fcdc1FoPitchCommandRaw');
+        this.simVarPublisher.subscribe('fcdc2FoPitchCommandRaw');
+        this.simVarPublisher.subscribe('fcdc1CaptRollCommandRaw');
+        this.simVarPublisher.subscribe('fcdc2CaptRollCommandRaw');
+        this.simVarPublisher.subscribe('fcdc1FoRollCommandRaw');
+        this.simVarPublisher.subscribe('fcdc2FoRollCommandRaw');
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
     }

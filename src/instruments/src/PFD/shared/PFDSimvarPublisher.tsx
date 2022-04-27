@@ -108,18 +108,18 @@ export interface PFDSimvars {
     daRaw: number;
     ls1Button: boolean;
     ls2Button: boolean;
-    fcdc1DiscreteWord1: number;
-    fcdc2DiscreteWord1: number;
-    fcdc1DiscreteWord2: number;
-    fcdc2DiscreteWord2: number;
-    fcdc1CaptPitchCommand: number;
-    fcdc2CaptPitchCommand: number;
-    fcdc1FoPitchCommand: number;
-    fcdc2FoPitchCommand: number;
-    fcdc1CaptRollCommand: number;
-    fcdc2CaptRollCommand: number;
-    fcdc1FoRollCommand: number;
-    fcdc2FoRollCommand: number;
+    fcdc1DiscreteWord1Raw: number;
+    fcdc2DiscreteWord1Raw: number;
+    fcdc1DiscreteWord2Raw: number;
+    fcdc2DiscreteWord2Raw: number;
+    fcdc1CaptPitchCommandRaw: number;
+    fcdc2CaptPitchCommandRaw: number;
+    fcdc1FoPitchCommandRaw: number;
+    fcdc2FoPitchCommandRaw: number;
+    fcdc1CaptRollCommandRaw: number;
+    fcdc2CaptRollCommandRaw: number;
+    fcdc1FoRollCommandRaw: number;
+    fcdc2FoRollCommandRaw: number;
   }
 
 export enum PFDVars {
@@ -230,18 +230,18 @@ export enum PFDVars {
     daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
     ls1Button = 'L:BTN_LS_1_FILTER_ACTIVE',
     ls2Button = 'L:BTN_LS_2_FILTER_ACTIVE',
-    fcdc1DiscreteWord1 = 'L:A32NX_FCDC_1_DISCRETE_WORD_1',
-    fcdc2DiscreteWord1 = 'L:A32NX_FCDC_2_DISCRETE_WORD_1',
-    fcdc1DiscreteWord2 = 'L:A32NX_FCDC_1_DISCRETE_WORD_2',
-    fcdc2DiscreteWord2 = 'L:A32NX_FCDC_2_DISCRETE_WORD_2',
-    fcdc1CaptPitchCommand = 'L:A32NX_FCDC_1_CAPT_PITCH_COMMAND',
-    fcdc2CaptPitchCommand = 'L:A32NX_FCDC_2_CAPT_PITCH_COMMAND',
-    fcdc1FoPitchCommand = 'L:A32NX_FCDC_1_FO_PITCH_COMMAND',
-    fcdc2FoPitchCommand = 'L:A32NX_FCDC_2_FO_PITCH_COMMAND',
-    fcdc1CaptRollCommand = 'L:A32NX_FCDC_1_CAPT_ROLL_COMMAND',
-    fcdc2CaptRollCommand = 'L:A32NX_FCDC_2_CAPT_ROLL_COMMAND',
-    fcdc1FoRollCommand = 'L:A32NX_FCDC_1_FO_ROLL_COMMAND',
-    fcdc2FoRollCommand = 'L:A32NX_FCDC_2_FO_ROLL_COMMAND',
+    fcdc1DiscreteWord1Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_1',
+    fcdc2DiscreteWord1Raw = 'L:A32NX_FCDC_2_DISCRETE_WORD_1',
+    fcdc1DiscreteWord2Raw = 'L:A32NX_FCDC_1_DISCRETE_WORD_2',
+    fcdc2DiscreteWord2Raw = 'L:A32NX_FCDC_2_DISCRETE_WORD_2',
+    fcdc1CaptPitchCommandRaw = 'L:A32NX_FCDC_1_CAPT_PITCH_COMMAND',
+    fcdc2CaptPitchCommandRaw = 'L:A32NX_FCDC_2_CAPT_PITCH_COMMAND',
+    fcdc1FoPitchCommandRaw = 'L:A32NX_FCDC_1_FO_PITCH_COMMAND',
+    fcdc2FoPitchCommandRaw = 'L:A32NX_FCDC_2_FO_PITCH_COMMAND',
+    fcdc1CaptRollCommandRaw = 'L:A32NX_FCDC_1_CAPT_ROLL_COMMAND',
+    fcdc2CaptRollCommandRaw = 'L:A32NX_FCDC_2_CAPT_ROLL_COMMAND',
+    fcdc1FoRollCommandRaw = 'L:A32NX_FCDC_1_FO_ROLL_COMMAND',
+    fcdc2FoRollCommandRaw = 'L:A32NX_FCDC_2_FO_ROLL_COMMAND',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -354,18 +354,18 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
         ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
         ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
-        ['fcdc1DiscreteWord1', { name: PFDVars.fcdc1DiscreteWord1, type: SimVarValueType.Number }],
-        ['fcdc2DiscreteWord1', { name: PFDVars.fcdc2DiscreteWord1, type: SimVarValueType.Number }],
-        ['fcdc1DiscreteWord2', { name: PFDVars.fcdc1DiscreteWord2, type: SimVarValueType.Number }],
-        ['fcdc2DiscreteWord2', { name: PFDVars.fcdc2DiscreteWord2, type: SimVarValueType.Number }],
-        ['fcdc1CaptPitchCommand', { name: PFDVars.fcdc1CaptPitchCommand, type: SimVarValueType.Number }],
-        ['fcdc2CaptPitchCommand', { name: PFDVars.fcdc2CaptPitchCommand, type: SimVarValueType.Number }],
-        ['fcdc1FoPitchCommand', { name: PFDVars.fcdc1FoPitchCommand, type: SimVarValueType.Number }],
-        ['fcdc2FoPitchCommand', { name: PFDVars.fcdc2FoPitchCommand, type: SimVarValueType.Number }],
-        ['fcdc1CaptRollCommand', { name: PFDVars.fcdc1CaptRollCommand, type: SimVarValueType.Number }],
-        ['fcdc2CaptRollCommand', { name: PFDVars.fcdc2CaptRollCommand, type: SimVarValueType.Number }],
-        ['fcdc1FoRollCommand', { name: PFDVars.fcdc1FoRollCommand, type: SimVarValueType.Number }],
-        ['fcdc2FoRollCommand', { name: PFDVars.fcdc2FoRollCommand, type: SimVarValueType.Number }],
+        ['fcdc1DiscreteWord1Raw', { name: PFDVars.fcdc1DiscreteWord1Raw, type: SimVarValueType.Number }],
+        ['fcdc2DiscreteWord1Raw', { name: PFDVars.fcdc2DiscreteWord1Raw, type: SimVarValueType.Number }],
+        ['fcdc1DiscreteWord2Raw', { name: PFDVars.fcdc1DiscreteWord2Raw, type: SimVarValueType.Number }],
+        ['fcdc2DiscreteWord2Raw', { name: PFDVars.fcdc2DiscreteWord2Raw, type: SimVarValueType.Number }],
+        ['fcdc1CaptPitchCommandRaw', { name: PFDVars.fcdc1CaptPitchCommandRaw, type: SimVarValueType.Number }],
+        ['fcdc2CaptPitchCommandRaw', { name: PFDVars.fcdc2CaptPitchCommandRaw, type: SimVarValueType.Number }],
+        ['fcdc1FoPitchCommandRaw', { name: PFDVars.fcdc1FoPitchCommandRaw, type: SimVarValueType.Number }],
+        ['fcdc2FoPitchCommandRaw', { name: PFDVars.fcdc2FoPitchCommandRaw, type: SimVarValueType.Number }],
+        ['fcdc1CaptRollCommandRaw', { name: PFDVars.fcdc1CaptRollCommandRaw, type: SimVarValueType.Number }],
+        ['fcdc2CaptRollCommandRaw', { name: PFDVars.fcdc2CaptRollCommandRaw, type: SimVarValueType.Number }],
+        ['fcdc1FoRollCommandRaw', { name: PFDVars.fcdc1FoRollCommandRaw, type: SimVarValueType.Number }],
+        ['fcdc2FoRollCommandRaw', { name: PFDVars.fcdc2FoRollCommandRaw, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {
