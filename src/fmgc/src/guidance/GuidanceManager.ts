@@ -61,7 +61,7 @@ export class GuidanceManager {
                 return new TFLeg(prevLeg.fix, to, editableData, segment);
             }
 
-            return new IFLeg(to, editableData, segment);
+            return new IFLeg(to, editableData, segment, to.additionalData.course);
         }
 
         if (!from || !to) {

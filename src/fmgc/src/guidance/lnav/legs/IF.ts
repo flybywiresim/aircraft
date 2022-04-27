@@ -9,13 +9,13 @@ import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 
 export class IFLeg extends XFLeg {
     constructor(
         fix: WayPoint,
         public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,
+        private course?: DegreesTrue,
     ) {
         super(fix);
 
@@ -35,19 +35,15 @@ export class IFLeg extends XFLeg {
     }
 
     recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
-        if (!(this.outboundGuidable instanceof Leg)) {
-            throw new Error(`IF outboundGuidable must be a leg (is ${this.outboundGuidable?.constructor})`);
-        }
-
         this.isComputed = true;
     }
 
     get inboundCourse(): Degrees | undefined {
-        return undefined;
+        return this.course;
     }
 
     get outboundCourse(): Degrees | undefined {
-        return undefined;
+        return this.course;
     }
 
     get distance(): NauticalMiles {

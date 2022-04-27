@@ -21,6 +21,7 @@ import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
+import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 
 export class TransitionPicker {
     static forLegs(from: Leg, to: Leg): Transition | null {
@@ -38,6 +39,9 @@ export class TransitionPicker {
         }
         if (from instanceof HALeg || from instanceof HFLeg || from instanceof HMLeg) {
             return TransitionPicker.fromHX(from, to);
+        }
+        if (from instanceof IFLeg) {
+            return TransitionPicker.fromIF(from, to);
         }
         if (from instanceof RFLeg) {
             return TransitionPicker.fromRF(from, to);
@@ -239,6 +243,14 @@ export class TransitionPicker {
 
         if (DEBUG && !(to instanceof RFLeg)) {
             console.error(`Illegal sequence DFLeg -> ${to.constructor.name}`);
+        }
+
+        return null;
+    }
+
+    private static fromIF(from: IFLeg, to: Leg): Transition | null {
+        if (to instanceof DFLeg) {
+            return new DirectToFixTransition(from, to);
         }
 
         return null;
