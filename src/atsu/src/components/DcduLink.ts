@@ -7,6 +7,42 @@ import { AtsuMessage, AtsuMessageDirection } from '../messages/AtsuMessage';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
 
+export enum DcduStatusMessage {
+    NoMessage = -1,
+    AnswerRequired = 0,
+    CommunicationFault,
+    CommunicationNotAvailable,
+    CommunicationNotInitialized,
+    MaximumDownlinkMessages,
+    LinkLost,
+    FlightplanLoadFailed,
+    FlightplanLoadPartial,
+    FlightplanLoadingUnavailable,
+    MonitoringFailed,
+    MonitoringLost,
+    MonitoringUnavailable,
+    NoAtcReply,
+    OverflowClosed,
+    PrintFailed,
+    SendFailed = 15,
+    FlightplanLoadSecondary,
+    FlightplanLoadingSecondary,
+    McduForText,
+    McduForModification,
+    MonitoringCancelled,
+    Monitoring,
+    NoFmData,
+    NoMoreMessages,
+    NoMorePages,
+    PartialFmgsData,
+    Printing,
+    RecallMode,
+    Reminder,
+    Sending,
+    Sent,
+    WaitFmData
+}
+
 class DcduMessage {
     public MessageId: number = 0;
 
