@@ -101,7 +101,7 @@ export class EfisSymbols {
                 case RunwaySurface.Bituminous:
                 case RunwaySurface.Concrete:
                 case RunwaySurface.Tarmac:
-                    if (runway.length >= 1300) {
+                    if (runway.length >= 1500 && runway.width >= 30) {
                         return true;
                     }
                     break;
@@ -270,7 +270,7 @@ export class EfisSymbols {
             const formatConstraintSpeed = (speed: number, prefix: string = '') => `${prefix}${Math.floor(speed)}KT`;
 
             for (const [index, leg] of this.guidanceController.activeGeometry.legs.entries()) {
-                if (leg.terminationWaypoint && leg.displayedOnMap) {
+                if (!leg.isNull && leg.terminationWaypoint && leg.displayedOnMap) {
                     if (!(leg.terminationWaypoint instanceof WayPoint)) {
                         const isActive = index === this.guidanceController.activeLegIndex;
 

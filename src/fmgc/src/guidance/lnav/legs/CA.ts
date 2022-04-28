@@ -4,7 +4,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
@@ -25,6 +24,7 @@ export class CALeg extends Leg {
         public readonly altitude: Feet,
         public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,
+        private readonly extraLength?: NauticalMiles,
     ) {
         super();
 
@@ -32,10 +32,6 @@ export class CALeg extends Leg {
     }
 
     private start: Coordinates;
-
-    private inboundGuidable: Guidable | undefined;
-
-    private outboundGuidable: Guidable | undefined;
 
     get terminationWaypoint(): WayPoint | Coordinates | undefined {
         return this.estimatedTermination;
@@ -59,12 +55,15 @@ export class CALeg extends Leg {
 
     private wasMovedByPpos = false;
 
-    recomputeWithParameters(isActive: boolean, _tas: Knots, _gs: Knots, ppos: Coordinates, _trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
-        this.inboundGuidable = previousGuidable;
-        this.outboundGuidable = nextGuidable;
-
+    recomputeWithParameters(
+        isActive: boolean,
+        _tas: Knots,
+        _gs: Knots,
+        ppos: Coordinates,
+        _trueTrack: DegreesTrue,
+    ) {
         // FIXME somehow after reloads the isRunway property is gone, so consider airports as runways for now
-        const afterRunway = previousGuidable instanceof IFLeg && (previousGuidable.fix.isRunway || previousGuidable.fix.icao.startsWith('A'));
+        const afterRunway = this.inboundGuidable instanceof IFLeg && (this.inboundGuidable.fix.isRunway || this.inboundGuidable.fix.icao.startsWith('A'));
 
         // We assign / spread properties here to avoid copying references and causing bugs
         if (isActive && !afterRunway) {
@@ -81,7 +80,7 @@ export class CALeg extends Leg {
                 this.recomputeEstimatedTermination();
             }
         } else if (!this.wasMovedByPpos) {
-            const newPreviousGuidableStart = previousGuidable?.getPathEndPoint();
+            const newPreviousGuidableStart = this.inboundGuidable?.getPathEndPoint();
 
             if (newPreviousGuidableStart) {
                 if (!this.start) {
@@ -130,11 +129,15 @@ export class CALeg extends Leg {
         }
 
         const minutesToAltitude = (this.altitude - Math.max(0, originAltitude)) / ESTIMATED_VS; // minutes
-        const distanceToAltitude = (minutesToAltitude / 60) * ESTIMATED_KTS; // NM
+        let distanceToTermination = (minutesToAltitude / 60) * ESTIMATED_KTS; // NM
+
+        if (!this.wasMovedByPpos && this.extraLength > 0) {
+            distanceToTermination += this.extraLength;
+        }
 
         this.estimatedTermination = Avionics.Utils.bearingDistanceToCoordinates(
             this.course,
-            distanceToAltitude,
+            distanceToTermination,
             this.start.lat,
             this.start.long,
         );
@@ -153,6 +156,12 @@ export class CALeg extends Leg {
     }
 
     getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, _tas: Knots): GuidanceParameters | undefined {
+        // FIXME: should be just track guidance, no xtk
+        // (the start of the predicted path should also float with ppos once active, along with the transition to the leg)
+        // return {
+        //    law: ControlLaw.TRACK,
+        //    course: this.course,
+        // };
         return courseToFixGuidance(ppos, trueTrack, this.course, this.estimatedTermination);
     }
 

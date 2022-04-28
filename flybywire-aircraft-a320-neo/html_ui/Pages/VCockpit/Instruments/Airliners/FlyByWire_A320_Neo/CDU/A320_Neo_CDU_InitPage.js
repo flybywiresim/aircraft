@@ -217,7 +217,7 @@ class CDUInitPage {
                 CDUInitPage.ShowPage1(mcdu);
             } catch (msg) {
                 if (msg instanceof McduMessage) {
-                    mcdu.addNewMessage(msg);
+                    mcdu.setScratchpadMessage(msg);
                     scratchpadCallback();
                 } else {
                     throw msg;
@@ -316,7 +316,7 @@ class CDUInitPage {
         }
         mcdu.onRightInput[0] = async (value, scratchpadCallback) => {
             if (value === "") {
-                mcdu.scratchpad.setText(
+                mcdu.setScratchpadText(
                     (isFinite(getZfw()) ? (NXUnits.kgToUser(getZfw() / 1000)).toFixed(1) : "") +
                     "/" +
                     (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));

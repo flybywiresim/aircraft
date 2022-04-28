@@ -3154,10 +3154,10 @@ void AutopilotStateMachineModelClass::step()
   conditionSoftAlt = !rtb_BusConversion_InsertedFor_BusAssignment_at_inport_2_BusCreator1_APPR_push;
   engageCondition = !AutopilotStateMachine_DWork.Delay1_DSTATE.armed.FINAL_DES;
   state_e_tmp_0 = !AutopilotStateMachine_DWork.DelayInput1_DSTATE_g;
-  AutopilotStateMachine_DWork.state_e = (state_e_tmp_0 && ((AutopilotStateMachine_U.in.data.H_radio_ft >= 30.0) ||
-    (!rtb_AND)) && (rtb_cLAND || AutopilotStateMachine_U.in.input.FM_rnav_appr_selected) &&
-    (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_NAV)) &&
-    (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LAND)) &&
+  AutopilotStateMachine_DWork.state_e = (state_e_tmp_0 && AutopilotStateMachine_U.in.data.is_flight_plan_available &&
+    ((AutopilotStateMachine_U.in.data.H_radio_ft >= 30.0) || (!rtb_AND)) && (rtb_cLAND ||
+    AutopilotStateMachine_U.in.input.FM_rnav_appr_selected) && (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode ==
+    lateral_mode_NAV)) && (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_LAND)) &&
     (!(AutopilotStateMachine_DWork.Delay_DSTATE.output.mode == lateral_mode_FLARE)) && (engageCondition || state_e_tmp ||
     rtb_BusAssignment1_data_altimeter_setting_changed || conditionSoftAlt) && AutopilotStateMachine_DWork.state_e);
   AutopilotStateMachine_DWork.wasFlightPlanAvailable = AutopilotStateMachine_U.in.data.is_flight_plan_available;

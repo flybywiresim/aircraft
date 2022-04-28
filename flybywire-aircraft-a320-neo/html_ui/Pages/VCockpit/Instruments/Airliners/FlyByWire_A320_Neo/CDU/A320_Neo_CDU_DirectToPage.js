@@ -69,13 +69,13 @@ class CDUDirectToPage {
             });
         };
         mcdu.onRightInput[2] = () => {
-            mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+            mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
         };
         mcdu.onRightInput[3] = () => {
-            mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+            mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
         };
         mcdu.onRightInput[4] = () => {
-            mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+            mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
         };
         let i = 0;
         let cellIter = 0;

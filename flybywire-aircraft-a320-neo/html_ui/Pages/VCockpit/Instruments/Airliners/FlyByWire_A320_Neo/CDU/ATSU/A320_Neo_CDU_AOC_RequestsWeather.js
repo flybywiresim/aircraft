@@ -43,13 +43,13 @@ class CDUAocRequestsWeather {
             }
         }
 
-        let sendMessage = "SEND\xa0[color]cyan";
-        if (data.airports.filter((n) => n).length !== 0) {
-            sendMessage = "SEND*[color]cyan";
-        }
-
         const updateView = () => {
             if (mcdu.page.Current === mcdu.page.AOCRequestWeather) {
+                let sendMessage = "SEND\xa0[color]cyan";
+                if (data.airports.filter((n) => n).length !== 0 && data.sendStatus !== "SENDING") {
+                    sendMessage = "SEND*[color]cyan";
+                }
+
                 mcdu.setTemplate([
                     ["AOC WEATHER REQUEST"],
                     ["\xa0WX TYPE", "AIRPORTS\xa0"],
@@ -76,7 +76,7 @@ class CDUAocRequestsWeather {
                     CDUAocRequestsWeather.ShowPage(mcdu, data);
                 } else {
                     if (!/^[A-Z0-9]{4}$/.test(value)) {
-                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     } else {
                         mcdu.dataManager.GetAirportByIdent(value).then((airport) => {
                             if (airport) {
@@ -87,7 +87,7 @@ class CDUAocRequestsWeather {
                                     CDUAocRequestsWeather.ShowPage(mcdu, data);
                                 }
                             } else {
-                                mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                                mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                             }
                         });
                     }
@@ -102,7 +102,7 @@ class CDUAocRequestsWeather {
         mcdu.onRightInput[5] = async () => {
             const icaos = data.airports.filter((n) => n);
             if (icaos.length === 0) {
-                mcdu.addNewMessage(NXFictionalMessages.noAirportSpecified);
+                mcdu.setScratchpadMessage(NXFictionalMessages.noAirportSpecified);
                 return;
             }
             data.sendStatus = "SENDING";

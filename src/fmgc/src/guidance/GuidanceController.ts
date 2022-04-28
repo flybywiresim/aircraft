@@ -12,11 +12,9 @@ import { EfisState } from '@fmgc/guidance/FmsState';
 import { EfisSide, Mode, rangeSettings } from '@shared/NavigationDisplay';
 import { TaskCategory, TaskQueue } from '@fmgc/guidance/TaskQueue';
 import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
-import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SimVarString } from '@shared/simvar';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { normaliseApproachName } from '@shared/flightplan';
 import { LnavDriver } from './lnav/LnavDriver';
 import { FlightPlanManager, FlightPlans } from '../flightplanning/FlightPlanManager';
 import { GuidanceManager } from './GuidanceManager';
@@ -146,7 +144,7 @@ export class GuidanceController {
         if (appr && appr.approachType !== ApproachType.APPROACH_TYPE_UNKNOWN) {
             const phase = getFlightPhaseManager().phase;
             if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250)) {
-                apprMsg = normaliseApproachName(appr.name);
+                apprMsg = appr.name;
             }
         }
 
@@ -307,7 +305,10 @@ export class GuidanceController {
      */
     updateGeometries() {
         this.updateActiveGeometry();
-        this.updateTemporaryGeometry();
+
+        if (this.flightPlanManager.getFlightPlan(FlightPlans.Temporary)) {
+            this.updateTemporaryGeometry();
+        }
 
         this.recomputeGeometries();
 
@@ -341,8 +342,8 @@ export class GuidanceController {
     }
 
     recomputeGeometries() {
-        const tas = SimVar.GetSimVarValue(LnavConfig.DEBUG_USE_SPEED_LVARS ? 'L:A32NX_DEBUG_FM_TAS' : 'AIRSPEED TRUE', 'Knots');
-        const gs = SimVar.GetSimVarValue(LnavConfig.DEBUG_USE_SPEED_LVARS ? 'L:A32NX_DEBUG_FM_GS' : 'GPS GROUND SPEED', 'Knots');
+        const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
+        const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
         const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRACK', 'degrees');
 
         if (this.activeGeometry) {
@@ -398,9 +399,9 @@ export class GuidanceController {
     setHoldSpeed(tas: Knots) {
         let holdLeg: HMLeg;
         if (this.isManualHoldActive()) {
-            holdLeg = this.activeGeometry.legs.get(this.activeLegIndex) as HMLeg;
+            holdLeg = this.activeGeometry.legs.get(this.activeLegIndex) as unknown as HMLeg;
         } else if (this.isManualHoldNext()) {
-            holdLeg = this.activeGeometry.legs.get(this.activeLegIndex + 1) as HMLeg;
+            holdLeg = this.activeGeometry.legs.get(this.activeLegIndex + 1) as unknown as HMLeg;
         }
 
         if (holdLeg) {

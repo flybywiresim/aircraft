@@ -96,6 +96,20 @@ export class FlightPhaseManager {
         }
     }
 
+    handleNewCruiseAltitudeEntered(newCruiseFlightLevel: number): void {
+        const currentFlightLevel = Math.round(SimVar.GetSimVarValue('INDICATED ALTITUDE:3', 'feet') / 100);
+        if (this.activePhase === FmgcFlightPhase.Approach) {
+            this.changePhase(FmgcFlightPhase.Climb);
+        } else if (currentFlightLevel < newCruiseFlightLevel
+            && this.activePhase === FmgcFlightPhase.Descent) {
+            this.changePhase(FmgcFlightPhase.Climb);
+        } else if (currentFlightLevel > newCruiseFlightLevel
+            && (this.activePhase === FmgcFlightPhase.Climb
+                || this.activePhase === FmgcFlightPhase.Descent)) {
+            this.changePhase(FmgcFlightPhase.Cruise);
+        }
+    }
+
     changePhase(newPhase: FmgcFlightPhase): void {
         const prevPhase = this.phase;
         console.log(`FMGC Flight Phase: ${prevPhase} => ${newPhase}`);

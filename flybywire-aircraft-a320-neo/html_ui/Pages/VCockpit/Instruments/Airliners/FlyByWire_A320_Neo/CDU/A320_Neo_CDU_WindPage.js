@@ -111,7 +111,7 @@ class CDUWindPage {
             }
             const wind = CDUWindPage.ParseWind(value);
             if (wind == null) {
-                mcdu.addNewMessage(NXSystemMessages.formatError);
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
             } else {
                 mcdu.winds.alternate = wind;
@@ -216,7 +216,7 @@ class CDUWindPage {
     static TryAddWind(mcdu, _windArray, _input, _showPage, scratchpadCallback) {
         const data = CDUWindPage.ParseTrueWindAlt(_input);
         if (data == null) {
-            mcdu.addNewMessage(NXSystemMessages.formatError);
+            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             scratchpadCallback(_input);
         } else {
             _windArray.push(data);
