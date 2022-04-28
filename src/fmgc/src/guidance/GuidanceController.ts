@@ -175,7 +175,7 @@ export class GuidanceController {
         this.lnavDriver.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         this.lnavDriver.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
-        this.activeLegIndex = this.flightPlanManager.getActiveWaypointIndex();
+        this.activeLegIndex = this.flightPlanManager.getActiveWaypointIndex(false, false, FlightPlans.Active);
 
         this.updateGeometries();
 
@@ -308,6 +308,8 @@ export class GuidanceController {
 
         if (this.flightPlanManager.getFlightPlan(FlightPlans.Temporary)) {
             this.updateTemporaryGeometry();
+        } else {
+            this.temporaryGeometry = undefined;
         }
 
         this.recomputeGeometries();
@@ -344,7 +346,7 @@ export class GuidanceController {
     recomputeGeometries() {
         const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
         const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
-        const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRACK', 'degrees');
+        const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
         if (this.activeGeometry) {
             this.activeGeometry.recomputeWithParameters(
