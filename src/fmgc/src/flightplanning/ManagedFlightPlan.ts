@@ -842,7 +842,7 @@ export class ManagedFlightPlan {
         const toWpt = this.waypoints[waypointIndex];
         toWpt.additionalData.legType = LegType.DF;
 
-        const turningPoint = WaypointBuilder.fromCoordinates('T-P', new LatLongAlt(lat, long), this._parentInstrument, { legType: LegType.IF, course: trueTrack }, this.getTurningPointIcao());
+        const turningPoint = WaypointBuilder.fromCoordinates('T-P', new LatLongAlt(lat, long), this._parentInstrument, { legType: LegType.IF, course: trueTrack, dynamicPpos: true }, this.getTurningPointIcao());
 
         turningPoint.isTurningPoint = true;
 
@@ -858,7 +858,7 @@ export class ManagedFlightPlan {
 
     public updateTurningPoint(): boolean {
         const wp = this.getWaypoint(this.activeWaypointIndex - 1);
-        if (wp?.isTurningPoint) {
+        if (wp?.additionalData?.dynamicPpos) {
             wp.infos.coordinates.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
             wp.infos.coordinates.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
             wp.additionalData.course = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');

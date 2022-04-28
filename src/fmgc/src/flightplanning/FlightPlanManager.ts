@@ -238,6 +238,10 @@ export class FlightPlanManager {
         const copiedFlightPlan = this._flightPlans[this._currentFlightPlanIndex].copy();
         const { activeWaypointIndex } = copiedFlightPlan;
 
+        if (this._currentFlightPlanIndex === FlightPlans.Temporary && index === FlightPlans.Active) {
+            copiedFlightPlan.waypoints.forEach((wp) => delete wp.additionalData.dynamicPpos);
+        }
+
         this._flightPlans[index] = copiedFlightPlan;
 
         if (index === 0) {
@@ -1634,10 +1638,10 @@ export class FlightPlanManager {
      *
      * @param icao The ICAO designation for the fix to fly direct-to.
      */
-    public async insertDirectTo(icao: string): Promise<void> {
+    public async insertDirectTo(waypoint: WayPoint): Promise<void> {
         const currentFlightPlan = this._flightPlans[this._currentFlightPlanIndex];
 
-        await currentFlightPlan.addDirectTo(icao);
+        await currentFlightPlan.addDirectTo(waypoint);
 
         this.updateFlightPlanVersion().catch(console.error);
     }
