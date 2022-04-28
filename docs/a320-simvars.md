@@ -897,6 +897,14 @@
     - Bool
     - Power Transfer Unit is rotating continuously
 
+- A32NX_HYD_PTU_DEV_DEACTIVATION_DELTA
+    - Psi
+    - Write to this simvar to force a deactivation delta pressure for Power Transfer Unit
+
+- A32NX_HYD_PTU_DEV_EFFICIENCY
+    - Number
+    - Write to this simvar to force an efficiency value for Power Transfer Unit
+
 - A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED
     - Bool
     - Deploys the RAT manually
