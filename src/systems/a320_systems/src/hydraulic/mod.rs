@@ -5109,6 +5109,7 @@ impl SimulationElement for SpoilerComputer {
 
 struct A320GravityExtension {
     gear_gravity_extension_active_id: VariableIdentifier,
+    gear_gravity_extension_handle_is_turned_id: VariableIdentifier,
 
     handle_angle: Angle,
 
@@ -5126,6 +5127,8 @@ impl A320GravityExtension {
         Self {
             gear_gravity_extension_active_id: context
                 .get_identifier("GEAR_EMERGENCY_EXTENSION_ACTIVE".to_owned()),
+            gear_gravity_extension_handle_is_turned_id: context
+                .get_identifier("GEAR_EMERGENCY_EXTENSION_IS_TURNED".to_owned()),
 
             handle_angle: Angle::default(),
             is_extending_gear: true,
@@ -5163,6 +5166,13 @@ impl GearGravityExtension for A320GravityExtension {
 impl SimulationElement for A320GravityExtension {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.is_turned = reader.read(&self.gear_gravity_extension_active_id);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.gear_gravity_extension_handle_is_turned_id,
+            self.handle_angle.get::<degree>() < 360. && self.is_turned,
+        );
     }
 }
 

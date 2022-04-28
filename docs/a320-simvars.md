@@ -2615,6 +2615,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates the emergency extension handle is clicked in cockpit.
     - Bool
 
+- A32NX_GEAR_EMERGENCY_EXTENSION_IS_TURNED
+    - Indicates the emergency extension handle is currently turning.
+    - Bool
 
 ## ATC (ATA 34)
 
