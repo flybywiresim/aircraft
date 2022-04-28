@@ -266,6 +266,8 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     private readonly distanceNmUnitVisible = Subject.create(false);
 
+    private readonly etaValue = Subject.create('');
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
@@ -290,6 +292,10 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
 
         sub.on('toWptDistanceCaptain').whenChanged().handle((value) => {
             this.handleToWptDistance(value);
+        });
+
+        sub.on('toWptEtaCaptain').whenChanged().handle((value) => {
+            this.handleToWptEta(value);
         });
 
         sub.on('realTime').whenChangedBy(100).handle(() => {
@@ -324,6 +330,20 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
         }
     }
 
+    private handleToWptEta(eta: Seconds) {
+        if (eta === -1) {
+            this.etaValue.set('');
+            return;
+        }
+
+        const hh = Math.floor(eta / 3600);
+        const mm = Math.floor((eta % 3600) / 60);
+
+        const utc = `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
+
+        this.etaValue.set(utc);
+    }
+
     private refreshToWptIdent(): void {
         const ident = SimVarString.unpack([this.topWptIdent0, this.topWptIdent1]);
 
@@ -343,20 +363,20 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
                 </g>
 
                 <g visibility={this.distanceLargeContainerVisible.map(this.visibilityFn)}>
-                    <text ref={this.largeDistanceNumberRef} x={39} y={32} class="Green FontIntermediate EndAlign">50</text>
+                    <text ref={this.largeDistanceNumberRef} x={39} y={32} class="Green FontIntermediate EndAlign" />
                 </g>
 
                 <g visibility={this.distanceSmallContainerVisible.map(this.visibilityFn)}>
-                    <text ref={this.smallDistanceIntegerPartRef} x={6} y={32} class="Green FontIntermediate EndAlign">1</text>
+                    <text ref={this.smallDistanceIntegerPartRef} x={6} y={32} class="Green FontIntermediate EndAlign" />
                     <text x={3} y={32} class="Green FontSmallest StartAlign">.</text>
-                    <text ref={this.smallDistanceDecimalPartRef} x={20} y={32} class="Green FontSmallest StartAlign">8</text>
+                    <text ref={this.smallDistanceDecimalPartRef} x={20} y={32} class="Green FontSmallest StartAlign" />
                 </g>
 
                 <text x={72} y={32} class="Cyan FontSmallest EndAlign" visibility={this.distanceNmUnitVisible.map(this.visibilityFn)}>
                     NM
                 </text>
 
-                <text x={72} y={66} class="Green FontIntermediate EndAlign">17:52</text>
+                <text x={72} y={66} class="Green FontIntermediate EndAlign">{this.etaValue}</text>
             </Layer>
         );
     }
