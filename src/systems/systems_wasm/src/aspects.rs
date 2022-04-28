@@ -1,5 +1,6 @@
 use crate::{
-    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_to_f64, MsfsVariableRegistry, Variable,
+    f64_to_sim_connect_32k_pos, sim_connect_32k_pos_inv_to_f64, sim_connect_32k_pos_to_f64,
+    MsfsVariableRegistry, Variable,
 };
 use enum_dispatch::enum_dispatch;
 use msfs::sim_connect::{SimConnect, SimConnectRecv, SIMCONNECT_OBJECT_ID_USER};
@@ -701,6 +702,9 @@ pub enum EventToVariableMapping {
     /// Maps the event data from a 32k position to an [f64].
     EventData32kPosition,
 
+    /// Maps the event data from a 32k position to an [f64] and inverts it.
+    EventData32kPositionInverted,
+
     /// When the event occurs, calls the function with event data and sets
     /// the variable to the returned value.
     EventDataToValue(fn(sys::DWORD) -> f64),
@@ -771,6 +775,9 @@ impl EventToVariable {
             EventToVariableMapping::Value(value) => value,
             EventToVariableMapping::EventDataRaw => e.data() as f64,
             EventToVariableMapping::EventData32kPosition => sim_connect_32k_pos_to_f64(e.data()),
+            EventToVariableMapping::EventData32kPositionInverted => {
+                sim_connect_32k_pos_inv_to_f64(e.data())
+            }
             EventToVariableMapping::EventDataToValue(func) => func(e.data()),
             EventToVariableMapping::CurrentValueToValue(func) => {
                 func(variables.read(&self.target).unwrap_or(0.))

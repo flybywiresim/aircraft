@@ -49,7 +49,7 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
 
     builder.event_to_variable(
         "AXIS_STEERING_SET",
-        EventToVariableMapping::EventData32kPosition,
+        EventToVariableMapping::EventData32kPositionInverted,
         Variable::aspect("RAW_TILLER_HANDLE_POSITION"),
         |options| options.mask(),
     )?;
@@ -100,6 +100,8 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
             let rudder_pedal_position = values[1];
             let tiller_handle_position = values[2];
             let tiller_pedal_disconnect = to_bool(values[3]);
+
+            println!("WASM: raw tiller position: {:.2}", values[2]);
 
             if realistic_tiller_enabled {
                 // Convert tiller handle position to [-1;1], -1 is left
