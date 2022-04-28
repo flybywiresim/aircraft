@@ -209,7 +209,6 @@ impl A320CargoDoorFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
-            true,
         )
     }
 
@@ -301,7 +300,6 @@ impl A320AileronFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
-            false,
             false,
         )
     }
@@ -401,7 +399,6 @@ impl A320SpoilerFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
-            true,
         )
     }
 
@@ -509,7 +506,6 @@ impl A320ElevatorFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
-            false,
         )
     }
 
@@ -597,7 +593,6 @@ impl A320RudderFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
-            false,
             false,
         )
     }
@@ -689,7 +684,6 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
-            true,
         )
     }
 
@@ -716,7 +710,6 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
-            true,
             true,
         )
     }
@@ -828,7 +821,6 @@ impl A320GearFactory {
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
-            true,
         )
     }
 
@@ -853,7 +845,6 @@ impl A320GearFactory {
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
-            true,
             true,
         )
     }
