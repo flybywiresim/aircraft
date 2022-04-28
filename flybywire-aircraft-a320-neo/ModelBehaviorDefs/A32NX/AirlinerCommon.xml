@@ -430,9 +430,12 @@
                 <UseTemplate Name="ASOBO_GT_Update">
                     <FREQUENCY>3</FREQUENCY>
                     <UPDATE_CODE>
-                    (A:COM TRANSMIT:#Radio_ID#, Bool) if{
-                        <!-- #Button_ID# (&gt;L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) -->
-                    }
+                         <!-- At the time of RMP fix, I couldn't figure out the purpose of this condition and its underlying code -->
+                         <!-- But to me it was part of all the problems -->
+                         <!-- I have disabled the code to make an example of regular code update if needed -->
+                        (A:COM TRANSMIT:#Radio_ID#, Bool) if{
+                            <!-- #Button_ID# (&gt;L:XMLVAR_COM_PANEL#ID#_Transmit_Channel) -->
+                        }
                     </UPDATE_CODE>
                 </UseTemplate>
             </True>
@@ -497,8 +500,11 @@
                     }
                 </ANTICLOCKWISE_CODE>
                 <ANIM_CODE_SWITCH>
-                <!-- (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) -->
-                <!-- #Button_ID# (L:XMLVAR_COM_Transmit_Channel) == or 100 * -->
+                    <!-- Code disabled because I did not understand its purpose when I fixed the RMPs -->
+                    <!-- No changes seen but I don't want to delete code I don't understand -->
+                    
+                    <!-- (L:XMLVAR_COM_#ID#_#FREQ_ID#_Switch_Down) -->
+                    <!-- #Button_ID# (L:XMLVAR_COM_Transmit_Channel) == or 100 * -->
                 </ANIM_CODE_SWITCH>
                 <ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
                 <LEFT_SINGLE_CODE>
