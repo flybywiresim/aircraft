@@ -36,8 +36,9 @@ use systems::{
             SteeringRatioToAngle,
         },
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
-        PressureSwitchType, PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
+        HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitCharacteristics,
+        PowerTransferUnitController, PressureSwitch, PressureSwitchType, PumpController,
+        RamAirTurbine, RamAirTurbineController, Reservoir,
     },
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
@@ -45,7 +46,7 @@ use systems::{
     shared::{
         interpolation,
         low_pass_filter::LowPassFilter,
-        random_from_range,
+        random_from_normal_distribution, random_from_range,
         update_iterator::{FixedStepLoop, MaxStepLoop},
         DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
@@ -649,6 +650,151 @@ impl A320RudderFactory {
     }
 }
 
+struct A320PowerTransferUnitCharacteristics {
+    efficiency: Ratio,
+
+    deactivation_delta_pressure: Pressure,
+    activation_delta_pressure: Pressure,
+
+    shot_to_shot_variability: Ratio,
+}
+impl A320PowerTransferUnitCharacteristics {
+    // Randomisation parameters
+    // As ptu wear parameters are non linear, for now we simulate two normal distributions:
+    // -Nominal distribution which is the PTU you'll find in wide majority of planes
+    // -Worn out distribution, which is the PTU which is still acceptable but has degraded behaviour
+    const MEAN_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
+    const STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+
+    // Ratio of worn PTU : 0.1 means 10% of cases we get a worn out ptu
+    const WORN_PTU_CASE_PROBABILITY: f64 = 0.15;
+
+    const WORN_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 20.;
+    const WORN_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+    const WORN_MIN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+    const WORN_MAX_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 30.;
+
+    const NOMINAL_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 90.;
+    const NOMINAL_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 15.;
+    const NOMINAL_MIN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+    const NOMINAL_MAX_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 180.;
+
+    const WORN_EFFICIENCY_MEAN: f64 = 0.6;
+    const WORN_EFFICIENCY_STD_DEV: f64 = 0.06;
+    const NOMINAL_EFFICIENCY_MEAN: f64 = 0.85;
+    const NOMINAL_EFFICIENCY_STD_DEV: f64 = 0.04;
+    const EFFICIENCY_MIN_ALLOWED: f64 = 0.5;
+    const EFFICIENCY_MAX: f64 = 0.9;
+
+    const SHOT_TO_SHOT_VARIABILITY_PERCENT_RATIO: f64 = 0.05;
+
+    fn new_randomized() -> Self {
+        let randomized_is_ptu_worn_out = Self::randomized_is_ptu_worn_out();
+
+        Self {
+            efficiency: Self::randomized_efficiency(randomized_is_ptu_worn_out),
+
+            deactivation_delta_pressure: Self::randomized_deactivation_delta_pressure(
+                randomized_is_ptu_worn_out,
+            ),
+
+            activation_delta_pressure: Pressure::new::<psi>(random_from_normal_distribution(
+                Self::MEAN_ACTIVATION_DELTA_PRESSURE_PSI,
+                Self::STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI,
+            )),
+
+            shot_to_shot_variability: Ratio::new::<ratio>(
+                Self::SHOT_TO_SHOT_VARIABILITY_PERCENT_RATIO,
+            ),
+        }
+    }
+
+    #[cfg(test)]
+    fn new_worst_part_acceptable() -> Self {
+        Self {
+            efficiency: Ratio::new::<ratio>(Self::EFFICIENCY_MIN_ALLOWED),
+
+            deactivation_delta_pressure: Pressure::new::<psi>(
+                Self::WORN_MIN_DEACTIVATION_DELTA_PRESSURE_PSI,
+            ),
+
+            activation_delta_pressure: Pressure::new::<psi>(
+                Self::MEAN_ACTIVATION_DELTA_PRESSURE_PSI
+                    + 5. * Self::STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI,
+            ),
+
+            shot_to_shot_variability: Ratio::new::<ratio>(
+                Self::SHOT_TO_SHOT_VARIABILITY_PERCENT_RATIO,
+            ),
+        }
+    }
+
+    fn randomized_is_ptu_worn_out() -> bool {
+        random_from_range(0., 1.) < Self::WORN_PTU_CASE_PROBABILITY
+    }
+
+    fn randomized_efficiency(is_worn_out: bool) -> Ratio {
+        if is_worn_out {
+            Ratio::new::<ratio>(
+                random_from_normal_distribution(
+                    Self::WORN_EFFICIENCY_MEAN,
+                    Self::WORN_EFFICIENCY_STD_DEV,
+                )
+                .max(Self::EFFICIENCY_MIN_ALLOWED)
+                .min(Self::EFFICIENCY_MAX),
+            )
+        } else {
+            Ratio::new::<ratio>(
+                random_from_normal_distribution(
+                    Self::NOMINAL_EFFICIENCY_MEAN,
+                    Self::NOMINAL_EFFICIENCY_STD_DEV,
+                )
+                .max(Self::EFFICIENCY_MIN_ALLOWED)
+                .min(Self::EFFICIENCY_MAX),
+            )
+        }
+    }
+
+    fn randomized_deactivation_delta_pressure(is_worn_out: bool) -> Pressure {
+        if is_worn_out {
+            Pressure::new::<psi>(
+                random_from_normal_distribution(
+                    Self::WORN_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI,
+                    Self::WORN_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI,
+                )
+                .min(Self::WORN_MAX_DEACTIVATION_DELTA_PRESSURE_PSI)
+                .max(Self::WORN_MIN_DEACTIVATION_DELTA_PRESSURE_PSI),
+            )
+        } else {
+            Pressure::new::<psi>(
+                random_from_normal_distribution(
+                    Self::NOMINAL_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI,
+                    Self::NOMINAL_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI,
+                )
+                .min(Self::NOMINAL_MAX_DEACTIVATION_DELTA_PRESSURE_PSI)
+                .max(Self::NOMINAL_MIN_DEACTIVATION_DELTA_PRESSURE_PSI),
+            )
+        }
+    }
+}
+impl PowerTransferUnitCharacteristics for A320PowerTransferUnitCharacteristics {
+    fn efficiency(&self) -> Ratio {
+        self.efficiency
+    }
+
+    fn deactivation_delta_pressure(&self) -> Pressure {
+        self.deactivation_delta_pressure
+    }
+
+    fn activation_delta_pressure(&self) -> Pressure {
+        self.activation_delta_pressure
+    }
+
+    fn shot_to_shot_variability(&self) -> Ratio {
+        self.shot_to_shot_variability
+    }
+}
+
 pub(super) struct A320Hydraulic {
     hyd_ptu_ecam_memo_id: VariableIdentifier,
     ptu_high_pitch_sound_id: VariableIdentifier,
@@ -862,7 +1008,10 @@ impl A320Hydraulic {
                 Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
             ),
 
-            power_transfer_unit: PowerTransferUnit::new(context),
+            power_transfer_unit: PowerTransferUnit::new(
+                context,
+                &A320PowerTransferUnitCharacteristics::new_randomized(),
+            ),
             power_transfer_unit_controller: A320PowerTransferUnitController::new(
                 context,
                 Self::PTU_CONTROL_POWER_BUS,
@@ -1616,6 +1765,7 @@ impl A320Hydraulic {
         absolute_delta_pressure
             > Pressure::new::<psi>(Self::HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI)
             && is_ptu_rotating
+            && !self.ptu_high_pitch_sound_active.output()
     }
 }
 impl SimulationElement for A320Hydraulic {
@@ -5027,8 +5177,15 @@ mod tests {
             fn set_dc_bus_2_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_2_powered = bus_is_alive;
             }
+
             fn set_dc_ess_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_ess_powered = bus_is_alive;
+            }
+
+            fn use_worst_case_ptu(&mut self) {
+                self.hydraulics.power_transfer_unit.update_characteristics(
+                    &A320PowerTransferUnitCharacteristics::new_worst_part_acceptable(),
+                );
             }
         }
 
@@ -5390,6 +5547,11 @@ mod tests {
                 if is_connected {
                     self = self.on_the_ground();
                 }
+                self
+            }
+
+            fn with_worst_case_ptu(mut self) -> Self {
+                self.command(|a| a.use_worst_case_ptu());
                 self
             }
 
@@ -8527,6 +8689,32 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs(10));
+
+            // Yellow epump working
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(80));
+
+            assert!(test_bed.get_flaps_left_position_percent() > 99.);
+            assert!(test_bed.get_flaps_right_position_percent() > 99.);
+            assert!(test_bed.get_slats_left_position_percent() > 99.);
+            assert!(test_bed.get_slats_right_position_percent() > 99.);
+        }
+
+        #[test]
+        fn yellow_epump_can_deploy_flaps_and_slats_on_worst_case_ptu() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .with_worst_case_ptu()
                 .run_one_tick();
 
             test_bed = test_bed
