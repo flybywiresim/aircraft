@@ -813,7 +813,7 @@ export class ManagedFlightPlan {
      *
      * @param icao The waypoint to go direct to
      */
-    public async addDirectTo(icao: string): Promise<void> {
+    public async addDirectTo(waypoint: WayPoint): Promise<void> {
         // TODO Replace with FMGC pos
         const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
@@ -821,7 +821,7 @@ export class ManagedFlightPlan {
 
         const fromWp = this.waypoints[this.activeWaypointIndex - 1];
         const toWp = this.waypoints[this.activeWaypointIndex];
-        if (fromWp?.isTurningPoint && toWp?.additionalData?.legType === LegType.DF && toWp?.icao !== icao) {
+        if (fromWp?.isTurningPoint && toWp?.additionalData?.legType === LegType.DF && toWp?.icao !== waypoint.icao) {
             if (!toWp.endsInDiscontinuity) {
                 toWp.additionalData.legType = LegType.IF;
             } else {
@@ -829,14 +829,13 @@ export class ManagedFlightPlan {
             }
         }
 
-        let waypointIndex = this.waypoints.findIndex((w) => w.icao === icao);
+        let waypointIndex = this.waypoints.findIndex((w) => w.icao === waypoint.icao);
         if (waypointIndex === -1) {
             // string, to the start of the flight plan, then direct to
-            const waypoint = await this._parentInstrument.facilityLoader.getFacilityRaw(icao).catch(console.error);
             waypoint.endsInDiscontinuity = true;
             waypoint.discontinuityCanBeCleared = true;
             this.addWaypoint(waypoint, this.activeWaypointIndex);
-            waypointIndex = this.waypoints.findIndex((w) => w.icao === icao);
+            waypointIndex = this.waypoints.findIndex((w) => w.icao === waypoint.icao);
         }
 
         const toWpt = this.waypoints[waypointIndex];

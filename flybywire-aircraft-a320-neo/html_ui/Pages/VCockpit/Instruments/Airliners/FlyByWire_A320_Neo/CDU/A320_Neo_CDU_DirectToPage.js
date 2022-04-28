@@ -57,7 +57,7 @@ class CDUDirectToPage {
                 if (w) {
                     mcdu.eraseTemporaryFlightPlan(() => {
                         mcdu.ensureCurrentFlightPlanIsTemporary(() => {
-                            mcdu.flightPlanManager.insertDirectTo(w.infos.icao).then(() => {
+                            mcdu.flightPlanManager.insertDirectTo(w).then(() => {
                                 CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex);
                             });
                         });
@@ -92,7 +92,7 @@ class CDUDirectToPage {
                     mcdu.onLeftInput[cellIter + 1] = () => {
                         mcdu.eraseTemporaryFlightPlan(() => {
                             mcdu.ensureCurrentFlightPlanIsTemporary(() => {
-                                mcdu.flightPlanManager.insertDirectTo(waypoint.infos.icao).then(() => {
+                                mcdu.flightPlanManager.insertDirectTo(waypoint).then(() => {
                                     CDUDirectToPage.ShowPage(mcdu, waypoint, wptsListIndex);
                                 });
                             });
