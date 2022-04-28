@@ -142,7 +142,7 @@
       "DoorFwd": "Front Dør",
       "ExternalPower": "Ekstern Strøm",
       "FuelTruck": "Brændstof Lastbil",
-      "JetBridge": "Jet Bridge",
+      "JetBridge": "Jetbro",
       "Title": "Tjenester"
     },
     "Title": "Ground"
@@ -150,7 +150,7 @@
   "Modals": {
     "Cancel": "Annuller",
     "Confirm": "Bekræft ",
-    "Okay": "okay"
+    "Okay": "Okay"
   },
   "NavigationAndCharts": {
     "All": "Alle",
