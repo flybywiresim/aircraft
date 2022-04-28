@@ -170,6 +170,140 @@ pub trait PowerTransferUnitController {
     fn should_enable(&self) -> bool;
 }
 
+pub trait PowerTransferUnitCharacteristics {
+    fn efficiency(&self) -> Ratio;
+    fn deactivation_delta_pressure(&self) -> Pressure;
+    fn activation_delta_pressure(&self) -> Pressure;
+    fn shot_to_shot_variability(&self) -> Ratio;
+}
+
+pub struct A320PowerTransferUnitCharacteristics {
+    efficiency: Ratio,
+
+    deactivation_delta_pressure: Pressure,
+    activation_delta_pressure: Pressure,
+
+    shot_to_shot_variability: Ratio,
+}
+impl A320PowerTransferUnitCharacteristics {
+    // Randomisation parameters
+    // As ptu wear parameters are non linear, for now we simulate two normal distributions:
+    // -Nominal distribution which is the PTU you'll find in wide majority of planes
+    // -Worn out distribution, which is the PTU which is still acceptable but has degraded behaviour
+    const MEAN_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
+    const STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+
+    // Ratio of worn PTU : 0.1 means 10% of cases we get a worn out ptu
+    const WORN_PTU_CASE_PROBABILITY: f64 = 0.15;
+
+    const WORN_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 20.;
+    const WORN_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+    const WORN_MIN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+    const WORN_MAX_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 30.;
+
+    const NOMINAL_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 90.;
+    const NOMINAL_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 15.;
+    const NOMINAL_MIN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+    const NOMINAL_MAX_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 180.;
+
+    const WORN_EFFICIENCY_MEAN: f64 = 0.6;
+    const WORN_EFFICIENCY_STD_DEV: f64 = 0.06;
+    const NOMINAL_EFFICIENCY_MEAN: f64 = 0.85;
+    const NOMINAL_EFFICIENCY_STD_DEV: f64 = 0.04;
+    const EFFICIENCY_MIN_ALLOWED: f64 = 0.5;
+    const EFFICIENCY_MAX: f64 = 0.9;
+
+    const SHOT_TO_SHOT_VARIABILITY_PERCENT_RATIO: f64 = 0.05;
+
+    fn new_randomized() -> Self {
+        let randomized_is_ptu_worn_out = Self::randomized_is_ptu_worn_out();
+
+        Self {
+            efficiency: Self::randomized_efficiency(randomized_is_ptu_worn_out),
+
+            deactivation_delta_pressure: Self::randomized_deactivation_delta_pressure(
+                randomized_is_ptu_worn_out,
+            ),
+
+            activation_delta_pressure: Pressure::new::<psi>(random_from_normal_distribution(
+                Self::MEAN_ACTIVATION_DELTA_PRESSURE_PSI,
+                Self::STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI,
+            )),
+
+            shot_to_shot_variability: Ratio::new::<ratio>(
+                Self::SHOT_TO_SHOT_VARIABILITY_PERCENT_RATIO,
+            ),
+        }
+    }
+
+    fn new_worst_part_acceptable() -> Self {
+        Self {
+            efficiency: Ratio::new::<ratio>(Self::EFFICIENCY_MIN_ALLOWED),
+
+            deactivation_delta_pressure: Pressure::new::<psi>(
+                Self::WORN_MIN_DEACTIVATION_DELTA_PRESSURE_PSI,
+            ),
+
+            activation_delta_pressure: Pressure::new::<psi>(
+                Self::MEAN_ACTIVATION_DELTA_PRESSURE_PSI
+                    + 5. * Self::STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI,
+            ),
+
+            shot_to_shot_variability: Ratio::new::<ratio>(
+                Self::SHOT_TO_SHOT_VARIABILITY_PERCENT_RATIO,
+            ),
+        }
+    }
+
+    fn randomized_is_ptu_worn_out() -> bool {
+        random_from_range(0., 1.) < Self::WORN_PTU_CASE_PROBABILITY
+    }
+
+    fn randomized_efficiency(is_worn_out: bool) -> Ratio {
+        if is_worn_out {
+            Ratio::new::<ratio>(
+                random_from_normal_distribution(
+                    Self::WORN_EFFICIENCY_MEAN,
+                    Self::WORN_EFFICIENCY_STD_DEV,
+                )
+                .max(Self::EFFICIENCY_MIN_ALLOWED)
+                .min(Self::EFFICIENCY_MAX),
+            )
+        } else {
+            Ratio::new::<ratio>(
+                random_from_normal_distribution(
+                    Self::NOMINAL_EFFICIENCY_MEAN,
+                    Self::NOMINAL_EFFICIENCY_STD_DEV,
+                )
+                .max(Self::EFFICIENCY_MIN_ALLOWED)
+                .min(Self::EFFICIENCY_MAX),
+            )
+        }
+    }
+
+    fn randomized_deactivation_delta_pressure(is_worn_out: bool) -> Pressure {
+        if is_worn_out {
+            Pressure::new::<psi>(
+                random_from_normal_distribution(
+                    Self::WORN_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI,
+                    Self::WORN_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI,
+                )
+                .min(Self::WORN_MAX_DEACTIVATION_DELTA_PRESSURE_PSI)
+                .max(Self::WORN_MIN_DEACTIVATION_DELTA_PRESSURE_PSI),
+            )
+        } else {
+            Pressure::new::<psi>(
+                random_from_normal_distribution(
+                    Self::NOMINAL_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI,
+                    Self::NOMINAL_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI,
+                )
+                .min(Self::NOMINAL_MAX_DEACTIVATION_DELTA_PRESSURE_PSI)
+                .max(Self::NOMINAL_MIN_DEACTIVATION_DELTA_PRESSURE_PSI),
+            )
+        }
+    }
+}
+
 pub struct PowerTransferUnit {
     valve_opened_id: VariableIdentifier,
     shaft_rpm_id: VariableIdentifier,
