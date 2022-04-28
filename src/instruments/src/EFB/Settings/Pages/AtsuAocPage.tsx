@@ -254,13 +254,8 @@ export const AtsuAocPage = () => {
                 <Toggle value={telexEnabled === 'ENABLED'} onToggle={(toggleValue) => handleTelexToggle(toggleValue)} />
             </SettingItem>
 
-            <SettingItem name={t('Settings.AtsuAoc.SimBriefUsernamePilotId')}>
-                <SimpleInput
-                    className="text-center w-30"
-                    value={simbriefDisplay}
-                    onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
-                    onChange={(value) => setSimbriefDisplay(value)}
-                />
+            <SettingItem name={t('Settings.AtsuAoc.HoppieEnabled')}>
+                <Toggle value={hoppieEnabled === 'ENABLED'} onToggle={(toggleValue) => handleHoppieEnabled(toggleValue)} />
             </SettingItem>
 
             <SettingItem name={t('Settings.AtsuAoc.HoppieUserId')}>
@@ -272,8 +267,13 @@ export const AtsuAocPage = () => {
                 />
             </SettingItem>
 
-            <SettingItem name={t('Settings.AtsuAoc.HoppieEnabled')}>
-                <Toggle value={hoppieEnabled === 'ENABLED'} onToggle={(toggleValue) => handleHoppieEnabled(toggleValue)} />
+            <SettingItem name={t('Settings.AtsuAoc.SimBriefUsernamePilotId')}>
+                <SimpleInput
+                    className="text-center w-30"
+                    value={simbriefDisplay}
+                    onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
+                    onChange={(value) => setSimbriefDisplay(value)}
+                />
             </SettingItem>
         </SettingsPage>
     );
