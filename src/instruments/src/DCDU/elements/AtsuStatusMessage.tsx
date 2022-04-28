@@ -6,7 +6,7 @@ type AtsuStatusMessageProps = {
     systemMessage: DcduStatusMessage;
 }
 
-const translateStatusMessage = (status: DcduStatusMessage): string => {
+const translateStatusMessage = (status: DcduStatusMessage) => {
     switch (status) {
     case DcduStatusMessage.AnswerRequired:
         return 'ANSWER MSG';
@@ -65,7 +65,12 @@ const translateStatusMessage = (status: DcduStatusMessage): string => {
     case DcduStatusMessage.RecallMode:
         return 'RECALL MODE';
     case DcduStatusMessage.RecallEmpty:
-        return 'RECALL EMPTY CONSULT MSG RECORD';
+        return (
+            <>
+                <tspan>RECALL EMPTY</tspan>
+                <tspan x="50%" dy={200}>CONSULT MSG RECORD</tspan>
+            </>
+        );
     case DcduStatusMessage.Reminder:
         return 'REMINDER';
     case DcduStatusMessage.Sending:
@@ -85,15 +90,12 @@ export const AtsuStatusMessage: React.FC<AtsuStatusMessageProps> = ({ visibleMes
         return <></>;
     }
 
-    let statusMessage = '';
     let textFill = 'rgb(255,255,255)';
     if (systemMessage !== DcduStatusMessage.NoMessage) {
-        statusMessage = translateStatusMessage(systemMessage);
         if (systemMessage <= DcduStatusMessage.SendFailed) {
             textFill = 'rgb(255,191,0)';
         }
     } else if (visibleMessage !== DcduStatusMessage.NoMessage) {
-        statusMessage = translateStatusMessage(visibleMessage);
         if (visibleMessage <= DcduStatusMessage.SendFailed) {
             textFill = 'rgb(255,191,0)';
         }
@@ -102,7 +104,7 @@ export const AtsuStatusMessage: React.FC<AtsuStatusMessageProps> = ({ visibleMes
     return (
         <>
             <g>
-                <text className="status-atsu" fill={textFill} x="50%" y="2160">{statusMessage}</text>
+                <text className="status-atsu" fill={textFill} x="50%" y="2160">{translateStatusMessage(systemMessage)}</text>
             </g>
         </>
     );
