@@ -45,7 +45,6 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
         sub.on('heading').whenChanged().handle((value) => {
             this.magneticHeadingWord.set(new Arinc429Word(value));
-            console.log(`${this.magneticHeadingWord.get().value}bruh`);
             this.handleMapRotation();
         });
 

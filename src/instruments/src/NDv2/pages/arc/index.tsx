@@ -58,9 +58,6 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
 
         sub.on('groundTrack').whenChanged().handle((v) => {
             this.trackWord.set(new Arinc429Word(v));
-            if (this.props.isUsingTrackUpMode.get()) {
-                this.handleRingRotation();
-            }
         });
     }
 
