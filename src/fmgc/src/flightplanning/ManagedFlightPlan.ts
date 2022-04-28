@@ -71,6 +71,8 @@ export class ManagedFlightPlan {
     /** The details of any direct-to procedures on this flight plan. */
     public directTo: DirectTo = new DirectTo();
 
+    private turningPointIndex = 0;
+
     /** The departure segment of the flight plan. */
     public get departure(): FlightPlanSegment {
         return this.getSegment(SegmentType.Departure);
@@ -799,25 +801,66 @@ export class ManagedFlightPlan {
     /**
      * Goes direct to the specified waypoint index in the flight plan.
      *
-     * @param index The waypoint index to go direct to.
+     * @param icao The waypoint to go direct to
      */
-    public addDirectTo(index: number): void {
+    public async addDirectTo(waypoint: WayPoint): Promise<void> {
         // TODO Replace with FMGC pos
         const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+        const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
-        const turningPoint = WaypointBuilder.fromCoordinates('T-P', new LatLongAlt(lat, long), this._parentInstrument);
-        turningPoint.additionalData.legType = LegType.IF;
+        const fromWp = this.waypoints[this.activeWaypointIndex - 1];
+        const toWp = this.waypoints[this.activeWaypointIndex];
+        if (fromWp?.isTurningPoint && toWp?.additionalData?.legType === LegType.DF && toWp?.icao !== waypoint.icao) {
+            if (!toWp.endsInDiscontinuity) {
+                toWp.additionalData.legType = LegType.IF;
+            } else {
+                this.removeWaypoint(this.activeWaypointIndex);
+            }
+        }
+
+        let waypointIndex = this.waypoints.findIndex((w) => w.icao === waypoint.icao);
+        if (waypointIndex === -1) {
+            // string, to the start of the flight plan, then direct to
+            waypoint.endsInDiscontinuity = true;
+            waypoint.discontinuityCanBeCleared = true;
+            this.addWaypoint(waypoint, this.activeWaypointIndex);
+            waypointIndex = this.waypoints.findIndex((w) => w.icao === waypoint.icao);
+        }
+
+        const toWpt = this.waypoints[waypointIndex];
+        toWpt.additionalData.legType = LegType.DF;
+
+        const turningPoint = WaypointBuilder.fromCoordinates('T-P', new LatLongAlt(lat, long), this._parentInstrument, { legType: LegType.IF, course: trueTrack, dynamicPpos: true }, this.getTurningPointIcao());
+
         turningPoint.isTurningPoint = true;
 
-        this.addWaypoint(turningPoint, index);
-        this.activeWaypointIndex = index + 1;
+        this.addWaypoint(turningPoint, waypointIndex);
+        this.activeWaypointIndex = waypointIndex + 1;
 
         const deleteCount = this.activeWaypointIndex - 1;
 
         for (let i = 0; i < deleteCount; i++) {
             this.removeWaypoint(0);
         }
+    }
+
+    public updateTurningPoint(): boolean {
+        const wp = this.getWaypoint(this.activeWaypointIndex - 1);
+        if (wp?.additionalData?.dynamicPpos) {
+            wp.infos.coordinates.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+            wp.infos.coordinates.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+            wp.additionalData.course = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
+            wp.icao = this.getTurningPointIcao();
+            wp.infos.icao = wp.icao;
+            return true;
+        }
+        return false;
+    }
+
+    private getTurningPointIcao(): string {
+        this.turningPointIndex = (this.turningPointIndex + 1) % 1000;
+        return `WXX    TP${this.turningPointIndex.toFixed(0).padStart(3, '0')}`
     }
 
     /**

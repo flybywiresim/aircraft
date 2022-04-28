@@ -2452,14 +2452,6 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    activateDirectToWaypoint(waypoint, callback = EmptyCallback.Void) {
-        const waypoints = this.flightPlanManager.getWaypoints();
-        this.flightPlanManager.activateDirectTo(waypoint.infos.icao, () => {
-            SimVar.SetSimVarValue("K:A32NX.FMGC_DIR_TO_TRIGGER", "number", 0);
-            callback();
-        });
-    }
-
     /**
      *
      * @param {string} lastWaypointIdent The waypoint along the airway to insert up to
@@ -2624,6 +2616,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     eraseTemporaryFlightPlan(callback = EmptyCallback.Void) {
         this.flightPlanManager.setCurrentFlightPlanIndex(0, () => {
+            this.flightPlanManager.deleteFlightPlan(FlightPlans.Temporary);
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
             SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 0);
             this.tempFpPendingAutoTune = false;
@@ -2635,6 +2628,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
             this.flightPlanManager.copyCurrentFlightPlanInto(0, () => {
                 this.flightPlanManager.setCurrentFlightPlanIndex(0, () => {
+                    this.flightPlanManager.getCurrentFlightPlan().updateTurningPoint();
                     SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
                     SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 0);
                     if (this.tempFpPendingAutoTune) {
