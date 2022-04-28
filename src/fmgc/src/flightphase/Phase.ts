@@ -56,11 +56,6 @@ export class TakeOffPhase extends Phase {
     shouldActivateNextPhase(_deltaTime) {
         const isAcOnGround = Simplane.getAltitudeAboveGround() <= 1.5;
 
-        if (isAcOnGround && Math.max(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'), SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number')) < 35) {
-            this.nextPhase = FmgcFlightPhase.Preflight;
-            return true;
-        }
-
         if (isAcOnGround && !isAnEngineOn()) {
             this.nextPhase = FmgcFlightPhase.Done;
             return true;
