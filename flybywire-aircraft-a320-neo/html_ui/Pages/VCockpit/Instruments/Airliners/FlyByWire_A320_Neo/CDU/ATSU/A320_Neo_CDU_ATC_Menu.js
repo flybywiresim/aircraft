@@ -1,28 +1,19 @@
 class CDUAtcMenu {
-    static ShowPage1(mcdu) {
+    static ShowPage(mcdu) {
         mcdu.activeSystem = "ATSU";
-        if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansB) {
-            CDUAtcMenuFansB.ShowPage(mcdu);
-        } else {
-            CDUAtcMenuFansA.ShowPage(mcdu);
-        }
-    }
 
-    static ShowPage2(mcdu) {
-        mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ATCMenu;
         mcdu.setTemplate([
-            ["ATC MENU", "2", "2"],
-            ["------ATS623 PAGE--------"],
-            ["<DEPART REQ", "ATIS>"],
-            ["", ""],
-            ["<OCEANIC REQ", ""],
+            ["ATC MENU"],
             [""],
+            ["<FLIGHT REQ", "USUAL REQ>"],
             [""],
+            ["<GROUND REQ", "D-ATIS>"],
             [""],
+            ["<MSG RECORD", "REPORTS>"],
             [""],
+            ["<MONITORED MSG"],
             [""],
-            [""],
+            ["<CONNECTION"],
             ["\xa0ATSU DLK"],
             ["<RETURN"]
         ]);
@@ -31,35 +22,60 @@ class CDUAtcMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[0] = () => {
-            CDUAtcDepartReq.ShowPage1(mcdu);
+            CDUAtcFlightReq.ShowPage(mcdu);
         };
 
         mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
-            CDUAtcOceanicReq.ShowPage1(mcdu);
+            CDUAtcGroundReq.ShowPage(mcdu);
         };
 
-        mcdu.leftInputDelay[5] = () => {
+        mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[5] = () => {
-            CDUAtsuMenu.ShowPage(mcdu);
+        mcdu.onLeftInput[2] = () => {
+            CDUAtcMessagesRecord.ShowPage(mcdu);
+        };
+
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[2] = () => {
+            // TODO monitored messages
+        };
+
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[2] = () => {
+            CDUAtcConnection.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[0] = () => {
+            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansB) {
+                CDUAtcUsualRequestFansB.ShowPage(mcdu);
+            } else {
+                CDUAtcUsualRequestFansA.ShowPage(mcdu);
+            }
+        };
+
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[1] = () => {
             CDUAtcAtisMenu.ShowPage(mcdu);
         };
 
-        mcdu.onPrevPage = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
         };
-        mcdu.onNextPage = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+        mcdu.onRightInput[2] = () => {
+            // TODO link reports page
         };
     }
 }

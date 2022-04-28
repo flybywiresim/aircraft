@@ -3,7 +3,7 @@ class Keypad {
         this._mcdu = mcdu;
         this._keys = {
             "AIRPORT": () => mcdu.onAirport(),
-            "ATC": () => CDUAtcMenu.ShowPage1(mcdu),
+            "ATC": () => CDUAtcMenu.ShowPage(mcdu),
             "DATA": () => CDUDataIndexPage.ShowPage1(mcdu),
             "DIR": () => {
                 mcdu.eraseTemporaryFlightPlan();

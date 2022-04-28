@@ -110,7 +110,7 @@ class CDUAtcTextFansB {
                         // TODO update message
                         mcdu.atsu.registerMessage(prepMessage);
                     }
-                    CDUAtcMenu.ShowPage1(mcdu);
+                    CDUAtcMenu.ShowPage(mcdu);
                 }
             }
         };

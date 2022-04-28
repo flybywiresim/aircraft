@@ -277,7 +277,7 @@ class CDUAtcOceanicReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage2(mcdu);
+            CDUAtcMenu.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {
