@@ -17,7 +17,7 @@ use uom::si::{
     angular_velocity::degree_per_second,
     f64::*,
     length::foot,
-    ratio::{percent, ratio},
+    ratio::ratio,
     thermodynamic_temperature::degree_celsius,
     velocity::{foot_per_minute, knot},
 };
@@ -1296,6 +1296,7 @@ mod tests {
     use uom::si::{
         angle::degree,
         length::foot,
+        ratio::percent,
         thermodynamic_temperature::degree_celsius,
         velocity::{foot_per_minute, knot},
     };
