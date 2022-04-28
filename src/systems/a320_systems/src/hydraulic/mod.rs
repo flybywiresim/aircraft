@@ -4413,15 +4413,35 @@ impl SpoilerGroup {
     fn update(
         &mut self,
         context: &UpdateContext,
-        green_section:  &impl SectionPressure,
-        blue_section:  &impl SectionPressure,
+        green_section: &impl SectionPressure,
+        blue_section: &impl SectionPressure,
         yellow_section: &impl SectionPressure,
     ) {
-        self.spoilers[0].update(context, &self.hydraulic_controllers[0], green_section.pressure_downstream_leak_valve());
-        self.spoilers[1].update(context, &self.hydraulic_controllers[1], yellow_section.pressure_downstream_leak_valve());
-        self.spoilers[2].update(context, &self.hydraulic_controllers[2], blue_section.pressure_downstream_leak_valve());
-        self.spoilers[3].update(context, &self.hydraulic_controllers[3], yellow_section.pressure_downstream_leak_valve());
-        self.spoilers[4].update(context, &self.hydraulic_controllers[4], green_section.pressure_downstream_leak_valve());
+        self.spoilers[0].update(
+            context,
+            &self.hydraulic_controllers[0],
+            green_section.pressure_downstream_leak_valve(),
+        );
+        self.spoilers[1].update(
+            context,
+            &self.hydraulic_controllers[1],
+            yellow_section.pressure_downstream_leak_valve(),
+        );
+        self.spoilers[2].update(
+            context,
+            &self.hydraulic_controllers[2],
+            blue_section.pressure_downstream_leak_valve(),
+        );
+        self.spoilers[3].update(
+            context,
+            &self.hydraulic_controllers[3],
+            yellow_section.pressure_downstream_leak_valve(),
+        );
+        self.spoilers[4].update(
+            context,
+            &self.hydraulic_controllers[4],
+            green_section.pressure_downstream_leak_valve(),
+        );
     }
 
     fn actuator(&mut self, spoiler_id: usize) -> &mut impl Actuator {
@@ -5434,7 +5454,6 @@ mod tests {
                 self.write_by_name("OVHD_HYD_PTU_PB_IS_AUTO", is_auto);
                 self
             }
-
 
             fn set_flaps_handle_position(mut self, pos: u8) -> Self {
                 self.write_by_name("FLAPS_HANDLE_INDEX", pos as f64);
