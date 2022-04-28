@@ -8,7 +8,7 @@ interface Props {
     value: number | string,
 }
 
-const textDataModeVHF3 = 'DATA';
+const TEXT_DATA_MODE_VHF3 = 'DATA';
 
 /**
  * Format the given frequency to be displayed.
@@ -26,7 +26,7 @@ export function RadioPanelDisplay(props: Props) {
     const [lightsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Boolean', 1000);
 
     // // If the passed value prop is a number, we'll use formatFrequency to get string format.
-    let value = textDataModeVHF3;
+    let value = TEXT_DATA_MODE_VHF3;
     let offsetx = '100%';
 
     if (typeof props.value === 'number') {
