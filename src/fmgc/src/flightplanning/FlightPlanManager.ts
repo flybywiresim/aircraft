@@ -281,6 +281,12 @@ export class FlightPlanManager {
         callback();
     }
 
+    public async deleteFlightPlan(flightPlanIndex): Promise<void> {
+        if (this._flightPlans[flightPlanIndex]) {
+            delete this._flightPlans[flightPlanIndex];
+        }
+    }
+
     /**
      * Gets the origin of the currently active flight plan.
      */

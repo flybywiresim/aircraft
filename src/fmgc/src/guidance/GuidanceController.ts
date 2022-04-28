@@ -308,6 +308,8 @@ export class GuidanceController {
 
         if (this.flightPlanManager.getFlightPlan(FlightPlans.Temporary)) {
             this.updateTemporaryGeometry();
+        } else {
+            this.temporaryGeometry = undefined;
         }
 
         this.recomputeGeometries();
