@@ -17,7 +17,7 @@ use uom::si::{
     angular_velocity::degree_per_second,
     f64::*,
     length::foot,
-    ratio::ratio,
+    ratio::{percent, ratio},
     thermodynamic_temperature::degree_celsius,
     velocity::{foot_per_minute, knot},
 };
@@ -2692,7 +2692,7 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().pitch_of(angle);
             test_bed.run();
 
-            assert_eq!(test_bed.pitch(adiru_number).normal_value().unwrap(), angle);
+            assert_eq!(test_bed.pitch(adiru_number).normal_value().unwrap(), -angle);
         }
 
         #[rstest]
@@ -2704,7 +2704,7 @@ mod tests {
             let mut test_bed = all_adirus_aligned_test_bed_with().roll_of(angle);
             test_bed.run();
 
-            assert_eq!(test_bed.roll(adiru_number).normal_value().unwrap(), angle);
+            assert_eq!(test_bed.roll(adiru_number).normal_value().unwrap(), -angle);
         }
 
         #[rstest]
@@ -2722,7 +2722,7 @@ mod tests {
                     .normal_value()
                     .unwrap()
                     .get::<degree_per_second>(),
-                rate.get::<revolution_per_minute>()
+                -rate.get::<degree_per_second>()
             );
         }
 
@@ -2741,7 +2741,7 @@ mod tests {
                     .normal_value()
                     .unwrap()
                     .get::<degree_per_second>(),
-                rate.get::<revolution_per_minute>()
+                -rate.get::<degree_per_second>()
             );
         }
 
@@ -2760,7 +2760,7 @@ mod tests {
                     .normal_value()
                     .unwrap()
                     .get::<degree_per_second>(),
-                rate.get::<revolution_per_minute>()
+                rate.get::<degree_per_second>()
             );
         }
 
@@ -2771,13 +2771,20 @@ mod tests {
         fn body_long_acc_is_supplied_by_ir(#[case] adiru_number: usize) {
             let acc = Acceleration::new::<meter_per_second_squared>(1.);
             let g = Acceleration::new::<meter_per_second_squared>(9.81);
-            let mut test_bed = all_adirus_aligned_test_bed();
+            let pitch = Angle::new::<degree>(5.);
+            let roll = Angle::new::<degree>(5.);
+            let mut test_bed = all_adirus_aligned_test_bed().pitch_of(pitch).roll_of(roll);
             test_bed.set_long_acc(acc);
             test_bed.run();
 
             assert_about_eq!(
-                V::from(test_bed.body_long_acc(adiru_number).normal_value().unwrap()),
-                V::from(acc / g)
+                test_bed
+                    .body_long_acc(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<percent>(),
+                (acc / g - test_bed.pitch(adiru_number).normal_value().unwrap().cos())
+                    .get::<ratio>()
             );
         }
 
@@ -2788,13 +2795,22 @@ mod tests {
         fn body_lat_acc_is_supplied_by_ir(#[case] adiru_number: usize) {
             let acc = Acceleration::new::<meter_per_second_squared>(1.);
             let g = Acceleration::new::<meter_per_second_squared>(9.81);
-            let mut test_bed = all_adirus_aligned_test_bed();
+            let pitch = Angle::new::<degree>(5.);
+            let roll = Angle::new::<degree>(5.);
+            let mut test_bed = all_adirus_aligned_test_bed().pitch_of(pitch).roll_of(roll);
             test_bed.set_lat_acc(acc);
             test_bed.run();
 
             assert_about_eq!(
-                V::from(test_bed.body_lat_acc(adiru_number).normal_value().unwrap()),
-                V::from(acc / g)
+                test_bed
+                    .body_lat_acc(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<percent>(),
+                (acc / g
+                    + test_bed.pitch(adiru_number).normal_value().unwrap().cos()
+                        * test_bed.roll(adiru_number).normal_value().unwrap().sin())
+                .get::<ratio>()
             );
         }
 
@@ -2805,18 +2821,22 @@ mod tests {
         fn body_norm_acc_is_supplied_by_ir(#[case] adiru_number: usize) {
             let acc = Acceleration::new::<meter_per_second_squared>(1.);
             let g = Acceleration::new::<meter_per_second_squared>(9.81);
-            let mut test_bed = all_adirus_aligned_test_bed();
+            let pitch = Angle::new::<degree>(5.);
+            let roll = Angle::new::<degree>(5.);
+            let mut test_bed = all_adirus_aligned_test_bed().pitch_of(pitch).roll_of(roll);
             test_bed.set_norm_acc(acc);
             test_bed.run();
 
             assert_about_eq!(
-                V::from(
-                    test_bed
-                        .body_normal_acc(adiru_number)
-                        .normal_value()
-                        .unwrap()
-                ),
-                V::from(acc / g)
+                test_bed
+                    .body_normal_acc(adiru_number)
+                    .normal_value()
+                    .unwrap()
+                    .get::<percent>(),
+                (acc / g
+                    + test_bed.pitch(adiru_number).normal_value().unwrap().cos()
+                        * test_bed.roll(adiru_number).normal_value().unwrap().cos())
+                .get::<ratio>()
             );
         }
 
