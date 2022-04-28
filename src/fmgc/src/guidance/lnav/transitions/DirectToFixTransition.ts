@@ -113,7 +113,7 @@ export class DirectToFixTransition extends Transition {
 
         let trackChange = MathUtils.diffAngle(this.previousLeg.outboundCourse, bearingTo(this.previousLeg.getPathEndPoint(), nextFix), this.nextLeg.metadata.turnDirection);
 
-        if (Math.abs(trackChange) < 3) {
+        if (Math.abs(trackChange) < 3 || !Number.isFinite(trackChange)) {
             this.isNull = true;
             this.isComputed = true;
 
