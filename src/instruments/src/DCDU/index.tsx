@@ -13,6 +13,7 @@ import { AffirmNegativeButtons } from './elements/AffirmNegativeButtons';
 import { WilcoUnableButtons } from './elements/WilcoUnableButtons';
 import { RogerButtons } from './elements/RogerButtons';
 import { CloseButtons } from './elements/CloseButtons';
+import { RecallButtons } from './elements/RecallButtons';
 import { render } from '../Common';
 import { SelfTest } from './pages/SelfTest';
 import { AtsuStatusMessage } from './elements/AtsuStatusMessage';
@@ -87,6 +88,9 @@ const DCDU: React.FC = () => {
     const sendResponse = (uid: number, response: number) => events.triggerToAllSubscribers('A32NX_ATSU_SEND_RESPONSE', uid, response);
 
     // functions to handle the internal queue
+    const recallMessage = () => {
+        events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_RECALL');
+    };
     const closeMessage = (uid: number) => {
         const sortedMessages = sortedMessageArray(messages);
         const index = sortedMessages.findIndex((element) => element.messages[0].UniqueMessageID === uid);
@@ -230,6 +234,10 @@ const DCDU: React.FC = () => {
     });
     useCoherentEvent('A32NX_DCDU_ATC_LOGON_MSG', (message: string) => {
         setAtcMessage(message);
+    });
+    useCoherentEvent('A32NX_DCDU_SYSTEM_ATSU_STATUS', (status: DcduStatusMessage) => {
+        setSystemStatusMessage(status);
+        setSystemStatusTimer(5000);
     });
     useCoherentEvent('A32NX_DCDU_MSG_ATSU_STATUS', (uid: number, status: DcduStatusMessage) => {
         const dcduBlock = messages.get(uid);
@@ -385,6 +393,7 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
+                    {(visibleMessages === undefined) && <RecallButtons recallMessage={recallMessage} />}
                     <AtsuStatusMessage visibleMessage={visibleMessageStatus} systemMessage={systemStatusMessage} />
                     <DcduLines />
                     {
