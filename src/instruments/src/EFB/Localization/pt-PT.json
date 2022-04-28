@@ -31,25 +31,25 @@
       },
       "GoToPage": "Ir para a página",
       "Maintenance": {
-        "NoActiveFailures": "Nenhuma Falha Ativa",
+        "NoActiveFailures": "Nenhuma falha ativa",
         "Title": "Manutenção"
       },
       "PinnedCharts": {
         "NoPinnedCharts": "Nenhuma carta fixada",
-        "Title": "Cartas fixadas"
+        "Title": "Cartas Fixadas"
       },
       "TT": {
         "RearrangeWidgets": "Reorganizar Dispositivos"
       },
       "Title": "Informação importante",
       "Weather": {
-        "AirPressure": "Pressão atmosférica",
+        "AirPressure": "Pressão Atmosférica",
         "DewPoint": "Ponto de Orvalho",
         "IcaoInvalid": "ICAO inválido ou METAR indisponível",
         "Loading": "A Carregar",
         "MetarParsingError": "METAR recebido não pode ser analisado ",
         "NoIcaoProvided": "ICAO não fornecido",
-        "Raw": "Mau Tempo",
+        "Raw": "Por processar",
         "TT": {
           "SwitchToIconView": "Mudar para a visualização de ícones",
           "SwitchToRawMetarView": "Mudar para vista de METAR não processada"
@@ -63,13 +63,13 @@
     "YourFlight": {
       "Alternate": "Alternativo",
       "AverageWind": "Vento Médio",
-      "CompanyRoute": "Rota da companhia",
+      "CompanyRoute": "Rota da Companhia",
       "CostIndex": "Índice de Custo",
       "CruiseAlt": "Altitude de Cruzeiro",
       "ImportSimBriefData": "Importar dados do SimBrief",
       "Route": "Rota",
       "SimBriefDataNotYetLoaded": "Dados do SimBrief não carregados.",
-      "Title": "O teu Voo",
+      "Title": "Voo",
       "ZFW": "ZFW"
     }
   },
@@ -145,7 +145,7 @@
       "JetBridge": "Manga de Embarque",
       "Title": "Serviços"
     },
-    "Title": "Terra"
+    "Title": "Assistentes de terra"
   },
   "Modals": {
     "Cancel": "Cancelar",
@@ -174,13 +174,13 @@
       "IntoYourBrowserAndEnterTheCodeBelow": "no seu navegador e insira o código abaixo\n",
       "NoAirportSelected": "Nenhum Aeroporto Selecionado",
       "ResetNavigraphAuthentication": "Redefinir a Autenticação Navigraph",
-      "ScanTheQrCodeOrOpen": "Digitalize o Código QR ou Abra",
+      "ScanTheQrCodeOrOpen": "Digitalize o código QR ou clique",
       "Title": "Navigraph"
     },
     "PinnedCharts": {
       "Delete": "Eliminar",
       "Edit": "Editar",
-      "NoItemsFound": "Nenhum Item Encontrado",
+      "NoItemsFound": "Nenhum item encontrado",
       "SearchPlaceholder": "Pesquisar",
       "ShowingChartsFromAllProviders": "A mostrar cartas de todos os fornecedores",
       "SortMethods": {
@@ -287,7 +287,7 @@
         "UnitKt": "kt"
       },
       "Result": {
-        "BeforeTarget": "Antes do Alvo",
+        "BeforeTarget": "Antes do alvo",
         "DesiredDescentAngle": "Ângulo de descida desejado",
         "DesiredVerticalSpeed": "Velocidade vertical desejada",
         "StartYourDescentAbout": "Inicie a sua descida a cerca",
@@ -307,9 +307,9 @@
       "ConfirmationDialogMsg": "Por favor, confirme o carregamento da predefinição.",
       "CurrentProcedureStep": "Etapa do Procedimento Atual",
       "PleaseConfirmLoadingOfPreset": "Por favor, confirme o carregamento da predefinição.",
-      "ReadyPushback": "Pronto para o pushback",
+      "ReadyPushback": "Pronto para Pushback",
       "ReadyTakeoff": "Pronto para Descolar",
-      "ReadyTaxi": "Pronto para o Táxi",
+      "ReadyTaxi": "Pronto para Táxi",
       "SelectAPresetToLoad": "Selecione uma Predefinição para Carregar",
       "TheAircraftMustBeOnTheGroundToLoadAPreset": "O Avião deve estar em terra para carregar uma predefinição.",
       "TheAircraftMustBeOntheGroundToLoadAPreset": "O Avião deve estar em terra para carregar uma predefinição.",
@@ -357,14 +357,14 @@
     },
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Altura de Aceleração (ft)",
-      "EngineOutAccelerationHeight": "Altura de aceleração de saída do motor (ft)",
+      "EngineOutAccelerationHeight": "Altura de Aceleração de Saída do Motor (ft)",
       "IsisBaroUnit": "Unidade ISIS Baro",
-      "IsisMetricAltitude": "Altitude métrica ISIS",
+      "IsisMetricAltitude": "Altitude Métrica ISIS",
       "LatLonExtendedFormat": "Formato Waypoint FMGC Lat/Lon",
       "PaxSigns": "Sinal de Passageiros",
       "RmpVhfSpacing": "Espaçamento RMP VHF",
-      "ThrustReductionHeight": "Altura de redução de propulsão (ft)",
-      "Title": "Opções do Avião / Programas de pinos",
+      "ThrustReductionHeight": "Altura de Redução de Propulsão (ft)",
+      "Title": "Opções do Avião / Programas Pin",
       "WeightUnit": "Unidade de Peso"
     },
     "AtsuAoc": {
@@ -406,7 +406,7 @@
     "Realism": {
       "AdirsAlignTime": "Tempo de alinhamento do ADIRS",
       "AutofillChecklists": "Preencher automaticamente as Listas de Verificação",
-      "BoardingTime": "Horário de Embarque",
+      "BoardingTime": "Tempo de Embarque",
       "DmcSelfTestTime": "Tempo de autoteste DMC",
       "HomeCockpitMode": "Modo Cockpit em Casa",
       "McduFocusTimeout": "Tempo limite de foco da MCDU (segundos)",
