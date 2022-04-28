@@ -18,9 +18,10 @@ class AutopilotStateMachineModelClass
   struct D_Work_AutopilotStateMachine_T {
     ap_vertical Delay1_DSTATE;
     ap_lateral Delay_DSTATE;
+    real_T Delay_DSTATE_d;
     real_T DelayInput1_DSTATE;
     real_T DelayInput1_DSTATE_i;
-    real_T Delay_DSTATE_d[100];
+    real_T Delay_DSTATE_d5[100];
     real_T Delay_DSTATE_c[100];
     real_T DelayInput1_DSTATE_b;
     real_T Delay_DSTATE_d2[100];
@@ -159,6 +160,7 @@ class AutopilotStateMachineModelClass
     ap_sm_output ap_sm_output_MATLABStruct;
     real_T LagFilter_C1;
     real_T RateLimiterDynamicVariableTs_InitialCondition;
+    real_T RateLimiterDynamicVariableTs_InitialCondition_a;
     real_T RateLimiterDynamicVariableTs_InitialCondition_d;
     real_T RateLimiterDynamicVariableTs_InitialCondition_db;
     real_T RateLimiterDynamicVariableTs_InitialCondition_g;
@@ -166,15 +168,17 @@ class AutopilotStateMachineModelClass
     real_T RateLimiterDynamicVariableTs_InitialCondition_m;
     real_T RateLimiterDynamicVariableTs_InitialCondition_ge;
     real_T RateLimiterDynamicVariableTs_InitialCondition_do;
+    real_T Debounce1_Value;
     real_T Debounce_Value;
     real_T Debounce_Value_f;
     real_T Debounce_Value_a;
     real_T Debounce_Value_j;
-    real_T Debounce1_Value;
+    real_T Debounce1_Value_p;
     real_T Debounce_Value_d;
     real_T Debounce_Value_k;
     real_T Debounce_Value_h;
     real_T CompareToConstant_const;
+    real_T CompareToConstant_const_h;
     real_T CompareToConstant_const_l;
     real_T CompareToConstant_const_c;
     real_T CompareToConstant_const_d;
@@ -182,7 +186,7 @@ class AutopilotStateMachineModelClass
     real_T CompareToConstant_const_da;
     real_T CompareToConstant_const_n;
     real_T CompareToConstant_const_i;
-    real_T CompareToConstant_const_h;
+    real_T CompareToConstant_const_hz;
     real_T CompareToConstant_const_cc;
     real_T DetectChange_vinit;
     real_T DetectChange1_vinit;
@@ -205,6 +209,8 @@ class AutopilotStateMachineModelClass
     ap_vertical Delay1_InitialCondition;
     ap_lateral Delay_InitialCondition;
     real_T Constant_Value;
+    real_T Raising_Value;
+    real_T Falling_Value;
     real_T GainTheta_Gain;
     real_T GainTheta1_Gain;
     real_T Gain_Gain;
@@ -226,15 +232,15 @@ class AutopilotStateMachineModelClass
     real_T Delay_InitialCondition_m;
     real_T Constant_Value_m;
     real_T Delay_InitialCondition_i4;
-    real_T Raising_Value;
-    real_T Falling_Value;
+    real_T Raising_Value_a;
+    real_T Falling_Value_f;
     real_T Raising_Value_b;
     real_T Falling_Value_a;
     real_T Raising_Value_f;
     real_T Falling_Value_b;
     real_T Raising_Value_c;
     real_T Falling_Value_ay;
-    real_T Raising_Value_a;
+    real_T Raising_Value_ag;
     real_T Falling_Value_k;
     real_T Raising_Value_i;
     real_T Falling_Value_o;
