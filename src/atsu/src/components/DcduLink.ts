@@ -71,6 +71,8 @@ export class DcduLink {
 
     private bufferedMessages: (DcduMessage[])[] = [];
 
+    private lastClosedMessage: [DcduMessage[], number] | undefined = undefined;
+
     private atcMsgWatchdogInterval: number | undefined = undefined;
 
     private atcRingInterval: number | undefined = undefined;
@@ -136,6 +138,10 @@ export class DcduLink {
         Coherent.on('A32NX_ATSU_DCDU_MESSAGE_CLOSED', (uid: number) => {
             const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx !== -1) {
+                if (this.lastClosedMessage === undefined || this.lastClosedMessage[0][0].MessageId !== uid) {
+                    this.lastClosedMessage = [this.messages[idx], new Date().getTime()];
+                }
+
                 this.messages.splice(idx, 1);
                 this.validateNotificationCondition();
 
@@ -162,6 +168,31 @@ export class DcduLink {
                     });
 
                     this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', dcduMessages);
+                }
+            }
+        });
+        Coherent.on('A32NX_ATSU_DCDU_MESSAGE_RECALL', () => {
+            if (this.lastClosedMessage === undefined) {
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', DcduStatusMessage.RecallEmpty);
+            } else {
+                const currentStamp = new Date().getTime();
+                // timed out after five minutes
+                if (currentStamp - this.lastClosedMessage[1] > 300000) {
+                    this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', DcduStatusMessage.RecallEmpty);
+                    this.lastClosedMessage = undefined;
+                } else {
+                    const messages : CpdlcMessage[] = [];
+
+                    this.lastClosedMessage[0].forEach((dcduMessage) => {
+                        const msg = this.atc.messages().find((elem) => elem.UniqueMessageID === dcduMessage.MessageId);
+                        if (msg !== undefined) {
+                            messages.push(msg as CpdlcMessage);
+                        }
+                    });
+
+                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', messages);
+                    this.messages.push(this.lastClosedMessage[0]);
+                    this.updateDcduStatusMessage(messages[0].UniqueMessageID, DcduStatusMessage.RecallMode);
                 }
             }
         });
