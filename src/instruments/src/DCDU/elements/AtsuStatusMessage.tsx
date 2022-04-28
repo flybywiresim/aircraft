@@ -64,6 +64,8 @@ const translateStatusMessage = (status: DcduStatusMessage): string => {
         return 'PRINTING';
     case DcduStatusMessage.RecallMode:
         return 'RECALL MODE';
+    case DcduStatusMessage.RecallEmpty:
+        return 'RECALL EMPTY CONSULT MSG RECORD';
     case DcduStatusMessage.Reminder:
         return 'REMINDER';
     case DcduStatusMessage.Sending:

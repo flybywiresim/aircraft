@@ -37,6 +37,7 @@ export enum DcduStatusMessage {
     PartialFmgsData,
     Printing,
     RecallMode,
+    RecallEmpty,
     Reminder,
     Sending,
     Sent,
