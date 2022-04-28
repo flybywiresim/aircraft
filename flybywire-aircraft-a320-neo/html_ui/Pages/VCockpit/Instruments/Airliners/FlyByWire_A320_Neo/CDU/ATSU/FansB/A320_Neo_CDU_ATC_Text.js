@@ -23,9 +23,11 @@ class CDUAtcTextFansB {
     static ShowPage(mcdu, message = null, data = CDUAtcTextFansB.CreateDataBlock()) {
         mcdu.clearDisplay();
 
+        let erase = "\xa0ERASE";
         let reqDisplay = "DCDU\xa0[color]cyan";
         if (CDUAtcTextFansA.CanSendData(data)) {
             reqDisplay = "DCDU*[color]cyan";
+            erase = "*ERASE";
         }
 
         const acPerform = ["\xa0DUE TO", "{cyan}{{end}A/C PERFORM"];
@@ -40,19 +42,17 @@ class CDUAtcTextFansB {
         }
 
         mcdu.setTemplate([
-            ["TEXT"],
-            ["{big}\xa0\xa0\xa0 REPLY WITHIN 20S{end}"],
-            [""],
-            [acPerform[0]],
-            [acPerform[1]],
-            [weather[0]],
-            [weather[1]],
+            ["FREE TEXT"],
+            [acPerform[0], weather[0]],
+            [acPerform[1], weather[1]],
             [""],
             [""],
             [""],
             [""],
             [""],
             [""],
+            ["ALL FIELDS"],
+            [erase],
             ["\xa0ATC MENU", `XFR TO\xa0[color]cyan`],
             ["<RETURN", reqDisplay]
         ]);
@@ -70,24 +70,31 @@ class CDUAtcTextFansB {
             CDUAtcTextFansB.ShowPage(mcdu, parent, message, data);
         };
 
-        mcdu.leftInputDelay[1] = () => {
+        mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[1] = (value) => {
+        mcdu.onRightInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.weather = false;
-            } else {
                 data.performance = false;
-                data.weather = true;
+            } else {
+                data.performance = true;
+                data.weather = false;
             }
             CDUAtcTextFansB.ShowPage(mcdu, parent, message, data);
+        };
+
+        mcdu.leftInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[4] = () => {
+            CDUAtcTextFansB.ShowPage(mcdu);
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcFlightReq.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {

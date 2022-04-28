@@ -4,9 +4,8 @@ class CDUAtcTextFansA {
             performance: false,
             weather: false,
             turbulence: false,
-            medical: false,
-            technical: false,
             discretion: false,
+            icing: false,
             freetext: [ "", "", "", "", "" ]
         };
     }
@@ -21,7 +20,7 @@ class CDUAtcTextFansA {
     }
 
     static CanEraseData(data) {
-        if (data.performance || data.weather || data.turbulence || data.medical || data.technical || data.discretion) {
+        if (data.performance || data.weather || data.turbulence || data.discretion || data.icing) {
             return true;
         }
         const freetext = data.freetext.filter((n) => n);
@@ -51,12 +50,12 @@ class CDUAtcTextFansA {
             extension = Atsu.CpdlcMessagesDownlink["DM65"][1].deepCopy();
         } else if (data.turbulence) {
             extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        } else if (data.medical) {
-            extension = Atsu.CpdlcMessagesDownlink["DM68"][1].deepCopy();
-        } else if (data.technical) {
-            extension = Atsu.CpdlcMessagesDownlink["DM68"][1].deepCopy();
+            extension.Content[0].Value = 'DUE TO TURBULENCE';
         } else if (data.discretion) {
             extension = Atsu.CpdlcMessagesDownlink["DM75"][1].deepCopy();
+        } else if (data.icing) {
+            extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+            extension.Content[0].Value = 'DUE TO ICING';
         }
 
         if (messages.length === 0) {
@@ -99,30 +98,25 @@ class CDUAtcTextFansA {
             acPerform[0] += "[color]cyan";
             acPerform[1] = "\xa0A/C PERFORM[color]cyan";
         }
-        const weather = ["\xa0DUE TO", "{cyan}{{end}WEATHER"];
+        const weather = ["\xa0DUE TO", "WEATHER"];
         if (data.weather) {
             weather[0] += "[color]cyan";
-            weather[1] = "\xa0WEATHER[color]cyan";
+            weather[1] = "WEATHER\xa0[color]cyan";
         }
-        const turbulence = ["\xa0DUE TO", "{cyan}{{end}TURBULENCE"];
+        const turbulence = ["\xa0DUE TO", "TURBULENCE{cyan}}{end}"];
         if (data.turbulence) {
             turbulence[0] += "[color]cyan";
-            turbulence[1] = "\xa0TURBULENCE[color]cyan";
+            turbulence[1] = "TURBULENCE\xa0[color]cyan";
         }
-        const medical = ["DUE TO\xa0", "MEDICAL{cyan}}{end}"];
-        if (data.medical) {
-            medical[0] += "[color]cyan";
-            medical[1] = "MEDICAL\xa0[color]cyan";
-        }
-        const technical = ["DUE TO\xa0", "TECHNICAL{cyan}}{end}"];
-        if (data.technical) {
-            technical[0] += "[color]cyan";
-            technical[1] = "TECHNICAL\xa0[color]cyan";
-        }
-        const discretion = ["AT PILOT\xa0", "DISCRETION{cyan}}{end}"];
+        const discretion = ["AT PILOTS\xa0", "{cyan}{{end}DISCRETION"];
         if (data.discretion) {
             discretion[0] += "[color]cyan";
-            discretion[1] = "DISCRETION\xa0[color]cyan";
+            discretion[1] = "\xa0DISCRETION[color]cyan";
+        }
+        const icing = ["\xa0DUE TO", "ICING{cyan}}{end}"];
+        if (data.icing) {
+            icing[0] += "[color]cyan";
+            icing[1] = "ICING\xa0[color]cyan";
         }
         let freetext = "[\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0][color]cyan";
         if (data.freetext[0] !== "") {
@@ -130,13 +124,13 @@ class CDUAtcTextFansA {
         }
 
         mcdu.setTemplate([
-            ["TEXT", "1", "2"],
-            [acPerform[0], medical[0]],
-            [acPerform[1], medical[1]],
-            [weather[0], technical[0]],
-            [weather[1], technical[1]],
-            [turbulence[0], discretion[0]],
-            [turbulence[1], discretion[1]],
+            ["FREE TEXT", "1", "2"],
+            [acPerform[0], weather[0]],
+            [acPerform[1], weather[1]],
+            [discretion[0], turbulence[0]],
+            [discretion[1], turbulence[1]],
+            ["", icing[0]],
+            ["", icing[1]],
             ["---------FREE TEXT---------"],
             [freetext],
             ["\xa0ALL FIELDS"],
@@ -157,7 +151,7 @@ class CDUAtcTextFansA {
                 data.performance = true;
                 data.freetext = oldFreetext;
             }
-            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
+            CDUAtcTextFansA.ShowPage(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[1] = () => {
@@ -165,29 +159,14 @@ class CDUAtcTextFansA {
         };
         mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.weather = false;
+                data.discretion = false;
             } else {
                 const oldFreetext = data.freetext;
                 data = CDUAtcTextFansA.CreateDataBlock();
-                data.weather = true;
+                data.discretion = true;
                 data.freetext = oldFreetext;
             }
-            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
-        };
-
-        mcdu.leftInputDelay[2] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onLeftInput[2] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                data.turbulence = false;
-            } else {
-                const oldFreetext = data.freetext;
-                data = CDUAtcTextFansA.CreateDataBlock();
-                data.turbulence = true;
-                data.freetext = oldFreetext;
-            }
-            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
+            CDUAtcTextFansA.ShowPage(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[3] = () => {
@@ -199,7 +178,7 @@ class CDUAtcTextFansA {
             } else if (value) {
                 data.freetext[0] = value;
             }
-            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
+            CDUAtcTextFansA.ShowPage(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[4] = () => {
@@ -213,7 +192,7 @@ class CDUAtcTextFansA {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcFlightReq.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[0] = () => {
@@ -221,11 +200,11 @@ class CDUAtcTextFansA {
         };
         mcdu.onRightInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.medical = false;
+                data.weather = false;
             } else {
                 const oldFreetext = data.freetext;
                 data = CDUAtcTextFansA.CreateDataBlock();
-                data.medical = true;
+                data.weather = true;
                 data.freetext = oldFreetext;
             }
             CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
@@ -236,11 +215,11 @@ class CDUAtcTextFansA {
         };
         mcdu.onRightInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.technical = false;
+                data.turbulence = false;
             } else {
                 const oldFreetext = data.freetext;
                 data = CDUAtcTextFansA.CreateDataBlock();
-                data.technical = true;
+                data.turbulence = true;
                 data.freetext = oldFreetext;
             }
             CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
@@ -251,11 +230,11 @@ class CDUAtcTextFansA {
         };
         mcdu.onRightInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.discretion = false;
+                data.icing = false;
             } else {
                 const oldFreetext = data.freetext;
                 data = CDUAtcTextFansA.CreateDataBlock();
-                data.discretion = true;
+                data.icing = true;
                 data.freetext = oldFreetext;
             }
             CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
@@ -316,7 +295,7 @@ class CDUAtcTextFansA {
         }
 
         mcdu.setTemplate([
-            ["TEXT", "2", "2"],
+            ["FREE TEXT", "2", "2"],
             [""],
             [freetext1],
             [""],
@@ -390,7 +369,7 @@ class CDUAtcTextFansA {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcFlightReq.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {
