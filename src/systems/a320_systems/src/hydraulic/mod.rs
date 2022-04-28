@@ -5117,7 +5117,7 @@ struct A320GravityExtension {
     is_turned: bool,
 }
 impl A320GravityExtension {
-    const INCREMENT_ANGLE_DEGREE_PER_SECOND: f64 = 120.;
+    const INCREMENT_ANGLE_DEGREE_PER_SECOND: f64 = 220.;
 
     // Can be allowed when handle animation is available
     const ALLOW_RETURNING_TO_STOWED_HANDLE_POSITION: bool = false;
