@@ -68,89 +68,89 @@
       "CruiseAlt": "Wysokość Przelotowa",
       "ImportSimBriefData": "Importuj Dane z SimBrief",
       "Route": "Trasa",
-      "SimBriefDataNotYetLoaded": "SimBrief data not yet loaded.",
-      "Title": "Your Flight",
+      "SimBriefDataNotYetLoaded": "Dane z SimBrief nie zostały jeszcze załadowane.",
+      "Title": "Twój Lot",
       "ZFW": "ZFW"
     }
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Import SimBrief Data",
+      "ImportSimBriefData": "Importuj Dane z SimBrief",
       "TT": {
-        "IncreaseFontSize": "Increase Font Size",
-        "ReduceFontSize": "Reduce Font Size"
+        "IncreaseFontSize": "Zwiększ Rozmiar Czcionki",
+        "ReduceFontSize": "Zmniejsz Rozmiar Czcionki"
       },
       "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
+      "YouHaveNotYetImportedAnySimBriefData": "Nie zaimportowałeś jeszcze żadnych danych SimBrief."
     },
     "Overview": {
-      "Engines": "Engines",
+      "Engines": "Silniki",
       "MMO": "MMO",
       "MRW": "MRW",
       "MTOW": "MTOW",
       "MZFW": "MZFW",
-      "MaximumCargo": "Maximum Cargo",
-      "MaximumFuelCapacity": "Maximum Fuel Capacity",
-      "MaximumPassengers": "Maximum Passengers",
+      "MaximumCargo": "Maksymalna Ilość Ładunku",
+      "MaximumFuelCapacity": "Maksymalna Ilość Paliwa",
+      "MaximumPassengers": "Maksymalna Liczba Pasażerów",
       "Model": "Model",
-      "Range": "Range",
-      "Title": "Overview"
+      "Range": "Zasięg",
+      "Title": "Przegląd Danych"
     },
-    "Title": "Dispatch"
+    "Title": "Odprawa"
   },
   "Failures": {
     "Comfort": {
-      "Title": "Comfort"
+      "Title": "Komfort"
     },
     "Compact": {
-      "Title": "Compact"
+      "Title": "Zwarty"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Full simulation of the failures below isn't yet guaranteed.",
-    "Search": "Search",
-    "Title": "Failures"
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Pełna symulacja poniższych awarii nie jest jeszcze gwarantowana.",
+    "Search": "Szukaj",
+    "Title": "Awarie"
   },
   "Ground": {
     "Fuel": {
-      "CenterTank": "Center Tank",
-      "Completed": "Completed",
-      "Defueling": "Defueling",
-      "EstimatedDuration": "Estimated duration (minutes)",
+      "CenterTank": "Zbiornik Środkowy",
+      "Completed": "Ukończono",
+      "Defueling": "Usuwanie Paliwa",
+      "EstimatedDuration": "Szacowany czas trwania (minuty)",
       "EstimatedTime": "Estimated Time",
-      "LeftInnerTank": "Left Inner Tank",
-      "LeftOuterTank": "Left Outer Tank",
-      "ReadyToStart": "Ready to Start",
-      "Refuel": "Refuel",
-      "RefuelTime": "Refuel Time",
-      "Refueling": "Refueling",
-      "RightInnerTank": "Right Inner Tank",
-      "RightOuterTank": "Right Outer Tank",
+      "LeftInnerTank": "Lewy Wewnętrzny Zbiornik",
+      "LeftOuterTank": "Lewy Zewnętrzny Zbiornik",
+      "ReadyToStart": "Gotowe Do Rozpoczęcia",
+      "Refuel": "Tankowanie",
+      "RefuelTime": "Czas Tankowania",
+      "Refueling": "Tankowanie",
+      "RightInnerTank": "Prawy Wewnętrzny Zbiornik",
+      "RightOuterTank": "Prawy Zewnętrzny Zbiornik",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aircraft Must Be Cold and Dark to Change Refuel Times",
-        "FillBlockFuelFromSimBrief": "Fill Block Fuel from SimBrief"
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Samolot musi być całkowicie wyłączony, by móc zmienić tempo tankowania.",
+        "FillBlockFuelFromSimBrief": "Zatankuj Ilość Paliwa z Simbrief"
       },
-      "Title": "Fuel",
-      "TotalFuel": "Total Fuel",
-      "Unavailable": "Unavailable"
+      "Title": "Paliwo",
+      "TotalFuel": "Paliwo Łącznie",
+      "Unavailable": "Niedostępny"
     },
     "Pushback": {
-      "Title": "Pushback"
+      "Title": "Wypychanie"
     },
     "Services": {
-      "BaggageTruck": "Baggage Truck",
-      "CateringTruck": "Catering Truck",
-      "DoorAft": "Door Aft",
-      "DoorFwd": "Door Fwd",
-      "ExternalPower": "External Power",
-      "FuelTruck": "Fuel Truck",
-      "JetBridge": "Jet Bridge",
-      "Title": "Services"
+      "BaggageTruck": "Ciężarówka Bagażowa",
+      "CateringTruck": "Ciężarówka Gastronomiczna",
+      "DoorAft": "Drzwi Rufowe",
+      "DoorFwd": "Przednie Drzwi",
+      "ExternalPower": "Zewnętrzne Zasilanie",
+      "FuelTruck": "Cysterna z Paliwem",
+      "JetBridge": "Rękaw",
+      "Title": "Obsługa"
     },
-    "Title": "Ground"
+    "Title": "Obsługa Naziemna"
   },
   "Modals": {
-    "Cancel": "Cancel",
-    "Confirm": "Confirm",
-    "Okay": "Okay"
+    "Cancel": "Anuluj",
+    "Confirm": "Potwierdź",
+    "Okay": "OK"
   },
   "NavigationAndCharts": {
     "All": "All",

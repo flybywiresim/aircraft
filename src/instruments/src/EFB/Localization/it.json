@@ -44,7 +44,7 @@
       "Title": "Informazioni importanti",
       "Weather": {
         "AirPressure": "Pressione Atmosferica",
-        "DewPoint": "Punto di rugiada",
+        "DewPoint": "Punto di Rugiada",
         "IcaoInvalid": "ICAO non valido o nessun METAR disponibile",
         "Loading": "Caricamento",
         "MetarParsingError": "Il METAR ricevuto non può essere elaborato",
@@ -62,7 +62,7 @@
     "Title": "Dashboard",
     "YourFlight": {
       "Alternate": "Alternato",
-      "AverageWind": "Velocità Media Vento",
+      "AverageWind": "Velocità Vento Media",
       "CompanyRoute": "Rotta Compagnia",
       "CostIndex": "Cost Index",
       "CruiseAlt": "Alt. Crociera",
@@ -90,7 +90,7 @@
       "MTOW": "MTOW",
       "MZFW": "MZFW",
       "MaximumCargo": "Carico Massimo",
-      "MaximumFuelCapacity": "Capacità Massima Carburante",
+      "MaximumFuelCapacity": "Capacità Carburante Massima",
       "MaximumPassengers": "Passeggeri Massimi",
       "Model": "Modello",
       "Range": "Autonomia",
@@ -119,7 +119,7 @@
       "LeftInnerTank": "Serbatoio Sinistro Interno",
       "LeftOuterTank": "Serbatoio Sinistro Esterno",
       "ReadyToStart": "Pronto a Iniziare",
-      "Refuel": "Rifornimento Carburante",
+      "Refuel": "Rifornimento",
       "RefuelTime": "Durata Rifornimento",
       "Refueling": "Caricamento",
       "RightInnerTank": "Serbatoio Destro Interno",
@@ -192,7 +192,7 @@
       },
       "TT": {
         "ChangeChartProvider": "Cambia Fornitore Carte",
-        "ChangeChartSortMethod": "Cambia Modalità di Ordinamento delle Carte",
+        "ChangeChartSortMethod": "Cambia Modalità Disposizione Carte",
         "RemoveAllPinnedCharts": "Rimuovi Tutte le Carte Fissate"
       },
       "Title": "Carte Fissate",
@@ -204,8 +204,8 @@
       "FitChartToHeight": "Adatta Carta all'Altezza",
       "FitChartToWidth": "Adatta Carta alla Larghezza",
       "ResetMovement": "Ripristina Posizione",
-      "RotateLeft45Degrees": "Ruota 45 Gradi a Sinistra",
-      "RotateRight45Degrees": "Ruota 45 Gradi a Destra",
+      "RotateLeft45Degrees": "Ruota 45 Gradi Sinistra",
+      "RotateRight45Degrees": "Ruota 45 Gradi Destra",
       "ZoomIn": "Ingrandisci",
       "ZoomOut": "Rimpicciolisci"
     },
@@ -228,11 +228,11 @@
       "FillDataFrom": "Inserisci dati da",
       "FlapsConfiguration": "Configurazione Flap",
       "Low": "Low",
-      "MaximumManual": "Maximum Manuale",
+      "MaximumManual": "Maximum Manual",
       "Medium": "Medium",
       "MetarErrorDialogMessage": "Non è stato possibile elaborare con successo il METAR dal tuo OFP. Desideri, invece, inserire automaticamente i dati recuperando un altro METAR?",
       "MetarErrorDialogTitle": "Errore Elaborazione METAR dell'OFP",
-      "OverweightProcedure": "Procedura in Sovraccarico",
+      "OverweightProcedure": "Procedura Sovraccarico",
       "Qnh": "QNH",
       "ReverseThrust": "Inversori di Spinta",
       "RunwayAltitude": "Altitudine Pista",
@@ -258,7 +258,7 @@
       "WindMagnitude": "Magnitudo Vento",
       "WindMagnitudeUnit": "kts"
     },
-    "SYNC": "SINC",
+    "SYNC": "SYNC",
     "Title": "Prestazioni",
     "TopOfDescent": {
       "Data": {
@@ -280,14 +280,14 @@
         "GroundSpeed": "Velocità al Suolo",
         "ManualInput": "Inserimento Manuale",
         "MinAltitude": "Altitudine Min.",
-        "RemoveLast": "Rimuovi l'Ultimo",
-        "Sync": "SINC",
+        "RemoveLast": "Rimuovi Ultimo",
+        "Sync": "SYNC",
         "Title": "Velocità al Suolo",
         "UnitKnots": "nodi",
         "UnitKt": "kt"
       },
       "Result": {
-        "BeforeTarget": "Prima del Target",
+        "BeforeTarget": "prima del target",
         "DesiredDescentAngle": "Angolo Discesa Desiderato",
         "DesiredVerticalSpeed": "Velocità Verticale Desiderata",
         "StartYourDescentAbout": "Inizia la tua discesa a circa",
@@ -305,7 +305,7 @@
       "Cancel": "Annulla",
       "ColdDark": "Spento",
       "ConfirmationDialogMsg": "Prego conferma caricamento del preset.",
-      "CurrentProcedureStep": "Fase Attuale della Procedura",
+      "CurrentProcedureStep": "Stato Processo in Corso",
       "PleaseConfirmLoadingOfPreset": "Prego conferma caricamento del preset.",
       "ReadyPushback": "Pronto per Pushback",
       "ReadyTakeoff": "Pronto per Decollo",
@@ -328,7 +328,7 @@
       "SavingPreset": "Salvataggio Preset",
       "SelectAnInteriorLightingPresetToLoadOrSave": "Seleziona un preset di illuminazione interna da caricare o salvare.",
       "TT": {
-        "AircraftMustBePowered": "L'Aeromobile deve essere Alimentato",
+        "AircraftMustBePowered": "L'Aeromobile Deve essere Alimentato",
         "ClickTextToChangeThePresetsName": "Clicca il Testo per Cambiare Nome Preset",
         "LoadThisPreset": "Carica Questo Preset",
         "SaveTheCurrentLightingLevels": "Salva Livelli di Illuminazione Attuali"
@@ -356,15 +356,15 @@
       "Title": "Informazioni"
     },
     "AircraftOptionsPinPrograms": {
-      "AccelerationHeight": "Accelerazione in Altezza (ft)",
-      "EngineOutAccelerationHeight": "Accelerazione in Altezza Senza Motore (ft)",
+      "AccelerationHeight": "Altezza Accelerazione (ft)",
+      "EngineOutAccelerationHeight": "Altezza Accelerazione Senza Motore (ft)",
       "IsisBaroUnit": "Unità ISIS Baro",
       "IsisMetricAltitude": "Altitudine Metrica ISIS",
       "LatLonExtendedFormat": "Formato Waypoint Lat/Lon FMGC",
       "PaxSigns": "PAX Sign",
       "RmpVhfSpacing": "Spaziatura VHF RMP",
       "ThrustReductionHeight": "Altezza Riduzione Spinta (ft)",
-      "Title": "Opzioni Aeromobile / Programmi Fissati",
+      "Title": "Opzioni Aeromobile / Definisci Comportamenti",
       "WeightUnit": "Unità Peso"
     },
     "AtsuAoc": {
@@ -410,7 +410,7 @@
       "DmcSelfTestTime": "Durata Autotest DMC",
       "HomeCockpitMode": "Modalità Home Cockpit",
       "McduFocusTimeout": "Rilascio Selezione su MCDU (secondi)",
-      "McduKeyboardInput": "Input Tastiera MCDU",
+      "McduKeyboardInput": "Input Tastiera su MCDU",
       "SeparateTillerFromRudderInputs": "Separa gli Input del Tiller e dei Pedali",
       "Title": "Realismo"
     },
@@ -424,10 +424,10 @@
       "ExternalMcduServerPort": "Porta Esterna Server MCDU",
       "Hpa": "hPa",
       "Inactive": "Inattivo",
-      "LoadOnly": "Carica Solamente",
-      "None": "Nessuno",
+      "LoadOnly": "Carica Soltanto",
+      "None": "No",
       "Off": "Off",
-      "Save": "Salva",
+      "Save": "Sì",
       "SyncMsfsFlightPlan": "Sincronizza Piano di Volo MSFS",
       "ThrottleDetents": "Posizioni Manetta",
       "Title": "Opzioni Sim",
@@ -443,7 +443,7 @@
       "ConfigureStart": "Configura Inizio",
       "CurrentValue": "Valore Attuale",
       "Deadband": "Zona Morta",
-      "ErrorOverlapMsg": "Conflitto con",
+      "ErrorOverlapMsg": "confligge con",
       "IndependentAxis": "Assi Separate",
       "LoadFromFile": "Carica da File",
       "PleaseEnterAValidDeadzone": "Prego inserisci una zona morta valida",
@@ -500,7 +500,7 @@
     "TT": {
       "ConnectedToLocalApi": "Connesso all'API Locale",
       "DisconnectedFromLocalApi": "Sconnesso dall'API Locale",
-      "TurnOffOrShutdownEfb": "Spegni o Arresta l'EFB"
+      "TurnOffOrShutdownEfb": "Spegni o Arresta EFB"
     },
     "Thu": "Gio",
     "Tue": "Mar",

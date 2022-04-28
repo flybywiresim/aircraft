@@ -159,7 +159,7 @@
     "From": "De",
     "LocalFiles": {
       "Both": "Les deux",
-      "EstablishingConnection": "Établissement de la connexion…",
+      "EstablishingConnection": "Connexion en cours",
       "FailedToEstablishConnection": "Impossible d'établir la connexion.",
       "FileName": "Nom du fichier",
       "Image": "Images",
@@ -230,8 +230,8 @@
       "Low": "Faible",
       "MaximumManual": "Manuel maximum",
       "Medium": "Moyenne",
-      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
-      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
+      "MetarErrorDialogMessage": "Le METAR de votre OFP n'a pas pu être analysé avec succès. Souhaitez-vous plutôt remplir automatiquement les données à l'aide d'un METAR récupéré ?",
+      "MetarErrorDialogTitle": "Erreur lors de l'analyse du METAR OFP",
       "OverweightProcedure": "Procédure de surpoids",
       "Qnh": "QNH",
       "ReverseThrust": "Inversion de poussée",
@@ -265,7 +265,7 @@
         "Angle": "Angle",
         "CurrentAltitude": "Altitude actuelle",
         "Distance": "Distance",
-        "GroundSpeed": "Vitesse au sol",
+        "GroundSpeed": "Vitesse sol",
         "TargetAltitude": "Altitude cible",
         "Title": "Données",
         "UnitAngleDegrees": "degrés",
@@ -290,14 +290,14 @@
         "BeforeTarget": "avant la cible",
         "DesiredDescentAngle": "Angle de descente souhaité",
         "DesiredVerticalSpeed": "Vitesse verticale désirée",
-        "StartYourDescentAbout": "Commencez votre descente environ",
+        "StartYourDescentAbout": "Commencez votre descente dans",
         "Title": "Résultat"
       },
       "TT": {
         "DesynchronizeInputWithAircraftsCurrentAltitude": "Désynchroniser l'entrée avec l'altitude actuelle de l'avion",
         "SynchronizeInputWithAircraftsCurrentAltitude": "Synchroniser l'entrée avec l'altitude actuelle de l'avion"
       },
-      "Title": "Au sommet de la descente"
+      "Title": "Début de descente"
     }
   },
   "Presets": {
@@ -373,7 +373,7 @@
       "Enable": "Activer",
       "EnableTelex": "Activer le TELEX",
       "ErrorReporting": "Rapport d'erreurs",
-      "HoppieEnabled": "Hoppie enabled",
+      "HoppieEnabled": "Hoppie activé",
       "HoppieUserId": "Nom d'utilisateur Hoppie",
       "MetarSource": "Source METAR",
       "OptionalA32nxErrorReporting": "Rapport d'erreurs A32NX optionnel",
@@ -487,7 +487,7 @@
     "Feb": "Fév",
     "Fri": "Ven",
     "Jan": "Janv",
-    "Jul": "Jul",
+    "Jul": "Juil",
     "Jun": "Juin",
     "Mar": "Mars",
     "May": "Mai",

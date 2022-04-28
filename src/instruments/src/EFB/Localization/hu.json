@@ -174,7 +174,7 @@
       "IntoYourBrowserAndEnterTheCodeBelow": "a böngészőbe, és írja be a kódot lentebb\n",
       "NoAirportSelected": "Nincs repülőtér kiválasztva",
       "ResetNavigraphAuthentication": "Navigraph hitelesítés visszaállítása",
-      "ScanTheQrCodeOrOpen": "Szkennelje be a QR-kódot vagy Megnyitás",
+      "ScanTheQrCodeOrOpen": "Szkennelje be a QR-kódot vagy megnyitás",
       "Title": "Navigraph"
     },
     "PinnedCharts": {
@@ -184,8 +184,8 @@
       "SearchPlaceholder": "Keresés",
       "ShowingChartsFromAllProviders": "Chart-ok megjelenítése az összes szolgáltatótól",
       "SortMethods": {
-        "AlphabeticalAZ": "ABC sorrend - A->Z",
-        "AlphabeticalZA": "ABC sorrend - Z->A",
+        "AlphabeticalAZ": "ABC sorrend - A -> Z",
+        "AlphabeticalZA": "ABC sorrend - Z -> A",
         "FirstAccessed": "Először használt",
         "LastAccessed": "Legutóbb használt",
         "None": "Egyik sem"
@@ -211,7 +211,7 @@
     },
     "ThereAreNoChartsToDisplay": "Nincsenek megjeleníthető Chart-ok",
     "ThereIsNoChartToDisplay": "Nincs megjeleníthető Chart",
-    "Title": "Navigáció és Térképek",
+    "Title": "Navigáció és Chart-ok",
     "To": "Érkező"
   },
   "Performance": {
@@ -230,7 +230,7 @@
       "Low": "Alacsony",
       "MaximumManual": "Maximális manuális",
       "Medium": "Közepes",
-      "MetarErrorDialogMessage": "Az OFP-ből származó METAR nem sikerült sikeresen elemezni. Szeretné automatikusan kitölteni az adatokat egy lekért METAR használatával?",
+      "MetarErrorDialogMessage": "Az OFP-ből származó METAR nem sikerült elemezni. Szeretné automatikusan kitölteni az adatokat egy lekért METAR használatával?",
       "MetarErrorDialogTitle": "Hiba az OFP METAR elemzésekor",
       "OverweightProcedure": "Túlsúlyos eljárás",
       "Qnh": "QNH",
@@ -245,7 +245,7 @@
       "RunwayLdaUnitMeter": "m",
       "RunwaySlope": "Futópálya lejtése",
       "TT": {
-        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Irjon be egy ICAO kódot a METAR kérelem benyújtásához",
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Irjon be egy ICAO kódot a METAR lekérdezéséhez",
         "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Az adatok automatikus kitöltéséhez be kell töltenie a SimBrief adatokat"
       },
       "Temperature": "Hőmérséklet",
@@ -392,7 +392,7 @@
     },
     "Audio": {
       "Announcements": "Közlemények",
-      "BoardingMusic": "Beszállási zene",
+      "BoardingMusic": "Zene beszállításkor",
       "EngineInteriorVolume": "Hajtómű hangerő (belső)",
       "ExteriorMasterVolume": "Általános hangerő (külső)",
       "PassengerAmbience": "Utasok hangja",
@@ -468,7 +468,7 @@
       "Local": "Helyi",
       "LocalTimeFormat": "Helyi idő formátum",
       "OnscreenKeyboardLayout": "Képernyőn megjelenő billentyűzet elrendezése",
-      "ShowColoredRawMetar": "Színes nyers METAR megjelenítése",
+      "ShowColoredRawMetar": "Színes METAR kód megjelenítése",
       "ShowStatusBarFlightProgressIndicator": "Repülési folyamat megjelenítése az állapotsor jelzőjével",
       "Theme": "Megjelenés",
       "TimeDisplayed": "Megjelenített idő",
