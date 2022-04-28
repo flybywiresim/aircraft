@@ -248,23 +248,23 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     private topWptIdent1: number;
 
-    private readonly identRef = FSComponent.createRef<SVGTextElement>();
-
-    private readonly largeDistanceContainerRef = FSComponent.createRef<SVGGElement>();
-
     private readonly largeDistanceNumberRef = FSComponent.createRef<SVGTextElement>();
-
-    private readonly smallDistanceContainerRef = FSComponent.createRef<SVGGElement>();
 
     private readonly smallDistanceIntegerPartRef = FSComponent.createRef<SVGTextElement>();
 
     private readonly smallDistanceDecimalPartRef = FSComponent.createRef<SVGTextElement>();
 
-    private readonly bearingContainerRef = FSComponent.createRef<SVGGElement>();
+    private readonly bearingContainerVisible = Subject.create(false);
 
     private readonly bearingRwf = FSComponent.createRef<SVGTextElement>();
 
     private readonly toWptIdentValue = Subject.create('');
+
+    private readonly distanceSmallContainerVisible = Subject.create(false);
+
+    private readonly distanceLargeContainerVisible = Subject.create(false);
+
+    private readonly distanceNmUnitVisible = Subject.create(false);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -281,10 +281,10 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
 
         sub.on('toWptBearingCaptain').whenChanged().handle((value) => {
             if (value && Number.isFinite(value)) {
-                this.bearingContainerRef.instance.style.visibility = 'visible';
+                this.bearingContainerVisible.set(true);
                 this.bearingRwf.instance.textContent = (Math.round(value)).toString().padStart(3, '0');
             } else {
-                this.bearingContainerRef.instance.style.visibility = 'hidden';
+                this.bearingContainerVisible.set(false);
             }
         });
 
@@ -298,17 +298,26 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
     }
 
     private handleToWptDistance(value: number) {
+        if (!value) {
+            this.distanceSmallContainerVisible.set(false);
+            this.distanceLargeContainerVisible.set(false);
+            this.distanceNmUnitVisible.set(false);
+            return;
+        }
+
+        this.distanceNmUnitVisible.set(true);
+
         if (value > 20) {
-            this.smallDistanceContainerRef.instance.style.visibility = 'hidden';
-            this.largeDistanceContainerRef.instance.style.visibility = 'visible';
+            this.distanceSmallContainerVisible.set(false);
+            this.distanceLargeContainerVisible.set(true);
 
             this.largeDistanceNumberRef.instance.textContent = Math.round(value).toString();
         } else {
             const integerPart = Math.trunc(value);
             const decimalPart = (value - integerPart).toString()[2];
 
-            this.largeDistanceContainerRef.instance.style.visibility = 'hidden';
-            this.smallDistanceContainerRef.instance.style.visibility = 'visible';
+            this.distanceSmallContainerVisible.set(true);
+            this.distanceLargeContainerVisible.set(false);
 
             this.smallDistanceIntegerPartRef.instance.textContent = integerPart.toString();
             this.smallDistanceDecimalPartRef.instance.textContent = decimalPart;
@@ -321,27 +330,31 @@ class ToWaypointIndicator extends DisplayComponent<{ bus: EventBus }> {
         this.toWptIdentValue.set(ident);
     }
 
+    private readonly visibilityFn = (v) => (v ? 'visible' : 'hidden');
+
     render(): VNode | null {
         return (
             <Layer x={690} y={25}>
-                <text ref={this.identRef} x={-13} y={0} class="White FontIntermediate EndAlign">{this.toWptIdentValue}</text>
+                <text x={-13} y={0} class="White FontIntermediate EndAlign">{this.toWptIdentValue}</text>
 
-                <g ref={this.bearingContainerRef}>
+                <g visibility={this.bearingContainerVisible.map(this.visibilityFn)}>
                     <text ref={this.bearingRwf} x={54} y={0} class="Green FontIntermediate EndAlign" />
                     <text x={73} y={2} class="Cyan FontIntermediate EndAlign">&deg;</text>
                 </g>
 
-                <g ref={this.largeDistanceContainerRef}>
+                <g visibility={this.distanceLargeContainerVisible.map(this.visibilityFn)}>
                     <text ref={this.largeDistanceNumberRef} x={39} y={32} class="Green FontIntermediate EndAlign">50</text>
                 </g>
 
-                <g ref={this.smallDistanceContainerRef}>
+                <g visibility={this.distanceSmallContainerVisible.map(this.visibilityFn)}>
                     <text ref={this.smallDistanceIntegerPartRef} x={6} y={32} class="Green FontIntermediate EndAlign">1</text>
                     <text x={3} y={32} class="Green FontSmallest StartAlign">.</text>
                     <text ref={this.smallDistanceDecimalPartRef} x={20} y={32} class="Green FontSmallest StartAlign">8</text>
                 </g>
 
-                <text x={72} y={32} class="Cyan FontSmallest EndAlign">NM</text>
+                <text x={72} y={32} class="Cyan FontSmallest EndAlign" visibility={this.distanceNmUnitVisible.map(this.visibilityFn)}>
+                    NM
+                </text>
 
                 <text x={72} y={66} class="Green FontIntermediate EndAlign">17:52</text>
             </Layer>
