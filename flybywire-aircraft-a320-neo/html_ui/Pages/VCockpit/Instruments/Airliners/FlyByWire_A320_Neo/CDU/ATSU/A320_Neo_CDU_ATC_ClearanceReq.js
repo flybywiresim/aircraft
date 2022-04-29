@@ -23,7 +23,7 @@ class CDUAtcClearanceReq {
         let addText = "ADD TEXT\xa0";
         let clearance = "{cyan}{{end}CLEARANCE";
         let transfer = ["{cyan}XFR TO\xa0{end}", "{cyan}DCDU\xa0{end}"];
-        let erase = ["ALL FIELDS", "\xa0ERASE"];
+        let erase = ["\xa0ALL FIELDS", "\xa0ERASE"];
         if (mcdu.atsu.atc.fansMode() !== Atsu.FansMode.FansA) {
             clearance = "<DEPARTURE";
             transfer = ["", ""];

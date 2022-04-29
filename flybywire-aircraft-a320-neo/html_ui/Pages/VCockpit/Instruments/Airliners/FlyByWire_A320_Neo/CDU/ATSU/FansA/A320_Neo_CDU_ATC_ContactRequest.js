@@ -78,7 +78,7 @@ class CDUAtcContactRequest {
                     data.climb = Atsu.InputValidation.formatScratchpadAltitude(value);
                 }
             }
-            CDUAtcContactRequest.ShowPage1(mcdu, data);
+            CDUAtcContactRequest.ShowPage(mcdu, data);
         };
 
         mcdu.leftInputDelay[1] = () => {
@@ -95,7 +95,7 @@ class CDUAtcContactRequest {
                     data.altitude = Atsu.InputValidation.formatScratchpadAltitude(value);
                 }
             }
-            CDUAtcContactRequest.ShowPage1(mcdu, data);
+            CDUAtcContactRequest.ShowPage(mcdu, data);
         };
 
         mcdu.leftInputDelay[4] = () => {

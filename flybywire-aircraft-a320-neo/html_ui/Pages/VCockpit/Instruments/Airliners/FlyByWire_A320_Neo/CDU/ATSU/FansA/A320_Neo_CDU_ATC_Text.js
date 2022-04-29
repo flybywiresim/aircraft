@@ -98,7 +98,7 @@ class CDUAtcTextFansA {
             acPerform[0] += "[color]cyan";
             acPerform[1] = "\xa0A/C PERFORM[color]cyan";
         }
-        const weather = ["DUE TO\xa0", "WEATHER"];
+        const weather = ["DUE TO\xa0", "WEATHER{cyan}}{end}"];
         if (data.weather) {
             weather[0] += "[color]cyan";
             weather[1] = "WEATHER\xa0[color]cyan";
@@ -135,7 +135,7 @@ class CDUAtcTextFansA {
             [freetext],
             ["\xa0ALL FIELDS"],
             [erase],
-            ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
+            ["\xa0FLIGHT REQ", "XFR TO\xa0[color]cyan"],
             ["<RETURN", reqDisplay]
         ]);
 
@@ -151,7 +151,7 @@ class CDUAtcTextFansA {
                 data.performance = true;
                 data.freetext = oldFreetext;
             }
-            CDUAtcTextFansA.ShowPage(mcdu, messages, data);
+            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[1] = () => {
@@ -166,7 +166,7 @@ class CDUAtcTextFansA {
                 data.discretion = true;
                 data.freetext = oldFreetext;
             }
-            CDUAtcTextFansA.ShowPage(mcdu, messages, data);
+            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[3] = () => {
@@ -178,7 +178,7 @@ class CDUAtcTextFansA {
             } else if (value) {
                 data.freetext[0] = value;
             }
-            CDUAtcTextFansA.ShowPage(mcdu, messages, data);
+            CDUAtcTextFansA.ShowPage1(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[4] = () => {
@@ -306,7 +306,7 @@ class CDUAtcTextFansA {
             [freetext4],
             ["\xa0ALL FIELDS"],
             [erase],
-            ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
+            ["\xa0FLIGHT REQ", "XFR TO\xa0[color]cyan"],
             ["<RETURN", reqDisplay]
         ]);
 

@@ -35,7 +35,7 @@ class CDUAtcUsualRequestFansA {
     static CreateRequests(mcdu, data) {
         const retval = [];
 
-        const extension = null;
+        let extension = null;
         if (data.dueToWeather) {
             extension = Atsu.CpdlcMessagesDownlink["DM65"][1].deepCopy();
         }
@@ -51,14 +51,14 @@ class CDUAtcUsualRequestFansA {
             retval.push(CDUAtcUsualRequestFansA.CreateRequest(mcdu, "DM70", [data.heading === 0 ? "360" : data.heading.toString()]));
         }
         if (data.climbTo) {
-            retval.push(CDUAtcUsualRequestFansA.CreateRequest(mcdu, "DM9", [data.climb]));
+            retval.push(CDUAtcUsualRequestFansA.CreateRequest(mcdu, "DM9", [data.climbTo]));
         }
         if (data.descentTo) {
-            retval.push(CDUAtcUsualRequestFansA.CreateRequest(mcdu, "DM10", [data.descend]));
+            retval.push(CDUAtcUsualRequestFansA.CreateRequest(mcdu, "DM10", [data.descentTo]));
         }
         if (data.requestDescent) {
             retval.push(CDUAtcUsualRequestFansA.CreateRequest(mcdu, "DM67"));
-            retval[retval.length - 1].Content[0].Value = "REQUEST DESCENT";
+            retval[retval.length - 1].Content.Content[0].Value = "REQUEST DESCENT";
         }
         if (data.speed) {
             retval.push(CDUAtcUsualRequestFansA.CreateRequest(mcdu, "DM18", [data.speed]));

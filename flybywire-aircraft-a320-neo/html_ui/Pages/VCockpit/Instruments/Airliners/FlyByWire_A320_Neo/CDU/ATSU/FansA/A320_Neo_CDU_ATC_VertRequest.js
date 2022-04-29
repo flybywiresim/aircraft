@@ -151,7 +151,7 @@ class CDUAtcVertRequestFansA {
         }
         if (data.requestDescent) {
             retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM67"));
-            retval[retval.length - 1].Content[0].Value = "REQUEST DESCENT";
+            retval[retval.length - 1].Content.Content[0].Value = "REQUEST DESCENT";
         }
         if (data.cruise) {
             retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, data.whenCruise ? "DM54" : "DM8", [data.cruise]));

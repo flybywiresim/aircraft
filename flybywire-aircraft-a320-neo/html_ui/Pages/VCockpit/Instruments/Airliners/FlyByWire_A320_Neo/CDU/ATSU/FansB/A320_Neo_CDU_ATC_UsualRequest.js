@@ -33,7 +33,7 @@ class CDUAtcUsualRequestFansB {
     static CreateRequests(mcdu, data) {
         const retval = [];
 
-        const extension = null;
+        let extension = null;
         if (data.dueToWeather) {
             extension = Atsu.CpdlcMessagesDownlink["DM65"][1].deepCopy();
         }
@@ -46,10 +46,10 @@ class CDUAtcUsualRequestFansB {
             retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, "DM27", [elements[0], elements[1]]));
         }
         if (data.climbTo) {
-            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, "DM9", [data.climb]));
+            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, "DM9", [data.climbTo]));
         }
         if (data.descentTo) {
-            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, "DM10", [data.descend]));
+            retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, "DM10", [data.descentTo]));
         }
         if (data.speed) {
             retval.push(CDUAtcUsualRequestFansB.CreateRequest(mcdu, "DM18", [data.speed]));
