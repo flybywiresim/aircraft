@@ -16,7 +16,7 @@ class CDUAtcMenu {
             [""],
             ["<CONNECTION"],
             ["\xa0ATSU DLK"],
-            ["<RETURN"]
+            ["<RETURN", "EMER MENU>[color]amber"]
         ]);
 
         mcdu.leftInputDelay[0] = () => {
@@ -77,6 +77,17 @@ class CDUAtcMenu {
         };
         mcdu.onRightInput[2] = () => {
             // TODO link reports page
+        };
+
+        mcdu.rightInputDelay[5] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[5] = () => {
+            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+                CDUAtcEmergencyFansA.ShowPage1(mcdu);
+            } else {
+                CDUAtcEmergencyFansB.ShowPage(mcdu);
+            }
         };
     }
 }

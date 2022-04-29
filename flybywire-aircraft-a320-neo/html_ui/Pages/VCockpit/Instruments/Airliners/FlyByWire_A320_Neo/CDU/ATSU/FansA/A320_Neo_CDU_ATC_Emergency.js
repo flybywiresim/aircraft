@@ -39,38 +39,38 @@ class CDUAtcEmergencyFansA {
         const retval = [];
 
         if (data.mayday === true) {
-            retval.push(CDUAtcWhenCanWe.CreateRequest(mcdu, "DM56"));
+            retval.push(CDUAtcEmergencyFansA.CreateRequest(mcdu, "DM56"));
         }
         if (data.panpan === true) {
-            retval.push(CDUAtcWhenCanWe.CreateRequest(mcdu, "DM55"));
+            retval.push(CDUAtcEmergencyFansA.CreateRequest(mcdu, "DM55"));
         }
         if (data.descendingTo) {
-            retval.push(CDUAtcWhenCanWe.CreateRequest(mcdu, "DM55", [data.descendingTo]));
+            retval.push(CDUAtcEmergencyFansA.CreateRequest(mcdu, "DM55", [data.descendingTo]));
         }
         if (data.personsOnBoard && data.endurance) {
-            retval.push(CDUAtcWhenCanWe.CreateRequest(mcdu, "DM57", [data.endurance, data.personsOnBoard]));
+            retval.push(CDUAtcEmergencyFansA.CreateRequest(mcdu, "DM57", [data.endurance, data.personsOnBoard]));
         }
         if (data.cancelEmergency === true) {
-            retval.push(CDUAtcWhenCanWe.CreateRequest(mcdu, "DM58"));
+            retval.push(CDUAtcEmergencyFansA.CreateRequest(mcdu, "DM58"));
         }
         if (data.deviating) {
             const elements = Atsu.InputValidation.expandLateralOffset(data.deviating).split(" ");
-            retval.push(CDUAtcWhenCanWe.CreateRequest(mcdu, "DM80", [elements[0], elements[1]]));
+            retval.push(CDUAtcEmergencyFansA.CreateRequest(mcdu, "DM80", [elements[0], elements[1]]));
         }
         if (data.climbingTo) {
-            retval.push(CDUAtcWhenCanWe.CreateRequest(mcdu, "DM29", [data.climbingTo]));
+            retval.push(CDUAtcEmergencyFansA.CreateRequest(mcdu, "DM29", [data.climbingTo]));
         }
         if (data.diverting && data.divertingVia) {
-            retval.push(CDUAtcWhenCanWe.CreateRequest(mcdu, "DM59", [data.diverting, data.divertingVia]));
+            retval.push(CDUAtcEmergencyFansA.CreateRequest(mcdu, "DM59", [data.diverting, data.divertingVia]));
         }
         if (data.voiceContact === true) {
-            retval.push(CDUAtcWhenCanWe.CreateRequest(mcdu, "DM20"));
+            retval.push(CDUAtcEmergencyFansA.CreateRequest(mcdu, "DM20"));
         }
 
         return retval;
     }
 
-    static ShowPage1(mcdu, data = CDUAtcOtherRequest.CreateDataBlock()) {
+    static ShowPage1(mcdu, data = CDUAtcEmergencyFansA.CreateDataBlock()) {
         mcdu.clearDisplay();
 
         let mayday = "{cyan}{{end}{red}MAYDAY{end}";
@@ -268,7 +268,7 @@ class CDUAtcEmergencyFansA {
         };
     }
 
-    static ShowPage2(mcdu, data = CDUAtcOtherRequest.CreateDataBlock()) {
+    static ShowPage2(mcdu, data = CDUAtcEmergencyFansA.CreateDataBlock()) {
         mcdu.clearDisplay();
 
         let deviating = "{cyan}[ ]{end}";
