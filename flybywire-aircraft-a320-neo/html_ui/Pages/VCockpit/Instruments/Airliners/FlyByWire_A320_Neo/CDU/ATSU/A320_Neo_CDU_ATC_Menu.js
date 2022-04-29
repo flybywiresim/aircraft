@@ -39,17 +39,17 @@ class CDUAtcMenu {
             CDUAtcMessagesRecord.ShowPage(mcdu);
         };
 
-        mcdu.leftInputDelay[2] = () => {
+        mcdu.leftInputDelay[3] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[2] = () => {
+        mcdu.onLeftInput[3] = () => {
             // TODO monitored messages
         };
 
-        mcdu.leftInputDelay[2] = () => {
+        mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[2] = () => {
+        mcdu.onLeftInput[4] = () => {
             CDUAtcConnection.ShowPage(mcdu);
         };
 

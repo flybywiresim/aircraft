@@ -145,7 +145,7 @@ class CDUAtcDepartReq {
             [freetext],
             ["", "MORE\xa0"],
             ["", "FREE TEXT>"],
-            ["\xa0ATC MENU", "{cyan}XFR TO\xa0{end}"],
+            ["\xa0GROUND REQ", "{cyan}XFR TO\xa0{end}"],
             ["<RETURN", reqDisplButton]
         ]);
 
@@ -188,7 +188,7 @@ class CDUAtcDepartReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage(mcdu);
+            CDUAtcClearanceReq.ShowPage(mcdu, "GROUND");
         };
 
         mcdu.rightInputDelay[1] = () => {

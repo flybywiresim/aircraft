@@ -262,7 +262,7 @@ class CDUAtcOceanicReq {
             [freetext],
             ["", "MORE\xa0"],
             ["", "FREE TEXT>"],
-            ["\xa0ATC MENU", "{cyan}XFR TO\xa0{end}"],
+            ["\xa0FLIGHT REQ", "{cyan}XFR TO\xa0{end}"],
             ["<RETURN", reqDisplButton]
         ]);
 
@@ -277,7 +277,7 @@ class CDUAtcOceanicReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage(mcdu);
+            CDUFlightPlanPage.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {
