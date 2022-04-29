@@ -579,6 +579,7 @@ export const CpdlcMessagesDownlink: { [identification: string]: [string[], Cpdlc
     DM21: [['REQUEST VOICE CONTACT %s'], new CpdlcMessageElement('DM21', [FansMode.FansA], [new CpdlcMessageContentFrequency(3)], CpdlcMessageExpectedResponseType.Yes)],
     DM22: [['REQUEST DIRECT TO %s'], new CpdlcMessageElement('DM22', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentPosition(3)], CpdlcMessageExpectedResponseType.Yes)],
     DM23: [['REQUEST %s'], new CpdlcMessageElement('DM23', [FansMode.FansA], [new CpdlcMessageContentProcedure(1)], CpdlcMessageExpectedResponseType.Yes)],
+    DM25: [['REQUEST %s CLEARANCE'], new CpdlcMessageElement('DM25', [FansMode.FansA], [new CpdlcMessageContentFreetext(1, 2)], CpdlcMessageExpectedResponseType.Yes)],
     DM26: [['REQUEST WEATHER DEVIATION TO %s VIA %s'], new CpdlcMessageElement('DM26', [FansMode.FansA],
         [new CpdlcMessageContentPosition(4), new CpdlcMessageContentFreetext(6, -1)], CpdlcMessageExpectedResponseType.Yes)],
     DM27: [['REQUEST WEATHER DEVIATION UP TO %s %s OF ROUTE'], new CpdlcMessageElement('DM27', [FansMode.FansA, FansMode.FansB],
