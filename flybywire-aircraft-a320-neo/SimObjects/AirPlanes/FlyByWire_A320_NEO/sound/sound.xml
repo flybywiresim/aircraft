@@ -1810,7 +1810,7 @@
             <WwiseRTPC SimVar="ROTATION VELOCITY BODY Z" Units="PERCENT" Index="0" RTPCName="SIMVAR_ROTATION_VELOCITY_BODY_Z"/>
         </Sound>
 
-        <!-- BETTER WIND NOISES ========================================================================================== -->
+        <!-- BETTER WIND AND DRAG NOISES ========================================================================================== -->
 
         <Sound WwiseData="true" WwiseEvent="Betterwind" SimVar="AIRSPEED INDICATED" ViewPoint="Inside" NodeName="PEDALS_LEFT" Continuous="True" Units="KNOTS" Index="0" FadeOutType="2" FadeOutTime="1">
             <Range LowerBound="1" />
