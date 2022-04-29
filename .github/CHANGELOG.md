@@ -241,6 +241,7 @@
 1. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
 1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (donbikes#4084)
 1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
+1. [HYD] PTU model refinement and simulated potential wear state probabilities - @Crocket63
 1. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
 1. [FMGC] Implemented Airport Button - @patmack14 (Patrick Macken)
 1. [RMP] Fixed colour of SEL indicator - @tracernz (Mike)
