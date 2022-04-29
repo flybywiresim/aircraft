@@ -885,24 +885,25 @@
     - Bool
     - Power Transfer Unit can receive fluid from yellow and green circuits
 
-- A32NX_HYD_PTU_ACTIVE_{motor_side}
-    - Bool
-    - Power Transfer Unit is trying to transfer hydraulic power from either yellow to green (R2L) or green to yellow (L2R) circuits
-    - {motor_side}
-        - L2R
-        - R2L
-
-- A32NX_HYD_PTU_MOTOR_FLOW
-    - Gallon per second
-    - Power Transfer Unit instantaneous flow in motor side
-
 - A32NX_HYD_PTU_SHAFT_RPM
     - Revolutions per minute
     - Power Transfer Unit shaft rpm
 
+- A32NX_HYD_PTU_BARK_STRENGTH
+    - Number
+    - 0 no PTU. 1 to 5 indicates barking sound power level.
+
 - A32NX_HYD_PTU_CONTINUOUS_MODE
     - Bool
     - Power Transfer Unit is rotating continuously
+
+- A32NX_HYD_PTU_DEV_DEACTIVATION_DELTA
+    - Psi
+    - Write to this simvar to force a deactivation delta pressure for Power Transfer Unit
+
+- A32NX_HYD_PTU_DEV_EFFICIENCY
+    - Number
+    - Write to this simvar to force an efficiency value for Power Transfer Unit
 
 - A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED
     - Bool
