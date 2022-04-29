@@ -480,7 +480,7 @@ class CDUAtcVertRequestFansA {
             [descendStart],
             ["---WHEN CAN WE EXPECT---"],
             [higherAlt, lowerAlt],
-            ["", "WHEN CAN SPD\xa0"],
+            [""],
             [""],
             ["\xa0ALL FIELDS"],
             [erase, text],

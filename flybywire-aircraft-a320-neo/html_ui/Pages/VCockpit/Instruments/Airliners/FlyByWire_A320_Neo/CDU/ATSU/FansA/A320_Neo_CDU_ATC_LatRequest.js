@@ -103,7 +103,7 @@ class CDUAtcLatRequestFansA {
             ["\xa0DIR TO[color]white"],
             [directTo],
             ["\xa0HDG", "OFFSET\xa0"],
-            [heading, offsetDistance],
+            [heading, `{cyan}${offsetDistance}{end}`],
             ["\xa0GND TRK", "WX DEV\xa0"],
             [grdTrack, weatherDeviation],
             [""],
@@ -291,11 +291,11 @@ class CDUAtcLatRequestFansA {
             offsetDistance = data.offset;
             offsetStartPoint = data.offsetStart;
         }
-        let whenCanWe = "{big}WHEN CAN WE\xa0{end}";
+        let whenCanWe = "{big}\xa0WHEN CAN WE\xa0{end}";
         let backOnRoute = "{cyan}{{end}EXPECT BACK ON ROUTE";
         if (data.backOnTrack) {
             backOnRoute = "{cyan}\xa0EXPECT BACK ON ROUTE{end}";
-            whenCanWe = "{cyan}{big}WHEN CAN WE\xa0{end}{end}";
+            whenCanWe = "{cyan}{big}\xa0WHEN CAN WE\xa0{end}{end}";
         }
 
         let text = "ADD TEXT\xa0";

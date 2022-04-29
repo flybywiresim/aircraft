@@ -98,22 +98,22 @@ class CDUAtcTextFansA {
             acPerform[0] += "[color]cyan";
             acPerform[1] = "\xa0A/C PERFORM[color]cyan";
         }
-        const weather = ["\xa0DUE TO", "WEATHER"];
+        const weather = ["DUE TO\xa0", "WEATHER"];
         if (data.weather) {
             weather[0] += "[color]cyan";
             weather[1] = "WEATHER\xa0[color]cyan";
         }
-        const turbulence = ["\xa0DUE TO", "TURBULENCE{cyan}}{end}"];
+        const turbulence = ["DUE TO\xa0", "TURBULENCE{cyan}}{end}"];
         if (data.turbulence) {
             turbulence[0] += "[color]cyan";
             turbulence[1] = "TURBULENCE\xa0[color]cyan";
         }
-        const discretion = ["AT PILOTS\xa0", "{cyan}{{end}DISCRETION"];
+        const discretion = ["\xa0AT PILOTS", "{cyan}{{end}DISCRETION"];
         if (data.discretion) {
             discretion[0] += "[color]cyan";
             discretion[1] = "\xa0DISCRETION[color]cyan";
         }
-        const icing = ["\xa0DUE TO", "ICING{cyan}}{end}"];
+        const icing = ["DUE TO\xa0", "ICING{cyan}}{end}"];
         if (data.icing) {
             icing[0] += "[color]cyan";
             icing[1] = "ICING\xa0[color]cyan";

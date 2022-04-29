@@ -1,5 +1,6 @@
 class CDUAtcMenu {
     static ShowPage(mcdu) {
+        mcdu.page.Current = mcdu.page.ATCMenu;
         mcdu.activeSystem = "ATSU";
 
         mcdu.setTemplate([
@@ -57,10 +58,10 @@ class CDUAtcMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[0] = () => {
-            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansB) {
-                CDUAtcUsualRequestFansB.ShowPage(mcdu);
-            } else {
+            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
                 CDUAtcUsualRequestFansA.ShowPage(mcdu);
+            } else {
+                CDUAtcUsualRequestFansB.ShowPage(mcdu);
             }
         };
 

@@ -277,7 +277,7 @@ class CDUAtcOceanicReq {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUFlightPlanPage.ShowPage(mcdu);
+            CDUAtcFlightReq.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[5] = () => {

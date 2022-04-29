@@ -81,11 +81,11 @@ class CDUAtcUsualRequestFansA {
         let addText = "ADD TEXT\xa0";
         let erase = "\xa0ERASE";
         let reqDisplay = "DCDU\xa0[color]cyan";
-        if (CDUAtcTextFansA.CanSendData(messages, data)) {
+        if (CDUAtcUsualRequestFansA.CanSendData(data)) {
             reqDisplay = "DCDU*[color]cyan";
             addText = "ADD TEXT>";
         }
-        if (CDUAtcTextFansA.CanEraseData(data)) {
+        if (CDUAtcUsualRequestFansA.CanEraseData(data)) {
             erase = "*ERASE";
         }
 
