@@ -37,7 +37,7 @@ export class InputValidation {
      * @returns AtsuStatusCodes.Ok if the format is valid
      */
     public static validateScratchpadPosition(value: string): AtsuStatusCodes {
-        if (/^[A-Z0-9]{1,5}$/.test(value)) {
+        if (/^[A-Z0-9]{1,10}$/.test(value)) {
             return AtsuStatusCodes.Ok;
         }
         return AtsuStatusCodes.FormatError;
