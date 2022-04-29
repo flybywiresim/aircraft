@@ -29,7 +29,7 @@ class CDUAtcMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[1] = () => {
-            CDUAtcGroundReq.ShowPage(mcdu);
+            CDUAtcClearanceReq.ShowPage(mcdu, "GROUND");
         };
 
         mcdu.leftInputDelay[2] = () => {
