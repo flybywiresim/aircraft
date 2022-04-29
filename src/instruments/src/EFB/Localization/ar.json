@@ -14,7 +14,7 @@
     "AreYouSureYouWantToResetAllChecklists": "هل تريد بالتأكيد إعادة تعيين جميع قوائم التحقق؟",
     "AreYouSureYouWantToResetChecklists": "هل انت متأكد من انك تريد اعادة تعيين جميع قوائم التحقق؟ ",
     "ChecklistResetWarning": "إنذار إعادة تعيين قوائم التحقق",
-    "MarkChecklistAsComplete": "وضع علامة على قائمة التحقق كاملة",
+    "MarkChecklistAsComplete": "وضع علامة اكتمال على القائمة المرجعية ",
     "MarkItemAsComplete": "اشر على العنصر على انه اكتمل",
     "ProceedToNextChecklist": "الانتقال الى قائمة التحقق التالية",
     "ResetAll": "إعادة تعيين الكل",
@@ -52,153 +52,153 @@
         "Raw": "غير معالج",
         "TT": {
           "SwitchToIconView": "التبديل إلى عرض الأيقونة",
-          "SwitchToRawMetarView": "Switch to Raw METAR View"
+          "SwitchToRawMetarView": "التبديل إلى طريقة عرض METAR الخام"
         },
-        "Temperature": "Temperature",
-        "Title": "Weather",
-        "WindSpeed": "Wind Speed"
+        "Temperature": "درجة الحرارة",
+        "Title": "الطقس",
+        "WindSpeed": "سرعة الرياح"
       }
     },
-    "Title": "Dashboard",
+    "Title": "لوحة المعلومات",
     "YourFlight": {
-      "Alternate": "Alternate",
-      "AverageWind": "Average Wind",
-      "CompanyRoute": "Company Route",
-      "CostIndex": "Cost Index",
-      "CruiseAlt": "Cruise Alt.",
-      "ImportSimBriefData": "Import SimBrief Data",
-      "Route": "Route",
-      "SimBriefDataNotYetLoaded": "SimBrief data not yet loaded.",
-      "Title": "Your Flight",
-      "ZFW": "ZFW"
+      "Alternate": "بديل",
+      "AverageWind": "متوسط الرياح",
+      "CompanyRoute": "مسار الشركة",
+      "CostIndex": "مؤشر التكلفة",
+      "CruiseAlt": "الارتفاع النهائي ",
+      "ImportSimBriefData": "استيراد بيانات SimBrief",
+      "Route": "مسار",
+      "SimBriefDataNotYetLoaded": "بيانات SimBrief لم يتم تحميلها بعد.\n",
+      "Title": "رحلتك",
+      "ZFW": "الوزن بدون الوقود "
     }
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Import SimBrief Data",
+      "ImportSimBriefData": "استيراد بيانات SimBrief",
       "TT": {
-        "IncreaseFontSize": "Increase Font Size",
-        "ReduceFontSize": "Reduce Font Size"
+        "IncreaseFontSize": "زيادة حجم الخط",
+        "ReduceFontSize": "تقليل حجم الخط"
       },
-      "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
+      "Title": "خطة الطيران التشغيلية\n",
+      "YouHaveNotYetImportedAnySimBriefData": "لم تستورد بعد أي بيانات SimBrief.\n"
     },
     "Overview": {
-      "Engines": "Engines",
+      "Engines": "محركات",
       "MMO": "MMO",
       "MRW": "MRW",
-      "MTOW": "MTOW",
-      "MZFW": "MZFW",
-      "MaximumCargo": "Maximum Cargo",
-      "MaximumFuelCapacity": "Maximum Fuel Capacity",
-      "MaximumPassengers": "Maximum Passengers",
-      "Model": "Model",
-      "Range": "Range",
-      "Title": "Overview"
+      "MTOW": "الوزن الأقصى للإقلاع\n",
+      "MZFW": "أقصى وزن للطائرة من غير الوقود ",
+      "MaximumCargo": "الحد الأقصى للشحن",
+      "MaximumFuelCapacity": "الحد الأقصى لسعة الوقود",
+      "MaximumPassengers": "الحد الأقصى للركاب",
+      "Model": "الطراز",
+      "Range": "المدى ",
+      "Title": "نظرة عامة"
     },
-    "Title": "Dispatch"
+    "Title": "إرسال"
   },
   "Failures": {
     "Comfort": {
-      "Title": "Comfort"
+      "Title": "الراحة"
     },
     "Compact": {
       "Title": "Compact"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Full simulation of the failures below isn't yet guaranteed.",
-    "Search": "Search",
-    "Title": "Failures"
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "المحاكاة الكاملة للفشل بالأسفل ليست مضمونة بعد.",
+    "Search": "بحث…",
+    "Title": "الفشل "
   },
   "Ground": {
     "Fuel": {
-      "CenterTank": "Center Tank",
-      "Completed": "Completed",
-      "Defueling": "Defueling",
-      "EstimatedDuration": "Estimated duration (minutes)",
+      "CenterTank": "خزان الوقود الوسط",
+      "Completed": "اكتمل",
+      "Defueling": "اخراج الوقود ",
+      "EstimatedDuration": "المدة المقدرة (دقائق)",
       "EstimatedTime": "Estimated Time",
-      "LeftInnerTank": "Left Inner Tank",
-      "LeftOuterTank": "Left Outer Tank",
-      "ReadyToStart": "Ready to Start",
+      "LeftInnerTank": "خزان الوقود الداخلي لأيسر",
+      "LeftOuterTank": "خزان الوقود الخارجي الأيسر",
+      "ReadyToStart": "جاهز للبدء",
       "Refuel": "التزود بالوقود",
       "RefuelTime": "وقت التزود بالوقود",
-      "Refueling": "Refueling",
-      "RightInnerTank": "Right Inner Tank",
-      "RightOuterTank": "Right Outer Tank",
+      "Refueling": "تزويد الوقود",
+      "RightInnerTank": "خزان الوقود  الداخلي الأيمن",
+      "RightOuterTank": "خزان الوقود الخارجي الأيمن",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aircraft Must Be Cold and Dark to Change Refuel Times",
-        "FillBlockFuelFromSimBrief": "Fill Block Fuel from SimBrief"
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "يجب أن تكون الطائرة مطفأة بالكامل لتغيير أوقات التزود بالوقود",
+        "FillBlockFuelFromSimBrief": "تعبئة كتلة الوقود من SimBrief"
       },
-      "Title": "Fuel",
-      "TotalFuel": "Total Fuel",
-      "Unavailable": "Unavailable"
+      "Title": "وقود",
+      "TotalFuel": "كمية الوقود الكاملة ",
+      "Unavailable": "غير متوفر"
     },
     "Pushback": {
-      "Title": "Pushback"
+      "Title": "دفع الى الخلف"
     },
     "Services": {
-      "BaggageTruck": "Baggage Truck",
-      "CateringTruck": "Catering Truck",
-      "DoorAft": "Door Aft",
-      "DoorFwd": "Door Fwd",
-      "ExternalPower": "External Power",
-      "FuelTruck": "Fuel Truck",
-      "JetBridge": "Jet Bridge",
-      "Title": "Services"
+      "BaggageTruck": "شاحنة الأمتعة",
+      "CateringTruck": "شاحنة التموين",
+      "DoorAft": "الباب الخلفي ",
+      "DoorFwd": "الباب الامامي ",
+      "ExternalPower": "الطاقة الخارجية",
+      "FuelTruck": "شاحنة وقود",
+      "JetBridge": "جسر الصعود ",
+      "Title": "الخدمات"
     },
-    "Title": "Ground"
+    "Title": "الأرضي"
   },
   "Modals": {
-    "Cancel": "Cancel",
-    "Confirm": "Confirm",
-    "Okay": "Okay"
+    "Cancel": "إلغاء",
+    "Confirm": "تأكيد",
+    "Okay": "حسنًا"
   },
   "NavigationAndCharts": {
-    "All": "All",
-    "Altn": "Altn",
-    "ExitFullscreenMode": "Exit Fullscreen Mode",
-    "From": "From",
+    "All": "الكل",
+    "Altn": "البديل ",
+    "ExitFullscreenMode": "الخروج من الشاشة الكاملة ",
+    "From": "من",
     "LocalFiles": {
-      "Both": "Both",
-      "EstablishingConnection": "Establishing Connection",
-      "FailedToEstablishConnection": "Failed to Establish Connection.",
-      "FileName": "File Name",
-      "Image": "Image",
-      "Pdf": "Pdf",
-      "Retry": "Retry",
-      "Title": "Local Files"
+      "Both": "كلاهما",
+      "EstablishingConnection": "جارٍ انشاء اتصال…",
+      "FailedToEstablishConnection": "فشل إنشاء اتصال.",
+      "FileName": "اسم الملف",
+      "Image": "صورة",
+      "Pdf": "‏ملف PDF",
+      "Retry": "إعادة المحاولة",
+      "Title": "الملفات المحلية"
     },
     "Navigraph": {
-      "AirportDoesNotExist": "Airport Does Not Exist",
-      "AuthenticateWithNavigraph": "Authenticate with Navigraph",
-      "InsufficientEnv": "Insufficient .env File",
-      "IntoYourBrowserAndEnterTheCodeBelow": "into your browser and enter the code below\n",
-      "NoAirportSelected": "No Airport Selected",
-      "ResetNavigraphAuthentication": "Reset Navigraph Authentication",
-      "ScanTheQrCodeOrOpen": "Scan the QR Code or Open",
-      "Title": "Navigraph"
+      "AirportDoesNotExist": "المطار غير موجود",
+      "AuthenticateWithNavigraph": "مصادقة مع Navigraph",
+      "InsufficientEnv": "ملف .env غير كاف",
+      "IntoYourBrowserAndEnterTheCodeBelow": "في متصفحك وأدخل الرمز بالاسفل\n",
+      "NoAirportSelected": "لم يتم اختيار مطار",
+      "ResetNavigraphAuthentication": "إعادة تعيين مصادقة Navigraph",
+      "ScanTheQrCodeOrOpen": "مسح رمز الاستجابة السريعة أو فتح",
+      "Title": "نافيغراف"
     },
     "PinnedCharts": {
-      "Delete": "Delete",
-      "Edit": "Edit",
+      "Delete": "حذف",
+      "Edit": "تعديل",
       "NoItemsFound": "No Items Found",
-      "SearchPlaceholder": "Search",
-      "ShowingChartsFromAllProviders": "Showing Charts from All Providers",
+      "SearchPlaceholder": "بحث…",
+      "ShowingChartsFromAllProviders": "عرض مخططات الطيران من جميع المزودين",
       "SortMethods": {
-        "AlphabeticalAZ": "Alphabetical - A -> Z",
-        "AlphabeticalZA": "Alphabetical - Z -> A",
+        "AlphabeticalAZ": "أبجدي - A -> Z",
+        "AlphabeticalZA": "أبجدي - Z -> A",
         "FirstAccessed": "First Accessed",
         "LastAccessed": "Last Accessed",
-        "None": "None"
+        "None": "لا شيء"
       },
       "TT": {
-        "ChangeChartProvider": "Change Chart Provider",
-        "ChangeChartSortMethod": "Change Chart Sort Method",
+        "ChangeChartProvider": "تغيير موفر المخطط",
+        "ChangeChartSortMethod": "تغيير طريقة فرز المخطط",
         "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
-      "Title": "Pinned Charts",
-      "View": "View"
+      "Title": "مخططات الطيران المثبتة",
+      "View": "عرض"
     },
-    "PleaseWait": "Please Wait",
+    "PleaseWait": "يرجى الإنتظار...",
     "ShowingAllItems": "Showing All Items",
     "TT": {
       "FitChartToHeight": "Fit Chart to Height",
