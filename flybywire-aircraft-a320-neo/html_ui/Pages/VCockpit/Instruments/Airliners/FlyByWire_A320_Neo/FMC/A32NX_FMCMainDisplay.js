@@ -207,7 +207,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.navRadioManager = new Fmgc.NavRadioManager(this);
         this.efisSymbols = new Fmgc.EfisSymbols(this.flightPlanManager, this.guidanceController);
 
-        Fmgc.initFmgcLoop();
+        Fmgc.initFmgcLoop(this, this.flightPlanManager);
 
         this.guidanceController.init();
         this.efisSymbols.init();
@@ -3233,13 +3233,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.cruiseTemperature = undefined;
         this.updateConstraints();
 
-        const acFl = Math.floor(Simplane.getAltitude() / 100);
-
-        if (acFl > fl && (phase === FmgcFlightPhases.CLIMB || phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH)) {
-            this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.CRUISE);
-        } else if (acFl < fl && (phase === FmgcFlightPhases.DESCENT || phase === FmgcFlightPhases.APPROACH)) {
-            this.flightPhaseManager.changeFlightPhase(FmgcFlightPhases.CLIMB);
-        }
+        this.flightPhaseManager.handleNewCruiseAltitudeEntered(fl);
 
         return true;
     }

@@ -19,6 +19,10 @@
 
 ## Uncategorized
 
+- A32NX_IS_READY
+  - Bool
+  - Indicates that the JavaScript part is ready
+
 - A32NX_START_STATE
   - Enum
   - Indicates the state in which MSFS started
@@ -881,24 +885,25 @@
     - Bool
     - Power Transfer Unit can receive fluid from yellow and green circuits
 
-- A32NX_HYD_PTU_ACTIVE_{motor_side}
-    - Bool
-    - Power Transfer Unit is trying to transfer hydraulic power from either yellow to green (R2L) or green to yellow (L2R) circuits
-    - {motor_side}
-        - L2R
-        - R2L
-
-- A32NX_HYD_PTU_MOTOR_FLOW
-    - Gallon per second
-    - Power Transfer Unit instantaneous flow in motor side
-
 - A32NX_HYD_PTU_SHAFT_RPM
     - Revolutions per minute
     - Power Transfer Unit shaft rpm
 
+- A32NX_HYD_PTU_BARK_STRENGTH
+    - Number
+    - 0 no PTU. 1 to 5 indicates barking sound power level.
+
 - A32NX_HYD_PTU_CONTINUOUS_MODE
     - Bool
     - Power Transfer Unit is rotating continuously
+
+- A32NX_HYD_PTU_DEV_DEACTIVATION_DELTA
+    - Psi
+    - Write to this simvar to force a deactivation delta pressure for Power Transfer Unit
+
+- A32NX_HYD_PTU_DEV_EFFICIENCY
+    - Number
+    - Write to this simvar to force an efficiency value for Power Transfer Unit
 
 - A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED
     - Bool
@@ -960,6 +965,15 @@
         - 1: Autobrake in LOW
         - 2: Autobrake in MED
         - 3: Autobrake in MAX
+
+- A32NX_AUTOBRAKES_ARMED_MODE_SET
+    - Number
+    - Requests an autobrake mode
+        - -1: (technical state not requesting anything)
+        -  0: Disarm Autobrake
+        -  1: Set Autobrake to LOW
+        -  2: Set Autobrake to MED
+        -  3: Set Autobrake to MAX (if allowed)
 
 - A32NX_AUTOBRAKES_ACTIVE
     - Bool
@@ -1535,9 +1549,17 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429Word<Degrees>
     - The inertial heading of the aircraft.
 
+- A32NX_ADIRS_IR_{number}_TRUE_HEADING
+    - Arinc429Word<Degrees>
+    - The true inertial heading of the aircraft.
+
 - A32NX_ADIRS_IR_{number}_TRACK
     - Arinc429Word<Degrees>
     - The inertial track of the aircraft.
+
+- A32NX_ADIRS_IR_{number}_TRUE_TRACK
+    - Arinc429Word<Degrees>
+    - The true inertial track of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_VERTICAL_SPEED
     - Arinc429Word<Feet per minute>

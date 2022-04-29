@@ -36,8 +36,9 @@ use systems::{
             SteeringRatioToAngle,
         },
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
-        HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitController, PressureSwitch,
-        PressureSwitchType, PumpController, RamAirTurbine, RamAirTurbineController, Reservoir,
+        HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitCharacteristics,
+        PowerTransferUnitController, PressureSwitch, PressureSwitchType, PumpController,
+        RamAirTurbine, RamAirTurbineController, Reservoir,
     },
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
@@ -45,7 +46,7 @@ use systems::{
     shared::{
         interpolation,
         low_pass_filter::LowPassFilter,
-        random_from_range,
+        random_from_normal_distribution, random_from_range,
         update_iterator::{FixedStepLoop, MaxStepLoop},
         DelayedFalseLogicGate, DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType,
         ElectricalBuses, EmergencyElectricalRatPushButton, EmergencyElectricalState,
@@ -649,6 +650,151 @@ impl A320RudderFactory {
     }
 }
 
+struct A320PowerTransferUnitCharacteristics {
+    efficiency: Ratio,
+
+    deactivation_delta_pressure: Pressure,
+    activation_delta_pressure: Pressure,
+
+    shot_to_shot_variability: Ratio,
+}
+impl A320PowerTransferUnitCharacteristics {
+    // Randomisation parameters
+    // As ptu wear parameters are non linear, for now we simulate two normal distributions:
+    // -Nominal distribution which is the PTU you'll find in wide majority of planes
+    // -Worn out distribution, which is the PTU which is still acceptable but has degraded behaviour
+    const MEAN_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 500.;
+    const STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+
+    // Ratio of worn PTU : 0.1 means 10% of cases we get a worn out ptu
+    const WORN_PTU_CASE_PROBABILITY: f64 = 0.15;
+
+    const WORN_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 20.;
+    const WORN_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+    const WORN_MIN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+    const WORN_MAX_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 30.;
+
+    const NOMINAL_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 90.;
+    const NOMINAL_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 15.;
+    const NOMINAL_MIN_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 5.;
+    const NOMINAL_MAX_DEACTIVATION_DELTA_PRESSURE_PSI: f64 = 180.;
+
+    const WORN_EFFICIENCY_MEAN: f64 = 0.6;
+    const WORN_EFFICIENCY_STD_DEV: f64 = 0.06;
+    const NOMINAL_EFFICIENCY_MEAN: f64 = 0.85;
+    const NOMINAL_EFFICIENCY_STD_DEV: f64 = 0.04;
+    const EFFICIENCY_MIN_ALLOWED: f64 = 0.5;
+    const EFFICIENCY_MAX: f64 = 0.9;
+
+    const SHOT_TO_SHOT_VARIABILITY_PERCENT_RATIO: f64 = 0.05;
+
+    fn new_randomized() -> Self {
+        let randomized_is_ptu_worn_out = Self::randomized_is_ptu_worn_out();
+
+        Self {
+            efficiency: Self::randomized_efficiency(randomized_is_ptu_worn_out),
+
+            deactivation_delta_pressure: Self::randomized_deactivation_delta_pressure(
+                randomized_is_ptu_worn_out,
+            ),
+
+            activation_delta_pressure: Pressure::new::<psi>(random_from_normal_distribution(
+                Self::MEAN_ACTIVATION_DELTA_PRESSURE_PSI,
+                Self::STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI,
+            )),
+
+            shot_to_shot_variability: Ratio::new::<ratio>(
+                Self::SHOT_TO_SHOT_VARIABILITY_PERCENT_RATIO,
+            ),
+        }
+    }
+
+    #[cfg(test)]
+    fn new_worst_part_acceptable() -> Self {
+        Self {
+            efficiency: Ratio::new::<ratio>(Self::EFFICIENCY_MIN_ALLOWED),
+
+            deactivation_delta_pressure: Pressure::new::<psi>(
+                Self::WORN_MIN_DEACTIVATION_DELTA_PRESSURE_PSI,
+            ),
+
+            activation_delta_pressure: Pressure::new::<psi>(
+                Self::MEAN_ACTIVATION_DELTA_PRESSURE_PSI
+                    + 5. * Self::STD_DEV_ACTIVATION_DELTA_PRESSURE_PSI,
+            ),
+
+            shot_to_shot_variability: Ratio::new::<ratio>(
+                Self::SHOT_TO_SHOT_VARIABILITY_PERCENT_RATIO,
+            ),
+        }
+    }
+
+    fn randomized_is_ptu_worn_out() -> bool {
+        random_from_range(0., 1.) < Self::WORN_PTU_CASE_PROBABILITY
+    }
+
+    fn randomized_efficiency(is_worn_out: bool) -> Ratio {
+        if is_worn_out {
+            Ratio::new::<ratio>(
+                random_from_normal_distribution(
+                    Self::WORN_EFFICIENCY_MEAN,
+                    Self::WORN_EFFICIENCY_STD_DEV,
+                )
+                .max(Self::EFFICIENCY_MIN_ALLOWED)
+                .min(Self::EFFICIENCY_MAX),
+            )
+        } else {
+            Ratio::new::<ratio>(
+                random_from_normal_distribution(
+                    Self::NOMINAL_EFFICIENCY_MEAN,
+                    Self::NOMINAL_EFFICIENCY_STD_DEV,
+                )
+                .max(Self::EFFICIENCY_MIN_ALLOWED)
+                .min(Self::EFFICIENCY_MAX),
+            )
+        }
+    }
+
+    fn randomized_deactivation_delta_pressure(is_worn_out: bool) -> Pressure {
+        if is_worn_out {
+            Pressure::new::<psi>(
+                random_from_normal_distribution(
+                    Self::WORN_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI,
+                    Self::WORN_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI,
+                )
+                .min(Self::WORN_MAX_DEACTIVATION_DELTA_PRESSURE_PSI)
+                .max(Self::WORN_MIN_DEACTIVATION_DELTA_PRESSURE_PSI),
+            )
+        } else {
+            Pressure::new::<psi>(
+                random_from_normal_distribution(
+                    Self::NOMINAL_MEAN_DEACTIVATION_DELTA_PRESSURE_PSI,
+                    Self::NOMINAL_STD_DEV_DEACTIVATION_DELTA_PRESSURE_PSI,
+                )
+                .min(Self::NOMINAL_MAX_DEACTIVATION_DELTA_PRESSURE_PSI)
+                .max(Self::NOMINAL_MIN_DEACTIVATION_DELTA_PRESSURE_PSI),
+            )
+        }
+    }
+}
+impl PowerTransferUnitCharacteristics for A320PowerTransferUnitCharacteristics {
+    fn efficiency(&self) -> Ratio {
+        self.efficiency
+    }
+
+    fn deactivation_delta_pressure(&self) -> Pressure {
+        self.deactivation_delta_pressure
+    }
+
+    fn activation_delta_pressure(&self) -> Pressure {
+        self.activation_delta_pressure
+    }
+
+    fn shot_to_shot_variability(&self) -> Ratio {
+        self.shot_to_shot_variability
+    }
+}
+
 pub(super) struct A320Hydraulic {
     hyd_ptu_ecam_memo_id: VariableIdentifier,
     ptu_high_pitch_sound_id: VariableIdentifier,
@@ -862,7 +1008,10 @@ impl A320Hydraulic {
                 Self::RAT_CONTROL_SOLENOID2_POWER_BUS,
             ),
 
-            power_transfer_unit: PowerTransferUnit::new(context),
+            power_transfer_unit: PowerTransferUnit::new(
+                context,
+                &A320PowerTransferUnitCharacteristics::new_randomized(),
+            ),
             power_transfer_unit_controller: A320PowerTransferUnitController::new(
                 context,
                 Self::PTU_CONTROL_POWER_BUS,
@@ -1233,6 +1382,7 @@ impl A320Hydraulic {
 
         // Uses external conditions and momentary button: better to check each frame
         self.ram_air_turbine_controller.update(
+            context,
             overhead_panel,
             rat_and_emer_gen_man_on,
             emergency_elec_state,
@@ -1615,6 +1765,7 @@ impl A320Hydraulic {
         absolute_delta_pressure
             > Pressure::new::<psi>(Self::HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI)
             && is_ptu_rotating
+            && !self.ptu_high_pitch_sound_active.output()
     }
 }
 impl SimulationElement for A320Hydraulic {
@@ -2371,6 +2522,7 @@ impl A320RamAirTurbineController {
 
     fn update(
         &mut self,
+        context: &UpdateContext,
         overhead_panel: &A320HydraulicOverheadPanel,
         rat_and_emer_gen_man_on: &impl EmergencyElectricalRatPushButton,
         emergency_elec_state: &impl EmergencyElectricalState,
@@ -2381,9 +2533,10 @@ impl A320RamAirTurbineController {
         let solenoid_2_should_trigger_deployment_if_powered =
             emergency_elec_state.is_in_emergency_elec() || rat_and_emer_gen_man_on.is_pressed();
 
-        self.should_deploy = (self.is_solenoid_1_powered
-            && solenoid_1_should_trigger_deployment_if_powered)
-            || (self.is_solenoid_2_powered && solenoid_2_should_trigger_deployment_if_powered);
+        // due to initialization issues the RAT will not deployed in any case when simulation has just started
+        self.should_deploy = context.is_sim_ready()
+            && ((self.is_solenoid_1_powered && solenoid_1_should_trigger_deployment_if_powered)
+                || (self.is_solenoid_2_powered && solenoid_2_should_trigger_deployment_if_powered));
     }
 }
 impl RamAirTurbineController for A320RamAirTurbineController {
@@ -3235,6 +3388,7 @@ impl SimulationElement for PushbackTug {
 /// that we expect for the plane
 pub struct A320AutobrakeController {
     armed_mode_id: VariableIdentifier,
+    armed_mode_id_set: VariableIdentifier,
     decel_light_id: VariableIdentifier,
     active_id: VariableIdentifier,
     spoilers_ground_spoilers_active_id: VariableIdentifier,
@@ -3276,6 +3430,7 @@ impl A320AutobrakeController {
     fn new(context: &mut InitContext) -> A320AutobrakeController {
         A320AutobrakeController {
             armed_mode_id: context.get_identifier("AUTOBRAKES_ARMED_MODE".to_owned()),
+            armed_mode_id_set: context.get_identifier("AUTOBRAKES_ARMED_MODE_SET".to_owned()),
             decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
             active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
             spoilers_ground_spoilers_active_id: context
@@ -3285,17 +3440,19 @@ impl A320AutobrakeController {
             deceleration_governor: AutobrakeDecelerationGovernor::new(),
             target: Acceleration::new::<meter_per_second_squared>(0.),
             mode: AutobrakeMode::NONE,
-            arming_is_allowed_by_bcu: false,
+            arming_is_allowed_by_bcu: context.is_in_flight(),
             left_brake_pedal_input: Ratio::new::<percent>(0.),
             right_brake_pedal_input: Ratio::new::<percent>(0.),
             ground_spoilers_are_deployed: false,
             last_ground_spoilers_are_deployed: false,
             should_disarm_after_time_in_flight: DelayedPulseTrueLogicGate::new(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
-            ),
+            )
+            .starting_as(context.is_in_flight(), false),
             should_reject_max_mode_after_time_in_flight: DelayedTrueLogicGate::new(
                 Duration::from_secs_f64(Self::DURATION_OF_FLIGHT_TO_DISARM_AUTOBRAKE_SECS),
-            ),
+            )
+            .starting_as(context.is_in_flight()),
             external_disarm_event: false,
         }
     }
@@ -3308,8 +3465,12 @@ impl A320AutobrakeController {
         Ratio::new::<ratio>(self.deceleration_governor.output())
     }
 
-    fn determine_mode(&mut self, autobrake_panel: &AutobrakePanel) -> AutobrakeMode {
-        if self.should_disarm() {
+    fn determine_mode(
+        &mut self,
+        context: &UpdateContext,
+        autobrake_panel: &AutobrakePanel,
+    ) -> AutobrakeMode {
+        if self.should_disarm(context) {
             AutobrakeMode::NONE
         } else {
             match autobrake_panel.pressed_mode() {
@@ -3325,8 +3486,8 @@ impl A320AutobrakeController {
         }
     }
 
-    fn should_engage_deceleration_governor(&self) -> bool {
-        self.is_armed() && self.ground_spoilers_are_deployed && !self.should_disarm()
+    fn should_engage_deceleration_governor(&self, context: &UpdateContext) -> bool {
+        self.is_armed() && self.ground_spoilers_are_deployed && !self.should_disarm(context)
     }
 
     fn is_armed(&self) -> bool {
@@ -3379,12 +3540,16 @@ impl A320AutobrakeController {
         }
     }
 
-    fn should_disarm(&self) -> bool {
+    fn should_disarm(&self, context: &UpdateContext) -> bool {
+        // when a simulation is started in flight, some values need to be ignored for a certain time to ensure
+        // an unintended disarm is not happening
         (self.deceleration_governor.is_engaged() && self.should_disarm_due_to_pedal_input())
-            || !self.arming_is_allowed_by_bcu
+            || (context.is_sim_ready() && !self.arming_is_allowed_by_bcu)
             || self.spoilers_retracted_during_this_update()
             || self.should_disarm_after_time_in_flight.output()
             || self.external_disarm_event
+            || (self.mode == AutobrakeMode::MAX
+                && self.should_reject_max_mode_after_time_in_flight.output())
     }
 
     fn calculate_target(&mut self) -> Acceleration {
@@ -3447,10 +3612,10 @@ impl A320AutobrakeController {
             lgciu1,
             lgciu2,
         );
-        self.mode = self.determine_mode(autobrake_panel);
+        self.mode = self.determine_mode(context, autobrake_panel);
 
         self.deceleration_governor
-            .engage_when(self.should_engage_deceleration_governor());
+            .engage_when(self.should_engage_deceleration_governor(context));
 
         self.target = self.calculate_target();
         self.deceleration_governor.update(context, self.target);
@@ -3459,6 +3624,7 @@ impl A320AutobrakeController {
 impl SimulationElement for A320AutobrakeController {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.armed_mode_id, self.mode as u8 as f64);
+        writer.write(&self.armed_mode_id_set, -1.);
         writer.write(&self.decel_light_id, self.is_decelerating());
         writer.write(&self.active_id, self.deceleration_demanded());
     }
@@ -3469,7 +3635,10 @@ impl SimulationElement for A320AutobrakeController {
         self.external_disarm_event = reader.read(&self.external_disarm_event_id);
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)
-        self.mode = reader.read_f64(&self.armed_mode_id).into();
+        let readed_mode = reader.read_f64(&self.armed_mode_id_set);
+        if readed_mode >= 0.0 {
+            self.mode = readed_mode.into();
+        }
     }
 }
 
@@ -5008,8 +5177,15 @@ mod tests {
             fn set_dc_bus_2_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_2_powered = bus_is_alive;
             }
+
             fn set_dc_ess_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_ess_powered = bus_is_alive;
+            }
+
+            fn use_worst_case_ptu(&mut self) {
+                self.hydraulics.power_transfer_unit.update_characteristics(
+                    &A320PowerTransferUnitCharacteristics::new_worst_part_acceptable(),
+                );
             }
         }
 
@@ -5374,6 +5550,11 @@ mod tests {
                 self
             }
 
+            fn with_worst_case_ptu(mut self) -> Self {
+                self.command(|a| a.use_worst_case_ptu());
+                self
+            }
+
             fn on_the_ground(mut self) -> Self {
                 self.set_indicated_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(true);
@@ -5416,6 +5597,16 @@ mod tests {
                     .set_gear_up()
                     .set_park_brake(false)
                     .external_power(false)
+            }
+
+            fn sim_not_ready(mut self) -> Self {
+                self.set_sim_is_ready(false);
+                self
+            }
+
+            fn sim_ready(mut self) -> Self {
+                self.set_sim_is_ready(true);
+                self
             }
 
             fn set_tiller_demand(mut self, steering_ratio: Ratio) -> Self {
@@ -5694,6 +5885,26 @@ mod tests {
 
             fn set_right_brake(mut self, position: Ratio) -> Self {
                 self.write_by_name("RIGHT_BRAKE_PEDAL_INPUT", position);
+                self
+            }
+
+            fn set_autobrake_disarmed_with_set_variable(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_ARMED_MODE_SET", 0);
+                self
+            }
+
+            fn set_autobrake_low_with_set_variable(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_ARMED_MODE_SET", 1);
+                self
+            }
+
+            fn set_autobrake_med_with_set_variable(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_ARMED_MODE_SET", 2);
+                self
+            }
+
+            fn set_autobrake_max_with_set_variable(mut self) -> Self {
+                self.write_by_name("AUTOBRAKES_ARMED_MODE_SET", 3);
                 self
             }
 
@@ -7561,6 +7772,50 @@ mod tests {
         }
 
         #[test]
+        fn autobrakes_arming_according_to_set_variable() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .on_the_ground()
+                .set_park_brake(false)
+                .start_eng1(Ratio::new::<percent>(100.))
+                .start_eng2(Ratio::new::<percent>(100.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            // set autobrake to LOW
+            test_bed = test_bed
+                .set_autobrake_low_with_set_variable()
+                .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
+
+            // using the set variable again is still resulting in LOW
+            // and not disarming
+            test_bed = test_bed
+                .set_autobrake_low_with_set_variable()
+                .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::LOW);
+
+            // set autobrake to MED
+            test_bed = test_bed
+                .set_autobrake_med_with_set_variable()
+                .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            // set autobrake to MAX
+            test_bed = test_bed
+                .set_autobrake_max_with_set_variable()
+                .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MAX);
+
+            // set autobrake to DISARMED
+            test_bed = test_bed
+                .set_autobrake_disarmed_with_set_variable()
+                .run_waiting_for(Duration::from_secs(1));
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
         fn autobrakes_disarms_if_green_pressure_low() {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
@@ -7580,6 +7835,36 @@ mod tests {
                 .set_ptu_state(false)
                 .stop_eng1()
                 .run_waiting_for(Duration::from_secs(20));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn autobrakes_does_not_disarm_if_askid_off_but_sim_not_ready() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .sim_not_ready()
+                .set_gear_up()
+                .run_waiting_for(Duration::from_secs(12));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            test_bed = test_bed
+                .set_autobrake_med()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            // sim is not ready --> no disarm
+            test_bed = test_bed
+                .set_anti_skid(false)
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            // sim is now ready --> disarm expected
+            test_bed = test_bed.sim_ready().run_waiting_for(Duration::from_secs(1));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
         }
@@ -7619,6 +7904,13 @@ mod tests {
 
             test_bed = test_bed
                 .set_autobrake_max()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+
+            // using the set variable should also not work
+            test_bed = test_bed
+                .set_autobrake_max_with_set_variable()
                 .run_waiting_for(Duration::from_secs(1));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
@@ -7915,6 +8207,28 @@ mod tests {
             test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
 
             assert!(test_bed.autobrake_mode() == AutobrakeMode::NONE);
+        }
+
+        #[test]
+        fn autobrakes_does_not_disarm_after_10s_when_started_in_flight() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_waiting_for(Duration::from_secs(1));
+
+            test_bed = test_bed
+                .set_autobrake_med_with_set_variable()
+                .run_waiting_for(Duration::from_secs(1));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
+
+            test_bed = test_bed.in_flight().run_waiting_for(Duration::from_secs(6));
+
+            assert!(test_bed.autobrake_mode() == AutobrakeMode::MED);
         }
 
         #[test]
@@ -8232,6 +8546,30 @@ mod tests {
         }
 
         #[test]
+        fn rat_does_not_deploy_when_sim_not_ready() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .sim_not_ready()
+                .start_eng1(Ratio::new::<percent>(80.))
+                .start_eng2(Ratio::new::<percent>(80.))
+                .run_waiting_for(Duration::from_secs(10));
+
+            // AC off, sim not ready -> RAT should not deploy
+            test_bed = test_bed
+                .ac_bus_1_lost()
+                .ac_bus_2_lost()
+                .run_waiting_for(Duration::from_secs(2));
+
+            assert!(!test_bed.rat_deploy_commanded());
+
+            // AC off, sim ready -> RAT should deploy
+            test_bed = test_bed.sim_ready().run_waiting_for(Duration::from_secs(2));
+
+            assert!(test_bed.rat_deploy_commanded());
+        }
+
+        #[test]
         fn rat_deploys_on_both_ac_lost() {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
@@ -8351,6 +8689,32 @@ mod tests {
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
+                .run_one_tick();
+
+            test_bed = test_bed
+                .set_yellow_e_pump(false)
+                .run_waiting_for(Duration::from_secs(10));
+
+            // Yellow epump working
+            assert!(test_bed.is_yellow_pressure_switch_pressurised());
+
+            test_bed = test_bed
+                .set_flaps_handle_position(4)
+                .run_waiting_for(Duration::from_secs(80));
+
+            assert!(test_bed.get_flaps_left_position_percent() > 99.);
+            assert!(test_bed.get_flaps_right_position_percent() > 99.);
+            assert!(test_bed.get_slats_left_position_percent() > 99.);
+            assert!(test_bed.get_slats_right_position_percent() > 99.);
+        }
+
+        #[test]
+        fn yellow_epump_can_deploy_flaps_and_slats_on_worst_case_ptu() {
+            let mut test_bed = test_bed_with()
+                .engines_off()
+                .on_the_ground()
+                .set_cold_dark_inputs()
+                .with_worst_case_ptu()
                 .run_one_tick();
 
             test_bed = test_bed
