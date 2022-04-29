@@ -410,9 +410,13 @@ class CDUAtcLatRequestFansA {
                         CDUAtcLatRequestFansA.ShowPage2(mcdu, data);
                     });
                 } else if (updatedOffset) {
-                    data.offset = offset;
+                    if (data.offsetStart) {
+                        data.offset = offset;
+                    } else {
+                        mcdu.addNewAtsuMessage(Atsu.AtsuStatusCodes.FormatError);
+                    }
                 } else if (error) {
-                    mcdu.setScratchpadMessage(error);
+                    mcdu.addNewAtsuMessage(error);
                 }
             }
 
