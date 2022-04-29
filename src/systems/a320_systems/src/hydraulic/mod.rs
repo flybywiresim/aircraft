@@ -955,6 +955,7 @@ impl A320GearSystemFactory {
             A320GearFactory::a320_gear_assembly(GearWheel::LEFT),
             A320GearFactory::a320_gear_assembly(GearWheel::RIGHT),
         )
+    }
 }
 struct A320PowerTransferUnitCharacteristics {
     efficiency: Ratio,
