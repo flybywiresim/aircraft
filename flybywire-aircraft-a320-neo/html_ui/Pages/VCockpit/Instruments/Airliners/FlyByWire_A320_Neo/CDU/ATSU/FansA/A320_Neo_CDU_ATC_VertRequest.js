@@ -2,7 +2,9 @@ class CDUAtcVertRequestFansA {
     static CreateDataBlock() {
         return {
             climb: null,
+            climbStart: null,
             descend: null,
+            descendStart: null,
             startAt: null,
             whenHigher: false,
             whenLower: false,
@@ -15,16 +17,16 @@ class CDUAtcVertRequestFansA {
     }
 
     static CanSendData(data) {
-        return data.climb || data.descend || data.startAt || data.altitude || data.whenHigher || data.whenLower ||
+        return data.climb || data.climbStart || data.descendStart || data.descend || data.startAt || data.altitude || data.whenHigher || data.whenLower ||
             data.blockAltitudeLow || data.blockAltitudeHigh || data.cruise || data.requestDescent;
     }
 
     static HandleClbDesStart(mcdu, value, data, climbRequest) {
         if (value === FMCMainDisplay.clrValue || !value) {
             if (climbRequest) {
-                data.climb = null;
+                data.climbStart = null;
             } else {
-                data.descend = null;
+                data.descendStart = null;
             }
             data.startAt = null;
         } else {
@@ -71,20 +73,20 @@ class CDUAtcVertRequestFansA {
                         if (altitude && start) {
                             data.startAt = start;
                             if (climbRequest) {
-                                data.climb = altitude;
+                                data.climbStart = altitude;
                             } else {
-                                data.descend = altitude;
+                                data.descendStart = altitude;
                             }
                         } else if (altitude) {
                             // update the altitude and keep the start at
                             const lastStart = data.startAt;
                             data.startAt = lastStart;
                             if (climbRequest) {
-                                data.climb = altitude;
+                                data.climbStart = altitude;
                             } else {
-                                data.descend = altitude;
+                                data.descendStart = altitude;
                             }
-                        } else if (start && (data.climb || data.descend)) {
+                        } else if (start && (data.climbStart || data.descendStart)) {
                             // update start at if climb or descend are set
                             data.startAt = start;
                         }
@@ -94,9 +96,9 @@ class CDUAtcVertRequestFansA {
                 });
             } else if (updateAlt) {
                 if (climbRequest) {
-                    data.climb = altitude;
+                    data.climbStart = altitude;
                 } else {
-                    data.descend = altitude;
+                    data.descendStart = altitude;
                 }
             } else if (error) {
                 mcdu.addNewAtsuMessage(error);
@@ -122,18 +124,16 @@ class CDUAtcVertRequestFansA {
         const retval = [];
 
         if (data.climb) {
-            if (data.startAt) {
-                retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, /$[0-9]{4}Z^/.test(data.startAt) ? "DM13" : "DM11", [data.startAt, data.climb]));
-            } else {
-                retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM9", [data.climb]));
-            }
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM9", [data.climb]));
+        }
+        if (data.climbStart) {
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, /$[0-9]{4}Z^/.test(data.startAt) ? "DM13" : "DM11", [data.startAt, data.climbStart]));
         }
         if (data.descend) {
-            if (data.startAt) {
-                retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, /$[0-9]{4}Z^/.test(data.startAt) ? "DM14" : "DM12", [data.startAt, data.descend]));
-            } else {
-                retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM10", [data.descend]));
-            }
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM10", [data.descend]));
+        }
+        if (data.descendStart) {
+            retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, /$[0-9]{4}Z^/.test(data.startAt) ? "DM14" : "DM12", [data.startAt, data.descendStart]));
         }
         if (data.altitude) {
             retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM6", [data.altitude]));
@@ -165,10 +165,10 @@ class CDUAtcVertRequestFansA {
 
         let climbTo = "[   ][color]cyan";
         let descentTo = "[   ][color]cyan";
-        if (data.climb && data.startAt === null) {
+        if (data.climb) {
             climbTo = `${data.climb}[color]cyan`;
         }
-        if (data.descend && data.startAt === null) {
+        if (data.descend) {
             descentTo = `${data.descend}[color]cyan`;
         }
         let altitude = "[   ][color]cyan";
@@ -220,16 +220,13 @@ class CDUAtcVertRequestFansA {
         };
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                if (data.startAt === null) {
-                    data.climb = null;
-                }
+                data.climb = null;
             } else if (value) {
                 const error = Atsu.InputValidation.validateScratchpadAltitude(value);
                 if (error !== Atsu.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.climb = Atsu.InputValidation.formatScratchpadAltitude(value);
-                    data.startAt = null;
                 }
             }
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
@@ -314,7 +311,7 @@ class CDUAtcVertRequestFansA {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcVertRequestFansA.ShowPage2(mcdu);
+            CDUAtcVertRequestFansA.ShowPage1(mcdu);
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -327,18 +324,15 @@ class CDUAtcVertRequestFansA {
         mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.rightInputDelay[0] = (value) => {
+        mcdu.onRightInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                if (data.startAt === null) {
-                    data.descend = null;
-                }
+                data.descend = null;
             } else if (value) {
                 const error = Atsu.InputValidation.validateScratchpadAltitude(value);
                 if (error !== Atsu.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.descend = Atsu.InputValidation.formatScratchpadAltitude(value);
-                    data.startAt = 0;
                 }
             }
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
@@ -352,30 +346,6 @@ class CDUAtcVertRequestFansA {
                 data.requestDescent = false;
             } else {
                 data.requestDescent = true;
-            }
-            CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
-        };
-
-        mcdu.rightInputDelay[1] = () => {
-            return mcdu.getDelaySwitchPage();
-        };
-        mcdu.onRightInput[1] = (value) => {
-            if (value === FMCMainDisplay.clrValue) {
-                if (!data.whenSpeedRange) {
-                    data.speedLow = null;
-                    data.speedHigh = null;
-                }
-            } else if (value) {
-                const range = Atsu.InputValidation.validateScratchpadSpeedRanges(value);
-                if (range[0] !== Atsu.AtsuStatusCodes.Ok) {
-                    mcdu.addNewAtsuMessage(range[0]);
-                } else {
-                    if (range[1].length === 2) {
-                        data.speedLow = range[1][0];
-                        data.speedHigh = range[1][1];
-                        data.whenSpeedRange = false;
-                    }
-                }
             }
             CDUAtcVertRequestFansA.ShowPage1(mcdu, data);
         };
@@ -446,12 +416,12 @@ class CDUAtcVertRequestFansA {
         mcdu.clearDisplay();
 
         let climbStart = "[   ]/[   ][color]cyan";
-        if (data.climb) {
-            climbStart = `${data.climb}/${data.startAt ? data.startAt : "[   ]"}[color]cyan`;
+        if (data.climbStart) {
+            climbStart = `${data.climbStart}/${data.startAt ? data.startAt : "[   ]"}[color]cyan`;
         }
         let descendStart = "[   ]/[   ][color]cyan";
-        if (data.descend) {
-            descendStart = `${data.descend}/${data.startAt ? data.startAt : "[   ]"}[color]cyan`;
+        if (data.descendStart) {
+            descendStart = `${data.descendStart}/${data.startAt ? data.startAt : "[   ]"}[color]cyan`;
         }
 
         let higherAlt = "{cyan}{{end}HIGHER ALT";

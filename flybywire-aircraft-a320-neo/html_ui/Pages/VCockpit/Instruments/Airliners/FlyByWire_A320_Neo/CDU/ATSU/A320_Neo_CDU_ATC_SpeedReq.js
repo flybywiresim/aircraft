@@ -32,7 +32,7 @@ class CDUAtcSpeedRequest {
         if (data.speed) {
             retval.push(CDUAtcSpeedRequest.CreateRequest(mcdu, "DM18", [data.speed]));
         }
-        if (data.whenCanWe) {
+        if (data.whenSpeed) {
             retval.push(CDUAtcSpeedRequest.CreateRequest(mcdu, "DM49", [data.whenSpeed]));
         }
 

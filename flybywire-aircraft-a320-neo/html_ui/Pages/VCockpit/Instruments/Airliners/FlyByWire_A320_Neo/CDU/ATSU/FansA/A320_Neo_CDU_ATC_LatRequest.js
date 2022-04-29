@@ -328,7 +328,7 @@ class CDUAtcLatRequestFansA {
         mcdu.leftInputDelay[2] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[2] = () => {
+        mcdu.onLeftInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.backOnTrack = false;
             } else {
