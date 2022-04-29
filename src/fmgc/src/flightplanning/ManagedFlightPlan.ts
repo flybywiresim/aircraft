@@ -387,9 +387,19 @@ export class ManagedFlightPlan {
             this.reflowSegments();
             this.reflowDistances();
         } else {
-            let segment = segmentType !== undefined
-                ? this.getSegment(segmentType)
-                : this.findSegmentByWaypointIndex(index);
+            let segment;
+
+            if (segmentType !== undefined) {
+                segment = this.getSegment(segmentType);
+                if (segment === FlightPlanSegment.Empty) {
+                    segment = this.addSegment(segmentType);
+                }
+            } else {
+                segment = this.findSegmentByWaypointIndex(index);
+                if (segment === FlightPlanSegment.Empty) {
+                    throw new Error('ManagedFlightPlan::addWaypoint: no segment found!');
+                }
+            }
 
             // hitting first waypoint in segment > enroute
             if (segment.type > SegmentType.Enroute && index === segment.offset) {
