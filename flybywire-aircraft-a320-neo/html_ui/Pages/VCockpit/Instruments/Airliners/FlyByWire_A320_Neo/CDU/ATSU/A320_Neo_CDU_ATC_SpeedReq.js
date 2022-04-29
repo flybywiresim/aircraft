@@ -98,7 +98,7 @@ class CDUAtcSpeedRequest {
                     mcdu.addNewAtsuMessage(error);
                 }
             }
-            CDUAtcSpeedRequest.ShowPage1(mcdu, data);
+            CDUAtcSpeedRequest.ShowPage(mcdu, data);
         };
 
         mcdu.leftInputDelay[1] = () => {
@@ -116,7 +116,7 @@ class CDUAtcSpeedRequest {
                         mcdu.addNewAtsuMessage(error);
                     }
                 }
-                CDUAtcSpeedRequest.ShowPage1(mcdu, data);
+                CDUAtcSpeedRequest.ShowPage(mcdu, data);
             }
         };
 
