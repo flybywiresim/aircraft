@@ -44,10 +44,10 @@ class CDUAtcVertRequestFansB {
 
         let climbTo = "[   ][color]cyan";
         let descentTo = "[   ][color]cyan";
-        if (data.climb && data.startAt === null) {
+        if (data.climb) {
             climbTo = `${data.climb}[color]cyan`;
         }
-        if (data.descend && data.startAt === null) {
+        if (data.descend) {
             descentTo = `${data.descend}[color]cyan`;
         }
         let altitude = "[   ][color]cyan";
@@ -131,7 +131,7 @@ class CDUAtcVertRequestFansB {
         mcdu.rightInputDelay[0] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.rightInputDelay[0] = (value) => {
+        mcdu.onRightInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.descend = null;
             } else if (value) {
