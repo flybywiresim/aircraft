@@ -826,10 +826,10 @@ export class ManagedFlightPlan {
 
         const oldToWp = this.waypoints[this.activeWaypointIndex];
 
-        const turningPoint = WaypointBuilder.fromCoordinates('T-P', new LatLongAlt(lat, long), this._parentInstrument, { legType: LegType.IF, course: trueTrack, dynamicPpos: true }, this.getTurningPointIcao());
+        const turningPoint = WaypointBuilder.fromCoordinates('T-P', new LatLongAlt(lat, long), this._parentInstrument, { legType: LegType.CF, course: trueTrack, dynamicPpos: true }, this.getTurningPointIcao());
         turningPoint.isTurningPoint = true;
 
-        let waypointIndex = this.waypoints.findIndex((w) => w.icao === waypoint.icao);
+        let waypointIndex = this.waypoints.findIndex((w, idx) => idx >= this.activeWaypointIndex && w.icao === waypoint.icao);
         if (waypointIndex === -1) {
             // in this case the waypoint is not already in the flight plan
             // we string it to the start of the flight plan, add a discontinuity after, and then the existing flight plan
@@ -848,19 +848,25 @@ export class ManagedFlightPlan {
             // we can skip all the legs before it, and add our dir to
             const toWp = this.waypoints[waypointIndex];
             toWp.additionalData.legType = LegType.DF;
+            toWp.turnDirection = 0;
             this.addWaypoint(turningPoint, waypointIndex);
             this.activeWaypointIndex = waypointIndex + 1;
         }
     }
 
-    public updateTurningPoint(): boolean {
+    /**
+     *
+     * @param force force updating a turning point even if it's not marked dynamic
+     */
+    public updateTurningPoint(force = false): boolean {
         const wp = this.getWaypoint(this.activeWaypointIndex - 1);
-        if (wp?.additionalData?.dynamicPpos) {
+        if (wp?.additionalData?.dynamicPpos || (force && wp?.isTurningPoint)) {
             wp.infos.coordinates.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
             wp.infos.coordinates.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
             wp.additionalData.course = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
             wp.icao = this.getTurningPointIcao();
             wp.infos.icao = wp.icao;
+            console.log('updated T-P:', force, wp.additionalData, wp.infos.coordinates);
             return true;
         }
         return false;

@@ -2628,7 +2628,8 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
             this.flightPlanManager.copyCurrentFlightPlanInto(0, () => {
                 this.flightPlanManager.setCurrentFlightPlanIndex(0, () => {
-                    this.flightPlanManager.getCurrentFlightPlan().updateTurningPoint();
+                    this.flightPlanManager.getCurrentFlightPlan().updateTurningPoint(true);
+                    this.flightPlanManager.deleteFlightPlan(FlightPlans.Temporary);
                     SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
                     SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 0);
                     if (this.tempFpPendingAutoTune) {
