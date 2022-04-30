@@ -238,6 +238,14 @@
       "RunwayAltitude": "跑道海拔",
       "RunwayAltitudeUnit": "海拔高度 (英尺/ft)",
       "RunwayCondition": "跑道状况",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "跑道航向",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "跑道可用着陆长度",
@@ -343,11 +351,14 @@
     "CallTug": "呼叫推车",
     "Forward": "向前",
     "Halt": "停止",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "断开停机刹车",
       "On": "拉起停机刹车",
       "Title": "停机刹车"
     },
+    "Right": "Right",
     "TugDirection": "后推方向",
     "TugSpeed": "后推速度"
   },

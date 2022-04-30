@@ -238,6 +238,14 @@
       "RunwayAltitude": "ความสูงรันเวย์",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "สภาพรันเวย์",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": " ทิศทางรันเวย์",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "ระยะที่ลงจอดได้ บนรันเวย์",
@@ -343,11 +351,14 @@
     "CallTug": "เรียกรถลากจูง",
     "Forward": "ไปข้างหน้า",
     "Halt": "หยุด",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "ปิด",
       "On": "เปิด",
       "Title": "Parking Brake"
     },
+    "Right": "Right",
     "TugDirection": "ทิศทางการลากจูง",
     "TugSpeed": "ความเร็วลากจูง"
   },

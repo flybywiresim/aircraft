@@ -238,6 +238,14 @@
       "RunwayAltitude": "Hoogte Landingsbaan",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Conditie landingsbaan",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "Koers Landingsbaan",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Landingsbaan LDA",
@@ -342,12 +350,15 @@
     "Backward": "Terug",
     "CallTug": "Bel Tug",
     "Forward": "Vooruit",
-    "Halt": "Stoppen",
+    "Halt": "Gepauzeerd",
+    "Left": "Left",
+    "Moving": "Bewegend",
     "ParkingBrake": {
       "Off": "Uit",
       "On": "Aan",
       "Title": "Parkeerrem"
     },
+    "Right": "Right",
     "TugDirection": "Richting tug",
     "TugSpeed": "Tug snelheid"
   },

@@ -1,7 +1,12 @@
 /* eslint-disable max-len */
 import React, { useEffect, useRef, useState } from 'react';
 import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
-import { ArrowLeft, ArrowRight, PauseCircleFill, PlayCircleFill, TruckFlatbed } from 'react-bootstrap-icons';
+import {
+    ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronDoubleDown, ChevronDoubleUp,
+    ChevronLeft, ChevronRight,
+    PauseCircleFill, PlayCircleFill,
+    TruckFlatbed,
+} from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
 import { toast } from 'react-toastify';
 import { MathUtils } from '@shared/MathUtils';
@@ -260,7 +265,7 @@ export const PushbackPage = () => {
 
     return (
         <div className="flex relative flex-col space-y-4 h-content-section-reduced">
-            <div className="overflow-hidden flex-grow rounded-lg border-2 border-theme-accent h-[430px]">
+            <div className="overflow-hidden flex-grow h-[430px] rounded-lg border-2 border-theme-accent">
                 <BingMap
                     configFolder="/Pages/VCockpit/Instruments/MAP/"
                     centerLla={{ lat: latitude, long: longitude }}
@@ -310,30 +315,6 @@ export const PushbackPage = () => {
                     </div>
                 </div>
 
-                <div>
-                    <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
-                        {t('Pushback.TugDirection')}
-                    </p>
-                    <div className="flex flex-row items-center space-x-4">
-                        <p className="font-bold text-unselected">L</p>
-                        <Slider
-                            className={`${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
-                            onChange={(value) => handleTugDirection(value)}
-                            min={-1}
-                            step={0.01}
-                            max={1}
-                            value={tugCommandedHeadingFactor}
-                            startPoint={0}
-                        />
-                        <p
-                            className="font-bold text-unselected"
-                            onDoubleClick={() => setShowDebugInfo(!showDebugInfo)}
-                        >
-                            R
-                        </p>
-                    </div>
-                </div>
-
                 <div className="flex flex-row space-x-4">
                     <div className="w-full">
                         <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
@@ -344,7 +325,7 @@ export const PushbackPage = () => {
                             className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
                             onClick={() => handleTugSpeed(tugCommandedSpeedFactor - 0.1)}
                         >
-                            <ArrowLeft size={40} />
+                            <ArrowDown size={40} />
                         </button>
                     </div>
 
@@ -357,6 +338,32 @@ export const PushbackPage = () => {
                             className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
                             onClick={() => handleTugSpeed(tugCommandedSpeedFactor + 0.1)}
                         >
+                            <ArrowUp size={40} />
+                        </button>
+                    </div>
+
+                    <div className="w-full">
+                        <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
+                            {t('Pushback.Left')}
+                        </p>
+                        <button
+                            type="button"
+                            className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
+                            onClick={() => handleTugDirection(tugCommandedHeadingFactor - 0.1)}
+                        >
+                            <ArrowLeft size={40} />
+                        </button>
+                    </div>
+
+                    <div className="w-full">
+                        <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
+                            {t('Pushback.Right')}
+                        </p>
+                        <button
+                            type="button"
+                            className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
+                            onClick={() => handleTugDirection(tugCommandedHeadingFactor + 0.1)}
+                        >
                             <ArrowRight size={40} />
                         </button>
                     </div>
@@ -364,17 +371,45 @@ export const PushbackPage = () => {
 
                 <div>
                     <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
+                        {t('Pushback.TugDirection')}
+                    </p>
+                    <div className="flex flex-row items-center space-x-4">
+                        <p className="font-bold text-unselected"><ChevronLeft /></p>
+                        <Slider
+                            className={`${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
+                            onChange={(value) => handleTugDirection(value)}
+                            min={-1}
+                            step={0.01}
+                            max={1}
+                            value={tugCommandedHeadingFactor}
+                            startPoint={0}
+                        />
+                        <p className="font-bold text-unselected"><ChevronRight /></p>
+                    </div>
+                </div>
+
+                <div>
+                    <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
                         {t('Pushback.TugSpeed')}
                     </p>
-                    <Slider
-                        className={`${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
-                        min={-1}
-                        step={0.1}
-                        max={1}
-                        value={tugCommandedSpeedFactor}
-                        onChange={(value) => handleTugSpeed(value)}
-                        startPoint={0}
-                    />
+                    <div className="flex flex-row items-center space-x-4">
+                        <p className="font-bold text-unselected"><ChevronDoubleDown /></p>
+                        <Slider
+                            className={`${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
+                            min={-1}
+                            step={0.1}
+                            max={1}
+                            value={tugCommandedSpeedFactor}
+                            onChange={(value) => handleTugSpeed(value)}
+                            startPoint={0}
+                        />
+                        <p
+                            className="font-bold text-unselected"
+                            onDoubleClick={() => setShowDebugInfo(!showDebugInfo)}
+                        >
+                            <ChevronDoubleUp />
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

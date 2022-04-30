@@ -238,6 +238,14 @@
       "RunwayAltitude": "Pist İrtifası",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Pist Durumu",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "Pist Başı",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Pist LDA",
@@ -343,11 +351,14 @@
     "CallTug": "Çekiciye Haber Ver",
     "Forward": "İleri",
     "Halt": "Durdur",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "Kapalı",
       "On": "Açık",
       "Title": "Park Freni"
     },
+    "Right": "Right",
     "TugDirection": "Çekici Yönü",
     "TugSpeed": "Çekici Hızı"
   },

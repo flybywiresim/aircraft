@@ -238,6 +238,14 @@
       "RunwayAltitude": "Высота ВПП",
       "RunwayAltitudeUnit": "футов ASL",
       "RunwayCondition": "Состояние ВПП",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "Направление ВПП",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "ВПП LDA",
@@ -343,11 +351,14 @@
     "CallTug": "Вызов буксира",
     "Forward": "Вперёд",
     "Halt": "Остановить",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "Откл.",
       "On": "Вкл.",
       "Title": "Стояночный тормоз"
     },
+    "Right": "Right",
     "TugDirection": "Направление буксира",
     "TugSpeed": "Скорость буксира"
   },

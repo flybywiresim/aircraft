@@ -238,6 +238,14 @@
       "RunwayAltitude": "활주로 고도",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "활주로 상태",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "활주로 방향",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "활주로 LDA",
@@ -343,11 +351,14 @@
     "CallTug": "터그 부르기",
     "Forward": "앞으로",
     "Halt": "중지",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "끄기",
       "On": "켜기",
       "Title": "파킹 브레이크"
     },
+    "Right": "Right",
     "TugDirection": "터그 방향",
     "TugSpeed": "터그 속도"
   },

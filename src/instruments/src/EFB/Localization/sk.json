@@ -238,6 +238,14 @@
       "RunwayAltitude": "Výška dráhy",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Stav dráhy",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "Smer dráhy",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Dráha LDA",
@@ -343,11 +351,14 @@
     "CallTug": "Zavolajte Tug",
     "Forward": "Dopredu",
     "Halt": "Zastaviť",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "Vypnuté",
       "On": "Zapnuté",
       "Title": "Parkovacia brzda"
     },
+    "Right": "Right",
     "TugDirection": "Smer Tagu",
     "TugSpeed": "Rýchlosť Tugu"
   },

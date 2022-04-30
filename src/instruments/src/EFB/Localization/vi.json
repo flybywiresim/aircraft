@@ -238,6 +238,14 @@
       "RunwayAltitude": "Độ cao đường băng",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Điều kiện đường băng",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "Hướng của đường băng",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Đường băng LDA",
@@ -343,11 +351,14 @@
     "CallTug": "Gọi xe kéo",
     "Forward": "Tiến",
     "Halt": "Tạm dừng",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "Cài",
       "On": "Cài",
       "Title": "Phanh đỗ"
     },
+    "Right": "Right",
     "TugDirection": "Hướng của xe kéo",
     "TugSpeed": "Tốc độ xe kéo"
   },

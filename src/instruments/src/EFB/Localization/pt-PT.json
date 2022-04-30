@@ -238,6 +238,14 @@
       "RunwayAltitude": "Altitude da Pista",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Condição da Pista",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "Orientação da Pista",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "LDA da pista",
@@ -343,11 +351,14 @@
     "CallTug": "Ligar para o Reboque",
     "Forward": "Frontal",
     "Halt": "Parar",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "Destravado",
       "On": "Travado",
       "Title": "Travão de Estacionamento"
     },
+    "Right": "Right",
     "TugDirection": "Direção do Reboque",
     "TugSpeed": "Velocidade do Reboque"
   },

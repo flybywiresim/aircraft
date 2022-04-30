@@ -238,6 +238,14 @@
       "RunwayAltitude": "Υψόμετρο Διαδρόμου",
       "RunwayAltitudeUnit": "Πόδια Άνωθεν Επιπέδου Θαλάσσης ",
       "RunwayCondition": "Κατάσταση Διαδρόμου",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "Πορεία Διαδρόμου",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "LDA Διαδρόμου",
@@ -343,11 +351,14 @@
     "CallTug": "Καλέστε Ρυμουλκό",
     "Forward": "Μπροστά",
     "Halt": "Διακοπή",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "Απενεργοποίηση",
       "On": "Ενεργοποίηση",
       "Title": "Φρένο Στάθμευσης"
     },
+    "Right": "Right",
     "TugDirection": "Κατεύθυνση Ρυμουλκού",
     "TugSpeed": "Ταχύτητα Ρυμουλκού"
   },
