@@ -125,7 +125,7 @@
       "RightInnerTank": "Höger innertank",
       "RightOuterTank": "Höger yttertank",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Ändring av tankningstiden endast på marken med avstängda motorer.",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Ändring av tankningstiden endast på marken med avstängda motorer",
         "FillBlockFuelFromSimBrief": "Fyll block bränsle från SimBrief"
       },
       "Title": "Bränsle",
