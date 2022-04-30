@@ -26,10 +26,6 @@ export const PushbackPage = () => {
     const [tugCommandedHeadingFactor, setTugCommandedHeadingFactor] = useSimVar('L:A32NX_PUSHBACK_TUG_COMMANDED_HEADING_FACTOR', 'Number', 50);
     const [tugCommandedSpeedFactor, setTugCommandedSpeedFactor] = useSimVar('L:A32NX_PUSHBACK_TUG_COMMANDED_SPEED_FACTOR', 'Number', 50);
 
-    // Calls update on PushbackUpdater helper class which in turn updates
-    // pushback movements when pushback tug is attached.
-    const [pushbackUpdater] = useState(() => new PushbackUpdater());
-
     // called once when loading and unloading
     useEffect(() => {
         setPushBackPaused(true);
@@ -104,6 +100,11 @@ export const PushbackPage = () => {
         setTugCommandedSpeedFactor(-elevatorPosition);
     }, [elevatorPosition]);
 
+    // Updater for pushback movements to be smooth
+    const [pushbackUpdater] = useState(() => new PushbackUpdater());
+    // Set up an update interval to ensure smooth movement independent of
+    // Glass Cockpit refresh rate. This is required as refresh rate  is
+    // 10x lower in external view which leads to jerky movements otherwise.
     const [updateInterval, setUpdateInterval] = useState(0);
     useEffect(() => {
         if (pushBackAttached && updateInterval === 0) {
