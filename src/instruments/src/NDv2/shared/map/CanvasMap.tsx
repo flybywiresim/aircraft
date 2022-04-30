@@ -7,6 +7,7 @@ import { FmsSymbolsData } from '../../FmsSymbolsPublisher';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { WaypointLayer } from './WaypointLayer';
+import { ConstraintsLayer } from './ConstraintsLayer';
 
 export interface CanvasMapProps {
     bus: EventBus,
@@ -16,6 +17,7 @@ export interface CanvasMapProps {
     height: number,
     mapRotation: Subscribable<number>,
     mapRangeRadius: Subscribable<number>,
+    mapVisible: Subscribable<boolean>,
 }
 
 export class CanvasMap extends DisplayComponent<CanvasMapProps> {
@@ -32,6 +34,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private readonly longitude = Subject.create(0);
 
     private readonly waypointLayer = new WaypointLayer();
+
+    private readonly constraintsLayer = new ConstraintsLayer();
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -60,6 +64,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             this.handleRecomputeMapParameters();
         });
 
+        this.props.mapVisible.sub((visible) => {
+            this.canvasRef.instance.style.visibility = visible ? 'visible' : 'hidden';
+        }, true);
+
         sub.on('symbols').handle((data: NdSymbol[]) => {
             this.handleNewSymbols(data);
         });
@@ -84,6 +92,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         const waypoints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan);
 
         this.waypointLayer.data = waypoints;
+
+        const constraints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.ConstraintUnknown | NdSymbolTypeFlags.ConstraintMet | NdSymbolTypeFlags.ConstraintMissed);
+
+        this.constraintsLayer.data = constraints;
     }
 
     private handleNewVectors(vectors: PathVector[]) {
@@ -103,6 +115,9 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
         this.waypointLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.waypointLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
+
+        this.constraintsLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
+        this.constraintsLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
     }
 
     private drawSymbol(context: CanvasRenderingContext2D, symbol: NdSymbol) {

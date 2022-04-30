@@ -79,14 +79,6 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
             context.ellipse(x, y, 14, 14, 0, 0, Math.PI * 2);
             context.stroke();
             context.closePath();
-
-            // Text TODO move to own layer
-            context.fillStyle = '#ff94ff';
-            for (let i = 0; i < symbol.constraints.length; i++) {
-                const line = symbol.constraints[i];
-
-                PaintUtils.paintText(isColorLayer, context, x + 13, y + 37 + (19 * i), line, '#ff94ff');
-            }
         }
 
         PaintUtils.paintText(isColorLayer, context, x + 13, y + 18, symbol.ident, mainColor);

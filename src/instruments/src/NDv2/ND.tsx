@@ -117,6 +117,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     height={1240}
                     mapRotation={this.mapRotation}
                     mapRangeRadius={this.mapRangeRadius}
+                    mapVisible={this.headingWord.map((it) => it.isNormalOperation())}
                 />
             </DisplayUnit>
         );
