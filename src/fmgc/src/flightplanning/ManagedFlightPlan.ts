@@ -71,6 +71,8 @@ export class ManagedFlightPlan {
     /** The details of any direct-to procedures on this flight plan. */
     public directTo: DirectTo = new DirectTo();
 
+    private turningPointIndex = 0;
+
     /** The departure segment of the flight plan. */
     public get departure(): FlightPlanSegment {
         return this.getSegment(SegmentType.Departure);
@@ -352,12 +354,13 @@ export class ManagedFlightPlan {
      *                    be appended to the end of the flight plan.
      *
      * @param segmentType The type of segment to add the waypoint to
+     * @returns The index the waypoint was actually inserted at
      */
     public addWaypoint(
         waypoint: WayPoint | any,
         index?: number | undefined,
         segmentType?: SegmentType,
-    ): void {
+    ): number {
         console.log('addWaypoint', waypoint, index, SegmentType[segmentType]);
         const mappedWaypoint: WayPoint = (waypoint instanceof WayPoint) ? waypoint : RawDataMapper.toWaypoint(waypoint, this._parentInstrument);
 
@@ -460,8 +463,12 @@ export class ManagedFlightPlan {
                 } else if (this.activeWaypointIndex === 1 && waypoint.isRunway && segment.type === SegmentType.Departure) {
                     this.activeWaypointIndex = 2;
                 }
+
+                return finalIndex;
             }
         }
+
+        return -1;
     }
 
     /**
@@ -809,25 +816,65 @@ export class ManagedFlightPlan {
     /**
      * Goes direct to the specified waypoint index in the flight plan.
      *
-     * @param index The waypoint index to go direct to.
+     * @param waypoint The waypoint to go direct to
      */
-    public addDirectTo(index: number): void {
+    public async addDirectTo(waypoint: WayPoint): Promise<void> {
         // TODO Replace with FMGC pos
         const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+        const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
-        const turningPoint = WaypointBuilder.fromCoordinates('T-P', new LatLongAlt(lat, long), this._parentInstrument);
-        turningPoint.additionalData.legType = LegType.IF;
+        const oldToWp = this.waypoints[this.activeWaypointIndex];
+
+        const turningPoint = WaypointBuilder.fromCoordinates('T-P', new LatLongAlt(lat, long), this._parentInstrument, { legType: LegType.CF, course: trueTrack, dynamicPpos: true }, this.getTurningPointIcao());
         turningPoint.isTurningPoint = true;
 
-        this.addWaypoint(turningPoint, index);
-        this.activeWaypointIndex = index + 1;
+        let waypointIndex = this.waypoints.findIndex((w, idx) => idx >= this.activeWaypointIndex && w.icao === waypoint.icao);
+        if (waypointIndex === -1) {
+            // in this case the waypoint is not already in the flight plan
+            // we string it to the start of the flight plan, add a discontinuity after, and then the existing flight plan
+            waypoint.endsInDiscontinuity = true;
+            waypoint.discontinuityCanBeCleared = true;
+            waypoint.additionalData.legType = LegType.DF;
+            this.addWaypoint(waypoint, this.activeWaypointIndex);
+            this.activeWaypointIndex = this.addWaypoint(turningPoint, this.activeWaypointIndex) + 1;
 
-        const deleteCount = this.activeWaypointIndex - 1;
-
-        for (let i = 0; i < deleteCount; i++) {
-            this.removeWaypoint(0);
+            // fix up the old leg that's now after the discont
+            if (ManagedFlightPlan.isXfLeg(oldToWp)) {
+                oldToWp.additionalData.legType = LegType.IF;
+            }
+        } else {
+            // in this case the waypoint is already in the flight plan...
+            // we can skip all the legs before it, and add our dir to
+            const toWp = this.waypoints[waypointIndex];
+            toWp.additionalData.legType = LegType.DF;
+            toWp.turnDirection = 0;
+            this.addWaypoint(turningPoint, waypointIndex);
+            this.activeWaypointIndex = waypointIndex + 1;
         }
+    }
+
+    /**
+     *
+     * @param force force updating a turning point even if it's not marked dynamic
+     */
+    public updateTurningPoint(force = false): boolean {
+        const wp = this.getWaypoint(this.activeWaypointIndex - 1);
+        if (wp?.additionalData?.dynamicPpos || (force && wp?.isTurningPoint)) {
+            wp.infos.coordinates.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
+            wp.infos.coordinates.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
+            wp.additionalData.course = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
+            wp.icao = this.getTurningPointIcao();
+            wp.infos.icao = wp.icao;
+            console.log('updated T-P:', force, wp.additionalData, wp.infos.coordinates);
+            return true;
+        }
+        return false;
+    }
+
+    private getTurningPointIcao(): string {
+        this.turningPointIndex = (this.turningPointIndex + 1) % 1000;
+        return `WXX    TP${this.turningPointIndex.toFixed(0).padStart(3, '0')}`
     }
 
     /**
@@ -1167,7 +1214,7 @@ export class ManagedFlightPlan {
     }
 
     private static isXfLeg(leg: WayPoint): boolean {
-        switch (leg.additionalData.legType) {
+        switch (leg?.additionalData?.legType) {
             case LegType.CF:
             case LegType.DF:
             case LegType.IF:
@@ -1180,7 +1227,7 @@ export class ManagedFlightPlan {
     }
 
     private static isFxLeg(leg: WayPoint): boolean {
-        switch (leg.additionalData.legType) {
+        switch (leg?.additionalData?.legType) {
             case LegType.FA:
             case LegType.FC:
             case LegType.FD:
