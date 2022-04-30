@@ -125,7 +125,7 @@
       "RightInnerTank": "Høyre indre tank",
       "RightOuterTank": "Høyre Ytre Tank",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Flyet må være kaldt og mørkt for å endre drivstofftider",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Endring av tanking varighet bare på bakken med motorer stengt",
         "FillBlockFuelFromSimBrief": "Fyll Block Fuel fra SimBrief"
       },
       "Title": "Drivstoff",

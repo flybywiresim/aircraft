@@ -125,7 +125,7 @@
       "RightInnerTank": "Højre Indvendig tank",
       "RightOuterTank": "Højre Ydre tank",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Flyet skal være \"Cold And Dark\" for at ændre tankningstider",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Ændring af optankningstiden kun på jorden med slukkede motorer",
         "FillBlockFuelFromSimBrief": "Fyld \"Block Fuel\" fra SimBrief"
       },
       "Title": "Brændstof",
@@ -145,7 +145,7 @@
       "JetBridge": "Jetbro",
       "Title": "Tjenester"
     },
-    "Title": "Ground"
+    "Title": "Jorden"
   },
   "Modals": {
     "Cancel": "Annuller",
