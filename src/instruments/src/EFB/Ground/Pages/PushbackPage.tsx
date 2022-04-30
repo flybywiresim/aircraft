@@ -1,12 +1,11 @@
 /* eslint-disable max-len */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import { ArrowLeft, ArrowRight, PauseCircleFill, PlayCircleFill, TruckFlatbed } from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
 import { toast } from 'react-toastify';
 import { MathUtils } from '@shared/MathUtils';
 import { t } from '../../translation';
-import { PushbackUpdater } from './PushbackUpdater';
 
 export const PushbackPage = () => {
     const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
@@ -21,10 +20,23 @@ export const PushbackPage = () => {
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 250);
 
     const [pushBackPaused, setPushBackPaused] = useState(false);
-    const [deltaTime] = useSimVar('L:A32NX_PUSHBACK_DELTA_TIME', 'number', 0);
-    const [tugCommandedHeading] = useSimVar('L:A32NX_PUSHBACK_TUG_COMMANDED_HEADING', 'Number', 50);
-    const [tugCommandedHeadingFactor, setTugCommandedHeadingFactor] = useSimVar('L:A32NX_PUSHBACK_TUG_COMMANDED_HEADING_FACTOR', 'Number', 50);
-    const [tugCommandedSpeedFactor, setTugCommandedSpeedFactor] = useSimVar('L:A32NX_PUSHBACK_TUG_COMMANDED_SPEED_FACTOR', 'Number', 50);
+
+    const [lastTime, setLastTime] = useState(0);
+    const [deltaTime, setDeltaTime] = useState(0);
+    const [tugCommandedHeading, setTugCommandedHeading] = useState(0);
+    const [tugCommandedHeadingFactor, setTugCommandedHeadingFactor] = useState(0);
+    const [tugCommandedSpeedFactor, setTugCommandedSpeedFactor] = useState(0);
+    const [tugCommandedSpeed, setTugCommandedSpeed] = useState(0);
+
+    // required so these can be used inside the setInterval callback function
+    const lastTimeRef = useRef(lastTime);
+    lastTimeRef.current = lastTime;
+    const deltaTimeRef = useRef(deltaTime);
+    deltaTimeRef.current = deltaTime;
+    const tugCommandedHeadingFactorRef = useRef(tugCommandedHeadingFactor);
+    tugCommandedHeadingFactorRef.current = tugCommandedHeadingFactor;
+    const tugCommandedSpeedFactorRef = useRef(tugCommandedSpeedFactor);
+    tugCommandedSpeedFactorRef.current = tugCommandedSpeedFactor;
 
     // called once when loading and unloading
     useEffect(() => {
@@ -100,15 +112,60 @@ export const PushbackPage = () => {
         setTugCommandedSpeedFactor(-elevatorPosition);
     }, [elevatorPosition]);
 
-    // Updater for pushback movements to be smooth
-    const [pushbackUpdater] = useState(() => new PushbackUpdater());
+    const SHOW_DEBUG_INFO = false;
+    const InternalTugHeadingDegrees = 0xffffffff / 360;
+
+    const updater = () => {
+        const startTime = Date.now();
+        setDeltaTime(() => (startTime - lastTimeRef.current.valueOf()));
+        setLastTime(() => startTime);
+
+        const simOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
+        const pushBackAttached = SimVar.GetSimVarValue('Pushback Attached', 'bool');
+
+        if (pushBackAttached && simOnGround) {
+            // If no speed is commanded stop the aircraft and return.
+            if (tugCommandedSpeedFactorRef.current.valueOf() === 0) {
+                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
+                SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
+                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
+            } else {
+                // compute heading and speed
+                SimVar.SetSimVarValue('Pushback Wait', 'bool', false);
+                const parkingBrakeEngaged = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
+                const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
+                const computedTugHeading = (aircraftHeading - (50 * tugCommandedHeadingFactorRef.current.valueOf())) % 360;
+                setTugCommandedHeading((() => computedTugHeading)); // debug
+                const convertedComputedTugHeading = (computedTugHeading * InternalTugHeadingDegrees) & 0xffffffff;
+                const computedRotationVelocity = (tugCommandedSpeedFactor <= 0 ? -1 : 1) * tugCommandedHeadingFactor * (parkingBrakeEngaged ? 0.01 : 0.1);
+                const tugCommandedSpeed = tugCommandedSpeedFactorRef.current.valueOf() * (parkingBrakeEngaged ? 0.8 : 8);
+                setTugCommandedSpeed(() => tugCommandedSpeed); // debug
+                // Set tug heading
+                SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', convertedComputedTugHeading);
+                SimVar.SetSimVarValue('ROTATION VELOCITY BODY X', 'Number', 0);
+                SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
+                SimVar.SetSimVarValue('ROTATION VELOCITY BODY Z', 'Number', 0);
+                // Set tug speed
+                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
+                SimVar.SetSimVarValue('VELOCITY BODY X', 'Number', 0);
+                SimVar.SetSimVarValue('VELOCITY BODY Y', 'Number', 0);
+                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', tugCommandedSpeed);
+            }
+        }
+
+        if (SHOW_DEBUG_INFO) {
+            const updateTime = Date.now() - startTime;
+            console.log(`Pushback update took: ${updateTime}ms - Delta: ${deltaTimeRef.current}ms`);
+        }
+    };
+
     // Set up an update interval to ensure smooth movement independent of
     // Glass Cockpit refresh rate. This is required as refresh rate  is
     // 10x lower in external view which leads to jerky movements otherwise.
     const [updateInterval, setUpdateInterval] = useState(0);
     useEffect(() => {
         if (pushBackAttached && updateInterval === 0) {
-            const interval = setInterval(pushbackUpdater.updater, 50, pushbackUpdater);
+            const interval = setInterval(updater, 50);
             // @ts-ignore
             setUpdateInterval(interval);
         } else if (!pushBackAttached) {
@@ -130,7 +187,7 @@ export const PushbackPage = () => {
 
                 {showDebugInfo && (
                     <div className="flex flex-grow">
-                        <div className="mx-4">
+                        <div className="mx-2">
                             deltaTime:
                             {' '}
                             {deltaTime}
@@ -151,6 +208,18 @@ export const PushbackPage = () => {
                             {' '}
                             {pushBackState}
                             <br />
+                            pushbackAngle:
+                            {' '}
+                            {pushbackAngle.toFixed(4)}
+                            {' ('}
+                            {(pushbackAngle * (180 / Math.PI)).toFixed(4)}
+                            °)
+                        </div>
+                        <div className="mx-2">
+                            aircraftHeading:
+                            {' '}
+                            {aircraftHeading.toFixed(4)}
+                            <br />
                             tugCommandedHeadingFactor:
                             {' '}
                             {tugCommandedHeadingFactor.toFixed(4)}
@@ -158,17 +227,6 @@ export const PushbackPage = () => {
                             tugCommandedHeading:
                             {' '}
                             {tugCommandedHeading.toFixed(4)}
-                            <br />
-                            aircraftHeading:
-                            {' '}
-                            {aircraftHeading.toFixed(4)}
-                            <br />
-                            pushbackAngle:
-                            {' '}
-                            {pushbackAngle.toFixed(4)}
-                            {' ('}
-                            {(pushbackAngle * (180 / Math.PI)).toFixed(4)}
-                            °)
                             <br />
                             Rotation Velocity X:
                             {' '}
@@ -182,7 +240,7 @@ export const PushbackPage = () => {
                             {' '}
                             {SimVar.GetSimVarValue('ROTATION VELOCITY BODY Z', 'Number').toFixed(4)}
                         </div>
-                        <div className="mx-4">
+                        <div className="mx-2">
                             aircraftGroundSpeed:
                             {' '}
                             {aircraftGroundSpeed.toFixed(4)}
@@ -191,13 +249,13 @@ export const PushbackPage = () => {
                             {(aircraftGroundSpeed * 1.68781).toFixed(4)}
                             ft/s)
                             <br />
-                            tugCommandedSpeed:
+                            tugCommandedSpeedFactor:
                             {' '}
                             {tugCommandedSpeedFactor}
                             <br />
-                            tugCommandedVelocity:
+                            tugCommandedSpeed:
                             {' '}
-                            { (tugCommandedSpeedFactor * (parkingBrakeEngaged ? 0.4 : 4)).toFixed(4) }
+                            { tugCommandedSpeed }
                             <br />
                             Velocity X:
                             {' '}
