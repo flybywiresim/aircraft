@@ -66,203 +66,203 @@
       "CompanyRoute": "公司航路",
       "CostIndex": "成本指數",
       "CruiseAlt": "巡航高度",
-      "ImportSimBriefData": "Import SimBrief Data",
-      "Route": "Route",
-      "SimBriefDataNotYetLoaded": "SimBrief data not yet loaded.",
-      "Title": "Your Flight",
-      "ZFW": "ZFW"
+      "ImportSimBriefData": "導入 SimBrief 數據",
+      "Route": "航路",
+      "SimBriefDataNotYetLoaded": "未加載 SimBrief 數據。",
+      "Title": "你的航班",
+      "ZFW": "零油重量（ZFW）"
     }
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Import SimBrief Data",
+      "ImportSimBriefData": "導入 SimBrief 數據",
       "TT": {
-        "IncreaseFontSize": "Increase Font Size",
-        "ReduceFontSize": "Reduce Font Size"
+        "IncreaseFontSize": "放大字體",
+        "ReduceFontSize": "減小字體"
       },
-      "Title": "OFP",
-      "YouHaveNotYetImportedAnySimBriefData": "You have not yet imported any SimBrief data."
+      "Title": "運行飛行計劃（OFP）",
+      "YouHaveNotYetImportedAnySimBriefData": "尚未導入任何 SimBrief 數據。"
     },
     "Overview": {
-      "Engines": "Engines",
-      "MMO": "MMO",
-      "MRW": "MRW",
-      "MTOW": "MTOW",
-      "MZFW": "MZFW",
-      "MaximumCargo": "Maximum Cargo",
-      "MaximumFuelCapacity": "Maximum Fuel Capacity",
-      "MaximumPassengers": "Maximum Passengers",
-      "Model": "Model",
+      "Engines": "引擎",
+      "MMO": "最大馬赫數（MMO）",
+      "MRW": "最大機坪重量（MRW）",
+      "MTOW": "最大起飛重量（MTOW）",
+      "MZFW": "最大零油重量（MZFW）",
+      "MaximumCargo": "最大貨物重量",
+      "MaximumFuelCapacity": "最大燃油容量",
+      "MaximumPassengers": "最大乘客数量",
+      "Model": "機型",
       "Range": "Range",
-      "Title": "Overview"
+      "Title": "總覽"
     },
-    "Title": "Dispatch"
+    "Title": "簽派"
   },
   "Failures": {
     "Comfort": {
-      "Title": "Comfort"
+      "Title": "舒適"
     },
     "Compact": {
-      "Title": "Compact"
+      "Title": "密集"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Full simulation of the failures below isn't yet guaranteed.",
-    "Search": "Search",
-    "Title": "Failures"
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "目前還不能保證對以下故障進行全面仿真",
+    "Search": "搜尋",
+    "Title": "故障"
   },
   "Ground": {
     "Fuel": {
-      "CenterTank": "Center Tank",
-      "Completed": "Completed",
-      "Defueling": "Defueling",
-      "EstimatedDuration": "Estimated duration (minutes)",
+      "CenterTank": "中央油箱",
+      "Completed": "已完成",
+      "Defueling": "釋放燃油",
+      "EstimatedDuration": "預計剩餘時間 (分鐘)",
       "EstimatedTime": "Estimated Time",
-      "LeftInnerTank": "Left Inner Tank",
-      "LeftOuterTank": "Left Outer Tank",
-      "ReadyToStart": "Ready to Start",
-      "Refuel": "Refuel",
-      "RefuelTime": "Refuel Time",
-      "Refueling": "Refueling",
-      "RightInnerTank": "Right Inner Tank",
-      "RightOuterTank": "Right Outer Tank",
+      "LeftInnerTank": "左內側油箱",
+      "LeftOuterTank": "左外側油箱",
+      "ReadyToStart": "準備開始加油",
+      "Refuel": "加油",
+      "RefuelTime": "加油時間",
+      "Refueling": "加油中",
+      "RightInnerTank": "右內側油箱",
+      "RightOuterTank": "右外側油箱",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aircraft Must Be Cold and Dark to Change Refuel Times",
-        "FillBlockFuelFromSimBrief": "Fill Block Fuel from SimBrief"
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "飛機必須恢復至冷艙狀態以更改加油時間",
+        "FillBlockFuelFromSimBrief": "填充 Simbrief 中的燃油量"
       },
-      "Title": "Fuel",
-      "TotalFuel": "Total Fuel",
-      "Unavailable": "Unavailable"
+      "Title": "燃油",
+      "TotalFuel": "總燃油量",
+      "Unavailable": "不可用"
     },
     "Pushback": {
-      "Title": "Pushback"
+      "Title": "後推"
     },
     "Services": {
-      "BaggageTruck": "Baggage Truck",
-      "CateringTruck": "Catering Truck",
-      "DoorAft": "Door Aft",
-      "DoorFwd": "Door Fwd",
-      "ExternalPower": "External Power",
-      "FuelTruck": "Fuel Truck",
-      "JetBridge": "Jet Bridge",
-      "Title": "Services"
+      "BaggageTruck": "行李車",
+      "CateringTruck": "餐食車",
+      "DoorAft": "後門",
+      "DoorFwd": "前門",
+      "ExternalPower": "外部電源",
+      "FuelTruck": "加油車",
+      "JetBridge": "廊橋",
+      "Title": "服務"
     },
-    "Title": "Ground"
+    "Title": "地面"
   },
   "Modals": {
-    "Cancel": "Cancel",
-    "Confirm": "Confirm",
-    "Okay": "Okay"
+    "Cancel": "取消",
+    "Confirm": "確認",
+    "Okay": "好的"
   },
   "NavigationAndCharts": {
-    "All": "All",
-    "Altn": "Altn",
-    "ExitFullscreenMode": "Exit Fullscreen Mode",
-    "From": "From",
+    "All": "全部",
+    "Altn": "備降機場",
+    "ExitFullscreenMode": "離開全螢幕模式",
+    "From": "起飛機場",
     "LocalFiles": {
-      "Both": "Both",
-      "EstablishingConnection": "Establishing Connection",
-      "FailedToEstablishConnection": "Failed to Establish Connection.",
-      "FileName": "File Name",
-      "Image": "Image",
-      "Pdf": "Pdf",
-      "Retry": "Retry",
-      "Title": "Local Files"
+      "Both": "全部",
+      "EstablishingConnection": "正在建立連線...",
+      "FailedToEstablishConnection": "無法建立連接",
+      "FileName": "檔案名",
+      "Image": "圖片",
+      "Pdf": "PDF",
+      "Retry": "重試",
+      "Title": "本地檔案"
     },
     "Navigraph": {
-      "AirportDoesNotExist": "Airport Does Not Exist",
-      "AuthenticateWithNavigraph": "Authenticate with Navigraph",
-      "InsufficientEnv": "Insufficient .env File",
-      "IntoYourBrowserAndEnterTheCodeBelow": "into your browser and enter the code below\n",
-      "NoAirportSelected": "No Airport Selected",
-      "ResetNavigraphAuthentication": "Reset Navigraph Authentication",
-      "ScanTheQrCodeOrOpen": "Scan the QR Code or Open",
+      "AirportDoesNotExist": "機場不存在",
+      "AuthenticateWithNavigraph": "使用 Navigraph 驗證",
+      "InsufficientEnv": ".env 文件不足",
+      "IntoYourBrowserAndEnterTheCodeBelow": "進入您的瀏覽器，然後輸入下面的代碼\n",
+      "NoAirportSelected": "未選擇機場",
+      "ResetNavigraphAuthentication": "重置 Navigraph 驗證",
+      "ScanTheQrCodeOrOpen": "掃描二維碼或打開",
       "Title": "Navigraph"
     },
     "PinnedCharts": {
-      "Delete": "Delete",
-      "Edit": "Edit",
-      "NoItemsFound": "No Items Found",
-      "SearchPlaceholder": "Search",
-      "ShowingChartsFromAllProviders": "Showing Charts from All Providers",
+      "Delete": "刪除",
+      "Edit": "編輯",
+      "NoItemsFound": "沒有找到項目",
+      "SearchPlaceholder": "搜尋",
+      "ShowingChartsFromAllProviders": "顯示所有提供商的航圖",
       "SortMethods": {
-        "AlphabeticalAZ": "Alphabetical - A -> Z",
-        "AlphabeticalZA": "Alphabetical - Z -> A",
-        "FirstAccessed": "First Accessed",
-        "LastAccessed": "Last Accessed",
-        "None": "None"
+        "AlphabeticalAZ": "按 A->Z 字母順序排列",
+        "AlphabeticalZA": "按 Z->A 字母順序排列",
+        "FirstAccessed": "首次訪問",
+        "LastAccessed": "上次訪問",
+        "None": "無"
       },
       "TT": {
-        "ChangeChartProvider": "Change Chart Provider",
-        "ChangeChartSortMethod": "Change Chart Sort Method",
+        "ChangeChartProvider": "更改航图提供商",
+        "ChangeChartSortMethod": "更改航圖排序方式",
         "RemoveAllPinnedCharts": "Remove All Pinned Charts"
       },
-      "Title": "Pinned Charts",
-      "View": "View"
+      "Title": "標記的航圖",
+      "View": "瀏覽"
     },
-    "PleaseWait": "Please Wait",
-    "ShowingAllItems": "Showing All Items",
+    "PleaseWait": "請稍候...",
+    "ShowingAllItems": "顯示所有項目",
     "TT": {
-      "FitChartToHeight": "Fit Chart to Height",
-      "FitChartToWidth": "Fit Chart to Width",
-      "ResetMovement": "Reset Movement",
-      "RotateLeft45Degrees": "Rotate Left 45 Degrees",
-      "RotateRight45Degrees": "Rotate Right 45 Degrees",
-      "ZoomIn": "Zoom In",
-      "ZoomOut": "Zoom Out"
+      "FitChartToHeight": "使航圖適合高度",
+      "FitChartToWidth": "使航圖適合寬度",
+      "ResetMovement": "重置移動",
+      "RotateLeft45Degrees": "向左旋轉 45 度",
+      "RotateRight45Degrees": "向右旋轉 45 度",
+      "ZoomIn": "放大",
+      "ZoomOut": "縮小"
     },
-    "ThereAreNoChartsToDisplay": "There are no charts to display.",
-    "ThereIsNoChartToDisplay": "There is no chart to display.",
-    "Title": "Navigation & Charts",
-    "To": "To"
+    "ThereAreNoChartsToDisplay": "沒有可顯示的航圖",
+    "ThereIsNoChartToDisplay": "沒有可顯示的航圖",
+    "Title": "導航和航圖",
+    "To": "落地機場"
   },
   "Performance": {
-    "Data": "Data",
+    "Data": "資料",
     "Landing": {
-      "AirportIcao": "Airport ICAO",
-      "ApproachSpeed": "Approach Speed",
-      "ApproachSpeedUnit": "kts",
-      "AutoLand": "Autoland",
-      "Calculate": "Calculate",
-      "Clear": "Clear",
-      "DropDownNo": "No",
-      "DropDownYes": "Yes",
-      "FillDataFrom": "Fill data from",
-      "FlapsConfiguration": "Flaps Configuration",
-      "Low": "Low",
-      "MaximumManual": "Maximum Manual",
-      "Medium": "Medium",
+      "AirportIcao": "機場 ICAO 代碼",
+      "ApproachSpeed": "進近速度",
+      "ApproachSpeedUnit": "節（knots）",
+      "AutoLand": "自動著陸",
+      "Calculate": "計算",
+      "Clear": "清除",
+      "DropDownNo": "否",
+      "DropDownYes": "是",
+      "FillDataFrom": "填充數據來自",
+      "FlapsConfiguration": "襟翼設定",
+      "Low": "低",
+      "MaximumManual": "最大人工制動",
+      "Medium": "中",
       "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
       "MetarErrorDialogTitle": "Error Parsing OFP METAR",
-      "OverweightProcedure": "Overweight Procedure",
-      "Qnh": "QNH",
-      "ReverseThrust": "Reverse Thrust",
-      "RunwayAltitude": "Runway Altitude",
-      "RunwayAltitudeUnit": "ft ASL",
+      "OverweightProcedure": "超重程序",
+      "Qnh": "修正海壓（QNH）",
+      "ReverseThrust": "反推",
+      "RunwayAltitude": "跑道高度",
+      "RunwayAltitudeUnit": "海拔高度（英尺/ft.）",
       "RunwayCondition": "Runway Condition",
-      "RunwayHeading": "Runway Heading",
+      "RunwayHeading": "跑道朝向",
       "RunwayHeadingUnit": "°",
-      "RunwayLda": "Runway LDA",
-      "RunwayLdaUnitFt": "ft",
-      "RunwayLdaUnitMeter": "m",
-      "RunwaySlope": "Runway Slope",
+      "RunwayLda": "跑道可用著陸距離",
+      "RunwayLdaUnitFt": "英呎（ft.）",
+      "RunwayLdaUnitMeter": "米（m）",
+      "RunwaySlope": "跑道坡度",
       "TT": {
-        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "You need to enter an ICAO code in order to make a METAR request",
-        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "You need to load SimBrief data in order to autofill data"
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "您需要輸入一個機場 ICAO 代碼才能請求 METAR 報文",
+        "YouNeedToLoadSimBriefDataInOrderToAutofillData": "您需要加載 SimBrief 數據才能自動填充數據"
       },
-      "Temperature": "Temperature",
-      "Title": "Landing",
-      "UnitFt": "ft",
-      "UnitMeter": "m",
-      "Weight": "Weight",
-      "WindDirection": "Wind Direction",
+      "Temperature": "溫度",
+      "Title": "降落",
+      "UnitFt": "英呎（ft.）",
+      "UnitMeter": "米（m）",
+      "Weight": "重量",
+      "WindDirection": "風向",
       "WindDirectionUnit": "°",
-      "WindMagnitude": "Wind Magnitude",
-      "WindMagnitudeUnit": "kts"
+      "WindMagnitude": "風級",
+      "WindMagnitudeUnit": "節（knots）"
     },
-    "SYNC": "SYNC",
-    "Title": "Performance",
+    "SYNC": "同步",
+    "Title": "性能",
     "TopOfDescent": {
       "Data": {
-        "Angle": "Angle",
+        "Angle": "下滑角",
         "CurrentAltitude": "Current Altitude",
         "Distance": "Distance",
         "GroundSpeed": "Ground Speed",

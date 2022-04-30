@@ -125,7 +125,7 @@
       "RightInnerTank": "Rechter binnentank",
       "RightOuterTank": "Buitenste rechtertank",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Vliegtuig moet Cold & Dark zijn om de snelheid van het bijtanken te wijzigen.",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Wijziging van de bijtanktijd alleen op de grond met uitgeschakelde motoren",
         "FillBlockFuelFromSimBrief": "Vul blokbrandstof van SimBrief"
       },
       "Title": "Brandstof",
@@ -230,8 +230,8 @@
       "Low": "Laag",
       "MaximumManual": "Maximum Manual",
       "Medium": "Medium",
-      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
-      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
+      "MetarErrorDialogMessage": "De METAR van uw OFP kon niet met succes worden geparseerd. Wilt u in plaats daarvan automatisch gegevens invullen met behulp van een opgehaalde METAR?",
+      "MetarErrorDialogTitle": "Fout bij parseren van OFP METAR",
       "OverweightProcedure": "Procedure bij overgewicht",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
