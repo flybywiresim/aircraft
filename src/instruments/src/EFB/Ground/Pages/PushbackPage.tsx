@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, PauseCircleFill, PlayCircleFill, TruckFlatbed } 
 import Slider from 'rc-slider';
 import { toast } from 'react-toastify';
 import { MathUtils } from '@shared/MathUtils';
+import { BingMap } from '../../UtilComponents/BingMap';
 import { t } from '../../translation';
 
 export const PushbackPage = () => {
@@ -16,6 +17,9 @@ export const PushbackPage = () => {
     const [pushBackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
     const [pushBackState, setPushBackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 250);
     const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Radians', 100);
+    const [latitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
+    const [longitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
+    const [headingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 2);
 
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 250);
 
@@ -163,6 +167,7 @@ export const PushbackPage = () => {
     function debugInformation() {
         return (
             <div className="flex absolute right-0 left-0 z-50 flex-grow justify-between mx-4 font-mono text-black bg-gray-100 border-gray-100">
+                {/* @ts-ignore */}
                 <div className="overflow-hidden text-black text-m">
                     deltaTime:
                     {' '}
@@ -189,7 +194,7 @@ export const PushbackPage = () => {
                     {pushbackAngle.toFixed(3)}
                     {' ('}
                     {(pushbackAngle * (180 / Math.PI)).toFixed(3)}
-                    °)
+                    {' °)'}
                 </div>
                 <div className="overflow-hidden text-black text-m">
                     acHeading:
@@ -252,8 +257,13 @@ export const PushbackPage = () => {
 
     return (
         <div className="flex relative flex-col space-y-4 h-content-section-reduced">
-            <div className="flex-grow rounded-lg border-2 border-theme-accent">
-                {/* TODO: Insert bing map here */}
+            <div className="overflow-hidden flex-grow rounded-lg border-2 border-theme-accent h-[430px]">
+                <BingMap
+                    configFolder="/Pages/VCockpit/Instruments/MAP/"
+                    centerLla={{ lat: latitude, long: longitude }}
+                    mapId="PUSHBACK_MAP"
+                    range={0.2}
+                />
             </div>
             {showDebugInfo && debugInformation()}
             <div className="flex flex-col p-6 space-y-4 rounded-lg border-2 border-theme-accent">
