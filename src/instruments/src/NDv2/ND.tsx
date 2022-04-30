@@ -10,7 +10,7 @@ import { ArcModePage } from './pages/arc';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { FmMessages } from './FmMessages';
 import { Flag } from './shared/Flag';
-import { CanvasMap } from './shared/CanvasMap';
+import { CanvasMap } from './shared/map/CanvasMap';
 import { EcpSimVars } from '../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 
 export interface NDProps {

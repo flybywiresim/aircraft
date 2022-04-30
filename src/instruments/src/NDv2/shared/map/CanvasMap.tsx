@@ -3,9 +3,10 @@ import { EfisVectorsGroup, NdSymbol, NdSymbolTypeFlags } from '@shared/Navigatio
 import type { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { distanceTo } from 'msfs-geo';
 import { MathUtils } from '@shared/MathUtils';
-import { FmsSymbolsData } from '../FmsSymbolsPublisher';
-import { MapParameters } from '../../ND/utils/MapParameters';
-import { NDSimvars } from '../NDSimvarPublisher';
+import { FmsSymbolsData } from '../../FmsSymbolsPublisher';
+import { MapParameters } from '../../../ND/utils/MapParameters';
+import { NDSimvars } from '../../NDSimvarPublisher';
+import { WaypointLayer } from './WaypointLayer';
 
 export interface CanvasMapProps {
     bus: EventBus,
@@ -29,6 +30,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private readonly latitude = Subject.create(0);
 
     private readonly longitude = Subject.create(0);
+
+    private readonly waypointLayer = new WaypointLayer();
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -77,6 +80,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private handleNewSymbols(symbols: NdSymbol[]) {
         this.symbols.length = 0;
         this.symbols.push(...symbols);
+
+        const waypoints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan);
+
+        this.waypointLayer.data = waypoints;
     }
 
     private handleNewVectors(vectors: PathVector[]) {
@@ -94,9 +101,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             this.drawVector(context, vector, 0);
         }
 
-        for (const symbol of this.symbols) {
-            this.drawSymbol(context, symbol);
-        }
+        this.waypointLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
+        this.waypointLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
     }
 
     private drawSymbol(context: CanvasRenderingContext2D, symbol: NdSymbol) {
@@ -107,8 +113,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         if (symbol.type & NdSymbolTypeFlags.Runway) {
             this.drawScaledRunway(context, rx, ry, symbol);
         } else if (symbol.type & (NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.FixInfo)) {
-            this.drawWaypoint(context, rx, ry, symbol);
-
             if (symbol.type & NdSymbolTypeFlags.FixInfo) {
                 if (symbol.radii) {
                     for (const radius of symbol.radii) {
@@ -124,55 +128,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         } else if (symbol.type & NdSymbolTypeFlags.Airport) {
             this.drawAirport(context, rx, ry, symbol);
         }
-    }
-
-    private drawWaypoint(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
-        function drawShape(color: string, lineWidth: number) {
-            context.strokeStyle = color;
-            context.lineWidth = lineWidth;
-
-            context.beginPath();
-            context.moveTo(x - 7, y);
-            context.lineTo(x, y - 7);
-            context.lineTo(x + 7, y);
-            context.lineTo(x, y + 7);
-            context.lineTo(x - 7, y);
-            context.stroke();
-        }
-
-        const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#fff' : '#0f0';
-
-        drawShape('#000', 3.25);
-        drawShape(mainColor, 1.75);
-
-        context.font = '23px Ecam';
-
-        if (symbol.constraints) {
-            // Circle
-
-            if (symbol.type & NdSymbolTypeFlags.ConstraintMet) {
-                context.strokeStyle = '#ff94ff';
-            } else if (symbol.type & NdSymbolTypeFlags.ConstraintMissed) {
-                context.strokeStyle = '#e68000';
-            } else {
-                context.strokeStyle = '#fff';
-            }
-
-            context.beginPath();
-            context.ellipse(x, y, 14, 14, 0, 0, Math.PI * 2);
-            context.stroke();
-            context.closePath();
-
-            // Text
-            context.fillStyle = '#ff94ff';
-            for (let i = 0; i < symbol.constraints.length; i++) {
-                const line = symbol.constraints[i];
-
-                this.drawText(context, x + 13, y + 37 + (19 * i), line, '#ff94ff');
-            }
-        }
-
-        this.drawText(context, x + 13, y + 18, symbol.ident, mainColor, true);
     }
 
     private drawAirport(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
