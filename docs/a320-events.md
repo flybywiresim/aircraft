@@ -187,3 +187,9 @@
 
 - A32NX.AUTOBRAKE_BUTTON_MAX
   - When triggered the autobrake button MAX is pressed (as if triggered in the cockpit)
+
+- A32NX.EFIS_L_CHRONO_PUSHED
+  - When triggered presses the left chrono button (to start the clock on the left ND)
+
+- A32NX.EFIS_R_CHRONO_PUSHED
+  - When triggered presses the right chrono button (to start the clock on the right ND)

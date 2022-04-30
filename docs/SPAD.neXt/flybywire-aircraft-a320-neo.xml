@@ -40,4 +40,6 @@
   <CustomClientEvent Name="AUTOBRAKE BUTTON LO" EventID="A32NX.AUTOBRAKE_BUTTON_LO" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Press Autobrake button LO</CustomClientEvent>
   <CustomClientEvent Name="AUTOBRAKE BUTTON MED" EventID="A32NX.AUTOBRAKE_BUTTON_MED" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Press Autobrake button MED</CustomClientEvent>
   <CustomClientEvent Name="AUTOBRAKE BUTTON MAX" EventID="A32NX.AUTOBRAKE_BUTTON_MAX" SubCategory="A32NX AUTOBRAKE" IsGlobal="true">Press Autobrake button MAX</CustomClientEvent>
+  <CustomClientEvent Name="EFIS LEFT CHRONO BUTTON" EventID="A32NX.EFIS_L_CHRONO_PUSHED" SubCategory="A32NX EFIS" IsGlobal="true">Press Left Chrono button</CustomClientEvent>
+  <CustomClientEvent Name="EFIS RIGHT CHRONO BUTTON" EventID="A32NX.EFIS_R_CHRONO_PUSHED" SubCategory="A32NX EFIS" IsGlobal="true">Press Right Chrono button</CustomClientEvent>
 </CustomClientEvents>
