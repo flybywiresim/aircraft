@@ -1301,7 +1301,7 @@ export class ManagedFlightPlan {
             for (let i = 0; i < toDeleteFromB; i++) {
                 this.removeWaypoint(segmentB.offset, true);
             }
-            if (toDeleteFromB === 0 && !ManagedFlightPlan.legsStartOrEndAtSameFix(lastLegA, firstLegB)) {
+            if (toDeleteFromB === 0 && firstLegB.additionalData.legType === LegType.IF) {
                 lastLegA.endsInDiscontinuity = true;
                 lastLegA.discontinuityCanBeCleared = true;
             }
