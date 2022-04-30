@@ -47,7 +47,7 @@ class A32NX_TipsManager {
         const assistenceLandingEnabled = SimVar.GetSimVarValue("ASSISTANCE LANDING ENABLED", "Bool");
         const assistenceAutotrimActive = SimVar.GetSimVarValue("AI AUTOTRIM ACTIVE", "Bool");
         if (assistenceTakeOffEnabled || assistenceLandingEnabled || assistenceAutotrimActive) {
-            this.notif.showNotification({message: "Ensure you have turned off the following assistance functions:\n- ASSISTET TAKEOFF\n- ASSISTET LANDING\n- AI AUTO-TRIM\n\nThey cause serious incompatibility!", timeout: 20000});
+            this.notif.showNotification({message: "Ensure you have turned off the following assistance functions:\n- ASSISTED TAKEOFF\n- ASSISTED LANDING\n- AI AUTO-TRIM\n\nThey cause serious incompatibility!", timeout: 20000});
         }
     }
 
