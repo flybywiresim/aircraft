@@ -448,22 +448,18 @@ impl GroundSpeed for AirDataInertialReferenceSystem {
 }
 impl AdirsDiscreteOutputs for AirDataInertialReferenceSystem {
     fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool {
-        assert!(adiru_number > 0 && adiru_number <= 3);
         self.adirus[adiru_number - 1].low_speed_warning_1_104kts()
     }
 
     fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool {
-        assert!(adiru_number > 0 && adiru_number <= 3);
         self.adirus[adiru_number - 1].low_speed_warning_2_54kts()
     }
 
     fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool {
-        assert!(adiru_number > 0 && adiru_number <= 3);
         self.adirus[adiru_number - 1].low_speed_warning_3_159kts()
     }
 
     fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool {
-        assert!(adiru_number > 0 && adiru_number <= 3);
         self.adirus[adiru_number - 1].low_speed_warning_4_260kts()
     }
 }
