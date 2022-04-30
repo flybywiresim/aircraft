@@ -377,4 +377,14 @@ export class MathUtils {
        });
        return ret;
    }
+
+   /**
+     * Returns the given value if the value is >=lower or <= upper. Otherwise returns the boundary value.
+     * @param value the value to be clamped
+     * @param lower lowest boundary value
+     * @param upper highest boundary value
+     */
+   public static clamp(value, lower, upper) {
+       return Math.min(Math.max(value, lower), upper);
+   }
 }
