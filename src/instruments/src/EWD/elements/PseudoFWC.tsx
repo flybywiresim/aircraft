@@ -1390,12 +1390,20 @@ const PseudoFWC: React.FC = () => {
         let tempMemoArrayRight:string[] = [];
         const allFailureKeys: string[] = [];
         let tempFailureArrayLeft:string[] = [];
-        const failureKeysLeft: string[] = failuresLeft;
+        let failureKeysLeft: string[] = failuresLeft;
+        let recallFailureKeys: string[] = recallFailures;
         let tempFailureArrayRight:string[] = [];
         const failureKeysRight: string[] = failuresRight;
         let leftFailureSystemCount = 0;
         let rightFailureSystemCount = 0;
-
+        // Update failuresLeft list in case failure has been resolved
+        for (const [key, value] of Object.entries(EWDMessageFailures)) {
+            if (!value.simVarIsActive || value.flightPhaseInhib.some((e) => e === flightPhase)) {
+                failureKeysLeft = failureKeysLeft.filter((e) => e !== key);
+                recallFailureKeys = recallFailures.filter((e) => e !== key);
+            }
+        }
+        setRecallFailures(recallFailureKeys);
         // Failures first
         for (const [key, value] of Object.entries(EWDMessageFailures)) {
             if (value.simVarIsActive && !value.flightPhaseInhib.some((e) => e === flightPhase)) {
@@ -1403,7 +1411,7 @@ const PseudoFWC: React.FC = () => {
                     allFailureKeys.push(key);
                 }
 
-                if ((value.side === 'LEFT' && !failuresLeft.includes(key) && !recallFailures.includes(key)) || (value.side === 'RIGHT' && !failuresRight.includes(key))) {
+                if ((value.side === 'LEFT' && !failuresLeft.includes(key) && !recallFailureKeys.includes(key)) || (value.side === 'RIGHT' && !failuresRight.includes(key))) {
                     if (value.side === 'LEFT') {
                         failureKeysLeft.push(key);
                     } else {
@@ -1419,9 +1427,8 @@ const PseudoFWC: React.FC = () => {
                 } else if (![eng1FireTest, eng2FireTest, apuFireTest, cargoFireTest].every((e) => e === 0)) {
                     masterWarning(1);
                 }
-
                 const newCode: string[] = [];
-                if (!recallFailures.includes(key)) {
+                if (!recallFailureKeys.includes(key)) {
                     const codeIndex = value.whichCodeToReturn.filter((e) => e !== null);
                     codeIndex.forEach((e: number) => {
                         newCode.push(value.codesToReturn[e]);
@@ -1447,7 +1454,6 @@ const PseudoFWC: React.FC = () => {
         }
 
         const failLeft = tempFailureArrayLeft.length > 0;
-        // const failRight = tempFailureArrayRight.length > 0;
 
         const mesgFailOrderLeft: string[] = [];
         const mesgFailOrderRight: string[] = [];
@@ -1465,7 +1471,7 @@ const PseudoFWC: React.FC = () => {
         setFailuresLeft(failureKeysLeft);
         setFailuresRight(failureKeysRight);
 
-        if (failLeft) {
+        if (tempFailureArrayLeft.length > 0) {
             setMemoMessageLeft(orderedFailureArrayLeft);
         }
 
