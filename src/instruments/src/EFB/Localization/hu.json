@@ -238,6 +238,14 @@
       "RunwayAltitude": "Futópálya magassága",
       "RunwayAltitudeUnit": "ft AMSL",
       "RunwayCondition": "Futópálya állapota",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "Futópálya iránya",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Futópálya hossza",
@@ -343,11 +351,14 @@
     "CallTug": "Vontató hívása",
     "Forward": "Előre",
     "Halt": "Állj",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "Ki",
       "On": "Be",
       "Title": "Rögzítőfék"
     },
+    "Right": "Right",
     "TugDirection": "Vontatás iránya",
     "TugSpeed": "Vontatás sebessége"
   },

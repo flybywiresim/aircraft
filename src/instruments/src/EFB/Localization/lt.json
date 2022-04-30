@@ -238,6 +238,14 @@
       "RunwayAltitude": "Pakilimo tako aukštis",
       "RunwayAltitudeUnit": "pėdos virš jūros lygio",
       "RunwayCondition": "Pakilimo tako kondicija",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "Pakilimo tako kryptis",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Galimas nusileidimo tako nuotolis",
@@ -343,11 +351,14 @@
     "CallTug": "Iškviesti vilkiką",
     "Forward": "Pirmyn",
     "Halt": "Sustabdyti",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "Išjungta",
       "On": "Įjungta",
       "Title": "Stovėjimo stabdys"
     },
+    "Right": "Right",
     "TugDirection": "Vilkiko kryptis",
     "TugSpeed": "Vilkiko greitis"
   },

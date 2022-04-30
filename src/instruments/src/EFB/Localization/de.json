@@ -238,6 +238,14 @@
       "RunwayAltitude": "Landebahnhöhenlage",
       "RunwayAltitudeUnit": "Fuß über Meeresspiegel",
       "RunwayCondition": "Zustand der Landebahn",
+      "RunwayConditions": {
+        "Dry": "Trocken (6)",
+        "Good": "Gut (5)",
+        "GoodMedium": "Gut-Mittel (4)",
+        "Medium": "Mittel (3)",
+        "MediumPoor": "Mittel-Schlecht (2)",
+        "Poor": "Schlecht (1)"
+      },
       "RunwayHeading": "Landebahnrichtung",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Verfügbare Landebahnlänge",
@@ -342,12 +350,15 @@
     "Backward": "Rückwärts",
     "CallTug": "Rufe Flugzeugschlepper",
     "Forward": "Vorwärts",
-    "Halt": "Halt",
+    "Halt": "Pausiert",
+    "Left": "Links",
+    "Moving": "In Bewegung",
     "ParkingBrake": {
       "Off": "Aus",
       "On": "An",
       "Title": "Parkbremse"
     },
+    "Right": "Rechts",
     "TugDirection": "Schlepprichtung",
     "TugSpeed": "Schleppgeschwindigkeit"
   },

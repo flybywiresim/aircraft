@@ -238,6 +238,14 @@
       "RunwayAltitude": "Altitude de la piste",
       "RunwayAltitudeUnit": "pi. ASL",
       "RunwayCondition": "État de la piste",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "Cap de piste",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Piste LDA",
@@ -343,11 +351,14 @@
     "CallTug": "Appeler le remorqueur",
     "Forward": "Avancer",
     "Halt": "Interrompre",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "DÉSACTIVÉ",
       "On": "ACTIVÉ",
       "Title": "Frein de parc"
     },
+    "Right": "Right",
     "TugDirection": "Direction du remorqueur",
     "TugSpeed": "Vitesse du remorqueur"
   },

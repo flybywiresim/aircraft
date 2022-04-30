@@ -238,6 +238,14 @@
       "RunwayAltitude": "रनवे की ऊंचाई",
       "RunwayAltitudeUnit": "फुट एएसएल",
       "RunwayCondition": "रनवे दशा",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "रनवे हेडिंग",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "रनवे एलडीए",
@@ -342,12 +350,15 @@
     "Backward": "Backward",
     "CallTug": "Call Tug",
     "Forward": "Forward",
-    "Halt": "Halt",
+    "Halt": "Paused",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "Off",
       "On": "On",
       "Title": "Parking Brake"
     },
+    "Right": "Right",
     "TugDirection": "Tug Direction",
     "TugSpeed": "Tug Speed"
   },

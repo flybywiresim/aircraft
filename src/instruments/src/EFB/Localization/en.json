@@ -238,6 +238,14 @@
       "RunwayAltitude": "Runway Altitude",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Runway Condition",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "Runway Heading",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "Runway LDA",
@@ -343,12 +351,14 @@
     "CallTug": "Call Tug",
     "Forward": "Forward",
     "Halt": "Paused",
+    "Left": "Left",
     "Moving": "Moving",
     "ParkingBrake": {
       "Off": "Off",
       "On": "On",
       "Title": "Parking Brake"
     },
+    "Right": "Right",
     "TugDirection": "Tug Direction",
     "TugSpeed": "Tug Speed"
   },

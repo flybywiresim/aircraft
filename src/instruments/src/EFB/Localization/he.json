@@ -238,6 +238,14 @@
       "RunwayAltitude": "גובה המסלול",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "מצב המסלול",
+      "RunwayConditions": {
+        "Dry": "Dry (6)",
+        "Good": "Good (5)",
+        "GoodMedium": "Good-Medium (4)",
+        "Medium": "Medium (3)",
+        "MediumPoor": "Medium-Poor (2)",
+        "Poor": "Poor (1)"
+      },
       "RunwayHeading": "כיוון המסלול",
       "RunwayHeadingUnit": "°",
       "RunwayLda": "מרחק נחיתה זמין (LDA)",
@@ -343,11 +351,14 @@
     "CallTug": "קרא לנע-דחף",
     "Forward": "קדימה",
     "Halt": "עצור",
+    "Left": "Left",
+    "Moving": "Moving",
     "ParkingBrake": {
       "Off": "כבוי",
       "On": "פועל",
       "Title": "בלם חניה"
     },
+    "Right": "Right",
     "TugDirection": "כיוון הגרירה",
     "TugSpeed": "מהירות הגרירה"
   },
