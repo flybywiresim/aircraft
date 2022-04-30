@@ -49,6 +49,7 @@
         "Loading": "Laden...",
         "MetarParsingError": "Ontvangen METAR kon niet worden ontcijferd",
         "NoIcaoProvided": "Er is geen ICAO verstrekt",
+        "NotAvailableShort": "N/A",
         "Raw": "Onbewerkt",
         "TT": {
           "SwitchToIconView": "Overschakelen naar pictogramweergave",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Authenticeren met Navigraph",
       "InsufficientEnv": "Incorrect .env-bestand",
       "IntoYourBrowserAndEnterTheCodeBelow": "in uw browser en voer de onderstaande code in\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Geen luchthaven geselecteerd",
       "ResetNavigraphAuthentication": "Navigraph-verificatie resetten",
       "ScanTheQrCodeOrOpen": "Scan de QR-code of Open",

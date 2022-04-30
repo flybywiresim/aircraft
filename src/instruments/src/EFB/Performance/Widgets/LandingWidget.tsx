@@ -550,12 +550,12 @@ export const LandingWidget = () => {
                                         value={runwayCondition}
                                         onChange={handleRunwayConditionChange}
                                         options={[
-                                            { value: 0, displayValue: 'Dry (6)' },
-                                            { value: 1, displayValue: 'Good (5)' },
-                                            { value: 2, displayValue: 'Good-Medium (4)' },
-                                            { value: 3, displayValue: 'Medium (3)' },
-                                            { value: 4, displayValue: 'Medium-Poor (2)' },
-                                            { value: 5, displayValue: 'Poor (1)' },
+                                            { value: 0, displayValue: t('Performance.Landing.RunwayCondition.Dry') },
+                                            { value: 1, displayValue: t('Performance.Landing.RunwayCondition.Good') },
+                                            { value: 2, displayValue: t('Performance.Landing.RunwayCondition.Good-Medium') },
+                                            { value: 3, displayValue: t('Performance.Landing.RunwayCondition.Medium') },
+                                            { value: 4, displayValue: t('Performance.Landing.RunwayCondition.Medium-Poor') },
+                                            { value: 5, displayValue: t('Performance.Landing.RunwayCondition.Poor') },
                                         ]}
                                     />
                                 </Label>

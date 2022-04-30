@@ -49,6 +49,7 @@
         "Loading": "Se incarcă",
         "MetarParsingError": "METAR-ul primit nu a putut fi analizat",
         "NoIcaoProvided": "Niciun cod ICAO furnizat",
+        "NotAvailableShort": "N/A",
         "Raw": "Brut",
         "TT": {
           "SwitchToIconView": "Comutare la vizualizarea pictogramă",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Autentificare cu Navigraph",
       "InsufficientEnv": "Fișier .env insuficient",
       "IntoYourBrowserAndEnterTheCodeBelow": "în browser-ul dumneavoastră și introduceți codul de mai jos\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Niciun aeroport selectat",
       "ResetNavigraphAuthentication": "Resetare autentificare Navigraph",
       "ScanTheQrCodeOrOpen": "Scanați codul QR sau Deschideti",

@@ -49,6 +49,7 @@
         "Loading": "Chargement",
         "MetarParsingError": "Le METAR reçu n'a pas pu être analysé",
         "NoIcaoProvided": "Aucun code OACI fourni",
+        "NotAvailableShort": "N/A",
         "Raw": "Brut",
         "TT": {
           "SwitchToIconView": "Basculer vers METAR visuel",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "S'authentifier avec Navigraph",
       "InsufficientEnv": "Fichier .env insuffisant",
       "IntoYourBrowserAndEnterTheCodeBelow": "dans votre navigateur et saisissez le code ci-dessous\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Aucun aéroport sélectionné",
       "ResetNavigraphAuthentication": "Réinitialiser l'authentification Navigraph",
       "ScanTheQrCodeOrOpen": "Scannez le code QR ou ouvrez",

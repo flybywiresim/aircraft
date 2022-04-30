@@ -49,6 +49,7 @@
         "Loading": "جارٍ التحميل…",
         "MetarParsingError": "لا يمكن تحليل الMETAR المستلم",
         "NoIcaoProvided": "لم يتم توفير ICAO\n",
+        "NotAvailableShort": "N/A",
         "Raw": "غير معالج",
         "TT": {
           "SwitchToIconView": "التبديل إلى عرض الأيقونة",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "مصادقة مع Navigraph",
       "InsufficientEnv": "ملف .env غير كاف",
       "IntoYourBrowserAndEnterTheCodeBelow": "في متصفحك وأدخل الرمز بالاسفل\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "لم يتم اختيار مطار",
       "ResetNavigraphAuthentication": "إعادة تعيين مصادقة Navigraph",
       "ScanTheQrCodeOrOpen": "مسح رمز الاستجابة السريعة أو فتح",

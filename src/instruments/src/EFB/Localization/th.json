@@ -49,6 +49,7 @@
         "Loading": "กำลังโหลด",
         "MetarParsingError": "ไม่สามารถแยกวิเคราะห์ METAR ที่ได้รับได้",
         "NoIcaoProvided": "ไม่มี ICAO ให้",
+        "NotAvailableShort": "N/A",
         "Raw": "ข้อมูลดิบ",
         "TT": {
           "SwitchToIconView": "สลับไปยังมุมมองไอคอน",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "ตรวจสอบสิทธิ์ด้วย Navigraph",
       "InsufficientEnv": "ไฟล์ .env ไม่เพียงพอ",
       "IntoYourBrowserAndEnterTheCodeBelow": "ลงในเบราว์เซอร์ของคุณและป้อนรหัสด้านล่าง",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "ไม่มีสนามบินที่เลือก",
       "ResetNavigraphAuthentication": "รีเซ็ตการตรวจสอบสิทธิ์ของ Navigraph",
       "ScanTheQrCodeOrOpen": "สแกน QR Code หรือ เปิด",

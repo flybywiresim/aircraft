@@ -49,6 +49,7 @@
         "Loading": "正在加载",
         "MetarParsingError": "无法解析 METAR",
         "NoIcaoProvided": "未填入 ICAO 代码",
+        "NotAvailableShort": "N/A",
         "Raw": "原始数据",
         "TT": {
           "SwitchToIconView": "切换到图标视图",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "使用 Navigraph 帐户进行身份验证",
       "InsufficientEnv": ".env 文件数量不足",
       "IntoYourBrowserAndEnterTheCodeBelow": "进入浏览器并输入下面的代码\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "未选择机场",
       "ResetNavigraphAuthentication": "重置 Navigraph 身份验证",
       "ScanTheQrCodeOrOpen": "扫描二维码或打开",

@@ -49,6 +49,7 @@
         "Loading": "Yükleniyor",
         "MetarParsingError": "Alınan METAR ayrıştırılamadı",
         "NoIcaoProvided": "ICAO sağlanmadı",
+        "NotAvailableShort": "N/A",
         "Raw": "Ham",
         "TT": {
           "SwitchToIconView": "Simge Görünümüne Geç",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Navigraph ile Kimlik Doğrulama",
       "InsufficientEnv": "Yetersiz .env dosyası",
       "IntoYourBrowserAndEnterTheCodeBelow": "tarayıcınıza girin ve aşağıdaki kodu girin\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Havaalanı Seçilmedi",
       "ResetNavigraphAuthentication": "Navigraph Kimlik Doğrulamasını Sıfırla",
       "ScanTheQrCodeOrOpen": "QR Kodunu tarayın veya Açın",

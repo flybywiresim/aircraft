@@ -49,6 +49,7 @@
         "Loading": "טוען",
         "MetarParsingError": "לא ניתן היה לנתח את ה-METAR שהתקבל",
         "NoIcaoProvided": "ICAO לא סופק",
+        "NotAvailableShort": "N/A",
         "Raw": "גלם",
         "TT": {
           "SwitchToIconView": "עבור לתצוגת אייקונים",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "אמת עם Navigraph",
       "InsufficientEnv": "קובץ env. לא מספיק",
       "IntoYourBrowserAndEnterTheCodeBelow": "לדפדפן שלך והזן את הקוד שלהלן",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "לא נבחר שדה תעופה",
       "ResetNavigraphAuthentication": "אפס את אימות Navigraph",
       "ScanTheQrCodeOrOpen": "סרוק קוד QR או פתח",

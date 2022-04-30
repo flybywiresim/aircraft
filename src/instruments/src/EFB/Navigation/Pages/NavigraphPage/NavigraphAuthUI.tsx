@@ -47,7 +47,7 @@ const Loading = () => {
 
 export const NavigraphAuthUI = () => {
     const navigraph = useNavigraph();
-    const [displayAuthCode, setDisplayAuthCode] = useState('LOADING');
+    const [displayAuthCode, setDisplayAuthCode] = useState(t('NavigationAndCharts.Navigraph.LoadingMsg').toUpperCase());
 
     useInterval(() => {
         if (navigraph.auth.code) {

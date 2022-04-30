@@ -49,6 +49,7 @@
         "Loading": "Loading",
         "MetarParsingError": "Received METAR could not be parsed",
         "NoIcaoProvided": "No ICAO provided",
+        "NotAvailableShort": "N/A",
         "Raw": "Raw",
         "TT": {
           "SwitchToIconView": "Switch to Icon View",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Authenticate with Navigraph",
       "InsufficientEnv": "Insufficient .env File",
       "IntoYourBrowserAndEnterTheCodeBelow": "into your browser and enter the code below\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "No Airport Selected",
       "ResetNavigraphAuthentication": "Reset Navigraph Authentication",
       "ScanTheQrCodeOrOpen": "Scan the QR Code or Open",

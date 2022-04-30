@@ -49,6 +49,7 @@
         "Loading": "लोड हो रहा है…",
         "MetarParsingError": "प्राप्त METAR को पार्स नहीं किया जा सका",
         "NoIcaoProvided": "कोई ICAO नहीं दिया गया",
+        "NotAvailableShort": "N/A",
         "Raw": "सरल ",
         "TT": {
           "SwitchToIconView": "आइकन दृश्य में स्विच करें",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "नैवीग्राफ से प्रमाणित करें",
       "InsufficientEnv": "अपर्याप्त.env फ़ाइल",
       "IntoYourBrowserAndEnterTheCodeBelow": "अपने ब्राउज़र में नीचे दिए गए कोड को दर्ज करें\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "कोई हवाई अड्डा चयनित नहीं",
       "ResetNavigraphAuthentication": "नैवीग्राफ प्रमाणीकरण रीसेट करें",
       "ScanTheQrCodeOrOpen": "QR कोड स्कैन करें या खोलें",

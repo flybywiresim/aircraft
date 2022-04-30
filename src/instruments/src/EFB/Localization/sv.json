@@ -49,6 +49,7 @@
         "Loading": "Laddar",
         "MetarParsingError": "Mottagen METAR kunde inte tolkas",
         "NoIcaoProvided": "Ingen ICAO tillhandahållen",
+        "NotAvailableShort": "N/A",
         "Raw": "Rådata",
         "TT": {
           "SwitchToIconView": "Byt till ikonvy",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Autentisera med Navigraph",
       "InsufficientEnv": "Otillräcklig .env-fil",
       "IntoYourBrowserAndEnterTheCodeBelow": "i din webbläsare och ange koden nedan\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Ingen flygplats vald",
       "ResetNavigraphAuthentication": "Återställ Navigraph autentisering",
       "ScanTheQrCodeOrOpen": "Skanna QR-koden eller öppna",

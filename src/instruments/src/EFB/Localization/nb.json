@@ -49,6 +49,7 @@
         "Loading": "Laster inn",
         "MetarParsingError": "Mottatt METAR kunne ikke analyseres",
         "NoIcaoProvided": "Ingen ICAO oppgitt",
+        "NotAvailableShort": "N/A",
         "Raw": "Rå",
         "TT": {
           "SwitchToIconView": "Bytt til ikonvisning",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Autentisere med Navigraph",
       "InsufficientEnv": "Utilstrekkelig .env-fil",
       "IntoYourBrowserAndEnterTheCodeBelow": "inn i nettleseren din og skriv inn koden nedenfor\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Ingen flyplass valgt",
       "ResetNavigraphAuthentication": "Tilbakestill Navigraph-autentisering",
       "ScanTheQrCodeOrOpen": "Skann QR-koden eller åpne",

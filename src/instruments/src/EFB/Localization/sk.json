@@ -49,6 +49,7 @@
         "Loading": "Načítava sa…",
         "MetarParsingError": "Prijaté METAR nebolo možné analyzovať",
         "NoIcaoProvided": "Neposkytnuty ICAO kód",
+        "NotAvailableShort": "N/A",
         "Raw": "Hrubé",
         "TT": {
           "SwitchToIconView": "Prepnúť do zobrazenia ikon",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Autentifikácia pomocou Navigraph",
       "InsufficientEnv": "Nedostatočný .env súbor",
       "IntoYourBrowserAndEnterTheCodeBelow": "do vášho prehliadača a zadajte kód nižšie\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Letisko nie je vybrané",
       "ResetNavigraphAuthentication": "Obnovenie overovania Navigrafu",
       "ScanTheQrCodeOrOpen": "Skenovanie QR kódu alebo otvoriť",
