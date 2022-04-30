@@ -49,6 +49,7 @@
         "Loading": "Kraunama",
         "MetarParsingError": "Gauta METAR informacija negalėjo buti išanalizuota",
         "NoIcaoProvided": "ICAO kodas nepateiktas",
+        "NotAvailableShort": "N/A",
         "Raw": "Neapdorotas",
         "TT": {
           "SwitchToIconView": "Pereiti į ikonų vaizdą",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Autentifikuoti su Navigraph",
       "InsufficientEnv": "Nepakankamas .env failas",
       "IntoYourBrowserAndEnterTheCodeBelow": "savo naršyklėje ir įveskite žemiau esantį kodą.",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Oro uostas nepasirinktas",
       "ResetNavigraphAuthentication": "Atstatyti Navigraph autentifikaciją",
       "ScanTheQrCodeOrOpen": "Nuskanuokite QR kodą arba atidarykite",

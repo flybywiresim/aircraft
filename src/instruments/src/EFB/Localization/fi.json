@@ -49,6 +49,7 @@
         "Loading": "Ladataan",
         "MetarParsingError": "Vastaanotettua METAR:ia ei pystytty käyttämään",
         "NoIcaoProvided": "ICAO-koodi puuttuu",
+        "NotAvailableShort": "N/A",
         "Raw": "Raakalukema",
         "TT": {
           "SwitchToIconView": "Vaihda kuvakenäkymään",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Tunnistaudu Navigraphissa",
       "InsufficientEnv": "Puutteellinen .env-tiedosto",
       "IntoYourBrowserAndEnterTheCodeBelow": "selaimeesi ja kirjoita alla oleva koodi",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Ei lentokenttää valittuna",
       "ResetNavigraphAuthentication": "Resetoi Navigraph tunnistautuminen",
       "ScanTheQrCodeOrOpen": "Skannaa QR-koodi tai avaa",

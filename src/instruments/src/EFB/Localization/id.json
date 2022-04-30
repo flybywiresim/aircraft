@@ -49,6 +49,7 @@
         "Loading": "Memuat",
         "MetarParsingError": "METAR yang diterima gagal dimuat",
         "NoIcaoProvided": "Tak ada ICAO yang disediakan",
+        "NotAvailableShort": "N/A",
         "Raw": "Format mentah",
         "TT": {
           "SwitchToIconView": "Beralih ke Tampilan Ikon",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Autentikasi dengan Navigraph",
       "InsufficientEnv": "File .env tidak memadai",
       "IntoYourBrowserAndEnterTheCodeBelow": "pada browser anda dan masukkan kode dibawah ini",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Tidak ada Bandara yang dipilih",
       "ResetNavigraphAuthentication": "Atur Ulang Autentikasi Navigraph",
       "ScanTheQrCodeOrOpen": "Pindai Kode QR atau Buka",

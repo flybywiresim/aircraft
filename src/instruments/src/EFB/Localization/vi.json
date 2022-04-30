@@ -49,6 +49,7 @@
         "Loading": "Đang tải…",
         "MetarParsingError": "METAR đã nhận không thể phân tích được",
         "NoIcaoProvided": "Chưa cung cấp mã ICAO",
+        "NotAvailableShort": "N/A",
         "Raw": "Nguyên",
         "TT": {
           "SwitchToIconView": "Chuyển sang Chế độ biểu tượng",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Xác thực với Navigraph",
       "InsufficientEnv": "Tệp .env không đủ",
       "IntoYourBrowserAndEnterTheCodeBelow": "vào trình duyệt của bạn và nhập mã dưới đây\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Không có sân bay nào được chọn",
       "ResetNavigraphAuthentication": "Đặt lại xác thực Navigraph",
       "ScanTheQrCodeOrOpen": "Quét mã QR hoặc Mở",

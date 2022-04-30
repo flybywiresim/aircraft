@@ -49,6 +49,7 @@
         "Loading": "Φόρτωση...",
         "MetarParsingError": "Ληφθέν METAR αδύνατο να αναλυθεί",
         "NoIcaoProvided": "Δεν παρέχεται ICAO",
+        "NotAvailableShort": "N/A",
         "Raw": "Ακατέργαστο",
         "TT": {
           "SwitchToIconView": "Εναλλαγή σε Προβολή Εικονιδίων",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Έλεγχος ταυτότητας με Navigraph",
       "InsufficientEnv": "Ανεπαρκές αρχείο.env",
       "IntoYourBrowserAndEnterTheCodeBelow": "στο πρόγραμμα περιήγησής σας και εισάγετε τον παρακάτω κωδικό\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Δεν Επιλέχθηκε Αεροδρόμιο",
       "ResetNavigraphAuthentication": "Επαναφορά Ελέγχου Ταυτότητας Navigraph",
       "ScanTheQrCodeOrOpen": "Σάρωση του κώδικα QR ή Άνοιγμα",

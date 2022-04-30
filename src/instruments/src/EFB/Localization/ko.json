@@ -49,6 +49,7 @@
         "Loading": "로딩 중...",
         "MetarParsingError": "수신된 METAR 정보를 분석할 수 없음",
         "NoIcaoProvided": "ICAO가 제공되지 않음",
+        "NotAvailableShort": "N/A",
         "Raw": "원본",
         "TT": {
           "SwitchToIconView": "아이콘 보기로 전환",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Navigraph 인증",
       "InsufficientEnv": "불충분한 .env 파일",
       "IntoYourBrowserAndEnterTheCodeBelow": "브라우저에서 아래 코드를 입력하세요",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "선택된 공항 없음",
       "ResetNavigraphAuthentication": "Navigraph 인증 재설정",
       "ScanTheQrCodeOrOpen": "QR코드 스캔 또는 열기 - ",

@@ -220,11 +220,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                                     <>
                                                         {metar.barometer ? <BaroValue /> : 'N/A'}
                                                     </>
-                                                ) : (
-                                                    <>
-                                                        N/A
-                                                    </>
-                                                )}
+                                                ) : t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}
                                             </div>
                                             <div className="flex flex-col items-center space-y-1">
                                                 <Wind size={35} />
@@ -241,7 +237,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                                             {' '}
                                                             kts
                                                         </>
-                                                    ) : 'N/A'}
+                                                    ) : t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}
                                             </div>
                                             <div className="flex flex-col items-center space-y-1">
                                                 <ThermometerHalf size={35} />
@@ -253,7 +249,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                                             {' '}
                                                             &deg;C
                                                         </>
-                                                    ) : 'N/A'}
+                                                    ) : t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}
                                             </div>
                                             <div className="flex flex-col items-center space-y-1">
                                                 <Droplet size={35} />
@@ -265,7 +261,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                                             {' '}
                                                             &deg;C
                                                         </>
-                                                    ) : 'N/A'}
+                                                    ) : t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}
                                             </div>
                                         </div>
                                     </>

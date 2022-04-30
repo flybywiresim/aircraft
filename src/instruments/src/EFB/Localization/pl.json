@@ -49,6 +49,7 @@
         "Loading": "Wczytywanie",
         "MetarParsingError": "Odebrany METAR nie może zostać przetworzony",
         "NoIcaoProvided": "Nie podano kodu ICAO",
+        "NotAvailableShort": "N/A",
         "Raw": "Źródłowy",
         "TT": {
           "SwitchToIconView": "Przełącz do Widoku Ikon",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Uwierzytelnij za pomocą Navigraph",
       "InsufficientEnv": "Niewłaściwy Plik .env",
       "IntoYourBrowserAndEnterTheCodeBelow": "w twojej przeglądarce i wprowadź poniższy kod\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Nie Wybrano Lotniska",
       "ResetNavigraphAuthentication": "Resetuj Uwierzytelnienie Navigraph",
       "ScanTheQrCodeOrOpen": "Zeskanuj kod QR lub Otwórz",

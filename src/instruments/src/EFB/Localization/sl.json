@@ -49,6 +49,7 @@
         "Loading": "Nalagam",
         "MetarParsingError": "Prejetega METAR-ja ni bilo mogoče razčleniti",
         "NoIcaoProvided": "ICAO ni naveden",
+        "NotAvailableShort": "N/A",
         "Raw": "Nerazčlenjeno",
         "TT": {
           "SwitchToIconView": "Preklopi na ikonski pogled",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Preverjanje pristnosti z Navigraph-om",
       "InsufficientEnv": "Nezadostna datoteka .env",
       "IntoYourBrowserAndEnterTheCodeBelow": "v brskalniku in vnesite spodnjo kodo",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Ni izbranega letališča",
       "ResetNavigraphAuthentication": "Ponastavitev Navigraph avtentikacije",
       "ScanTheQrCodeOrOpen": "Skenirajte QR kodo ali odprite",

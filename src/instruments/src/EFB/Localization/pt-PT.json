@@ -49,6 +49,7 @@
         "Loading": "A Carregar",
         "MetarParsingError": "METAR recebido não pode ser analisado ",
         "NoIcaoProvided": "ICAO não fornecido",
+        "NotAvailableShort": "N/A",
         "Raw": "Por processar",
         "TT": {
           "SwitchToIconView": "Mudar para a visualização de ícones",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Autenticar com Navigraph",
       "InsufficientEnv": "Arquivo .env insuficiente",
       "IntoYourBrowserAndEnterTheCodeBelow": "no seu navegador e insira o código abaixo\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Nenhum Aeroporto Selecionado",
       "ResetNavigraphAuthentication": "Redefinir a Autenticação Navigraph",
       "ScanTheQrCodeOrOpen": "Digitalize o código QR ou clique",

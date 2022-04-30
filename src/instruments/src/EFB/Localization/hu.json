@@ -49,6 +49,7 @@
         "Loading": "Betöltés",
         "MetarParsingError": "A kapott METAR nem értelmezhető",
         "NoIcaoProvided": "Nincs ICAO megadva",
+        "NotAvailableShort": "N/A",
         "Raw": "Kód",
         "TT": {
           "SwitchToIconView": "Váltás ikon nézetre",
@@ -172,6 +173,7 @@
       "AuthenticateWithNavigraph": "Hitelesítés a Navigraph segítségével",
       "InsufficientEnv": "Nem megfelelő .env fájl",
       "IntoYourBrowserAndEnterTheCodeBelow": "a böngészőbe, és írja be a kódot lentebb\n",
+      "LoadingMsg": "Loading",
       "NoAirportSelected": "Nincs repülőtér kiválasztva",
       "ResetNavigraphAuthentication": "Navigraph hitelesítés visszaállítása",
       "ScanTheQrCodeOrOpen": "Szkennelje be a QR-kódot vagy megnyitás",

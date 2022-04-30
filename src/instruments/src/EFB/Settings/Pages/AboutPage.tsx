@@ -5,6 +5,7 @@ import { SettingsPage } from '../Settings';
 
 // @ts-ignore
 import FbwTail from '../../Assets/FBW-Tail.svg';
+import { t } from '../../translation';
 
 interface BuildInfo {
     built: string;
@@ -79,7 +80,7 @@ export const AboutPage = () => {
     }, [version]);
 
     return (
-        <SettingsPage name="About">
+        <SettingsPage name={t('Settings.About.Title')}>
             <div className="flex absolute inset-y-0 flex-col justify-center px-16 pointer-events-none">
                 <div className="flex flex-row items-center">
 
