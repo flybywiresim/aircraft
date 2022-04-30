@@ -15,7 +15,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
 
             if (symbol.type & NdSymbolTypeFlags.FlightPlan) {
                 this.paintFlightPlanWaypoint(false, context, rx, ry, symbol);
-            } else if (symbol.type & NdSymbolTypeFlags.Airport) {
+            } else if (symbol.type & NdSymbolTypeFlags.Airport || symbol.type & NdSymbolTypeFlags.Runway) {
                 this.paintAirport(false, context, rx, ry, symbol);
             } else {
                 this.paintWaypoint(false, context, rx, ry, symbol);
@@ -40,7 +40,6 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     }
 
     private paintAirport(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
-        console.log(`${symbol.ident}, ${symbol.type & NdSymbolTypeFlags.FlightPlan}`);
         const mainColor = symbol.type & NdSymbolTypeFlags.FlightPlan ? '#fff' : '#ff94ff';
 
         this.paintAirportShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
