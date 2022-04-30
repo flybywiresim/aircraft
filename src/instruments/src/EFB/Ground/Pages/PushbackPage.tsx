@@ -136,17 +136,17 @@ export const PushbackPage = () => {
                 const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
                 const computedTugHeading = (aircraftHeading - (50 * tugCommandedHeadingFactorRef.current.valueOf())) % 360;
                 setTugCommandedHeading((() => computedTugHeading)); // debug
-                const convertedComputedTugHeading = (computedTugHeading * InternalTugHeadingDegrees) & 0xffffffff;
-                const computedRotationVelocity = (tugCommandedSpeedFactor <= 0 ? -1 : 1) * tugCommandedHeadingFactor * (parkingBrakeEngaged ? 0.01 : 0.1);
+                const computedRotationVelocity = (tugCommandedSpeedFactorRef.current.valueOf() <= 0 ? -1 : 1) * tugCommandedHeadingFactorRef.current.valueOf() * (parkingBrakeEngaged ? 0.008 : 0.08);
+                const convertedComputedHeading = (computedTugHeading * InternalTugHeadingDegrees) & 0xffffffff;
                 const tugCommandedSpeed = tugCommandedSpeedFactorRef.current.valueOf() * (parkingBrakeEngaged ? 0.8 : 8);
                 setTugCommandedSpeed(() => tugCommandedSpeed); // debug
                 // Set tug heading
-                SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', convertedComputedTugHeading);
+                SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', convertedComputedHeading);
                 SimVar.SetSimVarValue('ROTATION VELOCITY BODY X', 'Number', 0);
                 SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
                 SimVar.SetSimVarValue('ROTATION VELOCITY BODY Z', 'Number', 0);
                 // Set tug speed
-                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
+                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', tugCommandedSpeed);
                 SimVar.SetSimVarValue('VELOCITY BODY X', 'Number', 0);
                 SimVar.SetSimVarValue('VELOCITY BODY Y', 'Number', 0);
                 SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', tugCommandedSpeed);
@@ -176,103 +176,102 @@ export const PushbackPage = () => {
 
     const [showDebugInfo, setShowDebugInfo] = useState(false);
 
+    function debugInformation() {
+        return (
+            <div className="flex absolute right-0 left-0 z-50 flex-grow justify-between mx-4 font-mono text-black bg-gray-100 border-gray-100">
+                <div className="overflow-hidden text-black text-m">
+                    deltaTime:
+                    {' '}
+                    {deltaTime}
+                    <br />
+                    pushBackPaused:
+                    {' '}
+                    {pushBackPaused ? 1 : 0}
+                    <br />
+                    pushBackWait:
+                    {' '}
+                    {pushBackWait}
+                    <br />
+                    pushBackAttached:
+                    {' '}
+                    {pushBackAttached}
+                    <br />
+                    pushBackState:
+                    {' '}
+                    {pushBackState}
+                    <br />
+                    tugAngle:
+                    {' '}
+                    {pushbackAngle.toFixed(3)}
+                    {' ('}
+                    {(pushbackAngle * (180 / Math.PI)).toFixed(3)}
+                    °)
+                </div>
+                <div className="overflow-hidden text-black text-m">
+                    acHeading:
+                    {' '}
+                    {aircraftHeading.toFixed(3)}
+                    <br />
+                    tCHeadingF:
+                    {' '}
+                    {tugCommandedHeadingFactor.toFixed(3)}
+                    <br />
+                    tCHeading :
+                    {' '}
+                    {tugCommandedHeading.toFixed(3)}
+                    <br />
+                    Rotation Velocity X:
+                    {' '}
+                    {SimVar.GetSimVarValue('ROTATION VELOCITY BODY Y', 'Number').toFixed(3)}
+                    <br />
+                    Rotation Velocity Y:
+                    {' '}
+                    {SimVar.GetSimVarValue('ROTATION VELOCITY BODY X', 'Number').toFixed(3)}
+                    <br />
+                    {' '}
+                    Rotation Velocity Z:
+                    {' '}
+                    {SimVar.GetSimVarValue('ROTATION VELOCITY BODY Z', 'Number').toFixed(3)}
+                </div>
+                <div className="overflow-hidden text-black text-m">
+                    acGroundSpeed:
+                    {' '}
+                    {aircraftGroundSpeed.toFixed(3)}
+                    {'kts '}
+                    {' ('}
+                    {(aircraftGroundSpeed * 1.68781).toFixed(3)}
+                    ft/s)
+                    <br />
+                    tCSpeedFactor:
+                    {' '}
+                    {tugCommandedSpeedFactor.toFixed(3)}
+                    <br />
+                    tCSpeed:
+                    {' '}
+                    {tugCommandedSpeed.toFixed(3)}
+                    <br />
+                    Velocity X:
+                    {' '}
+                    {SimVar.GetSimVarValue('VELOCITY BODY Y', 'Number').toFixed(3)}
+                    <br />
+                    Velocity Y:
+                    {' '}
+                    {SimVar.GetSimVarValue('VELOCITY BODY X', 'Number').toFixed(3)}
+                    <br />
+                    Velocity Z:
+                    {' '}
+                    {SimVar.GetSimVarValue('VELOCITY BODY Z', 'Number').toFixed(3)}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex relative flex-col space-y-4 h-content-section-reduced">
-            <div
-                className="flex-grow rounded-lg border-2 border-theme-accent"
-                onDoubleClick={() => setShowDebugInfo(!showDebugInfo)}
-            >
-
+            <div className="flex-grow rounded-lg border-2 border-theme-accent">
                 {/* TODO: Insert bing map here */}
-
-                {showDebugInfo && (
-                    <div className="flex flex-grow">
-                        <div className="mx-2">
-                            deltaTime:
-                            {' '}
-                            {deltaTime}
-                            <br />
-                            pushBackPaused:
-                            {' '}
-                            {pushBackPaused ? 1 : 0}
-                            <br />
-                            pushBackWait:
-                            {' '}
-                            {pushBackWait}
-                            <br />
-                            pushBackAttached:
-                            {' '}
-                            {pushBackAttached}
-                            <br />
-                            pushBackState:
-                            {' '}
-                            {pushBackState}
-                            <br />
-                            pushbackAngle:
-                            {' '}
-                            {pushbackAngle.toFixed(4)}
-                            {' ('}
-                            {(pushbackAngle * (180 / Math.PI)).toFixed(4)}
-                            °)
-                        </div>
-                        <div className="mx-2">
-                            aircraftHeading:
-                            {' '}
-                            {aircraftHeading.toFixed(4)}
-                            <br />
-                            tugCommandedHeadingFactor:
-                            {' '}
-                            {tugCommandedHeadingFactor.toFixed(4)}
-                            <br />
-                            tugCommandedHeading:
-                            {' '}
-                            {tugCommandedHeading.toFixed(4)}
-                            <br />
-                            Rotation Velocity X:
-                            {' '}
-                            {SimVar.GetSimVarValue('ROTATION VELOCITY BODY Y', 'Number').toFixed(4)}
-                            <br />
-                            Rotation Velocity Y:
-                            {' '}
-                            {SimVar.GetSimVarValue('ROTATION VELOCITY BODY X', 'Number').toFixed(4)}
-                            <br />
-                            Rotation Velocity Z:
-                            {' '}
-                            {SimVar.GetSimVarValue('ROTATION VELOCITY BODY Z', 'Number').toFixed(4)}
-                        </div>
-                        <div className="mx-2">
-                            aircraftGroundSpeed:
-                            {' '}
-                            {aircraftGroundSpeed.toFixed(4)}
-                            {'kts '}
-                            (
-                            {(aircraftGroundSpeed * 1.68781).toFixed(4)}
-                            ft/s)
-                            <br />
-                            tugCommandedSpeedFactor:
-                            {' '}
-                            {tugCommandedSpeedFactor}
-                            <br />
-                            tugCommandedSpeed:
-                            {' '}
-                            { tugCommandedSpeed }
-                            <br />
-                            Velocity X:
-                            {' '}
-                            {SimVar.GetSimVarValue('VELOCITY BODY Y', 'Number').toFixed(4)}
-                            <br />
-                            Velocity Y:
-                            {' '}
-                            {SimVar.GetSimVarValue('VELOCITY BODY X', 'Number').toFixed(4)}
-                            <br />
-                            Velocity Z:
-                            {' '}
-                            {SimVar.GetSimVarValue('VELOCITY BODY Z', 'Number').toFixed(4)}
-                            {' '}
-                        </div>
-                    </div>
-                )}
             </div>
+            {showDebugInfo && debugInformation()}
             <div className="flex flex-col p-6 space-y-4 rounded-lg border-2 border-theme-accent">
                 <div className="flex flex-row space-x-4">
                     <div className="w-full">
@@ -329,7 +328,12 @@ export const PushbackPage = () => {
                             value={tugCommandedHeadingFactor}
                             startPoint={0}
                         />
-                        <p className="font-bold text-unselected">R</p>
+                        <p
+                            className="font-bold text-unselected"
+                            onDoubleClick={() => setShowDebugInfo(!showDebugInfo)}
+                        >
+                            R
+                        </p>
                     </div>
                 </div>
 
