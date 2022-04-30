@@ -17,6 +17,7 @@ export const PushbackPage = () => {
     const [pushBackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
     const [pushBackState, setPushBackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 250);
     const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Radians', 100);
+
     const [latitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
     const [longitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
     const [headingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 2);
@@ -32,6 +33,8 @@ export const PushbackPage = () => {
     const [tugCommandedSpeed, setTugCommandedSpeed] = useState(0);
 
     // required so these can be used inside the setInterval callback function
+    const pushBackAttachedRef = useRef(pushBackAttached);
+    pushBackAttachedRef.current = pushBackAttached;
     const pushbackPausedRef = useRef(pushBackPaused);
     pushbackPausedRef.current = pushBackPaused;
     const lastTimeRef = useRef(lastTime);
@@ -50,11 +53,11 @@ export const PushbackPage = () => {
         setPushbackWait(1);
         // when unloading the page
         return (() => {
-            if (pushBackAttached) {
-                toast.info('Pausing Pushback. Return to Pushback page to resume pushback.');
+            if (pushBackAttachedRef.current) {
                 setPushBackPaused(true);
                 setTugCommandedSpeedFactor(0);
                 setPushbackWait(1);
+                toast.info('Pausing Pushback. Return to Pushback page to resume pushback.');
             }
         });
     }, []);
@@ -344,6 +347,7 @@ export const PushbackPage = () => {
                             <ArrowLeft size={40} />
                         </button>
                     </div>
+
                     <div className="w-full">
                         <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
                             {t('Pushback.Forward')}
@@ -357,6 +361,7 @@ export const PushbackPage = () => {
                         </button>
                     </div>
                 </div>
+
                 <div>
                     <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
                         {t('Pushback.TugSpeed')}
