@@ -36,6 +36,7 @@ import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
+import { PushbackUpdater } from './Utils/PushbackUpdater';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
@@ -108,6 +109,13 @@ const Efb = () => {
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
     }, []);
+
+    // Calls update on PushbackUpdater helper class which in turn updates
+    // pushback movements when pushback tug is attached.
+    const [pushbackUpdater] = useState(() => new PushbackUpdater());
+    useInterval(() => {
+        pushbackUpdater.update();
+    }, 500);
 
     useEffect(() => {
         const remainingDistance = distanceTo(
