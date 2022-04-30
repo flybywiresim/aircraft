@@ -6,6 +6,7 @@ import Slider from 'rc-slider';
 import { toast } from 'react-toastify';
 import { MathUtils } from '@shared/MathUtils';
 import { t } from '../../translation';
+import { PushbackUpdater } from './PushbackUpdater';
 
 export const PushbackPage = () => {
     const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
@@ -24,6 +25,10 @@ export const PushbackPage = () => {
     const [tugCommandedHeading] = useSimVar('L:A32NX_PUSHBACK_TUG_COMMANDED_HEADING', 'Number', 50);
     const [tugCommandedHeadingFactor, setTugCommandedHeadingFactor] = useSimVar('L:A32NX_PUSHBACK_TUG_COMMANDED_HEADING_FACTOR', 'Number', 50);
     const [tugCommandedSpeedFactor, setTugCommandedSpeedFactor] = useSimVar('L:A32NX_PUSHBACK_TUG_COMMANDED_SPEED_FACTOR', 'Number', 50);
+
+    // Calls update on PushbackUpdater helper class which in turn updates
+    // pushback movements when pushback tug is attached.
+    const [pushbackUpdater] = useState(() => new PushbackUpdater());
 
     // called once when loading and unloading
     useEffect(() => {
@@ -98,6 +103,18 @@ export const PushbackPage = () => {
         setPushBackPaused(false);
         setTugCommandedSpeedFactor(-elevatorPosition);
     }, [elevatorPosition]);
+
+    const [updateInterval, setUpdateInterval] = useState(0);
+    useEffect(() => {
+        if (pushBackAttached && updateInterval === 0) {
+            const interval = setInterval(pushbackUpdater.updater, 50, pushbackUpdater);
+            // @ts-ignore
+            setUpdateInterval(interval);
+        } else if (!pushBackAttached) {
+            clearInterval(updateInterval);
+            setUpdateInterval(0);
+        }
+    }, [pushBackAttached]);
 
     const [showDebugInfo, setShowDebugInfo] = useState(false);
 

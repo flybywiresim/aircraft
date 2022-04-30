@@ -81,15 +81,4 @@ export class PushbackUpdater {
             console.log(`Pushback update took: ${pb.updateTime}ms - Delta: ${pb.deltaTime}ms`);
         }
     }
-
-    update() {
-        this.pushBackAttached = SimVar.GetSimVarValue('Pushback Attached', 'bool');
-        if (this.pushBackAttached && this.updateInterval === undefined) {
-            // @ts-ignore
-            this.updateInterval = setInterval(this.updater, this.timeout, this);
-        } else if (!this.pushBackAttached) {
-            clearInterval(this.updateInterval);
-            this.updateInterval = undefined;
-        }
-    }
 }
