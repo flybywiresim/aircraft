@@ -20,7 +20,6 @@ export const PushbackPage = () => {
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 250);
 
     const [pushBackPaused, setPushBackPaused] = useState(false);
-
     const [lastTime, setLastTime] = useState(0);
     const [deltaTime, setDeltaTime] = useState(0);
     const [tugCommandedHeading, setTugCommandedHeading] = useState(0);
@@ -29,6 +28,8 @@ export const PushbackPage = () => {
     const [tugCommandedSpeed, setTugCommandedSpeed] = useState(0);
 
     // required so these can be used inside the setInterval callback function
+    const pushbackPausedRef = useRef(pushBackPaused);
+    pushbackPausedRef.current = pushBackPaused;
     const lastTimeRef = useRef(lastTime);
     lastTimeRef.current = lastTime;
     const deltaTimeRef = useRef(deltaTime);
@@ -74,23 +75,6 @@ export const PushbackPage = () => {
         setTugCommandedHeadingFactor(MathUtils.clamp(value, -1, 1));
     };
 
-    // Pause pushback
-    useEffect(() => {
-        if (pushBackPaused) {
-            setPushbackWait(1);
-        } else {
-            setPushbackWait(0);
-        }
-    }, [pushBackPaused]);
-
-    // protect against tug starting pushback while paused
-    useEffect(() => {
-        if (pushBackPaused && aircraftGroundSpeed.toFixed(2) > 0) {
-            setPushbackWait(1);
-            setTugCommandedSpeedFactor(0);
-        }
-    }, [aircraftGroundSpeed.toFixed(2)]);
-
     // Update commanded heading from rudder input
     useEffect(() => {
         // create deadzone
@@ -125,10 +109,10 @@ export const PushbackPage = () => {
 
         if (pushBackAttached && simOnGround) {
             // If no speed is commanded stop the aircraft and return.
-            if (tugCommandedSpeedFactorRef.current.valueOf() === 0) {
+            if (pushbackPausedRef.current.valueOf() || tugCommandedSpeedFactorRef.current.valueOf() === 0) {
                 SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
-                SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
                 SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
+                SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
             } else {
                 // compute heading and speed
                 SimVar.SetSimVarValue('Pushback Wait', 'bool', false);
