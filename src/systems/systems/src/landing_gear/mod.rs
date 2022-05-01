@@ -141,7 +141,7 @@ impl LgciuSensorInputs {
             left_door_up_and_locked: false,
 
             nose_gear_compressed_id: context.get_identifier(format!(
-                "LGCIU_{}_CENTER_GEAR_COMPRESSED",
+                "LGCIU_{}_NOSE_GEAR_COMPRESSED",
                 lgciu_number(lgciu_id)
             )),
             left_gear_compressed_id: context.get_identifier(format!(
@@ -581,11 +581,11 @@ impl LandingGearControlInterfaceUnit {
                 lgciu_number(lgciu_id)
             )),
             nose_gear_downlock_id: context.get_identifier(format!(
-                "LGCIU_{}_CENTER_GEAR_DOWNLOCKED",
+                "LGCIU_{}_NOSE_GEAR_DOWNLOCKED",
                 lgciu_number(lgciu_id)
             )),
             nose_gear_unlock_id: context.get_identifier(format!(
-                "LGCIU_{}_CENTER_GEAR_UNLOCKED",
+                "LGCIU_{}_NOSE_GEAR_UNLOCKED",
                 lgciu_number(lgciu_id)
             )),
             right_gear_downlock_id: context.get_identifier(format!(
