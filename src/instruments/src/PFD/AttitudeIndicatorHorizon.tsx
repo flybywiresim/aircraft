@@ -113,11 +113,11 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             if (pitch.isNormalOperation()) {
                 this.pitchGroupRef.instance.style.display = 'block';
 
-                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(-currentValueAtPrecision)}px, 0px)`;
+                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(currentValueAtPrecision)}px, 0px)`;
             } else {
                 this.pitchGroupRef.instance.style.display = 'none';
             }
-            const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(-currentValueAtPrecision), 31.563), -31.563);
+            const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(currentValueAtPrecision), 31.563), -31.563);
             this.yOffset.set(yOffset);
         });
 
@@ -127,7 +127,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             if (roll.isNormalOperation()) {
                 this.rollGroupRef.instance.style.display = 'block';
 
-                this.rollGroupRef.instance.setAttribute('transform', `rotate(${currentValueAtPrecision} 68.814 80.730)`);
+                this.rollGroupRef.instance.setAttribute('transform', `rotate(${-currentValueAtPrecision} 68.814 80.730)`);
             } else {
                 this.rollGroupRef.instance.style.display = 'none';
             }
@@ -544,9 +544,9 @@ class RisingGround extends DisplayComponent<{ bus: EventBus, filteredRadioAltitu
     private horizonGroundRectangle = FSComponent.createRef<SVGGElement>();
 
     private setOffset() {
-        const targetPitch = (this.radioAlt.isNoComputedData() || this.radioAlt.isFailureWarning()) ? -200 : -0.1 * this.props.filteredRadioAltitude.get();
+        const targetPitch = (this.radioAlt.isNoComputedData() || this.radioAlt.isFailureWarning()) ? 200 : 0.1 * this.props.filteredRadioAltitude.get();
 
-        const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch((-this.lastPitch.value) - targetPitch) - 31.563, 0), -63.093);
+        const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(this.lastPitch.value + targetPitch) - 31.563, 0), -63.093);
         this.horizonGroundRectangle.instance.style.transform = `translate3d(0px, ${targetOffset.toFixed(2)}px, 0px)`;
     }
 
