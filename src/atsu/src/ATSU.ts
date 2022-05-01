@@ -156,6 +156,10 @@ export class Atsu {
         return this.flightStateObserver.NextWaypoint;
     }
 
+    public destinationWaypoint() {
+        return this.flightStateObserver.Destination;
+    }
+
     public currentFlightState() {
         return this.flightStateObserver.PresentPosition;
     }

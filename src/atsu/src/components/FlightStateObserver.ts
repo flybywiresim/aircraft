@@ -23,6 +23,8 @@ export class FlightStateObserver {
 
     public NextWaypoint: Waypoint | undefined = undefined;
 
+    public Destination: Waypoint | undefined = undefined;
+
     private static findLastWaypoint(fp) {
         if (fp) {
             let idx = fp.activeWaypointIndex;
@@ -84,6 +86,7 @@ export class FlightStateObserver {
             const last = FlightStateObserver.findLastWaypoint(fp);
             const active = fp?.getWaypoint(fp.activeWaypointIndex);
             const next = fp?.getWaypoint(fp.activeWaypointIndex + 1);
+            const destination = fp?.getWaypoint(fp.waypoints.length - 1);
 
             this.updatePresentPosition();
             this.updateFcu();
@@ -111,6 +114,12 @@ export class FlightStateObserver {
                 if (!this.NextWaypoint || this.NextWaypoint.ident !== next.ident) {
                     this.NextWaypoint = new Waypoint(next.ident);
                 }
+                this.ActiveWaypoint.utc = Math.round(stats.get(fp.activeWaypointIndex + 1).etaFromPpos);
+
+                if (!this.Destination || this.Destination.ident !== destination.ident) {
+                    this.Destination = new Waypoint(destination.ident);
+                }
+                this.Destination.utc = Math.round(stats.get(fp.waypoints.length - 1).etaFromPpos);
             }
         }, 1000);
     }
