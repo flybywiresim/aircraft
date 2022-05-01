@@ -125,18 +125,18 @@ class CDUAtcPositionReport {
             to[1] = data.activeWaypoint[1];
         }
 
-        const next = "[    ]";
+        let next = "[    ]";
         if (data.nextWaypoint) {
             next = data.nextWaypoint;
         }
 
         mcdu.setTemplate([
             ["POSITION REPORT", "1", "3"],
-            ["\xa0OVHD--------------UTC/ALT"],
+            ["\xa0OVHD-----------UTC/ALT"],
             [`{cyan}${overhead[0]}{end}`, `{cyan}${overhead[1]}/${overhead[2]}`],
-            ["\xa0PPOS--------------UTC/ALT"],
+            ["\xa0PPOS-----------UTC/ALT"],
             [ppos[0], ppos[1]],
-            ["\xa0TO--------------------UTC"],
+            ["\xa0TO-----------------UTC"],
             [`{cyan}${to[0]}{end}`, `{cyan}${to[1]}{end}`],
             ["\xa0NEXT"],
             [`{cyan}${next}{end}`],
