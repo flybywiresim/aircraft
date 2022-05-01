@@ -61,7 +61,7 @@ class CDUAtcReports {
             ["REPORTS"],
             [""],
             [backOnRoute],
-            ["DEVIATING"],
+            ["\xa0DEVIATING"],
             [deviating],
             [""],
             ["<MANUAL POS REPORT"],
