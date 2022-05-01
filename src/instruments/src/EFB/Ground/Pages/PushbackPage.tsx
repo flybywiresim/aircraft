@@ -10,6 +10,7 @@ import {
 import Slider from 'rc-slider';
 import { toast } from 'react-toastify';
 import { MathUtils } from '@shared/MathUtils';
+import { IconPlane } from '@tabler/icons';
 import { BingMap } from '../../UtilComponents/BingMap';
 import { t } from '../../translation';
 
@@ -265,7 +266,7 @@ export const PushbackPage = () => {
 
     return (
         <div className="flex relative flex-col space-y-4 h-content-section-reduced">
-            <div className="overflow-hidden flex-grow rounded-lg border-2 h-[430px] border-theme-accent">
+            <div className="overflow-hidden relative flex-grow rounded-lg border-2 h-[430px] border-theme-accent">
                 {!process.env.VITE_BUILD && (
                     <BingMap
                         configFolder="/Pages/VCockpit/Instruments/MAP/"
@@ -275,6 +276,13 @@ export const PushbackPage = () => {
                         rotation={-headingTrue}
                     />
                 )}
+                <div className="flex absolute inset-0 justify-center items-center">
+                    <IconPlane
+                        className="transform -rotate-90 fill-current text-theme-highlight"
+                        size={50}
+                        strokeLinejoin="miter"
+                    />
+                </div>
             </div>
             {showDebugInfo && debugInformation()}
             <div className="flex flex-col p-6 space-y-4 rounded-lg border-2 border-theme-accent">
