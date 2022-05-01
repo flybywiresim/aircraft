@@ -81,9 +81,11 @@ class A32NX_ND extends BaseInstrument {
         this.simVarPublisher.subscribe('toWptEtaCaptain');
         this.simVarPublisher.subscribe('apprMessage0Captain');
         this.simVarPublisher.subscribe('apprMessage1Captain');
+        this.simVarPublisher.subscribe('selectedWaypointLat');
+        this.simVarPublisher.subscribe('selectedWaypointLong');
         this.simVarPublisher.subscribe('selectedHeading');
-        this.simVarPublisher.subscribe('pposLat');
-        this.simVarPublisher.subscribe('pposLong');
+        this.simVarPublisher.subscribe('latitude');
+        this.simVarPublisher.subscribe('longitude');
 
         this.ecpBusSimVarPublisher.subscribe('ndRangeSetting');
         this.ecpBusSimVarPublisher.subscribe('ndMode');

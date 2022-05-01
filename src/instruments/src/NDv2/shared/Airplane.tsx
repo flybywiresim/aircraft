@@ -4,10 +4,13 @@ import { Layer } from '../../MsfsAvionicsCommon/Layer';
 const PLANE_X_OFFSET = -41;
 const PLANE_Y_OFFSET = 0;
 
-export class Airplane extends DisplayComponent<{ available: Subscribable<boolean>, x: number, y: number, rotation: Subscribable<Degrees> }> {
+export class Airplane extends DisplayComponent<{ available: Subscribable<boolean>, x: Subscribable<number>, y: Subscribable<number>, rotation: Subscribable<Degrees> }> {
     render(): VNode | null {
         return (
-            <Layer x={this.props.x + PLANE_X_OFFSET} y={this.props.y + PLANE_Y_OFFSET}>
+            <Layer
+                x={this.props.x.map((x) => x + PLANE_X_OFFSET)}
+                y={this.props.y.map((y) => y + PLANE_Y_OFFSET)}
+            >
                 <g visibility={this.props.available.map((it) => (it ? 'visible' : 'hidden'))} transform={this.props.rotation.map((rotation) => `rotate(${rotation})`)}>
                     <path
                         class="shadow"

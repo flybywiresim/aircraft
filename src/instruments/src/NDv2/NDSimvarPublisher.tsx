@@ -18,6 +18,8 @@ export type NDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     toWptEtaCaptain: Seconds;
     apprMessage0Captain: number;
     apprMessage1Captain: number;
+    selectedWaypointLat: Degrees;
+    selectedWaypointLong: Degrees;
     selectedHeading: Degrees;
     pposLat: Degrees;
     pposLong: Degrees;
@@ -35,6 +37,8 @@ export enum NDVars {
     toWptEtaCaptain = 'L:A32NX_EFIS_L_TO_WPT_ETA',
     apprMessage0Captain = 'L:A32NX_EFIS_L_APPR_MSG_0',
     apprMessage1Captain = 'L:A32NX_EFIS_L_APPR_MSG_1',
+    selectedWaypointLat = 'L:A32NX_SELECTED_WAYPOINT_LAT',
+    selectedWaypointLong = 'L:A32NX_SELECTED_WAYPOINT_LONG',
     selectedHeading = 'L:A32NX_AUTOPILOT_HEADING_SELECTED',
     pposLat = 'PLANE LATITUDE', // TODO replace with fm position
     pposLong = 'PLANE LONGITUDE', // TODO replace with fm position
@@ -56,6 +60,8 @@ export class NDSimvarPublisher extends SimVarPublisher<NDSimvars> {
         ['toWptEtaCaptain', { name: NDVars.toWptEtaCaptain, type: SimVarValueType.Seconds }],
         ['apprMessage0Captain', { name: NDVars.apprMessage0Captain, type: SimVarValueType.Number }],
         ['apprMessage1Captain', { name: NDVars.apprMessage1Captain, type: SimVarValueType.Number }],
+        ['selectedWaypointLat', { name: NDVars.selectedWaypointLat, type: SimVarValueType.Degree }],
+        ['selectedWaypointLong', { name: NDVars.selectedWaypointLong, type: SimVarValueType.Degree }],
         ['selectedHeading', { name: NDVars.selectedHeading, type: SimVarValueType.Degree }],
         ['pposLat', { name: NDVars.pposLat, type: SimVarValueType.Degree }],
         ['pposLong', { name: NDVars.pposLong, type: SimVarValueType.Degree }],

@@ -13,6 +13,7 @@ import { Flag } from './shared/Flag';
 import { CanvasMap } from './shared/map/CanvasMap';
 import { EcpSimVars } from '../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import { NDPage } from './pages/NDPage';
+import { PlanModePage } from './pages/plan';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -30,13 +31,23 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
     private readonly trueTrackWord = Subject.create(Arinc429Word.empty());
 
+    private readonly pposLatWord = Subject.create(Arinc429Word.empty());
+
+    private readonly pposLongWord = Subject.create(Arinc429Word.empty());
+
+    private selectedWaypointLat = Subject.create(0);
+
+    private selectedWaypointLong = Subject.create(0);
+
     private readonly mapRotation = Subject.create(0);
 
     private readonly mapRangeRadius = Subject.create(0);
 
     private readonly arcPage = FSComponent.createRef<ArcModePage>();
 
-    private currentPageMode = EfisNdMode.ARC;
+    private readonly planPage = FSComponent.createRef<PlanModePage>();
+
+    private currentPageMode = Subject.create(EfisNdMode.ARC);
 
     private currentPageInstance: NDPage;
 
@@ -48,7 +59,27 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
     private rangeChangeInvalidationTimeout = -1;
 
-    private mapVisible = MappedSubject.create(([trackUp, trueHeading, trueTrack, pageChange, rangeChange]) => {
+    private mapCenterLat = MappedSubject.create(([mode, pposLat, selectedWaypointLat]) => {
+        if (mode === EfisNdMode.PLAN) {
+            return selectedWaypointLat;
+        }
+
+        return pposLat.valueOr(0);
+    }, this.currentPageMode, this.pposLatWord, this.selectedWaypointLat);
+
+    private mapCenterLong = MappedSubject.create(([mode, pposLong, selectedWaypointLong]) => {
+        if (mode === EfisNdMode.PLAN) {
+            return selectedWaypointLong;
+        }
+
+        return pposLong.valueOr(0);
+    }, this.currentPageMode, this.pposLongWord, this.selectedWaypointLong);
+
+    private mapVisible = MappedSubject.create(([pposLat, pposLong, trackUp, trueHeading, trueTrack, pageChange, rangeChange]) => {
+        if (!pposLat.isNormalOperation() || !pposLong.isNormalOperation()) {
+            return false;
+        }
+
         if (trackUp && !trueTrack.isNormalOperation()) {
             return false;
         } if (!trueHeading.isNormalOperation()) {
@@ -56,7 +87,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
         }
 
         return !(pageChange || rangeChange);
-    }, this.isUsingTrackUpMode, this.trueHeadingWord, this.trueTrackWord, this.pageChangeInProgress, this.rangeChangeInProgress);
+    }, this.pposLatWord, this.pposLongWord, this.isUsingTrackUpMode, this.trueHeadingWord, this.trueTrackWord, this.pageChangeInProgress, this.rangeChangeInProgress);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -64,6 +95,22 @@ export class NDComponent extends DisplayComponent<NDProps> {
         this.currentPageInstance = this.arcPage.instance;
 
         const sub = this.props.bus.getSubscriber<NDSimvars & EcpSimVars & ClockEvents>();
+
+        sub.on('latitude').whenChanged().handle((value) => {
+            this.pposLatWord.set(new Arinc429Word(value));
+        });
+
+        sub.on('longitude').whenChanged().handle((value) => {
+            this.pposLongWord.set(new Arinc429Word(value));
+        });
+
+        sub.on('selectedWaypointLat').whenChanged().handle((value) => {
+            this.selectedWaypointLat.set(value);
+        });
+
+        sub.on('selectedWaypointLong').whenChanged().handle((value) => {
+            this.selectedWaypointLong.set(value);
+        });
 
         sub.on('heading').whenChanged().handle((value) => {
             this.magneticHeadingWord.set(new Arinc429Word(value));
@@ -113,22 +160,27 @@ export class NDComponent extends DisplayComponent<NDProps> {
     }
 
     private handleNewMapPage(mode: EfisNdMode) {
-        if (mode === this.currentPageMode) {
+        if (mode === this.currentPageMode.get()) {
             return;
         }
 
         this.currentPageInstance.isVisible.set(false);
 
-        this.currentPageMode = mode;
+        this.currentPageMode.set(mode);
 
         switch (mode) {
         case EfisNdMode.ARC:
             this.currentPageInstance = this.arcPage.instance;
             break;
+        case EfisNdMode.PLAN:
+            this.currentPageInstance = this.planPage.instance;
+            break;
         default:
             console.warn(`Unknown ND page mode=${mode}`);
             break;
         }
+
+        this.currentPageInstance.isVisible.set(true);
 
         this.invalidatePage();
     }
@@ -139,10 +191,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
         }
 
         this.rangeChangeInProgress.set(true);
-        this.currentPageInstance.isVisible.set(false);
         this.rangeChangeInvalidationTimeout = window.setTimeout(() => {
             this.rangeChangeInProgress.set(false);
-            this.currentPageInstance.isVisible.set(true);
         }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
     }
 
@@ -152,10 +202,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
         }
 
         this.pageChangeInProgress.set(true);
-        this.currentPageInstance.isVisible.set(false);
         this.pageChangeInvalidationTimeout = window.setTimeout(() => {
             this.pageChangeInProgress.set(false);
-            this.currentPageInstance.isVisible.set(true);
         }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
     }
 
@@ -169,10 +217,16 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <ApproachIndicator bus={this.props.bus} />
 
                     <Flag shown={Subject.create(false)} x={384} y={54} class="Cyan FontSmallest">TRUE</Flag>
-                    <Flag shown={Subject.create(false)} x={350} y={84} class="Amber FontSmall">DISPLAY SYSTEM VERSION INCONSISTENCY</Flag>
+                    <Flag shown={Subject.create(false)} x={350} y={84} class="Amber FontSmall">
+                        DISPLAY SYSTEM VERSION
+                        INCONSISTENCY
+                    </Flag>
                     <Flag shown={Subject.create(false)} x={384} y={170} class="Amber FontMedium">CHECK HDG</Flag>
 
-                    <Flag shown={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">RANGE CHANGE</Flag>
+                    <Flag shown={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">
+                        RANGE
+                        CHANGE
+                    </Flag>
                     <Flag
                         shown={MappedSubject.create(([rangeChange, pageChange]) => !rangeChange && pageChange, this.rangeChangeInProgress, this.pageChangeInProgress)}
                         x={384}
@@ -188,16 +242,32 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         bus={this.props.bus}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />
+                    <PlanModePage
+                        // @ts-ignore
+                        ref={this.planPage}
+                        mapCenterLat={this.pposLatWord.map((v) => v.valueOr(0))}
+                        mapCenterLong={this.pposLongWord.map((v) => v.valueOr(0))}
+                        mapRangeRadius={this.mapRangeRadius}
+                        aircraftTrueHeading={this.trueHeadingWord}
+                    />
 
                     <FmMessages bus={this.props.bus} />
                 </svg>
 
                 <CanvasMap
                     bus={this.props.bus}
-                    x={384}
-                    y={626}
+                    x={Subject.create(384)}
+                    y={this.currentPageMode.map((mode) => {
+                        if (mode === EfisNdMode.ARC) {
+                            return 626;
+                        }
+
+                        return 384;
+                    })}
                     width={1240}
                     height={1240}
+                    mapCenterLat={this.mapCenterLat}
+                    mapCenterLong={this.mapCenterLong}
                     mapRotation={this.mapRotation}
                     mapRangeRadius={this.mapRangeRadius}
                     mapVisible={this.mapVisible}

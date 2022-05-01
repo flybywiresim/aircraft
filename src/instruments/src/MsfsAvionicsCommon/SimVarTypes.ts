@@ -22,6 +22,8 @@ export interface AdirsSimVars {
     fpaRaw: number;
     daRaw: number;
     mach: number;
+    latitude: number;
+    longitude: number;
 }
 
 export enum AdirsVars {
@@ -39,6 +41,8 @@ export enum AdirsVars {
     fpaRaw = 'L:A32NX_ADIRS_IR_1_FLIGHT_PATH_ANGLE',
     daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
     mach = 'L:A32NX_ADIRS_ADR_1_MACH',
+    latitude = 'L:A32NX_ADIRS_IR_1_LATITUDE',
+    longitude = 'L:A32NX_ADIRS_IR_1_LONGITUDE',
 }
 
 export const AdirsSimVarDefinitions = new Map<keyof AdirsSimVars, SimVarDefinition>([
@@ -54,6 +58,8 @@ export const AdirsSimVarDefinitions = new Map<keyof AdirsSimVars, SimVarDefiniti
     ['fpaRaw', { name: AdirsVars.fpaRaw, type: SimVarValueType.Number }],
     ['daRaw', { name: AdirsVars.daRaw, type: SimVarValueType.Number }],
     ['mach', { name: AdirsVars.mach, type: SimVarValueType.Number }],
+    ['latitude', { name: AdirsVars.latitude, type: SimVarValueType.Number }],
+    ['longitude', { name: AdirsVars.longitude, type: SimVarValueType.Number }],
 ]);
 
 export interface SwitchingPanelVSimVars {

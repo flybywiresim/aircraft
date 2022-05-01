@@ -76,7 +76,7 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
 
     render(): VNode | null {
         return (
-            <>
+            <g visibility={this.isVisible.map((visible) => (visible ? 'visible' : 'hidden'))}>
                 <ArcModeUnderlay
                     bus={this.props.bus}
                     ringAvailable={this.ringAvailable}
@@ -94,8 +94,8 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
                 />
 
                 <Airplane
-                    x={384}
-                    y={626}
+                    x={Subject.create(384)}
+                    y={Subject.create(626)}
                     available={this.headingWord.map((it) => it.isNormalOperation())}
                     rotation={this.planeRotation}
                 />
@@ -107,7 +107,7 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
                 <Flag shown={this.trkFlagShown} x={381} y={204} class="Red FontSmallest">TRK</Flag>
                 <Flag shown={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
                 <Flag shown={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">MAP NOT AVAIL</Flag>
-            </>
+            </g>
         );
     }
 }

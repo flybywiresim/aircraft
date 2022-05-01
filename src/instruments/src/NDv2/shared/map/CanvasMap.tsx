@@ -1,4 +1,4 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
 import { EfisVectorsGroup, NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import type { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { distanceTo } from 'msfs-geo';
@@ -11,10 +11,12 @@ import { ConstraintsLayer } from './ConstraintsLayer';
 
 export interface CanvasMapProps {
     bus: EventBus,
-    x: number,
-    y: number,
+    x: Subscribable<number>,
+    y: Subscribable<number>,
     width: number,
     height: number,
+    mapCenterLat: Subscribable<number>,
+    mapCenterLong: Subscribable<number>,
     mapRotation: Subscribable<number>,
     mapRangeRadius: Subscribable<number>,
     mapVisible: Subscribable<boolean>,
@@ -30,10 +32,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private readonly symbols: NdSymbol[] = [];
 
     private readonly mapParams = new MapParameters();
-
-    private readonly latitude = Subject.create(0);
-
-    private readonly longitude = Subject.create(0);
 
     public pointerX = 0;
 
@@ -53,13 +51,11 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private setupCallbacks() {
         const sub = this.props.bus.getSubscriber<NDSimvars & FmsSymbolsData & ClockEvents>();
 
-        sub.on('pposLat').whenChanged().handle((value) => {
-            this.latitude.set(value);
+        this.props.mapCenterLat.sub((v) => {
             this.handleRecomputeMapParameters();
         });
 
-        sub.on('pposLong').whenChanged().handle((value) => {
-            this.longitude.set(value);
+        this.props.mapCenterLong.sub((v) => {
             this.handleRecomputeMapParameters();
         });
 
@@ -98,7 +94,12 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     }
 
     private handleRecomputeMapParameters() {
-        this.mapParams.compute({ lat: this.latitude.get(), long: this.longitude.get() }, this.props.mapRangeRadius.get() * 2, this.props.width, this.props.mapRotation.get());
+        this.mapParams.compute(
+            { lat: this.props.mapCenterLat.get(), long: this.props.mapCenterLong.get() },
+            this.props.mapRangeRadius.get() * 2,
+            this.props.width,
+            this.props.mapRotation.get(),
+        );
     }
 
     private handleNewSymbols(symbols: NdSymbol[]) {
@@ -120,6 +121,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     }
 
     private handleFrame() {
+        // console.log(`center: lat=${this.props.mapCenterLat.get()}, long=${this.props.mapCenterLong.get()}`);
+
         const canvas = this.canvasRef.instance;
         const context = canvas.getContext('2d');
 
@@ -284,11 +287,11 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
                     ref={this.canvasRef}
                     width={this.props.width}
                     height={this.props.height}
-                    style={`width: ${this.props.width}px; height: ${this.props.height}px; position: absolute; top: 0; left: 0; transform: translate(${-(this.props.width / 2) + this.props.x}px, ${-(this.props.height / 2) + this.props.y}px)`}
+                    style={MappedSubject.create(([x, y]) => `width: ${this.props.width}px; height: ${this.props.height}px; position: absolute; top: 0; left: 0; transform: translate(${-(this.props.width / 2) + x}px, ${-(this.props.height / 2) + y}px)`, this.props.x, this.props.y)}
                 />
                 <div
                     ref={this.touchContainerRef}
-                    style={`z-index: 5000; width: ${this.props.width}px; height: ${this.props.height}px; position: absolute; top: 0; left: 0; transform: translate(${-(this.props.width / 2) + this.props.x}px, ${-(this.props.height / 2) + this.props.y}px)`}
+                    style={MappedSubject.create(([x, y]) => `width: ${this.props.width}px; height: ${this.props.height}px; position: absolute; top: 0; left: 0; transform: translate(${-(this.props.width / 2) + x}px, ${-(this.props.height / 2) + y}px)`, this.props.x, this.props.y)}
                 />
             </>
         );
