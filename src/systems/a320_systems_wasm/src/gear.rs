@@ -52,7 +52,7 @@ pub(super) fn gear(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>
     builder.variable_to_event_id(
         Variable::aspect("GEAR_HANDLE_POSITION"),
         VariableToEventMapping::EventDataRaw,
-        VariableToEventWriteOn::EveryTick,
+        VariableToEventWriteOn::Change,
         gear_set_set_event_id,
     );
 
