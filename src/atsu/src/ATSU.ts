@@ -8,11 +8,14 @@ import { Atc } from './ATC';
 import { Aoc } from './AOC';
 import { AtsuMessage, AtsuMessageSerializationFormat } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
+import { FlightStateObserver } from './components/FlightStateObserver';
 
 /**
  * Defines the ATSU
  */
 export class Atsu {
+    private flightStateObserver: FlightStateObserver = undefined;
+
     private datalink = new Datalink(this);
 
     private fltNo: string = '';
@@ -28,6 +31,7 @@ export class Atsu {
     private mcdu = undefined;
 
     constructor(mcdu) {
+        this.flightStateObserver = new FlightStateObserver(mcdu);
         this.mcdu = mcdu;
     }
 
@@ -138,5 +142,25 @@ export class Atsu {
     public printMessage(message: AtsuMessage): void {
         const text = message.serialize(AtsuMessageSerializationFormat.Printer);
         this.mcdu.printPage(text.split('\n'));
+    }
+
+    public lastWaypoint() {
+        return this.flightStateObserver.LastWaypoint;
+    }
+
+    public activeWaypoint() {
+        return this.flightStateObserver.ActiveWaypoint;
+    }
+
+    public nextWaypoint() {
+        return this.flightStateObserver.NextWaypoint;
+    }
+
+    public currentFlightState() {
+        return this.flightStateObserver.PresentPosition;
+    }
+
+    public targetFlightState() {
+        return this.flightStateObserver.FcuSettings;
     }
 }
