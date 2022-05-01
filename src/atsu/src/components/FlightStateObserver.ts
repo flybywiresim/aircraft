@@ -17,7 +17,7 @@ export class FlightStateObserver {
 
     public PresentPosition = { lat: null, lon: null, altitude: null, heading: null, track: null, indicatedAirspeed: null, groundSpeed: null, verticalSpeed: null };
 
-    public FcuSettings = { speed: null, machMode: false, altitude: null }
+    public FcuSettings = { apActive: false, speed: null, machMode: false, altitude: null }
 
     public ActiveWaypoint: Waypoint | undefined = undefined;
 
@@ -51,19 +51,30 @@ export class FlightStateObserver {
     }
 
     private updateFcu() {
+        const ap1 = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool');
+        const ap2 = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool');
+
         const thrustMode = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE', 'number');
-        this.FcuSettings.altitude = Math.round(SimVar.GetSimVarValue('A32NX_FG_TARGET_ALTITUDE', 'number'));
-        this.FcuSettings.machMode = thrustMode === 8;
-        if (thrustMode === 0) {
-            if (this.FcuSettings.machMode) {
-                this.FcuSettings.speed = SimVar.GetSimVarValue('L:A32NX_MachPreselVal', 'number');
+        this.FcuSettings.apActive = ap1 || ap2;
+
+        if (this.FcuSettings.apActive) {
+            this.FcuSettings.altitude = Math.round(SimVar.GetSimVarValue('A32NX_FG_TARGET_ALTITUDE', 'number'));
+            this.FcuSettings.machMode = thrustMode === 8;
+            if (thrustMode === 0) {
+                if (this.FcuSettings.machMode) {
+                    this.FcuSettings.speed = SimVar.GetSimVarValue('L:A32NX_MachPreselVal', 'number');
+                } else {
+                    this.FcuSettings.speed = SimVar.GetSimVarValue('L:A32NX_SpeedPreselVal', 'number');
+                }
+            } else if (this.FcuSettings.machMode) {
+                this.FcuSettings.speed = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
             } else {
-                this.FcuSettings.speed = SimVar.GetSimVarValue('L:A32NX_SpeedPreselVal', 'number');
+                this.FcuSettings.speed = SimVar.GetSimVarValue('AIRSPEED MACH', 'mach');
             }
-        } else if (this.FcuSettings.machMode) {
-            this.FcuSettings.speed = SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots');
         } else {
-            this.FcuSettings.speed = SimVar.GetSimVarValue('AIRSPEED MACH', 'mach');
+            this.FcuSettings.altitude = null;
+            this.FcuSettings.machMode = false;
+            this.FcuSettings.speed = null;
         }
     }
 
