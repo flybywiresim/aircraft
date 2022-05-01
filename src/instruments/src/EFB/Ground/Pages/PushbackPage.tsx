@@ -2,10 +2,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import {
-    ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronDoubleDown, ChevronDoubleUp,
-    ChevronLeft, ChevronRight,
+    ArrowDown, ArrowLeft, ArrowRight, ArrowUp,
+    ChevronDoubleDown, ChevronDoubleUp, ChevronLeft, ChevronRight,
     PauseCircleFill, PlayCircleFill,
     TruckFlatbed,
+    ZoomIn, ZoomOut,
 } from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
 import { toast } from 'react-toastify';
@@ -27,6 +28,7 @@ export const PushbackPage = () => {
     const [latitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
     const [longitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
     const [headingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 2);
+    const [mapRange, setMapRange] = useState(0.2);
 
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 250);
 
@@ -266,22 +268,38 @@ export const PushbackPage = () => {
 
     return (
         <div className="flex relative flex-col space-y-4 h-content-section-reduced">
-            <div className="overflow-hidden relative flex-grow rounded-lg border-2 h-[430px] border-theme-accent">
+            <div className="overflow-hidden relative flex-grow h-[430px] rounded-lg border-2 border-theme-accent">
                 {!process.env.VITE_BUILD && (
                     <BingMap
                         configFolder="/Pages/VCockpit/Instruments/MAP/"
                         centerLla={{ lat: latitude, long: longitude }}
                         mapId="PUSHBACK_MAP"
-                        range={0.2}
+                        range={mapRange}
                         rotation={-headingTrue}
                     />
                 )}
                 <div className="flex absolute inset-0 justify-center items-center">
                     <IconPlane
-                        className="transform -rotate-90 fill-current text-theme-highlight"
+                        className="text-theme-highlight transform -rotate-90 fill-current"
                         size={50}
                         strokeLinejoin="miter"
                     />
+                </div>
+                <div className="flex overflow-hidden absolute top-6 right-6 bottom-6 z-30 flex-col justify-end rounded-md cursor-pointer">
+                    <button
+                        type="button"
+                        onClick={() => setMapRange(MathUtils.clamp(mapRange - 0.1, 0.1, 1.5))}
+                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                    >
+                        <ZoomIn className="text-white" size={40} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setMapRange(MathUtils.clamp(mapRange + 0.1, 0.1, 1.5))}
+                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                    >
+                        <ZoomOut className="text-white" size={40} />
+                    </button>
                 </div>
             </div>
             {showDebugInfo && debugInformation()}
