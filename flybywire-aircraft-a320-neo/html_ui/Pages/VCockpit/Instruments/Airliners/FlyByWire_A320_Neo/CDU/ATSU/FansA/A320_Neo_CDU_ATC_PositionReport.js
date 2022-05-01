@@ -13,8 +13,7 @@ class CDUAtcPositionReport {
             currentPosition: null,
             currentUtc: null,
             currentAltitude: null,
-            windDirection: null,
-            windSpeed: null,
+            wind: null,
             sat: null,
             icing: null,
             turbulence: null,
@@ -77,7 +76,7 @@ class CDUAtcPositionReport {
 
     static CanEraseData(data) {
         return data.passedWaypoint[0] || data.passedWaypoint[1] || data.passedWaypoint[2] || data.activeWaypoint[0] || data.activeWaypoint[1] || data.nextWaypoint ||
-            data.currentPosition || data.currentUtc || data.currentAltitude || data.windDirection || data.windSpeed || data.sat || data.icing || data.turbulence ||
+            data.currentPosition || data.currentUtc || data.currentAltitude || data.wind || data.sat || data.icing || data.turbulence ||
             data.eta || data.endurance || data.indicatedAirspeed || data.groundSpeed || data.verticalSpeed || data.deviating || data.heading || data.track ||
             data.descending || data.climbing;
     }
@@ -149,18 +148,220 @@ class CDUAtcPositionReport {
             ["<RETURN", reqDisplay]
         ]);
 
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[0] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.lastWaypoint[0] = null;
+            } else if (value) {
+                if (mcdu.isLatLonFormat(value)) {
+                    // format: DDMM.MB/EEEMM.MC
+                    try {
+                        mcdu.parseLatLon(value);
+                        data.lastWaypoint[0] = value;
+                    } catch (err) {
+                        if (err === NXSystemMessages.formatError) {
+                            mcdu.setScratchpadMessage(err);
+                        }
+                    };
+                } else if (/^[A-Z0-9]{2,7}/.test(value)) {
+                    // place format
+                    mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(value).then((waypoints) => {
+                        if (waypoints.length === 0) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
+                        } else {
+                            data.lastWaypoint[0] = value;
+                        }
+
+                        CDUAtcPositionReport.ShowPage1(mcdu, data);
+                    });
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage1(mcdu, data);
+        };
+
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[1] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.currentPosition = null;
+            } else if (value && mcdu.isLatLonFormat(value)) {
+                // format: DDMM.MB/EEEMM.MC
+                try {
+                    mcdu.parseLatLon(value);
+                    data.currentPosition = value;
+                } catch (err) {
+                    if (err === NXSystemMessages.formatError) {
+                        mcdu.setScratchpadMessage(err);
+                    }
+                };
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+            }
+
+            CDUAtcPositionReport.ShowPage1(mcdu, data);
+        };
+
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[2] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.activeWaypoint[0] = null;
+            } else if (value) {
+                if (mcdu.isLatLonFormat(value)) {
+                    // format: DDMM.MB/EEEMM.MC
+                    try {
+                        mcdu.parseLatLon(value);
+                        data.activeWaypoint[0] = value;
+                    } catch (err) {
+                        if (err === NXSystemMessages.formatError) {
+                            mcdu.setScratchpadMessage(err);
+                        }
+                    };
+                } else if (/^[A-Z0-9]{2,7}/.test(value)) {
+                    // place format
+                    mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(value).then((waypoints) => {
+                        if (waypoints.length === 0) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
+                        } else {
+                            data.activeWaypoint[0] = value;
+                        }
+
+                        CDUAtcPositionReport.ShowPage1(mcdu, data);
+                    });
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage1(mcdu, data);
+        };
+
+        mcdu.leftInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[3] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.nextWaypoint = null;
+            } else if (value) {
+                if (mcdu.isLatLonFormat(value)) {
+                    // format: DDMM.MB/EEEMM.MC
+                    try {
+                        mcdu.parseLatLon(value);
+                        data.nextWaypoint = value;
+                    } catch (err) {
+                        if (err === NXSystemMessages.formatError) {
+                            mcdu.setScratchpadMessage(err);
+                        }
+                    };
+                } else if (/^[A-Z0-9]{2,7}/.test(value)) {
+                    // place format
+                    mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(value).then((waypoints) => {
+                        if (waypoints.length === 0) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
+                        } else {
+                            data.nextWaypoint = value;
+                        }
+
+                        CDUAtcPositionReport.ShowPage1(mcdu, data);
+                    });
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage1(mcdu, data);
+        };
+
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcPositionReport.ShowPage(mcdu);
+            CDUAtcPositionReport.ShowPage1(mcdu, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcReports.ShowPage(mcdu, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
+            CDUAtcReports.ShowPage(mcdu);
+        };
+
+        mcdu.rightInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[0] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.lastWaypoint[1] = null;
+                data.lastWaypoint[2] = null;
+            } else {
+                const elements = value.split("/");
+                if (elements.length === 2) {
+                    const timeError = Atsu.InputValidation.validateScratchpadTime(elements[0]);
+                    const altError = Atsu.InputValidation.validateScratchpadAltitude(elements[1]);
+
+                    if (timeError !== Atsu.AtsuStatusCodes.Ok) {
+                        mcdu.addNewAtsuMessage(timeError);
+                    } else if (altError !== Atsu.AtsuStatusCodes.Ok) {
+                        mcdu.addNewAtsuMessage(altError);
+                    } else {
+                        data.lastWaypoint[1] = elements[0];
+                        data.lastWaypoint[2] = elements[1];
+                    }
+                } else {
+                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage1(mcdu, data);
+        };
+
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[1] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.currentUtc = null;
+                data.currentAltitude = null;
+            } else {
+                const elements = value.split("/");
+                if (elements.length === 2) {
+                    const timeError = Atsu.InputValidation.validateScratchpadTime(elements[0]);
+                    const altError = Atsu.InputValidation.validateScratchpadAltitude(elements[1]);
+
+                    if (timeError !== Atsu.AtsuStatusCodes.Ok) {
+                        mcdu.addNewAtsuMessage(timeError);
+                    } else if (altError !== Atsu.AtsuStatusCodes.Ok) {
+                        mcdu.addNewAtsuMessage(altError);
+                    } else {
+                        data.currentUtc = elements[0];
+                        data.currentAltitude = elements[1];
+                    }
+                } else {
+                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage1(mcdu, data);
+        };
+
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[2] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.activeWaypoint[1] = null;
+            } else {
+                const error = Atsu.InputValidation.validateScratchpadTime(value);
+
+                if (error !== Atsu.AtsuStatusCodes.Ok) {
+                    mcdu.addNewAtsuMessage(error);
+                } else {
+                    data.activeWaypoint[1] = value;
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage1(mcdu, data);
         };
 
         mcdu.rightInputDelay[4] = () => {
@@ -183,7 +384,7 @@ class CDUAtcPositionReport {
                 } else {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
                     mcdu.atsu.registerMessages([report]);
-                    CDUAtcPositionReport.ShowPage(mcdu);
+                    CDUAtcPositionReport.ShowPage1(mcdu);
                 }
             }
         };
@@ -199,6 +400,13 @@ class CDUAtcPositionReport {
     static ShowPage2(mcdu, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
         mcdu.clearDisplay();
 
+        const wind = data.wind ? data.wind.split("/") : ["[  ]", "[  ]"];
+        const sat = data.sat ? data.sat : "[  ]";
+        const turbulence = data.turbulence ? data.turbulence : "[  ]";
+        const icing = data.icing ? data.icing : "[  ]";
+        const eta = data.eta ? data.eta : "[   ]";
+        const endurance = data.endurance ? data.endurance : "[   ]";
+
         let text = "ADD TEXT\xa0";
         let erase = "\xa0ERASE";
         let reqDisplay = "DCDU\xa0[color]cyan";
@@ -210,12 +418,12 @@ class CDUAtcPositionReport {
 
         mcdu.setTemplate([
             ["POSITION REPORT", "2", "3"],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
+            ["\xa0WIND", "SAT\xa0"],
+            [`{cyan}${wind[0]}{end}{white}°{end}/{cyan}${wind[1]}{end}`, `{cyan}${sat}{end}`],
+            ["\xa0ICING(TLMS)", "TURB(LMS)\xa0"],
+            [`{cyan}${icing}{end}`, `{cyan}${turbulence}{end}`],
+            ["\xa0ETA", "ENDURANCE\xa0"],
+            [`{cyan}${eta}{end}`, `{cyan}${endurance}{end}`],
             [""],
             [""],
             ["\xa0ALL FIELDS"],
@@ -224,11 +432,53 @@ class CDUAtcPositionReport {
             ["<RETURN", reqDisplay]
         ]);
 
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[0] = (value) => {
+            if (value === FMCDataManager.clrValue) {
+                data.wind = null;
+            } else if (Atsu.InputValidation.validateScratchpadWind(value)) {
+                data.wind = Atsu.InputValidation.formatScratchpadWind(value);
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+            }
+            CDUAtcPositionReport.ShowPage2(mcdu, data);
+        };
+
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[1] = (value) => {
+            if (value === FMCDataManager.clrValue) {
+                data.icing = null;
+            } else if (value === "T" || value === "L" || value === "M" || value === "S") {
+                data.icing = value;
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            }
+            CDUAtcPositionReport.ShowPage2(mcdu, data);
+        };
+
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[2] = (value) => {
+            if (value === FMCDataManager.clrValue) {
+                data.eta = null;
+            } else if (Atsu.InputValidation.validateScratchpadTime(value)) {
+                data.eta = value;
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+            }
+            CDUAtcPositionReport.ShowPage2(mcdu, data);
+        };
+
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcPositionReport.ShowPage(mcdu, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
+            CDUAtcPositionReport.ShowPage2(mcdu, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -236,6 +486,51 @@ class CDUAtcPositionReport {
         };
         mcdu.onLeftInput[5] = () => {
             CDUAtcReports.ShowPage(mcdu);
+        };
+
+        mcdu.rightInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[0] = (value) => {
+            if (value === FMCDataManager.clrValue) {
+                data.sat = null;
+            } else {
+                const error = Atsu.InputValidation.validateScratchpadTemperature(value);
+                if (error === Atsu.AtsuStatusCodes.Ok) {
+                    data.sat = Atsu.InputValidation.formatScratchpadTemperature(value);
+                } else {
+                    mcdu.addNewAtsuMessage(error);
+                }
+            }
+            CDUAtcPositionReport.ShowPage2(mcdu, data);
+        };
+
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[1] = (value) => {
+            if (value === FMCDataManager.clrValue) {
+                data.turbulence = null;
+            } else if (value === "L" || value === "M" || value === "S") {
+                data.turbulence = value;
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            }
+            CDUAtcPositionReport.ShowPage2(mcdu, data);
+        };
+
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[2] = (value) => {
+            if (value === FMCDataManager.clrValue) {
+                data.endurance = null;
+            } else if (Atsu.InputValidation.validateScratchpadEndurance(value)) {
+                data.endurance = Atsu.InputValidation.formatScratchpadEndurance(value);
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+            }
+            CDUAtcPositionReport.ShowPage2(mcdu, data);
         };
 
         mcdu.rightInputDelay[4] = () => {
@@ -258,7 +553,7 @@ class CDUAtcPositionReport {
                 } else {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
                     mcdu.atsu.registerMessages([report]);
-                    CDUAtcPositionReport.ShowPage(mcdu);
+                    CDUAtcPositionReport.ShowPage2(mcdu);
                 }
             }
         };
@@ -274,6 +569,28 @@ class CDUAtcPositionReport {
     static ShowPage3(mcdu, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
         mcdu.clearDisplay();
 
+        const indicatedAirspeed = data.indicatedAirspeed ? data.indicatedAirspeed : "[  ]";
+        const groundSpeed = data.groundSpeed ? data.groundSpeed : "[  ]";
+        const verticalSpeed = data.verticalSpeed ? data.verticalSpeed : "[  ]";
+        const deviating = data.deviating ? data.deviating : "[  ]";
+        const heading = data.heading ? data.heading : "[  ]";
+        const track = data.track ? data.track : "[  ]";
+        const descending = ["\xa0DSCENDING TO", "[   ]"];
+        const climbing = ["CLBING TO\xa0", "[   ]"];
+
+        const current = mcdu.atsu.currentFlightState();
+        const target = mcdu.atsu.targetFlightState();
+        if (target.altitude < current.altitude) {
+            climbing[0] = climbing[1] = "";
+            descending[1] = target.altitude;
+        } else if (target.altitude > current.altitude) {
+            descending[0] = descending[1] = "";
+            climbing[1] = target.altitude;
+        } else {
+            descending[0] = descending[1] = "";
+            climbing[0] = climbing[1] = "";
+        }
+
         let text = "ADD TEXT\xa0";
         let erase = "\xa0ERASE";
         let reqDisplay = "DCDU\xa0[color]cyan";
@@ -285,14 +602,14 @@ class CDUAtcPositionReport {
 
         mcdu.setTemplate([
             ["POSITION REPORT", "3", "3"],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
-            [""],
+            ["\xa0SPEED", "GROUND SPD\xa0"],
+            [`{cyan}${indicatedAirspeed}{end}`, `{cyan}${groundSpeed}{end}`],
+            ["\xa0VERT SPEED", "DEVIATING\xa0"],
+            [`{cyan}${verticalSpeed}{end}`, `{cyan}${deviating}{end}`],
+            ["\xa0HEADING", "TRACK ANGLE\xa0"],
+            [`{cyan}${heading}{end}{white}°{end}`, `{cyan}${track}{end}{white}°{end}`],
+            [descending[0], climbing[0]],
+            [`{cyan}${descending[1]}{end}`, `{cyan}${climbing[1]}{end}`],
             ["\xa0ALL FIELDS"],
             [erase, text],
             ["\xa0ATC REPORTS", "XFR TO\xa0[color]cyan"],
@@ -303,7 +620,7 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcPositionReport.ShowPage(mcdu, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
+            CDUAtcPositionReport.ShowPage3(mcdu, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -333,7 +650,7 @@ class CDUAtcPositionReport {
                 } else {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
                     mcdu.atsu.registerMessages([report]);
-                    CDUAtcPositionReport.ShowPage(mcdu);
+                    CDUAtcPositionReport.ShowPage3(mcdu);
                 }
             }
         };
