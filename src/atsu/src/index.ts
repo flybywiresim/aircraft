@@ -17,6 +17,7 @@ import { OclMessage } from './messages/OclMessage';
 import { InputValidation, InputWaypointType } from './InputValidation';
 import { FansMode } from './com/FutureAirNavigationSystem';
 import { HoppieConnector } from './com/webinterfaces/HoppieConnector';
+import { Waypoint } from './components/FlightStateObserver';
 
 export {
     AtsuStatusCodes,
@@ -48,4 +49,5 @@ export {
     InputValidation,
     InputWaypointType,
     HoppieConnector,
+    Waypoint,
 };
