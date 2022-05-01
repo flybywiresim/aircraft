@@ -76,7 +76,9 @@ class CDUAtcMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[2] = () => {
-            // TODO link reports page
+            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+                CDUAtcReports.ShowPage(mcdu);
+            }
         };
 
         mcdu.rightInputDelay[5] = () => {
