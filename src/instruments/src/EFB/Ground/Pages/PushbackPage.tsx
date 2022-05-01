@@ -2,18 +2,33 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import {
-    ArrowDown, ArrowLeft, ArrowRight, ArrowUp,
-    ChevronDoubleDown, ChevronDoubleUp, ChevronLeft, ChevronRight,
-    PauseCircleFill, PlayCircleFill,
+    ArrowDown,
+    ArrowLeft,
+    ArrowRight,
+    ArrowUp,
+    ChevronDoubleDown,
+    ChevronDoubleUp,
+    ChevronLeft,
+    ChevronRight,
+    PauseCircleFill,
+    PlayCircleFill,
     TruckFlatbed,
-    ZoomIn, ZoomOut,
+    ZoomIn,
+    ZoomOut,
 } from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
 import { toast } from 'react-toastify';
 import { MathUtils } from '@shared/MathUtils';
 import { IconPlane } from '@tabler/icons';
+import { Coordinates } from 'msfs-geo';
+import { computeDestinationPoint as geolibDestPoint } from 'geolib';
 import { BingMap } from '../../UtilComponents/BingMap';
 import { t } from '../../translation';
+
+interface ScreenCoordinates {
+    x: number;
+    y: number;
+}
 
 interface TurningRadiusIndicatorProps {
     turningRadius: number;
@@ -44,24 +59,34 @@ function describeArc(x, y, radius, startAngle, endAngle) {
 
 const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) => (
     <svg width={turningRadius * 2} height={turningRadius * 2} viewBox={`0 0 ${turningRadius * 2} ${turningRadius * 2}`}>
-        <path d={describeArc(turningRadius, turningRadius, turningRadius, 0, 45 + 45 * (19/turningRadius))} fill="none" stroke="white" strokeWidth="2"/>
+        <path d={describeArc(turningRadius, turningRadius, turningRadius, 0, 45 + 45 * (19 / turningRadius))} fill="none" stroke="white" strokeWidth="2" />
     </svg>
 );
 
 export const PushbackPage = () => {
-    const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
-    const [elevatorPosition] = useSimVar('A:ELEVATOR POSITION', 'number', 50);
-    const [aircraftGroundSpeed] = useSimVar('GROUND VELOCITY', 'Knots');
-    const [aircraftHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 50);
-    const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 250);
-    const [pushBackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
     const [pushBackState, setPushBackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 250);
+    const [pushBackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
+    const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 100);
     const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Radians', 100);
 
-    const [latitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
-    const [longitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
-    const [headingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 2);
+    const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
+    const [elevatorPosition] = useSimVar('A:ELEVATOR POSITION', 'number', 50);
+
+    const [planeGroundSpeed] = useSimVar('GROUND VELOCITY', 'Knots', 50);
+    const [planeHeadingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 50);
+    const [planeHeadingMagnetic] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees', 50);
+    const [planeLatitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
+    const [planeLongitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
+
     const [mapRange, setMapRange] = useState(0.2);
+
+    const [actualLatLon, setActualLatLon] = useState({ lat: 0, long: 0 } as Coordinates);
+    const [centerPlaneMode, setCenterPlaneMode] = useState(true);
+
+    const [dragging, setDragging] = useState(false);
+    const [mouseDown, setMouseDown] = useState(false);
+    const [dragStartCoords, setDragStartCoords] = useState({ x: 0, y: 0 } as ScreenCoordinates);
+    const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 } as ScreenCoordinates);
 
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 250);
 
@@ -121,6 +146,22 @@ export const PushbackPage = () => {
 
     const handleTugDirection = (value: number) => {
         setTugCommandedHeadingFactor(MathUtils.clamp(value, -1, 1));
+    };
+
+    const calculateTurningRadius = (wheelBase: number, turnAngle: number) => {
+        const tanDeg = Math.tan(turnAngle * Math.PI / 180);
+        return wheelBase / tanDeg;
+    };
+
+    const computeOffset: (latLon: Coordinates, d: ScreenCoordinates) => Coordinates = (
+        latLon: Coordinates, d: ScreenCoordinates,
+    ) => {
+        const someConstant = 900 / mapRange; // ((mapSize / 2) / mapRange)
+        const distance = Math.hypot(d.x, d.y) / someConstant;
+        const bearing = Math.atan2(d.y, d.x) * (180 / Math.PI) - 90 + planeHeadingTrue;
+        const point = geolibDestPoint({ lat: latLon.lat, lon: latLon.long }, distance * 1852, bearing, 6371000);
+        // console.log(`LatLon: ${latLon.lat} ${latLon.long} DeltaScreen: ${d.x} ${d.y} Distance: ${distance} Bearing: ${bearing} Point: ${point.latitude} ${point.longitude}`);
+        return { lat: point.latitude, long: point.longitude };
     };
 
     // Update commanded heading from rudder input
@@ -206,8 +247,28 @@ export const PushbackPage = () => {
         }
     }, [pushBackAttached]);
 
-    const [showDebugInfo, setShowDebugInfo] = useState(false);
+    // Update actual lat/lon when plane is moving
+    useEffect(() => {
+        if (centerPlaneMode) {
+            setActualLatLon({ lat: planeLatitude, long: planeLongitude });
+        }
+    }, [centerPlaneMode, planeLatitude, planeLongitude]);
 
+    useEffect(() => {
+        if (dragging) {
+            setCenterPlaneMode(false);
+            const latLon: Coordinates = computeOffset(actualLatLon, {
+                x: (mouseCoords.x - dragStartCoords.x),
+                y: (mouseCoords.y - dragStartCoords.y),
+            });
+            setActualLatLon(latLon);
+            setDragStartCoords(mouseCoords);
+        }
+    }, [dragging, mouseDown, mouseCoords]);
+
+    const turningRadius = calculateTurningRadius(13, Math.abs(tugCommandedHeadingFactor * 90));
+
+    const [showDebugInfo, setShowDebugInfo] = useState(false);
     function debugInformation() {
         return (
             <div className="flex absolute right-0 left-0 z-50 flex-grow justify-between mx-4 font-mono text-black bg-gray-100 border-gray-100">
@@ -243,7 +304,7 @@ export const PushbackPage = () => {
                 <div className="overflow-hidden text-black text-m">
                     acHeading:
                     {' '}
-                    {aircraftHeading.toFixed(3)}
+                    {planeHeadingTrue.toFixed(3)}
                     <br />
                     tCHeadingF:
                     {' '}
@@ -269,10 +330,10 @@ export const PushbackPage = () => {
                 <div className="overflow-hidden text-black text-m">
                     acGroundSpeed:
                     {' '}
-                    {aircraftGroundSpeed.toFixed(3)}
+                    {planeGroundSpeed.toFixed(3)}
                     {'kts '}
                     {' ('}
-                    {(aircraftGroundSpeed * 1.68781).toFixed(3)}
+                    {(planeGroundSpeed * 1.68781).toFixed(3)}
                     ft/s)
                     <br />
                     tCSpeedFactor:
@@ -299,48 +360,81 @@ export const PushbackPage = () => {
         );
     }
 
-    const calculateTurningRadius = (wheelBase: number, turnAngle: number) => {
-        const tanDeg = Math.tan(turnAngle * Math.PI / 180);
-        return wheelBase / tanDeg;
-    };
-
-    const turningRadius = calculateTurningRadius(13, Math.abs(tugCommandedHeadingFactor * 90));
-
     return (
         <div className="flex relative flex-col space-y-4 h-content-section-reduced">
-            <div className="overflow-hidden relative flex-grow rounded-lg border-2 h-[430px] border-theme-accent">
+            <div
+                className="overflow-hidden relative flex-grow h-[430px] rounded-lg border-2 border-theme-accent"
+                onMouseDown={(e) => {
+                    setMouseDown(true);
+                    setDragStartCoords({ x: e.pageX, y: e.pageY });
+                }}
+                onMouseMove={(e) => {
+                    if (mouseDown) {
+                        setMouseCoords({ x: e.pageX, y: e.pageY });
+                    }
+                    if (mouseDown && !dragging && (Math.abs(e.pageX - dragStartCoords.x) > 3 || Math.abs(e.pageY - dragStartCoords.y) > 3)) {
+                        setDragging(true);
+                    }
+                }}
+                onMouseUp={() => {
+                    setMouseDown(false);
+                    if (dragging) {
+                        setDragging(false);
+                    }
+                }}
+            >
                 {!process.env.VITE_BUILD && (
                     <BingMap
                         configFolder="/Pages/VCockpit/Instruments/MAP/"
-                        centerLla={{ lat: latitude, long: longitude }}
+                        centerLla={{ lat: actualLatLon.lat, long: actualLatLon.long }}
                         mapId="PUSHBACK_MAP"
                         range={mapRange}
-                        rotation={-headingTrue}
+                        rotation={-planeHeadingTrue}
                     />
                 )}
                 <div className="flex absolute inset-0 justify-center items-center">
-                    <div className="absolute" style={{transform: `rotate(-90deg) translateY(${turningRadius}px) scaleX(${tugCommandedSpeedFactor >= 0 ? 1 : -1}) scaleY(${tugCommandedHeadingFactor >= 0 ? 1 : -1}) translateY(${tugCommandedHeadingFactor >= 0 ? '0px' : `${turningRadius * 2}px` })`}}>
+                    <div className="absolute" style={{ transform: `rotate(-90deg) translateY(${turningRadius}px) scaleX(${tugCommandedSpeedFactor >= 0 ? 1 : -1}) scaleY(${tugCommandedHeadingFactor >= 0 ? 1 : -1}) translateY(${tugCommandedHeadingFactor >= 0 ? '0px' : `${turningRadius * 2}px`})` }}>
                         <TurningRadiusIndicator turningRadius={turningRadius} />
                     </div>
 
                     <IconPlane
-                        className="transform -rotate-90 fill-current text-theme-highlight"
+                        className="text-theme-highlight transform -rotate-90 fill-current"
                         size={50}
                         strokeLinejoin="miter"
                     />
                 </div>
+                <div className="flex overflow-hidden absolute top-2 left-2 z-30 flex-col rounded-md cursor-pointer">
+                    Heading (True):
+                    {' '}
+                    {planeHeadingTrue.toFixed(4)}
+                    {' - '}
+                    Heading (Magnetic):
+                    {' '}
+                    {planeHeadingMagnetic.toFixed(4)}
+                </div>
                 <div className="flex overflow-hidden absolute right-6 bottom-6 z-30 flex-col rounded-md cursor-pointer">
                     <button
                         type="button"
+                        onClick={() => setCenterPlaneMode(!centerPlaneMode)}
+                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                    >
+                        <IconPlane
+                            className={`text-white transform -rotate-90 ${centerPlaneMode && 'fill-current'}`}
+                            size={40}
+                            strokeLinejoin="round"
+                        />
+                    </button>
+                    <button
+                        type="button"
                         onClick={() => setMapRange(MathUtils.clamp(mapRange - 0.1, 0.1, 1.5))}
-                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                     >
                         <ZoomIn size={40} />
                     </button>
                     <button
                         type="button"
                         onClick={() => setMapRange(MathUtils.clamp(mapRange + 0.1, 0.1, 1.5))}
-                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                     >
                         <ZoomOut size={40} />
                     </button>
