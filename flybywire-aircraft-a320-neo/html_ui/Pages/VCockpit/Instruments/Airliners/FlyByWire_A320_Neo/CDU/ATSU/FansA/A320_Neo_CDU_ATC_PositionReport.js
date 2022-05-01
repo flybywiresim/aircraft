@@ -42,7 +42,7 @@ class CDUAtcPositionReport {
                 retval.passedWaypoint[2] = lastWp.altitude;
             }
 
-            retval.currentPosition = new LatLong(current.lat, current.lon).toShortDegreeString();
+            retval.currentPosition = [current.lat, current.lon];
             retval.currentUtc = CDUAtcPositionReport.SecondsToString(SimVar.GetSimVarValue('E:ZULU TIME', 'seconds'));
             retval.currentAltitude = current.altitude;
 
@@ -56,7 +56,9 @@ class CDUAtcPositionReport {
 
             // TODO add wind
             // TODO add SAT
-            // TODO add ETA
+            if (mcdu.atsu.destinationWaypoint()) {
+                retval.eta = CDUAtcPositionReport.SecondsToString(mcdu.atsu.destinationWaypoint().utc);
+            }
 
             retval.indicatedAirspeed = current.indicatedAirspeed;
             retval.groundSpeed = current.groundSpeed;
