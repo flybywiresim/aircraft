@@ -90,7 +90,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         ),
         (
             32_006,
-            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockGearCenter1),
+            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockGearNose1),
         ),
         (
             32_007,
