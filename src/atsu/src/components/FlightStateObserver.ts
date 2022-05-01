@@ -80,13 +80,15 @@ export class FlightStateObserver {
             console.log(this.PresentPosition);
             console.log(this.FcuSettings);
 
-            if (last && active && next) {
+            if (last) {
                 if (!this.LastWaypoint || last.ident !== this.LastWaypoint.ident) {
                     this.LastWaypoint = new Waypoint(last.ident);
                     this.LastWaypoint.utc = last.waypointReachedAt;
                     this.LastWaypoint.altitude = this.PresentPosition.altitude;
                 }
+            }
 
+            if (active && next) {
                 const ppos = {
                     lat: this.PresentPosition.lat,
                     long: this.PresentPosition.lon,
@@ -96,7 +98,7 @@ export class FlightStateObserver {
                 if (!this.ActiveWaypoint || this.ActiveWaypoint.ident !== active.ident) {
                     this.ActiveWaypoint = new Waypoint(active.ident);
                 }
-                this.ActiveWaypoint.utc = stats[fp.activeWaypointIndex];
+                this.ActiveWaypoint.utc = Math.round(stats.get(fp.activeWaypointIndex).etaFromPpos);
 
                 if (!this.NextWaypoint || this.NextWaypoint.ident !== next.ident) {
                     this.NextWaypoint = new Waypoint(next.ident);
