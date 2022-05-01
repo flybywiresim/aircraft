@@ -265,13 +265,16 @@ export const PushbackPage = () => {
 
     return (
         <div className="flex relative flex-col space-y-4 h-content-section-reduced">
-            <div className="overflow-hidden flex-grow h-[430px] rounded-lg border-2 border-theme-accent">
-                <BingMap
-                    configFolder="/Pages/VCockpit/Instruments/MAP/"
-                    centerLla={{ lat: latitude, long: longitude }}
-                    mapId="PUSHBACK_MAP"
-                    range={0.2}
-                />
+            <div className="overflow-hidden flex-grow rounded-lg border-2 h-[430px] border-theme-accent">
+                {!process.env.VITE_BUILD && (
+                    <BingMap
+                        configFolder="/Pages/VCockpit/Instruments/MAP/"
+                        centerLla={{ lat: latitude, long: longitude }}
+                        mapId="PUSHBACK_MAP"
+                        range={0.2}
+                        rotation={-headingTrue}
+                    />
+                )}
             </div>
             {showDebugInfo && debugInformation()}
             <div className="flex flex-col p-6 space-y-4 rounded-lg border-2 border-theme-accent">
@@ -280,7 +283,7 @@ export const PushbackPage = () => {
                         <p className="text-center">{t('Pushback.CallTug')}</p>
                         <button
                             type="button"
-                            onClick={() => handleCallTug()}
+                            onClick={handleCallTug}
                             className={`${pushBackAttached ? 'text-white bg-green-600 border-green-600' : 'bg-theme-highlight opacity-60 hover:opacity-100 text-theme-text hover:text-theme-secondary transition duration-200 disabled:bg-grey-600'}  border-2 border-theme-accent w-full h-20 rounded-md transition duration-100 flex items-center justify-center`}
                         >
                             <TruckFlatbed size={40} />
@@ -292,7 +295,7 @@ export const PushbackPage = () => {
                         </p>
                         <button
                             type="button"
-                            onClick={() => handlePause()}
+                            onClick={handlePause}
                             className={`flex justify-center items-center w-full h-20 text-white bg-green-900 hover:bg-green-600 rounded-md transition duration-100 ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
                         >
                             {pushBackPaused ? (
@@ -405,7 +408,7 @@ export const PushbackPage = () => {
                         />
                         <p
                             className="font-bold text-unselected"
-                            onDoubleClick={() => setShowDebugInfo(!showDebugInfo)}
+                            onDoubleClick={() => setShowDebugInfo((old) => !old)}
                         >
                             <ChevronDoubleUp />
                         </p>
