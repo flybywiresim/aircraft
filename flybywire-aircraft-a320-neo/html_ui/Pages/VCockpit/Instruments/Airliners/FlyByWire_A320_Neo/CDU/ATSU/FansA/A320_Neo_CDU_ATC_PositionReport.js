@@ -64,9 +64,9 @@ class CDUAtcPositionReport {
             // TODO add deviating
             retval.heading = current.heading;
             retval.track = current.track;
-            if (current.altitude > target.altitude) {
+            if (target.apActive && current.altitude > target.altitude) {
                 retval.descending = target.altitude;
-            } else if (current.altitude < target.altitude) {
+            } else if (target.apActive && current.altitude < target.altitude) {
                 retval.climbing = target.altitude;
             }
         }
@@ -580,15 +580,15 @@ class CDUAtcPositionReport {
 
         const current = mcdu.atsu.currentFlightState();
         const target = mcdu.atsu.targetFlightState();
-        if (target.altitude < current.altitude) {
-            climbing[0] = climbing[1] = "";
-            descending[1] = target.altitude;
-        } else if (target.altitude > current.altitude) {
-            descending[0] = descending[1] = "";
-            climbing[1] = target.altitude;
-        } else {
+        if (target.apActive && target.altitude === current.altitude) {
             descending[0] = descending[1] = "";
             climbing[0] = climbing[1] = "";
+        } else if (data.climbing) {
+            descending[0] = descending[1] = "";
+            climbing[1] = data.climbing;
+        } else if (data.descending) {
+            climbing[0] = climbing[1] = "";
+            descending = data.descending;
         }
 
         let text = "ADD TEXT\xa0";
