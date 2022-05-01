@@ -2,6 +2,13 @@ class A32NX_TipsManager {
     constructor() {
         this.notif = new NXNotif();
         this.checkThrottleCalibration();
+        this.updateThrottler = new UpdateThrottler(30000);
+    }
+
+    update(deltaTime) {
+        if (this.updateThrottler.canUpdate(deltaTime) !== -1) {
+            this.checkAssistenceConfiguration();
+        }
     }
 
     checkThrottleCalibration() {
@@ -32,6 +39,15 @@ class A32NX_TipsManager {
                     input = Math.round(SimVar.GetSimVarValue("L:A32NX_THROTTLE_MAPPING_INPUT:1", "Number") * 100) / 100;
                 }
             }, 300000);
+        }
+    }
+
+    checkAssistenceConfiguration() {
+        const assistenceTakeOffEnabled = SimVar.GetSimVarValue("ASSISTANCE TAKEOFF ENABLED", "Bool");
+        const assistenceLandingEnabled = SimVar.GetSimVarValue("ASSISTANCE LANDING ENABLED", "Bool");
+        const assistenceAutotrimActive = SimVar.GetSimVarValue("AI AUTOTRIM ACTIVE", "Bool");
+        if (assistenceTakeOffEnabled || assistenceLandingEnabled || assistenceAutotrimActive) {
+            this.notif.showNotification({message: "Ensure you have turned off all assistance functions:\n\n-AUTO-RUDDER\n- ASSISTED YOKE\n- ASSISTED LANDING\n- ASSISTED TAKEOFF\n- AI ANTI-STALL PROTECTION\n- AI AUTO-TRIM\n- ASSISTED CONTROLLER SENSITIVITY\n\nThey cause serious incompatibility!", timeout: 20000});
         }
     }
 
