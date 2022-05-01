@@ -2570,7 +2570,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
     - {gear}
-        - CENTER
+        - NOSE
         - LEFT
         - RIGHT
 
@@ -2581,7 +2581,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
     - {gear}
-        - CENTER
+        - NOSE
         - LEFT
         - RIGHT
 
@@ -2592,7 +2592,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
     - {gear}
-        - CENTER
+        - NOSE
         - LEFT
         - RIGHT
 
