@@ -97,9 +97,11 @@ class CDUAtcPositionReport {
         let text = "ADD TEXT\xa0";
         let erase = "\xa0ERASE";
         let reqDisplay = "DCDU\xa0[color]cyan";
-        if (CDUAtcReports.CanSendData(data)) {
+        if (CDUAtcPositionReport.CanSendData(data)) {
             reqDisplay = "DCDU*[color]cyan";
             text = "ADD TEXT>";
+        }
+        if (CDUAtcPositionReport.CanEraseData(data)) {
             erase = "*ERASE";
         }
 
@@ -114,7 +116,26 @@ class CDUAtcPositionReport {
 
         const ppos = ["_______[color]amber", "____/______[color]amber"];
         if (data.currentPosition) {
-            ppos[0] = `{cyan}${data.currentPosition}{end}`;
+            const dmsLat = CDUInitPage.ConvertDDToDMS(data.currentPosition[0], false);
+            const dmsLon = CDUInitPage.ConvertDDToDMS(data.currentPosition[1], true);
+
+            dmsLon['deg'] = Number(dmsLon['deg']);
+            dmsLat['sec'] = Math.ceil(Number(dmsLat['sec'] / 100));
+            dmsLon['sec'] = Math.ceil(Number(dmsLon['sec'] / 100));
+            dmsLat['min'] = dmsLat['min'].toString();
+            dmsLon['min'] = dmsLon['min'].toString();
+
+            if (dmsLat['dir'] === "N") {
+                if (dmsLon['dir'] === "E") {
+                    ppos[0] = `{cyan}${dmsLat['deg']}N${dmsLon['deg']}{end}`;
+                } else {
+                    ppos[0] = `{cyan}${dmsLat['deg']}${dmsLon['deg']}N{end}`;
+                }
+            } else if (dmsLon['dir'] === "E") {
+                ppos[0] = `{cyan}${dmsLat['deg']}${dmsLon['deg']}S{end}`;
+            } else {
+                ppos[0] = `{cyan}${dmsLat['deg']}W${dmsLon['deg']}{end}`;
+            }
         }
         if (data.currentUtc && data.currentAltitude) {
             // TODO convert Altitude the FL if STD is used
@@ -412,9 +433,11 @@ class CDUAtcPositionReport {
         let text = "ADD TEXT\xa0";
         let erase = "\xa0ERASE";
         let reqDisplay = "DCDU\xa0[color]cyan";
-        if (CDUAtcReports.CanSendData(data)) {
+        if (CDUAtcPositionReport.CanSendData(data)) {
             reqDisplay = "DCDU*[color]cyan";
             text = "ADD TEXT>";
+        }
+        if (CDUAtcPositionReport.CanEraseData(data)) {
             erase = "*ERASE";
         }
 
@@ -596,9 +619,11 @@ class CDUAtcPositionReport {
         let text = "ADD TEXT\xa0";
         let erase = "\xa0ERASE";
         let reqDisplay = "DCDU\xa0[color]cyan";
-        if (CDUAtcReports.CanSendData(data)) {
+        if (CDUAtcPositionReport.CanSendData(data)) {
             reqDisplay = "DCDU*[color]cyan";
             text = "ADD TEXT>";
+        }
+        if (CDUAtcPositionReport.CanEraseData(data)) {
             erase = "*ERASE";
         }
 
