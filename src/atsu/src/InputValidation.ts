@@ -414,6 +414,55 @@ export class InputValidation {
     }
 
     /**
+     * Validates the temparture
+     * @param {string} value The entered temperature
+     * @returns AtsuStatusCodes.Ok if the value is valid
+     */
+    public static validateScratchpadTemperature(value: string): AtsuStatusCodes {
+        if (/^[-+M]?[0-9]{1,3}[CF]?$/.test(value)) {
+            const negative = value.startsWith('-') || value.startsWith('M');
+            const fahrenheit = value.endsWith('F');
+
+            let temperature = parseInt(value.match(/([0-9]+)/)[0]);
+            if (negative) {
+                temperature *= -1;
+            }
+
+            if (fahrenheit && temperature >= -105 && temperature <= 150) {
+                return AtsuStatusCodes.Ok;
+            }
+            if (!fahrenheit && temperature >= 80 || temperature < 47) {
+                return AtsuStatusCodes.Ok;
+            }
+
+            return AtsuStatusCodes.EntryOutOfRange;
+        }
+
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
+     * Validates the wind data
+     * @param {string} value The entered wind data
+     * @returns AtsuStatusCodes.Ok if the value is valid
+     */
+    public static validateScratchpadWind(value: string): AtsuStatusCodes {
+        if (/^[0-9]{1,3}\/[0-9]{1,3}(KT|KM)?$/.test(value)) {
+            const numbers = value.match(/([0-9]+)/g);
+            const direction = parseInt(numbers[0]);
+            const speed = parseInt(numbers[1]);
+
+            if (direction < 1 || direction > 360 || speed < 0 || speed > 255) {
+                return AtsuStatusCodes.EntryOutOfRange;
+            }
+
+            return AtsuStatusCodes.Ok;
+        }
+
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
      * Converts an FCOM valid encoded offset string to a list of offset entries
      * @param {string} offset Valid encoded offset
      * @returns The decoded offset entries
@@ -450,6 +499,36 @@ export class InputValidation {
         }
 
         return [distance.toString(), nmUnit ? 'NM' : 'KM', left ? 'L' : 'R'];
+    }
+
+    /**
+     * Formats a valid scratchpad offset to a normalized temperature entry
+     * @param {string} value The entered temperature
+     * @returns The formatted temperature
+     */
+    public static formatScratchpadTemperature(value: string): string {
+        const negative = value.startsWith('-') || value.startsWith('M');
+        const fahrenheit = value.endsWith('F');
+
+        let temperature = parseInt(value.match(/([0-9]+)/)[0]);
+        if (negative) {
+            temperature *= -1;
+        }
+
+        return `${temperature}${fahrenheit ? 'F' : 'C'}`;
+    }
+
+    /**
+     * Normalizes the wind data
+     * @param {string} value The entered wind data
+     * @returns The normalized wind data
+     */
+    public static formatScratchpadWind(value: string): string {
+        const numbers = value.match(/([0-9]+)/g);
+        const direction = parseInt(numbers[0]);
+        const speed = parseInt(numbers[1]);
+        const kilometers = value.endsWith('M');
+        return `${direction.toString().padStart(3, '0')}/${speed.toString().padStart(3, '0')}${kilometers ? 'KM' : 'KT'}`;
     }
 
     /**
