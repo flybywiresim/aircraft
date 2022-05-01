@@ -139,7 +139,7 @@ export class GuidanceManager {
         }
 
         if (to.isVectors) {
-            return new VMLeg(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse, metadata, segment);
+            return new VMLeg(to.additionalData.course, metadata, segment);
         }
 
         return new TFLeg(from, to, metadata, segment);
