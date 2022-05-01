@@ -1,4 +1,10 @@
 class CDUAtcPositionReport {
+    static SecondsToString(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor(seconds / 60) % 60;
+        return `${hours.toString().padStart(2, '0')}${minutes.toString().padStart(2, '0')}`;
+    }
+
     static CreateDataBlock(mcdu, autoFill) {
         const retval = {
             passedWaypoint: [null, null, null],
@@ -33,20 +39,17 @@ class CDUAtcPositionReport {
 
             if (lastWp) {
                 retval.passedWaypoint[0] = lastWp.ident;
-                retval.passedWaypoint[1] = lastWp.utc;
+                retval.passedWaypoint[1] = CDUAtcPositionReport.SecondsToString(lastWp.utc);
                 retval.passedWaypoint[2] = lastWp.altitude;
             }
 
             retval.currentPosition = new LatLong(current.lat, current.lon).toShortDegreeString();
-            const seconds = SimVar.GetSimVarValue('E:ZULU TIME', 'seconds');
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor(seconds / 60) % 60;
-            retval.currentUtc = `${hours.toString().padStart(2, '0')}${minutes.toString().padStart(2, '0')}`;
+            retval.currentUtc = CDUAtcPositionReport.SecondsToString(SimVar.GetSimVarValue('E:ZULU TIME', 'seconds'));
             retval.currentAltitude = current.altitude;
 
             if (activeWp) {
                 retval.activeWaypoint[0] = activeWp.ident;
-                retval.activeWaypoint[1] = activeWp.utc;
+                retval.activeWaypoint[1] = CDUAtcPositionReport.SecondsToString(activeWp.utc);
             }
             if (nextWp) {
                 retval.nextWaypoint = nextWp.ident;
