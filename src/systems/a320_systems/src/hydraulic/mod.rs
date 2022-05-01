@@ -789,12 +789,12 @@ impl A320GearDoorFactory {
 
     fn a320_gear_door_assembly(wheel_id: GearWheel) -> HydraulicLinearActuatorAssembly<1> {
         let gear_door_body = match wheel_id {
-            GearWheel::CENTER => Self::a320_nose_gear_door_body(),
+            GearWheel::NOSE => Self::a320_nose_gear_door_body(),
             GearWheel::LEFT => Self::a320_left_gear_door_body(),
             GearWheel::RIGHT => Self::a320_right_gear_door_body(),
         };
         let gear_door_actuator = match wheel_id {
-            GearWheel::CENTER => Self::a320_nose_gear_door_actuator(&gear_door_body),
+            GearWheel::NOSE => Self::a320_nose_gear_door_actuator(&gear_door_body),
             GearWheel::LEFT | GearWheel::RIGHT => {
                 Self::a320_main_gear_door_actuator(&gear_door_body)
             }
@@ -926,7 +926,7 @@ impl A320GearFactory {
 
     fn a320_gear_assembly(wheel_id: GearWheel) -> HydraulicLinearActuatorAssembly<1> {
         let gear_body = match wheel_id {
-            GearWheel::CENTER => Self::a320_nose_gear_body(),
+            GearWheel::NOSE => Self::a320_nose_gear_body(),
 
             GearWheel::LEFT => Self::a320_left_gear_body(),
 
@@ -934,7 +934,7 @@ impl A320GearFactory {
         };
 
         let gear_actuator = match wheel_id {
-            GearWheel::CENTER => Self::a320_nose_gear_actuator(&gear_body),
+            GearWheel::NOSE => Self::a320_nose_gear_actuator(&gear_body),
 
             GearWheel::LEFT | GearWheel::RIGHT => Self::a320_main_gear_actuator(&gear_body),
         };
@@ -948,10 +948,10 @@ impl A320GearSystemFactory {
     fn a320_gear_system(context: &mut InitContext) -> HydraulicGearSystem {
         HydraulicGearSystem::new(
             context,
-            A320GearDoorFactory::a320_gear_door_assembly(GearWheel::CENTER),
+            A320GearDoorFactory::a320_gear_door_assembly(GearWheel::NOSE),
             A320GearDoorFactory::a320_gear_door_assembly(GearWheel::LEFT),
             A320GearDoorFactory::a320_gear_door_assembly(GearWheel::RIGHT),
-            A320GearFactory::a320_gear_assembly(GearWheel::CENTER),
+            A320GearFactory::a320_gear_assembly(GearWheel::NOSE),
             A320GearFactory::a320_gear_assembly(GearWheel::LEFT),
             A320GearFactory::a320_gear_assembly(GearWheel::RIGHT),
         )
@@ -6353,7 +6353,7 @@ mod tests {
 
             fn get_real_gear_position(&mut self, wheel_id: GearWheel) -> f64 {
                 match wheel_id {
-                    GearWheel::CENTER => self.read_by_name("GEAR_CENTER_POSITION"),
+                    GearWheel::NOSE => self.read_by_name("GEAR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_LEFT_POSITION"),
                     GearWheel::RIGHT => self.read_by_name("GEAR_RIGHT_POSITION"),
                 }
@@ -6361,32 +6361,32 @@ mod tests {
 
             fn get_real_gear_door_position(&mut self, wheel_id: GearWheel) -> f64 {
                 match wheel_id {
-                    GearWheel::CENTER => self.read_by_name("GEAR_DOOR_CENTER_POSITION"),
+                    GearWheel::NOSE => self.read_by_name("GEAR_DOOR_CENTER_POSITION"),
                     GearWheel::LEFT => self.read_by_name("GEAR_DOOR_LEFT_POSITION"),
                     GearWheel::RIGHT => self.read_by_name("GEAR_DOOR_RIGHT_POSITION"),
                 }
             }
 
             fn is_all_gears_really_up(&mut self) -> bool {
-                self.get_real_gear_position(GearWheel::CENTER) <= 0.
+                self.get_real_gear_position(GearWheel::NOSE) <= 0.
                     && self.get_real_gear_position(GearWheel::LEFT) <= 0.
                     && self.get_real_gear_position(GearWheel::RIGHT) <= 0.
             }
 
             fn is_all_gears_really_down(&mut self) -> bool {
-                self.get_real_gear_position(GearWheel::CENTER) >= 1.
+                self.get_real_gear_position(GearWheel::NOSE) >= 1.
                     && self.get_real_gear_position(GearWheel::LEFT) >= 1.
                     && self.get_real_gear_position(GearWheel::RIGHT) >= 1.
             }
 
             fn is_all_doors_really_up(&mut self) -> bool {
-                self.get_real_gear_door_position(GearWheel::CENTER) <= 0.
+                self.get_real_gear_door_position(GearWheel::NOSE) <= 0.
                     && self.get_real_gear_door_position(GearWheel::LEFT) <= 0.
                     && self.get_real_gear_door_position(GearWheel::RIGHT) <= 0.
             }
 
             fn is_all_doors_really_down(&mut self) -> bool {
-                self.get_real_gear_door_position(GearWheel::CENTER) >= 0.9
+                self.get_real_gear_door_position(GearWheel::NOSE) >= 0.9
                     && self.get_real_gear_door_position(GearWheel::LEFT) >= 0.9
                     && self.get_real_gear_door_position(GearWheel::RIGHT) >= 0.9
             }
@@ -6715,7 +6715,7 @@ mod tests {
         }
 
         #[test]
-        fn ptu_inhibited_on_ground_is_activated_when_center_gear_in_air() {
+        fn ptu_inhibited_on_ground_is_activated_when_nose_gear_in_air() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()
@@ -8827,7 +8827,7 @@ mod tests {
         }
 
         #[test]
-        fn controller_blue_epump_activates_when_no_weight_on_center_wheel() {
+        fn controller_blue_epump_activates_when_no_weight_on_nose_wheel() {
             let mut test_bed = test_bed_with()
                 .engines_off()
                 .on_the_ground()

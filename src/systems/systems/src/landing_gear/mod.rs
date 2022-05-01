@@ -64,7 +64,7 @@ impl LandingGear {
 
     fn wheel_id_compression(&self, wheel_id: GearWheel) -> Ratio {
         match wheel_id {
-            GearWheel::CENTER => self.center_compression,
+            GearWheel::NOSE => self.center_compression,
             GearWheel::LEFT => self.left_compression,
             GearWheel::RIGHT => self.right_compression,
         }
@@ -165,7 +165,7 @@ impl LgciuSensorInputs {
         self.external_power_available = external_power_available;
         self.is_powered = is_powered;
 
-        self.nose_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::CENTER);
+        self.nose_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::NOSE);
         self.left_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::LEFT);
         self.right_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::RIGHT);
 
@@ -174,23 +174,23 @@ impl LgciuSensorInputs {
         self.left_gear_up_and_locked =
             gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::LEFT, self.lgciu_id);
         self.nose_gear_up_and_locked =
-            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::CENTER, self.lgciu_id);
+            gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::NOSE, self.lgciu_id);
 
         self.right_gear_down_and_locked =
             gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::RIGHT, self.lgciu_id);
         self.left_gear_down_and_locked =
             gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::LEFT, self.lgciu_id);
         self.nose_gear_down_and_locked =
-            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::CENTER, self.lgciu_id);
+            gear_system_sensors.is_wheel_id_down_and_locked(GearWheel::NOSE, self.lgciu_id);
 
         self.nose_door_fully_opened =
-            gear_system_sensors.is_door_id_down_and_locked(GearWheel::CENTER, self.lgciu_id);
+            gear_system_sensors.is_door_id_down_and_locked(GearWheel::NOSE, self.lgciu_id);
         self.right_door_fully_opened =
             gear_system_sensors.is_door_id_down_and_locked(GearWheel::RIGHT, self.lgciu_id);
         self.left_door_fully_opened =
             gear_system_sensors.is_door_id_down_and_locked(GearWheel::LEFT, self.lgciu_id);
         self.nose_door_up_and_locked =
-            gear_system_sensors.is_door_id_up_and_locked(GearWheel::CENTER, self.lgciu_id);
+            gear_system_sensors.is_door_id_up_and_locked(GearWheel::NOSE, self.lgciu_id);
         self.right_door_up_and_locked =
             gear_system_sensors.is_door_id_up_and_locked(GearWheel::RIGHT, self.lgciu_id);
         self.left_door_up_and_locked =
@@ -200,12 +200,12 @@ impl LgciuSensorInputs {
     fn unlock_state(&self, wheel_id: GearWheel, gear_lever_is_down: bool) -> bool {
         let gear_uplocked = match wheel_id {
             GearWheel::LEFT => self.left_gear_up_and_locked,
-            GearWheel::CENTER => self.nose_gear_up_and_locked,
+            GearWheel::NOSE => self.nose_gear_up_and_locked,
             GearWheel::RIGHT => self.right_gear_up_and_locked,
         };
         let gear_downlocked = match wheel_id {
             GearWheel::LEFT => self.left_gear_down_and_locked,
-            GearWheel::CENTER => self.nose_gear_down_and_locked,
+            GearWheel::NOSE => self.nose_gear_down_and_locked,
             GearWheel::RIGHT => self.right_gear_down_and_locked,
         };
 
@@ -219,7 +219,7 @@ impl LgciuSensorInputs {
     fn downlock_state(&self, wheel_id: GearWheel) -> bool {
         match wheel_id {
             GearWheel::LEFT => self.left_gear_down_and_locked,
-            GearWheel::CENTER => self.nose_gear_down_and_locked,
+            GearWheel::NOSE => self.nose_gear_down_and_locked,
             GearWheel::RIGHT => self.right_gear_down_and_locked,
         }
     }
@@ -775,11 +775,11 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
             self.is_powered
                 && self
                     .sensor_inputs
-                    .unlock_state(GearWheel::CENTER, self.gear_handle_is_down()),
+                    .unlock_state(GearWheel::NOSE, self.gear_handle_is_down()),
         );
         writer.write(
             &self.nose_gear_downlock_id,
-            self.is_powered && self.sensor_inputs.downlock_state(GearWheel::CENTER),
+            self.is_powered && self.sensor_inputs.downlock_state(GearWheel::NOSE),
         );
 
         writer.write(
@@ -1223,7 +1223,7 @@ mod tests {
             Ratio::new::<ratio>(0.9),
         );
 
-        assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::CENTER)));
+        assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::NOSE)));
         assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::LEFT)));
         assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::RIGHT)));
     }
@@ -1236,7 +1236,7 @@ mod tests {
             Ratio::new::<ratio>(0.51),
         );
 
-        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::CENTER)));
+        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::NOSE)));
         assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::LEFT)));
         assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::RIGHT)));
     }
@@ -1249,7 +1249,7 @@ mod tests {
             Ratio::new::<ratio>(0.51),
         );
 
-        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::CENTER)));
+        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::NOSE)));
         assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::LEFT)));
         assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::RIGHT)));
     }

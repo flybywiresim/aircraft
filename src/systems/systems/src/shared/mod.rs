@@ -122,27 +122,27 @@ pub enum LgciuId {
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum ProximityDetectorId {
-    UplockGearCenter1,
-    UplockGearCenter2,
+    UplockGearNose1,
+    UplockGearNose2,
     UplockGearLeft1,
     UplockGearLeft2,
     UplockGearRight1,
     UplockGearRight2,
-    DownlockGearCenter1,
-    DownlockGearCenter2,
+    DownlockGearNose1,
+    DownlockGearNose2,
     DownlockGearLeft1,
     DownlockGearLeft2,
     DownlockGearRight1,
     DownlockGearRight2,
 
-    UplockDoorCenter1,
-    UplockDoorCenter2,
+    UplockDoorNose1,
+    UplockDoorNose2,
     UplockDoorLeft1,
     UplockDoorLeft2,
     UplockDoorRight1,
     UplockDoorRight2,
-    DownlockDoorCenter1,
-    DownlockDoorCenter2,
+    DownlockDoorNose1,
+    DownlockDoorNose2,
     DownlockDoorLeft1,
     DownlockDoorLeft2,
     DownlockDoorRight1,
@@ -194,7 +194,7 @@ pub trait AdirsDiscreteOutputs {
 }
 
 pub enum GearWheel {
-    CENTER = 0,
+    NOSE = 0,
     LEFT = 1,
     RIGHT = 2,
 }

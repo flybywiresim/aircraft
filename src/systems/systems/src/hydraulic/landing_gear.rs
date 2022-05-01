@@ -69,12 +69,12 @@ impl HydraulicGearSystem {
                 nose_door,
                 false,
                 [
-                    ProximityDetectorId::UplockDoorCenter1,
-                    ProximityDetectorId::UplockDoorCenter2,
+                    ProximityDetectorId::UplockDoorNose1,
+                    ProximityDetectorId::UplockDoorNose2,
                 ],
                 [
-                    ProximityDetectorId::DownlockDoorCenter1,
-                    ProximityDetectorId::DownlockDoorCenter2,
+                    ProximityDetectorId::DownlockDoorNose1,
+                    ProximityDetectorId::DownlockDoorNose2,
                 ],
             ),
             left_door_assembly: GearSystemComponentAssembly::new(
@@ -113,12 +113,12 @@ impl HydraulicGearSystem {
                 nose_gear,
                 true,
                 [
-                    ProximityDetectorId::UplockGearCenter1,
-                    ProximityDetectorId::UplockGearCenter2,
+                    ProximityDetectorId::UplockGearNose1,
+                    ProximityDetectorId::UplockGearNose2,
                 ],
                 [
-                    ProximityDetectorId::DownlockGearCenter1,
-                    ProximityDetectorId::DownlockGearCenter2,
+                    ProximityDetectorId::DownlockGearNose1,
+                    ProximityDetectorId::DownlockGearNose2,
                 ],
             ),
             left_gear_assembly: GearSystemComponentAssembly::new(
@@ -221,7 +221,7 @@ impl HydraulicGearSystem {
 impl GearSystemSensors for HydraulicGearSystem {
     fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
         match wheel_id {
-            GearWheel::CENTER => self.nose_gear_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::NOSE => self.nose_gear_assembly.is_sensor_uplock(lgciu_id),
             GearWheel::LEFT => self.left_gear_assembly.is_sensor_uplock(lgciu_id),
             GearWheel::RIGHT => self.right_gear_assembly.is_sensor_uplock(lgciu_id),
         }
@@ -229,7 +229,7 @@ impl GearSystemSensors for HydraulicGearSystem {
 
     fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
         match wheel_id {
-            GearWheel::CENTER => self.nose_gear_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::NOSE => self.nose_gear_assembly.is_sensor_fully_opened(lgciu_id),
             GearWheel::LEFT => self.left_gear_assembly.is_sensor_fully_opened(lgciu_id),
             GearWheel::RIGHT => self.right_gear_assembly.is_sensor_fully_opened(lgciu_id),
         }
@@ -237,7 +237,7 @@ impl GearSystemSensors for HydraulicGearSystem {
 
     fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
         match wheel_id {
-            GearWheel::CENTER => self.nose_door_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::NOSE => self.nose_door_assembly.is_sensor_uplock(lgciu_id),
             GearWheel::LEFT => self.left_door_assembly.is_sensor_uplock(lgciu_id),
             GearWheel::RIGHT => self.right_door_assembly.is_sensor_uplock(lgciu_id),
         }
@@ -245,7 +245,7 @@ impl GearSystemSensors for HydraulicGearSystem {
 
     fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
         match wheel_id {
-            GearWheel::CENTER => self.nose_door_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::NOSE => self.nose_door_assembly.is_sensor_fully_opened(lgciu_id),
             GearWheel::LEFT => self.left_door_assembly.is_sensor_fully_opened(lgciu_id),
             GearWheel::RIGHT => self.right_door_assembly.is_sensor_fully_opened(lgciu_id),
         }
