@@ -77,9 +77,6 @@ export class FlightStateObserver {
             this.updatePresentPosition();
             this.updateFcu();
 
-            console.log(this.PresentPosition);
-            console.log(this.FcuSettings);
-
             if (last) {
                 if (!this.LastWaypoint || last.ident !== this.LastWaypoint.ident) {
                     this.LastWaypoint = new Waypoint(last.ident);
@@ -103,10 +100,6 @@ export class FlightStateObserver {
                 if (!this.NextWaypoint || this.NextWaypoint.ident !== next.ident) {
                     this.NextWaypoint = new Waypoint(next.ident);
                 }
-
-                console.log(this.LastWaypoint);
-                console.log(this.ActiveWaypoint);
-                console.log(this.NextWaypoint);
             }
         }, 1000);
     }
