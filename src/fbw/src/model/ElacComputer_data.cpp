@@ -1,5 +1,63 @@
 #include "ElacComputer.h"
 
+base_elac_logic_outputs rtP_elac_logic_output_MATLABStruct{
+  false,
+  false,
+  lateral_efcs_law::None,
+  lateral_efcs_law::None,
+  pitch_efcs_law::None,
+  pitch_efcs_law::None,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  0.0,
+  0.0,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+
+  {
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  },
+
+  {
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  },
+  0.0,
+  false
+} ;
+
 base_elac_laws_outputs rtP_elac_laws_output_MATLABStruct{
   {
     0.0,
@@ -46,6 +104,12 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   14.0,
 
+  1.0,
+
+  1.0,
+
+  1.0,
+
   0.0,
 
   0.0,
@@ -70,6 +134,18 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   1450.0,
 
+  1.0,
+
+  1.0,
+
+  1.0,
+
+  1.0,
+
+  1.0,
+
+  1.0,
+
   0.5,
 
   0.5,
@@ -86,6 +162,38 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   lateral_efcs_law::NormalLaw,
 
+  50.0F,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
+  true,
+
   true,
 
   true,
@@ -100,230 +208,17 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   true,
 
+  true,
 
-  {
-    false,
-    false,
-    lateral_efcs_law::None,
-    lateral_efcs_law::None,
-    pitch_efcs_law::None,
-    pitch_efcs_law::None,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    0.0,
-    0.0,
+  true,
 
-    {
-      {
-        0U,
-        0.0F
-      },
+  true,
 
-      {
-        0U,
-        0.0F
-      },
+  true,
 
-      {
-        0U,
-        0.0F
-      },
+  true,
 
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      }
-    },
-
-    {
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      }
-    }
-  },
+  true,
 
 
   {
@@ -441,45 +336,15 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   -1.0,
 
-  -1.0,
-
-  6.0,
-
-  -6.0,
-
   0.0,
 
   1.6,
 
-  0.01,
-
-  1.0,
-
-  -1.0,
-
-  -1.0,
-
-  -6.0,
-
-  -6.0,
-
-  0.01,
-
-  1.0,
-
-  -1.0,
-
-  -1.0,
-
-  -6.0,
-
   0.0,
 
   0.0,
 
   0.0,
-
-  -6.0,
 
   15.0F,
 
@@ -490,6 +355,41 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   19.0F,
 
   30.0F,
+
+  false,
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  false,
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  false,
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+  false,
 
   false,
 

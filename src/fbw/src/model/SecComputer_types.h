@@ -444,25 +444,14 @@ struct sec_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_lateral_normal_input_
-#define DEFINED_TYPEDEF_FOR_lateral_normal_input_
+#ifndef DEFINED_TYPEDEF_FOR_lateral_direct_input_
+#define DEFINED_TYPEDEF_FOR_lateral_direct_input_
 
-struct lateral_normal_input
+struct lateral_direct_input
 {
   base_time time;
-  real_T Theta_deg;
-  real_T Phi_deg;
-  real_T r_deg_s;
-  real_T pk_deg_s;
-  real_T V_ias_kn;
-  real_T V_tas_kn;
-  real_T H_radio_ft;
   real_T delta_xi_pos;
-  real_T delta_zeta_pos;
-  boolean_T on_ground;
   boolean_T tracking_mode_on;
-  boolean_T high_aoa_prot_active;
-  boolean_T high_speed_prot_active;
 };
 
 #endif
@@ -478,31 +467,6 @@ struct base_roll_output
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_roll_data_computed_
-#define DEFINED_TYPEDEF_FOR_base_roll_data_computed_
-
-struct base_roll_data_computed
-{
-  real_T delta_xi_deg;
-  real_T in_flight;
-  real_T in_flight_gain;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_roll_normal_
-#define DEFINED_TYPEDEF_FOR_base_roll_normal_
-
-struct base_roll_normal
-{
-  real_T pk_c_deg_s;
-  real_T Phi_c_deg;
-  real_T xi_deg;
-  real_T zeta_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_pitch_normal_input_
 #define DEFINED_TYPEDEF_FOR_pitch_normal_input_
 
@@ -512,7 +476,6 @@ struct pitch_normal_input
   real_T nz_g;
   real_T Theta_deg;
   real_T Phi_deg;
-  real_T p_deg_s;
   real_T qk_deg_s;
   real_T qk_dot_deg_s2;
   real_T eta_deg;
@@ -624,6 +587,21 @@ struct base_pitch_law_output
 struct base_pitch_integrated
 {
   real_T eta_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_pitch_direct_input_
+#define DEFINED_TYPEDEF_FOR_pitch_direct_input_
+
+struct pitch_direct_input
+{
+  base_time time;
+  real_T eta_deg;
+  real_T flaps_handle_index;
+  real_T tracking_mode_on_override;
+  real_T delta_eta_pos;
+  boolean_T tracking_mode_on;
 };
 
 #endif
