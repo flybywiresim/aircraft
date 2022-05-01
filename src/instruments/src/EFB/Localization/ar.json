@@ -201,25 +201,25 @@
       "View": "عرض"
     },
     "PleaseWait": "يرجى الإنتظار...",
-    "ShowingAllItems": "Showing All Items",
+    "ShowingAllItems": "عرض جميع العناصر",
     "TT": {
       "FitChartToHeight": "Fit Chart to Height",
       "FitChartToWidth": "Fit Chart to Width",
-      "ResetMovement": "Reset Movement",
-      "RotateLeft45Degrees": "Rotate Left 45 Degrees",
-      "RotateRight45Degrees": "Rotate Right 45 Degrees",
-      "ZoomIn": "Zoom In",
-      "ZoomOut": "Zoom Out"
+      "ResetMovement": "إعادة تعيين الحركة",
+      "RotateLeft45Degrees": "تدوير لليسار 45 درجة",
+      "RotateRight45Degrees": "تدوير لليمين 45 درجة ",
+      "ZoomIn": "تكبير",
+      "ZoomOut": "تصغير"
     },
-    "ThereAreNoChartsToDisplay": "There are no charts to display.",
-    "ThereIsNoChartToDisplay": "There is no chart to display.",
-    "Title": "Navigation & Charts",
-    "To": "To"
+    "ThereAreNoChartsToDisplay": "لا توجد مخططات لعرضها.",
+    "ThereIsNoChartToDisplay": "لا يوجد مخطط لعرضه.",
+    "Title": "الملاحة ومخططات الطيران ",
+    "To": "إلى"
   },
   "Performance": {
-    "Data": "Data",
+    "Data": "البيانات",
     "Landing": {
-      "AirportIcao": "Airport ICAO",
+      "AirportIcao": "معلومات ICAO للمطار ",
       "ApproachSpeed": "Approach Speed",
       "ApproachSpeedUnit": "kts",
       "AutoLand": "Autoland",
@@ -361,6 +361,20 @@
       "Title": "Parking Brake"
     },
     "Right": "Right",
+    "TT": {
+      "CallReleaseTug": "Call or release tug",
+      "CenterPlaneMode": "Center map on plane On/Off",
+      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0",
+      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0",
+      "Left": "Go left (double click for straight)",
+      "PausePushback": "Pause or unpause pushback",
+      "Right": "Go right (double click for straight)",
+      "SetReleaseParkingBrake": "Set or release parking brake",
+      "SliderDirection": "Move for desired direction",
+      "SliderSpeed": "Move for desired speed",
+      "ZoomIn": "Zoom in",
+      "ZoomOut": "Zoom out"
+    },
     "TugDirection": "Tug Direction",
     "TugSpeed": "Tug Speed"
   },

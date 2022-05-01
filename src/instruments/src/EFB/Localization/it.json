@@ -49,7 +49,7 @@
         "Loading": "Caricamento",
         "MetarParsingError": "Il METAR ricevuto non può essere elaborato",
         "NoIcaoProvided": "Nessun ICAO fornito",
-        "NotAvailableShort": "N/A",
+        "NotAvailableShort": "N/D",
         "Raw": "Tecnica",
         "TT": {
           "SwitchToIconView": "Passa alla Visualizzazione a Icone",
@@ -69,7 +69,7 @@
       "CruiseAlt": "Alt. Crociera",
       "ImportSimBriefData": "Importa Dati SimBrief",
       "Route": "Rotta",
-      "SimBriefDataNotYetLoaded": "Dati SiemBrief non ancora caricati.",
+      "SimBriefDataNotYetLoaded": "Dati SimBrief non ancora caricati.",
       "Title": "Il Tuo Volo",
       "ZFW": "ZFW"
     }
@@ -126,7 +126,7 @@
       "RightInnerTank": "Serbatoio Destro Interno",
       "RightOuterTank": "Serbatoio Destro Esterno",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Modifica la durata del rifornimento solo a terra con motori spenti",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Cambiare la durata del rifornimento soltanto a terra con motori spenti",
         "FillBlockFuelFromSimBrief": "Inserisci Block Fuel da SimBrief"
       },
       "Title": "Carburante",
@@ -241,12 +241,12 @@
       "RunwayAltitudeUnit": "ASL ft",
       "RunwayCondition": "Condizioni Pista",
       "RunwayConditions": {
-        "Dry": "Dry (6)",
-        "Good": "Good (5)",
-        "GoodMedium": "Good-Medium (4)",
-        "Medium": "Medium (3)",
-        "MediumPoor": "Medium-Poor (2)",
-        "Poor": "Poor (1)"
+        "Dry": "Asciutta",
+        "Good": "Buone",
+        "GoodMedium": "Medio-Buone",
+        "Medium": "Medie",
+        "MediumPoor": "Medio-Scarse",
+        "Poor": "Scarse"
       },
       "RunwayHeading": "Orientamento Pista",
       "RunwayHeadingUnit": "°",
@@ -321,7 +321,7 @@
       "ReadyTakeoff": "Pronto per Decollo",
       "ReadyTaxi": "Pronto per Rullaggio",
       "SelectAPresetToLoad": "Seleziona un Preset da Caricare",
-      "TheAircraftMustBeOnTheGroundToLoadAPreset": "L'Aeromobile deve essere a terra per caricare un preset",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "L'Aeromobile deve essere a terra per caricare un preset.",
       "TheAircraftMustBeOntheGroundToLoadAPreset": "L'Aeromobile deve essere a terra per caricare un preset.",
       "Title": "Stati Aeromobile",
       "Turnaround": "Turnaround"
@@ -353,14 +353,28 @@
     "CallTug": "Chiama Tug",
     "Forward": "Avanti",
     "Halt": "In Pausa",
-    "Left": "Left",
+    "Left": "Sinistra",
     "Moving": "In Movimento",
     "ParkingBrake": {
       "Off": "Off",
       "On": "On",
       "Title": "Freni Parcheggio"
     },
-    "Right": "Right",
+    "Right": "Destra",
+    "TT": {
+      "CallReleaseTug": "Call or release tug",
+      "CenterPlaneMode": "Center map on plane On/Off",
+      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0",
+      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0",
+      "Left": "Go left (double click for straight)",
+      "PausePushback": "Pause or unpause pushback",
+      "Right": "Go right (double click for straight)",
+      "SetReleaseParkingBrake": "Set or release parking brake",
+      "SliderDirection": "Move for desired direction",
+      "SliderSpeed": "Move for desired speed",
+      "ZoomIn": "Zoom in",
+      "ZoomOut": "Zoom out"
+    },
     "TugDirection": "Direzione Tug",
     "TugSpeed": "Velocità Tug"
   },
@@ -382,14 +396,14 @@
     },
     "AtsuAoc": {
       "AtisAtcSource": "Fonte ATIS/ATC",
-      "AutomaticallyImportSimBriefData": "Importa Automaticamente Dati SimBrief",
+      "AutomaticallyImportSimBriefData": "Importa Dati SimBrief Automaticamente",
       "Enable": "Abilita",
       "EnableTelex": "Abilita TELEX",
       "ErrorReporting": "Segnalazione Errori",
       "HoppieEnabled": "Hoppie Abilitato",
       "HoppieUserId": "ID Utente Hoppie",
       "MetarSource": "Fonte METAR",
-      "OptionalA32nxErrorReporting": "Segnalazione Opzionale Errori A32NX ",
+      "OptionalA32nxErrorReporting": "Segnalazione Errori A32NX Opzionale",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Verifica di aver inserito correttamente il tuo nome utente o ID pilota SimBrief",
       "SimBriefUsernamePilotId": "Nome Utente/ID Pilota SimBrief",
       "TafSource": "Fonte TAF",
@@ -431,7 +445,7 @@
       "Active": "Attivo",
       "Auto": "Auto",
       "Calibrate": "Calibra",
-      "DefaultBarometerUnit": "Unità Predefinita Barometro",
+      "DefaultBarometerUnit": "Unità Barometro Predefinita",
       "DynamicRegistrationDecal": "Decalco Registrazione Dinamico",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Abilita Connessione Server MCDU (Disattivazione automatica dopo 5 minuti in caso di connessione non riuscita)",
       "ExternalMcduServerPort": "Porta Esterna Server MCDU",
@@ -472,7 +486,7 @@
     "Unrealistic": "Irrealistico",
     "flyPad": {
       "AutoBrightness": "Luminosità Automatica",
-      "AutomaticallyShowOnscreenKeyboard": "Visualizza Automaticamente Tastiera a Schermo",
+      "AutomaticallyShowOnscreenKeyboard": "Visualizza Tastiera a Schermo Automaticamente",
       "Blue": "Blu",
       "Brightness": "Luminosità",
       "Dark": "Scuro",

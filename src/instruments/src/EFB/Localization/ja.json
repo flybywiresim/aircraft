@@ -49,7 +49,7 @@
         "Loading": "読み込み中…",
         "MetarParsingError": "受信したMETARを解析できませんでした",
         "NoIcaoProvided": "ICAOから提供されていません",
-        "NotAvailableShort": "N/A",
+        "NotAvailableShort": "利用不可",
         "Raw": "原文",
         "TT": {
           "SwitchToIconView": "アイコン表示に切り替え",
@@ -126,7 +126,7 @@
       "RightInnerTank": "右内側タンク",
       "RightOuterTank": "右外側タンク",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "給油時間を変更するには、機体の状態をコールド＆ダーク(全電源停止)にする必要があります",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "エンジン停止かつ地上にいる場合のみ、給油時間を変更できます",
         "FillBlockFuelFromSimBrief": "SimBriefからブロック燃料を読み込む"
       },
       "Title": "燃料",
@@ -173,7 +173,7 @@
       "AuthenticateWithNavigraph": "Navigraphで認証する",
       "InsufficientEnv": ".envファイルが不足しています",
       "IntoYourBrowserAndEnterTheCodeBelow": "このURLをブラウザに入力し、以下のコードを入力してください\n",
-      "LoadingMsg": "Loading",
+      "LoadingMsg": "読み込み中…",
       "NoAirportSelected": "空港が選択されていません",
       "ResetNavigraphAuthentication": "Navigraph認証のリセット",
       "ScanTheQrCodeOrOpen": "QRコードをスキャンするか、これを開いてください",
@@ -241,12 +241,12 @@
       "RunwayAltitudeUnit": "ft(海抜高度)",
       "RunwayCondition": "滑走路の状態",
       "RunwayConditions": {
-        "Dry": "Dry (6)",
-        "Good": "Good (5)",
-        "GoodMedium": "Good-Medium (4)",
-        "Medium": "Medium (3)",
-        "MediumPoor": "Medium-Poor (2)",
-        "Poor": "Poor (1)"
+        "Dry": "乾燥(6)",
+        "Good": "良い(5)",
+        "GoodMedium": "やや良い(4)",
+        "Medium": "中間(3)",
+        "MediumPoor": "やや悪い(2)",
+        "Poor": "悪い(1)"
       },
       "RunwayHeading": "滑走路の方位",
       "RunwayHeadingUnit": "°",
@@ -352,15 +352,29 @@
     "Backward": "後進",
     "CallTug": "牽引車を呼ぶ",
     "Forward": "前進",
-    "Halt": "停止",
-    "Left": "Left",
-    "Moving": "Moving",
+    "Halt": "停止中",
+    "Left": "左へ旋回",
+    "Moving": "移動中",
     "ParkingBrake": {
       "Off": "オフ",
       "On": "オン",
       "Title": "パーキングブレーキ"
     },
-    "Right": "Right",
+    "Right": "右へ旋回",
+    "TT": {
+      "CallReleaseTug": "Call or release tug",
+      "CenterPlaneMode": "Center map on plane On/Off",
+      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0",
+      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0",
+      "Left": "Go left (double click for straight)",
+      "PausePushback": "Pause or unpause pushback",
+      "Right": "Go right (double click for straight)",
+      "SetReleaseParkingBrake": "Set or release parking brake",
+      "SliderDirection": "Move for desired direction",
+      "SliderSpeed": "Move for desired speed",
+      "ZoomIn": "Zoom in",
+      "ZoomOut": "Zoom out"
+    },
     "TugDirection": "牽引方向",
     "TugSpeed": "牽引速度"
   },
