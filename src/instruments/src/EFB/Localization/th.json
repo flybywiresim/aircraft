@@ -49,7 +49,7 @@
         "Loading": "กำลังโหลด",
         "MetarParsingError": "ไม่สามารถแยกวิเคราะห์ METAR ที่ได้รับได้",
         "NoIcaoProvided": "ไม่มี ICAO ให้",
-        "NotAvailableShort": "N/A",
+        "NotAvailableShort": "ไม่มี",
         "Raw": "ข้อมูลดิบ",
         "TT": {
           "SwitchToIconView": "สลับไปยังมุมมองไอคอน",
@@ -126,7 +126,7 @@
       "RightInnerTank": "ถังน้ำมันด้านในขวา",
       "RightOuterTank": "ถังน้ำมันด้านนอกขวา",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "เครื่องบินต้องเป็น Cold & Dark เพื่อที่จะเปลี่ยนเวลาเติมน้ำมัน",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "สามารถเปลี่ยนระยะเวลาการเติมน้ำมันได้บนพื้นดิน และเครื่องยนต์ดับอยู่เท่านั้น",
         "FillBlockFuelFromSimBrief": "กรอก Block Fuel จาก SimBrief"
       },
       "Title": "น้ำมัน",
@@ -173,7 +173,7 @@
       "AuthenticateWithNavigraph": "ตรวจสอบสิทธิ์ด้วย Navigraph",
       "InsufficientEnv": "ไฟล์ .env ไม่เพียงพอ",
       "IntoYourBrowserAndEnterTheCodeBelow": "ลงในเบราว์เซอร์ของคุณและป้อนรหัสด้านล่าง",
-      "LoadingMsg": "Loading",
+      "LoadingMsg": "กำลังโหลด",
       "NoAirportSelected": "ไม่มีสนามบินที่เลือก",
       "ResetNavigraphAuthentication": "รีเซ็ตการตรวจสอบสิทธิ์ของ Navigraph",
       "ScanTheQrCodeOrOpen": "สแกน QR Code หรือ เปิด",
@@ -241,12 +241,12 @@
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "สภาพรันเวย์",
       "RunwayConditions": {
-        "Dry": "Dry (6)",
-        "Good": "Good (5)",
-        "GoodMedium": "Good-Medium (4)",
-        "Medium": "Medium (3)",
-        "MediumPoor": "Medium-Poor (2)",
-        "Poor": "Poor (1)"
+        "Dry": "แห้ง (6)",
+        "Good": "ดี (5)",
+        "GoodMedium": "ดี-ปานกลาง (4)",
+        "Medium": "กลาง (3)",
+        "MediumPoor": "ปานกลาง-แย่ (2)",
+        "Poor": "แย่ (1)"
       },
       "RunwayHeading": " ทิศทางรันเวย์",
       "RunwayHeadingUnit": "°",
@@ -352,15 +352,29 @@
     "Backward": "ถอยหลัง",
     "CallTug": "เรียกรถลากจูง",
     "Forward": "ไปข้างหน้า",
-    "Halt": "หยุด",
-    "Left": "Left",
-    "Moving": "Moving",
+    "Halt": "หยุดชั่วคราว",
+    "Left": "ซ้าย",
+    "Moving": "กำลังเคลื่อนที่…",
     "ParkingBrake": {
       "Off": "ปิด",
       "On": "เปิด",
       "Title": "Parking Brake"
     },
-    "Right": "Right",
+    "Right": "ขวา",
+    "TT": {
+      "CallReleaseTug": "Call or release tug",
+      "CenterPlaneMode": "Center map on plane On/Off",
+      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0",
+      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0",
+      "Left": "Go left (double click for straight)",
+      "PausePushback": "Pause or unpause pushback",
+      "Right": "Go right (double click for straight)",
+      "SetReleaseParkingBrake": "Set or release parking brake",
+      "SliderDirection": "Move for desired direction",
+      "SliderSpeed": "Move for desired speed",
+      "ZoomIn": "Zoom in",
+      "ZoomOut": "Zoom out"
+    },
     "TugDirection": "ทิศทางการลากจูง",
     "TugSpeed": "ความเร็วลากจูง"
   },
