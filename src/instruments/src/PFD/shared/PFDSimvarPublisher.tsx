@@ -12,7 +12,7 @@ export interface PFDSimvars {
     altitude: number;
     speed: number;
     alphaProt: number;
-    centerGearCompressed: boolean;
+    noseGearCompressed: boolean;
     leftMainGearCompressed: boolean;
     rightMainGearCompressed: boolean;
     activeLateralMode: number;
@@ -126,7 +126,7 @@ export enum PFDVars {
     altitude = 'L:A32NX_ADIRS_ADR_1_ALTITUDE',
     speed = 'L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED',
     alphaProt = 'L:A32NX_SPEEDS_ALPHA_PROTECTION',
-    centerGearCompressed = 'L:A32NX_LGCIU_1_CENTER_GEAR_COMPRESSED',
+    noseGearCompressed = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
     leftMainGearCompressed = 'L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED',
     rightMainGearCompressed = 'L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED',
     activeLateralMode = 'L:A32NX_FMA_LATERAL_MODE',
@@ -242,7 +242,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['altitude', { name: PFDVars.altitude, type: SimVarValueType.Number }],
         ['speed', { name: PFDVars.speed, type: SimVarValueType.Number }],
         ['alphaProt', { name: PFDVars.alphaProt, type: SimVarValueType.Number }],
-        ['centerGearCompressed', { name: PFDVars.centerGearCompressed, type: SimVarValueType.Bool }],
+        ['noseGearCompressed', { name: PFDVars.noseGearCompressed, type: SimVarValueType.Bool }],
         ['leftMainGearCompressed', { name: PFDVars.leftMainGearCompressed, type: SimVarValueType.Bool }],
         ['rightMainGearCompressed', { name: PFDVars.rightMainGearCompressed, type: SimVarValueType.Bool }],
         ['activeLateralMode', { name: PFDVars.activeLateralMode, type: SimVarValueType.Number }],

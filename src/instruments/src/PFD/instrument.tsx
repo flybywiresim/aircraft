@@ -71,7 +71,7 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('altitude');
         this.simVarPublisher.subscribe('speed');
         this.simVarPublisher.subscribe('alphaProt');
-        this.simVarPublisher.subscribe('centerGearCompressed');
+        this.simVarPublisher.subscribe('noseGearCompressed');
         this.simVarPublisher.subscribe('leftMainGearCompressed');
         this.simVarPublisher.subscribe('rightMainGearCompressed');
         this.simVarPublisher.subscribe('activeLateralMode');

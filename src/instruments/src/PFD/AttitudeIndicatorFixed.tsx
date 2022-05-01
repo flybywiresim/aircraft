@@ -424,7 +424,7 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-        sub.on('centerGearCompressed').whenChanged().handle((g) => {
+        sub.on('noseGearCompressed').whenChanged().handle((g) => {
             this.onGround = g;
             this.handleSideStickIndication();
         });
