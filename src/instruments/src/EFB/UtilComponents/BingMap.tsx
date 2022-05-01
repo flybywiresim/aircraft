@@ -11,7 +11,7 @@ const RANGE_CONSTANT = 1852;
 const DEFAULT_RANGE = 80;
 
 export const BingMap: React.FC<BingMapProps> = ({ configFolder, mapId, range = DEFAULT_RANGE, centerLla }) => {
-    const mapRef = useRef<NetBingMap>();
+    const mapRef = useRef<BingMapElement>();
 
     useEffect(() => {
         if (mapRef.current) {
