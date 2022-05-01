@@ -52,7 +52,7 @@ export class FlightStateObserver {
 
     private updateFcu() {
         const thrustMode = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE', 'number');
-        this.FcuSettings.altitude = SimVar.GetSimVarValue('A32NX_FG_TARGET_ALTITUDE', 'number');
+        this.FcuSettings.altitude = Math.round(SimVar.GetSimVarValue('A32NX_FG_TARGET_ALTITUDE', 'number'));
         this.FcuSettings.machMode = thrustMode === 8;
         if (thrustMode === 0) {
             if (this.FcuSettings.machMode) {
