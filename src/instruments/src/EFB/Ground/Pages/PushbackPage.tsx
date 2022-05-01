@@ -15,6 +15,39 @@ import { IconPlane } from '@tabler/icons';
 import { BingMap } from '../../UtilComponents/BingMap';
 import { t } from '../../translation';
 
+interface TurningRadiusIndicatorProps {
+    turningRadius: number;
+}
+
+function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+    const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+
+    return {
+        x: centerX + (radius * Math.cos(angleInRadians)),
+        y: centerY + (radius * Math.sin(angleInRadians)),
+    };
+}
+
+function describeArc(x, y, radius, startAngle, endAngle) {
+    const start = polarToCartesian(x, y, radius, endAngle);
+    const end = polarToCartesian(x, y, radius, startAngle);
+
+    const arcSweep = endAngle - startAngle <= 180 ? '0' : '1';
+
+    const d = [
+        'M', start.x, start.y,
+        'A', radius, radius, 0, arcSweep, 0, end.x, end.y,
+    ].join(' ');
+
+    return d;
+}
+
+const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) => (
+    <svg width={turningRadius * 2} height={turningRadius * 2} viewBox={`0 0 ${turningRadius * 2} ${turningRadius * 2}`}>
+        <path d={describeArc(turningRadius, turningRadius, turningRadius, 0, 45 + 45 * (19/turningRadius))} fill="none" stroke="white" strokeWidth="2"/>
+    </svg>
+);
+
 export const PushbackPage = () => {
     const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
     const [elevatorPosition] = useSimVar('A:ELEVATOR POSITION', 'number', 50);
@@ -266,9 +299,16 @@ export const PushbackPage = () => {
         );
     }
 
+    const calculateTurningRadius = (wheelBase: number, turnAngle: number) => {
+        const tanDeg = Math.tan(turnAngle * Math.PI / 180);
+        return wheelBase / tanDeg;
+    };
+
+    const turningRadius = calculateTurningRadius(13, Math.abs(tugCommandedHeadingFactor * 90));
+
     return (
         <div className="flex relative flex-col space-y-4 h-content-section-reduced">
-            <div className="overflow-hidden relative flex-grow h-[430px] rounded-lg border-2 border-theme-accent">
+            <div className="overflow-hidden relative flex-grow rounded-lg border-2 h-[430px] border-theme-accent">
                 {!process.env.VITE_BUILD && (
                     <BingMap
                         configFolder="/Pages/VCockpit/Instruments/MAP/"
@@ -279,26 +319,30 @@ export const PushbackPage = () => {
                     />
                 )}
                 <div className="flex absolute inset-0 justify-center items-center">
+                    <div className="absolute" style={{transform: `rotate(-90deg) translateY(${turningRadius}px) scaleX(${tugCommandedSpeedFactor >= 0 ? 1 : -1}) scaleY(${tugCommandedHeadingFactor >= 0 ? 1 : -1}) translateY(${tugCommandedHeadingFactor >= 0 ? '0px' : `${turningRadius * 2}px` })`}}>
+                        <TurningRadiusIndicator turningRadius={turningRadius} />
+                    </div>
+
                     <IconPlane
-                        className="text-theme-highlight transform -rotate-90 fill-current"
+                        className="transform -rotate-90 fill-current text-theme-highlight"
                         size={50}
                         strokeLinejoin="miter"
                     />
                 </div>
-                <div className="flex overflow-hidden absolute top-6 right-6 bottom-6 z-30 flex-col justify-end rounded-md cursor-pointer">
+                <div className="flex overflow-hidden absolute right-6 bottom-6 z-30 flex-col rounded-md cursor-pointer">
                     <button
                         type="button"
                         onClick={() => setMapRange(MathUtils.clamp(mapRange - 0.1, 0.1, 1.5))}
-                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                     >
-                        <ZoomIn className="text-white" size={40} />
+                        <ZoomIn size={40} />
                     </button>
                     <button
                         type="button"
                         onClick={() => setMapRange(MathUtils.clamp(mapRange + 0.1, 0.1, 1.5))}
-                        className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                        className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                     >
-                        <ZoomOut className="text-white" size={40} />
+                        <ZoomOut size={40} />
                     </button>
                 </div>
             </div>
