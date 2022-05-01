@@ -159,7 +159,7 @@ impl LandingGearControlInterfaceUnit {
             left_gear_down_and_locked: false,
             nose_gear_down_and_locked: false,
             nose_gear_compressed_id: context
-                .get_identifier(format!("LGCIU_{}_NOSE_GEAR_COMPRESSED", number)),
+                .get_identifier(format!("LGCIU_{}_CENTER_GEAR_COMPRESSED", number)),
             left_gear_compressed_id: context
                 .get_identifier(format!("LGCIU_{}_LEFT_GEAR_COMPRESSED", number)),
             right_gear_compressed_id: context
