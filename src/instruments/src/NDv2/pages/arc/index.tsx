@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, VNode, Subscribable } from 'msfssdk';
+import { FSComponent, EventBus, MappedSubject, Subject, VNode, Subscribable, DisplayComponent } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { Airplane } from '../../shared/Airplane';
 import { TrackBug } from '../../shared/TrackBug';
@@ -8,8 +8,11 @@ import { NDSimvars } from '../../NDSimvarPublisher';
 import { LubberLine } from './LubberLine';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Flag } from '../../shared/Flag';
+import { NDPage } from '../NDPage';
 
-export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackUpMode: Subscribable<boolean> }> {
+export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackUpMode: Subscribable<boolean> }> implements NDPage {
+    public isVisible = Subject.create(false);
+
     private readonly headingWord = Subject.create(Arinc429Word.empty());
 
     private readonly trackWord = Subject.create(Arinc429Word.empty());

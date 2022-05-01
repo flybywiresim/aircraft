@@ -3,9 +3,13 @@ import { MathUtils } from '@shared/MathUtils';
 import { MapLayer } from './MapLayer';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 import { PaintUtils } from './PaintUtils';
+import { CanvasMap } from './CanvasMap';
 
 export class WaypointLayer implements MapLayer<NdSymbol> {
     data: NdSymbol[] = [];
+
+    constructor(private readonly canvasMap: CanvasMap) {
+    }
 
     paintShadowLayer(context: CanvasRenderingContext2D, mapWidth: number, mapHeight: number, mapParameters: MapParameters) {
         for (const symbol of this.data) {
@@ -52,6 +56,16 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     private paintWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
         this.paintWaypointShape(context, x, y, isColorLayer ? '#ff94ff' : '#000', isColorLayer ? 1.75 : 3.25);
 
+        const px = this.canvasMap.pointerX;
+        const py = this.canvasMap.pointerY;
+
+        const TEXT_LENGTH = Math.max(110, symbol.ident.length * 13.5);
+        if (px > x - 7 && px < x + 13 + TEXT_LENGTH && py > y - 10 && py < y + 22) {
+            context.strokeStyle = '#0ff';
+            context.lineWidth = 1.75;
+            context.strokeRect(x - 7, y - 10, 10 + 13 + TEXT_LENGTH, 29);
+        }
+
         context.font = '21px Ecam';
 
         PaintUtils.paintText(isColorLayer, context, x + 13, y + 18, symbol.ident, '#ff94ff');
@@ -67,12 +81,16 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
         if (symbol.constraints) {
             // Circle
 
-            if (symbol.type & NdSymbolTypeFlags.ConstraintMet) {
-                context.strokeStyle = '#ff94ff';
-            } else if (symbol.type & NdSymbolTypeFlags.ConstraintMissed) {
-                context.strokeStyle = '#e68000';
+            if (isColorLayer) {
+                if (symbol.type & NdSymbolTypeFlags.ConstraintMet) {
+                    context.strokeStyle = '#ff94ff';
+                } else if (symbol.type & NdSymbolTypeFlags.ConstraintMissed) {
+                    context.strokeStyle = '#e68000';
+                } else {
+                    context.strokeStyle = '#fff';
+                }
             } else {
-                context.strokeStyle = '#fff';
+                context.strokeStyle = '#000';
             }
 
             context.beginPath();

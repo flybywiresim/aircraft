@@ -23,6 +23,8 @@ export interface CanvasMapProps {
 export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private readonly canvasRef = FSComponent.createRef<HTMLCanvasElement>();
 
+    private readonly touchContainerRef = FSComponent.createRef<HTMLDivElement>();
+
     private readonly activeVectors: PathVector[] = [];
 
     private readonly symbols: NdSymbol[] = [];
@@ -33,7 +35,11 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
     private readonly longitude = Subject.create(0);
 
-    private readonly waypointLayer = new WaypointLayer();
+    public pointerX = 0;
+
+    public pointerY = 0;
+
+    private readonly waypointLayer = new WaypointLayer(this);
 
     private readonly constraintsLayer = new ConstraintsLayer();
 
@@ -41,6 +47,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         super.onAfterRender(node);
 
         this.setupCallbacks();
+        this.setupEvents();
     }
 
     private setupCallbacks() {
@@ -76,8 +83,17 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             this.handleNewVectors(data);
         });
 
-        sub.on('realTime').whenChangedBy(16).handle(() => {
+        sub.on('realTime').whenChangedBy(8).handle(() => {
             this.handleFrame();
+        });
+    }
+
+    private setupEvents() {
+        const touchContainer = this.touchContainerRef.instance;
+
+        touchContainer.addEventListener('mousemove', (e) => {
+            this.pointerX = e.offsetX;
+            this.pointerY = e.offsetY;
         });
     }
 
@@ -118,62 +134,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
         this.constraintsLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.constraintsLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
-    }
-
-    private drawSymbol(context: CanvasRenderingContext2D, symbol: NdSymbol) {
-        const [x, y] = this.mapParams.coordinatesToXYy(symbol.location);
-        const rx = x + this.props.width / 2;
-        const ry = y + this.props.width / 2;
-
-        if (symbol.type & NdSymbolTypeFlags.Runway) {
-            this.drawScaledRunway(context, rx, ry, symbol);
-        } else if (symbol.type & (NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan | NdSymbolTypeFlags.FixInfo)) {
-            if (symbol.type & NdSymbolTypeFlags.FixInfo) {
-                if (symbol.radii) {
-                    for (const radius of symbol.radii) {
-                        this.drawFixInfoRadius(context, rx, ry, this.mapParams.nmToPx * radius);
-                    }
-                }
-                if (symbol.radials) {
-                    for (const radial of symbol.radials) {
-                        this.drawFixInfoRadial(context, rx, ry, this.mapParams.rotation(radial));
-                    }
-                }
-            }
-        } else if (symbol.type & NdSymbolTypeFlags.Airport) {
-            this.drawAirport(context, rx, ry, symbol);
-        }
-    }
-
-    private drawAirport(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
-        function drawShape(color: string, lineWidth: number) {
-            context.strokeStyle = color;
-            context.lineWidth = lineWidth;
-
-            context.beginPath();
-
-            function drawLine(rotation: number) {
-                context.translate(x, y);
-                context.rotate(rotation * MathUtils.DEGREES_TO_RADIANS);
-                context.translate(-x, -y);
-
-                context.moveTo(x - 12.5, y);
-                context.lineTo(x + 12.5, y);
-            }
-
-            drawLine(0);
-            drawLine(45);
-            drawLine(90);
-            drawLine(135);
-
-            context.resetTransform();
-            context.stroke();
-        }
-
-        drawShape('#000', 3.25);
-        drawShape('#ff94ff', 1.75);
-
-        this.drawText(context, x + 13, y + 18.5, symbol.ident, '#ff94ff', true);
     }
 
     private drawScaledRunway(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
@@ -319,12 +279,18 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
     render(): VNode | null {
         return (
-            <canvas
-                ref={this.canvasRef}
-                width={this.props.width}
-                height={this.props.height}
-                style={`width: ${this.props.width}px; height: ${this.props.height}px; position: absolute; top: 0; left: 0; transform: translate(${-(this.props.width / 2) + this.props.x}px, ${-(this.props.height / 2) + this.props.y}px)`}
-            />
+            <>
+                <canvas
+                    ref={this.canvasRef}
+                    width={this.props.width}
+                    height={this.props.height}
+                    style={`width: ${this.props.width}px; height: ${this.props.height}px; position: absolute; top: 0; left: 0; transform: translate(${-(this.props.width / 2) + this.props.x}px, ${-(this.props.height / 2) + this.props.y}px)`}
+                />
+                <div
+                    ref={this.touchContainerRef}
+                    style={`z-index: 5000; width: ${this.props.width}px; height: ${this.props.height}px; position: absolute; top: 0; left: 0; transform: translate(${-(this.props.width / 2) + this.props.x}px, ${-(this.props.height / 2) + this.props.y}px)`}
+                />
+            </>
         );
     }
 }

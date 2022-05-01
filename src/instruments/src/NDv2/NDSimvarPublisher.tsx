@@ -21,7 +21,6 @@ export type NDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     selectedHeading: Degrees;
     pposLat: Degrees;
     pposLong: Degrees;
-    trueHeading: DegreesTrue;
   }
 
 export enum NDVars {
@@ -39,7 +38,6 @@ export enum NDVars {
     selectedHeading = 'L:A32NX_AUTOPILOT_HEADING_SELECTED',
     pposLat = 'PLANE LATITUDE', // TODO replace with fm position
     pposLong = 'PLANE LONGITUDE', // TODO replace with fm position
-    trueHeading = 'PLANE HEADING DEGREES TRUE',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -61,7 +59,6 @@ export class NDSimvarPublisher extends SimVarPublisher<NDSimvars> {
         ['selectedHeading', { name: NDVars.selectedHeading, type: SimVarValueType.Degree }],
         ['pposLat', { name: NDVars.pposLat, type: SimVarValueType.Degree }],
         ['pposLong', { name: NDVars.pposLong, type: SimVarValueType.Degree }],
-        ['trueHeading', { name: NDVars.trueHeading, type: SimVarValueType.Degree }],
     ])
 
     public constructor(bus: EventBus) {

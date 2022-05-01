@@ -71,7 +71,9 @@ class A32NX_ND extends BaseInstrument {
         this.simVarPublisher.subscribe('groundSpeed');
         this.simVarPublisher.subscribe('speed');
         this.simVarPublisher.subscribe('heading');
+        this.simVarPublisher.subscribe('trueHeading');
         this.simVarPublisher.subscribe('groundTrack');
+        this.simVarPublisher.subscribe('trueGroundTrack');
         this.simVarPublisher.subscribe('toWptIdent0Captain');
         this.simVarPublisher.subscribe('toWptIdent1Captain');
         this.simVarPublisher.subscribe('toWptBearingCaptain');
@@ -82,7 +84,6 @@ class A32NX_ND extends BaseInstrument {
         this.simVarPublisher.subscribe('selectedHeading');
         this.simVarPublisher.subscribe('pposLat');
         this.simVarPublisher.subscribe('pposLong');
-        this.simVarPublisher.subscribe('trueHeading');
 
         this.ecpBusSimVarPublisher.subscribe('ndRangeSetting');
         this.ecpBusSimVarPublisher.subscribe('ndMode');

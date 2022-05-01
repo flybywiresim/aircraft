@@ -1,8 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { FSComponent, DisplayComponent, EventBus, VNode, ClockEvents, Subject } from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { SimVarString } from '@shared/simvar';
-import { rangeSettings } from '@shared/NavigationDisplay';
+import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { NDSimvars } from './NDSimvarPublisher';
@@ -12,6 +12,10 @@ import { FmMessages } from './FmMessages';
 import { Flag } from './shared/Flag';
 import { CanvasMap } from './shared/map/CanvasMap';
 import { EcpSimVars } from '../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
+import { NDPage } from './pages/NDPage';
+
+const PAGE_GENERATION_BASE_DELAY = 500;
+const PAGE_GENERATION_RANDOM_DELAY = 70;
 
 export interface NDProps {
     bus: EventBus,
@@ -20,26 +24,44 @@ export interface NDProps {
 export class NDComponent extends DisplayComponent<NDProps> {
     private readonly isUsingTrackUpMode = Subject.create(true);
 
-    private readonly lat = Subject.create(0);
-
-    private readonly lon = Subject.create(0);
-
     private readonly magneticHeadingWord = Subject.create(Arinc429Word.empty());
 
-    private readonly trueHeading = Subject.create(0);
+    private readonly trueHeadingWord = Subject.create(Arinc429Word.empty());
 
-    private readonly headingWord = Subject.create(Arinc429Word.empty());
-
-    private readonly trackWord = Subject.create(Arinc429Word.empty());
-
-    private readonly magVar = Subject.create(0);
+    private readonly trueTrackWord = Subject.create(Arinc429Word.empty());
 
     private readonly mapRotation = Subject.create(0);
 
     private readonly mapRangeRadius = Subject.create(0);
 
+    private readonly arcPage = FSComponent.createRef<ArcModePage>();
+
+    private currentPageMode = EfisNdMode.ARC;
+
+    private currentPageInstance: NDPage;
+
+    private readonly pageChangeInProgress = Subject.create(false);
+
+    private pageChangeInvalidationTimeout = -1;
+
+    private readonly rangeChangeInProgress = Subject.create(false);
+
+    private rangeChangeInvalidationTimeout = -1;
+
+    private mapVisible = MappedSubject.create(([trackUp, trueHeading, trueTrack, pageChange, rangeChange]) => {
+        if (trackUp && !trueTrack.isNormalOperation()) {
+            return false;
+        } if (!trueHeading.isNormalOperation()) {
+            return false;
+        }
+
+        return !(pageChange || rangeChange);
+    }, this.isUsingTrackUpMode, this.trueHeadingWord, this.trueTrackWord, this.pageChangeInProgress, this.rangeChangeInProgress);
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
+
+        this.currentPageInstance = this.arcPage.instance;
 
         const sub = this.props.bus.getSubscriber<NDSimvars & EcpSimVars & ClockEvents>();
 
@@ -48,19 +70,23 @@ export class NDComponent extends DisplayComponent<NDProps> {
             this.handleMapRotation();
         });
 
-        // TODO use ADIRS for this
         sub.on('trueHeading').whenChanged().handle((value) => {
-            this.trueHeading.set(value);
+            this.trueHeadingWord.set(new Arinc429Word(value));
             this.handleMapRotation();
         });
 
-        sub.on('groundTrack').whenChanged().handle((value) => {
-            this.trackWord.set(new Arinc429Word(value));
+        sub.on('trueGroundTrack').whenChanged().handle((value) => {
+            this.trueTrackWord.set(new Arinc429Word(value));
             this.handleMapRotation();
         });
 
         sub.on('ndRangeSetting').whenChanged().handle((value) => {
             this.mapRangeRadius.set(rangeSettings[value]);
+            this.invalidateRange();
+        });
+
+        sub.on('ndMode').whenChanged().handle((mode) => {
+            this.handleNewMapPage(mode);
         });
     }
 
@@ -68,24 +94,69 @@ export class NDComponent extends DisplayComponent<NDProps> {
         const usingTrackUpMode = this.isUsingTrackUpMode.get();
 
         if (usingTrackUpMode) {
-            const trackWord = this.trackWord.get();
+            const trueTrackWord = this.trueTrackWord.get();
 
-            if (trackWord.isNormalOperation()) {
-                const magVar = this.trueHeading.get() - this.magneticHeadingWord.get().value;
-
-                this.mapRotation.set(trackWord.value + magVar);
+            if (trueTrackWord.isNormalOperation()) {
+                this.mapRotation.set(trueTrackWord.value);
             } else {
                 this.mapRotation.set(0);
             }
         } else {
-            const headingWord = this.headingWord.get();
+            const trueHeadingWord = this.trueHeadingWord.get();
 
-            if (headingWord.isNormalOperation()) {
-                this.mapRotation.set(this.trueHeading.get());
+            if (trueHeadingWord.isNormalOperation()) {
+                this.mapRotation.set(this.trueHeadingWord.get().value);
             } else {
                 this.mapRotation.set(0);
             }
         }
+    }
+
+    private handleNewMapPage(mode: EfisNdMode) {
+        if (mode === this.currentPageMode) {
+            return;
+        }
+
+        this.currentPageInstance.isVisible.set(false);
+
+        this.currentPageMode = mode;
+
+        switch (mode) {
+        case EfisNdMode.ARC:
+            this.currentPageInstance = this.arcPage.instance;
+            break;
+        default:
+            console.warn(`Unknown ND page mode=${mode}`);
+            break;
+        }
+
+        this.invalidatePage();
+    }
+
+    private invalidateRange() {
+        if (this.rangeChangeInvalidationTimeout !== -1) {
+            window.clearTimeout(this.rangeChangeInvalidationTimeout);
+        }
+
+        this.rangeChangeInProgress.set(true);
+        this.currentPageInstance.isVisible.set(false);
+        this.rangeChangeInvalidationTimeout = window.setTimeout(() => {
+            this.rangeChangeInProgress.set(false);
+            this.currentPageInstance.isVisible.set(true);
+        }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
+    }
+
+    private invalidatePage() {
+        if (this.pageChangeInvalidationTimeout !== -1) {
+            window.clearTimeout(this.pageChangeInvalidationTimeout);
+        }
+
+        this.pageChangeInProgress.set(true);
+        this.currentPageInstance.isVisible.set(false);
+        this.pageChangeInvalidationTimeout = window.setTimeout(() => {
+            this.pageChangeInProgress.set(false);
+            this.currentPageInstance.isVisible.set(true);
+        }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
     }
 
     render(): VNode | null {
@@ -101,7 +172,19 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <Flag shown={Subject.create(false)} x={350} y={84} class="Amber FontSmall">DISPLAY SYSTEM VERSION INCONSISTENCY</Flag>
                     <Flag shown={Subject.create(false)} x={384} y={170} class="Amber FontMedium">CHECK HDG</Flag>
 
+                    <Flag shown={this.rangeChangeInProgress} x={384} y={320} class="Green FontIntermediate">RANGE CHANGE</Flag>
+                    <Flag
+                        shown={MappedSubject.create(([rangeChange, pageChange]) => !rangeChange && pageChange, this.rangeChangeInProgress, this.pageChangeInProgress)}
+                        x={384}
+                        y={320}
+                        class="Green FontIntermediate"
+                    >
+                        MODE CHANGE
+                    </Flag>
+
                     <ArcModePage
+                        // @ts-ignore
+                        ref={this.arcPage}
                         bus={this.props.bus}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
                     />
@@ -117,7 +200,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     height={1240}
                     mapRotation={this.mapRotation}
                     mapRangeRadius={this.mapRangeRadius}
-                    mapVisible={this.headingWord.map((it) => it.isNormalOperation())}
+                    mapVisible={this.mapVisible}
                 />
             </DisplayUnit>
         );
