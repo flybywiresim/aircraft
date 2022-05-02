@@ -47,6 +47,8 @@ export class Atc {
 
     private currentFansMode: FansMode = FansMode.FansNone;
 
+    private automaticPositionReport: boolean = false;
+
     constructor(parent: Atsu, datalink: Datalink) {
         this.parent = parent;
         this.datalink = datalink;
@@ -537,5 +539,13 @@ export class Atc {
 
     public fansMode(): FansMode {
         return this.currentFansMode;
+    }
+
+    public automaticPositionReportActive(): boolean {
+        return this.automaticPositionReport;
+    }
+
+    public toggleAutomaticPositionReportActive(): void {
+        this.automaticPositionReport = !this.automaticPositionReport;
     }
 }
