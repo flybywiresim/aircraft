@@ -244,29 +244,7 @@ class CDUAtcPositionReport {
 
         const ppos = ["_______[color]amber", "____/______[color]amber"];
         if (data.currentPosition[0]) {
-            const dmsLat = CDUInitPage.ConvertDDToDMS(data.currentPosition[0][0], false);
-            const dmsLon = CDUInitPage.ConvertDDToDMS(data.currentPosition[0][1], true);
-
-            dmsLon['deg'] = Number(dmsLon['deg']);
-            dmsLat['sec'] = Math.ceil(Number(dmsLat['sec'] / 100));
-            dmsLon['sec'] = Math.ceil(Number(dmsLon['sec'] / 100));
-            dmsLat['min'] = dmsLat['min'].toString();
-            dmsLon['min'] = dmsLon['min'].toString();
-
-            if (dmsLat['dir'] === "N") {
-                if (dmsLon['dir'] === "E") {
-                    ppos[0] = `{cyan}${dmsLat['deg']}N${dmsLon['deg']}{end}`;
-                } else {
-                    ppos[0] = `{cyan}${dmsLat['deg']}${dmsLon['deg']}N{end}`;
-                }
-            } else if (dmsLon['dir'] === "E") {
-                ppos[0] = `{cyan}${dmsLat['deg']}${dmsLon['deg']}S{end}`;
-            } else {
-                ppos[0] = `{cyan}${dmsLat['deg']}W${dmsLon['deg']}{end}`;
-            }
-            //const lat = `${dmsLat['deg']}°${dmsLat['min']}.${dmsLat['sec']}${dmsLat['dir']}`;
-            //const lon = `${dmsLon['deg']}°${dmsLon['min']}.${dmsLon['sec']}${dmsLon['dir']}`;
-            //ppos[0] = `{cyan}${lat}/${lon}{end}`;
+            ppos[0] = `{cyan}${CDUAtcPositionReport.CoordinateToString(data.currentPosition[0], true)}{end}`;
         }
         if (data.currentUtc[0] && data.currentAltitude[0]) {
             ppos[1] = `{cyan}${data.currentUtc[0]}/${data.currentAltitude[0]}{end}`;
