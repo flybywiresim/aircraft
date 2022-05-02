@@ -161,7 +161,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     private setOutline() {
         let airspeedValue: number;
-        if (this.airSpeed.isFailureWarning() || (this.airSpeed.isNoComputedData() && !this.onGround)) {
+        if (this.airSpeed.isFailureWarning() || (this.airSpeed.isNoComputedData() && !this.onGround.get())) {
             airspeedValue = NaN;
         } else if (this.airSpeed.isNoComputedData()) {
             airspeedValue = 30;
@@ -255,11 +255,13 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         pf.on('leftMainGearCompressed').whenChanged().handle((g) => {
             this.leftMainGearCompressed = g;
             this.onGround.set(this.rightMainGearCompressed || g);
+            this.setOutline();
         });
 
         pf.on('rightMainGearCompressed').whenChanged().handle((g) => {
             this.rightMainGearCompressed = g;
             this.onGround.set(this.leftMainGearCompressed || g);
+            this.setOutline();
         });
 
         // showBars replacement
