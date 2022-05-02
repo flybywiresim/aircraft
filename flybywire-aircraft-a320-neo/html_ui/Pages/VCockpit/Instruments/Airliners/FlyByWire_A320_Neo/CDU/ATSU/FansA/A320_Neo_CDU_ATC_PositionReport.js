@@ -5,6 +5,13 @@ class CDUAtcPositionReport {
         return `${hours.toString().padStart(2, '0')}${minutes.toString().padStart(2, '0')}`;
     }
 
+    static AltitudeToString(altitude) {
+        if (Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD") {
+            altitude = Math.round(altitude / 1000);
+        }
+        return Atsu.InputValidation.formatScratchpadAltitude(altitude);
+    }
+
     static FillDataBlock(mcdu, data) {
         const current = mcdu.atsu.currentFlightState();
         const target = mcdu.atsu.targetFlightState();
@@ -15,12 +22,12 @@ class CDUAtcPositionReport {
         if (lastWp && !data.passedWaypoint[3]) {
             data.passedWaypoint[0] = lastWp.ident;
             data.passedWaypoint[1] = CDUAtcPositionReport.SecondsToString(lastWp.utc);
-            data.passedWaypoint[2] = lastWp.altitude;
+            data.passedWaypoint[2] = CDUAtcPositionReport.AltitudeToString(lastWp.altitude);
         }
 
         data.currentPosition = !data.currentPosition[2] ? [current.lat, current.lon, false] : data.currentPosition;
         data.currentUtc[0] = !data.currentUtc[1] ? CDUAtcPositionReport.SecondsToString(SimVar.GetSimVarValue('E:ZULU TIME', 'seconds')) : data.currentUtc[0];
-        data.currentAltitude[0] = !data.currentAltitude[1] ? current.altitude : data.currentAltitude[0];
+        data.currentAltitude[0] = !data.currentAltitude[1] ? CDUAtcPositionReport.AltitudeToString(current.altitude) : data.currentAltitude[0];
 
         if (activeWp && !data.activeWaypoint[2]) {
             data.activeWaypoint[0] = activeWp.ident;
@@ -110,7 +117,8 @@ class CDUAtcPositionReport {
     }
 
     static CanSendData(data) {
-        return data.currentPosition[0] && data.currentUtc[0] && data.currentAltitude[0];
+        return data.passedWaypoint[0] && data.passedWaypoint[1] && data.passedWaypoint[2] && data.activeWaypoint[0] && data.activeWaypoint[1] && data.nextWaypoint[0] &&
+            data.currentPosition[0] && data.currentUtc[0] && data.currentAltitude[0];
     }
 
     static CreateReport(mcdu, data) {
@@ -167,7 +175,6 @@ class CDUAtcPositionReport {
             //ppos[0] = `{cyan}${lat}/${lon}{end}`;
         }
         if (data.currentUtc[0] && data.currentAltitude[0]) {
-            // TODO convert Altitude the FL if STD is used
             ppos[1] = `{cyan}${data.currentUtc[0]}/${data.currentAltitude[0]}{end}`;
         }
 
@@ -687,6 +694,83 @@ class CDUAtcPositionReport {
             ["<RETURN", reqDisplay]
         ]);
 
+        mcdu.leftInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[0] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.indicatedAirspeed = [null, true];
+            } else {
+                const error = Atsu.InputValidation.validateScratchpadSpeed(value);
+                if (error === Atsu.AtsuStatusCodes.Ok) {
+                    data.indicatedAirspeed = [Atsu.InputValidation.formatScratchpadSpeed(value), true];
+                } else {
+                    mcdu.addNewAtsuMessage(error);
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage3(mcdu, data);
+        };
+
+        mcdu.leftInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[1] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.verticalSpeed = [null, true];
+            } else {
+                const error = Atsu.InputValidation.validateScratchpadVerticalSpeed(value);
+                if (error === Atsu.AtsuStatusCodes.Ok) {
+                    data.verticalSpeed = [Atsu.InputValidation.formatScratchpadVerticalSpeed(value), true];
+                } else {
+                    mcdu.addNewAtsuMessage(error);
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage3(mcdu, data);
+        };
+
+        mcdu.leftInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[2] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.heading = [null, true];
+            } else {
+                const error = Atsu.InputValidation.validateScratchpadDegree(value);
+                if (error === Atsu.AtsuStatusCodes.Ok) {
+                    data.heading = [value, true];
+                } else {
+                    mcdu.addNewAtsuMessage(error);
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage3(mcdu, data);
+        };
+
+        mcdu.leftInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[3] = (value) => {
+            const current = mcdu.atsu.currentFlightState();
+            const target = mcdu.atsu.targetFlightState();
+
+            if (!target.apActive || (target.apActive && target.altitude !== current.altitude)) {
+                if (value === FMCMainDisplay.clrValue) {
+                    data.descending = [null, true];
+                } else {
+                    const error = Atsu.InputValidation.validateScratchpadAltitude(value);
+                    if (error === Atsu.AtsuStatusCodes.Ok) {
+                        data.descending = [Atsu.InputValidation.formatScratchpadAltitude(value), true];
+                    } else {
+                        mcdu.addNewAtsuMessage(error);
+                    }
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage3(mcdu, data);
+        };
+
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
@@ -699,6 +783,83 @@ class CDUAtcPositionReport {
         };
         mcdu.onLeftInput[5] = () => {
             CDUAtcReports.ShowPage(mcdu);
+        };
+
+        mcdu.rightInputDelay[0] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[0] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.groundSpeed = [null, true];
+            } else {
+                const error = Atsu.InputValidation.validateScratchpadSpeed(value);
+                if (error === Atsu.AtsuStatusCodes.Ok) {
+                    data.groundSpeed = [Atsu.InputValidation.formatScratchpadSpeed(value), true];
+                } else {
+                    mcdu.addNewAtsuMessage(error);
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage3(mcdu, data);
+        };
+
+        mcdu.rightInputDelay[1] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[1] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.deviating = [null, true];
+            } else {
+                const error = Atsu.InputValidation.validateScratchpadOffset(value);
+                if (error === Atsu.AtsuStatusCodes.Ok) {
+                    data.deviating = [Atsu.InputValidation.formatScratchpadOffset(value), true];
+                } else {
+                    mcdu.addNewAtsuMessage(error);
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage3(mcdu, data);
+        };
+
+        mcdu.rightInputDelay[2] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[2] = (value) => {
+            if (value === FMCMainDisplay.clrValue) {
+                data.track = [null, true];
+            } else {
+                const error = Atsu.InputValidation.validateScratchpadDegree(value);
+                if (error === Atsu.AtsuStatusCodes.Ok) {
+                    data.track = [value, true];
+                } else {
+                    mcdu.addNewAtsuMessage(error);
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage3(mcdu, data);
+        };
+
+        mcdu.rightInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[3] = (value) => {
+            const current = mcdu.atsu.currentFlightState();
+            const target = mcdu.atsu.targetFlightState();
+
+            if (!target.apActive || (target.apActive && target.altitude !== current.altitude)) {
+                if (value === FMCMainDisplay.clrValue) {
+                    data.climbing = [null, true];
+                } else {
+                    const error = Atsu.InputValidation.validateScratchpadAltitude(value);
+                    if (error === Atsu.AtsuStatusCodes.Ok) {
+                        data.climbing = [Atsu.InputValidation.formatScratchpadAltitude(value), true];
+                    } else {
+                        mcdu.addNewAtsuMessage(error);
+                    }
+                }
+            }
+
+            CDUAtcPositionReport.ShowPage3(mcdu, data);
         };
 
         mcdu.rightInputDelay[4] = () => {
