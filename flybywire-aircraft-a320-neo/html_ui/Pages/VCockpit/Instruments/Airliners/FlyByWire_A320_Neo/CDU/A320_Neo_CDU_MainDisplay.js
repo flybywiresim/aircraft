@@ -116,6 +116,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             AOCRcvdMsgs: 73,
             AOCSentMsgs: 74,
             AOCFreeText: 75,
+            ATCPositionReport1: 76,
+            ATCPositionReport2: 77,
+            ATCPositionReport3: 78,
         };
 
         // Handling of MCDU Sever connection attempts
