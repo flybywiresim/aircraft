@@ -231,6 +231,32 @@ export class InputValidation {
     }
 
     /**
+     * Validates a value that it is compatible with the FCOM format for vertical speeds
+     * @param {string} value The entered scratchpad vertical speed
+     * @returns An AtsuStatusCodes-value
+     */
+    public static validateScratchpadVerticalSpeed(value: string): AtsuStatusCodes {
+        if (/^(\+|-|M)?[0-9]{1,4}(FT\/MIN|FT|FTM|M\/MIN|MM|M){1}$/.test(value)) {
+            let verticalSpeed = parseInt(value.match(/([0-9]+)/)[0]);
+            if (value.startsWith('-') || value.startsWith('M')) {
+                verticalSpeed *= -1;
+            }
+
+            if (/(M\/MIN|MM|M){1}$/.test(value)) {
+                if (verticalSpeed >= -2000 && verticalSpeed <= 2000) {
+                    return AtsuStatusCodes.Ok;
+                }
+            } else if (verticalSpeed >= -6000 && verticalSpeed <= 6000) {
+                return AtsuStatusCodes.Ok;
+            }
+
+            return AtsuStatusCodes.EntryOutOfRange;
+        }
+
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
      * Validates that two speed entries describe the same (knots or mach)
      * @param {string} lower Lower speed value
      * @param {string} higher Higher speed value
@@ -305,6 +331,24 @@ export class InputValidation {
             return `M.${value.match(/([0-9]+)/)[0]}`;
         }
         return value.replace('KT', '');
+    }
+
+    /**
+     * Validates a value that it is compatible with the FCOM format for vertical speeds
+     * @param {string} value The entered scratchpad vertical speed
+     * @returns An AtsuStatusCodes-value
+     */
+    public static formatScratchpadVerticalSpeed(value: string): string {
+        let verticalSpeed = parseInt(value.match(/([0-9]+)/)[0]);
+        if (value.startsWith('-') || value.startsWith('M')) {
+            verticalSpeed *= -1;
+        }
+
+        if (/(M\/MIN|MM|M){1}$/.test(value)) {
+            return `${verticalSpeed}MM`;
+        }
+
+        return `${verticalSpeed}FTM`;
     }
 
     /**
