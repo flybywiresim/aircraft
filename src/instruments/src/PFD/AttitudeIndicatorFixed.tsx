@@ -398,7 +398,7 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     private sideStickY = 0;
 
-    private onGround = 0;
+    private onGround = true;
 
     private crossHairRef = FSComponent.createRef<SVGPathElement>();
 
@@ -411,7 +411,7 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
     private handleSideStickIndication() {
         const oneEngineRunning = this.engOneRunning || this.engTwoRunning;
 
-        if (this.onGround === 0 || !oneEngineRunning) {
+        if (!this.onGround || !oneEngineRunning) {
             this.onGroundForVisibility.set('hidden');
         } else {
             this.onGroundForVisibility.set('visible');
@@ -424,7 +424,7 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-        sub.on('onGround').whenChanged().handle((g) => {
+        sub.on('noseGearCompressed').whenChanged().handle((g) => {
             this.onGround = g;
             this.handleSideStickIndication();
         });
