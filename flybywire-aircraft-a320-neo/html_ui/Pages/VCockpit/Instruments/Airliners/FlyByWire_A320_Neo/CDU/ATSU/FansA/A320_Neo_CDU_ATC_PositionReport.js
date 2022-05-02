@@ -5,86 +5,112 @@ class CDUAtcPositionReport {
         return `${hours.toString().padStart(2, '0')}${minutes.toString().padStart(2, '0')}`;
     }
 
+    static FillDataBlock(mcdu, data) {
+        const current = mcdu.atsu.currentFlightState();
+        const target = mcdu.atsu.targetFlightState();
+        const lastWp = mcdu.atsu.lastWaypoint();
+        const activeWp = mcdu.atsu.activeWaypoint();
+        const nextWp = mcdu.atsu.nextWaypoint();
+
+        if (lastWp && !data.passedWaypoint[3]) {
+            data.passedWaypoint[0] = lastWp.ident;
+            data.passedWaypoint[1] = CDUAtcPositionReport.SecondsToString(lastWp.utc);
+            data.passedWaypoint[2] = lastWp.altitude;
+        }
+
+        data.currentPosition = !data.currentPosition[2] ? [current.lat, current.lon, false] : data.currentPosition;
+        data.currentUtc[0] = !data.currentUtc[1] ? CDUAtcPositionReport.SecondsToString(SimVar.GetSimVarValue('E:ZULU TIME', 'seconds')) : data.currentUtc[0];
+        data.currentAltitude[0] = !data.currentAltitude[1] ? current.altitude : data.currentAltitude[0];
+
+        if (activeWp && !data.activeWaypoint[2]) {
+            data.activeWaypoint[0] = activeWp.ident;
+            data.activeWaypoint[1] = CDUAtcPositionReport.SecondsToString(activeWp.utc);
+        }
+        if (nextWp && !data.nextWaypoint[1]) {
+            data.nextWaypoint[0] = nextWp.ident;
+        }
+        if (mcdu.atsu.destinationWaypoint() && !data.eta[1]) {
+            data.eta[0] = CDUAtcPositionReport.SecondsToString(mcdu.atsu.destinationWaypoint().utc);
+        }
+
+        if (!data.wind[1]) {
+            const windDirection = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_1_WIND_DIRECTION`, 500);
+            const windVelocity = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_1_WIND_VELOCITY`, 500);
+
+            const wind = `${Math.round(windDirection.value)}/${Math.round(windVelocity.value)}`;
+            if (Atsu.InputValidation.validateScratchpadWind(wind) === Atsu.AtsuStatusCodes.Ok) {
+                data.wind[0] = Atsu.InputValidation.formatScratchpadWind(wind);
+            }
+        }
+        if (!data.sat[1]) {
+            const sat = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE', 500);
+            if (Atsu.InputValidation.validateScratchpadTemperature(sat.value) === Atsu.AtsuStatusCodes.Ok) {
+                data.sat[0] = Math.round(Atsu.InputValidation.formatScratchpadTemperature(`${sat.value}`));
+            }
+        }
+
+        data.indicatedAirspeed[0] = !data.indicatedAirspeed[1] ? current.indicatedAirspeed : data.indicatedAirspeed[0];
+        data.groundSpeed[0] = !data.groundSpeed[1] ? current.groundSpeed : data.groundSpeed[0];
+        data.verticalSpeed[0] = !data.verticalSpeed[1] ? current.verticalSpeed : data.verticalSpeed[0];
+        // TODO add deviating
+        data.heading[0] = !data.heading[1] ? current.heading : data.heading[0];
+        data.track[0] = !data.track[1] ? current.track : data.track[0];
+        if (target.apActive && current.altitude > target.altitude) {
+            data.descending = target.altitude;
+        } else if (target.apActive && current.altitude < target.altitude) {
+            data.climbing = target.altitude;
+        }
+    }
+
     static CreateDataBlock(mcdu, autoFill) {
         const retval = {
-            passedWaypoint: [null, null, null],
-            activeWaypoint: [null, null],
-            nextWaypoint: null,
-            currentPosition: null,
-            currentUtc: null,
-            currentAltitude: null,
-            wind: null,
-            sat: null,
-            icing: null,
-            turbulence: null,
-            eta: null,
-            endurance: null,
-            indicatedAirspeed: null,
-            groundSpeed: null,
-            verticalSpeed: null,
-            deviating: null,
-            heading: null,
-            track: null,
-            descending: null,
-            climbing: null,
+            passedWaypoint: [null, null, null, !autoFill],
+            activeWaypoint: [null, null, !autoFill],
+            nextWaypoint: [null, !autoFill],
+            currentPosition: [null, !autoFill],
+            currentUtc: [null, !autoFill],
+            currentAltitude: [null, !autoFill],
+            wind: [null, !autoFill],
+            sat: [null, !autoFill],
+            icing: [null, !autoFill],
+            turbulence: [null, !autoFill],
+            eta: [null, !autoFill],
+            endurance: [null, !autoFill],
+            indicatedAirspeed: [null, !autoFill],
+            groundSpeed: [null, !autoFill],
+            verticalSpeed: [null, !autoFill],
+            deviating: [null, !autoFill],
+            heading: [null, !autoFill],
+            track: [null, !autoFill],
+            descending: [null, !autoFill],
+            climbing: [null, !autoFill],
         };
 
         if (autoFill === true) {
-            const current = mcdu.atsu.currentFlightState();
-            const target = mcdu.atsu.targetFlightState();
-            const lastWp = mcdu.atsu.lastWaypoint();
-            const activeWp = mcdu.atsu.activeWaypoint();
-            const nextWp = mcdu.atsu.nextWaypoint();
-
-            if (lastWp) {
-                retval.passedWaypoint[0] = lastWp.ident;
-                retval.passedWaypoint[1] = CDUAtcPositionReport.SecondsToString(lastWp.utc);
-                retval.passedWaypoint[2] = lastWp.altitude;
-            }
-
-            retval.currentPosition = [current.lat, current.lon];
-            retval.currentUtc = CDUAtcPositionReport.SecondsToString(SimVar.GetSimVarValue('E:ZULU TIME', 'seconds'));
-            retval.currentAltitude = current.altitude;
-
-            if (activeWp) {
-                retval.activeWaypoint[0] = activeWp.ident;
-                retval.activeWaypoint[1] = CDUAtcPositionReport.SecondsToString(activeWp.utc);
-            }
-            if (nextWp) {
-                retval.nextWaypoint = nextWp.ident;
-            }
-
-            // TODO add wind
-            // TODO add SAT
-            if (mcdu.atsu.destinationWaypoint()) {
-                retval.eta = CDUAtcPositionReport.SecondsToString(mcdu.atsu.destinationWaypoint().utc);
-            }
-
-            retval.indicatedAirspeed = current.indicatedAirspeed;
-            retval.groundSpeed = current.groundSpeed;
-            retval.verticalSpeed = current.verticalSpeed;
-            // TODO add deviating
-            retval.heading = current.heading;
-            retval.track = current.track;
-            if (target.apActive && current.altitude > target.altitude) {
-                retval.descending = target.altitude;
-            } else if (target.apActive && current.altitude < target.altitude) {
-                retval.climbing = target.altitude;
-            }
+            setTimeout(() => {
+                CDUAtcPositionReport.FillDataBlock(mcdu, retval);
+                if (mcdu.page.Current === mcdu.page.ATCPositionReport1) {
+                    CDUAtcPositionReport.ShowPage1(mcdu, retval);
+                } else if (mcdu.page.Current === mcdu.page.ATCPositionReport2) {
+                    CDUAtcPositionReport.ShowPage2(mcdu, retval);
+                } else if (mcdu.page.Current === mcdu.page.ATCPositionReport3) {
+                    CDUAtcPositionReport.ShowPage3(mcdu, retval);
+                }
+            }, 1500);
         }
 
         return retval;
     }
 
     static CanEraseData(data) {
-        return data.passedWaypoint[0] || data.passedWaypoint[1] || data.passedWaypoint[2] || data.activeWaypoint[0] || data.activeWaypoint[1] || data.nextWaypoint ||
-            data.currentPosition || data.currentUtc || data.currentAltitude || data.wind || data.sat || data.icing || data.turbulence ||
-            data.eta || data.endurance || data.indicatedAirspeed || data.groundSpeed || data.verticalSpeed || data.deviating || data.heading || data.track ||
-            data.descending || data.climbing;
+        return data.passedWaypoint[0] || data.passedWaypoint[1] || data.passedWaypoint[2] || data.activeWaypoint[0] || data.activeWaypoint[1] || data.nextWaypoint[0] ||
+            data.currentPosition[0] || data.currentUtc[0] || data.currentAltitude[0] || data.wind[0] || data.sat[0] || data.icing[0] || data.turbulence[0] ||
+            data.eta[0] || data.endurance[0] || data.indicatedAirspeed[0] || data.groundSpeed[0] || data.verticalSpeed[0] || data.deviating[0] || data.heading[0] || data.track[0] ||
+            data.descending[0] || data.climbing[0];
     }
 
     static CanSendData(data) {
-        return data.currentPosition && data.currentUtc && data.currentAltitude;
+        return data.currentPosition[0] && data.currentUtc[0] && data.currentAltitude[0];
     }
 
     static CreateReport(mcdu, data) {
@@ -92,7 +118,7 @@ class CDUAtcPositionReport {
     }
 
     static ShowPage1(mcdu, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
-        mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCPositionReport1;
 
         let text = "ADD TEXT\xa0";
         let erase = "\xa0ERASE";
@@ -115,9 +141,9 @@ class CDUAtcPositionReport {
         }
 
         const ppos = ["_______[color]amber", "____/______[color]amber"];
-        if (data.currentPosition) {
-            const dmsLat = CDUInitPage.ConvertDDToDMS(data.currentPosition[0], false);
-            const dmsLon = CDUInitPage.ConvertDDToDMS(data.currentPosition[1], true);
+        if (data.currentPosition[0]) {
+            const dmsLat = CDUInitPage.ConvertDDToDMS(data.currentPosition[0][0], false);
+            const dmsLon = CDUInitPage.ConvertDDToDMS(data.currentPosition[0][1], true);
 
             dmsLon['deg'] = Number(dmsLon['deg']);
             dmsLat['sec'] = Math.ceil(Number(dmsLat['sec'] / 100));
@@ -136,10 +162,13 @@ class CDUAtcPositionReport {
             } else {
                 ppos[0] = `{cyan}${dmsLat['deg']}W${dmsLon['deg']}{end}`;
             }
+            //const lat = `${dmsLat['deg']}°${dmsLat['min']}.${dmsLat['sec']}${dmsLat['dir']}`;
+            //const lon = `${dmsLon['deg']}°${dmsLon['min']}.${dmsLon['sec']}${dmsLon['dir']}`;
+            //ppos[0] = `{cyan}${lat}/${lon}{end}`;
         }
-        if (data.currentUtc && data.currentAltitude) {
+        if (data.currentUtc[0] && data.currentAltitude[0]) {
             // TODO convert Altitude the FL if STD is used
-            ppos[1] = `{cyan}${data.currentUtc}/${data.currentAltitude}{end}`;
+            ppos[1] = `{cyan}${data.currentUtc[0]}/${data.currentAltitude[0]}{end}`;
         }
 
         const to = ["[    ]", "[  ]"];
@@ -151,8 +180,8 @@ class CDUAtcPositionReport {
         }
 
         let next = "[    ]";
-        if (data.nextWaypoint) {
-            next = data.nextWaypoint;
+        if (data.nextWaypoint[0]) {
+            next = data.nextWaypoint[0];
         }
 
         mcdu.setTemplate([
@@ -177,12 +206,14 @@ class CDUAtcPositionReport {
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.lastWaypoint[0] = null;
+                data.lastWaypoint[3] = true;
             } else if (value) {
                 if (mcdu.isLatLonFormat(value)) {
                     // format: DDMM.MB/EEEMM.MC
                     try {
                         mcdu.parseLatLon(value);
                         data.lastWaypoint[0] = value;
+                        data.lastWaypoint[3] = true;
                     } catch (err) {
                         if (err === NXSystemMessages.formatError) {
                             mcdu.setScratchpadMessage(err);
@@ -195,6 +226,7 @@ class CDUAtcPositionReport {
                             mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                         } else {
                             data.lastWaypoint[0] = value;
+                            data.lastWaypoint[3] = true;
                         }
 
                         CDUAtcPositionReport.ShowPage1(mcdu, data);
@@ -210,12 +242,14 @@ class CDUAtcPositionReport {
         };
         mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.currentPosition = null;
+                data.currentPosition[0] = null;
+                data.currentPosition[1] = true;
             } else if (value && mcdu.isLatLonFormat(value)) {
                 // format: DDMM.MB/EEEMM.MC
                 try {
                     mcdu.parseLatLon(value);
-                    data.currentPosition = value;
+                    data.currentPosition[0] = value;
+                    data.currentPosition[1] = true;
                 } catch (err) {
                     if (err === NXSystemMessages.formatError) {
                         mcdu.setScratchpadMessage(err);
@@ -234,12 +268,14 @@ class CDUAtcPositionReport {
         mcdu.onLeftInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.activeWaypoint[0] = null;
+                data.activeWaypoint[2] = true;
             } else if (value) {
                 if (mcdu.isLatLonFormat(value)) {
                     // format: DDMM.MB/EEEMM.MC
                     try {
                         mcdu.parseLatLon(value);
                         data.activeWaypoint[0] = value;
+                        data.activeWaypoint[2] = true;
                     } catch (err) {
                         if (err === NXSystemMessages.formatError) {
                             mcdu.setScratchpadMessage(err);
@@ -252,6 +288,7 @@ class CDUAtcPositionReport {
                             mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                         } else {
                             data.activeWaypoint[0] = value;
+                            data.activeWaypoint[2] = true;
                         }
 
                         CDUAtcPositionReport.ShowPage1(mcdu, data);
@@ -267,13 +304,15 @@ class CDUAtcPositionReport {
         };
         mcdu.onLeftInput[3] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.nextWaypoint = null;
+                data.nextWaypoint[0] = null;
+                data.nextWaypoint[1] = true;
             } else if (value) {
                 if (mcdu.isLatLonFormat(value)) {
                     // format: DDMM.MB/EEEMM.MC
                     try {
                         mcdu.parseLatLon(value);
-                        data.nextWaypoint = value;
+                        data.nextWaypoint[0] = value;
+                        data.nextWaypoint[1] = true;
                     } catch (err) {
                         if (err === NXSystemMessages.formatError) {
                             mcdu.setScratchpadMessage(err);
@@ -285,7 +324,8 @@ class CDUAtcPositionReport {
                         if (waypoints.length === 0) {
                             mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                         } else {
-                            data.nextWaypoint = value;
+                            data.nextWaypoint[0] = value;
+                            data.nextWaypoint[1] = true;
                         }
 
                         CDUAtcPositionReport.ShowPage1(mcdu, data);
@@ -317,6 +357,7 @@ class CDUAtcPositionReport {
             if (value === FMCMainDisplay.clrValue) {
                 data.lastWaypoint[1] = null;
                 data.lastWaypoint[2] = null;
+                data.lastWaypoint[3] = true;
             } else {
                 const elements = value.split("/");
                 if (elements.length === 2) {
@@ -330,6 +371,7 @@ class CDUAtcPositionReport {
                     } else {
                         data.lastWaypoint[1] = elements[0];
                         data.lastWaypoint[2] = elements[1];
+                        data.lastWaypoint[3] = true;
                     }
                 } else {
                     mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -344,8 +386,8 @@ class CDUAtcPositionReport {
         };
         mcdu.onRightInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.currentUtc = null;
-                data.currentAltitude = null;
+                data.currentUtc = [null, true];
+                data.currentAltitude = [null, true];
             } else {
                 const elements = value.split("/");
                 if (elements.length === 2) {
@@ -357,8 +399,8 @@ class CDUAtcPositionReport {
                     } else if (altError !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(altError);
                     } else {
-                        data.currentUtc = elements[0];
-                        data.currentAltitude = elements[1];
+                        data.currentUtc = [elements[0], true];
+                        data.currentAltitude = [elements[1], true];
                     }
                 } else {
                     mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -374,6 +416,7 @@ class CDUAtcPositionReport {
         mcdu.onRightInput[2] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.activeWaypoint[1] = null;
+                data.activeWaypoint[2] = true;
             } else {
                 const error = Atsu.InputValidation.validateScratchpadTime(value);
 
@@ -381,6 +424,7 @@ class CDUAtcPositionReport {
                     mcdu.addNewAtsuMessage(error);
                 } else {
                     data.activeWaypoint[1] = value;
+                    data.activeWaypoint[2] = true;
                 }
             }
 
@@ -421,14 +465,14 @@ class CDUAtcPositionReport {
     }
 
     static ShowPage2(mcdu, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
-        mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCPositionReport2;
 
-        const wind = data.wind ? data.wind.split("/") : ["[  ]", "[  ]"];
-        const sat = data.sat ? data.sat : "[  ]";
-        const turbulence = data.turbulence ? data.turbulence : "[  ]";
-        const icing = data.icing ? data.icing : "[  ]";
-        const eta = data.eta ? data.eta : "[   ]";
-        const endurance = data.endurance ? data.endurance : "[   ]";
+        const wind = data.wind[0] ? data.wind[0].split("/") : ["[  ]", "[  ]"];
+        const sat = data.sat[0] ? data.sat[0] : "[  ]";
+        const turbulence = data.turbulence[0] ? data.turbulence[0] : "[  ]";
+        const icing = data.icing[0] ? data.icing[0] : "[  ]";
+        const eta = data.eta[0] ? data.eta[0] : "[   ]";
+        const endurance = data.endurance[0] ? data.endurance[0] : "[   ]";
 
         let text = "ADD TEXT\xa0";
         let erase = "\xa0ERASE";
@@ -444,7 +488,7 @@ class CDUAtcPositionReport {
         mcdu.setTemplate([
             ["POSITION REPORT", "2", "3"],
             ["\xa0WIND", "SAT\xa0"],
-            [`{cyan}${wind[0]}{end}{white}°{end}/{cyan}${wind[1]}{end}`, `{cyan}${sat}{end}`],
+            [`{cyan}${wind[0]}{end}{white}°{end}{cyan}/${wind[1]}{end}`, `{cyan}${sat}{end}`],
             ["\xa0ICING(TLMS)", "TURB(LMS)\xa0"],
             [`{cyan}${icing}{end}`, `{cyan}${turbulence}{end}`],
             ["\xa0ETA", "ENDURANCE\xa0"],
@@ -462,9 +506,9 @@ class CDUAtcPositionReport {
         };
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCDataManager.clrValue) {
-                data.wind = null;
+                data.wind = [null, true];
             } else if (Atsu.InputValidation.validateScratchpadWind(value)) {
-                data.wind = Atsu.InputValidation.formatScratchpadWind(value);
+                data.wind = [Atsu.InputValidation.formatScratchpadWind(value), true];
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             }
@@ -476,9 +520,9 @@ class CDUAtcPositionReport {
         };
         mcdu.onLeftInput[1] = (value) => {
             if (value === FMCDataManager.clrValue) {
-                data.icing = null;
+                data.icing = [null, true];
             } else if (value === "T" || value === "L" || value === "M" || value === "S") {
-                data.icing = value;
+                data.icing = [value, true];
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             }
@@ -490,9 +534,9 @@ class CDUAtcPositionReport {
         };
         mcdu.onLeftInput[2] = (value) => {
             if (value === FMCDataManager.clrValue) {
-                data.eta = null;
+                data.eta = [null, true];
             } else if (Atsu.InputValidation.validateScratchpadTime(value)) {
-                data.eta = value;
+                data.eta = [value, true];
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             }
@@ -518,11 +562,11 @@ class CDUAtcPositionReport {
         };
         mcdu.onRightInput[0] = (value) => {
             if (value === FMCDataManager.clrValue) {
-                data.sat = null;
+                data.sat = [null, true];
             } else {
                 const error = Atsu.InputValidation.validateScratchpadTemperature(value);
                 if (error === Atsu.AtsuStatusCodes.Ok) {
-                    data.sat = Atsu.InputValidation.formatScratchpadTemperature(value);
+                    data.sat = [Atsu.InputValidation.formatScratchpadTemperature(value), true];
                 } else {
                     mcdu.addNewAtsuMessage(error);
                 }
@@ -535,9 +579,9 @@ class CDUAtcPositionReport {
         };
         mcdu.onRightInput[1] = (value) => {
             if (value === FMCDataManager.clrValue) {
-                data.turbulence = null;
+                data.turbulence = [null, true];
             } else if (value === "L" || value === "M" || value === "S") {
-                data.turbulence = value;
+                data.turbulence = [value, true];
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             }
@@ -549,9 +593,9 @@ class CDUAtcPositionReport {
         };
         mcdu.onRightInput[2] = (value) => {
             if (value === FMCDataManager.clrValue) {
-                data.endurance = null;
+                data.endurance = [null, true];
             } else if (Atsu.InputValidation.validateScratchpadEndurance(value)) {
-                data.endurance = Atsu.InputValidation.formatScratchpadEndurance(value);
+                data.endurance = [Atsu.InputValidation.formatScratchpadEndurance(value), true];
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             }
@@ -592,14 +636,14 @@ class CDUAtcPositionReport {
     }
 
     static ShowPage3(mcdu, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
-        mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCPositionReport3;
 
-        const indicatedAirspeed = data.indicatedAirspeed ? data.indicatedAirspeed : "[  ]";
-        const groundSpeed = data.groundSpeed ? data.groundSpeed : "[  ]";
-        const verticalSpeed = data.verticalSpeed ? data.verticalSpeed : "[  ]";
-        const deviating = data.deviating ? data.deviating : "[  ]";
-        const heading = data.heading ? data.heading : "[  ]";
-        const track = data.track ? data.track : "[  ]";
+        const indicatedAirspeed = data.indicatedAirspeed[0] ? data.indicatedAirspeed[0] : "[  ]";
+        const groundSpeed = data.groundSpeed[0] ? data.groundSpeed[0] : "[  ]";
+        const verticalSpeed = data.verticalSpeed[0] ? data.verticalSpeed[0] : "[  ]";
+        const deviating = data.deviating[0] ? data.deviating[0] : "[  ]";
+        const heading = data.heading[0] ? data.heading[0] : "[  ]";
+        const track = data.track[0] ? data.track[0] : "[  ]";
         const descending = ["\xa0DSCENDING TO", "[   ]"];
         const climbing = ["CLBING TO\xa0", "[   ]"];
 
@@ -608,12 +652,12 @@ class CDUAtcPositionReport {
         if (target.apActive && target.altitude === current.altitude) {
             descending[0] = descending[1] = "";
             climbing[0] = climbing[1] = "";
-        } else if (data.climbing) {
+        } else if (data.climbing[0]) {
             descending[0] = descending[1] = "";
-            climbing[1] = data.climbing;
-        } else if (data.descending) {
+            climbing[1] = data.climbing[0];
+        } else if (data.descending[0]) {
             climbing[0] = climbing[1] = "";
-            descending = data.descending;
+            descending = data.descending[0];
         }
 
         let text = "ADD TEXT\xa0";
