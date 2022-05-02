@@ -65,8 +65,8 @@ class CDUAtcReports {
             [deviating],
             [""],
             ["<MANUAL POS REPORT"],
-            ["\xa0AUTO POS REPORT: OFF"],
-            ["{inop}*SET ON{end}"],
+            [`\xa0AUTO POS REPORT: ${mcdu.atsu.atc.automaticPositionReportActive() ? "ON" : "OFF"}`],
+            [`{cyan}*SET ${mcdu.atsu.atc.automaticPositionReportActive() ? "OFF" : "ON"}{end}`],
             ["\xa0ALL FIELDS"],
             [erase, text],
             ["\xa0ATC MENU", "XFR TO\xa0[color]cyan"],
@@ -107,6 +107,14 @@ class CDUAtcReports {
         };
         mcdu.onLeftInput[2] = () => {
             CDUAtcPositionReport.ShowPage1(mcdu);
+        };
+
+        mcdu.leftInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onLeftInput[3] = () => {
+            mcdu.atsu.atc.toggleAutomaticPositionReportActive();
+            CDUAtcReports.ShowPage(mcdu, data);
         };
 
         mcdu.leftInputDelay[4] = () => {
