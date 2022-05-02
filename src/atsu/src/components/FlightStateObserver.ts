@@ -49,18 +49,15 @@ export class FlightStateObserver {
         this.PresentPosition.track = Math.round(SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'));
         this.PresentPosition.indicatedAirspeed = Math.round(SimVar.GetSimVarValue('AIRSPEED INDICATED', 'knots'));
         this.PresentPosition.groundSpeed = Math.round(SimVar.GetSimVarValue('GROUND VELOCITY', 'knots'));
-        this.PresentPosition.verticalSpeed = Math.round(SimVar.GetSimVarValue('VERTICAL SPEED', 'feet per second'));
+        this.PresentPosition.verticalSpeed = Math.round(SimVar.GetSimVarValue('VERTICAL SPEED', 'feet per second') * 60.0);
     }
 
     private updateFcu() {
-        const ap1 = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_1_ACTIVE', 'bool');
-        const ap2 = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_2_ACTIVE', 'bool');
-
+        this.FcuSettings.apActive = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_ACTIVE', 'bool');
         const thrustMode = SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_MODE', 'number');
-        this.FcuSettings.apActive = ap1 || ap2;
 
         if (this.FcuSettings.apActive) {
-            this.FcuSettings.altitude = Math.round(SimVar.GetSimVarValue('A32NX_FG_TARGET_ALTITUDE', 'number'));
+            this.FcuSettings.altitude = Math.round(Simplane.getAutoPilotDisplayedAltitudeLockValue());
             this.FcuSettings.machMode = thrustMode === 8;
             if (thrustMode === 0) {
                 if (this.FcuSettings.machMode) {
