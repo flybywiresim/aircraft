@@ -156,19 +156,28 @@ class CDUAtcPositionReport {
 
         // define the overhead
         let extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `OVHD: ${data.passedWaypoint[0]} AT ${data.passedWaypoint[1]}Z/${data.passedWaypoint[2]}`;
+        extension.Content[0].Value = `OVHD:${data.passedWaypoint[0]}`;
+        retval.Extensions.push(extension);
+        extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+        extension.Content[0].Value = `AT ${data.passedWaypoint[1]}Z/${data.passedWaypoint[2]}`;
         retval.Extensions.push(extension);
         // define the present position
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `PPOS:${CDUAtcPositionReport.CoordinateToString(data.currentPosition[0], false)} AT ${data.currentUtc[0]}Z/${data.currentAltitude[2]}`;
+        extension.Content[0].Value = `PPOS:${CDUAtcPositionReport.CoordinateToString(data.currentPosition[0], false)}`;
+        retval.Extensions.push(extension);
+        extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+        extension.Content[0].Value = `AT ${data.currentUtc[0]}Z/${data.currentAltitude[0]}`;
         retval.Extensions.push(extension);
         // define the active position
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `ACTIVE: ${data.activeWaypoint[0]} AT ${data.activeWaypoint[1]}Z`;
+        extension.Content[0].Value = `ACTIVE:${data.activeWaypoint[0]}`;
+        retval.Extensions.push(extension);
+        extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
+        extension.Content[0].Value = `AT ${data.activeWaypoint[1]}Z`;
         retval.Extensions.push(extension);
         // define the next position
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `NEXT: ${data.nextWaypoint[0]}`;
+        extension.Content[0].Value = `NEXT:${data.nextWaypoint[0]}`;
         retval.Extensions.push(extension);
 
         // create the initial data
@@ -235,7 +244,7 @@ class CDUAtcPositionReport {
             extension.Content[0].Value = `GS: ${data.groundSpeed[0]}`;
             retval.Extensions.push(extension);
         }
-        if (data.verticalSpeed[0]) {
+        if (data.verticalSpeed[0] && data.verticalSpeed[0] !== "0FTM") {
             extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
             extension.Content[0].Value = `VS: ${data.verticalSpeed[0]}`;
             retval.Extensions.push(extension);
