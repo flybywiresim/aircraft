@@ -72,7 +72,8 @@ export const PushbackPage = () => {
     const [mouseDown, setMouseDown] = useState(false);
     const [dragging, setDragging] = useState(false);
     const [centerPlaneMode, setCenterPlaneMode] = useState(true);
-    const [actualLatLon, setActualLatLon] = useState({ lat: 0, long: 0 } as Coordinates);
+    const [actualMapLatLon, setActualMapLatLon] = useState({ lat: 0, long: 0 } as Coordinates);
+    const [aircraftIconPosition, setAircraftIconPosition] = useState({ x: 0, y: 0 } as ScreenCoordinates);
     const [dragStartCoords, setDragStartCoords] = useState({ x: 0, y: 0 } as ScreenCoordinates);
     const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 } as ScreenCoordinates);
 
@@ -244,7 +245,8 @@ export const PushbackPage = () => {
     // Update actual lat/lon when plane is moving
     useEffect(() => {
         if (centerPlaneMode) {
-            setActualLatLon({ lat: planeLatitude, long: planeLongitude });
+            setActualMapLatLon({ lat: planeLatitude, long: planeLongitude });
+            setAircraftIconPosition({ x: 0, y: 0 });
         }
     }, [centerPlaneMode, planeLatitude, planeLongitude]);
 
@@ -252,11 +254,10 @@ export const PushbackPage = () => {
     useEffect(() => {
         if (dragging) {
             setCenterPlaneMode(false);
-            const latLon: Coordinates = computeOffset(actualLatLon, {
-                x: (mouseCoords.x - dragStartCoords.x),
-                y: (mouseCoords.y - dragStartCoords.y),
-            });
-            setActualLatLon(latLon);
+            const delta = { x: mouseCoords.x - dragStartCoords.x, y: mouseCoords.y - dragStartCoords.y };
+            const latLon: Coordinates = computeOffset(actualMapLatLon, delta);
+            setActualMapLatLon(latLon);
+            setAircraftIconPosition({ x: aircraftIconPosition.x + delta.x, y: aircraftIconPosition.y - delta.y });
             setDragStartCoords(mouseCoords);
         }
     }, [dragging, mouseDown, mouseCoords]);
@@ -390,7 +391,7 @@ export const PushbackPage = () => {
                 {!process.env.VITE_BUILD && (
                     <BingMap
                         configFolder="/Pages/VCockpit/Instruments/MAP/"
-                        centerLla={{ lat: actualLatLon.lat, long: actualLatLon.long }}
+                        centerLla={{ lat: actualMapLatLon.lat, long: actualMapLatLon.long }}
                         mapId="PUSHBACK_MAP"
                         range={mapRange}
                         rotation={-planeHeadingTrue}
@@ -405,7 +406,7 @@ export const PushbackPage = () => {
                     {/* prepared to move with map when dragging - work in progress */}
                     <IconPlane
                         className="text-theme-highlight"
-                        style={{ transform: 'rotate(-90deg) translateY(0) translateX(0)' }}
+                        style={{ transform: `rotate(-90deg) translateY(${aircraftIconPosition.x}px) translateX(${aircraftIconPosition.y}px)` }}
                         size={a320IconSize(mapRange)}
                         strokeLinejoin="miter"
                         stroke={1}
