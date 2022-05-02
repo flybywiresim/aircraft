@@ -45,13 +45,17 @@ export class CpdlcMessage extends AtsuMessage {
         this.DcduRelevantMessage = jsonData.DcduRelevantMessage;
     }
 
-    protected serializeContent(template: string, element: CpdlcMessageElement): string {
+    protected serializeContent(format: AtsuMessageSerializationFormat, template: string, element: CpdlcMessageElement): string {
         let content: string = '';
 
         content = template;
         element.Content.forEach((entry) => {
             const idx = content.indexOf('%s');
-            content = `${content.substring(0, idx)}@${entry.Value}@${content.substring(idx + 2)}`;
+            if (format === AtsuMessageSerializationFormat.Network) {
+                content = `${content.substring(0, idx)}${entry.Value}${content.substring(idx + 2)}`;
+            } else {
+                content = `${content.substring(0, idx)}@${entry.Value}@${content.substring(idx + 2)}`;
+            }
         });
 
         return content;
@@ -75,9 +79,9 @@ export class CpdlcMessage extends AtsuMessage {
 
         if (this.Content !== undefined) {
             if (this.Direction === AtsuMessageDirection.Downlink) {
-                content = this.serializeContent(CpdlcMessagesDownlink[this.Content.TypeId][0][this.ContentTemplateIndex], this.Content);
+                content = this.serializeContent(format, CpdlcMessagesDownlink[this.Content.TypeId][0][this.ContentTemplateIndex], this.Content);
             } else {
-                content = this.serializeContent(CpdlcMessagesUplink[this.Content.TypeId][0][this.ContentTemplateIndex], this.Content);
+                content = this.serializeContent(format, CpdlcMessagesUplink[this.Content.TypeId][0][this.ContentTemplateIndex], this.Content);
             }
         } else {
             content = this.Message;

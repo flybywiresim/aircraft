@@ -32,9 +32,9 @@ export class RequestMessage extends CpdlcMessage {
         const contentEntries: string[] = [];
         let message = '';
 
-        contentEntries.push(this.serializeContent(CpdlcMessagesDownlink[this.Content.TypeId][0][0], this.Content));
+        contentEntries.push(this.serializeContent(format, CpdlcMessagesDownlink[this.Content.TypeId][0][0], this.Content));
         this.Extensions.forEach((element) => {
-            contentEntries.push(this.serializeContent(CpdlcMessagesDownlink[element.TypeId][0][0], element));
+            contentEntries.push(this.serializeContent(format, CpdlcMessagesDownlink[element.TypeId][0][0], element));
         });
         const content = contentEntries.join(' ');
         const lines = wordWrap(content, 25);
