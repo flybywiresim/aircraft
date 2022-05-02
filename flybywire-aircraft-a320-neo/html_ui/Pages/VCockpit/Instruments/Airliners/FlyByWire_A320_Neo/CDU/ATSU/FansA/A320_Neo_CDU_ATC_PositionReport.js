@@ -13,33 +13,6 @@ class CDUAtcPositionReport {
         return Atsu.InputValidation.formatScratchpadAltitude(`${altitude}FT`);
     }
 
-    static CoordinateToString(coordinate, shortVersion) {
-        const dmsLat = CDUInitPage.ConvertDDToDMS(coordinate[0], false);
-        const dmsLon = CDUInitPage.ConvertDDToDMS(coordinate[1], true);
-
-        dmsLon['deg'] = Number(dmsLon['deg']);
-        dmsLat['sec'] = Math.ceil(Number(dmsLat['sec'] / 100));
-        dmsLon['sec'] = Math.ceil(Number(dmsLon['sec'] / 100));
-        dmsLat['min'] = dmsLat['min'].toString();
-        dmsLon['min'] = dmsLon['min'].toString();
-
-        if (shortVersion) {
-            if (dmsLat['dir'] === "N") {
-                if (dmsLon['dir'] === "E") {
-                    return `${dmsLat['deg']}N${dmsLon['deg']}`;
-                }
-                return `${dmsLat['deg']}${dmsLon['deg']}N`;
-            } else if (dmsLon['dir'] === "E") {
-                return `${dmsLat['deg']}${dmsLon['deg']}S`;
-            }
-            return `${dmsLat['deg']}W${dmsLon['deg']}`;
-        }
-
-        const lat = `${dmsLat['deg']}°${dmsLat['min']}.${dmsLat['sec']}${dmsLat['dir']}`;
-        const lon = `${dmsLon['deg']}°${dmsLon['min']}.${dmsLon['sec']}${dmsLon['dir']}`;
-        return `${lat}/${lon}`;
-    }
-
     static FillDataBlock(mcdu, data) {
         const current = mcdu.atsu.currentFlightState();
         const target = mcdu.atsu.targetFlightState();
@@ -163,7 +136,7 @@ class CDUAtcPositionReport {
         retval.Extensions.push(extension);
         // define the present position
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `PPOS:${CDUAtcPositionReport.CoordinateToString(data.currentPosition[0], false)}`;
+        extension.Content[0].Value = `PPOS:${Atsu.coordinateToString({ lat: data.currentPosition[0][0], lon: data.currentPosition[0][1] }, false)}`;
         retval.Extensions.push(extension);
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
         extension.Content[0].Value = `AT ${data.currentUtc[0]}Z/${data.currentAltitude[0]}`;
@@ -291,7 +264,7 @@ class CDUAtcPositionReport {
 
         const ppos = ["_______[color]amber", "____/______[color]amber"];
         if (data.currentPosition[0]) {
-            ppos[0] = `{cyan}${CDUAtcPositionReport.CoordinateToString(data.currentPosition[0], true)}{end}`;
+            ppos[0] = `{cyan}${Atsu.coordinateToString({ lat: data.currentPosition[0][0], lon: data.currentPosition[0][1] }, true)}{end}`;
         }
         if (data.currentUtc[0] && data.currentAltitude[0]) {
             ppos[1] = `{cyan}${data.currentUtc[0]}/${data.currentAltitude[0]}{end}`;

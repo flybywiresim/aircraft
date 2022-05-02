@@ -18,6 +18,7 @@ import { InputValidation, InputWaypointType } from './InputValidation';
 import { FansMode } from './com/FutureAirNavigationSystem';
 import { HoppieConnector } from './com/webinterfaces/HoppieConnector';
 import { Waypoint } from './components/FlightStateObserver';
+import { coordinateToString } from './Common';
 
 export {
     AtsuStatusCodes,
@@ -50,4 +51,5 @@ export {
     InputWaypointType,
     HoppieConnector,
     Waypoint,
+    coordinateToString,
 };
