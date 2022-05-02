@@ -353,6 +353,7 @@
     "CallTug": "터그 부르기",
     "Forward": "앞으로",
     "Halt": "일시 중지",
+    "LeavePageMessage": "Pausing Pushback",
     "Left": "왼쪽",
     "Moving": "이동 중",
     "ParkingBrake": {
@@ -364,8 +365,8 @@
     "TT": {
       "CallReleaseTug": "Call or release tug",
       "CenterPlaneMode": "Center map on plane On/Off",
-      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0",
-      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0",
+      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0)",
+      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0)",
       "Left": "Go left (double click for straight)",
       "PausePushback": "Pause or unpause pushback",
       "Right": "Go right (double click for straight)",

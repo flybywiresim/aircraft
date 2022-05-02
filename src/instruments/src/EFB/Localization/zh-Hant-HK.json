@@ -353,6 +353,7 @@
     "CallTug": "召喚推機車",
     "Forward": "向前",
     "Halt": "已暫停",
+    "LeavePageMessage": "Pausing Pushback",
     "Left": "左",
     "Moving": "移動中",
     "ParkingBrake": {
@@ -362,18 +363,18 @@
     },
     "Right": "右",
     "TT": {
-      "CallReleaseTug": "Call or release tug",
-      "CenterPlaneMode": "Center map on plane On/Off",
-      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0",
-      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0",
-      "Left": "Go left (double click for straight)",
-      "PausePushback": "Pause or unpause pushback",
-      "Right": "Go right (double click for straight)",
-      "SetReleaseParkingBrake": "Set or release parking brake",
-      "SliderDirection": "Move for desired direction",
-      "SliderSpeed": "Move for desired speed",
-      "ZoomIn": "Zoom in",
-      "ZoomOut": "Zoom out"
+      "CallReleaseTug": "召喚或釋放推機車",
+      "CenterPlaneMode": "地圖中央於本機 — 開/關",
+      "DecreaseSpeed": "向後或慢前 (雙擊重設速度為 0",
+      "IncreaseSpeed": "向前或慢後 (雙擊重設速度為 0",
+      "Left": "左轉 (雙擊停轉)",
+      "PausePushback": "暫停或回復推機",
+      "Right": "右轉 (雙擊停轉)",
+      "SetReleaseParkingBrake": "鎖上或放開泊機煞掣",
+      "SliderDirection": "移動到所需方向",
+      "SliderSpeed": "移動到所需速度",
+      "ZoomIn": "放大",
+      "ZoomOut": "縮小"
     },
     "TugDirection": "推機方向",
     "TugSpeed": "推機速度"

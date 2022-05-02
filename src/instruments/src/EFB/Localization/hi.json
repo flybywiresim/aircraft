@@ -353,6 +353,7 @@
     "CallTug": "Call Tug",
     "Forward": "Forward",
     "Halt": "Paused",
+    "LeavePageMessage": "Pausing Pushback",
     "Left": "Left",
     "Moving": "Moving",
     "ParkingBrake": {
@@ -364,8 +365,8 @@
     "TT": {
       "CallReleaseTug": "Call or release tug",
       "CenterPlaneMode": "Center map on plane On/Off",
-      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0",
-      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0",
+      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0)",
+      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0)",
       "Left": "Go left (double click for straight)",
       "PausePushback": "Pause or unpause pushback",
       "Right": "Go right (double click for straight)",

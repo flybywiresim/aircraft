@@ -1,19 +1,27 @@
-/* eslint-disable max-len */
+/* eslint-disable max-len,no-console */
 import React, { useEffect, useRef, useState } from 'react';
 import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import {
-    ArrowDown, ArrowLeft, ArrowRight, ArrowUp,
-    ChevronDoubleDown, ChevronDoubleUp, ChevronLeft, ChevronRight,
-    PauseCircleFill, PlayCircleFill,
+    ArrowDown,
+    ArrowLeft,
+    ArrowRight,
+    ArrowUp,
+    ChevronDoubleDown,
+    ChevronDoubleUp,
+    ChevronLeft,
+    ChevronRight,
+    PauseCircleFill,
+    PlayCircleFill,
     TruckFlatbed,
-    ZoomIn, ZoomOut,
+    ZoomIn,
+    ZoomOut,
 } from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
-import { toast } from 'react-toastify';
 import { MathUtils } from '@shared/MathUtils';
 import { IconPlane } from '@tabler/icons';
 import { Coordinates } from 'msfs-geo';
 import { computeDestinationPoint } from 'geolib'; // getDistance
+import { toast } from 'react-toastify';
 import { BingMap } from '../../UtilComponents/BingMap';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
@@ -27,15 +35,15 @@ interface TurningRadiusIndicatorProps {
     turningRadius: number;
 }
 
-function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
     const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
     return {
         x: centerX + (radius * Math.cos(angleInRadians)),
         y: centerY + (radius * Math.sin(angleInRadians)),
     };
-}
+};
 
-function describeArc(x, y, radius, startAngle, endAngle) {
+const describeArc = (x, y, radius, startAngle, endAngle) => {
     const start = polarToCartesian(x, y, radius, endAngle);
     const end = polarToCartesian(x, y, radius, startAngle);
     const arcSweep = endAngle - startAngle <= 180 ? '0' : '1';
@@ -43,7 +51,7 @@ function describeArc(x, y, radius, startAngle, endAngle) {
         'M', start.x, start.y,
         'A', radius, radius, 0, arcSweep, 0, end.x, end.y,
     ].join(' ');
-}
+};
 
 const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) => (
     <svg width={turningRadius * 2} height={turningRadius * 2} viewBox={`0 0 ${turningRadius * 2} ${turningRadius * 2}`}>
@@ -77,16 +85,21 @@ export const PushbackPage = () => {
     const [dragStartCoords, setDragStartCoords] = useState({ x: 0, y: 0 } as ScreenCoordinates);
     const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 } as ScreenCoordinates);
 
-    const [pushBackPaused, setPushBackPaused] = useState(false);
+    const [pushBackPaused, setPushBackPaused] = useState(true);
     const [lastTime, setLastTime] = useState(0);
     const [deltaTime, setDeltaTime] = useState(0);
     const [tugCommandedHeading, setTugCommandedHeading] = useState(0);
     const [tugCommandedHeadingFactor, setTugCommandedHeadingFactor] = useState(0);
     const [tugCommandedSpeedFactor, setTugCommandedSpeedFactor] = useState(0);
     const [tugCommandedSpeed, setTugCommandedSpeed] = useState(0);
+    const [tugInertiaFactor, setTugInertiaFactor] = useState(0);
+
+    const [updateInterval, setUpdateInterval] = useState(0);
 
     // Required so these can be used inside the setInterval callback function for the
     // pushback movement update
+    const updateIntervalRef = useRef(updateInterval);
+    updateIntervalRef.current = updateInterval;
     const pushBackAttachedRef = useRef(pushBackAttached);
     pushBackAttachedRef.current = pushBackAttached;
     const pushbackPausedRef = useRef(pushBackPaused);
@@ -99,6 +112,8 @@ export const PushbackPage = () => {
     tugCommandedHeadingFactorRef.current = tugCommandedHeadingFactor;
     const tugCommandedSpeedFactorRef = useRef(tugCommandedSpeedFactor);
     tugCommandedSpeedFactorRef.current = tugCommandedSpeedFactor;
+    const tugInertiaFactorRef = useRef(tugInertiaFactor);
+    tugInertiaFactorRef.current = tugInertiaFactor;
 
     const handleCallTug = () => {
         setPushBackState(!pushBackState);
@@ -120,11 +135,8 @@ export const PushbackPage = () => {
         setTugCommandedHeadingFactor(MathUtils.clamp(value, -1, 1));
     };
 
-    const calculateTurningRadius = (wheelBase: number, turnAngle: number) => {
-        const tanDeg = Math.tan(turnAngle * Math.PI / 180);
-        return wheelBase / tanDeg;
-    };
-
+    // Computes the offset from  geo coordinates (Lat, Lon) and a delta of screen coordinates into
+    // a destination set of geo coordinates.
     const computeOffset: (latLon: Coordinates, d: ScreenCoordinates) => Coordinates = (
         latLon: Coordinates, d: ScreenCoordinates,
     ) => {
@@ -133,8 +145,6 @@ export const PushbackPage = () => {
         const distance = Math.hypot(d.x, d.y) / (someConstant / mapRange);
         const bearing = Math.atan2(d.y, d.x) * (180 / Math.PI) - 90 + planeHeadingTrue;
         const point = computeDestinationPoint({ lat: latLon.lat, lon: latLon.long }, distance, bearing);
-        // const d2 = getDistance({ lat: latLon.lat, lon: latLon.long }, point, 0.001);
-        // console.log(`LatLon: ${latLon.lat} ${latLon.long} DeltaScreen: ${d.x} ${d.y} Distance: ${distance} D2: ${d2} Bearing: ${bearing} Point: ${point.latitude} ${point.longitude}`);
         return { lat: point.latitude, long: point.longitude };
     };
 
@@ -143,6 +153,40 @@ export const PushbackPage = () => {
         const pixelPerMeter = 4.8596; // at 0.1 range
         const a320LengthMeter = 37.57;
         return a320LengthMeter * pixelPerMeter * (0.1 / mapRange);
+    };
+
+    // Calculates turning radius for the Turning prediction arc
+    const calculateTurningRadius = (wheelBase: number, turnAngle: number) => {
+        const tanDeg = Math.tan(turnAngle * Math.PI / 180);
+        return wheelBase / tanDeg;
+    };
+
+    const decelerateTug = (factor: number = 1) => {
+        const r = 0.05;
+        const bf = factor;
+        setTugInertiaFactor(bf);
+        if (bf <= 0) {
+            SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
+            return;
+        }
+        setTimeout(() => {
+            decelerateTug(bf - r);
+        }, 50);
+    };
+
+    const accelerateTug = (factor: number = 0) => {
+        const r = 0.05;
+        const bf = factor;
+        setTugInertiaFactor(bf);
+        if (bf === 0) {
+            SimVar.SetSimVarValue('Pushback Wait', 'bool', false);
+        }
+        if (bf >= 1) {
+            return;
+        }
+        setTimeout(() => {
+            accelerateTug(bf + r);
+        }, 50);
     };
 
     // Callback function for the setInterval to update the movement of the aircraft independent of
@@ -155,53 +199,54 @@ export const PushbackPage = () => {
         const simOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
 
         if (pushBackAttachedRef.current.valueOf() && simOnGround) {
-            // If no speed is commanded stop the aircraft and return.
-            if (pushbackPausedRef.current.valueOf() || tugCommandedSpeedFactorRef.current.valueOf() === 0) {
-                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
-                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
-                SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
-            } else {
-                // compute heading and speed
-                SimVar.SetSimVarValue('Pushback Wait', 'bool', false);
-                const parkingBrakeEngaged = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
-                const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
-                const computedTugHeading = (aircraftHeading - (50 * tugCommandedHeadingFactorRef.current.valueOf())) % 360;
-                setTugCommandedHeading((() => computedTugHeading)); // debug
-                const computedRotationVelocity = (tugCommandedSpeedFactorRef.current.valueOf() <= 0 ? -1 : 1) * tugCommandedHeadingFactorRef.current.valueOf() * (parkingBrakeEngaged ? 0.008 : 0.08);
-                // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
-                const convertedComputedHeading = (computedTugHeading * (0xffffffff / 360)) & 0xffffffff;
-                const tugCommandedSpeed = tugCommandedSpeedFactorRef.current.valueOf() * (parkingBrakeEngaged ? 0.8 : 8);
-                setTugCommandedSpeed(() => tugCommandedSpeed); // debug
-                // Set tug heading
-                SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', convertedComputedHeading);
-                SimVar.SetSimVarValue('ROTATION VELOCITY BODY X', 'Number', 0);
-                SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
-                SimVar.SetSimVarValue('ROTATION VELOCITY BODY Z', 'Number', 0);
-                // Set tug speed
-                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', tugCommandedSpeed);
-                SimVar.SetSimVarValue('VELOCITY BODY X', 'Number', 0);
-                SimVar.SetSimVarValue('VELOCITY BODY Y', 'Number', 0);
-                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', tugCommandedSpeed);
-            }
-        }
+            // compute heading and speed
+            const parkingBrakeEngaged = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
+            const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
+            const computedTugHeading = (aircraftHeading - (50 * tugCommandedHeadingFactorRef.current.valueOf())) % 360;
+            setTugCommandedHeading((() => computedTugHeading)); // debug
+            const computedRotationVelocity = (tugCommandedSpeedFactorRef.current.valueOf() <= 0 ? -1 : 1) * tugCommandedHeadingFactorRef.current.valueOf() * (parkingBrakeEngaged ? 0.008 : 0.08);
+            // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
+            const convertedComputedHeading = (computedTugHeading * (0xffffffff / 360)) & 0xffffffff;
+            const tugCommandedSpeed = tugCommandedSpeedFactorRef.current.valueOf() * (parkingBrakeEngaged ? 0.8 : 8) * tugInertiaFactorRef.current.valueOf();
+            setTugCommandedSpeed(() => tugCommandedSpeed); // debug
 
-        // Debug perf measuring
-        // const updateTime = Date.now() - startTime;
-        // console.log(`Pushback update took: ${updateTime}ms - Delta: ${deltaTimeRef.current}ms`);
+            if (tugCommandedSpeed === 0) {
+                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', tugCommandedSpeed);
+                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', tugCommandedSpeed);
+                SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
+                return;
+            }
+
+            SimVar.SetSimVarValue('Pushback Wait', 'bool', false);
+            // Set tug heading
+            SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', convertedComputedHeading);
+            SimVar.SetSimVarValue('ROTATION VELOCITY BODY X', 'Number', 0);
+            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
+            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Z', 'Number', 0);
+            // Set tug speed
+            SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', tugCommandedSpeed);
+            SimVar.SetSimVarValue('VELOCITY BODY X', 'Number', 0);
+            SimVar.SetSimVarValue('VELOCITY BODY Y', 'Number', 0);
+            SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', tugCommandedSpeed);
+        }
     };
 
-    // called once when loading and unloading
+    // called once when loading and unloading the page
     useEffect(() => {
-        setPushBackPaused(true);
-        setTugCommandedSpeedFactor(0);
+        // when loading the page
         setPushbackWait(1);
+
         // when unloading the page
+        // !obs: as with setInterval no access to current local variable values
         return (() => {
-            if (pushBackAttachedRef.current) {
-                setPushBackPaused(true);
-                setTugCommandedSpeedFactor(0);
-                setPushbackWait(1);
-                toast.info('Pausing Pushback. Return to Pushback page to resume pushback.');
+            if (pushBackAttachedRef.current.valueOf()) {
+                toast.info(t('Pushback.LeavePageMessage'), {
+                    autoClose: 750,
+                    hideProgressBar: true,
+                    closeButton: false,
+                });
+                clearInterval(updateIntervalRef.current.valueOf());
+                accelerateTug();
             }
         });
     }, []);
@@ -230,17 +275,24 @@ export const PushbackPage = () => {
     // Set up an update interval to ensure smooth movement independent of
     // Glass Cockpit Refresh Rate. This is required as the refresh rate is
     // 10x lower in external view which leads to jerky movements otherwise.
-    const [updateInterval, setUpdateInterval] = useState(0);
     useEffect(() => {
+        if (pushBackPaused) {
+            decelerateTug();
+        } else {
+            accelerateTug();
+        }
         if (pushBackAttached && updateInterval === 0) {
             const interval = setInterval(movementUpdate, 50);
-            // @ts-ignore
-            setUpdateInterval(interval);
+            setUpdateInterval(Number(interval));
         } else if (!pushBackAttached) {
             clearInterval(updateInterval);
             setUpdateInterval(0);
         }
-    }, [pushBackAttached]);
+    }, [pushBackAttached, pushBackPaused]);
+
+    useEffect(() => {
+        console.log(`Interval Change: ${updateInterval}`);
+    }, [updateInterval]);
 
     // Update actual lat/lon when plane is moving
     useEffect(() => {
@@ -248,7 +300,8 @@ export const PushbackPage = () => {
             setActualMapLatLon({ lat: planeLatitude, long: planeLongitude });
             setAircraftIconPosition({ x: 0, y: 0 });
         }
-    }, [centerPlaneMode, planeLatitude, planeLongitude]);
+        // console.log(`Update Map: ${planeLatitude.toFixed(6)} ${planeLongitude.toFixed(6)}`);
+    }, [centerPlaneMode, planeLatitude.toFixed(6), planeLongitude.toFixed(6)]);
 
     // Update actual lat/lon when dragging the map
     useEffect(() => {
@@ -339,6 +392,10 @@ export const PushbackPage = () => {
                 {(planeGroundSpeed * 1.68781).toFixed(3)}
                 ft/s)
                 <br />
+                tugInertiaFactor:
+                {' '}
+                {tugInertiaFactor.toFixed(2)}
+                <br />
                 tCSpeedFactor:
                 {' '}
                 {tugCommandedSpeedFactor.toFixed(3)}
@@ -397,6 +454,21 @@ export const PushbackPage = () => {
                         rotation={-planeHeadingTrue}
                     />
                 )}
+
+                {/* Position Information */}
+                {/* <div className="flex overflow-hidden absolute top-2 left-2 z-30 flex-col rounded-md cursor-pointer"> */}
+                {/*    Heading (True): */}
+                {/*    {' '} */}
+                {/*    {planeHeadingTrue} */}
+                {/*    {' - '} */}
+                {/*    Lat: */}
+                {/*    {' '} */}
+                {/*    {actualMapLatLon.lat} */}
+                {/*    {' - '} */}
+                {/*    Lon: */}
+                {/*    {' '} */}
+                {/*    {actualMapLatLon.long} */}
+                {/* </div> */}
 
                 {/* Aircraft and Turning Radius Indicator */}
                 <div className="flex absolute inset-0 justify-center items-center">

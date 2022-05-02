@@ -32,7 +32,7 @@
       "GoToPage": "Idź do strony",
       "Maintenance": {
         "NoActiveFailures": "Brak Aktywnych Awarii",
-        "Title": "Obsługa techniczna"
+        "Title": "Przegląd Techniczny"
       },
       "PinnedCharts": {
         "NoPinnedCharts": "Brak Przypiętych Chartów",
@@ -101,7 +101,7 @@
   },
   "Failures": {
     "Comfort": {
-      "Title": "Komfort"
+      "Title": "Wygodny"
     },
     "Compact": {
       "Title": "Zwarty"
@@ -304,7 +304,7 @@
         "Title": "Wynik"
       },
       "TT": {
-        "DesynchronizeInputWithAircraftsCurrentAltitude": "Desynchronizuj dane wejściowe z aktualną wysokością samolotu",
+        "DesynchronizeInputWithAircraftsCurrentAltitude": "Wstrzymaj Synchronizowanie Danych Wejściowych z Aktualną Wysokością Samolotu",
         "SynchronizeInputWithAircraftsCurrentAltitude": "Synchronizuj Dane Wejściowe z Aktualną Wysokością Samolotu"
       },
       "Title": "Top of Descent"
@@ -314,29 +314,29 @@
     "AircraftStates": {
       "Cancel": "Anuluj",
       "ColdDark": "Cold & Dark",
-      "ConfirmationDialogMsg": "Please confirm loading of preset.",
-      "CurrentProcedureStep": "Current Procedure Step",
-      "PleaseConfirmLoadingOfPreset": "Please confirm loading of preset.",
-      "ReadyPushback": "Ready for Pushback",
-      "ReadyTakeoff": "Ready for Takeoff",
-      "ReadyTaxi": "Ready for Taxi",
-      "SelectAPresetToLoad": "Select a Preset to Load",
-      "TheAircraftMustBeOnTheGroundToLoadAPreset": "The aircraft must be on the ground to load a preset.",
-      "TheAircraftMustBeOntheGroundToLoadAPreset": "The aircraft must be on the ground to load a preset.",
-      "Title": "Aircraft States",
+      "ConfirmationDialogMsg": "Proszę potwierdzić wczytanie predefiniowanego ustawienia.",
+      "CurrentProcedureStep": "Bieżący Etap Procedury",
+      "PleaseConfirmLoadingOfPreset": "Proszę potwierdzić wczytanie predefiniowanego ustawienia.",
+      "ReadyPushback": "Gotowy do Wypychania",
+      "ReadyTakeoff": "Gotowy do Startu",
+      "ReadyTaxi": "Gotowy do Kołowania",
+      "SelectAPresetToLoad": "Wybierz Ustawienie Predefiniowane do Wczytania",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "Samolot musi znajdować się na ziemi, by możliwe było wczytanie ustawień predefiniowanych.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "Samolot musi znajdować się na ziemi, by możliwe było wczytanie ustawień predefiniowanych.",
+      "Title": "Konfiguracje Samolotu",
       "Turnaround": "Turnaround"
     },
     "InteriorLighting": {
-      "AircraftNeedsToBePoweredToLoadPresets": "Aircraft Needs to be Powered to Load Presets",
-      "AircraftNeedsToBePoweredToSavePresets": "Aircraft Needs to Be Powered to Save Presets",
-      "LoadPreset": "Load Preset",
-      "LoadingPreset": "Loading Preset",
+      "AircraftNeedsToBePoweredToLoadPresets": "Samolot musi być zasilany, by możliwe było wczytanie ustawień",
+      "AircraftNeedsToBePoweredToSavePresets": "Samolot musi być zasilany, by możliwe było zapisanie ustawień",
+      "LoadPreset": "Wczytaj Ustawienia",
+      "LoadingPreset": "Wczytywanie Ustawienia",
       "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
-      "NoName": "No Name",
-      "PleaseConfirmSavingPreset": "Please Confirm Saving Preset",
-      "SavePreset": "Save Preset",
-      "SavingPreset": "Saving Preset",
-      "SelectAnInteriorLightingPresetToLoadOrSave": "Select an interior lighting preset to load or save.",
+      "NoName": "Bez Nazwy",
+      "PleaseConfirmSavingPreset": "Proszę Potwierdzić Zapisanie Ustawienia",
+      "SavePreset": "Zapisz Ustawienia",
+      "SavingPreset": "Zapisywanie Ustawienia",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Wybierz ustawienie oświetlenia wnętrza, które chcesz wczytać lub nadpisać.",
       "TT": {
         "AircraftMustBePowered": "Aircraft Must be Powered",
         "ClickTextToChangeThePresetsName": "Click Text to Change the Preset's Name",
@@ -353,6 +353,7 @@
     "CallTug": "Call Tug",
     "Forward": "Forward",
     "Halt": "Paused",
+    "LeavePageMessage": "Pausing Pushback",
     "Left": "Left",
     "Moving": "Moving",
     "ParkingBrake": {
@@ -364,8 +365,8 @@
     "TT": {
       "CallReleaseTug": "Call or release tug",
       "CenterPlaneMode": "Center map on plane On/Off",
-      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0",
-      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0",
+      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0)",
+      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0)",
       "Left": "Go left (double click for straight)",
       "PausePushback": "Pause or unpause pushback",
       "Right": "Go right (double click for straight)",
