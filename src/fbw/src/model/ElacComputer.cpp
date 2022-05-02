@@ -297,11 +297,11 @@ void ElacComputer::step()
              (ElacComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
     FailureWarning)) || rtb_AND2_p || ElacComputer_DWork.Memory_PreviousInput_i);
   rtb_NOT_h = (ElacComputer_DWork.Memory_PreviousInput_o || ElacComputer_DWork.Memory_PreviousInput_l);
-  rtb_OR4 = ((ElacComputer_U.in.bus_inputs.adr_2_bus.mach.SSM == static_cast<uint32_T>(SignStatusMatrix::FailureWarning))
-             || (ElacComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM == static_cast<uint32_T>
-                 (SignStatusMatrix::FailureWarning)) || (ElacComputer_U.in.bus_inputs.adr_2_bus.airspeed_true_kn.SSM ==
+  rtb_OR4 = ((ElacComputer_U.in.bus_inputs.adr_3_bus.mach.SSM == static_cast<uint32_T>(SignStatusMatrix::FailureWarning))
+             || (ElacComputer_U.in.bus_inputs.adr_3_bus.airspeed_computed_kn.SSM == static_cast<uint32_T>
+                 (SignStatusMatrix::FailureWarning)) || (ElacComputer_U.in.bus_inputs.adr_3_bus.airspeed_true_kn.SSM ==
               static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) ||
-             (ElacComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
+             (ElacComputer_U.in.bus_inputs.adr_3_bus.aoa_corrected_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
     FailureWarning)) || rtb_NOT_h || ElacComputer_DWork.Memory_PreviousInput_lo);
   rtb_doubleAdrFault = (rtb_OR3 && rtb_OR4);
   rtb_doubleAdrFault = ((rtb_OR1 && rtb_OR3) || rtb_doubleAdrFault || rtb_doubleAdrFault);
@@ -617,25 +617,28 @@ void ElacComputer::step()
     rtb_oppElacRollCapability = lateral_efcs_law::None;
   }
 
-  if (rtb_isEngagedInRoll && (rtb_oppElacRollCapability == lateral_efcs_law::NormalLaw) && (priorityPitchPitchLawCap ==
-       pitch_efcs_law::NormalLaw) && (priorityPitchLateralLawCap == lateral_efcs_law::NormalLaw)) {
-    rtb_activeLateralLaw = lateral_efcs_law::NormalLaw;
-  } else if (rtb_isEngagedInRoll && ((rtb_oppElacRollCapability != lateral_efcs_law::NormalLaw) ||
-              (priorityPitchPitchLawCap != pitch_efcs_law::NormalLaw) || (priorityPitchLateralLawCap != lateral_efcs_law::
-               NormalLaw))) {
-    rtb_activeLateralLaw = lateral_efcs_law::DirectLaw;
+  if (rtb_isEngagedInRoll) {
+    if ((rtb_oppElacRollCapability == lateral_efcs_law::NormalLaw) && (priorityPitchPitchLawCap == pitch_efcs_law::
+         NormalLaw) && (priorityPitchLateralLawCap == lateral_efcs_law::NormalLaw)) {
+      rtb_activeLateralLaw = lateral_efcs_law::NormalLaw;
+    } else {
+      rtb_activeLateralLaw = lateral_efcs_law::DirectLaw;
+    }
   } else {
     rtb_activeLateralLaw = lateral_efcs_law::None;
   }
 
-  if (rtb_isEngagedInPitch && (rtb_oppElacRollCapability == lateral_efcs_law::NormalLaw) && (priorityPitchPitchLawCap ==
-       pitch_efcs_law::NormalLaw) && (priorityPitchLateralLawCap == lateral_efcs_law::NormalLaw)) {
-    priorityPitchPitchLawCap = pitch_efcs_law::NormalLaw;
-  } else if (rtb_isEngagedInPitch && (rtb_oppElacRollCapability != lateral_efcs_law::NormalLaw)) {
-    if (rtb_pitchLawCapability == pitch_efcs_law::NormalLaw) {
+  if (rtb_isEngagedInPitch) {
+    if ((rtb_oppElacRollCapability == lateral_efcs_law::NormalLaw) && (priorityPitchPitchLawCap == pitch_efcs_law::
+         NormalLaw) && (priorityPitchLateralLawCap == lateral_efcs_law::NormalLaw)) {
+      priorityPitchPitchLawCap = pitch_efcs_law::NormalLaw;
+    } else if ((rtb_oppElacRollCapability != lateral_efcs_law::NormalLaw) && (priorityPitchPitchLawCap == pitch_efcs_law::
+                NormalLaw)) {
       priorityPitchPitchLawCap = pitch_efcs_law::AlternateLaw1;
-    } else {
+    } else if (priorityPitchPitchLawCap != pitch_efcs_law::NormalLaw) {
       priorityPitchPitchLawCap = rtb_pitchLawCapability;
+    } else {
+      priorityPitchPitchLawCap = pitch_efcs_law::DirectLaw;
     }
   } else {
     priorityPitchPitchLawCap = pitch_efcs_law::None;
