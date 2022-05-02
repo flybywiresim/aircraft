@@ -125,6 +125,9 @@ struct SimData {
   double brakeRightPosition;
   double flapsHandleIndex;
   double gearHandlePosition;
+  unsigned long long assistanceTakeoffEnabled;
+  unsigned long long assistanceLandingEnabled;
+  unsigned long long aiAutoTrimActive;
 };
 
 struct SimInput {
