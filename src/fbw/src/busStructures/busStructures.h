@@ -304,6 +304,11 @@ struct SecOutBus {
 
   Arinc429NumericWord speedBrakeLeverCommand;
 
+  // Thrust Lever Angles, for ELAC and FCDC
+  Arinc429NumericWord thrustLeverAngle1;
+
+  Arinc429NumericWord thrustLeverAngle2;
+
   // Discrete status words
   Arinc429DiscreteWord discreteStatusWord1;
 

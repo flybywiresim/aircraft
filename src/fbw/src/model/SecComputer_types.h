@@ -423,6 +423,8 @@ struct base_sec_out_bus
   base_arinc_429 left_sidestick_roll_command_deg;
   base_arinc_429 right_sidestick_roll_command_deg;
   base_arinc_429 speed_brake_lever_command_deg;
+  base_arinc_429 thrust_lever_angle_1_deg;
+  base_arinc_429 thrust_lever_angle_2_deg;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 discrete_status_word_2;
 };
@@ -708,10 +710,10 @@ struct struct_nu5JKWPKjcWouTrFXSVJgG
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_struct_akQg70Tw5X9p2Dc93ka7JF_
-#define DEFINED_TYPEDEF_FOR_struct_akQg70Tw5X9p2Dc93ka7JF_
+#ifndef DEFINED_TYPEDEF_FOR_struct_7m2qji9xkXJ1tCsn7SH04E_
+#define DEFINED_TYPEDEF_FOR_struct_7m2qji9xkXJ1tCsn7SH04E_
 
-struct struct_akQg70Tw5X9p2Dc93ka7JF
+struct struct_7m2qji9xkXJ1tCsn7SH04E
 {
   struct_2OohiAWrazWy5wDS5iisgF left_spoiler_1_position_deg;
   struct_2OohiAWrazWy5wDS5iisgF right_spoiler_1_position_deg;
@@ -725,6 +727,8 @@ struct struct_akQg70Tw5X9p2Dc93ka7JF
   struct_2OohiAWrazWy5wDS5iisgF left_sidestick_roll_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF right_sidestick_roll_command_deg;
   struct_2OohiAWrazWy5wDS5iisgF speed_brake_lever_command_deg;
+  struct_2OohiAWrazWy5wDS5iisgF thrust_lever_angle_1_deg;
+  struct_2OohiAWrazWy5wDS5iisgF thrust_lever_angle_2_deg;
   struct_2OohiAWrazWy5wDS5iisgF discrete_status_word_1;
   struct_2OohiAWrazWy5wDS5iisgF discrete_status_word_2;
 };

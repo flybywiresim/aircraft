@@ -435,6 +435,16 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
     {
       0U,
       0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
     }
   },
 

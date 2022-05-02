@@ -555,11 +555,19 @@ void SecComputer::step()
     (SecComputer_U.in.analog_inputs.fo_roll_stick_pos);
   SecComputer_Y.out.bus_outputs.right_sidestick_roll_command_deg.SSM = static_cast<uint32_T>
     (SecComputer_P.EnumeratedConstant1_Value);
-  rtb_y_l = static_cast<real32_T>(SecComputer_U.in.analog_inputs.spd_brk_lever_pos);
   SecComputer_Y.out.bus_outputs.speed_brake_lever_command_deg.Data = SecComputer_P.Gain4_Gain * static_cast<real32_T>
     (SecComputer_U.in.analog_inputs.spd_brk_lever_pos);
   SecComputer_Y.out.bus_outputs.speed_brake_lever_command_deg.SSM = static_cast<uint32_T>
     (SecComputer_P.EnumeratedConstant1_Value);
+  SecComputer_Y.out.bus_outputs.thrust_lever_angle_1_deg.SSM = static_cast<uint32_T>
+    (SecComputer_P.EnumeratedConstant1_Value);
+  SecComputer_Y.out.bus_outputs.thrust_lever_angle_1_deg.Data = static_cast<real32_T>
+    (SecComputer_U.in.analog_inputs.thr_lever_1_pos);
+  rtb_y_l = static_cast<real32_T>(SecComputer_U.in.analog_inputs.thr_lever_2_pos);
+  SecComputer_Y.out.bus_outputs.thrust_lever_angle_2_deg.SSM = static_cast<uint32_T>
+    (SecComputer_P.EnumeratedConstant1_Value);
+  SecComputer_Y.out.bus_outputs.thrust_lever_angle_2_deg.Data = static_cast<real32_T>
+    (SecComputer_U.in.analog_inputs.thr_lever_2_pos);
   rtb_VectorConcatenate[0] = (SecComputer_U.in.discrete_inputs.l_spoiler_1_servo_failed ||
     SecComputer_U.in.discrete_inputs.r_spoiler_1_servo_failed);
   rtb_VectorConcatenate[1] = (SecComputer_U.in.discrete_inputs.l_spoiler_2_servo_failed ||

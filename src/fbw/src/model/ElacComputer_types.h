@@ -259,6 +259,8 @@ struct base_sec_out_bus
   base_arinc_429 left_sidestick_roll_command_deg;
   base_arinc_429 right_sidestick_roll_command_deg;
   base_arinc_429 speed_brake_lever_command_deg;
+  base_arinc_429 thrust_lever_angle_1_deg;
+  base_arinc_429 thrust_lever_angle_2_deg;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 discrete_status_word_2;
 };

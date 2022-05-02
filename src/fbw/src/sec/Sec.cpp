@@ -105,6 +105,8 @@ base_sec_out_bus Sec::getBusOutputs() {
     output.left_sidestick_roll_command_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.right_sidestick_roll_command_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.speed_brake_lever_command_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.thrust_lever_angle_1_deg.SSM = Arinc429SignStatus::FailureWarning;
+    output.thrust_lever_angle_2_deg.SSM = Arinc429SignStatus::FailureWarning;
     output.discrete_status_word_1.SSM = Arinc429SignStatus::FailureWarning;
     output.discrete_status_word_2.SSM = Arinc429SignStatus::FailureWarning;
 
