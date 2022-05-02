@@ -140,11 +140,9 @@ class CDUAtcVertRequestFansA {
         }
         if (data.whenHigher) {
             retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM53"));
-            retval[retval.length - 1].ContentTemplateIndex = Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD" ? 0 : 1;
         }
         if (data.whenLower) {
             retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM52"));
-            retval[retval.length - 1].ContentTemplateIndex = Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD" ? 0 : 1;
         }
         if (data.blockAltitudeLow && data.blockAltitudeHigh) {
             retval.push(CDUAtcVertRequestFansA.CreateRequest(mcdu, "DM7", [data.blockAltitudeLow, data.blockAltitudeHigh]));
