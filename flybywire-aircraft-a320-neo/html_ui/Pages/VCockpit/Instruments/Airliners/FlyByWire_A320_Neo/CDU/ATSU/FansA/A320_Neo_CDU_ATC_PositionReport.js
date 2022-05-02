@@ -212,15 +212,15 @@ class CDUAtcPositionReport {
         };
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.lastWaypoint[0] = null;
-                data.lastWaypoint[3] = true;
+                data.passedWaypoint[0] = null;
+                data.passedWaypoint[3] = true;
             } else if (value) {
                 if (mcdu.isLatLonFormat(value)) {
                     // format: DDMM.MB/EEEMM.MC
                     try {
                         mcdu.parseLatLon(value);
-                        data.lastWaypoint[0] = value;
-                        data.lastWaypoint[3] = true;
+                        data.passedWaypoint[0] = value;
+                        data.passedWaypoint[3] = true;
                     } catch (err) {
                         if (err === NXSystemMessages.formatError) {
                             mcdu.setScratchpadMessage(err);
@@ -232,8 +232,8 @@ class CDUAtcPositionReport {
                         if (waypoints.length === 0) {
                             mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                         } else {
-                            data.lastWaypoint[0] = value;
-                            data.lastWaypoint[3] = true;
+                            data.passedWaypoint[0] = value;
+                            data.passedWaypoint[3] = true;
                         }
 
                         CDUAtcPositionReport.ShowPage1(mcdu, data);
@@ -362,9 +362,9 @@ class CDUAtcPositionReport {
         };
         mcdu.onRightInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                data.lastWaypoint[1] = null;
-                data.lastWaypoint[2] = null;
-                data.lastWaypoint[3] = true;
+                data.passedWaypoint[1] = null;
+                data.passedWaypoint[2] = null;
+                data.passedWaypoint[3] = true;
             } else {
                 const elements = value.split("/");
                 if (elements.length === 2) {
@@ -377,6 +377,8 @@ class CDUAtcPositionReport {
                         mcdu.addNewAtsuMessage(altError);
                     } else {
                         data.passedWaypoint[1] = elements[0].length === 5 ? elements[0].substring(0, 4) : elements[0];
+                        data.passedWaypoint[2] = Atsu.InputValidation.formatScratchpadAltitude(elements[1]);
+                        data.passedWaypoint[3] = true;
                     }
                 } else {
                     mcdu.setScratchpadMessage(NXSystemMessages.formatError);
