@@ -368,7 +368,7 @@ class CDUAtcPositionReport {
             } else {
                 const elements = value.split("/");
                 if (elements.length === 2) {
-                    const timeError = Atsu.InputValidation.validateScratchpadTime(elements[0]);
+                    const timeError = Atsu.InputValidation.validateScratchpadTime(elements[0], false);
                     const altError = Atsu.InputValidation.validateScratchpadAltitude(elements[1]);
 
                     if (timeError !== Atsu.AtsuStatusCodes.Ok) {
@@ -376,9 +376,7 @@ class CDUAtcPositionReport {
                     } else if (altError !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(altError);
                     } else {
-                        data.lastWaypoint[1] = elements[0];
-                        data.lastWaypoint[2] = elements[1];
-                        data.lastWaypoint[3] = true;
+                        data.passedWaypoint[1] = elements[0].length === 5 ? elements[0].substring(0, 4) : elements[0];
                     }
                 } else {
                     mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -398,7 +396,7 @@ class CDUAtcPositionReport {
             } else {
                 const elements = value.split("/");
                 if (elements.length === 2) {
-                    const timeError = Atsu.InputValidation.validateScratchpadTime(elements[0]);
+                    const timeError = Atsu.InputValidation.validateScratchpadTime(elements[0], false);
                     const altError = Atsu.InputValidation.validateScratchpadAltitude(elements[1]);
 
                     if (timeError !== Atsu.AtsuStatusCodes.Ok) {
@@ -406,7 +404,7 @@ class CDUAtcPositionReport {
                     } else if (altError !== Atsu.AtsuStatusCodes.Ok) {
                         mcdu.addNewAtsuMessage(altError);
                     } else {
-                        data.currentUtc = [elements[0], true];
+                        data.currentUtc = [elements[0].length === 5 ? elements[0].substring(0, 4) : elements[0], true];
                         data.currentAltitude = [elements[1], true];
                     }
                 } else {
@@ -425,12 +423,12 @@ class CDUAtcPositionReport {
                 data.activeWaypoint[1] = null;
                 data.activeWaypoint[2] = true;
             } else {
-                const error = Atsu.InputValidation.validateScratchpadTime(value);
+                const error = Atsu.InputValidation.validateScratchpadTime(value, false);
 
                 if (error !== Atsu.AtsuStatusCodes.Ok) {
                     mcdu.addNewAtsuMessage(error);
                 } else {
-                    data.activeWaypoint[1] = value;
+                    data.activeWaypoint[1] = value.length === 5 ? value.substring(0, 4) : value;
                     data.activeWaypoint[2] = true;
                 }
             }
