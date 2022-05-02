@@ -150,7 +150,73 @@ class CDUAtcPositionReport {
     }
 
     static CreateReport(mcdu, data) {
+        const retval = new Atsu.RequestMessage();
+        retval.Station = mcdu.atsu.atc.currentStation();
+        retval.Content = Atsu.CpdlcMessagesDownlink['DM48'][1].deepCopy();
 
+        // define the overhead
+        retval.Content.Content[0].Value = data.passedWaypoint[0];
+        retval.Content.Content[1].Value = `${data.passedWaypoint[1]}Z`;
+        retval.Content.Content[2].Value = data.passedWaypoint[2];
+        // define the present position
+        retval.Content.Content[3].Value = CDUAtcPositionReport.CoordinateToString(data.currentPosition[0], false);
+        retval.Content.Content[4].Value = `${data.currentUtc[0]}Z`;
+        retval.Content.Content[5].Value = data.currentAltitude[0];
+        // define the active position
+        retval.Content.Content[6].Value = data.activeWaypoint[0];
+        retval.Content.Content[7].Value = `${data.activeWaypoint[1]}Z`;
+        // define the next position
+        retval.Content.Content[8].Value = data.nextWaypoint[0];
+
+        // create the initial data
+        let additionalData = "";
+        if (data.descending[0]) {
+            additionalData = `DESCENDING TO ${data.descending[0]} `;
+        } else if (data.climbing[0]) {
+            additionalData = `CLIMBING TO ${data.climbing[0]} `;
+        }
+        if (data.deviating[0]) {
+            additionalData += `DEVIATING ${Atsu.InputValidation.expandLateralOffset(data.deviating[0])} `;
+        }
+        if (data.endurance[0]) {
+            additionalData += `ENDURANCE: ${data.endurance[0]} `;
+        }
+        if (data.wind[0]) {
+            additionalData += `WIND: ${data.wind[0]} `;
+        }
+        if (data.sat[0]) {
+            additionalData += `SAT: ${data.sat[0]} `;
+        }
+        if (data.icing[0]) {
+            additionalData += `ICING: ${data.icing[0]} `;
+        }
+        if (data.turbulence[0]) {
+            additionalData += `TURBULENCE: ${data.turbulence[0]} `;
+        }
+        if (data.eta[0]) {
+            additionalData += `DEST ETA: ${data.eta[0]} `;
+        }
+        if (data.indicatedAirspeed[0]) {
+            additionalData += `SPD: ${data.indicatedAirspeed[0]} `;
+        }
+        if (data.groundSpeed[0]) {
+            additionalData += `GS: ${data.groundSpeed[0]} `;
+        }
+        if (data.verticalSpeed[0]) {
+            additionalData += `VS ${data.verticalSpeed[0]}`;
+        }
+        if (data.heading[0]) {
+            additionalData += `HDG: ${data.heading[0]}° `;
+        }
+        if (data.track[0]) {
+            additionalData += `TRK: ${data.track[0]}° `;
+        }
+
+        if (additionalData.length !== 0) {
+            retval.Content.Content[9].Value = additionalData;
+        }
+
+        return retval;
     }
 
     static ShowPage1(mcdu, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
