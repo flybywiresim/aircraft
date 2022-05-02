@@ -36,11 +36,13 @@ export class RequestMessage extends CpdlcMessage {
         this.Extensions.forEach((element) => {
             contentEntries.push(this.serializeContent(format, CpdlcMessagesDownlink[element.TypeId][0][0], element));
         });
-        const content = contentEntries.join(' ');
-        const lines = wordWrap(content, 25);
+        const lines: string[] = [];
+        contentEntries.forEach((entry) => {
+            lines.push(...wordWrap(entry, 25));
+        });
 
         if (format === AtsuMessageSerializationFormat.Network) {
-            message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${this.Content.ExpectedResponse}/${content}`;
+            message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${this.Content.ExpectedResponse}/${lines.join(' ')}`;
         } else if (format === AtsuMessageSerializationFormat.DCDU) {
             message = lines.join('\n');
         } else if (format === AtsuMessageSerializationFormat.MCDU) {
@@ -60,7 +62,7 @@ export class RequestMessage extends CpdlcMessage {
                 message += this.Response.serialize(format);
             }
         } else {
-            message = content;
+            message = lines.join(' ');
         }
 
         return message;
