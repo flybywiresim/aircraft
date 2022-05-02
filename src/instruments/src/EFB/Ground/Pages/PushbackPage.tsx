@@ -172,9 +172,12 @@ export const PushbackPage = () => {
     const decelerateTug = (factor: number = 1) => {
         const r = 0.05;
         const bf = factor;
-        setTugInertiaFactor(bf);
+        setTugInertiaFactor(() => bf);
         if (bf <= 0) {
+            SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
+            SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
             SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
+            console.log('Full Stop!');
             return;
         }
         setTimeout(() => {
@@ -185,7 +188,7 @@ export const PushbackPage = () => {
     const accelerateTug = (factor: number = 0) => {
         const r = 0.05;
         const bf = factor;
-        setTugInertiaFactor(bf);
+        setTugInertiaFactor(() => bf);
         if (bf === 0) {
             SimVar.SetSimVarValue('Pushback Wait', 'bool', false);
         }
@@ -209,8 +212,8 @@ export const PushbackPage = () => {
         if (pushBackAttachedRef.current.valueOf() && simOnGround) {
             // compute heading and speed
             const parkingBrakeEngaged = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
-
             const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
+
             const computedTugHeading = (aircraftHeading - (50 * tugCommandedHeadingFactorRef.current.valueOf())) % 360;
             setTugCommandedHeading((() => computedTugHeading)); // debug
             // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
@@ -221,8 +224,8 @@ export const PushbackPage = () => {
             setTugCommandedSpeed(() => tugCommandedSpeed); // debug
 
             if (tugCommandedSpeed === 0) {
-                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', tugCommandedSpeed);
-                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', tugCommandedSpeed);
+                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
+                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
                 SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
                 return;
             }
@@ -255,8 +258,11 @@ export const PushbackPage = () => {
                     hideProgressBar: true,
                     closeButton: false,
                 });
+                decelerateTug();
                 clearInterval(updateIntervalRef.current.valueOf());
-                accelerateTug();
+                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
+                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
+                SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
             }
         });
     }, []);
@@ -282,6 +288,7 @@ export const PushbackPage = () => {
         setTugCommandedSpeedFactor(-elevatorPosition);
     }, [elevatorPosition]);
 
+    // Stop aircraft when paused
     useEffect(() => {
         if (pushBackPaused) {
             console.log('Paused');
@@ -298,7 +305,7 @@ export const PushbackPage = () => {
     useEffect(() => {
         if (pushBackAttached && updateInterval === 0) {
             console.log('Attached - start update interval');
-            const interval = setInterval(movementUpdate, 50);
+            const interval = setInterval(movementUpdate, 30);
             setUpdateInterval(Number(interval));
         } else if (!pushBackAttached) {
             console.log('Detached - stop update interval');
@@ -333,7 +340,7 @@ export const PushbackPage = () => {
     // Debug info for pushback movement - can be removed eventually
     const [showDebugInfo, setShowDebugInfo] = useState(false);
     const debugInformation = () => (
-        <div className="flex absolute right-0 left-0 z-50 flex-grow justify-between mx-4 font-mono text-black bg-gray-100 border-gray-100">
+        <div className="flex absolute right-0 left-0 z-50 flex-grow justify-between mx-4 font-mono text-black bg-gray-100 border-gray-100 opacity-50">
             <div className="overflow-hidden text-black text-m">
                 deltaTime:
                 {' '}
