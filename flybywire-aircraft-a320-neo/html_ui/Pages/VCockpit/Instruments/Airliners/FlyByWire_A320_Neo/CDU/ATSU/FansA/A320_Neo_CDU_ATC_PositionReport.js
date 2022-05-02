@@ -84,16 +84,16 @@ class CDUAtcPositionReport {
             }
         }
 
-        data.indicatedAirspeed[0] = !data.indicatedAirspeed[1] ? current.indicatedAirspeed : data.indicatedAirspeed[0];
-        data.groundSpeed[0] = !data.groundSpeed[1] ? current.groundSpeed : data.groundSpeed[0];
-        data.verticalSpeed[0] = !data.verticalSpeed[1] ? current.verticalSpeed : data.verticalSpeed[0];
+        data.indicatedAirspeed[0] = !data.indicatedAirspeed[1] ? Atsu.InputValidation.formatScratchpadSpeed(`${current.indicatedAirspeed}`) : data.indicatedAirspeed[0];
+        data.groundSpeed[0] = !data.groundSpeed[1] ? Atsu.InputValidation.formatScratchpadSpeed(`${current.groundSpeed}`) : data.groundSpeed[0];
+        data.verticalSpeed[0] = !data.verticalSpeed[1] ? Atsu.InputValidation.formatScratchpadVerticalSpeed(`${current.verticalSpeed}`) : data.verticalSpeed[0];
         // TODO add deviating
         data.heading[0] = !data.heading[1] ? current.heading : data.heading[0];
         data.track[0] = !data.track[1] ? current.track : data.track[0];
         if (target.apActive && current.altitude > target.altitude) {
-            data.descending = target.altitude;
+            data.descending = Atsu.InputValidation.formatScratchpadAltitude(target.altitude);
         } else if (target.apActive && current.altitude < target.altitude) {
-            data.climbing = target.altitude;
+            data.climbing = Atsu.InputValidation.formatScratchpadAltitude(target.altitude);
         }
     }
 
