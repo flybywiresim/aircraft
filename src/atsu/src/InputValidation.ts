@@ -60,8 +60,8 @@ export class InputValidation {
      * @param value The entered time candidate
      * @returns AtsuStatusCodes.Ok if the format is valid
      */
-    public static validateScratchpadTime(value: string): AtsuStatusCodes {
-        if (/^[0-9]{4}Z$/.test(value)) {
+    public static validateScratchpadTime(value: string, expectZulu: boolean = true): AtsuStatusCodes {
+        if (expectZulu && /^[0-9]{4}Z$/.test(value) || !expectZulu && /^[0-9]{4}$/.test(value)) {
             return AtsuStatusCodes.Ok;
         }
         return AtsuStatusCodes.FormatError;
