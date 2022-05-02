@@ -7,8 +7,7 @@ class CDUAtcPositionReport {
 
     static AltitudeToString(altitude) {
         if (Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD") {
-            altitude = Math.round(altitude / 1000);
-            return Atsu.InputValidation.formatScratchpadAltitude(`FL${Math.round(altitude / 1000)}`);
+            return Atsu.InputValidation.formatScratchpadAltitude(`FL${Math.round(altitude / 100)}`);
         }
         return Atsu.InputValidation.formatScratchpadAltitude(`${altitude}FT`);
     }
@@ -64,9 +63,9 @@ class CDUAtcPositionReport {
         data.heading[0] = !data.heading[1] ? current.heading : data.heading[0];
         data.track[0] = !data.track[1] ? current.track : data.track[0];
         if (target.apActive && current.altitude > target.altitude) {
-            data.descending = Atsu.InputValidation.formatScratchpadAltitude(target.altitude);
+            data.descending = CDUAtcPositionReport.AltitudeToString(target.altitude);
         } else if (target.apActive && current.altitude < target.altitude) {
-            data.climbing = Atsu.InputValidation.formatScratchpadAltitude(target.altitude);
+            data.climbing = CDUAtcPositionReport.AltitudeToString(target.altitude);
         }
     }
 
