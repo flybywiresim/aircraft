@@ -135,6 +135,14 @@ export const PushbackPage = () => {
         setTugCommandedHeadingFactor(MathUtils.clamp(value, -1, 1));
     };
 
+    const handleZoomChange = (value: number) => {
+        const newRange = mapRange + value;
+        const factor = mapRange / newRange;
+        setMapRange(MathUtils.clamp(newRange, 0.1, 1.5));
+        // place the aircraft icon according to the zoom level
+        setAircraftIconPosition({ x: aircraftIconPosition.x * factor, y: aircraftIconPosition.y * factor });
+    };
+
     // Computes the offset from  geo coordinates (Lat, Lon) and a delta of screen coordinates into
     // a destination set of geo coordinates.
     const computeOffset: (latLon: Coordinates, d: ScreenCoordinates) => Coordinates = (
@@ -201,12 +209,14 @@ export const PushbackPage = () => {
         if (pushBackAttachedRef.current.valueOf() && simOnGround) {
             // compute heading and speed
             const parkingBrakeEngaged = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
+
             const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
             const computedTugHeading = (aircraftHeading - (50 * tugCommandedHeadingFactorRef.current.valueOf())) % 360;
             setTugCommandedHeading((() => computedTugHeading)); // debug
-            const computedRotationVelocity = (tugCommandedSpeedFactorRef.current.valueOf() <= 0 ? -1 : 1) * tugCommandedHeadingFactorRef.current.valueOf() * (parkingBrakeEngaged ? 0.008 : 0.08);
             // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
             const convertedComputedHeading = (computedTugHeading * (0xffffffff / 360)) & 0xffffffff;
+            const computedRotationVelocity = (tugCommandedSpeedFactorRef.current.valueOf() <= 0 ? -1 : 1) * tugCommandedHeadingFactorRef.current.valueOf() * (parkingBrakeEngaged ? 0.008 : 0.08);
+
             const tugCommandedSpeed = tugCommandedSpeedFactorRef.current.valueOf() * (parkingBrakeEngaged ? 0.8 : 8) * tugInertiaFactorRef.current.valueOf();
             setTugCommandedSpeed(() => tugCommandedSpeed); // debug
 
@@ -234,7 +244,7 @@ export const PushbackPage = () => {
     // called once when loading and unloading the page
     useEffect(() => {
         // when loading the page
-        setPushbackWait(1);
+        setPushBackPaused(true);
 
         // when unloading the page
         // !obs: as with setInterval no access to current local variable values
@@ -272,27 +282,30 @@ export const PushbackPage = () => {
         setTugCommandedSpeedFactor(-elevatorPosition);
     }, [elevatorPosition]);
 
+    useEffect(() => {
+        if (pushBackPaused) {
+            console.log('Paused');
+            decelerateTug();
+        } else {
+            console.log('Unpaused');
+            accelerateTug();
+        }
+    }, [pushBackPaused]);
+
     // Set up an update interval to ensure smooth movement independent of
     // Glass Cockpit Refresh Rate. This is required as the refresh rate is
     // 10x lower in external view which leads to jerky movements otherwise.
     useEffect(() => {
-        if (pushBackPaused) {
-            decelerateTug();
-        } else {
-            accelerateTug();
-        }
         if (pushBackAttached && updateInterval === 0) {
+            console.log('Attached - start update interval');
             const interval = setInterval(movementUpdate, 50);
             setUpdateInterval(Number(interval));
         } else if (!pushBackAttached) {
+            console.log('Detached - stop update interval');
             clearInterval(updateInterval);
             setUpdateInterval(0);
         }
-    }, [pushBackAttached, pushBackPaused]);
-
-    useEffect(() => {
-        console.log(`Interval Change: ${updateInterval}`);
-    }, [updateInterval]);
+    }, [pushBackAttached]);
 
     // Update actual lat/lon when plane is moving
     useEffect(() => {
@@ -503,7 +516,7 @@ export const PushbackPage = () => {
                     <TooltipWrapper text={t('Pushback.TT.ZoomIn')}>
                         <button
                             type="button"
-                            onClick={() => setMapRange(MathUtils.clamp(mapRange - 0.1, 0.1, 1.5))}
+                            onClick={() => handleZoomChange(-0.1)}
                             className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                         >
                             <ZoomIn size={40} />
@@ -512,7 +525,7 @@ export const PushbackPage = () => {
                     <TooltipWrapper text={t('Pushback.TT.ZoomOut')}>
                         <button
                             type="button"
-                            onClick={() => setMapRange(MathUtils.clamp(mapRange + 0.1, 0.1, 1.5))}
+                            onClick={() => handleZoomChange(0.1)}
                             className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                         >
                             <ZoomOut size={40} />
