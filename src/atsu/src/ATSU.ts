@@ -128,7 +128,7 @@ export class Atsu {
     }
 
     constructor(mcdu) {
-        this.flightStateObserver = new FlightStateObserver(mcdu);
+        this.flightStateObserver = new FlightStateObserver(mcdu, Atsu.waypointPassedCallback);
         this.mcdu = mcdu;
     }
 
