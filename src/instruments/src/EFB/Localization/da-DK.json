@@ -173,7 +173,7 @@
       "AuthenticateWithNavigraph": "Autentificering med Navigraph",
       "InsufficientEnv": "Utilstrækkelig .env-fil",
       "IntoYourBrowserAndEnterTheCodeBelow": "ind i din browser og indtast koden nedenfor\n",
-      "LoadingMsg": "Loading",
+      "LoadingMsg": "Indlæser",
       "NoAirportSelected": "Ingen lufthavn valgt",
       "ResetNavigraphAuthentication": "Nulstil Navigraph-godkendelse",
       "ScanTheQrCodeOrOpen": "Scan QR-koden eller Åbn",
@@ -353,6 +353,7 @@
     "CallTug": "Kald skubber",
     "Forward": "Fremad",
     "Halt": "Pauset",
+    "LeavePageMessage": "Pausing Pushback",
     "Left": "Venstre",
     "Moving": "Flytning",
     "ParkingBrake": {
@@ -362,18 +363,18 @@
     },
     "Right": "Højre",
     "TT": {
-      "CallReleaseTug": "Call or release tug",
-      "CenterPlaneMode": "Center map on plane On/Off",
-      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0",
-      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0",
+      "CallReleaseTug": "Kald eller frigør skubber",
+      "CenterPlaneMode": "Centrer kort på flyet On/Off",
+      "DecreaseSpeed": "Baglæns eller langsommere fremad (dobbeltklik for at indstille hastigheden til 0)",
+      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0)",
       "Left": "Go left (double click for straight)",
-      "PausePushback": "Pause or unpause pushback",
+      "PausePushback": "Pause eller unpause pushback",
       "Right": "Go right (double click for straight)",
-      "SetReleaseParkingBrake": "Set or release parking brake",
+      "SetReleaseParkingBrake": "Indstil eller slip parkeringsbremse",
       "SliderDirection": "Move for desired direction",
       "SliderSpeed": "Move for desired speed",
-      "ZoomIn": "Zoom in",
-      "ZoomOut": "Zoom out"
+      "ZoomIn": "Zoom ind",
+      "ZoomOut": "Zoom ud"
     },
     "TugDirection": "Skubber Retning",
     "TugSpeed": "Skubber hastighed"
