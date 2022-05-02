@@ -149,15 +149,19 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
     private barTimeout= 0;
 
-    private onGround = 0;
+    private onGround = Subject.create(true);
 
     private airSpeed = new Arinc429Word(0);
 
     private vMax = 0;
 
+    private leftMainGearCompressed: boolean;
+
+    private rightMainGearCompressed: boolean;
+
     private setOutline() {
         let airspeedValue: number;
-        if (this.airSpeed.isFailureWarning() || (this.airSpeed.isNoComputedData() && !this.onGround)) {
+        if (this.airSpeed.isFailureWarning() || (this.airSpeed.isNoComputedData() && !this.onGround.get())) {
             airspeedValue = NaN;
         } else if (this.airSpeed.isNoComputedData()) {
             airspeedValue = 30;
@@ -248,10 +252,21 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             this.vMax = vMax;
         });
 
+        pf.on('leftMainGearCompressed').whenChanged().handle((g) => {
+            this.leftMainGearCompressed = g;
+            this.onGround.set(this.rightMainGearCompressed || g);
+            this.setOutline();
+        });
+
+        pf.on('rightMainGearCompressed').whenChanged().handle((g) => {
+            this.rightMainGearCompressed = g;
+            this.onGround.set(this.leftMainGearCompressed || g);
+            this.setOutline();
+        });
+
         // showBars replacement
-        pf.on('onGround').whenChanged().handle((g) => {
-            this.onGround = g;
-            if (g === 1) {
+        this.onGround.sub((g) => {
+            if (g) {
                 this.showBarsRef.instance.style.display = 'none';
                 this.barberPoleRef.instance.style.display = 'none';
                 clearTimeout(this.barTimeout);
@@ -423,15 +438,25 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: EventBus }
 
     private decelRef = FSComponent.createRef<SVGTextElement>();
 
-    private onGround = 0;
+    private onGround = true;
+
+    private leftMainGearCompressed = true;
+
+    private rightMainGearCompressed = true;
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('onGround').whenChanged().handle((g) => {
-            this.onGround = g;
+        sub.on('leftMainGearCompressed').whenChanged().handle((g) => {
+            this.leftMainGearCompressed = g;
+            this.onGround = this.rightMainGearCompressed || g;
+        });
+
+        sub.on('rightMainGearCompressed').whenChanged().handle((g) => {
+            this.rightMainGearCompressed = g;
+            this.onGround = this.leftMainGearCompressed || g;
         });
 
         sub.on('speedAr').handle((speed) => {
@@ -862,7 +887,11 @@ export class MachNumber extends DisplayComponent<{bus: EventBus}> {
 
     private showMach = false;
 
-    private onGround = 0;
+    private onGround = false;
+
+    private leftMainGearCompressed = true;
+
+    private rightMainGearCompressed = true;
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -888,8 +917,14 @@ export class MachNumber extends DisplayComponent<{bus: EventBus}> {
             }
         });
 
-        sub.on('onGround').whenChanged().handle((g) => {
-            this.onGround = g;
+        sub.on('leftMainGearCompressed').whenChanged().handle((g) => {
+            this.leftMainGearCompressed = g;
+            this.onGround = this.rightMainGearCompressed || g;
+        });
+
+        sub.on('rightMainGearCompressed').whenChanged().handle((g) => {
+            this.rightMainGearCompressed = g;
+            this.onGround = this.leftMainGearCompressed || g;
         });
     }
 

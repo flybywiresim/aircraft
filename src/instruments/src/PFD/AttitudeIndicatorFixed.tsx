@@ -418,7 +418,7 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
     private fcdc2DiscreteWord2 = new Arinc429Word(0);
 
-    private onGround = 0;
+    private onGround = true;
 
     private crossHairRef = FSComponent.createRef<SVGPathElement>();
 
@@ -431,7 +431,7 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
     private handleSideStickIndication() {
         const oneEngineRunning = this.engOneRunning || this.engTwoRunning;
 
-        const showIndicator = this.onGround === 1 && oneEngineRunning
+        const showIndicator = this.onGround && oneEngineRunning
                         && !this.captPitchCommand.isFailureWarning()
                         && !this.captRollCommand.isFailureWarning()
                         && !this.foPitchCommand.isFailureWarning()
@@ -460,7 +460,7 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('onGround').whenChanged().handle((g) => {
+        sub.on('noseGearCompressed').whenChanged().handle((g) => {
             this.onGround = g;
             this.handleSideStickIndication();
         });

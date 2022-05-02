@@ -466,7 +466,11 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
     private slideSlip = FSComponent.createRef<SVGPathElement>();
 
-    private onGround = 1;
+    private onGround = true;
+
+    private leftMainGearCompressed = true;
+
+    private rightMainGearCompressed = true;
 
     private roll = new Arinc429Word(0);
 
@@ -483,8 +487,15 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('onGround').whenChanged().handle((og) => {
-            this.onGround = og;
+        sub.on('leftMainGearCompressed').whenChanged().handle((og) => {
+            this.leftMainGearCompressed = og;
+            this.onGround = this.rightMainGearCompressed || og;
+            this.determineSlideSlip();
+        });
+
+        sub.on('rightMainGearCompressed').whenChanged().handle((og) => {
+            this.rightMainGearCompressed = og;
+            this.onGround = this.leftMainGearCompressed || og;
             this.determineSlideSlip();
         });
 
