@@ -1067,10 +1067,8 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   adirsBusOutputs[adirsIndex].irsBus.rollAttRate.setFromSimVar(idIrRollAttRate[adirsIndex]->get());
   adirsBusOutputs[adirsIndex].irsBus.inertialVerticalSpeed.setFromSimVar(idIrInertialVerticalSpeed[adirsIndex]->get());
 
-  if (clientDataEnabled && adirsIndex == 0) {
-    simConnectInterface.setClientDataAdr(adirsBusOutputs[adirsIndex].adrBus);
-    simConnectInterface.setClientDataIr(adirsBusOutputs[adirsIndex].irsBus);
-  }
+  simConnectInterface.setClientDataAdr(adirsBusOutputs[adirsIndex].adrBus, adirsIndex);
+  simConnectInterface.setClientDataIr(adirsBusOutputs[adirsIndex].irsBus, adirsIndex);
 
   return true;
 }

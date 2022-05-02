@@ -268,8 +268,8 @@ class SimConnectInterface {
   base_elac_analog_outputs getClientDataElacAnalogsOutput();
   base_elac_out_bus getClientDataElacBusOutput();
 
-  bool setClientDataAdr(base_adr_bus output);
-  bool setClientDataIr(base_ir_bus output);
+  bool setClientDataAdr(base_adr_bus output, int adrIndex);
+  bool setClientDataIr(base_ir_bus output, int irIndex);
   bool setClientDataRa(base_ra_bus output);
 
   void setLoggingFlightControlsEnabled(bool enabled);
@@ -295,8 +295,12 @@ class SimConnectInterface {
     ELAC_DISCRETE_OUTPUTS,
     ELAC_ANALOG_OUTPUTS,
     ELAC_BUS_OUTPUT,
-    ADR_INPUTS,
-    IR_INPUTS,
+    ADR_1_INPUTS,
+    ADR_2_INPUTS,
+    ADR_3_INPUTS,
+    IR_1_INPUTS,
+    IR_2_INPUTS,
+    IR_3_INPUTS,
     RA_INPUTS,
     ELAC_BUS_INPUTS,
     LOCAL_VARIABLES,
