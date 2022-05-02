@@ -8,8 +8,36 @@ class CDUAtcPositionReport {
     static AltitudeToString(altitude) {
         if (Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === "STD") {
             altitude = Math.round(altitude / 1000);
+            return Atsu.InputValidation.formatScratchpadAltitude(`FL${Math.round(altitude / 1000)}`);
         }
-        return Atsu.InputValidation.formatScratchpadAltitude(altitude);
+        return Atsu.InputValidation.formatScratchpadAltitude(`${altitude}FT`);
+    }
+
+    static CoordinateToString(coordinate, shortVersion) {
+        const dmsLat = CDUInitPage.ConvertDDToDMS(coordinate[0], false);
+        const dmsLon = CDUInitPage.ConvertDDToDMS(coordinate[1], true);
+
+        dmsLon['deg'] = Number(dmsLon['deg']);
+        dmsLat['sec'] = Math.ceil(Number(dmsLat['sec'] / 100));
+        dmsLon['sec'] = Math.ceil(Number(dmsLon['sec'] / 100));
+        dmsLat['min'] = dmsLat['min'].toString();
+        dmsLon['min'] = dmsLon['min'].toString();
+
+        if (shortVersion) {
+            if (dmsLat['dir'] === "N") {
+                if (dmsLon['dir'] === "E") {
+                    return `${dmsLat['deg']}N${dmsLon['deg']}`;
+                }
+                return `${dmsLat['deg']}${dmsLon['deg']}N`;
+            } else if (dmsLon['dir'] === "E") {
+                return `${dmsLat['deg']}${dmsLon['deg']}S`;
+            }
+            return `${dmsLat['deg']}W${dmsLon['deg']}`;
+        }
+
+        const lat = `${dmsLat['deg']}°${dmsLat['min']}.${dmsLat['sec']}${dmsLat['dir']}`;
+        const lon = `${dmsLon['deg']}°${dmsLon['min']}.${dmsLon['sec']}${dmsLon['dir']}`;
+        return `${lat}/${lon}`;
     }
 
     static FillDataBlock(mcdu, data) {
