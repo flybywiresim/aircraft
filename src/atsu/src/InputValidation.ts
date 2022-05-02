@@ -242,7 +242,7 @@ export class InputValidation {
                 verticalSpeed *= -1;
             }
 
-            if (/(M\/MIN|MM|M){1}$/.test(value)) {
+            if (!/(FT){1}/.test(value)) {
                 if (verticalSpeed >= -2000 && verticalSpeed <= 2000) {
                     return AtsuStatusCodes.Ok;
                 }
@@ -344,7 +344,7 @@ export class InputValidation {
             verticalSpeed *= -1;
         }
 
-        if (/(M\/MIN|MM|M){1}$/.test(value)) {
+        if (!/(FT){1}/.test(value)) {
             return `${verticalSpeed}MM`;
         }
 
