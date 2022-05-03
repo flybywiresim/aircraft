@@ -190,6 +190,7 @@ export class DcduLink {
                         }
                     });
 
+                    messages[0].CloseAutomatically = false;
                     this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', messages);
                     this.messages.push(this.lastClosedMessage[0]);
                     this.updateDcduStatusMessage(messages[0].UniqueMessageID, DcduStatusMessage.RecallMode);
