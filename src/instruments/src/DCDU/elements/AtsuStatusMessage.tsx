@@ -38,6 +38,8 @@ const translateStatusMessage = (status: DcduStatusMessage) => {
         return 'OVERFLW CLOSED';
     case DcduStatusMessage.PrintFailed:
         return 'PRINT FAILED';
+    case DcduStatusMessage.PriorityMessage:
+        return 'PRIORITY MSG +';
     case DcduStatusMessage.SendFailed:
         return 'SEND FAILED';
     case DcduStatusMessage.FlightplanLoadSecondary:

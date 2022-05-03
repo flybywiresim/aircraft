@@ -24,7 +24,8 @@ export enum DcduStatusMessage {
     NoAtcReply,
     OverflowClosed,
     PrintFailed,
-    SendFailed = 15,
+    PriorityMessage,
+    SendFailed = 16,
     FlightplanLoadSecondary,
     FlightplanLoadingSecondary,
     McduForText,
@@ -53,7 +54,7 @@ class DcduMessage {
 
     public MessageRead = false;
 
-    public EmergencyMessage = false;
+    public PriorityMessage = false;
 
     public Status: DcduStatusMessage = DcduStatusMessage.NoMessage;
 
@@ -254,7 +255,7 @@ export class DcduLink {
 
         this.uplinkMessages.forEach((elem) => {
             if (!elem[0].MessageRead) {
-                if (elem[0].EmergencyMessage) {
+                if (elem[0].PriorityMessage) {
                     interval = Math.min(interval, 5000);
                 } else {
                     interval = Math.min(interval, 15000);
@@ -327,6 +328,7 @@ export class DcduLink {
             block.MessageRead = message.Direction === AtsuMessageDirection.Downlink;
             block.Station = message.Station;
             block.Direction = message.Direction;
+            block.PriorityMessage = (message as CpdlcMessage).Content.Urgent;
             dcduBlocks.push(block);
         });
 
