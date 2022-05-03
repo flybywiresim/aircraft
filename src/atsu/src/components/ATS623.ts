@@ -67,26 +67,28 @@ export class ATS623 {
                 // new clearance request sent
                 this.clearanceRequest = message as CpdlcMessage;
             } else if (this.clearanceRequest instanceof DclMessage && this.atsu.destinationWaypoint()) {
+                (processedMessage as CpdlcMessage).CloseAutomatically = false;
+
                 // expect some clearance with TO DEST or SQWK/SQUAWK/SQK XXXX -> stop ATS run
                 const regex = new RegExp(`.*TO @?(${this.atsu.destinationWaypoint().ident}){1}@?.*(SQWK|SQUAWK){1}.*`);
                 if (regex.test(processedMessage.Message)) {
                     if ((processedMessage as CpdlcMessage).Content.ExpectedResponse === CpdlcMessageExpectedResponseType.No) {
                         (processedMessage as CpdlcMessage).Content.ExpectedResponse = CpdlcMessageExpectedResponseType.Roger;
                     }
-                    (processedMessage as CpdlcMessage).CloseAutomatically = false;
                     this.clearanceRequest = null;
                 } else if (/.*VIA TELEX.*/.test(processedMessage.Message)) {
                     // ignore "CLEARANCE DELIVERED VIA TELEX" in the DCDU
                     (processedMessage as CpdlcMessage).DcduRelevantMessage = false;
                 }
             } else if (this.atsu.destinationWaypoint()) {
+                (processedMessage as CpdlcMessage).CloseAutomatically = false;
+
                 // oceanic clearance with CLRD TO -> stop ATS run
                 const regex = new RegExp(`.*TO @?(${this.atsu.destinationWaypoint().ident}){1}@?`);
                 if (regex.test(processedMessage.Message)) {
                     if ((processedMessage as CpdlcMessage).Content.ExpectedResponse === CpdlcMessageExpectedResponseType.No) {
                         (processedMessage as CpdlcMessage).Content.ExpectedResponse = CpdlcMessageExpectedResponseType.Roger;
                     }
-                    (processedMessage as CpdlcMessage).CloseAutomatically = false;
                     this.clearanceRequest = null;
                 }
             }
