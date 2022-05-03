@@ -56,8 +56,10 @@ export class CpdlcMessage extends AtsuMessage {
             const idx = content.indexOf('%s');
             if (format === AtsuMessageSerializationFormat.Network) {
                 content = `${content.substring(0, idx)}${entry.Value}${content.substring(idx + 2)}`;
-            } else {
+            } else if (entry.Value !== '') {
                 content = `${content.substring(0, idx)}@${entry.Value}@${content.substring(idx + 2)}`;
+            } else {
+                content = `${content.substring(0, idx)}[    ]${content.substring(idx + 2)}`;
             }
         });
 
