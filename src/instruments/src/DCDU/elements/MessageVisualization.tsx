@@ -21,6 +21,7 @@ type MessageVisualizationProps = {
     cssClass: string,
     yStart: number,
     deltaY: number,
+    highPriority: boolean,
     updateSystemStatusMessage: (status: DcduStatusMessage) => void
 }
 
@@ -188,7 +189,7 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
 
 export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     message, backgroundColor, keepNewlines, ignoreHighlight, cssClass, yStart, deltaY,
-    updateSystemStatusMessage,
+    highPriority, updateSystemStatusMessage,
 }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
@@ -221,6 +222,9 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
 
     if (message.length === 0) {
         return <></>;
+    }
+    if (highPriority) {
+        message = `   ***HIGH PRIORITY***\n${message}`;
     }
 
     let lines = createVisualizationLines(message, keepNewlines);

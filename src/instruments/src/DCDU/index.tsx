@@ -341,6 +341,22 @@ const DCDU: React.FC = () => {
             visibleMessageStatus = arrMessages[messageIndex].statusMessage;
             response = arrMessages[messageIndex].response;
         }
+
+        // check if PRIORITY MSG + needs to be visualized
+        let noUrgentMessage = true;
+        arrMessages.forEach((message) => {
+            if (message.messages[0].Content?.Urgent && !message.messageVisible) {
+                if (systemStatusMessage !== DcduStatusMessage.PriorityMessage) {
+                    setSystemStatusMessage(DcduStatusMessage.PriorityMessage);
+                    setSystemStatusTimer(-1);
+                }
+                noUrgentMessage = false;
+            }
+        });
+
+        if (noUrgentMessage && systemStatusMessage === DcduStatusMessage.PriorityMessage) {
+            setSystemStatusMessage(DcduStatusMessage.NoMessage);
+        }
     }
 
     let answerRequired = false;

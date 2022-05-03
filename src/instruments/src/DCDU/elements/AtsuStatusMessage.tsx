@@ -39,7 +39,7 @@ const translateStatusMessage = (status: DcduStatusMessage) => {
     case DcduStatusMessage.PrintFailed:
         return 'PRINT FAILED';
     case DcduStatusMessage.PriorityMessage:
-        return 'PRIORITY MSG +';
+        return 'PRIORITY MSG';
     case DcduStatusMessage.SendFailed:
         return 'SEND FAILED';
     case DcduStatusMessage.FlightplanLoadSecondary:

@@ -55,10 +55,16 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
         content = content.slice(0, -1);
     }
 
+    let highPriority = false;
+    if (messages[0].Content?.Urgent) {
+        highPriority = true;
+    }
+
     return (
         <g>
             <MessageVisualization
                 message={content}
+                highPriority={highPriority}
                 backgroundColor={backgroundColor}
                 keepNewlines={messages[0].Direction === AtsuMessageDirection.Downlink}
                 ignoreHighlight={ignoreHighlight}
