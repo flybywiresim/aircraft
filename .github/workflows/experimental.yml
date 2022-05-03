@@ -42,5 +42,5 @@ jobs:
           BUNNY_SECRET_TOKEN: ${{ secrets.BUNNY_SECRET_TOKEN }}
           BUNNY_BUCKET_DESTINATION: addons/a32nx/experimental
         run: |
-        ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION ./build-modules
-        ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION ./${{ env.BUILD_DIR_NAME }}
+          ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION ./build-modules
+          ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION ./${{ env.BUILD_DIR_NAME }}
