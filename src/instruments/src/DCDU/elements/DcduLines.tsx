@@ -1,3 +1,5 @@
+import React from 'react';
+
 export const DcduLines: React.FC = () => (
     <>
         <g>

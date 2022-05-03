@@ -1,3 +1,4 @@
+import { DcduStatusMessage } from '@atsu/components/DcduLink';
 import React from 'react';
 import { MessageVisualization } from './MessageVisualization';
 
@@ -13,6 +14,8 @@ export const AtcStatus: React.FC<AtcStatusProps> = ({ message }) => {
         cssClass += 'atc-info-standby';
     }
 
+    const systemStatusSink = (_status: DcduStatusMessage): void => {};
+
     return (
         <>
             <MessageVisualization
@@ -23,9 +26,7 @@ export const AtcStatus: React.FC<AtcStatusProps> = ({ message }) => {
                 cssClass={cssClass}
                 yStart={800}
                 deltaY={240}
-                isStatusAvailable={undefined}
-                setStatus={undefined}
-                resetStatus={undefined}
+                updateSystemStatusMessage={systemStatusSink}
             />
         </>
     );
