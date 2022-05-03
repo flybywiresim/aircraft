@@ -122,7 +122,6 @@ export class Atsu {
             // skip the DCDU
             message.DcduRelevantMessage = false;
 
-            atsu.registerMessages([message]);
             atsu.sendMessage(message);
         }
     }
