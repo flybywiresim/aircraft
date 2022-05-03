@@ -69,9 +69,13 @@ export class DcduLink {
 
     private atc: Atc | undefined = undefined;
 
-    private messages: (DcduMessage[])[] = [];
+    private downlinkMessages: (DcduMessage[])[] = [];
 
-    private bufferedMessages: (DcduMessage[])[] = [];
+    private uplinkMessages: (DcduMessage[])[] = [];
+
+    private bufferedDownlinkMessages: (DcduMessage[])[] = [];
+
+    private bufferedUplinkMessages: (DcduMessage[])[] = [];
 
     private lastClosedMessage: [DcduMessage[], number] | undefined = undefined;
 
@@ -79,36 +83,86 @@ export class DcduLink {
 
     private atcRingInterval: number | undefined = undefined;
 
+    private closeMessage(messages: (DcduMessage[])[], backlog: (DcduMessage[])[], uid: number, uplink: boolean): boolean {
+        const idx = messages.findIndex((elem) => elem[0].MessageId === uid);
+        if (idx !== -1) {
+            if (this.lastClosedMessage === undefined || this.lastClosedMessage[0][0].MessageId !== uid) {
+                this.lastClosedMessage = [messages[idx], new Date().getTime()];
+            }
+
+            messages.splice(idx, 1);
+            if (uplink) {
+                this.validateNotificationCondition();
+            }
+
+            // add buffered messages
+            while (backlog.length !== 0 && messages.length !== DcduLink.MaxDcduFileSize) {
+                const bufferedBlock = backlog.shift();
+                const dcduMessages = [];
+                messages.push([]);
+
+                bufferedBlock.forEach((data) => {
+                    const message = this.atc.messages().find((elem) => elem.UniqueMessageID === data.MessageId);
+                    if (message !== undefined) {
+                        messages[messages.length - 1].push(data);
+
+                        // pushed a new inbound message
+                        if (!data.MessageRead) {
+                            this.setupIntervals();
+                        }
+
+                        if ((message as CpdlcMessage).DcduRelevantMessage) {
+                            dcduMessages.push(message);
+                        }
+                    }
+                });
+
+                if (dcduMessages.length !== 0) {
+                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', dcduMessages);
+                }
+            }
+        }
+
+        return idx !== -1;
+    }
+
     constructor(atsu: Atsu, atc: Atc) {
         this.atsu = atsu;
         this.atc = atc;
 
         Coherent.on('A32NX_ATSU_DELETE_MESSAGE', (uid: number) => {
-            const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
+            let idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx > -1) {
-                this.messages[idx].forEach((message) => {
+                this.uplinkMessages[idx].forEach((message) => {
                     this.atc.removeMessage(message.MessageId);
                 });
+            } else {
+                idx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
+                if (idx > -1) {
+                    this.downlinkMessages[idx].forEach((message) => {
+                        this.atc.removeMessage(message.MessageId);
+                    });
+                }
             }
         });
 
         Coherent.on('A32NX_ATSU_SEND_RESPONSE', (uid: number, response: number) => {
-            const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
+            const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx > -1) {
                 // iterate in reverse order to ensure that the "identification" message is the last message in the queue
                 // ensures that the DCDU-status change to SENT is done after every message is sent
-                this.messages[idx].slice().reverse().forEach((message) => {
+                this.uplinkMessages[idx].slice().reverse().forEach((message) => {
                     this.atc.sendResponse(message.MessageId, response);
                 });
             }
         });
 
         Coherent.on('A32NX_ATSU_SEND_MESSAGE', (uid: number) => {
-            const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
+            const idx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx > -1) {
                 // iterate in reverse order to ensure that the "identification" message is the last message in the queue
                 // ensures that the DCDU-status change to SENT is done after every message is sent
-                this.messages[idx].slice().reverse().forEach((entry) => {
+                this.downlinkMessages[idx].slice().reverse().forEach((entry) => {
                     const message = this.atc.messages().find((element) => element.UniqueMessageID === entry.MessageId);
                     if (message !== undefined) {
                         if (message.Direction === AtsuMessageDirection.Downlink) {
@@ -129,48 +183,16 @@ export class DcduLink {
                 this.updateDcduStatusMessage(uid, DcduStatusMessage.Printing);
                 this.atsu.printMessage(message);
                 setTimeout(() => {
-                    const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
-                    if (idx !== -1 && this.currentDcduStatusMessage(uid) === DcduStatusMessage.Printing) {
+                    if (this.currentDcduStatusMessage(uid) === DcduStatusMessage.Printing) {
                         this.updateDcduStatusMessage(uid, DcduStatusMessage.NoMessage);
                     }
-                }, 7000);
+                }, 4500);
             }
         });
 
         Coherent.on('A32NX_ATSU_DCDU_MESSAGE_CLOSED', (uid: number) => {
-            const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
-            if (idx !== -1) {
-                if (this.lastClosedMessage === undefined || this.lastClosedMessage[0][0].MessageId !== uid) {
-                    this.lastClosedMessage = [this.messages[idx], new Date().getTime()];
-                }
-
-                this.messages.splice(idx, 1);
-                this.validateNotificationCondition();
-
-                // add buffered messages
-                while (this.bufferedMessages.length !== 0 && this.messages.length !== DcduLink.MaxDcduFileSize) {
-                    const bufferedBlock = this.bufferedMessages.shift();
-                    const dcduMessages = [];
-                    this.messages.push([]);
-
-                    bufferedBlock.forEach((data) => {
-                        const message = this.atc.messages().find((elem) => elem.UniqueMessageID === data.MessageId);
-                        if (message !== undefined) {
-                            this.messages[this.messages.length - 1].push(data);
-
-                            // pushed a new inbound message
-                            if (!data.MessageRead) {
-                                this.setupIntervals();
-                            }
-
-                            if ((message as CpdlcMessage).DcduRelevantMessage) {
-                                dcduMessages.push(message);
-                            }
-                        }
-                    });
-
-                    this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', dcduMessages);
-                }
+            if (!this.closeMessage(this.uplinkMessages, this.bufferedUplinkMessages, uid, true)) {
+                this.closeMessage(this.downlinkMessages, this.bufferedDownlinkMessages, uid, false);
             }
         });
         Coherent.on('A32NX_ATSU_DCDU_MESSAGE_RECALL', () => {
@@ -194,16 +216,20 @@ export class DcduLink {
 
                     messages[0].CloseAutomatically = false;
                     this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', messages);
-                    this.messages.push(this.lastClosedMessage[0]);
+                    if (this.lastClosedMessage[0][0].Direction === AtsuMessageDirection.Downlink) {
+                        this.downlinkMessages.push(this.lastClosedMessage[0]);
+                    } else {
+                        this.uplinkMessages.push(this.lastClosedMessage[0]);
+                    }
                     this.updateDcduStatusMessage(messages[0].UniqueMessageID, DcduStatusMessage.RecallMode);
                 }
             }
         });
 
         Coherent.on('A32NX_ATSU_DCDU_MESSAGE_READ', (uid: number) => {
-            const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
+            const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx !== -1) {
-                this.messages[idx][0].MessageRead = true;
+                this.uplinkMessages[idx][0].MessageRead = true;
                 this.validateNotificationCondition();
             }
         });
@@ -212,7 +238,7 @@ export class DcduLink {
     private validateNotificationCondition() {
         // check if the ring tone is still needed
         let unreadMessages = false;
-        this.messages.forEach((elem) => {
+        this.uplinkMessages.forEach((elem) => {
             if (!elem[0].MessageRead) {
                 unreadMessages = true;
             }
@@ -226,7 +252,7 @@ export class DcduLink {
     private estimateRingInterval() {
         let interval = 15000;
 
-        this.messages.forEach((elem) => {
+        this.uplinkMessages.forEach((elem) => {
             if (!elem[0].MessageRead) {
                 if (elem[0].EmergencyMessage) {
                     interval = Math.min(interval, 5000);
@@ -290,79 +316,108 @@ export class DcduLink {
     }
 
     public enqueue(messages: AtsuMessage[]) {
-        if (this.messages.length < DcduLink.MaxDcduFileSize) {
-            this.messages.push([]);
-        } else {
-            this.bufferedMessages.push([]);
+        if (messages.length === 0) {
+            return;
         }
 
+        const dcduBlocks: DcduMessage[] = [];
         messages.forEach((message) => {
             const block = new DcduMessage();
             block.MessageId = message.UniqueMessageID;
             block.MessageRead = message.Direction === AtsuMessageDirection.Downlink;
             block.Station = message.Station;
             block.Direction = message.Direction;
-
-            if (this.messages.length < DcduLink.MaxDcduFileSize) {
-                this.messages[this.messages.length - 1].push(block);
-
-                // reset the ring tone interval
-                if (block.MessageRead === false) {
-                    SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
-                    SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number', 0);
-                    this.setupIntervals();
-                }
-            } else {
-                this.atsu.publishAtsuStatusCode(AtsuStatusCodes.DcduFull);
-                this.bufferedMessages[this.bufferedMessages.length - 1].push(block);
-            }
+            dcduBlocks.push(block);
         });
+
+        if (dcduBlocks[0].Direction === AtsuMessageDirection.Downlink && this.downlinkMessages.length < DcduLink.MaxDcduFileSize) {
+            this.downlinkMessages.push(dcduBlocks);
+        } else if (dcduBlocks[0].Direction === AtsuMessageDirection.Uplink && this.uplinkMessages.length < DcduLink.MaxDcduFileSize) {
+            this.uplinkMessages.push(dcduBlocks);
+            SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 1);
+            SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number', 0);
+            this.setupIntervals();
+        } else {
+            if (dcduBlocks[0].Direction === AtsuMessageDirection.Downlink) {
+                this.bufferedDownlinkMessages.push(dcduBlocks);
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', DcduStatusMessage.MaximumDownlinkMessages);
+                this.atsu.publishAtsuStatusCode(AtsuStatusCodes.DcduFull);
+            } else {
+                this.bufferedUplinkMessages.push(dcduBlocks);
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', DcduStatusMessage.AnswerRequired);
+            }
+            return;
+        }
 
         this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', messages);
     }
 
     public update(message: CpdlcMessage) {
         // the assumption is that the first message in the block is the UID for the complete block
-        const idx = this.messages.findIndex((elem) => elem[0].MessageId === message.UniqueMessageID);
-        if (idx !== -1) {
+        const uplinkIdx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === message.UniqueMessageID);
+        const downlinkIdx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === message.UniqueMessageID);
+        if (uplinkIdx !== -1 || downlinkIdx !== -1) {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', [message]);
         }
     }
 
     public dequeue(uid: number) {
         // the assumption is that the first message in the block is the UID for the complete block
-        const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
+        let idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
         if (idx !== -1) {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', uid);
-            this.messages.splice(idx, 1);
+        } else {
+            idx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
+            if (idx !== -1) {
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_DELETE_UID', uid);
+            }
         }
     }
 
     public updateDcduStatusMessage(uid: number, status: DcduStatusMessage): void {
         // the assumption is that the first message in the block is the UID for the complete block
-        const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
-        if (idx !== -1) {
+        const uplinkIdx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
+        const downlinkIdx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
+        if (uplinkIdx !== -1 || downlinkIdx !== -1) {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_ATSU_STATUS', uid, status);
         }
     }
 
     public currentDcduStatusMessage(uid: number): DcduStatusMessage {
-        const idx = this.messages.findIndex((elem) => elem[0].MessageId === uid);
+        let idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
         if (idx !== -1) {
-            return this.messages[idx][0].Status;
+            return this.uplinkMessages[idx][0].Status;
         }
+
+        idx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
+        if (idx !== -1) {
+            return this.downlinkMessages[idx][0].Status;
+        }
+
         return DcduStatusMessage.NoMessage;
     }
 
     public openMessagesForStation(station: string): boolean {
         let retval = false;
 
-        this.messages.forEach((block) => {
+        this.uplinkMessages.forEach((block) => {
             if (!block[0].MessageSent && block[0].Station === station) retval = true;
         });
 
         if (!retval) {
-            this.bufferedMessages.forEach((block) => {
+            this.downlinkMessages.forEach((block) => {
+                if (!block[0].MessageSent && block[0].Station === station) retval = true;
+            });
+        }
+
+        if (!retval) {
+            this.bufferedUplinkMessages.forEach((block) => {
+                if (!block[0].MessageSent && block[0].Station === station) retval = true;
+            });
+        }
+
+        if (!retval) {
+            this.bufferedDownlinkMessages.forEach((block) => {
                 if (!block[0].MessageSent && block[0].Station === station) retval = true;
             });
         }
