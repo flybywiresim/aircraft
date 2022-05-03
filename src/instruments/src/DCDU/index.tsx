@@ -111,13 +111,11 @@ const DCDU: React.FC = () => {
                 const message = updatedMap.get(sortedMessages[index - 1].messages[0].UniqueMessageID);
                 if (message) {
                     message.messageVisible = true;
-                    message.messageOnceVisualized = true;
                 }
             } else if (index + 1 < sortedMessages.length) {
                 const message = updatedMap.get(sortedMessages[index + 1].messages[0].UniqueMessageID);
                 if (message) {
                     message.messageVisible = true;
-                    message.messageOnceVisualized = true;
                 }
             }
 
@@ -147,7 +145,6 @@ const DCDU: React.FC = () => {
             if (oldMessage && newMessage) {
                 oldMessage.messageVisible = false;
                 newMessage.messageVisible = true;
-                newMessage.messageOnceVisualized = true;
                 setMessages(messages);
             }
         }
@@ -172,7 +169,6 @@ const DCDU: React.FC = () => {
             if (oldMessage && newMessage) {
                 oldMessage.messageVisible = false;
                 newMessage.messageVisible = true;
-                newMessage.messageOnceVisualized = true;
                 setMessages(messages);
             }
         }
@@ -242,7 +238,6 @@ const DCDU: React.FC = () => {
                 const message = messages.get(cpdlcMessages[0].UniqueMessageID);
                 if (message) {
                     message.messageVisible = true;
-                    message.messageOnceVisualized = true;
                 }
             }
 
