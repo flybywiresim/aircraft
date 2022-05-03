@@ -13,8 +13,8 @@ import { VerticalFlightPlanBuilder } from './guidance/vnav/verticalFlightPlan/Ve
 import { initComponents, updateComponents, recallMessageById } from './components';
 import { WaypointBuilder } from './flightplanning/WaypointBuilder';
 
-function initFmgcLoop(): void {
-    initComponents();
+function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanManager: FlightPlanManager): void {
+    initComponents(baseInstrument, flightPlanManager);
 }
 
 function updateFmgcLoop(deltaTime: number): void {

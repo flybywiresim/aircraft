@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
@@ -19,22 +19,16 @@ import { DcduLines } from './elements/DcduLines';
 import { DatalinkMessage } from './elements/DatalinkMessage';
 import { MessageStatus } from './elements/MessageStatus';
 import { AtcStatus } from './elements/AtcStatus';
-import { getSimVar, useUpdate } from '../util.js';
+import { useUpdate } from '../util.js';
 
 import './style.scss';
 
 enum DcduState {
-    Default,
     Off,
     On,
+    Selftest,
     Waiting,
-    Active,
-}
-
-function powerAvailable() {
-    // Each DCDU is powered by a different DC BUS. Sadly the cockpit only contains a single DCDU emissive.
-    // Once we have two DCDUs running, the capt. DCDU should be powered by DC 1, and F/O by DC 2.
-    return getSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool') || getSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool');
+    Standby
 }
 
 const sortedMessageArray = (messages: Map<number, [CpdlcMessage[], number, number]>): [CpdlcMessage[], number, number][] => {
@@ -44,13 +38,15 @@ const sortedMessageArray = (messages: Map<number, [CpdlcMessage[], number, numbe
 };
 
 const DCDU: React.FC = () => {
+    const [electricityState] = useSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'bool', 200);
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
-    const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
+    const [state, setState] = useState((isColdAndDark) ? DcduState.Off : DcduState.On);
     const [messages, setMessages] = useState(new Map<number, [CpdlcMessage[], number, number]>());
     const [statusMessage, setStatusMessage] = useState({ sender: '', message: '', remainingMilliseconds: 0 });
     const [events] = useState(RegisterViewListener('JS_LISTENER_SIMVARS', undefined, true));
     const [messageUid, setMessageUid] = useState(-1);
     const [atcMessage, setAtcMessage] = useState('');
+    const [timer, setTimer] = useState<number | null>(null);
 
     // functions to handle the status area
     const isStatusAvailable = (sender: string) => statusMessage.sender === sender || statusMessage.message.length === 0;
@@ -256,30 +252,52 @@ const DCDU: React.FC = () => {
         setAtcMessage(message);
     });
 
-    useUpdate((_deltaTime) => {
-        if (state === DcduState.Off) {
-            if (powerAvailable()) {
+    useUpdate((deltaTime) => {
+        if (timer !== null) {
+            if (timer > 0) {
+                setTimer(timer - (deltaTime / 1000));
+            } else if (state === DcduState.Off && electricityState !== 0) {
+                setState(DcduState.Selftest);
+                setTimer(6);
+            } else if (state === DcduState.Selftest) {
+                setState(DcduState.Waiting);
+                setTimer(12);
+            } else if (state === DcduState.Waiting) {
                 setState(DcduState.On);
+                setTimer(null);
             }
-        } else if (!powerAvailable()) {
-            setState(DcduState.Off);
         }
 
         // check if the status is outdated
         const status = statusMessage;
         if (status.message !== '') {
-            status.remainingMilliseconds -= _deltaTime;
+            status.remainingMilliseconds -= deltaTime;
             if (status.remainingMilliseconds <= 0) {
                 resetStatus('');
             }
         }
     });
 
+    useEffect(() => {
+        if (state === DcduState.On && electricityState === 0) {
+            setState(DcduState.Standby);
+        } else if (state === DcduState.Off && electricityState !== 0) {
+            setState(DcduState.Selftest);
+            setTimer(6);
+        } else if (state === DcduState.Standby && electricityState !== 0) {
+            setState(DcduState.On);
+            setTimer(null);
+        } else if (electricityState === 0) {
+            setState(DcduState.Off);
+            setTimer(null);
+        }
+    }, [electricityState]);
+
     // prepare the data
     let messageIndex = -1;
     let visibleMessages: CpdlcMessage[] | undefined = undefined;
     let response: number = -1;
-    if (state === DcduState.Active && messages.size !== 0) {
+    if (state === DcduState.On && messages.size !== 0) {
         const arrMessages = sortedMessageArray(messages);
 
         if (messageUid !== -1) {
@@ -298,14 +316,7 @@ const DCDU: React.FC = () => {
     }
 
     switch (state) {
-    case DcduState.Off:
-        return <></>;
-    case DcduState.On:
-        setTimeout(() => {
-            if (powerAvailable()) {
-                setState(DcduState.Waiting);
-            }
-        }, 8000);
+    case DcduState.Selftest:
         return (
             <>
                 <div className="BacklightBleed" />
@@ -313,18 +324,15 @@ const DCDU: React.FC = () => {
             </>
         );
     case DcduState.Waiting:
-        setTimeout(() => {
-            if (powerAvailable()) {
-                setState(DcduState.Active);
-            }
-        }, 12000);
         return (
             <>
                 <div className="BacklightBleed" />
                 <WaitingForData />
             </>
         );
-    case DcduState.Active:
+    case DcduState.Off:
+        return <></>;
+    default:
         return (
             <>
                 <div className="BacklightBleed" />
@@ -426,8 +434,6 @@ const DCDU: React.FC = () => {
                 </svg>
             </>
         );
-    default:
-        throw new RangeError();
     }
 };
 

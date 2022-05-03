@@ -8,6 +8,7 @@ import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { DFLeg } from '@fmgc/guidance/lnav/legs/DF';
 import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
+import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
@@ -30,7 +31,7 @@ import {
 } from '../CommonGeometry';
 import { CRLeg } from '../legs/CR';
 
-type PrevLeg = CALeg | /* CDLeg | */ CFLeg | CILeg | CRLeg | DFLeg | /* FALeg | FMLeg | */ HALeg | HFLeg | HMLeg | TFLeg | /* VALeg | VILeg | VDLeg | */ VMLeg; /* | VRLeg */
+type PrevLeg = CALeg | /* CDLeg | */ CFLeg | CILeg | CRLeg | DFLeg | /* FALeg | FMLeg | */ HALeg | HFLeg | HMLeg | IFLeg | TFLeg | /* VALeg | VILeg | VDLeg | */ VMLeg; /* | VRLeg */
 type NextLeg = CFLeg | DFLeg /* | FALeg | FMLeg */
 
 const tan = (input: Degrees) => Math.tan(input * (Math.PI / 180));
@@ -98,7 +99,7 @@ export class DirectToFixTransition extends Transition {
         return this.computedPath;
     }
 
-    recomputeWithParameters(_isActive: boolean, tas: Knots, gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
+    recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
         if (this.isFrozen) {
             return;
         }
@@ -112,7 +113,7 @@ export class DirectToFixTransition extends Transition {
 
         let trackChange = MathUtils.diffAngle(this.previousLeg.outboundCourse, bearingTo(this.previousLeg.getPathEndPoint(), nextFix), this.nextLeg.metadata.turnDirection);
 
-        if (Math.abs(trackChange) < 3) {
+        if (Math.abs(trackChange) < 3 || !Number.isFinite(trackChange)) {
             this.isNull = true;
             this.isComputed = true;
 
@@ -122,7 +123,7 @@ export class DirectToFixTransition extends Transition {
         const turnDirectionSign = trackChange > 0 ? 1 : -1;
         const turnDirection = turnDirectionSign > 0 ? TurnDirection.Right : TurnDirection.Left;
 
-        const currentRollAngle = 0; // TODO: if active leg, current aircraft roll, else 0
+        const currentRollAngle = isActive ? -SimVar.GetSimVarValue('PLANE BANK DEGREES', 'degrees') : 0;
         const rollAngleChange = Math.abs(turnDirectionSign * maxBank(tas, true) - currentRollAngle);
         const rollAnticipationDistance = Geometry.getRollAnticipationDistance(gs, 0, rollAngleChange);
 
