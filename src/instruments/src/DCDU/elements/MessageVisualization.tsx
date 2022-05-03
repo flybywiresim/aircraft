@@ -266,8 +266,8 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
             </text>
             {pageCount > 1 && (
                 <>
-                    <text className="status-atsu" x="65%" y="2480">PG</text>
-                    <text className="status-atsu" x="65%" y="2720">
+                    <text className="status-atsu" fill="white" x="65%" y="2480">PG</text>
+                    <text className="status-atsu" fill="white" x="65%" y="2720">
                         {pageIndex + 1}
                         {' '}
                         /

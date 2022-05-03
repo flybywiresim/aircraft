@@ -401,8 +401,8 @@ const DCDU: React.FC = () => {
                         && (
                             <>
                                 <g>
-                                    <text className="status-atsu" x="35%" y="2480">MSG</text>
-                                    <text className="status-atsu" x="35%" y="2720">
+                                    <text className="status-atsu" fill="white" x="35%" y="2480">MSG</text>
+                                    <text className="status-atsu" fill="white" x="35%" y="2720">
                                         {messageIndex + 1}
                                         {' '}
                                         /
