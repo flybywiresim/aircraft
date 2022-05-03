@@ -409,24 +409,9 @@ export const PushbackPage = () => {
                     />
                 )}
 
-                {/* Position Information */}
-                {/* <div className="flex overflow-hidden absolute top-2 left-2 z-30 flex-col rounded-md cursor-pointer"> */}
-                {/*    Heading (True): */}
-                {/*    {' '} */}
-                {/*    {planeHeadingTrue} */}
-                {/*    {' - '} */}
-                {/*    Lat: */}
-                {/*    {' '} */}
-                {/*    {actualMapLatLon.lat} */}
-                {/*    {' - '} */}
-                {/*    Lon: */}
-                {/*    {' '} */}
-                {/*    {actualMapLatLon.long} */}
-                {/* </div> */}
-
                 {/* Aircraft and Turning Radius Indicator */}
                 <div className="flex absolute inset-0 justify-center items-center">
-                    {!Number.isNaN(turningRadius)
+                    {!Number.isNaN(turningRadius) && Number.isFinite(turningRadius)
                         && (
                             <div
                                 className="absolute"
