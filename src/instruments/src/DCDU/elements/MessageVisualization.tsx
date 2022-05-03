@@ -186,7 +186,10 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
     return lines;
 }
 
-export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({ message, backgroundColor, keepNewlines, ignoreHighlight, cssClass, yStart, deltaY, updateSystemStatusMessage }) => {
+export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
+    message, backgroundColor, keepNewlines, ignoreHighlight, cssClass, yStart, deltaY,
+    updateSystemStatusMessage,
+}) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
     const maxLines = 5;
