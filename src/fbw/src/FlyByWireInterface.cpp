@@ -741,6 +741,9 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.throttle_lever_2_pos = simData.throttle_lever_2_pos;
   additionalData.corrected_engine_N1_1_percent = simData.corrected_engine_N1_1_percent;
   additionalData.corrected_engine_N1_2_percent = simData.corrected_engine_N1_2_percent;
+  additionalData.assistanceTakeoffEnabled = simData.assistanceTakeoffEnabled;
+  additionalData.assistanceLandingEnabled = simData.assistanceLandingEnabled;
+  additionalData.aiAutoTrimActive = simData.aiAutoTrimActive;
 
   return true;
 }
