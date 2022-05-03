@@ -282,8 +282,8 @@ const Efb = () => {
         tugInertiaFactor,
     } = useAppSelector((state) => state.pushback.pushbackState);
 
-    // Required so these can be used inside the setInterval callback function for the
-    // pushback movement update
+    // Required so these can be used inside the setInterval callback function
+    // for the pushback movement update
     const lastTimeStampRef = useRef(lastTimeStamp);
     lastTimeStampRef.current = lastTimeStamp;
     const pushbackPausedRef = useRef(pushbackPaused);
@@ -338,6 +338,7 @@ const Efb = () => {
             return;
         }
 
+        // Stop the pushback movement
         SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
         SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
         SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', 0);
