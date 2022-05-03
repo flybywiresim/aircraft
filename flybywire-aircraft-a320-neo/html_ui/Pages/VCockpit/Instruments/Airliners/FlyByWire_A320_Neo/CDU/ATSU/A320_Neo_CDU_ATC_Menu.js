@@ -78,6 +78,8 @@ class CDUAtcMenu {
         mcdu.onRightInput[2] = () => {
             if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
                 CDUAtcReports.ShowPage(mcdu);
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.keyNotActive);
             }
         };
 

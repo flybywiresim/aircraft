@@ -42,7 +42,11 @@ class CDUAtcConnection {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[4] = () => {
-            CDUAtcMaxUplinkDelay.ShowPage(mcdu);
+            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+                CDUAtcMaxUplinkDelay.ShowPage(mcdu);
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.keyNotActive);
+            }
         };
     }
 }

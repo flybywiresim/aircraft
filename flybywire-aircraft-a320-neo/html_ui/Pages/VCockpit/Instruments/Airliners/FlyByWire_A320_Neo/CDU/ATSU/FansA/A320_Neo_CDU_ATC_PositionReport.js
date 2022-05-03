@@ -25,6 +25,10 @@ class CDUAtcPositionReport {
             data.passedWaypoint[2] = CDUAtcPositionReport.AltitudeToString(lastWp.altitude);
         }
 
+        // will be abreviated during the rendering
+        if (!data.currentPosition[2]) {
+            mcdu.setScratchpadMessage(NXSystemMessages.latLonAbreviated);
+        }
         data.currentPosition = !data.currentPosition[2] ? [current.lat, current.lon, false] : data.currentPosition;
         data.currentUtc[0] = !data.currentUtc[1] ? CDUAtcPositionReport.SecondsToString(SimVar.GetSimVarValue('E:ZULU TIME', 'seconds')) : data.currentUtc[0];
         data.currentAltitude[0] = !data.currentAltitude[1] ? CDUAtcPositionReport.AltitudeToString(current.altitude) : data.currentAltitude[0];

@@ -89,7 +89,10 @@ const NXSystemMessages = {
     noAtisReceived:         new TypeIMessage("NO ATIS REPORT RECEIVED"),
     noPreviousAtis:         new TypeIMessage("NO PREVIOUS ATIS STORED"),
     arptTypeAlreadyInUse:   new TypeIMessage("ARPT/TYPE ALREADY USED"),
-    cancelAtisUpdate:       new TypeIMessage("CANCEL UPDATE BEFORE")
+    cancelAtisUpdate:       new TypeIMessage("CANCEL UPDATE BEFORE"),
+    keyNotActive:           new TypeIMessage("KEY NOT ACTIVE"),
+    latLonAbreviated:       new TypeIMessage("LAT/LON DISPL ABREVIATED"),
+    lastDownlinkMessage:    new TypeIMessage("LAST MSG ELEMENT"),
 };
 
 const NXFictionalMessages = {
