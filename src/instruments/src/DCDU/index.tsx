@@ -278,9 +278,29 @@ const DCDU: React.FC = () => {
             }
         }
 
-        // TODO check if message is sent (DM) or response is sent or can be closed (UM)
-        //  - set current time to start the timeout if message was seen
-        //  - close all messages that are seen and where the timeout is passed
+        // check if the timeout of messages is triggered
+        const currentTime = new Date().getTime() / 1000;
+        const sortedArray = sortedMessageArray(messages);
+        sortedArray.forEach((message) => {
+            if (message.messages[0].CloseAutomatically) {
+                if (message.messageVisible && message.automaticCloseTimeout < 0) {
+                    const cpdlcMessage = message.messages[0];
+
+                    // start the timeout
+                    if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.ComStatus === AtsuMessageComStatus.Sent
+                        || cpdlcMessage.Direction === AtsuMessageDirection.Uplink && cpdlcMessage.Response?.Content?.TypeId !== 'DM2'
+                        && cpdlcMessage.Response?.ComStatus === AtsuMessageComStatus.Sent) {
+                        message.automaticCloseTimeout = new Date().getTime() / 1000;
+                    }
+                } else if (message.automaticCloseTimeout > 0 && (currentTime - message.automaticCloseTimeout) >= 3.0) {
+                    // check if the timeout is reached
+                    closeMessage(message.messages[0].UniqueMessageID);
+                } else if (!message.messageVisible) {
+                    // reset the timeout of invisible messages
+                    message.automaticCloseTimeout = -1;
+                }
+            }
+        });
 
         if (systemStatusTimer !== null) {
             if (systemStatusTimer > 0) {
