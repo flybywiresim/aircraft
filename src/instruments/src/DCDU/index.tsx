@@ -78,7 +78,6 @@ const DCDU: React.FC = () => {
         if (entry !== undefined) {
             events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_READ', uid);
             entry.response = response;
-            updateMap.set(uid, entry);
         }
 
         setMessages(updateMap);
@@ -226,8 +225,6 @@ const DCDU: React.FC = () => {
                 if (cpdlcMessages[0].Response !== undefined && cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Sent) {
                     dcduBlock.response = -1;
                 }
-
-                messages.set(cpdlcMessages[0].UniqueMessageID, dcduBlock);
             } else {
                 const message = new DcduMessageBlock();
                 message.messages = cpdlcMessages;
@@ -259,7 +256,7 @@ const DCDU: React.FC = () => {
         const dcduBlock = messages.get(uid);
         if (dcduBlock !== undefined) {
             dcduBlock.statusMessage = status;
-            setMessages(messages.set(uid, dcduBlock));
+            setMessages(messages);
         }
     });
 
