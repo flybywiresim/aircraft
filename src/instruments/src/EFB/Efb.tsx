@@ -302,47 +302,51 @@ const Efb = () => {
         dispatch(setUpdateDeltaTime(startTime - lastTimeStampRef.current));
         dispatch(setLastTimestamp(startTime));
 
-        if (!pushbackPausedRef.current) {
-            const pushbackAttached = SimVar.GetSimVarValue('Pushback Attached', 'bool');
-            const simOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
+        const pushbackAttached = SimVar.GetSimVarValue('Pushback Attached', 'bool');
+        const simOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
 
-            if (pushbackAttached && simOnGround) {
-                // compute heading and speed
-                const parkingBrakeEngaged = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
-                const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
-
-                const computedTugHeading = (aircraftHeading - (50 * tugCommandedHeadingFactorRef.current)) % 360;
-                dispatch(setTugCommandedHeading(computedTugHeading)); // debug
-
-                // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
-                const convertedComputedHeading = (computedTugHeading * (0xffffffff / 360)) & 0xffffffff;
-                const computedRotationVelocity = (tugCommandedSpeedFactorRef.current <= 0 ? -1 : 1)
-                    * tugCommandedHeadingFactorRef.current * (parkingBrakeEngaged ? 0.008 : 0.08);
-
-                const tugCommandedSpeed = tugCommandedSpeedFactorRef.current
-                    * (parkingBrakeEngaged ? 0.8 : 8) * tugInertiaFactorRef.current;
-                dispatch(setTugCommandedSpeed(tugCommandedSpeed)); // debug
-
-                SimVar.SetSimVarValue('Pushback Wait', 'bool', false);
-                // Set tug heading
-                SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', convertedComputedHeading);
-                SimVar.SetSimVarValue('ROTATION VELOCITY BODY X', 'Number', 0);
-                SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
-                SimVar.SetSimVarValue('ROTATION VELOCITY BODY Z', 'Number', 0);
-                // Set tug speed
-                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', tugCommandedSpeed);
-                SimVar.SetSimVarValue('VELOCITY BODY X', 'Number', 0);
-                SimVar.SetSimVarValue('VELOCITY BODY Y', 'Number', 0);
-                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', tugCommandedSpeed);
+        if (pushbackAttached && simOnGround) {
+            // Stop the pushback movement when paused
+            if (pushbackPausedRef.current) {
+                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
+                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
+                SimVar.SetSimVarValue('ACCELERATION BODY Z', 'feet per second squared', 0);
+                SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', 0);
+                SimVar.SetSimVarValue('ROTATION ACCELERATION BODY Y', 'radians per second squared', 0);
+                SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
+                return;
             }
-            return;
-        }
 
-        // Stop the pushback movement
-        SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
-        SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
-        SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', 0);
-        SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
+            // compute heading and speed
+            const parkingBrakeEngaged = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
+            const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
+
+            const computedTugHeading = (aircraftHeading - (50 * tugCommandedHeadingFactorRef.current)) % 360;
+            dispatch(setTugCommandedHeading(computedTugHeading)); // debug
+
+            // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
+            const convertedComputedHeading = (computedTugHeading * (0xffffffff / 360)) & 0xffffffff;
+            const computedRotationVelocity = (tugCommandedSpeedFactorRef.current <= 0 ? -1 : 1)
+                * tugCommandedHeadingFactorRef.current * (parkingBrakeEngaged ? 0.008 : 0.08);
+
+            const tugCommandedSpeed = tugCommandedSpeedFactorRef.current
+                * (parkingBrakeEngaged ? 0.8 : 8) * tugInertiaFactorRef.current;
+            dispatch(setTugCommandedSpeed(tugCommandedSpeed)); // debug
+
+            SimVar.SetSimVarValue('Pushback Wait', 'bool', false);
+            // Set tug heading
+            SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', convertedComputedHeading);
+            SimVar.SetSimVarValue('ROTATION VELOCITY BODY X', 'Number', 0);
+            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
+            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
+            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Z', 'Number', 0);
+            // Set tug speed
+            SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', tugCommandedSpeed);
+            SimVar.SetSimVarValue('VELOCITY BODY X', 'Number', 0);
+            SimVar.SetSimVarValue('VELOCITY BODY Y', 'Number', 0);
+            // SimVar.SetSimVarValue('ACCELERATION BODY Z', 'feet per second squared', tugCommandedSpeed);
+            SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', tugCommandedSpeed); SimVar.SetSimVarValue('ACCELERATION BODY Z', 'Number', 0);
+        }
     };
 
     // Set up an update interval to ensure smooth movement independent of

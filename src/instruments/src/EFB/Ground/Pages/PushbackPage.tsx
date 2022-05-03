@@ -71,8 +71,8 @@ export const PushbackPage = () => {
     const dispatch = useAppDispatch();
 
     const [pushbackAttached] = useSimVar('Pushback Attached', 'bool', 100);
-    const [pushBackState, setPushBackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 250);
-    const [pushBackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
+    const [pushbackState, setPushbackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 250);
+    const [pushbackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
     const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Radians', 100);
 
     const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
@@ -115,7 +115,7 @@ export const PushbackPage = () => {
     pushbackPausedRef.current = pushbackPaused;
 
     const handleCallTug = () => {
-        setPushBackState(!pushBackState);
+        setPushbackState(!pushbackState);
         setPushbackWait(1);
     };
 
@@ -272,6 +272,14 @@ export const PushbackPage = () => {
     const mapRangeCompensationScalar = mapRange / 0.45;
     const turningRadius = calculateTurningRadius(13, Math.abs(tugCommandedHeadingFactor * 90)) / mapRangeCompensationScalar * (Math.abs(tugCommandedSpeedFactor) / 0.2);
 
+    //     const [pushbackAvailable] = useSimVar('PUSHBACK AVAILABLE', 'enum', 100);
+    //     const [accelX] = useSimVar('ACCELERATION BODY X', 'feet per second squared', 100);
+    //     const [accelY] = useSimVar('ACCELERATION BODY Y', 'feet per second squared', 100);
+    //     const [accelZ] = useSimVar('ACCELERATION BODY Z', 'feet per second squared', 100);
+    //     const [accelRX] = useSimVar('ROTATION ACCELERATION BODY X', 'radians per second squared', 100);
+    //     const [accelRY] = useSimVar('ROTATION ACCELERATION BODY Y', 'radians per second squared', 100);
+    //     const [accelRZ] = useSimVar('ROTATION ACCELERATION BODY Z', 'radians per second squared', 100);
+
     // Debug info for pushback movement - can be removed eventually
     const debugInformation = () => (
         <div className="flex absolute right-0 left-0 z-50 flex-grow justify-between mx-4 font-mono text-black bg-gray-100 border-gray-100 opacity-50">
@@ -286,7 +294,7 @@ export const PushbackPage = () => {
                 <br />
                 pushBackWait:
                 {' '}
-                {pushBackWait}
+                {pushbackWait}
                 <br />
                 pushBackAttached:
                 {' '}
@@ -294,7 +302,11 @@ export const PushbackPage = () => {
                 <br />
                 pushBackState:
                 {' '}
-                {pushBackState}
+                {pushbackState}
+                <br />
+                pushbackAvailable:
+                {' '}
+                {SimVar.GetSimVarValue('PUSHBACK AVAILABLE', 'bool')}
                 <br />
                 tugAngle:
                 {' '}
@@ -336,6 +348,21 @@ export const PushbackPage = () => {
                 Rotation Velocity Z:
                 {' '}
                 {SimVar.GetSimVarValue('ROTATION VELOCITY BODY Z', 'Number').toFixed(3)}
+                <br />
+                {' '}
+                Rot. Accel. X:
+                {' '}
+                {SimVar.GetSimVarValue('ROTATION ACCELERATION BODY X', 'radians per second squared').toFixed(3)}
+                <br />
+                {' '}
+                Rot. Accel. Y:
+                {' '}
+                {SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Y', 'radians per second squared').toFixed(3)}
+                <br />
+                {' '}
+                Rot. Accel Z:
+                {' '}
+                {SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Z', 'radians per second squared').toFixed(3)}
             </div>
             <div className="overflow-hidden text-black text-m">
                 acGroundSpeed:
@@ -369,6 +396,22 @@ export const PushbackPage = () => {
                 Velocity Z:
                 {' '}
                 {SimVar.GetSimVarValue('VELOCITY BODY Z', 'Number').toFixed(3)}
+                <br />
+                {' '}
+                Accel. X:
+                {' '}
+                {SimVar.GetSimVarValue('ACCELERATION BODY X', 'feet per second squared').toFixed(3)}
+                <br />
+                {' '}
+                Accel. Y:
+                {' '}
+                {SimVar.GetSimVarValue('ACCELERATION BODY Y', 'feet per second squared').toFixed(3)}
+                <br />
+                {' '}
+                Accel Z:
+                {' '}
+                {SimVar.GetSimVarValue('ACCELERATION BODY Z', 'feet per second squared').toFixed(3)}
+
             </div>
         </div>
     );
