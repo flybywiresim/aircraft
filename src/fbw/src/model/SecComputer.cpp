@@ -13,8 +13,6 @@ const uint8_T SecComputer_IN_OnGround{ 2U };
 
 const real_T SecComputer_RGND{ 0.0 };
 
-const boolean_T SecComputer_BGND{ false };
-
 void SecComputer::SecComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
   real_T *rty_Y, rtDW_RateLimiter_SecComputer_T *localDW)
 {
@@ -81,8 +79,6 @@ void SecComputer::step()
   real_T pair2RollCommand;
   real_T rtb_DataTypeConversion2;
   real_T rtb_DataTypeConversion4;
-  real_T rtb_DataTypeConversion5;
-  real_T rtb_DataTypeConversion6;
   real_T rtb_DataTypeConversion7;
   real_T rtb_DataTypeConversion_n;
   real_T rtb_Y_g;
@@ -396,22 +392,15 @@ void SecComputer::step()
   pair2RollCommand = SecComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data;
   rtb_DataTypeConversion2 = SecComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.Data;
   rtb_DataTypeConversion4 = SecComputer_U.in.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data;
-  rtb_DataTypeConversion5 = SecComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.Data;
-  rtb_DataTypeConversion6 = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_computed_kn.Data;
   rtb_DataTypeConversion7 = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
   rtb_NOT_k = (rtb_logic_crg14_tracking_mode_on || ((static_cast<real_T>(rtb_activePitchLaw) !=
     SecComputer_P.CompareToConstant2_const_f) && (static_cast<real_T>(rtb_activePitchLaw) !=
     SecComputer_P.CompareToConstant3_const_o)));
-  LawMDLOBJ2.step(&SecComputer_U.in.time.dt, &SecComputer_U.in.time.simulation_time, &rtb_DataTypeConversion_n,
-                  &pair2RollCommand, &rtb_DataTypeConversion2, &rtb_DataTypeConversion4, (const_cast<real_T*>
+  LawMDLOBJ2.step(&SecComputer_U.in.time.dt, &rtb_DataTypeConversion_n, &pair2RollCommand, &rtb_DataTypeConversion2,
+                  &rtb_DataTypeConversion4, (const_cast<real_T*>(&SecComputer_RGND)),
+                  &SecComputer_U.in.analog_inputs.ths_pos_deg, &rtb_DataTypeConversion7, (const_cast<real_T*>
     (&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)),
-                  &rtb_DataTypeConversion5, &rtb_DataTypeConversion6, &rtb_DataTypeConversion7, (const_cast<real_T*>
-    (&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (
-    const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>
-    (&SecComputer_RGND)), &rtb_logic_crg1_total_sidestick_pitch_command, &rtb_on_ground, &rtb_NOT_k,
-                  (const_cast<boolean_T*>(&SecComputer_BGND)), (const_cast<boolean_T*>(&SecComputer_BGND)), (const_cast<
-    real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (
-    const_cast<real_T*>(&SecComputer_RGND)), &rtb_eta_deg, &rtb_eta_trim_deg);
+                  &rtb_logic_crg1_total_sidestick_pitch_command, &rtb_NOT_k, &rtb_eta_deg, &rtb_eta_trim_deg);
   LawMDLOBJ3.step(&SecComputer_U.in.time.dt, &rtb_logic_crg1_total_sidestick_pitch_command, &pair2RollCommand,
                   &rtb_DataTypeConversion_n);
   switch (static_cast<int32_T>(rtb_activePitchLaw)) {

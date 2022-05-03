@@ -14,60 +14,42 @@ struct base_time
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_pitch_normal_input_
-#define DEFINED_TYPEDEF_FOR_pitch_normal_input_
+#ifndef DEFINED_TYPEDEF_FOR_pitch_alternate_input_
+#define DEFINED_TYPEDEF_FOR_pitch_alternate_input_
 
-struct pitch_normal_input
+struct pitch_alternate_input
 {
   base_time time;
   real_T nz_g;
   real_T Theta_deg;
   real_T Phi_deg;
-  real_T p_deg_s;
   real_T qk_deg_s;
   real_T qk_dot_deg_s2;
   real_T eta_deg;
   real_T eta_trim_deg;
-  real_T alpha_deg;
   real_T V_ias_kn;
   real_T V_tas_kn;
-  real_T H_radio_ft;
   real_T CG_percent_MAC;
   real_T total_weight_kg;
   real_T flaps_handle_index;
   real_T spoilers_left_pos;
   real_T spoilers_right_pos;
   real_T tracking_mode_on_override;
-  real_T thrust_lever_1_pos;
-  real_T thrust_lever_2_pos;
-  boolean_T tailstrike_protection_on;
-  real_T VLS_kn;
   real_T delta_eta_pos;
   boolean_T on_ground;
   boolean_T tracking_mode_on;
-  boolean_T high_aoa_prot_active;
-  boolean_T high_speed_prot_active;
-  real_T alpha_prot;
-  real_T alpha_max;
-  real_T high_speed_prot_high_kn;
-  real_T high_speed_prot_low_kn;
 };
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
-#define DEFINED_TYPEDEF_FOR_base_pitch_data_computed_
+#ifndef DEFINED_TYPEDEF_FOR_base_pitch_alternate_data_computed_
+#define DEFINED_TYPEDEF_FOR_base_pitch_alternate_data_computed_
 
-struct base_pitch_data_computed
+struct base_pitch_alternate_data_computed
 {
   real_T eta_trim_deg_limit_lo;
   real_T eta_trim_deg_limit_up;
   real_T delta_eta_deg;
-  real_T in_flight;
-  real_T in_rotation;
-  real_T in_flare;
-  real_T in_flight_gain;
-  real_T in_rotation_gain;
   real_T nz_limit_up_g;
   real_T nz_limit_lo_g;
   boolean_T eta_trim_deg_should_freeze;
@@ -76,20 +58,6 @@ struct base_pitch_data_computed
   boolean_T eta_trim_deg_should_write;
   real_T eta_trim_deg_rate_limit_up_deg_s;
   real_T eta_trim_deg_rate_limit_lo_deg_s;
-  real_T flare_Theta_deg;
-  real_T flare_Theta_c_deg;
-  real_T flare_Theta_c_rate_deg_s;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_pitch_rotation_
-#define DEFINED_TYPEDEF_FOR_base_pitch_rotation_
-
-struct base_pitch_rotation
-{
-  real_T qk_c_deg_s;
-  real_T eta_deg;
 };
 
 #endif
@@ -139,14 +107,13 @@ struct base_pitch_output
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_pitch_normal_output_
-#define DEFINED_TYPEDEF_FOR_pitch_normal_output_
+#ifndef DEFINED_TYPEDEF_FOR_pitch_alternate_output_
+#define DEFINED_TYPEDEF_FOR_pitch_alternate_output_
 
-struct pitch_normal_output
+struct pitch_alternate_output
 {
-  pitch_normal_input input;
-  base_pitch_data_computed data_computed;
-  base_pitch_rotation law_rotation;
+  pitch_alternate_input input;
+  base_pitch_alternate_data_computed data_computed;
   base_pitch_normal law_normal;
   base_pitch_law_output vote;
   base_pitch_integrated integrated;

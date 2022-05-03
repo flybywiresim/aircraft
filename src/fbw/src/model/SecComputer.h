@@ -7,7 +7,6 @@
 #include "PitchDirectLaw.h"
 
 extern const real_T SecComputer_RGND;
-extern const boolean_T SecComputer_BGND;
 extern base_sec_analog_outputs rtP_sec_analog_output_MATLABStruct;
 extern base_sec_laws_outputs rtP_sec_laws_output_MATLABStruct;
 extern base_sec_discrete_outputs rtP_sec_discrete_output_MATLABStruct;
