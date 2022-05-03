@@ -30,7 +30,7 @@ const translateResponseId = (response: number, message: CpdlcMessage): string =>
         return text;
     }
 
-    return 'UKN';
+    return '';
 };
 
 const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage | undefined): string => {
@@ -54,7 +54,7 @@ const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage 
         return text;
     }
 
-    return 'UKN';
+    return '';
 };
 
 export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedResponse }) => {
