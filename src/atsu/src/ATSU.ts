@@ -13,6 +13,7 @@ import { RequestMessage } from './messages/RequestMessage';
 import { CpdlcMessagesDownlink } from './messages/CpdlcMessageElements';
 import { coordinateToString, timestampToString } from './Common';
 import { InputValidation } from './InputValidation';
+import { ATS623 } from './components/ATS623';
 
 /**
  * Defines the ATSU
@@ -25,6 +26,8 @@ export class Atsu {
     private fltNo: string = '';
 
     private messageCounter = 0;
+
+    private ats623 = new ATS623(this);
 
     public aoc = new Aoc(this.datalink);
 
@@ -201,7 +204,9 @@ export class Atsu {
             message.Timestamp = new AtsuTimestamp();
         });
 
-        if (Aoc.isRelevantMessage(messages[0])) {
+        if (this.ats623.isRelevantMessage(messages[0])) {
+            this.ats623.insertMessages(messages);
+        } else if (Aoc.isRelevantMessage(messages[0])) {
             this.aoc.insertMessages(messages);
         } else if (Atc.isRelevantMessage(messages[0])) {
             this.atc.insertMessages(messages);
