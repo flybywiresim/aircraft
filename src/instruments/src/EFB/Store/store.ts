@@ -15,6 +15,7 @@ import keyboardReducer from './features/keyboard';
 import dispatchPageReducer from './features/dispatchPage';
 import failuresPageReducer from './features/failuresPage';
 import tooltipReducer from './features/tooltip';
+import pushbackReducer from './features/pushback';
 
 export type RootState = ReturnType<typeof combinedReducer>;
 export type AppDispatch = typeof store.dispatch;
@@ -34,6 +35,7 @@ const combinedReducer = combineReducers({
     dispatchPage: dispatchPageReducer,
     failuresPage: failuresPageReducer,
     tooltip: tooltipReducer,
+    pushback: pushbackReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {
