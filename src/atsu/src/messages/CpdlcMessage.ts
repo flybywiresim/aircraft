@@ -21,6 +21,8 @@ export class CpdlcMessage extends AtsuMessage {
 
     public DcduRelevantMessage = true;
 
+    public CloseAutomatically = true;
+
     constructor() {
         super();
         this.Type = AtsuMessageType.CPDLC;
@@ -43,6 +45,7 @@ export class CpdlcMessage extends AtsuMessage {
         this.CurrentTransmissionId = jsonData.CurrentTransmissionId;
         this.PreviousTransmissionId = jsonData.PreviousTransmissionId;
         this.DcduRelevantMessage = jsonData.DcduRelevantMessage;
+        this.CloseAutomatically = jsonData.CloseAutomatically;
     }
 
     protected serializeContent(format: AtsuMessageSerializationFormat, template: string, element: CpdlcMessageElement): string {
