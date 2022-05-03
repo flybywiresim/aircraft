@@ -35,7 +35,7 @@ interface TurningRadiusIndicatorProps {
     turningRadius: number;
 }
 
-const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
+const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
     const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
     return {
         x: centerX + (radius * Math.cos(angleInRadians)),
@@ -43,7 +43,7 @@ const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
     };
 };
 
-const describeArc = (x, y, radius, startAngle, endAngle) => {
+const describeArc = (x: number, y: number, radius: number, startAngle: number, endAngle: number) => {
     const start = polarToCartesian(x, y, radius, endAngle);
     const end = polarToCartesian(x, y, radius, startAngle);
     const arcSweep = endAngle - startAngle <= 180 ? '0' : '1';
@@ -328,8 +328,8 @@ export const PushbackPage = () => {
         }
     }, [dragging, mouseDown, mouseCoords]);
 
-    const turningRadius = calculateTurningRadius(13, Math.abs(tugCommandedHeadingFactor * 90));
-
+    const mapRangeCompensationScalar = mapRange / 0.45;
+    const turningRadius = calculateTurningRadius(13, Math.abs(tugCommandedHeadingFactor * 90)) / mapRangeCompensationScalar * (Math.abs(tugCommandedSpeedFactor) / 0.2);
     // Debug info for pushback movement - can be removed eventually
     const [showDebugInfo, setShowDebugInfo] = useState(false);
     const debugInformation = () => (
@@ -437,7 +437,7 @@ export const PushbackPage = () => {
 
             {/* Map Container */}
             <div
-                className="overflow-hidden relative flex-grow h-[430px] rounded-lg border-2 border-theme-accent"
+                className="overflow-hidden relative flex-grow rounded-lg border-2 h-[430px] border-theme-accent"
                 onMouseDown={(e) => {
                     setMouseDown(true);
                     setDragStartCoords({ x: e.pageX, y: e.pageY });
@@ -504,7 +504,7 @@ export const PushbackPage = () => {
                         <button
                             type="button"
                             onClick={() => setCenterPlaneMode(!centerPlaneMode)}
-                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                            className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                         >
                             <IconPlane
                                 className={`text-white transform -rotate-90 ${centerPlaneMode && 'fill-current'}`}
@@ -517,7 +517,7 @@ export const PushbackPage = () => {
                         <button
                             type="button"
                             onClick={() => handleZoomChange(-0.1)}
-                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                            className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                         >
                             <ZoomIn size={40} />
                         </button>
@@ -526,7 +526,7 @@ export const PushbackPage = () => {
                         <button
                             type="button"
                             onClick={() => handleZoomChange(0.1)}
-                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
+                            className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
                         >
                             <ZoomOut size={40} />
                         </button>
