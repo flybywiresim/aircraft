@@ -56,6 +56,8 @@ class DcduMessage {
     public EmergencyMessage = false;
 
     public Status: DcduStatusMessage = DcduStatusMessage.NoMessage;
+
+    public Direction: AtsuMessageDirection = null;
 }
 
 export class DcduLink {
@@ -299,6 +301,7 @@ export class DcduLink {
             block.MessageId = message.UniqueMessageID;
             block.MessageRead = message.Direction === AtsuMessageDirection.Downlink;
             block.Station = message.Station;
+            block.Direction = message.Direction;
 
             if (this.messages.length < DcduLink.MaxDcduFileSize) {
                 this.messages[this.messages.length - 1].push(block);
