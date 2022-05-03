@@ -1,4 +1,4 @@
-/* eslint-disable max-len,no-console */
+/* eslint-disable max-len */
 import React, { useEffect, useRef, useState } from 'react';
 import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import {
@@ -20,16 +20,24 @@ import Slider from 'rc-slider';
 import { MathUtils } from '@shared/MathUtils';
 import { IconPlane } from '@tabler/icons';
 import { Coordinates } from 'msfs-geo';
-import { computeDestinationPoint } from 'geolib'; // getDistance
+import { computeDestinationPoint } from 'geolib';
 import { toast } from 'react-toastify';
 import { BingMap } from '../../UtilComponents/BingMap';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
-
-interface ScreenCoordinates {
-    x: number;
-    y: number;
-}
+import { useAppDispatch, useAppSelector } from '../../Store/store';
+import {
+    TScreenCoordinates,
+    setPushbackPaused,
+    setMapRange,
+    setCenterPlaneMode,
+    setActualMapLatLon,
+    setAircraftIconPosition,
+    setShowDebugInfo,
+    setTugCommandedHeadingFactor,
+    setTugCommandedSpeedFactor,
+    setTugInertiaFactor,
+} from '../../Store/features/pushback';
 
 interface TurningRadiusIndicatorProps {
     turningRadius: number;
@@ -60,9 +68,11 @@ const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) 
 );
 
 export const PushbackPage = () => {
+    const dispatch = useAppDispatch();
+
+    const [pushbackAttached] = useSimVar('Pushback Attached', 'bool', 100);
     const [pushBackState, setPushBackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 250);
     const [pushBackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
-    const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 100);
     const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Radians', 100);
 
     const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
@@ -76,44 +86,33 @@ export const PushbackPage = () => {
 
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 250);
 
-    const [mapRange, setMapRange] = useState(0.2);
+    // Reducer state for pushback
+    const {
+        pushbackPaused,
+        updateDeltaTime,
+        mapRange,
+        centerPlaneMode,
+        actualMapLatLon,
+        aircraftIconPosition,
+        showDebugInfo,
+        tugCommandedHeadingFactor,
+        tugCommandedHeading,
+        tugCommandedSpeedFactor,
+        tugCommandedSpeed,
+        tugInertiaFactor,
+    } = useAppSelector((state) => state.pushback.pushbackState);
+
+    // Map
     const [mouseDown, setMouseDown] = useState(false);
     const [dragging, setDragging] = useState(false);
-    const [centerPlaneMode, setCenterPlaneMode] = useState(true);
-    const [actualMapLatLon, setActualMapLatLon] = useState({ lat: 0, long: 0 } as Coordinates);
-    const [aircraftIconPosition, setAircraftIconPosition] = useState({ x: 0, y: 0 } as ScreenCoordinates);
-    const [dragStartCoords, setDragStartCoords] = useState({ x: 0, y: 0 } as ScreenCoordinates);
-    const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 } as ScreenCoordinates);
+    const [dragStartCoords, setDragStartCoords] = useState({ x: 0, y: 0 } as TScreenCoordinates);
+    const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 } as TScreenCoordinates);
 
-    const [pushBackPaused, setPushBackPaused] = useState(true);
-    const [lastTime, setLastTime] = useState(0);
-    const [deltaTime, setDeltaTime] = useState(0);
-    const [tugCommandedHeading, setTugCommandedHeading] = useState(0);
-    const [tugCommandedHeadingFactor, setTugCommandedHeadingFactor] = useState(0);
-    const [tugCommandedSpeedFactor, setTugCommandedSpeedFactor] = useState(0);
-    const [tugCommandedSpeed, setTugCommandedSpeed] = useState(0);
-    const [tugInertiaFactor, setTugInertiaFactor] = useState(0);
-
-    const [updateInterval, setUpdateInterval] = useState(0);
-
-    // Required so these can be used inside the setInterval callback function for the
-    // pushback movement update
-    const updateIntervalRef = useRef(updateInterval);
-    updateIntervalRef.current = updateInterval;
-    const pushBackAttachedRef = useRef(pushBackAttached);
-    pushBackAttachedRef.current = pushBackAttached;
-    const pushbackPausedRef = useRef(pushBackPaused);
-    pushbackPausedRef.current = pushBackPaused;
-    const lastTimeRef = useRef(lastTime);
-    lastTimeRef.current = lastTime;
-    const deltaTimeRef = useRef(deltaTime);
-    deltaTimeRef.current = deltaTime;
-    const tugCommandedHeadingFactorRef = useRef(tugCommandedHeadingFactor);
-    tugCommandedHeadingFactorRef.current = tugCommandedHeadingFactor;
-    const tugCommandedSpeedFactorRef = useRef(tugCommandedSpeedFactor);
-    tugCommandedSpeedFactorRef.current = tugCommandedSpeedFactor;
-    const tugInertiaFactorRef = useRef(tugInertiaFactor);
-    tugInertiaFactorRef.current = tugInertiaFactor;
+    // Required so these can be used inside the useEffect return callback
+    const pushBackAttachedRef = useRef(pushbackAttached);
+    pushBackAttachedRef.current = pushbackAttached;
+    const pushbackPausedRef = useRef(pushbackPaused);
+    pushbackPausedRef.current = pushbackPaused;
 
     const handleCallTug = () => {
         setPushBackState(!pushBackState);
@@ -121,32 +120,36 @@ export const PushbackPage = () => {
     };
 
     const handlePause = () => {
-        setPushBackPaused(!pushBackPaused);
+        dispatch(setPushbackPaused(!pushbackPaused));
     };
 
     const handleTugSpeed = (speed: number) => {
-        setTugCommandedSpeedFactor(MathUtils.clamp(speed, -1, 1));
+        dispatch(setTugCommandedSpeedFactor(MathUtils.clamp(speed, -1, 1)));
         if (speed) {
-            setPushBackPaused(false);
+            dispatch(setPushbackPaused(false));
         }
     };
 
     const handleTugDirection = (value: number) => {
-        setTugCommandedHeadingFactor(MathUtils.clamp(value, -1, 1));
+        dispatch(setTugCommandedHeadingFactor(MathUtils.clamp(value, -1, 1)));
     };
 
     const handleZoomChange = (value: number) => {
         const newRange = mapRange + value;
         const factor = mapRange / newRange;
-        setMapRange(MathUtils.clamp(newRange, 0.1, 1.5));
+        dispatch(setMapRange(MathUtils.clamp(newRange, 0.1, 1.5)));
         // place the aircraft icon according to the zoom level
-        setAircraftIconPosition({ x: aircraftIconPosition.x * factor, y: aircraftIconPosition.y * factor });
+        dispatch(setAircraftIconPosition({ x: aircraftIconPosition.x * factor, y: aircraftIconPosition.y * factor }));
+    };
+
+    const handleCenterPlaneModeChange = () => {
+        dispatch(setCenterPlaneMode(!centerPlaneMode));
     };
 
     // Computes the offset from  geo coordinates (Lat, Lon) and a delta of screen coordinates into
     // a destination set of geo coordinates.
-    const computeOffset: (latLon: Coordinates, d: ScreenCoordinates) => Coordinates = (
-        latLon: Coordinates, d: ScreenCoordinates,
+    const computeOffset: (latLon: Coordinates, d: TScreenCoordinates) => Coordinates = (
+        latLon: Coordinates, d: TScreenCoordinates,
     ) => {
         // This constant has been determined via testing - needs more "thought"
         const someConstant = 0.48596;
@@ -169,100 +172,48 @@ export const PushbackPage = () => {
         return wheelBase / tanDeg;
     };
 
-    const decelerateTug = (factor: number = 1) => {
-        const r = 0.05;
-        const bf = factor;
-        setTugInertiaFactor(() => bf);
-        if (bf <= 0) {
-            SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
-            SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
-            SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
-            console.log('Full Stop!');
-            return;
-        }
-        setTimeout(() => {
-            decelerateTug(bf - r);
-        }, 50);
-    };
-
-    const accelerateTug = (factor: number = 0) => {
-        const r = 0.05;
-        const bf = factor;
-        setTugInertiaFactor(() => bf);
-        if (bf === 0) {
-            SimVar.SetSimVarValue('Pushback Wait', 'bool', false);
-        }
-        if (bf >= 1) {
-            return;
-        }
-        setTimeout(() => {
-            accelerateTug(bf + r);
-        }, 50);
-    };
-
-    // Callback function for the setInterval to update the movement of the aircraft independent of
-    // the refresh rate of the Glass Cockpit Refresh Rate in internal and external view.
-    const movementUpdate = () => {
-        const startTime = Date.now();
-        setDeltaTime(() => (startTime - lastTimeRef.current.valueOf()));
-        setLastTime(() => startTime);
-
-        const simOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
-
-        if (pushBackAttachedRef.current.valueOf() && simOnGround) {
-            // compute heading and speed
-            const parkingBrakeEngaged = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
-            const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
-
-            const computedTugHeading = (aircraftHeading - (50 * tugCommandedHeadingFactorRef.current.valueOf())) % 360;
-            setTugCommandedHeading((() => computedTugHeading)); // debug
-            // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
-            const convertedComputedHeading = (computedTugHeading * (0xffffffff / 360)) & 0xffffffff;
-            const computedRotationVelocity = (tugCommandedSpeedFactorRef.current.valueOf() <= 0 ? -1 : 1) * tugCommandedHeadingFactorRef.current.valueOf() * (parkingBrakeEngaged ? 0.008 : 0.08);
-
-            const tugCommandedSpeed = tugCommandedSpeedFactorRef.current.valueOf() * (parkingBrakeEngaged ? 0.8 : 8) * tugInertiaFactorRef.current.valueOf();
-            setTugCommandedSpeed(() => tugCommandedSpeed); // debug
-
-            if (tugCommandedSpeed === 0) {
-                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
-                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
-                SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
-                return;
-            }
-
-            SimVar.SetSimVarValue('Pushback Wait', 'bool', false);
-            // Set tug heading
-            SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', convertedComputedHeading);
-            SimVar.SetSimVarValue('ROTATION VELOCITY BODY X', 'Number', 0);
-            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
-            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Z', 'Number', 0);
-            // Set tug speed
-            SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', tugCommandedSpeed);
-            SimVar.SetSimVarValue('VELOCITY BODY X', 'Number', 0);
-            SimVar.SetSimVarValue('VELOCITY BODY Y', 'Number', 0);
-            SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', tugCommandedSpeed);
-        }
-    };
+    // FIXME
+    // const decelerateTug = (factor: number = 1) => {
+    //     const r = 0.05;
+    //     const bf = factor;
+    //     dispatch(setTugInertiaFactor(bf));
+    //     if (bf <= 0) {
+    //         console.log('Decelerated!');
+    //         return;
+    //     }
+    //     setTimeout(() => {
+    //         decelerateTug(bf - r);
+    //     }, 50);
+    // };
+    //
+    // const accelerateTug = (factor: number = 0) => {
+    //     const r = 0.05;
+    //     const bf = factor;
+    //     dispatch(setTugInertiaFactor(bf));
+    //     if (bf >= 1) {
+    //         console.log('Accelerated!');
+    //         return;
+    //     }
+    //     setTimeout(() => {
+    //         accelerateTug(bf + r);
+    //     }, 50);
+    // };
 
     // called once when loading and unloading the page
     useEffect(() => {
         // when loading the page
-        setPushBackPaused(true);
+        dispatch(setPushbackPaused(true));
 
         // when unloading the page
         // !obs: as with setInterval no access to current local variable values
         return (() => {
-            if (pushBackAttachedRef.current.valueOf()) {
+            if (pushBackAttachedRef.current && !pushbackPausedRef.current) {
                 toast.info(t('Pushback.LeavePageMessage'), {
                     autoClose: 750,
                     hideProgressBar: true,
                     closeButton: false,
                 });
-                decelerateTug();
-                clearInterval(updateIntervalRef.current.valueOf());
-                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
-                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
-                SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
+                dispatch(setPushbackPaused(true));
             }
         });
     }, []);
@@ -271,54 +222,37 @@ export const PushbackPage = () => {
     useEffect(() => {
         // create deadzone
         if (rudderPosition > -0.05 && rudderPosition < 0.05) {
-            setTugCommandedHeadingFactor(0);
+            dispatch(setTugCommandedHeadingFactor(0));
             return;
         }
-        setTugCommandedHeadingFactor(rudderPosition);
+        dispatch(setTugCommandedHeadingFactor(rudderPosition));
     }, [rudderPosition]);
 
     // Update commanded speed from elevator input
     useEffect(() => {
         // create deadzone
         if (elevatorPosition > -0.05 && elevatorPosition < 0.05) {
-            setTugCommandedSpeedFactor(0);
+            dispatch(setTugCommandedSpeedFactor(0));
             return;
         }
-        setPushBackPaused(false);
-        setTugCommandedSpeedFactor(-elevatorPosition);
+        dispatch(setPushbackPaused(false));
+        dispatch(setTugCommandedSpeedFactor(-elevatorPosition));
     }, [elevatorPosition]);
 
     // Stop aircraft when paused
     useEffect(() => {
-        if (pushBackPaused) {
+        if (pushbackPaused) {
             console.log('Paused');
-            decelerateTug();
         } else {
             console.log('Unpaused');
-            accelerateTug();
         }
-    }, [pushBackPaused]);
-
-    // Set up an update interval to ensure smooth movement independent of
-    // Glass Cockpit Refresh Rate. This is required as the refresh rate is
-    // 10x lower in external view which leads to jerky movements otherwise.
-    useEffect(() => {
-        if (pushBackAttached && updateInterval === 0) {
-            console.log('Attached - start update interval');
-            const interval = setInterval(movementUpdate, 30);
-            setUpdateInterval(Number(interval));
-        } else if (!pushBackAttached) {
-            console.log('Detached - stop update interval');
-            clearInterval(updateInterval);
-            setUpdateInterval(0);
-        }
-    }, [pushBackAttached]);
+    }, [pushbackPaused]);
 
     // Update actual lat/lon when plane is moving
     useEffect(() => {
         if (centerPlaneMode) {
-            setActualMapLatLon({ lat: planeLatitude, long: planeLongitude });
-            setAircraftIconPosition({ x: 0, y: 0 });
+            dispatch(setActualMapLatLon({ lat: planeLatitude, long: planeLongitude }));
+            dispatch(setAircraftIconPosition({ x: 0, y: 0 }));
         }
         // console.log(`Update Map: ${planeLatitude.toFixed(6)} ${planeLongitude.toFixed(6)}`);
     }, [centerPlaneMode, planeLatitude.toFixed(6), planeLongitude.toFixed(6)]);
@@ -326,29 +260,29 @@ export const PushbackPage = () => {
     // Update actual lat/lon when dragging the map
     useEffect(() => {
         if (dragging) {
-            setCenterPlaneMode(false);
+            dispatch(setCenterPlaneMode(false));
             const delta = { x: mouseCoords.x - dragStartCoords.x, y: mouseCoords.y - dragStartCoords.y };
             const latLon: Coordinates = computeOffset(actualMapLatLon, delta);
-            setActualMapLatLon(latLon);
-            setAircraftIconPosition({ x: aircraftIconPosition.x + delta.x, y: aircraftIconPosition.y - delta.y });
+            dispatch(setActualMapLatLon(latLon));
+            dispatch(setAircraftIconPosition({ x: aircraftIconPosition.x + delta.x, y: aircraftIconPosition.y - delta.y }));
             setDragStartCoords(mouseCoords);
         }
     }, [dragging, mouseDown, mouseCoords]);
 
     const mapRangeCompensationScalar = mapRange / 0.45;
     const turningRadius = calculateTurningRadius(13, Math.abs(tugCommandedHeadingFactor * 90)) / mapRangeCompensationScalar * (Math.abs(tugCommandedSpeedFactor) / 0.2);
+
     // Debug info for pushback movement - can be removed eventually
-    const [showDebugInfo, setShowDebugInfo] = useState(false);
     const debugInformation = () => (
         <div className="flex absolute right-0 left-0 z-50 flex-grow justify-between mx-4 font-mono text-black bg-gray-100 border-gray-100 opacity-50">
             <div className="overflow-hidden text-black text-m">
                 deltaTime:
                 {' '}
-                {deltaTime}
+                {updateDeltaTime}
                 <br />
-                pushBackPaused:
+                pushbackPaused:
                 {' '}
-                {pushBackPaused ? 1 : 0}
+                {pushbackPaused ? 1 : 0}
                 <br />
                 pushBackWait:
                 {' '}
@@ -356,7 +290,7 @@ export const PushbackPage = () => {
                 <br />
                 pushBackAttached:
                 {' '}
-                {pushBackAttached}
+                {pushbackAttached}
                 <br />
                 pushBackState:
                 {' '}
@@ -444,7 +378,7 @@ export const PushbackPage = () => {
 
             {/* Map Container */}
             <div
-                className="overflow-hidden relative flex-grow rounded-lg border-2 h-[430px] border-theme-accent"
+                className="overflow-hidden relative flex-grow h-[430px] rounded-lg border-2 border-theme-accent"
                 onMouseDown={(e) => {
                     setMouseDown(true);
                     setDragStartCoords({ x: e.pageX, y: e.pageY });
@@ -492,9 +426,15 @@ export const PushbackPage = () => {
 
                 {/* Aircraft and Turning Radius Indicator */}
                 <div className="flex absolute inset-0 justify-center items-center">
-                    <div className="absolute" style={{ transform: `rotate(-90deg) scaleX(${tugCommandedSpeedFactor >= 0 ? 1 : -1}) scaleY(${tugCommandedHeadingFactor >= 0 ? 1 : -1}) translateY(${turningRadius}px)` }}>
-                        <TurningRadiusIndicator turningRadius={turningRadius} />
-                    </div>
+                    {!Number.isNaN(turningRadius)
+                        && (
+                            <div
+                                className="absolute"
+                                style={{ transform: `rotate(-90deg) scaleX(${tugCommandedSpeedFactor >= 0 ? 1 : -1}) scaleY(${tugCommandedHeadingFactor >= 0 ? 1 : -1}) translateY(${turningRadius}px)` }}
+                            >
+                                <TurningRadiusIndicator turningRadius={turningRadius} />
+                            </div>
+                        )}
                     {/* prepared to move with map when dragging - work in progress */}
                     <IconPlane
                         className="text-theme-highlight"
@@ -510,8 +450,8 @@ export const PushbackPage = () => {
                     <TooltipWrapper text={t('Pushback.TT.CenterPlaneMode')}>
                         <button
                             type="button"
-                            onClick={() => setCenterPlaneMode(!centerPlaneMode)}
-                            className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                            onClick={() => handleCenterPlaneModeChange()}
+                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                         >
                             <IconPlane
                                 className={`text-white transform -rotate-90 ${centerPlaneMode && 'fill-current'}`}
@@ -524,7 +464,7 @@ export const PushbackPage = () => {
                         <button
                             type="button"
                             onClick={() => handleZoomChange(-0.1)}
-                            className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                         >
                             <ZoomIn size={40} />
                         </button>
@@ -533,7 +473,7 @@ export const PushbackPage = () => {
                         <button
                             type="button"
                             onClick={() => handleZoomChange(0.1)}
-                            className="p-2 transition duration-100 cursor-pointer hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight"
+                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                         >
                             <ZoomOut size={40} />
                         </button>
@@ -554,7 +494,7 @@ export const PushbackPage = () => {
                             <button
                                 type="button"
                                 onClick={handleCallTug}
-                                className={`${pushBackAttached ? 'text-white bg-green-600 border-green-600' : 'bg-theme-highlight opacity-60 hover:opacity-100 text-theme-text hover:text-theme-secondary transition duration-200 disabled:bg-grey-600'}  border-2 border-theme-accent w-full h-20 rounded-md transition duration-100 flex items-center justify-center`}
+                                className={`${pushbackAttached ? 'text-white bg-green-600 border-green-600' : 'bg-theme-highlight opacity-60 hover:opacity-100 text-theme-text hover:text-theme-secondary transition duration-200 disabled:bg-grey-600'}  border-2 border-theme-accent w-full h-20 rounded-md transition duration-100 flex items-center justify-center`}
                             >
                                 <TruckFlatbed size={40} />
                             </button>
@@ -564,15 +504,15 @@ export const PushbackPage = () => {
                     {/* Pause/Moving Button */}
                     <div className="w-full">
                         <p className="text-center">
-                            {pushBackPaused ? t('Pushback.Halt') : t('Pushback.Moving')}
+                            {pushbackPaused ? t('Pushback.Halt') : t('Pushback.Moving')}
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.PausePushback')}>
                             <button
                                 type="button"
                                 onClick={handlePause}
-                                className={`flex justify-center items-center w-full h-20 text-white bg-green-900 hover:bg-green-600 rounded-md transition duration-100 ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 text-white bg-green-900 hover:bg-green-600 rounded-md transition duration-100 ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
                             >
-                                {pushBackPaused ? (
+                                {pushbackPaused ? (
                                     <PlayCircleFill size={40} />
                                 ) : (
                                     <PauseCircleFill size={40} />
@@ -602,13 +542,13 @@ export const PushbackPage = () => {
 
                     {/* Backward Button */}
                     <div className="w-full">
-                        <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
+                        <p className={`text-center ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}>
                             { t('Pushback.Backward') }
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.DecreaseSpeed')}>
                             <button
                                 type="button"
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
                                 onClick={() => handleTugSpeed(tugCommandedSpeedFactor - 0.1)}
                                 onDoubleClick={() => handleTugSpeed(0)}
                             >
@@ -619,13 +559,13 @@ export const PushbackPage = () => {
 
                     {/* Forward Button */}
                     <div className="w-full">
-                        <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
+                        <p className={`text-center ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}>
                             {t('Pushback.Forward')}
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.IncreaseSpeed')}>
                             <button
                                 type="button"
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
                                 onClick={() => handleTugSpeed(tugCommandedSpeedFactor + 0.1)}
                                 onDoubleClick={() => handleTugSpeed(0)}
                             >
@@ -636,13 +576,13 @@ export const PushbackPage = () => {
 
                     {/* Left Button */}
                     <div className="w-full">
-                        <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
+                        <p className={`text-center ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}>
                             {t('Pushback.Left')}
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.Left')}>
                             <button
                                 type="button"
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
                                 onClick={() => handleTugDirection(tugCommandedHeadingFactor - 0.1)}
                                 onDoubleClick={() => handleTugDirection(0)}
                             >
@@ -653,13 +593,13 @@ export const PushbackPage = () => {
 
                     {/* Right Button */}
                     <div className="w-full">
-                        <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
+                        <p className={`text-center ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}>
                             {t('Pushback.Right')}
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.Right')}>
                             <button
                                 type="button"
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
                                 onClick={() => handleTugDirection(tugCommandedHeadingFactor + 0.1)}
                                 onDoubleClick={() => handleTugDirection(0)}
                             >
@@ -671,14 +611,14 @@ export const PushbackPage = () => {
 
                 {/* Direction Slider */}
                 <div>
-                    <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
+                    <p className={`text-center ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}>
                         {t('Pushback.TugDirection')}
                     </p>
                     <TooltipWrapper text={t('Pushback.TT.SliderDirection')}>
                         <div className="flex flex-row items-center space-x-4">
                             <p className="font-bold text-unselected"><ChevronLeft /></p>
                             <Slider
-                                className={`${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
                                 onChange={(value) => handleTugDirection(value)}
                                 min={-1}
                                 step={0.01}
@@ -693,14 +633,14 @@ export const PushbackPage = () => {
 
                 {/* Speed Slider */}
                 <div>
-                    <p className={`text-center ${!pushBackAttached && 'opacity-30 pointer-events-none'}`}>
+                    <p className={`text-center ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}>
                         {t('Pushback.TugSpeed')}
                     </p>
                     <TooltipWrapper text={t('Pushback.TT.SliderSpeed')}>
                         <div className="flex flex-row items-center space-x-4">
                             <p className="font-bold text-unselected"><ChevronDoubleDown /></p>
                             <Slider
-                                className={`${!pushBackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
                                 min={-1}
                                 step={0.1}
                                 max={1}
@@ -710,7 +650,7 @@ export const PushbackPage = () => {
                             />
                             <p
                                 className="font-bold text-unselected"
-                                onDoubleClick={() => setShowDebugInfo((old) => !old)}
+                                onDoubleClick={() => dispatch(setShowDebugInfo(!showDebugInfo))}
                             >
                                 <ChevronDoubleUp />
                             </p>

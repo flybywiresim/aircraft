@@ -1,4 +1,5 @@
 import { combineReducers } from 'redux';
+// @ts-ignore
 import { connectRouter } from 'connected-react-router';
 
 import todCalculatorReducer from './features/todCalculator';
@@ -12,6 +13,7 @@ import checklistsReducer from './features/checklists';
 import keyboardReducer from './features/keyboard';
 import dispatchPageReducer from './features/dispatchPage';
 import failuresPageReducer from './features/failuresPage';
+import pushbackReducer from './features/pushback';
 
 export const createRootReducer = (history) => combineReducers({
     router: connectRouter(history),
@@ -26,4 +28,5 @@ export const createRootReducer = (history) => combineReducers({
     keyboard: keyboardReducer,
     dispatchPage: dispatchPageReducer,
     failuresPage: failuresPageReducer,
+    pushback: pushbackReducer,
 });
