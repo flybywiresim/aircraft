@@ -45,7 +45,7 @@ export class DcduMessageBlock {
 
     public messageVisible: boolean = false;
 
-    public messageOnceVisualized: boolean = false;
+    public automaticCloseTimeout: number = -1;
 }
 
 const sortedMessageArray = (messages: Map<number, DcduMessageBlock>): DcduMessageBlock[] => {
