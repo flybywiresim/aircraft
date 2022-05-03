@@ -104,7 +104,7 @@ export const AtsuStatusMessage: React.FC<AtsuStatusMessageProps> = ({ visibleMes
     return (
         <>
             <g>
-                <text className="status-atsu" fill={textFill} x="50%" y="2160">{translateStatusMessage(systemMessage)}</text>
+                <text className="status-atsu" fill={textFill} x="50%" y="2160">{translateStatusMessage(systemMessage !== DcduStatusMessage.NoMessage ? systemMessage : visibleMessage)}</text>
             </g>
         </>
     );
