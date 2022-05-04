@@ -12,6 +12,7 @@ import { Datalink } from './com/Datalink';
 import { Atsu } from './ATSU';
 import { DcduStatusMessage, DcduLink } from './components/DcduLink';
 import { FansMode, FutureAirNavigationSystem } from './com/FutureAirNavigationSystem';
+import { UplinkMessageInterpretation } from './components/UplinkMessageInterpretation';
 
 /*
  * Defines the ATC system for CPDLC communication
@@ -399,6 +400,12 @@ export class Atc {
 
             if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.CurrentTransmissionId === -1) {
                 cpdlcMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
+            }
+
+            // check if the message can be closed and an semantic answer is required
+            cpdlcMessage.CloseAutomatically = !UplinkMessageInterpretation.MessageRemainsOnDcdu(cpdlcMessage);
+            if (UplinkMessageInterpretation.SemanticAnswerRequired(cpdlcMessage)) {
+                UplinkMessageInterpretation.AppendSemanticAnswer(this.parent, false, cpdlcMessage);
             }
 
             // search corresponding request, if previous ID is set
