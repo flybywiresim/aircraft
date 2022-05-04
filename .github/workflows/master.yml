@@ -12,8 +12,8 @@ jobs:
     env:
       A32NX_PRODUCTION_BUILD: 1
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
-      MASTER_PRE_RELEASE_ID: 65977058
-      MASTER_PRE_RELEASE_TAG: master
+      MASTER_PRE_RELEASE_ID: 66067756
+      MASTER_PRE_RELEASE_TAG: assets/master
       MASTER_ZIP_NAME: A32NX-master.zip
       BUILD_DIR_NAME: master
     steps:

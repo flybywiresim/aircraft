@@ -11,8 +11,8 @@ jobs:
     env:
       A32NX_PRODUCTION_BUILD: 1
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
-      STABLE_PRE_RELEASE_ID: 65977105
-      STABLE_PRE_RELEASE_TAG: stable
+      STABLE_PRE_RELEASE_ID: 66067814
+      STABLE_PRE_RELEASE_TAG: assets/stable
       RELEASE_ZIP_NAME: A32NX-stable.zip
       BUILD_DIR_NAME: stable
     steps:
