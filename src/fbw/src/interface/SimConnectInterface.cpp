@@ -971,14 +971,16 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   }
   // ------------------------------------------------------------------------------------------------------------------
 
-  // map client id
-  result &= SimConnect_MapClientDataNameToID(hSimConnect, "A32NX_CLIENT_DATA_RA_INPUT", ClientData::RA_INPUTS);
-  // create client data
-  result &=
-      SimConnect_CreateClientData(hSimConnect, ClientData::RA_INPUTS, sizeof(base_ra_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
-  // add data definitions
-  result &= SimConnect_AddToClientDataDefinition(hSimConnect, ClientData::RA_INPUTS, SIMCONNECT_CLIENTDATAOFFSET_AUTO,
-                                                 SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  for (int i = 0; i < 2; i++) {
+    auto defineId = ClientData::RA_1_BUS + i;
+    // map client id
+    result &= SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_RA_" + std::to_string(i + 1) + "_BUS").c_str(), defineId);
+    // create client data
+    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_ra_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+    // add data definitions
+    result &=
+        SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  }
 
   // ------------------------------------------------------------------------------------------------------------------
 
@@ -1452,8 +1454,8 @@ bool SimConnectInterface::setClientDataIr(base_ir_bus output, int irIndex) {
   return sendClientData(ClientData::IR_1_INPUTS + irIndex, sizeof(output), &output);
 }
 
-bool SimConnectInterface::setClientDataRa(base_ra_bus output) {
-  return sendClientData(ClientData::RA_INPUTS, sizeof(output), &output);
+bool SimConnectInterface::setClientDataRa(base_ra_bus output, int raIndex) {
+  return sendClientData(ClientData::RA_1_BUS + raIndex, sizeof(output), &output);
 }
 
 void SimConnectInterface::setLoggingFlightControlsEnabled(bool enabled) {

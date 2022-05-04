@@ -1040,8 +1040,8 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
 bool FlyByWireInterface::updateRa(int raIndex) {
   raBusOutputs[raIndex].radioHeight.setFromSimVar(idRadioAltimeterHeight[raIndex]->get());
 
-  if (clientDataEnabled && raIndex == 0) {
-    simConnectInterface.setClientDataRa(raBusOutputs[raIndex]);
+  if (clientDataEnabled) {
+    simConnectInterface.setClientDataRa(raBusOutputs[raIndex], raIndex);
   }
 
   return true;
