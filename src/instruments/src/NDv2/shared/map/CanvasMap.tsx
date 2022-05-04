@@ -1,4 +1,4 @@
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subscribable, VNode } from 'msfssdk';
 import { EfisVectorsGroup, NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import type { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { distanceTo } from 'msfs-geo';
@@ -8,6 +8,7 @@ import { MapParameters } from '../../../ND/utils/MapParameters';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { WaypointLayer } from './WaypointLayer';
 import { ConstraintsLayer } from './ConstraintsLayer';
+import { RunwayLayer } from './RunwayLayer';
 
 export interface CanvasMapProps {
     bus: EventBus,
@@ -19,6 +20,7 @@ export interface CanvasMapProps {
     mapCenterLong: Subscribable<number>,
     mapRotation: Subscribable<number>,
     mapRangeRadius: Subscribable<number>,
+    mapClip: Subscribable<Path2D>;
     mapVisible: Subscribable<boolean>,
 }
 
@@ -40,6 +42,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private readonly waypointLayer = new WaypointLayer(this);
 
     private readonly constraintsLayer = new ConstraintsLayer();
+
+    private readonly runwayLayer = new RunwayLayer();
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -106,13 +110,17 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         this.symbols.length = 0;
         this.symbols.push(...symbols);
 
-        const waypoints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan);
+        const waypoints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.Waypoint | NdSymbolTypeFlags.FlightPlan && !(it.type & NdSymbolTypeFlags.Runway));
 
         this.waypointLayer.data = waypoints;
 
         const constraints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.ConstraintUnknown | NdSymbolTypeFlags.ConstraintMet | NdSymbolTypeFlags.ConstraintMissed);
 
         this.constraintsLayer.data = constraints;
+
+        const runways = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.Runway);
+
+        this.runwayLayer.data = runways;
     }
 
     private handleNewVectors(vectors: PathVector[]) {
@@ -128,6 +136,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
         context.clearRect(0, 0, this.props.width, this.props.height);
 
+        context.translate(236, -6);
+        context.clip(this.props.mapClip.get());
+        context.resetTransform();
+
         for (const vector of this.activeVectors) {
             this.drawVector(context, vector, 0);
         }
@@ -137,6 +149,9 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
         this.constraintsLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.constraintsLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
+
+        this.runwayLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
+        this.runwayLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
     }
 
     private drawScaledRunway(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {

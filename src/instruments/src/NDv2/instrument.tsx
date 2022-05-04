@@ -91,6 +91,7 @@ class A32NX_ND extends BaseInstrument {
         this.ecpBusSimVarPublisher.subscribe('ndMode');
 
         this.fmsDataPublisher.subscribe('ndMessageFlags');
+        this.fmsDataPublisher.subscribe('crossTrackError');
 
         FSComponent.render(<NDComponent bus={this.bus} />, document.getElementById('ND_CONTENT'));
     }

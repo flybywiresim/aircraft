@@ -23,7 +23,7 @@ export interface NDProps {
 }
 
 export class NDComponent extends DisplayComponent<NDProps> {
-    private readonly isUsingTrackUpMode = Subject.create(true);
+    private readonly isUsingTrackUpMode = Subject.create(false);
 
     private readonly magneticHeadingWord = Subject.create(Arinc429Word.empty());
 
@@ -270,6 +270,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     mapCenterLong={this.mapCenterLong}
                     mapRotation={this.mapRotation}
                     mapRangeRadius={this.mapRangeRadius}
+                    mapClip={Subject.create(new Path2D('M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312'))}
                     mapVisible={this.mapVisible}
                 />
             </DisplayUnit>

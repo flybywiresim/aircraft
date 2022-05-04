@@ -9,6 +9,7 @@ import { LubberLine } from './LubberLine';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Flag } from '../../shared/Flag';
 import { NDPage } from '../NDPage';
+import { CrossTrackError } from '../../shared/CrossTrackError';
 
 export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackUpMode: Subscribable<boolean> }> implements NDPage {
     public isVisible = Subject.create(false);
@@ -107,6 +108,8 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
                 <Flag shown={this.trkFlagShown} x={381} y={204} class="Red FontSmallest">TRK</Flag>
                 <Flag shown={this.hdgFlagShown} x={384} y={241} class="Red FontLarge">HDG</Flag>
                 <Flag shown={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">MAP NOT AVAIL</Flag>
+
+                <CrossTrackError bus={this.props.bus} x={390} y={646} isPlanMode={Subject.create(false)} />
             </g>
         );
     }
