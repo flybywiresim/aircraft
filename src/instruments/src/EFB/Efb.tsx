@@ -317,9 +317,9 @@ const Efb = () => {
             if (pushbackPausedRef.current) {
                 SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
                 SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
-                SimVar.SetSimVarValue('ACCELERATION BODY Z', 'feet per second squared', 0);
+                // SimVar.SetSimVarValue('ACCELERATION BODY Z', 'feet per second squared', 0);
                 SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', 0);
-                SimVar.SetSimVarValue('ROTATION ACCELERATION BODY Y', 'radians per second squared', 0);
+                // SimVar.SetSimVarValue('ROTATION ACCELERATION BODY Y', 'radians per second squared', 0);
                 SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
                 return;
             }
@@ -340,12 +340,11 @@ const Efb = () => {
                 * (parkingBrakeEngaged ? 0.8 : 8) * tugInertiaFactorRef.current;
             dispatch(setTugCommandedSpeed(tugCommandedSpeed)); // debug
 
-            SimVar.SetSimVarValue('Pushback Wait', 'bool', false);
+            SimVar.SetSimVarValue('Pushback Wait', 'bool', tugCommandedSpeed === 0);
             // Set tug heading
-            SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', convertedComputedHeading);
+            SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', tugCommandedSpeed !== 0 ? convertedComputedHeading : 0);
             SimVar.SetSimVarValue('ROTATION VELOCITY BODY X', 'Number', 0);
-            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
-            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
+            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', tugCommandedSpeed !== 0 ? computedRotationVelocity : 0);
             SimVar.SetSimVarValue('ROTATION VELOCITY BODY Z', 'Number', 0);
             // Set tug speed
             SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', tugCommandedSpeed);

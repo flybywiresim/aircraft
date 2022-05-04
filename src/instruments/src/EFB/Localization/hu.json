@@ -351,8 +351,10 @@
   "Pushback": {
     "Backward": "Hátra",
     "CallTug": "Vontató hívása",
+    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
+    "DisableSystemMessageTitle": "Disable Pushback System",
     "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
-    "EnableSystemMessageTitle": "Enable Pushback Systems",
+    "EnableSystemMessageTitle": "Enable Pushback System",
     "Forward": "Előre",
     "Halt": "Állj",
     "LeavePageMessage": "Pausing Pushback",
