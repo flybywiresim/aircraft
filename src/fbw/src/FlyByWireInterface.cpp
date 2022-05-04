@@ -1338,7 +1338,7 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
   fcdcs[fcdcIndex].discreteInputs.sec2Valid = !secsDiscreteOutputs[1].sec_failed;
   fcdcs[fcdcIndex].discreteInputs.eng1NotOnGroundAndNotLowOilPress = false;
   fcdcs[fcdcIndex].discreteInputs.eng2NotOnGroundAndNotLowOilPress = false;
-  fcdcs[fcdcIndex].discreteInputs.noseGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  fcdcs[fcdcIndex].discreteInputs.noseGearPressed = idLgciuNoseGearCompressed[0]->get();
   fcdcs[fcdcIndex].discreteInputs.oppFcdcFailed = !fcdcsDiscreteOutputs[oppFcdcIndex].fcdcValid;
   fcdcs[fcdcIndex].discreteInputs.sec3Off = idSecPushbuttonStatus[3]->get();
   fcdcs[fcdcIndex].discreteInputs.sec3Valid = !secsDiscreteOutputs[2].sec_failed;
@@ -1412,7 +1412,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].discreteInputs.rudderTrimActuatorHealthy = true;
   facs[facIndex].discreteInputs.rudderTravelLimActuatorHealthy = true;
   facs[facIndex].discreteInputs.slatsExtended = false;
-  facs[facIndex].discreteInputs.noseGearPressed = flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  facs[facIndex].discreteInputs.noseGearPressed = idLgciuNoseGearCompressed[facIndex]->get();
   facs[facIndex].discreteInputs.ir3Switch = false;
   facs[facIndex].discreteInputs.adr3Switch = false;
   facs[facIndex].discreteInputs.yawDamperHasHydPress = facIndex == 0 ? idHydGreenPressurised->get() : idHydYellowPressurised->get();
