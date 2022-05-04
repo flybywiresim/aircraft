@@ -2,6 +2,7 @@ import React from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { DcduStatusMessage } from '@atsu/components/DcduLink';
+import { UplinkMessageInterpretation } from '@atsu/components/UplinkMessageInterpretation';
 import { MessageVisualization } from './MessageVisualization';
 
 type DatalinkMessageProps = {
@@ -49,6 +50,10 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
             content += `${message.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;
         }
     });
+
+    if (UplinkMessageInterpretation.SemanticAnswerRequired(messages[0]) && messages[0].Response) {
+        content += '\n------------------------------';
+    }
 
     // remove the last newline
     if (content.length !== 0) {
