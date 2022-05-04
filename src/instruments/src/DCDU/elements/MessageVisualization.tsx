@@ -16,23 +16,25 @@ interface ColorizedLine {
 type MessageVisualizationProps = {
     message: string,
     backgroundColor: [number, number, number],
-    keepNewlines: boolean,
+    keepNewlines?: boolean,
     ignoreHighlight: boolean,
     cssClass: string,
     yStart: number,
     deltaY: number,
-    highPriority: boolean,
+    seperatorLine?: number,
     updateSystemStatusMessage: (status: DcduStatusMessage) => void
 }
 
-function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, deltaY: number, useDeltaY: boolean, ignoreHighlight: boolean) {
+function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, deltaY: number, useDeltaY: boolean, ignoreHighlight: boolean, backgroundActive: boolean) {
     if (startIdx >= line.length) {
         return <></>;
     }
 
     const highlight = line[startIdx].highlight && !ignoreHighlight;
     let className = 'message-tspan';
-    if (highlight) {
+    if (backgroundActive) {
+        className = 'message-onbackground';
+    } else if (highlight) {
         className = ' message-highlight';
     }
     let nextIdx = line.length;
@@ -51,14 +53,14 @@ function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, 
             return (
                 <>
                     <tspan x="224" dy={deltaY} className={className}>{message}</tspan>
-                    {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight)}
+                    {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight, backgroundActive)}
                 </>
             );
         }
         return (
             <>
                 <tspan x="224" y={startY} className={className}>{message}</tspan>
-                {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight)}
+                {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight, backgroundActive)}
             </>
         );
     }
@@ -67,12 +69,12 @@ function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, 
     return (
         <>
             <tspan className={className}>{message}</tspan>
-            {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight)}
+            {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight, backgroundActive)}
         </>
     );
 }
 
-function visualizeLines(lines: ColorizedLine[], yStart: number, deltaY: number, ignoreHighlight: boolean) {
+function visualizeLines(lines: ColorizedLine[], backgroundIdx: number, yStart: number, deltaY: number, ignoreHighlight: boolean) {
     if (lines.length === 0) {
         return <></>;
     }
@@ -80,10 +82,14 @@ function visualizeLines(lines: ColorizedLine[], yStart: number, deltaY: number, 
     const firstLine = lines[0];
     lines.shift();
 
+    let lineCount = 0;
     return (
         <>
-            {visualizeLine(firstLine.words, 0, yStart, deltaY, false, ignoreHighlight)}
-            {lines.map((line) => visualizeLine(line.words, 0, yStart, deltaY, true, ignoreHighlight))}
+            {visualizeLine(firstLine.words, 0, yStart, deltaY, false, ignoreHighlight, backgroundIdx <= 0)}
+            {lines.map((line) => {
+                lineCount += 1;
+                return visualizeLine(line.words, 0, yStart, deltaY, true, ignoreHighlight, backgroundIdx <= lineCount);
+            })}
         </>
     );
 }
@@ -188,8 +194,8 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
 }
 
 export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
-    message, backgroundColor, keepNewlines, ignoreHighlight, cssClass, yStart, deltaY,
-    highPriority, updateSystemStatusMessage,
+    message, backgroundColor, keepNewlines = false, ignoreHighlight, cssClass, yStart, deltaY,
+    seperatorLine = undefined, updateSystemStatusMessage,
 }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
@@ -223,9 +229,6 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     if (message.length === 0) {
         return <></>;
     }
-    if (highPriority) {
-        message = `   ***HIGH PRIORITY***\n${message}`;
-    }
 
     let lines = createVisualizationLines(message, keepNewlines);
 
@@ -249,16 +252,42 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     lines = lines.slice(startIndex, endIndex);
 
     // calculate the position of the background rectangle
-    const contentHeight = 120 + lines.length * 230;
-    const backgroundNeeded = backgroundColor[0] !== 0 || backgroundColor[1] !== 0 || backgroundColor[2] !== 0;
+    let backgroundY = 472;
+    let contentHeight = 120;
+    let backgroundNeeded = false;
+    if (backgroundColor[0] !== 0 || backgroundColor[1] !== 0 || backgroundColor[2] !== 0) {
+        if (seperatorLine !== undefined) {
+            if (seperatorLine >= endIndex) {
+                // only the next message is visible
+                contentHeight += lines.length * 230;
+                backgroundNeeded = true;
+            } else if (startIndex <= seperatorLine) {
+                // seperator on the same page
+                contentHeight += (endIndex - seperatorLine) * 230;
+                backgroundY += (seperatorLine - startIndex) * 230;
+                backgroundNeeded = true;
+            }
+        } else {
+            contentHeight += lines.length * 230;
+            backgroundNeeded = true;
+        }
+    }
     const rgb = `rgb(${backgroundColor[0]},${backgroundColor[1]},${backgroundColor[2]})`;
+    let backgroundIdx = maxLines;
+    if (backgroundNeeded) {
+        if (seperatorLine && seperatorLine >= startIndex) {
+            backgroundIdx = (seperatorLine - startIndex) >= maxLines ? 0 : (seperatorLine - startIndex);
+        } else if (!seperatorLine) {
+            backgroundIdx = 0;
+        }
+    }
 
     return (
         <>
             {backgroundNeeded && (
                 <Checkerboard
                     x={130}
-                    y={472}
+                    y={backgroundY}
                     width={3600}
                     height={contentHeight}
                     cellSize={10}
@@ -266,7 +295,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
                 />
             )}
             <text className={cssClass}>
-                {visualizeLines(lines, yStart, deltaY, ignoreHighlight)}
+                {visualizeLines(lines, backgroundIdx, yStart, deltaY, ignoreHighlight)}
             </text>
             {pageCount > 1 && (
                 <>

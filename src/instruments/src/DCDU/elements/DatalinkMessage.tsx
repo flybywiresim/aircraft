@@ -19,6 +19,12 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
         } else {
             backgroundColor = [0, 255, 255];
         }
+    } else if (UplinkMessageInterpretation.SemanticAnswerRequired(messages[0])) {
+        if (messages[0].Response?.ComStatus === AtsuMessageComStatus.Sent || messages[0].Response?.ComStatus === AtsuMessageComStatus.Sending) {
+            backgroundColor = [0, 255, 0];
+        } else {
+            backgroundColor = [0, 255, 255];
+        }
     }
 
     // check if highlight is needed
@@ -51,8 +57,11 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
         }
     });
 
+    let messageSeperatorLine: number | undefined = undefined;
     if (UplinkMessageInterpretation.SemanticAnswerRequired(messages[0]) && messages[0].Response) {
-        content += '\n------------------------------';
+        messageSeperatorLine = content.split('\n').length;
+        content += '------------------------------\n';
+        content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;
     }
 
     // remove the last newline
@@ -60,18 +69,17 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
         content = content.slice(0, -1);
     }
 
-    let highPriority = false;
     if (messages[0].Content?.Urgent) {
-        highPriority = true;
+        content = `   ***HIGH PRIORITY***\n${content}`;
     }
 
     return (
         <g>
             <MessageVisualization
                 message={content}
-                highPriority={highPriority}
+                seperatorLine={messageSeperatorLine}
                 backgroundColor={backgroundColor}
-                keepNewlines={messages[0].Direction === AtsuMessageDirection.Downlink}
+                keepNewlines
                 ignoreHighlight={ignoreHighlight}
                 cssClass={messageClass}
                 yStart={720}

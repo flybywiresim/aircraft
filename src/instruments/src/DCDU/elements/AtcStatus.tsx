@@ -21,7 +21,6 @@ export const AtcStatus: React.FC<AtcStatusProps> = ({ message }) => {
             <MessageVisualization
                 message={message}
                 backgroundColor={[0, 0, 0]}
-                keepNewlines={false}
                 ignoreHighlight={false}
                 cssClass={cssClass}
                 yStart={800}
