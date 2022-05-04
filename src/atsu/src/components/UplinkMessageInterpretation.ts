@@ -89,5 +89,17 @@ export class UplinkMessageInterpretation {
                 cpdlc.Response = response;
             }
         }
+
+        // TODO fill out the values of content and extension
+    }
+
+    public static HasNegativeResponse(message: CpdlcMessage): boolean {
+        if (message.Content.TypeId in UplinkMessageInterpretation.SemanticAnswerTable) {
+            const lutEntry = UplinkMessageInterpretation.SemanticAnswerTable[message.Content.TypeId];
+            if (lutEntry.positiveOrNegative) {
+                return message.Response.Content.TypeId !== lutEntry.messages[1];
+            }
+        }
+        return false;
     }
 }
