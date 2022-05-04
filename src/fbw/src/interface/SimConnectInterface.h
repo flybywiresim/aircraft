@@ -268,6 +268,8 @@ class SimConnectInterface {
   base_elac_analog_outputs getClientDataElacAnalogsOutput();
   base_elac_out_bus getClientDataElacBusOutput();
 
+  bool setClientDataSecBus(base_sec_out_bus output, int secIndex);
+
   bool setClientDataAdr(base_adr_bus output, int adrIndex);
   bool setClientDataIr(base_ir_bus output, int irIndex);
   bool setClientDataRa(base_ra_bus output);
@@ -295,6 +297,8 @@ class SimConnectInterface {
     ELAC_DISCRETE_OUTPUTS,
     ELAC_ANALOG_OUTPUTS,
     ELAC_BUS_OUTPUT,
+    SEC_1_BUS_OUTPUT,
+    SEC_2_BUS_OUTPUT,
     ADR_1_INPUTS,
     ADR_2_INPUTS,
     ADR_3_INPUTS,

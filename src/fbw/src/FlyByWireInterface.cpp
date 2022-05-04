@@ -1318,6 +1318,10 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secsAnalogOutputs[secIndex] = secs[secIndex].getAnalogOutputs();
   secsBusOutputs[secIndex] = secs[secIndex].getBusOutputs();
 
+  if (elacDisabled != -1 && secIndex < 2) {
+    simConnectInterface.setClientDataSecBus(secsBusOutputs[secIndex], secIndex);
+  }
+
   idSecFaultLightOn[secIndex]->set(secsDiscreteOutputs[secIndex].sec_failed);
 
   return true;
