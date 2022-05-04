@@ -95,7 +95,7 @@
       "MaximumPassengers": "Maksymalna Liczba Pasażerów",
       "Model": "Model",
       "Range": "Zasięg",
-      "Title": "Przegląd Danych"
+      "Title": "Dane o Samolocie"
     },
     "Title": "Odprawa"
   },
@@ -282,13 +282,13 @@
         "UnitFeet": "stóp",
         "UnitFtMin": "stóp/min",
         "UnitNM": "NM",
-        "VerticalSpeed": "Prędkość Wznoszenia/Opadania"
+        "VerticalSpeed": "Prędkość Wznoszenia/Zniżania"
       },
       "GroundSpeed": {
         "Add": "Dodaj",
         "FetchingSpeedFromSimulator": "Pobieranie Prędkości z Symulatora",
         "GroundSpeed": "Prędkość Względem Ziemi",
-        "ManualInput": "Ręczne Wprowadzenie",
+        "ManualInput": "Wprowadź Ręcznie",
         "MinAltitude": "Wysokość Minimalna",
         "RemoveLast": "Usuń Ostatni",
         "Sync": "Synchronizuj",
@@ -298,8 +298,8 @@
       },
       "Result": {
         "BeforeTarget": "przed celem",
-        "DesiredDescentAngle": "Pożądany Kąt Opadania",
-        "DesiredVerticalSpeed": "Pożądana Prędkość Opadania",
+        "DesiredDescentAngle": "Pożądany Kąt Zniżania",
+        "DesiredVerticalSpeed": "Pożądana Prędkość Zniżania",
         "StartYourDescentAbout": "Rozpocznij zniżanie około",
         "Title": "Wynik"
       },
@@ -338,30 +338,34 @@
       "SavingPreset": "Zapisywanie Ustawienia",
       "SelectAnInteriorLightingPresetToLoadOrSave": "Wybierz ustawienie oświetlenia wnętrza, które chcesz wczytać lub nadpisać.",
       "TT": {
-        "AircraftMustBePowered": "Aircraft Must be Powered",
-        "ClickTextToChangeThePresetsName": "Click Text to Change the Preset's Name",
-        "LoadThisPreset": "Load This Preset",
-        "SaveTheCurrentLightingLevels": "Save the Current Lighting Levels"
+        "AircraftMustBePowered": "Samolot Musi Być Zasilony",
+        "ClickTextToChangeThePresetsName": "Kliknij Tutaj, aby Zmienić Nazwę Ustawienia",
+        "LoadThisPreset": "Wczytaj To Ustawienie",
+        "SaveTheCurrentLightingLevels": "Zapisz Bieżące Ustawienia Oświetlenia"
       },
-      "TheAircraftMustBePoweredForInteriorLightingPresets": "The aircraft must be powered for interior lighting presets.",
-      "Title": "Interior Lighting"
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "Samolot musi być zasilany, by możliwe było zapisanie ustawień.",
+      "Title": "Oświetlenie Wewnętrzne"
     },
-    "Title": "Presets"
+    "Title": "Ustawienia Predefiniowane"
   },
   "Pushback": {
-    "Backward": "Backward",
-    "CallTug": "Call Tug",
-    "Forward": "Forward",
-    "Halt": "Paused",
+    "Backward": "Do Tyłu",
+    "CallTug": "Wezwij Holownik",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
+    "EnableSystemMessageTitle": "Enable Pushback Systems",
+    "Forward": "Do Przodu",
+    "Halt": "Stój",
     "LeavePageMessage": "Pausing Pushback",
     "Left": "Left",
     "Moving": "Moving",
     "ParkingBrake": {
-      "Off": "Off",
-      "On": "On",
-      "Title": "Parking Brake"
+      "Off": "Wył.",
+      "On": "Wł.",
+      "Title": "Hamulec Postojowy"
     },
     "Right": "Right",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
     "TT": {
       "CallReleaseTug": "Call or release tug",
       "CenterPlaneMode": "Center map on plane On/Off",
@@ -373,81 +377,84 @@
       "SetReleaseParkingBrake": "Set or release parking brake",
       "SliderDirection": "Move for desired direction",
       "SliderSpeed": "Move for desired speed",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
       "ZoomIn": "Zoom in",
       "ZoomOut": "Zoom out"
     },
-    "TugDirection": "Tug Direction",
-    "TugSpeed": "Tug Speed"
+    "TugAttached": "Tug is attached",
+    "TugDirection": "Kierunek Holowania",
+    "TugSpeed": "Prędkość Holowania"
   },
   "Settings": {
     "About": {
-      "Title": "About"
+      "Title": "O Programie"
     },
     "AircraftOptionsPinPrograms": {
-      "AccelerationHeight": "Acceleration Height (ft)",
+      "AccelerationHeight": "Wysokość Zwiększenia Prędkości (ft)",
       "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
-      "IsisBaroUnit": "ISIS Baro Unit",
-      "IsisMetricAltitude": "ISIS Metric Altitude",
+      "IsisBaroUnit": "Ustawienie Jednostki Barometrycznej na ISIS",
+      "IsisMetricAltitude": "Ustawienie Wysokości Metrycznej na ISIS",
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
-      "PaxSigns": "PAX Signs",
-      "RmpVhfSpacing": "RMP VHF Spacing",
-      "ThrustReductionHeight": "Thrust Reduction Height (ft)",
-      "Title": "Aircraft Options / Pin Programs",
-      "WeightUnit": "Weight Unit"
+      "PaxSigns": "Znaki dla Pasażerów",
+      "RmpVhfSpacing": "Odstępy Częstotliwości VHF na Panelu RMP",
+      "ThrustReductionHeight": "Wysokość Redukcji Ciągu (ft)",
+      "Title": "Opcje Samolotu/Przypięte Programy",
+      "WeightUnit": "Jednostka Masy"
     },
     "AtsuAoc": {
-      "AtisAtcSource": "ATIS/ATC Source",
-      "AutomaticallyImportSimBriefData": "Automatically Import SimBrief Data",
-      "Enable": "Enable",
-      "EnableTelex": "Enable TELEX",
-      "ErrorReporting": "Error Reporting",
+      "AtisAtcSource": "Źródło ATIS/ATC",
+      "AutomaticallyImportSimBriefData": "Automatyczne Importowanie Danych SimBrief",
+      "Enable": "Włącz",
+      "EnableTelex": "Włącz TELEX",
+      "ErrorReporting": "Zgłaszanie Błędów",
       "HoppieEnabled": "Hoppie enabled",
-      "HoppieUserId": "Hoppie User ID",
-      "MetarSource": "METAR Source",
-      "OptionalA32nxErrorReporting": "Optional A32NX Error Reporting",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
-      "SimBriefUsernamePilotId": "SimBrief Username/Pilot ID",
-      "TafSource": "TAF Source",
+      "HoppieUserId": "ID Użytkownika Hoppie",
+      "MetarSource": "Źródło METAR",
+      "OptionalA32nxErrorReporting": "Opcjonalne Raportowanie Błędów A32NX",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Sprawdź, czy poprawnie wprowadzono nazwę użytkownika SimBrief lub ID pilota.",
+      "SimBriefUsernamePilotId": "Nazwa Użytkownika SimBrief/ID Pilota",
+      "TafSource": "Źródło TAF",
       "Telex": "TELEX",
-      "TelexEnablesFreeTextAndLiveMap": "TELEX enables free text and live map. If enabled, aircraft position data is published for the duration of the flight. Messages are public and not moderated. USE THIS FEATURE AT YOUR OWN RISK. To learn more about TELEX and the features it enables, please go to https://docs.flybywiresim.com/telex.",
-      "TelexWarning": "TELEX Warning",
+      "TelexEnablesFreeTextAndLiveMap": "TELEX umożliwia przesyłanie tekstu swobodnego i mapy w czasie rzeczywistym. Jeśli funkcja ta jest włączona, dane o pozycji statku powietrznego są publikowane na czas trwania lotu. Wiadomości są publiczne i nie są moderowane. KORZYSTANIE Z TEJ FUNKCJI ODBYWA SIĘ NA WŁASNE RYZYKO. Aby dowiedzieć się więcej o TELEX i jego możliwościach, prosimy wejść na stronę https://docs.flybywiresim.com/telex.",
+      "TelexWarning": "Ostrzeżenie TELEX",
       "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "There was an error validating your Hoppie-ID",
-      "Title": "ATSU / AOC",
-      "YouAreAbleToOptIntoAnonymousErrorReporting": "You are able to opt into anonymous error reporting that will allow us to diagnose, monitor, and take care of issues at a faster rate. This feature is completely optional and we will never collect your personal data, but may allow you to more easily get support and have the issues you encounter fixed at a faster rate.",
+      "Title": "ATSU/AOC",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Użytkownik może zdecydować się na anonimowe zgłaszanie błędów, co pozwoli nam szybciej diagnozować, monitorować i rozwiązywać problemy. Ta funkcja jest całkowicie opcjonalna i nigdy nie będziemy gromadzić danych osobowych użytkownika, ale może pozwolić na łatwiejsze uzyskanie pomocy technicznej i szybsze rozwiązywanie napotkanych problemów.",
       "YourHoppieIdHasBeenRemoved": "Your Hoppie-ID has been removed",
       "YourHoppieIdHasBeenValidated": "Your Hoppie-ID has been validated",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Your SimBrief PilotID has been validated and updated to"
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Twoje ID Pilota SimBrief zostało zatwierdzone i zaktualizowane do"
     },
     "Audio": {
-      "Announcements": "Announcements",
-      "BoardingMusic": "Boarding Music",
-      "EngineInteriorVolume": "Engine Interior Volume",
-      "ExteriorMasterVolume": "Exterior Master Volume",
-      "PassengerAmbience": "Passenger Ambience",
-      "PtuAudibleInCockpit": "PTU Audible in Cockpit",
-      "Title": "Audio",
-      "WindInteriorVolume": "Wind Interior Volume"
+      "Announcements": "Ogłoszenia Załogi",
+      "BoardingMusic": "Muzyka Wejścia na Pokład",
+      "EngineInteriorVolume": "Głośność Silników Wewnątrz Samolotu",
+      "ExteriorMasterVolume": "Ogólna Głośność na Zewnątrz Samolotu",
+      "PassengerAmbience": "Dźwięki Wydawane przez Pasażerów",
+      "PtuAudibleInCockpit": "Dźwięk PTU Słyszalny w Kokpicie",
+      "Title": "Dźwięki",
+      "WindInteriorVolume": "Głośność Wiatru Wewnątrz Samolotu"
     },
-    "Fast": "Fast",
-    "Instant": "Instant",
-    "Real": "Real",
+    "Fast": "Szybki",
+    "Instant": "Natychmiastowy",
+    "Real": "Rzeczywisty",
     "Realism": {
-      "AdirsAlignTime": "ADIRS Align Time",
-      "AutofillChecklists": "Autofill Checklists",
-      "BoardingTime": "Boarding Time",
-      "DmcSelfTestTime": "DMC Self Test Time",
-      "HomeCockpitMode": "Home Cockpit Mode",
-      "McduFocusTimeout": "MCDU Focus Timeout (seconds)",
-      "McduKeyboardInput": "MCDU Keyboard Input",
-      "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
-      "Title": "Realism"
+      "AdirsAlignTime": "Czas Kalibracji ADIRS",
+      "AutofillChecklists": "Automatyczne Wypełnianie Checklist",
+      "BoardingTime": "Czas Wejścia Pasażerów na Pokład",
+      "DmcSelfTestTime": "Czas Autotestu DMC",
+      "HomeCockpitMode": "Tryb Kokpitu Domowego",
+      "McduFocusTimeout": "Czas Aktywności MCDU (sekundy)",
+      "McduKeyboardInput": "Wprowadzanie Danych Fizyczną Klawiaturą do MCDU",
+      "SeparateTillerFromRudderInputs": "Oddziel Sterowanie Kołem od Steru Kierunku",
+      "Title": "Realizm"
     },
     "SimOptions": {
-      "Active": "Active",
-      "Auto": "Auto",
-      "Calibrate": "Calibrate",
-      "DefaultBarometerUnit": "Default Barometer Unit",
-      "DynamicRegistrationDecal": "Dynamic Registration Decal",
+      "Active": "Aktywny",
+      "Auto": "Automatycznie",
+      "Calibrate": "Kalibruj",
+      "DefaultBarometerUnit": "Domyślna Jednostka Barometru",
+      "DynamicRegistrationDecal": "Dynamiczny Numer Rejestracyjny",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
       "ExternalMcduServerPort": "External MCDU Server Port",
       "Hpa": "hPa",
