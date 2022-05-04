@@ -4,6 +4,7 @@ import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hook
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { CpdlcMessageExpectedResponseType } from '@atsu/messages/CpdlcMessageElements';
+import { UplinkMessageInterpretation } from '@atsu/components/UplinkMessageInterpretation';
 import { RequestMessage } from '@atsu/messages/RequestMessage';
 import { DclMessage } from '@atsu/messages/DclMessage';
 import { OclMessage } from '@atsu/messages/OclMessage';
@@ -23,7 +24,6 @@ import { DatalinkMessage } from './elements/DatalinkMessage';
 import { MessageStatus } from './elements/MessageStatus';
 import { AtcStatus } from './elements/AtcStatus';
 import { useUpdate } from '../util.js';
-
 import './style.scss';
 
 enum DcduState {
@@ -46,6 +46,8 @@ export class DcduMessageBlock {
     public messageVisible: boolean = false;
 
     public automaticCloseTimeout: number = -1;
+
+    public semanticResponseIncomplete: boolean = false;
 }
 
 const sortedMessageArray = (messages: Map<number, DcduMessageBlock>): DcduMessageBlock[] => {
@@ -238,6 +240,20 @@ const DCDU: React.FC = () => {
                 const message = messages.get(cpdlcMessages[0].UniqueMessageID);
                 if (message) {
                     message.messageVisible = true;
+                }
+            }
+
+            // check if we have a semantic response and all data is available
+            if (UplinkMessageInterpretation.SemanticAnswerRequired(cpdlcMessages[0]) && cpdlcMessages[0].Response && cpdlcMessages[0].Response.Content) {
+                for (const entry of cpdlcMessages[0].Response.Content.Content) {
+                    if (entry.Value === '') {
+                        const dcduBlock = messages.get(cpdlcMessages[0].UniqueMessageID);
+                        if (dcduBlock) {
+                            dcduBlock.semanticResponseIncomplete = true;
+                            dcduBlock.statusMessage = DcduStatusMessage.NoFmData;
+                            break;
+                        }
+                    }
                 }
             }
 
