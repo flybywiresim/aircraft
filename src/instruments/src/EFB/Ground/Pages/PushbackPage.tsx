@@ -11,7 +11,7 @@ import {
     ChevronLeft,
     ChevronRight,
     PauseCircleFill,
-    PlayCircleFill,
+    PlayCircleFill, ToggleOff, ToggleOn,
     TruckFlatbed,
     ZoomIn,
     ZoomOut,
@@ -38,6 +38,7 @@ import {
     setTugCommandedSpeedFactor,
     setTugInertiaFactor,
 } from '../../Store/features/pushback';
+import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 
 interface TurningRadiusIndicatorProps {
     turningRadius: number;
@@ -69,6 +70,9 @@ const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) 
 
 export const PushbackPage = () => {
     const dispatch = useAppDispatch();
+    const { showModal } = useModals();
+
+    const [pushbackSystemEnabled, setPushbackSystemEnabled] = useSimVar('L:A32NX_PUSHBACK_SYSTEM_ENABLED', 'bool', 100);
 
     const [pushbackAttached] = useSimVar('Pushback Attached', 'bool', 100);
     const [pushbackState, setPushbackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 250);
@@ -114,6 +118,25 @@ export const PushbackPage = () => {
     const pushbackPausedRef = useRef(pushbackPaused);
     pushbackPausedRef.current = pushbackPaused;
 
+    const handleEnableSystem = () => {
+        if (pushbackSystemEnabled) {
+            if (pushbackState < 3) {
+                setPushbackState(!pushbackState);
+            }
+            setPushbackSystemEnabled(0);
+            return;
+        }
+        showModal(
+            <PromptModal
+                title={t('Pushback.EnableSystemMessageTitle')}
+                bodyText={`${t('Pushback.EnableSystemMessageBody')}`}
+                onConfirm={() => {
+                    setPushbackSystemEnabled(1);
+                }}
+            />,
+        );
+    };
+
     const handleCallTug = () => {
         setPushbackState(!pushbackState);
         setPushbackWait(1);
@@ -145,6 +168,8 @@ export const PushbackPage = () => {
     const handleCenterPlaneModeChange = () => {
         dispatch(setCenterPlaneMode(!centerPlaneMode));
     };
+
+    const pushbackActive = () => pushbackSystemEnabled && pushbackAttached;
 
     // Computes the offset from  geo coordinates (Lat, Lon) and a delta of screen coordinates into
     // a destination set of geo coordinates.
@@ -220,6 +245,9 @@ export const PushbackPage = () => {
 
     // Update commanded heading from rudder input
     useEffect(() => {
+        if (!pushbackActive()) {
+            return;
+        }
         // create deadzone
         if (rudderPosition > -0.05 && rudderPosition < 0.05) {
             dispatch(setTugCommandedHeadingFactor(0));
@@ -230,6 +258,9 @@ export const PushbackPage = () => {
 
     // Update commanded speed from elevator input
     useEffect(() => {
+        if (!pushbackActive()) {
+            return;
+        }
         // create deadzone
         if (elevatorPosition > -0.05 && elevatorPosition < 0.05) {
             dispatch(setTugCommandedSpeedFactor(0));
@@ -238,15 +269,6 @@ export const PushbackPage = () => {
         dispatch(setPushbackPaused(false));
         dispatch(setTugCommandedSpeedFactor(-elevatorPosition));
     }, [elevatorPosition]);
-
-    // Stop aircraft when paused
-    useEffect(() => {
-        if (pushbackPaused) {
-            console.log('Paused');
-        } else {
-            console.log('Unpaused');
-        }
-    }, [pushbackPaused]);
 
     // Update actual lat/lon when plane is moving
     useEffect(() => {
@@ -515,14 +537,43 @@ export const PushbackPage = () => {
             {/* Manual Pushback Controls */}
             <div className="flex flex-col p-6 space-y-4 rounded-lg border-2 border-theme-accent">
                 <div className="flex flex-row space-x-4">
+                    {/* Pushback System enabled On/Off */}
+                    {pushbackSystemEnabled ? (
+                        <div className="w-full">
+                            <p className="text-center">{t('Pushback.SystemEnabledOn')}</p>
+                            <TooltipWrapper text={t('Pushback.TT.SystemEnabledOn')}>
+                                <button
+                                    type="button"
+                                    onClick={handleEnableSystem}
+                                    className="bg-green-600 opacity-60 hover:opacity-100 text-theme-text hover:text-theme-secondary transition duration-200'}  border-2 border-theme-accent w-full h-20 rounded-md transition duration-100 flex items-center justify-center"
+                                >
+                                    <ToggleOn size={50} />
+                                </button>
+                            </TooltipWrapper>
+                        </div>
+                    ) : (
+                        <div className="w-full">
+                            <p className="text-center">{t('Pushback.SystemEnabledOff')}</p>
+                            <TooltipWrapper text={t('Pushback.TT.SystemEnabledOff')}>
+                                <button
+                                    type="button"
+                                    onClick={handleEnableSystem}
+                                    className="bg-red-600 opacity-60 hover:opacity-100 text-theme-text hover:text-theme-secondary transition duration-200'}  border-2 border-theme-accent w-full h-20 rounded-md transition duration-100 flex items-center justify-center"
+                                >
+                                    <ToggleOff size={50} />
+                                </button>
+                            </TooltipWrapper>
+                        </div>
+                    )}
+
                     {/* Call Tug */}
                     <div className="w-full">
-                        <p className="text-center">{t('Pushback.CallTug')}</p>
+                        <p className="text-center">{pushbackAttached ? t('Pushback.TugAttached') : t('Pushback.CallTug')}</p>
                         <TooltipWrapper text={t('Pushback.TT.CallReleaseTug')}>
                             <button
                                 type="button"
                                 onClick={handleCallTug}
-                                className={`${pushbackAttached ? 'text-white bg-green-600 border-green-600' : 'bg-theme-highlight opacity-60 hover:opacity-100 text-theme-text hover:text-theme-secondary transition duration-200 disabled:bg-grey-600'}  border-2 border-theme-accent w-full h-20 rounded-md transition duration-100 flex items-center justify-center`}
+                                className={`${pushbackAttached ? 'text-white bg-green-600 border-green-600' : 'bg-theme-highlight opacity-60 hover:opacity-100 text-theme-text hover:text-theme-secondary transition duration-200 disabled:bg-grey-600'}  border-2 border-theme-accent w-full h-20 rounded-md transition duration-100 flex items-center justify-center ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}
                             >
                                 <TruckFlatbed size={40} />
                             </button>
@@ -538,7 +589,7 @@ export const PushbackPage = () => {
                             <button
                                 type="button"
                                 onClick={handlePause}
-                                className={`flex justify-center items-center w-full h-20 text-white bg-green-900 hover:bg-green-600 rounded-md transition duration-100 ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 text-white bg-green-900 hover:bg-green-600 rounded-md transition duration-100 ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                             >
                                 {pushbackPaused ? (
                                     <PlayCircleFill size={40} />
@@ -548,8 +599,6 @@ export const PushbackPage = () => {
                             </button>
                         </TooltipWrapper>
                     </div>
-
-                    <div className="w-full" />
 
                     {/* Parking Brake */}
                     <div className="w-full">
@@ -570,13 +619,13 @@ export const PushbackPage = () => {
 
                     {/* Backward Button */}
                     <div className="w-full">
-                        <p className={`text-center ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}>
+                        <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
                             { t('Pushback.Backward') }
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.DecreaseSpeed')}>
                             <button
                                 type="button"
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                                 onClick={() => handleTugSpeed(tugCommandedSpeedFactor - 0.1)}
                                 onDoubleClick={() => handleTugSpeed(0)}
                             >
@@ -587,13 +636,13 @@ export const PushbackPage = () => {
 
                     {/* Forward Button */}
                     <div className="w-full">
-                        <p className={`text-center ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}>
+                        <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
                             {t('Pushback.Forward')}
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.IncreaseSpeed')}>
                             <button
                                 type="button"
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                                 onClick={() => handleTugSpeed(tugCommandedSpeedFactor + 0.1)}
                                 onDoubleClick={() => handleTugSpeed(0)}
                             >
@@ -604,13 +653,13 @@ export const PushbackPage = () => {
 
                     {/* Left Button */}
                     <div className="w-full">
-                        <p className={`text-center ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}>
+                        <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
                             {t('Pushback.Left')}
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.Left')}>
                             <button
                                 type="button"
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                                 onClick={() => handleTugDirection(tugCommandedHeadingFactor - 0.1)}
                                 onDoubleClick={() => handleTugDirection(0)}
                             >
@@ -621,13 +670,13 @@ export const PushbackPage = () => {
 
                     {/* Right Button */}
                     <div className="w-full">
-                        <p className={`text-center ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}>
+                        <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
                             {t('Pushback.Right')}
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.Right')}>
                             <button
                                 type="button"
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                                 onClick={() => handleTugDirection(tugCommandedHeadingFactor + 0.1)}
                                 onDoubleClick={() => handleTugDirection(0)}
                             >
@@ -639,14 +688,14 @@ export const PushbackPage = () => {
 
                 {/* Direction Slider */}
                 <div>
-                    <p className={`text-center ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}>
+                    <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
                         {t('Pushback.TugDirection')}
                     </p>
                     <TooltipWrapper text={t('Pushback.TT.SliderDirection')}>
                         <div className="flex flex-row items-center space-x-4">
                             <p className="font-bold text-unselected"><ChevronLeft /></p>
                             <Slider
-                                className={`${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                                 onChange={(value) => handleTugDirection(value)}
                                 min={-1}
                                 step={0.01}
@@ -661,14 +710,14 @@ export const PushbackPage = () => {
 
                 {/* Speed Slider */}
                 <div>
-                    <p className={`text-center ${!pushbackAttached && 'opacity-30 pointer-events-none'}`}>
+                    <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
                         {t('Pushback.TugSpeed')}
                     </p>
                     <TooltipWrapper text={t('Pushback.TT.SliderSpeed')}>
                         <div className="flex flex-row items-center space-x-4">
                             <p className="font-bold text-unselected"><ChevronDoubleDown /></p>
                             <Slider
-                                className={`${!pushbackAttached && 'opacity-30 pointer-events-none'}`}
+                                className={`${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                                 min={-1}
                                 step={0.1}
                                 max={1}
