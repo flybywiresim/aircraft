@@ -351,6 +351,8 @@
   "Pushback": {
     "Backward": "Rückwärts",
     "CallTug": "Rufe Flugzeugschlepper",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
+    "EnableSystemMessageTitle": "Enable Pushback Systems",
     "Forward": "Vorwärts",
     "Halt": "Pausiert",
     "LeavePageMessage": "Pausing Pushback",
@@ -362,6 +364,8 @@
       "Title": "Parkbremse"
     },
     "Right": "Rechts",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
     "TT": {
       "CallReleaseTug": "Schlepper rufen oder freigeben",
       "CenterPlaneMode": "Karte auf Flugzeugposition zentrieren",
@@ -373,9 +377,12 @@
       "SetReleaseParkingBrake": "Parkbremse setzen oder lösen",
       "SliderDirection": "Schieberegler verschieben, um die gewünschte Richtung einzustellen",
       "SliderSpeed": "Schieberegler verschieben, um die gewünschte Geschwindigkeit einzustellen",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
       "ZoomIn": "Vergrößern",
       "ZoomOut": "Verkleinern"
     },
+    "TugAttached": "Tug is attached",
     "TugDirection": "Schlepprichtung",
     "TugSpeed": "Schleppgeschwindigkeit"
   },

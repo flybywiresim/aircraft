@@ -351,9 +351,11 @@
   "Pushback": {
     "Backward": "向後",
     "CallTug": "召喚推機車",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
+    "EnableSystemMessageTitle": "Enable Pushback Systems",
     "Forward": "向前",
     "Halt": "已暫停",
-    "LeavePageMessage": "Pausing Pushback",
+    "LeavePageMessage": "暫停推機",
     "Left": "左",
     "Moving": "移動中",
     "ParkingBrake": {
@@ -362,6 +364,8 @@
       "Title": "泊機煞掣"
     },
     "Right": "右",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
     "TT": {
       "CallReleaseTug": "召喚或釋放推機車",
       "CenterPlaneMode": "地圖中央於本機 — 開/關",
@@ -373,9 +377,12 @@
       "SetReleaseParkingBrake": "鎖上或放開泊機煞掣",
       "SliderDirection": "移動到所需方向",
       "SliderSpeed": "移動到所需速度",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
       "ZoomIn": "放大",
       "ZoomOut": "縮小"
     },
+    "TugAttached": "Tug is attached",
     "TugDirection": "推機方向",
     "TugSpeed": "推機速度"
   },

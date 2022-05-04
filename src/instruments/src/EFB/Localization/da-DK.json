@@ -351,6 +351,8 @@
   "Pushback": {
     "Backward": "Bagud",
     "CallTug": "Kald skubber",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
+    "EnableSystemMessageTitle": "Enable Pushback Systems",
     "Forward": "Fremad",
     "Halt": "Pauset",
     "LeavePageMessage": "Pausing Pushback",
@@ -362,6 +364,8 @@
       "Title": "Parkeringsbremse"
     },
     "Right": "Højre",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
     "TT": {
       "CallReleaseTug": "Kald eller frigør skubber",
       "CenterPlaneMode": "Centrer kort på flyet On/Off",
@@ -373,9 +377,12 @@
       "SetReleaseParkingBrake": "Indstil eller slip parkeringsbremse",
       "SliderDirection": "Move for desired direction",
       "SliderSpeed": "Move for desired speed",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
       "ZoomIn": "Zoom ind",
       "ZoomOut": "Zoom ud"
     },
+    "TugAttached": "Tug is attached",
     "TugDirection": "Skubber Retning",
     "TugSpeed": "Skubber hastighed"
   },

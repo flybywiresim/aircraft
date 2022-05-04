@@ -349,11 +349,10 @@
     "Title": "Presets"
   },
   "Pushback": {
-    "SystemEnabledOn": "Pushback System On",
-    "SystemEnabledOff": "Pushback System Off",
     "Backward": "Backward",
     "CallTug": "Call Tug",
-    "TugAttached": "Tug is attached",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
+    "EnableSystemMessageTitle": "Enable Pushback Systems",
     "Forward": "Forward",
     "Halt": "Paused",
     "LeavePageMessage": "Pausing Pushback",
@@ -365,6 +364,8 @@
       "Title": "Parking Brake"
     },
     "Right": "Right",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
     "TT": {
       "CallReleaseTug": "Call or release tug",
       "CenterPlaneMode": "Center map on plane On/Off",
@@ -376,11 +377,12 @@
       "SetReleaseParkingBrake": "Set or release parking brake",
       "SliderDirection": "Move for desired direction",
       "SliderSpeed": "Move for desired speed",
-      "ZoomIn": "Zoom in",
-      "ZoomOut": "Zoom out",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
       "SystemEnabledOn": "Click to turn the pushback system completely off.",
-      "SystemEnabledOff": "Click to turn the pushback system on."
+      "ZoomIn": "Zoom in",
+      "ZoomOut": "Zoom out"
     },
+    "TugAttached": "Tug is attached",
     "TugDirection": "Tug Direction",
     "TugSpeed": "Tug Speed"
   },

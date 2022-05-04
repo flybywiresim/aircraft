@@ -194,7 +194,7 @@
       },
       "TT": {
         "ChangeChartProvider": "Změnit poskytovatele map",
-        "ChangeChartSortMethod": "Změna metodu řazení map",
+        "ChangeChartSortMethod": "Změna metody řazení map",
         "RemoveAllPinnedCharts": "Odstranit všechny připnuté mapy"
       },
       "Title": "Připnuté mapy",
@@ -351,9 +351,11 @@
   "Pushback": {
     "Backward": "Vzad",
     "CallTug": "Přivolat pushback",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
+    "EnableSystemMessageTitle": "Enable Pushback Systems",
     "Forward": "Vpřed",
     "Halt": "Pozastaveno",
-    "LeavePageMessage": "Pausing Pushback",
+    "LeavePageMessage": "Vytlačení pozastaveno",
     "Left": "Vlevo",
     "Moving": "V pohybu",
     "ParkingBrake": {
@@ -362,20 +364,25 @@
       "Title": "Parkovací brzda"
     },
     "Right": "Vpravo",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
     "TT": {
-      "CallReleaseTug": "Call or release tug",
-      "CenterPlaneMode": "Center map on plane On/Off",
-      "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0)",
-      "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0)",
-      "Left": "Go left (double click for straight)",
-      "PausePushback": "Pause or unpause pushback",
-      "Right": "Go right (double click for straight)",
-      "SetReleaseParkingBrake": "Set or release parking brake",
-      "SliderDirection": "Move for desired direction",
-      "SliderSpeed": "Move for desired speed",
-      "ZoomIn": "Zoom in",
-      "ZoomOut": "Zoom out"
+      "CallReleaseTug": "Přivolat nebo uvolnit pushback",
+      "CenterPlaneMode": "Vycentrovat mapu na letadlo Zap/Vyp",
+      "DecreaseSpeed": "Vzad nebo pomaleji vpřed (dvojklikem nastavit rychlost na 0)",
+      "IncreaseSpeed": "Vpřed nebo pomaleji vzad (dvojklikem nastavit rychlost na 0)",
+      "Left": "Jet doleva (dvojklik pro jízdu rovně)",
+      "PausePushback": "Pozastavit nebo zrušit pozastavení vytlačení",
+      "Right": "Jet doprava (dvojklik pro jízdu rovně)",
+      "SetReleaseParkingBrake": "Zapnout nebo vypnout parkovací brzdu",
+      "SliderDirection": "Posuňte pro požadovaný směr",
+      "SliderSpeed": "Posuňte pro požadovanou rychlost",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "ZoomIn": "Přiblížit",
+      "ZoomOut": "Oddálit"
     },
+    "TugAttached": "Tug is attached",
     "TugDirection": "Směr vytlačení",
     "TugSpeed": "Rychlost vytlačení"
   },

@@ -351,6 +351,8 @@
   "Pushback": {
     "Backward": "Taaksepäin",
     "CallTug": "Kutsu työntöauto",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
+    "EnableSystemMessageTitle": "Enable Pushback Systems",
     "Forward": "Eteenpäin",
     "Halt": "Pysäytä",
     "LeavePageMessage": "Pausing Pushback",
@@ -362,6 +364,8 @@
       "Title": "Pysäköintijarru"
     },
     "Right": "Right",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
     "TT": {
       "CallReleaseTug": "Call or release tug",
       "CenterPlaneMode": "Center map on plane On/Off",
@@ -373,9 +377,12 @@
       "SetReleaseParkingBrake": "Set or release parking brake",
       "SliderDirection": "Move for desired direction",
       "SliderSpeed": "Move for desired speed",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
       "ZoomIn": "Zoom in",
       "ZoomOut": "Zoom out"
     },
+    "TugAttached": "Tug is attached",
     "TugDirection": "Työntöauton suunta",
     "TugSpeed": "Työntöauton nopeus"
   },

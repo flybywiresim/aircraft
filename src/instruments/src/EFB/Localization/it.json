@@ -351,9 +351,11 @@
   "Pushback": {
     "Backward": "Indietro",
     "CallTug": "Chiama Tug",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
+    "EnableSystemMessageTitle": "Enable Pushback Systems",
     "Forward": "Avanti",
-    "Halt": "In Pausa",
-    "LeavePageMessage": "Pausing Pushback",
+    "Halt": "Interrotto",
+    "LeavePageMessage": "Interruzione Pushback",
     "Left": "Sinistra",
     "Moving": "In Movimento",
     "ParkingBrake": {
@@ -362,20 +364,25 @@
       "Title": "Freni Parcheggio"
     },
     "Right": "Destra",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
     "TT": {
       "CallReleaseTug": "Chiama o allontana tug",
       "CenterPlaneMode": "Centra mappa sull'aereo On/Off",
       "DecreaseSpeed": "Indietro o avanti lento (doppio click per impostare velocità a 0)",
       "IncreaseSpeed": "Avanti o indietro lento (doppio click per impostare velocità a 0)",
       "Left": "Vai a sinistra (doppio click per dritto)",
-      "PausePushback": "Pausa o riattiva pushback",
+      "PausePushback": "Interrompi o riavvia pushback",
       "Right": "Vai a destra (doppio click per dritto)",
       "SetReleaseParkingBrake": "Inserisci o rilascia freni parcheggio",
       "SliderDirection": "Sposta per direzione desiderata",
       "SliderSpeed": "Sposta per velocità desiderata",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
       "ZoomIn": "Ingrandisci",
       "ZoomOut": "Rimpicciolisci"
     },
+    "TugAttached": "Tug is attached",
     "TugDirection": "Direzione Tug",
     "TugSpeed": "Velocità Tug"
   },

@@ -94,7 +94,7 @@
       "MaximumFuelCapacity": "最大燃油容量",
       "MaximumPassengers": "最大乘客数量",
       "Model": "機型",
-      "Range": "Range",
+      "Range": "航距",
       "Title": "總覽"
     },
     "Title": "簽派"
@@ -106,7 +106,7 @@
     "Compact": {
       "Title": "密集"
     },
-    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "目前還不能保證對以下故障進行全面仿真",
+    "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "現時還不能保證完全模擬以下故障。",
     "Search": "搜尋",
     "Title": "故障"
   },
@@ -203,8 +203,8 @@
     "PleaseWait": "請稍候...",
     "ShowingAllItems": "顯示所有項目",
     "TT": {
-      "FitChartToHeight": "使航圖適合高度",
-      "FitChartToWidth": "使航圖適合寬度",
+      "FitChartToHeight": "使航圖符合高度",
+      "FitChartToWidth": "使航圖符合寬度",
       "ResetMovement": "重置移動",
       "RotateLeft45Degrees": "向左旋轉 45 度",
       "RotateRight45Degrees": "向右旋轉 45 度",
@@ -229,9 +229,9 @@
       "DropDownYes": "是",
       "FillDataFrom": "填充數據來自",
       "FlapsConfiguration": "襟翼設定",
-      "Low": "低",
-      "MaximumManual": "最大人工制動",
-      "Medium": "中",
+      "Low": "低剎力",
+      "MaximumManual": "最高性能手動着陸",
+      "Medium": "中剎力",
       "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
       "MetarErrorDialogTitle": "Error Parsing OFP METAR",
       "OverweightProcedure": "超重程序",
@@ -239,7 +239,7 @@
       "ReverseThrust": "反推",
       "RunwayAltitude": "跑道高度",
       "RunwayAltitudeUnit": "海拔高度（英尺/ft.）",
-      "RunwayCondition": "Runway Condition",
+      "RunwayCondition": "跑道狀況",
       "RunwayConditions": {
         "Dry": "Dry (6)",
         "Good": "Good (5)",
@@ -321,8 +321,8 @@
       "ReadyTakeoff": "準備起飛",
       "ReadyTaxi": "準備滑行",
       "SelectAPresetToLoad": "選擇要加載的預設",
-      "TheAircraftMustBeOnTheGroundToLoadAPreset": "飛機必須在地面上來加載預設",
-      "TheAircraftMustBeOntheGroundToLoadAPreset": "飛機必須在地面上來加載預設",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "飛機必須在地面上才能加載預設",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "飛機必須在地面上才能加載預設",
       "Title": "飛機狀態",
       "Turnaround": "過站"
     },
@@ -335,33 +335,37 @@
       "NoName": "無名",
       "PleaseConfirmSavingPreset": "請確認保存預設",
       "SavePreset": "保存預設",
-      "SavingPreset": "保存預設",
+      "SavingPreset": "正在儲存預設",
       "SelectAnInteriorLightingPresetToLoadOrSave": "選擇要加載或保存的內部照明預設",
       "TT": {
         "AircraftMustBePowered": "飛機必須通電",
         "ClickTextToChangeThePresetsName": "單擊「文本」以更改預設的名稱",
-        "LoadThisPreset": "Load This Preset",
-        "SaveTheCurrentLightingLevels": "Save the Current Lighting Levels"
+        "LoadThisPreset": "加載此預設",
+        "SaveTheCurrentLightingLevels": "保存當前照明亮度"
       },
-      "TheAircraftMustBePoweredForInteriorLightingPresets": "The aircraft must be powered for interior lighting presets.",
-      "Title": "Interior Lighting"
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "飛機必須接通電源才能使用艙內照明預設",
+      "Title": "艙內照明"
     },
-    "Title": "Presets"
+    "Title": "預設"
   },
   "Pushback": {
-    "Backward": "Backward",
-    "CallTug": "Call Tug",
-    "Forward": "Forward",
-    "Halt": "Paused",
+    "Backward": "向後",
+    "CallTug": "呼叫拖車",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
+    "EnableSystemMessageTitle": "Enable Pushback Systems",
+    "Forward": "向前",
+    "Halt": "暫停",
     "LeavePageMessage": "Pausing Pushback",
     "Left": "Left",
     "Moving": "Moving",
     "ParkingBrake": {
-      "Off": "Off",
-      "On": "On",
-      "Title": "Parking Brake"
+      "Off": "松開",
+      "On": "剎住",
+      "Title": "泊機煞車"
     },
     "Right": "Right",
+    "SystemEnabledOff": "Pushback System Off",
+    "SystemEnabledOn": "Pushback System On",
     "TT": {
       "CallReleaseTug": "Call or release tug",
       "CenterPlaneMode": "Center map on plane On/Off",
@@ -373,36 +377,39 @@
       "SetReleaseParkingBrake": "Set or release parking brake",
       "SliderDirection": "Move for desired direction",
       "SliderSpeed": "Move for desired speed",
+      "SystemEnabledOff": "Click to turn the pushback system on.",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
       "ZoomIn": "Zoom in",
       "ZoomOut": "Zoom out"
     },
-    "TugDirection": "Tug Direction",
-    "TugSpeed": "Tug Speed"
+    "TugAttached": "Tug is attached",
+    "TugDirection": "推機方向",
+    "TugSpeed": "推機速度"
   },
   "Settings": {
     "About": {
-      "Title": "About"
+      "Title": "相關"
     },
     "AircraftOptionsPinPrograms": {
-      "AccelerationHeight": "Acceleration Height (ft)",
-      "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
-      "IsisBaroUnit": "ISIS Baro Unit",
-      "IsisMetricAltitude": "ISIS Metric Altitude",
+      "AccelerationHeight": "加速高度（英尺/ft）",
+      "EngineOutAccelerationHeight": "引擎失效速度高度（英尺/ft）",
+      "IsisBaroUnit": "ISIS 氣壓單位",
+      "IsisMetricAltitude": "ISIS 公制高度顯示",
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
-      "PaxSigns": "PAX Signs",
-      "RmpVhfSpacing": "RMP VHF Spacing",
-      "ThrustReductionHeight": "Thrust Reduction Height (ft)",
-      "Title": "Aircraft Options / Pin Programs",
-      "WeightUnit": "Weight Unit"
+      "PaxSigns": "客艙標誌",
+      "RmpVhfSpacing": "RMP 甚高頻（VHF）間隔",
+      "ThrustReductionHeight": "減推高度（英呎/ft）",
+      "Title": "飛機選項/置頂程式",
+      "WeightUnit": "重量單位"
     },
     "AtsuAoc": {
-      "AtisAtcSource": "ATIS/ATC Source",
-      "AutomaticallyImportSimBriefData": "Automatically Import SimBrief Data",
-      "Enable": "Enable",
-      "EnableTelex": "Enable TELEX",
-      "ErrorReporting": "Error Reporting",
+      "AtisAtcSource": "ATIS/ATC 供應商",
+      "AutomaticallyImportSimBriefData": "自動加載 SimBrief 數據",
+      "Enable": "啟用",
+      "EnableTelex": "啟用 TELEX",
+      "ErrorReporting": "報告錯誤",
       "HoppieEnabled": "Hoppie enabled",
-      "HoppieUserId": "Hoppie User ID",
+      "HoppieUserId": "Hoppie 用户 ID",
       "MetarSource": "METAR Source",
       "OptionalA32nxErrorReporting": "Optional A32NX Error Reporting",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
