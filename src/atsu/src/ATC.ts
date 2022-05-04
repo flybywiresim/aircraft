@@ -405,7 +405,7 @@ export class Atc {
             // check if the message can be closed and an semantic answer is required
             cpdlcMessage.CloseAutomatically = !UplinkMessageInterpretation.MessageRemainsOnDcdu(cpdlcMessage);
             if (UplinkMessageInterpretation.SemanticAnswerRequired(cpdlcMessage)) {
-                UplinkMessageInterpretation.AppendSemanticAnswer(this.parent, false, cpdlcMessage);
+                UplinkMessageInterpretation.AppendSemanticAnswer(this.parent, true, cpdlcMessage);
             }
 
             // search corresponding request, if previous ID is set
