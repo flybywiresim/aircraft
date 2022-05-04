@@ -486,6 +486,13 @@ void FlyByWireInterface::setupLocalVariables() {
     idRadioAltimeterHeight[i] = make_unique<LocalVariable>("A32NX_RA_" + idString + "_RADIO_ALTITUDE");
   }
 
+  for (int i = 0; i < 2; i++) {
+    string idString = std::to_string(i + 1);
+    idLgciuNoseGearCompressed[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_NOSE_GEAR_COMPRESSED");
+    idLgciuLeftMainGearCompressed[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_LEFT_GEAR_COMPRESSED");
+    idLgciuRightMainGearCompressed[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_RIGHT_GEAR_COMPRESSED");
+  }
+
   for (int i = 0; i < 3; i++) {
     string idString = std::to_string(i + 1);
     idAdrAltitudeCorrected[i] = make_unique<LocalVariable>("A32NX_ADIRS_ADR_" + idString + "_ALTITUDE");
@@ -1101,19 +1108,13 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.discrete_inputs.opp_left_aileron_lost = !elacsDiscreteOutputs[oppElacIndex].left_aileron_ok;
   elacs[elacIndex].modelInputs.in.discrete_inputs.opp_right_aileron_lost = !elacsDiscreteOutputs[oppElacIndex].right_aileron_ok;
   elacs[elacIndex].modelInputs.in.discrete_inputs.fac_1_yaw_control_lost = !facsDiscreteOutputs[0].yawDamperNormalLawAvail;
-  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_1_nose_gear_pressed =
-      flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
-  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_2_nose_gear_pressed =
-      flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_1_nose_gear_pressed = idLgciuNoseGearCompressed[0]->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_2_nose_gear_pressed = idLgciuNoseGearCompressed[1]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.fac_2_yaw_control_lost = !facsDiscreteOutputs[1].yawDamperNormalLawAvail;
-  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_1_right_main_gear_pressed =
-      flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
-  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_2_right_main_gear_pressed =
-      flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
-  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_1_left_main_gear_pressed =
-      flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
-  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_2_left_main_gear_pressed =
-      flyByWireOutput.sim.data_computed.on_ground;  // TODO should come from LGCIU
+  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_1_right_main_gear_pressed = idLgciuRightMainGearCompressed[0]->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_2_right_main_gear_pressed = idLgciuRightMainGearCompressed[1]->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_1_left_main_gear_pressed = idLgciuLeftMainGearCompressed[0]->get();
+  elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_2_left_main_gear_pressed = idLgciuLeftMainGearCompressed[1]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.ths_motor_fault = false;
   elacs[elacIndex].modelInputs.in.discrete_inputs.sfcc_1_slats_out = false;
   elacs[elacIndex].modelInputs.in.discrete_inputs.sfcc_2_slats_out = false;

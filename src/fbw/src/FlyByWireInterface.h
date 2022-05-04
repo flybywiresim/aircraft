@@ -361,6 +361,11 @@ class FlyByWireInterface {
   // RA bus inputs
   std::unique_ptr<LocalVariable> idRadioAltimeterHeight[2];
 
+  // LGCIU inputs
+  std::unique_ptr<LocalVariable> idLgciuNoseGearCompressed[2];
+  std::unique_ptr<LocalVariable> idLgciuLeftMainGearCompressed[2];
+  std::unique_ptr<LocalVariable> idLgciuRightMainGearCompressed[2];
+
   // ADR bus inputs
   std::unique_ptr<LocalVariable> idAdrAltitudeCorrected[3];
   std::unique_ptr<LocalVariable> idAdrMach[3];
