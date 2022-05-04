@@ -246,6 +246,8 @@
 1. [FMGC] Implemented Airport Button - @patmack14 (Patrick Macken)
 1. [RMP] Fixed colour of SEL indicator - @tracernz (Mike)
 1. [MISC] Added custom Autobrake event for SimConnect - @aguther (Andreas Guther)
+1. [EWD] Fixed failures not re-triggering when resolved - @tricky_dicky (Richard Pilbery)
+1. [SOUND] Prevent autopilot disconnect from sounding on C+D spawn - @tricky_dicky (Richard Pilbery) and @saschl (saschl#9432)
 
 ## 0.7.0
 
