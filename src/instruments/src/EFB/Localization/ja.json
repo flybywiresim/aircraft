@@ -351,8 +351,10 @@
   "Pushback": {
     "Backward": "後進",
     "CallTug": "牽引車を呼ぶ",
-    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
-    "EnableSystemMessageTitle": "Enable Pushback Systems",
+    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
+    "DisableSystemMessageTitle": "Disable Pushback System",
+    "EnableSystemMessageBody": "新しいflyPadOS 3プッシュバックシステムはまだ完成していません。他のプッシュバックアドオンと互換性がなく、問題を引き起こす可能性があります。",
+    "EnableSystemMessageTitle": "プッシュバックシステムを有効にする",
     "Forward": "前進",
     "Halt": "停止中",
     "LeavePageMessage": "プッシュバックを一時停止中",
@@ -364,8 +366,8 @@
       "Title": "パーキングブレーキ"
     },
     "Right": "右へ旋回",
-    "SystemEnabledOff": "Pushback System Off",
-    "SystemEnabledOn": "Pushback System On",
+    "SystemEnabledOff": "プッシュバックシステム オフ",
+    "SystemEnabledOn": "プッシュバックシステム オン",
     "TT": {
       "CallReleaseTug": "牽引車を呼ぶ・解除",
       "CenterPlaneMode": "自機を地図の中心に表示する オン/オフ",
@@ -377,12 +379,12 @@
       "SetReleaseParkingBrake": "パーキングブレーキの有効・無効",
       "SliderDirection": "任意の牽引方向",
       "SliderSpeed": "任意の牽引速度",
-      "SystemEnabledOff": "Click to turn the pushback system on.",
-      "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "SystemEnabledOff": "クリックすると、プッシュバックシステムがオンになります。",
+      "SystemEnabledOn": "クリックすると、プッシュバックシステムが完全にオフになります。",
       "ZoomIn": "拡大",
       "ZoomOut": "縮小"
     },
-    "TugAttached": "Tug is attached",
+    "TugAttached": "牽引車に接続中",
     "TugDirection": "牽引方向",
     "TugSpeed": "牽引速度"
   },

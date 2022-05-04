@@ -351,11 +351,13 @@
   "Pushback": {
     "Backward": "뒤로",
     "CallTug": "터그 부르기",
+    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
+    "DisableSystemMessageTitle": "Disable Pushback System",
     "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
-    "EnableSystemMessageTitle": "Enable Pushback Systems",
+    "EnableSystemMessageTitle": "푸시백 시스템 활성화",
     "Forward": "앞으로",
     "Halt": "일시 중지",
-    "LeavePageMessage": "Pausing Pushback",
+    "LeavePageMessage": "푸시백 일시 정지",
     "Left": "왼쪽",
     "Moving": "이동 중",
     "ParkingBrake": {
@@ -364,11 +366,11 @@
       "Title": "파킹 브레이크"
     },
     "Right": "오른쪽",
-    "SystemEnabledOff": "Pushback System Off",
-    "SystemEnabledOn": "Pushback System On",
+    "SystemEnabledOff": "푸시백 시스템 끄기",
+    "SystemEnabledOn": "푸시백 시스템 켜기",
     "TT": {
-      "CallReleaseTug": "Call or release tug",
-      "CenterPlaneMode": "Center map on plane On/Off",
+      "CallReleaseTug": "터그 요청 또는 연결 해제",
+      "CenterPlaneMode": "맵 중앙에 항공기 아이콘 켜기/끄기",
       "DecreaseSpeed": "Backwards or slower forwards (double click to set speed to 0)",
       "IncreaseSpeed": "Forwards or slower backwards (double click to set speed to 0)",
       "Left": "Go left (double click for straight)",
@@ -379,10 +381,10 @@
       "SliderSpeed": "Move for desired speed",
       "SystemEnabledOff": "Click to turn the pushback system on.",
       "SystemEnabledOn": "Click to turn the pushback system completely off.",
-      "ZoomIn": "Zoom in",
-      "ZoomOut": "Zoom out"
+      "ZoomIn": "확대",
+      "ZoomOut": "축소"
     },
-    "TugAttached": "Tug is attached",
+    "TugAttached": "터그가  연결되었습니다",
     "TugDirection": "터그 방향",
     "TugSpeed": "터그 속도"
   },

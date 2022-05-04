@@ -121,9 +121,19 @@ export const PushbackPage = () => {
     const handleEnableSystem = () => {
         if (pushbackSystemEnabled) {
             if (pushbackState < 3) {
-                setPushbackState(!pushbackState);
+                showModal(
+                    <PromptModal
+                        title={t('Pushback.DisableSystemMessageTitle')}
+                        bodyText={`${t('Pushback.DisableSystemMessageBody')}`}
+                        onConfirm={() => {
+                            setPushbackState(!pushbackState);
+                            setPushbackSystemEnabled(0);
+                        }}
+                    />,
+                );
+            } else {
+                setPushbackSystemEnabled(0);
             }
-            setPushbackSystemEnabled(0);
             return;
         }
         showModal(
@@ -143,6 +153,10 @@ export const PushbackPage = () => {
     };
 
     const handlePause = () => {
+        if (!pushbackPaused) {
+            dispatch(setTugCommandedHeadingFactor(0));
+            dispatch(setTugCommandedSpeedFactor(0));
+        }
         dispatch(setPushbackPaused(!pushbackPaused));
     };
 
@@ -293,14 +307,6 @@ export const PushbackPage = () => {
 
     const mapRangeCompensationScalar = mapRange / 0.45;
     const turningRadius = calculateTurningRadius(13, Math.abs(tugCommandedHeadingFactor * 90)) / mapRangeCompensationScalar * (Math.abs(tugCommandedSpeedFactor) / 0.2);
-
-    //     const [pushbackAvailable] = useSimVar('PUSHBACK AVAILABLE', 'enum', 100);
-    //     const [accelX] = useSimVar('ACCELERATION BODY X', 'feet per second squared', 100);
-    //     const [accelY] = useSimVar('ACCELERATION BODY Y', 'feet per second squared', 100);
-    //     const [accelZ] = useSimVar('ACCELERATION BODY Z', 'feet per second squared', 100);
-    //     const [accelRX] = useSimVar('ROTATION ACCELERATION BODY X', 'radians per second squared', 100);
-    //     const [accelRY] = useSimVar('ROTATION ACCELERATION BODY Y', 'radians per second squared', 100);
-    //     const [accelRZ] = useSimVar('ROTATION ACCELERATION BODY Z', 'radians per second squared', 100);
 
     // Debug info for pushback movement - can be removed eventually
     const debugInformation = () => (
@@ -545,7 +551,7 @@ export const PushbackPage = () => {
                                 <button
                                     type="button"
                                     onClick={handleEnableSystem}
-                                    className="bg-green-600 opacity-60 hover:opacity-100 text-theme-text hover:text-theme-secondary transition duration-200'}  border-2 border-theme-accent w-full h-20 rounded-md transition duration-100 flex items-center justify-center"
+                                    className="flex justify-center items-center w-full h-20 text-theme-text bg-green-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100"
                                 >
                                     <ToggleOn size={50} />
                                 </button>
@@ -558,7 +564,7 @@ export const PushbackPage = () => {
                                 <button
                                     type="button"
                                     onClick={handleEnableSystem}
-                                    className="bg-red-600 opacity-60 hover:opacity-100 text-theme-text hover:text-theme-secondary transition duration-200'}  border-2 border-theme-accent w-full h-20 rounded-md transition duration-100 flex items-center justify-center"
+                                    className="flex justify-center items-center w-full h-20 text-theme-text bg-red-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100"
                                 >
                                     <ToggleOff size={50} />
                                 </button>
@@ -568,34 +574,16 @@ export const PushbackPage = () => {
 
                     {/* Call Tug */}
                     <div className="w-full">
-                        <p className="text-center">{pushbackAttached ? t('Pushback.TugAttached') : t('Pushback.CallTug')}</p>
+                        <p className={`text-center ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}>
+                            {pushbackActive() ? t('Pushback.TugAttached') : t('Pushback.CallTug')}
+                        </p>
                         <TooltipWrapper text={t('Pushback.TT.CallReleaseTug')}>
                             <button
                                 type="button"
                                 onClick={handleCallTug}
-                                className={`${pushbackAttached ? 'text-white bg-green-600 border-green-600' : 'bg-theme-highlight opacity-60 hover:opacity-100 text-theme-text hover:text-theme-secondary transition duration-200 disabled:bg-grey-600'}  border-2 border-theme-accent w-full h-20 rounded-md transition duration-100 flex items-center justify-center ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 text-theme-text bg-green-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100 ${pushbackActive() ? 'text-white' : 'text-utility-red'} ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}
                             >
                                 <TruckFlatbed size={40} />
-                            </button>
-                        </TooltipWrapper>
-                    </div>
-
-                    {/* Pause/Moving Button */}
-                    <div className="w-full">
-                        <p className="text-center">
-                            {pushbackPaused ? t('Pushback.Halt') : t('Pushback.Moving')}
-                        </p>
-                        <TooltipWrapper text={t('Pushback.TT.PausePushback')}>
-                            <button
-                                type="button"
-                                onClick={handlePause}
-                                className={`flex justify-center items-center w-full h-20 text-white bg-green-900 hover:bg-green-600 rounded-md transition duration-100 ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
-                            >
-                                {pushbackPaused ? (
-                                    <PlayCircleFill size={40} />
-                                ) : (
-                                    <PauseCircleFill size={40} />
-                                )}
                             </button>
                         </TooltipWrapper>
                     </div>
@@ -627,7 +615,6 @@ export const PushbackPage = () => {
                                 type="button"
                                 className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                                 onClick={() => handleTugSpeed(tugCommandedSpeedFactor - 0.1)}
-                                onDoubleClick={() => handleTugSpeed(0)}
                             >
                                 <ArrowDown size={40} />
                             </button>
@@ -644,9 +631,28 @@ export const PushbackPage = () => {
                                 type="button"
                                 className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                                 onClick={() => handleTugSpeed(tugCommandedSpeedFactor + 0.1)}
-                                onDoubleClick={() => handleTugSpeed(0)}
                             >
                                 <ArrowUp size={40} />
+                            </button>
+                        </TooltipWrapper>
+                    </div>
+
+                    {/* Pause/Moving Button */}
+                    <div className="w-full">
+                        <p className="text-center">
+                            {pushbackPaused ? t('Pushback.Halt') : t('Pushback.Moving')}
+                        </p>
+                        <TooltipWrapper text={t('Pushback.TT.PausePushback')}>
+                            <button
+                                type="button"
+                                onClick={handlePause}
+                                className={`flex justify-center items-center w-full h-20 text-theme-text bg-green-600 opacity-60 hover:opacity-100 rounded-md transition duration-100 ${!pushbackActive() && 'opacity-30 pointer-events-none'} ${pushbackPaused && 'text-red-900'}`}
+                            >
+                                {pushbackPaused ? (
+                                    <PlayCircleFill size={40} />
+                                ) : (
+                                    <PauseCircleFill size={40} />
+                                )}
                             </button>
                         </TooltipWrapper>
                     </div>
@@ -661,7 +667,6 @@ export const PushbackPage = () => {
                                 type="button"
                                 className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                                 onClick={() => handleTugDirection(tugCommandedHeadingFactor - 0.1)}
-                                onDoubleClick={() => handleTugDirection(0)}
                             >
                                 <ArrowLeft size={40} />
                             </button>
@@ -678,7 +683,6 @@ export const PushbackPage = () => {
                                 type="button"
                                 className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                                 onClick={() => handleTugDirection(tugCommandedHeadingFactor + 0.1)}
-                                onDoubleClick={() => handleTugDirection(0)}
                             >
                                 <ArrowRight size={40} />
                             </button>
