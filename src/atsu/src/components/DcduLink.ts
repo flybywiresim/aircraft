@@ -196,6 +196,7 @@ export class DcduLink {
                 this.closeMessage(this.downlinkMessages, this.bufferedDownlinkMessages, uid, false);
             }
         });
+
         Coherent.on('A32NX_ATSU_DCDU_MESSAGE_RECALL', () => {
             if (this.lastClosedMessage === undefined) {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', DcduStatusMessage.RecallEmpty);
