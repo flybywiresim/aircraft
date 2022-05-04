@@ -19,6 +19,7 @@ import { FansMode } from './com/FutureAirNavigationSystem';
 import { HoppieConnector } from './com/webinterfaces/HoppieConnector';
 import { Waypoint } from './components/FlightStateObserver';
 import { coordinateToString } from './Common';
+import { UplinkMessageInterpretation } from './components/UplinkMessageInterpretation';
 
 export {
     AtsuStatusCodes,
@@ -52,4 +53,5 @@ export {
     HoppieConnector,
     Waypoint,
     coordinateToString,
+    UplinkMessageInterpretation,
 };
