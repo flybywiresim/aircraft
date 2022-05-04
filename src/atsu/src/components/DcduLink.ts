@@ -6,6 +6,7 @@ import { Atsu } from '../ATSU';
 import { AtsuMessage, AtsuMessageDirection } from '../messages/AtsuMessage';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
+import { UplinkMessageInterpretation } from './UplinkMessageInterpretation';
 
 export enum DcduStatusMessage {
     NoMessage = -1,
@@ -233,6 +234,14 @@ export class DcduLink {
             if (idx !== -1) {
                 this.uplinkMessages[idx][0].MessageRead = true;
                 this.validateNotificationCondition();
+            }
+        });
+
+        Coherent.on('A32NX_ATSU_DCDU_MESSAGE_INVERT_SEMANTIC_RESPONSE', (uid: number) => {
+            const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
+            if (message !== undefined) {
+                UplinkMessageInterpretation.AppendSemanticAnswer(this.atsu, false, message as CpdlcMessage);
+                this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', [message]);
             }
         });
     }
