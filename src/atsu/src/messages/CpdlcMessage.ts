@@ -59,7 +59,7 @@ export class CpdlcMessage extends AtsuMessage {
             } else if (entry.Value !== '') {
                 content = `${content.substring(0, idx)}@${entry.Value}@${content.substring(idx + 2)}`;
             } else {
-                content = `${content.substring(0, idx)}[    ]${content.substring(idx + 2)}`;
+                content = `${content.substring(0, idx)}[      ]${content.substring(idx + 2)}`;
             }
         });
 
