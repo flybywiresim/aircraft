@@ -349,8 +349,11 @@
     "Title": "Presets"
   },
   "Pushback": {
+    "SystemEnabledOn": "Pushback System On",
+    "SystemEnabledOff": "Pushback System Off",
     "Backward": "Backward",
     "CallTug": "Call Tug",
+    "TugAttached": "Tug is attached",
     "Forward": "Forward",
     "Halt": "Paused",
     "LeavePageMessage": "Pausing Pushback",
@@ -374,7 +377,9 @@
       "SliderDirection": "Move for desired direction",
       "SliderSpeed": "Move for desired speed",
       "ZoomIn": "Zoom in",
-      "ZoomOut": "Zoom out"
+      "ZoomOut": "Zoom out",
+      "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "SystemEnabledOff": "Click to turn the pushback system on."
     },
     "TugDirection": "Tug Direction",
     "TugSpeed": "Tug Speed"

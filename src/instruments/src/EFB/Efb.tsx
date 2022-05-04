@@ -271,6 +271,7 @@ const Efb = () => {
 
     // =========================================================================
     // <Pushback>
+    const [pushbackSystemEnabled] = useSimVar('L:A32NX_PUSHBACK_SYSTEM_ENABLED', 'bool', 100);
     const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 100);
 
     const {
@@ -284,6 +285,8 @@ const Efb = () => {
 
     // Required so these can be used inside the setInterval callback function
     // for the pushback movement update
+    const pushbackSystemEnabledRef = useRef(pushbackSystemEnabled);
+    pushbackSystemEnabledRef.current = pushbackSystemEnabled;
     const lastTimeStampRef = useRef(lastTimeStamp);
     lastTimeStampRef.current = lastTimeStamp;
     const pushbackPausedRef = useRef(pushbackPaused);
@@ -298,6 +301,10 @@ const Efb = () => {
     // Callback function for the setInterval to update the movement of the aircraft independent of
     // the refresh rate of the Glass Cockpit Refresh Rate in internal and external view.
     const movementUpdate = () => {
+        if (!pushbackSystemEnabledRef.current) {
+            return;
+        }
+
         const startTime = Date.now();
         dispatch(setUpdateDeltaTime(startTime - lastTimeStampRef.current));
         dispatch(setLastTimestamp(startTime));
@@ -353,14 +360,14 @@ const Efb = () => {
     // Glass Cockpit Refresh Rate. This is required as the refresh rate is
     // 10x lower in external view which leads to jerky movements otherwise.
     useEffect(() => {
-        if (pushBackAttached && updateIntervalID === 0) {
+        if (pushbackSystemEnabled && pushBackAttached && updateIntervalID === 0) {
             const interval = setInterval(movementUpdate, 50);
             dispatch(setUpdateIntervalID(Number(interval)));
         } else if (!pushBackAttached) {
             clearInterval(updateIntervalID);
             dispatch(setUpdateIntervalID(0));
         }
-    }, [pushBackAttached]);
+    }, [pushBackAttached, pushbackSystemEnabled]);
 
     // </Pushback>
     // =========================================================================
