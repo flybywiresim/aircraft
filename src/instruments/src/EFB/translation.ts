@@ -20,6 +20,7 @@ import fr from './Localization/fr.json';
 import he from './Localization/he.json';
 import hi from './Localization/hi.json';
 import hu from './Localization/hu.json';
+import hr from './Localization/hr.json';
 import id from './Localization/id.json';
 import it from './Localization/it.json';
 import ja from './Localization/ja.json';
@@ -95,6 +96,7 @@ export const languageOptions: LanguageOption[] = [
     { langCode: 'he', langData: he, langName: 'Hebrew', alias: 'עִבְרִית' },
     { langCode: 'hi', langData: hi, langName: 'Hindi', alias: 'हिंदी' },
     { langCode: 'hu', langData: hu, langName: 'Hungarian', alias: 'Magyar' },
+    { langCode: 'hr', langData: hr, langName: 'Croatian', alias: 'Hrvatski' },
     { langCode: 'id', langData: id, langName: 'Indonesian', alias: 'Bahasa Indonesia' },
     { langCode: 'it', langData: it, langName: 'Italian', alias: 'Italiano' },
     { langCode: 'ja', langData: ja, langName: 'Japanese', alias: '日本語' },
