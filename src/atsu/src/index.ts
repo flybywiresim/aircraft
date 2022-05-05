@@ -3,7 +3,7 @@ import { Atsu } from './ATSU';
 import { FreetextMessage } from './messages/FreetextMessage';
 import { AtsuMessage, AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessageNetwork, AtsuMessageType } from './messages/AtsuMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
-import { CpdlcMessageExpectedResponseType, CpdlcMessageContent, CpdlcMessageElement, CpdlcMessagesDownlink } from './messages/CpdlcMessageElements';
+import { CpdlcMessageExpectedResponseType, CpdlcMessageContentType, CpdlcMessageContent, CpdlcMessageElement, CpdlcMessagesDownlink } from './messages/CpdlcMessageElements';
 import { CpdlcMessage } from './messages/CpdlcMessage';
 import { WeatherMessage } from './messages/WeatherMessage';
 import { MetarMessage } from './messages/MetarMessage';
@@ -35,6 +35,7 @@ export {
     CpdlcMessageExpectedResponseType,
     CpdlcMessageContent,
     CpdlcMessageElement,
+    CpdlcMessageContentType,
     CpdlcMessagesDownlink,
     FreetextMessage,
     WeatherMessage,
