@@ -110,6 +110,10 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateRa(i);
   }
 
+  for (int i = 0; i < 2; i++) {
+    result &= updateLgciu(i);
+  }
+
   for (int i = 0; i < 3; i++) {
     result &= updateAdirs(i);
   }
@@ -1050,6 +1054,26 @@ bool FlyByWireInterface::updateRa(int raIndex) {
   return true;
 }
 
+bool FlyByWireInterface::updateLgciu(int lgciuIndex) {
+  bool noseGearPressed = idLgciuNoseGearCompressed[lgciuIndex]->get();
+  bool leftMainGearPressed = idLgciuLeftMainGearCompressed[lgciuIndex]->get();
+  bool rightMainGearPressed = idLgciuRightMainGearCompressed[lgciuIndex]->get();
+
+  lgciuBusOutputs[lgciuIndex].discreteWord1.setSsm(Arinc429SignStatus::NormalOperation);
+  lgciuBusOutputs[lgciuIndex].discreteWord2.setSsm(Arinc429SignStatus::NormalOperation);
+  lgciuBusOutputs[lgciuIndex].discreteWord2.setBit(12, noseGearPressed);
+  lgciuBusOutputs[lgciuIndex].discreteWord2.setBit(13, leftMainGearPressed);
+  lgciuBusOutputs[lgciuIndex].discreteWord2.setBit(14, rightMainGearPressed);
+  lgciuBusOutputs[lgciuIndex].discreteWord3.setSsm(Arinc429SignStatus::NormalOperation);
+  lgciuBusOutputs[lgciuIndex].discreteWord4.setSsm(Arinc429SignStatus::NormalOperation);
+
+  if (clientDataEnabled) {
+    simConnectInterface.setClientDataLgciu(lgciuBusOutputs[lgciuIndex], lgciuIndex);
+  }
+
+  return true;
+}
+
 bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   adirsBusOutputs[adirsIndex].adrBus.altitudeCorrected.setFromSimVar(idAdrAltitudeCorrected[adirsIndex]->get());
   adirsBusOutputs[adirsIndex].adrBus.mach.setFromSimVar(idAdrMach[adirsIndex]->get());
@@ -1314,6 +1338,10 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.bus_inputs.fcdc_2_bus = fcdcsBusOutputs[1];
   secs[secIndex].modelInputs.in.bus_inputs.elac_1_bus = elacsBusOutputs[0];
   secs[secIndex].modelInputs.in.bus_inputs.elac_2_bus = elacsBusOutputs[1];
+  secs[secIndex].modelInputs.in.bus_inputs.sfcc_1_bus = {};
+  secs[secIndex].modelInputs.in.bus_inputs.sfcc_2_bus = {};
+  secs[secIndex].modelInputs.in.bus_inputs.lgciu_1_bus = lgciuBusOutputs[0];
+  secs[secIndex].modelInputs.in.bus_inputs.lgciu_2_bus = lgciuBusOutputs[1];
 
   if (secIndex == secDisabled) {
     simConnectInterface.setClientDataSecDiscretes(secs[secIndex].modelInputs.in.discrete_inputs);

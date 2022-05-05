@@ -282,6 +282,7 @@ class SimConnectInterface {
   bool setClientDataAdr(base_adr_bus output, int adrIndex);
   bool setClientDataIr(base_ir_bus output, int irIndex);
   bool setClientDataRa(base_ra_bus output, int raIndex);
+  bool setClientDataLgciu(base_lgciu_bus output, int lgciuIndex);
 
   void setLoggingFlightControlsEnabled(bool enabled);
   bool getLoggingFlightControlsEnabled();
@@ -321,6 +322,8 @@ class SimConnectInterface {
     IR_3_INPUTS,
     RA_1_BUS,
     RA_2_BUS,
+    LGCIU_1_BUS,
+    LGCIU_2_BUS,
     LOCAL_VARIABLES,
     LOCAL_VARIABLES_AUTOTHRUST,
   };

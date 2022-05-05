@@ -2,6 +2,7 @@
 
 #include "../Arinc429.h"
 #include "../model/ElacComputer_types.h"
+#include "../model/SecComputer_types.h"
 
 enum class LateralLaw {
   NormalLaw,
@@ -593,4 +594,6 @@ struct LgciuBus {
   Arinc429DiscreteWord discreteWord3;
   // Label 23
   Arinc429DiscreteWord discreteWord4;
+
+  operator base_lgciu_bus() { return *reinterpret_cast<base_lgciu_bus*>(this); }
 };

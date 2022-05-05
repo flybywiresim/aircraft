@@ -773,6 +773,7 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
           SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
     }
   }
+
   // ------------------------------------------------------------------------------------------------------------------
 
   for (int i = 0; i < 2; i++) {
@@ -784,6 +785,22 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
     // add data definitions
     result &=
         SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------
+
+  for (int i = 0; i < 2; i++) {
+    auto defineId = ClientData::LGCIU_1_BUS + i;
+    // map client id
+    result &=
+        SimConnect_MapClientDataNameToID(hSimConnect, ("A32NX_CLIENT_DATA_LGCIU_" + std::to_string(i + 1) + "_BUS").c_str(), defineId);
+    // create client data
+    result &= SimConnect_CreateClientData(hSimConnect, defineId, sizeof(base_lgciu_bus), SIMCONNECT_CREATE_CLIENT_DATA_FLAG_DEFAULT);
+    // add data definitions
+    for (int i = 0; i < 4; i++) {
+      result &=
+          SimConnect_AddToClientDataDefinition(hSimConnect, defineId, SIMCONNECT_CLIENTDATAOFFSET_AUTO, SIMCONNECT_CLIENTDATATYPE_FLOAT64);
+    }
   }
 
   // ------------------------------------------------------------------------------------------------------------------
@@ -1278,6 +1295,10 @@ bool SimConnectInterface::setClientDataIr(base_ir_bus output, int irIndex) {
 
 bool SimConnectInterface::setClientDataRa(base_ra_bus output, int raIndex) {
   return sendClientData(ClientData::RA_1_BUS + raIndex, sizeof(output), &output);
+}
+
+bool SimConnectInterface::setClientDataLgciu(base_lgciu_bus output, int lgciuIndex) {
+  return sendClientData(ClientData::LGCIU_1_BUS + lgciuIndex, sizeof(output), &output);
 }
 
 void SimConnectInterface::setLoggingFlightControlsEnabled(bool enabled) {

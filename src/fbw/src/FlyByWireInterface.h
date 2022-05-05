@@ -110,6 +110,8 @@ class FlyByWireInterface {
 
   RaBus raBusOutputs[2] = {};
 
+  LgciuBus lgciuBusOutputs[2] = {};
+
   AdirsBusses adirsBusOutputs[3] = {};
 
   Elac elacs[2] = {Elac(true), Elac(false)};
@@ -547,6 +549,8 @@ class FlyByWireInterface {
   bool updateAutothrust(double sampleTime);
 
   bool updateRa(int raIndex);
+
+  bool updateLgciu(int lgciuIndex);
 
   bool updateAdirs(int adirsIndex);
 
