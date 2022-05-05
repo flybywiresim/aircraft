@@ -1,7 +1,6 @@
 class CDUAtcMenu {
     static ShowPage(mcdu) {
         mcdu.page.Current = mcdu.page.ATCMenu;
-        mcdu.activeSystem = "ATSU";
 
         mcdu.setTemplate([
             ["ATC MENU"],
