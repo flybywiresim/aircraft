@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import {
     ArrowDown,
@@ -16,60 +16,23 @@ import {
     PauseCircleFill,
     PlayCircleFill, ToggleOff, ToggleOn,
     TruckFlatbed,
-    ZoomIn,
-    ZoomOut,
 } from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
 import { MathUtils } from '@shared/MathUtils';
-import { IconPlane } from '@tabler/icons';
-import { Coordinates } from 'msfs-geo';
-import { computeDestinationPoint } from 'geolib';
 import { toast } from 'react-toastify';
-import { BingMap } from '../../UtilComponents/BingMap';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
-    TScreenCoordinates,
+    setActualMapLatLon, setAircraftIconPosition,
     setPushbackPaused,
-    setMapRange,
-    setCenterPlaneMode,
-    setActualMapLatLon,
-    setAircraftIconPosition,
     setShowDebugInfo,
     setTugCommandedHeadingFactor,
     setTugCommandedSpeedFactor,
     setTugInertiaFactor,
 } from '../../Store/features/pushback';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
-
-interface TurningRadiusIndicatorProps {
-    turningRadius: number;
-}
-
-const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
-    const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
-    return {
-        x: centerX + (radius * Math.cos(angleInRadians)),
-        y: centerY + (radius * Math.sin(angleInRadians)),
-    };
-};
-
-const describeArc = (x: number, y: number, radius: number, startAngle: number, endAngle: number) => {
-    const start = polarToCartesian(x, y, radius, endAngle);
-    const end = polarToCartesian(x, y, radius, startAngle);
-    const arcSweep = endAngle - startAngle <= 180 ? '0' : '1';
-    return [
-        'M', start.x, start.y,
-        'A', radius, radius, 0, arcSweep, 0, end.x, end.y,
-    ].join(' ');
-};
-
-const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) => (
-    <svg width={turningRadius * 2} height={turningRadius * 2} viewBox={`0 0 ${turningRadius * 2} ${turningRadius * 2}`}>
-        <path d={describeArc(turningRadius, turningRadius, turningRadius, 0, 45 + 45 * (19 / turningRadius))} fill="none" stroke="white" strokeWidth="2" />
-    </svg>
-);
+import { PushbackMap } from './PushbackMap';
 
 export const PushbackPage = () => {
     const dispatch = useAppDispatch();
@@ -78,8 +41,11 @@ export const PushbackPage = () => {
     // This is used to completely turn off the pushback for compatible with other
     // pushback add-ons. Only watching sim variable like PUSHBACK STATE or
     // Pushback Available lead to conflicts as other add-on also write to them.
-    // It is impemented as a LVAR to allow 3rd parties to deactivate it if required.
+    // It is implemented as a LVAR to allow 3rd parties to deactivate it if required.
     const [pushbackSystemEnabled, setPushbackSystemEnabled] = useSimVar('L:A32NX_PUSHBACK_SYSTEM_ENABLED', 'bool', 100);
+
+    const [planeLatitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
+    const [planeLongitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
 
     const [pushbackAttached] = useSimVar('Pushback Attached', 'bool', 100);
     const [pushbackState, setPushbackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 250);
@@ -92,8 +58,6 @@ export const PushbackPage = () => {
     const [planeGroundSpeed] = useSimVar('GROUND VELOCITY', 'Knots', 50);
     const [planeHeadingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 50);
     const [planeHeadingMagnetic] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees', 50);
-    const [planeLatitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
-    const [planeLongitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
 
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 250);
 
@@ -101,10 +65,6 @@ export const PushbackPage = () => {
     const {
         pushbackPaused,
         updateDeltaTime,
-        mapRange,
-        centerPlaneMode,
-        actualMapLatLon,
-        aircraftIconPosition,
         showDebugInfo,
         tugCommandedHeadingFactor,
         tugCommandedHeading,
@@ -112,12 +72,6 @@ export const PushbackPage = () => {
         tugCommandedSpeed,
         tugInertiaFactor,
     } = useAppSelector((state) => state.pushback.pushbackState);
-
-    // Map
-    const [mouseDown, setMouseDown] = useState(false);
-    const [dragging, setDragging] = useState(false);
-    const [dragStartCoords, setDragStartCoords] = useState({ x: 0, y: 0 } as TScreenCoordinates);
-    const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 } as TScreenCoordinates);
 
     // Required so these can be used inside the useEffect return callback
     const pushBackAttachedRef = useRef(pushbackAttached);
@@ -178,45 +132,7 @@ export const PushbackPage = () => {
         dispatch(setTugCommandedHeadingFactor(MathUtils.clamp(value, -1, 1)));
     };
 
-    const handleZoomChange = (value: number) => {
-        const newRange = mapRange + value;
-        const factor = mapRange / newRange;
-        dispatch(setMapRange(MathUtils.clamp(newRange, 0.1, 1.5)));
-        // place the aircraft icon according to the zoom level
-        dispatch(setAircraftIconPosition({ x: aircraftIconPosition.x * factor, y: aircraftIconPosition.y * factor }));
-    };
-
-    const handleCenterPlaneModeChange = () => {
-        dispatch(setCenterPlaneMode(!centerPlaneMode));
-    };
-
     const pushbackActive = () => pushbackSystemEnabled && pushbackAttached;
-
-    // Computes the offset from  geo coordinates (Lat, Lon) and a delta of screen coordinates into
-    // a destination set of geo coordinates.
-    const computeOffset: (latLon: Coordinates, d: TScreenCoordinates) => Coordinates = (
-        latLon: Coordinates, d: TScreenCoordinates,
-    ) => {
-        // This constant has been determined via testing - needs more "thought"
-        const someConstant = 0.48596;
-        const distance = Math.hypot(d.x, d.y) / (someConstant / mapRange);
-        const bearing = Math.atan2(d.y, d.x) * (180 / Math.PI) - 90 + planeHeadingTrue;
-        const point = computeDestinationPoint({ lat: latLon.lat, lon: latLon.long }, distance, bearing);
-        return { lat: point.latitude, long: point.longitude };
-    };
-
-    // Calculates the size in pixels based on the real A320 length and the current zoom
-    const a320IconSize = (mapRange) => {
-        const pixelPerMeter = 4.8596; // at 0.1 range
-        const a320LengthMeter = 37.57;
-        return a320LengthMeter * pixelPerMeter * (0.1 / mapRange);
-    };
-
-    // Calculates turning radius for the Turning prediction arc
-    const calculateTurningRadius = (wheelBase: number, turnAngle: number) => {
-        const tanDeg = Math.tan(turnAngle * Math.PI / 180);
-        return wheelBase / tanDeg;
-    };
 
     // FIXME
     // const decelerateTug = (factor: number = 1) => {
@@ -290,30 +206,6 @@ export const PushbackPage = () => {
         dispatch(setPushbackPaused(false));
         dispatch(setTugCommandedSpeedFactor(-elevatorPosition));
     }, [elevatorPosition]);
-
-    // Update actual lat/lon when plane is moving
-    useEffect(() => {
-        if (centerPlaneMode) {
-            dispatch(setActualMapLatLon({ lat: planeLatitude, long: planeLongitude }));
-            dispatch(setAircraftIconPosition({ x: 0, y: 0 }));
-        }
-        // console.log(`Update Map: ${planeLatitude.toFixed(6)} ${planeLongitude.toFixed(6)}`);
-    }, [centerPlaneMode, planeLatitude.toFixed(6), planeLongitude.toFixed(6)]);
-
-    // Update actual lat/lon when dragging the map
-    useEffect(() => {
-        if (dragging) {
-            dispatch(setCenterPlaneMode(false));
-            const delta = { x: mouseCoords.x - dragStartCoords.x, y: mouseCoords.y - dragStartCoords.y };
-            const latLon: Coordinates = computeOffset(actualMapLatLon, delta);
-            dispatch(setActualMapLatLon(latLon));
-            dispatch(setAircraftIconPosition({ x: aircraftIconPosition.x + delta.x, y: aircraftIconPosition.y - delta.y }));
-            setDragStartCoords(mouseCoords);
-        }
-    }, [dragging, mouseDown, mouseCoords]);
-
-    const mapRangeCompensationScalar = mapRange / 0.45;
-    const turningRadius = calculateTurningRadius(13, Math.abs(tugCommandedHeadingFactor * 90)) / mapRangeCompensationScalar * (Math.abs(tugCommandedSpeedFactor) / 0.2);
 
     // Debug info for pushback movement - can be removed eventually
     const debugInformation = () => (
@@ -452,103 +344,18 @@ export const PushbackPage = () => {
     );
 
     return (
-        <div className="flex relative flex-col space-y-4 h-content-section-reduced">
+        <div className="flex relative flex-col space-y-4">
 
             {/* Map Container */}
-            <div
-                className="overflow-hidden relative flex-grow h-[430px] rounded-lg border-2 border-theme-accent"
-                onMouseDown={(e) => {
-                    setMouseDown(true);
-                    setDragStartCoords({ x: e.pageX, y: e.pageY });
-                }}
-                onMouseMove={(e) => {
-                    if (mouseDown) {
-                        setMouseCoords({ x: e.pageX, y: e.pageY });
-                    }
-                    if (mouseDown && !dragging && (Math.abs(e.pageX - dragStartCoords.x) > 3 || Math.abs(e.pageY - dragStartCoords.y) > 3)) {
-                        setDragging(true);
-                    }
-                }}
-                onMouseUp={() => {
-                    setMouseDown(false);
-                    if (dragging) {
-                        setDragging(false);
-                    }
-                }}
-            >
-                {/* Map */}
-                {!process.env.VITE_BUILD && (
-                    <BingMap
-                        configFolder="/Pages/VCockpit/Instruments/MAP/"
-                        centerLla={{ lat: actualMapLatLon.lat, long: actualMapLatLon.long }}
-                        mapId="PUSHBACK_MAP"
-                        range={mapRange}
-                        rotation={-planeHeadingTrue}
-                    />
-                )}
+            <div className="flex relative flex-col space-y-4 h-[430px]">
+                <PushbackMap />
 
-                {/* Aircraft and Turning Radius Indicator */}
-                <div className="flex absolute inset-0 justify-center items-center">
-                    {!Number.isNaN(turningRadius) && Number.isFinite(turningRadius)
-                        && (
-                            <div
-                                className="absolute"
-                                style={{ transform: `rotate(-90deg) scaleX(${tugCommandedSpeedFactor >= 0 ? 1 : -1}) scaleY(${tugCommandedHeadingFactor >= 0 ? 1 : -1}) translateY(${turningRadius}px)` }}
-                            >
-                                <TurningRadiusIndicator turningRadius={turningRadius} />
-                            </div>
-                        )}
-                    {/* prepared to move with map when dragging - work in progress */}
-                    <IconPlane
-                        className="text-theme-highlight"
-                        style={{ transform: `rotate(-90deg) translateY(${aircraftIconPosition.x}px) translateX(${aircraftIconPosition.y}px)` }}
-                        size={a320IconSize(mapRange)}
-                        strokeLinejoin="miter"
-                        stroke={1}
-                    />
-                </div>
-
-                {/* Map Controls */}
-                <div className="flex overflow-hidden absolute right-6 bottom-6 z-30 flex-col rounded-md cursor-pointer">
-                    <TooltipWrapper text={t('Pushback.TT.CenterPlaneMode')}>
-                        <button
-                            type="button"
-                            onClick={() => handleCenterPlaneModeChange()}
-                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
-                        >
-                            <IconPlane
-                                className={`text-white transform -rotate-90 ${centerPlaneMode && 'fill-current'}`}
-                                size={40}
-                                strokeLinejoin="round"
-                            />
-                        </button>
-                    </TooltipWrapper>
-                    <TooltipWrapper text={t('Pushback.TT.ZoomIn')}>
-                        <button
-                            type="button"
-                            onClick={() => handleZoomChange(-0.1)}
-                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
-                        >
-                            <ZoomIn size={40} />
-                        </button>
-                    </TooltipWrapper>
-                    <TooltipWrapper text={t('Pushback.TT.ZoomOut')}>
-                        <button
-                            type="button"
-                            onClick={() => handleZoomChange(0.1)}
-                            className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
-                        >
-                            <ZoomOut size={40} />
-                        </button>
-                    </TooltipWrapper>
-                </div>
+                {/* Pushback Debug Information */}
+                {showDebugInfo && debugInformation()}
             </div>
 
-            {/* Pushback Debug Information */}
-            {showDebugInfo && debugInformation()}
-
             {/* Manual Pushback Controls */}
-            <div className="flex flex-col p-6 space-y-4 rounded-lg border-2 border-theme-accent">
+            <div className="flex flex-col p-6 space-y-4 h-1/3 rounded-lg border-2 border-theme-accent">
                 <div className="flex flex-row space-x-4">
                     {/* Pushback System enabled On/Off */}
                     {pushbackSystemEnabled ? (

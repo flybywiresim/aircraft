@@ -38,7 +38,10 @@ const initialState: TPushbackStateContainer = {
         lastTimeStamp: 0,
         mapRange: 0.2,
         centerPlaneMode: true,
-        actualMapLatLon: { lat: 0, long: 0 },
+        actualMapLatLon: {
+            lat: SimVar.GetSimVarValue('A:PLANE LATITUDE', 'degrees latitude'),
+            long: SimVar.GetSimVarValue('A:PLANE LONGITUDE', 'degrees longitude'),
+        },
         aircraftIconPosition: { x: 0, y: 0 },
         showDebugInfo: false,
         tugCommandedHeadingFactor: 0,
