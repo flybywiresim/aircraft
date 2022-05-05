@@ -434,6 +434,14 @@ export class Atc {
         }
     }
 
+    public updateMessage(message: CpdlcMessage): void {
+        const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === message.UniqueMessageID);
+        if (index !== -1) {
+            this.messageQueue[index] = message;
+            this.dcduLink.update(message);
+        }
+    }
+
     public messageRead(uid: number): boolean {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
         if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Uplink) {
