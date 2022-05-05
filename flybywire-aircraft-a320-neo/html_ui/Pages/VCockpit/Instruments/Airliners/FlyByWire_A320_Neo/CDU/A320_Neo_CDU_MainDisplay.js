@@ -93,7 +93,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             AOCDepartRequest: 50,
             ATCMenu: 51,
             ATCRequest: 52,
-            ATCEdit: 53,
+            ATCModify: 53,
             ATCText: 54,
             ATCDepartReq: 55,
             ATCOceanicReq: 56,
