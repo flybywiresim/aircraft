@@ -1,7 +1,7 @@
 #include "SecComputer.h"
 #include "rtwtypes.h"
-#include <cmath>
 #include "SecComputer_types.h"
+#include <cmath>
 #include "look1_binlxpw.h"
 #include "LateralDirectLaw.h"
 #include "PitchAlternateLaw.h"
@@ -25,8 +25,38 @@ void SecComputer::SecComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rt
   *rty_Y = localDW->pY;
 }
 
-void SecComputer::SecComputer_MATLABFunction(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
-  rtDW_MATLABFunction_SecComputer_T *localDW)
+void SecComputer::SecComputer_MATLABFunction(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y)
+{
+  real32_T tmp;
+  uint32_T a;
+  tmp = std::round(rtu_u->Data);
+  if (tmp < 4.2949673E+9F) {
+    if (tmp >= 0.0F) {
+      a = static_cast<uint32_T>(tmp);
+    } else {
+      a = 0U;
+    }
+  } else {
+    a = MAX_uint32_T;
+  }
+
+  if (-(rtu_bit - 1.0) >= 0.0) {
+    if (-(rtu_bit - 1.0) <= 31.0) {
+      a <<= static_cast<uint8_T>(-(rtu_bit - 1.0));
+    } else {
+      a = 0U;
+    }
+  } else if (-(rtu_bit - 1.0) >= -31.0) {
+    a >>= static_cast<uint8_T>(rtu_bit - 1.0);
+  } else {
+    a = 0U;
+  }
+
+  *rty_y = a & 1U;
+}
+
+void SecComputer::SecComputer_MATLABFunction_e(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
+  rtDW_MATLABFunction_SecComputer_l_T *localDW)
 {
   boolean_T rtu_isRisingEdge_0;
   if (!localDW->previousInput_not_empty) {
@@ -88,6 +118,7 @@ void SecComputer::step()
   real_T rtb_xi_deg;
   real_T rtb_zeta_deg;
   real32_T rtb_y_l;
+  uint32_T rtb_Switch7;
   boolean_T rtb_VectorConcatenate[19];
   boolean_T canEngageInPitch;
   boolean_T hasPriorityInPitch;
@@ -95,57 +126,70 @@ void SecComputer::step()
   boolean_T rightElevatorAvail;
   boolean_T rtb_AND1_h;
   boolean_T rtb_AND4_a;
-  boolean_T rtb_NOT_k;
-  boolean_T rtb_OR7;
+  boolean_T rtb_NOT_bl;
+  boolean_T rtb_OR14;
+  boolean_T rtb_OR16;
   boolean_T rtb_isEngagedInPitch;
   boolean_T rtb_isEngagedInRoll;
   boolean_T rtb_logic_crg14_is_blue_hydraulic_power_avail;
   boolean_T rtb_logic_crg14_is_green_hydraulic_power_avail;
-  boolean_T rtb_logic_crg14_tracking_mode_on;
-  boolean_T rtb_on_ground;
+  boolean_T rtb_logic_crg_is_yellow_hydraulic_power_avail;
   boolean_T spoilerPair1SupplyAvail;
   boolean_T spoilerPair2SupplyAvail;
   pitch_efcs_law rtb_activePitchLaw;
+  SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2, SecComputer_P.BitfromLabel4_bit,
+    &rtb_Switch7);
+  rtb_AND4_a = (rtb_Switch7 != 0U);
+  SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2, SecComputer_P.BitfromLabel6_bit,
+    &rtb_Switch7);
+  rtb_OR16 = (rtb_AND4_a || (rtb_Switch7 != 0U));
+  SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2, SecComputer_P.BitfromLabel5_bit,
+    &rtb_Switch7);
+  rtb_AND1_h = (rtb_Switch7 != 0U);
+  SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2, SecComputer_P.BitfromLabel7_bit,
+    &rtb_Switch7);
+  rtb_AND4_a = (rtb_Switch7 != 0U);
+  rtb_OR14 = (rtb_AND1_h || (rtb_Switch7 != 0U));
   if (SecComputer_DWork.is_active_c8_SecComputer == 0U) {
     SecComputer_DWork.is_active_c8_SecComputer = 1U;
     SecComputer_DWork.is_c8_SecComputer = SecComputer_IN_OnGround;
-    rtb_on_ground = true;
+    rtb_OR16 = true;
   } else if (SecComputer_DWork.is_c8_SecComputer == SecComputer_IN_InAir) {
-    if (static_cast<real_T>(SecComputer_P.Constant_Value_l) > 0.1) {
+    if ((static_cast<real_T>(rtb_OR16) > 0.1) || (static_cast<real_T>(rtb_OR14) > 0.1)) {
       SecComputer_DWork.is_c8_SecComputer = SecComputer_IN_OnGround;
-      rtb_on_ground = true;
+      rtb_OR16 = true;
     } else {
-      rtb_on_ground = false;
+      rtb_OR16 = false;
     }
-  } else if (!SecComputer_P.Constant_Value_l) {
+  } else if ((!rtb_OR16) && (!rtb_OR14)) {
     SecComputer_DWork.is_c8_SecComputer = SecComputer_IN_InAir;
-    rtb_on_ground = false;
+    rtb_OR16 = false;
   } else {
-    rtb_on_ground = true;
+    rtb_OR16 = true;
   }
 
-  rtb_AND4_a = (SecComputer_U.in.sim_data.slew_on || SecComputer_U.in.sim_data.pause_on ||
+  rtb_AND1_h = (SecComputer_U.in.sim_data.slew_on || SecComputer_U.in.sim_data.pause_on ||
                 SecComputer_U.in.sim_data.tracking_mode_on_override);
-  rtb_logic_crg14_tracking_mode_on = rtb_AND4_a;
+  rtb_OR14 = rtb_AND1_h;
   SecComputer_MATLABFunction_n(!SecComputer_U.in.discrete_inputs.yellow_low_pressure, SecComputer_U.in.time.dt,
     SecComputer_P.ConfirmNode_isRisingEdge, SecComputer_P.ConfirmNode_timeDelay, &rtb_AND4_a,
     &SecComputer_DWork.sf_MATLABFunction_ndv);
   SecComputer_MATLABFunction_n(!SecComputer_U.in.discrete_inputs.blue_low_pressure, SecComputer_U.in.time.dt,
     SecComputer_P.ConfirmNode1_isRisingEdge, SecComputer_P.ConfirmNode1_timeDelay, &rtb_AND1_h,
-    &SecComputer_DWork.sf_MATLABFunction_gf);
+    &SecComputer_DWork.sf_MATLABFunction_g);
   SecComputer_MATLABFunction_n(!SecComputer_U.in.discrete_inputs.green_low_pressure, SecComputer_U.in.time.dt,
-    SecComputer_P.ConfirmNode2_isRisingEdge, SecComputer_P.ConfirmNode2_timeDelay, &rtb_NOT_k,
+    SecComputer_P.ConfirmNode2_isRisingEdge, SecComputer_P.ConfirmNode2_timeDelay, &rtb_NOT_bl,
     &SecComputer_DWork.sf_MATLABFunction_h);
   rtb_logic_crg14_is_blue_hydraulic_power_avail = rtb_AND1_h;
-  rtb_logic_crg14_is_green_hydraulic_power_avail = rtb_NOT_k;
-  SecComputer_MATLABFunction(SecComputer_U.in.discrete_inputs.capt_priority_takeover_pressed,
+  rtb_logic_crg14_is_green_hydraulic_power_avail = rtb_NOT_bl;
+  SecComputer_MATLABFunction_e(SecComputer_U.in.discrete_inputs.capt_priority_takeover_pressed,
     SecComputer_P.PulseNode_isRisingEdge, &rtb_AND1_h, &SecComputer_DWork.sf_MATLABFunction_g4);
-  SecComputer_MATLABFunction(SecComputer_U.in.discrete_inputs.fo_priority_takeover_pressed,
-    SecComputer_P.PulseNode1_isRisingEdge, &rtb_NOT_k, &SecComputer_DWork.sf_MATLABFunction_nu);
+  SecComputer_MATLABFunction_e(SecComputer_U.in.discrete_inputs.fo_priority_takeover_pressed,
+    SecComputer_P.PulseNode1_isRisingEdge, &rtb_NOT_bl, &SecComputer_DWork.sf_MATLABFunction_nu);
   if (rtb_AND1_h) {
     SecComputer_DWork.pRightStickDisabled = true;
     SecComputer_DWork.pLeftStickDisabled = false;
-  } else if (rtb_NOT_k) {
+  } else if (rtb_NOT_bl) {
     SecComputer_DWork.pLeftStickDisabled = true;
     SecComputer_DWork.pRightStickDisabled = false;
   }
@@ -250,37 +294,68 @@ void SecComputer::step()
     rtb_activePitchLaw = pitch_efcs_law::None;
   }
 
-  SecComputer_MATLABFunction(rtb_on_ground, SecComputer_P.PulseNode3_isRisingEdge, &rtb_NOT_k,
+  rtb_logic_crg_is_yellow_hydraulic_power_avail = rtb_AND4_a;
+  SecComputer_MATLABFunction_e(rtb_OR16, SecComputer_P.PulseNode3_isRisingEdge, &rtb_NOT_bl,
     &SecComputer_DWork.sf_MATLABFunction_nd);
-  SecComputer_MATLABFunction(rtb_on_ground, SecComputer_P.PulseNode2_isRisingEdge, &rtb_AND1_h,
+  SecComputer_MATLABFunction_e(rtb_OR16, SecComputer_P.PulseNode2_isRisingEdge, &rtb_AND1_h,
     &SecComputer_DWork.sf_MATLABFunction_n);
-  SecComputer_DWork.Memory_PreviousInput = SecComputer_P.Logic_table[(((static_cast<uint32_T>(rtb_NOT_k ||
+  SecComputer_DWork.Memory_PreviousInput = SecComputer_P.Logic_table[(((static_cast<uint32_T>(rtb_NOT_bl ||
     ((SecComputer_U.in.analog_inputs.wheel_speed_left < SecComputer_P.CompareToConstant11_const) &&
      (SecComputer_U.in.analog_inputs.wheel_speed_right < SecComputer_P.CompareToConstant12_const))) << 1) + rtb_AND1_h) <<
     1) + SecComputer_DWork.Memory_PreviousInput];
-  SecComputer_MATLABFunction(false, SecComputer_P.PulseNode1_isRisingEdge_k, &rtb_NOT_k,
-    &SecComputer_DWork.sf_MATLABFunction_a);
-  rtb_AND1_h = (SecComputer_U.in.analog_inputs.spd_brk_lever_pos < SecComputer_P.CompareToConstant_const);
-  SecComputer_DWork.Delay1_DSTATE_i = ((rtb_AND1_h || ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <
-    SecComputer_P.CompareToConstant1_const) || (SecComputer_U.in.analog_inputs.thr_lever_2_pos <
-    SecComputer_P.CompareToConstant2_const))) && ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
-    SecComputer_P.CompareToConstant3_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
-    SecComputer_P.CompareToConstant4_const)) && (((SecComputer_U.in.analog_inputs.wheel_speed_left >=
+  SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2, SecComputer_P.BitfromLabel4_bit_a,
+    &rtb_Switch7);
+  rtb_AND4_a = (rtb_Switch7 != 0U);
+  SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2, SecComputer_P.BitfromLabel6_bit_d,
+    &rtb_Switch7);
+  rtb_AND1_h = (rtb_AND4_a && (rtb_Switch7 != 0U));
+  SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2, SecComputer_P.BitfromLabel5_bit_i,
+    &rtb_Switch7);
+  rtb_NOT_bl = (rtb_Switch7 != 0U);
+  SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2, SecComputer_P.BitfromLabel7_bit_m,
+    &rtb_Switch7);
+  SecComputer_MATLABFunction_e(rtb_AND1_h || (rtb_NOT_bl && (rtb_Switch7 != 0U)),
+    SecComputer_P.PulseNode1_isRisingEdge_k, &rtb_NOT_bl, &SecComputer_DWork.sf_MATLABFunction_a);
+  rtb_AND1_h = (rtb_NOT_bl || ((SecComputer_U.in.analog_inputs.wheel_speed_left >=
     SecComputer_P.CompareToConstant5_const) && (SecComputer_U.in.analog_inputs.wheel_speed_right >=
-    SecComputer_P.CompareToConstant6_const) && SecComputer_DWork.Memory_PreviousInput) ||
-    SecComputer_DWork.Delay1_DSTATE_i));
-  rtb_NOT_k = (SecComputer_U.in.analog_inputs.thr_lever_1_pos <= SecComputer_P.CompareToConstant9_const);
-  rtb_OR7 = (rtb_NOT_k && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <= SecComputer_P.CompareToConstant10_const));
-  SecComputer_MATLABFunction(false, SecComputer_P.PulseNode_isRisingEdge_n, &rtb_NOT_k,
-    &SecComputer_DWork.sf_MATLABFunction_g);
-  SecComputer_DWork.Delay_DSTATE_n = (((SecComputer_U.in.analog_inputs.thr_lever_1_pos <
-    SecComputer_P.CompareToConstant7_const) || (SecComputer_U.in.analog_inputs.thr_lever_2_pos <
-    SecComputer_P.CompareToConstant8_const)) && rtb_OR7 && SecComputer_DWork.Delay_DSTATE_n);
+    SecComputer_P.CompareToConstant6_const) && SecComputer_DWork.Memory_PreviousInput));
+  rtb_NOT_bl = (SecComputer_U.in.analog_inputs.spd_brk_lever_pos < SecComputer_P.CompareToConstant_const);
+  SecComputer_DWork.Delay1_DSTATE_i = (((((SecComputer_U.in.analog_inputs.spd_brk_lever_pos >
+    SecComputer_P.CompareToConstant15_const) || rtb_NOT_bl) && ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
+    SecComputer_P.CompareToConstant1_const) || (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
+    SecComputer_P.CompareToConstant2_const))) || (((SecComputer_U.in.analog_inputs.thr_lever_1_pos <
+    SecComputer_P.CompareToConstant3_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
+    SecComputer_P.CompareToConstant4_const)) || ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
+    SecComputer_P.CompareToConstant13_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <
+    SecComputer_P.CompareToConstant14_const)))) && (rtb_AND1_h || SecComputer_DWork.Delay1_DSTATE_i));
+  SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2, SecComputer_P.BitfromLabel_bit,
+    &rtb_Switch7);
+  rtb_AND1_h = (rtb_Switch7 != 0U);
+  SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2, SecComputer_P.BitfromLabel2_bit,
+    &rtb_Switch7);
+  rtb_AND4_a = (rtb_AND1_h || (rtb_Switch7 != 0U));
+  SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_1_bus.discrete_word_2, SecComputer_P.BitfromLabel1_bit,
+    &rtb_Switch7);
+  rtb_AND1_h = (rtb_Switch7 != 0U);
+  SecComputer_MATLABFunction(&SecComputer_U.in.bus_inputs.lgciu_2_bus.discrete_word_2, SecComputer_P.BitfromLabel3_bit,
+    &rtb_Switch7);
+  SecComputer_MATLABFunction_e(rtb_AND4_a || (rtb_AND1_h || (rtb_Switch7 != 0U)), SecComputer_P.PulseNode_isRisingEdge_h,
+    &rtb_AND1_h, &SecComputer_DWork.sf_MATLABFunction_e3);
+  SecComputer_DWork.Delay_DSTATE_n = (((((SecComputer_U.in.analog_inputs.spd_brk_lever_pos >
+    SecComputer_P.CompareToConstant10_const) || rtb_NOT_bl) && ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
+    SecComputer_P.CompareToConstant7_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
+    SecComputer_P.CompareToConstant16_const))) || (((SecComputer_U.in.analog_inputs.thr_lever_1_pos <
+    SecComputer_P.CompareToConstant17_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <=
+    SecComputer_P.CompareToConstant18_const)) || ((SecComputer_U.in.analog_inputs.thr_lever_1_pos <=
+    SecComputer_P.CompareToConstant8_const) && (SecComputer_U.in.analog_inputs.thr_lever_2_pos <
+    SecComputer_P.CompareToConstant9_const)))) && (rtb_AND1_h || SecComputer_DWork.Delay_DSTATE_n));
+  rtb_AND1_h = ((!SecComputer_DWork.Delay1_DSTATE_i) && SecComputer_DWork.Delay_DSTATE_n);
   rtb_logic_crg1_total_sidestick_pitch_command = rtb_Y_oa;
   rtb_logic_crg1_total_sidestick_roll_command = rtb_DataTypeConversion_n;
+  rtb_AND4_a = rtb_NOT_bl;
   if (SecComputer_DWork.Delay1_DSTATE_i) {
     rtb_Y_g = SecComputer_P.Constant_Value;
-  } else if (SecComputer_DWork.Delay_DSTATE_n) {
+  } else if (rtb_AND1_h) {
     rtb_Y_g = SecComputer_P.Constant1_Value_i;
   } else {
     rtb_Y_g = SecComputer_P.Constant2_Value;
@@ -289,7 +364,7 @@ void SecComputer::step()
   SecComputer_RateLimiter(rtb_Y_g, SecComputer_P.RateLimiterVariableTs6_up, SecComputer_P.RateLimiterVariableTs6_lo,
     SecComputer_U.in.time.dt, SecComputer_P.RateLimiterVariableTs6_InitialCondition, &rtb_DataTypeConversion_n,
     &SecComputer_DWork.sf_RateLimiter_c);
-  rtb_NOT_k = (SecComputer_DWork.Delay1_DSTATE_i || SecComputer_DWork.Delay_DSTATE_n);
+  rtb_NOT_bl = (SecComputer_DWork.Delay1_DSTATE_i || rtb_AND1_h);
   SecComputer_RateLimiter(look1_binlxpw(SecComputer_U.in.analog_inputs.spd_brk_lever_pos,
     SecComputer_P.uDLookupTable_bp01Data, SecComputer_P.uDLookupTable_tableData, 4U),
     SecComputer_P.RateLimiterVariableTs1_up, SecComputer_P.RateLimiterVariableTs1_lo, SecComputer_U.in.time.dt,
@@ -330,7 +405,7 @@ void SecComputer::step()
     pair2RollCommand += rtb_Y_g;
   }
 
-  if (rtb_NOT_k) {
+  if (rtb_NOT_bl) {
     rtb_DataTypeConversion2 = rtb_DataTypeConversion_n;
   } else {
     rtb_DataTypeConversion2 = std::fmax(rtb_xi_deg - (rtb_zeta_deg - std::fmax(rtb_zeta_deg, -50.0)), -50.0);
@@ -345,7 +420,7 @@ void SecComputer::step()
   SecComputer_RateLimiter(rtb_DataTypeConversion2, SecComputer_P.RateLimiterVariableTs2_up,
     SecComputer_P.RateLimiterVariableTs2_lo, SecComputer_U.in.time.dt,
     SecComputer_P.RateLimiterVariableTs2_InitialCondition, &rtb_Y_g, &SecComputer_DWork.sf_RateLimiter_b);
-  if (rtb_NOT_k) {
+  if (rtb_NOT_bl) {
     rtb_DataTypeConversion2 = rtb_DataTypeConversion_n;
   } else {
     rtb_DataTypeConversion2 = std::fmax(rtb_zeta_deg - (rtb_xi_deg - std::fmax(rtb_xi_deg, -50.0)), -50.0);
@@ -360,7 +435,7 @@ void SecComputer::step()
   SecComputer_RateLimiter(rtb_DataTypeConversion2, SecComputer_P.RateLimiterVariableTs3_up,
     SecComputer_P.RateLimiterVariableTs3_lo, SecComputer_U.in.time.dt,
     SecComputer_P.RateLimiterVariableTs3_InitialCondition, &rtb_zeta_deg, &SecComputer_DWork.sf_RateLimiter_f);
-  if (rtb_NOT_k) {
+  if (rtb_NOT_bl) {
     rtb_DataTypeConversion2 = rtb_DataTypeConversion_n;
   } else {
     rtb_DataTypeConversion2 = std::fmax(rtb_Y_oa - (pair2RollCommand - std::fmax(pair2RollCommand, -50.0)), -50.0);
@@ -375,7 +450,7 @@ void SecComputer::step()
   SecComputer_RateLimiter(rtb_DataTypeConversion2, SecComputer_P.RateLimiterVariableTs4_up,
     SecComputer_P.RateLimiterVariableTs4_lo, SecComputer_U.in.time.dt,
     SecComputer_P.RateLimiterVariableTs4_InitialCondition, &rtb_xi_deg, &SecComputer_DWork.sf_RateLimiter_j);
-  if (!rtb_NOT_k) {
+  if (!rtb_NOT_bl) {
     rtb_DataTypeConversion_n = std::fmax(pair2RollCommand - (rtb_Y_oa - std::fmax(rtb_Y_oa, -50.0)), -50.0);
   }
 
@@ -393,14 +468,13 @@ void SecComputer::step()
   rtb_DataTypeConversion2 = SecComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.Data;
   rtb_DataTypeConversion4 = SecComputer_U.in.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.Data;
   rtb_DataTypeConversion7 = SecComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.Data;
-  rtb_NOT_k = (rtb_logic_crg14_tracking_mode_on || ((static_cast<real_T>(rtb_activePitchLaw) !=
-    SecComputer_P.CompareToConstant2_const_f) && (static_cast<real_T>(rtb_activePitchLaw) !=
-    SecComputer_P.CompareToConstant3_const_o)));
+  rtb_NOT_bl = (rtb_OR14 || ((static_cast<real_T>(rtb_activePitchLaw) != SecComputer_P.CompareToConstant2_const_f) && (
+    static_cast<real_T>(rtb_activePitchLaw) != SecComputer_P.CompareToConstant3_const_o)));
   LawMDLOBJ2.step(&SecComputer_U.in.time.dt, &rtb_DataTypeConversion_n, &pair2RollCommand, &rtb_DataTypeConversion2,
                   &rtb_DataTypeConversion4, (const_cast<real_T*>(&SecComputer_RGND)),
                   &SecComputer_U.in.analog_inputs.ths_pos_deg, &rtb_DataTypeConversion7, (const_cast<real_T*>
     (&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)),
-                  &rtb_logic_crg1_total_sidestick_pitch_command, &rtb_NOT_k, &rtb_eta_deg, &rtb_eta_trim_deg);
+                  &rtb_logic_crg1_total_sidestick_pitch_command, &rtb_NOT_bl, &rtb_eta_deg, &rtb_eta_trim_deg);
   LawMDLOBJ3.step(&SecComputer_U.in.time.dt, &rtb_logic_crg1_total_sidestick_pitch_command, &pair2RollCommand,
                   &rtb_DataTypeConversion_n);
   switch (static_cast<int32_T>(rtb_activePitchLaw)) {
@@ -442,11 +516,11 @@ void SecComputer::step()
   SecComputer_Y.out.discrete_outputs.thr_reverse_selected = SecComputer_P.Constant1_Value_g;
   SecComputer_Y.out.discrete_outputs.left_elevator_ok = leftElevatorAvail;
   SecComputer_Y.out.discrete_outputs.right_elevator_ok = rightElevatorAvail;
-  SecComputer_Y.out.discrete_outputs.ground_spoiler_out = SecComputer_P.Constant_Value_i;
+  SecComputer_Y.out.discrete_outputs.ground_spoiler_out = SecComputer_DWork.Delay1_DSTATE_i;
   SecComputer_Y.out.discrete_outputs.sec_failed = SecComputer_P.Constant2_Value_n;
-  rtb_NOT_k = (rtb_isEngagedInPitch && leftElevatorAvail);
-  SecComputer_Y.out.discrete_outputs.left_elevator_damping_mode = rtb_NOT_k;
-  SecComputer_Y.out.discrete_outputs.right_elevator_damping_mode = rtb_NOT_k;
+  rtb_NOT_bl = (rtb_isEngagedInPitch && leftElevatorAvail);
+  SecComputer_Y.out.discrete_outputs.left_elevator_damping_mode = rtb_NOT_bl;
+  SecComputer_Y.out.discrete_outputs.right_elevator_damping_mode = rtb_NOT_bl;
   SecComputer_Y.out.discrete_outputs.ths_active = (rtb_isEngagedInPitch &&
     (!SecComputer_U.in.discrete_inputs.ths_motor_fault));
   if (SecComputer_U.in.discrete_inputs.l_spoiler_1_servo_failed) {
@@ -575,7 +649,7 @@ void SecComputer::step()
   rtb_VectorConcatenate[12] = rtb_isEngagedInPitch;
   rtb_VectorConcatenate[13] = SecComputer_P.Constant8_Value;
   rtb_VectorConcatenate[14] = SecComputer_DWork.Delay1_DSTATE_i;
-  rtb_VectorConcatenate[15] = rtb_AND1_h;
+  rtb_VectorConcatenate[15] = rtb_AND4_a;
   rtb_VectorConcatenate[16] = SecComputer_P.Constant8_Value;
   rtb_VectorConcatenate[17] = SecComputer_P.Constant8_Value;
   rtb_VectorConcatenate[18] = SecComputer_P.Constant8_Value;
@@ -611,8 +685,8 @@ void SecComputer::step()
   SecComputer_Y.out.laws.lateral_law_outputs.right_spoiler_2_command_deg = rtb_Y_oa;
   SecComputer_Y.out.laws.pitch_law_outputs.elevator_command_deg = pair2RollCommand;
   SecComputer_Y.out.laws.pitch_law_outputs.ths_command_deg = rtb_DataTypeConversion_n;
-  SecComputer_Y.out.logic.on_ground = rtb_on_ground;
-  SecComputer_Y.out.logic.tracking_mode_on = rtb_logic_crg14_tracking_mode_on;
+  SecComputer_Y.out.logic.on_ground = rtb_OR16;
+  SecComputer_Y.out.logic.tracking_mode_on = rtb_OR14;
   SecComputer_Y.out.logic.pitch_law_capability = pitch_efcs_law::AlternateLaw1;
   SecComputer_Y.out.logic.active_pitch_law = rtb_activePitchLaw;
   SecComputer_Y.out.logic.is_engaged_in_pitch = rtb_isEngagedInPitch;
@@ -623,7 +697,7 @@ void SecComputer::step()
   SecComputer_Y.out.logic.is_engaged_in_roll = rtb_isEngagedInRoll;
   SecComputer_Y.out.logic.spoiler_pair_1_avail = spoilerPair1SupplyAvail;
   SecComputer_Y.out.logic.spoiler_pair_2_avail = spoilerPair2SupplyAvail;
-  SecComputer_Y.out.logic.is_yellow_hydraulic_power_avail = rtb_AND4_a;
+  SecComputer_Y.out.logic.is_yellow_hydraulic_power_avail = rtb_logic_crg_is_yellow_hydraulic_power_avail;
   SecComputer_Y.out.logic.is_blue_hydraulic_power_avail = rtb_logic_crg14_is_blue_hydraulic_power_avail;
   SecComputer_Y.out.logic.is_green_hydraulic_power_avail = rtb_logic_crg14_is_green_hydraulic_power_avail;
   SecComputer_Y.out.logic.left_sidestick_disabled = SecComputer_DWork.pLeftStickDisabled;
@@ -632,9 +706,9 @@ void SecComputer::step()
   SecComputer_Y.out.logic.right_sidestick_priority_locked = SecComputer_DWork.Delay1_DSTATE;
   SecComputer_Y.out.logic.total_sidestick_pitch_command = rtb_logic_crg1_total_sidestick_pitch_command;
   SecComputer_Y.out.logic.total_sidestick_roll_command = rtb_logic_crg1_total_sidestick_roll_command;
-  SecComputer_Y.out.logic.ground_spoilers_armed = rtb_AND1_h;
+  SecComputer_Y.out.logic.ground_spoilers_armed = rtb_AND4_a;
   SecComputer_Y.out.logic.ground_spoilers_out = SecComputer_DWork.Delay1_DSTATE_i;
-  SecComputer_Y.out.logic.partial_lift_dumping_active = SecComputer_DWork.Delay_DSTATE_n;
+  SecComputer_Y.out.logic.partial_lift_dumping_active = rtb_AND1_h;
   SecComputer_Y.out.logic.adr_computation_data = SecComputer_U.in.bus_inputs.adr_1_bus;
   SecComputer_Y.out.logic.ir_computation_data = SecComputer_U.in.bus_inputs.ir_1_bus;
 }

@@ -1307,15 +1307,16 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   }
   secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1] * 19;
   secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
-  secs[secIndex].modelInputs.in.analog_inputs.spd_brk_lever_pos = simData.spoilers_handle_position;
+  secs[secIndex].modelInputs.in.analog_inputs.spd_brk_lever_pos =
+      spoilersHandler->getIsArmed() ? -0.05 : spoilersHandler->getHandlePosition();
   secs[secIndex].modelInputs.in.analog_inputs.thr_lever_1_pos = thrustLeverAngle_1->get();
   secs[secIndex].modelInputs.in.analog_inputs.thr_lever_2_pos = thrustLeverAngle_2->get();
   secs[secIndex].modelInputs.in.analog_inputs.left_spoiler_1_pos_deg = -idLeftSpoilerPosition[splrIndex]->get() * 50;
   secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_1_pos_deg = -idRightSpoilerPosition[splrIndex]->get() * 50;
   secs[secIndex].modelInputs.in.analog_inputs.left_spoiler_2_pos_deg = -idLeftSpoilerPosition[splrIndex + 1]->get() * 50;
   secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_2_pos_deg = -idRightSpoilerPosition[splrIndex + 1]->get() * 50;
-  secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_left = 0;
-  secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_right = 0;
+  secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_left = simData.V_gnd_kn;   // TODO: Placeholder, should be gear rotation speed
+  secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_right = simData.V_gnd_kn;  // TODO: Placeholder, should be gear rotation speed
 
   if (secIndex == 0) {
     secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adirsBusOutputs[0].adrBus;

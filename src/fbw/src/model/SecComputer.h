@@ -18,7 +18,7 @@ class SecComputer final
     boolean_T pY_not_empty;
   };
 
-  struct rtDW_MATLABFunction_SecComputer_T {
+  struct rtDW_MATLABFunction_SecComputer_l_T {
     boolean_T output;
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
@@ -39,17 +39,17 @@ class SecComputer final
     boolean_T Memory_PreviousInput;
     boolean_T pLeftStickDisabled;
     boolean_T pRightStickDisabled;
-    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_nu;
-    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_g4;
+    rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_nu;
+    rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_g4;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_j;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_g2;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_h;
-    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_gf;
+    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_g;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_ndv;
-    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_nd;
-    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_n;
-    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_a;
-    rtDW_MATLABFunction_SecComputer_T sf_MATLABFunction_g;
+    rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_nd;
+    rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_n;
+    rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_a;
+    rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_e3;
     rtDW_RateLimiter_SecComputer_T sf_RateLimiter_c;
     rtDW_RateLimiter_SecComputer_T sf_RateLimiter_d;
     rtDW_RateLimiter_SecComputer_T sf_RateLimiter_j;
@@ -73,19 +73,37 @@ class SecComputer final
     real_T RateLimiterVariableTs3_InitialCondition;
     real_T RateLimiterVariableTs4_InitialCondition;
     real_T RateLimiterVariableTs5_InitialCondition;
+    real_T BitfromLabel4_bit;
+    real_T BitfromLabel6_bit;
+    real_T BitfromLabel5_bit;
+    real_T BitfromLabel7_bit;
+    real_T BitfromLabel4_bit_a;
+    real_T BitfromLabel6_bit_d;
+    real_T BitfromLabel5_bit_i;
+    real_T BitfromLabel7_bit_m;
+    real_T BitfromLabel_bit;
+    real_T BitfromLabel2_bit;
+    real_T BitfromLabel1_bit;
+    real_T BitfromLabel3_bit;
     real_T CompareToConstant11_const;
     real_T CompareToConstant12_const;
     real_T CompareToConstant5_const;
     real_T CompareToConstant6_const;
     real_T CompareToConstant_const;
+    real_T CompareToConstant15_const;
     real_T CompareToConstant1_const;
     real_T CompareToConstant2_const;
     real_T CompareToConstant3_const;
     real_T CompareToConstant4_const;
+    real_T CompareToConstant13_const;
+    real_T CompareToConstant14_const;
+    real_T CompareToConstant10_const;
     real_T CompareToConstant7_const;
+    real_T CompareToConstant16_const;
+    real_T CompareToConstant17_const;
+    real_T CompareToConstant18_const;
     real_T CompareToConstant8_const;
     real_T CompareToConstant9_const;
-    real_T CompareToConstant10_const;
     real_T CompareToConstant2_const_f;
     real_T CompareToConstant3_const_o;
     real_T CompareToConstant1_const_p;
@@ -119,7 +137,7 @@ class SecComputer final
     boolean_T PulseNode3_isRisingEdge;
     boolean_T PulseNode2_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge_k;
-    boolean_T PulseNode_isRisingEdge_n;
+    boolean_T PulseNode_isRisingEdge_h;
     base_sec_logic_outputs Constant1_Value;
     base_sec_out_bus Constant4_Value;
     real_T Constant_Value;
@@ -154,14 +172,12 @@ class SecComputer final
     real32_T Gain2_Gain;
     real32_T Gain3_Gain;
     real32_T Gain4_Gain;
-    boolean_T Constant_Value_l;
     boolean_T Delay_InitialCondition;
     boolean_T Delay1_InitialCondition;
     boolean_T Logic_table[16];
     boolean_T Delay1_InitialCondition_l;
     boolean_T Delay_InitialCondition_j;
     boolean_T Constant1_Value_g;
-    boolean_T Constant_Value_i;
     boolean_T Constant2_Value_n;
     boolean_T Constant8_Value;
     boolean_T Constant7_Value;
@@ -194,8 +210,9 @@ class SecComputer final
   static Parameters_SecComputer_T SecComputer_P;
   static void SecComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init, real_T
     *rty_Y, rtDW_RateLimiter_SecComputer_T *localDW);
-  static void SecComputer_MATLABFunction(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
-    rtDW_MATLABFunction_SecComputer_T *localDW);
+  static void SecComputer_MATLABFunction(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
+  static void SecComputer_MATLABFunction_e(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
+    rtDW_MATLABFunction_SecComputer_l_T *localDW);
   static void SecComputer_MATLABFunction_n(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
     rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_SecComputer_o_T *localDW);
   static void SecComputer_MATLABFunction_c(const boolean_T rtu_u[19], real32_T *rty_y);

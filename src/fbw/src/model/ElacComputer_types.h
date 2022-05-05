@@ -432,6 +432,8 @@ struct base_elac_logic_outputs
   boolean_T right_aileron_crosscommand_active;
   boolean_T left_aileron_avail;
   boolean_T right_aileron_avail;
+  boolean_T aileron_droop_active;
+  boolean_T aileron_antidroop_active;
   boolean_T is_yellow_hydraulic_power_avail;
   boolean_T is_blue_hydraulic_power_avail;
   boolean_T is_green_hydraulic_power_avail;
