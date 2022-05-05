@@ -98,6 +98,13 @@ const DCDU: React.FC = () => {
     const invertResponse = (uid: number) => {
         events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_INVERT_SEMANTIC_RESPONSE', uid);
     };
+    const modifyResponse = (uid: number) => {
+        const message = messages.get(uid);
+        if (message) {
+            message.statusMessage = DcduStatusMessage.McduForModification;
+            // TODO trigger DcduLink to open the page on the MCDU
+        }
+    };
     const recallMessage = () => {
         events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_RECALL');
     };
@@ -477,6 +484,7 @@ const DCDU: React.FC = () => {
                             message={visibleMessages[0]}
                             dataIncomplete={visibleMessagesSemanticResponseIncomplete}
                             invertResponse={invertResponse}
+                            modifyResponse={modifyResponse}
                             sendMessage={sendMessage}
                             closeMessage={closeMessage}
                         />

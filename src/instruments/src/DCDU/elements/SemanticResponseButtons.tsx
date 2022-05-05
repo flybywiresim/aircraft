@@ -8,11 +8,12 @@ type SemanticResponseButtonsProps = {
     message: CpdlcMessage,
     dataIncomplete: boolean,
     invertResponse: (message: number) => void,
+    modifyResponse: (message: number) => void,
     sendMessage: (message: number) => void,
     closeMessage: (message: number) => void
 }
 
-export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = ({ message, dataIncomplete, invertResponse, sendMessage, closeMessage }) => {
+export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = ({ message, dataIncomplete, invertResponse, modifyResponse, sendMessage, closeMessage }) => {
     const showAnswers = message.Response === undefined || (message.Response.ComStatus !== AtsuMessageComStatus.Sending && message.Response.ComStatus !== AtsuMessageComStatus.Sent);
     const buttonsBlocked = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending;
 
@@ -24,10 +25,11 @@ export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = (
         if (showAnswers) {
             if (index === 'L1') {
                 invertResponse(message.UniqueMessageID);
+            } else if (index === 'R1') {
+                modifyResponse(message.UniqueMessageID);
             } else if (index === 'R2' && message.Response) {
                 sendMessage(message.Response.UniqueMessageID);
             }
-            // TODO process R1 and modify the message
         } else if (index === 'R2') {
             closeMessage(message.UniqueMessageID);
         }
