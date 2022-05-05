@@ -423,6 +423,18 @@ class CDUAtcLatRequestFansA {
             CDUAtcLatRequestFansA.ShowPage2(mcdu, data);
         };
 
+        mcdu.rightInputDelay[4] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[4] = () => {
+            if (CDUAtcLatRequestFansA.CanSendData(data)) {
+                const requests = CDUAtcLatRequestFansA.CreateRequests(mcdu, data);
+                if (requests.length !== 0) {
+                    CDUAtcTextFansA.ShowPage1(mcdu, requests);
+                }
+            }
+        };
+
         mcdu.rightInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
