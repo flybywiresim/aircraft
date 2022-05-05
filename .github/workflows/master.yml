@@ -15,6 +15,8 @@ jobs:
       MASTER_PRE_RELEASE_ID: 66067756
       MASTER_PRE_RELEASE_TAG: assets/master
       MASTER_ZIP_NAME: A32NX-master.zip
+      VMASTER_PRE_RELEASE_ID: 32243965
+      VMASTER_PRE_RELEASE_TAG: vmaster
       BUILD_DIR_NAME: master
     steps:
       - name: Checkout source
@@ -38,12 +40,12 @@ jobs:
 
           mkdir ./${{ env.BUILD_DIR_NAME }}
           zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
-      - name: Get and delete master pre-release zip asset
+      - name: Get and delete vmaster pre-release zip asset
         run: |
           echo 'checking for first release asset...'
           assets=$( \
             curl --location --request GET \
-              --url https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets
+              --url https://api.github.com/repos/${{ github.repository }}/releases/${{ env.VMASTER_PRE_RELEASE_ID }}/assets
           )
 
           if [ $(echo $assets | jq '.[0].size') -eq '0' ]; then
@@ -59,8 +61,6 @@ jobs:
         uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          VMASTER_PRE_RELEASE_ID: 32243965
-          VMASTER_PRE_RELEASE_TAG: vmaster
         with:
           upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.VMASTER_PRE_RELEASE_ID }}/assets{?name,label}
           asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
@@ -69,8 +69,6 @@ jobs:
       - name: Update vmaster pre-release body
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          VMASTER_PRE_RELEASE_ID: 32243965
-          VMASTER_PRE_RELEASE_TAG: vmaster
         run: |
           curl --request PATCH \
             --url 'https://api.github.com/repos/${{ github.repository }}/releases/${{ env.VMASTER_PRE_RELEASE_ID }}' \
@@ -85,6 +83,12 @@ jobs:
           BUNNY_SECRET_TOKEN: ${{ secrets.BUNNY_SECRET_TOKEN }}
           BUNNY_BUCKET_DESTINATION: addons/a32nx/master
         run: ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION
+      - name: Delete old GitHub Pre-Release assets
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ env.MASTER_PRE_RELEASE_TAG }}
+          assets: '*'
       - name: Upload aicraft package to GitHub Pre-Release Assets
         uses: actions/upload-release-asset@v1.0.2
         env:
