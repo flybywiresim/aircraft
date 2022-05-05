@@ -351,8 +351,8 @@
   "Pushback": {
     "Backward": "後進",
     "CallTug": "牽引車を呼ぶ",
-    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
-    "DisableSystemMessageTitle": "Disable Pushback System",
+    "DisableSystemMessageBody": "プッシュバックシステムを無効にしてもよろしいですか?これにより、牽引車との接続も解除されます。",
+    "DisableSystemMessageTitle": "プッシュバックシステムを無効にする",
     "EnableSystemMessageBody": "新しいflyPadOS 3プッシュバックシステムはまだ完成していません。他のプッシュバックアドオンと互換性がなく、問題を引き起こす可能性があります。",
     "EnableSystemMessageTitle": "プッシュバックシステムを有効にする",
     "Forward": "前進",

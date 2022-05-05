@@ -1,15 +1,18 @@
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable max-len */
 import React, { useEffect, useRef, useState } from 'react';
 import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import {
     ArrowDown,
     ArrowLeft,
-    ArrowRight,
+    ArrowRight, ArrowsAngleContract, ArrowsAngleExpand,
     ArrowUp,
     ChevronDoubleDown,
     ChevronDoubleUp,
     ChevronLeft,
-    ChevronRight,
+    ChevronRight, DashCircle, DashCircleFill,
     PauseCircleFill,
     PlayCircleFill, ToggleOff, ToggleOn,
     TruckFlatbed,
@@ -72,6 +75,10 @@ export const PushbackPage = () => {
     const dispatch = useAppDispatch();
     const { showModal } = useModals();
 
+    // This is used to completely turn off the pushback for compatible with other
+    // pushback add-ons. Only watching sim variable like PUSHBACK STATE or
+    // Pushback Available lead to conflicts as other add-on also write to them.
+    // It is impemented as a LVAR to allow 3rd parties to deactivate it if required.
     const [pushbackSystemEnabled, setPushbackSystemEnabled] = useSimVar('L:A32NX_PUSHBACK_SYSTEM_ENABLED', 'bool', 100);
 
     const [pushbackAttached] = useSimVar('Pushback Attached', 'bool', 100);
@@ -581,23 +588,36 @@ export const PushbackPage = () => {
                             <button
                                 type="button"
                                 onClick={handleCallTug}
-                                className={`flex justify-center items-center w-full h-20 text-theme-text bg-green-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100 ${pushbackActive() ? 'text-white' : 'text-utility-red'} ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 text-theme-text bg-green-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100'} ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}
                             >
-                                <TruckFlatbed size={40} />
+                                <TruckFlatbed size={50} />
+                                {pushbackActive() ? (
+                                    <ArrowsAngleContract className="ml-4" size={40} />
+                                ) : (
+                                    <ArrowsAngleExpand className="ml-4" size={40} />
+                                )}
                             </button>
                         </TooltipWrapper>
                     </div>
 
                     {/* Parking Brake */}
                     <div className="w-full">
-                        <p className="text-center">{t('Pushback.ParkingBrake.Title')}</p>
+                        <p className="text-center jus">
+                            {t('Pushback.ParkingBrake.Title')}
+                            {' '}
+                            {parkingBrakeEngaged ? t('Pushback.ParkingBrake.On') : t('Pushback.ParkingBrake.Off')}
+                        </p>
                         <TooltipWrapper text={t('Pushback.TT.SetReleaseParkingBrake')}>
                             <button
                                 type="button"
                                 onClick={() => setParkingBrakeEngaged((old) => !old)}
-                                className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center  ${parkingBrakeEngaged ? 'bg-white text-utility-red' : 'bg-utility-red text-white'}`}
+                                className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center text-utility-white opacity-60 hover:opacity-100  ${parkingBrakeEngaged ? 'bg-red-600' : 'bg-green-600'}`}
                             >
-                                <h1 className="font-bold text-current uppercase">{parkingBrakeEngaged ? t('Pushback.ParkingBrake.On') : t('Pushback.ParkingBrake.Off')}</h1>
+                                {parkingBrakeEngaged ? (
+                                    <DashCircleFill className="transform" size={40} />
+                                ) : (
+                                    <DashCircle className="transform -rotate-90" size={40} />
+                                )}
                             </button>
                         </TooltipWrapper>
                     </div>
@@ -646,7 +666,7 @@ export const PushbackPage = () => {
                             <button
                                 type="button"
                                 onClick={handlePause}
-                                className={`flex justify-center items-center w-full h-20 text-theme-text bg-green-600 opacity-60 hover:opacity-100 rounded-md transition duration-100 ${!pushbackActive() && 'opacity-30 pointer-events-none'} ${pushbackPaused && 'text-red-900'}`}
+                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                             >
                                 {pushbackPaused ? (
                                     <PlayCircleFill size={40} />

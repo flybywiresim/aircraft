@@ -351,10 +351,10 @@
   "Pushback": {
     "Backward": "Назад",
     "CallTug": "Вызов буксира",
-    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
-    "DisableSystemMessageTitle": "Disable Pushback System",
-    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
-    "EnableSystemMessageTitle": "Enable Pushback System",
+    "DisableSystemMessageBody": "Вы действительно хотите отключить систему буксировки? Это также освободит буксир.",
+    "DisableSystemMessageTitle": "Отключить систему буксировки",
+    "EnableSystemMessageBody": "Новая система буксировки FlyPados 3 еще не доработана. Он несовместим с другими дополнениями буксировки и может вызвать другие проблемы.",
+    "EnableSystemMessageTitle": "Включить систему буксировки",
     "Forward": "Вперёд",
     "Halt": "Приостановить",
     "LeavePageMessage": "Приостановка отталкивания",
@@ -366,8 +366,8 @@
       "Title": "Стояночный тормоз"
     },
     "Right": "Направо",
-    "SystemEnabledOff": "Pushback System Off",
-    "SystemEnabledOn": "Pushback System On",
+    "SystemEnabledOff": "Система буксировки выключена",
+    "SystemEnabledOn": "Система буксировки включена",
     "TT": {
       "CallReleaseTug": "Вызовите или отпустите буксир",
       "CenterPlaneMode": "Вкл/выкл центра карты",
@@ -379,12 +379,12 @@
       "SetReleaseParkingBrake": "Установите или отпустите стояночный тормоз",
       "SliderDirection": "Перемещение в нужном направлении",
       "SliderSpeed": "Перемещение на желаемую скорость",
-      "SystemEnabledOff": "Click to turn the pushback system on.",
-      "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "SystemEnabledOff": "Нажмите, чтобы включить систему буксировки.",
+      "SystemEnabledOn": "Нажмите, чтобы полностью отключить систему буксировки.",
       "ZoomIn": "Увеличить",
       "ZoomOut": "Уменьшить"
     },
-    "TugAttached": "Tug is attached",
+    "TugAttached": "Буксир прикреплен",
     "TugDirection": "Направление буксира",
     "TugSpeed": "Скорость буксира"
   },
