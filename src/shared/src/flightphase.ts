@@ -9,10 +9,19 @@ export enum FmgcFlightPhase {
     Done,
 }
 
+export function isOnGround(): boolean {
+    return SimVar.GetSimVarValue('L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED', 'bool')
+        || SimVar.GetSimVarValue('L:A32NX_LGCIU_2_NOSE_GEAR_COMPRESSED', 'bool');
+}
+
+function isEngineOn(index: number): boolean {
+    return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
+}
+
 export function isAnEngineOn(): boolean {
-    return Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
+    return isEngineOn(1) || isEngineOn(2);
 }
 
 export function isAllEngineOn(): boolean {
-    return Simplane.getEngineActive(0) && Simplane.getEngineActive(1);
+    return isEngineOn(1) && isEngineOn(2);
 }

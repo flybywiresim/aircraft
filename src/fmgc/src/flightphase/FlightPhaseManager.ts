@@ -1,6 +1,7 @@
 import { Phase, PreFlightPhase, TakeOffPhase, ClimbPhase, CruisePhase, DescentPhase, ApproachPhase, GoAroundPhase, DonePhase } from '@fmgc/flightphase/Phase';
 import { VerticalMode } from '@shared/autopilot';
-import { FmgcFlightPhase } from '@shared/flightphase';
+import { FmgcFlightPhase, isAnEngineOn, isOnGround } from '@shared/flightphase';
+import { ConfirmationNode } from '@shared/logic';
 
 function canInitiateDes(distanceToDestination: number): boolean {
     const fl = Math.round(Simplane.getAltitude() / 100);
@@ -13,6 +14,8 @@ function canInitiateDes(distanceToDestination: number): boolean {
 }
 
 export class FlightPhaseManager {
+    private onGroundConfirmationNode = new ConfirmationNode(30 * 1000);
+
     private activePhase: FmgcFlightPhase = SimVar.GetSimVarValue('L:A32NX_INITIAL_FLIGHT_PHASE', 'number') || FmgcFlightPhase.Preflight;
 
     private phases: { [key in FmgcFlightPhase]: Phase } = {
@@ -38,7 +41,11 @@ export class FlightPhaseManager {
     }
 
     shouldActivateNextPhase(_deltaTime: number): void {
-        if (this.phases[this.phase].shouldActivateNextPhase(_deltaTime)) {
+        if (this.shouldActivateDonePhase(_deltaTime)
+            && this.phase !== FmgcFlightPhase.Done
+            && this.phase !== FmgcFlightPhase.Preflight) {
+            this.changePhase(FmgcFlightPhase.Done);
+        } else if (this.phases[this.phase].shouldActivateNextPhase(_deltaTime)) {
             this.changePhase(this.phases[this.phase].nextPhase);
         }
     }
@@ -141,5 +148,11 @@ export class FlightPhaseManager {
         }
 
         return true;
+    }
+
+    shouldActivateDonePhase(_deltaTime: number): boolean {
+        this.onGroundConfirmationNode.input = isOnGround();
+        this.onGroundConfirmationNode.update(_deltaTime);
+        return this.onGroundConfirmationNode.output && !isAnEngineOn();
     }
 }

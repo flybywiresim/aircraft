@@ -1,4 +1,4 @@
-import { FmgcFlightPhase, isAllEngineOn, isAnEngineOn } from '@shared/flightphase';
+import { FmgcFlightPhase, isAllEngineOn, isAnEngineOn, isOnGround } from '@shared/flightphase';
 import { ConfirmationNode } from '@shared/logic';
 
 export abstract class Phase {
@@ -12,7 +12,7 @@ export abstract class Phase {
     protected canInitiateTO(): boolean {
         const v2 = SimVar.GetSimVarValue('L:AIRLINER_V2_SPEED', 'knots');
 
-        return SimVar.GetSimVarValue('CAMERA STATE', 'number') < 10 && Simplane.getAltitudeAboveGround() > 1.5
+        return SimVar.GetSimVarValue('CAMERA STATE', 'number') < 10 && !isOnGround()
         || (
             Math.max(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'), SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number')) >= 35
             && !Number.isNaN(v2)
@@ -73,7 +73,7 @@ export class ClimbPhase extends Phase {
     shouldActivateNextPhase(_deltaTime) {
         const cruiseFl = SimVar.GetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number') / 100;
 
-        if (!isAnEngineOn() && Simplane.getAltitudeAboveGround() < 1.5) {
+        if (!isAnEngineOn() && isOnGround()) {
             this.nextPhase = FmgcFlightPhase.Done;
             return true;
         }
@@ -86,7 +86,7 @@ export class CruisePhase extends Phase {
     nextPhase = FmgcFlightPhase.Done;
 
     shouldActivateNextPhase(_deltaTime) {
-        return !isAnEngineOn() && Simplane.getAltitudeAboveGround() < 1.5;
+        return !isAnEngineOn() && isOnGround();
     }
 }
 
@@ -105,7 +105,7 @@ export class DescentPhase extends Phase {
             return true;
         }
 
-        if (!isAnEngineOn() && Simplane.getAltitudeAboveGround() < 1.5) {
+        if (!isAnEngineOn() && isOnGround()) {
             this.nextPhase = FmgcFlightPhase.Done;
             return true;
         }
@@ -129,7 +129,7 @@ export class ApproachPhase extends Phase {
             return true;
         }
 
-        this.landingConfirmation.input = Simplane.getAltitudeAboveGround() < 1.5;
+        this.landingConfirmation.input = isOnGround();
         this.landingConfirmation.update(_deltaTime);
         return this.landingConfirmation.output || !isAnEngineOn();
     }
@@ -143,7 +143,7 @@ export class GoAroundPhase extends Phase {
     }
 
     shouldActivateNextPhase(_deltaTime) {
-        return !isAnEngineOn() && Simplane.getAltitudeAboveGround() < 1.5;
+        return !isAnEngineOn() && isOnGround();
     }
 }
 
