@@ -43,6 +43,10 @@ class A32NX_TipsManager {
     }
 
     checkAssistenceConfiguration() {
+        // only check when actually flying, otherwise return
+        if (SimVar.GetSimVarValue("CAMERA STATE", "Number") >= 10) {
+            return;
+        }
         const assistenceTakeOffEnabled = SimVar.GetSimVarValue("ASSISTANCE TAKEOFF ENABLED", "Bool");
         const assistenceLandingEnabled = SimVar.GetSimVarValue("ASSISTANCE LANDING ENABLED", "Bool");
         const assistenceAutotrimActive = SimVar.GetSimVarValue("AI AUTOTRIM ACTIVE", "Bool");
