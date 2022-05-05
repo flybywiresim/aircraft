@@ -36,9 +36,9 @@ bool FlyByWireInterface::connect() {
   flightDataRecorder.initialize();
 
   // connect to sim connect
-  return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, throttleAxis,
-                                     spoilersHandler, elevatorTrimHandler, rudderTrimHandler, flightControlsKeyChangeAileron,
-                                     flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
+  return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, elacDisabled,
+                                     secDisabled, throttleAxis, spoilersHandler, elevatorTrimHandler, rudderTrimHandler,
+                                     flightControlsKeyChangeAileron, flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
                                      disableXboxCompatibilityRudderAxisPlusMinus, idMinimumSimulationRate->get(),
                                      idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
 }
@@ -169,11 +169,12 @@ void FlyByWireInterface::loadConfiguration() {
   autoThrustEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "AUTOTHRUST_ENABLED", true);
   flyByWireEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "FLY_BY_WIRE_ENABLED", true);
   elacDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "ELAC_DISABLED", -1);
+  secDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "SEC_DISABLED", -1);
   tailstrikeProtectionEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "TAILSTRIKE_PROTECTION_ENABLED", false);
 
   // if any model is deactivated we need to enable client data
-  clientDataEnabled =
-      (elacDisabled != -1 || !autopilotStateMachineEnabled || !autopilotLawsEnabled || !autoThrustEnabled || !flyByWireEnabled);
+  clientDataEnabled = (elacDisabled != -1 || secDisabled != -1 || !autopilotStateMachineEnabled || !autopilotLawsEnabled ||
+                       !autoThrustEnabled || !flyByWireEnabled);
 
   // print configuration into console
   cout << "WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = " << clientDataEnabled << endl;
@@ -181,6 +182,8 @@ void FlyByWireInterface::loadConfiguration() {
   cout << "WASM: MODEL     : AUTOPILOT_LAWS_ENABLED               = " << autopilotLawsEnabled << endl;
   cout << "WASM: MODEL     : AUTOTHRUST_ENABLED                   = " << autoThrustEnabled << endl;
   cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << endl;
+  cout << "WASM: MODEL     : ELAC_DISABLED                        = " << elacDisabled << endl;
+  cout << "WASM: MODEL     : SEC_DISABLED                         = " << secDisabled << endl;
   cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << endl;
 
   // --------------------------------------------------------------------------
@@ -1078,8 +1081,8 @@ bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   adirsBusOutputs[adirsIndex].irsBus.inertialVerticalSpeed.setFromSimVar(idIrInertialVerticalSpeed[adirsIndex]->get());
 
   if (clientDataEnabled) {
-  simConnectInterface.setClientDataAdr(adirsBusOutputs[adirsIndex].adrBus, adirsIndex);
-  simConnectInterface.setClientDataIr(adirsBusOutputs[adirsIndex].irsBus, adirsIndex);
+    simConnectInterface.setClientDataAdr(adirsBusOutputs[adirsIndex].adrBus, adirsIndex);
+    simConnectInterface.setClientDataIr(adirsBusOutputs[adirsIndex].irsBus, adirsIndex);
   }
 
   return true;
@@ -1186,8 +1189,8 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
     elacsBusOutputs[elacIndex] = elacs[elacIndex].getBusOutputs();
   }
 
-  if (oppElacIndex == elacDisabled) {
-    simConnectInterface.setClientDataElacBusInput(elacsBusOutputs[elacIndex]);
+  if (oppElacIndex == elacDisabled || secDisabled != -1) {
+    simConnectInterface.setClientDataElacBusInput(elacsBusOutputs[elacIndex], elacIndex);
   }
 
   idElacFaultLightOn[elacIndex]->set(!elacsDiscreteOutputs[elacIndex].digital_output_validated);
@@ -1312,13 +1315,22 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.bus_inputs.elac_1_bus = elacsBusOutputs[0];
   secs[secIndex].modelInputs.in.bus_inputs.elac_2_bus = elacsBusOutputs[1];
 
-  Failures failureIndex = secIndex == 0 ? Failures::Sec1 : (secIndex == 1 ? Failures::Sec2 : Failures::Sec3);
-  secs[secIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex),
-                        secIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get());
+  if (secIndex == secDisabled) {
+    simConnectInterface.setClientDataSecDiscretes(secs[secIndex].modelInputs.in.discrete_inputs);
+    simConnectInterface.setClientDataSecAnalog(secs[secIndex].modelInputs.in.analog_inputs);
 
-  secsDiscreteOutputs[secIndex] = secs[secIndex].getDiscreteOutputs();
-  secsAnalogOutputs[secIndex] = secs[secIndex].getAnalogOutputs();
-  secsBusOutputs[secIndex] = secs[secIndex].getBusOutputs();
+    secsDiscreteOutputs[secIndex] = simConnectInterface.getClientDataSecDiscretesOutput();
+    secsAnalogOutputs[secIndex] = simConnectInterface.getClientDataSecAnalogsOutput();
+    secsBusOutputs[secIndex] = simConnectInterface.getClientDataSecBusOutput();
+  } else {
+    Failures failureIndex = secIndex == 0 ? Failures::Sec1 : (secIndex == 1 ? Failures::Sec2 : Failures::Sec3);
+    secs[secIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(failureIndex),
+                          secIndex == 0 ? idElecDcEssBusPowered->get() : idElecDcBus2Powered->get());
+
+    secsDiscreteOutputs[secIndex] = secs[secIndex].getDiscreteOutputs();
+    secsAnalogOutputs[secIndex] = secs[secIndex].getAnalogOutputs();
+    secsBusOutputs[secIndex] = secs[secIndex].getBusOutputs();
+  }
 
   if (elacDisabled != -1 && secIndex < 2) {
     simConnectInterface.setClientDataSecBus(secsBusOutputs[secIndex], secIndex);

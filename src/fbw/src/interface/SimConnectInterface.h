@@ -13,6 +13,7 @@
 #include "SimConnectData.h"
 
 #include "../model/ElacComputer_types.h"
+#include "../model/SecComputer_types.h"
 
 class SimConnectInterface {
  public:
@@ -189,6 +190,8 @@ class SimConnectInterface {
                bool autopilotStateMachineEnabled,
                bool autopilotLawsEnabled,
                bool flyByWireEnabled,
+               int elacDisabled,
+               int secDisabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
                std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
@@ -262,13 +265,19 @@ class SimConnectInterface {
 
   bool setClientDataElacDiscretes(base_elac_discrete_inputs output);
   bool setClientDataElacAnalog(base_elac_analog_inputs output);
-  bool setClientDataElacBusInput(base_elac_out_bus output);
+  bool setClientDataElacBusInput(base_elac_out_bus output, int elacIndex);
 
   base_elac_discrete_outputs getClientDataElacDiscretesOutput();
   base_elac_analog_outputs getClientDataElacAnalogsOutput();
   base_elac_out_bus getClientDataElacBusOutput();
 
+  bool setClientDataSecDiscretes(base_sec_discrete_inputs output);
+  bool setClientDataSecAnalog(base_sec_analog_inputs output);
   bool setClientDataSecBus(base_sec_out_bus output, int secIndex);
+
+  base_sec_discrete_outputs getClientDataSecDiscretesOutput();
+  base_sec_analog_outputs getClientDataSecAnalogsOutput();
+  base_sec_out_bus getClientDataSecBusOutput();
 
   bool setClientDataAdr(base_adr_bus output, int adrIndex);
   bool setClientDataIr(base_ir_bus output, int irIndex);
@@ -296,7 +305,12 @@ class SimConnectInterface {
     ELAC_ANALOG_INPUTS,
     ELAC_DISCRETE_OUTPUTS,
     ELAC_ANALOG_OUTPUTS,
-    ELAC_BUS_OUTPUT,
+    ELAC_1_BUS_OUTPUT,
+    ELAC_2_BUS_OUTPUT,
+    SEC_DISCRETE_INPUTS,
+    SEC_ANALOG_INPUTS,
+    SEC_DISCRETE_OUTPUTS,
+    SEC_ANALOG_OUTPUTS,
     SEC_1_BUS_OUTPUT,
     SEC_2_BUS_OUTPUT,
     ADR_1_INPUTS,
@@ -307,7 +321,6 @@ class SimConnectInterface {
     IR_3_INPUTS,
     RA_1_BUS,
     RA_2_BUS,
-    ELAC_BUS_INPUTS,
     LOCAL_VARIABLES,
     LOCAL_VARIABLES_AUTOTHRUST,
   };
@@ -321,6 +334,9 @@ class SimConnectInterface {
   double maxSimulationRate = 0;
   bool limitSimulationRateByPerformance = true;
   bool clientDataEnabled = false;
+
+  int elacDisabled = -1;
+  int secDisabled = -1;
 
   // change to non-static when aileron events can be processed via SimConnect
   static bool loggingFlightControlsEnabled;
@@ -346,6 +362,10 @@ class SimConnectInterface {
   base_elac_discrete_outputs clientDataElacDiscreteOutputs = {};
   base_elac_analog_outputs clientDataElacAnalogOutputs = {};
   base_elac_out_bus clientDataElacBusOutputs = {};
+
+  base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
+  base_sec_analog_outputs clientDataSecAnalogOutputs = {};
+  base_sec_out_bus clientDataSecBusOutputs = {};
 
   // change to non-static when aileron events can be processed via SimConnect
   static double flightControlsKeyChangeAileron;
