@@ -202,7 +202,7 @@ class CDUWindPage {
         }
 
         const altitude = parseInt(elements[2]);
-        if (!isFinite(altitude) || altitude < 0 || altitude > 390) {
+        if (!isFinite(altitude) || altitude < 0 || altitude > 450) {
             return null;
         }
 
