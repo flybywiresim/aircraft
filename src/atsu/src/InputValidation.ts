@@ -84,6 +84,23 @@ export class InputValidation {
     }
 
     /**
+     * Checks if the value fits to the squawk format
+     * @param value The entered squawk candidate
+     * @returns AtsuStatusCodes.Ok if the format is valid
+     */
+    public static validateScratchpadSquawk(value: string): AtsuStatusCodes {
+        if (/^[0-9]{4}$/.test(value)) {
+            const squawk = parseInt(value);
+            if (squawk >= 0 && squawk < 7777) {
+                return AtsuStatusCodes.Ok;
+            }
+            return AtsuStatusCodes.EntryOutOfRange;
+        }
+
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
      * Classifies a possible waypoint type of the scratchpad
      * Types:
      *   -  0 = lat-lon coordinate
