@@ -67,7 +67,7 @@ export const PushbackPage = () => {
         tugCommandedHeading,
         tugCommandedSpeedFactor,
         tugCommandedSpeed,
-        tugInertiaFactor,
+        tugInertiaSpeed,
     } = useAppSelector((state) => state.pushback.pushbackState);
 
     // Required so these can be used inside the useEffect return callback
@@ -264,7 +264,7 @@ export const PushbackPage = () => {
                 {pushbackAngle.toFixed(3)}
                 {' ('}
                 {(pushbackAngle * (180 / Math.PI)).toFixed(3)}
-                {' °)'}
+                °)
                 <br />
                 NW STRG DISC MEMO
                 {' '}
@@ -272,11 +272,11 @@ export const PushbackPage = () => {
                 <br />
                 Steer Input Control:
                 {' '}
-                { SimVar.GetSimVarValue('STEER INPUT CONTROL', 'Percent Over 100').toFixed(4)}
+                {MathUtils.round(SimVar.GetSimVarValue('STEER INPUT CONTROL', 'Percent Over 100'), 3).toFixed(3)}
                 <br />
                 Gear Steer Angle:
                 {' '}
-                { SimVar.GetSimVarValue('GEAR STEER ANGLE PCT:0', 'Percent Over 100').toFixed(4)}
+                {MathUtils.round(SimVar.GetSimVarValue('GEAR STEER ANGLE PCT:0', 'Percent Over 100'), 3).toFixed(3)}
             </div>
             <div className="overflow-hidden text-black text-m">
                 Heading (True):
@@ -297,31 +297,31 @@ export const PushbackPage = () => {
                 <br />
                 Rotation Velocity X:
                 {' '}
-                {SimVar.GetSimVarValue('ROTATION VELOCITY BODY Y', 'Number').toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY Y', 'Number'), 3).toFixed(3)}
                 <br />
                 Rotation Velocity Y:
                 {' '}
-                {SimVar.GetSimVarValue('ROTATION VELOCITY BODY X', 'Number').toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY X', 'Number'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Rotation Velocity Z:
                 {' '}
-                {SimVar.GetSimVarValue('ROTATION VELOCITY BODY Z', 'Number').toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION VELOCITY BODY Z', 'Number'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Rot. Accel. X:
                 {' '}
-                {SimVar.GetSimVarValue('ROTATION ACCELERATION BODY X', 'radians per second squared').toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY X', 'radians per second squared'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Rot. Accel. Y:
                 {' '}
-                {SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Y', 'radians per second squared').toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Y', 'radians per second squared'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Rot. Accel Z:
                 {' '}
-                {SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Z', 'radians per second squared').toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ROTATION ACCELERATION BODY Z', 'radians per second squared'), 3).toFixed(3)}
             </div>
             <div className="overflow-hidden text-black text-m">
                 acGroundSpeed:
@@ -332,10 +332,6 @@ export const PushbackPage = () => {
                 {(planeGroundSpeed * 1.68781).toFixed(3)}
                 ft/s)
                 <br />
-                tugInertiaFactor:
-                {' '}
-                {tugInertiaFactor.toFixed(2)}
-                <br />
                 tCSpeedFactor:
                 {' '}
                 {tugCommandedSpeedFactor.toFixed(3)}
@@ -344,32 +340,36 @@ export const PushbackPage = () => {
                 {' '}
                 {tugCommandedSpeed.toFixed(3)}
                 <br />
+                tInertiaSpeed:
+                {' '}
+                {tugInertiaSpeed.toFixed(3)}
+                <br />
                 Velocity X:
                 {' '}
-                {SimVar.GetSimVarValue('VELOCITY BODY Y', 'Number').toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY Y', 'Number'), 3).toFixed(3)}
                 <br />
                 Velocity Y:
                 {' '}
-                {SimVar.GetSimVarValue('VELOCITY BODY X', 'Number').toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY X', 'Number'), 3).toFixed(3)}
                 <br />
                 Velocity Z:
                 {' '}
-                {SimVar.GetSimVarValue('VELOCITY BODY Z', 'Number').toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('VELOCITY BODY Z', 'Number'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Accel. X:
                 {' '}
-                {SimVar.GetSimVarValue('ACCELERATION BODY X', 'feet per second squared').toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ACCELERATION BODY X', 'feet per second squared'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Accel. Y:
                 {' '}
-                {SimVar.GetSimVarValue('ACCELERATION BODY Y', 'feet per second squared').toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ACCELERATION BODY Y', 'feet per second squared'), 3).toFixed(3)}
                 <br />
                 {' '}
                 Accel Z:
                 {' '}
-                {SimVar.GetSimVarValue('ACCELERATION BODY Z', 'feet per second squared').toFixed(3)}
+                {MathUtils.round(SimVar.GetSimVarValue('ACCELERATION BODY Z', 'feet per second squared'), 3).toFixed(3)}
 
             </div>
         </div>

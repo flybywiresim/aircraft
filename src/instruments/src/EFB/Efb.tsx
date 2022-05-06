@@ -43,8 +43,11 @@ import {
     setUpdateIntervalID,
     setUpdateDeltaTime,
     setLastTimestamp,
-    setTugCommandedHeading, setTugCommandedSpeed,
+    setTugCommandedHeading,
+    setTugCommandedSpeed,
+    setTugInertiaSpeed,
 } from './Store/features/pushback';
+import { InertialDampener } from './Ground/Pages/InertialDampener';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
@@ -275,13 +278,14 @@ const Efb = () => {
     const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 100);
     const [nwStrgDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool', 100);
 
+    const inertialDampener = new InertialDampener(0.1);
+
     const {
         pushbackPaused,
         updateIntervalID,
         lastTimeStamp,
         tugCommandedHeadingFactor,
         tugCommandedSpeedFactor,
-        tugInertiaFactor,
     } = useAppSelector((state) => state.pushback.pushbackState);
 
     // Required so these can be used inside the setInterval callback function
@@ -296,8 +300,6 @@ const Efb = () => {
     tugCommandedHeadingFactorRef.current = tugCommandedHeadingFactor;
     const tugCommandedSpeedFactorRef = useRef(tugCommandedSpeedFactor);
     tugCommandedSpeedFactorRef.current = tugCommandedSpeedFactor;
-    const tugInertiaFactorRef = useRef(tugInertiaFactor);
-    tugInertiaFactorRef.current = tugInertiaFactor;
 
     // Callback function for the setInterval to update the movement of the aircraft independent of
     // the refresh rate of the Glass Cockpit Refresh Rate in internal and external view.
@@ -317,48 +319,47 @@ const Efb = () => {
         // SimVar.SetSimVarValue('ACCELERATION BODY Z', 'feet per second squared', 0);
         // SimVar.SetSimVarValue('ROTATION ACCELERATION BODY Y', 'radians per second squared', 0);
 
+        const SpeedRatio = 8;
         if (pushbackAttached && simOnGround) {
-            // Stop the pushback movement when paused
-            if (pushbackPausedRef.current) {
-                SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
-                SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', 0);
-                SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
-                SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', 0);
-                SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
-                return;
-            }
-
             // compute heading and speed
             const parkingBrakeEngaged = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
             const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
+
+            const tugCommandedSpeed = tugCommandedSpeedFactorRef.current * (parkingBrakeEngaged ? (SpeedRatio / 10) : SpeedRatio);
+            dispatch(setTugCommandedSpeed(tugCommandedSpeed)); // debug
+
+            const inertiaSpeed = inertialDampener.updateSpeed(tugCommandedSpeed);
+            dispatch(setTugInertiaSpeed(inertiaSpeed)); // debug
 
             const computedTugHeading = (aircraftHeading - (50 * tugCommandedHeadingFactorRef.current)) % 360;
             dispatch(setTugCommandedHeading(computedTugHeading)); // debug
 
             // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
             const convertedComputedHeading = (computedTugHeading * (0xffffffff / 360)) & 0xffffffff;
-            const computedRotationVelocity = (tugCommandedSpeedFactorRef.current <= 0 ? -1 : 1)
-                * tugCommandedHeadingFactorRef.current * (parkingBrakeEngaged ? 0.008 : 0.08);
+            const computedRotationVelocity = (Math.abs(inertiaSpeed) / SpeedRatio)
+                * tugCommandedHeadingFactorRef.current
+                * (parkingBrakeEngaged ? 0.008 : 0.08);
 
-            const tugCommandedSpeed = tugCommandedSpeedFactorRef.current
-                * (parkingBrakeEngaged ? 0.8 : 8) * tugInertiaFactorRef.current;
-            dispatch(setTugCommandedSpeed(tugCommandedSpeed)); // debug
-
-            SimVar.SetSimVarValue('Pushback Wait', 'bool', tugCommandedSpeed === 0);
+            SimVar.SetSimVarValue('Pushback Wait', 'bool', inertiaSpeed === 0);
             // Set tug heading
-            SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', tugCommandedSpeed !== 0 ? convertedComputedHeading : 0);
+            SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', inertiaSpeed !== 0 ? convertedComputedHeading : 0);
             SimVar.SetSimVarValue('ROTATION VELOCITY BODY X', 'Number', 0);
-            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', tugCommandedSpeed !== 0 ? computedRotationVelocity : 0);
+            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
             SimVar.SetSimVarValue('ROTATION VELOCITY BODY Z', 'Number', 0);
             // Set tug speed
-            SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', tugCommandedSpeed);
+            SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', inertiaSpeed);
             SimVar.SetSimVarValue('VELOCITY BODY X', 'Number', 0);
             SimVar.SetSimVarValue('VELOCITY BODY Y', 'Number', 0);
-            SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', tugCommandedSpeed);
+            SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', inertiaSpeed);
             // prevents the aircraft to lift front wheel when pushing backwards
             SimVar.SetSimVarValue('ROTATION ACCELERATION BODY X',
                 'radians per second squared',
-                tugCommandedSpeed > 0 ? -2 : 2);
+                // eslint-disable-next-line no-nested-ternary
+                inertiaSpeed > 0
+                    ? -2
+                    : inertiaSpeed < 0
+                        ? 2
+                        : 0);
         }
     };
 
@@ -367,7 +368,7 @@ const Efb = () => {
     // 10x lower in external view which leads to jerky movements otherwise.
     useEffect(() => {
         if (pushbackSystemEnabled && pushBackAttached && updateIntervalID === 0) {
-            const interval = setInterval(movementUpdate, 50);
+            const interval = setInterval(movementUpdate, 30);
             dispatch(setUpdateIntervalID(Number(interval)));
         } else if (!pushBackAttached) {
             clearInterval(updateIntervalID);
