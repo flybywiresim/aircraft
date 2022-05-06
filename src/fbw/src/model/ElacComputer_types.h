@@ -383,9 +383,9 @@ enum class pitch_efcs_law
 
 struct base_elac_adr_computation_data
 {
-  real_T mach;
   real_T V_ias_kn;
   real_T V_tas_kn;
+  real_T mach;
   real_T alpha_deg;
 };
 
@@ -420,6 +420,7 @@ struct base_elac_logic_outputs
   lateral_efcs_law active_lateral_law;
   pitch_efcs_law pitch_law_capability;
   pitch_efcs_law active_pitch_law;
+  boolean_T abnormal_condition_law_active;
   boolean_T is_engaged_in_pitch;
   boolean_T can_engage_in_pitch;
   boolean_T has_priority_in_pitch;

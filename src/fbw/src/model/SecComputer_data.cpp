@@ -73,6 +73,14 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   14.0,
 
+  28.0,
+
+  28.0,
+
+  29.0,
+
+  29.0,
+
   23.0,
 
   23.0,

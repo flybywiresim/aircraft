@@ -56,6 +56,7 @@ class ElacComputer final
     boolean_T pRightStickDisabled;
     boolean_T ra1CoherenceRejected;
     boolean_T ra2CoherenceRejected;
+    boolean_T abnormalConditionWasActive;
     rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_nu;
     rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_g4b;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_j2;
@@ -101,6 +102,7 @@ class ElacComputer final
     real_T BitfromLabel1_bit;
     real_T BitfromLabel2_bit;
     real_T BitfromLabel3_bit;
+    real_T BitfromLabel_bit_e;
     real_T SourceMonitoringbyVote_confirmTime;
     real_T SourceMonitoringbyVote1_confirmTime;
     real_T AlphaMonitoring_confirmTime;
@@ -223,7 +225,6 @@ class ElacComputer final
     boolean_T Constant_Value_i;
     boolean_T Constant1_Value_e;
     boolean_T Constant_Value_h;
-    boolean_T Constant8_Value;
     boolean_T Constant9_Value;
     boolean_T Constant10_Value;
   };

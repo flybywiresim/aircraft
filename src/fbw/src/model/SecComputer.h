@@ -45,7 +45,7 @@ class SecComputer final
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_j;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_g2;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_h;
-    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_g;
+    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_gf;
     rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_ndv;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_nd;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_n;
@@ -86,6 +86,10 @@ class SecComputer final
     real_T BitfromLabel2_bit;
     real_T BitfromLabel1_bit;
     real_T BitfromLabel3_bit;
+    real_T BitfromLabel_bit_a;
+    real_T BitfromLabel1_bit_c;
+    real_T BitfromLabel2_bit_o;
+    real_T BitfromLabel3_bit_j;
     real_T CompareToConstant11_const;
     real_T CompareToConstant12_const;
     real_T CompareToConstant5_const;
@@ -209,9 +213,9 @@ class SecComputer final
   ExternalOutputs_SecComputer_T SecComputer_Y;
   D_Work_SecComputer_T SecComputer_DWork;
   static Parameters_SecComputer_T SecComputer_P;
+  static void SecComputer_MATLABFunction(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
   static void SecComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init, real_T
     *rty_Y, rtDW_RateLimiter_SecComputer_T *localDW);
-  static void SecComputer_MATLABFunction(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
   static void SecComputer_MATLABFunction_e(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
     rtDW_MATLABFunction_SecComputer_l_T *localDW);
   static void SecComputer_MATLABFunction_n(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
