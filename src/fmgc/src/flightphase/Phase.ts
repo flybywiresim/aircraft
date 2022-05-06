@@ -1,4 +1,4 @@
-import { FmgcFlightPhase, isAllEngineOn, isAnEngineOn, isOnGround } from '@shared/flightphase';
+import { FmgcFlightPhase, isAllEngineOn, isAnEngineOn, isOnGround, isReady } from '@shared/flightphase';
 import { ConfirmationNode } from '@shared/logic';
 
 export abstract class Phase {
@@ -12,7 +12,7 @@ export abstract class Phase {
     protected canInitiateTO(): boolean {
         const v2 = SimVar.GetSimVarValue('L:AIRLINER_V2_SPEED', 'knots');
 
-        return SimVar.GetSimVarValue('CAMERA STATE', 'number') < 10 && !isOnGround()
+        return isReady() && !isOnGround()
         || (
             Math.max(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'), SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number')) >= 35
             && !Number.isNaN(v2)

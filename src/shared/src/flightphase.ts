@@ -9,6 +9,10 @@ export enum FmgcFlightPhase {
     Done,
 }
 
+export function isReady(): boolean {
+    return SimVar.GetSimVarValue('L:A32NX_IS_READY', 'number') === 1;
+}
+
 export function isOnGround(): boolean {
     return SimVar.GetSimVarValue('L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED', 'bool')
         || SimVar.GetSimVarValue('L:A32NX_LGCIU_2_NOSE_GEAR_COMPRESSED', 'bool');

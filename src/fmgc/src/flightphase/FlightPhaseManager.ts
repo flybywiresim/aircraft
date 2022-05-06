@@ -1,6 +1,6 @@
 import { Phase, PreFlightPhase, TakeOffPhase, ClimbPhase, CruisePhase, DescentPhase, ApproachPhase, GoAroundPhase, DonePhase } from '@fmgc/flightphase/Phase';
 import { VerticalMode } from '@shared/autopilot';
-import { FmgcFlightPhase, isAnEngineOn, isOnGround } from '@shared/flightphase';
+import { FmgcFlightPhase, isAnEngineOn, isOnGround, isReady } from '@shared/flightphase';
 import { ConfirmationNode } from '@shared/logic';
 
 function canInitiateDes(distanceToDestination: number): boolean {
@@ -16,7 +16,7 @@ function canInitiateDes(distanceToDestination: number): boolean {
 export class FlightPhaseManager {
     private onGroundConfirmationNode = new ConfirmationNode(30 * 1000);
 
-    private activePhase: FmgcFlightPhase = SimVar.GetSimVarValue('L:A32NX_INITIAL_FLIGHT_PHASE', 'number') || FmgcFlightPhase.Preflight;
+    private activePhase: FmgcFlightPhase = this.initialPhase || FmgcFlightPhase.Preflight;
 
     private phases: { [key in FmgcFlightPhase]: Phase } = {
         [FmgcFlightPhase.Preflight]: new PreFlightPhase(),
@@ -35,6 +35,10 @@ export class FlightPhaseManager {
         return this.activePhase;
     }
 
+    get initialPhase() {
+        return SimVar.GetSimVarValue('L:A32NX_INITIAL_FLIGHT_PHASE', 'number');
+    }
+
     init(): void {
         console.log(`FMGC Flight Phase: ${this.phase}`);
         this.phases[this.phase].init();
@@ -42,12 +46,17 @@ export class FlightPhaseManager {
     }
 
     shouldActivateNextPhase(_deltaTime: number): void {
-        if (this.shouldActivateDonePhase(_deltaTime)
-            && this.phase !== FmgcFlightPhase.Done
-            && this.phase !== FmgcFlightPhase.Preflight) {
-            this.changePhase(FmgcFlightPhase.Done);
-        } else if (this.phases[this.phase].shouldActivateNextPhase(_deltaTime)) {
-            this.changePhase(this.phases[this.phase].nextPhase);
+        // process transitions only when plane is ready
+        if (isReady()) {
+            if (this.shouldActivateDonePhase(_deltaTime)) {
+                this.changePhase(FmgcFlightPhase.Done);
+            } else if (this.phases[this.phase].shouldActivateNextPhase(_deltaTime)) {
+                this.changePhase(this.phases[this.phase].nextPhase);
+            }
+        } else if (this.activePhase !== this.initialPhase) {
+            // ensure correct init of phase
+            this.activePhase = this.initialPhase;
+            this.changePhase(this.initialPhase);
         }
     }
 
@@ -152,12 +161,8 @@ export class FlightPhaseManager {
     }
 
     shouldActivateDonePhase(_deltaTime: number): boolean {
-        // only evaluate phase change to DONE when the plane is ready
-        if (SimVar.GetSimVarValue('L:A32NX_IS_READY', 'number') !== 1) {
-            return false;
-        }
         this.onGroundConfirmationNode.input = isOnGround();
         this.onGroundConfirmationNode.update(_deltaTime);
-        return this.onGroundConfirmationNode.output && !isAnEngineOn();
+        return this.onGroundConfirmationNode.output && !isAnEngineOn() && this.phase !== FmgcFlightPhase.Done && this.phase !== FmgcFlightPhase.Preflight;
     }
 }
