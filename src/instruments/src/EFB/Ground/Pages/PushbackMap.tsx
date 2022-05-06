@@ -120,7 +120,6 @@ export const PushbackMap = () => {
             dispatch(setActualMapLatLon({ lat: planeLatitude, long: planeLongitude }));
             dispatch(setAircraftIconPosition({ x: 0, y: 0 }));
         }
-        console.log(`Update Map: ${planeLatitude.toFixed(6)} ${planeLongitude.toFixed(6)}`);
     }, [centerPlaneMode, planeLatitude.toFixed(6), planeLongitude.toFixed(6)]);
 
     // Update actual lat/lon when dragging the map
