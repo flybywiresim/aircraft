@@ -33,6 +33,7 @@ class ElacComputer final
 
   struct rtDW_MATLABFunction_ElacComputer_b_T {
     boolean_T output;
+    boolean_T output_not_empty;
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
   };

@@ -119,6 +119,11 @@ void ElacComputer::ElacComputer_MATLABFunction_g(boolean_T rtu_u, boolean_T rtu_
   rtDW_MATLABFunction_ElacComputer_b_T *localDW)
 {
   boolean_T rtu_isRisingEdge_0;
+  if (!localDW->output_not_empty) {
+    localDW->output = rtu_u;
+    localDW->output_not_empty = true;
+  }
+
   if (!localDW->previousInput_not_empty) {
     localDW->previousInput = rtu_isRisingEdge;
     localDW->previousInput_not_empty = true;

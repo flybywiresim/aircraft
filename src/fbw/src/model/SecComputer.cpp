@@ -59,6 +59,11 @@ void SecComputer::SecComputer_MATLABFunction_e(boolean_T rtu_u, boolean_T rtu_is
   rtDW_MATLABFunction_SecComputer_l_T *localDW)
 {
   boolean_T rtu_isRisingEdge_0;
+  if (!localDW->output_not_empty) {
+    localDW->output = rtu_u;
+    localDW->output_not_empty = true;
+  }
+
   if (!localDW->previousInput_not_empty) {
     localDW->previousInput = rtu_isRisingEdge;
     localDW->previousInput_not_empty = true;
