@@ -3391,7 +3391,9 @@ pub struct A320AutobrakeController {
     armed_mode_id_set: VariableIdentifier,
     decel_light_id: VariableIdentifier,
     active_id: VariableIdentifier,
-    spoilers_ground_spoilers_active_id: VariableIdentifier,
+    ground_spoilers_out_sec1_id: VariableIdentifier,
+    ground_spoilers_out_sec2_id: VariableIdentifier,
+    ground_spoilers_out_sec3_id: VariableIdentifier,
     external_disarm_event_id: VariableIdentifier,
 
     deceleration_governor: AutobrakeDecelerationGovernor,
@@ -3433,8 +3435,12 @@ impl A320AutobrakeController {
             armed_mode_id_set: context.get_identifier("AUTOBRAKES_ARMED_MODE_SET".to_owned()),
             decel_light_id: context.get_identifier("AUTOBRAKES_DECEL_LIGHT".to_owned()),
             active_id: context.get_identifier("AUTOBRAKES_ACTIVE".to_owned()),
-            spoilers_ground_spoilers_active_id: context
-                .get_identifier("SPOILERS_GROUND_SPOILERS_ACTIVE".to_owned()),
+            ground_spoilers_out_sec1_id: context
+                .get_identifier("SEC_1_GROUND_SPOILER_OUT".to_owned()),
+            ground_spoilers_out_sec2_id: context
+                .get_identifier("SEC_2_GROUND_SPOILER_OUT".to_owned()),
+            ground_spoilers_out_sec3_id: context
+                .get_identifier("SEC_3_GROUND_SPOILER_OUT".to_owned()),
             external_disarm_event_id: context.get_identifier("AUTOBRAKE_DISARM".to_owned()),
 
             deceleration_governor: AutobrakeDecelerationGovernor::new(),
@@ -3631,7 +3637,12 @@ impl SimulationElement for A320AutobrakeController {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.last_ground_spoilers_are_deployed = self.ground_spoilers_are_deployed;
-        self.ground_spoilers_are_deployed = reader.read(&self.spoilers_ground_spoilers_active_id);
+        let sec_1_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec1_id);
+        let sec_2_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec2_id);
+        let sec_3_gnd_splrs_out = reader.read(&self.ground_spoilers_out_sec3_id);
+        self.ground_spoilers_are_deployed = (sec_1_gnd_splrs_out && sec_2_gnd_splrs_out)
+            || (sec_1_gnd_splrs_out && sec_3_gnd_splrs_out)
+            || (sec_2_gnd_splrs_out && sec_3_gnd_splrs_out);
         self.external_disarm_event = reader.read(&self.external_disarm_event_id);
 
         // Reading current mode in sim to initialize correct mode if sim changes it (from .FLT files for example)

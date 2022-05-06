@@ -342,7 +342,6 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idSpoilersArmed;
   std::unique_ptr<LocalVariable> idSpoilersHandlePosition;
-  std::unique_ptr<LocalVariable> idSpoilersGroundSpoilersActive;
   std::shared_ptr<SpoilersHandler> spoilersHandler;
   std::unique_ptr<LocalVariable> idSpoilersPositionLeft;
   std::unique_ptr<LocalVariable> idSpoilersPositionRight;
@@ -452,6 +451,7 @@ class FlyByWireInterface {
 
   // SEC discrete output Lvars
   std::unique_ptr<LocalVariable> idSecFaultLightOn[3];
+  std::unique_ptr<LocalVariable> idSecGroundSpoilersOut[3];
 
   // Flight controls solenoid valve energization Lvars
   std::unique_ptr<LocalVariable> idLeftAileronSolenoidEnergized[2];

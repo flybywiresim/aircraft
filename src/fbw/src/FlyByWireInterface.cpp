@@ -474,7 +474,6 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idSpoilersArmed = make_unique<LocalVariable>("A32NX_SPOILERS_ARMED");
   idSpoilersHandlePosition = make_unique<LocalVariable>("A32NX_SPOILERS_HANDLE_POSITION");
-  idSpoilersGroundSpoilersActive = make_unique<LocalVariable>("A32NX_SPOILERS_GROUND_SPOILERS_ACTIVE");
   idSpoilersPositionLeft = make_unique<LocalVariable>("A32NX_SPOILERS_LEFT_DEFLECTION_DEMAND");
   idSpoilersPositionRight = make_unique<LocalVariable>("A32NX_SPOILERS_RIGHT_DEFLECTION_DEMAND");
 
@@ -579,6 +578,7 @@ void FlyByWireInterface::setupLocalVariables() {
 
     idSecPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_PUSHBUTTON_STATUS");
     idSecFaultLightOn[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_FAULT_LIGHT_ON");
+    idSecGroundSpoilersOut[i] = make_unique<LocalVariable>("A32NX_SEC_" + idString + "_GROUND_SPOILER_OUT");
   }
 
   for (int i = 0; i < 2; i++) {
@@ -970,7 +970,8 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.spoilers_handle_pos = idSpoilersHandlePosition->get();
   additionalData.spoilers_armed = idSpoilersArmed->get();
   additionalData.spoilers_handle_sim_pos = simData.spoilers_handle_position;
-  additionalData.ground_spoilers_active = idSpoilersGroundSpoilersActive->get();
+  additionalData.ground_spoilers_active =
+      idSecGroundSpoilersOut[0]->get() || idSecGroundSpoilersOut[1]->get() || idSecGroundSpoilersOut[2]->get();
   additionalData.flaps_handle_percent = idFlapsHandlePercent->get();
   additionalData.flaps_handle_index = idFlapsHandleIndex->get();
   additionalData.flaps_handle_configuration_index = flapsHandleIndexFlapConf->get();
@@ -1366,6 +1367,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   }
 
   idSecFaultLightOn[secIndex]->set(secsDiscreteOutputs[secIndex].sec_failed);
+  idSecGroundSpoilersOut[secIndex]->set(secsDiscreteOutputs[secIndex].ground_spoiler_out);
 
   return true;
 }
@@ -2561,7 +2563,6 @@ bool FlyByWireInterface::updateSpoilers(double sampleTime) {
   // set 3D handle position
   idSpoilersArmed->set(spoilersHandler->getIsArmed() ? 1 : 0);
   idSpoilersHandlePosition->set(spoilersHandler->getHandlePosition());
-  idSpoilersGroundSpoilersActive->set(spoilersHandler->getIsGroundSpoilersActive() ? 1 : 0);
 
   // set spoiler demand as input for hydraulics
   idSpoilersPositionLeft->set(spoilersHandler->getLeftPosition());
