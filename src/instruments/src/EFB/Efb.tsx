@@ -273,6 +273,7 @@ const Efb = () => {
     // <Pushback>
     const [pushbackSystemEnabled] = useSimVar('L:A32NX_PUSHBACK_SYSTEM_ENABLED', 'bool', 100);
     const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 100);
+    const [nwStrgDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool', 100);
 
     const {
         pushbackPaused,
@@ -312,14 +313,17 @@ const Efb = () => {
         const pushbackAttached = SimVar.GetSimVarValue('Pushback Attached', 'bool');
         const simOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
 
+        // Just a reminder that these exist
+        // SimVar.SetSimVarValue('ACCELERATION BODY Z', 'feet per second squared', 0);
+        // SimVar.SetSimVarValue('ROTATION ACCELERATION BODY Y', 'radians per second squared', 0);
+
         if (pushbackAttached && simOnGround) {
             // Stop the pushback movement when paused
             if (pushbackPausedRef.current) {
                 SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', 0);
+                SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', 0);
                 SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', 0);
-                // SimVar.SetSimVarValue('ACCELERATION BODY Z', 'feet per second squared', 0);
                 SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', 0);
-                // SimVar.SetSimVarValue('ROTATION ACCELERATION BODY Y', 'radians per second squared', 0);
                 SimVar.SetSimVarValue('Pushback Wait', 'bool', true);
                 return;
             }
@@ -350,8 +354,11 @@ const Efb = () => {
             SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', tugCommandedSpeed);
             SimVar.SetSimVarValue('VELOCITY BODY X', 'Number', 0);
             SimVar.SetSimVarValue('VELOCITY BODY Y', 'Number', 0);
-            // SimVar.SetSimVarValue('ACCELERATION BODY Z', 'feet per second squared', tugCommandedSpeed);
-            SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', tugCommandedSpeed); SimVar.SetSimVarValue('ACCELERATION BODY Z', 'Number', 0);
+            SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', tugCommandedSpeed);
+            // prevents the aircraft to lift front wheel when pushing backwards
+            SimVar.SetSimVarValue('ROTATION ACCELERATION BODY X',
+                'radians per second squared',
+                tugCommandedSpeed > 0 ? -2 : 2);
         }
     };
 
@@ -367,6 +374,15 @@ const Efb = () => {
             dispatch(setUpdateIntervalID(0));
         }
     }, [pushBackAttached, pushbackSystemEnabled]);
+
+    // Required to fully release the tug and restore steering capabilities
+    // Must not be fire too early after disconnect therefore we wait until
+    // ECAM "NW STRG DISC" message also disappears.
+    useEffect(() => {
+        if (!nwStrgDisc) {
+            SimVar.SetSimVarValue('K:TUG_DISABLE', 'Bool', 1);
+        }
+    }, [nwStrgDisc]);
 
     // </Pushback>
     // =========================================================================
