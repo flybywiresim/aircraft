@@ -89,6 +89,7 @@ jobs:
           token: ${{ github.token }}
           tag: ${{ env.MASTER_PRE_RELEASE_TAG }}
           assets: '*'
+          fail-if-no-assets: false
       - name: Upload aicraft package to GitHub Pre-Release Assets
         uses: actions/upload-release-asset@v1.0.2
         env:
