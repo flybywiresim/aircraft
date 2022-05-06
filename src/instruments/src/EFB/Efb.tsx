@@ -355,7 +355,7 @@ const Efb = () => {
                 'radians per second squared',
                 // eslint-disable-next-line no-nested-ternary
                 inertiaSpeed > 0
-                    ? -2
+                    ? -1
                     : inertiaSpeed < 0
                         ? 2
                         : 0);
