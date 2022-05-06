@@ -338,6 +338,37 @@ enum class pitch_efcs_law
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_adr_computation_data_
+#define DEFINED_TYPEDEF_FOR_base_sec_adr_computation_data_
+
+struct base_sec_adr_computation_data
+{
+  real_T V_ias_kn;
+  real_T V_tas_kn;
+  real_T mach;
+  real_T alpha_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_sec_ir_computation_data_
+#define DEFINED_TYPEDEF_FOR_base_sec_ir_computation_data_
+
+struct base_sec_ir_computation_data
+{
+  real_T theta_deg;
+  real_T phi_deg;
+  real_T q_deg_s;
+  real_T r_deg_s;
+  real_T n_x_g;
+  real_T n_y_g;
+  real_T n_z_g;
+  real_T theta_dot_deg_s;
+  real_T phi_dot_deg_s;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_logic_outputs_
 #define DEFINED_TYPEDEF_FOR_base_sec_logic_outputs_
 
@@ -347,6 +378,7 @@ struct base_sec_logic_outputs
   boolean_T tracking_mode_on;
   pitch_efcs_law pitch_law_capability;
   pitch_efcs_law active_pitch_law;
+  boolean_T abnormal_condition_law_active;
   boolean_T is_engaged_in_pitch;
   boolean_T can_engage_in_pitch;
   boolean_T has_priority_in_pitch;
@@ -367,8 +399,15 @@ struct base_sec_logic_outputs
   boolean_T ground_spoilers_armed;
   boolean_T ground_spoilers_out;
   boolean_T partial_lift_dumping_active;
-  base_adr_bus adr_computation_data;
-  base_ir_bus ir_computation_data;
+  boolean_T single_adr_failure;
+  boolean_T double_adr_failure;
+  boolean_T cas_or_mach_disagree;
+  boolean_T alpha_disagree;
+  boolean_T single_ir_failure;
+  boolean_T double_ir_failure;
+  boolean_T ir_disagree;
+  base_sec_adr_computation_data adr_computation_data;
+  base_sec_ir_computation_data ir_computation_data;
 };
 
 #endif
@@ -584,97 +623,6 @@ struct struct_2OohiAWrazWy5wDS5iisgF
 {
   real_T SSM;
   real_T Data;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_iYKtYvDSJGDKbsguW4EWaF_
-#define DEFINED_TYPEDEF_FOR_struct_iYKtYvDSJGDKbsguW4EWaF_
-
-struct struct_iYKtYvDSJGDKbsguW4EWaF
-{
-  struct_2OohiAWrazWy5wDS5iisgF altitude_standard_ft;
-  struct_2OohiAWrazWy5wDS5iisgF altitude_corrected_ft;
-  struct_2OohiAWrazWy5wDS5iisgF mach;
-  struct_2OohiAWrazWy5wDS5iisgF airspeed_computed_kn;
-  struct_2OohiAWrazWy5wDS5iisgF airspeed_true_kn;
-  struct_2OohiAWrazWy5wDS5iisgF vertical_speed_ft_min;
-  struct_2OohiAWrazWy5wDS5iisgF aoa_corrected_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_0c3ss1QuY6KtuadlqfvlrE_
-#define DEFINED_TYPEDEF_FOR_struct_0c3ss1QuY6KtuadlqfvlrE_
-
-struct struct_0c3ss1QuY6KtuadlqfvlrE
-{
-  struct_2OohiAWrazWy5wDS5iisgF discrete_word_1;
-  struct_2OohiAWrazWy5wDS5iisgF latitude_deg;
-  struct_2OohiAWrazWy5wDS5iisgF longitude_deg;
-  struct_2OohiAWrazWy5wDS5iisgF ground_speed_kn;
-  struct_2OohiAWrazWy5wDS5iisgF track_angle_true_deg;
-  struct_2OohiAWrazWy5wDS5iisgF heading_true_deg;
-  struct_2OohiAWrazWy5wDS5iisgF wind_speed_kn;
-  struct_2OohiAWrazWy5wDS5iisgF wind_direction_true_deg;
-  struct_2OohiAWrazWy5wDS5iisgF track_angle_magnetic_deg;
-  struct_2OohiAWrazWy5wDS5iisgF heading_magnetic_deg;
-  struct_2OohiAWrazWy5wDS5iisgF drift_angle_deg;
-  struct_2OohiAWrazWy5wDS5iisgF flight_path_angle_deg;
-  struct_2OohiAWrazWy5wDS5iisgF flight_path_accel_g;
-  struct_2OohiAWrazWy5wDS5iisgF pitch_angle_deg;
-  struct_2OohiAWrazWy5wDS5iisgF roll_angle_deg;
-  struct_2OohiAWrazWy5wDS5iisgF body_pitch_rate_deg_s;
-  struct_2OohiAWrazWy5wDS5iisgF body_roll_rate_deg_s;
-  struct_2OohiAWrazWy5wDS5iisgF body_yaw_rate_deg_s;
-  struct_2OohiAWrazWy5wDS5iisgF body_long_accel_g;
-  struct_2OohiAWrazWy5wDS5iisgF body_lat_accel_g;
-  struct_2OohiAWrazWy5wDS5iisgF body_normal_accel_g;
-  struct_2OohiAWrazWy5wDS5iisgF track_angle_rate_deg_s;
-  struct_2OohiAWrazWy5wDS5iisgF pitch_att_rate_deg_s;
-  struct_2OohiAWrazWy5wDS5iisgF roll_att_rate_deg_s;
-  struct_2OohiAWrazWy5wDS5iisgF inertial_alt_ft;
-  struct_2OohiAWrazWy5wDS5iisgF along_track_horiz_acc_g;
-  struct_2OohiAWrazWy5wDS5iisgF cross_track_horiz_acc_g;
-  struct_2OohiAWrazWy5wDS5iisgF vertical_accel_g;
-  struct_2OohiAWrazWy5wDS5iisgF inertial_vertical_speed_ft_s;
-  struct_2OohiAWrazWy5wDS5iisgF north_south_velocity_kn;
-  struct_2OohiAWrazWy5wDS5iisgF east_west_velocity_kn;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_struct_nu5JKWPKjcWouTrFXSVJgG_
-#define DEFINED_TYPEDEF_FOR_struct_nu5JKWPKjcWouTrFXSVJgG_
-
-struct struct_nu5JKWPKjcWouTrFXSVJgG
-{
-  boolean_T on_ground;
-  boolean_T tracking_mode_on;
-  pitch_efcs_law pitch_law_capability;
-  pitch_efcs_law active_pitch_law;
-  boolean_T is_engaged_in_pitch;
-  boolean_T can_engage_in_pitch;
-  boolean_T has_priority_in_pitch;
-  boolean_T left_elevator_avail;
-  boolean_T right_elevator_avail;
-  boolean_T is_engaged_in_roll;
-  boolean_T spoiler_pair_1_avail;
-  boolean_T spoiler_pair_2_avail;
-  boolean_T is_yellow_hydraulic_power_avail;
-  boolean_T is_blue_hydraulic_power_avail;
-  boolean_T is_green_hydraulic_power_avail;
-  boolean_T left_sidestick_disabled;
-  boolean_T right_sidestick_disabled;
-  boolean_T left_sidestick_priority_locked;
-  boolean_T right_sidestick_priority_locked;
-  real_T total_sidestick_pitch_command;
-  real_T total_sidestick_roll_command;
-  boolean_T ground_spoilers_armed;
-  boolean_T ground_spoilers_out;
-  boolean_T partial_lift_dumping_active;
-  struct_iYKtYvDSJGDKbsguW4EWaF adr_computation_data;
-  struct_0c3ss1QuY6KtuadlqfvlrE ir_computation_data;
 };
 
 #endif

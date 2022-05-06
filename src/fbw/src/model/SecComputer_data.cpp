@@ -1,5 +1,59 @@
 #include "SecComputer.h"
 
+base_sec_logic_outputs rtP_sec_logic_output_MATLABStruct{
+  false,
+  false,
+  pitch_efcs_law::None,
+  pitch_efcs_law::None,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  0.0,
+  0.0,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+  false,
+
+  {
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  },
+
+  {
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  }
+} ;
+
 base_sec_analog_outputs rtP_sec_analog_output_MATLABStruct{
   0.0,
   0.0,
@@ -137,6 +191,12 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   -50.0,
 
+  1.0,
+
+  1.0,
+
+  1.0,
+
   0.5,
 
   0.5,
@@ -163,23 +223,11 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   SignStatusMatrix::NormalOperation,
 
-  false,
+  3.0F,
 
-  true,
+  0.05F,
 
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
+  1.0F,
 
   false,
 
@@ -187,227 +235,29 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   true,
 
+  true,
 
-  {
-    false,
-    false,
-    pitch_efcs_law::None,
-    pitch_efcs_law::None,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    0.0,
-    0.0,
-    false,
-    false,
-    false,
+  true,
 
-    {
-      {
-        0U,
-        0.0F
-      },
+  true,
 
-      {
-        0U,
-        0.0F
-      },
+  true,
 
-      {
-        0U,
-        0.0F
-      },
+  true,
 
-      {
-        0U,
-        0.0F
-      },
+  true,
 
-      {
-        0U,
-        0.0F
-      },
+  true,
 
-      {
-        0U,
-        0.0F
-      },
+  true,
 
-      {
-        0U,
-        0.0F
-      }
-    },
+  true,
 
-    {
-      {
-        0U,
-        0.0F
-      },
+  false,
 
-      {
-        0U,
-        0.0F
-      },
+  true,
 
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      },
-
-      {
-        0U,
-        0.0F
-      }
-    }
-  },
+  true,
 
 
   {
@@ -557,6 +407,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   19.0F,
 
   30.0F,
+
+  false,
 
   false,
 

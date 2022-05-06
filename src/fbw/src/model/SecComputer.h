@@ -7,6 +7,7 @@
 #include "PitchDirectLaw.h"
 
 extern const real_T SecComputer_RGND;
+extern base_sec_logic_outputs rtP_sec_logic_output_MATLABStruct;
 extern base_sec_analog_outputs rtP_sec_analog_output_MATLABStruct;
 extern base_sec_laws_outputs rtP_sec_laws_output_MATLABStruct;
 extern base_sec_discrete_outputs rtP_sec_discrete_output_MATLABStruct;
@@ -18,16 +19,16 @@ class SecComputer final
     boolean_T pY_not_empty;
   };
 
+  struct rtDW_MATLABFunction_SecComputer_g_T {
+    real_T timeSinceCondition;
+    boolean_T output;
+  };
+
   struct rtDW_MATLABFunction_SecComputer_l_T {
     boolean_T output;
     boolean_T output_not_empty;
     boolean_T previousInput;
     boolean_T previousInput_not_empty;
-  };
-
-  struct rtDW_MATLABFunction_SecComputer_o_T {
-    real_T timeSinceCondition;
-    boolean_T output;
   };
 
   struct D_Work_SecComputer_T {
@@ -40,17 +41,21 @@ class SecComputer final
     boolean_T Memory_PreviousInput;
     boolean_T pLeftStickDisabled;
     boolean_T pRightStickDisabled;
+    boolean_T abnormalConditionWasActive;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_nu;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_g4;
-    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_j;
-    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_g2;
-    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_h;
-    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_gf;
-    rtDW_MATLABFunction_SecComputer_o_T sf_MATLABFunction_ndv;
+    rtDW_MATLABFunction_SecComputer_g_T sf_MATLABFunction_j2;
+    rtDW_MATLABFunction_SecComputer_g_T sf_MATLABFunction_g2;
+    rtDW_MATLABFunction_SecComputer_g_T sf_MATLABFunction_h;
+    rtDW_MATLABFunction_SecComputer_g_T sf_MATLABFunction_gf;
+    rtDW_MATLABFunction_SecComputer_g_T sf_MATLABFunction_ndv;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_nd;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_n;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_a;
     rtDW_MATLABFunction_SecComputer_l_T sf_MATLABFunction_e3;
+    rtDW_MATLABFunction_SecComputer_g_T sf_MATLABFunction_eg;
+    rtDW_MATLABFunction_SecComputer_g_T sf_MATLABFunction_gs;
+    rtDW_MATLABFunction_SecComputer_g_T sf_MATLABFunction_c;
     rtDW_RateLimiter_SecComputer_T sf_RateLimiter_c;
     rtDW_RateLimiter_SecComputer_T sf_RateLimiter_d;
     rtDW_RateLimiter_SecComputer_T sf_RateLimiter_j;
@@ -120,6 +125,9 @@ class SecComputer final
     real_T RateLimiterVariableTs5_lo;
     real_T ConfirmNode_timeDelay;
     real_T ConfirmNode1_timeDelay;
+    real_T ConfirmNode_timeDelay_l;
+    real_T ConfirmNode_timeDelay_c;
+    real_T ConfirmNode1_timeDelay_k;
     real_T ConfirmNode2_timeDelay;
     real_T ConfirmNode1_timeDelay_a;
     real_T ConfirmNode_timeDelay_a;
@@ -131,9 +139,15 @@ class SecComputer final
     real_T RateLimiterVariableTs5_up;
     SignStatusMatrix EnumeratedConstant_Value;
     SignStatusMatrix EnumeratedConstant1_Value;
+    real32_T CompareToConstant_const_n;
+    real32_T CompareToConstant1_const_d;
+    real32_T CompareToConstant_const_k;
     boolean_T SRFlipFlop_initial_condition;
     boolean_T ConfirmNode_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge;
+    boolean_T ConfirmNode_isRisingEdge_f;
+    boolean_T ConfirmNode_isRisingEdge_a;
+    boolean_T ConfirmNode1_isRisingEdge_j;
     boolean_T ConfirmNode2_isRisingEdge;
     boolean_T PulseNode_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge;
@@ -143,10 +157,9 @@ class SecComputer final
     boolean_T PulseNode2_isRisingEdge;
     boolean_T PulseNode1_isRisingEdge_k;
     boolean_T PulseNode_isRisingEdge_h;
-    base_sec_logic_outputs Constant1_Value;
     base_sec_out_bus Constant4_Value;
     real_T Constant_Value;
-    real_T Constant1_Value_i;
+    real_T Constant1_Value;
     real_T Constant2_Value;
     real_T Constant5_Value;
     real_T Constant6_Value;
@@ -177,6 +190,7 @@ class SecComputer final
     real32_T Gain2_Gain;
     real32_T Gain3_Gain;
     real32_T Gain4_Gain;
+    boolean_T Constant_Value_f;
     boolean_T Delay_InitialCondition;
     boolean_T Delay1_InitialCondition;
     boolean_T Logic_table[16];
@@ -216,11 +230,12 @@ class SecComputer final
   static void SecComputer_MATLABFunction(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
   static void SecComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init, real_T
     *rty_Y, rtDW_RateLimiter_SecComputer_T *localDW);
+  static void SecComputer_MATLABFunction_l(const base_arinc_429 *rtu_u, boolean_T *rty_y);
+  static void SecComputer_MATLABFunction_c(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
+    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_SecComputer_g_T *localDW);
   static void SecComputer_MATLABFunction_e(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
     rtDW_MATLABFunction_SecComputer_l_T *localDW);
-  static void SecComputer_MATLABFunction_n(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
-    rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_SecComputer_o_T *localDW);
-  static void SecComputer_MATLABFunction_c(const boolean_T rtu_u[19], real32_T *rty_y);
+  static void SecComputer_MATLABFunction_cw(const boolean_T rtu_u[19], real32_T *rty_y);
   LateralDirectLaw LawMDLOBJ1;
   PitchAlternateLaw LawMDLOBJ2;
   PitchDirectLaw LawMDLOBJ3;

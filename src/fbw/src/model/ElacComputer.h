@@ -61,7 +61,7 @@ class ElacComputer final
     rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_g4b;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_j2;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_g24;
-    rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_l;
+    rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_lf;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_jl;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_jz;
     rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_br;
@@ -102,6 +102,15 @@ class ElacComputer final
     real_T BitfromLabel1_bit;
     real_T BitfromLabel2_bit;
     real_T BitfromLabel3_bit;
+    real_T BitfromLabel5_bit;
+    real_T BitfromLabel4_bit;
+    real_T BitfromLabel6_bit;
+    real_T BitfromLabel7_bit;
+    real_T BitfromLabel8_bit;
+    real_T BitfromLabel_bit_h;
+    real_T BitfromLabel1_bit_e;
+    real_T BitfromLabel2_bit_k;
+    real_T BitfromLabel3_bit_m;
     real_T BitfromLabel_bit_e;
     real_T SourceMonitoringbyVote_confirmTime;
     real_T SourceMonitoringbyVote1_confirmTime;
