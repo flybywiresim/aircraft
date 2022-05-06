@@ -143,8 +143,18 @@ export const PushbackPage = () => {
         }
     };
 
+    const handleTugDirectionLeft = () => {
+        handleTugDirection(tugCommandedHeadingFactor - 0.1);
+    };
+
+    const handleTugDirectionRight = () => {
+        handleTugDirection(tugCommandedHeadingFactor + 0.1);
+    };
+
     const handleTugDirection = (value: number) => {
-        dispatch(setTugCommandedHeadingFactor(MathUtils.clamp(value, -1, 1)));
+        dispatch(setTugCommandedHeadingFactor(
+            MathUtils.clamp(value, -1, 1),
+        ));
     };
 
     const tugInTransit = () => pushbackAttached !== nwStrgDisc;
@@ -538,7 +548,7 @@ export const PushbackPage = () => {
                             <button
                                 type="button"
                                 className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
-                                onClick={() => handleTugDirection(tugCommandedHeadingFactor - 0.1)}
+                                onClick={() => handleTugDirectionLeft()}
                             >
                                 <ArrowLeft size={40} />
                             </button>
@@ -554,7 +564,7 @@ export const PushbackPage = () => {
                             <button
                                 type="button"
                                 className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
-                                onClick={() => handleTugDirection(tugCommandedHeadingFactor + 0.1)}
+                                onClick={() => handleTugDirectionRight()}
                             >
                                 <ArrowRight size={40} />
                             </button>

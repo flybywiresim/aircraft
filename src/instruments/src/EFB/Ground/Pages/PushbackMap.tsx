@@ -45,7 +45,16 @@ const describeArc = (x: number, y: number, radius: number, startAngle: number, e
 
 const TurningRadiusIndicator = ({ turningRadius }: TurningRadiusIndicatorProps) => (
     <svg width={turningRadius * 2} height={turningRadius * 2} viewBox={`0 0 ${turningRadius * 2} ${turningRadius * 2}`}>
-        <path d={describeArc(turningRadius, turningRadius, turningRadius, 0, 45 + 45 * (19 / turningRadius))} fill="none" stroke="white" strokeWidth="2" />
+        <path
+            d={describeArc(turningRadius,
+                turningRadius,
+                turningRadius,
+                0,
+                45 + 45 * (19 / turningRadius))}
+            fill="none"
+            stroke="white"
+            strokeWidth="2"
+        />
     </svg>
 );
 
@@ -55,6 +64,10 @@ export const PushbackMap = () => {
     const [planeHeadingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 50);
     const [planeLatitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
     const [planeLongitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
+
+    // This constant has been determined via testing - needs more "thought"
+    // It describes the ratio between the map and real distance
+    const someConstant = 0.48596;
 
     // Reducer state for pushback
     const {
@@ -89,8 +102,6 @@ export const PushbackMap = () => {
     const computeOffset: (latLon: Coordinates, d: TScreenCoordinates) => Coordinates = (
         latLon: Coordinates, d: TScreenCoordinates,
     ) => {
-        // This constant has been determined via testing - needs more "thought"
-        const someConstant = 0.48596;
         const distance = Math.hypot(d.x, d.y) / (someConstant / mapRange);
         const bearing = Math.atan2(d.y, d.x) * (180 / Math.PI) - 90 + planeHeadingTrue;
         const point = computeDestinationPoint({ lat: latLon.lat, lon: latLon.long }, distance, bearing);
@@ -99,7 +110,7 @@ export const PushbackMap = () => {
 
     // Calculates the size in pixels based on the real A320 length and the current zoom
     const a320IconSize = (mapRange) => {
-        const pixelPerMeter = 4.8596; // at 0.1 range
+        const pixelPerMeter = someConstant * 10; // at 0.1 range
         const a320LengthMeter = 37.57;
         return a320LengthMeter * pixelPerMeter * (0.1 / mapRange);
     };
@@ -134,7 +145,7 @@ export const PushbackMap = () => {
         }
     }, [dragging, mouseDown, mouseCoords]);
 
-    const mapRangeCompensationScalar = mapRange / 0.45;
+    const mapRangeCompensationScalar = mapRange / someConstant;
     const turningRadius = calculateTurningRadius(13, Math.abs(tugCommandedHeadingFactor * 90)) / mapRangeCompensationScalar * (Math.abs(tugCommandedSpeedFactor) / 0.2);
 
     return (
@@ -178,7 +189,12 @@ export const PushbackMap = () => {
                         && (
                             <div
                                 className="absolute"
-                                style={{ transform: `rotate(-90deg) scaleX(${tugCommandedSpeedFactor >= 0 ? 1 : -1}) scaleY(${tugCommandedHeadingFactor >= 0 ? 1 : -1}) translateY(${turningRadius}px)` }}
+                                style={{
+                                    transform: `rotate(-90deg) 
+                                scaleX(${tugCommandedSpeedFactor >= 0 ? 1 : -1}) 
+                                scaleY(${tugCommandedHeadingFactor >= 0 ? 1 : -1}) 
+                                translateY(${turningRadius}px)`,
+                                }}
                             >
                                 <TurningRadiusIndicator turningRadius={turningRadius} />
                             </div>

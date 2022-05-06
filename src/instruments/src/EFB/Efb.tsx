@@ -336,9 +336,8 @@ const Efb = () => {
 
             // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
             const convertedComputedHeading = (computedTugHeading * (0xffffffff / 360)) & 0xffffffff;
-            const computedRotationVelocity = (Math.abs(inertiaSpeed) / SpeedRatio)
-                * tugCommandedHeadingFactorRef.current
-                * (parkingBrakeEngaged ? 0.008 : 0.08);
+            const computedRotationVelocity = Math.sign(tugCommandedSpeed) * tugCommandedHeadingFactorRef.current
+                                                * (parkingBrakeEngaged ? 0.008 : 0.08);
 
             SimVar.SetSimVarValue('Pushback Wait', 'bool', inertiaSpeed === 0);
             // Set tug heading
