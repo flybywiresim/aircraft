@@ -43,7 +43,7 @@ const initialState: TPushbackStateContainer = {
             long: SimVar.GetSimVarValue('A:PLANE LONGITUDE', 'degrees longitude'),
         },
         aircraftIconPosition: { x: 0, y: 0 },
-        showDebugInfo: true,
+        showDebugInfo: false,
         tugCommandedHeadingFactor: 0,
         tugCommandedHeading: 0,
         tugCommandedSpeedFactor: 0,
