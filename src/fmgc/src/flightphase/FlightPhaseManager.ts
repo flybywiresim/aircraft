@@ -38,6 +38,7 @@ export class FlightPhaseManager {
     init(): void {
         console.log(`FMGC Flight Phase: ${this.phase}`);
         this.phases[this.phase].init();
+        this.changePhase(this.activePhase);
     }
 
     shouldActivateNextPhase(_deltaTime: number): void {
@@ -151,6 +152,10 @@ export class FlightPhaseManager {
     }
 
     shouldActivateDonePhase(_deltaTime: number): boolean {
+        // only evaluate phase change to DONE when the plane is ready
+        if (SimVar.GetSimVarValue('L:A32NX_IS_READY', 'number') !== 1) {
+            return false;
+        }
         this.onGroundConfirmationNode.input = isOnGround();
         this.onGroundConfirmationNode.update(_deltaTime);
         return this.onGroundConfirmationNode.output && !isAnEngineOn();
