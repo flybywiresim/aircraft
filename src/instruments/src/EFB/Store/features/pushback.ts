@@ -27,7 +27,7 @@ export interface TPushbackState {
     tugCommandedHeading: number
     tugCommandedSpeedFactor: number
     tugCommandedSpeed: number
-    tugInertiaFactor: number
+    tugInertiaSpeed: number
 }
 
 const initialState: TPushbackStateContainer = {
@@ -43,12 +43,12 @@ const initialState: TPushbackStateContainer = {
             long: SimVar.GetSimVarValue('A:PLANE LONGITUDE', 'degrees longitude'),
         },
         aircraftIconPosition: { x: 0, y: 0 },
-        showDebugInfo: false,
+        showDebugInfo: true,
         tugCommandedHeadingFactor: 0,
         tugCommandedHeading: 0,
         tugCommandedSpeedFactor: 0,
         tugCommandedSpeed: 0,
-        tugInertiaFactor: 1,
+        tugInertiaSpeed: 0,
     },
 };
 
@@ -95,10 +95,9 @@ export const pushbackSlice = createSlice({
         setTugCommandedSpeed: (state, action: PayloadAction<number>) => {
             state.pushbackState.tugCommandedSpeed = action.payload;
         },
-        setTugInertiaFactor: (state, action: PayloadAction<number>) => {
-            state.pushbackState.tugInertiaFactor = action.payload;
+        setTugInertiaSpeed: (state, action: PayloadAction<number>) => {
+            state.pushbackState.tugInertiaSpeed = action.payload;
         },
-
     },
 });
 
@@ -116,6 +115,6 @@ export const {
     setTugCommandedHeading,
     setTugCommandedSpeedFactor,
     setTugCommandedSpeed,
-    setTugInertiaFactor,
+    setTugInertiaSpeed,
 } = pushbackSlice.actions;
 export default pushbackSlice.reducer;
