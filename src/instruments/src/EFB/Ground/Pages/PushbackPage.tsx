@@ -24,12 +24,11 @@ import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
-    setActualMapLatLon, setAircraftIconPosition,
     setPushbackPaused,
     setShowDebugInfo,
     setTugCommandedHeadingFactor,
     setTugCommandedSpeedFactor,
-    setTugInertiaFactor,
+    // setTugInertiaFactor,
 } from '../../Store/features/pushback';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { PushbackMap } from './PushbackMap';
@@ -44,12 +43,9 @@ export const PushbackPage = () => {
     // It is implemented as a LVAR to allow 3rd parties to deactivate it if required.
     const [pushbackSystemEnabled, setPushbackSystemEnabled] = useSimVar('L:A32NX_PUSHBACK_SYSTEM_ENABLED', 'bool', 100);
 
-    const [planeLatitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
-    const [planeLongitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
-
-    const [pushbackAttached] = useSimVar('Pushback Attached', 'bool', 100);
-    const [pushbackState, setPushbackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 250);
+    const [pushbackState, setPushbackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 100);
     const [pushbackWait, setPushbackWait] = useSimVar('Pushback Wait', 'bool', 100);
+    const [pushbackAttached] = useSimVar('Pushback Attached', 'bool', 100);
     const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Radians', 100);
 
     const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
@@ -60,6 +56,7 @@ export const PushbackPage = () => {
     const [planeHeadingMagnetic] = useSimVar('PLANE HEADING DEGREES MAGNETIC', 'degrees', 50);
 
     const [parkingBrakeEngaged, setParkingBrakeEngaged] = useSimVar('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool', 250);
+    const [nwStrgDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool', 250);
 
     // Reducer state for pushback
     const {
@@ -79,6 +76,22 @@ export const PushbackPage = () => {
     const pushbackPausedRef = useRef(pushbackPaused);
     pushbackPausedRef.current = pushbackPaused;
 
+    const releaseTug = () => {
+        setPushbackState(3);
+        setPushbackWait(0);
+        // This alone does not suffice to fully release the tug.
+        // A "TUG_DISABLE" event has to be sent. But if sent too early it gets sometimes
+        // ignored by the sim and the aircraft would not steer.
+        // See the useEffect [nwStrgDisc] in Efb.tsx to fire this event when the
+        // NW STRG DISC message disappears which is also the moment when the
+        // nose wheel visually starts turning again.
+    };
+
+    const callTug = () => {
+        setPushbackState(0);
+        setPushbackWait(1);
+    };
+
     const handleEnableSystem = () => {
         if (pushbackSystemEnabled) {
             if (pushbackState < 3) {
@@ -87,8 +100,7 @@ export const PushbackPage = () => {
                         title={t('Pushback.DisableSystemMessageTitle')}
                         bodyText={`${t('Pushback.DisableSystemMessageBody')}`}
                         onConfirm={() => {
-                            setPushbackState(!pushbackState);
-                            setPushbackSystemEnabled(0);
+                            releaseTug();
                         }}
                     />,
                 );
@@ -109,8 +121,11 @@ export const PushbackPage = () => {
     };
 
     const handleCallTug = () => {
-        setPushbackState(!pushbackState);
-        setPushbackWait(1);
+        if (pushbackState < 3) {
+            releaseTug();
+            return;
+        }
+        callTug();
     };
 
     const handlePause = () => {
@@ -132,7 +147,8 @@ export const PushbackPage = () => {
         dispatch(setTugCommandedHeadingFactor(MathUtils.clamp(value, -1, 1)));
     };
 
-    const pushbackActive = () => pushbackSystemEnabled && pushbackAttached;
+    const tugInTransit = () => pushbackAttached !== nwStrgDisc;
+    const pushbackActive = () => pushbackSystemEnabled && !tugInTransit() && nwStrgDisc;
 
     // FIXME
     // const decelerateTug = (factor: number = 1) => {
@@ -211,6 +227,10 @@ export const PushbackPage = () => {
     const debugInformation = () => (
         <div className="flex absolute right-0 left-0 z-50 flex-grow justify-between mx-4 font-mono text-black bg-gray-100 border-gray-100 opacity-50">
             <div className="overflow-hidden text-black text-m">
+                pushbackSystemEnabled:
+                {' '}
+                {pushbackSystemEnabled}
+                <br />
                 deltaTime:
                 {' '}
                 {updateDeltaTime}
@@ -231,6 +251,10 @@ export const PushbackPage = () => {
                 {' '}
                 {pushbackState}
                 <br />
+                tugInTransit:
+                {' '}
+                {tugInTransit() ? 'true' : 'false'}
+                <br />
                 pushbackAvailable:
                 {' '}
                 {SimVar.GetSimVarValue('PUSHBACK AVAILABLE', 'bool')}
@@ -242,6 +266,19 @@ export const PushbackPage = () => {
                 {(pushbackAngle * (180 / Math.PI)).toFixed(3)}
                 {' °)'}
                 <br />
+                NW STRG DISC MEMO
+                {' '}
+                { SimVar.GetSimVarValue('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool')}
+                <br />
+                Steer Input Control:
+                {' '}
+                { SimVar.GetSimVarValue('STEER INPUT CONTROL', 'Percent Over 100').toFixed(4)}
+                <br />
+                Gear Steer Angle:
+                {' '}
+                { SimVar.GetSimVarValue('GEAR STEER ANGLE PCT:0', 'Percent Over 100').toFixed(4)}
+            </div>
+            <div className="overflow-hidden text-black text-m">
                 Heading (True):
                 {' '}
                 {planeHeadingTrue.toFixed(4)}
@@ -249,11 +286,6 @@ export const PushbackPage = () => {
                 Heading (Magnetic):
                 {' '}
                 {planeHeadingMagnetic.toFixed(4)}
-            </div>
-            <div className="overflow-hidden text-black text-m">
-                acHeading:
-                {' '}
-                {planeHeadingTrue.toFixed(3)}
                 <br />
                 tCHeadingF:
                 {' '}
@@ -343,6 +375,16 @@ export const PushbackPage = () => {
         </div>
     );
 
+    const callTugLabel = () => {
+        if (pushbackActive()) {
+            return (t('Pushback.TugAttached'));
+        }
+        if (tugInTransit()) {
+            return (t('Pushback.TugInTransit'));
+        }
+        return (t('Pushback.CallTug'));
+    };
+
     return (
         <div className="flex relative flex-col space-y-4">
 
@@ -351,6 +393,7 @@ export const PushbackPage = () => {
                 <PushbackMap />
 
                 {/* Pushback Debug Information */}
+                {' '}
                 {showDebugInfo && debugInformation()}
             </div>
 
@@ -358,6 +401,7 @@ export const PushbackPage = () => {
             <div className="flex flex-col p-6 space-y-4 h-1/3 rounded-lg border-2 border-theme-accent">
                 <div className="flex flex-row space-x-4">
                     {/* Pushback System enabled On/Off */}
+                    {' '}
                     {pushbackSystemEnabled ? (
                         <div className="w-full">
                             <p className="text-center">{t('Pushback.SystemEnabledOn')}</p>
@@ -389,15 +433,16 @@ export const PushbackPage = () => {
                     {/* Call Tug */}
                     <div className="w-full">
                         <p className={`text-center ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}>
-                            {pushbackActive() ? t('Pushback.TugAttached') : t('Pushback.CallTug')}
+                            {callTugLabel()}
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.CallReleaseTug')}>
                             <button
                                 type="button"
                                 onClick={handleCallTug}
-                                className={`flex justify-center items-center w-full h-20 text-theme-text bg-green-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100'} ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}
+                                className={`flex justify-center items-center w-full h-20 text-theme-text rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100'} ${tugInTransit() ? 'bg-utility-amber' : 'bg-green-600'} ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}
                             >
                                 <TruckFlatbed size={50} />
+                                {' '}
                                 {pushbackActive() ? (
                                     <ArrowsAngleContract className="ml-4" size={40} />
                                 ) : (
@@ -435,7 +480,7 @@ export const PushbackPage = () => {
                     {/* Backward Button */}
                     <div className="w-full">
                         <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
-                            { t('Pushback.Backward') }
+                            {t('Pushback.Backward')}
                         </p>
                         <TooltipWrapper text={t('Pushback.TT.DecreaseSpeed')}>
                             <button
