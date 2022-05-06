@@ -1,4 +1,4 @@
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+import { TurnDirection } from '../../fmgc/src/types/fstypes/FSEnums';
 
 export class MathUtils {
    static DEGREES_TO_RADIANS = Math.PI / 180;
@@ -386,5 +386,15 @@ export class MathUtils {
      */
    public static clamp(value, lower, upper) {
        return Math.min(Math.max(value, lower), upper);
+   }
+
+   /**
+     * Returns a value rounded to the given number of decimal precission.
+     * @param value
+     * @param decimalPrecision
+     */
+   public static round(value: number, decimalPrecision: number) {
+       const shift = 10 ** decimalPrecision;
+       return Math.round((value + Number.EPSILON) * shift) / shift;
    }
 }
