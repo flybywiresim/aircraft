@@ -1288,7 +1288,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = false;
 
   if (secIndex < 2) {
-    secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0] * 15;
+    secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
     secs[secIndex].modelInputs.in.analog_inputs.fo_pitch_stick_pos = 0;
     double leftElevPos = -idLeftElevatorPosition->get();
     double rightElevPos = -idRightElevatorPosition->get();
@@ -1306,7 +1306,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_1_g = 0;
     secs[secIndex].modelInputs.in.analog_inputs.load_factor_acc_2_g = 0;
   }
-  secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1] * 19;
+  secs[secIndex].modelInputs.in.analog_inputs.capt_roll_stick_pos = -simInput.inputs[1];
   secs[secIndex].modelInputs.in.analog_inputs.fo_roll_stick_pos = 0;
   secs[secIndex].modelInputs.in.analog_inputs.spd_brk_lever_pos =
       spoilersHandler->getIsArmed() ? -0.05 : spoilersHandler->getHandlePosition();
