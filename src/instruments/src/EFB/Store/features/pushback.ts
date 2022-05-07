@@ -30,6 +30,8 @@ export interface TPushbackState {
     tugInertiaSpeed: number
 }
 
+const ACE = process.env.VITE_BUILD;
+
 const initialState: TPushbackStateContainer = {
     pushbackState: {
         pushbackPaused: true,
@@ -39,8 +41,8 @@ const initialState: TPushbackStateContainer = {
         mapRange: 0.2,
         centerPlaneMode: true,
         actualMapLatLon: {
-            lat: SimVar.GetSimVarValue('A:PLANE LATITUDE', 'degrees latitude'),
-            long: SimVar.GetSimVarValue('A:PLANE LONGITUDE', 'degrees longitude'),
+            lat: (ACE ? 0 : SimVar.GetSimVarValue('A:PLANE LATITUDE', 'degrees latitude')),
+            long: (ACE ? 0 : SimVar.GetSimVarValue('A:PLANE LONGITUDE', 'degrees longitude')),
         },
         aircraftIconPosition: { x: 0, y: 0 },
         showDebugInfo: false,
