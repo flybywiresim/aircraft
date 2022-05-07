@@ -349,6 +349,7 @@
     "Title": "プリセット"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "後進",
     "CallTug": "牽引車を呼ぶ",
     "DisableSystemMessageBody": "プッシュバックシステムを無効にしてもよろしいですか?これにより、牽引車との接続も解除されます。",
@@ -371,11 +372,11 @@
     "TT": {
       "CallReleaseTug": "牽引車を呼ぶ・解除",
       "CenterPlaneMode": "自機を地図の中心に表示する オン/オフ",
-      "DecreaseSpeed": "後進・前進速度を落とす(ダブルクリックで速度を0にする)",
-      "IncreaseSpeed": "前進・後進速度を落とす(ダブルクリックで速度を0にする)",
-      "Left": "左へ旋回(ダブルクリックで直進)",
+      "DecreaseSpeed": "後進・前進速度を落とす",
+      "IncreaseSpeed": "前進・後進速度を落とす",
+      "Left": "左へ旋回",
       "PausePushback": "プッシュバックの一時停止・再開",
-      "Right": "右へ旋回(ダブルクリックで直進)",
+      "Right": "右へ旋回",
       "SetReleaseParkingBrake": "パーキングブレーキの有効・無効",
       "SliderDirection": "任意の牽引方向",
       "SliderSpeed": "任意の牽引速度",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "牽引車に接続中",
     "TugDirection": "牽引方向",
+    "TugInTransit": "牽引車/ピンの取り外しを準備中",
     "TugSpeed": "牽引速度"
   },
   "Settings": {

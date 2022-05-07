@@ -349,6 +349,7 @@
     "Title": "Voreinstellungen"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Schlepper-Steuerelemente sind nur am Boden verfügbar",
     "Backward": "Rückwärts",
     "CallTug": "Rufe Flugzeugschlepper",
     "DisableSystemMessageBody": "Möchten Sie das Pushback-System wirklich deaktivieren? Dadurch wird auch der Schlepper freigegeben.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Schlepper ist befestigt",
     "TugDirection": "Schlepprichtung",
+    "TugInTransit": "Warten auf Schlepper und Pin",
     "TugSpeed": "Schleppgeschwindigkeit"
   },
   "Settings": {

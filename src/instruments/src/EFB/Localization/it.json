@@ -349,6 +349,7 @@
     "Title": "Preset"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Indietro",
     "CallTug": "Chiama Tug",
     "DisableSystemMessageBody": "Sei sicuro di voler disabilitare il Sistema Pushback? Questo farà anche allontanare il tug.",
@@ -371,11 +372,11 @@
     "TT": {
       "CallReleaseTug": "Chiama o allontana tug",
       "CenterPlaneMode": "Centra mappa sull'aereo On/Off",
-      "DecreaseSpeed": "Indietro o avanti lento (doppio click per impostare velocità a 0)",
-      "IncreaseSpeed": "Avanti o indietro lento (doppio click per impostare velocità a 0)",
-      "Left": "Vai a sinistra (doppio click per dritto)",
+      "DecreaseSpeed": "Indietro o avanti lentamente",
+      "IncreaseSpeed": "Avanti o indietro lentamente",
+      "Left": "Vai a sinistra",
       "PausePushback": "Interrompi o riavvia pushback",
-      "Right": "Vai a destra (doppio click per dritto)",
+      "Right": "Vai a destra",
       "SetReleaseParkingBrake": "Inserisci o rilascia freni parcheggio",
       "SliderDirection": "Sposta per direzione desiderata",
       "SliderSpeed": "Sposta per velocità desiderata",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Tug è collegato",
     "TugDirection": "Direzione Tug",
+    "TugInTransit": "In Attesa del Tug",
     "TugSpeed": "Velocità Tug"
   },
   "Settings": {

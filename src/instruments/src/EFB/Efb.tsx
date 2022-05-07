@@ -95,7 +95,6 @@ const Efb = () => {
     const [brightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
     const [usingAutobrightness] = useSimVar('L:A32NX_EFB_USING_AUTOBRIGHTNESS', 'bool', 300);
     const [dayOfYear] = useSimVar('E:ZULU DAY OF YEAR', 'number');
-    const [latitude] = useSimVar('PLANE LATITUDE', 'degree latitude');
     const [batteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
 
     const [navigraph] = useState(() => new NavigraphClient());
@@ -258,7 +257,7 @@ const Efb = () => {
     useEffect(() => {
         if (usingAutobrightness) {
             const localTime = currentLocalTime / 3600;
-            setBrightness((calculateBrightness(latitude, dayOfYear, localTime)));
+            setBrightness((calculateBrightness(lat, dayOfYear, localTime)));
         }
     }, [Math.ceil(currentLocalTime / 5), usingAutobrightness]);
 

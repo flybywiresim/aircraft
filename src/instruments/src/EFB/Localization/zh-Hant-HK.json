@@ -349,6 +349,7 @@
     "Title": "預設"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "向後",
     "CallTug": "召喚推機車",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "推機方向",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "推機速度"
   },
   "Settings": {

@@ -349,6 +349,7 @@
     "Title": "Presetări"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Înapoi",
     "CallTug": "Chemați remorcher",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Direcție remorcher",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Viteză remorcher"
   },
   "Settings": {

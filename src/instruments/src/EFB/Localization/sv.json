@@ -349,6 +349,7 @@
     "Title": "Förinställningar"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Bakåt",
     "CallTug": "Ring dragare",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Dragarriktning",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Dragarhastighet"
   },
   "Settings": {

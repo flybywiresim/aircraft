@@ -37,6 +37,8 @@ export const PushbackPage = () => {
     const dispatch = useAppDispatch();
     const { showModal } = useModals();
 
+    const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 500);
+
     // This is used to completely turn off the pushback for compatible with other
     // pushback add-ons. Only watching sim variable like PUSHBACK STATE or
     // Pushback Available lead to conflicts as other add-on also write to them.
@@ -75,6 +77,8 @@ export const PushbackPage = () => {
     pushBackAttachedRef.current = pushbackAttached;
     const pushbackPausedRef = useRef(pushbackPaused);
     pushbackPausedRef.current = pushbackPaused;
+
+    const pushbackUIAvailable: () => boolean = () => simOnGround;
 
     const releaseTug = () => {
         setPushbackState(3);
@@ -232,6 +236,11 @@ export const PushbackPage = () => {
         dispatch(setPushbackPaused(false));
         dispatch(setTugCommandedSpeedFactor(-elevatorPosition));
     }, [elevatorPosition]);
+
+    // Make sure to deactivate the pushback system completely when leaving ground
+    useEffect(() => {
+        setPushbackSystemEnabled(simOnGround);
+    }, [simOnGround]);
 
     // Debug info for pushback movement - can be removed eventually
     const debugInformation = () => (
@@ -403,234 +412,238 @@ export const PushbackPage = () => {
     };
 
     return (
-        <div className="flex relative flex-col space-y-4">
+        <>
+            <div className="flex relative flex-col space-y-4 w-full h-full">
 
-            {/* Map Container */}
-            <div className="flex relative flex-col space-y-4 h-[430px]">
-                <PushbackMap />
-
-                {/* Pushback Debug Information */}
-                {' '}
-                {showDebugInfo && debugInformation()}
-            </div>
-
-            {/* Manual Pushback Controls */}
-            <div className="flex flex-col p-6 space-y-4 h-1/3 rounded-lg border-2 border-theme-accent">
-                <div className="flex flex-row space-x-4">
-                    {/* Pushback System enabled On/Off */}
+                {/* Map Container */}
+                <div className="flex flex-col flex-grow space-y-4">
+                    <PushbackMap />
+                    {/* Pushback Debug Information */}
                     {' '}
-                    {pushbackSystemEnabled ? (
-                        <div className="w-full">
-                            <p className="text-center">{t('Pushback.SystemEnabledOn')}</p>
-                            <TooltipWrapper text={t('Pushback.TT.SystemEnabledOn')}>
-                                <button
-                                    type="button"
-                                    onClick={handleEnableSystem}
-                                    className="flex justify-center items-center w-full h-20 text-theme-text bg-green-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100"
-                                >
-                                    <ToggleOn size={50} />
-                                </button>
-                            </TooltipWrapper>
-                        </div>
-                    ) : (
-                        <div className="w-full">
-                            <p className="text-center">{t('Pushback.SystemEnabledOff')}</p>
-                            <TooltipWrapper text={t('Pushback.TT.SystemEnabledOff')}>
-                                <button
-                                    type="button"
-                                    onClick={handleEnableSystem}
-                                    className="flex justify-center items-center w-full h-20 text-theme-text bg-red-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100"
-                                >
-                                    <ToggleOff size={50} />
-                                </button>
-                            </TooltipWrapper>
-                        </div>
-                    )}
-
-                    {/* Call Tug */}
-                    <div className="w-full">
-                        <p className={`text-center ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}>
-                            {callTugLabel()}
-                        </p>
-                        <TooltipWrapper text={t('Pushback.TT.CallReleaseTug')}>
-                            <button
-                                type="button"
-                                onClick={handleCallTug}
-                                className={`flex justify-center items-center w-full h-20 text-theme-text rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100'} ${tugInTransit() ? 'bg-utility-amber' : 'bg-green-600'} ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}
-                            >
-                                <TruckFlatbed size={50} />
-                                {' '}
-                                {pushbackActive() ? (
-                                    <ArrowsAngleContract className="ml-4" size={40} />
-                                ) : (
-                                    <ArrowsAngleExpand className="ml-4" size={40} />
-                                )}
-                            </button>
-                        </TooltipWrapper>
-                    </div>
-
-                    {/* Parking Brake */}
-                    <div className="w-full">
-                        <p className="text-center jus">
-                            {t('Pushback.ParkingBrake.Title')}
-                            {' '}
-                            {parkingBrakeEngaged ? t('Pushback.ParkingBrake.On') : t('Pushback.ParkingBrake.Off')}
-                        </p>
-                        <TooltipWrapper text={t('Pushback.TT.SetReleaseParkingBrake')}>
-                            <button
-                                type="button"
-                                onClick={() => setParkingBrakeEngaged((old) => !old)}
-                                className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center text-utility-white opacity-60 hover:opacity-100  ${parkingBrakeEngaged ? 'bg-red-600' : 'bg-green-600'}`}
-                            >
-                                {parkingBrakeEngaged ? (
-                                    <DashCircleFill className="transform" size={40} />
-                                ) : (
-                                    <DashCircle className="transform -rotate-90" size={40} />
-                                )}
-                            </button>
-                        </TooltipWrapper>
-                    </div>
+                    {showDebugInfo && debugInformation()}
                 </div>
 
-                <div className="flex flex-row space-x-4">
-
-                    {/* Backward Button */}
-                    <div className="w-full">
-                        <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
-                            {t('Pushback.Backward')}
-                        </p>
-                        <TooltipWrapper text={t('Pushback.TT.DecreaseSpeed')}>
-                            <button
-                                type="button"
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
-                                onClick={() => handleTugSpeed(tugCommandedSpeedFactor - 0.1)}
-                            >
-                                <ArrowDown size={40} />
-                            </button>
-                        </TooltipWrapper>
+                {/* Show message when not on ground */}
+                {!pushbackUIAvailable() && (
+                    <div className="absolute top-2/3 text-center bu left-0 right-0 text-5xl border-white border-2}">
+                        {t('Pushback.AvailableOnlyOnGround')}
                     </div>
+                )}
 
-                    {/* Forward Button */}
-                    <div className="w-full">
-                        <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
-                            {t('Pushback.Forward')}
-                        </p>
-                        <TooltipWrapper text={t('Pushback.TT.IncreaseSpeed')}>
-                            <button
-                                type="button"
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
-                                onClick={() => handleTugSpeed(tugCommandedSpeedFactor + 0.1)}
-                            >
-                                <ArrowUp size={40} />
-                            </button>
-                        </TooltipWrapper>
-                    </div>
+                {/* Manual Pushback Controls */}
+                <div className={`flex flex-col p-6 h-full space-y-4 rounded-lg border-2 border-theme-accent ${!pushbackUIAvailable() && 'opacity-20 pointer-events-none'}`}>
+                    <div className="flex flex-row space-x-4">
+                        {/* Pushback System enabled On/Off */}
+                        {pushbackSystemEnabled ? (
+                            <div className="w-full">
+                                <p className="text-center">{t('Pushback.SystemEnabledOn')}</p>
+                                <TooltipWrapper text={t('Pushback.TT.SystemEnabledOn')}>
+                                    <button
+                                        type="button"
+                                        onClick={handleEnableSystem}
+                                        className="flex justify-center items-center w-full h-20 text-theme-text bg-green-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100"
+                                    >
+                                        <ToggleOn size={50} />
+                                    </button>
+                                </TooltipWrapper>
+                            </div>
+                        ) : (
+                            <div className="w-full">
+                                <p className="text-center">{t('Pushback.SystemEnabledOff')}</p>
+                                <TooltipWrapper text={t('Pushback.TT.SystemEnabledOff')}>
+                                    <button
+                                        type="button"
+                                        onClick={handleEnableSystem}
+                                        className={`flex justify-center items-center w-full h-20 text-theme-text bg-red-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100 {${!pushbackUIAvailable() && 'opacity-30 pointer-events-none'}`}
+                                    >
+                                        <ToggleOff size={50} />
+                                    </button>
+                                </TooltipWrapper>
+                            </div>
+                        )}
 
-                    {/* Pause/Moving Button */}
-                    <div className="w-full">
-                        <p className="text-center">
-                            {pushbackPaused ? t('Pushback.Halt') : t('Pushback.Moving')}
-                        </p>
-                        <TooltipWrapper text={t('Pushback.TT.PausePushback')}>
-                            <button
-                                type="button"
-                                onClick={handlePause}
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
-                            >
-                                {pushbackPaused ? (
-                                    <PlayCircleFill size={40} />
-                                ) : (
-                                    <PauseCircleFill size={40} />
-                                )}
-                            </button>
-                        </TooltipWrapper>
-                    </div>
-
-                    {/* Left Button */}
-                    <div className="w-full">
-                        <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
-                            {t('Pushback.Left')}
-                        </p>
-                        <TooltipWrapper text={t('Pushback.TT.Left')}>
-                            <button
-                                type="button"
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
-                                onClick={() => handleTugDirectionLeft()}
-                            >
-                                <ArrowLeft size={40} />
-                            </button>
-                        </TooltipWrapper>
-                    </div>
-
-                    {/* Right Button */}
-                    <div className="w-full">
-                        <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
-                            {t('Pushback.Right')}
-                        </p>
-                        <TooltipWrapper text={t('Pushback.TT.Right')}>
-                            <button
-                                type="button"
-                                className={`flex justify-center items-center w-full h-20 bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100 hover:text-theme-highlight ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
-                                onClick={() => handleTugDirectionRight()}
-                            >
-                                <ArrowRight size={40} />
-                            </button>
-                        </TooltipWrapper>
-                    </div>
-                </div>
-
-                {/* Direction Slider */}
-                <div>
-                    <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
-                        {t('Pushback.TugDirection')}
-                    </p>
-                    <TooltipWrapper text={t('Pushback.TT.SliderDirection')}>
-                        <div className="flex flex-row items-center space-x-4">
-                            <p className="font-bold text-unselected"><ChevronLeft /></p>
-                            <Slider
-                                ref={directionSliderRef}
-                                className={`${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
-                                onChange={(value) => handleTugDirection(value)}
-                                onAfterChange={() => directionSliderRef.current.blur()}
-                                min={-1}
-                                step={0.01}
-                                max={1}
-                                value={tugCommandedHeadingFactor}
-                                startPoint={0}
-                            />
-                            <p className="font-bold text-unselected"><ChevronRight /></p>
-                        </div>
-                    </TooltipWrapper>
-                </div>
-
-                {/* Speed Slider */}
-                <div>
-                    <p className={`text-center ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
-                        {t('Pushback.TugSpeed')}
-                    </p>
-                    <TooltipWrapper text={t('Pushback.TT.SliderSpeed')}>
-                        <div className="flex flex-row items-center space-x-4">
-                            <p className="font-bold text-unselected"><ChevronDoubleDown /></p>
-                            <Slider
-                                className={`${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
-                                min={-1}
-                                step={0.1}
-                                max={1}
-                                value={tugCommandedSpeedFactor}
-                                onChange={(value) => handleTugSpeed(value)}
-                                onAfterChange={() => speedSliderRef.current.blur()}
-                                startPoint={0}
-                            />
-                            <p
-                                className="font-bold text-unselected"
-                                onDoubleClick={() => dispatch(setShowDebugInfo(!showDebugInfo))}
-                            >
-                                <ChevronDoubleUp />
+                        {/* Call Tug */}
+                        <div className={`w-full ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}>
+                            <p className="text-center">
+                                {callTugLabel()}
                             </p>
+                            <TooltipWrapper text={t('Pushback.TT.CallReleaseTug')}>
+                                <button
+                                    type="button"
+                                    onClick={handleCallTug}
+                                    className={`flex justify-center items-center w-full h-20 text-theme-text rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100'} ${tugInTransit() ? 'bg-utility-amber' : 'bg-green-600'} ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}
+                                >
+                                    <TruckFlatbed size={50} />
+                                    {' '}
+                                    {pushbackActive() ? (
+                                        <ArrowsAngleContract className="ml-4" size={40} />
+                                    ) : (
+                                        <ArrowsAngleExpand className="ml-4" size={40} />
+                                    )}
+                                </button>
+                            </TooltipWrapper>
                         </div>
-                    </TooltipWrapper>
+
+                        {/* Parking Brake */}
+                        <div className="w-full">
+                            <p className="text-center jus">
+                                {t('Pushback.ParkingBrake.Title')}
+                                {' '}
+                                {parkingBrakeEngaged ? t('Pushback.ParkingBrake.On') : t('Pushback.ParkingBrake.Off')}
+                            </p>
+                            <TooltipWrapper text={t('Pushback.TT.SetReleaseParkingBrake')}>
+                                <button
+                                    type="button"
+                                    onClick={() => setParkingBrakeEngaged((old) => !old)}
+                                    className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center text-utility-white opacity-60 hover:opacity-100  ${parkingBrakeEngaged ? 'bg-red-600' : 'bg-green-600'} {${!pushbackUIAvailable() && 'opacity-30 pointer-events-none'}`}
+                                >
+                                    {parkingBrakeEngaged ? (
+                                        <DashCircleFill className="transform" size={40} />
+                                    ) : (
+                                        <DashCircle className="transform -rotate-90" size={40} />
+                                    )}
+                                </button>
+                            </TooltipWrapper>
+                        </div>
+                    </div>
+
+                    <div className={`flex flex-row space-x-4 ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
+                        {/* Backward Button */}
+                        <div className="w-full">
+                            <p className="text-center">
+                                {t('Pushback.Backward')}
+                            </p>
+                            <TooltipWrapper text={t('Pushback.TT.DecreaseSpeed')}>
+                                <button
+                                    type="button"
+                                    className="flex justify-center items-center w-full h-20 hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                                    onClick={() => handleTugSpeed(tugCommandedSpeedFactor - 0.1)}
+                                >
+                                    <ArrowDown size={40} />
+                                </button>
+                            </TooltipWrapper>
+                        </div>
+
+                        {/* Forward Button */}
+                        <div className="w-full">
+                            <p className="text-center">
+                                {t('Pushback.Forward')}
+                            </p>
+                            <TooltipWrapper text={t('Pushback.TT.IncreaseSpeed')}>
+                                <button
+                                    type="button"
+                                    className="flex justify-center items-center w-full h-20 hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                                    onClick={() => handleTugSpeed(tugCommandedSpeedFactor + 0.1)}
+                                >
+                                    <ArrowUp size={40} />
+                                </button>
+                            </TooltipWrapper>
+                        </div>
+
+                        {/* Pause/Moving Button */}
+                        <div className="w-full">
+                            <p className="text-center">
+                                {pushbackPaused ? t('Pushback.Halt') : t('Pushback.Moving')}
+                            </p>
+                            <TooltipWrapper text={t('Pushback.TT.PausePushback')}>
+                                <button
+                                    type="button"
+                                    onClick={handlePause}
+                                    className="flex justify-center items-center w-full h-20 hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                                >
+                                    {pushbackPaused ? (
+                                        <PlayCircleFill size={40} />
+                                    ) : (
+                                        <PauseCircleFill size={40} />
+                                    )}
+                                </button>
+                            </TooltipWrapper>
+                        </div>
+
+                        {/* Left Button */}
+                        <div className="w-full">
+                            <p className="text-center">
+                                {t('Pushback.Left')}
+                            </p>
+                            <TooltipWrapper text={t('Pushback.TT.Left')}>
+                                <button
+                                    type="button"
+                                    className="flex justify-center items-center w-full h-20 hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                                    onClick={() => handleTugDirectionLeft()}
+                                >
+                                    <ArrowLeft size={40} />
+                                </button>
+                            </TooltipWrapper>
+                        </div>
+
+                        {/* Right Button */}
+                        <div className="w-full">
+                            <p className="text-center">
+                                {t('Pushback.Right')}
+                            </p>
+                            <TooltipWrapper text={t('Pushback.TT.Right')}>
+                                <button
+                                    type="button"
+                                    className="flex justify-center items-center w-full h-20 hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                                    onClick={() => handleTugDirectionRight()}
+                                >
+                                    <ArrowRight size={40} />
+                                </button>
+                            </TooltipWrapper>
+                        </div>
+                    </div>
+
+                    {/* Direction Slider */}
+                    <div className={`${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
+                        <p className="text-center">
+                            {t('Pushback.TugDirection')}
+                        </p>
+                        <TooltipWrapper text={t('Pushback.TT.SliderDirection')}>
+                            <div className="flex flex-row items-center space-x-4">
+                                <p className="font-bold text-unselected"><ChevronLeft /></p>
+                                <Slider
+                                    ref={directionSliderRef}
+                                    onChange={(value) => handleTugDirection(value)}
+                                    onAfterChange={() => directionSliderRef.current.blur()}
+                                    min={-1}
+                                    step={0.01}
+                                    max={1}
+                                    value={tugCommandedHeadingFactor}
+                                    startPoint={0}
+                                />
+                                <p className="font-bold text-unselected"><ChevronRight /></p>
+                            </div>
+                        </TooltipWrapper>
+                    </div>
+
+                    {/* Speed Slider */}
+                    <div className={`${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
+                        <p className="text-center">
+                            {t('Pushback.TugSpeed')}
+                        </p>
+                        <TooltipWrapper text={t('Pushback.TT.SliderSpeed')}>
+                            <div className="flex flex-row items-center space-x-4">
+                                <p className="font-bold text-unselected"><ChevronDoubleDown /></p>
+                                <Slider
+                                    min={-1}
+                                    step={0.1}
+                                    max={1}
+                                    value={tugCommandedSpeedFactor}
+                                    onChange={(value) => handleTugSpeed(value)}
+                                    onAfterChange={() => speedSliderRef.current.blur()}
+                                    startPoint={0}
+                                />
+                                <p
+                                    className="font-bold text-unselected"
+                                    onDoubleClick={() => dispatch(setShowDebugInfo(!showDebugInfo))}
+                                >
+                                    <ChevronDoubleUp />
+                                </p>
+                            </div>
+                        </TooltipWrapper>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };

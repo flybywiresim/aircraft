@@ -349,6 +349,7 @@
     "Title": "Predefinições"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Reverso",
     "CallTug": "Ligar para o Reboque",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Direção do Reboque",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Velocidade do Reboque"
   },
   "Settings": {

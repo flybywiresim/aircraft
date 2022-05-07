@@ -349,6 +349,7 @@
     "Title": "Předvolby"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Vzad",
     "CallTug": "Přivolat pushback",
     "DisableSystemMessageBody": "Určitě chcete vypnout pushback systém? Tato akce také uvolní pushback.",
@@ -371,11 +372,11 @@
     "TT": {
       "CallReleaseTug": "Přivolat nebo uvolnit pushback",
       "CenterPlaneMode": "Vycentrovat mapu na letadlo Zap/Vyp",
-      "DecreaseSpeed": "Vzad nebo pomaleji vpřed (dvojklikem nastavit rychlost na 0)",
-      "IncreaseSpeed": "Vpřed nebo pomaleji vzad (dvojklikem nastavit rychlost na 0)",
-      "Left": "Jet doleva (dvojklik pro jízdu rovně)",
+      "DecreaseSpeed": "Dozadu nebo pomaleji dopředu",
+      "IncreaseSpeed": "Dopředu nebo pomaleji dozadu",
+      "Left": "Jet doleva",
       "PausePushback": "Pozastavit nebo zrušit pozastavení vytlačení",
-      "Right": "Jet doprava (dvojklik pro jízdu rovně)",
+      "Right": "Jet doprava",
       "SetReleaseParkingBrake": "Zapnout nebo vypnout parkovací brzdu",
       "SliderDirection": "Posuňte pro požadovaný směr",
       "SliderSpeed": "Posuňte pro požadovanou rychlost",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Pushback je připojen",
     "TugDirection": "Směr vytlačení",
+    "TugInTransit": "Čekání na pushback/pin",
     "TugSpeed": "Rychlost vytlačení"
   },
   "Settings": {
