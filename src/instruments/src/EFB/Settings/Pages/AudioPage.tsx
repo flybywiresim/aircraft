@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import Slider from 'rc-slider';
@@ -16,15 +16,25 @@ export const AudioPage = () => {
     const [announcementsEnabled, setAnnouncementsEnabled] = usePersistentNumberProperty('SOUND_ANNOUNCEMENTS_ENABLED', 1);
     const [boardingMusicEnabled, setBoardingMusicEnabled] = usePersistentNumberProperty('SOUND_BOARDING_MUSIC_ENABLED', 1);
 
+    // To prevent keyboard input (esp. END key for external view) to change
+    // the slider position. This is accomplished by a
+    // onAfterChange={() => sliderRef.current.blur()}
+    // in the Slider component props.
+    const exteriorSliderRef = useRef<any>(null);
+    const engineSliderRef = useRef<any>(null);
+    const windSliderRef = useRef<any>(null);
+
     return (
         <SettingsPage name={t('Settings.Audio.Title')}>
 
             <SettingItem name={t('Settings.Audio.ExteriorMasterVolume')}>
                 <div className="flex flex-row items-center space-x-8">
                     <Slider
+                        ref={exteriorSliderRef}
                         style={{ width: '24rem' }}
                         value={exteriorVolume + 50}
                         onChange={(value) => setExteriorVolume(value - 50)}
+                        onAfterChange={() => exteriorSliderRef.current.blur()}
                     />
                     <SimpleInput
                         min={1}
@@ -40,9 +50,11 @@ export const AudioPage = () => {
             <SettingItem name={t('Settings.Audio.EngineInteriorVolume')}>
                 <div className="flex flex-row items-center space-x-8">
                     <Slider
+                        ref={engineSliderRef}
                         style={{ width: '24rem' }}
                         value={engineVolume + 50}
                         onChange={(value) => setEngineVolume(value - 50)}
+                        onAfterChange={() => engineSliderRef.current.blur()}
                     />
                     <SimpleInput
                         min={1}
@@ -58,9 +70,11 @@ export const AudioPage = () => {
             <SettingItem name={t('Settings.Audio.WindInteriorVolume')}>
                 <div className="flex flex-row items-center space-x-8">
                     <Slider
+                        ref={windSliderRef}
                         style={{ width: '24rem' }}
                         value={windVolume + 50}
                         onChange={(value) => setWindVolume(value - 50)}
+                        onAfterChange={() => windSliderRef.current.blur()}
                     />
                     <SimpleInput
                         min={1}

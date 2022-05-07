@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { useSimVar } from '@instruments/common/simVars';
@@ -53,6 +53,12 @@ export const FlyPadPage = () => {
         document.documentElement.classList.add(`theme-${theme}`);
     };
 
+    // To prevent keyboard input (esp. END key for external view) to change
+    // the slider position. This is accomplished by a
+    // onAfterChange={() => sliderRef.current.blur()}
+    // in the Slider component props.
+    const brightnessSliderRef = useRef<any>(null);
+
     return (
         <SettingsPage name={t('Settings.flyPad.Title')}>
 
@@ -89,9 +95,11 @@ export const FlyPadPage = () => {
                         <div className="flex flex-row items-center space-x-8">
                             <>
                                 <Slider
+                                    ref={brightnessSliderRef}
                                     style={{ width: '24rem' }}
                                     value={usingAutobrightness ? brightness : brightnessSetting}
                                     onChange={setBrightnessSetting}
+                                    onAfterChange={() => brightnessSliderRef.current.blur()}
                                 />
                                 <SimpleInput
                                     min={1}
