@@ -366,7 +366,7 @@ const Efb = () => {
     // 10x lower in external view which leads to jerky movements otherwise.
     useEffect(() => {
         if (pushbackSystemEnabled && pushBackAttached && updateIntervalID === 0) {
-            const interval = setInterval(movementUpdate, 30);
+            const interval = setInterval(movementUpdate, 40);
             dispatch(setUpdateIntervalID(Number(interval)));
         } else if (!pushBackAttached) {
             clearInterval(updateIntervalID);

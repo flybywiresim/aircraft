@@ -28,7 +28,6 @@ import {
     setShowDebugInfo,
     setTugCommandedHeadingFactor,
     setTugCommandedSpeedFactor,
-    // setTugInertiaFactor,
 } from '../../Store/features/pushback';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { PushbackMap } from './PushbackMap';
@@ -37,13 +36,14 @@ export const PushbackPage = () => {
     const dispatch = useAppDispatch();
     const { showModal } = useModals();
 
-    const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 500);
+    const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 250);
     const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum', 250);
 
-    // This is used to completely turn off the pushback for compatible with other
-    // pushback add-ons. Only watching sim variable like PUSHBACK STATE or
-    // Pushback Available lead to conflicts as other add-on also write to them.
-    // It is implemented as a LVAR to allow 3rd parties to deactivate it if required.
+    // This is used to completely turn off the pushback for compatibility with other
+    // pushback add-ons. Only watching sim variables like PUSHBACK STATE or
+    // Pushback Available leads to conflicts as other add-on also read/write them.
+    // It is implemented as a LVAR to allow 3rd parties to see that the a32nx pushback is active
+    // and to be able to deactivate themselves or the a32nx pushback system if required.
     const [pushbackSystemEnabled, setPushbackSystemEnabled] = useSimVar('L:A32NX_PUSHBACK_SYSTEM_ENABLED', 'bool', 100);
 
     const [pushbackState, setPushbackState] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 100);
@@ -87,7 +87,7 @@ export const PushbackPage = () => {
         // This alone does not suffice to fully release the tug.
         // A "TUG_DISABLE" event has to be sent. But if sent too early it gets sometimes
         // ignored by the sim and the aircraft would not steer.
-        // See the useEffect [nwStrgDisc] in Efb.tsx to fire this event when the
+        // See the useEffect [nwStrgDisc] in Efb.tsx - it fires this event when the
         // NW STRG DISC message disappears which is also the moment when the
         // nose wheel visually starts turning again.
     };
@@ -164,33 +164,6 @@ export const PushbackPage = () => {
 
     const tugInTransit = () => pushbackAttached !== nwStrgDisc;
     const pushbackActive = () => pushbackSystemEnabled && !tugInTransit() && nwStrgDisc;
-
-    // FIXME
-    // const decelerateTug = (factor: number = 1) => {
-    //     const r = 0.05;
-    //     const bf = factor;
-    //     dispatch(setTugInertiaFactor(bf));
-    //     if (bf <= 0) {
-    //         console.log('Decelerated!');
-    //         return;
-    //     }
-    //     setTimeout(() => {
-    //         decelerateTug(bf - r);
-    //     }, 50);
-    // };
-    //
-    // const accelerateTug = (factor: number = 0) => {
-    //     const r = 0.05;
-    //     const bf = factor;
-    //     dispatch(setTugInertiaFactor(bf));
-    //     if (bf >= 1) {
-    //         console.log('Accelerated!');
-    //         return;
-    //     }
-    //     setTimeout(() => {
-    //         accelerateTug(bf + r);
-    //     }, 50);
-    // };
 
     // called once when loading and unloading the page
     useEffect(() => {

@@ -85,10 +85,18 @@ export const PushbackMap = () => {
     const [dragStartCoords, setDragStartCoords] = useState({ x: 0, y: 0 } as TScreenCoordinates);
     const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 } as TScreenCoordinates);
 
+    const handleZoomIn = () => {
+        handleZoomChange(-1);
+    };
+
+    const handleZoomOut = () => {
+        handleZoomChange(1);
+    };
+
     const handleZoomChange = (value: number) => {
-        const newRange = mapRange + value;
+        const newRange = (1 + (Math.sign(value) * (mapRange <= 3 ? 0.1 : 0.5))) * mapRange;
         const factor = mapRange / newRange;
-        dispatch(setMapRange(MathUtils.clamp(newRange, 0.1, 1.5)));
+        dispatch(setMapRange(MathUtils.clamp(newRange, 0.1, 1000.0)));
         // place the aircraft icon according to the zoom level
         dispatch(setAircraftIconPosition({ x: aircraftIconPosition.x * factor, y: aircraftIconPosition.y * factor }));
     };
@@ -112,7 +120,7 @@ export const PushbackMap = () => {
     const a320IconSize = (mapRange) => {
         const pixelPerMeter = someConstant * 10; // at 0.1 range
         const a320LengthMeter = 37.57;
-        return a320LengthMeter * pixelPerMeter * (0.1 / mapRange);
+        return MathUtils.clamp(a320LengthMeter * pixelPerMeter * (0.1 / mapRange), 15, 1000);
     };
 
     // Calculates turning radius for the Turning prediction arc
@@ -239,7 +247,7 @@ export const PushbackMap = () => {
                     <TooltipWrapper text={t('Pushback.TT.ZoomIn')}>
                         <button
                             type="button"
-                            onClick={() => handleZoomChange(-0.1)}
+                            onClick={() => handleZoomIn()}
                             className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                         >
                             <ZoomIn size={40} />
@@ -248,7 +256,7 @@ export const PushbackMap = () => {
                     <TooltipWrapper text={t('Pushback.TT.ZoomOut')}>
                         <button
                             type="button"
-                            onClick={() => handleZoomChange(0.1)}
+                            onClick={() => handleZoomOut()}
                             className="p-2 hover:text-theme-body bg-theme-secondary hover:bg-theme-highlight transition duration-100 cursor-pointer"
                         >
                             <ZoomOut size={40} />
