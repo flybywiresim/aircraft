@@ -349,6 +349,7 @@
     "Title": "Cấu hình sẵn"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Lùi",
     "CallTug": "Gọi xe kéo",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Hướng của xe kéo",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Tốc độ xe kéo"
   },
   "Settings": {

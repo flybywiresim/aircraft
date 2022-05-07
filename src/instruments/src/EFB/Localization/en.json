@@ -349,9 +349,9 @@
     "Title": "Presets"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Backward",
     "CallTug": "Call Tug",
-    "TugInTransit": "Waiting for Tug/Pin",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
     "DisableSystemMessageTitle": "Disable Pushback System",
     "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
@@ -387,6 +387,7 @@
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Tug Direction",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Tug Speed"
   },
   "Settings": {

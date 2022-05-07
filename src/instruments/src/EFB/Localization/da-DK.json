@@ -349,6 +349,7 @@
     "Title": "Forudindstillinger"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Bagud",
     "CallTug": "Kald skubber",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Skubber Retning",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Skubber hastighed"
   },
   "Settings": {

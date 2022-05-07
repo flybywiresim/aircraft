@@ -349,6 +349,7 @@
     "Title": "תבניות"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "אחורה",
     "CallTug": "קרא לנע-דחף",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "כיוון הגרירה",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "מהירות הגרירה"
   },
   "Settings": {

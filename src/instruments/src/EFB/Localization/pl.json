@@ -349,6 +349,7 @@
     "Title": "Ustawienia Predefiniowane"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Do Tyłu",
     "CallTug": "Wezwij Holownik",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Kierunek Holowania",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Prędkość Holowania"
   },
   "Settings": {

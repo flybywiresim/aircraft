@@ -349,6 +349,7 @@
     "Title": "Predeterminados"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Atrás",
     "CallTug": "Llamar al remolcador",
     "DisableSystemMessageBody": "¿Está seguro que desea deshabilitar el sistema de remolque? Esto también liberará el remolcador.",
@@ -371,11 +372,11 @@
     "TT": {
       "CallReleaseTug": "Llamar o soltar remolcador ",
       "CenterPlaneMode": "Centrar mapa en avión Activar / Desactivar",
-      "DecreaseSpeed": "Hacia atrás o más lento hacia adelante (doble click para establecer la velocidad a 0)",
-      "IncreaseSpeed": "Hacia adelante o más lento hacia atrás (doble click para establecer la velocidad a 0)",
-      "Left": "Ir a la izquierda (doble click para ir recto)",
+      "DecreaseSpeed": "Hacia atrás o más lento hacia adelante",
+      "IncreaseSpeed": "Hacia adelante o más lento hacia atrás",
+      "Left": "Ir a la izquierda",
       "PausePushback": "Pausar o reanudar remolque ",
-      "Right": "Ir a la derecha (doble click para ir recto)",
+      "Right": "Ir a la derecha",
       "SetReleaseParkingBrake": "Establecer o liberar freno de estacionamiento",
       "SliderDirection": "Mover en la dirección deseada ",
       "SliderSpeed": "Mover a la velocidad deseada",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "El remolcador está unido",
     "TugDirection": "Dirección del remolcador",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Velocidad del remolcador"
   },
   "Settings": {

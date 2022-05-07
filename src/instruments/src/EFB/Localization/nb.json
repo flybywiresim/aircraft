@@ -349,6 +349,7 @@
     "Title": "Forhåndsinnstillinger"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Bakover",
     "CallTug": "Tilkall pushbacktraktor",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Pushbacktraktor-retning",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "pushbacktraktor-hastighet"
   },
   "Settings": {

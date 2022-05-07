@@ -349,6 +349,7 @@
     "Title": "Préréglages"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Reculer",
     "CallTug": "Appeler le remorqueur",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Le remorqueur est attaché",
     "TugDirection": "Direction du remorqueur",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Vitesse du remorqueur"
   },
   "Settings": {

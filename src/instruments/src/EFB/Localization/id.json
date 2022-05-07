@@ -49,7 +49,7 @@
         "Loading": "Memuat",
         "MetarParsingError": "METAR yang diterima gagal dimuat",
         "NoIcaoProvided": "Tak ada ICAO yang disediakan",
-        "NotAvailableShort": "N/A",
+        "NotAvailableShort": "Tidak Tersedia",
         "Raw": "Format mentah",
         "TT": {
           "SwitchToIconView": "Beralih ke Tampilan Ikon",
@@ -349,6 +349,7 @@
     "Title": "Preset"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Mundur",
     "CallTug": "Panggil Tug",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
@@ -357,7 +358,7 @@
     "EnableSystemMessageTitle": "Enable Pushback System",
     "Forward": "Maju",
     "Halt": "Jeda",
-    "LeavePageMessage": "Pausing Pushback",
+    "LeavePageMessage": "Menjeda Pushback",
     "Left": "Left",
     "Moving": "Bergerak",
     "ParkingBrake": {
@@ -369,23 +370,24 @@
     "SystemEnabledOff": "Pushback System Off",
     "SystemEnabledOn": "Pushback System On",
     "TT": {
-      "CallReleaseTug": "Call or release tug",
+      "CallReleaseTug": "Panggil atau lepaskan tug",
       "CenterPlaneMode": "Center map on plane On/Off",
-      "DecreaseSpeed": "Backwards or slower forwards",
-      "IncreaseSpeed": "Forwards or slower backwards",
-      "Left": "Go left",
-      "PausePushback": "Pause or unpause pushback",
-      "Right": "Go right",
+      "DecreaseSpeed": "Mundur atau lebih lambat ke depan",
+      "IncreaseSpeed": "Maju atau lebih lambat ke belakang",
+      "Left": "Ke kiri",
+      "PausePushback": "Jeda atau hentikan jeda pushback",
+      "Right": "Ke kanan",
       "SetReleaseParkingBrake": "Set or release parking brake",
       "SliderDirection": "Move for desired direction",
       "SliderSpeed": "Move for desired speed",
       "SystemEnabledOff": "Click to turn the pushback system on.",
-      "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "SystemEnabledOn": "Klik untuk mematikan sistem pushback sepenuhnya.",
       "ZoomIn": "Zoom in",
       "ZoomOut": "Zoom out"
     },
     "TugAttached": "Tug is attached",
     "TugDirection": "Arah Tug",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Kecepatan Tug"
   },
   "Settings": {

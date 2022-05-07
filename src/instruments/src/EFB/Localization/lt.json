@@ -349,6 +349,7 @@
     "Title": "Išankstiniai nustatymai"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "Atgal",
     "CallTug": "Iškviesti vilkiką",
     "DisableSystemMessageBody": "Ar tikrai norite išjunti išstumimo sistemą? Vilkikas bus paleistas.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "Vilkikas prisijungęs",
     "TugDirection": "Vilkiko kryptis",
+    "TugInTransit": "Laukiama vilkiko",
     "TugSpeed": "Vilkiko greitis"
   },
   "Settings": {

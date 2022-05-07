@@ -349,6 +349,7 @@
     "Title": "프리셋"
   },
   "Pushback": {
+    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
     "Backward": "뒤로",
     "CallTug": "터그 부르기",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
@@ -386,6 +387,7 @@
     },
     "TugAttached": "터그가  연결되었습니다",
     "TugDirection": "터그 방향",
+    "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "터그 속도"
   },
   "Settings": {
