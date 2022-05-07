@@ -67,4 +67,12 @@ export class Arinc429Word {
     valueOr(defaultValue: number) {
         return this.isNormalOperation() ? this.value : defaultValue;
     }
+
+    getBitValue(bit: number): boolean {
+        return ((this.value >> (bit - 1)) & 1) !== 0;
+    }
+
+    getBitValueOr(bit: number, defaultValue: boolean): boolean {
+        return this.isNormalOperation() ? ((this.value >> (bit - 1)) & 1) !== 0 : defaultValue;
+    }
 }
