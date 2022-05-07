@@ -656,7 +656,9 @@ impl LandingGearControlInterfaceUnit {
                 .update(&self.sensor_inputs, !self.is_gear_lever_down);
         }
 
-        self.update_monitoring(context, gear_handle);
+        if context.is_sim_ready() {
+            self.update_monitoring(context, gear_handle);
+        }
 
         self.is_active_computer_previous_state = is_master_computer;
         self.is_powered_previous_state = self.is_powered;
