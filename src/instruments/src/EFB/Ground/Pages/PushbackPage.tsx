@@ -385,6 +385,13 @@ export const PushbackPage = () => {
         </div>
     );
 
+    // To prevent keyboard input (esp. END key for external view) to change
+    // the slider position. This is accomplished by a
+    // onAfterChange={() => sliderRef.current.blur()}
+    // in the Slider component props.
+    const directionSliderRef = useRef<any>(null);
+    const speedSliderRef = useRef<any>(null);
+
     const callTugLabel = () => {
         if (pushbackActive()) {
             return (t('Pushback.TugAttached'));
@@ -581,8 +588,10 @@ export const PushbackPage = () => {
                         <div className="flex flex-row items-center space-x-4">
                             <p className="font-bold text-unselected"><ChevronLeft /></p>
                             <Slider
+                                ref={directionSliderRef}
                                 className={`${!pushbackActive() && 'opacity-30 pointer-events-none'}`}
                                 onChange={(value) => handleTugDirection(value)}
+                                onAfterChange={() => directionSliderRef.current.blur()}
                                 min={-1}
                                 step={0.01}
                                 max={1}
@@ -609,6 +618,7 @@ export const PushbackPage = () => {
                                 max={1}
                                 value={tugCommandedSpeedFactor}
                                 onChange={(value) => handleTugSpeed(value)}
+                                onAfterChange={() => speedSliderRef.current.blur()}
                                 startPoint={0}
                             />
                             <p
