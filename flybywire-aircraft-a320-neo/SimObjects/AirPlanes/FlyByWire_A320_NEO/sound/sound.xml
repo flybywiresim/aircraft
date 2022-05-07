@@ -1884,32 +1884,28 @@
             <WwiseRTPC SimVar="ELEVATOR POSITION" Units="PERCENT" Index="0" RTPCName="SIMVAR_ELEVATOR_POSITION" />
         </Sound>
 
-        <Sound WwiseEvent="gdown" WwiseData="true" Continuous="true" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="1" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
-            <Range LowerBound="0.1" UpperBound="0.9" />
-            <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" />
+        <Sound WwiseEvent="gdown" WwiseData="true" Continuous="true" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="1" LocalVar="A32NX_GEAR_DOOR_CENTER_POSITION" >
+            <Range LowerBound="30" />
+            <WwiseRTPC LocalVar="A32NX_GEAR_CENTER_POSITION" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" />
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED" />
         </Sound>
 
-        <Sound WwiseEvent="gup" WwiseData="true" Continuous="true" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="1" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
-            <Range LowerBound="0.1" UpperBound="0.9" />
-            <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" />
+        <Sound WwiseEvent="gup" WwiseData="true" Continuous="true" NodeName="PEDALS_LEFT" FadeOutType="2" FadeOutTime="1" LocalVar="A32NX_GEAR_DOOR_CENTER_POSITION" >
+            <Range LowerBound="30" />
+            <WwiseRTPC LocalVar="A32NX_GEAR_CENTER_POSITION" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" />
             <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED" />
         </Sound>
 
-        <Sound WwiseEvent="gearcab" WwiseData="true" Continuous="true" NodeName="WHEELS_L" FadeOutType="2" FadeOutTime="3" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
-            <Range LowerBound="0.1" UpperBound="0.95" />
-            <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Derived="true" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED_DERIVED" />
-            <WwiseRTPC SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT" Index="0" RTPCName="SIMVAR_GEAR_TOTAL_PCT_EXTENDED" />
-        </Sound>
-
-        <Sound WwiseEvent="gmain" WwiseData="true" Continuous="false" NodeName="PEDALS_LEFT" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
-            <Range LowerBound="0.05" UpperBound="0.95" />
-        </Sound>
-        <Sound WwiseEvent="gearlock" WwiseData="true" Continuous="false" NodeName="WHEELS_L" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
+        <Sound WwiseEvent="gearcab" WwiseData="true" Continuous="true" NodeName="WHEELS_L" FadeOutType="2" FadeOutTime="1" LocalVar="A32NX_LGCIU_2_LEFT_GEAR_UNLOCKED" >
             <Range LowerBound="1" />
         </Sound>
 
-        <Sound WwiseEvent="gearlock" WwiseData="true" Continuous="false" NodeName="WHEELS_L" SimVar="GEAR TOTAL PCT EXTENDED" Units="PERCENT">
+
+        <Sound WwiseEvent="gmain" WwiseData="true" Continuous="false" NodeName="PEDALS_LEFT" LocalVar="A32NX_LGCIU_2_NOSE_GEAR_UNLOCKED" >
+            <Range LowerBound="1" />
+        </Sound>
+
+        <Sound WwiseEvent="gearlock" WwiseData="true" Continuous="false" NodeName="WHEELS_L" LocalVar="A32NX_LGCIU_2_NOSE_GEAR_UNLOCKED" >
             <Range UpperBound="0" />
         </Sound>
 
