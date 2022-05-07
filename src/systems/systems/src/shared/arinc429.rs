@@ -90,6 +90,19 @@ pub(crate) fn to_arinc429(value: f64, ssm: SignStatus) -> f64 {
     f64::from_bits(bits)
 }
 
+pub(crate) fn arinc429_to_f64(word: Arinc429Word<f32>) -> f64 {
+    let value = word.value as f32;
+    let status: u64 = word.ssm.into();
+
+    let bits = (value.to_bits() as u64) << 32 | status;
+
+    f64::from_bits(bits)
+}
+
+pub(crate) fn set_arinc429_bit(word: &mut Arinc429Word<f32>, bit: u32, value: bool) {
+    word.value = (((word.value as u32) & !(1 << (bit - 1))) | ((value as u32) << (bit - 1))) as f32;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

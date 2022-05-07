@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use crate::{
     failures::{Failure, FailureType},
+    shared::arinc429::{arinc429_to_f64, set_arinc429_bit, Arinc429Word, SignStatus},
     shared::{
         ElectricalBusType, ElectricalBuses, GearWheel, LandingGearHandle, LgciuDoorPosition,
         LgciuGearControl, LgciuGearExtension, LgciuId, LgciuInterface, LgciuWeightOnWheels,
@@ -544,6 +545,9 @@ pub struct LandingGearControlInterfaceUnit {
     right_gear_unlock_id: VariableIdentifier,
     fault_ecam_id: VariableIdentifier,
 
+    discrete_word_1_id: VariableIdentifier,
+    discrete_word_3_id: VariableIdentifier,
+
     is_powered: bool,
     is_powered_previous_state: bool,
 
@@ -598,6 +602,11 @@ impl LandingGearControlInterfaceUnit {
             )),
             fault_ecam_id: context
                 .get_identifier(format!("LGCIU_{}_FAULT", lgciu_number(lgciu_id))),
+
+            discrete_word_1_id: context
+                .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_1", lgciu_number(lgciu_id))),
+            discrete_word_3_id: context
+                .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_3", lgciu_number(lgciu_id))),
 
             is_powered: false,
             is_powered_previous_state: false,
@@ -744,6 +753,69 @@ impl LandingGearControlInterfaceUnit {
     fn status(&self) -> LgciuStatus {
         self.status
     }
+
+    fn discrete_word_1(&self) -> Arinc429Word<f32> {
+        if !self.is_powered {
+            Arinc429Word::new(0., SignStatus::FailureWarning)
+        } else {
+            let mut word = Arinc429Word::new(0., SignStatus::NormalOperation);
+            set_arinc429_bit(&mut word, 17, !self.sensor_inputs.left_door_up_and_locked);
+            set_arinc429_bit(&mut word, 18, !self.sensor_inputs.right_door_up_and_locked);
+            set_arinc429_bit(&mut word, 19, !self.sensor_inputs.nose_door_up_and_locked);
+            set_arinc429_bit(
+                &mut word,
+                23,
+                self.sensor_inputs.downlock_state(GearWheel::LEFT),
+            );
+            set_arinc429_bit(
+                &mut word,
+                24,
+                self.sensor_inputs.downlock_state(GearWheel::RIGHT),
+            );
+            set_arinc429_bit(
+                &mut word,
+                25,
+                self.sensor_inputs.downlock_state(GearWheel::NOSE),
+            );
+            set_arinc429_bit(
+                &mut word,
+                26,
+                self.sensor_inputs.left_gear_compressed(false),
+            );
+            set_arinc429_bit(
+                &mut word,
+                27,
+                self.sensor_inputs.right_gear_compressed(false),
+            );
+            set_arinc429_bit(
+                &mut word,
+                28,
+                self.sensor_inputs.nose_gear_compressed(false),
+            );
+            set_arinc429_bit(&mut word, 29, self.gear_handle_is_down());
+
+            return word;
+        }
+    }
+
+    fn discrete_word_3(&self) -> Arinc429Word<f32> {
+        if !self.is_powered {
+            Arinc429Word::new(0., SignStatus::FailureWarning)
+        } else {
+            let mut word = Arinc429Word::new(0., SignStatus::NormalOperation);
+            set_arinc429_bit(&mut word, 11, !self.sensor_inputs.left_gear_up_and_locked);
+            set_arinc429_bit(&mut word, 12, !self.sensor_inputs.right_gear_up_and_locked);
+            set_arinc429_bit(&mut word, 13, !self.sensor_inputs.nose_gear_up_and_locked);
+            set_arinc429_bit(&mut word, 14, !self.gear_handle_is_down());
+            set_arinc429_bit(&mut word, 25, self.sensor_inputs.left_door_fully_opened);
+            set_arinc429_bit(&mut word, 26, self.sensor_inputs.right_door_fully_opened);
+            set_arinc429_bit(&mut word, 27, self.sensor_inputs.nose_door_fully_opened);
+            // Nose gear door should be seperated into left/right doors. For now, just copy the data.
+            set_arinc429_bit(&mut word, 28, self.sensor_inputs.nose_door_fully_opened);
+
+            return word;
+        }
+    }
 }
 impl SimulationElement for LandingGearControlInterfaceUnit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -797,6 +869,15 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
         );
 
         writer.write(&self.fault_ecam_id, self.status() != LgciuStatus::Ok);
+
+        writer.write(
+            &self.discrete_word_1_id,
+            arinc429_to_f64(self.discrete_word_1()),
+        );
+        writer.write(
+            &self.discrete_word_3_id,
+            arinc429_to_f64(self.discrete_word_3()),
+        );
     }
 }
 
