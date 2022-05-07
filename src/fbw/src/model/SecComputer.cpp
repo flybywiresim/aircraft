@@ -756,7 +756,7 @@ void SecComputer::step()
     SecComputer_Y.out.bus_outputs.left_elevator_position_deg.SSM = static_cast<uint32_T>
       (SecComputer_P.EnumeratedConstant1_Value);
     SecComputer_Y.out.bus_outputs.left_elevator_position_deg.Data = static_cast<real32_T>
-      (SecComputer_U.in.analog_inputs.right_elevator_pos_deg);
+      (SecComputer_U.in.analog_inputs.left_elevator_pos_deg);
   }
 
   if (SecComputer_U.in.discrete_inputs.r_elev_servo_failed) {

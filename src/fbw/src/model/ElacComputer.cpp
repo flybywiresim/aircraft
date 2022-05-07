@@ -986,7 +986,7 @@ void ElacComputer::step()
     ElacComputer_Y.out.bus_outputs.left_elevator_position_deg.SSM = static_cast<uint32_T>
       (ElacComputer_P.EnumeratedConstant1_Value);
     ElacComputer_Y.out.bus_outputs.left_elevator_position_deg.Data = static_cast<real32_T>
-      (ElacComputer_U.in.analog_inputs.right_elevator_pos_deg);
+      (ElacComputer_U.in.analog_inputs.left_elevator_pos_deg);
   }
 
   if (ElacComputer_U.in.discrete_inputs.r_elev_servo_failed) {
