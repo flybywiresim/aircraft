@@ -290,7 +290,7 @@ class CDUWindPage {
 
     static WindRequest(mcdu, stage, _showPage) {
         getSimBriefOfp(mcdu, () => {}, () => {
-            const windData = [];
+            let windData = [];
             let lastAltitude = 0;
             switch (stage) {
                 case "CLB":
@@ -365,18 +365,64 @@ class CDUWindPage {
                     });
                     break;
                 case "DSC":
+                    // TOD is marked as cruise stage, but we want it's topmost wind data
                     const tod = mcdu.simbrief.navlog.find((val) => val.ident === "TOD");
-                    mcdu.winds.des = [];
-                    tod["wind_data"].level.forEach((val) => {
-                        const direction = parseInt(val.wind_dir);
-                        const speed = parseInt(val.wind_spd);
-                        const altitude = parseInt(val.altitude / 100);
-                        mcdu.winds.des.push({
-                            direction,
-                            speed,
-                            altitude,
+                    const desWpts = [tod, ...mcdu.simbrief.navlog.filter((val) => val.stage === stage)];
+
+                    // iterate through each clbWpt grabbing the wind data
+                    windData = [];
+                    lastAltitude = 45000;
+                    desWpts.forEach((desWpt, wptIdx) => {
+                        if (wptIdx == 0) {
+                            let altIdx = desWpt.wind_data.level.length - 1;
+                            // we need to backfill from crz altitude to above next clbWpt.altitude_feet in windData
+                            while (lastAltitude > desWpt.altitude_feet) {
+                                const altitude = parseInt(desWpt.wind_data.level[altIdx].altitude);
+                                const speed = parseInt(desWpt.wind_data.level[altIdx].wind_spd);
+                                const direction = parseInt(desWpt.wind_data.level[altIdx].wind_dir);
+
+                                windData.push({
+                                    direction,
+                                    speed,
+                                    altitude: altitude / 100,
+                                });
+                                lastAltitude = altitude;
+                                altIdx--;
+                            }
+                        }
+                        // Now we add the closest wind data to the altitude of the desWpt
+                        desWpt.wind_data.level.reverse().forEach((wind, levelIdx) => {
+                            const altitude = parseInt(wind.altitude);
+
+                            let deltaNextLevel = 0;
+                            let deltaThisLevel = 0;
+                            // Look forwards for the closest level
+                            if (levelIdx < desWpt.wind_data.level.length - 2) {
+                                deltaNextLevel = Math.abs(desWpt.altitude_feet - parseInt(desWpt.wind_data.level[levelIdx + 1].altitude));
+                                deltaThisLevel = Math.abs(desWpt.altitude_feet - altitude);
+                            }
+
+                            // Check that altitude isn't backtracking
+                            if (altitude >= lastAltitude && lastAltitude > desWpt.altitude_feet) {
+                                const idx = (deltaNextLevel > deltaThisLevel) ? levelIdx : levelIdx + 1;
+
+                                const idxAltitude = parseInt(desWpt.wind_data.level[idx].altitude);
+                                const direction = parseInt(desWpt.wind_data.level[idx].wind_dir);
+                                const speed = parseInt(desWpt.wind_data.level[idx].wind_spd);
+
+                                // Check again that we didn't backtrack
+                                if (idxAltitude < lastAltitude) {
+                                    windData.push({
+                                        direction,
+                                        speed,
+                                        altitude: idxAltitude / 100,
+                                    });
+                                    lastAltitude = idxAltitude;
+                                }
+                            }
                         });
                     });
+                    mcdu.winds.des = windData;
                     break;
             }
             _showPage(mcdu);
