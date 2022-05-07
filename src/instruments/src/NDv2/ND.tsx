@@ -1,5 +1,13 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, VNode } from 'msfssdk';
+import {
+    ClockEvents,
+    DisplayComponent,
+    EventBus,
+    FSComponent,
+    MappedSubject,
+    Subject,
+    VNode,
+} from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { SimVarString } from '@shared/simvar';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
@@ -278,16 +286,119 @@ export class NDComponent extends DisplayComponent<NDProps> {
     }
 }
 
+const mod = (x: number, n: number) => x - Math.floor(x / n) * n;
+
 class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
+    private readonly windDirectionWord = Subject.create(Arinc429Word.empty());
+
+    private readonly windVelocityWord = Subject.create(Arinc429Word.empty());
+
+    private readonly planeHeadingWord = Subject.create(Arinc429Word.empty());
+
+    private readonly windDirectionText = Subject.create('');
+
+    private readonly windVelocityText = Subject.create('');
+
+    private readonly windArrowVisible = Subject.create(false);
+
+    private readonly windArrowRotation = Subject.create(0);
+
+    onAfterRender(node: VNode) {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<AdirsSimVars>();
+
+        sub.on('windDirection').whenChanged().atFrequency(2).handle((value) => {
+            const word = new Arinc429Word(value);
+
+            this.windDirectionWord.set(word);
+
+            this.handleWindDirection();
+            this.handleWindArrow();
+        });
+
+        sub.on('windVelocity').whenChanged().atFrequency(2).handle((value) => {
+            const word = new Arinc429Word(value);
+
+            this.windVelocityWord.set(word);
+
+            this.handleWindVelocity();
+        });
+
+        sub.on('heading').whenChanged().atFrequency(2).handle((value) => {
+            const word = new Arinc429Word(value);
+
+            this.planeHeadingWord.set(word);
+
+            this.handleWindArrow();
+        });
+    }
+
+    private handleWindDirection() {
+        const direction = this.windDirectionWord.get();
+        const velocity = this.windVelocityWord.get();
+
+        if (direction.isNormalOperation()) {
+            if (velocity.value < Number.EPSILON) {
+                this.windDirectionText.set('---');
+            } else {
+                const text = Math.round(direction.value).toString().padStart(3, '0');
+
+                this.windDirectionText.set(text);
+            }
+        } else {
+            this.windDirectionText.set('');
+        }
+    }
+
+    private handleWindVelocity() {
+        const velocity = this.windVelocityWord.get();
+
+        if (velocity.isNormalOperation()) {
+            if (velocity.value < Number.EPSILON) {
+                this.windVelocityText.set('---');
+            } else {
+                const text = Math.round(velocity.value).toString();
+
+                this.windVelocityText.set(text);
+            }
+        } else {
+            this.windVelocityText.set('');
+        }
+    }
+
+    private handleWindArrow() {
+        const direction = this.windDirectionWord.get();
+        const velocity = this.windVelocityWord.get();
+        const heading = this.planeHeadingWord.get();
+
+        if (!direction.isNormalOperation() || !velocity.isNormalOperation() || !heading.isNormalOperation()) {
+            this.windArrowVisible.set(false);
+            return;
+        }
+
+        const directionValue = direction.value;
+        const velocityValue = velocity.value;
+        const headingValue = heading.value;
+
+        if (velocityValue > 2) {
+            this.windArrowVisible.set(true);
+
+            this.windArrowRotation.set(mod(Math.round(directionValue) - Math.round(headingValue) + 180, 360));
+        } else {
+            this.windArrowVisible.set(false);
+        }
+    }
+
     render(): VNode | null {
         return (
             <Layer x={23} y={58}>
                 <text x={25} y={0} class="Green FontSmall EndAlign">
-                    356
+                    {this.windDirectionText}
                 </text>
                 <text x={31} y={-1} class="White FontSmallest">/</text>
                 <text x={50} y={0} class="Green FontSmall">
-                    11
+                    {this.windVelocityText}
                 </text>
                 <Layer x={3} y={10}>
                     <path
@@ -295,8 +406,8 @@ class WindIndicator extends DisplayComponent<{ bus: EventBus }> {
                         strokeWidth={2.5}
                         strokeLinecap="round"
                         d="M 0 30 v -30 m -6.5 12 l 6.5 -12 l 6.5 12"
-                        transform={`rotate(${270} 0 15)`}
-                        visibility="visible"
+                        transform={this.windArrowRotation.map((rotation) => `rotate(${rotation} 0 15)`)}
+                        visibility={this.windArrowVisible.map((visible) => (visible ? 'visible' : 'hidden'))}
                     />
                 </Layer>
             </Layer>
