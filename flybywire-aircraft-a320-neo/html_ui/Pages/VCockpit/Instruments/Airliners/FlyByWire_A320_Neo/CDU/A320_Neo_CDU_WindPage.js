@@ -290,16 +290,13 @@ class CDUWindPage {
 
     static WindRequest(mcdu, stage, _showPage) {
         getSimBriefOfp(mcdu, () => {}, () => {
+            const windData = [];
+            let lastAltitude = 0;
             switch (stage) {
                 case "CLB":
                     const clbWpts = mcdu.simbrief.navlog.filter((val) => val.stage === stage);
-                    if (clbWpts[clbWpts.length - 1].ident == "TOC") {
-                        clbWpts.pop(); // Remove TOC from CLB list
-                    }
 
                     // iterate through each clbWpt grabbing the wind data
-                    const windData = [];
-                    let lastAltitude = 0;
                     clbWpts.forEach((clbWpt, wptIdx) => {
                         if (wptIdx == 0) {
                             let altIdx = 0;
@@ -331,7 +328,7 @@ class CDUWindPage {
                             }
 
                             // Check that altitude isn't backtracking
-                            if (altitude > lastAltitude) {
+                            if (altitude > lastAltitude && lastAltitude <= clbWpt.altitude_feet) {
                                 const idx = (deltaPrevLevel > deltaThisLevel) ? levelIdx : levelIdx - 1;
 
                                 const idxAltitude = parseInt(clbWpt.wind_data.level[idx].altitude);
@@ -364,6 +361,7 @@ class CDUWindPage {
                             speed,
                             altitude,
                         });
+                        lastAltitude = altitude;
                     });
                     break;
                 case "DSC":
