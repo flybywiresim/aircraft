@@ -123,6 +123,18 @@ export const PushbackMap = () => {
 
     // called once when loading and unloading the page
     useEffect(() => {
+        let timeOutID: any = 0;
+        if (centerPlaneMode) {
+            // setTimeout required because when loading on runway it did not
+            // adjust the position from before "Ready to Fly"
+            timeOutID = setTimeout(() => {
+                dispatch(setActualMapLatLon({ lat: planeLatitude, long: planeLongitude }));
+                dispatch(setAircraftIconPosition({ x: 0, y: 0 }));
+            }, 500);
+        }
+        return (() => {
+            clearTimeout(timeOutID);
+        });
     }, []);
 
     // Update actual lat/lon when plane is moving
