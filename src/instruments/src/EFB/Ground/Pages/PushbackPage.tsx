@@ -38,6 +38,7 @@ export const PushbackPage = () => {
     const { showModal } = useModals();
 
     const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 500);
+    const [flightPhase] = useSimVar('L:A32NX_FMGC_FLIGHT_PHASE', 'enum', 250);
 
     // This is used to completely turn off the pushback for compatible with other
     // pushback add-ons. Only watching sim variable like PUSHBACK STATE or
@@ -239,7 +240,9 @@ export const PushbackPage = () => {
 
     // Make sure to deactivate the pushback system completely when leaving ground
     useEffect(() => {
-        setPushbackSystemEnabled(simOnGround);
+        if (flightPhase !== 0 && flightPhase !== 7) {
+            setPushbackSystemEnabled(simOnGround);
+        }
     }, [simOnGround]);
 
     // Debug info for pushback movement - can be removed eventually
