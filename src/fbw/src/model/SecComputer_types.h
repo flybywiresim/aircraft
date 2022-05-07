@@ -399,6 +399,7 @@ struct base_sec_logic_outputs
   boolean_T ground_spoilers_armed;
   boolean_T ground_spoilers_out;
   boolean_T partial_lift_dumping_active;
+  boolean_T speed_brake_inhibited;
   boolean_T single_adr_failure;
   boolean_T double_adr_failure;
   boolean_T cas_or_mach_disagree;
