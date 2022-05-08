@@ -341,13 +341,9 @@ const Efb = () => {
             SimVar.SetSimVarValue('Pushback Wait', 'bool', inertiaSpeed === 0);
             // Set tug heading
             SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', inertiaSpeed !== 0 ? convertedComputedHeading : 0);
-            SimVar.SetSimVarValue('ROTATION VELOCITY BODY X', 'Number', 0);
             SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
-            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Z', 'Number', 0);
             // Set tug speed
             SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', inertiaSpeed);
-            SimVar.SetSimVarValue('VELOCITY BODY X', 'Number', 0);
-            SimVar.SetSimVarValue('VELOCITY BODY Y', 'Number', 0);
             SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', inertiaSpeed);
             // prevents the aircraft to lift front wheel when pushing backwards
             SimVar.SetSimVarValue('ROTATION ACCELERATION BODY X',
