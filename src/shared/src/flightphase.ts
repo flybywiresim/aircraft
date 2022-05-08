@@ -46,9 +46,7 @@ export function getAutopilotVerticalMode(): VerticalMode {
 
 export function conditionTakeOff(): boolean {
     return (
-        getAutopilotVerticalMode() === VerticalMode.SRS && (
-            (isEngineOnTakeOffThrust(1) && isEngineOnTakeOffThrust(2))
-            || Math.abs(Simplane.getGroundSpeed()) > 90
-        )
+        (getAutopilotVerticalMode() === VerticalMode.SRS && isEngineOnTakeOffThrust(1) && isEngineOnTakeOffThrust(2))
+        || Math.abs(Simplane.getGroundSpeed()) > 90
     );
 }
