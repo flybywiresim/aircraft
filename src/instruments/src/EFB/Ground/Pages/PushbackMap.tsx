@@ -249,7 +249,6 @@ export const PushbackMap = () => {
                                 <TurningRadiusIndicator turningRadius={turningRadius} />
                             </div>
                         )}
-                    {/* prepared to move with map when dragging - work in progress */}
                     <IconPlane
                         className="text-theme-highlight"
                         style={{ transform: `rotate(-90deg) translateY(${aircraftIconPosition.x}px) translateX(${aircraftIconPosition.y}px)` }}

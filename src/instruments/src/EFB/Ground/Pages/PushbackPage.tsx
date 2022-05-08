@@ -85,8 +85,8 @@ export const PushbackPage = () => {
         setPushbackState(3);
         setPushbackWait(0);
         // This alone does not suffice to fully release the tug.
-        // A "TUG_DISABLE" event has to be sent. But if sent too early it gets sometimes
-        // ignored by the sim and the aircraft would not steer.
+        // A "TUG_DISABLE" event has to be sent. But if sent too early it gets
+        // ignored by the sim sometimes and the aircraft would not steer.
         // See the useEffect [nwStrgDisc] in Efb.tsx - it fires this event when the
         // NW STRG DISC message disappears which is also the moment when the
         // nose wheel visually starts turning again.
@@ -409,6 +409,7 @@ export const PushbackPage = () => {
                 {/* Manual Pushback Controls */}
                 <div className={`flex flex-col p-6 h-full space-y-4 rounded-lg border-2 border-theme-accent ${!pushbackUIAvailable() && 'opacity-20 pointer-events-none'}`}>
                     <div className="flex flex-row space-x-4">
+
                         {/* Pushback System enabled On/Off */}
                         {pushbackSystemEnabled ? (
                             <div className="w-full">
@@ -484,6 +485,7 @@ export const PushbackPage = () => {
                     </div>
 
                     <div className={`flex flex-row space-x-4 ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
+
                         {/* Backward Button */}
                         <div className="w-full">
                             <p className="text-center">

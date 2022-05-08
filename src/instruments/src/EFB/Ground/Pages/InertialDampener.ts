@@ -3,28 +3,36 @@
 
 import { MathUtils } from '@shared/MathUtils';
 
+/**
+ * The InertialDampener provides a dampened output based on the current input
+ * and an internal state value. The output value increases or decreases from the
+ * internal state value towards the input value with the given acceleration value.
+ */
 export class InertialDampener {
     accelFactor: number = 0;
 
-    lastSpeed: number = 0;
+    lastValue: number = 0;
 
-    constructor(accelFactor: number) {
+    /**
+     * Creates a new instance of the InertialDampener
+     * @param startValue initial value to avoid a too large delta for the first usage
+     * @param accelFactor value which will be added/subtracted to/from the internal
+     *                    state towards the input value.
+     */
+    constructor(startValue:number, accelFactor: number) {
+        this.lastValue = startValue;
         this.accelFactor = accelFactor;
     }
 
     updateSpeed(newSpeed: number): number {
-        if (MathUtils.round(newSpeed, 1) === MathUtils.round(this.lastSpeed, 1)) {
+        if (MathUtils.round(newSpeed, 1) === MathUtils.round(this.lastValue, 1)) {
             return newSpeed;
         }
-        if (newSpeed > this.lastSpeed) {
-            this.lastSpeed += this.accelFactor;
-        } else if (newSpeed < this.lastSpeed) {
-            this.lastSpeed -= this.accelFactor;
+        if (newSpeed > this.lastValue) {
+            this.lastValue += this.accelFactor;
+        } else if (newSpeed < this.lastValue) {
+            this.lastValue -= this.accelFactor;
         }
-        return this.lastSpeed;
-    }
-
-    isWithin(value, target, tolerance):boolean {
-        return (value >= target - tolerance) && ((value <= target + tolerance));
+        return this.lastValue;
     }
 }
