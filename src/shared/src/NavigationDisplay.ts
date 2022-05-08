@@ -143,3 +143,9 @@ export interface NdTraffic {
     closureRate?: number;
     closureAccel?: number;
 }
+
+export const enum NavAidMode {
+    Off = 0,
+    ADF,
+    VOR,
+}
