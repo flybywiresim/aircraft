@@ -254,7 +254,8 @@ export namespace FSComponent {
     'rect': true,
     'stop': true,
     'svg': true,
-    'text': true
+    'text': true,
+    'tspan': true,
   };
 
 
@@ -265,6 +266,7 @@ export namespace FSComponent {
       'strokeDasharray': 'stroke-dasharray',
       'strokeDashoffset': 'stroke-dashoffset',
       'strokeLinecap': 'stroke-linecap',
+      'textDecoration': 'text-decoration',
       'clipPath': 'clip-path',
       'xlinkHref': 'xlink:href',
   }
