@@ -1,3 +1,5 @@
+import { coordinateToString, timestampToString } from '../Common';
+import { InputValidation } from '../InputValidation';
 import { CpdlcMessagesDownlink } from '../messages/CpdlcMessageElements';
 import { Atsu } from '../ATSU';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
@@ -56,6 +58,80 @@ export class UplinkMessageInterpretation {
         return message.Content.TypeId === 'UM143' || message.Content.TypeId in UplinkMessageInterpretation.SemanticAnswerTable;
     }
 
+    private static getDigitsFromBco16(code: number): number[] {
+        let codeCopy = code;
+        const digits: number[] = [];
+        while (codeCopy > 0) {
+            digits.push(codeCopy % 16);
+            codeCopy = Math.floor(codeCopy / 16);
+        }
+        if (digits.length < 4) {
+            const digitsToAdd = 4 - digits.length;
+            for (let i = 0; i < digitsToAdd; i++) {
+                digits.push(0);
+            }
+        }
+        digits.reverse();
+        return digits;
+    }
+
+    private static FillPresentData(atsu: Atsu, message: CpdlcMessage): boolean {
+        if (message.Content.TypeId === 'UM132') {
+            message.Response.Content.Content[0].Value = coordinateToString({ lat: atsu.currentFlightState().lat, lon: atsu.currentFlightState().lon }, false);
+        } else if (message.Content.TypeId === 'UM133') {
+            message.Response.Content.Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.currentFlightState().altitude / 100).toString());
+        } else if (message.Content.TypeId === 'UM134') {
+            message.Response.Content.Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.currentFlightState().indicatedAirspeed.toString());
+        } else if (message.Content.TypeId === 'UM144') {
+            const squawk = UplinkMessageInterpretation.getDigitsFromBco16(SimVar.GetSimVarValue('TRANSPONDER CODE:1', 'Bco16'));
+            message.Response.Content.Content[0].Value = `${squawk[0]}${squawk[1]}${squawk[2]}${squawk[3]}`;
+        } else if (message.Content.TypeId === 'UM145') {
+            message.Response.Content.Content[0].Value = atsu.currentFlightState().heading.toString();
+        } else if (message.Content.TypeId === 'UM146') {
+            message.Response.Content.Content[0].Value = atsu.currentFlightState().track.toString();
+        } else if (message.Content.TypeId === 'UM228') {
+            message.Response.Content.Content[0].Value = `${timestampToString(atsu.destinationWaypoint().utc)}Z`;
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static FillAssignedData(atsu: Atsu, message: CpdlcMessage): boolean {
+        if (message.Content.TypeId === 'UM135') {
+            message.Response.Content.Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.targetFlightState().altitude() / 100).toString());
+        } else if (message.Content.TypeId === 'UM136') {
+            message.Response.Content.Content[0].Value = InputValidation.formatScratchpadAltitude(atsu.targetFlightState().speed.toString());
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+    // UM137 -> assigned route
+
+    private static FillPositionReportRelatedData(atsu: Atsu, message: CpdlcMessage): boolean {
+        if (message.Content.TypeId === 'UM138') {
+            message.Response.Content.Content[0].Value = `${timestampToString(atsu.lastWaypoint().utc)}Z`;
+        } else if (message.Content.TypeId === 'UM139') {
+            message.Response.Content.Content[0].Value = atsu.lastWaypoint().ident;
+        } else if (message.Content.TypeId === 'UM140') {
+            message.Response.Content.Content[0].Value = atsu.activeWaypoint().ident;
+        } else if (message.Content.TypeId === 'UM141') {
+            message.Response.Content.Content[0].Value = `${timestampToString(atsu.activeWaypoint().utc)}Z`;
+        } else if (message.Content.TypeId === 'UM142') {
+            message.Response.Content.Content[0].Value = atsu.nextWaypoint().ident;
+        } else if (message.Content.TypeId === 'UM147') {
+            message.Response = Atsu.createAutomatedPositionReport(atsu);
+        } else {
+            return false;
+        }
+
+        return true;
+    }
+    // UM181 -> distance to %s
+
     public static AppendSemanticAnswer(atsu: Atsu, positiveAnswer: boolean, message: CpdlcMessage) {
         const cpdlc = message as CpdlcMessage;
 
@@ -90,7 +166,9 @@ export class UplinkMessageInterpretation {
             }
         }
 
-        // TODO fill out the values of content and extension
+        if (!UplinkMessageInterpretation.FillPresentData(atsu, message) && !UplinkMessageInterpretation.FillAssignedData(atsu, message)) {
+            UplinkMessageInterpretation.FillPositionReportRelatedData(atsu, message);
+        }
     }
 
     public static HasNegativeResponse(message: CpdlcMessage): boolean {
