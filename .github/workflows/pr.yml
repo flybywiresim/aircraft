@@ -66,7 +66,8 @@ jobs:
 
           cp ./build-modules/modules.json ./flybywire-aircraft-a320-neo/install.json
           ./scripts/dev-env/run.sh node ./scripts/install-source.js
-      - uses: actions/upload-artifact@v2
+      - name: Upload PR artifact
+        uses: actions/upload-artifact@v2
         with:
           name: A32NX
-          path: ./flybywire-aircraft-a320-neo/
+          path: ./**/flybywire-aircraft-a320-neo/
