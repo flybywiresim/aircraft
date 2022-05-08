@@ -1,7 +1,14 @@
 const ModifyLookupTable = {
-    UM133: [{
+    UM132: [{
         text: "PRESENT POSITION",
         type: Atsu.CpdlcMessageContentType.Position,
+        textIndex: -1,
+        valueIndex: 0,
+        emptyLength: 5
+    }],
+    UM133: [{
+        text: "PRESENT LEVEL",
+        type: Atsu.CpdlcMessageContentType.Level,
         textIndex: -1,
         valueIndex: 0,
         emptyLength: 5
