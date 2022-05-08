@@ -8,17 +8,19 @@ import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
 import { MathUtils } from '@shared/MathUtils';
 import { IconPlane } from '@tabler/icons';
 import { Coordinates } from 'msfs-geo';
-import { computeDestinationPoint } from 'geolib';
+import { computeDestinationPoint, getGreatCircleBearing } from 'geolib';
+import getDistance from 'geolib/es/getPreciseDistance';
+import { GeolibInputCoordinates } from 'geolib/es/types';
 import { BingMap } from '../../UtilComponents/BingMap';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
-    TScreenCoordinates,
-    setMapRange,
-    setCenterPlaneMode,
     setActualMapLatLon,
     setAircraftIconPosition,
+    setCenterPlaneMode,
+    setMapRange,
+    TScreenCoordinates,
 } from '../../Store/features/pushback';
 
 interface TurningRadiusIndicatorProps {
@@ -105,17 +107,6 @@ export const PushbackMap = () => {
         dispatch(setCenterPlaneMode(!centerPlaneMode));
     };
 
-    // Computes the offset from  geo coordinates (Lat, Lon) and a delta of screen coordinates into
-    // a destination set of geo coordinates.
-    const computeOffset: (latLon: Coordinates, d: TScreenCoordinates) => Coordinates = (
-        latLon: Coordinates, d: TScreenCoordinates,
-    ) => {
-        const distance = Math.hypot(d.x, d.y) / (someConstant / mapRange);
-        const bearing = Math.atan2(d.y, d.x) * (180 / Math.PI) - 90 + planeHeadingTrue;
-        const point = computeDestinationPoint({ lat: latLon.lat, lon: latLon.long }, distance, bearing);
-        return { lat: point.latitude, long: point.longitude };
-    };
-
     // Calculates the size in pixels based on the real A320 length and the current zoom
     const a320IconSize = (mapRange) => {
         const pixelPerMeter = someConstant * 10; // at 0.1 range
@@ -127,6 +118,40 @@ export const PushbackMap = () => {
     const calculateTurningRadius = (wheelBase: number, turnAngle: number) => {
         const tanDeg = Math.tan(turnAngle * Math.PI / 180);
         return wheelBase / tanDeg;
+    };
+
+    // Computes the offset from  geo coordinates (Lat, Lon) and a delta of screen coordinates into
+    // a destination set of geo coordinates.
+    const computeOffset: (latLon: Coordinates, d: TScreenCoordinates) => Coordinates = (
+        latLon: Coordinates, d: TScreenCoordinates,
+    ) => {
+        const distance = Math.hypot(d.x, d.y) / (someConstant / mapRange);
+        const bearing = Math.atan2(d.y, d.x) * (180 / Math.PI) - 90 + planeHeadingTrue;
+        const point = computeDestinationPoint({ lat: latLon.lat, lon: latLon.long }, distance, bearing);
+        return { lat: point.latitude, long: point.longitude };
+    };
+
+    // Calculate where to place the aircraft icon when not in center mode and plane is moving
+    const computeAircraftIconPosition = (planePosition : Coordinates, mapPosition: Coordinates): TScreenCoordinates => {
+        const geoPlanePosition: GeolibInputCoordinates = { lat: planePosition.lat, longitude: planePosition.long };
+        const geoMapPosition: GeolibInputCoordinates = { lat: mapPosition.lat, longitude: mapPosition.long };
+        const distance = getDistance(
+            geoPlanePosition,
+            geoMapPosition,
+            0.00001,
+        );
+        const distancePx = distance * (someConstant / mapRange);
+        const bearing = getGreatCircleBearing(
+            geoPlanePosition,
+            geoMapPosition,
+        );
+        const angle = MathUtils.angleAdd(MathUtils.angleAdd(bearing, -180), -planeHeadingTrue);
+        const angleRad = Math.abs(angle) * (Math.PI / 180);
+        const dX = Math.sign(angle) * Math.sin(angleRad) * distancePx;
+        const dY = Math.cos(angleRad) * distancePx;
+        // console.log(`Distance: ${distance} Bearing: ${bearing} Plane Heading True: ${planeHeadingTrue}`);
+        // console.log(`DistancePx: ${distancePx} Angle: ${angle} dX: ${dX} dY: ${dY}`);
+        return { x: dX, y: dY };
     };
 
     // called once when loading and unloading the page
@@ -150,8 +175,13 @@ export const PushbackMap = () => {
         if (centerPlaneMode) {
             dispatch(setActualMapLatLon({ lat: planeLatitude, long: planeLongitude }));
             dispatch(setAircraftIconPosition({ x: 0, y: 0 }));
+            return;
         }
-    }, [centerPlaneMode, planeLatitude.toFixed(6), planeLongitude.toFixed(6)]);
+        dispatch(setAircraftIconPosition(computeAircraftIconPosition(
+            { lat: planeLatitude, long: planeLongitude },
+            actualMapLatLon,
+        )));
+    }, [centerPlaneMode, mapRange, planeLatitude.toFixed(6), planeLongitude.toFixed(6)]);
 
     // Update actual lat/lon when dragging the map
     useEffect(() => {

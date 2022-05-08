@@ -35,6 +35,22 @@ export class MathUtils {
        return (Math.round(val * coefficient) / coefficient);
    }
 
+   /**
+     * Adds two angles with wrap around to result in 0-360°
+     * @param a - positive or negative angle
+     * @param b - positive or negative angle
+     */
+   public static angleAdd(a: number, b: number): number {
+       let r = a + b;
+       while (r > 360) {
+           r -= 360;
+       }
+       while (r < 0) {
+           r += 360;
+       }
+       return r;
+   }
+
    public static diffAngle(a: number, b: number, direction?: TurnDirection): number {
        let diff = b - a;
        while (diff > 180) {

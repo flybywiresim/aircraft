@@ -24,3 +24,21 @@ describe('MathUtils.round', () => {
         expect(MathUtils.round(1.05, 0)).toBe(1);
     });
 });
+
+describe('MathUtils.angleAdd', () => {
+    it('correctly adds two angles', () => {
+        expect(MathUtils.angleAdd(270, 90)).toBeCloseTo(360, 4);
+        expect(MathUtils.angleAdd(270, 90.1)).toBeCloseTo(0.1, 4);
+        expect(MathUtils.angleAdd(270, -90)).toBeCloseTo(180, 4);
+        expect(MathUtils.angleAdd(90, -90)).toBeCloseTo(0, 4);
+        expect(MathUtils.angleAdd(90, -90)).toBeCloseTo(0, 4);
+        expect(MathUtils.angleAdd(90, -89.9)).toBeCloseTo(0.1, 4);
+        expect(MathUtils.angleAdd(-90, -89.9)).toBeCloseTo(180.1, 4);
+        expect(MathUtils.angleAdd(-90, -90.1)).toBeCloseTo(179.9, 4);
+        expect(MathUtils.angleAdd(359, -359)).toBeCloseTo(0, 4);
+        expect(MathUtils.angleAdd(180, 179.9)).toBeCloseTo(359.9, 4);
+        expect(MathUtils.angleAdd(180, 180.1)).toBeCloseTo(0.1, 4);
+        expect(MathUtils.angleAdd(-180, 180.1)).toBeCloseTo(0.1, 4);
+        expect(MathUtils.angleAdd(-180, -180.1)).toBeCloseTo(359.9, 4);
+    });
+});
