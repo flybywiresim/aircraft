@@ -159,6 +159,9 @@ const ModifyLookupTable = {
     ]
 };
 
+// TODO UM131 -> present fuel&people
+// TODO UM147 -> request pos-rep
+
 class CDUAtcMessageModify {
     static CreateDataBlock(message) {
         const lutEntry = ModifyLookupTable[message.Content.TypeId];
