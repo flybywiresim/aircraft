@@ -1,3 +1,5 @@
+// do not use @fmgc shortcut - breaks units tests with jest
+// noinspection ES6PreferShortImport
 import { TurnDirection } from '../../fmgc/src/types/fstypes/FSEnums';
 
 export class MathUtils {
