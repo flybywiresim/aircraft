@@ -61,6 +61,7 @@
   top: 0;
   left: 0;
   right: 0;
+  z-index:-1;
   pointer-events: none;
   visibility: hidden;
 }
@@ -85,7 +86,11 @@
 #typography, #palette, #pencil, #close {
   width: 75px;
   height: 75px;
-  stroke: black;
+  stroke: #000;
+}
+
+#typography:hover, #palette:hover, #pencil:hover, #close:hover {
+  stroke-width: 2.5;
 }
 
 #close {
