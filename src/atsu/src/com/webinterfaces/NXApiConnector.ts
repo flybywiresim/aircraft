@@ -201,7 +201,7 @@ export class NXApiConnector {
             }
 
             // Fetch new messages
-            Telex.fetchMessages()
+            await Telex.fetchMessages()
                 .then((data) => {
                     for (const msg of data) {
                         const message = new FreetextMessage();
