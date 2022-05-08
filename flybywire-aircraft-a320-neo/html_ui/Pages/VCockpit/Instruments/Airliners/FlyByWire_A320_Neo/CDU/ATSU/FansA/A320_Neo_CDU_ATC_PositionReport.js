@@ -146,14 +146,14 @@ class CDUAtcPositionReport {
         retval.Extensions.push(extension);
         // define the active position
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `ACTIVE:${data.activeWaypoint[0]}`;
+        extension.Content[0].Value = `NEXT:${data.activeWaypoint[0]}`;
         retval.Extensions.push(extension);
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
         extension.Content[0].Value = `AT ${data.activeWaypoint[1]}Z`;
         retval.Extensions.push(extension);
         // define the next position
         extension = Atsu.CpdlcMessagesDownlink["DM67"][1].deepCopy();
-        extension.Content[0].Value = `NEXT:${data.nextWaypoint[0]}`;
+        extension.Content[0].Value = `ENSUING:${data.nextWaypoint[0]}`;
         retval.Extensions.push(extension);
 
         // create the initial data
