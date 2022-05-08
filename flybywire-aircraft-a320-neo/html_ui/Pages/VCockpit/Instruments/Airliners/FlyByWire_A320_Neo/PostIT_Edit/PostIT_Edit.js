@@ -83,7 +83,6 @@ class PostIT_Edit extends BaseInstrument {
         });
 
         this.closeIcon.addEventListener("click", () => {
-            this.textElem.blur();
             this.unlockControls();
             NXDataStore.set("POSTIT_CONTENT", this.textElem.value.substring(this.splitIndex));
             SimVar.SetSimVarValue("L:A32NX_MODEL_POSTIT_EDIT", "Bool", 0);
