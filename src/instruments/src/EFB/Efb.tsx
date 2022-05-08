@@ -277,7 +277,7 @@ const Efb = () => {
     const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 100);
     const [nwStrgDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool', 100);
 
-    const inertialDampener = new InertialDampener(0.1);
+    const inertialDampener = new InertialDampener(0, 0.1);
 
     const {
         pushbackPaused,
@@ -325,13 +325,13 @@ const Efb = () => {
             const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
 
             const tugCommandedSpeed = tugCommandedSpeedFactorRef.current * (parkingBrakeEngaged ? (SpeedRatio / 10) : SpeedRatio);
-            dispatch(setTugCommandedSpeed(tugCommandedSpeed)); // debug
+            dispatch(setTugCommandedSpeed(tugCommandedSpeed)); // debug info
 
             const inertiaSpeed = inertialDampener.updateSpeed(tugCommandedSpeed);
-            dispatch(setTugInertiaSpeed(inertiaSpeed)); // debug
+            dispatch(setTugInertiaSpeed(inertiaSpeed)); // debug info
 
             const computedTugHeading = (aircraftHeading - (50 * tugCommandedHeadingFactorRef.current)) % 360;
-            dispatch(setTugCommandedHeading(computedTugHeading)); // debug
+            dispatch(setTugCommandedHeading(computedTugHeading)); // debug info
 
             // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
             const convertedComputedHeading = (computedTugHeading * (0xffffffff / 360)) & 0xffffffff;
@@ -371,7 +371,7 @@ const Efb = () => {
     }, [pushBackAttached, pushbackSystemEnabled]);
 
     // Required to fully release the tug and restore steering capabilities
-    // Must not be fire too early after disconnect therefore we wait until
+    // Must not be fired too early after disconnect therefore we wait until
     // ECAM "NW STRG DISC" message also disappears.
     useEffect(() => {
         if (!nwStrgDisc) {
