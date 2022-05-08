@@ -22,6 +22,7 @@ import { CanvasMap } from './shared/map/CanvasMap';
 import { EcpSimVars } from '../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import { NDPage } from './pages/NDPage';
 import { PlanModePage } from './pages/plan';
+import { RadioNavInfo } from './shared/RadioNavInfo';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -260,6 +261,9 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     />
 
                     <FmMessages bus={this.props.bus} />
+
+                    <RadioNavInfo bus={this.props.bus} index={1} />
+                    <RadioNavInfo bus={this.props.bus} index={2} />
                 </svg>
 
                 <CanvasMap
