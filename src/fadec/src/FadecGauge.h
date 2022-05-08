@@ -27,7 +27,7 @@
 #include "Tables.h"
 #include "common.h"
 
-#define DEFAULT_AIRCRAFT_REGISTRATION "A32NX"
+#define DEFAULT_AIRCRAFT_REGISTRATION "ASX320"
 
 using namespace std;
 
