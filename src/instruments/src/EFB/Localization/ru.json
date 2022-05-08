@@ -349,7 +349,7 @@
     "Title": "Пресеты"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "Элементы управления буксировки доступны только на земле",
     "Backward": "Назад",
     "CallTug": "Вызов буксира",
     "DisableSystemMessageBody": "Вы действительно хотите отключить систему буксировки? Это также освободит буксир.",
@@ -373,10 +373,10 @@
       "CallReleaseTug": "Вызовите или отпустите буксир",
       "CenterPlaneMode": "Вкл/выкл центра карты",
       "DecreaseSpeed": "Назад или медленнее вперед (двойной щелчок, чтобы установить скорость на 0)",
-      "IncreaseSpeed": "Вперёд или медленнее назад (двойной щелчок, чтобы установить скорость на 0)",
-      "Left": "Налево (двойной щелчок для прямой)",
+      "IncreaseSpeed": "Вперёд или медленнее назад",
+      "Left": "Налево",
       "PausePushback": "Приостановить или отменить откат",
-      "Right": "Перейти вправо (двойной щелчок для прямой)",
+      "Right": "Направо",
       "SetReleaseParkingBrake": "Установите или отпустите стояночный тормоз",
       "SliderDirection": "Перемещение в нужном направлении",
       "SliderSpeed": "Перемещение на желаемую скорость",
@@ -387,7 +387,7 @@
     },
     "TugAttached": "Буксир прикреплен",
     "TugDirection": "Направление буксира",
-    "TugInTransit": "Waiting for Tug/Pin",
+    "TugInTransit": "Ожидание буксира",
     "TugSpeed": "Скорость буксира"
   },
   "Settings": {

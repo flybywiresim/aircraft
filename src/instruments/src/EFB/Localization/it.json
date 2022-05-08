@@ -349,7 +349,7 @@
     "Title": "Preset"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "I comandi per il pushback sono disponibili solo a terra",
     "Backward": "Indietro",
     "CallTug": "Chiama Tug",
     "DisableSystemMessageBody": "Sei sicuro di voler disabilitare il Sistema Pushback? Questo farà anche allontanare il tug.",
