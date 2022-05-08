@@ -235,7 +235,7 @@ export const PushbackMap = () => {
 
                 {/* Aircraft and Turning Radius Indicator */}
                 <div className="flex absolute inset-0 justify-center items-center">
-                    {!Number.isNaN(turningRadius) && Number.isFinite(turningRadius)
+                    {centerPlaneMode && !Number.isNaN(turningRadius) && Number.isFinite(turningRadius)
                         && (
                             <div
                                 className="absolute"
