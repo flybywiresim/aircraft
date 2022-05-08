@@ -2,7 +2,7 @@ name: Pre release
 on:
   push:
     tags:
-      - 'v*-rc*'
+      - "v*-rc*"
 
 jobs:
   build:
@@ -28,6 +28,10 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
       - name: Build ZIP file
         run: |
+          ./scripts/dev-env/run.sh node ./scripts/fragment.js
+
+          cp ./build-modules/modules.json ./flybywire-aircraft-a320-neo/install.json
+          ./scripts/dev-env/run.sh node ./scripts/install-source.js
           mkdir ./${{ env.BUILD_DIR_NAME }}
           zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
       - name: Create Release
