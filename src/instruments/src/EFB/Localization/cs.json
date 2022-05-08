@@ -349,7 +349,7 @@
     "Title": "Předvolby"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "Ovládací prvky pro vytlačení jsou dostupné pouze na zemi",
     "Backward": "Vzad",
     "CallTug": "Přivolat pushback",
     "DisableSystemMessageBody": "Určitě chcete vypnout pushback systém? Tato akce také uvolní pushback.",

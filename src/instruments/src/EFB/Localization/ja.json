@@ -349,7 +349,7 @@
     "Title": "プリセット"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "プッシュバックコントロールは地上でのみ使用できます",
     "Backward": "後進",
     "CallTug": "牽引車を呼ぶ",
     "DisableSystemMessageBody": "プッシュバックシステムを無効にしてもよろしいですか?これにより、牽引車との接続も解除されます。",

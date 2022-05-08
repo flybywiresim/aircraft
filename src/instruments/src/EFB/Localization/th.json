@@ -349,7 +349,7 @@
     "Title": "ค่าที่ตั้งไว้"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "การควบคุม Pushback จะใช้ได้เฉพาะบนพื้นดินเท่านั้น",
     "Backward": "ถอยหลัง",
     "CallTug": "เรียกรถลากจูง",
     "DisableSystemMessageBody": "คุณแน่ใจหรือว่าต้องการจะปิดการใช้งานระบบ Pushback? นอกจากนี้ยังจะปล่อยรถลากจูงด้วย",
@@ -387,7 +387,7 @@
     },
     "TugAttached": "รถลากจูงติดอยู่แล้ว",
     "TugDirection": "ทิศทางการลากจูง",
-    "TugInTransit": "Waiting for Tug/Pin",
+    "TugInTransit": "กำลังรอ รถลากจูง/หมุด",
     "TugSpeed": "ความเร็วลากจูง"
   },
   "Settings": {
