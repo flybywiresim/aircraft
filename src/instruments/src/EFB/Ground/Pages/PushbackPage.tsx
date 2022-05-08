@@ -79,7 +79,9 @@ export const PushbackPage = () => {
     const pushbackPausedRef = useRef(pushbackPaused);
     pushbackPausedRef.current = pushbackPaused;
 
-    const pushbackUIAvailable: () => boolean = () => simOnGround;
+    const pushbackUIAvailable: boolean = simOnGround;
+    const tugInTransit: boolean = pushbackAttached !== nwStrgDisc;
+    const pushbackActive: boolean = pushbackSystemEnabled && !tugInTransit && nwStrgDisc;
 
     const releaseTug = () => {
         setPushbackState(3);
@@ -162,9 +164,6 @@ export const PushbackPage = () => {
         ));
     };
 
-    const tugInTransit = () => pushbackAttached !== nwStrgDisc;
-    const pushbackActive = () => pushbackSystemEnabled && !tugInTransit() && nwStrgDisc;
-
     // called once when loading and unloading the page
     useEffect(() => {
         // when loading the page
@@ -186,7 +185,7 @@ export const PushbackPage = () => {
 
     // Update commanded heading from rudder input
     useEffect(() => {
-        if (!pushbackActive()) {
+        if (!pushbackActive) {
             return;
         }
         // create deadzone
@@ -199,7 +198,7 @@ export const PushbackPage = () => {
 
     // Update commanded speed from elevator input
     useEffect(() => {
-        if (!pushbackActive()) {
+        if (!pushbackActive) {
             return;
         }
         // create deadzone
@@ -248,7 +247,7 @@ export const PushbackPage = () => {
                 <br />
                 tugInTransit:
                 {' '}
-                {tugInTransit() ? 'true' : 'false'}
+                {tugInTransit ? 'true' : 'false'}
                 <br />
                 pushbackAvailable:
                 {' '}
@@ -378,10 +377,10 @@ export const PushbackPage = () => {
     const speedSliderRef = useRef<any>(null);
 
     const callTugLabel = () => {
-        if (pushbackActive()) {
+        if (pushbackActive) {
             return (t('Pushback.TugAttached'));
         }
-        if (tugInTransit()) {
+        if (tugInTransit) {
             return (t('Pushback.TugInTransit'));
         }
         return (t('Pushback.CallTug'));
@@ -400,14 +399,14 @@ export const PushbackPage = () => {
                 </div>
 
                 {/* Show message when not on ground */}
-                {!pushbackUIAvailable() && (
+                {!pushbackUIAvailable && (
                     <div className="absolute top-2/3 text-center bu left-0 right-0 text-5xl border-white border-2}">
                         {t('Pushback.AvailableOnlyOnGround')}
                     </div>
                 )}
 
                 {/* Manual Pushback Controls */}
-                <div className={`flex flex-col p-6 h-full space-y-4 rounded-lg border-2 border-theme-accent ${!pushbackUIAvailable() && 'opacity-20 pointer-events-none'}`}>
+                <div className={`flex flex-col p-6 h-full space-y-4 rounded-lg border-2 border-theme-accent ${!pushbackUIAvailable && 'opacity-20 pointer-events-none'}`}>
                     <div className="flex flex-row space-x-4">
 
                         {/* Pushback System enabled On/Off */}
@@ -431,7 +430,7 @@ export const PushbackPage = () => {
                                     <button
                                         type="button"
                                         onClick={handleEnableSystem}
-                                        className={`flex justify-center items-center w-full h-20 text-theme-text bg-red-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100 {${!pushbackUIAvailable() && 'opacity-30 pointer-events-none'}`}
+                                        className={`flex justify-center items-center w-full h-20 text-theme-text bg-red-600 rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100 {${!pushbackUIAvailable && 'opacity-30 pointer-events-none'}`}
                                     >
                                         <ToggleOff size={50} />
                                     </button>
@@ -448,11 +447,11 @@ export const PushbackPage = () => {
                                 <button
                                     type="button"
                                     onClick={handleCallTug}
-                                    className={`flex justify-center items-center w-full h-20 text-theme-text rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100'} ${tugInTransit() ? 'bg-utility-amber' : 'bg-green-600'} ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}
+                                    className={`flex justify-center items-center w-full h-20 text-theme-text rounded-md border-2 border-theme-accent opacity-60 hover:opacity-100 transition duration-100'} ${tugInTransit ? 'bg-utility-amber' : 'bg-green-600'} ${!pushbackSystemEnabled && 'opacity-30 pointer-events-none'}`}
                                 >
                                     <TruckFlatbed size={50} />
                                     {' '}
-                                    {pushbackActive() ? (
+                                    {pushbackActive ? (
                                         <ArrowsAngleContract className="ml-4" size={40} />
                                     ) : (
                                         <ArrowsAngleExpand className="ml-4" size={40} />
@@ -472,7 +471,7 @@ export const PushbackPage = () => {
                                 <button
                                     type="button"
                                     onClick={() => setParkingBrakeEngaged((old) => !old)}
-                                    className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center text-utility-white opacity-60 hover:opacity-100  ${parkingBrakeEngaged ? 'bg-red-600' : 'bg-green-600'} {${!pushbackUIAvailable() && 'opacity-30 pointer-events-none'}`}
+                                    className={`w-full h-20 rounded-md transition duration-100 flex items-center justify-center text-utility-white opacity-60 hover:opacity-100  ${parkingBrakeEngaged ? 'bg-red-600' : 'bg-green-600'} {${!pushbackUIAvailable && 'opacity-30 pointer-events-none'}`}
                                 >
                                     {parkingBrakeEngaged ? (
                                         <DashCircleFill className="transform" size={40} />
@@ -484,7 +483,7 @@ export const PushbackPage = () => {
                         </div>
                     </div>
 
-                    <div className={`flex flex-row space-x-4 ${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
+                    <div className={`flex flex-row space-x-4 ${!pushbackActive && 'opacity-30 pointer-events-none'}`}>
 
                         {/* Backward Button */}
                         <div className="w-full">
@@ -572,7 +571,7 @@ export const PushbackPage = () => {
                     </div>
 
                     {/* Direction Slider */}
-                    <div className={`${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
+                    <div className={`${!pushbackActive && 'opacity-30 pointer-events-none'}`}>
                         <p className="text-center">
                             {t('Pushback.TugDirection')}
                         </p>
@@ -595,7 +594,7 @@ export const PushbackPage = () => {
                     </div>
 
                     {/* Speed Slider */}
-                    <div className={`${!pushbackActive() && 'opacity-30 pointer-events-none'}`}>
+                    <div className={`${!pushbackActive && 'opacity-30 pointer-events-none'}`}>
                         <p className="text-center">
                             {t('Pushback.TugSpeed')}
                         </p>
