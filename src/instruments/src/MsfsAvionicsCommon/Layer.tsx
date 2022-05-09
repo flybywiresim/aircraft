@@ -1,6 +1,12 @@
 import { FSComponent, DisplayComponent, VNode, Subscribable, MappedSubject } from 'msfssdk';
 
-export class Layer extends DisplayComponent<{ x: number | Subscribable<number>, y: number | Subscribable<number> }> {
+export interface LayerProps {
+    x: number | Subscribable<number>;
+    y: number | Subscribable<number>;
+    visible?: Subscribable<boolean>;
+}
+
+export class Layer extends DisplayComponent<LayerProps> {
     render(): VNode | null {
         const { x, y } = this.props;
 
@@ -14,7 +20,7 @@ export class Layer extends DisplayComponent<{ x: number | Subscribable<number>, 
         }
 
         return (
-            <g transform={value}>
+            <g transform={value} visibility={this.props.visible?.map((v) => (v ? 'visible' : 'hidden')) ?? 'visible'}>
                 {this.props.children}
             </g>
         );
