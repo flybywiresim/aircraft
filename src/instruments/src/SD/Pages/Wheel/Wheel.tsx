@@ -357,19 +357,19 @@ const LandingGearPositionIndicators = ({ x, y, location, lgciu1DiscreteWord1, lg
         lgciu2GearNotUplocked = lgciu2DiscreteWord3.getBitValue(11);
         lgciu1GearDownlocked = lgciu1DiscreteWord1.getBitValue(23);
         lgciu2GearDownlocked = lgciu2DiscreteWord1.getBitValue(23);
-        upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.getBitValue(20) && lgciu1DiscreteWord1.getBitValue(20);
+        upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.getBitValue(20) && lgciu2DiscreteWord1.getBitValue(20);
     } else if (location === 'right') {
         lgciu1GearNotUplocked = lgciu1DiscreteWord3.getBitValue(12);
         lgciu2GearNotUplocked = lgciu2DiscreteWord3.getBitValue(12);
         lgciu1GearDownlocked = lgciu1DiscreteWord1.getBitValue(24);
         lgciu2GearDownlocked = lgciu2DiscreteWord1.getBitValue(24);
-        upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.getBitValue(21) && lgciu1DiscreteWord1.getBitValue(21);
+        upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.getBitValue(21) && lgciu2DiscreteWord1.getBitValue(21);
     } else {
         lgciu1GearNotUplocked = lgciu1DiscreteWord3.getBitValue(13);
         lgciu2GearNotUplocked = lgciu2DiscreteWord3.getBitValue(13);
         lgciu1GearDownlocked = lgciu1DiscreteWord1.getBitValue(25);
         lgciu2GearDownlocked = lgciu2DiscreteWord1.getBitValue(25);
-        upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.getBitValue(22) && lgciu1DiscreteWord1.getBitValue(22);
+        upLockFlagShown = upLockFlagShown && lgciu1DiscreteWord1.getBitValue(22) && lgciu2DiscreteWord1.getBitValue(22);
     }
 
     let lgciu1Color = '';
