@@ -1,5 +1,6 @@
 const ModifyLookupTable = {
     UM132: [{
+        response: "DM33",
         text: "PRESENT POSITION",
         type: Atsu.CpdlcMessageContentType.Position,
         textIndex: -1,
@@ -7,6 +8,7 @@ const ModifyLookupTable = {
         emptyLength: 5
     }],
     UM133: [{
+        response: "DM32",
         text: "PRESENT LEVEL",
         type: Atsu.CpdlcMessageContentType.Level,
         textIndex: -1,
@@ -14,6 +16,7 @@ const ModifyLookupTable = {
         emptyLength: 5
     }],
     UM134: [{
+        response: "DM34",
         text: "PRESENT SPEED",
         type: Atsu.CpdlcMessageContentType.Speed,
         textIndex: -1,
@@ -21,6 +24,7 @@ const ModifyLookupTable = {
         emptyLength: 4
     }],
     UM135: [{
+        response: "DM38",
         text: "ASSIGNED LEVEL",
         type: Atsu.CpdlcMessageContentType.Level,
         textIndex: -1,
@@ -28,6 +32,7 @@ const ModifyLookupTable = {
         emptyLength: 5
     }],
     UM136: [{
+        response: "DM39",
         text: "ASSIGNED SPEED",
         type: Atsu.CpdlcMessageContentType.Speed,
         textIndex: -1,
@@ -35,6 +40,7 @@ const ModifyLookupTable = {
         emptyLength: 4
     }],
     UM137: [{
+        response: "DM45",
         text: "ASSIGNED ROUTE",
         type: Atsu.CpdlcMessageContentType.Freetext,
         textIndex: -1,
@@ -42,6 +48,7 @@ const ModifyLookupTable = {
         emptyLength: 6
     }],
     UM138: [{
+        response: "DM46",
         text: "REPORTED TIME",
         type: Atsu.CpdlcMessageContentType.Time,
         textIndex: -1,
@@ -49,6 +56,7 @@ const ModifyLookupTable = {
         emptyLength: 4
     }],
     UM139: [{
+        response: "DM45",
         text: "REPORTED WAYPOINT",
         type: Atsu.CpdlcMessageContentType.Position,
         textIndex: -1,
@@ -56,6 +64,7 @@ const ModifyLookupTable = {
         emptyLength: 5
     }],
     UM140: [{
+        response: "DM42",
         text: "NEXT WAYPOINT",
         type: Atsu.CpdlcMessageContentType.Position,
         textIndex: -1,
@@ -63,6 +72,7 @@ const ModifyLookupTable = {
         emptyLength: 5
     }],
     UM141: [{
+        response: "DM43",
         text: "NEXT WAYPOINT ETA",
         type: Atsu.CpdlcMessageContentType.Time,
         textIndex: -1,
@@ -70,6 +80,7 @@ const ModifyLookupTable = {
         emptyLength: 4
     }],
     UM142: [{
+        response: "DM44",
         text: "ENSUING WAYPOINT",
         type: Atsu.CpdlcMessageContentType.Position,
         textIndex: -1,
@@ -77,6 +88,7 @@ const ModifyLookupTable = {
         emptyLength: 5
     }],
     UM144: [{
+        response: "DM47",
         text: "PRESENT SQUAWK",
         type: Atsu.CpdlcMessageContentType.Squawk,
         textIndex: -1,
@@ -84,6 +96,7 @@ const ModifyLookupTable = {
         emptyLength: 4
     }],
     UM145: [{
+        response: "DM35",
         text: "PRESENT HEADING",
         type: Atsu.CpdlcMessageContentType.Degree,
         textIndex: -1,
@@ -91,6 +104,7 @@ const ModifyLookupTable = {
         emptyLength: 3
     }],
     UM146: [{
+        response: "DM36",
         text: "PRESENT GROUND TRACK",
         type: Atsu.CpdlcMessageContentType.Degree,
         textIndex: -1,
@@ -98,18 +112,21 @@ const ModifyLookupTable = {
         emptyLength: 3
     }],
     UM148: [{
+        response: "DM81",
         text: "CAN %s AT",
         type: Atsu.CpdlcMessageContentType.Time,
         textIndex: 0,
         valueIndex: 1,
         emptyLength: 5
     }, {
+        response: "DM67",
         text: "CAN %s NOW",
         type: Atsu.CpdlcMessageContentType.Unknown,
         textIndex: 0,
         valueIndex: -1,
         emptyLength: 0
     }, {
+        response: "DM82",
         text: "CANNOT %s",
         type: Atsu.CpdlcMessageContentType.Unknown,
         textIndex: 0,
@@ -118,18 +135,21 @@ const ModifyLookupTable = {
     }
     ],
     UM151: [{
+        response: "DM83",
         text: "CAN %s AT",
         type: Atsu.CpdlcMessageContentType.Time,
         textIndex: 0,
         valueIndex: 1,
         emptyLength: 5
     }, {
+        response: "DM67",
         text: "CAN %s NOW",
         type: Atsu.CpdlcMessageContentType.Unknown,
         textIndex: 0,
         valueIndex: -1,
         emptyLength: 0
     }, {
+        response: "DM94",
         text: "CANNOT %s",
         type: Atsu.CpdlcMessageContentType.Unknown,
         textIndex: 0,
@@ -138,18 +158,21 @@ const ModifyLookupTable = {
     }
     ],
     UM152: [{
+        response: "DM85",
         text: "CAN %s AT",
         type: Atsu.CpdlcMessageContentType.Time,
         textIndex: 0,
         valueIndex: 1,
         emptyLength: 5
     }, {
+        response: "DM67",
         text: "CAN %s NOW",
         type: Atsu.CpdlcMessageContentType.Unknown,
         textIndex: 0,
         valueIndex: -1,
         emptyLength: 0
     }, {
+        response: "DM86",
         text: "CANNOT %s",
         type: Atsu.CpdlcMessageContentType.Unknown,
         textIndex: 0,
@@ -262,11 +285,15 @@ class CDUAtcMessageModify {
 
         if (data.selectedToggles[0]) {
             const freetext = "WE CAN ACCEPT %s NOW".replace("%s", message.Content.Content[lutEntry[1].textIndex].Value);
-            message.Response.Content = Atsu.CpdlcMessagesDownlink['DM67'][1].deepCopy();
+            message.Response.Content = Atsu.CpdlcMessagesDownlink[lutEntry[1].response][1].deepCopy();
             message.Response.Content.Content[0] = freetext;
         } else if (data.selectedToggles[1]) {
-            Atsu.UplinkMessageInterpretation.AppendSemanticAnswer(mcdu.atsu, false, message);
+            message.Response.Content = Atsu.CpdlcMessagesDownlink[lutEntry[2].response][1].deepCopy();
         } else {
+            const newContent = Atsu.CpdlcMessagesDownlink[lutEntry[0].response][1].deepCopy();
+            if (lutEntry[0].valueIndex !== 0) {
+                newContent.Content[0].Value = message.Content.Content[entry.textIndex].Value;
+            }
             message.Response.Content.Content[lutEntry[0].valueIndex].Value = data.value;
         }
     }
