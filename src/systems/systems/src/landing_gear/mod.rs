@@ -759,9 +759,19 @@ impl LandingGearControlInterfaceUnit {
             Arinc429Word::new(0., SignStatus::FailureWarning)
         } else {
             let mut word = Arinc429Word::new(0., SignStatus::NormalOperation);
+            set_arinc429_bit(&mut word, 11, !self.sensor_inputs.left_gear_up_and_locked && !self.gear_handle_is_down());
+            set_arinc429_bit(&mut word, 12, !self.sensor_inputs.right_gear_up_and_locked && !self.gear_handle_is_down());
+            set_arinc429_bit(&mut word, 13, !self.sensor_inputs.nose_gear_up_and_locked && !self.gear_handle_is_down());
+            set_arinc429_bit(&mut word, 14, !self.sensor_inputs.left_gear_down_and_locked && self.gear_handle_is_down());
+            set_arinc429_bit(&mut word, 15, !self.sensor_inputs.right_gear_down_and_locked && self.gear_handle_is_down());
+            set_arinc429_bit(&mut word, 16, !self.sensor_inputs.nose_gear_down_and_locked && self.gear_handle_is_down());
             set_arinc429_bit(&mut word, 17, !self.sensor_inputs.left_door_up_and_locked);
             set_arinc429_bit(&mut word, 18, !self.sensor_inputs.right_door_up_and_locked);
             set_arinc429_bit(&mut word, 19, !self.sensor_inputs.nose_door_up_and_locked);
+            // The conditions for bits 20, 21 and 22 are not implemented, so they are set to false for now.
+            set_arinc429_bit(&mut word, 20, false);
+            set_arinc429_bit(&mut word, 21, false);
+            set_arinc429_bit(&mut word, 22, false);
             set_arinc429_bit(
                 &mut word,
                 23,

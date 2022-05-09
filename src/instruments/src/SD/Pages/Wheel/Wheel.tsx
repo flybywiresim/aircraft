@@ -45,8 +45,6 @@ export const WheelPage = () => {
                     y={263}
                     lgciu1DiscreteWord1={lgciu1DiscreteWord1}
                     lgciu2DiscreteWord1={lgciu2DiscreteWord1}
-                    lgciu1DiscreteWord3={lgciu1DiscreteWord3}
-                    lgciu2DiscreteWord3={lgciu2DiscreteWord3}
                 />
                 <AntiSkid x={300} y={312} />
 
@@ -136,26 +134,22 @@ const AntiSkid = ({ x, y }: ComponentPositionProps) => {
 interface LandingGearCtlProps extends ComponentPositionProps {
     lgciu1DiscreteWord1: Arinc429Word,
     lgciu2DiscreteWord1: Arinc429Word,
-    lgciu1DiscreteWord3: Arinc429Word,
-    lgciu2DiscreteWord3: Arinc429Word,
 }
 
-const LandingGearCtl = ({ x, y, lgciu1DiscreteWord1, lgciu2DiscreteWord1, lgciu1DiscreteWord3, lgciu2DiscreteWord3 }: LandingGearCtlProps) => {
+const LandingGearCtl = ({ x, y, lgciu1DiscreteWord1, lgciu2DiscreteWord1 }: LandingGearCtlProps) => {
     const anyLgciuValid = lgciu1DiscreteWord1.isNormalOperation() || lgciu2DiscreteWord1.isNormalOperation();
 
-    const gearLeverUp = lgciu1DiscreteWord3.getBitValue(14) || lgciu2DiscreteWord3.getBitValue(14);
-    const gearLeverDown = lgciu1DiscreteWord1.getBitValue(29) || lgciu2DiscreteWord1.getBitValue(29);
+    const leftMainGearNotDownlockedAndSelectedDown = lgciu1DiscreteWord1.getBitValue(14) || lgciu2DiscreteWord1.getBitValue(14);
+    const rightMainGearNotDownlockedAndSelectedDown = lgciu1DiscreteWord1.getBitValue(15) || lgciu2DiscreteWord1.getBitValue(15);
+    const noseGearNotDownlockedAndSelectedDown = lgciu1DiscreteWord1.getBitValue(16) || lgciu2DiscreteWord1.getBitValue(16);
 
-    const leftMainGearDownlocked = lgciu1DiscreteWord1.getBitValue(23) || lgciu2DiscreteWord1.getBitValue(23);
-    const rightMainGearDownlocked = lgciu1DiscreteWord1.getBitValue(24) || lgciu2DiscreteWord1.getBitValue(24);
-    const noseGearDownlocked = lgciu1DiscreteWord1.getBitValue(25) || lgciu2DiscreteWord1.getBitValue(25);
+    const leftMainGearNotUplockedAndNotSelectedDown = lgciu1DiscreteWord1.getBitValue(11) || lgciu2DiscreteWord1.getBitValue(11);
+    const rightMainGearNotUplockedAndNotSelectedDown = lgciu1DiscreteWord1.getBitValue(12) || lgciu2DiscreteWord1.getBitValue(12);
+    const noseGearNotUplockedAndNotSelectedDown = lgciu1DiscreteWord1.getBitValue(13) || lgciu2DiscreteWord1.getBitValue(13);
 
-    const leftMainGearNotUplocked = lgciu1DiscreteWord3.getBitValue(11) || lgciu2DiscreteWord3.getBitValue(11);
-    const rightMainGearNotUplocked = lgciu1DiscreteWord3.getBitValue(12) || lgciu2DiscreteWord3.getBitValue(12);
-    const noseGearNotUplocked = lgciu1DiscreteWord3.getBitValue(13) || lgciu2DiscreteWord3.getBitValue(13);
-
-    const landingGearInTransit = anyLgciuValid && ((gearLeverDown && (!leftMainGearDownlocked || !rightMainGearDownlocked || !noseGearDownlocked))
-                                || (gearLeverUp && (leftMainGearNotUplocked || rightMainGearNotUplocked || noseGearNotUplocked)));
+    const landingGearInTransit = anyLgciuValid && (leftMainGearNotDownlockedAndSelectedDown || rightMainGearNotDownlockedAndSelectedDown
+                                                    || noseGearNotDownlockedAndSelectedDown || leftMainGearNotUplockedAndNotSelectedDown
+                                                    || rightMainGearNotUplockedAndNotSelectedDown || noseGearNotUplockedAndNotSelectedDown);
 
     return landingGearInTransit ? (
         <text id="center-lg-ctl" x={x} y={y} className="big-text align-left color-amber">L/G CTL</text>
