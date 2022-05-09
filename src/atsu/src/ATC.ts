@@ -351,7 +351,7 @@ export class Atc {
                 }
 
                 // logon rejected
-                if (response.Content?.TypeId === 'UM9996') {
+                if (response.Content?.TypeId === 'UM9996' || response.Content?.TypeId === 'UM0') {
                     response.DcduRelevantMessage = false;
                     this.dcduLink.setAtcLogonMessage('');
                     this.currentAtc = '';
