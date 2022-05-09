@@ -280,7 +280,7 @@ class CDUAtcMessageModify {
         return data.value !== "" || data.selectedToggles[0] || data.selectedToggles[1];
     }
 
-    static UpdateResponseMessage(mcdu, message, data) {
+    static UpdateResponseMessage(message, data) {
         const lutEntry = ModifyLookupTable[message.Content.TypeId];
 
         if (data.selectedToggles[0]) {
@@ -443,8 +443,12 @@ class CDUAtcMessageModify {
         };
         mcdu.onRightInput[4] = () => {
             if (CDUAtcMessageModify.CanUpdateMessage(data)) {
-                CDUAtcMessageModify.UpdateResponseMessage(mcdu, message, data);
-                CDUAtcTextFansA.ShowPage1(mcdu, [message]);
+                CDUAtcMessageModify.UpdateResponseMessage(message, data);
+                if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+                    CDUAtcTextFansA.ShowPage1(mcdu, [message]);
+                } else {
+                    CDUAtcTextFansB.ShowPage(mcdu, [message]);
+                }
             }
         };
 
