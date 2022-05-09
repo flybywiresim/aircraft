@@ -5261,7 +5261,7 @@ impl A320GravityExtension {
     const INCREMENT_ANGLE_DEGREE_PER_SECOND: f64 = 220.;
 
     // Can be allowed when handle animation is available
-    const ALLOW_RETURNING_TO_STOWED_HANDLE_POSITION: bool = true;
+    const ALLOW_RETURNING_TO_STOWED_HANDLE_POSITION: bool = false;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -10296,6 +10296,8 @@ mod tests {
             );
         }
 
+        // TODO un-ignore when emergency gear extension is allowed to be reset
+        #[ignore]
         #[test]
         fn reverting_emergency_extension_do_not_change_fluid_volume() {
             let mut test_bed = test_bed_with()
