@@ -74,11 +74,6 @@ pub trait FeedbackPositionPickoffUnit {
     fn angle(&self) -> Angle;
 }
 
-pub trait LandingGearRealPosition {
-    fn is_up_and_locked(&self) -> bool;
-    fn is_down_and_locked(&self) -> bool;
-}
-
 pub trait LgciuWeightOnWheels {
     fn right_gear_compressed(&self, treat_ext_pwr_as_ground: bool) -> bool;
     fn right_gear_extended(&self, treat_ext_pwr_as_ground: bool) -> bool;
@@ -97,7 +92,63 @@ pub trait LgciuGearExtension {
     fn all_up_and_locked(&self) -> bool;
 }
 
-pub trait LgciuSensors: LgciuWeightOnWheels + LgciuGearExtension {}
+pub trait LgciuDoorPosition {
+    fn all_fully_opened(&self) -> bool;
+    fn all_closed_and_locked(&self) -> bool;
+}
+
+pub trait LgciuGearControl {
+    fn should_open_doors(&self) -> bool;
+    fn should_extend_gears(&self) -> bool;
+    fn control_active(&self) -> bool;
+}
+
+pub trait LandingGearHandle {
+    fn gear_handle_is_down(&self) -> bool;
+    fn gear_handle_baulk_locked(&self) -> bool;
+}
+
+pub trait LgciuInterface:
+    LgciuWeightOnWheels + LgciuGearExtension + LgciuDoorPosition + LgciuGearControl + LandingGearHandle
+{
+}
+
+#[derive(Copy, Clone, PartialEq, Debug)]
+#[repr(usize)]
+pub enum LgciuId {
+    Lgciu1 = 0,
+    Lgciu2 = 1,
+}
+
+#[derive(Clone, Copy, PartialEq)]
+pub enum ProximityDetectorId {
+    UplockGearNose1,
+    UplockGearNose2,
+    UplockGearLeft1,
+    UplockGearLeft2,
+    UplockGearRight1,
+    UplockGearRight2,
+    DownlockGearNose1,
+    DownlockGearNose2,
+    DownlockGearLeft1,
+    DownlockGearLeft2,
+    DownlockGearRight1,
+    DownlockGearRight2,
+
+    UplockDoorNose1,
+    UplockDoorNose2,
+    UplockDoorLeft1,
+    UplockDoorLeft2,
+    UplockDoorRight1,
+    UplockDoorRight2,
+    DownlockDoorNose1,
+    DownlockDoorNose2,
+    DownlockDoorLeft1,
+    DownlockDoorLeft2,
+    DownlockDoorRight1,
+    DownlockDoorRight2,
+}
+
 pub trait EngineCorrectedN1 {
     fn corrected_n1(&self) -> Ratio;
 }
@@ -133,6 +184,19 @@ pub trait EngineBleedPushbutton {
 
 pub trait GroundSpeed {
     fn ground_speed(&self) -> Velocity;
+}
+
+pub trait AdirsDiscreteOutputs {
+    fn low_speed_warning_1_104kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool;
+    fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool;
+}
+
+pub enum GearWheel {
+    NOSE = 0,
+    LEFT = 1,
+    RIGHT = 2,
 }
 
 pub trait SectionPressure {

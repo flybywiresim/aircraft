@@ -29,7 +29,7 @@ export default new TaskOfTasks('a32nx', [
     ], true),
 
     new TaskOfTasks('dist', [
-        new ExecTask('metadata', 'bash scripts/metadata.sh'),
+        new ExecTask('metadata', 'node scripts/metadata.js flybywire-aircraft-a320-neo a32nx'),
         new ExecTask('manifests', 'node scripts/build.js'),
     ]),
 ]);
