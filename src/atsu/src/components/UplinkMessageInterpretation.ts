@@ -141,6 +141,9 @@ export class UplinkMessageInterpretation {
                 if (UplinkMessageInterpretation.RequestMessages.findIndex((elem) => elem === cpdlc.Content.TypeId) !== -1) {
                     const request = message as RequestMessage;
                     const response = new RequestMessage();
+
+                    response.Station = message.Station;
+                    response.PreviousTransmissionId = request.CurrentTransmissionId;
                     response.Content = cpdlc.Content.deepCopy();
                     request.Extensions.forEach((extension) => response.Extensions.push(extension.deepCopy()));
                     cpdlc.Response = response;
@@ -151,6 +154,8 @@ export class UplinkMessageInterpretation {
             const lutEntry = UplinkMessageInterpretation.SemanticAnswerTable[message.Content.TypeId];
             if (lutEntry.positiveOrNegative) {
                 const response = new CpdlcMessage();
+                response.Station = message.Station;
+                response.PreviousTransmissionId = message.CurrentTransmissionId;
 
                 if (positiveAnswer) {
                     response.Content = CpdlcMessagesDownlink[lutEntry.messages[0]][1].deepCopy();
@@ -161,6 +166,8 @@ export class UplinkMessageInterpretation {
                 cpdlc.Response = response;
             } else if (lutEntry.messages[0] in CpdlcMessagesDownlink) {
                 const response = new CpdlcMessage();
+                response.Station = message.Station;
+                response.PreviousTransmissionId = message.CurrentTransmissionId;
                 response.Content = CpdlcMessagesDownlink[lutEntry.messages[0]][1].deepCopy();
                 cpdlc.Response = response;
             }
