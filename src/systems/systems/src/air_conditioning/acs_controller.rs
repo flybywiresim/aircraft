@@ -2152,6 +2152,19 @@ mod acs_controller_tests {
         }
 
         #[test]
+        fn pack_flow_valve_doesnt_have_fault_when_bleed_and_ditching_mode() {
+            let mut test_bed = test_bed().with().both_packs_on();
+
+            test_bed.command_apu_bleed_on();
+
+            test_bed.command_ditching_on();
+            test_bed = test_bed.iterate(2);
+
+            assert!(!test_bed.pack_1_has_fault());
+            assert!(!test_bed.pack_2_has_fault());
+        }
+
+        #[test]
         fn pack_flow_light_resets_after_condition() {
             let mut test_bed = test_bed().with().both_packs_on().iterate(2);
 
