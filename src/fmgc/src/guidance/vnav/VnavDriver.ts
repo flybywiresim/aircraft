@@ -173,7 +173,7 @@ export class VnavDriver implements GuidanceComponent {
             }
 
             this.updateTimeMarkers();
-            this.descentGuidance.update();
+            this.descentGuidance.update(deltaTime);
         } catch (e) {
             console.error('[FMS] Failed to calculate vertical profil. See exception below.');
             console.error(e);

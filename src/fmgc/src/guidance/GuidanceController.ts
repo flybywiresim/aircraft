@@ -38,6 +38,7 @@ export interface Fmgc {
     getManagedClimbSpeedMach(): Mach;
     getAccelerationAltitude(): Feet,
     getThrustReductionAltitude(): Feet,
+    getOriginTransitionAltitude(): Feet | undefined,
     getCruiseAltitude(): Feet,
     getFlightPhase(): FmgcFlightPhase,
     getManagedCruiseSpeed(): Knots,

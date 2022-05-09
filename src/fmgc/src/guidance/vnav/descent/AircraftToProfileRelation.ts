@@ -68,6 +68,13 @@ export class AircraftToDescentProfileRelation {
         return !this.topOfDescent || this.inertialDistanceAlongTrack.get() > this.topOfDescent.distanceFromStart;
     }
 
+    distanceToTopOfDescent(): number|null {
+        if (this.topOfDescent) {
+            return this.topOfDescent.distanceFromStart - this.inertialDistanceAlongTrack.get();
+        }
+        return null;
+    }
+
     isOnGeometricPath(): boolean {
         return this.inertialDistanceAlongTrack.get() > this.geometricPathStart.distanceFromStart;
     }

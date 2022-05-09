@@ -7,6 +7,7 @@ import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { SpeedMargin } from './SpeedMargin';
+import { TodGuidance } from './TodGuidance';
 
 enum DescentVerticalGuidanceState {
     InvalidProfile,
@@ -41,9 +42,9 @@ export class DescentGuidance {
 
     private speedMargin: SpeedMargin;
 
-    private speedTarget: Knots | Mach;
+    private todGuidance: TodGuidance;
 
-    private tdReached: boolean;
+    private speedTarget: Knots | Mach;
 
     // An "overspeed condition" just means we are above the speed margins, not that we are in the red band.
     // We use a boolean here for hysteresis
@@ -57,6 +58,7 @@ export class DescentGuidance {
         private atmosphericConditions: AtmosphericConditions,
     ) {
         this.speedMargin = new SpeedMargin(this.observer);
+        this.todGuidance = new TodGuidance(this.aircraftToDescentProfileRelation, this.observer, this.atmosphericConditions);
 
         this.writeToSimVars();
     }
@@ -91,7 +93,7 @@ export class DescentGuidance {
         this.isInOverspeedCondition = false;
     }
 
-    update() {
+    update(deltaTime: number) {
         this.aircraftToDescentProfileRelation.update();
 
         if (!this.aircraftToDescentProfileRelation.isValid) {
@@ -113,19 +115,7 @@ export class DescentGuidance {
         }
 
         this.writeToSimVars();
-        this.updateTdReached();
-    }
-
-    updateTdReached() {
-        const { flightPhase } = this.observer.get();
-        const isPastTopOfDescent = this.aircraftToDescentProfileRelation.isPastTopOfDescent();
-        const isInManagedSpeed = Simplane.getAutoPilotAirspeedManaged();
-
-        const tdReached = flightPhase >= FmgcFlightPhase.Climb && flightPhase <= FmgcFlightPhase.Cruise && isPastTopOfDescent && isInManagedSpeed;
-        if (tdReached !== this.tdReached) {
-            this.tdReached = tdReached;
-            SimVar.SetSimVarValue('L:A32NX_PFD_MSG_TD_REACHED', 'boolean', this.tdReached);
-        }
+        this.todGuidance.update(deltaTime);
     }
 
     private updateLinearDeviation() {
