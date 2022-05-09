@@ -69,11 +69,20 @@ class CDUAtcTextFansA {
         // update all messages, if needed
         if (extension || (updateFreetext && freetextElement)) {
             messages.forEach((message) => {
-                if (updateFreetext && freetextElement) {
-                    message.Extensions.push(freetextElement);
-                }
-                if (extension) {
-                    message.Extensions.push(extension);
+                if (message.Content.TypeId.includes("UM")) {
+                    if (updateFreetext && freetextElement) {
+                        message.Response.Extensions.push(freetextElement);
+                    }
+                    if (extension) {
+                        message.Response.Extensions.push(extension);
+                    }
+                } else {
+                    if (updateFreetext && freetextElement) {
+                        message.Extensions.push(freetextElement);
+                    }
+                    if (extension) {
+                        message.Extensions.push(extension);
+                    }
                 }
             });
         }
@@ -249,7 +258,9 @@ class CDUAtcTextFansA {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const prepMessages = CDUAtcTextFansA.CreateMessages(mcdu, messages, data);
-                    if (prepMessages) {
+                    if (prepMessages && prepMessages[0].Content.TypeId.includes("UM")) {
+                        mcdu.atsu.atc.updateMessage(prepMessages[0]);
+                    } else if (prepMessages) {
                         mcdu.atsu.registerMessages(prepMessages);
                     }
                     CDUAtcTextFansA.ShowPage1(mcdu);
@@ -381,7 +392,9 @@ class CDUAtcTextFansA {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const prepMessages = CDUAtcTextFansA.CreateMessages(mcdu, messages, data);
-                    if (prepMessages) {
+                    if (prepMessages && prepMessages[0].Content.TypeId.includes("UM")) {
+                        mcdu.atsu.atc.updateMessage(prepMessages[0]);
+                    } else if (prepMessages) {
                         mcdu.atsu.registerMessages(prepMessages);
                     }
                     CDUAtcTextFansA.ShowPage2(mcdu);

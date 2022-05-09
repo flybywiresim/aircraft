@@ -10,22 +10,33 @@ class CDUAtcTextFansB {
         return data.performance || data.weather;
     }
 
-    static CreateMessage(message, data) {
+    static CreateMessages(messages, data) {
         let extension = null;
         if (data.performance) {
             extension = Atsu.CpdlcMessagesDownlink["DM66"][1].deepCopy();
         } else if (data.weather) {
             extension = Atsu.CpdlcMessagesDownlink["DM65"][1].deepCopy();
         }
-        message.Extensions.push(extension);
+
+        let updated = false;
+        for (const message of messages) {
+            if (message.Content.TypeId.includes("UM")) {
+                message.Response.Extensions.push(extension);
+                updated = true;
+            } else {
+                message.Extensions.push(extension);
+            }
+        }
+
+        return updated;
     }
 
-    static ShowPage(mcdu, message = null, data = CDUAtcTextFansB.CreateDataBlock()) {
+    static ShowPage(mcdu, messages, data = CDUAtcTextFansB.CreateDataBlock()) {
         mcdu.clearDisplay();
 
         let erase = "\xa0ERASE";
         let reqDisplay = "DCDU\xa0[color]cyan";
-        if (CDUAtcTextFansA.CanSendData(data)) {
+        if (CDUAtcTextFansB.CanSendData(data)) {
             reqDisplay = "DCDU*[color]cyan";
             erase = "*ERASE";
         }
@@ -67,7 +78,7 @@ class CDUAtcTextFansB {
                 data.performance = true;
                 data.weather = false;
             }
-            CDUAtcTextFansB.ShowPage(mcdu, parent, message, data);
+            CDUAtcTextFansB.ShowPage(mcdu, messages, data);
         };
 
         mcdu.rightInputDelay[0] = () => {
@@ -80,14 +91,14 @@ class CDUAtcTextFansB {
                 data.performance = true;
                 data.weather = false;
             }
-            CDUAtcTextFansB.ShowPage(mcdu, parent, message, data);
+            CDUAtcTextFansB.ShowPage(mcdu, messages, data);
         };
 
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcTextFansB.ShowPage(mcdu);
+            CDUAtcTextFansB.ShowPage(mcdu, messages);
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -101,14 +112,14 @@ class CDUAtcTextFansB {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[5] = () => {
-            if (CDUAtcTextFansA.CanSendData(data)) {
+            if (CDUAtcTextFansB.CanSendData(data)) {
                 if (mcdu.atsu.atc.currentStation() === "") {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
-                    const prepMessage = CDUAtcTextFansA.CreateMessage(messages, data);
-                    if (prepMessage) {
-                        // TODO update message
-                        mcdu.atsu.registerMessage(prepMessage);
+                    if (CDUAtcTextFansB.CreateMessages(mcdu, messages, data)) {
+                        mcdu.atsu.atc.updateMessage(messages[0]);
+                    } else {
+                        mcdu.atsu.registerMessages(messages);
                     }
                     CDUAtcMenu.ShowPage(mcdu);
                 }
