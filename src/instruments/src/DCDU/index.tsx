@@ -260,6 +260,10 @@ const DCDU: React.FC = () => {
             if (UplinkMessageInterpretation.SemanticAnswerRequired(cpdlcMessages[0]) && cpdlcMessages[0].Response && cpdlcMessages[0].Response.Content) {
                 const dcduBlock = messages.get(cpdlcMessages[0].UniqueMessageID);
                 if (dcduBlock) {
+                    dcduBlock.semanticResponseIncomplete = false;
+                    if (dcduBlock.statusMessage === DcduStatusMessage.NoFmData || dcduBlock.statusMessage === DcduStatusMessage.McduForModification) {
+                        dcduBlock.statusMessage = DcduStatusMessage.NoMessage;
+                    }
                     dcduBlock.semanticResponse = true;
 
                     for (const entry of cpdlcMessages[0].Response.Content.Content) {
