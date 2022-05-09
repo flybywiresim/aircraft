@@ -5,6 +5,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.9.0
+
+1. [HYD] Fix fluid return handling of actuators - @Crocket63 (crocket)
+
 ## 0.8.0
 
 1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
