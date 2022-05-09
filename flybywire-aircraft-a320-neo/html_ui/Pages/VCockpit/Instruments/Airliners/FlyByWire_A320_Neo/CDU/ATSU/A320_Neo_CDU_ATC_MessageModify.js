@@ -167,7 +167,7 @@ class CDUAtcMessageModify {
         const lutEntry = ModifyLookupTable[message.Content.TypeId];
 
         return {
-            value: message.Response.Content.Content[lutEntry[0].valueIndex].Value,
+            value: message.Response.Content.Content.length > lutEntry[0].valueIndex ? message.Response.Content.Content[lutEntry[0].valueIndex].Value : '',
             modified: false,
             multiSelection: lutEntry.length > 1,
             selectedToggles: [false, false]
