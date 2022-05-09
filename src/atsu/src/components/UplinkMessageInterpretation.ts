@@ -124,6 +124,11 @@ export class UplinkMessageInterpretation {
             message.Response.Content.Content[0].Value = atsu.nextWaypoint().ident;
         } else if (message.Content.TypeId === 'UM147') {
             message.Response = Atsu.createAutomatedPositionReport(atsu);
+        } else if (message.Content.TypeId === 'UM148' || message.Content.TypeId === 'UM151') {
+            message.Response.Content.Content[0].Value = message.Content.Content[0].Value;
+        } else if (message.Content.TypeId === 'UM152') {
+            message.Response.Content.Content[0].Value = message.Content.Content[0].Value;
+            message.Response.Content.Content[1].Value = message.Content.Content[1].Value;
         } else {
             return false;
         }
