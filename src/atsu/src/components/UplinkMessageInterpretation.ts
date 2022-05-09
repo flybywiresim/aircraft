@@ -99,9 +99,9 @@ export class UplinkMessageInterpretation {
     }
 
     private static FillAssignedData(atsu: Atsu, message: CpdlcMessage): boolean {
-        if (message.Content.TypeId === 'UM135') {
-            message.Response.Content.Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.targetFlightState().altitude() / 100).toString());
-        } else if (message.Content.TypeId === 'UM136') {
+        if (message.Content.TypeId === 'UM135' && atsu.targetFlightState().altitude !== undefined) {
+            message.Response.Content.Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.targetFlightState().altitude / 100).toString());
+        } else if (message.Content.TypeId === 'UM136' && atsu.targetFlightState().speed !== undefined) {
             message.Response.Content.Content[0].Value = InputValidation.formatScratchpadAltitude(atsu.targetFlightState().speed.toString());
         } else {
             return false;
