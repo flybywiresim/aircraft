@@ -984,6 +984,10 @@ mod acs_controller_tests {
             self.apu_bleed_air_valve = DefaultValve::new_open();
         }
 
+        fn set_apu_bleed_air_valve_closed(&mut self) {
+            self.apu_bleed_air_valve = DefaultValve::new_closed();
+        }
+
         fn set_cross_bleed_valve_open(&mut self) {
             self.cross_bleed_valve = DefaultValve::new_open();
         }
@@ -1147,6 +1151,10 @@ mod acs_controller_tests {
             self.pneumatic.set_apu_bleed_air_valve_open();
         }
 
+        fn set_apu_bleed_air_valve_closed(&mut self) {
+            self.pneumatic.set_apu_bleed_air_valve_closed();
+        }
+
         fn set_cross_bleed_valve_open(&mut self) {
             self.pneumatic.set_cross_bleed_valve_open();
         }
@@ -1176,6 +1184,9 @@ mod acs_controller_tests {
                     &self.pneumatic_overhead,
                 );
             }
+            self.acs_overhead.set_pack_pushbutton_fault(
+                self.acsc.pack_fault_determination(&self.pack_flow_valve),
+            );
         }
     }
     impl SimulationElement for TestAircraft {
@@ -1384,6 +1395,10 @@ mod acs_controller_tests {
             self.command(|a| a.set_apu_bleed_air_valve_open());
         }
 
+        fn command_apu_bleed_off(&mut self) {
+            self.command(|a| a.set_apu_bleed_air_valve_closed());
+        }
+
         fn command_eng_mode_selector(&mut self, mode: EngineModeSelector) {
             self.write_by_name("TURB ENG IGNITION SWITCH EX1:1", mode);
         }
@@ -1420,6 +1435,14 @@ mod acs_controller_tests {
 
         fn pack_flow(&self) -> MassRate {
             self.query(|a| a.acsc.pack_flow())
+        }
+
+        fn pack_1_has_fault(&mut self) -> bool {
+            self.read_by_name("OVHD_COND_PACK_1_PB_HAS_FAULT")
+        }
+
+        fn pack_2_has_fault(&mut self) -> bool {
+            self.read_by_name("OVHD_COND_PACK_2_PB_HAS_FAULT")
         }
     }
 
@@ -2096,6 +2119,55 @@ mod acs_controller_tests {
                 test_bed.pack_flow(),
                 MassRate::new::<kilogram_per_second>(0.)
             );
+        }
+
+        #[test]
+        fn pack_flow_valve_has_fault_when_no_bleed() {
+            let mut test_bed = test_bed().with().both_packs_on().iterate(2);
+
+            assert!(test_bed.pack_1_has_fault());
+            assert!(test_bed.pack_2_has_fault());
+        }
+
+        #[test]
+        fn pack_flow_valve_doesnt_have_fault_when_bleed_on() {
+            let mut test_bed = test_bed().with().both_packs_on();
+
+            test_bed.command_apu_bleed_on();
+            test_bed = test_bed.iterate(2);
+
+            assert!(!test_bed.pack_1_has_fault());
+            assert!(!test_bed.pack_2_has_fault());
+        }
+
+        #[test]
+        fn pack_flow_valve_doesnt_have_fault_when_no_bleed_and_engines_ignition() {
+            let mut test_bed = test_bed().with().both_packs_on();
+
+            test_bed.command_eng_mode_selector(EngineModeSelector::Ignition);
+            test_bed = test_bed.iterate(2);
+
+            assert!(!test_bed.pack_1_has_fault());
+            assert!(!test_bed.pack_2_has_fault());
+        }
+
+        #[test]
+        fn pack_flow_light_resets_after_condition() {
+            let mut test_bed = test_bed().with().both_packs_on().iterate(2);
+
+            assert!(test_bed.pack_1_has_fault());
+            assert!(test_bed.pack_2_has_fault());
+
+            test_bed.command_apu_bleed_on();
+            test_bed = test_bed.iterate(2);
+
+            assert!(!test_bed.pack_1_has_fault());
+            assert!(!test_bed.pack_2_has_fault());
+
+            test_bed.command_apu_bleed_off();
+            test_bed = test_bed.iterate(2);
+            assert!(test_bed.pack_1_has_fault());
+            assert!(test_bed.pack_2_has_fault());
         }
     }
 }
