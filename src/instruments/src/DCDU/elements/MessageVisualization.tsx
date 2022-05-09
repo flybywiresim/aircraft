@@ -186,6 +186,9 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
 
         inputLines.forEach((line) => {
             const words = colorizeWords(line, keepNewlines);
+            if (words.length === 1 && /-+/.test(line)) {
+                lastLineHighlight = false;
+            }
 
             if (words.length !== 0) {
                 // invert the highlights due to the old highlighted text of the last line
