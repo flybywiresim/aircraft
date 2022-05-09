@@ -176,7 +176,7 @@ class CDUAtcMessageModify {
 
     static CreateDescriptionLine(message, entry) {
         if (entry.textIndex >= 0) {
-            return entry.text.replace("%s", message.Content.Content[entry.textIndex]);
+            return entry.text.replace("%s", message.Content.Content[entry.textIndex].Value);
         }
         return entry.text;
     }
@@ -257,11 +257,11 @@ class CDUAtcMessageModify {
         return data.value !== "" || data.selectedToggles[0] || data.selectedToggles[1];
     }
 
-    static UpdateResponseMessage(message, data) {
+    static UpdateResponseMessage(mcdu, message, data) {
         const lutEntry = ModifyLookupTable[message.Content.TypeId];
 
         if (data.selectedToggles[0]) {
-            const freetext = "WE CAN ACCEPT %s NOW".replace("%s", message.Content.Content[lutEntry[1].textIndex]);
+            const freetext = "WE CAN ACCEPT %s NOW".replace("%s", message.Content.Content[lutEntry[1].textIndex].Value);
             message.Response.Content = Atsu.CpdlcMessagesDownlink['DM67'][1].deepCopy();
             message.Response.Content.Content[0] = freetext;
         } else if (data.selectedToggles[1]) {
@@ -410,7 +410,7 @@ class CDUAtcMessageModify {
         };
         mcdu.onRightInput[4] = () => {
             if (CDUAtcMessageModify.CanUpdateMessage(data)) {
-                CDUAtcMessageModify.UpdateResponseMessage(message, data);
+                CDUAtcMessageModify.UpdateResponseMessage(mcdu, message, data);
                 CDUAtcTextFansA.ShowPage1(mcdu, [message]);
             }
         };
@@ -420,7 +420,7 @@ class CDUAtcMessageModify {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcMessageModify.CanUpdateMessage(data)) {
-                CDUAtcMessageModify.UpdateResponseMessage(message, data);
+                CDUAtcMessageModify.UpdateResponseMessage(mcdu, message, data);
                 mcdu.atsu.atc.updateMessage(message);
                 CDUAtcMenu.ShowPage(mcdu);
             }
