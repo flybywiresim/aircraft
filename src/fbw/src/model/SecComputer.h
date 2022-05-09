@@ -84,13 +84,15 @@ class SecComputer final
     real_T BitfromLabel6_bit;
     real_T BitfromLabel5_bit;
     real_T BitfromLabel7_bit;
+    real_T BitfromLabel_bit;
+    real_T BitfromLabel1_bit;
     real_T BitfromLabel4_bit_a;
     real_T BitfromLabel6_bit_d;
     real_T BitfromLabel5_bit_i;
     real_T BitfromLabel7_bit_m;
-    real_T BitfromLabel_bit;
+    real_T BitfromLabel_bit_g;
     real_T BitfromLabel2_bit;
-    real_T BitfromLabel1_bit;
+    real_T BitfromLabel1_bit_a;
     real_T BitfromLabel3_bit;
     real_T BitfromLabel_bit_a;
     real_T BitfromLabel1_bit_c;
