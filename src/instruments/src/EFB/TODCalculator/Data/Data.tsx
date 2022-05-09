@@ -57,7 +57,9 @@ export const Data = ({ className }: {className: string}) => {
         }
 
         if (!inputValid(calculationType!, syncedInput)) {
-            dispatch(setTodData({ calculationInputMode: TOD_INPUT_MODE.MANUAL, calculation: { input: -1, type: undefined } }));
+            // Reset to default as otherwise there was an issue that the FPA field vanished
+            // when having it synced and the switch to HDG-VS.
+            dispatch(setTodData({ calculationInputMode: TOD_INPUT_MODE.MANUAL, calculation: { input: 3, type: TOD_CALCULATION_TYPE.FLIGHT_PATH_ANGLE } }));
             return;
         }
 
