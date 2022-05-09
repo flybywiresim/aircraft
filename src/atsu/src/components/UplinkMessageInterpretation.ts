@@ -158,7 +158,7 @@ export class UplinkMessageInterpretation {
         } else if (message.Content.TypeId in UplinkMessageInterpretation.SemanticAnswerTable) {
             const lutEntry = UplinkMessageInterpretation.SemanticAnswerTable[message.Content.TypeId];
             if (lutEntry.positiveOrNegative) {
-                const response = new CpdlcMessage();
+                const response = new RequestMessage();
                 response.Station = message.Station;
                 response.PreviousTransmissionId = message.CurrentTransmissionId;
 
@@ -170,7 +170,7 @@ export class UplinkMessageInterpretation {
 
                 cpdlc.Response = response;
             } else if (lutEntry.messages[0] in CpdlcMessagesDownlink) {
-                const response = new CpdlcMessage();
+                const response = new RequestMessage();
                 response.Station = message.Station;
                 response.PreviousTransmissionId = message.CurrentTransmissionId;
                 response.Content = CpdlcMessagesDownlink[lutEntry.messages[0]][1].deepCopy();
