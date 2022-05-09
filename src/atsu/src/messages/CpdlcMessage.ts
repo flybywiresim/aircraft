@@ -3,6 +3,7 @@
 
 import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
 import { CpdlcMessageElement, CpdlcMessagesDownlink, CpdlcMessagesUplink } from './CpdlcMessageElements';
+import { RequestMessage } from './RequestMessage';
 import { wordWrap } from '../Common';
 
 /**
@@ -39,7 +40,11 @@ export class CpdlcMessage extends AtsuMessage {
             this.Content.deserialize(jsonData.Content);
         }
         if (jsonData.Response !== undefined) {
-            this.Response = new CpdlcMessage();
+            if (jsonData.Response.Type === AtsuMessageType.CPDLC) {
+                this.Response = new CpdlcMessage();
+            } else if (jsonData.Response.Type === AtsuMessageType.Request) {
+                this.Response = new RequestMessage();
+            }
             this.Response.deserialize(jsonData.Response);
         }
         this.CurrentTransmissionId = jsonData.CurrentTransmissionId;
