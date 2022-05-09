@@ -286,7 +286,7 @@ class CDUAtcMessageModify {
         if (data.selectedToggles[0]) {
             const freetext = "WE CAN ACCEPT %s NOW".replace("%s", message.Content.Content[lutEntry[1].textIndex].Value);
             message.Response.Content = Atsu.CpdlcMessagesDownlink[lutEntry[1].response][1].deepCopy();
-            message.Response.Content.Content[0] = freetext;
+            message.Response.Content.Content[0].Value = freetext;
         } else if (data.selectedToggles[1]) {
             message.Response.Content = Atsu.CpdlcMessagesDownlink[lutEntry[2].response][1].deepCopy();
         } else {
