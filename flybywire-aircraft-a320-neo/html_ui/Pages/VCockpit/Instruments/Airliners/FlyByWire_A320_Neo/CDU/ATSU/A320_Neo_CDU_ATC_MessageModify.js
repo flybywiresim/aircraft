@@ -291,8 +291,8 @@ class CDUAtcMessageModify {
             message.Response.Content = Atsu.CpdlcMessagesDownlink[lutEntry[2].response][1].deepCopy();
         } else {
             const newContent = Atsu.CpdlcMessagesDownlink[lutEntry[0].response][1].deepCopy();
-            if (lutEntry[0].valueIndex !== 0) {
-                newContent.Content[0].Value = message.Content.Content[entry.textIndex].Value;
+            for (let i = 0; i < lutEntry[0].valueIndex; ++i) {
+                newContent.Content[i].Value = message.Content.Content[entry.textIndex + i].Value;
             }
             message.Response.Content.Content[lutEntry[0].valueIndex].Value = data.value;
         }
