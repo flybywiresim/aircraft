@@ -102,7 +102,7 @@ const DCDU: React.FC = () => {
         const message = messages.get(uid);
         if (message) {
             message.statusMessage = DcduStatusMessage.McduForModification;
-            // TODO trigger DcduLink to open the page on the MCDU
+            events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_MODIFY_RESPONSE', uid);
         }
     };
     const recallMessage = () => {
