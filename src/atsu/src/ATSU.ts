@@ -2,6 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { Atc } from './ATC';
@@ -226,6 +227,10 @@ export class Atsu {
 
     public publishAtsuStatusCode(code: AtsuStatusCodes): void {
         this.mcdu.addNewAtsuMessage(code);
+    }
+
+    public modifyDcduMessage(message: CpdlcMessage): void {
+        this.mcdu.modifyDcduMessage(message);
     }
 
     public async isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
