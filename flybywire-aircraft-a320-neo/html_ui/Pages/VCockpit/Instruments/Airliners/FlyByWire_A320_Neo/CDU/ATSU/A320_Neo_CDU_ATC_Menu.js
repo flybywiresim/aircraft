@@ -2,6 +2,11 @@ class CDUAtcMenu {
     static ShowPage(mcdu) {
         mcdu.page.Current = mcdu.page.ATCMenu;
 
+        let modif = "";
+        if (mcdu.atsu.modifMessage !== undefined) {
+            modif = "MODIFY>";
+        }
+
         mcdu.setTemplate([
             ["ATC MENU"],
             [""],
@@ -11,7 +16,7 @@ class CDUAtcMenu {
             [""],
             ["<MSG RECORD", "REPORTS>"],
             [""],
-            ["<MONITORED MSG"],
+            ["<MONITORED MSG", modif],
             [""],
             ["<CONNECTION"],
             ["\xa0ATSU DLK"],
@@ -79,6 +84,15 @@ class CDUAtcMenu {
                 CDUAtcReports.ShowPage(mcdu);
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.keyNotActive);
+            }
+        };
+
+        mcdu.rightInputDelay[3] = () => {
+            return mcdu.getDelaySwitchPage();
+        };
+        mcdu.onRightInput[3] = () => {
+            if (mcdu.atsu.modifMessage !== undefined) {
+                CDUAtcMessageModify.ShowPage(mcdu, mcdu.atsu.modifMessage);
             }
         };
 

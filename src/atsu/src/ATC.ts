@@ -470,6 +470,10 @@ export class Atc {
     public updateMessage(message: CpdlcMessage): void {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === message.UniqueMessageID);
         if (index !== -1) {
+            if (this.parent.modifMessage?.UniqueMessageID === message.UniqueMessageID) {
+                this.parent.modifMessage = undefined;
+            }
+
             this.messageQueue[index] = message;
             this.dcduLink.update(message);
         }

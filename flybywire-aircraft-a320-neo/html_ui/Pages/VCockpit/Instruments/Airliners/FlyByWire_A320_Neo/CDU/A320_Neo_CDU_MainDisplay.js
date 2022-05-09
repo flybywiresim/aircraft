@@ -1013,10 +1013,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
-    modifyDcduMessage(message) {
-        CDUAtcMessageModify.ShowPage(this, message);
-    }
-
     /* END OF MCDU MESSAGE SYSTEM */
     /* MCDU EVENTS */
 

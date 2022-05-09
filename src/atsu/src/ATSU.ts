@@ -34,6 +34,8 @@ export class Atsu {
 
     public atc = new Atc(this, this.datalink);
 
+    public modifMessage: CpdlcMessage | undefined = undefined;
+
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
     private mcdu = undefined;
@@ -230,7 +232,7 @@ export class Atsu {
     }
 
     public modifyDcduMessage(message: CpdlcMessage): void {
-        this.mcdu.modifyDcduMessage(message);
+        this.modifMessage = message;
     }
 
     public async isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
