@@ -823,7 +823,7 @@ impl LandingGearControlInterfaceUnit {
             set_arinc429_bit(&mut word, 28, self.sensor_inputs.nose_gear_compressed(true));
             set_arinc429_bit(&mut word, 29, self.gear_handle_is_down());
 
-            return word;
+            word
         }
     }
 
@@ -859,7 +859,7 @@ impl LandingGearControlInterfaceUnit {
                     && self.sensor_inputs.right_gear_down_and_locked,
             );
 
-            return word;
+            word
         }
     }
 
@@ -878,7 +878,7 @@ impl LandingGearControlInterfaceUnit {
             // Nose gear door should be seperated into left/right doors. For now, just copy the data.
             set_arinc429_bit(&mut word, 28, self.sensor_inputs.nose_door_fully_opened);
 
-            return word;
+            word
         }
     }
 }
