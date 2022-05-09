@@ -101,7 +101,16 @@ function colorizeWords(message: string, keepNewlines: boolean): ColorizedWord[] 
     }
 
     let highlightColor = false;
-    message.split(/\s+/).forEach((word) => {
+    const messageWords = message.match(/[-@_A-Z0-9]+|\[\s+\]/g);
+    if (!messageWords) {
+        return [];
+    }
+
+    for (let word of messageWords) {
+        if (word.length === 0) {
+            continue;
+        }
+
         /* check if the color needs to be changed */
         const highlightMarkers: number[] = [];
         for (let i = 0; i < word.length; ++i) {
@@ -126,7 +135,7 @@ function colorizeWords(message: string, keepNewlines: boolean): ColorizedWord[] 
         } else if (highlightMarkers.length !== 0) {
             highlightColor = !highlightColor;
         }
-    });
+    }
 
     return words;
 }
