@@ -247,6 +247,9 @@ class CDUAtcMessageModify {
         if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Level) {
             return Atsu.InputValidation.validateScratchpadAltitude(value);
         }
+        if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Time) {
+            return Atsu.InputValidation.validateScratchpadTime(value);
+        }
         if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Freetext) {
             return Atsu.AtsuStatusCodes.Ok;
         }
@@ -263,9 +266,6 @@ class CDUAtcMessageModify {
     static FormatScratchpadValue(message, value) {
         const lutEntry = ModifyLookupTable[message.Content.TypeId];
 
-        if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Position || lutEntry[0].type === Atsu.CpdlcMessageContentType.Freetext || lutEntry[0].type === Atsu.CpdlcMessageContentType.Squawk || lutEntry[0].type === Atsu.CpdlcMessageContentType.Degree) {
-            return value;
-        }
         if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Speed) {
             return Atsu.InputValidation.formatScratchpadSpeed(value);
         }
@@ -273,7 +273,7 @@ class CDUAtcMessageModify {
             return Atsu.InputValidation.formatScratchpadAltitude(value);
         }
 
-        return Atsu.AtsuStatusCodes.UnknownMessage;
+        return value;
     }
 
     static CanUpdateMessage(data) {
@@ -287,15 +287,21 @@ class CDUAtcMessageModify {
             const freetext = "WE CAN ACCEPT %s NOW".replace("%s", message.Content.Content[lutEntry[1].textIndex].Value);
             message.Response.Content = Atsu.CpdlcMessagesDownlink[lutEntry[1].response][1].deepCopy();
             message.Response.Content.Content[0].Value = freetext;
-        } else if (data.selectedToggles[1]) {
-            message.Response.Content = Atsu.CpdlcMessagesDownlink[lutEntry[2].response][1].deepCopy();
-        } else {
-            const newContent = Atsu.CpdlcMessagesDownlink[lutEntry[0].response][1].deepCopy();
-            for (let i = 0; i < lutEntry[0].valueIndex; ++i) {
-                newContent.Content[i].Value = message.Content.Content[entry.textIndex + i].Value;
-            }
-            message.Response.Content.Content[lutEntry[0].valueIndex].Value = data.value;
+            return;
         }
+
+        let newContent = null;
+        if (data.selectedToggles[1]) {
+            newContent = Atsu.CpdlcMessagesDownlink[lutEntry[2].response][1].deepCopy();
+        } else {
+            newContent = Atsu.CpdlcMessagesDownlink[lutEntry[0].response][1].deepCopy();
+            newContent.Content[lutEntry[0].valueIndex].Value = data.value;
+        }
+
+        for (let i = 0; i < lutEntry[0].valueIndex; ++i) {
+            newContent.Content[i].Value = message.Content.Content[lutEntry[0].textIndex + i].Value;
+        }
+        message.Response.Content = newContent;
     }
 
     static ShowPage(mcdu, message, data = CDUAtcMessageModify.CreateDataBlock(message)) {
