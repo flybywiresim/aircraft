@@ -261,6 +261,9 @@ export class Atc {
                 return;
             }
 
+            if (message.Response.UniqueMessageID < 0) {
+                message.Response.UniqueMessageID = ++this.cpdlcMessageId;
+            }
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
             this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sending);
             this.dcduLink.update(message);
