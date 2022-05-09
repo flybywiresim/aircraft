@@ -222,7 +222,7 @@ export class Atc {
         if (message !== undefined) {
             const responseMsg = this.createCpdlcResponse(message, response);
 
-            // avoid double-sents
+            // avoid double-sends
             if (message.Response !== undefined && message.Response.Content.TypeId === responseMsg.Content.TypeId
                  && (message.Response.ComStatus === AtsuMessageComStatus.Sending || message.Response.ComStatus === AtsuMessageComStatus.Sent)) {
                 return;
