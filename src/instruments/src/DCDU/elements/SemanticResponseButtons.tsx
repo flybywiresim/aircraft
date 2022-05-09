@@ -45,7 +45,7 @@ export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = (
                                 messageId={message.UniqueMessageID}
                                 index="L1"
                                 content="CANNOT"
-                                active={!buttonsBlocked && !dataIncomplete}
+                                active={!buttonsBlocked}
                                 onClick={clicked}
                             />
                         </>
