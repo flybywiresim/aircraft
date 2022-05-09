@@ -2593,10 +2593,24 @@ In the variables below, {number} should be replaced with one item in the set: { 
       23    | LH gear downlocked
       24    | RH gear downlocked
       25    | Nose gear downlocked
-      26    | LH gear shock absorber not extended
-      27    | RH gear shock absorber not extended
-      28    | Nose gear shock absorber not extended
+      26    | LH gear shock absorber not extended (Treat GND PWR connected as on ground)
+      27    | RH gear shock absorber not extended (Treat GND PWR connected as on ground)
+      28    | Nose gear shock absorber not extended (Treat GND PWR connected as on ground)
       29    | Gear selected down (Lever Position)
+
+- A32NX_LGCIU_{number}_DISCRETE_WORD_2
+    - Discrete Data word 2 of the LGCIU bus output
+    - Arinc429<Discrete>
+    - {number}
+        - 1
+        - 2
+    - Bit   | Description
+      11    | LH & RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)
+      12    | LH gear shock absorber compressed (Don't treat GND PWR connected as on ground)
+      13    | RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)
+      14    | Nose gear shock absorber compressed (Don't treat GND PWR connected as on ground)
+      15    | LH & RH gear downlocked
+
 
 - A32NX_LGCIU_{number}_DISCRETE_WORD_3
     - Discrete Data word 3 of the LGCIU bus output

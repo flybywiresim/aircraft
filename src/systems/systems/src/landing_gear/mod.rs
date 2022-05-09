@@ -546,6 +546,7 @@ pub struct LandingGearControlInterfaceUnit {
     fault_ecam_id: VariableIdentifier,
 
     discrete_word_1_id: VariableIdentifier,
+    discrete_word_2_id: VariableIdentifier,
     discrete_word_3_id: VariableIdentifier,
 
     is_powered: bool,
@@ -605,6 +606,8 @@ impl LandingGearControlInterfaceUnit {
 
             discrete_word_1_id: context
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_1", lgciu_number(lgciu_id))),
+            discrete_word_2_id: context
+                .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_2", lgciu_number(lgciu_id))),
             discrete_word_3_id: context
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_3", lgciu_number(lgciu_id))),
 
@@ -811,22 +814,50 @@ impl LandingGearControlInterfaceUnit {
                 25,
                 self.sensor_inputs.downlock_state(GearWheel::NOSE),
             );
-            set_arinc429_bit(
-                &mut word,
-                26,
-                self.sensor_inputs.left_gear_compressed(false),
-            );
+            set_arinc429_bit(&mut word, 26, self.sensor_inputs.left_gear_compressed(true));
             set_arinc429_bit(
                 &mut word,
                 27,
-                self.sensor_inputs.right_gear_compressed(false),
+                self.sensor_inputs.right_gear_compressed(true),
+            );
+            set_arinc429_bit(&mut word, 28, self.sensor_inputs.nose_gear_compressed(true));
+            set_arinc429_bit(&mut word, 29, self.gear_handle_is_down());
+
+            return word;
+        }
+    }
+
+    fn discrete_word_2(&self) -> Arinc429Word<f32> {
+        if !self.is_powered {
+            Arinc429Word::new(0., SignStatus::FailureWarning)
+        } else {
+            let mut word = Arinc429Word::new(0., SignStatus::NormalOperation);
+            set_arinc429_bit(
+                &mut word,
+                11,
+                !self.sensor_inputs.left_and_right_gear_compressed(false),
             );
             set_arinc429_bit(
                 &mut word,
-                28,
-                self.sensor_inputs.nose_gear_compressed(false),
+                12,
+                !self.sensor_inputs.nose_gear_compressed(false),
             );
-            set_arinc429_bit(&mut word, 29, self.gear_handle_is_down());
+            set_arinc429_bit(
+                &mut word,
+                13,
+                !self.sensor_inputs.left_gear_compressed(false),
+            );
+            set_arinc429_bit(
+                &mut word,
+                14,
+                !self.sensor_inputs.right_gear_compressed(false),
+            );
+            set_arinc429_bit(
+                &mut word,
+                15,
+                self.sensor_inputs.left_gear_down_and_locked
+                    && self.sensor_inputs.right_gear_down_and_locked,
+            );
 
             return word;
         }
@@ -907,6 +938,10 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
         writer.write(
             &self.discrete_word_1_id,
             arinc429_to_f64(self.discrete_word_1()),
+        );
+        writer.write(
+            &self.discrete_word_2_id,
+            arinc429_to_f64(self.discrete_word_2()),
         );
         writer.write(
             &self.discrete_word_3_id,
