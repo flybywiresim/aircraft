@@ -43164,6 +43164,26 @@
       {
         "name": "CHOCKS_MAIN_GEAR_LEFT",
         "parent": "HYDROLIC_LEFT"
+      },
+      {
+        "name": "CONE_ENG_L",
+        "parent": "HYDROLIC_LEFT"
+      },
+      {
+        "name": "CONE_L",
+        "parent": "HYDROLIC_LEFT"
+      },
+      {
+        "name": "CONE_ENG_R",
+        "parent": "HYDROLIC_RIGHT"
+      },
+      {
+        "name": "CONE_R",
+        "parent": "HYDROLIC_RIGHT"
+      },
+      {
+        "name": "CONE_B",
+        "parent": "HYDROLIC_RIGHT"
       }
     ]
   }

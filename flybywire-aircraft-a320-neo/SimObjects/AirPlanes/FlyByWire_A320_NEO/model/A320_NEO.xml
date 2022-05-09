@@ -485,11 +485,11 @@
                 <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED)</GND_ENABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
-                <NODE_ID>CONE_ENG1</NODE_ID>
+                <NODE_ID>CONE_ENG_L</NODE_ID>
                 <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED)</GND_ENABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
-                <NODE_ID>CONE_ENG2</NODE_ID>
+                <NODE_ID>CONE_ENG_R</NODE_ID>
                 <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED)</GND_ENABLE_OVRD>
             </UseTemplate>
 

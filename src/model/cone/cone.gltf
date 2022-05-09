@@ -153,48 +153,46 @@
     ],
     "nodes": [
         {
-            "translation": [0, -2.4, -25],
-            "rotation": [0, 0.117, 0, 0.993],
+            "rotation": [0.04116, -0.08451, 0.70670, 0.70123],
             "scale": [0.4, 0.4, 0.4],
+            "translation": [-0.375, -3.700, 22.700],
             "mesh": 0,
             "name": "CONE_B"
         },
         {
-            "translation": [18, -2.35, -8],
-            "rotation": [0, 0.993, 0, 0.117],
+            "rotation": [0.02399, -0.02395, -0.70652, 0.70687],
             "scale": [0.4, 0.4, 0.4],
+            "translation": [-0.720, -14.41, -4.180],
             "mesh": 0,
             "name": "CONE_L"
         },
         {
-            "translation": [-18, -2.35, -8],
-            "rotation": [0, 0, 0, 0],
+            "rotation": [0.08628, -0.13421, 0.70201, 0.69405],
             "scale": [0.4, 0.4, 0.4],
+            "translation": [0.746, 14.815, 3.973],
             "mesh": 0,
             "name": "CONE_R"
         },
         {
-            "translation": [5.75, -2.3, 3.5],
-            "rotation": [0, 0, 0, 0],
+            "rotation": [0.08432, 0.03803, -0.70409, 0.70405],
             "scale": [0.4, 0.4, 0.4],
+            "translation": [-1.433, -1.881, 6.933],
             "mesh": 0,
-            "name": "CONE_ENG1"
+            "name": "CONE_ENG_L"
         },
         {
-            "translation": [-5.75, -2.3, 3.5],
-            "rotation": [0, 0.993, 0, 0.117],
+            "rotation": [0.02434, -0.06770, 0.70696, 0.70357],
             "scale": [0.4, 0.4, 0.4],
+            "translation": [1.418, 1.873, -6.711],
             "mesh": 0,
-            "name": "CONE_ENG2"
+            "name": "CONE_ENG_R"
         }
     ],
     "scene": 0,
     "scenes": [
         {
-            "nodes": [
-                0, 1, 2, 3, 4
-            ],
-            "name": "Scene"
+            "nodes": [],
+            "name": "CONE_EQUIPMENT"
         }
     ],
     "textures": [

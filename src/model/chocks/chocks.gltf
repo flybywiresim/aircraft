@@ -291,7 +291,7 @@
     "scenes": [
         {
             "nodes": [],
-            "name": "GND_EQUIPMENT"
+            "name": "CHOCKS_EQUIPMENT"
         }
     ],
     "textures": [
