@@ -2,6 +2,10 @@ class CDUAtcMenu {
     static ShowPage(mcdu) {
         mcdu.page.Current = mcdu.page.ATCMenu;
 
+        mcdu.refreshPageCallback = () => {
+            this.ShowPage(mcdu);
+        };
+
         let modif = "";
         if (mcdu.atsu.modifMessage !== undefined) {
             modif = "MODIFY>";
