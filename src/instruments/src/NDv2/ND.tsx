@@ -10,7 +10,8 @@ import {
 } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
 import { SimVarString } from '@shared/simvar';
-import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
+import { EfisNdMode, EfisNdRangeValue, rangeSettings } from '@shared/NavigationDisplay';
+import { TcasMode } from '@tcas/lib/TcasConstants';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { NDSimvars } from './NDSimvarPublisher';
@@ -23,6 +24,7 @@ import { EcpSimVars } from '../MsfsAvionicsCommon/providers/EcpBusSimVarPublishe
 import { NDPage } from './pages/NDPage';
 import { PlanModePage } from './pages/plan';
 import { RadioNavInfo } from './shared/RadioNavInfo';
+import { RoseNavPage } from './pages/rose/RoseNavPage';
 
 const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
@@ -51,6 +53,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
     private readonly mapRotation = Subject.create(0);
 
     private readonly mapRangeRadius = Subject.create(0);
+
+    private readonly roseNavPage = FSComponent.createRef<RoseNavPage>();
 
     private readonly arcPage = FSComponent.createRef<ArcModePage>();
 
@@ -178,6 +182,9 @@ export class NDComponent extends DisplayComponent<NDProps> {
         this.currentPageMode.set(mode);
 
         switch (mode) {
+        case EfisNdMode.ROSE_NAV:
+            this.currentPageInstance = this.roseNavPage.instance;
+            break;
         case EfisNdMode.ARC:
             this.currentPageInstance = this.arcPage.instance;
             break;
@@ -245,6 +252,13 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         MODE CHANGE
                     </Flag>
 
+                    <RoseNavPage
+                        // @ts-ignore
+                        ref={this.roseNavPage}
+                        heading={this.magneticHeadingWord}
+                        tcasMode={Subject.create(TcasMode.STBY)}
+                        rangeValue={this.mapRangeRadius as Subject<EfisNdRangeValue>}
+                    />
                     <ArcModePage
                         // @ts-ignore
                         ref={this.arcPage}

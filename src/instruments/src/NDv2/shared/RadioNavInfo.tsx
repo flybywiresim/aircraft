@@ -86,8 +86,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                 />
 
                 <text x={this.x} y={692} fontSize={24} class="White">
-                    VOR
-                    {this.props.index}
+                    {`VOR${this.props.index}`}
                 </text>
 
                 <text
@@ -157,6 +156,10 @@ export class BigLittle extends DisplayComponent<BigLittleProps> {
         super.onAfterRender(node);
 
         this.props.value.sub((value) => {
+            if (!this.props.visible.get()) {
+                return;
+            }
+
             if (this.props.roundedThreshold && value >= this.props.roundedThreshold) {
                 this.intPartText.set(value.toFixed(0));
                 this.showDecimal.set(false);
@@ -164,8 +167,15 @@ export class BigLittle extends DisplayComponent<BigLittleProps> {
                 const [intPart, decimalPart] = value.toFixed(this.props.digits).split('.', 2);
 
                 this.intPartText.set(intPart);
-                this.decimalPartText.set(decimalPart);
+                this.decimalPartText.set(`.${decimalPart}`);
                 this.showDecimal.set(true);
+            }
+        });
+
+        this.props.visible.sub((visible) => {
+            if (!visible) {
+                this.intPartText.set('');
+                this.decimalPartText.set('');
             }
         });
     }
@@ -178,9 +188,8 @@ export class BigLittle extends DisplayComponent<BigLittleProps> {
                 </tspan>
                 <tspan
                     fontSize={20}
-                    visibility={MappedSubject.create(([visible, showDecimal]) => (visible && showDecimal ? 'visible' : 'hidden'), this.props.visible, this.showDecimal)}
+                    visibility={this.showDecimal.map((showDecimal) => (showDecimal ? 'visible' : 'hidden'))}
                 >
-                    .
                     {this.decimalPartText}
                 </tspan>
             </>

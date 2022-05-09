@@ -1,5 +1,6 @@
-import { FSComponent, EventBus, MappedSubject, Subject, VNode, Subscribable, DisplayComponent } from 'msfssdk';
+import { DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from 'msfssdk';
 import { Arinc429Word } from '@shared/arinc429';
+import { EfisNdMode } from '@shared/NavigationDisplay';
 import { Airplane } from '../../shared/Airplane';
 import { TrackBug } from '../../shared/TrackBug';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
@@ -10,6 +11,8 @@ import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Flag } from '../../shared/Flag';
 import { NDPage } from '../NDPage';
 import { CrossTrackError } from '../../shared/CrossTrackError';
+import { RadioNeedle } from '../../shared/RadioNeedle';
+import { TcasWxrMessages } from '../../TcasWxrMessages';
 
 export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackUpMode: Subscribable<boolean> }> implements NDPage {
     public isVisible = Subject.create(false);
@@ -84,6 +87,11 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
                     ringRotation={this.ringRotation}
                 />
 
+                <g clipPath="url(#arc-mode-map-clip)">
+                    <RadioNeedle bus={this.props.bus} index={1} side="L" mode={EfisNdMode.ARC} />
+                    <RadioNeedle bus={this.props.bus} index={2} side="L" mode={EfisNdMode.ARC} />
+                </g>
+
                 <SelectedHeadingBug
                     bus={this.props.bus}
                     rotationOffset={this.planeRotation}
@@ -110,6 +118,8 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
                 <Flag shown={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">MAP NOT AVAIL</Flag>
 
                 <CrossTrackError bus={this.props.bus} x={390} y={646} isPlanMode={Subject.create(false)} />
+
+                <TcasWxrMessages bus={this.props.bus} mode={EfisNdMode.ARC} />
             </g>
         );
     }
