@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { Layer } from '@instruments/common/utils';
 import { useSimVar } from '@instruments/common/simVars';
-import { EfisNdMode } from '@shared/NavigationDisplay';
+import { EfisNdMode, TcasWxrMessage } from '@shared/NavigationDisplay';
 
 /*
 Messages in priority order, from 1-12 (full set with ATSAW and nice weather radar)
@@ -17,11 +17,6 @@ Messages in priority order, from 1-12 (full set with ATSAW and nice weather rada
 [ TA ONLY (white) |                       ]
 [                 |     ADS-B (amber)     ]
 */
-
-interface TcasWxrMessage {
-    text: string;
-    color: 'White' | 'Amber';
-}
 
 export const TcasWxrMessages: FC<{ modeIndex: EfisNdMode}> = ({ modeIndex }) => {
     // TODO get data and decide what to display

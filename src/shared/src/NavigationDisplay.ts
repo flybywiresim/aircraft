@@ -149,3 +149,8 @@ export const enum NavAidMode {
     ADF,
     VOR,
 }
+
+export interface TcasWxrMessage {
+    text: string;
+    color: 'White' | 'Amber';
+}
