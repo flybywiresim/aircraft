@@ -160,7 +160,7 @@ export class DcduLink {
         });
 
         Coherent.on('A32NX_ATSU_SEND_MESSAGE', (uid: number) => {
-            const idx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
+            let idx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
             if (idx > -1) {
                 // iterate in reverse order to ensure that the "identification" message is the last message in the queue
                 // ensures that the DCDU-status change to SENT is done after every message is sent
@@ -176,6 +176,29 @@ export class DcduLink {
                         }
                     }
                 });
+
+                return;
+            }
+
+            idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
+            if (idx > -1) {
+                const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
+                if (message !== undefined) {
+                    const cpdlcMessage = message as CpdlcMessage;
+                    if (cpdlcMessage.Response && UplinkMessageInterpretation.SemanticAnswerRequired(cpdlcMessage)) {
+                        this.atc.sendExistingResponse(uid);
+                    }
+                }
+            }
+        });
+
+        Coherent.on('A32NX_ATSU_DCDU_MESSAGE_MODIFY_RESPONSE', (uid: number) => {
+            const idx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
+            if (idx > -1) {
+                const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
+                if (message !== undefined) {
+                    this.atsu.modifyDcduMessage(message as CpdlcMessage);
+                }
             }
         });
 

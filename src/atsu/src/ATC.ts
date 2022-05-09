@@ -253,6 +253,36 @@ export class Atc {
         }
     }
 
+    public sendExistingResponse(uid: number): void {
+        const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
+        if (message !== undefined && message.Response !== undefined) {
+            // avoid double-sends
+            if (message.Response.ComStatus === AtsuMessageComStatus.Sending || message.Response.ComStatus === AtsuMessageComStatus.Sent) {
+                return;
+            }
+
+            message.Response.ComStatus = AtsuMessageComStatus.Sending;
+            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sending);
+            this.dcduLink.update(message);
+
+            this.datalink.sendMessage(message.Response, false).then((code) => {
+                if (code === AtsuStatusCodes.Ok) {
+                    message.Response.ComStatus = AtsuMessageComStatus.Sent;
+                    this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sent);
+                    setTimeout(() => {
+                        if (this.dcduLink.currentDcduStatusMessage(message.UniqueMessageID) === DcduStatusMessage.Sent) {
+                            this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.NoMessage);
+                        }
+                    }, 5000);
+                } else {
+                    message.Response.ComStatus = AtsuMessageComStatus.Failed;
+                    this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.SendFailed);
+                }
+                this.dcduLink.update(message);
+            });
+        }
+    }
+
     public async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         if (message.ComStatus === AtsuMessageComStatus.Sending || message.ComStatus === AtsuMessageComStatus.Sent) {
             return AtsuStatusCodes.Ok;

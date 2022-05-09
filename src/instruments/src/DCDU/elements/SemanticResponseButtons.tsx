@@ -28,7 +28,7 @@ export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = (
             } else if (index === 'R1') {
                 modifyResponse(message.UniqueMessageID);
             } else if (index === 'R2' && message.Response) {
-                sendMessage(message.Response.UniqueMessageID);
+                sendMessage(message.UniqueMessageID);
             }
         } else if (index === 'R2') {
             closeMessage(message.UniqueMessageID);
