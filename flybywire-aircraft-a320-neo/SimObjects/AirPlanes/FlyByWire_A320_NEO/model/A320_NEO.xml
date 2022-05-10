@@ -474,35 +474,29 @@
             <!-- GND CONES -->
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CONE_B</NODE_ID>
-                <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED) (L:A32NX_IS_MOVING, bool) and ! if</GND_ENABLE_OVRD>
+                <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED) (L:A32NX_IS_STATIONARY, bool) and</GND_ENABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CONE_R</NODE_ID>
-                <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED) (L:A32NX_IS_MOVING, bool) and ! if</GND_ENABLE_OVRD>
+                <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED) (L:A32NX_IS_STATIONARY, bool) and</GND_ENABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CONE_L</NODE_ID>
-                <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED) (L:A32NX_IS_MOVING, bool) and ! if</GND_ENABLE_OVRD>
+                <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED) (L:A32NX_IS_STATIONARY, bool) and</GND_ENABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CONE_ENG_L</NODE_ID>
-                <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED) (L:A32NX_IS_MOVING, bool) and ! if</GND_ENABLE_OVRD>
+                <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED) (L:A32NX_IS_STATIONARY, bool) and</GND_ENABLE_OVRD>
             </UseTemplate>
             <UseTemplate Name="FBW_Gnd_Equipment">
                 <NODE_ID>CONE_ENG_R</NODE_ID>
-                <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED) (L:A32NX_IS_MOVING, bool) and ! if</GND_ENABLE_OVRD>
+                <GND_ENABLE_OVRD>(L:A32NX_MODEL_CONES_ENABLED) (L:A32NX_IS_STATIONARY, bool) and</GND_ENABLE_OVRD>
             </UseTemplate>
 
-            <!-- UTILITY FUNCTION -->
+            <!-- Utility function for creating the A32NX_IS_STATIONARY L-var. -->
             <UseTemplate Name="ASOBO_GT_Update">
                 <FREQUENCY>10</FREQUENCY>
-                <UPDATE_CODE>
-                    (A:SURFACE RELATIVE GROUND SPEED, feet per second) 0.1 > if{
-                        1 (&gt;L:A32NX_IS_MOVING, bool)
-                    } els{
-                        0 (&gt;L:A32NX_IS_MOVING, bool)
-                    }
-                </UPDATE_CODE>
+                <UPDATE_CODE>(A:SURFACE RELATIVE GROUND SPEED, feet per second) 0.1 &gt; ! (&gt;L:A32NX_IS_STATIONARY, bool)</UPDATE_CODE>
             </UseTemplate>
 
         </Component>

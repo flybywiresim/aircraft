@@ -3522,8 +3522,8 @@ impl A320BrakingForce {
         pushback_tug: &PushbackTug,
     ) {
         let chocks_on_wheels = context.is_on_ground()
-            && engine1.corrected_n1().get::<percent>() < 1.
-            && engine2.corrected_n1().get::<percent>() < 1.
+            && engine1.corrected_n1().get::<percent>() < 3.5
+            && engine2.corrected_n1().get::<percent>() < 3.5
             && !pushback_tug.is_nose_wheel_steering_pin_inserted()
             && !self.is_light_beacon_on;
 
