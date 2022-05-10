@@ -99,6 +99,7 @@ pub(crate) fn arinc429_to_f64(word: Arinc429Word<f32>) -> f64 {
     f64::from_bits(bits)
 }
 
+#[allow(dead_code)]
 pub(crate) fn arinc429_from_f64(value: f64) -> Arinc429Word<f32> {
     let bits = value.to_bits();
 
@@ -112,6 +113,7 @@ pub(crate) fn set_arinc429_bit(word: &mut Arinc429Word<f32>, bit: u32, value: bo
     word.value = (((word.value as u32) & !(1 << (bit - 1))) | ((value as u32) << (bit - 1))) as f32;
 }
 
+#[allow(dead_code)]
 pub(crate) fn get_arinc429_bit(word: &mut Arinc429Word<f32>, bit: u32) -> bool {
     ((word.value as u32 >> (bit - 1)) & 1) != 0
 }
@@ -154,20 +156,20 @@ mod tests {
 
         let mut expected_values: [bool; 30] = [false; 30];
 
-        for i in 11..29 {
-            expected_values[i] = rng.gen();
-            set_arinc429_bit(&mut word, i as u32, expected_values[i]);
+        for (i, item) in expected_values.iter_mut().enumerate().take(29).skip(11) {
+            *item = rng.gen();
+            set_arinc429_bit(&mut word, i as u32, *item);
         }
 
         let mut result = arinc429_from_f64(arinc429_to_f64(word));
 
-        for i in 11..29 {
+        for (i, item) in expected_values.iter_mut().enumerate().take(29).skip(11) {
             let result_bit = get_arinc429_bit(&mut result, i as u32);
             assert!(
-                result_bit == expected_values[i],
+                result_bit == *item,
                 "Expected Bit {} to be {}, got {}",
                 i,
-                expected_values[i],
+                *item,
                 result_bit
             );
         }
