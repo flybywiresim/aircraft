@@ -349,13 +349,13 @@
     "Title": "Préréglages"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "Les commandes de repoussage ne sont disponibles qu'au sol",
     "Backward": "Reculer",
     "CallTug": "Appeler le remorqueur",
-    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
-    "DisableSystemMessageTitle": "Disable Pushback System",
+    "DisableSystemMessageBody": "Êtes-vous sûr de désactiver le système de repoussage ? Cela retirera également le remorqueur.",
+    "DisableSystemMessageTitle": "Désactiver le système de repoussage",
     "EnableSystemMessageBody": "Le nouveau Système de Repoussage du FlyPadOS 3 n'est pas encore finalisé. Il est incompatible avec d'autres add-ons de Repoussage et peut entraîner d'autres problèmes.",
-    "EnableSystemMessageTitle": "Activer Systèmes de Repoussage",
+    "EnableSystemMessageTitle": "Activer le système de repoussage",
     "Forward": "Avancer",
     "Halt": "En pause",
     "LeavePageMessage": "Suspendre Repoussage",
@@ -372,11 +372,11 @@
     "TT": {
       "CallReleaseTug": "Appel ou libérer remorqueur",
       "CenterPlaneMode": "Centrer le plan sur l’avion On/Off",
-      "DecreaseSpeed": "Arrière ou avance lente (double-clic pour régler la vitesse sur 0)",
-      "IncreaseSpeed": "Avance ou recule lente (double-clic pour régler la vitesse sur 0)",
-      "Left": "Aller à gauche (double-clic pour tout droit)",
+      "DecreaseSpeed": "Arrière ou avance lente",
+      "IncreaseSpeed": "Avance ou reculer lentement",
+      "Left": "Aller à gauche",
       "PausePushback": "Suspendre ou reprendre repoussage",
-      "Right": "Aller à droite (double-clic pour tout droit)",
+      "Right": "Aller à droite",
       "SetReleaseParkingBrake": "Serrer ou Desserrer le frein de parking",
       "SliderDirection": "Déplacer pour la direction souhaitée",
       "SliderSpeed": "Déplacer pour la vitesse souhaitée",
@@ -387,7 +387,7 @@
     },
     "TugAttached": "Le remorqueur est attaché",
     "TugDirection": "Direction du remorqueur",
-    "TugInTransit": "Waiting for Tug/Pin",
+    "TugInTransit": "En attente du remorqueur/de la liaison",
     "TugSpeed": "Vitesse du remorqueur"
   },
   "Settings": {
