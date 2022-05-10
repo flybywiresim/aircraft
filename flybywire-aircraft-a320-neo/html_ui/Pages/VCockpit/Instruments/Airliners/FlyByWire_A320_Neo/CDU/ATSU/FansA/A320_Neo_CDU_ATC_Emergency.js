@@ -24,12 +24,12 @@ class CDUAtcEmergencyFansA {
     }
 
     static CreateRequest(mcdu, type, values = []) {
-        const retval = new Atsu.RequestMessage();
+        const retval = new Atsu.CpdlcMessage();
         retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content = Atsu.CpdlcMessagesDownlink[type][1].deepCopy();
+        retval.Content.push(Atsu.CpdlcMessagesDownlink[type][1].deepCopy());
 
         for (let i = 0; i < values.length; ++i) {
-            retval.Content.Content[i].Value = values[i];
+            retval.Content[0].Content[i].Value = values[i];
         }
 
         return retval;

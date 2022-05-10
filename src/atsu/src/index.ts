@@ -9,7 +9,6 @@ import { WeatherMessage } from './messages/WeatherMessage';
 import { MetarMessage } from './messages/MetarMessage';
 import { TafMessage } from './messages/TafMessage';
 import { AtisMessage, AtisType } from './messages/AtisMessage';
-import { RequestMessage } from './messages/RequestMessage';
 import { Aoc } from './AOC';
 import { Atc } from './ATC';
 import { DclMessage } from './messages/DclMessage';
@@ -48,7 +47,6 @@ export {
     DclMessage,
     OclMessage,
     FansMode,
-    RequestMessage,
     InputValidation,
     InputWaypointType,
     HoppieConnector,

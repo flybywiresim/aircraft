@@ -5,7 +5,6 @@ import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@at
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { CpdlcMessageExpectedResponseType } from '@atsu/messages/CpdlcMessageElements';
 import { UplinkMessageInterpretation } from '@atsu/components/UplinkMessageInterpretation';
-import { RequestMessage } from '@atsu/messages/RequestMessage';
 import { DclMessage } from '@atsu/messages/DclMessage';
 import { OclMessage } from '@atsu/messages/OclMessage';
 import { DcduStatusMessage } from '@atsu/components/DcduLink';
@@ -212,8 +211,6 @@ const DCDU: React.FC = () => {
                 let cpdlcMessage : CpdlcMessage | undefined = undefined;
                 if (serialized.Type === AtsuMessageType.CPDLC) {
                     cpdlcMessage = new CpdlcMessage();
-                } else if (serialized.Type === AtsuMessageType.Request) {
-                    cpdlcMessage = new RequestMessage();
                 } else if (serialized.Type === AtsuMessageType.DCL) {
                     cpdlcMessage = new DclMessage();
                 } else if (serialized.Type === AtsuMessageType.OCL) {
@@ -266,7 +263,7 @@ const DCDU: React.FC = () => {
                     }
                     dcduBlock.semanticResponse = true;
 
-                    for (const entry of cpdlcMessages[0].Response.Content.Content) {
+                    for (const entry of cpdlcMessages[0].Response.Content[0].Content) {
                         if (entry.Value === '') {
                             dcduBlock.semanticResponseIncomplete = true;
                             dcduBlock.statusMessage = DcduStatusMessage.NoFmData;
@@ -323,7 +320,7 @@ const DCDU: React.FC = () => {
 
                     // start the timeout
                     if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.ComStatus === AtsuMessageComStatus.Sent
-                        || cpdlcMessage.Direction === AtsuMessageDirection.Uplink && cpdlcMessage.Response?.Content?.TypeId !== 'DM2'
+                        || cpdlcMessage.Direction === AtsuMessageDirection.Uplink && cpdlcMessage.Response?.Content[0].TypeId !== 'DM2'
                         && cpdlcMessage.Response?.ComStatus === AtsuMessageComStatus.Sent) {
                         message.automaticCloseTimeout = new Date().getTime() / 1000;
                     }
@@ -383,7 +380,7 @@ const DCDU: React.FC = () => {
         // check if PRIORITY MSG + needs to be visualized
         let noUrgentMessage = true;
         arrMessages.forEach((message) => {
-            if (message.messages[0].Content?.Urgent && !message.messageVisible) {
+            if (message.messages[0].Content[0].Urgent && !message.messageVisible) {
                 if (systemStatusMessage !== DcduStatusMessage.PriorityMessage) {
                     setSystemStatusMessage(DcduStatusMessage.PriorityMessage);
                     setSystemStatusTimer(-1);
@@ -399,8 +396,8 @@ const DCDU: React.FC = () => {
 
     let answerRequired = false;
     if (visibleMessages !== undefined && visibleMessages[0].Direction === AtsuMessageDirection.Uplink) {
-        answerRequired = visibleMessages[0].Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired
-                         && visibleMessages[0].Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
+        answerRequired = visibleMessages[0].Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired
+                         && visibleMessages[0].Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
     }
 
     switch (state) {
@@ -444,7 +441,7 @@ const DCDU: React.FC = () => {
                         </>
                     ))}
                     {(visibleMessages !== undefined && answerRequired && !visibleMessageSemanticButtonNeeded
-                    && visibleMessages[0].Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.WilcoUnable && (
+                    && visibleMessages[0].Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.WilcoUnable && (
                         <WilcoUnableButtons
                             message={visibleMessages[0]}
                             selectedResponse={response}
@@ -453,8 +450,8 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(visibleMessages !== undefined && answerRequired && visibleMessageSemanticButtonNeeded
-                    && visibleMessages[0].Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.AffirmNegative && (
+                    {(visibleMessages !== undefined && answerRequired && !visibleMessageSemanticButtonNeeded
+                    && visibleMessages[0].Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.AffirmNegative && (
                         <AffirmNegativeButtons
                             message={visibleMessages[0]}
                             selectedResponse={response}
@@ -463,8 +460,8 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(visibleMessages !== undefined && answerRequired && visibleMessageSemanticButtonNeeded
-                    && visibleMessages[0].Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.Roger && (
+                    {(visibleMessages !== undefined && answerRequired && !visibleMessageSemanticButtonNeeded
+                    && visibleMessages[0].Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.Roger && (
                         <RogerButtons
                             message={visibleMessages[0]}
                             selectedResponse={response}
@@ -473,7 +470,7 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(visibleMessages !== undefined && !answerRequired && visibleMessageSemanticButtonNeeded
+                    {(visibleMessages !== undefined && !answerRequired && !visibleMessageSemanticButtonNeeded
                     && visibleMessages[0].Direction === AtsuMessageDirection.Downlink && (
                         <OutputButtons
                             message={visibleMessages[0]}

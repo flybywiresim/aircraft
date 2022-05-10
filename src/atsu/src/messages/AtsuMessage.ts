@@ -22,7 +22,7 @@ export enum AtsuMessageType {
     CPDLC = 5,
     DCL = 6,
     OCL = 7,
-    Request = 8
+    ATC = 8
 }
 
 export enum AtsuMessageComStatus {

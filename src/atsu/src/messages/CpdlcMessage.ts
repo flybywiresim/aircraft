@@ -3,16 +3,13 @@
 
 import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
 import { CpdlcMessageElement, CpdlcMessagesDownlink, CpdlcMessagesUplink } from './CpdlcMessageElements';
-import { RequestMessage } from './RequestMessage';
 import { wordWrap } from '../Common';
 
 /**
  * Defines the general freetext message format
  */
 export class CpdlcMessage extends AtsuMessage {
-    public ContentTemplateIndex: number = 0;
-
-    public Content: CpdlcMessageElement | undefined = undefined;
+    public Content: CpdlcMessageElement[] = [];
 
     public Response: CpdlcMessage | undefined = undefined;
 
@@ -34,17 +31,13 @@ export class CpdlcMessage extends AtsuMessage {
     public deserialize(jsonData: any): void {
         super.deserialize(jsonData);
 
-        this.ContentTemplateIndex = jsonData.ContentTemplateIndex;
-        if (jsonData.Content !== undefined) {
-            this.Content = new CpdlcMessageElement('');
-            this.Content.deserialize(jsonData.Content);
-        }
+        jsonData.Content.forEach((element) => {
+            const entry = new CpdlcMessageElement('');
+            entry.deserialize(element);
+            this.Content.push(entry);
+        });
         if (jsonData.Response !== undefined) {
-            if (jsonData.Response.Type === AtsuMessageType.CPDLC) {
-                this.Response = new CpdlcMessage();
-            } else if (jsonData.Response.Type === AtsuMessageType.Request) {
-                this.Response = new RequestMessage();
-            }
+            this.Response = new CpdlcMessage();
             this.Response.deserialize(jsonData.Response);
         }
         this.CurrentTransmissionId = jsonData.CurrentTransmissionId;
@@ -72,39 +65,39 @@ export class CpdlcMessage extends AtsuMessage {
     }
 
     protected extendSerializationWithResponse(): boolean {
-        if (this.Response === undefined || this.Response.Content !== undefined) {
+        if (this.Response?.Content.length === 0) {
             return false;
         }
 
         // ignore the standard responses
-        return this.Response.Content.TypeId !== 'DM0' && this.Response.Content.TypeId !== 'DM1' && this.Response.Content.TypeId !== 'DM2'
-            && this.Response.Content.TypeId !== 'DM3' && this.Response.Content.TypeId !== 'DM4' && this.Response.Content.TypeId !== 'DM5'
-            && this.Response.Content.TypeId !== 'UM0' && this.Response.Content.TypeId !== 'UM1' && this.Response.Content.TypeId !== 'UM3'
-            && this.Response.Content.TypeId !== 'UM4' && this.Response.Content.TypeId !== 'UM5';
+        return this.Response.Content[0].TypeId !== 'DM0' && this.Response.Content[0].TypeId !== 'DM1' && this.Response.Content[0].TypeId !== 'DM2'
+            && this.Response.Content[0].TypeId !== 'DM3' && this.Response.Content[0].TypeId !== 'DM4' && this.Response.Content[0].TypeId !== 'DM5'
+            && this.Response.Content[0].TypeId !== 'UM0' && this.Response.Content[0].TypeId !== 'UM1' && this.Response.Content[0].TypeId !== 'UM3'
+            && this.Response.Content[0].TypeId !== 'UM4' && this.Response.Content[0].TypeId !== 'UM5';
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {
-        let content: string = '';
+        const lineLength = format === AtsuMessageSerializationFormat.DCDU ? 30 : 25;
+        const lines: string[] = [];
         let message: string = '';
 
-        if (this.Content !== undefined) {
-            if (this.Direction === AtsuMessageDirection.Downlink) {
-                content = this.serializeContent(format, CpdlcMessagesDownlink[this.Content.TypeId][0][this.ContentTemplateIndex], this.Content);
-            } else {
-                content = this.serializeContent(format, CpdlcMessagesUplink[this.Content.TypeId][0][this.ContentTemplateIndex], this.Content);
+        if (this.Content.length !== 0) {
+            for (const element of this.Content) {
+                if (this.Direction === AtsuMessageDirection.Downlink) {
+                    lines.push(...wordWrap(this.serializeContent(format, CpdlcMessagesDownlink[element.TypeId][0][0], element), lineLength));
+                } else {
+                    lines.push(...wordWrap(this.serializeContent(format, CpdlcMessagesUplink[element.TypeId][0][0], element), lineLength));
+                }
             }
         } else {
-            content = this.Message;
+            this.Message.split('_').forEach((entry) => {
+                lines.push(...wordWrap(entry, lineLength));
+            });
         }
 
         if (format === AtsuMessageSerializationFormat.Network) {
-            message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${this.Content.ExpectedResponse}/${content}`;
+            message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${this.Content[0].ExpectedResponse}/${lines.join(' ')}`;
         } else if (format === AtsuMessageSerializationFormat.DCDU) {
-            // create the lines and interpret '_' as an encoded newline
-            let lines = [];
-            content.split('_').forEach((entry) => {
-                lines = lines.concat(wordWrap(entry, 30));
-            });
             message = lines.join('\n');
         } else if (format === AtsuMessageSerializationFormat.MCDU) {
             if (this.Direction === AtsuMessageDirection.Uplink) {
@@ -113,12 +106,9 @@ export class CpdlcMessage extends AtsuMessage {
                 message += `{cyan}${this.Timestamp.dcduTimestamp()} TO ${this.Station}{end}\n`;
             }
 
-            content.split('_').forEach((entry) => {
-                const newLines = wordWrap(entry, 25);
-                newLines.forEach((line) => {
-                    line = line.replace(/@/gi, '');
-                    message += `{green}${line}{end}\n`;
-                });
+            lines.forEach((line) => {
+                line = line.replace(/@/gi, '');
+                message += `{green}${line}{end}\n`;
             });
 
             message += '{white}------------------------{end}\n';
@@ -129,12 +119,9 @@ export class CpdlcMessage extends AtsuMessage {
         } else if (format === AtsuMessageSerializationFormat.Printer) {
             message += `${this.Timestamp.dcduTimestamp()} ${this.Direction === AtsuMessageDirection.Uplink ? 'FROM' : 'TO'} ${this.Station}}\n`;
 
-            content.split('_').forEach((entry) => {
-                const newLines = wordWrap(entry, 25);
-                newLines.forEach((line) => {
-                    line = line.replace(/@/gi, '');
-                    message += `${line}\n`;
-                });
+            lines.forEach((line) => {
+                line = line.replace(/@/gi, '');
+                message += `${line}\n`;
             });
 
             message += '------------------------\n';

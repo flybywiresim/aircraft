@@ -3,7 +3,6 @@ import { InputValidation } from '../InputValidation';
 import { CpdlcMessagesDownlink } from '../messages/CpdlcMessageElements';
 import { Atsu } from '../ATSU';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
-import { RequestMessage } from '../messages/RequestMessage';
 
 export class UplinkMessageInterpretation {
     private static NonAutomaticClosingMessage: string[] = [
@@ -51,11 +50,11 @@ export class UplinkMessageInterpretation {
     };
 
     public static MessageRemainsOnDcdu(message: CpdlcMessage): boolean {
-        return UplinkMessageInterpretation.NonAutomaticClosingMessage.findIndex((elem) => message.Content.TypeId === elem) !== -1;
+        return UplinkMessageInterpretation.NonAutomaticClosingMessage.findIndex((elem) => message.Content[0].TypeId === elem) !== -1;
     }
 
     public static SemanticAnswerRequired(message: CpdlcMessage): boolean {
-        return message.Content.TypeId === 'UM143' || message.Content.TypeId in UplinkMessageInterpretation.SemanticAnswerTable;
+        return message.Content[0].TypeId === 'UM143' || message.Content[0].TypeId in UplinkMessageInterpretation.SemanticAnswerTable;
     }
 
     private static getDigitsFromBco16(code: number): number[] {
@@ -76,21 +75,21 @@ export class UplinkMessageInterpretation {
     }
 
     private static FillPresentData(atsu: Atsu, message: CpdlcMessage): boolean {
-        if (message.Content.TypeId === 'UM132') {
-            message.Response.Content.Content[0].Value = coordinateToString({ lat: atsu.currentFlightState().lat, lon: atsu.currentFlightState().lon }, false);
-        } else if (message.Content.TypeId === 'UM133') {
-            message.Response.Content.Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.currentFlightState().altitude / 100).toString());
-        } else if (message.Content.TypeId === 'UM134') {
-            message.Response.Content.Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.currentFlightState().indicatedAirspeed.toString());
-        } else if (message.Content.TypeId === 'UM144') {
+        if (message.Content[0].TypeId === 'UM132') {
+            message.Response.Content[0].Content[0].Value = coordinateToString({ lat: atsu.currentFlightState().lat, lon: atsu.currentFlightState().lon }, false);
+        } else if (message.Content[0].TypeId === 'UM133') {
+            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.currentFlightState().altitude / 100).toString());
+        } else if (message.Content[0].TypeId === 'UM134') {
+            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadSpeed(atsu.currentFlightState().indicatedAirspeed.toString());
+        } else if (message.Content[0].TypeId === 'UM144') {
             const squawk = UplinkMessageInterpretation.getDigitsFromBco16(SimVar.GetSimVarValue('TRANSPONDER CODE:1', 'Bco16'));
-            message.Response.Content.Content[0].Value = `${squawk[0]}${squawk[1]}${squawk[2]}${squawk[3]}`;
-        } else if (message.Content.TypeId === 'UM145') {
-            message.Response.Content.Content[0].Value = atsu.currentFlightState().heading.toString();
-        } else if (message.Content.TypeId === 'UM146') {
-            message.Response.Content.Content[0].Value = atsu.currentFlightState().track.toString();
-        } else if (message.Content.TypeId === 'UM228') {
-            message.Response.Content.Content[0].Value = `${timestampToString(atsu.destinationWaypoint().utc)}Z`;
+            message.Response.Content[0].Content[0].Value = `${squawk[0]}${squawk[1]}${squawk[2]}${squawk[3]}`;
+        } else if (message.Content[0].TypeId === 'UM145') {
+            message.Response.Content[0].Content[0].Value = atsu.currentFlightState().heading.toString();
+        } else if (message.Content[0].TypeId === 'UM146') {
+            message.Response.Content[0].Content[0].Value = atsu.currentFlightState().track.toString();
+        } else if (message.Content[0].TypeId === 'UM228') {
+            message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.destinationWaypoint().utc)}Z`;
         } else {
             return false;
         }
@@ -99,10 +98,10 @@ export class UplinkMessageInterpretation {
     }
 
     private static FillAssignedData(atsu: Atsu, message: CpdlcMessage): boolean {
-        if (message.Content.TypeId === 'UM135' && atsu.targetFlightState().altitude !== undefined) {
-            message.Response.Content.Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.targetFlightState().altitude / 100).toString());
-        } else if (message.Content.TypeId === 'UM136' && atsu.targetFlightState().speed !== undefined) {
-            message.Response.Content.Content[0].Value = InputValidation.formatScratchpadAltitude(atsu.targetFlightState().speed.toString());
+        if (message.Content[0].TypeId === 'UM135' && atsu.targetFlightState().altitude !== undefined) {
+            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(Math.round(atsu.targetFlightState().altitude / 100).toString());
+        } else if (message.Content[0].TypeId === 'UM136' && atsu.targetFlightState().speed !== undefined) {
+            message.Response.Content[0].Content[0].Value = InputValidation.formatScratchpadAltitude(atsu.targetFlightState().speed.toString());
         } else {
             return false;
         }
@@ -112,23 +111,23 @@ export class UplinkMessageInterpretation {
     // UM137 -> assigned route
 
     private static FillPositionReportRelatedData(atsu: Atsu, message: CpdlcMessage): boolean {
-        if (message.Content.TypeId === 'UM138') {
-            message.Response.Content.Content[0].Value = `${timestampToString(atsu.lastWaypoint().utc)}Z`;
-        } else if (message.Content.TypeId === 'UM139') {
-            message.Response.Content.Content[0].Value = atsu.lastWaypoint().ident;
-        } else if (message.Content.TypeId === 'UM140') {
-            message.Response.Content.Content[0].Value = atsu.activeWaypoint().ident;
-        } else if (message.Content.TypeId === 'UM141') {
-            message.Response.Content.Content[0].Value = `${timestampToString(atsu.activeWaypoint().utc)}Z`;
-        } else if (message.Content.TypeId === 'UM142') {
-            message.Response.Content.Content[0].Value = atsu.nextWaypoint().ident;
-        } else if (message.Content.TypeId === 'UM147') {
+        if (message.Content[0].TypeId === 'UM138') {
+            message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.lastWaypoint().utc)}Z`;
+        } else if (message.Content[0].TypeId === 'UM139') {
+            message.Response.Content[0].Content[0].Value = atsu.lastWaypoint().ident;
+        } else if (message.Content[0].TypeId === 'UM140') {
+            message.Response.Content[0].Content[0].Value = atsu.activeWaypoint().ident;
+        } else if (message.Content[0].TypeId === 'UM141') {
+            message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.activeWaypoint().utc)}Z`;
+        } else if (message.Content[0].TypeId === 'UM142') {
+            message.Response.Content[0].Content[0].Value = atsu.nextWaypoint().ident;
+        } else if (message.Content[0].TypeId === 'UM147') {
             message.Response = Atsu.createAutomatedPositionReport(atsu);
-        } else if (message.Content.TypeId === 'UM148' || message.Content.TypeId === 'UM151') {
-            message.Response.Content.Content[0].Value = message.Content.Content[0].Value;
-        } else if (message.Content.TypeId === 'UM152') {
-            message.Response.Content.Content[0].Value = message.Content.Content[0].Value;
-            message.Response.Content.Content[1].Value = message.Content.Content[1].Value;
+        } else if (message.Content[0].TypeId === 'UM148' || message.Content[0].TypeId === 'UM151') {
+            message.Response.Content[0].Content[0].Value = message.Content[0].Content[0].Value;
+        } else if (message.Content[0].TypeId === 'UM152') {
+            message.Response.Content[0].Content[0].Value = message.Content[0].Content[0].Value;
+            message.Response.Content[0].Content[1].Value = message.Content[0].Content[1].Value;
         } else {
             return false;
         }
@@ -138,43 +137,44 @@ export class UplinkMessageInterpretation {
     // UM181 -> distance to %s
 
     public static AppendSemanticAnswer(atsu: Atsu, positiveAnswer: boolean, message: CpdlcMessage) {
-        const cpdlc = message as CpdlcMessage;
-
-        if (message.Content.TypeId === 'UM143') {
+        if (message.Content[0].TypeId === 'UM143') {
             // find last request and create a deep copy
-            for (const message of atsu.atc.messages()) {
-                if (UplinkMessageInterpretation.RequestMessages.findIndex((elem) => elem === cpdlc.Content.TypeId) !== -1) {
-                    const request = message as RequestMessage;
-                    const response = new RequestMessage();
+            for (const atcMessage of atsu.atc.messages()) {
+                const cpdlc = atcMessage as CpdlcMessage;
 
-                    response.Station = message.Station;
-                    response.PreviousTransmissionId = request.CurrentTransmissionId;
-                    response.Content = cpdlc.Content.deepCopy();
-                    request.Extensions.forEach((extension) => response.Extensions.push(extension.deepCopy()));
-                    cpdlc.Response = response;
+                if (UplinkMessageInterpretation.RequestMessages.findIndex((elem) => elem === cpdlc.Content[0].TypeId) !== -1) {
+                    const response = new CpdlcMessage();
+
+                    response.Station = atcMessage.Station;
+                    response.PreviousTransmissionId = message.CurrentTransmissionId;
+                    for (const entry of cpdlc.Content) {
+                        response.Content.push(entry.deepCopy());
+                    }
+
+                    message.Response = response;
                     break;
                 }
             }
-        } else if (message.Content.TypeId in UplinkMessageInterpretation.SemanticAnswerTable) {
-            const lutEntry = UplinkMessageInterpretation.SemanticAnswerTable[message.Content.TypeId];
+        } else if (message.Content[0].TypeId in UplinkMessageInterpretation.SemanticAnswerTable) {
+            const lutEntry = UplinkMessageInterpretation.SemanticAnswerTable[message.Content[0].TypeId];
             if (lutEntry.positiveOrNegative) {
-                const response = new RequestMessage();
+                const response = new CpdlcMessage();
                 response.Station = message.Station;
                 response.PreviousTransmissionId = message.CurrentTransmissionId;
 
                 if (positiveAnswer) {
-                    response.Content = CpdlcMessagesDownlink[lutEntry.messages[0]][1].deepCopy();
+                    response.Content.push(CpdlcMessagesDownlink[lutEntry.messages[0]][1].deepCopy());
                 } else {
-                    response.Content = CpdlcMessagesDownlink[lutEntry.messages[1]][1].deepCopy();
+                    response.Content.push(CpdlcMessagesDownlink[lutEntry.messages[1]][1].deepCopy());
                 }
 
-                cpdlc.Response = response;
+                message.Response = response;
             } else if (lutEntry.messages[0] in CpdlcMessagesDownlink) {
-                const response = new RequestMessage();
+                const response = new CpdlcMessage();
                 response.Station = message.Station;
                 response.PreviousTransmissionId = message.CurrentTransmissionId;
-                response.Content = CpdlcMessagesDownlink[lutEntry.messages[0]][1].deepCopy();
-                cpdlc.Response = response;
+                response.Content.push(CpdlcMessagesDownlink[lutEntry.messages[0]][1].deepCopy());
+                message.Response = response;
             }
         }
 
@@ -184,10 +184,10 @@ export class UplinkMessageInterpretation {
     }
 
     public static HasNegativeResponse(message: CpdlcMessage): boolean {
-        if (message.Content.TypeId in UplinkMessageInterpretation.SemanticAnswerTable) {
-            const lutEntry = UplinkMessageInterpretation.SemanticAnswerTable[message.Content.TypeId];
+        if (message.Content[0].TypeId in UplinkMessageInterpretation.SemanticAnswerTable) {
+            const lutEntry = UplinkMessageInterpretation.SemanticAnswerTable[message.Content[0].TypeId];
             if (lutEntry.positiveOrNegative) {
-                return message.Response.Content.TypeId !== lutEntry.messages[1];
+                return message.Response.Content[0].TypeId !== lutEntry.messages[1];
             }
         }
         return false;

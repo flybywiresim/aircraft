@@ -60,8 +60,8 @@ class CDUAtcTextFansA {
 
         if (messages.length === 0) {
             // the freetext is set (guaranteed due to CanSendData)
-            messages.push(new Atsu.RequestMessage());
-            messages[0].Content = freetextElement;
+            messages.push(new Atsu.CpdlcMessage());
+            messages[0].Content.push(freetextElement);
             messages[0].Station = mcdu.atsu.atc.currentStation();
             updateFreetext = false;
         }
@@ -69,19 +69,19 @@ class CDUAtcTextFansA {
         // update all messages, if needed
         if (extension || (updateFreetext && freetextElement)) {
             messages.forEach((message) => {
-                if (message.Content.TypeId.includes("UM")) {
+                if (message.Content[0].TypeId.includes("UM")) {
                     if (updateFreetext && freetextElement) {
-                        message.Response.Extensions.push(freetextElement);
+                        message.Response.Content.push(freetextElement);
                     }
                     if (extension) {
-                        message.Response.Extensions.push(extension);
+                        message.Response.Content.push(extension);
                     }
                 } else {
                     if (updateFreetext && freetextElement) {
-                        message.Extensions.push(freetextElement);
+                        message.Content.push(freetextElement);
                     }
                     if (extension) {
-                        message.Extensions.push(extension);
+                        message.Content.push(extension);
                     }
                 }
             });

@@ -10,10 +10,10 @@ class CDUAtcClearanceReq {
     }
 
     static CreateRequest(mcdu) {
-        const retval = new Atsu.RequestMessage();
+        const retval = new Atsu.CpdlcMessage();
         retval.Station = mcdu.atsu.atc.currentStation();
-        retval.Content = Atsu.CpdlcMessagesDownlink["DM25"][1].deepCopy();
-        retval.Content.Content[0].Value = "DEPARTURE";
+        retval.Content.push(Atsu.CpdlcMessagesDownlink["DM25"][1].deepCopy());
+        retval.Content[0].Content[0].Value = "DEPARTURE";
         return retval;
     }
 

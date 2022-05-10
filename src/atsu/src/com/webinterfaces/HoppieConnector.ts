@@ -359,9 +359,9 @@ export class HoppieConnector {
                     if (elements[3] !== '') {
                         cpdlc.PreviousTransmissionId = parseInt(elements[3]);
                     }
-                    cpdlc.Content = HoppieConnector.cpdlcMessageClassification(elements[5]);
-                    if ((elements[4] as CpdlcMessageExpectedResponseType) !== cpdlc.Content.ExpectedResponse) {
-                        cpdlc.Content.ExpectedResponse = (elements[4] as CpdlcMessageExpectedResponseType);
+                    cpdlc.Content.push(HoppieConnector.cpdlcMessageClassification(elements[5]));
+                    if ((elements[4] as CpdlcMessageExpectedResponseType) !== cpdlc.Content[0].ExpectedResponse) {
+                        cpdlc.Content[0].ExpectedResponse = (elements[4] as CpdlcMessageExpectedResponseType);
                     }
                     cpdlc.Message = elements[5];
 

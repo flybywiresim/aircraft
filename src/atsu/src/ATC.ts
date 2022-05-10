@@ -105,7 +105,7 @@ export class Atc {
         message.Station = station;
         message.CurrentTransmissionId = ++this.cpdlcMessageId;
         message.Direction = AtsuMessageDirection.Downlink;
-        message.Content = CpdlcMessagesDownlink.DM9998[1];
+        message.Content.push(CpdlcMessagesDownlink.DM9998[1]);
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'REQUEST LOGON';
         message.DcduRelevantMessage = false;
@@ -174,7 +174,7 @@ export class Atc {
         message.Station = this.currentAtc;
         message.CurrentTransmissionId = ++this.cpdlcMessageId;
         message.Direction = AtsuMessageDirection.Downlink;
-        message.Content = CpdlcMessagesDownlink.DM9999[1];
+        message.Content.push(CpdlcMessagesDownlink.DM9999[1]);
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.DcduRelevantMessage = false;
 
@@ -212,7 +212,7 @@ export class Atc {
         responseMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
         responseMessage.PreviousTransmissionId = request.CurrentTransmissionId;
         responseMessage.Station = request.Station;
-        responseMessage.Content = CpdlcMessagesDownlink[downlinkId][1];
+        responseMessage.Content.push(CpdlcMessagesDownlink[downlinkId][1]);
 
         return responseMessage;
     }
@@ -223,8 +223,8 @@ export class Atc {
             const responseMsg = this.createCpdlcResponse(message, response);
 
             // avoid double-sends
-            if (message.Response !== undefined && message.Response.Content.TypeId === responseMsg.Content.TypeId
-                 && (message.Response.ComStatus === AtsuMessageComStatus.Sending || message.Response.ComStatus === AtsuMessageComStatus.Sent)) {
+            if (message.Response?.Content[0].TypeId === responseMsg.Content[0].TypeId
+                 && (message.Response?.ComStatus === AtsuMessageComStatus.Sending || message.Response?.ComStatus === AtsuMessageComStatus.Sent)) {
                 return;
             }
 
@@ -352,9 +352,9 @@ export class Atc {
     }
 
     private analyzeMessage(request: CpdlcMessage, response: CpdlcMessage): boolean {
-        if (request.Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.NotRequired && response === undefined) {
+        if (request.Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.NotRequired && response === undefined) {
             // received the station message for the DCDU
-            if (request.Content?.TypeId === 'UM9999') {
+            if (request.Content[0].TypeId === 'UM9999') {
                 request.DcduRelevantMessage = false;
                 if (this.currentAtc !== '') {
                     this.dcduLink.setAtcLogonMessage(request.Message);
@@ -363,7 +363,7 @@ export class Atc {
             }
 
             // received a logoff message
-            if (request.Content?.TypeId === 'UM9995') {
+            if (request.Content[0].TypeId === 'UM9995') {
                 request.DcduRelevantMessage = false;
                 this.dcduLink.setAtcLogonMessage('');
                 this.currentAtc = '';
@@ -379,7 +379,7 @@ export class Atc {
             }
 
             // process the handover message
-            if (request.Content?.TypeId === 'UM9998') {
+            if (request.Content[0].TypeId === 'UM9998') {
                 const entries = request.Message.split(' ');
                 if (entries.length >= 2) {
                     request.DcduRelevantMessage = false;
@@ -392,9 +392,9 @@ export class Atc {
 
         // expecting a LOGON or denied message
         if (this.nextAtc !== '' && request !== undefined && response !== undefined) {
-            if (request.Content?.TypeId === 'DM9998') {
+            if (request.Content[0].TypeId === 'DM9998') {
                 // logon accepted by ATC
-                if (response.Content?.TypeId === 'UM9997') {
+                if (response.Content[0].TypeId === 'UM9997') {
                     response.DcduRelevantMessage = false;
                     this.dcduLink.setAtcLogonMessage(`CURRENT ATC UNIT @${this.nextAtc}@`);
                     this.currentFansMode = FutureAirNavigationSystem.currentFansMode(this.nextAtc);
@@ -405,7 +405,7 @@ export class Atc {
                 }
 
                 // logon rejected
-                if (response.Content?.TypeId === 'UM9996' || response.Content?.TypeId === 'UM0') {
+                if (response.Content[0].TypeId === 'UM9996' || response.Content[0].TypeId === 'UM0') {
                     response.DcduRelevantMessage = false;
                     this.dcduLink.setAtcLogonMessage('');
                     this.currentAtc = '';
@@ -426,9 +426,9 @@ export class Atc {
             let concatMessages = true;
             if (cpdlcMessage.Direction === AtsuMessageDirection.Uplink && cpdlcMessage.Content !== undefined) {
                 // filter all standard messages and LOGON-related messages
-                concatMessages = cpdlcMessage.Content.TypeId === 'UM0' || cpdlcMessage.Content.TypeId === 'UM1' || cpdlcMessage.Content.TypeId === 'UM3'
-                                 || cpdlcMessage.Content.TypeId === 'UM4' || cpdlcMessage.Content.TypeId === 'UM5' || cpdlcMessage.Content.TypeId === 'UM9995'
-                                 || cpdlcMessage.Content.TypeId === 'UM9996' || cpdlcMessage.Content.TypeId === 'UM9997';
+                concatMessages = cpdlcMessage.Content[0].TypeId === 'UM0' || cpdlcMessage.Content[0].TypeId === 'UM1' || cpdlcMessage.Content[0].TypeId === 'UM3'
+                                 || cpdlcMessage.Content[0].TypeId === 'UM4' || cpdlcMessage.Content[0].TypeId === 'UM5' || cpdlcMessage.Content[0].TypeId === 'UM9995'
+                                 || cpdlcMessage.Content[0].TypeId === 'UM9996' || cpdlcMessage.Content[0].TypeId === 'UM9997';
             }
 
             if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.CurrentTransmissionId === -1) {
