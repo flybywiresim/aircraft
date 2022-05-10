@@ -99,8 +99,21 @@ pub(crate) fn arinc429_to_f64(word: Arinc429Word<f32>) -> f64 {
     f64::from_bits(bits)
 }
 
+pub(crate) fn arinc429_from_f64(value: f64) -> Arinc429Word<f32> {
+    let bits = value.to_bits();
+
+    let value = (bits >> 32) as u32;
+    let status = bits as u32;
+
+    Arinc429Word::new(f32::from_bits(value), status.into())
+}
+
 pub(crate) fn set_arinc429_bit(word: &mut Arinc429Word<f32>, bit: u32, value: bool) {
     word.value = (((word.value as u32) & !(1 << (bit - 1))) | ((value as u32) << (bit - 1))) as f32;
+}
+
+pub(crate) fn get_arinc429_bit(word: &mut Arinc429Word<f32>, bit: u32) -> bool {
+    ((word.value as u32 >> (bit - 1)) & 1) != 0
 }
 
 #[cfg(test)]
@@ -127,5 +140,37 @@ mod tests {
             result.0
         );
         assert_eq!(expected_ssm, result.1);
+    }
+
+    #[rstest]
+    #[case(SignStatus::FailureWarning)]
+    #[case(SignStatus::FunctionalTest)]
+    #[case(SignStatus::NoComputedData)]
+    #[case(SignStatus::NormalOperation)]
+    fn bit_conversion_is_symmetric(#[case] expected_ssm: SignStatus) {
+        let mut rng = rand::thread_rng();
+
+        let mut word = Arinc429Word::new(0., expected_ssm);
+
+        let mut expected_values: [bool; 30] = [false; 30];
+
+        for i in 11..29 {
+            expected_values[i] = rng.gen();
+            set_arinc429_bit(&mut word, i as u32, expected_values[i]);
+        }
+
+        let mut result = arinc429_from_f64(arinc429_to_f64(word));
+
+        for i in 11..29 {
+            let result_bit = get_arinc429_bit(&mut result, i as u32);
+            assert!(
+                result_bit == expected_values[i],
+                "Expected Bit {} to be {}, got {}",
+                i,
+                expected_values[i],
+                result_bit
+            );
+        }
+        assert_eq!(expected_ssm, result.ssm());
     }
 }
