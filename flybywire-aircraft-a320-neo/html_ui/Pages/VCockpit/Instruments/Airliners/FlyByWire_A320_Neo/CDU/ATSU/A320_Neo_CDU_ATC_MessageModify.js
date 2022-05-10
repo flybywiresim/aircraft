@@ -187,10 +187,10 @@ const ModifyLookupTable = {
 
 class CDUAtcMessageModify {
     static CreateDataBlock(message) {
-        const lutEntry = ModifyLookupTable[message.Content.TypeId];
+        const lutEntry = ModifyLookupTable[message.Content[0].TypeId];
 
         return {
-            value: message.Response.Content.Content.length > lutEntry[0].valueIndex ? message.Response.Content.Content[lutEntry[0].valueIndex].Value : '',
+            value: message.Response.Content[0].Content.length > lutEntry[0].valueIndex ? message.Response.Content[0].Content[lutEntry[0].valueIndex].Value : '',
             modified: false,
             multiSelection: lutEntry.length > 1,
             selectedToggles: [false, false]
@@ -199,7 +199,7 @@ class CDUAtcMessageModify {
 
     static CreateDescriptionLine(message, entry) {
         if (entry.textIndex >= 0) {
-            return entry.text.replace("%s", message.Content.Content[entry.textIndex].Value);
+            return entry.text.replace("%s", message.Content[0].Content[entry.textIndex].Value);
         }
         return entry.text;
     }
@@ -214,7 +214,7 @@ class CDUAtcMessageModify {
     }
 
     static CreateVisualization(message, data) {
-        const lutEntry = ModifyLookupTable[message.Content.TypeId];
+        const lutEntry = ModifyLookupTable[message.Content[0].TypeId];
         const visualization = [["", ""], "", ""];
 
         const color = !data.selectedToggles[0] && !data.selectedToggles[1] ? "{cyan}" : "{white}";
@@ -236,7 +236,7 @@ class CDUAtcMessageModify {
     }
 
     static ValidateScratchpadValue(message, value) {
-        const lutEntry = ModifyLookupTable[message.Content.TypeId];
+        const lutEntry = ModifyLookupTable[message.Content[0].TypeId];
 
         if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Position) {
             return Atsu.InputValidation.validateScratchpadPosition(value);
@@ -264,7 +264,7 @@ class CDUAtcMessageModify {
     }
 
     static FormatScratchpadValue(message, value) {
-        const lutEntry = ModifyLookupTable[message.Content.TypeId];
+        const lutEntry = ModifyLookupTable[message.Content[0].TypeId];
 
         if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Speed) {
             return Atsu.InputValidation.formatScratchpadSpeed(value);
@@ -281,12 +281,12 @@ class CDUAtcMessageModify {
     }
 
     static UpdateResponseMessage(message, data) {
-        const lutEntry = ModifyLookupTable[message.Content.TypeId];
+        const lutEntry = ModifyLookupTable[message.Content[0].TypeId];
 
         if (data.selectedToggles[0]) {
-            const freetext = "WE CAN ACCEPT %s NOW".replace("%s", message.Content.Content[lutEntry[1].textIndex].Value);
-            message.Response.Content = Atsu.CpdlcMessagesDownlink[lutEntry[1].response][1].deepCopy();
-            message.Response.Content.Content[0].Value = freetext;
+            const freetext = "WE CAN ACCEPT %s NOW".replace("%s", message.Content[0].Content[lutEntry[1].textIndex].Value);
+            message.Response.Content = [Atsu.CpdlcMessagesDownlink[lutEntry[1].response][1].deepCopy()];
+            message.Response.Content[0].Content[0].Value = freetext;
             return;
         }
 
@@ -299,9 +299,9 @@ class CDUAtcMessageModify {
         }
 
         for (let i = 0; i < lutEntry[0].valueIndex; ++i) {
-            newContent.Content[i].Value = message.Content.Content[lutEntry[0].textIndex + i].Value;
+            newContent.Content[i].Value = message.Content[0].Content[lutEntry[0].textIndex + i].Value;
         }
-        message.Response.Content = newContent;
+        message.Response.Content = [newContent];
     }
 
     static ShowPage(mcdu, message, data = CDUAtcMessageModify.CreateDataBlock(message)) {
@@ -457,7 +457,7 @@ class CDUAtcMessageModify {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcMessageModify.CanUpdateMessage(data)) {
-                CDUAtcMessageModify.UpdateResponseMessage(mcdu, message, data);
+                CDUAtcMessageModify.UpdateResponseMessage(message, data);
                 mcdu.atsu.atc.updateMessage(message);
                 CDUAtcMenu.ShowPage(mcdu);
             }

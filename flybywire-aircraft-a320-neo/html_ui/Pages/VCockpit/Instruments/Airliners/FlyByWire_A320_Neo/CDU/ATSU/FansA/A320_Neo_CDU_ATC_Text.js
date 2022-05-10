@@ -258,7 +258,7 @@ class CDUAtcTextFansA {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const prepMessages = CDUAtcTextFansA.CreateMessages(mcdu, messages, data);
-                    if (prepMessages && prepMessages[0].Content.TypeId.includes("UM")) {
+                    if (prepMessages && prepMessages[0].Content[0].TypeId.includes("UM")) {
                         mcdu.atsu.atc.updateMessage(prepMessages[0]);
                     } else if (prepMessages) {
                         mcdu.atsu.registerMessages(prepMessages);
@@ -392,7 +392,7 @@ class CDUAtcTextFansA {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const prepMessages = CDUAtcTextFansA.CreateMessages(mcdu, messages, data);
-                    if (prepMessages && prepMessages[0].Content.TypeId.includes("UM")) {
+                    if (prepMessages && prepMessages[0].Content[0].TypeId.includes("UM")) {
                         mcdu.atsu.atc.updateMessage(prepMessages[0]);
                     } else if (prepMessages) {
                         mcdu.atsu.registerMessages(prepMessages);
