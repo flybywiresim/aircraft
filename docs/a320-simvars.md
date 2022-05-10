@@ -23,6 +23,10 @@
   - Bool
   - Indicates that the JavaScript part is ready
 
+- A32NX_IS_STATIONARY
+  - Bool
+  - Aircraft is stationary in relation to the speed of the first surface directly underneath it. (not moving on a carrier for example)
+
 - A32NX_START_STATE
   - Enum
   - Indicates the state in which MSFS started
