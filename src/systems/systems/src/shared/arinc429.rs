@@ -90,7 +90,7 @@ pub(crate) fn to_arinc429(value: f64, ssm: SignStatus) -> f64 {
     f64::from_bits(bits)
 }
 
-pub(crate) fn arinc429_to_f64(word: Arinc429Word<f32>) -> f64 {
+pub fn arinc429_to_f64(word: Arinc429Word<f32>) -> f64 {
     let value = word.value as f32;
     let status: u64 = word.ssm.into();
 
@@ -99,8 +99,7 @@ pub(crate) fn arinc429_to_f64(word: Arinc429Word<f32>) -> f64 {
     f64::from_bits(bits)
 }
 
-#[allow(dead_code)]
-pub(crate) fn arinc429_from_f64(value: f64) -> Arinc429Word<f32> {
+pub fn arinc429_from_f64(value: f64) -> Arinc429Word<f32> {
     let bits = value.to_bits();
 
     let value = (bits >> 32) as u32;
@@ -109,12 +108,11 @@ pub(crate) fn arinc429_from_f64(value: f64) -> Arinc429Word<f32> {
     Arinc429Word::new(f32::from_bits(value), status.into())
 }
 
-pub(crate) fn set_arinc429_bit(word: &mut Arinc429Word<f32>, bit: u32, value: bool) {
+pub fn set_arinc429_bit(word: &mut Arinc429Word<f32>, bit: u32, value: bool) {
     word.value = (((word.value as u32) & !(1 << (bit - 1))) | ((value as u32) << (bit - 1))) as f32;
 }
 
-#[allow(dead_code)]
-pub(crate) fn get_arinc429_bit(word: &mut Arinc429Word<f32>, bit: u32) -> bool {
+pub fn get_arinc429_bit(word: &mut Arinc429Word<f32>, bit: u32) -> bool {
     ((word.value as u32 >> (bit - 1)) & 1) != 0
 }
 
