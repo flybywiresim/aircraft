@@ -7,7 +7,7 @@ class CDUAtcMenu {
         };
 
         let modif = "";
-        if (mcdu.atsu.modifMessage !== undefined) {
+        if (mcdu.atsu.modificationMessage) {
             modif = "MODIFY>";
         }
 
@@ -95,8 +95,8 @@ class CDUAtcMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[3] = () => {
-            if (mcdu.atsu.modifMessage !== undefined) {
-                CDUAtcMessageModify.ShowPage(mcdu, mcdu.atsu.modifMessage);
+            if (mcdu.atsu.modificationMessage) {
+                CDUAtcMessageModify.ShowPage(mcdu, mcdu.atsu.modificationMessage);
             }
         };
 
