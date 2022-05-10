@@ -193,6 +193,8 @@ class SecComputer final
     real_T Saturation3_UpperSat;
     real_T Saturation3_LowerSat;
     real_T Constant_Value_a;
+    real_T Constant_Value_h;
+    real_T Constant2_Value_f;
     real32_T Gain_Gain;
     real32_T Gain1_Gain;
     real32_T Gain2_Gain;

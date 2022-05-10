@@ -209,6 +209,7 @@ class ElacComputer final
     real_T Saturation2_LowerSat;
     real_T Gain1_Gain;
     real_T Constant_Value_a;
+    real_T Constant_Value_b;
     real_T Switch13_Threshold;
     real_T Switch12_Threshold;
     real32_T Gain_Gain_b;
