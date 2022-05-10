@@ -53,6 +53,11 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
 
     private readonly mapFlagShown = MappedSubject.create(([headingWord]) => !headingWord.isNormalOperation(), this.headingWord);
 
+    // eslint-disable-next-line
+    private readonly airplaneShown = MappedSubject.create(([isVisible, headingWord]) => {
+        return isVisible && headingWord.isNormalOperation();
+    }, this.isVisible, this.headingWord);
+
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
@@ -95,17 +100,19 @@ export class ArcModePage extends DisplayComponent<{ bus: EventBus, isUsingTrackU
                 <SelectedHeadingBug
                     bus={this.props.bus}
                     rotationOffset={this.planeRotation}
+                    visible={this.isVisible}
                 />
 
                 <TrackBug
                     isUsingTrackUpMode={this.props.isUsingTrackUpMode}
                     bus={this.props.bus}
+                    visible={this.isVisible}
                 />
 
                 <Airplane
                     x={Subject.create(384)}
                     y={Subject.create(626)}
-                    available={this.headingWord.map((it) => it.isNormalOperation())}
+                    available={this.airplaneShown}
                     rotation={this.planeRotation}
                 />
                 <LubberLine
