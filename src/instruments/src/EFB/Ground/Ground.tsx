@@ -1,6 +1,9 @@
 import { connect } from 'react-redux';
 import React, { useEffect, useState } from 'react';
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir, IconTrafficCone, IconTriangle, IconCircle } from '@tabler/icons';
+import {
+    IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase,
+    IconBuildingArch, IconArchive, IconPlug, IconTir, IconTrafficCone, IconTriangle, IconCircle,
+} from '@tabler/icons';
 import './Ground.scss';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import fuselage from '../Assets/320neo-outline-upright.svg';
