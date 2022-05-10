@@ -239,18 +239,6 @@
 				<ID>3</ID>
 				<ANIM_NAME>Decals_Door_Rear</ANIM_NAME>
 			</UseTemplate>
-            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
-                <ID>0</ID>
-                <ANIM_NAME>Ribbbons_Door-Fwd-Anim</ANIM_NAME>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
-                <ID>3</ID>
-                <ANIM_NAME>Ribbons_Door-Rear-Anim</ANIM_NAME>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_DOOR_InteractivePoint_Template">
-                <ID>5</ID>
-                <ANIM_NAME>Ribbons_Cargo-Anim</ANIM_NAME>
-            </UseTemplate>
             <UseTemplate Name="ASOBO_FuelHose_InteractivePoint_Template">
                 <ID>9</ID>
                 <NODE_ID>GROUND_FUELPIPE</NODE_ID>
