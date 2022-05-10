@@ -40,6 +40,33 @@ impl<T: Copy> Arinc429Word<T> {
         self.ssm == SignStatus::NormalOperation
     }
 }
+impl Arinc429Word<f32> {
+    pub fn from_f64(value: f64) -> Self {
+        let bits = value.to_bits();
+
+        let value = (bits >> 32) as u32;
+        let status = bits as u32;
+
+        Arinc429Word::new(f32::from_bits(value), status.into())
+    }
+
+    pub fn to_f64(&self) -> f64 {
+        let status: u64 = self.ssm.into();
+
+        let bits = (self.value.to_bits() as u64) << 32 | status;
+
+        f64::from_bits(bits)
+    }
+
+    pub fn set_bit(&mut self, bit: u32, value: bool) {
+        self.value =
+            (((self.value as u32) & !(1 << (bit - 1))) | ((value as u32) << (bit - 1))) as f32;
+    }
+
+    pub fn get_bit(&self, bit: u32) -> bool {
+        ((self.value as u32 >> (bit - 1)) & 1) != 0
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum SignStatus {
@@ -90,32 +117,6 @@ pub(crate) fn to_arinc429(value: f64, ssm: SignStatus) -> f64 {
     f64::from_bits(bits)
 }
 
-pub fn arinc429_to_f64(word: Arinc429Word<f32>) -> f64 {
-    let value = word.value as f32;
-    let status: u64 = word.ssm.into();
-
-    let bits = (value.to_bits() as u64) << 32 | status;
-
-    f64::from_bits(bits)
-}
-
-pub fn arinc429_from_f64(value: f64) -> Arinc429Word<f32> {
-    let bits = value.to_bits();
-
-    let value = (bits >> 32) as u32;
-    let status = bits as u32;
-
-    Arinc429Word::new(f32::from_bits(value), status.into())
-}
-
-pub fn set_arinc429_bit(word: &mut Arinc429Word<f32>, bit: u32, value: bool) {
-    word.value = (((word.value as u32) & !(1 << (bit - 1))) | ((value as u32) << (bit - 1))) as f32;
-}
-
-pub fn get_arinc429_bit(word: &mut Arinc429Word<f32>, bit: u32) -> bool {
-    ((word.value as u32 >> (bit - 1)) & 1) != 0
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -156,13 +157,13 @@ mod tests {
 
         for (i, item) in expected_values.iter_mut().enumerate().take(29).skip(11) {
             *item = rng.gen();
-            set_arinc429_bit(&mut word, i as u32, *item);
+            word.set_bit(i as u32, *item);
         }
 
-        let mut result = arinc429_from_f64(arinc429_to_f64(word));
+        let result = Arinc429Word::from_f64(word.to_f64());
 
         for (i, item) in expected_values.iter_mut().enumerate().take(29).skip(11) {
-            let result_bit = get_arinc429_bit(&mut result, i as u32);
+            let result_bit = result.get_bit(i as u32);
             assert!(
                 result_bit == *item,
                 "Expected Bit {} to be {}, got {}",

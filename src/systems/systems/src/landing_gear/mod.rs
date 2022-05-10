@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use crate::{
     failures::{Failure, FailureType},
-    shared::arinc429::{arinc429_to_f64, set_arinc429_bit, Arinc429Word, SignStatus},
+    shared::arinc429::{Arinc429Word, SignStatus},
     shared::{
         ElectricalBusType, ElectricalBuses, GearWheel, LandingGearHandle, LgciuDoorPosition,
         LgciuGearControl, LgciuGearExtension, LgciuId, LgciuInterface, LgciuWeightOnWheels,
@@ -762,66 +762,44 @@ impl LandingGearControlInterfaceUnit {
             Arinc429Word::new(0., SignStatus::FailureWarning)
         } else {
             let mut word = Arinc429Word::new(0., SignStatus::NormalOperation);
-            set_arinc429_bit(
-                &mut word,
+            word.set_bit(
                 11,
                 !self.sensor_inputs.left_gear_up_and_locked && !self.gear_handle_is_down(),
             );
-            set_arinc429_bit(
-                &mut word,
+            word.set_bit(
                 12,
                 !self.sensor_inputs.right_gear_up_and_locked && !self.gear_handle_is_down(),
             );
-            set_arinc429_bit(
-                &mut word,
+            word.set_bit(
                 13,
                 !self.sensor_inputs.nose_gear_up_and_locked && !self.gear_handle_is_down(),
             );
-            set_arinc429_bit(
-                &mut word,
+            word.set_bit(
                 14,
                 !self.sensor_inputs.left_gear_down_and_locked && self.gear_handle_is_down(),
             );
-            set_arinc429_bit(
-                &mut word,
+            word.set_bit(
                 15,
                 !self.sensor_inputs.right_gear_down_and_locked && self.gear_handle_is_down(),
             );
-            set_arinc429_bit(
-                &mut word,
+            word.set_bit(
                 16,
                 !self.sensor_inputs.nose_gear_down_and_locked && self.gear_handle_is_down(),
             );
-            set_arinc429_bit(&mut word, 17, !self.sensor_inputs.left_door_up_and_locked);
-            set_arinc429_bit(&mut word, 18, !self.sensor_inputs.right_door_up_and_locked);
-            set_arinc429_bit(&mut word, 19, !self.sensor_inputs.nose_door_up_and_locked);
+            word.set_bit(17, !self.sensor_inputs.left_door_up_and_locked);
+            word.set_bit(18, !self.sensor_inputs.right_door_up_and_locked);
+            word.set_bit(19, !self.sensor_inputs.nose_door_up_and_locked);
             // The conditions for bits 20, 21 and 22 are not implemented, so they are set to false for now.
-            set_arinc429_bit(&mut word, 20, false);
-            set_arinc429_bit(&mut word, 21, false);
-            set_arinc429_bit(&mut word, 22, false);
-            set_arinc429_bit(
-                &mut word,
-                23,
-                self.sensor_inputs.downlock_state(GearWheel::LEFT),
-            );
-            set_arinc429_bit(
-                &mut word,
-                24,
-                self.sensor_inputs.downlock_state(GearWheel::RIGHT),
-            );
-            set_arinc429_bit(
-                &mut word,
-                25,
-                self.sensor_inputs.downlock_state(GearWheel::NOSE),
-            );
-            set_arinc429_bit(&mut word, 26, self.sensor_inputs.left_gear_compressed(true));
-            set_arinc429_bit(
-                &mut word,
-                27,
-                self.sensor_inputs.right_gear_compressed(true),
-            );
-            set_arinc429_bit(&mut word, 28, self.sensor_inputs.nose_gear_compressed(true));
-            set_arinc429_bit(&mut word, 29, self.gear_handle_is_down());
+            word.set_bit(20, false);
+            word.set_bit(21, false);
+            word.set_bit(22, false);
+            word.set_bit(23, self.sensor_inputs.downlock_state(GearWheel::LEFT));
+            word.set_bit(24, self.sensor_inputs.downlock_state(GearWheel::RIGHT));
+            word.set_bit(25, self.sensor_inputs.downlock_state(GearWheel::NOSE));
+            word.set_bit(26, self.sensor_inputs.left_gear_compressed(true));
+            word.set_bit(27, self.sensor_inputs.right_gear_compressed(true));
+            word.set_bit(28, self.sensor_inputs.nose_gear_compressed(true));
+            word.set_bit(29, self.gear_handle_is_down());
 
             word
         }
@@ -832,28 +810,14 @@ impl LandingGearControlInterfaceUnit {
             Arinc429Word::new(0., SignStatus::FailureWarning)
         } else {
             let mut word = Arinc429Word::new(0., SignStatus::NormalOperation);
-            set_arinc429_bit(
-                &mut word,
+            word.set_bit(
                 11,
                 !self.sensor_inputs.left_and_right_gear_compressed(false),
             );
-            set_arinc429_bit(
-                &mut word,
-                12,
-                !self.sensor_inputs.nose_gear_compressed(false),
-            );
-            set_arinc429_bit(
-                &mut word,
-                13,
-                !self.sensor_inputs.left_gear_compressed(false),
-            );
-            set_arinc429_bit(
-                &mut word,
-                14,
-                !self.sensor_inputs.right_gear_compressed(false),
-            );
-            set_arinc429_bit(
-                &mut word,
+            word.set_bit(12, !self.sensor_inputs.nose_gear_compressed(false));
+            word.set_bit(13, !self.sensor_inputs.left_gear_compressed(false));
+            word.set_bit(14, !self.sensor_inputs.right_gear_compressed(false));
+            word.set_bit(
                 15,
                 self.sensor_inputs.left_gear_down_and_locked
                     && self.sensor_inputs.right_gear_down_and_locked,
@@ -868,15 +832,15 @@ impl LandingGearControlInterfaceUnit {
             Arinc429Word::new(0., SignStatus::FailureWarning)
         } else {
             let mut word = Arinc429Word::new(0., SignStatus::NormalOperation);
-            set_arinc429_bit(&mut word, 11, !self.sensor_inputs.left_gear_up_and_locked);
-            set_arinc429_bit(&mut word, 12, !self.sensor_inputs.right_gear_up_and_locked);
-            set_arinc429_bit(&mut word, 13, !self.sensor_inputs.nose_gear_up_and_locked);
-            set_arinc429_bit(&mut word, 14, !self.gear_handle_is_down());
-            set_arinc429_bit(&mut word, 25, self.sensor_inputs.left_door_fully_opened);
-            set_arinc429_bit(&mut word, 26, self.sensor_inputs.right_door_fully_opened);
-            set_arinc429_bit(&mut word, 27, self.sensor_inputs.nose_door_fully_opened);
+            word.set_bit(11, !self.sensor_inputs.left_gear_up_and_locked);
+            word.set_bit(12, !self.sensor_inputs.right_gear_up_and_locked);
+            word.set_bit(13, !self.sensor_inputs.nose_gear_up_and_locked);
+            word.set_bit(14, !self.gear_handle_is_down());
+            word.set_bit(25, self.sensor_inputs.left_door_fully_opened);
+            word.set_bit(26, self.sensor_inputs.right_door_fully_opened);
+            word.set_bit(27, self.sensor_inputs.nose_door_fully_opened);
             // Nose gear door should be seperated into left/right doors. For now, just copy the data.
-            set_arinc429_bit(&mut word, 28, self.sensor_inputs.nose_door_fully_opened);
+            word.set_bit(28, self.sensor_inputs.nose_door_fully_opened);
 
             word
         }
@@ -937,15 +901,15 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
 
         writer.write(
             &self.discrete_word_1_id,
-            arinc429_to_f64(self.discrete_word_1()),
+            self.discrete_word_1().to_f64(),
         );
         writer.write(
             &self.discrete_word_2_id,
-            arinc429_to_f64(self.discrete_word_2()),
+            self.discrete_word_2().to_f64(),
         );
         writer.write(
             &self.discrete_word_3_id,
-            arinc429_to_f64(self.discrete_word_3()),
+            self.discrete_word_3().to_f64(),
         );
     }
 }
