@@ -899,18 +899,9 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
 
         writer.write(&self.fault_ecam_id, self.status() != LgciuStatus::Ok);
 
-        writer.write(
-            &self.discrete_word_1_id,
-            self.discrete_word_1().to_f64(),
-        );
-        writer.write(
-            &self.discrete_word_2_id,
-            self.discrete_word_2().to_f64(),
-        );
-        writer.write(
-            &self.discrete_word_3_id,
-            self.discrete_word_3().to_f64(),
-        );
+        writer.write(&self.discrete_word_1_id, f64::from(self.discrete_word_1()));
+        writer.write(&self.discrete_word_2_id, f64::from(self.discrete_word_2()));
+        writer.write(&self.discrete_word_3_id, f64::from(self.discrete_word_3()));
     }
 }
 
