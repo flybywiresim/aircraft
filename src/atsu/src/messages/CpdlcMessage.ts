@@ -21,6 +21,10 @@ export class CpdlcMessage extends AtsuMessage {
 
     public CloseAutomatically = true;
 
+    public MessageMonitored = false;
+
+    public SemanticResponseRequired = false;
+
     constructor() {
         super();
         this.Type = AtsuMessageType.CPDLC;
@@ -44,6 +48,8 @@ export class CpdlcMessage extends AtsuMessage {
         this.PreviousTransmissionId = jsonData.PreviousTransmissionId;
         this.DcduRelevantMessage = jsonData.DcduRelevantMessage;
         this.CloseAutomatically = jsonData.CloseAutomatically;
+        this.MessageMonitored = jsonData.MessageMonitored;
+        this.SemanticResponseRequired = jsonData.SemanticAnswerRequired;
     }
 
     protected serializeContent(format: AtsuMessageSerializationFormat, template: string, element: CpdlcMessageElement): string {

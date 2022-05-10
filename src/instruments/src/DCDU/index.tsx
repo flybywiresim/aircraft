@@ -47,8 +47,6 @@ export class DcduMessageBlock {
 
     public automaticCloseTimeout: number = -1;
 
-    public semanticResponse: boolean = false;
-
     public semanticResponseIncomplete: boolean = false;
 }
 
@@ -254,14 +252,13 @@ const DCDU: React.FC = () => {
             }
 
             // check if we have a semantic response and all data is available
-            if (UplinkMessageInterpretation.SemanticAnswerRequired(cpdlcMessages[0]) && cpdlcMessages[0].Response && cpdlcMessages[0].Response.Content) {
+            if (cpdlcMessages[0].SemanticResponseRequired && cpdlcMessages[0].Response && cpdlcMessages[0].Response.Content) {
                 const dcduBlock = messages.get(cpdlcMessages[0].UniqueMessageID);
                 if (dcduBlock) {
                     dcduBlock.semanticResponseIncomplete = false;
                     if (dcduBlock.statusMessage === DcduStatusMessage.NoFmData || dcduBlock.statusMessage === DcduStatusMessage.McduForModification) {
                         dcduBlock.statusMessage = DcduStatusMessage.NoMessage;
                     }
-                    dcduBlock.semanticResponse = true;
 
                     for (const entry of cpdlcMessages[0].Response.Content[0].Content) {
                         if (entry.Value === '') {
@@ -362,7 +359,6 @@ const DCDU: React.FC = () => {
     // prepare the data
     let messageIndex = -1;
     let visibleMessagesSemanticResponseIncomplete: boolean = false;
-    let visibleMessageSemanticButtonNeeded: boolean = false;
     let visibleMessages: CpdlcMessage[] | undefined = undefined;
     let visibleMessageStatus: DcduStatusMessage = DcduStatusMessage.NoMessage;
     const response: number = -1;
@@ -373,7 +369,6 @@ const DCDU: React.FC = () => {
         if (messageIndex !== -1) {
             visibleMessages = arrMessages[messageIndex].messages;
             visibleMessageStatus = arrMessages[messageIndex].statusMessage;
-            visibleMessageSemanticButtonNeeded = arrMessages[messageIndex].semanticResponse;
             visibleMessagesSemanticResponseIncomplete = arrMessages[messageIndex].semanticResponseIncomplete;
         }
 
@@ -440,7 +435,7 @@ const DCDU: React.FC = () => {
                             />
                         </>
                     ))}
-                    {(visibleMessages !== undefined && answerRequired && !visibleMessageSemanticButtonNeeded
+                    {(visibleMessages !== undefined && answerRequired && !visibleMessages[0].SemanticResponseRequired
                     && visibleMessages[0].Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.WilcoUnable && (
                         <WilcoUnableButtons
                             message={visibleMessages[0]}
@@ -450,7 +445,7 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(visibleMessages !== undefined && answerRequired && !visibleMessageSemanticButtonNeeded
+                    {(visibleMessages !== undefined && answerRequired && !visibleMessages[0].SemanticResponseRequired
                     && visibleMessages[0].Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.AffirmNegative && (
                         <AffirmNegativeButtons
                             message={visibleMessages[0]}
@@ -460,7 +455,7 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(visibleMessages !== undefined && answerRequired && !visibleMessageSemanticButtonNeeded
+                    {(visibleMessages !== undefined && answerRequired && !visibleMessages[0].SemanticResponseRequired
                     && visibleMessages[0].Content[0].ExpectedResponse === CpdlcMessageExpectedResponseType.Roger && (
                         <RogerButtons
                             message={visibleMessages[0]}
@@ -470,7 +465,7 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(visibleMessages !== undefined && !answerRequired && !visibleMessageSemanticButtonNeeded
+                    {(visibleMessages !== undefined && !answerRequired && !visibleMessages[0].SemanticResponseRequired
                     && visibleMessages[0].Direction === AtsuMessageDirection.Downlink && (
                         <OutputButtons
                             message={visibleMessages[0]}
@@ -479,7 +474,7 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(visibleMessages !== undefined && visibleMessageSemanticButtonNeeded
+                    {(visibleMessages !== undefined && visibleMessages[0].SemanticResponseRequired
                     && visibleMessages[0].Direction === AtsuMessageDirection.Uplink && (
                         <SemanticResponseButtons
                             message={visibleMessages[0]}
@@ -490,7 +485,7 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(visibleMessages !== undefined && !answerRequired && !visibleMessageSemanticButtonNeeded
+                    {(visibleMessages !== undefined && !answerRequired && !visibleMessages[0].SemanticResponseRequired
                     && visibleMessages[0].Direction === AtsuMessageDirection.Uplink && (
                         <CloseButtons
                             message={visibleMessages[0]}
