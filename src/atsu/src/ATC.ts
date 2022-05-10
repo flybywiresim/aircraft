@@ -18,13 +18,13 @@ import { UplinkMessageInterpretation } from './components/UplinkMessageInterpret
  * Defines the ATC system for CPDLC communication
  */
 export class Atc {
-    private parent: Atsu | undefined = undefined;
+    private parent: Atsu = null;
 
-    private datalink: Datalink | undefined = undefined;
+    private datalink: Datalink = null;
 
-    private dcduLink: DcduLink | undefined = undefined;
+    private dcduLink: DcduLink = null;
 
-    private handoverInterval: number | undefined = 0;
+    private handoverInterval: number = 0;
 
     private handoverOngoing = false;
 

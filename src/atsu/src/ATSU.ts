@@ -19,7 +19,7 @@ import { ATS623 } from './components/ATS623';
  * Defines the ATSU
  */
 export class Atsu {
-    private flightStateObserver: FlightStateObserver = undefined;
+    private flightStateObserver: FlightStateObserver = null;
 
     private datalink = new Datalink(this);
 
