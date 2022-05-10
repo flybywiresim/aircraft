@@ -1,5 +1,6 @@
 import { FSComponent, Subject, VNode } from 'msfssdk';
 import { RoseMode, RoseModeOverlay, RoseModeProps } from './RoseMode';
+import { Airplane } from '../../shared/Airplane';
 
 export class RoseNavPage extends RoseMode<RoseModeProps> {
     isVisible = Subject.create(false);
@@ -12,6 +13,13 @@ export class RoseNavPage extends RoseMode<RoseModeProps> {
                     tcasMode={this.props.tcasMode}
                     rangeValue={this.props.rangeValue}
                     visible={this.isVisible}
+                />
+
+                <Airplane
+                    x={Subject.create(384)}
+                    y={Subject.create(384)}
+                    available={this.isVisible}
+                    rotation={Subject.create(0)}
                 />
             </g>
         );
