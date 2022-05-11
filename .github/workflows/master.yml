@@ -30,6 +30,7 @@ jobs:
           echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
           echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
           echo SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> .env
+          echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
@@ -92,7 +93,7 @@ jobs:
         with:
           token: ${{ github.token }}
           tag: ${{ env.MASTER_PRE_RELEASE_TAG }}
-          assets: '*'
+          assets: "*"
           fail-if-no-assets: false
       - name: Upload aicraft package to GitHub Pre-Release Assets
         uses: actions/upload-release-asset@v1.0.2
