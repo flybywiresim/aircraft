@@ -456,6 +456,8 @@ const DCDU: React.FC = () => {
                             setMessageStatus={setMessageStatus}
                             sendResponse={sendResponse}
                             closeMessage={closeMessage}
+                            monitorMessage={monitorMessage}
+                            cancelMessageMonitoring={stopMessageMonitoring}
                         />
                     ))}
                     {(visibleMessages !== undefined && answerRequired && !visibleMessages[0].SemanticResponseRequired
@@ -466,6 +468,8 @@ const DCDU: React.FC = () => {
                             setMessageStatus={setMessageStatus}
                             sendResponse={sendResponse}
                             closeMessage={closeMessage}
+                            monitorMessage={monitorMessage}
+                            cancelMessageMonitoring={stopMessageMonitoring}
                         />
                     ))}
                     {(visibleMessages !== undefined && answerRequired && !visibleMessages[0].SemanticResponseRequired
@@ -476,6 +480,8 @@ const DCDU: React.FC = () => {
                             setMessageStatus={setMessageStatus}
                             sendResponse={sendResponse}
                             closeMessage={closeMessage}
+                            monitorMessage={monitorMessage}
+                            cancelMessageMonitoring={stopMessageMonitoring}
                         />
                     ))}
                     {(visibleMessages !== undefined && !answerRequired && !visibleMessages[0].SemanticResponseRequired

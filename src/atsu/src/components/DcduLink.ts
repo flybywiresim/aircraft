@@ -6,7 +6,7 @@ import { Atsu } from '../ATSU';
 import { AtsuMessage, AtsuMessageDirection } from '../messages/AtsuMessage';
 import { AtsuStatusCodes } from '../AtsuStatusCodes';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
-import { UplinkMessageInterpretation } from './UplinkMessageInterpretation';
+import { UplinkMessageStateMachine } from './UplinkMessageStateMachine';
 
 export enum DcduStatusMessage {
     NoMessage = -1,
@@ -185,7 +185,7 @@ export class DcduLink {
                 const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
                 if (message !== undefined) {
                     const cpdlcMessage = message as CpdlcMessage;
-                    if (cpdlcMessage.Response && UplinkMessageInterpretation.SemanticAnswerRequired(cpdlcMessage)) {
+                    if (cpdlcMessage.Response && cpdlcMessage.SemanticResponseRequired) {
                         this.atc.sendExistingResponse(uid);
                     }
                 }
@@ -219,6 +219,18 @@ export class DcduLink {
             if (!this.closeMessage(this.uplinkMessages, this.bufferedUplinkMessages, uid, true)) {
                 this.closeMessage(this.downlinkMessages, this.bufferedDownlinkMessages, uid, false);
             }
+        });
+
+        Coherent.on('A32NX_ATSU_DCDU_MESSAGE_MONITORING', (uid: number) => {
+            const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
+            UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true);
+            this.update(message as CpdlcMessage);
+        });
+
+        Coherent.on('A32NX_ATSU_DCDU_MESSAGE_STOP_MONITORING', (uid: number) => {
+            const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
+            UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, false);
+            this.update(message as CpdlcMessage);
         });
 
         Coherent.on('A32NX_ATSU_DCDU_MESSAGE_RECALL', () => {
@@ -263,7 +275,7 @@ export class DcduLink {
         Coherent.on('A32NX_ATSU_DCDU_MESSAGE_INVERT_SEMANTIC_RESPONSE', (uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
-                UplinkMessageInterpretation.AppendSemanticAnswer(this.atsu, false, message as CpdlcMessage);
+                UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, false);
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', [message]);
             }
         });

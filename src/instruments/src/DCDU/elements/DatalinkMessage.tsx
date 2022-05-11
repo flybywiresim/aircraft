@@ -2,7 +2,6 @@ import React from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { DcduStatusMessage } from '@atsu/components/DcduLink';
-import { UplinkMessageInterpretation } from '@atsu/components/UplinkMessageInterpretation';
 import { MessageVisualization } from './MessageVisualization';
 
 type DatalinkMessageProps = {
@@ -19,7 +18,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
         } else {
             backgroundColor = [0, 255, 255];
         }
-    } else if (UplinkMessageInterpretation.SemanticAnswerRequired(messages[0])) {
+    } else if (messages[0].SemanticResponseRequired) {
         if (messages[0].Response?.ComStatus === AtsuMessageComStatus.Sent || messages[0].Response?.ComStatus === AtsuMessageComStatus.Sending) {
             backgroundColor = [0, 255, 0];
         } else {
@@ -58,7 +57,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
     });
 
     let messageSeperatorLine: number | undefined = undefined;
-    if (UplinkMessageInterpretation.SemanticAnswerRequired(messages[0]) && messages[0].Response) {
+    if (messages[0].SemanticResponseRequired && messages[0].Response) {
         messageSeperatorLine = content.split('\n').length;
         content += '------------------------------\n';
         content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;

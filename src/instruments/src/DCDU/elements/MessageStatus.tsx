@@ -2,7 +2,6 @@ import React from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessageExpectedResponseType, CpdlcMessagesDownlink } from '@atsu/messages/CpdlcMessageElements';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
-import { UplinkMessageInterpretation } from '@atsu/components/UplinkMessageInterpretation';
 import { Checkerboard } from './Checkerboard';
 
 type MessageStatusProps = {
@@ -45,7 +44,7 @@ const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage 
             return 'SENT';
         }
     } else if (response.Content !== undefined && response.Content[0].TypeId in CpdlcMessagesDownlink) {
-        if (!UplinkMessageInterpretation.SemanticAnswerRequired(message)) {
+        if (message.SemanticResponseRequired) {
             const text = CpdlcMessagesDownlink[response.Content[0].TypeId][0][0];
             if (text === 'STANDBY') {
                 return 'STBY';
@@ -67,7 +66,7 @@ const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage 
 export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedResponse }) => {
     let statusClass = 'status-message ';
     if (message.Direction === AtsuMessageDirection.Uplink) {
-        if (!UplinkMessageInterpretation.SemanticAnswerRequired(message)) {
+        if (!message.SemanticResponseRequired) {
             if (message.Response === undefined && selectedResponse === -1) {
                 statusClass += 'status-open';
             } else {
