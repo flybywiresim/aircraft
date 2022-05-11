@@ -20,8 +20,8 @@
 ## Uncategorized
 
 - A32NX_IS_READY
-  - Bool
-  - Indicates that the JavaScript part is ready
+    - Bool
+    - Indicates that the JavaScript part is ready
 
 - A32NX_IS_STATIONARY
   - Bool
@@ -32,18 +32,18 @@
   - Indicates if any GND equipment is visible or not
 
 - A32NX_START_STATE
-  - Enum
-  - Indicates the state in which MSFS started
-  - State | Value
-    --- | ---
-    Hangar | 1
-    Apron | 2
-    Taxi | 3
-    Runway | 4
-    Climb | 5
-    Cruise | 6
-    Approach | 7
-    Final | 8
+    - Enum
+    - Indicates the state in which MSFS started
+    - State | Value
+                --- | ---
+      Hangar | 1
+      Apron | 2
+      Taxi | 3
+      Runway | 4
+      Climb | 5
+      Cruise | 6
+      Approach | 7
+      Final | 8
 
 - A32NX_NO_SMOKING_MEMO
     - Boolean that determines whether the NO SMOKING memo should be visible on the upper ECAM
@@ -56,8 +56,10 @@
 - A32NX_REPORTED_BRAKE_TEMPERATURE_{1,2,3,4}
     - celsius
     - represents the reported brake temperature of the rear wheels by the sensor.
-    - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool the sensor more than the brakes
-    - (which have much more energy to dissipate) therefore giving potentially erroneous readings that the pilots must take into account
+    - It can be different from the brake temperature when the brake fan has been used, because the brake fan will cool
+      the sensor more than the brakes
+    - (which have much more energy to dissipate) therefore giving potentially erroneous readings that the pilots must
+      take into account
 
 - A32NX_BRAKE_FAN
     - boolean
@@ -300,7 +302,7 @@
 
 - A32NX_SPEEDS_VAPP
     - Number
-    - vapp calculated for config full  whether A32NX_VSPEEDS_LANDING_CONF3 or not
+    - vapp calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
     - is mach corrected
 
 - A32NX_SPEEDS_ALPHA_PROTECTION
@@ -432,24 +434,24 @@
     - Indicates whether the door slides are armed or not
 
 - A32NX_RAIN_REPELLENT_RIGHT_ON
-  - Bool
-  - True if rain repellent is activated on the right windshield.
+    - Bool
+    - True if rain repellent is activated on the right windshield.
 
 - A32NX_RAIN_REPELLENT_LEFT_ON
-  - Bool
-  - True if rain repellent is activated on the left windshield.
+    - Bool
+    - True if rain repellent is activated on the left windshield.
 
 - A32NX_RCDR_TEST
-  - Bool
-  - True if RCDR being tested.
+    - Bool
+    - True if RCDR being tested.
 
 - A32NX_RADAR_MULTISCAN_AUTO
-  - Bool
-  - True if multiscan switch is set to AUTO.
+    - Bool
+    - True if multiscan switch is set to AUTO.
 
 - A32NX_RADAR_GCS_AUTO
-  - Bool
-  - True if GCS switch is set to AUTO.
+    - Bool
+    - True if GCS switch is set to AUTO.
 
 - A32NX_OXYGEN_MASKS_DEPLOYED
     - Bool
@@ -858,14 +860,15 @@
 - A32NX_REALISTIC_TILLER_ENABLED
     - Bool
     - 0 for legacy mode (steering with rudder). 1 for realistic mode with tiller axis
-        Tiller axis to be binded on "ENGINE 4 MIXTURE AXIS"
+      Tiller axis to be binded on "ENGINE 4 MIXTURE AXIS"
 
 - A32NX_HOME_COCKPIT_ENABLED
     - Bool
     - 1 to enable Home Cockpit mode which:
-      - Removes backlight bleed from the PFD, ND, and ECAM displays
-      - Removes reflection from the ISIS
-    - Useful for home cockpits that use the sim's built-in pop-out feature and do not wish to have these effects present on their displays.
+        - Removes backlight bleed from the PFD, ND, and ECAM displays
+        - Removes reflection from the ISIS
+    - Useful for home cockpits that use the sim's built-in pop-out feature and do not wish to have these effects present
+      on their displays.
 
 - A32NX_HYD_{loop_name}_EPUMP_LOW_PRESS
     - Bool
@@ -970,10 +973,10 @@
     - Number
     - Requests an autobrake mode
         - -1: (technical state not requesting anything)
-        -  0: Disarm Autobrake
-        -  1: Set Autobrake to LOW
-        -  2: Set Autobrake to MED
-        -  3: Set Autobrake to MAX (if allowed)
+        - 0: Disarm Autobrake
+        - 1: Set Autobrake to LOW
+        - 2: Set Autobrake to MED
+        - 3: Set Autobrake to MAX (if allowed)
 
 - A32NX_AUTOBRAKES_ACTIVE
     - Bool
@@ -1010,13 +1013,13 @@
       Value | Meaning
       --- | ---
       PREFLIGHT | 0
-      TAKEOFF   | 1
-      CLIMB     | 2
-      CRUISE    | 3
-      DESCENT   | 4
-      APPROACH  | 5
-      GOAROUND  | 6
-      DONE      | 7
+      TAKEOFF | 1
+      CLIMB | 2
+      CRUISE | 3
+      DESCENT | 4
+      APPROACH | 5
+      GOAROUND | 6
+      DONE | 7
 
 - A32NX_FLAPS_HANDLE_INDEX
     - Number
@@ -1101,7 +1104,7 @@
     - Number
     - Indicates the desired flap configuration index according to the table
     - Value | Meaning
-      --- | ---
+                  --- | ---
       0 | Conf0
       1 | Conf1
       2 | Conf1F
@@ -1158,10 +1161,10 @@
       -1 | Empty value
 
 - A32NX_LOAD_LIGHTING_PRESET
-  - Number
-  - ID for preset
-  - When set to >0 the corresponding preset will be loaded if defined
-  - Will be reset to 0 after loading is done
+    - Number
+    - ID for preset
+    - When set to >0 the corresponding preset will be loaded if defined
+    - Will be reset to 0 after loading is done
 
 - A32NX_SAVE_LIGHTING_PRESET
     - Number
@@ -1175,17 +1178,24 @@
     - When set to >0 the corresponding preset will be loaded if defined
     - Will be reset to 0 after loading is done
     - When set to 0 during loading will stop and cancel the loading process
-    - Value | Meaning
-      ---   | ---
-          1 | Cold & Dark
-          2 | Turnaround
-          3 | Ready for Pushback
-          4 | Ready for Taxi
-          5 | Ready for Takeoff
+    - | Value | Meaning            |
+      |-------|--------------------|
+      | 1     | Cold & Dark        |
+      | 2     | Turnaround         |
+      | 3     | Ready for Pushback |
+      | 4     | Ready for Taxi     |
+      | 5     | Ready for Takeoff  |
 
 - A32NX_LOAD_AIRCRAFT_PRESET_PROGRESS
-  - Number (0.0..1.0)
-  - While loading a preset this will contain the percentage of the total progress of loading
+    - Number (0.0..1.0)
+    - While loading a preset this will contain the percentage of the total progress of loading
+
+- A32NX_PUSHBACK_SYSTEM_ENABLED
+    - Bool
+    - Read/Write
+    - 0 when pushback system is completely disabled, 1 when system is enabled
+    - When disabled pushback UI in the flyPadOS 3 is disabled and movement updates are suspended.
+    - This prevents conflicts with other pushback add-ons
 
 ## EIS Display System
 
@@ -1250,16 +1260,16 @@
     - Provides a bitfield of the active FM messages to the NDs
       Bit | Meaning
       --- | ---
-      0  | SelectTrueRef
-      1  | CheckNorthRef
-      2  | NavAccuracyDowngrade
-      3  | NavAccuracyUpgradeNoGps
-      4  | SpecifiedVorDmeUnavailble
-      5  | NavAccuracyUpgradeGps
-      6  | GpsPrimary
-      7  | MapPartlyDisplayed
-      8  | SetOffsideRangeMode
-      9  | OffsideFmControl
+      0 | SelectTrueRef
+      1 | CheckNorthRef
+      2 | NavAccuracyDowngrade
+      3 | NavAccuracyUpgradeNoGps
+      4 | SpecifiedVorDmeUnavailble
+      5 | NavAccuracyUpgradeGps
+      6 | GpsPrimary
+      7 | MapPartlyDisplayed
+      8 | SetOffsideRangeMode
+      9 | OffsideFmControl
       10 | OffsideFmWxrControl
       11 | OffsideWxrControl
       12 | GpsPrimaryLost
@@ -1295,32 +1305,32 @@
     - Indicates if the SET HOLD SPEED message is shown on the PFD
 
 - A32NX_ISIS_LS_ACTIVE
-	- Bool
-	- Indicates whether LS scales are shown on the ISIS
-	- Toggled by `H:A32NX_ISIS_LS_PRESSED`
+    - Bool
+    - Indicates whether LS scales are shown on the ISIS
+    - Toggled by `H:A32NX_ISIS_LS_PRESSED`
 
 - A32NX_ISIS_BUGS_ACTIVE
-	- Bool
-	- Indicates whether bugs page is shown on the ISIS
-	- Toggled by `H:A32NX_ISIS_BUGS_PRESSED`
+    - Bool
+    - Indicates whether bugs page is shown on the ISIS
+    - Toggled by `H:A32NX_ISIS_BUGS_PRESSED`
 
 - A32NX_ISIS_BUGS_ALT_VALUE:{number}
-	- Number (feet)
-	- Altitude of altitude bug set on ISIS bugs page
+    - Number (feet)
+    - Altitude of altitude bug set on ISIS bugs page
     - {number}
         - 0
         - 1
 
 - A32NX_ISIS_BUGS_ALT_ACTIVE:{number}
-	- Bool
-	- Indicates whether altitude bug is shown on the altitude tape of the ISIS
+    - Bool
+    - Indicates whether altitude bug is shown on the altitude tape of the ISIS
     - {number}
         - 0
         - 1
 
 - A32NX_ISIS_BUGS_SPD_VALUE:{number}
-	- Number (knots)
-	- Speed of speed bug set on ISIS bugs page
+    - Number (knots)
+    - Speed of speed bug set on ISIS bugs page
     - {number}
         - 0
         - 1
@@ -1328,8 +1338,8 @@
         - 3
 
 - A32NX_ISIS_BUGS_SPD_ACTIVE:{number}
-	- Bool
-	- Indicates whether speed bug is shown on the speed tape of the ISIS
+    - Bool
+    - Indicates whether speed bug is shown on the speed tape of the ISIS
     - {number}
         - 0
         - 1
@@ -1435,7 +1445,7 @@
       Value | Meaning
       --- | ---
       -1.0 | full up
-       0.0 | neutral
+      0.0 | neutral
       1.0 | full down
 
 - A32NX_AILERON_RIGHT_DEFLECTION_DEMAND
@@ -1444,7 +1454,7 @@
       Value | Meaning
       --- | ---
       -1.0 | full down
-       0.0 | neutral
+      0.0 | neutral
       1.0 | full up
 
 - A32NX_HYD_AILERON_LEFT_DEFLECTION
@@ -1453,7 +1463,7 @@
       Value | Meaning
       --- | ---
       -1.0 | full up
-       0.0 | neutral
+      0.0 | neutral
       1.0 | full down
 
 - A32NX_HYD_AILERON_RIGHT_DEFLECTION
@@ -1462,7 +1472,7 @@
       Value | Meaning
       --- | ---
       -1.0 | full down
-       0.0 | neutral
+      0.0 | neutral
       1.0 | full up
 
 ## ADIRS
@@ -1695,9 +1705,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
 ## Flight Management System
 
 - A32NX_FM_ENABLE_APPROACH_PHASE
-  - Bool
-  - Indicates whether the FMS should switch to APPROACH phase.
-  - **WARNING:** This is temporary and internal. Do not use.
+    - Bool
+    - Indicates whether the FMS should switch to APPROACH phase.
+    - **WARNING:** This is temporary and internal. Do not use.
 
 ## Autopilot System
 
@@ -1896,49 +1906,49 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Important: the signal is only usable above the runway and is not to be used elsewhere
 
 - A32NX_FCU_SPD_MANAGED_DASHES
-  - Boolean
-  - Indicates if managed speed/mach mode is active and a numerical value is not displayed
-    State | Value
+    - Boolean
+    - Indicates if managed speed/mach mode is active and a numerical value is not displayed
+      State | Value
       --- | ---
       SELECTED | 0
       MANAGED | 1
 
 - A32NX_FCU_SPD_MANAGED_DOT
-  - Boolean
-  - Indicates if managed speed/mach mode is active
-    State | Value
+    - Boolean
+    - Indicates if managed speed/mach mode is active
+      State | Value
       --- | ---
       SELECTED | 0
       MANAGED | 1
 
 - A32NX_FCU_HDG_MANAGED_DASHES
-  - Boolean
-  - Indicates if managed heading mode is active and a numerical value is not displayed
-    State | Value
+    - Boolean
+    - Indicates if managed heading mode is active and a numerical value is not displayed
+      State | Value
       --- | ---
       SELECTED | 0
       MANAGED | 1
 
 - A32NX_FCU_HDG_MANAGED_DOT
-  - Boolean
-  - Indicates if managed heading mode is active or armed
-    State | Value
+    - Boolean
+    - Indicates if managed heading mode is active or armed
+      State | Value
       --- | ---
       SELECTED | 0
       MANAGED/ARMED | 1
 
 - A32NX_FCU_ALT_MANAGED
-  - Boolean
-  - Indicates if managed altitude mode is active (dot)
-    State | Value
+    - Boolean
+    - Indicates if managed altitude mode is active (dot)
+      State | Value
       --- | ---
       SELECTED | 0
       MANAGED | 1
 
 - A32NX_FCU_VS_MANAGED
-  - Boolean
-  - Indicates if managed VS/FPA mode is active
-    State | Value
+    - Boolean
+    - Indicates if managed VS/FPA mode is active
+      State | Value
       --- | ---
       SELECTED | 0
       MANAGED | 1
@@ -2054,9 +2064,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Boolean
     - Indicates if the FINAL vertical mode can engage
     - FINAL mode will engage if :
-      - This Simvar is true
-      - NAV mode is engaged
-      - FINAL mode is armed
+        - This Simvar is true
+        - NAV mode is engaged
+        - FINAL mode is armed
 
 ## Autothrust System
 
@@ -2235,12 +2245,12 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Range is from -1 to 1
 
 - A32NX_THROTTLE_MAPPING_INCREMENT_NORMAL
-  - Number
-  - Indicates the increment being used for normal key events
+    - Number
+    - Indicates the increment being used for normal key events
 
 - A32NX_THROTTLE_MAPPING_INCREMENT_SMALL
-  - Number
-  - Indicates the increment being used for small key events
+    - Number
+    - Indicates the increment being used for small key events
 
 ## Engine and FADEC System
 
@@ -2277,11 +2287,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_ENGINE_N1:{index}
     - Number (% N1)
-    - Custom engine {index} N1 to model realistic start-up & shutdown, although equal to Sim's N2 for other flight phases.
+    - Custom engine {index} N1 to model realistic start-up & shutdown, although equal to Sim's N2 for other flight
+      phases.
 
 - A32NX_ENGINE_N2:{index}
     - Number (% N2)
-    - Custom engine N2 {index} to model realistic start-up & shutdown, although equal to Sim's N2 for other flight phases.
+    - Custom engine N2 {index} to model realistic start-up & shutdown, although equal to Sim's N2 for other flight
+      phases.
 
 - A32NX_ENGINE_EGT:{index}
     - Number (degrees Celsius)
@@ -2393,7 +2405,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_PRESS_CABIN_DELTA_PRESSURE
     - PSI
     - The difference in pressure between the cabin interior and the exterior air.
-    Positive when cabin pressure is higher than external pressure.
+      Positive when cabin pressure is higher than external pressure.
 
 - A32NX_PRESS_CABIN_VS
     - Feet per minute
@@ -2664,7 +2676,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_LGCIU_{number}_{gear}_GEAR_DOWNLOCKED
     - True if the gear is locked down.
     - Boolean
-     - {number}
+    - {number}
         - 1
         - 2
     - {gear}
@@ -2675,7 +2687,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_LGCIU_{number}_{gear}_GEAR_UNLOCKED
     - True is the gear is not in the same state as the gear lever
     - Boolean
-     - {number}
+    - {number}
         - 1
         - 2
     - {gear}
@@ -2731,9 +2743,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Bool
 
 - A32NX_SWITCH_TCAS_Position
-  - Enum
-  - Read-Only
-  - Selected TCAS Mode
+    - Enum
+    - Read-Only
+    - Selected TCAS Mode
       Description | Value
       --- | ---
       STBY | 0
@@ -2741,9 +2753,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
       TA/RA | 2
 
 - A32NX_SWITCH_TCAS_Traffic_Position
-  - Enum
-  - Read-Only
-  - Selected TCAS Display Mode
+    - Enum
+    - Read-Only
+    - Selected TCAS Display Mode
       Description | Value
       --- | ---
       THREAT | 0
@@ -2752,24 +2764,24 @@ In the variables below, {number} should be replaced with one item in the set: { 
       BELOW | 3
 
 - A32NX_TCAS_MODE
-  - Enum
-  - Read-Only
-  - Whether TCAS has been set to standby, TA Only or TA/RA Mode (see ATC panel)
-  Description | Value
+    - Enum
+    - Read-Only
+    - Whether TCAS has been set to standby, TA Only or TA/RA Mode (see ATC panel)
+      Description | Value
       --- | ---
       STBY | 0
       TA | 1
       TA/RA | 2
 
 - A32NX_TCAS_SENSITIVITY
-  - Number
-  - Read-Only
-  - Current sensitivity level
+    - Number
+    - Read-Only
+    - Current sensitivity level
 
 - A32NX_TCAS_STATE
-  - Enum
-  - Read-Only
-  - Currently active traffic/resolution advisory state
+    - Enum
+    - Read-Only
+    - Currently active traffic/resolution advisory state
       Description | Value
       --- | ---
       NONE | 0
@@ -2777,14 +2789,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
       RA | 2
 
 - A32NX_TCAS_RA_CORRECTIVE
-  - boolean
-  - Read-Only
-  - Active RA is corrective?
+    - boolean
+    - Read-Only
+    - Active RA is corrective?
 
 - A32NX_TCAS_VSPEED_RED:{number}
     - Feet per minute
     - Read-Only
-	- Lower and upper red vertical speed range of current active RA
+    - Lower and upper red vertical speed range of current active RA
     - {number}
         - 0
         - 1
@@ -2792,7 +2804,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_TCAS_VSPEED_GREEN:{number}
     - Feet per minute
     - Read-Only
-	- Lower and upper green vertical speed range of current active RA
+    - Lower and upper green vertical speed range of current active RA
     - {number}
         - 0
         - 1
@@ -2803,5 +2815,5 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - `Arinc429Word<Feet>`
     - The height over ground as measured by the corresponding radio altimeter towards the aft of the aircraft
     - {number}
-      - 0
-      - 1
+        - 0
+        - 1

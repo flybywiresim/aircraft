@@ -79,7 +79,7 @@ interface LanguageOption {
     alias: string;
 }
 
-// used for the dropdown in the flyPad settings page
+// used to initialize languages and for the dropdown in the flyPad settings page
 export const languageOptions: LanguageOption[] = [
     // Source language first
     { langCode: 'en', langData: en, langName: 'English', alias: 'English' },
