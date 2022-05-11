@@ -325,6 +325,10 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeValid;
   std::unique_ptr<LocalVariable> idRadioReceiverGlideSlopeDeviation;
 
+  std::unique_ptr<LocalVariable> idRealisticTillerEnabled;
+  std::unique_ptr<LocalVariable> idTillerHandlePosition;
+  std::unique_ptr<LocalVariable> idNoseWheelPosition;
+
   void loadConfiguration();
   void setupLocalVariables();
 

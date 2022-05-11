@@ -29,4 +29,8 @@ struct AdditionalData {
   unsigned long long assistanceTakeoffEnabled;
   unsigned long long assistanceLandingEnabled;
   unsigned long long aiAutoTrimActive;
+  unsigned long long aiControlsActive;
+  unsigned long long realisticTillerEnabled;
+  double tillerHandlePosition;
+  double noseWheelPosition;
 };
