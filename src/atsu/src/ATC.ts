@@ -12,7 +12,8 @@ import { Datalink } from './com/Datalink';
 import { Atsu } from './ATSU';
 import { DcduStatusMessage, DcduLink } from './components/DcduLink';
 import { FansMode, FutureAirNavigationSystem } from './com/FutureAirNavigationSystem';
-import { UplinkMessageInterpretation } from './components/UplinkMessageInterpretation';
+import { UplinkMessageStateMachine } from './components/UplinkMessageStateMachine';
+import { UplinkMessageMonitoring } from './components/UplinkMessageMonitoring';
 
 /*
  * Defines the ATC system for CPDLC communication
@@ -50,10 +51,13 @@ export class Atc {
 
     private automaticPositionReport: boolean = false;
 
+    public messageMonitoring: UplinkMessageMonitoring = null;
+
     constructor(parent: Atsu, datalink: Datalink) {
         this.parent = parent;
         this.datalink = datalink;
         this.dcduLink = new DcduLink(parent, this);
+        this.messageMonitoring = new UplinkMessageMonitoring(parent);
     }
 
     public async disconnect(): Promise<void> {
@@ -435,10 +439,9 @@ export class Atc {
                 cpdlcMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
             }
 
-            // check if the message can be closed and an semantic answer is required
-            cpdlcMessage.CloseAutomatically = !UplinkMessageInterpretation.MessageRemainsOnDcdu(cpdlcMessage);
-            if (UplinkMessageInterpretation.SemanticAnswerRequired(cpdlcMessage)) {
-                UplinkMessageInterpretation.AppendSemanticAnswer(this.parent, true, cpdlcMessage);
+            // initialize the uplink message
+            if (cpdlcMessage.Direction === AtsuMessageDirection.Uplink) {
+                UplinkMessageStateMachine.initialize(this.parent, cpdlcMessage);
             }
 
             // search corresponding request, if previous ID is set

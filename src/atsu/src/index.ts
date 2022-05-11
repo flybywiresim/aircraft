@@ -19,6 +19,8 @@ import { HoppieConnector } from './com/webinterfaces/HoppieConnector';
 import { Waypoint } from './components/FlightStateObserver';
 import { coordinateToString } from './Common';
 import { UplinkMessageInterpretation } from './components/UplinkMessageInterpretation';
+import { UplinkMessageStateMachine } from './components/UplinkMessageStateMachine';
+import { UplinkMonitor } from './components/UplinkMessageMonitoring';
 
 export {
     AtsuStatusCodes,
@@ -53,4 +55,6 @@ export {
     Waypoint,
     coordinateToString,
     UplinkMessageInterpretation,
+    UplinkMessageStateMachine,
+    UplinkMonitor,
 };
