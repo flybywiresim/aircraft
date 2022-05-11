@@ -104,7 +104,7 @@ class CDUAtcMessagesRecord {
             ["<RETURN", "PRINT*[color]inop"]
         ]);
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 4; i++) {
             mcdu.leftInputDelay[i] = () => {
                 return mcdu.getDelaySwitchPage();
             };
