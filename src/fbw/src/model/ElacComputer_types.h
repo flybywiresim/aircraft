@@ -444,6 +444,7 @@ struct base_elac_logic_outputs
   boolean_T right_sidestick_priority_locked;
   real_T total_sidestick_pitch_command;
   real_T total_sidestick_roll_command;
+  boolean_T ap_authorised;
   boolean_T double_adr_failure;
   boolean_T triple_adr_failure;
   boolean_T cas_or_mach_disagree;

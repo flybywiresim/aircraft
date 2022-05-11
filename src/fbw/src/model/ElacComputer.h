@@ -234,7 +234,6 @@ class ElacComputer final
     boolean_T Delay1_InitialCondition;
     boolean_T Constant_Value_i;
     boolean_T Constant1_Value_e;
-    boolean_T Constant_Value_h;
     boolean_T Constant9_Value;
     boolean_T Constant10_Value;
   };
