@@ -360,12 +360,13 @@ const DCDU: React.FC = () => {
     let visibleMessagesSemanticResponseIncomplete: boolean = false;
     let visibleMessages: CpdlcMessage[] | undefined = undefined;
     let visibleMessageStatus: DcduStatusMessage = DcduStatusMessage.NoMessage;
-    const response: number = -1;
+    let response: number = -1;
     if (state === DcduState.On && messages.size !== 0) {
         const arrMessages = sortedMessageArray(messages);
 
         messageIndex = arrMessages.findIndex((element) => element.messageVisible);
         if (messageIndex !== -1) {
+            response = arrMessages[messageIndex].response;
             visibleMessages = arrMessages[messageIndex].messages;
             visibleMessageStatus = arrMessages[messageIndex].statusMessage;
             visibleMessagesSemanticResponseIncomplete = arrMessages[messageIndex].semanticResponseIncomplete;
