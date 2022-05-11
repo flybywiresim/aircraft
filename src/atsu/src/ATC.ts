@@ -336,6 +336,19 @@ export class Atc {
         return this.messageQueue;
     }
 
+    public monitoredMessages(): AtsuMessage[] {
+        const retval: AtsuMessage[] = [];
+
+        this.messageMonitoring.monitoredMessageIds().forEach((id) => {
+            const message = this.messageQueue.find((elem) => elem.UniqueMessageID === id);
+            if (message) {
+                retval.push(message);
+            }
+        });
+
+        return retval;
+    }
+
     public static isRelevantMessage(message: AtsuMessage): boolean {
         return message.Type > AtsuMessageType.AOC && message.Type < AtsuMessageType.ATC;
     }
