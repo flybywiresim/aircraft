@@ -248,6 +248,7 @@
 1. [MISC] Added custom Autobrake event for SimConnect - @aguther (Andreas Guther)
 1. [EWD] Fixed failures not re-triggering when resolved - @tricky_dicky (Richard Pilbery)
 1. [SOUND] Prevent autopilot disconnect from sounding on C+D spawn - @tricky_dicky (Richard Pilbery) and @saschl (saschl#9432)
+1. [MCDU] Allow Wind Request from Simbrief flight plan - @USA-RedDragon (Jacob McSwain)
 
 ## 0.7.0
 
