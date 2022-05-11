@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
+import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/messages/CpdlcMessage';
 import { CpdlcMessageExpectedResponseType } from '@atsu/messages/CpdlcMessageElements';
 import { DclMessage } from '@atsu/messages/DclMessage';
 import { OclMessage } from '@atsu/messages/OclMessage';
@@ -133,6 +133,12 @@ const DCDU: React.FC = () => {
             updatedMap.delete(uid);
             setMessages(updatedMap);
         }
+    };
+    const monitorMessage = (uid: number) => {
+        events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_MONITORING', uid);
+    };
+    const stopMessageMonitoring = (uid: number) => {
+        events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_STOP_MONITORING', uid);
     };
 
     // the message scroll button handling
@@ -286,6 +292,13 @@ const DCDU: React.FC = () => {
         const dcduBlock = messages.get(uid);
         if (dcduBlock !== undefined) {
             dcduBlock.statusMessage = status;
+            if (status === DcduStatusMessage.NoMessage) {
+                if (dcduBlock.messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
+                    dcduBlock.statusMessage = DcduStatusMessage.Monitoring;
+                } else if (dcduBlock.messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
+                    dcduBlock.statusMessage = DcduStatusMessage.MonitoringCancelled;
+                }
+            }
             setMessages(messages);
         }
     });
