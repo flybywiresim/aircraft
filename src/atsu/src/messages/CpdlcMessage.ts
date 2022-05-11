@@ -5,6 +5,14 @@ import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageS
 import { CpdlcMessageElement, CpdlcMessagesDownlink, CpdlcMessagesUplink } from './CpdlcMessageElements';
 import { wordWrap } from '../Common';
 
+export enum CpdlcMessageMonitoringState {
+    Ignored = 0,
+    Required = 1,
+    Monitoring = 2,
+    Cancelled = 3,
+    Finished = 4
+}
+
 /**
  * Defines the general freetext message format
  */
@@ -21,7 +29,7 @@ export class CpdlcMessage extends AtsuMessage {
 
     public CloseAutomatically = true;
 
-    public MessageMonitored = false;
+    public MessageMonitoring = CpdlcMessageMonitoringState.Ignored;
 
     public SemanticResponseRequired = false;
 
@@ -48,7 +56,7 @@ export class CpdlcMessage extends AtsuMessage {
         this.PreviousTransmissionId = jsonData.PreviousTransmissionId;
         this.DcduRelevantMessage = jsonData.DcduRelevantMessage;
         this.CloseAutomatically = jsonData.CloseAutomatically;
-        this.MessageMonitored = jsonData.MessageMonitored;
+        this.MessageMonitoring = jsonData.MessageMonitoring;
         this.SemanticResponseRequired = jsonData.SemanticAnswerRequired;
     }
 
