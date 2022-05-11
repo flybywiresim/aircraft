@@ -11,6 +11,7 @@ import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { PageLink, PageRedirect } from '../Utils/routing';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 import { setSearchQuery } from '../Store/features/failuresPage';
+import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
 
 export const Failures = () => {
     const { allFailures } = useFailuresOrchestrator();
@@ -60,12 +61,14 @@ export const Failures = () => {
                     <Navbar basePath="/failures" tabs={tabs} />
                 </div>
 
-                <Route path="/failures/comfort">
-                    <ComfortUI filteredChapters={filteredChapters} allChapters={chapters} failures={filteredFailures} />
-                </Route>
-                <Route path="/failures/compact">
-                    <CompactUI chapters={filteredChapters} failures={filteredFailures} />
-                </Route>
+                <ScrollableContainer height={48}>
+                    <Route path="/failures/comfort">
+                        <ComfortUI filteredChapters={filteredChapters} allChapters={chapters} failures={filteredFailures} />
+                    </Route>
+                    <Route path="/failures/compact">
+                        <CompactUI chapters={filteredChapters} failures={filteredFailures} />
+                    </Route>
+                </ScrollableContainer>
             </div>
 
             <PageRedirect basePath="/failures" tabs={tabs} />
