@@ -871,17 +871,21 @@ class EngineControl {
       fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + (xfrCenter / 2);     // LBS
       fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + (xfrCenter / 2);  // LBS
 
+
+      double leftQuantity = simVars->getTankLeftQuantity() * fuelWeightGallon; // LBS
+      double rightQuantity = simVars->getTankRightQuantity() * fuelWeightGallon; // LBS
+
       // Checking for Inner Tank overflow - Will be taken off with Rust code
-      if (fuelLeft > 12167.1 && fuelRight > 12167.1) {
-        fuelCenter = centerQuantity + (fuelLeft - 12167.1) + (fuelRight - 12167.1);
-        fuelLeft = 12167.1;
-        fuelRight = 12167.1;
-      } else if (fuelRight > 12167.1) {
-        fuelCenter = centerQuantity + fuelRight - 12167.1;
-        fuelRight = 12167.1;
-      } else if (fuelLeft > 12167.1) {
-        fuelCenter = centerQuantity + fuelLeft - 12167.1;
-        fuelLeft = 12167.1;
+      if (fuelLeft > leftQuantity && fuelRight > rightQuantity) {
+        fuelCenter = centerQuantity + (fuelLeft - leftQuantity) + (fuelRight - rightQuantity);
+        fuelLeft = leftQuantity;
+        fuelRight = rightQuantity;
+      } else if (fuelRight > rightQuantity) {
+        fuelCenter = centerQuantity + fuelRight - rightQuantity;
+        fuelRight = rightQuantity;
+      } else if (fuelLeft > leftQuantity) {
+        fuelCenter = centerQuantity + fuelLeft - leftQuantity;
+        fuelLeft = leftQuantity;
       } else {
         fuelCenter = centerQuantity;
       }
