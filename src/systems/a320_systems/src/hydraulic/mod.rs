@@ -1734,6 +1734,9 @@ impl A320Hydraulic {
             context,
             &self.braking_circuit_norm,
             &self.braking_circuit_altn,
+            engine1,
+            engine2,
+            &self.pushback_tug,
         );
 
         self.slats_flaps_complex
@@ -3416,10 +3419,16 @@ struct A320BrakingForce {
     trailing_edge_flaps_left_percent_id: VariableIdentifier,
     trailing_edge_flaps_right_percent_id: VariableIdentifier,
 
+    enabled_chocks_id: VariableIdentifier,
+    light_beacon_on_id: VariableIdentifier,
+
     left_braking_force: f64,
     right_braking_force: f64,
 
     flap_position: f64,
+
+    is_chocks_enabled: bool,
+    is_light_beacon_on: bool,
 }
 impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2538.;
@@ -3438,10 +3447,16 @@ impl A320BrakingForce {
             trailing_edge_flaps_right_percent_id: context
                 .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
 
+            enabled_chocks_id: context.get_identifier("MODEL_WHEELCHOCKS_ENABLED".to_owned()),
+            light_beacon_on_id: context.get_identifier("LIGHT BEACON ON".to_owned()),
+
             left_braking_force: 0.,
             right_braking_force: 0.,
 
             flap_position: 0.,
+
+            is_chocks_enabled: false,
+            is_light_beacon_on: false,
         }
     }
 
@@ -3450,6 +3465,9 @@ impl A320BrakingForce {
         context: &UpdateContext,
         norm_brakes: &BrakeCircuit,
         altn_brakes: &BrakeCircuit,
+        engine1: &impl Engine,
+        engine2: &impl Engine,
+        pushback_tug: &PushbackTug,
     ) {
         // Base formula for output force is output_force[0:1] = 50 * sqrt(current_pressure) / Max_brake_pressure
         // This formula gives a bit more punch for lower brake pressures (like 1000 psi alternate braking), as linear formula
@@ -3470,6 +3488,8 @@ impl A320BrakingForce {
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
 
         self.correct_with_flaps_state(context);
+
+        self.update_chocks_braking(context, engine1, engine2, pushback_tug);
     }
 
     fn correct_with_flaps_state(&mut self, context: &UpdateContext) {
@@ -3493,6 +3513,25 @@ impl A320BrakingForce {
         self.right_braking_force = self.right_braking_force
             - (self.right_braking_force * final_flaps_correction_with_speed.get::<ratio>());
     }
+
+    fn update_chocks_braking(
+        &mut self,
+        context: &UpdateContext,
+        engine1: &impl Engine,
+        engine2: &impl Engine,
+        pushback_tug: &PushbackTug,
+    ) {
+        let chocks_on_wheels = context.is_on_ground()
+            && engine1.corrected_n1().get::<percent>() < 3.5
+            && engine2.corrected_n1().get::<percent>() < 3.5
+            && !pushback_tug.is_nose_wheel_steering_pin_inserted()
+            && !self.is_light_beacon_on;
+
+        if self.is_chocks_enabled && chocks_on_wheels {
+            self.left_braking_force = 1.;
+            self.right_braking_force = 1.;
+        }
+    }
 }
 
 impl SimulationElement for A320BrakingForce {
@@ -3506,6 +3545,9 @@ impl SimulationElement for A320BrakingForce {
         let left_flap: f64 = reader.read(&self.trailing_edge_flaps_left_percent_id);
         let right_flap: f64 = reader.read(&self.trailing_edge_flaps_right_percent_id);
         self.flap_position = (left_flap + right_flap) / 2.;
+
+        self.is_chocks_enabled = reader.read(&self.enabled_chocks_id);
+        self.is_light_beacon_on = reader.read(&self.light_beacon_on_id);
     }
 }
 
