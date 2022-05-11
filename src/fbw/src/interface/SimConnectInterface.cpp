@@ -242,8 +242,6 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR HANDLE POSITION", "POSITION");
 
-  result &= addDataDefinition(hSimConnect, 8, SIMCONNECT_DATATYPE_STRING32, "ATC ID", "");
-
   return result;
 }
 
@@ -2535,7 +2533,6 @@ bool SimConnectInterface::isSimConnectDataTypeStruct(SIMCONNECT_DATATYPE type) {
     case SIMCONNECT_DATATYPE_WAYPOINT:
     case SIMCONNECT_DATATYPE_LATLONALT:
     case SIMCONNECT_DATATYPE_XYZ:
-    case SIMCONNECT_DATATYPE_STRING32:
       return true;
 
     default:

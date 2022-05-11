@@ -8,7 +8,7 @@
 
 #include "ini_type_conversion.h"
 
-#define FILENAME_FADEC_CONF_FILE "\\work\\EngineConfiguration_"
+#define FILENAME_FADEC_CONF_DIRECTORY "\\work\\AircraftStates\\"
 #define FILENAME_FADEC_CONF_FILE_EXTENSION ".ini"
 #define CONFIGURATION_SECTION_FUEL "FUEL"
 
@@ -35,7 +35,7 @@ class EngineControl {
   Timer timerLeft;
   Timer timerRight;
 
-  std::string confFilename = FILENAME_FADEC_CONF_FILE;
+  std::string confFilename = FILENAME_FADEC_CONF_DIRECTORY;
 
   bool simPaused;
   double animationDeltaTime;
@@ -1247,10 +1247,10 @@ class EngineControl {
     Configuration configuration;
     mINI::INIStructure stInitStructure;
 
-    mINI::INIFile iniFile(confFilename.c_str());
+    mINI::INIFile iniFile(confFilename);
 
     if (!iniFile.read(stInitStructure)) {
-      std::cout << "WASM: failed to read configuration file " << confFilename << " -> use default main/aux/center: " <<
+      std::cout << "EngineControl: failed to read configuration file " << confFilename << " due to error \"" << strerror(errno) << "\" -> use default main/aux/center: " <<
         configuration.fuelLeft << "/" << configuration.fuelLeftAux << "/" << configuration.fuelCenter << std::endl;
     } else {
       configuration = loadConfiguration(stInitStructure);
@@ -1271,7 +1271,7 @@ class EngineControl {
 
   void saveFuelInConfiguration(Configuration configuration) {
     mINI::INIStructure stInitStructure;
-    mINI::INIFile iniFile(confFilename.c_str());
+    mINI::INIFile iniFile(confFilename);
 
     // Do not check a possible error since the file may not exist yet
     iniFile.read(stInitStructure);
@@ -1283,7 +1283,7 @@ class EngineControl {
     stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY] = std::to_string(configuration.fuelRightAux);
 
     if(!iniFile.write(stInitStructure, true)) {
-      std::cout << "WASM: failed to write engine conf " << confFilename << ". With error " << strerror(errno) << std::endl;
+      std::cout << "EngineControl: failed to write engine conf " << confFilename << " due to error \"" << strerror(errno) << "\"" << std::endl;
     }
   }
 };
