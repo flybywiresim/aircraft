@@ -757,11 +757,11 @@ impl LandingGearControlInterfaceUnit {
         self.status
     }
 
-    fn discrete_word_1(&self) -> Arinc429Word<f32> {
+    fn discrete_word_1(&self) -> Arinc429Word<u32> {
         if !self.is_powered {
-            Arinc429Word::new(0., SignStatus::FailureWarning)
+            Arinc429Word::new(0, SignStatus::FailureWarning)
         } else {
-            let mut word = Arinc429Word::new(0., SignStatus::NormalOperation);
+            let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
             word.set_bit(
                 11,
                 !self.sensor_inputs.left_gear_up_and_locked && !self.gear_handle_is_down(),
@@ -805,11 +805,11 @@ impl LandingGearControlInterfaceUnit {
         }
     }
 
-    fn discrete_word_2(&self) -> Arinc429Word<f32> {
+    fn discrete_word_2(&self) -> Arinc429Word<u32> {
         if !self.is_powered {
-            Arinc429Word::new(0., SignStatus::FailureWarning)
+            Arinc429Word::new(0, SignStatus::FailureWarning)
         } else {
-            let mut word = Arinc429Word::new(0., SignStatus::NormalOperation);
+            let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
             word.set_bit(
                 11,
                 !self.sensor_inputs.left_and_right_gear_compressed(false),
@@ -827,11 +827,11 @@ impl LandingGearControlInterfaceUnit {
         }
     }
 
-    fn discrete_word_3(&self) -> Arinc429Word<f32> {
+    fn discrete_word_3(&self) -> Arinc429Word<u32> {
         if !self.is_powered {
-            Arinc429Word::new(0., SignStatus::FailureWarning)
+            Arinc429Word::new(0, SignStatus::FailureWarning)
         } else {
-            let mut word = Arinc429Word::new(0., SignStatus::NormalOperation);
+            let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
             word.set_bit(11, !self.sensor_inputs.left_gear_up_and_locked);
             word.set_bit(12, !self.sensor_inputs.right_gear_up_and_locked);
             word.set_bit(13, !self.sensor_inputs.nose_gear_up_and_locked);
@@ -899,9 +899,9 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
 
         writer.write(&self.fault_ecam_id, self.status() != LgciuStatus::Ok);
 
-        writer.write(&self.discrete_word_1_id, f64::from(self.discrete_word_1()));
-        writer.write(&self.discrete_word_2_id, f64::from(self.discrete_word_2()));
-        writer.write(&self.discrete_word_3_id, f64::from(self.discrete_word_3()));
+        writer.write(&self.discrete_word_1_id, self.discrete_word_1());
+        writer.write(&self.discrete_word_2_id, self.discrete_word_2());
+        writer.write(&self.discrete_word_3_id, self.discrete_word_3());
     }
 }
 
