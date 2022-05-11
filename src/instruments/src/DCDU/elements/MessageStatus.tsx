@@ -11,7 +11,7 @@ type MessageStatusProps = {
 }
 
 const translateResponseId = (response: number, message: CpdlcMessage): string => {
-    const answerExpected = message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
+    const answerExpected = message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
 
     if (response === -1) {
         if (message.Direction === AtsuMessageDirection.Uplink && answerExpected) {
@@ -35,7 +35,7 @@ const translateResponseId = (response: number, message: CpdlcMessage): string =>
 };
 
 const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage | undefined): string => {
-    const answerExpected = message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
+    const answerExpected = message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
 
     if (response === undefined) {
         if (message.Direction === AtsuMessageDirection.Uplink && answerExpected) {
@@ -44,9 +44,9 @@ const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage 
         if (message.ComStatus === AtsuMessageComStatus.Sent) {
             return 'SENT';
         }
-    } else if (response.Content !== undefined && response.Content.TypeId in CpdlcMessagesDownlink) {
+    } else if (response.Content !== undefined && response.Content[0].TypeId in CpdlcMessagesDownlink) {
         if (!UplinkMessageInterpretation.SemanticAnswerRequired(message)) {
-            const text = CpdlcMessagesDownlink[response.Content.TypeId][0][0];
+            const text = CpdlcMessagesDownlink[response.Content[0].TypeId][0][0];
             if (text === 'STANDBY') {
                 return 'STBY';
             }
@@ -95,7 +95,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
     const backgroundRequired = text !== 'OPEN' && text !== 'SENT';
     let backgroundColor = 'rgba(0,0,0,0)';
     if (message.Direction === AtsuMessageDirection.Uplink) {
-        if (selectedResponse === -1 || message.Response?.Content?.TypeId === `DM${selectedResponse}`) {
+        if (selectedResponse === -1 || message.Response?.Content[0].TypeId === `DM${selectedResponse}`) {
             backgroundColor = 'rgb(0,255,0)';
         } else {
             backgroundColor = 'rgb(0,255,255)';
