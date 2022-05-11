@@ -4,7 +4,6 @@ import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hook
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
 import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { CpdlcMessageExpectedResponseType } from '@atsu/messages/CpdlcMessageElements';
-import { UplinkMessageInterpretation } from '@atsu/components/UplinkMessageInterpretation';
 import { DclMessage } from '@atsu/messages/DclMessage';
 import { OclMessage } from '@atsu/messages/OclMessage';
 import { DcduStatusMessage } from '@atsu/components/DcduLink';
