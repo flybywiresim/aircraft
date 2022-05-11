@@ -2,22 +2,18 @@ class CDUAtcMessage {
     static TranslateCpdlcResponse(message) {
         let retval;
 
-        if (message.Content !== undefined) {
-            if (message.Content.TypeId === "DM0") {
-                retval = "WILC";
-            } else if (message.Content.TypeId === "UM0" || message.Content.TypeId === "DM1") {
-                retval = "UNBL";
-            } else if (message.Content.TypeId === "UM1" || message.Content.TypeId === "DM2") {
-                retval = "STBY";
-            } else if (message.Content.TypeId === "UM3" || message.Content.TypeId === "DM3") {
-                retval = "ROGR";
-            } else if (message.Content.TypeId === "UM4" || message.Content.TypeId === "DM4") {
-                retval = "AFRM";
-            } else if (message.Content.TypeId === "UM5" || message.Content.TypeId === "DM5") {
-                retval = "NEG";
-            } else {
-                return "";
-            }
+        if (message.Content[0].TypeId === "DM0") {
+            retval = "WILC";
+        } else if (message.Content[0].TypeId === "UM0" || message.Content[0].TypeId === "DM1") {
+            retval = "UNBL";
+        } else if (message.Content[0].TypeId === "UM1" || message.Content[0].TypeId === "DM2") {
+            retval = "STBY";
+        } else if (message.Content[0].TypeId === "UM3" || message.Content[0].TypeId === "DM3") {
+            retval = "ROGR";
+        } else if (message.Content[0].TypeId === "UM4" || message.Content[0].TypeId === "DM4") {
+            retval = "AFRM";
+        } else if (message.Content[0].TypeId === "UM5" || message.Content[0].TypeId === "DM5") {
+            retval = "NEG";
         } else {
             return "";
         }

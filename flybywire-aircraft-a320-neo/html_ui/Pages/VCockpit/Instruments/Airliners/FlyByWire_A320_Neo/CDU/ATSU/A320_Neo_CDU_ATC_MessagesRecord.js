@@ -1,22 +1,22 @@
 class CDUAtcMessagesRecord {
     static TranslateCpdlcResponse(response) {
-        if (response !== undefined && response.Content !== undefined) {
-            if (response.Content.TypeId === "DM0") {
+        if (response !== undefined) {
+            if (response.Content[0].TypeId === "DM0") {
                 return "WILC";
             }
-            if (response.Content.TypeId === "UM0" || response.Content.TypeId === "DM1") {
+            if (response.Content[0].TypeId === "UM0" || response.Content[0].TypeId === "DM1") {
                 return "UNBL";
             }
-            if (response.Content.TypeId === "UM1" || response.Content.TypeId === "DM2") {
+            if (response.Content[0].TypeId === "UM1" || response.Content[0].TypeId === "DM2") {
                 return "STBY";
             }
-            if (response.Content.TypeId === "UM3" || response.Content.TypeId === "DM3") {
+            if (response.Content[0].TypeId === "UM3" || response.Content[0].TypeId === "DM3") {
                 return "ROGR";
             }
-            if (response.Content.TypeId === "UM4" || response.Content.TypeId === "DM4") {
+            if (response.Content[0].TypeId === "UM4" || response.Content[0].TypeId === "DM4") {
                 return "AFRM";
             }
-            if (response.Content.TypeId === "UM5" || response.Content.TypeId === "DM5") {
+            if (response.Content[0].TypeId === "UM5" || response.Content[0].TypeId === "DM5") {
                 return "NEG";
             }
         }
