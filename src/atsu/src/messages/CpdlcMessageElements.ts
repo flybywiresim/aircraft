@@ -905,7 +905,7 @@ export const CpdlcMessagesUplink: { [identification: string]: [string[], CpdlcMe
     UM176: [['MAINTAIN OWN SEPARATION AND VMC'], new CpdlcMessageElement('UM176', [FansMode.FansA], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM177: [['AT PILOTS DISCRETION'], new CpdlcMessageElement('UM177', [FansMode.FansA], CpdlcMessageExpectedResponseType.No)],
     UM179: [['SQUAWK IDENT'], new CpdlcMessageElement('UM179', [FansMode.FansA, FansMode.FansB], CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM180: [['REPORT REACHING BLOCK %s TO %s'], new CpdlcMessageElement('UM180', [FansMode.FansA], [new CpdlcMessageContentLevel(3), new CpdlcMessageContentLevel(3)],
+    UM180: [['REPORT REACHING BLOCK %s TO %s'], new CpdlcMessageElement('UM180', [FansMode.FansA], [new CpdlcMessageContentLevel(3), new CpdlcMessageContentLevel(5)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM181: [['REPORT DISTANCE TO %s', 'REPORT DISTANCE FROM %s'], new CpdlcMessageElement('UM181', [FansMode.FansA], [new CpdlcMessageContentPosition(3)],
         CpdlcMessageExpectedResponseType.Yes)],
