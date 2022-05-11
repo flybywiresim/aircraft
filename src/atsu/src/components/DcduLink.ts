@@ -361,7 +361,7 @@ export class DcduLink {
             block.MessageRead = message.Direction === AtsuMessageDirection.Downlink;
             block.Station = message.Station;
             block.Direction = message.Direction;
-            block.PriorityMessage = (message as CpdlcMessage).Content.Urgent;
+            block.PriorityMessage = (message as CpdlcMessage).Content[0].Urgent;
             dcduBlocks.push(block);
         });
 
