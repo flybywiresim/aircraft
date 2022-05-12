@@ -288,6 +288,48 @@ class NXPopUp {
 /**
  * NXNotif utility class to create a notification event and element
  */
+
+class NXNotifManager {
+
+    constructor() {
+        Coherent.on('keyIntercepted', (key) => this.registerIntercepts(key));
+        Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_TOGGLE', 1);
+        Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_ON', 1);
+        Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_OFF', 1);
+        Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_SET', 1);
+        this.notifications = [];
+        /*
+        this.eventBus = new NXEvents();
+        KeyInterceptManager.getManager(this.eventBus).then((man) => {
+            this.manager = man;
+            this.registerIntercepts();
+        });
+        */
+    }
+
+    registerIntercepts(key) {
+        switch (key) {
+            case 'PAUSE_TOGGLE':
+            case 'PAUSE_ON':
+            case 'PAUSE_OFF':
+            case 'PAUSE_SET':
+                this.notifications.forEach((notif) => {
+                    notif.hideNotification();
+                });
+                this.notifications.length = 0;
+                break;
+            default:
+                break;
+        }
+    }
+
+    showNotification(params = {}) {
+        const notif = new NXNotif();
+        notif.showNotification(params);
+        this.notifications.push(notif);
+    }
+}
+
 class NXNotif {
     constructor() {
         const title = 'A32NX ALERT';
@@ -343,9 +385,13 @@ class NXNotif {
         }
         nxNotificationsListener.triggerToAllSubscribers('SendNewNotification', this.params);
         setTimeout(() => {
-            // TODO FIXME: May break in the future, check every update
-            nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, null, this.params.id);
+            this.hideNotification();
         }, this.params.timeout);
+    }
+
+    // TODO FIXME: May break in the future, check every update
+    hideNotification() {
+        nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, null, this.params.id);
     }
 }
 

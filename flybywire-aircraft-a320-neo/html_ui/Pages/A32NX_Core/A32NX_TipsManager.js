@@ -1,6 +1,6 @@
 class A32NX_TipsManager {
     constructor() {
-        this.notif = new NXNotif();
+        this.notif = new NXNotifManager();
         this.checkThrottleCalibration();
         this.updateThrottler = new UpdateThrottler(15000);
         this.wasAnyAssistanceActive = false;
