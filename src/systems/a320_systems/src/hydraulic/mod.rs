@@ -5314,9 +5314,6 @@ impl A320GravityExtension {
     const MIN_CRANK_HANDLE_ANGLE_DEGREE: f64 = 0.;
     const CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE: f64 = 0.1;
 
-    // Can be allowed when handle animation is available
-    const ALLOW_RETURNING_TO_STOWED_HANDLE_POSITION: bool = true;
-
     fn new(context: &mut InitContext) -> Self {
         Self {
             gear_gravity_extension_active_id: context
@@ -5354,8 +5351,7 @@ impl A320GravityExtension {
                     - Self::CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE,
             ));
 
-        if Self::ALLOW_RETURNING_TO_STOWED_HANDLE_POSITION
-            && self.handle_angle.get::<degree>() > Self::MAX_CRANK_HANDLE_ANGLE_DEGREE
+        if self.handle_angle.get::<degree>() > Self::MAX_CRANK_HANDLE_ANGLE_DEGREE
             && !self.is_turned
             && self.is_extending_gear
         {
