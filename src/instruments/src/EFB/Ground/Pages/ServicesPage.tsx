@@ -1,12 +1,12 @@
 import React, { useState, FC, useEffect } from 'react';
-import { useSplitSimVar } from '@instruments/common/simVars';
+import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
 import {
     DoorOpenFill,
     Truck,
     PersonPlusFill,
     PlugFill,
     HandbagFill,
-    ArchiveFill,
+    ArchiveFill, ConeStriped, VinylFill as Wheel, TriangleFill as Chock,
 } from 'react-bootstrap-icons';
 
 import { t } from '../../translation';
@@ -72,9 +72,32 @@ export const ServicesPage = () => {
     const [pushBack] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 1000);
     const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 'K:REQUEST_POWER_SUPPLY', 'bool', 1000);
 
+    const [wheelChocksEnabled, setWheelChocksEnabled] = useSimVar('L:A32NX_MODEL_WHEELCHOCKS_ENABLED', 'bool', 500);
+    const [conesEnabled, setConesEnabled] = useSimVar('L:A32NX_MODEL_CONES_ENABLED', 'bool', 500);
+
+    // Copy of the rules used here: src/behavior/src/A32NX_Exterior.xml line 210ff
+    // (A:SIM ON GROUND, bool) (L:A32NX_ENGINE_N1:1, Number) 3.5 &lt; and
+    // (L:A32NX_ENGINE_N1:2, Number) 3.5 &lt; and
+    // (L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO, bool) 0 == and
+    // (A:LIGHT BEACON ON, bool) 0 == and
+    const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 500);
+    const [engine1N1] = useSimVar('L:A32NX_ENGINE_N1:1', 'number', 500);
+    const [engine2N1] = useSimVar('L:A32NX_ENGINE_N1:2', 'number', 500);
+    const [nwStrgDiscMemo] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'bool', 500);
+    const [beaconLight] = useSimVar('A:LIGHT BEACON ON', 'bool', 500);
+    const isGroundEquipmentVisible = () => simOnGround && engine1N1 < 3.5 && engine2N1 < 3.5 && !nwStrgDiscMemo && !beaconLight;
+
+    const [wheelChocksVisible, setWheelChocksVisible] = useState(wheelChocksEnabled && isGroundEquipmentVisible());
+    const [conesVisible, setConesVisible] = useState(conesEnabled && isGroundEquipmentVisible);
+
     const [tugActive] = useState(false);
 
     const STATE_WAITING = 'WAITING';
+
+    useEffect(() => {
+        setWheelChocksVisible(wheelChocksEnabled && isGroundEquipmentVisible());
+        setConesVisible(conesEnabled && isGroundEquipmentVisible());
+    }, [simOnGround, engine1N1, engine2N1, nwStrgDiscMemo, beaconLight, wheelChocksEnabled, conesEnabled]);
 
     useEffect(() => {
         for (const button of activeButtons) {
@@ -82,7 +105,7 @@ export const ServicesPage = () => {
                 dispatch(updateButton(button));
             }
         }
-    }, [jetWayActive, cargoActive, cateringActive, fuelingActive, powerActive, pushBack]);
+    }, [jetWayActive, cargoActive, cateringActive, fuelingActive, powerActive, pushBack, wheelChocksEnabled, conesEnabled]);
 
     const handleClick = (callBack: () => void, event: React.MouseEvent, gameSync?, disabledButton?: string) => {
         if (!tugActive) {
@@ -160,6 +183,36 @@ export const ServicesPage = () => {
                 >
                     <HandbagFill size={36} />
                 </GroundServiceButton>
+            </ServiceButtonWrapper>
+
+            {/* Wheel Chocks and Security Cones are only visual information. To reuse styling */}
+            {/* the ServiceButtonWrapper and GroundServiceButton have been re-used. */}
+            <ServiceButtonWrapper xr={800} y={600} className="border-0 divide-y-0">
+                {wheelChocksEnabled === 1 && (
+                    <GroundServiceButton
+                        name={t('Ground.Services.WheelChocks')}
+                        onClick={() => setWheelChocksEnabled((old) => old)}
+                        className={`pointer-events-none ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}
+                        id="wheel-chocks"
+                    >
+                        <div className={`flex justify-center items-end -ml-2 -mr-[2px] ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
+                            <Chock size="12" stroke="4" />
+                            <Wheel size="36" stroke="5" className="-mx-0.5" />
+                            <Chock size="12" stroke="4" />
+                        </div>
+                    </GroundServiceButton>
+                )}
+
+                {conesEnabled === 1 && (
+                    <GroundServiceButton
+                        name={t('Ground.Services.Cones')}
+                        onClick={() => setConesEnabled((old) => old)}
+                        className={`pointer-events-none ${(conesVisible) ? 'text-green-500' : 'text-gray-500'} `}
+                        id="cones"
+                    >
+                        <ConeStriped size="38" stroke="1.5" className="mr-2" />
+                    </GroundServiceButton>
+                )}
             </ServiceButtonWrapper>
 
             <ServiceButtonWrapper xl={770} y={600} className="">

@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "משאית כבודה",
       "CateringTruck": "משאית קייטרינג",
+      "Cones": "Safety Cones",
       "DoorAft": "דלת אחורית",
       "DoorFwd": "דלת קדמית",
       "ExternalPower": "מתח חיצוני",
       "FuelTruck": "משאית דלק",
       "JetBridge": "שרוול",
-      "Title": "שירותים"
+      "Title": "שירותים",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "קרקע"
   },
@@ -349,15 +351,15 @@
     "Title": "תבניות"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "פקדי דחיפה זמינים רק על הקרקע",
     "Backward": "אחורה",
     "CallTug": "קרא לנע-דחף",
-    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
-    "DisableSystemMessageTitle": "Disable Pushback System",
-    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
-    "EnableSystemMessageTitle": "Enable Pushback System",
+    "DisableSystemMessageBody": "האם אתם בטוחים כי ברצונכם לבטל את מערכת הדחיפה? פעולה זו תשחרר גם את הנע-דחף",
+    "DisableSystemMessageTitle": "השבת מערכת דחיפה",
+    "EnableSystemMessageBody": "גירסת הדחיפה ב Flypad OS 3, איננה מוגמרת. היא איננה מותאמת לתוספי דחיפה נוספים ועשויה לגרום לתקלות אחרות",
+    "EnableSystemMessageTitle": "הפעל מערכת דחיפה",
     "Forward": "קדימה",
-    "Halt": "עצור",
+    "Halt": "מושהה",
     "LeavePageMessage": "השהיית דחיפה",
     "Left": "שמאלה",
     "Moving": "נע",
@@ -367,27 +369,27 @@
       "Title": "בלם חניה"
     },
     "Right": "ימינה",
-    "SystemEnabledOff": "Pushback System Off",
-    "SystemEnabledOn": "Pushback System On",
+    "SystemEnabledOff": "מערכת דחיפה כבויה",
+    "SystemEnabledOn": "מערכת דחיפה מופעלת",
     "TT": {
       "CallReleaseTug": "קרא או שחרר את הגורר",
       "CenterPlaneMode": "הפעלת או ביטול מרכוז המטוס על המפה. ",
-      "DecreaseSpeed": "אחורה או לאט יותר קדימה (לחיצה כפולה כדי להגדיר מהירות 0)",
-      "IncreaseSpeed": "קדימה או לאט יותר אחורה (לחיצה כפולה כדי להגדיר מהירות 0)",
-      "Left": "נוע שמאלה (לחיצה כפולה בשביל ישר)",
+      "DecreaseSpeed": "אחורה או לאט יותר קדימה",
+      "IncreaseSpeed": "קדימה או לאט יותר אחורה",
+      "Left": "נוע שמאלה",
       "PausePushback": "השהה או המשך דחיפה",
-      "Right": "נוע ימינה (לחיצה כפולה בשביל ישר)",
+      "Right": "נוע ימינה",
       "SetReleaseParkingBrake": "הפעל או שחרר בלם חנייה. ",
       "SliderDirection": "נוע לכיוון הרצוי",
       "SliderSpeed": "מעבר למהירות הרצויה",
-      "SystemEnabledOff": "Click to turn the pushback system on.",
-      "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "SystemEnabledOff": "לחץ כדי להפעיל את מערכת הדחיפה.",
+      "SystemEnabledOn": "לחץ כדי לכבות את מערכת הדחיפה לחלוטין.",
       "ZoomIn": "הגדל תצוגה",
       "ZoomOut": "הקטן תצוגה"
     },
-    "TugAttached": "Tug is attached",
+    "TugAttached": "נע-דחף מחובר",
     "TugDirection": "כיוון הגרירה",
-    "TugInTransit": "Waiting for Tug/Pin",
+    "TugInTransit": "ממתין לנע-דחף",
     "TugSpeed": "מהירות הגרירה"
   },
   "Settings": {
@@ -457,6 +459,7 @@
       "Active": "פעיל",
       "Auto": "אוטומטי",
       "Calibrate": "ויסות",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "יחידת ברומטר ברירת מחדל",
       "DynamicRegistrationDecal": "דִינָמִי מדבקת רישום",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "אפשר חיבור שרת MCDU (נכבה אוטומטית לאחר חמש דקות אם לא היה חיבור מוצלח)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "מעצורי מצערת",
       "Title": "אפשרויות סימולטור",
       "UseCalculatedIlsSignals": "השתמש באותות ILS מחושבים",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
@@ -489,7 +493,7 @@
       "ResetToDefaults": "איפוס לברירות מחדל",
       "ReverseFull": "דחף אחורי - מירבי",
       "ReverseIdle": "דחף אחורי - סרק",
-      "ReverserOnAxis": "דחף אחורי - בעל ציר",
+      "ReverserOnAxis": "דחף אחורי על ציר",
       "SaveAndApply": "שמור והחל",
       "SetFromThrottle": "הגדר מהמצערת",
       "ThrottleConfigurationReset": "איפוס תצורת מצערת"

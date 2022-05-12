@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Bagažo sunkvežimis",
       "CateringTruck": "Maitinimo sunkvežimis",
+      "Cones": "Safety Cones",
       "DoorAft": "Galinės durys",
       "DoorFwd": "Priekinės durys",
       "ExternalPower": "Išorinė energija",
       "FuelTruck": "Kuro cisterna",
       "JetBridge": "Rankovė",
-      "Title": "Aptarnavimas"
+      "Title": "Aptarnavimas",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Paslaugos"
   },
@@ -457,6 +459,7 @@
       "Active": "Aktyvus",
       "Auto": "Automatinis",
       "Calibrate": "Kalibruoti",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Numatyti Barometro Vienetai",
       "DynamicRegistrationDecal": "Dinaminis registracijos lipdukas",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Įgalinti MCDU serverio prisijungimą (automatiškai išjungiama po 5 minučių, jei nepavyksta prisijungti)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Droselio detentai",
       "Title": "Simuliatoriaus nustatymai",
       "UseCalculatedIlsSignals": "Naudoti apskaičiuotus ILS signalus",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

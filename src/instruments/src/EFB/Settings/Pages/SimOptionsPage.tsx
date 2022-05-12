@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import React, { useState } from 'react';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 
 import { useSimVar } from '@instruments/common/simVars';
 import { t } from '../../translation';
@@ -22,6 +22,8 @@ export const SimOptionsPage = () => {
     const [mcduServerEnabled, setMcduServerEnabled] = usePersistentProperty('CONFIG_EXTERNAL_MCDU_SERVER_ENABLED', 'AUTO ON');
     const [radioReceiverUsage, setRadioReceiverUsage] = usePersistentProperty('RADIO_RECEIVER_USAGE_ENABLED', '0');
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
+    const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
+    const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
 
     const defaultBaroButtons: ButtonType[] = [
         { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
@@ -108,6 +110,24 @@ export const SimOptionsPage = () => {
                             onToggle={(value) => {
                                 setRadioReceiverUsage(value ? '1' : '0');
                                 setRadioReceiverUsageSimVar(value ? 1 : 0);
+                            }}
+                        />
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')}>
+                        <Toggle
+                            value={wheelChocksEnabled === 1}
+                            onToggle={(value) => {
+                                setWheelChocksEnabled(value ? 1 : 0);
+                            }}
+                        />
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.SimOptions.ConesEnabled')}>
+                        <Toggle
+                            value={conesEnabled === 1}
+                            onToggle={(value) => {
+                                setConesEnabled(value ? 1 : 0);
                             }}
                         />
                     </SettingItem>

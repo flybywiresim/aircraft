@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Bagage Truck",
       "CateringTruck": "Catering Truck",
+      "Cones": "Safety Cones",
       "DoorAft": "Deur achter",
       "DoorFwd": "Deur voor",
       "ExternalPower": "Externe voeding",
       "FuelTruck": "Brandstof Wagen",
       "JetBridge": "Jet Bridge",
-      "Title": "Diensten"
+      "Title": "Diensten",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Grond"
   },
@@ -457,6 +459,7 @@
       "Active": "Actief",
       "Auto": "Auto",
       "Calibrate": "Kalibreren",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Standaard barometer-eenheid",
       "DynamicRegistrationDecal": "Dynamische Registratie Sticker",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU-serververbinding inschakelen (Deactiveert automatisch na 5 minuten als er geen succesvolle verbinding is)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Throttle Detents",
       "Title": "Sim-opties",
       "UseCalculatedIlsSignals": "Gebruik berekende ILS-signalen",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

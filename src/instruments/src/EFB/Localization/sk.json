@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Batožinové vozidlo",
       "CateringTruck": "Cateringové vozidlo",
+      "Cones": "Safety Cones",
       "DoorAft": "Dvere zadné",
       "DoorFwd": "Dvere predné",
       "ExternalPower": "Externé napájanie",
       "FuelTruck": "Cisterna z palivom",
       "JetBridge": "Jet Bridge",
-      "Title": "Služby"
+      "Title": "Služby",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Pozemný servis"
   },
@@ -457,6 +459,7 @@
       "Active": "Aktívne",
       "Auto": "Automaticky",
       "Calibrate": "Skalibrovať",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Štandardná jednotka barometra",
       "DynamicRegistrationDecal": "Dynamický registračný kód",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Povoliť pripojenie servera MCDU (automaticky sa deaktivuje po 5 minútach, ak nie je úspešné pripojenie)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Detenty škrtiacej klapky",
       "Title": "Možnosti Simulátora",
       "UseCalculatedIlsSignals": "Použiť vypočítané signály ILS",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

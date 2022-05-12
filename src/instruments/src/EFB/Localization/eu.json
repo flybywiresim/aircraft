@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Ekipaje kamioia",
       "CateringTruck": "Catering kamioia",
+      "Cones": "Safety Cones",
       "DoorAft": "Atz. Atea",
       "DoorFwd": "Aurr. Atea",
       "ExternalPower": "Kanpo elikatze elektrikoa",
       "FuelTruck": "Erregai kamioia",
       "JetBridge": "Hegazkineratze zubia",
-      "Title": "Zerbitzuak"
+      "Title": "Zerbitzuak",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Lurra"
   },
@@ -457,6 +459,7 @@
       "Active": "Active",
       "Auto": "Auto",
       "Calibrate": "Calibrate",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Default Barometer Unit",
       "DynamicRegistrationDecal": "Dynamic Registration Decal",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Throttle Detents",
       "Title": "Sim Options",
       "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

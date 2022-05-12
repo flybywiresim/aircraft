@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Kamion za prtljagu",
       "CateringTruck": "Catering kamion",
+      "Cones": "Safety Cones",
       "DoorAft": "Stražnja vrata",
       "DoorFwd": "Prednja vrata",
       "ExternalPower": "Vanjsko napajanje",
       "FuelTruck": "Kamion za gorivo",
       "JetBridge": "Avio most",
-      "Title": "Usluge"
+      "Title": "Usluge",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Tlo"
   },
@@ -457,6 +459,7 @@
       "Active": "Aktivno",
       "Auto": "Auto",
       "Calibrate": "Calibrate",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Default Barometer Unit",
       "DynamicRegistrationDecal": "Dynamic Registration Decal",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Enable MCDU Server Connection (Auto deactivates after 5 minutes if no successful connection)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Throttle Detents",
       "Title": "Sim Options",
       "UseCalculatedIlsSignals": "Use Calculated ILS Signals",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

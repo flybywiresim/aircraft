@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Ciężarówka Bagażowa",
       "CateringTruck": "Ciężarówka Gastronomiczna",
+      "Cones": "Safety Cones",
       "DoorAft": "Drzwi Rufowe",
       "DoorFwd": "Przednie Drzwi",
       "ExternalPower": "Zewnętrzne Zasilanie",
       "FuelTruck": "Cysterna z Paliwem",
       "JetBridge": "Rękaw",
-      "Title": "Obsługa"
+      "Title": "Obsługa",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Obsługa Naziemna"
   },
@@ -457,6 +459,7 @@
       "Active": "Aktywny",
       "Auto": "Automatycznie",
       "Calibrate": "Kalibruj",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Domyślna Jednostka Barometru",
       "DynamicRegistrationDecal": "Dynamiczny Numer Rejestracyjny",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Włącz połączenie z serwerem MCDU (Automatycznie dezaktywowane po 5 minutach bez połączenia)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Kalibracja Przepustnic",
       "Title": "Ustawienia Symulatora",
       "UseCalculatedIlsSignals": "Użyj Wyliczonego Sygnału ILS",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

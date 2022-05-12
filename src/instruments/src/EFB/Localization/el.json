@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Φορτηγό Αποσκευών",
       "CateringTruck": "Φορτηγό Τροφοδοσίας",
+      "Cones": "Safety Cones",
       "DoorAft": "Πίσω Πόρτα",
       "DoorFwd": "Μπροστινή Πόρτα",
       "ExternalPower": "Εξωτερική Ισχύος ",
       "FuelTruck": "Φορτηγό Καυσίμων",
       "JetBridge": "Γέφυρα Επιβίβασης ",
-      "Title": "Υπηρεσίες"
+      "Title": "Υπηρεσίες",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Έδαφος"
   },
@@ -457,6 +459,7 @@
       "Active": "Ενεργό",
       "Auto": "Αυτόματο",
       "Calibrate": "Βαθμονόμηση",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Προκαθορισμένη Βαρομετρική Μονάδα",
       "DynamicRegistrationDecal": "Δυναμική Χαλκομανία Εγγραφής",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ενεργοποίηση σύνδεσης διακομιστή MCDU (Αυτόματη απενεργοποίηση μετά από 5 λεπτά εάν δεν υπάρχει επιτυχής σύνδεση)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Αναστολέας Γκαζιού",
       "Title": "Επιλογές Sim",
       "UseCalculatedIlsSignals": "Χρήση Υπολογισμένων Σημάτων ILS",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
