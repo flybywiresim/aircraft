@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Tovornjak za prtljago",
       "CateringTruck": "Gostinski tovornjak",
+      "Cones": "Varnostni stožci",
       "DoorAft": "Zadnja vrata",
       "DoorFwd": "Sprednja vrata",
       "ExternalPower": "Zunanje napajanje",
       "FuelTruck": "Tovornjak z gorivom",
       "JetBridge": "Potniški most",
-      "Title": "Storitve"
+      "Title": "Storitve",
+      "WheelChocks": "Kolesne zagozde"
     },
     "Title": "Tla"
   },
@@ -349,7 +351,7 @@
     "Title": "Prednastavitve"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "Nadzor vleke je mogoč samo na tleh",
     "Backward": "Vzvratno",
     "CallTug": "Pokliči vlačilec",
     "DisableSystemMessageBody": "Ali ste prepričani, da želite onemogočiti sistem vleke? To bo odklopilo tudi vlačilca.",
@@ -457,6 +459,7 @@
       "Active": "Aktivno",
       "Auto": "Samodejno",
       "Calibrate": "Kalibracija",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Privzeta barometrična enota",
       "DynamicRegistrationDecal": "Dinamična registrska nalepka",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Omogoči povezavo s strežnikom MCDU (samodejna deaktivacija po 5 minutah, če ni uspešne povezave)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Odkloni plinske ročke",
       "Title": "Nastavitve simulatorja",
       "UseCalculatedIlsSignals": "Uporaba izračunanih signalov ILS",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

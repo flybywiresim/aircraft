@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Camión de equipaje",
       "CateringTruck": "Camión de catering",
+      "Cones": "Safety Cones",
       "DoorAft": "Puerta trasera",
       "DoorFwd": "Puerta delantera",
       "ExternalPower": "Alimentación externa",
       "FuelTruck": "Camión de combustible",
       "JetBridge": "Puente de embarque",
-      "Title": "Servicios"
+      "Title": "Servicios",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Ground"
   },
@@ -457,6 +459,7 @@
       "Active": "Activo",
       "Auto": "Auto",
       "Calibrate": "Calibrar",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Unidad del barómetro predeterminado",
       "DynamicRegistrationDecal": "Calcomanía de registro dinámica",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Activar la conexión con el servidor MCDU (se desactivará automáticamente tras 5 minutos si no ha habido una conexión exitosa)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Throttle Detents",
       "Title": "Opciones de simulación",
       "UseCalculatedIlsSignals": "Usar señales ILS calculadas",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

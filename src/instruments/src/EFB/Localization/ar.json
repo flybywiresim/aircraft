@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "شاحنة الأمتعة",
       "CateringTruck": "شاحنة التموين",
+      "Cones": "Safety Cones",
       "DoorAft": "الباب الخلفي ",
       "DoorFwd": "الباب الامامي ",
       "ExternalPower": "الطاقة الخارجية",
       "FuelTruck": "شاحنة وقود",
       "JetBridge": "جسر الصعود ",
-      "Title": "الخدمات"
+      "Title": "الخدمات",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "الأرضي"
   },
@@ -457,6 +459,7 @@
       "Active": "نشط",
       "Auto": "تلقائي",
       "Calibrate": "تعيّر ",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "وحدة البارومتر الافتراضية",
       "DynamicRegistrationDecal": "ملصق تسجيل ديناميكي",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "تمكين اتصال خادم MCDU (إلغاء التنشيط التلقائي بعد 5 دقائق إذا لم يكن هناك اتصال ناجح)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "محددات دفة تحكم النفاث ",
       "Title": "خيارات المحاكاة ",
       "UseCalculatedIlsSignals": "استخدم إشارات ILS المحسوبة",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "زنج"
     },
     "ThrottleConfig": {

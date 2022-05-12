@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Bagagelastbil",
       "CateringTruck": "Cateringlastbil",
+      "Cones": "Koner",
       "DoorAft": "Bakre dörr",
       "DoorFwd": "Främre dörr",
       "ExternalPower": "Extern ström",
       "FuelTruck": "Bränslebil",
       "JetBridge": "Jetbrygga",
-      "Title": "Tjänster"
+      "Title": "Tjänster",
+      "WheelChocks": "Hjulklossar"
     },
     "Title": "Marken"
   },
@@ -457,6 +459,7 @@
       "Active": "Aktiv",
       "Auto": "Auto",
       "Calibrate": "Kalibrera",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Standardbarometerenhet",
       "DynamicRegistrationDecal": "Dynamisk registreringsdekal",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktivera MCDU-serveranslutning (inaktiveras automatiskt efter 5 minuter om anslutningen inte lyckas).",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Kalibrering av tryckspaken",
       "Title": "Sim-inställningar",
       "UseCalculatedIlsSignals": "Använd beräknade ILS-signaler",
+      "WheelChocksEnabled": "Hjulklossar",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

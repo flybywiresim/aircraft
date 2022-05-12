@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Gepäckabfertigung",
       "CateringTruck": "Catering",
+      "Cones": "Sicherheitskegel",
       "DoorAft": "Hintere Tür",
       "DoorFwd": "Vordere Tür",
       "ExternalPower": "Externe Stromversorgung",
       "FuelTruck": "Tankwagen",
       "JetBridge": "Fluggastbrücke",
-      "Title": "Bodendienste"
+      "Title": "Bodendienste",
+      "WheelChocks": "Bremskeile"
     },
     "Title": "Bodendienste"
   },
@@ -457,6 +459,7 @@
       "Active": "Aktiv",
       "Auto": "Auto",
       "Calibrate": "Kalibrieren",
+      "ConesEnabled": "Sicherheitskegel",
       "DefaultBarometerUnit": "Standard Barometer-Einheit",
       "DynamicRegistrationDecal": "Flugzeugkennzeichen dynamisch darstellen",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU Serververbindung aktivieren (Wird nach 5 Minuten automatisch deaktiviert, wenn keine Verbindung zustande kommt)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Schubhebelkalibrierung",
       "Title": "Sim-Optionen",
       "UseCalculatedIlsSignals": "Berechnete ILS-Signale verwenden",
+      "WheelChocksEnabled": "Bremskeile",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

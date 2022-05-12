@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Poggyászkocsi",
       "CateringTruck": "Utasellátó",
+      "Cones": "Safety Cones",
       "DoorAft": "Hátsó ajtó",
       "DoorFwd": "Első ajtó",
       "ExternalPower": "Külső áramforrás",
       "FuelTruck": "Tartálykocsi",
       "JetBridge": "Utashíd",
-      "Title": "Szolgáltatások"
+      "Title": "Szolgáltatások",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Földi kiszolgálás"
   },
@@ -457,6 +459,7 @@
       "Active": "Aktív",
       "Auto": "Automatikus",
       "Calibrate": "Kalibrálás",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Alap barométer mértékegység",
       "DynamicRegistrationDecal": "Dinamikus regisztrációs matrica",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU Server Csatlakozás engedélyezése (Automatikus kikapcsolás 5 perc után, ha nincs sikeres kapcsolat)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Gázkar állások",
       "Title": "Szimulátor Opciók",
       "UseCalculatedIlsSignals": "Használjon Kiszámított ILS Jeleket",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

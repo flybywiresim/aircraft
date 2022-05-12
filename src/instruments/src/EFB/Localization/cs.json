@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Zavazadlový vůz",
       "CateringTruck": "Cateringový vůz",
+      "Cones": "Safety Cones",
       "DoorAft": "Zadní dveře",
       "DoorFwd": "Přední dveře",
       "ExternalPower": "Externí napájení",
       "FuelTruck": "Cisterna",
       "JetBridge": "Nástupní most",
-      "Title": "Služby"
+      "Title": "Služby",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Pozemní"
   },
@@ -457,6 +459,7 @@
       "Active": "Aktivní",
       "Auto": "Auto.",
       "Calibrate": "Kalibrovat",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Výchozí jednotky tlaku vzduchu",
       "DynamicRegistrationDecal": "Dynamická imatrikulace letadla",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Povolit připojení k serveru MCDU (Bez úspěšného připojení se po 5 minutách automaticky vypne)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Zarážky plynu",
       "Title": "Možnosti simulace",
       "UseCalculatedIlsSignals": "Používat vypočítaný signál ILS",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

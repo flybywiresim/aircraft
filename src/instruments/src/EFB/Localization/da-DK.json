@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Bagage Truck",
       "CateringTruck": "Catering Truck",
+      "Cones": "Safety Cones",
       "DoorAft": "Bagdør",
       "DoorFwd": "Front Dør",
       "ExternalPower": "Ekstern Strøm",
       "FuelTruck": "Brændstof Lastbil",
       "JetBridge": "Jetbro",
-      "Title": "Tjenester"
+      "Title": "Tjenester",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Jorden"
   },
@@ -457,6 +459,7 @@
       "Active": "Aktiv",
       "Auto": "Automatisk",
       "Calibrate": "Kalibrering",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Standard Barometer enhed",
       "DynamicRegistrationDecal": "Dynamisk registrerings mærke",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktiver MCDU Server Forbindelse (Deaktiveres automatisk efter 5 minutter, hvis der ikke oprettes succesfuld forbindelse)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Gashåndtagspositioner",
       "Title": "Sim-instillinger",
       "UseCalculatedIlsSignals": "Brug beregnede ILS-signaler",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

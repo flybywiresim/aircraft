@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "手荷物トラック",
       "CateringTruck": "機内食トラック",
+      "Cones": "セーフティコーン",
       "DoorAft": "後部ドア",
       "DoorFwd": "前部ドア",
       "ExternalPower": "外部電源",
       "FuelTruck": "燃料トラック",
       "JetBridge": "ボーディングブリッジ",
-      "Title": "サービス"
+      "Title": "サービス",
+      "WheelChocks": "輪止め"
     },
     "Title": "グランド"
   },
@@ -457,6 +459,7 @@
       "Active": "有効",
       "Auto": "自動",
       "Calibrate": "調整",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "デフォルトの気圧計単位",
       "DynamicRegistrationDecal": "登録番号デカールの表示",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDUサーバー接続の有効化(接続が成功しなかった場合、5分後に自動的に非有効化)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "スロットルディテント",
       "Title": "シミュレーターオプション",
       "UseCalculatedIlsSignals": "計算されたILS信号を使用",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

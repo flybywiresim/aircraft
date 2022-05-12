@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Xe tải chở hành lý",
       "CateringTruck": "Xe cung cấp thức ăn",
+      "Cones": "Chóp nón An toàn",
       "DoorAft": "Cửa phía sau",
       "DoorFwd": "Cửa phía trước",
       "ExternalPower": "Nguồn điện ngoài",
       "FuelTruck": "Xe chở nhiên liệu",
       "JetBridge": "Ống lồng",
-      "Title": "Các dịch vụ"
+      "Title": "Các dịch vụ",
+      "WheelChocks": "Ốp chặn bánh xe"
     },
     "Title": "Mặt đất"
   },
@@ -457,6 +459,7 @@
       "Active": "Hoạt động",
       "Auto": "Tự động",
       "Calibrate": "Hiệu chỉnh",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Đơn vị áp kế mặc định",
       "DynamicRegistrationDecal": "Đề-can đăng ký động",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Bật kết nối máy chủ MCDU (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Chốt cần ga",
       "Title": "Tùy chọn giả lập",
       "UseCalculatedIlsSignals": "Sử dụng tín hiệu ILS được tính",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

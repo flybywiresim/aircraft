@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "行李车",
       "CateringTruck": "餐车",
+      "Cones": "Safety Cones",
       "DoorAft": "后门",
       "DoorFwd": "前门",
       "ExternalPower": "外部电源",
       "FuelTruck": "加油车",
       "JetBridge": "廊桥",
-      "Title": "地面服务"
+      "Title": "地面服务",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "地面"
   },
@@ -457,6 +459,7 @@
       "Active": "启用",
       "Auto": "自动",
       "Calibrate": "校准",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "默认气压单位",
       "DynamicRegistrationDecal": "动态注册号喷涂",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "启用 MCDU 服务器 (5 分钟之内无连接将自动停用)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "油门卡位",
       "Title": "模拟器选项",
       "UseCalculatedIlsSignals": "使用经系统计算的ILS 信号",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "英寸汞柱 (inHg)"
     },
     "ThrottleConfig": {

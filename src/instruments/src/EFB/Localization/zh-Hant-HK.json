@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "行李車",
       "CateringTruck": "飲食服務車",
+      "Cones": "Safety Cones",
       "DoorAft": "後門",
       "DoorFwd": "正門",
       "ExternalPower": "外部電源",
       "FuelTruck": "燃油車",
       "JetBridge": "登機橋",
-      "Title": "服務"
+      "Title": "服務",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "地勤"
   },
@@ -457,6 +459,7 @@
       "Active": "使用中",
       "Auto": "自動",
       "Calibrate": "校正",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "氣壓單位",
       "DynamicRegistrationDecal": "註冊印花隨機",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "啟用 MCDU 伺服器 (5 分鐘之內無連接下會自動停用)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "油門停點",
       "Title": "模擬選項",
       "UseCalculatedIlsSignals": "使用電腦計算的 ILS 信號",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "英寸汞柱 (inHg)"
     },
     "ThrottleConfig": {

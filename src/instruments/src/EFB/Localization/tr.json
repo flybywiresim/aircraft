@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Bagaj Kamyonu",
       "CateringTruck": "Yemek Servis Aracı",
+      "Cones": "Safety Cones",
       "DoorAft": "Arka Giriş Kapısı",
       "DoorFwd": "Ön Giriş Kapısı",
       "ExternalPower": "Harici Güç",
       "FuelTruck": "Yakıt Kamyonu",
       "JetBridge": "Körük",
-      "Title": "Hizmetler"
+      "Title": "Hizmetler",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Yer"
   },
@@ -457,6 +459,7 @@
       "Active": "Etkin",
       "Auto": "Otomatik",
       "Calibrate": "Kalibrasyon",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Varsayılan Barometre Birimi",
       "DynamicRegistrationDecal": "Dinamik Kayıt Çıkartması",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDU Sunucu Bağlantısını Etkinleştir (Başarılı bağlantı olmazsa 5 dakika sonra otomatik olarak devre dışı bırakılır)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Gaz Mandalları",
       "Title": "Simülasyon Seçenekleri",
       "UseCalculatedIlsSignals": "Hesaplanan ILS Sinyallerini Kullan",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

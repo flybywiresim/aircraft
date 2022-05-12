@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Camion de bagaje",
       "CateringTruck": "Camion de Catering",
+      "Cones": "Safety Cones",
       "DoorAft": "Uşa din spate",
       "DoorFwd": "Uşa din față",
       "ExternalPower": "Unitate externă",
       "FuelTruck": "Camion de combustibil",
       "JetBridge": "Burduf de îmbarcare ",
-      "Title": "Servicii"
+      "Title": "Servicii",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Sol"
   },
@@ -457,6 +459,7 @@
       "Active": "Activ",
       "Auto": "Automat",
       "Calibrate": "Calibrare",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Unitate Barometrica Implicită",
       "DynamicRegistrationDecal": "Număr de înregistrare dinamic",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Activează conexiune server MCDU (Auto dezactivează după 5 minute dacă nu s-a stabilit conexiunea)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Senzori accelerație",
       "Title": "Opțiuni simulator",
       "UseCalculatedIlsSignals": "Utilizați semnal ILS calculat",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

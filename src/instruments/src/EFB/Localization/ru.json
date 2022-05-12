@@ -139,12 +139,14 @@
     "Services": {
       "BaggageTruck": "Багажный грузовик",
       "CateringTruck": "Кейтеринг грузовик",
+      "Cones": "Safety Cones",
       "DoorAft": "Задняя дверь",
       "DoorFwd": "Передняя дверь",
       "ExternalPower": "Внешнее питание",
       "FuelTruck": "Топливная тележка",
       "JetBridge": "Джет Бридж",
-      "Title": "Сервисы"
+      "Title": "Сервисы",
+      "WheelChocks": "Wheel Chocks"
     },
     "Title": "Земля"
   },
@@ -457,6 +459,7 @@
       "Active": "Активная",
       "Auto": "Авто",
       "Calibrate": "Калибровка",
+      "ConesEnabled": "Safety Cones",
       "DefaultBarometerUnit": "Единица измерения барометра по умолчанию",
       "DynamicRegistrationDecal": "Наклейка с динамической регистрацией",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Подключение к серверу MCDU (автоматически деактивируется через 5 минут, если соединение не было успешным)",
@@ -471,6 +474,7 @@
       "ThrottleDetents": "Защелки рычагов",
       "Title": "Параметры симулятора",
       "UseCalculatedIlsSignals": "Использовать рассчитанные сигналы ILS",
+      "WheelChocksEnabled": "Wheel Chocks",
       "inHg": "дюйм. рт.ст."
     },
     "ThrottleConfig": {
