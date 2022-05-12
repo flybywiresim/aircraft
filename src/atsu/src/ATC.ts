@@ -58,6 +58,17 @@ export class Atc {
         this.datalink = datalink;
         this.dcduLink = new DcduLink(parent, this);
         this.messageMonitoring = new UplinkMessageMonitoring(parent);
+
+        setInterval(() => {
+            const ids = this.messageMonitoring.checkMessageConditions();
+            ids.forEach((id) => {
+                const message = this.messageQueue.find((element) => id === element.UniqueMessageID);
+                if (message) {
+                    UplinkMessageStateMachine.update(this.parent, message, false, true);
+                    this.dcduLink.update(message);
+                }
+            });
+        }, 5000);
     }
 
     public async disconnect(): Promise<void> {
