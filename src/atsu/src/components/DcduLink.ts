@@ -223,13 +223,13 @@ export class DcduLink {
 
         Coherent.on('A32NX_ATSU_DCDU_MESSAGE_MONITORING', (uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
-            UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true);
+            UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, true);
             this.update(message as CpdlcMessage);
         });
 
         Coherent.on('A32NX_ATSU_DCDU_MESSAGE_STOP_MONITORING', (uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
-            UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, false);
+            UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, false);
             this.update(message as CpdlcMessage);
         });
 
@@ -275,7 +275,7 @@ export class DcduLink {
         Coherent.on('A32NX_ATSU_DCDU_MESSAGE_INVERT_SEMANTIC_RESPONSE', (uid: number) => {
             const message = this.atc.messages().find((element) => element.UniqueMessageID === uid);
             if (message !== undefined) {
-                UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, false);
+                UplinkMessageStateMachine.update(this.atsu, message as CpdlcMessage, true, false);
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', [message]);
             }
         });

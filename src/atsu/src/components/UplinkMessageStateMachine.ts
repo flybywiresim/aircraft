@@ -20,12 +20,12 @@ export class UplinkMessageStateMachine {
         }
     }
 
-    public static update(atsu: Atsu, message: CpdlcMessage, positive: boolean): void {
+    public static update(atsu: Atsu, message: CpdlcMessage, uiEvent: boolean, positive: boolean): void {
         if (positive) {
             if (message.MessageMonitoring === CpdlcMessageMonitoringState.Required) {
                 message.MessageMonitoring = CpdlcMessageMonitoringState.Monitoring;
                 atsu.atc.messageMonitoring.monitorMessage(message);
-            } else if (message.MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
+            } else if (!uiEvent && message.MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
                 message.MessageMonitoring = CpdlcMessageMonitoringState.Finished;
                 message.SemanticResponseRequired = UplinkMessageInterpretation.SemanticAnswerRequired(message);
             }
