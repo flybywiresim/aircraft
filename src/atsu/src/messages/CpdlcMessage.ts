@@ -57,7 +57,7 @@ export class CpdlcMessage extends AtsuMessage {
         this.DcduRelevantMessage = jsonData.DcduRelevantMessage;
         this.CloseAutomatically = jsonData.CloseAutomatically;
         this.MessageMonitoring = jsonData.MessageMonitoring;
-        this.SemanticResponseRequired = jsonData.SemanticAnswerRequired;
+        this.SemanticResponseRequired = jsonData.SemanticResponseRequired;
     }
 
     protected serializeContent(format: AtsuMessageSerializationFormat, template: string, element: CpdlcMessageElement): string {
