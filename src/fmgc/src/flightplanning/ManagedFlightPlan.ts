@@ -1472,16 +1472,67 @@ export class ManagedFlightPlan {
         return plan;
     }
 
+    private legDataMatches(a: WayPoint, b: WayPoint, fields: string[]) {
+        return fields.every((field) => a.additionalData[field] === b.additionalData[field]);
+    }
+
+    private isLegDuplicate(a: WayPoint, b: WayPoint): boolean {
+        if (a.additionalData.legType === b.additionalData.legType) {
+            switch (a.additionalData.legType) {
+            case LegType.AF:
+            case LegType.CR:
+            case LegType.VR:
+                return this.legDataMatches(a, b, ['course', 'theta', 'recommendedIcao']);
+            case LegType.CA:
+            case LegType.VA:
+                return this.legDataMatches(a, b, ['course']) && a.legAltitude1 === b.legAltitude1;
+            case LegType.CD:
+            case LegType.VD:
+                return this.legDataMatches(a, b, ['course', 'distance', 'recommendedIcao']);
+            case LegType.CF:
+                return this.legDataMatches(a, b, ['course']) && a.icao === b.icao;
+            case LegType.CI:
+            case LegType.VI:
+            case LegType.VM:
+                return this.legDataMatches(a, b, ['course']);
+            case LegType.DF:
+            case LegType.IF:
+            case LegType.TF:
+                return a.icao === b.icao;
+            case LegType.FA:
+                return a.icao === b.icao && a.legAltitude1 === b.legAltitude1;
+            case LegType.FC:
+                return this.legDataMatches(a, b, ['course', 'distance']) && a.icao === b.icao;
+            case LegType.FD:
+                return this.legDataMatches(a, b, ['course', 'distance', 'recommendedIcao']) && a.icao === b.icao;
+            case LegType.FM:
+                return this.legDataMatches(a, b, ['course']) && a.icao === b.icao;
+            case LegType.HA:
+                return this.legDataMatches(a, b, ['course', 'distance', 'distanceInMinutes']) && a.icao === b.icao && a.legAltitude1 === b.legAltitude1;
+            case LegType.HF:
+            case LegType.HM:
+            case LegType.PI:
+                return this.legDataMatches(a, b, ['course', 'distance', 'distanceInMinutes']) && a.icao === b.icao;
+            case LegType.RF:
+                return this.legDataMatches(a, b, ['center', 'radius']) && a.icao === b.icao;
+            default:
+            }
+        } else if (ManagedFlightPlan.isXfLeg(a) && ManagedFlightPlan.isXfLeg(b)
+            || ManagedFlightPlan.isFxLeg(a) && ManagedFlightPlan.isFxLeg(b))
+        {
+            return a.icao === b.icao;
+        }
+
+        return false;
+    }
+
     private addWaypointAvoidingDuplicates(waypoint: WayPoint, waypointIndex: number, segment: FlightPlanSegment): void {
-        const dupWp = this.waypoints.find((wp) => wp.ident === waypoint.ident);
-        const index = this.waypoints.findIndex((wp) => wp.ident === waypoint.ident); // FIXME this should really compare icaos...
+        const index = this.waypoints.findIndex((wp) => this.isLegDuplicate(waypoint, wp));
 
         // FIXME this should collapse any legs between the old position and the newly inserted position
         const wptDist = Math.abs(index - waypointIndex);
 
-        const wptSameLegTypes = dupWp?.additionalData?.legType === waypoint.additionalData?.legType;
-
-        if (wptSameLegTypes && wptDist <= 2) {
+        if (index !== -1 && wptDist <= 2) {
             // console.log('  -------> MFP: addWaypointAvoidingDuplicates: removing duplicate waypoint ', this.getWaypoint(index).ident);
             const removedWp = this.getWaypoint(index);
             if (waypoint.legAltitudeDescription === AltitudeDescriptor.Empty && removedWp.legAltitudeDescription !== AltitudeDescriptor.Empty) {
