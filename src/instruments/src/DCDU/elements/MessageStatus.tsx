@@ -44,7 +44,7 @@ const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage 
             return 'SENT';
         }
     } else if (response.Content.length !== 0 && response.Content[0].TypeId in CpdlcMessagesDownlink) {
-        if (message.SemanticResponseRequired) {
+        if (!message.SemanticResponseRequired) {
             const text = CpdlcMessagesDownlink[response.Content[0].TypeId][0][0];
             if (text === 'STANDBY') {
                 return 'STBY';
