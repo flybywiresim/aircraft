@@ -194,13 +194,13 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
                     </div>
                 )}
 
-                <TooltipWrapper text={localApiConnected ? t('StatusBar.TT.ConnectedToLocalApi') : t('StatusBar.TT.DisconnectedFromLocalApi')}>
-                    {localApiConnected ? (
-                        <Wifi size={26} />
-                    ) : (
-                        <WifiOff size={26} />
-                    )}
-                </TooltipWrapper>
+                {/* <TooltipWrapper text={localApiConnected ? t('StatusBar.TT.ConnectedToLocalApi') : t('StatusBar.TT.DisconnectedFromLocalApi')}> */}
+                {/*    {localApiConnected ? ( */}
+                {/*        <Wifi size={26} /> */}
+                {/*    ) : ( */}
+                {/*        <WifiOff size={26} /> */}
+                {/*    )} */}
+                {/* </TooltipWrapper> */}
 
                 <BatteryStatus batteryLevel={batteryLevel} isCharging={isCharging} />
 
