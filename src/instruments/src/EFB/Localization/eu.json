@@ -356,7 +356,7 @@
     "CallTug": "Call Tug",
     "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
     "DisableSystemMessageTitle": "Disable Pushback System",
-    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System is not yet finalized. It is incompatible with other Pushback add-ons and might cause other issues.",
+    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System can cause conflicts with other pushback add-ons. We recommend not to enable the system if you plan to use another pushback add-on. ",
     "EnableSystemMessageTitle": "Enable Pushback System",
     "Forward": "Forward",
     "Halt": "Paused",

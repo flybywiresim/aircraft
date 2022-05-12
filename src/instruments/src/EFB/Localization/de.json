@@ -356,7 +356,7 @@
     "CallTug": "Rufe Flugzeugschlepper",
     "DisableSystemMessageBody": "Möchten Sie das Pushback-System wirklich deaktivieren? Dadurch wird auch der Schlepper freigegeben.",
     "DisableSystemMessageTitle": "Pushback-System deaktivieren",
-    "EnableSystemMessageBody": "Das neue flyPadOS 3 Pushback-System ist noch nicht fertiggestellt. Es ist nicht mit anderen Pushback-Add-ons kompatibel und kann andere Probleme verursachen.",
+    "EnableSystemMessageBody": "Das neue flyPadOS 3 Pushback-System kann Konflikte mit anderen Pushback-Add-Ons verursachen. Wir empfehlen, das System nicht zu aktivieren, sollte ein anderes Pushback-Add-on verwendet werden.. ",
     "EnableSystemMessageTitle": "Pushback-System aktivieren",
     "Forward": "Vorwärts",
     "Halt": "Pausiert",

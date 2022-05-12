@@ -139,14 +139,14 @@
     "Services": {
       "BaggageTruck": "Camion à bagages",
       "CateringTruck": "Camion d'approvisionnement",
-      "Cones": "Safety Cones",
+      "Cones": "Cônes de sécurité",
       "DoorAft": "Porte arrière",
       "DoorFwd": "Porte avant",
       "ExternalPower": "Alimentation externe",
       "FuelTruck": "Camion de carburant",
       "JetBridge": "Passerelle",
       "Title": "Services",
-      "WheelChocks": "Wheel Chocks"
+      "WheelChocks": "Cales de roue"
     },
     "Title": "Sol"
   },
@@ -459,7 +459,7 @@
       "Active": "Actif",
       "Auto": "Auto",
       "Calibrate": "Calibrer",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "Cônes de sécurité",
       "DefaultBarometerUnit": "Unité baromètre par défaut",
       "DynamicRegistrationDecal": "Calque d'enregistrement dynamique",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Activer la connexion au serveur MCDU (désactivation automatique après 5 minutes en cas d'échec de la connexion)",
@@ -474,7 +474,7 @@
       "ThrottleDetents": "Encoches des manettes",
       "Title": "Options de simulation",
       "UseCalculatedIlsSignals": "Utiliser des signaux ILS calculés",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "Cales de roue",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
