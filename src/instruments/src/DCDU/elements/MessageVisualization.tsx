@@ -6,6 +6,7 @@ import { Checkerboard } from './Checkerboard';
 interface ColorizedWord {
     word: string;
     highlight: boolean;
+    watchdog: boolean;
 }
 
 interface ColorizedLine {
@@ -22,6 +23,7 @@ type MessageVisualizationProps = {
     yStart: number,
     deltaY: number,
     seperatorLine?: number,
+    watchdogIndices?: number[],
     updateSystemStatusMessage: (status: DcduStatusMessage) => void
 }
 
@@ -31,11 +33,14 @@ function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, 
     }
 
     const highlight = line[startIdx].highlight && !ignoreHighlight;
+    const monitoring = line[startIdx].watchdog && !ignoreHighlight;
     let className = 'message-tspan';
     if (backgroundActive) {
-        className = 'message-onbackground';
+        className += ' message-onbackground';
+    } else if (monitoring) {
+        className += ' message-monitoring';
     } else if (highlight) {
-        className = ' message-highlight';
+        className += ' message-highlight';
     }
     let nextIdx = line.length;
     let message = '';
@@ -94,12 +99,22 @@ function visualizeLines(lines: ColorizedLine[], backgroundIdx: number, yStart: n
     );
 }
 
-function colorizeWords(message: string, keepNewlines: boolean): ColorizedWord[] {
+function indexInList(list: number[], index: number): boolean {
+    for (const value of list) {
+        if (value === index) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function colorizeWords(message: string, keepNewlines: boolean, watchdogIndices: number[]): ColorizedWord[] {
     const words: ColorizedWord[] = [];
     if (!keepNewlines) {
         message = message.replace(/\n/gi, ' ');
     }
 
+    let watchdogColor = false;
     let highlightColor = false;
     const messageWords = message.match(/[-@_A-Z0-9]+|\[\s+\]/g);
     if (!messageWords) {
@@ -123,11 +138,22 @@ function colorizeWords(message: string, keepNewlines: boolean): ColorizedWord[] 
         // we need to change the highlight state
         if (highlightMarkers.length === 1 && highlightMarkers[0] === 0) {
             highlightColor = !highlightColor;
+            watchdogColor = false;
+            if (highlightColor) {
+                if (indexInList(watchdogIndices, words.length)) {
+                    watchdogColor = true;
+                }
+            }
         } else if (highlightMarkers.length !== 0) {
             highlightColor = !highlightColor;
+            if (highlightColor) {
+                if (indexInList(watchdogIndices, words.length)) {
+                    watchdogColor = true;
+                }
+            }
         }
 
-        words.push({ word, highlight: highlightColor });
+        words.push({ word, highlight: highlightColor, watchdog: watchdogColor });
 
         // only one word needs to be highlighted
         if (highlightMarkers.length === 1 && highlightMarkers[0] !== 0) {
@@ -158,11 +184,11 @@ function insertWord(lines: ColorizedLine[], word: ColorizedWord, keepNewlines: b
     lines[lines.length - 1].words.push(word);
 }
 
-function createVisualizationLines(message: string, keepNewlines: boolean): ColorizedLine[] {
+function createVisualizationLines(message: string, keepNewlines: boolean, watchdogIndices: number[]): ColorizedLine[] {
     const lines: ColorizedLine[] = [];
 
     if (!keepNewlines) {
-        const words = colorizeWords(message, keepNewlines);
+        const words = colorizeWords(message, keepNewlines, watchdogIndices);
         lines.push({ length: 0, words: [] });
 
         words.forEach((word) => {
@@ -176,7 +202,7 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
                 }
 
                 // insert the word
-                insertWord(lines, { word: entry, highlight: word.highlight }, keepNewlines);
+                insertWord(lines, { word: entry, highlight: word.highlight, watchdog: word.watchdog }, keepNewlines);
                 newline = !keepNewlines;
             });
         });
@@ -185,7 +211,7 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
         let lastLineHighlight = false;
 
         inputLines.forEach((line) => {
-            const words = colorizeWords(line, keepNewlines);
+            const words = colorizeWords(line, keepNewlines, watchdogIndices);
             if (words.length === 1 && /-+/.test(line)) {
                 lastLineHighlight = false;
             }
@@ -193,7 +219,12 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
             if (words.length !== 0) {
                 // invert the highlights due to the old highlighted text of the last line
                 if (lastLineHighlight) {
-                    words.forEach((word) => word.highlight = !word.highlight);
+                    words.forEach((word) => {
+                        word.highlight = !word.highlight;
+                        if (!word.highlight) {
+                            word.watchdog = false;
+                        }
+                    });
                 }
                 lastLineHighlight = words[words.length - 1].highlight;
             }
@@ -207,7 +238,7 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
 
 export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     message, backgroundColor, keepNewlines = false, ignoreHighlight, cssClass, yStart, deltaY,
-    seperatorLine = null, updateSystemStatusMessage,
+    seperatorLine = null, watchdogIndices = [], updateSystemStatusMessage,
 }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
@@ -242,7 +273,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
         return <></>;
     }
 
-    let lines = createVisualizationLines(message, keepNewlines);
+    let lines = createVisualizationLines(message, keepNewlines, watchdogIndices);
 
     // get the number of pages
     const messagePageCount = Math.ceil(lines.length / maxLines);
