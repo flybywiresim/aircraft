@@ -45,15 +45,26 @@ export abstract class CpdlcMessageContent {
 
     public IndexEnd: number = -1;
 
+    public Monitoring: boolean = false;
+
     public Value: string = '';
 
-    public constructor(type: CpdlcMessageContentType, ...args: number[]) {
+    public constructor(type: CpdlcMessageContentType, ...args: any[]) {
         this.Type = type;
 
-        this.IndexStart = args[0];
-        if (args.length === 2) {
-            this.IndexEnd = args[1];
-        }
+        args.forEach((arg) => {
+            if (typeof arg === 'number') {
+                if (this.IndexStart === -1) {
+                    this.IndexStart = arg as number;
+                } else {
+                    this.IndexEnd = arg as number;
+                }
+            } else if (typeof arg === 'boolean') {
+                this.Monitoring = arg as boolean;
+            } else if (typeof arg === 'string') {
+                this.Value = arg as string;
+            }
+        });
     }
 
     abstract validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] };
@@ -110,16 +121,13 @@ export abstract class CpdlcMessageContent {
         this.IndexStart = jsonData.IndexStart;
         this.IndexEnd = jsonData.IndexEnd;
         this.Value = jsonData.Value;
+        this.Monitoring = jsonData.Monitoring;
     }
 }
 
 export class CpdlcMessageContentLevel extends CpdlcMessageContent {
-    public constructor(...args: number[]) {
-        if (args.length === 2) {
-            super(CpdlcMessageContentType.Level, args[0], args[1]);
-        } else {
-            super(CpdlcMessageContentType.Level, args[0]);
-        }
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Level, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -143,8 +151,8 @@ export class CpdlcMessageContentLevel extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentPosition extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.Position, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Position, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -161,8 +169,8 @@ export class CpdlcMessageContentPosition extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentTime extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.Time, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Time, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -179,8 +187,8 @@ export class CpdlcMessageContentTime extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentDirection extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.Direction, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Direction, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -197,8 +205,8 @@ export class CpdlcMessageContentDirection extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentDistance extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.Direction, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Distance, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -215,8 +223,8 @@ export class CpdlcMessageContentDistance extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentSpeed extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.Speed, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Speed, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -233,8 +241,8 @@ export class CpdlcMessageContentSpeed extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentFrequency extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.Frequency, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Frequency, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -251,8 +259,8 @@ export class CpdlcMessageContentFrequency extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentProcedure extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.Procedure, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Procedure, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -269,8 +277,8 @@ export class CpdlcMessageContentProcedure extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentDegree extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.Degree, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Degree, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -287,8 +295,8 @@ export class CpdlcMessageContentDegree extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentVerticalRate extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.VerticalRate, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.VerticalRate, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -306,8 +314,8 @@ export class CpdlcMessageContentVerticalRate extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentAtcUnit extends CpdlcMessageContent {
-    public constructor(indexStart: number) {
-        super(CpdlcMessageContentType.AtcUnit, indexStart);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.AtcUnit, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -322,8 +330,8 @@ export class CpdlcMessageContentAtcUnit extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentSquawk extends CpdlcMessageContent {
-    public constructor(indexStart: number) {
-        super(CpdlcMessageContentType.Squawk, indexStart);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Squawk, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -341,8 +349,8 @@ export class CpdlcMessageContentSquawk extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentFreetext extends CpdlcMessageContent {
-    public constructor(indexStart: number, indexEnd: number) {
-        super(CpdlcMessageContentType.Freetext, indexStart, indexEnd);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Freetext, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -358,8 +366,8 @@ export class CpdlcMessageContentFreetext extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentLegTypeDistance extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.LegTypeDistance, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.LegTypeDistance, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -379,8 +387,8 @@ export class CpdlcMessageContentLegTypeDistance extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentLegTypeTime extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.LegTypeTime, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.LegTypeTime, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -404,11 +412,10 @@ export class CpdlcMessageContentLegType extends CpdlcMessageContent {
 
     private legTime: CpdlcMessageContentLegTypeTime;
 
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.LegType, index);
-
-        this.legDistance = new CpdlcMessageContentLegTypeDistance(index);
-        this.legTime = new CpdlcMessageContentLegTypeTime(index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.LegType, ...args);
+        this.legDistance = new CpdlcMessageContentLegTypeDistance(...args);
+        this.legTime = new CpdlcMessageContentLegTypeTime(...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -421,8 +428,8 @@ export class CpdlcMessageContentLegType extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentAltimeter extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.Altimeter, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Altimeter, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -444,8 +451,8 @@ export class CpdlcMessageContentAltimeter extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentAtis extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.Atis, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Atis, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -462,8 +469,8 @@ export class CpdlcMessageContentAtis extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentFuel extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.Fuel, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.Fuel, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -480,8 +487,8 @@ export class CpdlcMessageContentFuel extends CpdlcMessageContent {
 }
 
 export class CpdlcMessageContentPersonsOnBoard extends CpdlcMessageContent {
-    public constructor(index: number) {
-        super(CpdlcMessageContentType.PersonsOnBoard, index);
+    public constructor(...args: any[]) {
+        super(CpdlcMessageContentType.PersonsOnBoard, ...args);
     }
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
@@ -527,6 +534,7 @@ export class CpdlcMessageElement {
             instance.Content[instance.Content.length - 1].IndexStart = entry.IndexStart;
             instance.Content[instance.Content.length - 1].IndexEnd = entry.IndexEnd;
             instance.Content[instance.Content.length - 1].Value = entry.Value;
+            instance.Content[instance.Content.length - 1].Monitoring = entry.Monitoring;
         });
 
         return instance;
@@ -686,16 +694,16 @@ export const CpdlcMessagesUplink: { [identification: string]: [string[], CpdlcMe
         CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM20: [['CLIMB TO %s', 'CLIMB TO AND MAINTAIN %s'], new CpdlcMessageElement('UM20', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(2, 4)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM21: [['AT %s CLIMB TO %s', 'AT %s CLIMB TO AND MAINTAIN %s'], new CpdlcMessageElement('UM21', [FansMode.FansA], [new CpdlcMessageContentTime(1), new CpdlcMessageContentLevel(4, 6)],
-        CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM22: [['AT %s CLIMB TO %s', 'AT %s CLIMB TO AND MAINTAIN %s'], new CpdlcMessageElement('UM22', [FansMode.FansA], [new CpdlcMessageContentPosition(1), new CpdlcMessageContentLevel(4, 6)],
-        CpdlcMessageExpectedResponseType.WilcoUnable)],
+    UM21: [['AT %s CLIMB TO %s', 'AT %s CLIMB TO AND MAINTAIN %s'], new CpdlcMessageElement('UM21', [FansMode.FansA],
+        [new CpdlcMessageContentTime(1, true), new CpdlcMessageContentLevel(4, 6)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+    UM22: [['AT %s CLIMB TO %s', 'AT %s CLIMB TO AND MAINTAIN %s'], new CpdlcMessageElement('UM22', [FansMode.FansA],
+        [new CpdlcMessageContentPosition(1, true), new CpdlcMessageContentLevel(4, 6)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM23: [['DESCEND TO %s', 'DESCEND TO AND MAINTAIN %s'], new CpdlcMessageElement('UM23', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(2, 4)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM24: [['AT %s DESCEND TO %s', 'AT %s DESCEND TO AND MAINTAIN %s'], new CpdlcMessageElement('UM24', [FansMode.FansA], [new CpdlcMessageContentTime(1), new CpdlcMessageContentLevel(4, 6)],
-        CpdlcMessageExpectedResponseType.WilcoUnable)],
+    UM24: [['AT %s DESCEND TO %s', 'AT %s DESCEND TO AND MAINTAIN %s'], new CpdlcMessageElement('UM24', [FansMode.FansA],
+        [new CpdlcMessageContentTime(1, true), new CpdlcMessageContentLevel(4, 6)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM25: [['AT %s DESCEND TO %s', 'AT %s DESCEND TO AND MAINTAIN %s'], new CpdlcMessageElement('UM25', [FansMode.FansA],
-        [new CpdlcMessageContentPosition(1), new CpdlcMessageContentLevel(4, 6)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+        [new CpdlcMessageContentPosition(1, true), new CpdlcMessageContentLevel(4, 6)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM26: [['CLIMB TO REACH %s BY %s'], new CpdlcMessageElement('UM26', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(3), new CpdlcMessageContentTime(5)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM27: [['CLIMB TO REACH %s BY %s'], new CpdlcMessageElement('UM27', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(3), new CpdlcMessageContentPosition(5)],
@@ -756,9 +764,9 @@ export const CpdlcMessagesUplink: { [identification: string]: [string[], CpdlcMe
     UM64: [['OFFSET %s %s OF ROUTE'], new CpdlcMessageElement('UM64', [FansMode.FansA, FansMode.FansB],
         [new CpdlcMessageContentDistance(1), new CpdlcMessageContentDirection(2)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM65: [['AT %s OFFSET %s %s OF ROUTE'], new CpdlcMessageElement('UM65', [FansMode.FansA],
-        [new CpdlcMessageContentPosition(1), new CpdlcMessageContentDistance(3), new CpdlcMessageContentDirection(4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+        [new CpdlcMessageContentPosition(1, true), new CpdlcMessageContentDistance(3), new CpdlcMessageContentDirection(4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM66: [['AT %s OFFSET %s %s OF ROUTE'], new CpdlcMessageElement('UM66', [FansMode.FansA],
-        [new CpdlcMessageContentTime(1), new CpdlcMessageContentDistance(3), new CpdlcMessageContentDirection(4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+        [new CpdlcMessageContentTime(1, true), new CpdlcMessageContentDistance(3), new CpdlcMessageContentDirection(4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM67: [['PROCEED BACK ON ROUTE'], new CpdlcMessageElement('UM67', [FansMode.FansA], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM68: [['REJOIN ROUTE BY %s'], new CpdlcMessageElement('UM68', [FansMode.FansA], [new CpdlcMessageContentPosition(3)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM69: [['REJOIN ROUTE BY %s'], new CpdlcMessageElement('UM69', [FansMode.FansA], [new CpdlcMessageContentTime(3)], CpdlcMessageExpectedResponseType.WilcoUnable)],
@@ -768,11 +776,11 @@ export const CpdlcMessagesUplink: { [identification: string]: [string[], CpdlcMe
     // UM73 for clearance skipped -> needs to be handled in DCL manager
     UM74: [['PROCEED DIRECT TO %s'], new CpdlcMessageElement('UM74', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentPosition(3)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM75: [['WHEN ABLE PROCEED DIRECT TO %s'], new CpdlcMessageElement('UM75', [FansMode.FansA], [new CpdlcMessageContentPosition(5)], CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM76: [['AT %s PROCEED DIRECT TO %s'], new CpdlcMessageElement('UM76', [FansMode.FansA], [new CpdlcMessageContentTime(1), new CpdlcMessageContentPosition(5)],
+    UM76: [['AT %s PROCEED DIRECT TO %s'], new CpdlcMessageElement('UM76', [FansMode.FansA], [new CpdlcMessageContentTime(1, true), new CpdlcMessageContentPosition(5)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM77: [['AT %s PROCEED DIRECT TO %s'], new CpdlcMessageElement('UM77', [FansMode.FansA], [new CpdlcMessageContentPosition(1), new CpdlcMessageContentPosition(5)],
+    UM77: [['AT %s PROCEED DIRECT TO %s'], new CpdlcMessageElement('UM77', [FansMode.FansA], [new CpdlcMessageContentPosition(1, true), new CpdlcMessageContentPosition(5)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM78: [['AT %s PROCEED DIRECT TO %s'], new CpdlcMessageElement('UM78', [FansMode.FansA], [new CpdlcMessageContentLevel(1), new CpdlcMessageContentPosition(5)],
+    UM78: [['AT %s PROCEED DIRECT TO %s'], new CpdlcMessageElement('UM78', [FansMode.FansA], [new CpdlcMessageContentLevel(1, true), new CpdlcMessageContentPosition(5)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM79: [['CLEARED TO %s VIA %s'], new CpdlcMessageElement('UM79', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentPosition(2), new CpdlcMessageContentFreetext(4, -1)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
@@ -781,9 +789,9 @@ export const CpdlcMessagesUplink: { [identification: string]: [string[], CpdlcMe
     UM82: [['CLEARED TO DEVIATE UP TO %s %s OF ROUTE'], new CpdlcMessageElement('UM82', [FansMode.FansA, FansMode.FansB],
         [new CpdlcMessageContentDirection(5), new CpdlcMessageContentDistance(6)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM83: [['AT %s CLEARED %s'], new CpdlcMessageElement('UM83', [FansMode.FansA],
-        [new CpdlcMessageContentPosition(1), new CpdlcMessageContentFreetext(3, -1)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+        [new CpdlcMessageContentPosition(1, true), new CpdlcMessageContentFreetext(3, -1)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM84: [['AT %s CLEARED %s'], new CpdlcMessageElement('UM84', [FansMode.FansA],
-        [new CpdlcMessageContentPosition(1), new CpdlcMessageContentProcedure(3)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+        [new CpdlcMessageContentPosition(1, true), new CpdlcMessageContentProcedure(3)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM85: [['EXPECT %s'], new CpdlcMessageElement('UM85', [FansMode.FansA], [new CpdlcMessageContentFreetext(1, -1)], CpdlcMessageExpectedResponseType.Roger)],
     UM86: [['AT %s EXPECT %s'], new CpdlcMessageElement('UM86', [FansMode.FansA],
         [new CpdlcMessageContentPosition(1), new CpdlcMessageContentFreetext(3, -1)], CpdlcMessageExpectedResponseType.Roger)],
@@ -805,7 +813,7 @@ export const CpdlcMessagesUplink: { [identification: string]: [string[], CpdlcMe
     UM95: [['TURN %s GROUND TRACK %s'], new CpdlcMessageElement('UM95', [FansMode.FansA], [new CpdlcMessageContentDirection(1), new CpdlcMessageContentDegree(4)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM96: [['CONTINUE PRESENT HEADING', 'FLY PRESENT HEADING'], new CpdlcMessageElement('UM96', [FansMode.FansA, FansMode.FansB], CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM97: [['AT %s FLY HEADING %s'], new CpdlcMessageElement('UM97', [FansMode.FansA], [new CpdlcMessageContentPosition(1), new CpdlcMessageContentDegree(4)],
+    UM97: [['AT %s FLY HEADING %s'], new CpdlcMessageElement('UM97', [FansMode.FansA], [new CpdlcMessageContentPosition(1, true), new CpdlcMessageContentDegree(4)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM98: [['IMMEDIATELY TURN %s HEADING %s'], new CpdlcMessageElement('UM98', [FansMode.FansA], [new CpdlcMessageContentDirection(2), new CpdlcMessageContentDegree(4)],
         CpdlcMessageExpectedResponseType.WilcoUnable, true)],
@@ -836,23 +844,24 @@ export const CpdlcMessagesUplink: { [identification: string]: [string[], CpdlcMe
     UM117: [['CONTACT %s %s'], new CpdlcMessageElement('UM117', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentAtcUnit(1), new CpdlcMessageContentFrequency(2)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM118: [['AT %s CONTACT %s %s'], new CpdlcMessageElement('UM118', [FansMode.FansA],
-        [new CpdlcMessageContentPosition(1), new CpdlcMessageContentAtcUnit(3), new CpdlcMessageContentFrequency(4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+        [new CpdlcMessageContentPosition(1, true), new CpdlcMessageContentAtcUnit(3), new CpdlcMessageContentFrequency(4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM119: [['AT %s CONTACT %s %s'], new CpdlcMessageElement('UM119', [FansMode.FansA],
-        [new CpdlcMessageContentTime(1), new CpdlcMessageContentAtcUnit(3), new CpdlcMessageContentFrequency(4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+        [new CpdlcMessageContentTime(1, true), new CpdlcMessageContentAtcUnit(3), new CpdlcMessageContentFrequency(4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM120: [['MONITOR %s %s'], new CpdlcMessageElement('UM120', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentAtcUnit(1), new CpdlcMessageContentFrequency(2)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM121: [['AT %s MONITOR %s %s'], new CpdlcMessageElement('UM121', [FansMode.FansA],
-        [new CpdlcMessageContentPosition(1), new CpdlcMessageContentAtcUnit(3), new CpdlcMessageContentFrequency(4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+        [new CpdlcMessageContentPosition(1, true), new CpdlcMessageContentAtcUnit(3), new CpdlcMessageContentFrequency(4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM122: [['AT %s MONITOR %s %s'], new CpdlcMessageElement('UM122', [FansMode.FansA],
-        [new CpdlcMessageContentTime(1), new CpdlcMessageContentAtcUnit(3), new CpdlcMessageContentFrequency(4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+        [new CpdlcMessageContentTime(1, true), new CpdlcMessageContentAtcUnit(3), new CpdlcMessageContentFrequency(4)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM123: [['SQUAWK %s'], new CpdlcMessageElement('UM123', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentSquawk(1)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM124: [['STOP SQUAWK'], new CpdlcMessageElement('UM124', [FansMode.FansA], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM125: [['SQUAWK MODE CHARLIE', 'SQUAWK ALTITUDE'], new CpdlcMessageElement('UM125', [FansMode.FansA], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM126: [['STOP SQUAWK MODE CHARLIE', 'STOP SQUAWK ALTITUDE'], new CpdlcMessageElement('UM126', [FansMode.FansA], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM127: [['REPORT BACK ON ROUTE'], new CpdlcMessageElement('UM127', [FansMode.FansA], CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM128: [['REPORT LEAVING %s'], new CpdlcMessageElement('UM128', [FansMode.FansA], [new CpdlcMessageContentLevel(2)], CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM129: [['REPORT MAINTAINING %s', 'REPORT LEVEL %s'], new CpdlcMessageElement('UM129', [FansMode.FansA], [new CpdlcMessageContentLevel(2)], CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM130: [['REPORT PASSING %s'], new CpdlcMessageElement('UM130', [FansMode.FansA], [new CpdlcMessageContentPosition(2)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+    UM128: [['REPORT LEAVING %s'], new CpdlcMessageElement('UM128', [FansMode.FansA], [new CpdlcMessageContentLevel(2, true)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+    UM129: [['REPORT MAINTAINING %s', 'REPORT LEVEL %s'], new CpdlcMessageElement('UM129', [FansMode.FansA], [new CpdlcMessageContentLevel(2, true)],
+        CpdlcMessageExpectedResponseType.WilcoUnable)],
+    UM130: [['REPORT PASSING %s'], new CpdlcMessageElement('UM130', [FansMode.FansA], [new CpdlcMessageContentPosition(2, true)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM131: [['REPORT REMAINING FUEL AND PERSONS ON BOARD', 'REPORT REMAINING FUEL AND SOULS ON BOARD'], new CpdlcMessageElement('UM131', [FansMode.FansA],
         CpdlcMessageExpectedResponseType.Yes, true)],
     UM132: [['REPORT POSITION', 'CONFIRM POSITION'], new CpdlcMessageElement('UM132', [FansMode.FansA], CpdlcMessageExpectedResponseType.Yes)],
@@ -901,18 +910,18 @@ export const CpdlcMessagesUplink: { [identification: string]: [string[], CpdlcMe
         [new CpdlcMessageContentVerticalRate(2)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM174: [['DESCEND AT %s MAXIMUM'], new CpdlcMessageElement('UM174', [FansMode.FansA, FansMode.FansB],
         [new CpdlcMessageContentVerticalRate(2)], CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM175: [['REPORT REACHING %s'], new CpdlcMessageElement('UM175', [FansMode.FansA], [new CpdlcMessageContentLevel(2)], CpdlcMessageExpectedResponseType.WilcoUnable)],
+    UM175: [['REPORT REACHING %s'], new CpdlcMessageElement('UM175', [FansMode.FansA], [new CpdlcMessageContentLevel(2, true)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM176: [['MAINTAIN OWN SEPARATION AND VMC'], new CpdlcMessageElement('UM176', [FansMode.FansA], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM177: [['AT PILOTS DISCRETION'], new CpdlcMessageElement('UM177', [FansMode.FansA], CpdlcMessageExpectedResponseType.No)],
     UM179: [['SQUAWK IDENT'], new CpdlcMessageElement('UM179', [FansMode.FansA, FansMode.FansB], CpdlcMessageExpectedResponseType.WilcoUnable)],
-    UM180: [['REPORT REACHING BLOCK %s TO %s'], new CpdlcMessageElement('UM180', [FansMode.FansA], [new CpdlcMessageContentLevel(3), new CpdlcMessageContentLevel(5)],
+    UM180: [['REPORT REACHING BLOCK %s TO %s'], new CpdlcMessageElement('UM180', [FansMode.FansA], [new CpdlcMessageContentLevel(3, true), new CpdlcMessageContentLevel(5, true)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM181: [['REPORT DISTANCE TO %s', 'REPORT DISTANCE FROM %s'], new CpdlcMessageElement('UM181', [FansMode.FansA], [new CpdlcMessageContentPosition(3)],
         CpdlcMessageExpectedResponseType.Yes)],
     UM182: [['CONFIRM ATIS CODE'], new CpdlcMessageElement('UM182', [FansMode.FansA], CpdlcMessageExpectedResponseType.Yes)],
     UM183: [['%s'], new CpdlcMessageElement('UM183', [FansMode.FansB], [new CpdlcMessageContentFreetext(0, -1)], CpdlcMessageExpectedResponseType.Roger)],
     UM184: [['AT TIME %s REPORT DISTANCE TO %s', 'AT TIME %s REPORT DISTANCE FROM %s'], new CpdlcMessageElement('UM184', [FansMode.FansA],
-        [new CpdlcMessageContentTime(2), new CpdlcMessageContentPosition(6)], CpdlcMessageExpectedResponseType.Yes)],
+        [new CpdlcMessageContentTime(2, true), new CpdlcMessageContentPosition(6)], CpdlcMessageExpectedResponseType.Yes)],
     UM190: [['FLY HEADING %s'], new CpdlcMessageElement('UM190', [FansMode.FansB], [new CpdlcMessageContentDegree(2)], CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM213: [['%s ALTIMETER %s', '%s QNH %s'], new CpdlcMessageElement('UM213', [FansMode.FansA, FansMode.FansB],
         [new CpdlcMessageContentPosition(0), new CpdlcMessageContentAltimeter(2)], CpdlcMessageExpectedResponseType.Roger)],
