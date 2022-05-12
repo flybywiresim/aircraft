@@ -1,6 +1,6 @@
 import React from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageSerializationFormat } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
+import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/messages/CpdlcMessage';
 import { DcduStatusMessage } from '@atsu/components/DcduLink';
 import { MessageVisualization } from './MessageVisualization';
 
@@ -47,12 +47,27 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
     }
 
     // create the message content
+    let offset = 0;
     let content = '';
+    const watchdogIndices: number[] = [];
     messages.forEach((message) => {
         if (message.Content.length === 0 && message.Message !== '') {
             content += `${message.Message}\n`;
+            offset += message.Message.split(' ').length;
         } else {
-            content += `${message.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;
+            if (messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
+                message.Content.forEach((element) => {
+                    element.Content.forEach((value) => {
+                        if (value.Monitoring) {
+                            watchdogIndices.push(offset + value.IndexStart);
+                        }
+                    });
+                });
+            }
+
+            const text = message.serialize(AtsuMessageSerializationFormat.DCDU);
+            offset += text.split(' ').length;
+            content += `${text}\n`;
         }
     });
 
@@ -83,6 +98,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
                 cssClass={messageClass}
                 yStart={720}
                 deltaY={240}
+                watchdogIndices={watchdogIndices}
                 updateSystemStatusMessage={updateSystemStatusMessage}
             />
         </g>
