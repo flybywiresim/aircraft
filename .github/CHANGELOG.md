@@ -252,6 +252,8 @@
 1. [MISC] Added custom Autobrake event for SimConnect - @aguther (Andreas Guther)
 1. [EWD] Fixed failures not re-triggering when resolved - @tricky_dicky (Richard Pilbery)
 1. [SOUND] Prevent autopilot disconnect from sounding on C+D spawn - @tricky_dicky (Richard Pilbery) and @saschl (saschl#9432)
+1. [FMGC] Removed flight phase transition from TAKEOFF to PREFLIGHT - @beheh (Benedict Etzel)
+1. [FMGC] Added flight phase transition to DONE when on ground > 30 s and engines off - @aguther (Andreas Guther)
 
 ## 0.7.0
 
