@@ -5310,9 +5310,12 @@ struct A320GravityExtension {
 }
 impl A320GravityExtension {
     const INCREMENT_ANGLE_DEGREE_PER_SECOND: f64 = 220.;
+    const MAX_CRANK_HANDLE_ANGLE_DEGREE: f64 = 360. * 3.;
+    const MIN_CRANK_HANDLE_ANGLE_DEGREE: f64 = 0.;
+    const CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE: f64 = 0.1;
 
     // Can be allowed when handle animation is available
-    const ALLOW_RETURNING_TO_STOWED_HANDLE_POSITION: bool = false;
+    const ALLOW_RETURNING_TO_STOWED_HANDLE_POSITION: bool = true;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -5340,11 +5343,27 @@ impl A320GravityExtension {
             }
         }
 
+        self.handle_angle = self
+            .handle_angle
+            .min(Angle::new::<degree>(
+                Self::MAX_CRANK_HANDLE_ANGLE_DEGREE
+                    + Self::CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE,
+            ))
+            .max(Angle::new::<degree>(
+                Self::MIN_CRANK_HANDLE_ANGLE_DEGREE
+                    - Self::CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE,
+            ));
+
         if Self::ALLOW_RETURNING_TO_STOWED_HANDLE_POSITION
-            && self.handle_angle.get::<degree>() > 360. * 3.3
+            && self.handle_angle.get::<degree>() > Self::MAX_CRANK_HANDLE_ANGLE_DEGREE
+            && !self.is_turned
+            && self.is_extending_gear
         {
             self.is_extending_gear = false;
-        } else if self.handle_angle.get::<degree>() < -0.2 {
+        } else if self.handle_angle.get::<degree>() < Self::MIN_CRANK_HANDLE_ANGLE_DEGREE
+            && !self.is_turned
+            && !self.is_extending_gear
+        {
             self.is_extending_gear = true;
         }
     }
