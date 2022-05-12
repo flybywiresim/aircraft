@@ -244,6 +244,12 @@ const DCDU: React.FC = () => {
                     } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
                         dcduBlock.statusMessage = DcduStatusMessage.MonitoringCancelled;
                     }
+                } else if (dcduBlock.statusMessage === DcduStatusMessage.Monitoring) {
+                    if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
+                        dcduBlock.statusMessage = DcduStatusMessage.MonitoringCancelled;
+                    } else if (cpdlcMessages[0].MessageMonitoring !== CpdlcMessageMonitoringState.Monitoring) {
+                        dcduBlock.statusMessage = DcduStatusMessage.NoMessage;
+                    }
                 }
 
                 // response sent
