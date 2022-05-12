@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Power, WifiOff, Wifi } from 'react-bootstrap-icons';
+import { Power } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { usePersistentProperty, usePersistentNumberProperty } from '@instruments/common/persistence';
 import { useLongPress } from 'use-long-press';
 import { useHistory } from 'react-router-dom';
-import useInterval from '@instruments/common/useInterval';
 import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 import { usePower, PowerStates } from '../Efb';
@@ -91,26 +90,26 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     const shutoffTimerRef = useRef<NodeJS.Timer | null>(null);
 
     // TODO FIXME: This is going to need some readjustment when the user config changes
-    const setConnectedState = async () => {
-        try {
-            const healthRes = await fetch('http://localhost:8380/health');
-            const healthJson = await healthRes.json();
-
-            if (healthJson.info.api.status === 'up') {
-                setLocalApiConnected(true);
-            } else {
-                setLocalApiConnected(false);
-            }
-        } catch (_) {
-            setLocalApiConnected(false);
-        }
-    };
-
-    const [localApiConnected, setLocalApiConnected] = useState(false);
-
-    useInterval(() => {
-        setConnectedState();
-    }, 30_000);
+    // const setConnectedState = async () => {
+    //     try {
+    //         const healthRes = await fetch('http://localhost:8380/health');
+    //         const healthJson = await healthRes.json();
+    //
+    //         if (healthJson.info.api.status === 'up') {
+    //             setLocalApiConnected(true);
+    //         } else {
+    //             setLocalApiConnected(false);
+    //         }
+    //     } catch (_) {
+    //         setLocalApiConnected(false);
+    //     }
+    // };
+    //
+    // const [localApiConnected, setLocalApiConnected] = useState(false);
+    //
+    // useInterval(() => {
+    //     setConnectedState();
+    // }, 30_000);
 
     const bind = useLongPress(() => {}, {
         threshold: 100_000,
@@ -136,7 +135,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
     }, [shutoffBarPercent]);
 
     useEffect(() => {
-        setConnectedState();
+        // setConnectedState();
 
         const interval = setInterval(() => {
             setShowSchedTimes((old) => !old);

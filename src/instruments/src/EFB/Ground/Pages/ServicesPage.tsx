@@ -72,8 +72,8 @@ export const ServicesPage = () => {
     const [pushBack] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 1000);
     const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 'K:REQUEST_POWER_SUPPLY', 'bool', 1000);
 
-    const [wheelChocksEnabled, setWheelChocksEnabled] = useSimVar('L:A32NX_MODEL_WHEELCHOCKS_ENABLED', 'bool', 500);
-    const [conesEnabled, setConesEnabled] = useSimVar('L:A32NX_MODEL_CONES_ENABLED', 'bool', 500);
+    const [wheelChocksEnabled] = useSimVar('L:A32NX_MODEL_WHEELCHOCKS_ENABLED', 'bool', 500);
+    const [conesEnabled] = useSimVar('L:A32NX_MODEL_CONES_ENABLED', 'bool', 500);
     const [isGroundEquipmentVisible] = useSimVar('L:A32NX_GND_EQP_IS_VISIBLE', 'bool', 500);
 
     const [wheelChocksVisible, setWheelChocksVisible] = useState(wheelChocksEnabled && isGroundEquipmentVisible);
