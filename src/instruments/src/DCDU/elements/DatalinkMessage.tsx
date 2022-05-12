@@ -30,9 +30,9 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
     let ignoreHighlight = false;
     if (messages[0].Direction === AtsuMessageDirection.Downlink) {
         ignoreHighlight = true;
-    } else if (messages[0].Response !== undefined && messages[0].Response.ComStatus === AtsuMessageComStatus.Sending) {
+    } else if (messages[0].Response?.ComStatus === AtsuMessageComStatus.Sending) {
         ignoreHighlight = true;
-    } else if (messages[0].Response !== undefined && messages[0].Response.ComStatus === AtsuMessageComStatus.Sent && messages[0].Response.Message !== 'STANDBY') {
+    } else if (messages[0].Response?.ComStatus === AtsuMessageComStatus.Sent && messages[0].Response?.Message !== 'STANDBY') {
         ignoreHighlight = true;
     }
 
@@ -49,7 +49,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
     // create the message content
     let content = '';
     messages.forEach((message) => {
-        if (message.Content === undefined && message.Message !== '') {
+        if (message.Content.length === 0 && message.Message !== '') {
             content += `${message.Message}\n`;
         } else {
             content += `${message.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;

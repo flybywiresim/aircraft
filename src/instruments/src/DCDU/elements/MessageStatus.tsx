@@ -67,7 +67,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
     let statusClass = 'status-message ';
     if (message.Direction === AtsuMessageDirection.Uplink) {
         if (!message.SemanticResponseRequired) {
-            if (message.Response === undefined && selectedResponse === -1) {
+            if (message.Response && selectedResponse === -1) {
                 statusClass += 'status-open';
             } else {
                 statusClass += 'status-other';

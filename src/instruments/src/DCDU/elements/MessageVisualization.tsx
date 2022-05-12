@@ -207,7 +207,7 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
 
 export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     message, backgroundColor, keepNewlines = false, ignoreHighlight, cssClass, yStart, deltaY,
-    seperatorLine = undefined, updateSystemStatusMessage,
+    seperatorLine = null, updateSystemStatusMessage,
 }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
@@ -268,7 +268,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     let contentHeight = 120;
     let backgroundNeeded = false;
     if (backgroundColor[0] !== 0 || backgroundColor[1] !== 0 || backgroundColor[2] !== 0) {
-        if (seperatorLine !== undefined) {
+        if (seperatorLine) {
             if (seperatorLine >= endIndex) {
                 // only the next message is visible
                 contentHeight += lines.length * 230;

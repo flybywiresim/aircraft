@@ -67,9 +67,9 @@ export class DcduLink {
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
-    private atsu: Atsu | undefined = undefined;
+    private atsu: Atsu = null;
 
-    private atc: Atc | undefined = undefined;
+    private atc: Atc = null;
 
     private downlinkMessages: (DcduMessage[])[] = [];
 
@@ -79,16 +79,16 @@ export class DcduLink {
 
     private bufferedUplinkMessages: (DcduMessage[])[] = [];
 
-    private lastClosedMessage: [DcduMessage[], number] | undefined = undefined;
+    private lastClosedMessage: [DcduMessage[], number] = null;
 
-    private atcMsgWatchdogInterval: number | undefined = undefined;
+    private atcMsgWatchdogInterval: number = null;
 
-    private atcRingInterval: number | undefined = undefined;
+    private atcRingInterval: number = null;
 
     private closeMessage(messages: (DcduMessage[])[], backlog: (DcduMessage[])[], uid: number, uplink: boolean): boolean {
         const idx = messages.findIndex((elem) => elem[0].MessageId === uid);
         if (idx !== -1) {
-            if (this.lastClosedMessage === undefined || this.lastClosedMessage[0][0].MessageId !== uid) {
+            if (!this.lastClosedMessage || this.lastClosedMessage[0][0].MessageId !== uid) {
                 this.lastClosedMessage = [messages[idx], new Date().getTime()];
             }
 
@@ -234,7 +234,7 @@ export class DcduLink {
         });
 
         Coherent.on('A32NX_ATSU_DCDU_MESSAGE_RECALL', () => {
-            if (this.lastClosedMessage === undefined) {
+            if (!this.lastClosedMessage) {
                 this.listener.triggerToAllSubscribers('A32NX_DCDU_SYSTEM_ATSU_STATUS', DcduStatusMessage.RecallEmpty);
             } else {
                 const currentStamp = new Date().getTime();
@@ -321,19 +321,19 @@ export class DcduLink {
         SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_WAITING', 'boolean', 0);
         SimVar.SetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number', 0);
 
-        if (this.atcMsgWatchdogInterval !== undefined) {
+        if (this.atcMsgWatchdogInterval) {
             clearInterval(this.atcMsgWatchdogInterval);
-            this.atcMsgWatchdogInterval = undefined;
+            this.atcMsgWatchdogInterval = null;
         }
 
-        if (this.atcRingInterval !== undefined) {
+        if (this.atcRingInterval) {
             clearInterval(this.atcRingInterval);
-            this.atcRingInterval = undefined;
+            this.atcRingInterval = null;
         }
     }
 
     private setupIntervals() {
-        if (this.atcMsgWatchdogInterval === undefined) {
+        if (!this.atcMsgWatchdogInterval) {
             // start the watchdog to check the the ATC MSG button
             this.atcMsgWatchdogInterval = setInterval(() => {
                 if (SimVar.GetSimVarValue('L:A32NX_DCDU_ATC_MSG_ACK', 'number') === 1) {
@@ -342,7 +342,7 @@ export class DcduLink {
             }, 100);
         }
 
-        if (this.atcRingInterval !== undefined) {
+        if (!this.atcRingInterval) {
             clearInterval(this.atcRingInterval);
         }
 

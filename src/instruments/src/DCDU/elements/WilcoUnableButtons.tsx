@@ -18,7 +18,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({
     message, selectedResponse, setMessageStatus, sendResponse, closeMessage,
     monitorMessage, cancelMessageMonitoring,
 }) => {
-    const buttonsBlocked = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending;
+    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending;
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;
@@ -27,7 +27,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({
 
     // new message or a message update
     if (selectedResponse === -1) {
-        if (message.Response === undefined) {
+        if (!message.Response) {
             showStandby = true;
             showAnswers = true;
         } else if (message.Response.Content[0].TypeId === 'DM2') {
@@ -38,7 +38,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({
     }
 
     const clicked = (index: string) : void => {
-        if (message.UniqueMessageID === undefined || buttonsBlocked) {
+        if (message.UniqueMessageID === -1 || buttonsBlocked) {
             return;
         }
 

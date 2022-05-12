@@ -21,7 +21,7 @@ export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, sendMessa
     }
 
     const clicked = (index: string) : void => {
-        if (message.UniqueMessageID === undefined) {
+        if (message.UniqueMessageID === -1) {
             return;
         }
 

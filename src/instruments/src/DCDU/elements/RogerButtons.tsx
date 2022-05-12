@@ -21,14 +21,14 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedRes
     let showAnswers = false;
     let showSend = false;
 
-    if (selectedResponse === -1 && message.Response === undefined) {
+    if (selectedResponse === -1 && message.Response) {
         showAnswers = true;
     } else if (message.Response === undefined) {
         showSend = true;
     }
 
     const clicked = (index: string) : void => {
-        if (message.UniqueMessageID === undefined || buttonsBlocked) {
+        if (message.UniqueMessageID === -1 || buttonsBlocked) {
             return;
         }
 

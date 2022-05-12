@@ -146,7 +146,7 @@ export class Atc {
             this.handoverInterval = setInterval(() => {
                 if (!this.dcduLink.openMessagesForStation(this.currentAtc)) {
                     clearInterval(this.handoverInterval);
-                    this.handoverInterval = undefined;
+                    this.handoverInterval = null;
 
                     // add a timer to ensure that the last transmission is already received to avoid ATC software warnings
                     setTimeout(() => {
@@ -204,10 +204,10 @@ export class Atc {
         });
     }
 
-    private createCpdlcResponse(request: CpdlcMessage, response: number): CpdlcMessage | undefined {
+    private createCpdlcResponse(request: CpdlcMessage, response: number): CpdlcMessage {
         const downlinkId = `DM${response}`;
         if (!(downlinkId in CpdlcMessagesDownlink)) {
-            return undefined;
+            return null;
         }
 
         // create the meta information of the response
@@ -228,7 +228,7 @@ export class Atc {
 
             // avoid double-sends
             if (message.Response?.Content[0].TypeId === responseMsg.Content[0].TypeId
-                 && (message.Response?.ComStatus === AtsuMessageComStatus.Sending || message.Response?.ComStatus === AtsuMessageComStatus.Sent)) {
+            && (message.Response?.ComStatus === AtsuMessageComStatus.Sending || message.Response?.ComStatus === AtsuMessageComStatus.Sent)) {
                 return;
             }
 

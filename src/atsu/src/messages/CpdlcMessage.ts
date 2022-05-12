@@ -19,7 +19,7 @@ export enum CpdlcMessageMonitoringState {
 export class CpdlcMessage extends AtsuMessage {
     public Content: CpdlcMessageElement[] = [];
 
-    public Response: CpdlcMessage | undefined = undefined;
+    public Response: CpdlcMessage = null;
 
     public CurrentTransmissionId = -1;
 
@@ -48,7 +48,7 @@ export class CpdlcMessage extends AtsuMessage {
             entry.deserialize(element);
             this.Content.push(entry);
         });
-        if (jsonData.Response !== undefined) {
+        if (jsonData.Response) {
             this.Response = new CpdlcMessage();
             this.Response.deserialize(jsonData.Response);
         }
