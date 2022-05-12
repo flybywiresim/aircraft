@@ -25,7 +25,11 @@
 
 - A32NX_IS_STATIONARY
   - Bool
-  - Aircraft is stationary in relation to the speed of the first surface directly underneath it. (not moving on a carrier for example)
+  - Aircraft is stationary in relation to the speed of the first surface directly underneath it. (stationary on a carrier that is moving would be considered stationary)
+
+- A32NX_GND_EQP_IS_VISIBLE
+  - Bool
+  - Indicates if any GND equipment is visible or not
 
 - A32NX_START_STATE
   - Enum
