@@ -75,6 +75,8 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
             mcdu.simbrief["alternateIcao"] = data.alternate.icao_code;
             mcdu.simbrief["alternateTransAlt"] = parseInt(data.alternate.trans_alt, 10);
             mcdu.simbrief["alternateTransLevel"] = parseInt(data.alternate.trans_level, 10);
+            mcdu.simbrief["alternateAvgWindDir"] = parseInt(data.alternate.avg_wind_dir, 10);
+            mcdu.simbrief["alternateAvgWindSpd"] = parseInt(data.alternate.avg_wind_spd, 10);
             mcdu.simbrief["avgTropopause"] = data.general.avg_tropopause;
             mcdu.simbrief["ete"] = data.times.est_time_enroute;
             mcdu.simbrief["blockTime"] = data.times.est_block;
