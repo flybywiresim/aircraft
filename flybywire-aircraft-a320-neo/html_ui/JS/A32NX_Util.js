@@ -270,11 +270,17 @@ class NXPopUp {
         }
         if (callbackYes) {
             const yes = (typeof callbackYes === 'function') ? callbackYes : () => callbackYes;
-            Coherent.on("A32NX_POP_" + this.params.id + "_YES", yes);
+            Coherent.on(`A32NX_POP_${this.params.id}_YES`, () => {
+                Coherent.off(`A32NX_POP_${this.params.id}_YES`, null, null);
+                yes();
+            });
         }
         if (callbackNo) {
             const no = (typeof callbackNo === 'function') ? callbackNo : () => callbackNo;
-            Coherent.on("A32NX_POP_" + this.params.id + "_NO", no);
+            Coherent.on(`A32NX_POP_${this.params.id}_NO`, () => {
+                Coherent.off(`A32NX_POP_${this.params.id}_NO`, null, null);
+                no();
+            });
         }
 
         if (!this.popupListener) {
@@ -298,13 +304,6 @@ class NXNotifManager {
         Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_OFF', 1);
         Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_SET', 1);
         this.notifications = [];
-        /*
-        this.eventBus = new NXEvents();
-        KeyInterceptManager.getManager(this.eventBus).then((man) => {
-            this.manager = man;
-            this.registerIntercepts();
-        });
-        */
     }
 
     registerIntercepts(key) {
