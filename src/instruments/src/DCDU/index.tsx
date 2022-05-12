@@ -238,6 +238,14 @@ const DCDU: React.FC = () => {
                     message.Response = cpdlcMessages[0].Response;
                 });
 
+                if (dcduBlock.statusMessage === DcduStatusMessage.NoMessage) {
+                    if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
+                        dcduBlock.statusMessage = DcduStatusMessage.Monitoring;
+                    } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
+                        dcduBlock.statusMessage = DcduStatusMessage.MonitoringCancelled;
+                    }
+                }
+
                 // response sent
                 if (cpdlcMessages[0].Response?.ComStatus === AtsuMessageComStatus.Sent) {
                     dcduBlock.response = -1;
@@ -246,6 +254,11 @@ const DCDU: React.FC = () => {
                 const message = new DcduMessageBlock();
                 message.messages = cpdlcMessages;
                 message.timestamp = new Date().getTime();
+                if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
+                    message.statusMessage = DcduStatusMessage.Monitoring;
+                } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
+                    message.statusMessage = DcduStatusMessage.MonitoringCancelled;
+                }
                 messages.set(cpdlcMessages[0].UniqueMessageID, message);
             }
 
