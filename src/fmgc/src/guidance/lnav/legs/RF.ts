@@ -49,7 +49,7 @@ export class RFLeg extends XFLeg {
         const bearingFrom = Avionics.Utils.computeGreatCircleHeading(this.center, this.from.infos.coordinates); // -90?
         const bearingTo = Avionics.Utils.computeGreatCircleHeading(this.center, this.to.infos.coordinates); // -90?
 
-        switch (to.additionalData.turnDirection) {
+        switch (to.turnDirection) {
         case 1: // left
             this.clockwise = false;
             this.angle = Avionics.Utils.clampAngle(bearingFrom - bearingTo);

@@ -209,7 +209,7 @@ class CDUFlightPlanPage {
                     // ARINC Leg Types - R1A 610
                     switch (wp.additionalData.legType) {
                         case 1: // AF
-                            fixAnnotation = `${Math.round(wp.additionalData.rho).toString().substring(0, 2).padStart(2, '0')} ${wp.additionalData.navaidIdent.substring(0, 3)}`;
+                            fixAnnotation = `${Math.round(wp.additionalData.rho).toString().substring(0, 2).padStart(2, '0')} ${WayPoint.formatIdentFromIcao(wp.additionalData.recommendedIcao).substring(0, 3)}`;
                             break;
                         case 2: // CA
                         case 3: // CD
