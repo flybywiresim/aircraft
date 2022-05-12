@@ -10258,6 +10258,7 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
+                .with_worst_case_ptu()
                 .set_gear_lever_down()
                 .set_green_ed_pump(false)
                 .set_yellow_ed_pump(false)
@@ -10268,7 +10269,7 @@ mod tests {
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
 
             test_bed = test_bed.set_gear_lever_up();
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(60.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(80.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
         }
