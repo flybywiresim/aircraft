@@ -235,17 +235,17 @@ export const PinnedChartUI = () => {
                         onChange={(value) => dispatch(editTabProperty({ tab: NavigationTab.PINNED_CHARTS, searchQuery: value.toUpperCase() }))}
                     />
 
-                    <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.TT.ChangeChartProvider')}>
-                        <SelectInput
-                            className="w-56"
-                            options={Object.values(providerTabs).map(({ alias, provider }) => ({ displayValue: alias, value: provider }))}
-                            value={selectedProvider}
-                            onChange={(value) => dispatch(editTabProperty({
-                                tab: NavigationTab.PINNED_CHARTS,
-                                selectedProvider: value as ChartProvider | 'ALL',
-                            }))}
-                        />
-                    </TooltipWrapper>
+                    {/* <TooltipWrapper text={t('NavigationAndCharts.PinnedCharts.TT.ChangeChartProvider')}> */}
+                    {/*    <SelectInput */}
+                    {/*        className="w-56" */}
+                    {/*        options={Object.values(providerTabs).map(({ alias, provider }) => ({ displayValue: alias, value: provider }))} */}
+                    {/*        value={selectedProvider} */}
+                    {/*        onChange={(value) => dispatch(editTabProperty({ */}
+                    {/*            tab: NavigationTab.PINNED_CHARTS, */}
+                    {/*            selectedProvider: value as ChartProvider | 'ALL', */}
+                    {/*        }))} */}
+                    {/*    /> */}
+                    {/* </TooltipWrapper> */}
 
                     <SelectGroup>
                         <SelectItem
