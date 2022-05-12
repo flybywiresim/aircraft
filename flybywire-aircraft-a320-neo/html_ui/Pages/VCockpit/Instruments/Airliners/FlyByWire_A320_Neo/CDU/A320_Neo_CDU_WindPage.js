@@ -369,6 +369,11 @@ class CDUWindPage {
                     const tod = mcdu.simbrief.navlog.find((val) => val.ident === "TOD");
                     const desWpts = [tod, ...mcdu.simbrief.navlog.filter((val) => val.stage === stage)];
 
+                    mcdu.winds.alternate = {
+                        direction: mcdu.simbrief.alternateAvgWindDir,
+                        speed: mcdu.simbrief.alternateAvgWindSpd,
+                    };
+
                     // iterate through each clbWpt grabbing the wind data
                     windData = [];
                     lastAltitude = 45000;
