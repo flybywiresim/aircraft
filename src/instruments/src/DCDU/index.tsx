@@ -231,12 +231,7 @@ const DCDU: React.FC = () => {
             const dcduBlock = messages.get(cpdlcMessages[0].UniqueMessageID);
             if (dcduBlock !== undefined) {
                 // update the communication states and response
-                dcduBlock.messages.forEach((message) => {
-                    if (cpdlcMessages[0].ComStatus !== undefined) {
-                        message.ComStatus = cpdlcMessages[0].ComStatus;
-                    }
-                    message.Response = cpdlcMessages[0].Response;
-                });
+                dcduBlock.messages = cpdlcMessages;
 
                 if (dcduBlock.statusMessage === DcduStatusMessage.NoMessage) {
                     if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
