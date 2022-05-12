@@ -25,6 +25,16 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [A320Failure.GreenReservoirReturnLeak, 'Green reservoir return leak'],
     [A320Failure.BlueReservoirReturnLeak, 'Blue reservoir return leak'],
     [A320Failure.YellowReservoirReturnLeak, 'Yellow reservoir return leak'],
+
+    [A320Failure.LgciuPowerSupply1, 'LGCIU 1 Power supply'],
+    [A320Failure.LgciuPowerSupply2, 'LGCIU 2 Power supply'],
+    [A320Failure.LgciuInternalError1, 'LGCIU 1 Internal error'],
+    [A320Failure.LgciuInternalError2, 'LGCIU 2 Internal error'],
+    [A320Failure.GearProxSensorDamageGearUplockLeft1, 'Proximity Sensor Uplock Damage Left Gear #1'],
+    [A320Failure.GearProxSensorDamageDoorDownlockRight2, 'Proximity Sensor Downlock Damage Right Door #2'],
+    [A320Failure.GearProxSensorDamageGearUplockNose1, 'Proximity Sensor Uplock Damage Center Gear #1'],
+    [A320Failure.GearProxSensorDamageDoorUplockLeft2, 'Proximity Sensor Uplock Damage Left Door #2'],
+
     [A320Failure.RadioAltimeter1, 'RA 1'],
     [A320Failure.RadioAltimeter2, 'RA 2'],
 ]);

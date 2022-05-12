@@ -23,6 +23,10 @@
   - Bool
   - Indicates that the JavaScript part is ready
 
+- A32NX_IS_STATIONARY
+  - Bool
+  - Aircraft is stationary in relation to the speed of the first surface directly underneath it. (not moving on a carrier for example)
+
 - A32NX_START_STATE
   - Enum
   - Indicates the state in which MSFS started
@@ -2573,6 +2577,52 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - NOSE
         - LEFT
         - RIGHT
+
+- A32NX_LGCIU_{number}_{gear}_GEAR_DOWNLOCKED
+    - True if the gear is locked down.
+    - Boolean
+     - {number}
+        - 1
+        - 2
+    - {gear}
+        - NOSE
+        - LEFT
+        - RIGHT
+
+- A32NX_LGCIU_{number}_{gear}_GEAR_UNLOCKED
+    - True is the gear is not in the same state as the gear lever
+    - Boolean
+     - {number}
+        - 1
+        - 2
+    - {gear}
+        - NOSE
+        - LEFT
+        - RIGHT
+
+- A32NX_GEAR_DOOR_{gear}_POSITION
+    - Indicates the gear door position. 1 is fully opened. 0 fully closed and locked.
+    - Percent over 100
+    - {gear}
+        - CENTER
+        - LEFT
+        - RIGHT
+
+- A32NX_GEAR_{gear}_POSITION
+    - Indicates the gear position. 1 is fully opened. 0 fully closed and locked.
+    - Percent over 100
+    - {gear}
+        - CENTER
+        - LEFT
+        - RIGHT
+
+- A32NX_GEAR_EMERGENCY_EXTENSION_CLICKED
+    - Indicates the emergency extension handle is clicked in cockpit.
+    - Bool
+
+- A32NX_GEAR_EMERGENCY_EXTENSION_IS_TURNED
+    - Indicates the emergency extension handle is currently turning.
+    - Bool
 
 ## ATC (ATA 34)
 

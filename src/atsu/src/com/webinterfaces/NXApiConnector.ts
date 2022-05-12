@@ -201,19 +201,20 @@ export class NXApiConnector {
             }
 
             // Fetch new messages
-            Telex.fetchMessages()
-                .then((data) => {
-                    for (const msg of data) {
-                        const message = new FreetextMessage();
-                        message.Network = AtsuMessageNetwork.FBW;
-                        message.Direction = AtsuMessageDirection.Uplink;
-                        message.Station = msg.from.flight;
-                        message.Message = msg.message.replace(/;/i, ' ');
+            try {
+                const data = await Telex.fetchMessages();
+                for (const msg of data) {
+                    const message = new FreetextMessage();
+                    message.Network = AtsuMessageNetwork.FBW;
+                    message.Direction = AtsuMessageDirection.Uplink;
+                    message.Station = msg.from.flight;
+                    message.Message = msg.message.replace(/;/i, ' ');
 
-                        retval.push(message);
-                    }
-                })
-                .catch(() => [AtsuStatusCodes.ComFailed, retval]);
+                    retval.push(message);
+                }
+            } catch (_e) {
+                return [AtsuStatusCodes.ComFailed, retval];
+            }
         }
 
         return [AtsuStatusCodes.Ok, retval];

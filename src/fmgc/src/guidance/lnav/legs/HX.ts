@@ -54,13 +54,13 @@ abstract class HXLeg extends XFLeg {
      * Nominal TAS used for the current prediction
      * Not including wind
      */
-    protected predictedTas: Knots = 180;
+    protected currentPredictedTas: Knots = 180;
 
     /**
      * Nominal ground speed used the current prediction
      * including wind
      */
-    protected predictedGs: Knots = 180;
+    protected currentPredictedGs: Knots = 180;
 
     /**
      * Wind velocity along the inbound leg
@@ -123,7 +123,7 @@ abstract class HXLeg extends XFLeg {
 
         // distance is in time then...
         const defaultMinutes = alt < 14000 ? 1 : 1.5;
-        const inboundGroundSpeed = (this.predictedTas + (this.inboundWindSpeed ?? 0));
+        const inboundGroundSpeed = (this.currentPredictedTas + (this.inboundWindSpeed ?? 0));
         return (this.fix.additionalData.distanceInMinutes !== undefined ? this.fix.additionalData.distanceInMinutes : defaultMinutes) * inboundGroundSpeed / 60;
     }
 
@@ -188,8 +188,8 @@ abstract class HXLeg extends XFLeg {
     }
 
     get radius(): NauticalMiles {
-        const gsMs = this.predictedGs / 1.94384;
-        const radius = (gsMs ** 2 / (9.81 * Math.tan(maxBank(this.predictedTas, true) * Math.PI / 180)) / 1852);
+        const gsMs = this.currentPredictedGs / 1.94384;
+        const radius = (gsMs ** 2 / (9.81 * Math.tan(maxBank(this.currentPredictedTas, true) * Math.PI / 180)) / 1852);
 
         return radius;
     }
@@ -397,8 +397,8 @@ abstract class HXLeg extends XFLeg {
         const windAngleToInbound = Math.abs(Avionics.Utils.diffAngle(windDirection, this.inboundCourse));
         this.inboundWindSpeed = Math.cos(windAngleToInbound * Math.PI / 180) * windSpeed;
 
-        this.predictedTas = this.nextPredictedTas;
-        this.predictedGs = this.predictedTas + windSpeed;
+        this.currentPredictedTas = this.nextPredictedTas;
+        this.currentPredictedGs = this.currentPredictedTas + windSpeed;
         this.geometry = this.computeGeometry();
 
         // TODO update entry transition too

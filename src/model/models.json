@@ -950,6 +950,14 @@
         "bin": "./rivet-mesh/rivet-mesh.bin"
       },
       {
+        "gltf": "./chocks/chocks.gltf",
+        "bin": "./chocks/chocks.bin"
+      },
+      {
+        "gltf": "./cone/cone.gltf",
+        "bin": "./cone/cone.bin"
+      },
+      {
         "combineFiles": ["./a320-exterior/A320_NEO_LOD00.gltf"],
         "nodes": [
           {
@@ -43142,6 +43150,40 @@
             "indices": [3, 4, 5]
           }
         ]
+      }
+    ],
+    "addParentNodes" : [
+      {
+        "name": "CHOCKS_NOSE_GEAR",
+        "parent": "HYDROLIC_C"
+      },
+      {
+        "name": "CHOCKS_MAIN_GEAR_RIGHT",
+        "parent": "HYDROLIC_RIGHT"
+      },
+      {
+        "name": "CHOCKS_MAIN_GEAR_LEFT",
+        "parent": "HYDROLIC_LEFT"
+      },
+      {
+        "name": "CONE_ENG_L",
+        "parent": "HYDROLIC_LEFT"
+      },
+      {
+        "name": "CONE_L",
+        "parent": "HYDROLIC_LEFT"
+      },
+      {
+        "name": "CONE_ENG_R",
+        "parent": "HYDROLIC_RIGHT"
+      },
+      {
+        "name": "CONE_R",
+        "parent": "HYDROLIC_RIGHT"
+      },
+      {
+        "name": "CONE_B",
+        "parent": "HYDROLIC_RIGHT"
       }
     ]
   }

@@ -93,16 +93,24 @@ struct CoreHydraulicForce {
 
     force_raw: Force,
     force_filtered: LowPassFilter<Force>,
-    max_force: Force,
 
     pid_controller: PidController,
+
+    min_control_force: LowPassFilter<Force>,
+    max_control_force: LowPassFilter<Force>,
+
+    has_flow_restriction: bool,
 }
 impl CoreHydraulicForce {
+    const MIN_MAX_FORCE_CONTROLLER_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(30);
+
+    const MAX_ABSOLUTE_FORCE_NEWTON: f64 = 500000.;
+
     // Indicates the actuator positioning error from which max flow is applied
     const OPEN_LOOP_POSITION_ERROR_FOR_MAX_FLOW: f64 = 0.02;
 
-    const MIN_PRESSURE_TO_EXIT_POSITION_CONTROL_PSI: f64 = 500.;
-    const MIN_PRESSURE_TO_ALLOW_POSITION_CONTROL_PSI: f64 = 700.;
+    const MIN_PRESSURE_TO_EXIT_POSITION_CONTROL_PSI: f64 = 200.;
+    const MIN_PRESSURE_TO_ALLOW_POSITION_CONTROL_PSI: f64 = 400.;
 
     fn new(
         init_position: Ratio,
@@ -120,10 +128,12 @@ impl CoreHydraulicForce {
         flow_control_proportional_gain: f64,
         flow_control_integral_gain: f64,
         flow_control_force_gain: f64,
+        has_flow_restriction: bool,
     ) -> Self {
         let max_force = Pressure::new::<psi>(3000.) * bore_side_area;
+        let min_force = -Pressure::new::<psi>(3000.) * rod_side_area;
         Self {
-            current_mode: LinearActuatorMode::ClosedValves,
+            current_mode: LinearActuatorMode::ClosedCircuitDamping,
             closed_valves_reference_position: init_position,
 
             active_hydraulic_damping_constant,
@@ -143,17 +153,24 @@ impl CoreHydraulicForce {
             force_raw: Force::new::<newton>(0.),
             force_filtered: LowPassFilter::<Force>::new(slow_hydraulic_damping_filtering_constant),
 
-            max_force,
-
             pid_controller: PidController::new(
                 flow_control_proportional_gain,
                 flow_control_integral_gain,
                 0.,
-                -max_force.get::<newton>(),
+                min_force.get::<newton>(),
                 max_force.get::<newton>(),
                 0.,
                 flow_control_force_gain,
             ),
+            min_control_force: LowPassFilter::<Force>::new_with_init_value(
+                Self::MIN_MAX_FORCE_CONTROLLER_FILTER_TIME_CONSTANT,
+                min_force,
+            ),
+            max_control_force: LowPassFilter::<Force>::new_with_init_value(
+                Self::MIN_MAX_FORCE_CONTROLLER_FILTER_TIME_CONSTANT,
+                max_force,
+            ),
+            has_flow_restriction,
         }
     }
 
@@ -327,7 +344,10 @@ impl CoreHydraulicForce {
             }
         }
 
-        self.force_raw = self.force_raw.min(self.max_force).max(-self.max_force);
+        self.force_raw = self
+            .force_raw
+            .min(Force::new::<newton>(Self::MAX_ABSOLUTE_FORCE_NEWTON))
+            .max(Force::new::<newton>(-Self::MAX_ABSOLUTE_FORCE_NEWTON));
     }
 
     fn force(&self) -> Force {
@@ -391,23 +411,38 @@ impl CoreHydraulicForce {
             * open_loop_modifier_from_position
     }
 
-    fn update_force_min_max(&mut self, current_pressure: Pressure, speed: Velocity) {
-        self.pid_controller.set_min(-self.max_force.get::<newton>());
-        self.pid_controller.set_max(self.max_force.get::<newton>());
+    fn update_force_min_max(
+        &mut self,
+        context: &UpdateContext,
+        current_pressure: Pressure,
+        speed: Velocity,
+    ) {
+        let mut raw_max_force = Pressure::new::<psi>(3000.) * self.bore_side_area;
+        let mut raw_min_force = Pressure::new::<psi>(-3000.) * self.rod_side_area;
 
         if self.last_control_force > Force::new::<newton>(0.) {
             if speed > Velocity::new::<meter_per_second>(0.) {
                 let max_force = current_pressure * self.bore_side_area;
                 self.last_control_force = self.last_control_force.min(max_force);
-                self.pid_controller.set_max(max_force.get::<newton>());
+                raw_max_force = max_force;
             }
         } else if self.last_control_force < Force::new::<newton>(0.)
             && speed < Velocity::new::<meter_per_second>(0.)
         {
             let max_force = -1. * current_pressure * self.rod_side_area;
             self.last_control_force = self.last_control_force.max(max_force);
-            self.pid_controller.set_min(max_force.get::<newton>());
+            raw_min_force = max_force;
         }
+
+        self.min_control_force
+            .update(context.delta(), raw_min_force);
+        self.max_control_force
+            .update(context.delta(), raw_max_force);
+
+        self.pid_controller
+            .set_min(self.min_control_force.output().get::<newton>());
+        self.pid_controller
+            .set_max(self.max_control_force.output().get::<newton>());
     }
 
     fn force_position_control(
@@ -421,10 +456,17 @@ impl CoreHydraulicForce {
     ) -> Force {
         let open_loop_flow_target = self.open_loop_flow(required_position, position_normalized);
 
-        self.pid_controller
-            .change_setpoint(open_loop_flow_target.get::<gallon_per_second>());
+        let pressure_correction_factor = if self.has_flow_restriction {
+            (1. / 2500. * current_pressure.get::<psi>().powi(2) * 1. / 2500.).min(1.)
+        } else {
+            1.
+        };
 
-        self.update_force_min_max(current_pressure, speed);
+        let pressure_corrected_openloop_target = open_loop_flow_target * pressure_correction_factor;
+        self.pid_controller
+            .change_setpoint(pressure_corrected_openloop_target.get::<gallon_per_second>());
+
+        self.update_force_min_max(context, current_pressure, speed);
 
         self.last_control_force = Force::new::<newton>(self.pid_controller.next_control_output(
             signed_flow.get::<gallon_per_second>(),
@@ -476,6 +518,8 @@ pub struct LinearActuator {
     requested_position: Ratio,
 
     core_hydraulics: CoreHydraulicForce,
+
+    always_connected_to_line: bool,
 }
 impl LinearActuator {
     pub fn new(
@@ -494,6 +538,8 @@ impl LinearActuator {
         flow_control_proportional_gain: f64,
         flow_control_integral_gain: f64,
         flow_control_force_gain: f64,
+        has_flow_restriction: bool,
+        always_connected_to_line: bool,
     ) -> Self {
         let total_travel = (bounded_linear_length.max_absolute_length_to_anchor()
             - bounded_linear_length.min_absolute_length_to_anchor())
@@ -577,7 +623,9 @@ impl LinearActuator {
                 flow_control_proportional_gain,
                 flow_control_integral_gain,
                 flow_control_force_gain,
+                has_flow_restriction,
             ),
+            always_connected_to_line,
         }
     }
 
@@ -629,29 +677,30 @@ impl LinearActuator {
         // TODO We disable flow consumption and return for damping modes
         // This needs a clean rework as depending on volume extension ratio and displacement direction this
         // might not be physically possible to ignore return flow in damping modes and could cause reservoir quantity discrepencies
-        match self.core_hydraulics.mode() {
-            LinearActuatorMode::PositionControl | LinearActuatorMode::ClosedValves => {
-                let mut volume_to_actuator = Volume::new::<cubic_meter>(0.);
-                let mut volume_to_reservoir = Volume::new::<cubic_meter>(0.);
 
-                if self.delta_displacement > Length::new::<meter>(0.) {
-                    volume_to_actuator = self.delta_displacement * self.bore_side_area;
-                    volume_to_reservoir = volume_to_actuator / self.volume_extension_ratio;
-                } else if self.delta_displacement < Length::new::<meter>(0.) {
-                    volume_to_actuator = -self.delta_displacement * self.rod_side_area;
-                    volume_to_reservoir = volume_to_actuator * self.volume_extension_ratio;
-                }
+        if self.always_connected_to_line
+            || self.core_hydraulics.mode() == LinearActuatorMode::PositionControl
+            || self.core_hydraulics.mode() == LinearActuatorMode::ClosedValves
+        {
+            let mut volume_to_actuator = Volume::new::<cubic_meter>(0.);
+            let mut volume_to_reservoir = Volume::new::<cubic_meter>(0.);
 
-                self.signed_flow = if self.delta_displacement >= Length::new::<meter>(0.) {
-                    volume_to_actuator
-                } else {
-                    -volume_to_actuator
-                } / context.delta_as_time();
-
-                self.total_volume_to_actuator += volume_to_actuator;
-                self.total_volume_to_reservoir += volume_to_reservoir;
+            if self.delta_displacement > Length::new::<meter>(0.) {
+                volume_to_actuator = self.delta_displacement * self.bore_side_area;
+                volume_to_reservoir = volume_to_actuator / self.volume_extension_ratio;
+            } else if self.delta_displacement < Length::new::<meter>(0.) {
+                volume_to_actuator = -self.delta_displacement * self.rod_side_area;
+                volume_to_reservoir = volume_to_actuator * self.volume_extension_ratio;
             }
-            _ => {}
+
+            self.signed_flow = if self.delta_displacement >= Length::new::<meter>(0.) {
+                volume_to_actuator
+            } else {
+                -volume_to_actuator
+            } / context.delta_as_time();
+
+            self.total_volume_to_actuator += volume_to_actuator;
+            self.total_volume_to_reservoir += volume_to_reservoir;
         }
     }
 
@@ -666,6 +715,11 @@ impl LinearActuator {
     #[cfg(test)]
     fn force(&self) -> Force {
         self.core_hydraulics.force()
+    }
+
+    #[cfg(test)]
+    fn signed_flow(&self) -> VolumeRate {
+        self.signed_flow
     }
 }
 impl Actuator for LinearActuator {
@@ -767,6 +821,11 @@ impl<const N: usize> HydraulicLinearActuatorAssembly<N> {
 
     pub fn actuator_position_normalized(&self, index: usize) -> Ratio {
         self.linear_actuators[index].position_normalized()
+    }
+
+    #[cfg(test)]
+    pub fn actuator_flow(&self, index: usize) -> VolumeRate {
+        self.linear_actuators[index].signed_flow().abs()
     }
 }
 
@@ -941,7 +1000,7 @@ impl LinearActuatedRigidBodyOnHingeAxis {
         if self.actuator_extension_gives_positive_angle() {
             self.lock_position_request.get::<ratio>() * self.total_travel + self.min_angle
         } else {
-            self.lock_position_request.get::<ratio>() * self.total_travel + self.max_angle
+            -self.lock_position_request.get::<ratio>() * self.total_travel + self.max_angle
         }
     }
 
@@ -1603,14 +1662,14 @@ mod tests {
     fn right_main_gear_door_drops_when_unlocked() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_right_assembly(true),
             )
         });
 
         test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
         test_bed.command(|a| a.command_unlock());
-        test_bed.run_with_delta(Duration::from_secs(20));
+        test_bed.run_with_delta(Duration::from_secs(7));
 
         assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.98));
     }
@@ -1619,7 +1678,7 @@ mod tests {
     fn right_main_gear_door_drops_freefall_when_unlocked_with_broken_actuator() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_right_broken_assembly(true),
             )
         });
@@ -1632,26 +1691,10 @@ mod tests {
     }
 
     #[test]
-    fn left_main_gear_door_drops_when_unlocked() {
-        let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(
-                Duration::from_millis(33),
-                main_gear_door_left_assembly(true),
-            )
-        });
-
-        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
-        test_bed.command(|a| a.command_unlock());
-        test_bed.run_with_delta(Duration::from_secs(20));
-
-        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.98));
-    }
-
-    #[test]
     fn right_main_gear_door_cant_open_fully_if_banking_right() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_right_assembly(true),
             )
         });
@@ -1667,10 +1710,75 @@ mod tests {
     }
 
     #[test]
+    fn right_main_gear_door_closes_after_opening_with_pressure() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                Duration::from_millis(10),
+                main_gear_door_right_assembly(true),
+            )
+        });
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs_f64(3.5));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+
+        test_bed.command(|a| a.command_closed_valve_mode(0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.1));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.5), 0));
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(4.));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.001));
+    }
+
+    #[test]
+    fn nose_gear_door_closes_after_opening_with_pressure() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), nose_gear_door_assembly())
+        });
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs_f64(2.5));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+
+        test_bed.command(|a| a.command_closed_valve_mode(0));
+        test_bed.run_with_delta(Duration::from_secs_f64(0.1));
+
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.5), 0));
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
+
+        test_bed.run_with_delta(Duration::from_secs_f64(3.));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.001));
+    }
+
+    #[test]
+    fn left_main_gear_door_drops_when_unlocked() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(
+                Duration::from_millis(10),
+                main_gear_door_left_assembly(true),
+            )
+        });
+
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(7));
+
+        assert!(test_bed.query(|a| a.body_position()) > Ratio::new::<ratio>(0.98));
+    }
+
+    #[test]
     fn left_main_gear_door_can_open_fully_if_banking_right() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_left_assembly(true),
             )
         });
@@ -1687,7 +1795,7 @@ mod tests {
     fn left_main_gear_door_opens_with_pressure() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(
-                Duration::from_millis(33),
+                Duration::from_millis(10),
                 main_gear_door_left_assembly(true),
             )
         });
@@ -1701,12 +1809,9 @@ mod tests {
     }
 
     #[test]
-    fn right_main_gear_door_closes_after_opening_with_pressure() {
+    fn right_main_gear_retracts_with_pressure() {
         let mut test_bed = SimulationTestBed::new(|_| {
-            TestAircraft::new(
-                Duration::from_millis(33),
-                main_gear_door_right_assembly(true),
-            )
+            TestAircraft::new(Duration::from_millis(10), main_gear_right_assembly(true))
         });
 
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
@@ -1715,26 +1820,178 @@ mod tests {
         test_bed.run_with_delta(Duration::from_secs(10));
 
         assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
-
-        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.5), 0));
-        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
-
-        test_bed.run_with_delta(Duration::from_secs(6));
-        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.001));
     }
 
     #[test]
-    fn right_main_gear_retracts_with_pressure() {
+    fn right_main_gear_locked_down_at_init() {
         let mut test_bed = SimulationTestBed::new(|_| {
             TestAircraft::new(Duration::from_millis(33), main_gear_right_assembly(true))
         });
 
+        assert!(test_bed.query(|a| a.is_locked()));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        assert!(test_bed.query(|a| a.is_locked()));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+    }
+
+    #[test]
+    fn right_main_gear_locks_up_when_retracted() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), main_gear_right_assembly(true))
+        });
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
+        test_bed.run_with_delta(Duration::from_secs(10));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
+        assert!(test_bed.query(|a| a.is_locked()));
+    }
+
+    #[test]
+    fn right_main_gear_locks_down_when_extended_by_gravity() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), main_gear_right_assembly(true))
+        });
+
+        // FIRST GEAR UP
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
+        test_bed.run_with_delta(Duration::from_secs(10));
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
+        assert!(test_bed.query(|a| a.is_locked()));
+
+        //Gravity extension
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.01)));
+        test_bed.run_with_delta(Duration::from_secs(13));
+
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.011));
+        assert!(test_bed.query(|a| a.is_locked()));
+    }
+
+    #[test]
+    fn left_main_gear_retracts_with_pressure() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), main_gear_left_assembly(true))
+        });
+
         test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
         test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
         test_bed.command(|a| a.command_unlock());
         test_bed.run_with_delta(Duration::from_secs(10));
 
         assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+    }
+
+    #[test]
+    fn left_main_gear_retracts_with_limited_pressure() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), main_gear_left_assembly(true))
+        });
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(1500.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(35));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.98));
+    }
+
+    #[test]
+    fn left_main_gear_locked_down_at_init() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(33), main_gear_left_assembly(true))
+        });
+
+        assert!(test_bed.query(|a| a.is_locked()));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        assert!(test_bed.query(|a| a.is_locked()));
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+    }
+
+    #[test]
+    fn left_main_gear_locks_up_when_retracted() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), main_gear_left_assembly(true))
+        });
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
+        test_bed.run_with_delta(Duration::from_secs(10));
+
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
+        assert!(test_bed.query(|a| a.is_locked()));
+    }
+
+    #[test]
+    fn left_main_gear_locks_down_when_extended_by_gravity() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), main_gear_left_assembly(true))
+        });
+
+        // FIRST GEAR UP
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(1.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(1.)));
+        test_bed.run_with_delta(Duration::from_secs(10));
+        assert!(test_bed.query(|a| a.body_position()) >= Ratio::new::<ratio>(0.999));
+        assert!(test_bed.query(|a| a.is_locked()));
+
+        //Gravity extension
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(0.)]));
+        test_bed.command(|a| a.command_closed_circuit_damping_mode(0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.01)));
+        test_bed.run_with_delta(Duration::from_secs(13));
+
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.011));
+        assert!(test_bed.query(|a| a.is_locked()));
+    }
+
+    #[test]
+    fn nose_gear_locks_up_when_retracted() {
+        let mut test_bed = SimulationTestBed::new(|_| {
+            TestAircraft::new(Duration::from_millis(10), nose_gear_assembly())
+        });
+
+        test_bed.command(|a| a.set_pressures([Pressure::new::<psi>(3000.)]));
+        test_bed.command(|a| a.command_position_control(Ratio::new::<ratio>(-0.5), 0));
+        test_bed.command(|a| a.command_unlock());
+        test_bed.run_with_delta(Duration::from_secs(1));
+
+        test_bed.command(|a| a.command_lock(Ratio::new::<ratio>(0.)));
+        test_bed.run_with_delta(Duration::from_secs(10));
+
+        assert!(test_bed.query(|a| a.body_position()) <= Ratio::new::<ratio>(0.01));
+        assert!(test_bed.query(|a| a.is_locked()));
     }
 
     #[test]
@@ -2105,6 +2362,8 @@ mod tests {
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
+            false,
+            true,
         )
     }
 
@@ -2160,7 +2419,7 @@ mod tests {
 
     fn main_gear_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
         const DEFAULT_I_GAIN: f64 = 5.;
-        const DEFAULT_P_GAIN: f64 = 0.05;
+        const DEFAULT_P_GAIN: f64 = 0.7;
         const DEFAULT_FORCE_GAIN: f64 = 200000.;
 
         LinearActuator::new(
@@ -2168,17 +2427,19 @@ mod tests {
             1,
             Length::new::<meter>(0.055),
             Length::new::<meter>(0.03),
-            VolumeRate::new::<gallon_per_second>(0.08),
+            VolumeRate::new::<gallon_per_second>(0.09),
             20000.,
             5000.,
             2000.,
-            28000.,
+            9000.,
             Duration::from_millis(100),
-            [0.5, 1., 1., 1., 1., 0.5],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.15, 0.16, 0.84, 0.85, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
+            true,
+            true,
         )
     }
 
@@ -2199,6 +2460,8 @@ mod tests {
             0.,
             0.,
             0.,
+            false,
+            true,
         )
     }
 
@@ -2253,27 +2516,36 @@ mod tests {
         HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
     }
 
+    fn main_gear_left_assembly(is_locked: bool) -> HydraulicLinearActuatorAssembly<1> {
+        let rigid_body = main_gear_left_body(is_locked);
+        let actuator = main_gear_actuator(&rigid_body);
+
+        HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
+    }
+
     fn main_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
-        const DEFAULT_I_GAIN: f64 = 5.;
-        const DEFAULT_P_GAIN: f64 = 0.05;
-        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+        const DEFAULT_I_GAIN: f64 = 4.5;
+        const DEFAULT_P_GAIN: f64 = 0.3;
+        const DEFAULT_FORCE_GAIN: f64 = 250000.;
 
         LinearActuator::new(
             bounded_linear_length,
             1,
             Length::new::<meter>(0.145),
             Length::new::<meter>(0.105),
-            VolumeRate::new::<gallon_per_second>(0.15),
+            VolumeRate::new::<gallon_per_second>(0.17),
             800000.,
             15000.,
             50000.,
             1200000.,
             Duration::from_millis(100),
-            [1., 1., 1., 1., 1., 1.],
-            [0., 0.2, 0.21, 0.79, 0.8, 1.],
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.1, 0.11, 0.89, 0.9, 1.],
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
+            true,
+            true,
         )
     }
 
@@ -2295,6 +2567,138 @@ mod tests {
             Angle::new::<degree>(0.),
             150.,
             is_locked,
+            Vector3::new(0., 0., 1.),
+        )
+    }
+
+    fn main_gear_left_body(is_locked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(0.3, 3.453, 0.3);
+        let cg_offset = Vector3::new(0., -3. / 4. * size[1], 0.);
+
+        let control_arm = Vector3::new(0.1815, 0.15, 0.);
+        let anchor = Vector3::new(0.26, 0.15, 0.);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(700.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(0.),
+            Angle::new::<degree>(80.),
+            Angle::new::<degree>(0.),
+            150.,
+            is_locked,
+            Vector3::new(0., 0., 1.),
+        )
+    }
+
+    fn nose_gear_assembly() -> HydraulicLinearActuatorAssembly<1> {
+        let rigid_body = nose_gear_body();
+        let actuator = nose_gear_actuator(&rigid_body);
+
+        HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
+    }
+
+    fn nose_gear_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 4.5;
+        const DEFAULT_P_GAIN: f64 = 0.3;
+        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+
+        LinearActuator::new(
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.0792),
+            Length::new::<meter>(0.035),
+            VolumeRate::new::<gallon_per_second>(0.053),
+            800000.,
+            15000.,
+            50000.,
+            2200000.,
+            Duration::from_millis(100),
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.1, 0.11, 0.89, 0.9, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
+            true,
+            true,
+        )
+    }
+
+    fn nose_gear_body() -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(0.3, 2.453, 0.3);
+        let cg_offset = Vector3::new(0., -2. / 3. * size[1], 0.);
+
+        let control_arm = Vector3::new(0., -0.093, 0.212);
+        let anchor = Vector3::new(0., 0.56, 0.);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(300.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(-101.),
+            Angle::new::<degree>(92.),
+            Angle::new::<degree>(-9.),
+            150.,
+            true,
+            Vector3::new(1., 0., 0.),
+        )
+    }
+
+    fn nose_gear_door_assembly() -> HydraulicLinearActuatorAssembly<1> {
+        let rigid_body = nose_gear_door_right_left_body();
+        let actuator = nose_gear_door_actuator(&rigid_body);
+
+        HydraulicLinearActuatorAssembly::new([actuator], rigid_body)
+    }
+
+    fn nose_gear_door_actuator(bounded_linear_length: &impl BoundedLinearLength) -> LinearActuator {
+        const DEFAULT_I_GAIN: f64 = 5.;
+        const DEFAULT_P_GAIN: f64 = 0.15;
+        const DEFAULT_FORCE_GAIN: f64 = 200000.;
+
+        LinearActuator::new(
+            bounded_linear_length,
+            1,
+            Length::new::<meter>(0.0378),
+            Length::new::<meter>(0.023),
+            VolumeRate::new::<gallon_per_second>(0.027),
+            20000.,
+            5000.,
+            2000.,
+            28000.,
+            Duration::from_millis(100),
+            [0.5, 0.5, 1., 1., 0.5, 0.5],
+            [0., 0.15, 0.16, 0.84, 0.85, 1.],
+            DEFAULT_P_GAIN,
+            DEFAULT_I_GAIN,
+            DEFAULT_FORCE_GAIN,
+            true,
+            true,
+        )
+    }
+
+    fn nose_gear_door_right_left_body() -> LinearActuatedRigidBodyOnHingeAxis {
+        let size = Vector3::new(-0.4, 0.02, 1.5);
+        let cg_offset = Vector3::new(0.5 * size[0], 0., 0.);
+
+        let control_arm = Vector3::new(-0.1465, 0., 0.);
+        let anchor = Vector3::new(-0.1465, 0.40, 0.);
+
+        LinearActuatedRigidBodyOnHingeAxis::new(
+            Mass::new::<kilogram>(40.),
+            size,
+            cg_offset,
+            control_arm,
+            anchor,
+            Angle::new::<degree>(0.),
+            Angle::new::<degree>(85.),
+            Angle::new::<degree>(0.),
+            150.,
+            true,
             Vector3::new(0., 0., 1.),
         )
     }
@@ -2327,6 +2731,8 @@ mod tests {
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
+            false,
+            false,
         )
     }
 
@@ -2386,6 +2792,8 @@ mod tests {
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
+            false,
+            false,
         )
     }
 
@@ -2439,6 +2847,8 @@ mod tests {
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
+            false,
+            true,
         )
     }
 

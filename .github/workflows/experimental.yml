@@ -28,6 +28,7 @@ jobs:
           echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
           echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
           echo SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> .env
+          echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
@@ -36,6 +37,8 @@ jobs:
         run: |
           ./scripts/dev-env/run.sh node ./scripts/fragment.js
 
+          cp ./build-modules/modules.json ./flybywire-aircraft-a320-neo/install.json
+          ./scripts/dev-env/run.sh node ./scripts/install-source.js
           mkdir ./${{ env.BUILD_DIR_NAME }}
           zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.EXPERIMENTAL_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
       - name: Upload to Bunny CDN
@@ -43,13 +46,15 @@ jobs:
           BUNNY_BUCKET_PASSWORD: ${{ secrets.BUNNY_BUCKET_PASSWORD }}
           BUNNY_SECRET_TOKEN: ${{ secrets.BUNNY_SECRET_TOKEN }}
           BUNNY_BUCKET_DESTINATION: addons/a32nx/experimental
-        run: ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION
+        run: |
+          ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION ./build-modules
+          ./scripts/cdn.sh $BUNNY_BUCKET_DESTINATION ./${{ env.BUILD_DIR_NAME }}
       - name: Delete old GitHub Pre-Release assets
         uses: mknejp/delete-release-assets@v1
         with:
           token: ${{ github.token }}
           tag: ${{ env.EXPERIMENTAL_PRE_RELEASE_TAG }}
-          assets: '*'
+          assets: "*"
           fail-if-no-assets: false
       - name: Upload aicraft package to GitHub Pre-Release Assets
         uses: actions/upload-release-asset@v1.0.2
