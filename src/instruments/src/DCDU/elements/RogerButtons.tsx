@@ -15,15 +15,15 @@ type RogerButtonsProps = {
 }
 
 export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedResponse, setMessageStatus, sendResponse, closeMessage, monitorMessage, cancelMessageMonitoring }) => {
-    const buttonsBlocked = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending;
+    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending;
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;
     let showSend = false;
 
-    if (selectedResponse === -1 && message.Response) {
+    if (selectedResponse === -1 && !message.Response) {
         showAnswers = true;
-    } else if (message.Response === undefined) {
+    } else if (!message.Response) {
         showSend = true;
     }
 

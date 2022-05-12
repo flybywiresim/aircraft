@@ -210,7 +210,7 @@ const DCDU: React.FC = () => {
         const cpdlcMessages: CpdlcMessage[] = [];
 
         serializedMessages.forEach((serialized) => {
-            if (serialized.UniqueMessageID !== undefined) {
+            if (serialized.UniqueMessageID !== -1) {
                 let cpdlcMessage : CpdlcMessage | undefined = undefined;
                 if (serialized.Type === AtsuMessageType.CPDLC) {
                     cpdlcMessage = new CpdlcMessage();
@@ -239,7 +239,7 @@ const DCDU: React.FC = () => {
                 });
 
                 // response sent
-                if (cpdlcMessages[0].Response !== undefined && cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Sent) {
+                if (cpdlcMessages[0].Response?.ComStatus === AtsuMessageComStatus.Sent) {
                     dcduBlock.response = -1;
                 }
             } else {

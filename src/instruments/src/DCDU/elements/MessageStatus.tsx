@@ -36,14 +36,14 @@ const translateResponseId = (response: number, message: CpdlcMessage): string =>
 const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage | undefined): string => {
     const answerExpected = message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
 
-    if (response === undefined) {
+    if (!response) {
         if (message.Direction === AtsuMessageDirection.Uplink && answerExpected) {
             return 'OPEN';
         }
         if (message.ComStatus === AtsuMessageComStatus.Sent) {
             return 'SENT';
         }
-    } else if (response.Content !== undefined && response.Content[0].TypeId in CpdlcMessagesDownlink) {
+    } else if (response.Content.length !== 0 && response.Content[0].TypeId in CpdlcMessagesDownlink) {
         if (message.SemanticResponseRequired) {
             const text = CpdlcMessagesDownlink[response.Content[0].TypeId][0][0];
             if (text === 'STANDBY') {

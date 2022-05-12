@@ -15,7 +15,7 @@ type SemanticResponseButtonsProps = {
 
 export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = ({ message, dataIncomplete, invertResponse, modifyResponse, sendMessage, closeMessage }) => {
     const showAnswers = !message.Response || (message.Response.ComStatus !== AtsuMessageComStatus.Sending && message.Response.ComStatus !== AtsuMessageComStatus.Sent);
-    const buttonsBlocked = message.Response && message.Response.ComStatus === AtsuMessageComStatus.Sending;
+    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending;
 
     const clicked = (index: string) : void => {
         if (message.UniqueMessageID === -1 || buttonsBlocked) {
