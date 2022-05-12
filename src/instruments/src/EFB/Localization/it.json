@@ -139,14 +139,14 @@
     "Services": {
       "BaggageTruck": "Veicolo Bagagli",
       "CateringTruck": "Veicolo Catering",
-      "Cones": "Safety Cones",
+      "Cones": "Coni di Sicurezza",
       "DoorAft": "Porta Post.",
       "DoorFwd": "Porta Ant.",
       "ExternalPower": "Alimentazione Esterna",
       "FuelTruck": "Veicolo Carburante",
       "JetBridge": "Ponte Imbarco",
       "Title": "Servizi",
-      "WheelChocks": "Wheel Chocks"
+      "WheelChocks": "Tacchi per Ruote"
     },
     "Title": "Terra"
   },
@@ -459,7 +459,7 @@
       "Active": "Attivo",
       "Auto": "Auto",
       "Calibrate": "Calibra",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "Coni di Sicurezza",
       "DefaultBarometerUnit": "Unità Barometro Predefinita",
       "DynamicRegistrationDecal": "Decalco Registrazione Dinamico",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Abilita Connessione Server MCDU (Disattivazione automatica dopo 5 minuti in caso di connessione non riuscita)",
@@ -474,7 +474,7 @@
       "ThrottleDetents": "Posizioni Manetta",
       "Title": "Opzioni Sim",
       "UseCalculatedIlsSignals": "Usa Segnali ILS Calcolati",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "Tacchi per Ruote",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
