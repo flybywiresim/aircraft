@@ -43,10 +43,12 @@ impl<T: Copy> Arinc429Word<T> {
 }
 impl Arinc429Word<u32> {
     pub fn set_bit(&mut self, bit: u8, value: bool) {
+        debug_assert!((11..=29).contains(&bit));
         self.value = ((self.value) & !(1 << (bit - 1))) | ((value as u32) << (bit - 1));
     }
 
     pub fn get_bit(&self, bit: u8) -> bool {
+        debug_assert!((11..=29).contains(&bit));
         ((self.value >> (bit - 1)) & 1) != 0
     }
 }
