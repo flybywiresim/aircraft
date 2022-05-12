@@ -24,18 +24,19 @@
     - Indicates that the JavaScript part is ready
 
 - A32NX_IS_STATIONARY
-  - Bool
-  - Aircraft is stationary in relation to the speed of the first surface directly underneath it. (stationary on a carrier that is moving would be considered stationary)
+    - Bool
+    - Aircraft is stationary in relation to the speed of the first surface directly underneath it. (stationary on a
+      carrier that is moving would be considered stationary)
 
 - A32NX_GND_EQP_IS_VISIBLE
-  - Bool
-  - Indicates if any GND equipment is visible or not
+    - Bool
+    - Indicates if any GND equipment is visible or not
 
 - A32NX_START_STATE
     - Enum
     - Indicates the state in which MSFS started
     - State | Value
-                --- | ---
+            --- | ---
       Hangar | 1
       Apron | 2
       Taxi | 3
@@ -1104,7 +1105,7 @@
     - Number
     - Indicates the desired flap configuration index according to the table
     - Value | Meaning
-                  --- | ---
+            --- | ---
       0 | Conf0
       1 | Conf1
       2 | Conf1F
@@ -1179,7 +1180,7 @@
     - Will be reset to 0 after loading is done
     - When set to 0 during loading will stop and cancel the loading process
     - | Value | Meaning            |
-      |-------|--------------------|
+            |-------|--------------------|
       | 1     | Cold & Dark        |
       | 2     | Turnaround         |
       | 3     | Ready for Pushback |

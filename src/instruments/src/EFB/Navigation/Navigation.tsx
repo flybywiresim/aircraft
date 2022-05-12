@@ -32,7 +32,7 @@ import {
 import { PageLink, PageRedirect, TabRoutes } from '../Utils/routing';
 import { Navbar } from '../UtilComponents/Navbar';
 import { NavigraphPage } from './Pages/NavigraphPage/NavigraphPage';
-import { getPdfUrl, LocalFilesPage } from './Pages/LocalFilesPage/LocalFilesPage';
+import { getPdfUrl } from './Pages/LocalFilesPage/LocalFilesPage';
 import { PinnedChartUI } from './Pages/PinnedChartsPage';
 
 export const navigationTabs: (PageLink & {associatedTab: NavigationTab})[] = [
