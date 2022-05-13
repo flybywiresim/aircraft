@@ -78,19 +78,13 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
 
 #[sim_connect::data_definition]
 struct RollSimOutput {
-    // #[name = "ELEVATOR POSITION"]
-    // #[unit = "Position"]
-    // elevator: f64,
     #[name = "AILERON POSITION"]
     #[unit = "Position"]
     ailerons: f64,
-    // #[name = "RUDDER POSITION"]
-    // #[unit = "Position"]
-    // rudder: f64,
 }
 impl VariablesToObject for RollSimOutput {
     fn variables(&self) -> Vec<Variable> {
-        vec![Variable::named("HYD_FINAL_AILERON_FEEDBACK")]
+        vec![Variable::aspect("HYD_FINAL_AILERON_FEEDBACK")]
     }
 
     fn write(&mut self, values: Vec<f64>) {
