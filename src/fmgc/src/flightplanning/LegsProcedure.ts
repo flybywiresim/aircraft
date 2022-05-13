@@ -274,7 +274,7 @@ export class LegsProcedure {
     }
 
     // we use station declination for VOR/DME approaches
-    if (this.approachType === ApproachType.APPROACH_TYPE_VOR) {
+    if (this.approachType === ApproachType.APPROACH_TYPE_VORDME) {
       // find a leg with the reference navaid for the procedure
       for (let i = this._legs.length - 1; i >= 0; i--) {
         if (this._legs[i].originIcao.trim().length > 0) {
@@ -292,7 +292,7 @@ export class LegsProcedure {
     let useStationDeclination = (currentLeg.type === LegType.CF || currentLeg.type === LegType.FA || currentLeg.type === LegType.FM);
 
     // for localiser bearings (i.e. at or beyond FACF), always use airport value
-    if (this.approachType === ApproachType.APPROACH_TYPE_ILS || this.approachType === ApproachType.APPROACH_TYPE_LOC) {
+    if (this.approachType === ApproachType.APPROACH_TYPE_ILS || this.approachType === ApproachType.APPROACH_TYPE_LOCALIZER) {
       useStationDeclination = useStationDeclination && this._legs.indexOf(currentLeg) < this.getFacfIndex();
     }
 
