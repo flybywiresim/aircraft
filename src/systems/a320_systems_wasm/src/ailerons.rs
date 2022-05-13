@@ -46,19 +46,27 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
             Variable::aspect("HYD_AIL_RIGHT_DEFLECTION"),
             Variable::aspect("HYD_ELEV_LEFT_DEFLECTION"),
             Variable::aspect("HYD_ELEV_RIGHT_DEFLECTION"),
+            Variable::named("HYD_SPOILERS_LEFT_DEFLECTION"),
+            Variable::named("HYD_SPOILERS_RIGHT_DEFLECTION"),
             Variable::named("AILERON_LEFT_DEFLECTION_DEMAND"),
         ],
         |values| {
+            const SPOILER_ROLL_COEFF: f64 = 0.5;
+            const AILERON_ROLL_COEFF: f64 = 0.7;
             let elevator_roll_component = 0.2 * (values[3] - values[2]);
-            println!(
-                "FBW ail dmnd {:.2} Real aile pos: L{:.1} R{:.1} Elevator roll {:.2} --> SIM Roll output {:.2}",
-                values[4],
-                values[0],
-                values[1],
-                elevator_roll_component,
-                values[1] - values[0]
-            );
-            (values[1] - values[0]) + elevator_roll_component
+
+            let aileron_roll_asymetry = AILERON_ROLL_COEFF * (values[1] - values[0]);
+            let spoiler_roll_asymetry = SPOILER_ROLL_COEFF * (values[5] - values[4]);
+
+            // println!(
+            //     "FBW ail {:.2} Ail roll {:.2} Spoil roll {:.2} Elev roll {:.2} --> SIM Roll output {:.2}",
+            //     values[6],
+            //     aileron_roll_asymetry,
+            //     spoiler_roll_asymetry,
+            //     elevator_roll_component,
+            //     aileron_roll_asymetry
+            // );
+            aileron_roll_asymetry + spoiler_roll_asymetry + elevator_roll_component
         },
         Variable::aspect("HYD_FINAL_AILERON_FEEDBACK"),
     );

@@ -204,10 +204,10 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(autobrakes)?
     .with_aspect(nose_wheel_steering)?
     .with_aspect(flaps)?
+    .with_aspect(spoilers)?
     .with_aspect(ailerons)?
     .with_aspect(elevators)?
     .with_aspect(rudder)?
-    .with_aspect(spoilers)?
     .with_aspect(gear)?
     .build(A320::new)?;
 
