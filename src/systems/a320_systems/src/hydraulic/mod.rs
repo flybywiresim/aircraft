@@ -10354,8 +10354,6 @@ mod tests {
             );
         }
 
-        // TODO un-ignore when emergency gear extension is allowed to be reset
-        #[ignore]
         #[test]
         fn reverting_emergency_extension_do_not_change_fluid_volume() {
             let mut test_bed = test_bed_with()
