@@ -12,7 +12,7 @@ PitchDirectLaw::Parameters_PitchDirectLaw_T PitchDirectLaw::PitchDirectLaw_rtP{
 
   0.0,
 
-  30.0
+  -30.0
 };
 
 void PitchDirectLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_delta_eta_pos, real_T *rty_Out_eta_deg,
