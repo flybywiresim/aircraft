@@ -1666,7 +1666,7 @@ void FlyByWireModelClass::step()
       FlyByWire_P.ScheduledGain_BreakpointsForDimension1_jh, FlyByWire_P.ScheduledGain_Table_c, 3U);
   }
 
-  Vtas = FlyByWire_U.in.data.V_tas_kn * 0.5144;
+  Vtas = std::fmax(1.0, FlyByWire_U.in.data.V_tas_kn * 0.5144);
   rtb_Y_p = FlyByWire_U.in.data.V_ias_kn * 0.5144;
   if (FlyByWire_U.in.data.V_ias_kn >= 60.0) {
     omega_0 = FlyByWire_U.in.data.beta_deg;

@@ -152,6 +152,6 @@ export class CFLeg extends XFLeg {
     }
 
     get repr(): string {
-        return `CF(${this.course.toFixed(1)}°) TO ${this.fix.ident}`;
+        return `CF(${this.course.toFixed(1)}T) TO ${this.fix.ident}`;
     }
 }

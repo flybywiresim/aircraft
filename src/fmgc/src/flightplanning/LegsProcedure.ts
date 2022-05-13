@@ -129,7 +129,7 @@ export class LegsProcedure {
               try {
                   switch (currentLeg.type) {
                   case LegType.AF:
-                      mappedLeg = this.mapArcToFix(currentLeg, this._previousFix);
+                      mappedLeg = this.mapExactFix(currentLeg);
                       break;
                   case LegType.CD:
                   case LegType.VD:
@@ -221,13 +221,21 @@ export class LegsProcedure {
                   mappedLeg.legAltitude2 = currentLeg.altitude2 * 3.28084;
                   mappedLeg.speedConstraint = currentLeg.speedRestriction;
                   mappedLeg.turnDirection = currentLeg.turnDirection;
+
+                  const recNavaid: RawVor | RawNdb | undefined = this._facilities.get(currentLeg.originIcao);
+                  const thetaMagVar = recNavaid ? Facilities.getMagVar(recNavaid.lat, recNavaid.lon) : Facilities.getMagVar(mappedLeg.infos.coordinates.lat, mappedLeg.infos.coordinates.long);
+
                   mappedLeg.additionalData.legType = currentLeg.type;
                   mappedLeg.additionalData.overfly = currentLeg.flyOver;
                   mappedLeg.additionalData.fixTypeFlags = currentLeg.fixTypeFlags;
-
                   mappedLeg.additionalData.distance = currentLeg.distanceMinutes ? undefined : currentLeg.distance / 1852;
                   mappedLeg.additionalData.distanceInMinutes = currentLeg.distanceMinutes ? currentLeg.distance : undefined;
                   mappedLeg.additionalData.course = currentLeg.trueDegrees ? currentLeg.course : A32NX_Util.magneticToTrue(currentLeg.course, Facilities.getMagVar(mappedLeg.infos.coordinates.lat, mappedLeg.infos.coordinates.long));
+                  mappedLeg.additionalData.recommendedIcao = currentLeg.originIcao.trim().length > 0 ? currentLeg.originIcao : undefined;
+                  mappedLeg.additionalData.recommendedFrequency = recNavaid ? recNavaid.freqMHz : undefined;
+                  mappedLeg.additionalData.recommendedLocation = recNavaid ? { lat: recNavaid.lat, long: recNavaid.lon } : undefined;
+                  mappedLeg.additionalData.rho = currentLeg.rho / 1852;
+                  mappedLeg.additionalData.theta = A32NX_Util.magneticToTrue(currentLeg.theta, thetaMagVar);
                   mappedLeg.additionalData.annotation = currentAnnotation;
               }
 
@@ -276,9 +284,6 @@ export class LegsProcedure {
       );
 
       const waypoint = this.buildWaypoint(`${originIdent}${Math.trunc(legDistance * LegsProcedure.distanceNormalFactorNM)}`, coordinates);
-
-      waypoint.additionalData.vectorsCourse = course;
-      waypoint.additionalData.vectorsHeading = course;
 
       return waypoint;
   }
@@ -356,13 +361,9 @@ export class LegsProcedure {
   public mapHeadingToInterceptNextLeg(leg: RawProcedureLeg, prevLeg: WayPoint, nextLeg: RawProcedureLeg): WayPoint | null {
       const magVar = Facilities.getMagVar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
-      const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
 
       const coordinates = GeoMath.relativeBearingDistanceToCoords(course, 1, prevLeg.infos.coordinates);
       const waypoint = this.buildWaypoint(FixNamingScheme.courseToIntercept(course), coordinates, prevLeg.infos.magneticVariation);
-
-      waypoint.additionalData.vectorsCourse = course ?? leg.course;
-      waypoint.additionalData.vectorsHeading = heading;
 
       return waypoint;
   }
@@ -389,7 +390,6 @@ export class LegsProcedure {
 
       const magVar = Facilities.getMagVar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
-      const heading = leg.trueDegrees ? A32NX_Util.trueToMagnetic(leg.course, magVar) : leg.course;
 
       const coordinates = Avionics.Utils.bearingDistanceToCoordinates(
           course,
@@ -398,10 +398,6 @@ export class LegsProcedure {
 
       const waypoint = this.buildWaypoint(`${this.getIdent(origin.icao)}${leg.theta}`, coordinates);
 
-      waypoint.additionalData.vectorsCourse = course;
-      waypoint.additionalData.vectorsHeading = heading;
-      waypoint.additionalData.origin = origin;
-      waypoint.additionalData.theta = leg.theta;
       waypoint.additionalData.radial = A32NX_Util.magneticToTrue(leg.theta, Facilities.getMagVar(origin.lat, origin.lon));
 
       return waypoint;
@@ -423,8 +419,6 @@ export class LegsProcedure {
       const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, prevLeg.infos.coordinates);
       const waypoint = this.buildWaypoint(FixNamingScheme.headingUntilAltitude(altitudeFeet), coordinates, prevLeg.infos.magneticVariation);
 
-      waypoint.additionalData.vectorsCourse = course;
-      waypoint.additionalData.vectorsHeading = heading;
       waypoint.additionalData.vectorsAltitude = altitudeFeet;
 
       return waypoint;
@@ -447,9 +441,6 @@ export class LegsProcedure {
       waypoint.endsInDiscontinuity = true;
       waypoint.discontinuityCanBeCleared = false;
 
-      waypoint.additionalData.vectorsCourse = course;
-      waypoint.additionalData.vectorsHeading = heading;
-
       return waypoint;
   }
 
@@ -460,33 +451,13 @@ export class LegsProcedure {
    */
   public mapExactFix(leg: RawProcedureLeg): WayPoint {
       const facility = this._facilities.get(leg.fixIcao);
-      if (facility) {
-          return RawDataMapper.toWaypoint(facility, this._instrument);
-      }
-
-      const origin = this._facilities.get(leg.originIcao);
-      const originIdent = origin.icao.substring(7, 12).trim();
-
-      const coordinates = Avionics.Utils.bearingDistanceToCoordinates(leg.theta, leg.rho / 1852, origin.lat, origin.lon);
-      return this.buildWaypoint(`${originIdent}${Math.trunc(leg.rho / 1852)}`, coordinates);
+      return RawDataMapper.toWaypoint(facility, this._instrument);
   }
 
   public mapArcToFix(leg: RawProcedureLeg, prevLeg: WayPoint): WayPoint {
       const toFix = this._facilities.get(leg.fixIcao);
-      const navaid = this._facilities.get(leg.originIcao);
 
       const waypoint = RawDataMapper.toWaypoint(toFix, this._instrument);
-
-      const magVar = Facilities.getMagVar(waypoint.infos.coordinates.lat, waypoint.infos.coordinates.long);
-
-      const theta = leg.trueDegrees ? leg.theta : A32NX_Util.magneticToTrue(leg.theta, magVar);
-      const vectorsCourse = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
-
-      waypoint.additionalData.navaidIdent = navaid.icao.substring(7, 12);
-      waypoint.additionalData.navaid = { lat: navaid.lat, long: navaid.lon };
-      waypoint.additionalData.rho = leg.rho / 1852;
-      waypoint.additionalData.theta = theta;
-      waypoint.additionalData.vectorsCourse = vectorsCourse;
 
       return waypoint;
   }
@@ -503,7 +474,6 @@ export class LegsProcedure {
 
       waypoint.additionalData.radius = radius;
       waypoint.additionalData.center = arcCenterCoordinates;
-      waypoint.additionalData.turnDirection = leg.turnDirection;
 
       return waypoint;
   }

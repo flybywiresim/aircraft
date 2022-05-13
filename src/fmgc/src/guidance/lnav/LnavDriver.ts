@@ -243,7 +243,7 @@ export class LnavDriver implements GuidanceComponent {
                     }
 
                     // Track Angle Error
-                    const currentHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'Degrees');
+                    const currentHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'Degrees');
                     const deltaHeading = MathUtils.diffAngle(currentHeading, heading);
 
                     // Update and take into account turn state; only guide using phi during a forced turn
