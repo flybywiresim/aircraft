@@ -63,13 +63,13 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
         Variable::aspect("HYD_FINAL_AILERON_FEEDBACK"),
     );
 
-    builder.variables_to_object(Box::new(ControlSurfaces { ailerons: 0. }));
+    builder.variables_to_object(Box::new(RollSimOutput { ailerons: 0. }));
 
     Ok(())
 }
 
 #[sim_connect::data_definition]
-struct ControlSurfaces {
+struct RollSimOutput {
     // #[name = "ELEVATOR POSITION"]
     // #[unit = "Position"]
     // elevator: f64,
@@ -80,7 +80,7 @@ struct ControlSurfaces {
     // #[unit = "Position"]
     // rudder: f64,
 }
-impl VariablesToObject for ControlSurfaces {
+impl VariablesToObject for RollSimOutput {
     fn variables(&self) -> Vec<Variable> {
         vec![Variable::named("HYD_FINAL_AILERON_FEEDBACK")]
     }
