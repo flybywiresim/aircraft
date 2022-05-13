@@ -209,7 +209,6 @@ impl A320CargoDoorFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
-            true,
         )
     }
 
@@ -301,7 +300,6 @@ impl A320AileronFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
-            false,
             false,
         )
     }
@@ -401,7 +399,6 @@ impl A320SpoilerFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
-            true,
         )
     }
 
@@ -520,7 +517,6 @@ impl A320ElevatorFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
-            false,
         )
     }
 
@@ -608,7 +604,6 @@ impl A320RudderFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
-            false,
             false,
         )
     }
@@ -700,7 +695,6 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
-            true,
         )
     }
 
@@ -727,7 +721,6 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
-            true,
             true,
         )
     }
@@ -839,7 +832,6 @@ impl A320GearFactory {
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
-            true,
         )
     }
 
@@ -864,7 +856,6 @@ impl A320GearFactory {
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
-            true,
             true,
         )
     }
@@ -6579,6 +6570,21 @@ mod tests {
                 self
             }
 
+            fn stow_emergency_gear_extension(mut self) -> Self {
+                let mut number_of_loops = 0;
+                while self.get_emergency_handle_number_of_turns() != 0 {
+                    self = self
+                        .set_gear_emergency_extension_active(true)
+                        .run_waiting_for(Duration::from_secs_f64(0.5));
+                    number_of_loops += 1;
+                    assert!(number_of_loops < 50);
+                }
+
+                self = self.set_gear_emergency_extension_active(false);
+
+                self
+            }
+
             fn press_blue_epump_override_button_once(self) -> Self {
                 self.set_blue_e_pump_ovrd_pressed(true)
                     .run_one_tick()
@@ -10310,6 +10316,48 @@ mod tests {
             let downlocked_fluid_quantity = test_bed.get_green_reservoir_volume();
             assert!(
                 (initial_fluid_quantity - downlocked_fluid_quantity).abs()
+                    < Volume::new::<gallon>(0.01)
+            );
+        }
+
+        // TODO un-ignore when emergency gear extension is allowed to be reset
+        #[ignore]
+        #[test]
+        fn reverting_emergency_extension_do_not_change_fluid_volume() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+
+            test_bed = test_bed
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(20.));
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert!(test_bed.is_all_doors_really_up());
+
+            let initial_uplocked_fluid_quantity = test_bed.get_green_reservoir_volume();
+
+            test_bed = test_bed
+                .set_gear_lever_down()
+                .turn_emergency_gear_extension_n_turns(3)
+                .run_waiting_for(Duration::from_secs_f64(20.));
+            assert!(test_bed.is_all_gears_really_down());
+            assert!(test_bed.is_all_doors_really_down());
+
+            test_bed = test_bed
+                .stow_emergency_gear_extension()
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(20.));
+            assert!(test_bed.is_all_gears_really_up());
+            assert!(test_bed.is_all_doors_really_up());
+
+            let final_uplocked_fluid_quantity = test_bed.get_green_reservoir_volume();
+
+            assert!(
+                (initial_uplocked_fluid_quantity - final_uplocked_fluid_quantity).abs()
                     < Volume::new::<gallon>(0.01)
             );
         }
