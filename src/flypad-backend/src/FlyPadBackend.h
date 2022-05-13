@@ -27,7 +27,9 @@
 using namespace std;
 
 // Required to map local data structures to simconnect data
-enum DataTypesID { SimulationDataTypeId };
+enum DataTypesID {
+  SimulationDataTypeId,
+};
 
 // Local data structure for simconnect data
 struct SimulationData {
@@ -36,6 +38,7 @@ struct SimulationData {
 
 class LightPreset;
 class AircraftPreset;
+class Pushback;
 
 class FlyPadBackend {
  private:
@@ -54,6 +57,7 @@ class FlyPadBackend {
 
   std::unique_ptr<LightPreset> lightPresetPtr;
   std::unique_ptr<AircraftPreset> aircraftPresetPtr;
+  std::unique_ptr<Pushback> pushbackPtr;
 
  public:
   /**

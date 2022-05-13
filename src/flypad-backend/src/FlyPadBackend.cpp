@@ -4,6 +4,7 @@
 #include "FlyPadBackend.h"
 #include "Aircraft/AircraftPreset.h"
 #include "Lighting/LightPreset.h"
+#include "Pushback/Pushback.h"
 
 FlyPadBackend FLYPAD_BACKEND;
 
@@ -40,6 +41,7 @@ bool FlyPadBackend::initialize() {
 
   lightPresetPtr = std::make_unique<LightPreset>();
   aircraftPresetPtr = std::make_unique<AircraftPreset>();
+  pushbackPtr = std::make_unique<Pushback>();
 
   if (!SUCCEEDED(SimConnect_Open(&hSimConnect, "FlyPadBackend", nullptr, 0, 0, 0))) {
     std::cout << "FLYPAD_BACKEND: SimConnect failed." << std::endl;
@@ -50,9 +52,10 @@ bool FlyPadBackend::initialize() {
   // Simulation Data to local data structure mapping
   const HRESULT result = SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::SimulationDataTypeId, "SIMULATION TIME", "NUMBER");
 
-  // initialize preset modules
+  // initialize sub modules
   lightPresetPtr->initialize();
   aircraftPresetPtr->initialize();
+  pushbackPtr->initialize();
 
   std::cout << "FLYPAD_BACKEND: SimConnect connected." << std::endl;
   return (result == S_OK);
@@ -70,9 +73,10 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
     }
     previousSimulationTime = simulationData.simulationTime;
 
-    // update presets modules
+    // update sub modules
     lightPresetPtr->onUpdate(deltaTime);
     aircraftPresetPtr->onUpdate(deltaTime);
+    pushbackPtr->onUpdate(deltaTime);
 
     return true;
   }
@@ -81,8 +85,12 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
 
 bool FlyPadBackend::shutdown() {
   std::cout << "FLYPAD_BACKEND: Disconnecting ..." << std::endl;
+
+  // shutdown suib modules
   lightPresetPtr->shutdown();
   aircraftPresetPtr->shutdown();
+  pushbackPtr->shutdown();
+
   isConnected = false;
   unregister_all_named_vars();
   std::cout << "FLYPAD_BACKEND: Disconnected." << std::endl;
