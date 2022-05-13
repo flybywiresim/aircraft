@@ -27,9 +27,7 @@
 using namespace std;
 
 // Required to map local data structures to simconnect data
-enum DataTypesID {
-  SimulationDataTypeId
-};
+enum DataTypesID { SimulationDataTypeId };
 
 // Local data structure for simconnect data
 struct SimulationData {
@@ -39,8 +37,8 @@ struct SimulationData {
 class LightPreset;
 class AircraftPreset;
 
-class Presets {
-private:
+class FlyPadBackend {
+ private:
   HANDLE hSimConnect;
 
   // Instance of local data structure for simconnect data
@@ -57,8 +55,7 @@ private:
   std::unique_ptr<LightPreset> lightPresetPtr;
   std::unique_ptr<AircraftPreset> aircraftPresetPtr;
 
-public:
-
+ public:
   /**
    * Initialize the gauge (instead of a constructor).
    * Sets up data for the gauge and also connect to SimConnect.
@@ -80,8 +77,7 @@ public:
    */
   bool shutdown();
 
-private:
-
+ private:
   /**
    * Requests simconnect data in preparation of reading it into a local data structure.
    * @return true if request was successful, false otherwise

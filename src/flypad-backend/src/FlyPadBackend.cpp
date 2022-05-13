@@ -1,32 +1,33 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-#include "Presets.h"
+#include "FlyPadBackend.h"
 #include "Aircraft/AircraftPreset.h"
 #include "Lighting/LightPreset.h"
 
-Presets PRESETS;
+FlyPadBackend FLYPAD_BACKEND;
 
 /**
  * Gauge Callback
  * @see
  * https://docs.flightsimulator.com/html/Content_Configuration/SimObjects/Aircraft_SimO/Instruments/C_C++_Gauges.htm?rhhlterm=_gauge_callback&rhsearch=_gauge_callback
  */
-__attribute__((export_name("Presets_gauge_callback"))) extern "C" __attribute__((unused)) bool
-Presets_gauge_callback(__attribute__((unused)) FsContext ctx, int service_id, void* pData) {
+__attribute__((export_name("FlyPadBackend_gauge_callback"))) extern "C" __attribute__((unused)) bool
+FlyPadBackend_gauge_callback(__attribute__((unused)) FsContext ctx, int service_id, void* pData) {
   switch (service_id) {
     case PANEL_SERVICE_PRE_INSTALL: {
       return true;
     }
     case PANEL_SERVICE_POST_INSTALL: {
-      return PRESETS.initialize();
+      return FLYPAD_BACKEND.initialize();
     }
     case PANEL_SERVICE_PRE_DRAW: {
       auto drawData = static_cast<sGaugeDrawData*>(pData);
-      return PRESETS.onUpdate(drawData->dt);
+      return FLYPAD_BACKEND.onUpdate(drawData->dt);
     }
     case PANEL_SERVICE_PRE_KILL: {
-      return PRESETS.shutdown();;
+      return FLYPAD_BACKEND.shutdown();
+      ;
     }
     default:
       break;
@@ -34,14 +35,14 @@ Presets_gauge_callback(__attribute__((unused)) FsContext ctx, int service_id, vo
   return false;
 }
 
-bool Presets::initialize() {
-  std::cout << "PRESETS: Connecting to SimConnect..." << std::endl;
+bool FlyPadBackend::initialize() {
+  std::cout << "FLYPAD_BACKEND: Connecting to SimConnect..." << std::endl;
 
   lightPresetPtr = std::make_unique<LightPreset>();
   aircraftPresetPtr = std::make_unique<AircraftPreset>();
 
-  if (!SUCCEEDED(SimConnect_Open(&hSimConnect, "Presets", nullptr, 0, 0, 0))) {
-    std::cout << "PRESETS: SimConnect failed." << std::endl;
+  if (!SUCCEEDED(SimConnect_Open(&hSimConnect, "FlyPadBackend", nullptr, 0, 0, 0))) {
+    std::cout << "FLYPAD_BACKEND: SimConnect failed." << std::endl;
     return false;
   }
   isConnected = true;
@@ -53,13 +54,12 @@ bool Presets::initialize() {
   lightPresetPtr->initialize();
   aircraftPresetPtr->initialize();
 
-  std::cout << "PRESETS: SimConnect connected." << std::endl;
+  std::cout << "FLYPAD_BACKEND: SimConnect connected." << std::endl;
   return (result == S_OK);
 }
 
-bool Presets::onUpdate(double deltaTime) {
+bool FlyPadBackend::onUpdate(double deltaTime) {
   if (isConnected) {
-
     // read simulation data from simconnect
     simConnectRequestData();
     simConnectProcessMessages();
@@ -79,21 +79,18 @@ bool Presets::onUpdate(double deltaTime) {
   return false;
 }
 
-bool Presets::shutdown() {
-  std::cout << "PRESETS: Disconnecting ..." << std::endl;
+bool FlyPadBackend::shutdown() {
+  std::cout << "FLYPAD_BACKEND: Disconnecting ..." << std::endl;
   lightPresetPtr->shutdown();
   aircraftPresetPtr->shutdown();
   isConnected = false;
   unregister_all_named_vars();
-  std::cout << "PRESETS: Disconnected." << std::endl;
+  std::cout << "FLYPAD_BACKEND: Disconnected." << std::endl;
   return SUCCEEDED(SimConnect_Close(hSimConnect));
 }
 
-bool Presets::simConnectRequestData() const {
-  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect,
-                                                     0,
-                                                     DataTypesID::SimulationDataTypeId,
-                                                     SIMCONNECT_OBJECT_ID_USER,
+bool FlyPadBackend::simConnectRequestData() const {
+  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, DataTypesID::SimulationDataTypeId, SIMCONNECT_OBJECT_ID_USER,
                                                      SIMCONNECT_PERIOD_ONCE);
   if (result != S_OK) {
     return false;
@@ -101,7 +98,7 @@ bool Presets::simConnectRequestData() const {
   return true;
 }
 
-void Presets::simConnectProcessMessages() {
+void FlyPadBackend::simConnectProcessMessages() {
   DWORD cbData;
   SIMCONNECT_RECV* pData;
   while (SUCCEEDED(SimConnect_GetNextDispatch(hSimConnect, &pData, &cbData))) {
@@ -109,14 +106,14 @@ void Presets::simConnectProcessMessages() {
   }
 }
 
-void Presets::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
+void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData) {
   switch (pData->dwID) {
     case SIMCONNECT_RECV_ID_OPEN:
-      cout << "PRESETS: SimConnect connection established" << endl;
+      cout << "FLYPAD_BACKEND: SimConnect connection established" << endl;
       break;
 
     case SIMCONNECT_RECV_ID_QUIT:
-      cout << "PRESETS: Received SimConnect connection quit message" << endl;
+      cout << "FLYPAD_BACKEND: Received SimConnect connection quit message" << endl;
       break;
 
     case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
@@ -124,9 +121,8 @@ void Presets::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cb
       break;
 
     case SIMCONNECT_RECV_ID_EXCEPTION:
-      cout << "PRESETS: Exception in SimConnect connection: ";
-      cout << getSimConnectExceptionString(
-        static_cast<SIMCONNECT_EXCEPTION>(static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
+      cout << "FLYPAD_BACKEND: Exception in SimConnect connection: ";
+      cout << getSimConnectExceptionString(static_cast<SIMCONNECT_EXCEPTION>(static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
       cout << endl;
       break;
 
@@ -135,22 +131,22 @@ void Presets::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cb
   }
 }
 
-void Presets::simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data) {
+void FlyPadBackend::simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data) {
   // process depending on request id from SimConnect_RequestDataOnSimObject()
   switch (data->dwRequestID) {
     case 0:
       // store aircraft data in local data structure
-      simulationData = *((SimulationData*) &data->dwData);
+      simulationData = *((SimulationData*)&data->dwData);
       return;
 
     default:
-      cout << "PRESETS: Unknown request id in SimConnect connection: ";
+      cout << "FLYPAD_BACKEND: Unknown request id in SimConnect connection: ";
       cout << data->dwRequestID << endl;
       return;
   }
 }
 
-std::string Presets::getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception) {
+std::string FlyPadBackend::getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception) {
   switch (exception) {
     case SIMCONNECT_EXCEPTION_NONE:
       return "NONE";
