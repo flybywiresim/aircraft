@@ -270,7 +270,7 @@ export class LegsProcedure {
         console.warn('Leg coded incorrectly (missing vor fix or station declination)', currentLeg, vor);
         return this.airportMagVar;
       }
-      return -vor.magneticVariation;
+      return 360 - vor.magneticVariation;
     }
 
     // we use station declination for VOR/DME approaches
@@ -280,7 +280,7 @@ export class LegsProcedure {
         if (this._legs[i].originIcao.trim().length > 0) {
           const recNavaid: RawVor = this._facilities.get(currentLeg.originIcao);
           if (recNavaid && recNavaid.magneticVariation !== undefined) {
-            return -recNavaid.magneticVariation;
+            return 360 - recNavaid.magneticVariation;
           }
         }
       }
@@ -302,7 +302,7 @@ export class LegsProcedure {
         console.warn('Leg coded incorrectly (missing recommended navaid or station declination)', currentLeg, recNavaid);
         return this.airportMagVar;
       }
-      return -recNavaid.magneticVariation;
+      return 360 - recNavaid.magneticVariation;
     }
 
     // for all other terminal procedure legs we use airport magnetic variation
