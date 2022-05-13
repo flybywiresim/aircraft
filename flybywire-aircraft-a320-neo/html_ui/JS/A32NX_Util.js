@@ -269,14 +269,14 @@ class NXPopUp {
             this.params.style = style;
         }
         if (callbackYes) {
-            const yes = (typeof callbackYes === 'function') ? callbackYes : () => callbackYes;
+            const yes = (typeof callbackYes === "function") ? callbackYes : () => callbackYes;
             Coherent.on(`A32NX_POP_${this.params.id}_YES`, () => {
                 Coherent.off(`A32NX_POP_${this.params.id}_YES`, null, null);
                 yes();
             });
         }
         if (callbackNo) {
-            const no = (typeof callbackNo === 'function') ? callbackNo : () => callbackNo;
+            const no = (typeof callbackNo === "function") ? callbackNo : () => callbackNo;
             Coherent.on(`A32NX_POP_${this.params.id}_NO`, () => {
                 Coherent.off(`A32NX_POP_${this.params.id}_NO`, null, null);
                 no();
@@ -298,20 +298,20 @@ class NXPopUp {
 class NXNotifManager {
 
     constructor() {
-        Coherent.on('keyIntercepted', (key) => this.registerIntercepts(key));
-        Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_TOGGLE', 1);
-        Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_ON', 1);
-        Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_OFF', 1);
-        Coherent.call('INTERCEPT_KEY_EVENT', 'PAUSE_SET', 1);
+        Coherent.on("keyIntercepted", (key) => this.registerIntercepts(key));
+        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_TOGGLE", 1);
+        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_ON", 1);
+        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_OFF", 1);
+        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_SET", 1);
         this.notifications = [];
     }
 
     registerIntercepts(key) {
         switch (key) {
-            case 'PAUSE_TOGGLE':
-            case 'PAUSE_ON':
-            case 'PAUSE_OFF':
-            case 'PAUSE_SET':
+            case "PAUSE_TOGGLE":
+            case "PAUSE_ON":
+            case "PAUSE_OFF":
+            case "PAUSE_SET":
                 this.notifications.forEach((notif) => {
                     notif.hideNotification();
                 });
@@ -331,15 +331,15 @@ class NXNotifManager {
 
 class NXNotif {
     constructor() {
-        const title = 'A32NX ALERT';
+        const title = "A32NX ALERT";
         this.time = new Date().getTime();
         this.params = {
             id: `${title}_${this.time}`,
             title,
-            type: 'MESSAGE',
-            theme: 'GAMEPLAY',
-            image: 'IMAGE_NOTIFICATION',
-            description: 'Default Message',
+            type: "MESSAGE",
+            theme: "GAMEPLAY",
+            image: "IMAGE_NOTIFICATION",
+            description: "Default Message",
             timeout: 10000,
             time: this.time,
         };
@@ -380,9 +380,9 @@ class NXNotif {
         this.setData(params);
 
         if (!nxNotificationsListener) {
-            nxNotificationsListener = RegisterViewListener('JS_LISTENER_NOTIFICATIONS');
+            nxNotificationsListener = RegisterViewListener("JS_LISTENER_NOTIFICATIONS");
         }
-        nxNotificationsListener.triggerToAllSubscribers('SendNewNotification', this.params);
+        nxNotificationsListener.triggerToAllSubscribers("SendNewNotification", this.params);
         setTimeout(() => {
             this.hideNotification();
         }, this.params.timeout);
@@ -390,7 +390,7 @@ class NXNotif {
 
     // TODO FIXME: May break in the future, check every update
     hideNotification() {
-        nxNotificationsListener.triggerToAllSubscribers('HideNotification', this.params.type, null, this.params.id);
+        nxNotificationsListener.triggerToAllSubscribers("HideNotification", this.params.type, null, this.params.id);
     }
 }
 
