@@ -127,18 +127,18 @@ export const LandingWidget = () => {
             lowAutobrakeLandingDist: Math.round(landingDistances.lowAutobrakeDist),
             runwayVisualizationLabels: [
                 {
-                    label: 'MAX MANUAL',
-                    distance: landingDistances.maxAutobrakeDist,
+                    label: 'LOW',
+                    distance: landingDistances.lowAutobrakeDist,
                     type: LabelType.Main,
                 },
                 {
-                    label: 'MEDIUM',
+                    label: 'MED',
                     distance: landingDistances.mediumAutobrakeDist,
                     type: LabelType.Main,
                 },
                 {
-                    label: 'LOW',
-                    distance: landingDistances.lowAutobrakeDist,
+                    label: 'MAX',
+                    distance: landingDistances.maxAutobrakeDist,
                     type: LabelType.Main,
                 },
             ],

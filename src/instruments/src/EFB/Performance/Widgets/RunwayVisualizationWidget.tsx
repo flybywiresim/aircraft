@@ -96,29 +96,19 @@ const RunwayVisualizationWidget = ({ asda = 0, labels = [], mainLength = 0, runw
     useEffect(() => setLabelComponents(() => {
         const elements = labels.map((label) => {
             const bottomPercentage = getLabelBottomPercentage(label);
-
-            const closestLabel = (labels).reduce((a, b) => {
-                if (a.label === label.label) return b;
-                if (b.label === label.label) return a;
-
-                return Math.abs(getLabelBottomPercentage(b) - bottomPercentage) < Math.abs(getLabelBottomPercentage(a) - bottomPercentage) ? b : a;
-            });
-
-            const showText = Math.abs(getLabelBottomPercentage(closestLabel) - bottomPercentage) > 5;
+            const showBelow = label.label === 'MAX';
 
             return (
                 <div
                     className={`w-32 h-1 absolute left-1/2 transform -translate-x-1/2 bg-current ${isLabelOverDistance(label) ? 'text-white' : 'text-theme-highlight'}`}
                     style={{ bottom: `${bottomPercentage}%` }}
                 >
-                    {showText && (
-                        <p className={`absolute w-full font-bold text-center text-current transform -top-0.5 ${isLabelOverDistance(label) ? 'bg-red-900' : 'bg-black'} ${bottomPercentage < 95 ? '-translate-y-full' : 'translate-y-full'}`}>
-                            {label.label}
-                            {' '}
-                            { Math.round(distanceUnit === 'ft' ? Units.metreToFoot(label.distance) : label.distance) }
-                            {distanceUnit}
-                        </p>
-                    )}
+                    <p className={`absolute w-full text-m font-bold text-center text-current transform -top-0.5 ${isLabelOverDistance(label) ? 'bg-red-900' : 'bg-black'} ${(bottomPercentage < 95 && !showBelow) ? '-translate-y-full' : 'translate-y-1/4'}`}>
+                        {label.label}
+                        {' '}
+                        { Math.round(distanceUnit === 'ft' ? Units.metreToFoot(label.distance) : label.distance) }
+                        {distanceUnit}
+                    </p>
                 </div>
             );
         });
