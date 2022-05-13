@@ -11,6 +11,7 @@
 1. [HYD] Fix fluid return handling of actuators - @Crocket63 (crocket)
 1. [ENGINE] Fuel persistency between each flight - @juliansebline (Julian Sebline#8476)
 1. [HYD] Now allowing reverting gravity gear extension - @Crocket63 (crocket)
+1. [FMGC] Map leg course with station declination where required - @tracernz (Mike)
 
 ## 0.8.0
 
