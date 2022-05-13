@@ -162,6 +162,6 @@ export class CILeg extends Leg {
     }
 
     get repr(): string {
-        return `CI(${Math.trunc(this.course)}°)`;
+        return `CI(${Math.trunc(this.course)}T)`;
     }
 }
