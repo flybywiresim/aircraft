@@ -1,0 +1,355 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 16804,
+            "min": [
+                -0.3274737000465393,
+                -0.08002274483442307,
+                -0.8798854351043701
+            ],
+            "max": [
+                0.14885760843753815,
+                0.12263897061347961,
+                0.11595223844051361
+            ],
+            "type": "VEC3",
+            "name": "CHOCKS_SMALL_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 16804,
+            "type": "VEC4",
+            "name": "CHOCKS_SMALL_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 16804,
+            "type": "VEC4",
+            "name": "CHOCKS_SMALL_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 16804,
+            "type": "VEC2",
+            "name": "CHOCKS_SMALL_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 16804,
+            "type": "VEC2",
+            "name": "CHOCKS_SMALL_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 16804,
+            "type": "VEC4",
+            "name": "CHOCKS_SMALL_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5123,
+            "count": 34578,
+            "type": "SCALAR",
+            "name": "CHOCKS_SMALL_indices#0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 604944,
+            "componentType": 5126,
+            "count": 22521,
+            "min": [
+                -0.2920980751514435,
+                -0.07955849915742874,
+                -0.879885196685791
+            ],
+            "max": [
+                0.15092258155345917,
+                0.12263885140419006,
+                0.11153745651245117
+            ],
+            "type": "VEC3",
+            "name": "CHOCKS_LARGE_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 604956,
+            "componentType": 5120,
+            "count": 22521,
+            "type": "VEC4",
+            "name": "CHOCKS_LARGE_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 604960,
+            "componentType": 5120,
+            "count": 22521,
+            "type": "VEC4",
+            "name": "CHOCKS_LARGE_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 604964,
+            "componentType": 5122,
+            "count": 22521,
+            "type": "VEC2",
+            "name": "CHOCKS_LARGE_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 604968,
+            "componentType": 5122,
+            "count": 22521,
+            "type": "VEC2",
+            "name": "CHOCKS_LARGE_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 604972,
+            "componentType": 5123,
+            "count": 22521,
+            "type": "VEC4",
+            "name": "CHOCKS_LARGE_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 69156,
+            "componentType": 5123,
+            "count": 45960,
+            "type": "SCALAR",
+            "name": "CHOCKS_LARGE_indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.6.16",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.15092258155345917,
+                    0.12263897061347961,
+                    0.11595223844051361
+                ],
+                "BoundingBoxMin": [
+                    -0.3274737000465393,
+                    -0.08002274483442307,
+                    -0.8798854351043701
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 3,
+                "UseCheckerboardMaterialForMissingTextures": true
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 1415700,
+            "byteStride": 36,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 161076,
+            "byteOffset": 1415700,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        }
+    ],
+    "extensionsRequired": [
+        "MSFT_texture_dds"
+    ],
+    "materials": [
+        {
+            "name": "Chocks Texture",
+            "normalTexture": {
+                "index": 0
+            },
+            "occlusionTexture": {
+                "index": 1
+            },
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 2
+                },
+                "metallicRoughnessTexture": {
+                    "index": 1
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 5,
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TANGENT": 1,
+                        "TEXCOORD_0": 3,
+                        "TEXCOORD_1": 4
+                    },
+                    "indices": 6,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 11526,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "CHOCKS_SMALL"
+        },
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 12,
+                        "NORMAL": 9,
+                        "POSITION": 7,
+                        "TANGENT": 8,
+                        "TEXCOORD_0": 10,
+                        "TEXCOORD_1": 11
+                    },
+                    "indices": 13,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 15320,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "CHOCKS_LARGE"
+        }
+    ],
+    "nodes": [
+        {
+            "translation": [-0.25, 0.385, 0.160],
+            "rotation": [
+                -0.7070687413215637,
+                0,
+                0,
+                0.7071449160575867
+            ],
+            "mesh": 0,
+            "name": "CHOCKS_NOSE_GEAR"
+        },
+        {
+            "translation": [
+                1.205,
+                0.47999998927116394,
+                -0.5399999618530273
+            ],
+            "rotation": [
+                0.7076706290245056,
+                -0.7057617902755737,
+                0.02350836619734764,
+                -0.023450102657079697
+            ],
+            "scale": [1.49, 1.49, 1.49],
+            "mesh": 1,
+            "name": "CHOCKS_MAIN_GEAR_RIGHT"
+        },
+                {
+            "translation": [
+                -1.122,
+                -0.4699999988079071,
+                -0.5999999642372131
+            ],
+            "rotation": [
+                0.7066760063171387,
+                0.7066760659217834,
+                0.024677637964487076,
+                0.024677636101841927
+            ],
+            "scale": [1.49, 1.49, 1.49],
+            "mesh": 1,
+            "name": "CHOCKS_MAIN_GEAR_LEFT"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [],
+            "name": "CHOCKS_EQUIPMENT"
+        }
+    ],
+    "textures": [
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 0
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 1
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 2
+                }
+            }
+        }
+    ],
+    "samplers": [
+        {
+            "magFilter": 9729,
+            "minFilter": 9987,
+            "wrapS": 10497,
+            "wrapT": 10497
+        }
+    ],
+    "extensionsUsed": [
+        "MSFT_texture_dds",
+        "ASOBO_asset_optimized"
+    ],
+    "buffers": [
+        {
+            "byteLength": 1576776,
+            "uri": "chocks.bin"
+        }
+    ],
+    "images": [
+        {
+            "uri": "CHOCKS_NORM.PNG.DDS",
+            "name": "CHOCKS_NORM",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "CHOCKS_COMP.PNG.DDS",
+            "name": "CHOCKS_COMP",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "CHOCKS_ALBD.PNG.DDS",
+            "name": "CHOCKS_ALBD",
+            "extras": "ASOBO_image_converted_meta"
+        }
+    ]
+}

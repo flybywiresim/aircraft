@@ -571,6 +571,10 @@ void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delim
   fmt::print(out, "data.assistanceTakeoffEnabled{}", delimiter);
   fmt::print(out, "data.assistanceLandingEnabled{}", delimiter);
   fmt::print(out, "data.aiAutoTrimActive{}", delimiter);
+  fmt::print(out, "data.aiControlsActive{}", delimiter);
+  fmt::print(out, "data.realisticTillerEnabled{}", delimiter);
+  fmt::print(out, "data.tillerHandlePosition{}", delimiter);
+  fmt::print(out, "data.noseWheelPosition{}", delimiter);
   fmt::print(out, "\n");
 }
 
@@ -1147,5 +1151,9 @@ void FlightDataRecorderConverter::writeStruct(ofstream& out,
   fmt::print(out, "{}{}", static_cast<unsigned int>(data.assistanceTakeoffEnabled), delimiter);
   fmt::print(out, "{}{}", static_cast<unsigned int>(data.assistanceLandingEnabled), delimiter);
   fmt::print(out, "{}{}", static_cast<unsigned int>(data.aiAutoTrimActive), delimiter);
+  fmt::print(out, "{}{}", static_cast<unsigned int>(data.aiControlsActive), delimiter);
+  fmt::print(out, "{}{}", data.realisticTillerEnabled, delimiter);
+  fmt::print(out, "{}{}", data.tillerHandlePosition, delimiter);
+  fmt::print(out, "{}{}", data.noseWheelPosition, delimiter);
   fmt::print(out, "\n");
 }
