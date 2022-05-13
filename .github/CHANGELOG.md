@@ -5,6 +5,20 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.8.1
+
+1. [GENERAL] Ensure notifications are dismissed on exit to main menu
+1. [FBW] Rudder stuck on one side
+1. [ATHR] Initialize throttle position to IDLE
+1. [BUILD] Installer version detection
+1. [GENERAL] Do no longer force disable assistance
+1. [ATSU] Fixes for NXApi-Freetext and CPDLC Logon-issues
+1. [ISIS] force css animations
+1. [FMGC] clean up unneeded changes from #7114
+1. [GENERAL] only show warning due to enabled assistants when in cockpit
+1. [VR] Update cameras.cfg
+1. [SOUND] Prevent autopilot sound on Cold and Dark spawn
+
 ## 0.8.0
 
 1. [FBW] Improved speed dependent roll law model - @IbrahimK42 (IbrahimK42)
