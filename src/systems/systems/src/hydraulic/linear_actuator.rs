@@ -518,8 +518,6 @@ pub struct LinearActuator {
     requested_position: Ratio,
 
     core_hydraulics: CoreHydraulicForce,
-
-    always_connected_to_line: bool,
 }
 impl LinearActuator {
     pub fn new(
@@ -539,7 +537,6 @@ impl LinearActuator {
         flow_control_integral_gain: f64,
         flow_control_force_gain: f64,
         has_flow_restriction: bool,
-        always_connected_to_line: bool,
     ) -> Self {
         let total_travel = (bounded_linear_length.max_absolute_length_to_anchor()
             - bounded_linear_length.min_absolute_length_to_anchor())
@@ -625,7 +622,6 @@ impl LinearActuator {
                 flow_control_force_gain,
                 has_flow_restriction,
             ),
-            always_connected_to_line,
         }
     }
 
@@ -674,33 +670,34 @@ impl LinearActuator {
     }
 
     fn update_fluid_displacements(&mut self, context: &UpdateContext) {
-        // TODO We disable flow consumption and return for damping modes
-        // This needs a clean rework as depending on volume extension ratio and displacement direction this
-        // might not be physically possible to ignore return flow in damping modes and could cause reservoir quantity discrepencies
+        let mut volume_to_actuator = Volume::new::<cubic_meter>(0.);
+        let mut volume_to_reservoir = Volume::new::<cubic_meter>(0.);
 
-        if self.always_connected_to_line
-            || self.core_hydraulics.mode() == LinearActuatorMode::PositionControl
-            || self.core_hydraulics.mode() == LinearActuatorMode::ClosedValves
-        {
-            let mut volume_to_actuator = Volume::new::<cubic_meter>(0.);
-            let mut volume_to_reservoir = Volume::new::<cubic_meter>(0.);
+        if self.delta_displacement > Length::new::<meter>(0.) {
+            volume_to_actuator = self.delta_displacement * self.bore_side_area;
+            volume_to_reservoir = volume_to_actuator / self.volume_extension_ratio;
+        } else if self.delta_displacement < Length::new::<meter>(0.) {
+            volume_to_actuator = -self.delta_displacement * self.rod_side_area;
+            volume_to_reservoir = volume_to_actuator * self.volume_extension_ratio;
+        }
 
-            if self.delta_displacement > Length::new::<meter>(0.) {
-                volume_to_actuator = self.delta_displacement * self.bore_side_area;
-                volume_to_reservoir = volume_to_actuator / self.volume_extension_ratio;
-            } else if self.delta_displacement < Length::new::<meter>(0.) {
-                volume_to_actuator = -self.delta_displacement * self.rod_side_area;
-                volume_to_reservoir = volume_to_actuator * self.volume_extension_ratio;
-            }
+        self.signed_flow = if self.delta_displacement >= Length::new::<meter>(0.) {
+            volume_to_actuator
+        } else {
+            -volume_to_actuator
+        } / context.delta_as_time();
 
-            self.signed_flow = if self.delta_displacement >= Length::new::<meter>(0.) {
-                volume_to_actuator
-            } else {
-                -volume_to_actuator
-            } / context.delta_as_time();
-
+        // If actuator is in active control, it can use fluid from its input port
+        // Else it will only return fluid to reservoir or take fluid from reservoir
+        //
+        // Note on assymetric actuators, in extension direction, return to reservoir can be negative,
+        //   meaning actuator takes fluid in the return circuit to be able to move.
+        // This is a shortcut as it shouldn't directly take from reservoir but from return circuit
+        if self.core_hydraulics.mode() == LinearActuatorMode::PositionControl {
             self.total_volume_to_actuator += volume_to_actuator;
             self.total_volume_to_reservoir += volume_to_reservoir;
+        } else {
+            self.total_volume_to_reservoir += volume_to_reservoir - volume_to_actuator;
         }
     }
 
@@ -2363,7 +2360,6 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             false,
-            true,
         )
     }
 
@@ -2439,7 +2435,6 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
-            true,
         )
     }
 
@@ -2461,7 +2456,6 @@ mod tests {
             0.,
             0.,
             false,
-            true,
         )
     }
 
@@ -2545,7 +2539,6 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
-            true,
         )
     }
 
@@ -2622,7 +2615,6 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
-            true,
         )
     }
 
@@ -2677,7 +2669,6 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             true,
-            true,
         )
     }
 
@@ -2731,7 +2722,6 @@ mod tests {
             DEFAULT_P_GAIN,
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
-            false,
             false,
         )
     }
@@ -2793,7 +2783,6 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             false,
-            false,
         )
     }
 
@@ -2848,7 +2837,6 @@ mod tests {
             DEFAULT_I_GAIN,
             DEFAULT_FORCE_GAIN,
             false,
-            true,
         )
     }
 

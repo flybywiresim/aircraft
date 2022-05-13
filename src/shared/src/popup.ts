@@ -23,7 +23,8 @@ export type NotiticationParams = {
  * import { PopUp } from '@shared/popup';
  * ...
  * const popup = new PopUp();
- * popup.showPopUp({ title: "CRITICAL SETTING CHANGED", message: "Your message here", style: "small"}, yesFunc, noFunc);
+ * popup.showPopUp("CRITICAL SETTING CHANGED", "Your message here", "small", yesFunc, noFunc);
+ * popup.showInformation("CRITICAL MESSAGE", "Your message here", "small", yesFunc);
  */
 export class PopUp {
     params: NotiticationParams;
@@ -80,11 +81,17 @@ export class PopUp {
         }
         if (callbackYes) {
             const yes = (typeof callbackYes === 'function') ? callbackYes : () => callbackYes;
-            Coherent.on(`A32NX_POP_${this.params.id}_YES`, yes);
+            Coherent.on(`A32NX_POP_${this.params.id}_YES`, () => {
+                Coherent.off(`A32NX_POP_${this.params.id}_YES`, null, null);
+                yes();
+            });
         }
         if (callbackNo) {
             const no = (typeof callbackNo === 'function') ? callbackNo : () => callbackNo;
-            Coherent.on(`A32NX_POP_${this.params.id}_NO`, no);
+            Coherent.on(`A32NX_POP_${this.params.id}_NO`, () => {
+                Coherent.off(`A32NX_POP_${this.params.id}_NO`, null, null);
+                no();
+            });
         }
 
         if (!this.popupListener) {
@@ -113,7 +120,10 @@ export class PopUp {
         }
         if (callback) {
             const yes = (typeof callback === 'function') ? callback : () => callback;
-            Coherent.on(`A32NX_POP_${this.params.id}_YES`, yes);
+            Coherent.on(`A32NX_POP_${this.params.id}_YES`, () => {
+                Coherent.off(`A32NX_POP_${this.params.id}_YES`, null, null);
+                yes();
+            });
         }
         this.params.buttons = [new NotificationButton('TT:MENU.OK', `A32NX_POP_${this.params.id}_YES`)];
 
