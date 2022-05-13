@@ -524,7 +524,7 @@ class CDUFlightPlanPage {
                 addLskAt(rowI, 0, (value, scratchpadCallback) => {
                     if (value === FMCMainDisplay.clrValue) {
                         // TODO
-                        mcdu.addNewMessage(NXSystemMessages.notAllowed);
+                        mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     }
                 });
             } else if (marker) {

@@ -101,7 +101,7 @@ class CDUStepAltsPage {
 
         // Create new step altitude
         if (coordinator.steps.length >= 4) {
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
+            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
         }
 
@@ -110,7 +110,7 @@ class CDUStepAltsPage {
         const waypointInput = splitInputs[1];
 
         if (!waypointInput) {
-            mcdu.addNewMessage(NXSystemMessages.notAllowed);
+            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
             // OPT STEP
         }
@@ -121,7 +121,7 @@ class CDUStepAltsPage {
         }
 
         if (!coordinator.requestToAddGeographicStep(waypointInput, alt)) {
-            mcdu.addNewMessage(NXSystemMessages.formatError);
+            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             return false;
         }
 
@@ -136,16 +136,16 @@ class CDUStepAltsPage {
         }
 
         if (!isFinite(altValue) || !/^\d{4,5}$/.test(altitudeInput) && !/^FL\d{1,3}$/.test(altitudeInput)) {
-            mcdu.addNewMessage(NXSystemMessages.formatError);
+            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             return false;
         }
 
         altValue = Math.round(altValue / 10) * 10;
         if (altValue < 1000 || altValue > 45000) {
-            mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+            mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             return false;
         } else if (altValue > 39800) {
-            mcdu.addNewMessage(NXSystemMessages.stepAboveMaxFl);
+            mcdu.setScratchpadMessage(NXSystemMessages.stepAboveMaxFl);
             return false;
         }
 
