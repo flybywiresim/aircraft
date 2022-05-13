@@ -1,6 +1,10 @@
 use std::error::Error;
-use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder};
-use systems_wasm::Variable;
+use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder, VariablesToObject};
+
+use systems_wasm::{set_data_on_sim_object, Variable};
+
+use msfs::sim_connect;
+use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 
 pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     // Inputs from FBW becomes the aileron position demand for hydraulic system
@@ -34,5 +38,56 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
         Variable::named("HYD_AILERON_RIGHT_DEFLECTION"),
     );
 
+    // AILERON POSITION FEEDBACK TO SIM
+    builder.map_many(
+        ExecuteOn::PostTick,
+        vec![
+            Variable::aspect("HYD_AIL_LEFT_DEFLECTION"),
+            Variable::aspect("HYD_AIL_RIGHT_DEFLECTION"),
+            Variable::aspect("HYD_ELEV_LEFT_DEFLECTION"),
+            Variable::aspect("HYD_ELEV_RIGHT_DEFLECTION"),
+            Variable::named("AILERON_LEFT_DEFLECTION_DEMAND"),
+        ],
+        |values| {
+            let elevator_roll_component = 0.2 * (values[3] - values[2]);
+            println!(
+                "FBW ail dmnd {:.2} Real aile pos: L{:.1} R{:.1} Elevator roll {:.2} --> SIM Roll output {:.2}",
+                values[4],
+                values[0],
+                values[1],
+                elevator_roll_component,
+                values[1] - values[0]
+            );
+            (values[1] - values[0]) + elevator_roll_component
+        },
+        Variable::aspect("HYD_FINAL_AILERON_FEEDBACK"),
+    );
+
+    builder.variables_to_object(Box::new(ControlSurfaces { ailerons: 0. }));
+
     Ok(())
+}
+
+#[sim_connect::data_definition]
+struct ControlSurfaces {
+    // #[name = "ELEVATOR POSITION"]
+    // #[unit = "Position"]
+    // elevator: f64,
+    #[name = "AILERON POSITION"]
+    #[unit = "Position"]
+    ailerons: f64,
+    // #[name = "RUDDER POSITION"]
+    // #[unit = "Position"]
+    // rudder: f64,
+}
+impl VariablesToObject for ControlSurfaces {
+    fn variables(&self) -> Vec<Variable> {
+        vec![Variable::named("HYD_FINAL_AILERON_FEEDBACK")]
+    }
+
+    fn write(&mut self, values: Vec<f64>) {
+        self.ailerons = values[0];
+    }
+
+    set_data_on_sim_object!();
 }
