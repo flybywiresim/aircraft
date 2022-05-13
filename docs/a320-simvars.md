@@ -19,6 +19,18 @@
 
 ## Uncategorized
 
+- A32NX_IS_READY
+  - Bool
+  - Indicates that the JavaScript part is ready
+
+- A32NX_IS_STATIONARY
+  - Bool
+  - Aircraft is stationary in relation to the speed of the first surface directly underneath it. (stationary on a carrier that is moving would be considered stationary)
+
+- A32NX_GND_EQP_IS_VISIBLE
+  - Bool
+  - Indicates if any GND equipment is visible or not
+
 - A32NX_START_STATE
   - Enum
   - Indicates the state in which MSFS started
@@ -881,24 +893,25 @@
     - Bool
     - Power Transfer Unit can receive fluid from yellow and green circuits
 
-- A32NX_HYD_PTU_ACTIVE_{motor_side}
-    - Bool
-    - Power Transfer Unit is trying to transfer hydraulic power from either yellow to green (R2L) or green to yellow (L2R) circuits
-    - {motor_side}
-        - L2R
-        - R2L
-
-- A32NX_HYD_PTU_MOTOR_FLOW
-    - Gallon per second
-    - Power Transfer Unit instantaneous flow in motor side
-
 - A32NX_HYD_PTU_SHAFT_RPM
     - Revolutions per minute
     - Power Transfer Unit shaft rpm
 
+- A32NX_HYD_PTU_BARK_STRENGTH
+    - Number
+    - 0 no PTU. 1 to 5 indicates barking sound power level.
+
 - A32NX_HYD_PTU_CONTINUOUS_MODE
     - Bool
     - Power Transfer Unit is rotating continuously
+
+- A32NX_HYD_PTU_DEV_DEACTIVATION_DELTA
+    - Psi
+    - Write to this simvar to force a deactivation delta pressure for Power Transfer Unit
+
+- A32NX_HYD_PTU_DEV_EFFICIENCY
+    - Number
+    - Write to this simvar to force an efficiency value for Power Transfer Unit
 
 - A32NX_OVHD_HYD_RAT_MAN_ON_IS_PRESSED
     - Bool
@@ -960,6 +973,15 @@
         - 1: Autobrake in LOW
         - 2: Autobrake in MED
         - 3: Autobrake in MAX
+
+- A32NX_AUTOBRAKES_ARMED_MODE_SET
+    - Number
+    - Requests an autobrake mode
+        - -1: (technical state not requesting anything)
+        -  0: Disarm Autobrake
+        -  1: Set Autobrake to LOW
+        -  2: Set Autobrake to MED
+        -  3: Set Autobrake to MAX (if allowed)
 
 - A32NX_AUTOBRAKES_ACTIVE
     - Bool
@@ -1535,9 +1557,17 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Arinc429Word<Degrees>
     - The inertial heading of the aircraft.
 
+- A32NX_ADIRS_IR_{number}_TRUE_HEADING
+    - Arinc429Word<Degrees>
+    - The true inertial heading of the aircraft.
+
 - A32NX_ADIRS_IR_{number}_TRACK
     - Arinc429Word<Degrees>
     - The inertial track of the aircraft.
+
+- A32NX_ADIRS_IR_{number}_TRUE_TRACK
+    - Arinc429Word<Degrees>
+    - The true inertial track of the aircraft.
 
 - A32NX_ADIRS_IR_{number}_VERTICAL_SPEED
     - Arinc429Word<Feet per minute>
@@ -2182,6 +2212,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates the low or high value to latch into the given detent
     - Range is from -1 to 1
 
+- A32NX_THROTTLE_MAPPING_INCREMENT_NORMAL
+  - Number
+  - Indicates the increment being used for normal key events
+
+- A32NX_THROTTLE_MAPPING_INCREMENT_SMALL
+  - Number
+  - Indicates the increment being used for small key events
+
 ## Engine and FADEC System
 
 - A32NX_ENGINE_CYCLE_TIME
@@ -2543,6 +2581,52 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - NOSE
         - LEFT
         - RIGHT
+
+- A32NX_LGCIU_{number}_{gear}_GEAR_DOWNLOCKED
+    - True if the gear is locked down.
+    - Boolean
+     - {number}
+        - 1
+        - 2
+    - {gear}
+        - NOSE
+        - LEFT
+        - RIGHT
+
+- A32NX_LGCIU_{number}_{gear}_GEAR_UNLOCKED
+    - True is the gear is not in the same state as the gear lever
+    - Boolean
+     - {number}
+        - 1
+        - 2
+    - {gear}
+        - NOSE
+        - LEFT
+        - RIGHT
+
+- A32NX_GEAR_DOOR_{gear}_POSITION
+    - Indicates the gear door position. 1 is fully opened. 0 fully closed and locked.
+    - Percent over 100
+    - {gear}
+        - CENTER
+        - LEFT
+        - RIGHT
+
+- A32NX_GEAR_{gear}_POSITION
+    - Indicates the gear position. 1 is fully opened. 0 fully closed and locked.
+    - Percent over 100
+    - {gear}
+        - CENTER
+        - LEFT
+        - RIGHT
+
+- A32NX_GEAR_EMERGENCY_EXTENSION_CLICKED
+    - Indicates the emergency extension handle is clicked in cockpit.
+    - Bool
+
+- A32NX_GEAR_EMERGENCY_EXTENSION_IS_TURNED
+    - Indicates the emergency extension handle is currently turning.
+    - Bool
 
 ## ATC (ATA 34)
 

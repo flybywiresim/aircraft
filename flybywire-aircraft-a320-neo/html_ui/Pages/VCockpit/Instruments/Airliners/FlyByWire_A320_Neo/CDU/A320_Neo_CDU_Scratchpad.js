@@ -52,21 +52,15 @@ class ScratchpadDataLink {
         }
     }
 
-    delChar() {
-        if (this._status === SpDisplayStatus.userContent) {
-            this.setText(this._text.slice(0, -1));
-        }
-    }
-
     clear() {
         if (this._status === SpDisplayStatus.empty) {
             this.setText(FMCMainDisplay.clrValue);
         } else if (this._status === SpDisplayStatus.clrValue) {
             this.setText("");
         } else if (this._status === SpDisplayStatus.userContent) {
-            this.delChar();
+            this.setText(this._text.slice(0, -1));
         } else {
-            this._mcdu.tryRemoveMessage(this._message.text);
+            this._mcdu.removeMessageFromQueue(this._message.text);
             this.setText(this._text);
         }
     }
@@ -129,7 +123,7 @@ class ScratchpadDataLink {
         } else {
             if (this._text === "" || scratchpadText === "") {
                 this._status = SpDisplayStatus.empty;
-                setTimeout(() => this._mcdu.tryShowMessage(), 150);
+                setTimeout(() => this._mcdu.updateMessageQueue(), 150);
             } else if (this._text === FMCMainDisplay.clrValue) {
                 this._status = SpDisplayStatus.clrValue;
             } else {

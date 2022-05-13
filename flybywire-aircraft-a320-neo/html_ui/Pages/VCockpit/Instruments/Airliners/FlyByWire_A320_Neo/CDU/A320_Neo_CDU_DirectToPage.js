@@ -1,20 +1,7 @@
-/*
- * A32NX
- * Copyright (C) 2020 FlyByWire Simulations and its contributors
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// Copyright (c) 2020, 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+// TODO this whole thing is thales layout...
 
 class CDUDirectToPage {
     static ShowPage(mcdu, directWaypoint, wptsListIndex = 0) {
@@ -27,62 +14,74 @@ class CDUDirectToPage {
         let directWaypointCell = "";
         if (directWaypoint) {
             directWaypointCell = directWaypoint.ident;
-        } else if (mcdu.flightPlanManager.getDirectToTarget()) {
-            directWaypointCell = mcdu.flightPlanManager.getDirectToTarget().ident;
+        } else if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === FlightPlans.Temporary) {
+            mcdu.eraseTemporaryFlightPlan(() => {
+                CDUDirectToPage.ShowPage(mcdu);
+            });
+            return;
         }
         const waypointsCell = ["", "", "", "", ""];
         let iMax = 5;
         let eraseLabel = "";
-        if (directWaypoint) {
+        let eraseLine = "";
+        let insertLabel = "";
+        let insertLine = "";
+        if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === FlightPlans.Temporary) {
             iMax--;
             eraseLabel = "\xa0DIR TO[color]amber";
-            waypointsCell[4] = "{ERASE[color]amber";
+            eraseLine = "{ERASE[color]amber";
+            insertLabel = "TMPY\xa0[color]amber";
+            insertLine = "DIRECT*[color]amber";
             mcdu.onLeftInput[5] = () => {
-                SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 0);
-                CDUDirectToPage.ShowPage(mcdu);
+                mcdu.eraseTemporaryFlightPlan(() => {
+                    CDUDirectToPage.ShowPage(mcdu);
+                });
+            };
+            mcdu.onRightInput[5] = () => {
+                mcdu.insertTemporaryFlightPlan(() => {
+                    SimVar.SetSimVarValue("K:A32NX.FMGC_DIR_TO_TRIGGER", "number", 0);
+                    CDUFlightPlanPage.ShowPage(mcdu);
+                });
             };
         }
-        // TODO create leg sequence
-        //  - IF at T-P
-        //  - CF equal to A/C track (turn anticipation)
-        //  - DF to waypoint or what about radial in/out?
-        //  - clear fp up to waypoint
-        //  - discont if waypoint not in FP
-        // TODO enable automatic sequencing
-        // TODO engage NAV mode
+
         mcdu.onLeftInput[0] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
-                SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 0);
-                CDUDirectToPage.ShowPage(mcdu, undefined, wptsListIndex);
+                mcdu.eraseTemporaryFlightPlan(() => {
+                    CDUDirectToPage.ShowPage(mcdu, undefined, wptsListIndex);
+                });
                 return;
             }
 
             mcdu.getOrSelectWaypointByIdent(value, (w) => {
                 if (w) {
-                    SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 1);
-                    SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_0", "number", SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"));
-                    SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_0", "number", SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
-                    SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_1", "number", w.infos.coordinates.lat);
-                    SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_1", "number", w.infos.coordinates.long);
-                    CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex);
+                    mcdu.eraseTemporaryFlightPlan(() => {
+                        mcdu.ensureCurrentFlightPlanIsTemporary(() => {
+                            mcdu.flightPlanManager.insertDirectTo(w).then(() => {
+                                CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex);
+                            });
+                        });
+                    });
+                } else {
+                    mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                 }
             });
         };
         mcdu.onRightInput[2] = () => {
-            mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+            mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
         };
         mcdu.onRightInput[3] = () => {
-            mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+            mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
         };
         mcdu.onRightInput[4] = () => {
-            mcdu.addNewMessage(NXFictionalMessages.notYetImplemented);
+            mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
         };
         let i = 0;
         let cellIter = 0;
-        wptsListIndex = Math.max(wptsListIndex, mcdu.flightPlanManager.getActiveWaypointIndex());
-        const totalWaypointsCount = mcdu.flightPlanManager.getWaypointsCount() + mcdu.flightPlanManager.getArrivalWaypointsCount() + mcdu.flightPlanManager.getApproachWaypoints().length;
+        wptsListIndex = Math.max(wptsListIndex, mcdu.flightPlanManager.getActiveWaypointIndex(false, false, FlightPlans.Active));
+        const totalWaypointsCount = mcdu.flightPlanManager.getWaypointsCount(FlightPlans.Active);
         while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount && cellIter < iMax) {
-            const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, NaN, true);
+            const waypoint = mcdu.flightPlanManager.getWaypoint(i + wptsListIndex, FlightPlans.Active, true);
             if (waypoint) {
                 if (waypoint.isVectors) {
                     i++;
@@ -91,12 +90,13 @@ class CDUDirectToPage {
                 waypointsCell[cellIter] = "{" + waypoint.ident + "[color]cyan";
                 if (waypointsCell[cellIter]) {
                     mcdu.onLeftInput[cellIter + 1] = () => {
-                        SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 1);
-                        SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_0", "number", SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"));
-                        SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_0", "number", SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
-                        SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LAT_1", "number", waypoint.infos.coordinates.lat);
-                        SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO_LONG_1", "number", waypoint.infos.coordinates.long);
-                        CDUDirectToPage.ShowPage(mcdu, waypoint, wptsListIndex);
+                        mcdu.eraseTemporaryFlightPlan(() => {
+                            mcdu.ensureCurrentFlightPlanIsTemporary(() => {
+                                mcdu.flightPlanManager.insertDirectTo(waypoint).then(() => {
+                                    CDUDirectToPage.ShowPage(mcdu, waypoint, wptsListIndex);
+                                });
+                            });
+                        });
                     };
                 }
             } else {
@@ -107,18 +107,6 @@ class CDUDirectToPage {
         }
         if (cellIter < iMax) {
             waypointsCell[cellIter] = "--END--";
-        }
-        let insertLabel = "";
-        let insertLine = "";
-        if (directWaypoint) {
-            insertLabel = "\xa0TMPY[color]amber";
-            insertLine = "DIRECT*[color]amber";
-            mcdu.onRightInput[5] = () => {
-                mcdu.activateDirectToWaypoint(directWaypoint, () => {
-                    SimVar.SetSimVarValue("L:A320_NEO_PREVIEW_DIRECT_TO", "number", 0);
-                    CDUFlightPlanPage.ShowPage(mcdu);
-                });
-            };
         }
         let up = false;
         let down = false;
@@ -150,7 +138,7 @@ class CDUDirectToPage {
             ["", "RADIAL OUT\xa0"],
             [waypointsCell[3], "[ ]°[color]cyan"],
             [eraseLabel, insertLabel],
-            [waypointsCell[4], insertLine]
+            [eraseLine ? eraseLine : waypointsCell[4], insertLine]
         ]);
     }
 }

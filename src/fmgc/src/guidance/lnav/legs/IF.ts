@@ -4,14 +4,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { PathVector } from '@fmgc/guidance/lnav/PathVector';
-import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { Guidable } from '@fmgc/guidance/Guidable';
+import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 
 export class IFLeg extends XFLeg {
     constructor(
@@ -36,16 +35,16 @@ export class IFLeg extends XFLeg {
         return this.fix.infos.coordinates;
     }
 
-    private nextGuidable: Leg | undefined;
-
-    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue, _previousGuidable: Guidable, nextGuidable: Guidable) {
-        if (nextGuidable instanceof Transition) {
-            throw new Error(`IF nextGuidable must be a leg (is ${nextGuidable.constructor})`);
-        }
-
-        this.nextGuidable = nextGuidable as Leg;
-
+    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
         this.isComputed = true;
+    }
+
+    /** @inheritdoc */
+    setNeighboringGuidables(inbound: Guidable, outbound: Guidable) {
+        if (outbound && !(outbound instanceof Leg) && outbound !== this.outboundGuidable) {
+            console.error(`IF outboundGuidable must be a leg (is ${outbound?.constructor})`);
+        }
+        super.setNeighboringGuidables(inbound, outbound);
     }
 
     get inboundCourse(): Degrees | undefined {
@@ -65,7 +64,7 @@ export class IFLeg extends XFLeg {
     }
 
     getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters | undefined {
-        return this.nextGuidable?.getGuidanceParameters(ppos, trueTrack, tas, gs) ?? undefined;
+        return this.outboundGuidable?.getGuidanceParameters(ppos, trueTrack, tas, gs) ?? undefined;
     }
 
     getNominalRollAngle(_gs): Degrees | undefined {

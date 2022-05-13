@@ -78,7 +78,7 @@
             <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
                 <LEFT_SINGLE_CODE>
                     (L:A32NX_FIRE_GUARD_#TYPE##ID#) 1 == if{
-                    1 (&gt;#TOGGLE_VAR#) #LEFT_SINGLE_CODE#
+                        (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#)
                     }
                 </LEFT_SINGLE_CODE>
                 <LEFT_LEAVE_CODE />

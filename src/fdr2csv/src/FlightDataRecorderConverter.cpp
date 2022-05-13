@@ -5,10 +5,7 @@
 
 using namespace std;
 
-void FlightDataRecorderConverter::writeHeader(
-    ofstream &out,
-    const string &delimiter
-) {
+void FlightDataRecorderConverter::writeHeader(ofstream& out, const string& delimiter) {
   fmt::print(out, "ap_sm.time.dt{}", delimiter);
   fmt::print(out, "ap_sm.time.simulation_time{}", delimiter);
   fmt::print(out, "ap_sm.data.aircraft_position.lat{}", delimiter);
@@ -571,19 +568,24 @@ void FlightDataRecorderConverter::writeHeader(
   fmt::print(out, "data.throttle_lever_2_pos{}", delimiter);
   fmt::print(out, "data.corrected_engine_N1_1_percent{}", delimiter);
   fmt::print(out, "data.corrected_engine_N1_2_percent{}", delimiter);
+  fmt::print(out, "data.assistanceTakeoffEnabled{}", delimiter);
+  fmt::print(out, "data.assistanceLandingEnabled{}", delimiter);
+  fmt::print(out, "data.aiAutoTrimActive{}", delimiter);
+  fmt::print(out, "data.aiControlsActive{}", delimiter);
+  fmt::print(out, "data.realisticTillerEnabled{}", delimiter);
+  fmt::print(out, "data.tillerHandlePosition{}", delimiter);
+  fmt::print(out, "data.noseWheelPosition{}", delimiter);
   fmt::print(out, "\n");
 }
 
-void FlightDataRecorderConverter::writeStruct(
-    ofstream &out,
-    const string &delimiter,
-    const ap_sm_output &ap_sm,
-    const ap_raw_output &ap_law,
-    const athr_out &athr,
-    const fbw_output &fbw,
-    const EngineData &engine,
-    const AdditionalData &data
-) {
+void FlightDataRecorderConverter::writeStruct(ofstream& out,
+                                              const string& delimiter,
+                                              const ap_sm_output& ap_sm,
+                                              const ap_raw_output& ap_law,
+                                              const athr_out& athr,
+                                              const fbw_output& fbw,
+                                              const EngineData& engine,
+                                              const AdditionalData& data) {
   fmt::print(out, "{}{}", ap_sm.time.dt, delimiter);
   fmt::print(out, "{}{}", ap_sm.time.simulation_time, delimiter);
   fmt::print(out, "{}{}", ap_sm.data.aircraft_position.lat, delimiter);
@@ -803,16 +805,10 @@ void FlightDataRecorderConverter::writeStruct(
   fmt::print(out, "{}{}", static_cast<unsigned int>(ap_sm.vertical_previous.output.EXPED_mode_active), delimiter);
   fmt::print(out, "{}{}", static_cast<unsigned int>(ap_sm.vertical_previous.output.FD_disconnect), delimiter);
   fmt::print(out, "{}{}", static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_sub_mode), delimiter);
-  fmt::print(out,
-             "{}{}",
-             static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_sub_mode_compatible),
-             delimiter);
+  fmt::print(out, "{}{}", static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_sub_mode_compatible), delimiter);
   fmt::print(out, "{}{}", static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_message_disarm), delimiter);
   fmt::print(out, "{}{}", static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_message_RA_inhibit), delimiter);
-  fmt::print(out,
-             "{}{}",
-             static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_message_TRK_FPA_deselection),
-             delimiter);
+  fmt::print(out, "{}{}", static_cast<unsigned int>(ap_sm.vertical_previous.output.TCAS_message_TRK_FPA_deselection), delimiter);
   fmt::print(out, "{}{}", ap_sm.output.enabled_AP1, delimiter);
   fmt::print(out, "{}{}", ap_sm.output.enabled_AP2, delimiter);
   fmt::print(out, "{}{}", ap_sm.output.lateral_law, delimiter);
@@ -1152,5 +1148,12 @@ void FlightDataRecorderConverter::writeStruct(
   fmt::print(out, "{}{}", data.throttle_lever_2_pos, delimiter);
   fmt::print(out, "{}{}", data.corrected_engine_N1_1_percent, delimiter);
   fmt::print(out, "{}{}", data.corrected_engine_N1_2_percent, delimiter);
+  fmt::print(out, "{}{}", static_cast<unsigned int>(data.assistanceTakeoffEnabled), delimiter);
+  fmt::print(out, "{}{}", static_cast<unsigned int>(data.assistanceLandingEnabled), delimiter);
+  fmt::print(out, "{}{}", static_cast<unsigned int>(data.aiAutoTrimActive), delimiter);
+  fmt::print(out, "{}{}", static_cast<unsigned int>(data.aiControlsActive), delimiter);
+  fmt::print(out, "{}{}", data.realisticTillerEnabled, delimiter);
+  fmt::print(out, "{}{}", data.tillerHandlePosition, delimiter);
+  fmt::print(out, "{}{}", data.noseWheelPosition, delimiter);
   fmt::print(out, "\n");
 }

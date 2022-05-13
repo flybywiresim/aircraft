@@ -113,11 +113,11 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             if (pitch.isNormalOperation()) {
                 this.pitchGroupRef.instance.style.display = 'block';
 
-                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(-currentValueAtPrecision)}px, 0px)`;
+                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(currentValueAtPrecision)}px, 0px)`;
             } else {
                 this.pitchGroupRef.instance.style.display = 'none';
             }
-            const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(-currentValueAtPrecision), 31.563), -31.563);
+            const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(currentValueAtPrecision), 31.563), -31.563);
             this.yOffset.set(yOffset);
         });
 
@@ -127,7 +127,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             if (roll.isNormalOperation()) {
                 this.rollGroupRef.instance.style.display = 'block';
 
-                this.rollGroupRef.instance.setAttribute('transform', `rotate(${currentValueAtPrecision} 68.814 80.730)`);
+                this.rollGroupRef.instance.setAttribute('transform', `rotate(${-currentValueAtPrecision} 68.814 80.730)`);
             } else {
                 this.rollGroupRef.instance.style.display = 'none';
             }
@@ -449,7 +449,11 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
     private slideSlip = FSComponent.createRef<SVGPathElement>();
 
-    private onGround = 1;
+    private onGround = true;
+
+    private leftMainGearCompressed = true;
+
+    private rightMainGearCompressed = true;
 
     private roll = new Arinc429Word(0);
 
@@ -466,8 +470,15 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('onGround').whenChanged().handle((og) => {
-            this.onGround = og;
+        sub.on('leftMainGearCompressed').whenChanged().handle((og) => {
+            this.leftMainGearCompressed = og;
+            this.onGround = this.rightMainGearCompressed || og;
+            this.determineSlideSlip();
+        });
+
+        sub.on('rightMainGearCompressed').whenChanged().handle((og) => {
+            this.rightMainGearCompressed = og;
+            this.onGround = this.leftMainGearCompressed || og;
             this.determineSlideSlip();
         });
 
@@ -544,9 +555,9 @@ class RisingGround extends DisplayComponent<{ bus: EventBus, filteredRadioAltitu
     private horizonGroundRectangle = FSComponent.createRef<SVGGElement>();
 
     private setOffset() {
-        const targetPitch = (this.radioAlt.isNoComputedData() || this.radioAlt.isFailureWarning()) ? -200 : -0.1 * this.props.filteredRadioAltitude.get();
+        const targetPitch = (this.radioAlt.isNoComputedData() || this.radioAlt.isFailureWarning()) ? 200 : 0.1 * this.props.filteredRadioAltitude.get();
 
-        const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch((-this.lastPitch.value) - targetPitch) - 31.563, 0), -63.093);
+        const targetOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(this.lastPitch.value + targetPitch) - 31.563, 0), -63.093);
         this.horizonGroundRectangle.instance.style.transform = `translate3d(0px, ${targetOffset.toFixed(2)}px, 0px)`;
     }
 

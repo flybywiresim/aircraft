@@ -59,18 +59,18 @@ class CDUNavRadioPage {
                                 CDUNavRadioPage.ShowPage(mcdu);
                             });
                         } else {
-                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                             scratchpadCallback();
                         }
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3}(\.\d{1,2})?$/.test(value) || !RadioNav.isHz50Compliant(numValue)) {
-                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                         scratchpadCallback();
                         return false;
                     }
                     if (numValue < 108 || numValue > 117.95) {
-                        mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                        mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                         scratchpadCallback();
                         return false;
                     }
@@ -93,7 +93,7 @@ class CDUNavRadioPage {
                         });
                     }
                 } else {
-                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     scratchpadCallback();
                 }
             };
@@ -114,7 +114,7 @@ class CDUNavRadioPage {
                     mcdu.vor1Course = 0;
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     scratchpadCallback();
                 }
             };
@@ -132,7 +132,7 @@ class CDUNavRadioPage {
                 const lsCourse = SimVar.GetSimVarValue('L:A32NX_FM_LS_COURSE', 'number');
                 if (lsCourse >= 0) {
                     ilsCourseCell = `{${mcdu.ilsCourse !== undefined ? 'big' : 'small'}}F${lsCourse.toFixed(0).padStart(3, "0")}{end}`;
-                } else {
+                } else if (mcdu._ilsFrequencyPilotEntered) {
                     ilsCourseCell = "{amber}____{end}";
                 }
             }
@@ -181,18 +181,18 @@ class CDUNavRadioPage {
                                 CDUNavRadioPage.ShowPage(mcdu);
                             });
                         } else {
-                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                             scratchpadCallback();
                         }
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3,4}(\.\d{1})?$/.test(value)) {
-                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                         scratchpadCallback();
                         return false;
                     }
                     if (numValue < 190 || numValue > 1750) {
-                        mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                        mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                         scratchpadCallback();
                         return false;
                     }
@@ -211,7 +211,7 @@ class CDUNavRadioPage {
                     mcdu.radioNav.setADFActiveFrequency(1, 0);
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     scratchpadCallback();
                 }
             };
@@ -248,18 +248,18 @@ class CDUNavRadioPage {
                                 CDUNavRadioPage.ShowPage(mcdu);
                             });
                         } else {
-                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                             scratchpadCallback();
                         }
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3}(\.\d{1,2})?$/.test(value) || !RadioNav.isHz50Compliant(numValue)) {
-                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                         scratchpadCallback();
                         return false;
                     }
                     if (numValue < 108 || numValue > 117.95) {
-                        mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                        mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                         scratchpadCallback();
                         return false;
                     }
@@ -282,7 +282,7 @@ class CDUNavRadioPage {
                         });
                     }
                 } else {
-                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     scratchpadCallback();
                 }
             };
@@ -303,7 +303,7 @@ class CDUNavRadioPage {
                     mcdu.vor2Course = 0;
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     scratchpadCallback();
                 }
             };
@@ -330,18 +330,18 @@ class CDUNavRadioPage {
                                 CDUNavRadioPage.ShowPage(mcdu);
                             });
                         } else {
-                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                             scratchpadCallback();
                         }
                     });
                 } else if (isFinite(numValue)) {
                     if (!/^\d{3,4}(\.\d{1})?$/.test(value)) {
-                        mcdu.addNewMessage(NXSystemMessages.formatError);
+                        mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                         scratchpadCallback();
                         return false;
                     }
                     if (numValue < 190 || numValue > 1750) {
-                        mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                        mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                         scratchpadCallback();
                         return false;
                     }
@@ -361,7 +361,7 @@ class CDUNavRadioPage {
                     adf2FrequencyCell = "[\xa0\xa0.]/[\xa0]";
                     CDUNavRadioPage.ShowPage(mcdu);
                 } else {
-                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     scratchpadCallback();
                 }
             };

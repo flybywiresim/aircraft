@@ -205,7 +205,7 @@ class CDUAtcRequest {
         mcdu.onRightInput[5] = () => {
             if (CDUAtcRequest.CanBeSent(store)) {
                 if (mcdu.atsu.atc.currentStation() === "") {
-                    mcdu.addNewMessage(NXSystemMessages.noAtc);
+                    mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const requests = CDUAtcRequest.CreateRequests(mcdu, store);
                     if (requests) {

@@ -12,7 +12,6 @@ import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { arcDistanceToGo, arcGuidance, maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { MathUtils } from '@shared/MathUtils';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { bearingTo, closestSmallCircleIntersection, placeBearingDistance } from 'msfs-geo';
 import { PathVector, pathVectorLength, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
@@ -29,12 +28,10 @@ export class DmeArcTransition extends Transition {
     predictedPath: PathVector[] = [];
 
     constructor(
-        previousLeg: DmeArcTransitionPreviousLeg,
-        nextLeg: DmeArcTransitionNextLeg,
+        public previousLeg: DmeArcTransitionPreviousLeg,
+        public nextLeg: DmeArcTransitionNextLeg,
     ) {
-        super();
-        this.previousLeg = previousLeg;
-        this.nextLeg = nextLeg;
+        super(previousLeg, nextLeg);
     }
 
     getPathStartPoint(): Coordinates | undefined {
@@ -57,7 +54,7 @@ export class DmeArcTransition extends Transition {
 
     private clockwise: boolean | undefined
 
-    recomputeWithParameters(_isActive: boolean, tas: Knots, gs: MetresPerSecond, _ppos: Coordinates, _trueTrack: DegreesTrue, _previousGuidable: Guidable, _nextGuidable: Guidable) {
+    recomputeWithParameters(_isActive: boolean, tas: Knots, gs: MetresPerSecond, _ppos: Coordinates, _trueTrack: DegreesTrue) {
         if (this.isFrozen) {
             return;
         }

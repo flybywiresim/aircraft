@@ -47,7 +47,7 @@ export abstract class CpdlcMessageContent {
         }
     }
 
-    abstract validateAndReplaceContent(value: string[]): boolean;
+    abstract validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] };
 
     public static createInstance(type: CpdlcMessageContentType): CpdlcMessageContent {
         switch (type) {
@@ -95,7 +95,7 @@ export class CpdlcMessageContentLevel extends CpdlcMessageContent {
         }
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
         let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             retval = InputValidation.validateScratchpadAltitude(value[this.IndexStart]) === AtsuStatusCodes.Ok;
@@ -111,7 +111,7 @@ export class CpdlcMessageContentLevel extends CpdlcMessageContent {
                 value[this.IndexEnd] = '%s';
             }
         }
-        return retval;
+        return { matched: retval, remaining: value };
     }
 }
 
@@ -120,15 +120,16 @@ export class CpdlcMessageContentPosition extends CpdlcMessageContent {
         super(CpdlcMessageContentType.Position, index);
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
+        let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             if (InputValidation.validateScratchpadWaypoint(value[this.IndexStart]) === AtsuStatusCodes.Ok) {
                 this.Value = value[this.IndexStart];
                 value[this.IndexStart] = '%s';
-                return true;
+                retval = true;
             }
         }
-        return false;
+        return { matched: retval, remaining: value };
     }
 }
 
@@ -137,15 +138,16 @@ export class CpdlcMessageContentTime extends CpdlcMessageContent {
         super(CpdlcMessageContentType.Time, index);
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
+        let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             if (InputValidation.validateScratchpadTime(value[this.IndexStart]) === AtsuStatusCodes.Ok) {
                 this.Value = value[this.IndexStart];
                 value[this.IndexStart] = '%s';
-                return true;
+                retval = true;
             }
         }
-        return false;
+        return { matched: retval, remaining: value };
     }
 }
 
@@ -154,15 +156,16 @@ export class CpdlcMessageContentDirection extends CpdlcMessageContent {
         super(CpdlcMessageContentType.Direction, index);
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
+        let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             if (value[this.IndexStart] === 'LEFT' || value[this.IndexStart] === 'RIGHT') {
                 this.Value = value[this.IndexStart];
                 value[this.IndexStart] = '%s';
-                return true;
+                retval = true;
             }
         }
-        return false;
+        return { matched: retval, remaining: value };
     }
 }
 
@@ -171,15 +174,16 @@ export class CpdlcMessageContentDistance extends CpdlcMessageContent {
         super(CpdlcMessageContentType.Direction, index);
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
+        let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             if (InputValidation.validateScratchpadDistance(value[this.IndexStart]) === AtsuStatusCodes.Ok) {
                 this.Value = value[this.IndexStart];
                 value[this.IndexStart] = '%s';
-                return true;
+                retval = true;
             }
         }
-        return false;
+        return { matched: retval, remaining: value };
     }
 }
 
@@ -188,15 +192,16 @@ export class CpdlcMessageContentSpeed extends CpdlcMessageContent {
         super(CpdlcMessageContentType.Speed, index);
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
+        let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             if (InputValidation.validateScratchpadSpeed(value[this.IndexStart]) === AtsuStatusCodes.Ok) {
                 this.Value = value[this.IndexStart];
                 value[this.IndexStart] = '%s';
-                return true;
+                retval = true;
             }
         }
-        return false;
+        return { matched: retval, remaining: value };
     }
 }
 
@@ -205,15 +210,16 @@ export class CpdlcMessageContentFrequency extends CpdlcMessageContent {
         super(CpdlcMessageContentType.Frequency, index);
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
+        let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             if (InputValidation.validateVhfFrequency(value[this.IndexStart]) === AtsuStatusCodes.Ok) {
                 this.Value = value[this.IndexStart];
                 value[this.IndexStart] = '%s';
-                return true;
+                retval = true;
             }
         }
-        return false;
+        return { matched: retval, remaining: value };
     }
 }
 
@@ -222,15 +228,16 @@ export class CpdlcMessageContentProcedure extends CpdlcMessageContent {
         super(CpdlcMessageContentType.Procedure, index);
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
+        let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             if (InputValidation.validateScratchpadProcedure(value[this.IndexStart]) === AtsuStatusCodes.Ok) {
                 this.Value = value[this.IndexStart];
                 value[this.IndexStart] = '%s';
-                return true;
+                retval = true;
             }
         }
-        return false;
+        return { matched: retval, remaining: value };
     }
 }
 
@@ -239,15 +246,16 @@ export class CpdlcMessageContentDegree extends CpdlcMessageContent {
         super(CpdlcMessageContentType.Degree, index);
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
+        let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             if (InputValidation.validateScratchpadDegree(value[this.IndexStart]) === AtsuStatusCodes.Ok) {
                 this.Value = value[this.IndexStart];
                 value[this.IndexStart] = '%s';
-                return true;
+                retval = true;
             }
         }
-        return false;
+        return { matched: retval, remaining: value };
     }
 }
 
@@ -256,13 +264,14 @@ export class CpdlcMessageContentAtcUnit extends CpdlcMessageContent {
         super(CpdlcMessageContentType.AtcUnit, indexStart);
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
+        let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1 && /^[0-9A-Z]{4}$/.test(value[this.IndexStart])) {
             this.Value = value[this.IndexStart];
             value[this.IndexStart] = '%s';
-            return true;
+            retval = true;
         }
-        return false;
+        return { matched: retval, remaining: value };
     }
 }
 
@@ -271,14 +280,15 @@ export class CpdlcMessageContentFreetext extends CpdlcMessageContent {
         super(CpdlcMessageContentType.Freetext, indexStart, indexEnd);
     }
 
-    public validateAndReplaceContent(value: string[]): boolean {
+    public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
+        let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             this.Value = value.slice(this.IndexStart, this.IndexEnd === -1 ? value.length : this.IndexEnd + 1).join(' ');
             value = value.slice(0, this.IndexStart);
             value.push('%s');
-            return true;
+            retval = true;
         }
-        return false;
+        return { matched: retval, remaining: value };
     }
 }
 
@@ -395,6 +405,8 @@ export const CpdlcMessagesUplink: { [identification: string]: [string[], CpdlcMe
     UM3: [['ROGER'], new CpdlcMessageElement('UM3', [FansMode.FansA, FansMode.FansB])],
     UM4: [['AFFIRM'], new CpdlcMessageElement('UM4', [FansMode.FansA, FansMode.FansB])],
     UM5: [['NEGATIVE'], new CpdlcMessageElement('UM5', [FansMode.FansA, FansMode.FansB])],
+    UM19: [['MAINTAIN %s'], new CpdlcMessageElement('UM19', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(1)],
+        CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM20: [['CLIMB TO %s', 'CLIMB TO AND MAINTAIN %s'], new CpdlcMessageElement('UM20', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(2, 4)],
         CpdlcMessageExpectedResponseType.WilcoUnable)],
     UM23: [['DESCEND TO %s', 'DESCEND TO AND MAINTAIN %s'], new CpdlcMessageElement('UM23', [FansMode.FansA, FansMode.FansB], [new CpdlcMessageContentLevel(2, 4)],

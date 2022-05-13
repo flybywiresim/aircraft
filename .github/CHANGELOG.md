@@ -4,6 +4,15 @@
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+## 0.9.0
+
+1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
+1. [MCDU] Allow Wind Request from Simbrief flight plan - @USA-RedDragon (Jacob McSwain)
+1. [ENGINE] Fuel persistency between each flight - @juliansebline (Julian Sebline#8476)
+
+## 0.9.0
+
+1. [HYD] Fix fluid return handling of actuators - @Crocket63 (crocket)
 
 ## 0.8.0
 
@@ -237,6 +246,19 @@
 1. [HYD] Adjusted droop characteristics and randomness of surfaces actuators - @Crocket63
 1. [PFD] Reimplement PFD with msfs-avionics framework for improved performance - @saschl (saschl#9432)
 1. [GPWS] Mute "100 above" callout during autoland - @patmack14 (Patrick Macken)
+1. [MCDU] Refactored mcdu key input events - @derl30n - (Leon)
+1. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
+1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (donbikes#4084)
+1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
+1. [HYD] PTU model refinement and simulated potential wear state probabilities - @Crocket63
+1. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
+1. [FMGC] Implemented Airport Button - @patmack14 (Patrick Macken)
+1. [RMP] Fixed colour of SEL indicator - @tracernz (Mike)
+1. [MISC] Added custom Autobrake event for SimConnect - @aguther (Andreas Guther)
+1. [EWD] Fixed failures not re-triggering when resolved - @tricky_dicky (Richard Pilbery)
+1. [SOUND] Prevent autopilot disconnect from sounding on C+D spawn - @tricky_dicky (Richard Pilbery) and @saschl (saschl#9432)
+1. [FMGC] Removed flight phase transition from TAKEOFF to PREFLIGHT - @beheh (Benedict Etzel)
+1. [FMGC] Added flight phase transition to DONE when on ground > 30 s and engines off - @aguther (Andreas Guther)
 
 ## 0.7.0
 
@@ -1019,4 +1041,4 @@
 1. [MISC] Standby Instrument stays ON if emergency power should be available, bug fixes - @2hwk (2Cas#1022 on discord)
 1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
-1. [ENGINE] Fuel persistency between each flight - @juliansebline (Julian Sebline#8476)
+1. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)

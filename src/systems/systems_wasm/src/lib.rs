@@ -176,7 +176,7 @@ impl MsfsHandler {
                         Self::read_failures_into_simulation(failures, simulation);
                     }
 
-                    simulation.tick(delta_time, self);
+                    simulation.tick(delta_time, self.time.simulation_time(), self);
                     self.post_tick(sim_connect)?;
                 }
             }
@@ -562,6 +562,10 @@ impl Time {
         self.previous_simulation_time_value = simulation_time.value;
     }
 
+    fn simulation_time(&self) -> f64 {
+        self.previous_simulation_time_value
+    }
+
     fn is_pausing(&self) -> bool {
         self.next_delta == 0.
     }
@@ -590,7 +594,13 @@ pub fn sim_connect_32k_pos_to_f64(sim_connect_axis_value: sys::DWORD) -> f64 {
     let casted_value = (sim_connect_axis_value as i32) as f64;
     let scaled_value =
         (casted_value + OFFSET_32KPOS_VAL_FROM_SIMCONNECT) / RANGE_32KPOS_VAL_FROM_SIMCONNECT;
-
+    scaled_value.min(1.).max(0.)
+}
+// Takes a 32k position type from simconnect, returns a value from scaled from 0 to 1 (inverted)
+pub fn sim_connect_32k_pos_inv_to_f64(sim_connect_axis_value: sys::DWORD) -> f64 {
+    let casted_value = -1. * (sim_connect_axis_value as i32) as f64;
+    let scaled_value =
+        (casted_value + OFFSET_32KPOS_VAL_FROM_SIMCONNECT) / RANGE_32KPOS_VAL_FROM_SIMCONNECT;
     scaled_value.min(1.).max(0.)
 }
 // Takes a [0:1] f64 and returns a simconnect 32k position type
