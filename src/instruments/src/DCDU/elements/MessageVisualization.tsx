@@ -295,20 +295,21 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     lines = lines.slice(startIndex, endIndex);
 
     // calculate the position of the background rectangle
-    let backgroundY = 472;
+    let backgroundY = 520;
     let contentHeight = 120;
     let backgroundNeeded = false;
     if (backgroundColor[0] !== 0 || backgroundColor[1] !== 0 || backgroundColor[2] !== 0) {
         if (seperatorLine) {
-            if (seperatorLine >= endIndex) {
-                // only the next message is visible
-                contentHeight += lines.length * 230;
-                backgroundNeeded = true;
-            } else if (startIndex <= seperatorLine) {
-                // seperator on the same page
-                contentHeight += (endIndex - seperatorLine) * 230;
-                backgroundY += (seperatorLine - startIndex) * 230;
-                backgroundNeeded = true;
+            backgroundNeeded = true;
+            if (seperatorLine <= startIndex) {
+                // first line contains downlink message
+                contentHeight += lines.length * 210;
+            } else if (seperatorLine < endIndex) {
+                // mix of uplink and downlink message
+                contentHeight += (endIndex - seperatorLine) * 210;
+                backgroundY += (lines.length - (endIndex - seperatorLine)) * 210;
+            } else {
+                backgroundNeeded = false;
             }
         } else {
             contentHeight += lines.length * 230;
