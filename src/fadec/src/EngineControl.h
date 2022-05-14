@@ -6,6 +6,27 @@
 #include "ThrustLimits.h"
 #include "common.h"
 
+#include "ini_type_conversion.h"
+
+#define FILENAME_FADEC_CONF_DIRECTORY "\\work\\AircraftStates\\"
+#define FILENAME_FADEC_CONF_FILE_EXTENSION ".ini"
+#define CONFIGURATION_SECTION_FUEL "FUEL"
+
+#define CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY "FUEL_CENTER_QUANTITY"
+#define CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY "FUEL_LEFT_QUANTITY"
+#define CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY "FUEL_RIGHT_QUANTITY"
+#define CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY "FUEL_LEFT_AUX_QUANTITY"
+#define CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY "FUEL_RIGHT_AUX_QUANTITY"
+
+/* Values in gallons */
+struct Configuration {
+    double fuelCenter = 0;
+    double fuelLeft = 400;
+    double fuelRight = fuelLeft;
+    double fuelLeftAux = 228;
+    double fuelRightAux = fuelLeftAux;
+};
+
 class EngineControl {
  private:
   SimVars* simVars;
@@ -13,6 +34,8 @@ class EngineControl {
   Polynomial* poly;
   Timer timerLeft;
   Timer timerRight;
+
+  std::string confFilename = FILENAME_FADEC_CONF_DIRECTORY;
 
   bool simPaused;
   double animationDeltaTime;
@@ -731,6 +754,9 @@ class EngineControl {
     double fuelTotalPre = fuelLeftPre + fuelRightPre + fuelAuxLeftPre + fuelAuxRightPre + fuelCenterPre;          // LBS
     double deltaFuelRate = abs(fuelTotalActual - fuelTotalPre) / (fuelWeightGallon * deltaTime);                  // LBS/ sec
 
+    double engine1State = simVars->getEngine1State();
+    double engine2State = simVars->getEngine2State();
+
     // Check Development State for UI
     double devState = simVars->getDeveloperState();
 
@@ -795,13 +821,11 @@ class EngineControl {
         fuelLeftAux = (fuelAuxLeftPre / fuelWeightGallon);    // USG
         fuelRightAux = (fuelAuxRightPre / fuelWeightGallon);  // USG
 
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &fuelCenter);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelCenter);
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeft);
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRight);
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeftAux);
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
-                                      &fuelRightAux);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRightAux);
       }
     } else if (!uiFuelTamper && refuelStartedByUser == 1) {  // Detects refueling from the EFB
       simVars->setFuelLeftPre(leftQuantity);                 // in LBS
@@ -905,6 +929,21 @@ class EngineControl {
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelCenter);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeft);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRight);
+    }
+
+    // Will save the current fuel quantities if on the ground AND engines being shutdown
+    if(simVars->getSimOnGround() &&
+        (engine1State == 0 || engine1State == 10 || engine1State == 4 || engine1State == 14 ||
+        engine2State == 0 || engine2State == 10 || engine2State == 4 || engine2State == 14)) {
+      Configuration configuration;
+
+      configuration.fuelLeft = simVars->getFuelLeftPre() / simVars->getFuelWeightGallon();
+      configuration.fuelRight = simVars->getFuelRightPre() / simVars->getFuelWeightGallon();
+      configuration.fuelCenter = simVars->getFuelCenterPre() / simVars->getFuelWeightGallon();
+      configuration.fuelLeftAux = simVars->getFuelAuxLeftPre() / simVars->getFuelWeightGallon();
+      configuration.fuelRightAux = simVars->getFuelAuxRightPre() / simVars->getFuelWeightGallon();
+
+      saveFuelInConfiguration(configuration);
     }
   }
 
@@ -1017,23 +1056,19 @@ class EngineControl {
   /// <summary>
   /// Initialize the FADEC and Fuel model
   /// </summary>
-  void initialize() {
-    srand((int)time(0));
-
-    double engTime;
-    double fuelCenterInit = 0;
-    double fuelLeftInit = (rand() % 100) + 340;
-    double fuelRightInit = fuelLeftInit;
-    double fuelLeftAuxInit = 228;
-    double fuelRightAuxInit = fuelLeftAuxInit;
-
+  void initialize(const char * acftRegistration) {
     std::cout << "FADEC: Initializing EngineControl" << std::endl;
 
     simVars = new SimVars();
-    engTime = 0;
+    double engTime = 0;
     ambientTemp = simVars->getAmbientTemperature();
     simN2LeftPre = simVars->getN2(1);
     simN2RightPre = simVars->getN2(2);
+
+    confFilename += acftRegistration;
+    confFilename += FILENAME_FADEC_CONF_FILE_EXTENSION;
+
+    Configuration configuration = getConfigurationFromFile();
 
     // One-off Engine imbalance
     generateEngineImbalance(1);
@@ -1101,11 +1136,11 @@ class EngineControl {
     simVars->setEngine2Timer(0);
 
     // Initialize Fuel Tanks
-    simVars->setFuelLeftPre(fuelLeftInit * simVars->getFuelWeightGallon());          // in LBS
-    simVars->setFuelRightPre(fuelRightInit * simVars->getFuelWeightGallon());        // in LBS
-    simVars->setFuelAuxLeftPre(fuelLeftAuxInit * simVars->getFuelWeightGallon());    // in LBS
-    simVars->setFuelAuxRightPre(fuelRightAuxInit * simVars->getFuelWeightGallon());  // in LBS
-    simVars->setFuelCenterPre(fuelCenterInit * simVars->getFuelWeightGallon());      // in LBS
+    simVars->setFuelLeftPre(configuration.fuelLeft * simVars->getFuelWeightGallon());          // in LBS
+    simVars->setFuelRightPre(configuration.fuelRight * simVars->getFuelWeightGallon());        // in LBS
+    simVars->setFuelAuxLeftPre(configuration.fuelLeftAux * simVars->getFuelWeightGallon());    // in LBS
+    simVars->setFuelAuxRightPre(configuration.fuelRightAux * simVars->getFuelWeightGallon());  // in LBS
+    simVars->setFuelCenterPre(configuration.fuelCenter * simVars->getFuelWeightGallon());      // in LBS
 
     // Initialize Pump State
     simVars->setPumpStateLeft(0);
@@ -1207,6 +1242,50 @@ class EngineControl {
   }
 
   void terminate() {}
+
+  Configuration getConfigurationFromFile() {
+    Configuration configuration;
+    mINI::INIStructure stInitStructure;
+
+    mINI::INIFile iniFile(confFilename);
+
+    if (!iniFile.read(stInitStructure)) {
+      std::cout << "EngineControl: failed to read configuration file " << confFilename << " due to error \"" << strerror(errno) << "\" -> use default main/aux/center: " <<
+        configuration.fuelLeft << "/" << configuration.fuelLeftAux << "/" << configuration.fuelCenter << std::endl;
+    } else {
+      configuration = loadConfiguration(stInitStructure);
+    }
+
+    return configuration;
+  }
+
+  Configuration loadConfiguration(const mINI::INIStructure& structure) {
+    return {
+      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY, 0),
+      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY, 400.0),
+      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY, 400.0),
+      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY, 228.0),
+      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY, 228.0),
+    };
+  }
+
+  void saveFuelInConfiguration(Configuration configuration) {
+    mINI::INIStructure stInitStructure;
+    mINI::INIFile iniFile(confFilename);
+
+    // Do not check a possible error since the file may not exist yet
+    iniFile.read(stInitStructure);
+
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY] = std::to_string(configuration.fuelCenter);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY] = std::to_string(configuration.fuelLeft);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY] = std::to_string(configuration.fuelRight);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY] = std::to_string(configuration.fuelLeftAux);
+    stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY] = std::to_string(configuration.fuelRightAux);
+
+    if(!iniFile.write(stInitStructure, true)) {
+      std::cout << "EngineControl: failed to write engine conf " << confFilename << " due to error \"" << strerror(errno) << "\"" << std::endl;
+    }
+  }
 };
 
 EngineControl EngineControlInstance;

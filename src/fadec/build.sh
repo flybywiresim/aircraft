@@ -38,9 +38,8 @@ clang++ \
   -fvisibility=hidden \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
-  -I "${DIR}/src" \
-  "${DIR}/src/FadecGauge.cpp" \
-  -o fadec.o
+  -I "${DIR}/../fbw/src/inih" \
+  "${DIR}/src/FadecGauge.cpp"
 
 # restore directory
 popd
