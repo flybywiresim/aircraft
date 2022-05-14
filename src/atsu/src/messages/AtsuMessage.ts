@@ -48,7 +48,7 @@ export class AtsuMessage {
 
     public UniqueMessageID: number = -1;
 
-    public Timestamp: AtsuTimestamp = null;
+    public Timestamp: AtsuTimestamp = new AtsuTimestamp();
 
     public Station = '';
 
