@@ -186,9 +186,9 @@ export class UplinkMessageMonitoring {
                 if (message !== undefined && message.Response?.ComStatus === AtsuMessageComStatus.Sent) {
                     ids.push(this.monitoredMessages[idx].messageId);
                     this.monitoredMessages.splice(idx, 1);
-                    idx -= 1;
                 }
             }
+            idx -= 1;
         }
 
         return ids;
