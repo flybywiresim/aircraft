@@ -1,7 +1,8 @@
 import React from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/messages/AtsuMessage';
+import { AtsuTimestamp } from '@atsu/messages/AtsuTimestamp';
 import { CpdlcMessageExpectedResponseType, CpdlcMessagesDownlink } from '@atsu/messages/CpdlcMessageElements';
-import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
+import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/messages/CpdlcMessage';
 import { Checkerboard } from './Checkerboard';
 
 type MessageStatusProps = {
@@ -111,14 +112,21 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
         background.y = 310 - background.height;
     }
 
+    let title = '';
+    if (message.MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
+        if (message.SemanticResponseRequired) {
+            title = `${message.Response?.Timestamp?.dcduTimestamp()} TO ${message.Response?.Station}`;
+        } else {
+            title = (new AtsuTimestamp()).dcduTimestamp();
+            text = '';
+        }
+    } else {
+        title = `${message.Timestamp?.dcduTimestamp()} ${message.Direction === AtsuMessageDirection.Downlink ? ' TO ' : ' FROM '} ${message.Station}`;
+    }
+
     return (
         <g>
-            <text className="station" x="168" y="280">
-                {message.Timestamp?.dcduTimestamp()}
-                {' '}
-                {message.Direction === AtsuMessageDirection.Downlink ? ' TO ' : ' FROM '}
-                {message.Station}
-            </text>
+            <text className="station" x="168" y="280">{title}</text>
             <>
                 (
                 {backgroundRequired
