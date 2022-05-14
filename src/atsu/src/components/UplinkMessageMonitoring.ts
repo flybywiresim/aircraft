@@ -1,5 +1,6 @@
 import { Atsu } from '../ATSU';
 import { CpdlcMessage } from '../messages/CpdlcMessage';
+import { AtsuMessageComStatus } from '../messages/AtsuMessage';
 
 export abstract class UplinkMonitor {
     private static positionMonitoringMessageIds = ['UM22', 'UM25', 'UM65', 'UM77', 'UM83', 'UM84', 'UM97', 'UM118', 'UM121', 'UM130'];
@@ -166,14 +167,27 @@ export class UplinkMessageMonitoring {
         return ids;
     }
 
+    private findAtcMessage(uid: number): CpdlcMessage | undefined {
+        for (const message of this.atsu.atc.messages()) {
+            if (message.UniqueMessageID === uid) {
+                return message as CpdlcMessage;
+            }
+        }
+        return undefined;
+    }
+
     public checkMessageConditions(): number[] {
         const ids = [];
 
-        const idx = this.monitoredMessages.length - 1;
+        let idx = this.monitoredMessages.length - 1;
         while (idx >= 0) {
             if (this.monitoredMessages[idx].conditionsMet()) {
-                ids.push(this.monitoredMessages[idx].messageId);
-                this.monitoredMessages.splice(idx, 1);
+                const message = this.findAtcMessage(this.monitoredMessages[idx].messageId);
+                if (message !== undefined && message.Response?.ComStatus === AtsuMessageComStatus.Sent) {
+                    ids.push(this.monitoredMessages[idx].messageId);
+                    this.monitoredMessages.splice(idx, 1);
+                    idx -= 1;
+                }
             }
         }
 
