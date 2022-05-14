@@ -10,40 +10,52 @@
 
 #include <memory>
 
+
 #include "Units.h"
+#include "FlyPadBackend.h"
 
 class InertialDampener;
 
 using namespace std;
 
+constexpr double PI = 3.14159265358979323846;
+
 /**
  * Class for handling aircraft presets.
  */
 class Pushback {
- private:
-  Units* m_Units{};
-  std::unique_ptr<InertialDampener> inertialDampenerPtr;
+
+private:
+  HANDLE hSimConnect;
   bool isInitialized = false;
 
+  PushbackData* pushbackDataPtr;
+
+  std::unique_ptr<Units> m_Units;
+  std::unique_ptr<InertialDampener> inertialDampenerPtr;
+
   // LVARs
-  ID PushbackSystemEnabled{};
-  ID NwStrgDiscMemo{};
+  ID pushbackSystemEnabled{};
+  ID nwStrgDiscMemo{};
   ID pushbackPaused{};
   ID tugCommandedHeadingFactor{};
+  ID tugCommandedHeading{};
   ID tugCommandedSpeedFactor{};
+  ID tugCommandedSpeed{};
+  ID tugInertiaSpeed{};
   ID parkingBrakeEngaged{};
+  ID updateDelta{};
 
   // Simvars
-  ENUM SimOnGround{};
-  ENUM PushbackAttached{};
+  ENUM simOnGround{};
+  ENUM pushbackAttached{};
   ENUM aircraftHeading{};
-  ENUM pushBackWait{};
 
- public:
+public:
   /**
    * Creates an instance of the Pushback class.
    */
-  Pushback();
+  Pushback(HANDLE hdl, PushbackData* data);
 
   /**
    * Destructor
@@ -67,4 +79,74 @@ class Pushback {
    * Called when SimConnect is shut down
    */
   void shutdown();
+
+private:
+  // @formatter:off
+  inline bool isPushbackPaused() const { return static_cast<bool>(get_named_variable_value(pushbackPaused)); }
+  inline bool isPushbackSystemEnabled() const { return static_cast<bool>(get_named_variable_value(pushbackSystemEnabled)); }
+  inline bool isParkingBrakeEngaged() const { return static_cast<bool>(get_named_variable_value(parkingBrakeEngaged)); }
+  inline FLOAT64 getTugCmdSpdFactor() const { return static_cast<FLOAT64>(get_named_variable_value(tugCommandedSpeedFactor)); }
+  inline FLOAT64 getTugCmdHdgFactor() const { return static_cast<FLOAT64>(get_named_variable_value(tugCommandedHeadingFactor)); }
+
+  inline bool isPushbackAttached() const { return static_cast<bool>(aircraft_varget(pushbackAttached, m_Units->Bool, 0)); }
+  inline bool isSimOnGround() const { return static_cast<bool>(aircraft_varget(simOnGround, m_Units->Bool, 0)); }
+  inline FLOAT64 getAircraftTrueHeading() const {
+    return (180.0 / PI) * static_cast<FLOAT64>(aircraft_varget(aircraftHeading, m_Units->Number, 0));
+  }
+
+  inline bool isPushbackWaiting() const { return static_cast<bool>(pushbackDataPtr->pushbackWait); }
+  // @formatter:on
+
+  /**
+   * Adds two angles with wrap around to result in 0-360°
+   * @param a - positive or negative angle
+   * @param b - positive or negative angle
+   */
+  static double angleAdd(double a, double b) {
+    double r = a + b;
+    while (r > 360.0) {
+      r -= 360.0;
+    }
+    while (r < 0.0) {
+      r += 360.0;
+    }
+    return r;
+  };
+
+  /**
+   * Returns the signum (sign) of the given value.
+   * @tparam T
+   * @param val
+   * @return sign of value or 0 when value==0
+   */
+  template<typename T>
+  int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+  }
+
+  /**
+   * Updates data by reading from simconnect
+   * @return success
+   */
+  bool readFromSimConnect();
+
+  /**
+   * Process received simconnect dispatch messages
+   * @param pData
+   * @param cbData
+   */
+  void simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData);
+
+  /**
+   * Process received simconnect data
+   * @param data
+   */
+  void simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data);
+
+  /**
+   * Returns human-readable descriptions of simconnect exceptions
+   * @param exception
+   * @return string describing the exception
+   */
+  static std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception);
 };

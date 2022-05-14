@@ -7,4 +7,15 @@
 
 #pragma once
 
-class InertialDampener {};
+class InertialDampener {
+ private:
+  double lastValue{};
+  double accelFactor{};
+
+ public:
+  InertialDampener(double startValue, double accelFactor);
+
+  double updateSpeed(double cmdSpeed);
+
+  static double round(double value, int decimalPrecision);
+};

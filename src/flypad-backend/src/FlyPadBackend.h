@@ -26,9 +26,10 @@
 
 using namespace std;
 
-// Required to map local data structures to simconnect data
-enum DataTypesID {
-  SimulationDataTypeId,
+// IDs for data structures - must be mapped to data structs
+enum DataStructureIDs {
+  SimulationDataID,
+  PushbackDataID
 };
 
 // Local data structure for simconnect data
@@ -36,16 +37,25 @@ struct SimulationData {
   double simulationTime;
 };
 
+// Data structure for PushbackDataID
+struct PushbackData {
+  INT64 pushbackWait;
+  FLOAT64 rotVelBodyY;
+  FLOAT64 velBodyZ;
+  FLOAT64 rotAccelBodyX;
+};
+
 class LightPreset;
 class AircraftPreset;
 class Pushback;
 
 class FlyPadBackend {
- private:
+private:
   HANDLE hSimConnect;
 
   // Instance of local data structure for simconnect data
   SimulationData simulationData = {};
+  PushbackData pushbackData = {};
 
   /**
    * Flag if connection has been initialized.
@@ -59,7 +69,7 @@ class FlyPadBackend {
   std::unique_ptr<AircraftPreset> aircraftPresetPtr;
   std::unique_ptr<Pushback> pushbackPtr;
 
- public:
+public:
   /**
    * Initialize the gauge (instead of a constructor).
    * Sets up data for the gauge and also connect to SimConnect.
@@ -81,7 +91,7 @@ class FlyPadBackend {
    */
   bool shutdown();
 
- private:
+private:
   /**
    * Requests simconnect data in preparation of reading it into a local data structure.
    * @return true if request was successful, false otherwise
@@ -113,5 +123,5 @@ class FlyPadBackend {
    * @param exception
    * @return string describing the exception
    */
-  static std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception);
+  std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception);
 };

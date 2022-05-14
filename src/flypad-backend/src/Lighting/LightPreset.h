@@ -49,14 +49,14 @@ struct LightingValues {
  * Class for handling light presets.
  */
 class LightPreset {
- private:
+private:
   const std::string CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini";
 
   bool isInitialized = false;
 
   LightingSimVars* simVars;
 
- public:
+public:
   /**
    * Currently stored lighting values.
    */
@@ -67,7 +67,7 @@ class LightPreset {
    * @param simVars pointer to the LightSimVars object for reading and writing
    * the simulation variables.
    */
-  LightPreset() : simVars(new LightingSimVars()){};
+  LightPreset(HANDLE handle) : simVars(new LightingSimVars()) {};
 
   /**
    * Called when SimConnect is initialized
@@ -92,7 +92,7 @@ class LightPreset {
    */
   __attribute__((unused)) std::string sprint() const;
 
- private:
+private:
   /**
    * Loads a specified preset
    * @param loadPresetRequest the number of the preset to be loaded
@@ -143,17 +143,25 @@ class LightPreset {
    * @param defaultValue a default value that is returned if the key does not exist
    * @return the value of the key or the default value if the key does not exist
    */
-  static double iniGetOrDefault(const mINI::INIStructure& ini, const std::string& section, const std::string& key, double defaultValue);
+  static double
+  iniGetOrDefault(const mINI::INIStructure &ini, const std::string &section, const std::string &key,
+                  double defaultValue);
 
   // formatter:off
-  const LightingValues DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
-                                     50.0, 50.0, 50.0, 0.5,  0.5,  0.5,  0.5,  50.0, 50.0, 50.0, 50.0, 50.0};
+  const LightingValues DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
+                                     50.0, 50.0,
+                                     50.0, 50.0, 50.0, 0.5, 0.5, 0.5, 0.5, 50.0, 50.0, 50.0, 50.0,
+                                     50.0};
 
-  __attribute__((unused)) const LightingValues DEFAULT_10 = {10.0, 0.0,  10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
-                                                             10.0, 10.0, 10.0, 0.1,  0.1,  0.1,  0.0,  10.0, 10.0, 10.0, 10.0, 10.0};
+  __attribute__((unused)) const LightingValues DEFAULT_10 = {10.0, 0.0, 10.0, 10.0, 10.0, 10.0,
+                                                             10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+                                                             10.0, 10.0, 10.0, 0.1, 0.1, 0.1, 0.0,
+                                                             10.0, 10.0, 10.0, 10.0, 10.0};
 
   __attribute__((unused))
-  const LightingValues DEFAULT_100 = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
-                                      100.0, 100.0, 100.0, 1.0,   1.0,   1.0,   1.0,   100.0, 100.0, 100.0, 100.0, 100.0};
+  const LightingValues DEFAULT_100 = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
+                                      100.0, 100.0, 100.0,
+                                      100.0, 100.0, 100.0, 1.0, 1.0, 1.0, 1.0, 100.0, 100.0, 100.0,
+                                      100.0, 100.0};
   // @formatter:on
 };
