@@ -356,7 +356,7 @@
     "CallTug": "Gọi xe kéo",
     "DisableSystemMessageBody": "Bạn có chắc muốn vô hiệu hóa hệ thống đẩy lùi không? Điều này sẽ làm ngắt kết nối với xe lai dắt.",
     "DisableSystemMessageTitle": "Vô hiệu hóa hệ thống đẩy lùi",
-    "EnableSystemMessageBody": "Hệ thống đẩy lùi của flyPadOS 3 chưa được hoàn thiện. Nó không tương thích với các tiện ích đẩy lùi khác và có thể gây ra lỗi.",
+    "EnableSystemMessageBody": "Hệ thống đẩy lùi của flyPadOS 3 chưa được hoàn thiện. Nó không tương thích với các tiện ích đẩy lùi khác và có thể gây ra lỗi. Chúng tôi khuyên bạn không nên dùng hệ thống này nếu bạn định dùng một tiện ích đẩy lùi khác.",
     "EnableSystemMessageTitle": "Kích hoạt hệ thống đẩy lùi",
     "Forward": "Tiến",
     "Halt": "Tạm dừng",
@@ -459,7 +459,7 @@
       "Active": "Hoạt động",
       "Auto": "Tự động",
       "Calibrate": "Hiệu chỉnh",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "Chóp nón An toàn",
       "DefaultBarometerUnit": "Đơn vị áp kế mặc định",
       "DynamicRegistrationDecal": "Đề-can đăng ký động",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Bật kết nối máy chủ MCDU (Tự động ngừng kích hoạt sau 5 phút nếu không có kết nối thành công)",
@@ -474,7 +474,7 @@
       "ThrottleDetents": "Chốt cần ga",
       "Title": "Tùy chọn giả lập",
       "UseCalculatedIlsSignals": "Sử dụng tín hiệu ILS được tính",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "Ốp chặn bánh xe",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

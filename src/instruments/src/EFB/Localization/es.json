@@ -139,14 +139,14 @@
     "Services": {
       "BaggageTruck": "Camión de equipaje",
       "CateringTruck": "Camión de catering",
-      "Cones": "Safety Cones",
+      "Cones": "Conos de seguridad",
       "DoorAft": "Puerta trasera",
       "DoorFwd": "Puerta delantera",
       "ExternalPower": "Alimentación externa",
       "FuelTruck": "Camión de combustible",
       "JetBridge": "Puente de embarque",
       "Title": "Servicios",
-      "WheelChocks": "Wheel Chocks"
+      "WheelChocks": "Calzos de ruedas"
     },
     "Title": "Ground"
   },
@@ -351,12 +351,12 @@
     "Title": "Predeterminados"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "Los controles de remolque sólo están disponibles en tierra",
     "Backward": "Atrás",
     "CallTug": "Llamar al remolcador",
     "DisableSystemMessageBody": "¿Está seguro que desea deshabilitar el sistema de remolque? Esto también liberará el remolcador.",
     "DisableSystemMessageTitle": "Deshabilitar sistema de remolque",
-    "EnableSystemMessageBody": "El nuevo sistema de remolque de flyPadOS 3 aún no está terminado. Es incompatible con otros add-ons para remolque y podría causar otros problemas.",
+    "EnableSystemMessageBody": "El nuevo Sistema de Remolque de flyPadOS 3 puede causar conflictos con otros add-ons de remolque. Recomendamos no habilitar el sistema si tiene previsto utilizar otro complemento de remolque. ",
     "EnableSystemMessageTitle": "Habilitar sistemas de remolque ",
     "Forward": "Adelante",
     "Halt": "En pausa",
@@ -389,7 +389,7 @@
     },
     "TugAttached": "El remolcador está unido",
     "TugDirection": "Dirección del remolcador",
-    "TugInTransit": "Waiting for Tug/Pin",
+    "TugInTransit": "Esperando al Remolcador/Pin",
     "TugSpeed": "Velocidad del remolcador"
   },
   "Settings": {
@@ -459,7 +459,7 @@
       "Active": "Activo",
       "Auto": "Auto",
       "Calibrate": "Calibrar",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "Conos de seguridad",
       "DefaultBarometerUnit": "Unidad del barómetro predeterminado",
       "DynamicRegistrationDecal": "Calcomanía de registro dinámica",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Activar la conexión con el servidor MCDU (se desactivará automáticamente tras 5 minutos si no ha habido una conexión exitosa)",
@@ -474,7 +474,7 @@
       "ThrottleDetents": "Throttle Detents",
       "Title": "Opciones de simulación",
       "UseCalculatedIlsSignals": "Usar señales ILS calculadas",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "Calzos de ruedas",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

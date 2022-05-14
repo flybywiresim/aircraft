@@ -1,10 +1,10 @@
 {
   "AirTrafficControl": {
     "Active": "Aktywny",
-    "ChangeATISATCSourceButton": "Change ATIS/ATC source",
+    "ChangeATISATCSourceButton": "Zmień źródło ATIS/ATC",
     "ConnectHoppieACARS": "Połącz Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Brak dostępnej informacji dla tej częstotliwości",
-    "SelectCorrectATISATCSource": "This page is only available when IVAO or VATSIM is selected as the ATIS/ATC source in the settings page.",
+    "SelectCorrectATISATCSource": "Ta strona jest dostępna tylko wtedy, gdy na stronie ustawień jako źródło ATIS/ATC wybrano IVAO lub VATSIM.",
     "SetActive": "Ustaw jako aktywną",
     "SetStandby": "Ustaw jako Oczekującą",
     "Standby": "Oczekująca",
@@ -35,8 +35,8 @@
         "Title": "Przegląd Techniczny"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "Brak Przypiętych Chartów",
-        "Title": "Przypięte Charty"
+        "NoPinnedCharts": "Brak Przypiętych Map",
+        "Title": "Przypięte Mapy"
       },
       "TT": {
         "RearrangeWidgets": "Zmień Rozmieszczenie Widżetów"
@@ -49,7 +49,7 @@
         "Loading": "Wczytywanie",
         "MetarParsingError": "Odebrany METAR nie może zostać przetworzony",
         "NoIcaoProvided": "Nie podano kodu ICAO",
-        "NotAvailableShort": "N/A",
+        "NotAvailableShort": "nd.",
         "Raw": "Źródłowy",
         "TT": {
           "SwitchToIconView": "Przełącz do Widoku Ikon",
@@ -139,14 +139,14 @@
     "Services": {
       "BaggageTruck": "Ciężarówka Bagażowa",
       "CateringTruck": "Ciężarówka Gastronomiczna",
-      "Cones": "Safety Cones",
+      "Cones": "Pachołki Bezpieczeństwa",
       "DoorAft": "Drzwi Rufowe",
       "DoorFwd": "Przednie Drzwi",
       "ExternalPower": "Zewnętrzne Zasilanie",
       "FuelTruck": "Cysterna z Paliwem",
       "JetBridge": "Rękaw",
       "Title": "Obsługa",
-      "WheelChocks": "Wheel Chocks"
+      "WheelChocks": "Kliny do Kół"
     },
     "Title": "Obsługa Naziemna"
   },
@@ -175,7 +175,7 @@
       "AuthenticateWithNavigraph": "Uwierzytelnij za pomocą Navigraph",
       "InsufficientEnv": "Niewłaściwy Plik .env",
       "IntoYourBrowserAndEnterTheCodeBelow": "w twojej przeglądarce i wprowadź poniższy kod\n",
-      "LoadingMsg": "Loading",
+      "LoadingMsg": "Wczytywanie",
       "NoAirportSelected": "Nie Wybrano Lotniska",
       "ResetNavigraphAuthentication": "Resetuj Uwierzytelnienie Navigraph",
       "ScanTheQrCodeOrOpen": "Zeskanuj kod QR lub Otwórz",
@@ -197,9 +197,9 @@
       "TT": {
         "ChangeChartProvider": "Zmień Dostawcę Map",
         "ChangeChartSortMethod": "Zmień Metodę Sortowania Map",
-        "RemoveAllPinnedCharts": "Remove All Pinned Charts"
+        "RemoveAllPinnedCharts": "Usuń Wszystkie Przypięte Mapy"
       },
-      "Title": "Przypięte Charty",
+      "Title": "Przypięte Mapy",
       "View": "Widok"
     },
     "PleaseWait": "Proszę Czekać",
@@ -234,8 +234,8 @@
       "Low": "Nisko",
       "MaximumManual": "Maksymalnie Manualne",
       "Medium": "Średnio",
-      "MetarErrorDialogMessage": "The METAR from your OFP could not be successfully parsed. Would you like to autofill data using a fetched METAR instead?",
-      "MetarErrorDialogTitle": "Error Parsing OFP METAR",
+      "MetarErrorDialogMessage": "Nie udało się pomyślnie przetworzyć danych METAR z Twojego OFP. Czy chcesz automatycznie uzupełnić dane, używając pobranego METAR-u?",
+      "MetarErrorDialogTitle": "Błąd Przetwarzania METAR OFP",
       "OverweightProcedure": "Procedura Overweight",
       "Qnh": "QNH",
       "ReverseThrust": "Ciąg Wsteczny",
@@ -243,12 +243,12 @@
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Stan Pasa",
       "RunwayConditions": {
-        "Dry": "Dry (6)",
-        "Good": "Good (5)",
-        "GoodMedium": "Good-Medium (4)",
-        "Medium": "Medium (3)",
-        "MediumPoor": "Medium-Poor (2)",
-        "Poor": "Poor (1)"
+        "Dry": "Suche (6)",
+        "Good": "Dobre (5)",
+        "GoodMedium": "Średnio-dobre (4)",
+        "Medium": "Średnie (3)",
+        "MediumPoor": "Średnio-złe (2)",
+        "Poor": "Złe (1)"
       },
       "RunwayHeading": "Kierunek Pasa",
       "RunwayHeadingUnit": "°",
@@ -333,7 +333,7 @@
       "AircraftNeedsToBePoweredToSavePresets": "Samolot musi być zasilany, by możliwe było zapisanie ustawień",
       "LoadPreset": "Wczytaj Ustawienia",
       "LoadingPreset": "Wczytywanie Ustawienia",
-      "NewNameConfirmationDialogMsg": "Please confirm the new name for the lighting preset",
+      "NewNameConfirmationDialogMsg": "Proszę potwierdzić nową nazwę ustawienia oświetlenia wnętrza",
       "NoName": "Bez Nazwy",
       "PleaseConfirmSavingPreset": "Proszę Potwierdzić Zapisanie Ustawienia",
       "SavePreset": "Zapisz Ustawienia",
@@ -351,46 +351,46 @@
     "Title": "Ustawienia Predefiniowane"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "Sterowanie wypychaniem jest dostępne tylko na ziemi",
     "Backward": "Do Tyłu",
     "CallTug": "Wezwij Holownik",
-    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
-    "DisableSystemMessageTitle": "Disable Pushback System",
-    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System can cause conflicts with other pushback add-ons. We recommend not to enable the system if you plan to use another pushback add-on. ",
-    "EnableSystemMessageTitle": "Enable Pushback System",
+    "DisableSystemMessageBody": "Czy na pewno chcesz wyłączyć System Wypychania? Spowoduje to również odłączenie holownika.",
+    "DisableSystemMessageTitle": "Wyłącz System Wypychania",
+    "EnableSystemMessageBody": "Nowy System Wypychania flyPadOS 3 może konfliktować z innymi dodatkami do wypychania. Zalecamy by nie włączać Systemu Wypychania, jeżeli planujesz używać innego dodatku tego typu.",
+    "EnableSystemMessageTitle": "Włącz System Wypychania",
     "Forward": "Do Przodu",
     "Halt": "Stój",
-    "LeavePageMessage": "Pausing Pushback",
-    "Left": "Left",
-    "Moving": "Moving",
+    "LeavePageMessage": "Wstrzymywanie Wypychania",
+    "Left": "W Lewo",
+    "Moving": "Wypychanie",
     "ParkingBrake": {
       "Off": "Wył.",
       "On": "Wł.",
       "Title": "Hamulec Postojowy"
     },
-    "Right": "Right",
-    "SystemEnabledOff": "Pushback System Off",
-    "SystemEnabledOn": "Pushback System On",
+    "Right": "W Prawo",
+    "SystemEnabledOff": "System Wypychania Wyłączony",
+    "SystemEnabledOn": "System Wypychania Włączony",
     "TT": {
-      "CallReleaseTug": "Call or release tug",
-      "CenterPlaneMode": "Center map on plane On/Off",
-      "DecreaseSpeed": "Backwards or slower forwards",
-      "IncreaseSpeed": "Forwards or slower backwards",
-      "Left": "Go left",
-      "PausePushback": "Pause or unpause pushback",
-      "Right": "Go right",
-      "SetReleaseParkingBrake": "Set or release parking brake",
-      "SliderDirection": "Move for desired direction",
-      "SliderSpeed": "Move for desired speed",
-      "SystemEnabledOff": "Click to turn the pushback system on.",
-      "SystemEnabledOn": "Click to turn the pushback system completely off.",
-      "ZoomIn": "Zoom in",
-      "ZoomOut": "Zoom out"
+      "CallReleaseTug": "Wezwij lub zwolnij holownik",
+      "CenterPlaneMode": "Wyśrodkuj mapę na samolocie Wł/Wył",
+      "DecreaseSpeed": "Wycofaj lub zmniejsz prędkosć (podwójne kliknięcie by zatrzymać)",
+      "IncreaseSpeed": "Naprzód lub wolniej do tyłu (podwójne kliknięcie by zatrzymać)",
+      "Left": "Skręć w lewo (podwójne kliknięcie- prosto)",
+      "PausePushback": "Wstrzymaj lub wznów wypychanie",
+      "Right": "Skręć w prawo (podwójne kliknięcie- prosto)",
+      "SetReleaseParkingBrake": "Zaciągnij lub zwolnij hamulec postojowy",
+      "SliderDirection": "Ustaw pożądany kierunek",
+      "SliderSpeed": "Ustaw pożądaną prędkość",
+      "SystemEnabledOff": "Kliknij, aby włączyć system wypychania.",
+      "SystemEnabledOn": "Kliknij, aby całkowicie wyłączyć system wypychania.",
+      "ZoomIn": "Przybliż",
+      "ZoomOut": "Oddal"
     },
-    "TugAttached": "Tug is attached",
-    "TugDirection": "Kierunek Holowania",
-    "TugInTransit": "Waiting for Tug/Pin",
-    "TugSpeed": "Prędkość Holowania"
+    "TugAttached": "Holownik jest podłączony",
+    "TugDirection": "Kierunek Wypychania",
+    "TugInTransit": "Oczekuję na Holownik/Kołek",
+    "TugSpeed": "Prędkość Wypychania"
   },
   "Settings": {
     "About": {
@@ -398,10 +398,10 @@
     },
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Wysokość Zwiększenia Prędkości (ft)",
-      "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (ft)",
+      "EngineOutAccelerationHeight": "Wysokość Przyspieszania z Jednym Silnikiem (ft)",
       "IsisBaroUnit": "Ustawienie Jednostki Barometrycznej na ISIS",
       "IsisMetricAltitude": "Ustawienie Wysokości Metrycznej na ISIS",
-      "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint Format",
+      "LatLonExtendedFormat": "Format Punktów Trasy FMGC Szer/Dł Geog.",
       "PaxSigns": "Znaki dla Pasażerów",
       "RmpVhfSpacing": "Odstępy Częstotliwości VHF na Panelu RMP",
       "ThrustReductionHeight": "Wysokość Redukcji Ciągu (ft)",
@@ -414,7 +414,7 @@
       "Enable": "Włącz",
       "EnableTelex": "Włącz TELEX",
       "ErrorReporting": "Zgłaszanie Błędów",
-      "HoppieEnabled": "Hoppie enabled",
+      "HoppieEnabled": "Hoppie Włączone",
       "HoppieUserId": "ID Użytkownika Hoppie",
       "MetarSource": "Źródło METAR",
       "OptionalA32nxErrorReporting": "Opcjonalne Raportowanie Błędów A32NX",
@@ -424,11 +424,11 @@
       "Telex": "TELEX",
       "TelexEnablesFreeTextAndLiveMap": "TELEX umożliwia przesyłanie tekstu swobodnego i mapy w czasie rzeczywistym. Jeśli funkcja ta jest włączona, dane o pozycji statku powietrznego są publikowane na czas trwania lotu. Wiadomości są publiczne i nie są moderowane. KORZYSTANIE Z TEJ FUNKCJI ODBYWA SIĘ NA WŁASNE RYZYKO. Aby dowiedzieć się więcej o TELEX i jego możliwościach, prosimy wejść na stronę https://docs.flybywiresim.com/telex.",
       "TelexWarning": "Ostrzeżenie TELEX",
-      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "There was an error validating your Hoppie-ID",
+      "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Wystąpił błąd podczas sprawdzania poprawności Hoppie-ID",
       "Title": "ATSU/AOC",
       "YouAreAbleToOptIntoAnonymousErrorReporting": "Użytkownik może zdecydować się na anonimowe zgłaszanie błędów, co pozwoli nam szybciej diagnozować, monitorować i rozwiązywać problemy. Ta funkcja jest całkowicie opcjonalna i nigdy nie będziemy gromadzić danych osobowych użytkownika, ale może pozwolić na łatwiejsze uzyskanie pomocy technicznej i szybsze rozwiązywanie napotkanych problemów.",
-      "YourHoppieIdHasBeenRemoved": "Your Hoppie-ID has been removed",
-      "YourHoppieIdHasBeenValidated": "Your Hoppie-ID has been validated",
+      "YourHoppieIdHasBeenRemoved": "Twój Hoppie-ID został usunięty",
+      "YourHoppieIdHasBeenValidated": "Twój Hoppie-ID został zatwierdzony",
       "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Twoje ID Pilota SimBrief zostało zatwierdzone i zaktualizowane do"
     },
     "Audio": {
@@ -459,7 +459,7 @@
       "Active": "Aktywny",
       "Auto": "Automatycznie",
       "Calibrate": "Kalibruj",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "Pachołki Bezpieczeństwa",
       "DefaultBarometerUnit": "Domyślna Jednostka Barometru",
       "DynamicRegistrationDecal": "Dynamiczny Numer Rejestracyjny",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Włącz połączenie z serwerem MCDU (Automatycznie dezaktywowane po 5 minutach bez połączenia)",
@@ -474,7 +474,7 @@
       "ThrottleDetents": "Kalibracja Przepustnic",
       "Title": "Ustawienia Symulatora",
       "UseCalculatedIlsSignals": "Użyj Wyliczonego Sygnału ILS",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "Kliny do Kół",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
@@ -483,7 +483,7 @@
       "Axis": "Oś",
       "Back": "Powrót",
       "ConfigureEnd": "Koniec Konfiguracji",
-      "ConfigureStart": "Configure Start",
+      "ConfigureStart": "Konfiguruj Start",
       "CurrentValue": "Obecna Wartość",
       "Deadband": "Zakres Strefy",
       "ErrorOverlapMsg": "koliduje z",
@@ -511,42 +511,42 @@
       "Local": "Lokalne",
       "LocalTimeFormat": "Lokalny Format Czasu",
       "OnscreenKeyboardLayout": "Układ Klawiatury Ekranowej",
-      "ShowColoredRawMetar": "Show Colored Raw METAR",
-      "ShowStatusBarFlightProgressIndicator": "Show Status Bar Flight Progress Indicator",
-      "Theme": "Theme",
-      "TimeDisplayed": "Time Displayed",
+      "ShowColoredRawMetar": "Pokaż Kolorowe Surowe Dane METAR",
+      "ShowStatusBarFlightProgressIndicator": "Pokazuj Pasek Postępu Lotu",
+      "Theme": "Motyw",
+      "TimeDisplayed": "Wyświetlany Czas",
       "Title": "flyPad",
       "TwelveHours": "12h",
       "TwentyFourHours": "24h",
       "Utc": "UTC",
-      "UtcAndLocal": "UTC and Local"
+      "UtcAndLocal": "UTC i Lokalny"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Battery Life Simulated",
+  "Settings.flyPad.BatteryLifeEnabled": "Symuluj Zużycie Baterii",
   "StatusBar": {
-    "Apr": "Apr",
-    "Aug": "Aug",
-    "Dec": "Dec",
-    "Feb": "Feb",
-    "Fri": "Fri",
-    "Jan": "Jan",
-    "Jul": "Jul",
-    "Jun": "Jun",
+    "Apr": "Kwi",
+    "Aug": "Sie",
+    "Dec": "Gru",
+    "Feb": "Lut",
+    "Fri": "Pt",
+    "Jan": "Sty",
+    "Jul": "Lip",
+    "Jun": "Cze",
     "Mar": "Mar",
-    "May": "May",
-    "Mon": "Mon",
-    "Nov": "Nov",
-    "Oct": "Oct",
-    "Sat": "Sat",
-    "Sep": "Sep",
-    "Sun": "Sun",
+    "May": "Maj",
+    "Mon": "Pon",
+    "Nov": "Lis",
+    "Oct": "Paź",
+    "Sat": "Sob",
+    "Sep": "Wrz",
+    "Sun": "Ndz",
     "TT": {
-      "ConnectedToLocalApi": "Connected to Local API",
-      "DisconnectedFromLocalApi": "Disconnected from Local API",
-      "TurnOffOrShutdownEfb": "Turn off or Shutdown EFB"
+      "ConnectedToLocalApi": "Połączony z Lokalnym API",
+      "DisconnectedFromLocalApi": "Odłączony od Lokalnego API",
+      "TurnOffOrShutdownEfb": "Wyłącz lub Zamknij EFB"
     },
-    "Thu": "Thu",
-    "Tue": "Tue",
-    "Wed": "Wed"
+    "Thu": "Czw",
+    "Tue": "Wt",
+    "Wed": "Śr"
   }
 }
