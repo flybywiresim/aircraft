@@ -47,35 +47,55 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
     }
 
     // create the message content
-    let offset = 0;
     let content = '';
     const watchdogIndices: number[] = [];
-    messages.forEach((message) => {
-        if (message.Content.length === 0 && message.Message !== '') {
-            content += `${message.Message}\n`;
-            offset += message.Message.split(' ').length;
-        } else {
-            if (messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
-                message.Content.forEach((element) => {
-                    element.Content.forEach((value) => {
-                        if (value.Monitoring) {
-                            watchdogIndices.push(offset + value.IndexStart);
-                        }
-                    });
-                });
-            }
-
-            const text = message.serialize(AtsuMessageSerializationFormat.DCDU);
-            offset += text.split(' ').length;
-            content += `${text}\n`;
-        }
-    });
-
     let messageSeperatorLine: number | undefined = undefined;
-    if (messages[0].SemanticResponseRequired && messages[0].Response) {
-        messageSeperatorLine = content.split('\n').length;
-        content += '------------------------------\n';
-        content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;
+    if (messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
+        content = `\xa0\xa0\xa0\xa0\xa0REMINDER MSG ${messages[0].Timestamp.dcduTimestamp()}\n`;
+        messageSeperatorLine = 0;
+
+        if (messages[0].SemanticResponseRequired) {
+            content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;
+        } else {
+            messages.forEach((message) => {
+                if (message.Content.length === 0 && message.Message !== '') {
+                    content += `${message.Message}\n`;
+                } else {
+                    content += `${message.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;
+                }
+            });
+        }
+
+        content = content.replace(/@/g, '');
+    } else {
+        let offset = 0;
+
+        messages.forEach((message) => {
+            if (message.Content.length === 0 && message.Message !== '') {
+                content += `${message.Message}\n`;
+                offset += message.Message.split(' ').length;
+            } else {
+                if (messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
+                    message.Content.forEach((element) => {
+                        element.Content.forEach((value) => {
+                            if (value.Monitoring) {
+                                watchdogIndices.push(offset + value.IndexStart);
+                            }
+                        });
+                    });
+                }
+
+                const text = message.serialize(AtsuMessageSerializationFormat.DCDU);
+                offset += text.split(' ').length;
+                content += `${text}\n`;
+            }
+        });
+
+        if (messages[0].SemanticResponseRequired && messages[0].Response) {
+            messageSeperatorLine = content.split('\n').length;
+            content += '------------------------------\n';
+            content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;
+        }
     }
 
     // remove the last newline
