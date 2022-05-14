@@ -51,8 +51,8 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
     const watchdogIndices: number[] = [];
     let messageSeperatorLine: number | undefined = undefined;
     if (messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
-        content = `\xa0\xa0\xa0\xa0\xa0REMINDER MSG ${messages[0].Timestamp.dcduTimestamp()}\n`;
-        messageSeperatorLine = 0;
+        content = `_____REMINDER MSG ${messages[0].Timestamp.dcduTimestamp()}\n`;
+        messageSeperatorLine = 1;
 
         if (messages[0].SemanticResponseRequired) {
             content += `${messages[0].Response.serialize(AtsuMessageSerializationFormat.DCDU)}\n`;
