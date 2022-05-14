@@ -139,14 +139,14 @@
     "Services": {
       "BaggageTruck": "Bagasjebil",
       "CateringTruck": "Cateringbil",
-      "Cones": "Safety Cones",
+      "Cones": "Sikkerhet kjegler",
       "DoorAft": "Bakre dør",
       "DoorFwd": "Fremre dør",
       "ExternalPower": "Ekstern Strøm",
       "FuelTruck": "Drivstoffbil",
       "JetBridge": "Ombordstigningsbro",
       "Title": "Tjenester",
-      "WheelChocks": "Wheel Chocks"
+      "WheelChocks": "Hjul Chocks"
     },
     "Title": "Bakke"
   },
@@ -356,7 +356,7 @@
     "CallTug": "Tilkall pushbacktraktor",
     "DisableSystemMessageBody": "Er du sikker på at du vil deaktivere pushback systemet? Dette vil også frigjøre pushbacktraktor.",
     "DisableSystemMessageTitle": "Deaktiver pushback system",
-    "EnableSystemMessageBody": "Den nye flyPadOS 3 pushback system er ennå ikke ferdigstilt. Det er inkompatibelt med andre pushback-add-ons og kan forårsake andre problemer.",
+    "EnableSystemMessageBody": "Det nye FlyPadOS 3 Pushback System kan forårsake konflikter med andre pushback-tillegg. Vi anbefaler ikke å aktivere systemet hvis du planlegger å bruke et annet pushback-tillegg. ",
     "EnableSystemMessageTitle": "Aktiver pushback system",
     "Forward": "Fremover",
     "Halt": "Stoppet",
@@ -459,7 +459,7 @@
       "Active": "Aktiv",
       "Auto": "Automatisk",
       "Calibrate": "Kalibrer",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "Sikkerhet kjegler",
       "DefaultBarometerUnit": "Standard Barometerenhet",
       "DynamicRegistrationDecal": "Dynamisk registreringsdekal",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktiver MCDU Servertilkobling (Deaktiveres automatisk etter 5 minutter hvis tilkoblingen ikke er vellykket)",
@@ -474,7 +474,7 @@
       "ThrottleDetents": "Gassperrer",
       "Title": "Sim-alternativer",
       "UseCalculatedIlsSignals": "Bruk kalkulerte ILS-signaler",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "Hjul Chocks",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

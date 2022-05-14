@@ -239,7 +239,7 @@
       "OverweightProcedure": "Overweight Procedure",
       "Qnh": "QNH",
       "ReverseThrust": "Reverse Thrust",
-      "RunwayAltitude": "Runway Altitude",
+      "RunwayAltitude": "Runway Elevation",
       "RunwayAltitudeUnit": "ft ASL",
       "RunwayCondition": "Runway Condition",
       "RunwayConditions": {

@@ -356,7 +356,7 @@
     "CallTug": "牽引車を呼ぶ",
     "DisableSystemMessageBody": "プッシュバックシステムを無効にしてもよろしいですか?これにより、牽引車との接続も解除されます。",
     "DisableSystemMessageTitle": "プッシュバックシステムを無効にする",
-    "EnableSystemMessageBody": "新しいflyPadOS 3プッシュバックシステムはまだ完成していません。他のプッシュバックアドオンと互換性がなく、問題を引き起こす可能性があります。",
+    "EnableSystemMessageBody": "新しいflyPadOS 3プッシュバックシステムは、他のプッシュバックアドオンと競合する可能性があります。他のプッシュバックアドオンを使用する予定がある場合は、システムを有効にしないことをお勧めします。",
     "EnableSystemMessageTitle": "プッシュバックシステムを有効にする",
     "Forward": "前進",
     "Halt": "停止中",
@@ -459,7 +459,7 @@
       "Active": "有効",
       "Auto": "自動",
       "Calibrate": "調整",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "セーフティコーン",
       "DefaultBarometerUnit": "デフォルトの気圧計単位",
       "DynamicRegistrationDecal": "登録番号デカールの表示",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "MCDUサーバー接続の有効化(接続が成功しなかった場合、5分後に自動的に非有効化)",
@@ -474,7 +474,7 @@
       "ThrottleDetents": "スロットルディテント",
       "Title": "シミュレーターオプション",
       "UseCalculatedIlsSignals": "計算されたILS信号を使用",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "輪止め",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

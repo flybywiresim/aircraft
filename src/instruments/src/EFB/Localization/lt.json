@@ -139,14 +139,14 @@
     "Services": {
       "BaggageTruck": "Bagažo sunkvežimis",
       "CateringTruck": "Maitinimo sunkvežimis",
-      "Cones": "Safety Cones",
+      "Cones": "Saugumo kūgiai",
       "DoorAft": "Galinės durys",
       "DoorFwd": "Priekinės durys",
       "ExternalPower": "Išorinė energija",
       "FuelTruck": "Kuro cisterna",
       "JetBridge": "Rankovė",
       "Title": "Aptarnavimas",
-      "WheelChocks": "Wheel Chocks"
+      "WheelChocks": "Ratų atrama"
     },
     "Title": "Paslaugos"
   },
@@ -351,7 +351,7 @@
     "Title": "Išankstiniai nustatymai"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "Išstumimo kontrolė prieinama tik ant žemės",
     "Backward": "Atgal",
     "CallTug": "Iškviesti vilkiką",
     "DisableSystemMessageBody": "Ar tikrai norite išjunti išstumimo sistemą? Vilkikas bus paleistas.",
@@ -374,8 +374,8 @@
     "TT": {
       "CallReleaseTug": "Iškviesti ar paleisti vilkiką",
       "CenterPlaneMode": "Centruoti žemėlapį",
-      "DecreaseSpeed": "Backwards or slower forwards",
-      "IncreaseSpeed": "Forwards or slower backwards",
+      "DecreaseSpeed": "Atgal arba lėčiau pirmyn",
+      "IncreaseSpeed": "Pirmyn arba lėčiau atgal",
       "Left": "Dešinėn (paspausti du kartus norint tiesaus)",
       "PausePushback": "Pristabdyti ar atstabdyti išstumimą",
       "Right": "Dešinėn (paspausti du kartus norint tiesaus)",
@@ -459,8 +459,8 @@
       "Active": "Aktyvus",
       "Auto": "Automatinis",
       "Calibrate": "Kalibruoti",
-      "ConesEnabled": "Safety Cones",
-      "DefaultBarometerUnit": "Numatyti Barometro Vienetai",
+      "ConesEnabled": "Saugumo kūgiai",
+      "DefaultBarometerUnit": "Numatyti barometro vienetai",
       "DynamicRegistrationDecal": "Dinaminis registracijos lipdukas",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Įgalinti MCDU serverio prisijungimą (automatiškai išjungiama po 5 minučių, jei nepavyksta prisijungti)",
       "ExternalMcduServerPort": "Išorinis MCDU serverio port",
@@ -474,7 +474,7 @@
       "ThrottleDetents": "Droselio detentai",
       "Title": "Simuliatoriaus nustatymai",
       "UseCalculatedIlsSignals": "Naudoti apskaičiuotus ILS signalus",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "Ratų atrama",
       "inHg": "inHg"
     },
     "ThrottleConfig": {

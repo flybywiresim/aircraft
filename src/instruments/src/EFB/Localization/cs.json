@@ -139,14 +139,14 @@
     "Services": {
       "BaggageTruck": "Zavazadlový vůz",
       "CateringTruck": "Cateringový vůz",
-      "Cones": "Bezpečnostní kužely",
+      "Cones": "Výstražné kužely",
       "DoorAft": "Zadní dveře",
       "DoorFwd": "Přední dveře",
       "ExternalPower": "Externí napájení",
       "FuelTruck": "Cisterna",
       "JetBridge": "Nástupní most",
       "Title": "Služby",
-      "WheelChocks": "Wheel Chocks"
+      "WheelChocks": "Špalky kol"
     },
     "Title": "Pozemní"
   },
@@ -356,7 +356,7 @@
     "CallTug": "Přivolat pushback",
     "DisableSystemMessageBody": "Určitě chcete vypnout pushback systém? Tato akce také uvolní pushback.",
     "DisableSystemMessageTitle": "Vypnout Pushback System",
-    "EnableSystemMessageBody": "Nový pushback systém z flyPadOS 3 ještě není dokončen. Není kompatibilní s ostatními pushback doplňky a může způsobit jiné problémy.",
+    "EnableSystemMessageBody": "Nový pushback systém z flyPadOS 3 může způsobit konflikty s jinými pushback doplňky. Při použití jiných pushback doplňků jej doporučujeme vypnout.",
     "EnableSystemMessageTitle": "Zapnout Pushback System",
     "Forward": "Vpřed",
     "Halt": "Pozastaveno",
@@ -364,8 +364,8 @@
     "Left": "Doleva",
     "Moving": "V pohybu",
     "ParkingBrake": {
-      "Off": "Vypnuto",
-      "On": "Zapnuto",
+      "Off": "vypnutá",
+      "On": "zapnutá",
       "Title": "Parkovací brzda"
     },
     "Right": "Doprava",
@@ -459,7 +459,7 @@
       "Active": "Aktivní",
       "Auto": "Auto.",
       "Calibrate": "Kalibrovat",
-      "ConesEnabled": "Bezpečnostní kužely",
+      "ConesEnabled": "Výstražné kužely",
       "DefaultBarometerUnit": "Výchozí jednotky tlaku vzduchu",
       "DynamicRegistrationDecal": "Dynamická imatrikulace letadla",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Povolit připojení k serveru MCDU (Bez úspěšného připojení se po 5 minutách automaticky vypne)",
@@ -474,7 +474,7 @@
       "ThrottleDetents": "Zarážky plynu",
       "Title": "Možnosti simulace",
       "UseCalculatedIlsSignals": "Používat vypočítaný signál ILS",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "Špalky kol",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
