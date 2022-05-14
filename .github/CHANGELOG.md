@@ -8,11 +8,8 @@
 
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
 1. [MCDU] Allow Wind Request from Simbrief flight plan - @USA-RedDragon (Jacob McSwain)
-1. [ENGINE] Fuel persistency between each flight - @juliansebline (Julian Sebline#8476)
-
-## 0.9.0
-
 1. [HYD] Fix fluid return handling of actuators - @Crocket63 (crocket)
+1. [ENGINE] Fuel persistency between each flight - @juliansebline (Julian Sebline#8476)
 
 ## 0.8.0
 
