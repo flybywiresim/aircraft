@@ -137,6 +137,22 @@ export class UplinkMessageInterpretation {
     }
     // UM181 -> distance to %s
 
+    private static FillReportingRelatedData(message: CpdlcMessage): boolean {
+        if (message.Content[0].TypeId === 'UM128' || message.Content[0].TypeId === 'UM175') {
+            message.Response.Content[0].Content[0].Value = message.Content[0].Content[0].Value;
+            return true;
+        }
+
+        if (message.Content[0].TypeId === 'UM180') {
+            for (let i = 0; i < message.Response.Content[0].Content.length; ++i) {
+                message.Response.Content[0].Content[i].Value = message.Content[0].Content[i].Value;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
     public static AppendSemanticAnswer(atsu: Atsu, positiveAnswer: boolean, message: CpdlcMessage) {
         if (message.Content[0].TypeId === 'UM143') {
             // find last request and create a deep copy
@@ -180,7 +196,9 @@ export class UplinkMessageInterpretation {
         }
 
         if (!UplinkMessageInterpretation.FillPresentData(atsu, message) && !UplinkMessageInterpretation.FillAssignedData(atsu, message)) {
-            UplinkMessageInterpretation.FillPositionReportRelatedData(atsu, message);
+            if (!UplinkMessageInterpretation.FillPositionReportRelatedData(atsu, message)) {
+                UplinkMessageInterpretation.FillReportingRelatedData(message);
+            }
         }
     }
 
