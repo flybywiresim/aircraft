@@ -29,6 +29,7 @@
 1. [EWD] E/WD visual improvements - @lukecologne (luke)
 1. [SFCC] Add SFCC bus outputs  - @lukecologne (luke)
 1. [EWD] Use FPPU angles for flaps/slats display  - @lukecologne (luke)
+1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 
 ## 0.8.0
 
