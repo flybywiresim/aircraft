@@ -5301,9 +5301,9 @@ struct A320GravityExtension {
 }
 impl A320GravityExtension {
     const INCREMENT_ANGLE_DEGREE_PER_SECOND: f64 = 220.;
-
-    // Can be allowed when handle animation is available
-    const ALLOW_RETURNING_TO_STOWED_HANDLE_POSITION: bool = false;
+    const MAX_CRANK_HANDLE_ANGLE_DEGREE: f64 = 360. * 3.;
+    const MIN_CRANK_HANDLE_ANGLE_DEGREE: f64 = 0.;
+    const CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE: f64 = 0.1;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -5331,11 +5331,26 @@ impl A320GravityExtension {
             }
         }
 
-        if Self::ALLOW_RETURNING_TO_STOWED_HANDLE_POSITION
-            && self.handle_angle.get::<degree>() > 360. * 3.3
+        self.handle_angle = self
+            .handle_angle
+            .min(Angle::new::<degree>(
+                Self::MAX_CRANK_HANDLE_ANGLE_DEGREE
+                    + Self::CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE,
+            ))
+            .max(Angle::new::<degree>(
+                Self::MIN_CRANK_HANDLE_ANGLE_DEGREE
+                    - Self::CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE,
+            ));
+
+        if self.handle_angle.get::<degree>() > Self::MAX_CRANK_HANDLE_ANGLE_DEGREE
+            && !self.is_turned
+            && self.is_extending_gear
         {
             self.is_extending_gear = false;
-        } else if self.handle_angle.get::<degree>() < -0.2 {
+        } else if self.handle_angle.get::<degree>() < Self::MIN_CRANK_HANDLE_ANGLE_DEGREE
+            && !self.is_turned
+            && !self.is_extending_gear
+        {
             self.is_extending_gear = true;
         }
     }
@@ -10249,6 +10264,7 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
+                .with_worst_case_ptu()
                 .set_gear_lever_down()
                 .set_green_ed_pump(false)
                 .set_yellow_ed_pump(false)
@@ -10259,7 +10275,7 @@ mod tests {
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
 
             test_bed = test_bed.set_gear_lever_up();
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(60.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(80.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
         }
@@ -10338,8 +10354,6 @@ mod tests {
             );
         }
 
-        // TODO un-ignore when emergency gear extension is allowed to be reset
-        #[ignore]
         #[test]
         fn reverting_emergency_extension_do_not_change_fluid_volume() {
             let mut test_bed = test_bed_with()
