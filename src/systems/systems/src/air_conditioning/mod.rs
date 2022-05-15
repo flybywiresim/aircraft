@@ -139,8 +139,7 @@ impl<const ZONES: usize> SimulationElement for AirConditioningSystem<ZONES> {
 pub struct AirConditioningSystemOverhead<const ZONES: usize> {
     flow_selector_id: VariableIdentifier,
 
-    pack_1_pb: OnOffFaultPushButton,
-    pack_2_pb: OnOffFaultPushButton,
+    pack_pbs: [OnOffFaultPushButton; 2],
     temperature_selectors: Vec<ValueKnob>,
     flow_selector: OverheadFlowSelector,
 }
@@ -151,8 +150,10 @@ impl<const ZONES: usize> AirConditioningSystemOverhead<ZONES> {
             flow_selector_id: context
                 .get_identifier("KNOB_OVHD_AIRCOND_PACKFLOW_Position".to_owned()),
 
-            pack_1_pb: OnOffFaultPushButton::new_on(context, "COND_PACK_1"),
-            pack_2_pb: OnOffFaultPushButton::new_on(context, "COND_PACK_2"),
+            pack_pbs: [
+                OnOffFaultPushButton::new_on(context, "COND_PACK_1"),
+                OnOffFaultPushButton::new_on(context, "COND_PACK_2"),
+            ],
             temperature_selectors: Vec::new(),
             flow_selector: OverheadFlowSelector::Norm,
         };
@@ -171,13 +172,15 @@ impl<const ZONES: usize> AirConditioningSystemOverhead<ZONES> {
         ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.04 + 18.)
     }
 
-    fn pack_pushbuttons_state(&self) -> [bool; 2] {
-        [self.pack_1_pb.is_on(), self.pack_2_pb.is_on()]
+    fn pack_pushbuttons_state(&self) -> Vec<bool> {
+        self.pack_pbs.iter().map(|pack| pack.is_on()).collect()
     }
 
     fn set_pack_pushbutton_fault(&mut self, pb_has_fault: [bool; 2]) {
-        self.pack_1_pb.set_fault(pb_has_fault[0]);
-        self.pack_2_pb.set_fault(pb_has_fault[1]);
+        self.pack_pbs
+            .iter_mut()
+            .enumerate()
+            .for_each(|(index, pushbutton)| pushbutton.set_fault(pb_has_fault[index]));
     }
 
     fn flow_selector_position(&self) -> OverheadFlowSelector {
@@ -192,8 +195,7 @@ impl<const ZONES: usize> SimulationElement for AirConditioningSystemOverhead<ZON
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.temperature_selectors, visitor);
-        self.pack_1_pb.accept(visitor);
-        self.pack_2_pb.accept(visitor);
+        accept_iterable!(self.pack_pbs, visitor);
 
         visitor.visit(self);
     }
