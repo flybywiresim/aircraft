@@ -245,6 +245,8 @@ const DCDU: React.FC = () => {
                     } else if (cpdlcMessages[0].MessageMonitoring !== CpdlcMessageMonitoringState.Monitoring) {
                         dcduBlock.statusMessage = DcduStatusMessage.NoMessage;
                     }
+                } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
+                    dcduBlock.statusMessage = DcduStatusMessage.NoMessage;
                 }
 
                 // response sent
