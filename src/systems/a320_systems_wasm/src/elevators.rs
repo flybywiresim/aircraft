@@ -86,8 +86,8 @@ pub(super) fn elevators(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn E
     builder.map_many(
         ExecuteOn::PostTick,
         vec![
-            Variable::aspect("HYD_ELEV_LEFT_DEFLECTION"),
-            Variable::aspect("HYD_ELEV_RIGHT_DEFLECTION"),
+            Variable::aspect("HYD_ELEVATOR_LEFT_DEFLECTION"),
+            Variable::aspect("HYD_ELEVATOR_RIGHT_DEFLECTION"),
             Variable::named("ELEVATOR_DEFLECTION_DEMAND"),
             Variable::aircraft("ELEVATOR DEFLECTION PCT", "Percent", 0),
         ],
@@ -96,12 +96,9 @@ pub(super) fn elevators(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn E
 
             println!(
                 "MSFSdmnd {:.2} FBW elev {:.2} Mean elev {:.2} --> SIM Elev output {:.2}",
-                values[3],
-                values[2],
-                mean_elevator_position,
-                mean_elevator_position * 2. - 1.
+                values[3], values[2], mean_elevator_position, mean_elevator_position
             );
-            mean_elevator_position * 2. - 1.
+            mean_elevator_position
         },
         Variable::aspect("HYD_FINAL_ELEVATOR_FEEDBACK"),
     );
