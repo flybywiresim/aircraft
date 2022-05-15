@@ -4972,7 +4972,7 @@ impl ElevatorAssembly {
             ],
         );
 
-        self.position = self.hydraulic_assembly.position_normalized();
+        self.position = self.hydraulic_assembly.actuator_position_normalized(0);
     }
 }
 impl SimulationElement for ElevatorAssembly {
