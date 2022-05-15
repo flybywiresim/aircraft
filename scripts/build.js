@@ -62,36 +62,6 @@ if (edition === 'stable') {
 }
 const title = `A32NX (${titlePostfix})`;
 
-// This copies one of two prepared DDS files from the src folder
-// (src/Textures/decals 4k/) to the aircraft folder
-// (flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/)
-// based on the current branch the build is executed from.
-// Stable and Master will get the DDS with the yellow INOP label.
-// All other branches get the DDS with the red INOP label.
-// Stable will not show the label (encoded in the src/model build.js)
-// Development will show a yellow label
-// All other branches show a red label
-
-function copyDDSFiles(src_dds) {
-    const TARGET_PATH = '/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds';
-    // destination will be created or overwritten by default.
-    fs.copyFile(path.join(path.resolve(__dirname, '..', 'src'), src_dds), path.join(A32NX, TARGET_PATH),
-        (err) => {
-            if (err) {
-                throw err;
-            }
-            console.log('copying ' + src_dds + ` to ` + TARGET_PATH + "failed: " + err);
-        });
-}
-
-if (edition === 'stable') {
-    copyDDSFiles('/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-stable.dds');
-} else if (GIT_BRANCH === 'master') {
-    copyDDSFiles('/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-master.dds');
-} else {
-    copyDDSFiles('/Textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-exp.dds');
-}
-
 const contentEntries = [];
 let totalPackageSize = 0;
 
