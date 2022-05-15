@@ -69,16 +69,16 @@ const DCDU: React.FC = () => {
     };
 
     const setMessageStatus = (uid: number, response: number) => {
-        const updateMap = messages;
+        const updateMap = new Map<number, [CpdlcMessage[], number, number]>(messages);
 
         const entry = updateMap.get(uid);
         if (entry !== undefined) {
             events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_READ', uid);
             entry[2] = response;
             updateMap.set(uid, entry);
-        }
 
-        setMessages(updateMap);
+            setMessages(updateMap)
+        }
     };
 
     const deleteMessage = (uid: number) => events.triggerToAllSubscribers('A32NX_ATSU_DELETE_MESSAGE', uid);
@@ -105,7 +105,7 @@ const DCDU: React.FC = () => {
             }
 
             // update the map
-            const updatedMap = messages;
+            const updatedMap = new Map<number, [CpdlcMessage[], number, number]>(messages);
             updatedMap.delete(uid);
             setMessages(updatedMap);
         }
@@ -194,6 +194,7 @@ const DCDU: React.FC = () => {
         });
 
         if (cpdlcMessages.length !== 0) {
+            const newMessageMap = new Map(messages);
             const dcduBlock = messages.get(cpdlcMessages[0].UniqueMessageID);
             if (dcduBlock !== undefined) {
                 // update the status entry
@@ -234,11 +235,10 @@ const DCDU: React.FC = () => {
                 if (cpdlcMessages[0].Response !== undefined && cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Sent) {
                     dcduBlock[2] = -1;
                 }
-
-                setMessages(messages.set(cpdlcMessages[0].UniqueMessageID, dcduBlock));
             } else {
-                setMessages(messages.set(cpdlcMessages[0].UniqueMessageID, [cpdlcMessages, new Date().getTime(), -1]));
+                newMessageMap.set(cpdlcMessages[0].UniqueMessageID, [cpdlcMessages, new Date().getTime(), -1]);
             }
+            setMessages(newMessageMap);
 
             if (messageUid === -1) {
                 setMessageUid(cpdlcMessages[0].UniqueMessageID);
