@@ -11,6 +11,7 @@
 1. [HYD] Fix fluid return handling of actuators - @Crocket63 (crocket)
 1. [ENGINE] Fuel persistency between each flight - @juliansebline (Julian Sebline#8476)
 1. [HYD] Now allowing reverting gravity gear extension - @Crocket63 (crocket)
+1. [TCAS] Fixed issue when turning to STBY while RA is issued - @2hwk (2Cas#1022)
 
 ## 0.8.0
 

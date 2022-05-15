@@ -329,11 +329,21 @@ export class TcasComputer implements TcasComponent {
      * Set TCAS status
      */
     private updateStatusFaults(): void {
-        // If in STBY, inhibit all, set sens to 1
+        // If in STBY, inhibit all, set sens to 1, clear all existing RAs
         if (this.tcasMode.getVar() === TcasMode.STBY) {
             this.taOnly.setVar(false);
             this.tcasFault.setVar(false);
             this.sensitivity.setVar(1);
+
+            this.activeRa.info = null;
+            this.activeRa.isReversal = false;
+            this.activeRa.secondsSinceStart = 0;
+            this.activeRa.hasBeenAnnounced = false;
+
+            this._newRa.info = null;
+            this._newRa.isReversal = false;
+            this._newRa.secondsSinceStart = 0;
+            this._newRa.hasBeenAnnounced = false;
             return;
         }
 
