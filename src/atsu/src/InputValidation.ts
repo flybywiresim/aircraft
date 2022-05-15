@@ -68,6 +68,18 @@ export class InputValidation {
     }
 
     /**
+     * Checks if the value fits to the ATIS format
+     * @param value The entered ATIS candidate
+     * @returns AtsuStatusCodes.Ok if the format is valid
+     */
+    public static validateScratchpadAtis(value: string): AtsuStatusCodes {
+        if (/^[A-Z]{1}$/.test(value)) {
+            return AtsuStatusCodes.Ok;
+        }
+        return AtsuStatusCodes.FormatError;
+    }
+
+    /**
      * Checks if the value fits to the degree format
      * @param value The entered degree candidate
      * @returns AtsuStatusCodes.Ok if the format is valid
