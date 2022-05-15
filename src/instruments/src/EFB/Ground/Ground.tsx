@@ -26,6 +26,8 @@ export const Ground = ({
     activeButtons, disabledButtons, pushBackWaitTimerHandle, setPushBackWaitTimerHandle,
     tugRequestOnly, setTugRequestOnly, addActiveButton, removeActiveButton, setActiveButtons, addDisabledButton, removeDisabledButton,
 }) => {
+    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 1_000);
+
     const [jetWayActive, setJetWayActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_JETWAY', 'bool', 1000);
     const [, setRampActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
     const [cargoActive, setCargoActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 'K:REQUEST_LUGGAGE', 'bool', 1000);
@@ -94,7 +96,7 @@ export const Ground = ({
     };
 
     const handleClick = (callBack: () => void, event: React.MouseEvent, disabledButton?: string) => {
-        if (!tugActive) {
+        if (!tugActive && isOnGround) {
             if (!activeButtons.map((b: StatefulButton) => b.id).includes(event.currentTarget.id)) {
                 addActiveButton({ id: event.currentTarget.id, state: STATE_WAITING });
                 if (disabledButton) {
@@ -120,21 +122,23 @@ export const Ground = ({
      * So all highlighting should be removed as well
      */
     const handlePushBackClick = (callBack: () => void, event: React.MouseEvent) => {
-        const tugRequest = 'tug-request';
-        if (activeButtons.map((b: StatefulButton) => b.id).includes(tugRequest)) {
-            if (event.currentTarget.id === tugRequest) {
-                setActiveButtons([]);
-                callBack();
-            } else {
+        if (isOnGround) {
+            const tugRequest = 'tug-request';
+            if (activeButtons.map((b: StatefulButton) => b.id).includes(tugRequest)) {
+                if (event.currentTarget.id === tugRequest) {
+                    setActiveButtons([]);
+                    callBack();
+                } else {
+                    setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
+                    callBack();
+                }
+            } else if (event.currentTarget.id === tugRequest) {
                 setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
+                disabledButtons.forEach((b, index) => {
+                    removeDisabledButton(index);
+                });
                 callBack();
             }
-        } else if (event.currentTarget.id === tugRequest) {
-            setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
-            disabledButtons.forEach((b, index) => {
-                removeDisabledButton(index);
-            });
-            callBack();
         }
     };
 
