@@ -43,9 +43,10 @@ export class UplinkMessageInterpretation {
         UM152: { positiveOrNegative: true, messages: ['DM85', 'DM86'] },
         UM175: { positiveOrNegative: false, messages: ['DM72'] },
         UM180: { positiveOrNegative: true, messages: ['DM76'] },
-        UM181: { positiveOrNegative: true, messages: ['DM67', 'DM68'] },
-        UM182: { positiveOrNegative: true, messages: ['DM67', 'DM68'] },
-        UM228: { positiveOrNegative: true, messages: ['DM67', 'DM68'] },
+        UM181: { positiveOrNegative: false, messages: ['DM68'] },
+        UM182: { positiveOrNegative: false, messages: ['DM79'] },
+        UM184: { positiveOrNegative: false, messages: ['DM68'] },
+        UM228: { positiveOrNegative: true, messages: ['DM68'] },
         UM231: { positiveOrNegative: false, messages: ['DM106'] },
         UM232: { positiveOrNegative: false, messages: ['DM109'] },
     };
