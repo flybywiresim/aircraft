@@ -277,24 +277,14 @@ impl PackFlowValve {
         pneumatic: &(impl PneumaticBleed + EngineStartState),
         pneumatic_overhead: &impl EngineBleedPushbutton,
     ) -> bool {
-        // Pneumatic overhead represents engine bleed pushbutton for left and right engine(s)
-        if self.number == 1 {
-            ((engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
-                && pneumatic_overhead.left_engine_bleed_pushbutton_is_auto())
-                || (engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
-                    && pneumatic_overhead.right_engine_bleed_pushbutton_is_auto()
-                    && pneumatic.engine_crossbleed_is_on()))
-                || pneumatic.apu_bleed_is_on()
-        } else if self.number == 2 {
-            ((engines[1].corrected_n1() >= Ratio::new::<percent>(15.)
-                && pneumatic_overhead.right_engine_bleed_pushbutton_is_auto())
-                || (engines[0].corrected_n1() >= Ratio::new::<percent>(15.)
-                    && pneumatic_overhead.left_engine_bleed_pushbutton_is_auto()
-                    && pneumatic.engine_crossbleed_is_on()))
-                || pneumatic.apu_bleed_is_on()
-        } else {
-            panic!("Something went wrong, flow control valve number was not 1 nor 2")
-        }
+        // Pneumatic overhead represents engine bleed pushbutton for left [0] and right [1] engine(s)
+        ((engines[self.number - 1].corrected_n1() >= Ratio::new::<percent>(15.)
+            && pneumatic_overhead.engine_bleed_pushbuttons_are_auto()[(self.number == 2) as usize])
+            || (engines[(self.number == 1) as usize].corrected_n1() >= Ratio::new::<percent>(15.)
+                && pneumatic_overhead.engine_bleed_pushbuttons_are_auto()
+                    [(self.number == 1) as usize]
+                && pneumatic.engine_crossbleed_is_on()))
+            || pneumatic.apu_bleed_is_on()
     }
 
     fn fcv_timer(&self) -> Duration {
@@ -420,12 +410,8 @@ mod air_conditioning_tests {
     }
 
     impl EngineBleedPushbutton for TestPneumaticOverhead {
-        fn left_engine_bleed_pushbutton_is_auto(&self) -> bool {
-            self.engine_1_bleed.is_auto()
-        }
-
-        fn right_engine_bleed_pushbutton_is_auto(&self) -> bool {
-            self.engine_2_bleed.is_auto()
+        fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
+            [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
         }
     }
 
