@@ -179,7 +179,23 @@ const ModifyLookupTable = {
         valueIndex: -1,
         emptyLength: 0
     }
-    ]
+    ],
+    UM181: [{
+        response: "DM67",
+        text: "DISTANCE TO %s",
+        type: Atsu.CpdlcMessageContentType.Distance,
+        textIndex: 0,
+        valueIndex: 0,
+        emptyLength: 3
+    }],
+    UM182: [{
+        response: "DM79",
+        text: "ATIS",
+        type: Atsu.CpdlcMessageContentType.Atis,
+        textIndex: -1,
+        valueIndex: 0,
+        emptyLength: 1
+    }]
 };
 
 // TODO UM131 -> present fuel&people
@@ -258,6 +274,9 @@ class CDUAtcMessageModify {
         }
         if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Degree) {
             return Atsu.InputValidation.validateScratchpadDegree(value);
+        }
+        if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Atis) {
+            return Atsu.InputValidation.validateScratchpadAtis(value);
         }
 
         return Atsu.AtsuStatusCodes.UnknownMessage;
