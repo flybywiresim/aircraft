@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useInteractionEvents, useUpdate } from './hooks';
 
 /**
@@ -292,8 +292,29 @@ export const useSimVar = (
     maxStaleness = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
-    const value = useSimVarValue(name, unit, maxStaleness);
-    const setter = useSimVarSetter(name, unit);
+    const lastUpdate = useRef(Date.now() - maxStaleness - 1);
+
+    const [value, setValue] = useState(() => SimVar.GetSimVarValue(name, unit));
+
+    const updateCallback = useCallback(() => {
+        const newValue = SimVar.GetSimVarValue(name, unit);
+
+        const delta = Date.now() - lastUpdate.current;
+
+        if (delta > maxStaleness) {
+            lastUpdate.current = Date.now();
+            setValue(newValue);
+        }
+    }, [name, unit, maxStaleness]);
+
+    useUpdate(updateCallback);
+
+    const setter = useCallback((value: any | SimVarSetter) => {
+        SimVar.SetSimVarValue(name, unit, typeof value === 'function' ? value(SimVar.GetSimVarValue(name, unit)) : value);
+
+        return value;
+    }, [name, unit]);
+
     return [value, setter];
 };
 
@@ -323,27 +344,24 @@ export const useGlobalVar = (
     unit: UnitName,
     maxStaleness = 0,
 ): SimVarValue => {
-    const contextValue = useContext(context);
+    const lastUpdate = useRef(Date.now() - maxStaleness - 1);
 
-    useEffect(() => {
-        // This part of useEffect will be called whenever either:
-        // - the component has just mounted, or
-        // - one the parameters below (name, unit, maxStaleness) has changed.
-        // In these cases, we want to register our current parameters with the
-        // SimVarProvider that we access through the context.
-        contextValue.register(name, unit, maxStaleness, 1);
-        return () => {
-            // This part of useEffect will be called whenever either:
-            // - one of the parameters below (name, unit, maxStaleness) is about
-            //   to change, or
-            // - the component is about to unmount
-            // In these cases, we want to unregister our current parameters from
-            // the SimVar provider, that we again access through the context.
-            contextValue.unregister(name, unit, maxStaleness, 1);
-        };
+    const [value, setValue] = useState(() => SimVar.GetGlobalVarValue(name, unit));
+
+    const updateCallback = useCallback(() => {
+        const newValue = SimVar.GetGlobalVarValue(name, unit);
+
+        const delta = Date.now() - lastUpdate.current;
+
+        if (delta > maxStaleness) {
+            lastUpdate.current = Date.now();
+            setValue(newValue);
+        }
     }, [name, unit, maxStaleness]);
 
-    return contextValue.retrieve(name, unit, false, 1);
+    useUpdate(updateCallback);
+
+    return value;
 };
 
 /**
@@ -372,27 +390,24 @@ export const useGameVar = (
     unit: UnitName,
     maxStaleness = 0,
 ): SimVarValue => {
-    const contextValue = useContext(context);
+    const lastUpdate = useRef(Date.now() - maxStaleness - 1);
 
-    useEffect(() => {
-        // This part of useEffect will be called whenever either:
-        // - the component has just mounted, or
-        // - one the parameters below (name, unit, maxStaleness) has changed.
-        // In these cases, we want to register our current parameters with the
-        // SimVarProvider that we access through the context.
-        contextValue.register(name, unit, maxStaleness, 2);
-        return () => {
-            // This part of useEffect will be called whenever either:
-            // - one of the parameters below (name, unit, maxStaleness) is about
-            //   to change, or
-            // - the component is about to unmount
-            // In these cases, we want to unregister our current parameters from
-            // the SimVar provider, that we again access through the context.
-            contextValue.unregister(name, unit, maxStaleness, 2);
-        };
+    const [value, setValue] = useState(() => SimVar.GetGameVarValue(name, unit));
+
+    const updateCallback = useCallback(() => {
+        const newValue = SimVar.GetGameVarValue(name, unit);
+
+        const delta = Date.now() - lastUpdate.current;
+
+        if (delta > maxStaleness) {
+            lastUpdate.current = Date.now();
+            setValue(newValue);
+        }
     }, [name, unit, maxStaleness]);
 
-    return contextValue.retrieve(name, unit, false, 2);
+    useUpdate(updateCallback);
+
+    return value;
 };
 
 /**
@@ -478,8 +493,9 @@ export const useSplitSimVar = (
     maxStaleness = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
-    const value = useSimVarValue(readName, readUnit, maxStaleness);
-    const setter = useSimVarSetter(readName, writeUnit || readUnit, writeName);
+    const [value] = useSimVar(readName, readUnit, maxStaleness);
+    const [, setter] = useSimVar(writeName, writeUnit || readUnit);
+
     return [value, setter];
 };
 
