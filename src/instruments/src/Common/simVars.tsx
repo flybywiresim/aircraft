@@ -40,8 +40,8 @@ type SimVarSetter = <T extends SimVarValue>(oldValue: T) => T;
 
 type RetrieveSimVar = (name: string, unit: UnitName, force?: boolean, varType?: number) => SimVarValue;
 type UpdateSimVar = (name: string, unit: UnitName, newValueOrSetter: SimVarValue | SimVarSetter, proxy?: string) => void;
-type RegisterSimVar = (name: string, unit: UnitName, maxStaleness: number, varType: number) => void;
-type UnregisterSimVar = (name: string, unit: UnitName, maxStaleness: number, varType: number) => void;
+type RegisterSimVar = (name: string, unit: UnitName, refreshRate: number, varType: number) => void;
+type UnregisterSimVar = (name: string, unit: UnitName, refreshRate: number, varType: number) => void;
 
 const errorCallback = () => {
     throw Error('useSimVar was called in a React tree with no SimVarProvider');
@@ -206,14 +206,14 @@ const SimVarProvider: React.FC = ({ children }) => {
     /**
      * This function will be called by the useSimVar hook through the context
      * and ensures the SimVar with the supplied name and unit will be updated
-     * every maxStaleness.
+     * every refreshRate.
      */
-    const register: RegisterSimVar = (name, unit, maxStaleness, varType) => {
+    const register: RegisterSimVar = (name, unit, refreshRate, varType) => {
         const key = getKey(name, unit, varType);
         if (!listeners.current[key]) {
             listeners.current[key] = [];
         }
-        listeners.current[key].push(maxStaleness || 0);
+        listeners.current[key].push(refreshRate || 0);
     };
 
     /**
@@ -221,7 +221,7 @@ const SimVarProvider: React.FC = ({ children }) => {
      * and notifies us that there is one listener less for this specific SimVar
      * and unit combination.
      */
-    const unregister: UnregisterSimVar = (name, unit, maxStaleness, varType): void => {
+    const unregister: UnregisterSimVar = (name, unit, refreshRate, varType): void => {
         const key = getKey(name, unit, varType);
         const old = listeners.current[key];
         if (!Array.isArray(old) || old.length === 0) {
@@ -232,7 +232,7 @@ const SimVarProvider: React.FC = ({ children }) => {
             delete listeners.current[key];
         } else {
             // ...otherwise, filter out the first occurence of this value
-            const index = listeners.current[key].indexOf(maxStaleness || 0);
+            const index = listeners.current[key].indexOf(refreshRate || 0);
             // splice removes in-place, so an assignment would be wrong here as the return value is the removed element
             listeners.current[key].splice(index, 1);
         }
@@ -258,7 +258,7 @@ const SimVarProvider: React.FC = ({ children }) => {
  * to ensure your React component stays in sync with the SimVar being modified
  * from outside your component (like from other components, XML or SimConnect).
  *
- * You may optionally specify the maximum refresh interval. If the same SimVar
+ * You may optionally specify the refresh interval. If the same SimVar
  * is used in multiple places, this hook will automatically deduplicate those
  * for maximum performance, rather than fetching the SimVar multiple times.
  * Setting the SimVar will instantly cause it to be updated in all other places
@@ -266,18 +266,15 @@ const SimVarProvider: React.FC = ({ children }) => {
  *
  * @param name The name of the SimVar.
  * @param unit The unit of the SimVar.
- * @param maxStaleness The maximum time in milliseconds that may elapse before
- * the next render will cause a SimVar refresh from the simulator. This
- * parameter is only an upper bound! If another hook requests the same SimVar
- * with a lower maxStaleness, this hook will also benefit from that and refresh
- * the value more often.
+ * @param refreshRate The time in milliseconds that needs to elapse before
+ * the next render will cause a SimVar refresh from the simulator.
  *
  * @example
  * // the return value is the value itself and a setter, similar to useState
  * const [v1, setV1] = useSimVar('L:AIRLINER_V1_SPEED', 'Knots');
  *
  * @example
- * // only refresh the SimVar every 500ms (unless this SimVar is lower elsewhere)
+ * // only refresh the SimVar every 500ms
  * const [lightsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 500);
  *
  * @returns {[*, (function(*): void)]}
@@ -289,10 +286,10 @@ const SimVarProvider: React.FC = ({ children }) => {
 export const useSimVar = (
     name: string,
     unit: UnitName,
-    maxStaleness = 0,
+    refreshRate = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
-    const lastUpdate = useRef(Date.now() - maxStaleness - 1);
+    const lastUpdate = useRef(Date.now() - refreshRate - 1);
 
     const [value, setValue] = useState(() => SimVar.GetSimVarValue(name, unit));
 
@@ -301,11 +298,11 @@ export const useSimVar = (
 
         const delta = Date.now() - lastUpdate.current;
 
-        if (delta > maxStaleness) {
+        if (delta > refreshRate) {
             lastUpdate.current = Date.now();
             setValue(newValue);
         }
-    }, [name, unit, maxStaleness]);
+    }, [name, unit, refreshRate]);
 
     useUpdate(updateCallback);
 
@@ -325,11 +322,8 @@ export const useSimVar = (
  *
  * @param name The name of the GlobalVar.
  * @param unit The unit of the GlobalVar.
- * @param maxStaleness The maximum time in milliseconds that may elapse before
- * the next render will cause a GlobalVar refresh from the simulator. This
- * parameter is only an upper bound! If another hook requests the same GlobalVar
- * with a lower maxStaleness, this hook will also benefit from that and refresh
- * the value more often.
+ * @param refreshRate The time in milliseconds that needs to elapse before
+ * the next render will cause a SimVar refresh from the simulator.
  *
  * @example
  * // only refresh the GlobalVar every 100ms (unless this GlobalVar is lower elsewhere)
@@ -342,9 +336,9 @@ export const useSimVar = (
 export const useGlobalVar = (
     name: string,
     unit: UnitName,
-    maxStaleness = 0,
+    refreshRate = 0,
 ): SimVarValue => {
-    const lastUpdate = useRef(Date.now() - maxStaleness - 1);
+    const lastUpdate = useRef(Date.now() - refreshRate - 1);
 
     const [value, setValue] = useState(() => SimVar.GetGlobalVarValue(name, unit));
 
@@ -353,11 +347,11 @@ export const useGlobalVar = (
 
         const delta = Date.now() - lastUpdate.current;
 
-        if (delta > maxStaleness) {
+        if (delta > refreshRate) {
             lastUpdate.current = Date.now();
             setValue(newValue);
         }
-    }, [name, unit, maxStaleness]);
+    }, [name, unit, refreshRate]);
 
     useUpdate(updateCallback);
 
@@ -371,11 +365,8 @@ export const useGlobalVar = (
  *
  * @param name The name of the useGameVar.
  * @param unit The unit of the useGameVar.
- * @param maxStaleness The maximum time in milliseconds that may elapse before
- * the next render will cause a useGameVar refresh from the simulator. This
- * parameter is only an upper bound! If another hook requests the same useGameVar
- * with a lower maxStaleness, this hook will also benefit from that and refresh
- * the value more often.
+ * @param refreshRate The time in milliseconds that needs to elapse before
+ * the next render will cause a SimVar refresh from the simulator.
  *
  * @example
  * // only refresh the useGameVar every 200ms (unless this useGameVar is lower elsewhere)
@@ -388,9 +379,9 @@ export const useGlobalVar = (
 export const useGameVar = (
     name: string,
     unit: UnitName,
-    maxStaleness = 0,
+    refreshRate = 0,
 ): SimVarValue => {
-    const lastUpdate = useRef(Date.now() - maxStaleness - 1);
+    const lastUpdate = useRef(Date.now() - refreshRate - 1);
 
     const [value, setValue] = useState(() => SimVar.GetGameVarValue(name, unit));
 
@@ -399,11 +390,11 @@ export const useGameVar = (
 
         const delta = Date.now() - lastUpdate.current;
 
-        if (delta > maxStaleness) {
+        if (delta > refreshRate) {
             lastUpdate.current = Date.now();
             setValue(newValue);
         }
-    }, [name, unit, maxStaleness]);
+    }, [name, unit, refreshRate]);
 
     useUpdate(updateCallback);
 
@@ -426,9 +417,8 @@ export const useGameVar = (
  * @param unit The unit of the SimVar.
  * @param interactionEvents The name of the interaction events that signals a
  * change to the SimVar.
- * @param maxStaleness The maximum time in milliseconds that may elapse before
- * the next render will cause a SimVar refresh from the simulator. This
- * parameter is only an upper bound.
+ * @param refreshRate The time in milliseconds that needs to elapse before
+ * the next render will cause a SimVar refresh from the simulator.
  *
  * @example
  * // the XML updates the SimVar and emits an H event, so we can use the optimized version
@@ -446,11 +436,11 @@ export const useInteractionSimVar = (
     name: string,
     unit: UnitName,
     interactionEvents: string | string[],
-    maxStaleness = 500,
+    refreshRate = 500,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
     const contextValue = useContext(context);
-    const value = useSimVarValue(name, unit, maxStaleness);
+    const value = useSimVarValue(name, unit, refreshRate);
 
     useInteractionEvents(
         Array.isArray(interactionEvents) ? interactionEvents : [interactionEvents],
@@ -470,9 +460,8 @@ export const useInteractionSimVar = (
  * @param readUnit The unit of the SimVar to read from.
  * @param writeName The name of the SimVar to write to.
  * @param writeUnit The unit of the SimVar to write to.
- * @param maxStaleness The maximum time in milliseconds that may elapse before
- * the next render will cause a SimVar refresh from the simulator. This
- * parameter is only an upper bound.
+ * @param refreshRate The time in milliseconds that needs to elapse before
+ * the next render will cause a SimVar refresh from the simulator.
  *
  * @example
  * // read the SimVar 'COM STANDBY FREQUENCY:2', and set it through 'K:COM_2_RADIO_SET_HZ'
@@ -490,10 +479,10 @@ export const useSplitSimVar = (
     readUnit: UnitName,
     writeName: string,
     writeUnit?: UnitName,
-    maxStaleness = 0,
+    refreshRate = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
-    const [value] = useSimVar(readName, readUnit, maxStaleness);
+    const [value] = useSimVar(readName, readUnit, refreshRate);
     const [, setter] = useSimVar(writeName, writeUnit || readUnit);
 
     return [value, setter];
@@ -504,26 +493,26 @@ export const useSplitSimVar = (
  * You will usually want to useSimVar instead. Don't use this unless you know
  * what you're doing and writing your own hook.
  */
-export const useSimVarValue = (name: string, unit: UnitName, maxStaleness: number): SimVarValue => {
+export const useSimVarValue = (name: string, unit: UnitName, refreshRate: number): SimVarValue => {
     const contextValue = useContext(context);
 
     useEffect(() => {
         // This part of useEffect will be called whenever either:
         // - the component has just mounted, or
-        // - one the parameters below (name, unit, maxStaleness) has changed.
+        // - one the parameters below (name, unit, refreshRate) has changed.
         // In these cases, we want to register our current parameters with the
         // SimVarProvider that we access through the context.
-        contextValue.register(name, unit, maxStaleness, 0);
+        contextValue.register(name, unit, refreshRate, 0);
         return () => {
             // This part of useEffect will be called whenever either:
-            // - one of the parameters below (name, unit, maxStaleness) is about
+            // - one of the parameters below (name, unit, refreshRate) is about
             //   to change, or
             // - the component is about to unmount
             // In these cases, we want to unregister our current parameters from
             // the SimVar provider, that we again access through the context.
-            contextValue.unregister(name, unit, maxStaleness, 0);
+            contextValue.unregister(name, unit, refreshRate, 0);
         };
-    }, [name, unit, maxStaleness]);
+    }, [name, unit, refreshRate]);
 
     return contextValue.retrieve(name, unit);
 };
