@@ -18,11 +18,11 @@ interface StatusBarProps {
 }
 
 export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
-    const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds');
-    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds');
-    const [dayOfWeek] = useSimVar('E:ZULU DAY OF WEEK', 'number');
-    const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number');
-    const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number');
+    const [currentUTC] = useSimVar('E:ZULU TIME', 'seconds', 1_000);
+    const [currentLocalTime] = useSimVar('E:LOCAL TIME', 'seconds', 1_000);
+    const [dayOfWeek] = useSimVar('E:ZULU DAY OF WEEK', 'number', 1_000);
+    const [monthOfYear] = useSimVar('E:ZULU MONTH OF YEAR', 'number', 1_000);
+    const [dayOfMonth] = useSimVar('E:ZULU DAY OF MONTH', 'number', 1_000);
     const [showStatusBarFlightProgress] = usePersistentNumberProperty('EFB_SHOW_STATUSBAR_FLIGHTPROGRESS', 1);
 
     const history = useHistory();
