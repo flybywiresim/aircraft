@@ -5,20 +5,20 @@
 
 #include "InertialDampener.h"
 
-InertialDampener::InertialDampener(double startValue, double accelFactor) {
+InertialDampener::InertialDampener(double startValue, double accelStepSize) {
   this->lastValue = startValue;
-  this->accelFactor = accelFactor;
+  this->accelStepSize = accelStepSize;
 }
 
-double InertialDampener::updateSpeed(double newSpeed) {
-  if (round(newSpeed, 1) == round(lastValue, 1)) {
-    return newSpeed;
+double InertialDampener::updateSpeed(double newTargetValue) {
+  if (round(newTargetValue, 1) == round(lastValue, 1)) {
+    return newTargetValue;
   }
-  if (newSpeed > this->lastValue) {
-    this->lastValue += this->accelFactor;
+  if (newTargetValue > this->lastValue) {
+    this->lastValue += this->accelStepSize;
   }
-  else if (newSpeed < this->lastValue) {
-    this->lastValue -= this->accelFactor;
+  else if (newTargetValue < this->lastValue) {
+    this->lastValue -= this->accelStepSize;
   }
   return this->lastValue;
 }
