@@ -209,4 +209,12 @@ export class UplinkMessageInterpretation {
         }
         return false;
     }
+
+    public static IsModifiable(message: CpdlcMessage): boolean {
+        if (message.Content[0].TypeId in UplinkMessageInterpretation.SemanticAnswerTable) {
+            const lutEntry = UplinkMessageInterpretation.SemanticAnswerTable[message.Content[0].TypeId];
+            return lutEntry.modifiable;
+        }
+        return false;
+    }
 }
