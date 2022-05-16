@@ -38,17 +38,17 @@ pub trait VariableRegistry {
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
-pub struct VariableIdentifier(u8, usize);
+pub struct VariableIdentifier(usize, usize);
 
 impl VariableIdentifier {
-    pub fn new<T: Into<u8>>(variable_type: T) -> Self {
+    pub fn new<T: Into<usize>>(variable_type: T) -> Self {
         Self {
             0: variable_type.into(),
             1: 0,
         }
     }
 
-    pub fn identifier_type(&self) -> u8 {
+    pub fn identifier_type(&self) -> usize {
         self.0
     }
 
