@@ -71,7 +71,7 @@ const DCDU: React.FC = () => {
         state.sender = sender;
         state.message = message;
         setStatusMessage(state);
-        if (duration > 0) {
+        if (Number.isFinite(duration)) {
             if (messageStatusTimeout) {
                 clearTimeout(messageStatusTimeout);
             }
