@@ -50,13 +50,17 @@ export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = (
                             />
                         </>
                     )}
-                    <Button
-                        messageId={message.UniqueMessageID}
-                        index="R1"
-                        content="MODIFY"
-                        active={!buttonsBlocked}
-                        onClick={clicked}
-                    />
+                    {UplinkMessageInterpretation.IsModifiable(message) && (
+                        <>
+                            <Button
+                                messageId={message.UniqueMessageID}
+                                index="R1"
+                                content="MODIFY"
+                                active={!buttonsBlocked}
+                                onClick={clicked}
+                            />
+                        </>
+                    )}
                     <Button
                         messageId={message.UniqueMessageID}
                         index="R2"
