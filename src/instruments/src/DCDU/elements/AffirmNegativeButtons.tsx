@@ -18,7 +18,7 @@ export const AffirmNegativeButtons: React.FC<AffirmNegativeButtonsProps> = ({ me
 
     if (buttonsBlocked) {
         if (isStatusAvailable('Buttons')) {
-            setStatus('Buttons', 'SENDING', -1);
+            setStatus('Buttons', 'SENDING', Infinity);
         }
     }
 
