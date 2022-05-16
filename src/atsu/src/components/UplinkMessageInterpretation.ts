@@ -110,7 +110,6 @@ export class UplinkMessageInterpretation {
 
         return true;
     }
-    // UM137 -> assigned route
 
     private static FillPositionReportRelatedData(atsu: Atsu, message: CpdlcMessage): boolean {
         if (message.Content[0].TypeId === 'UM138') {
@@ -136,7 +135,6 @@ export class UplinkMessageInterpretation {
 
         return true;
     }
-    // UM181 -> distance to %s
 
     private static FillReportingRelatedData(message: CpdlcMessage): boolean {
         if (message.Content[0].TypeId === 'UM128' || message.Content[0].TypeId === 'UM175') {
