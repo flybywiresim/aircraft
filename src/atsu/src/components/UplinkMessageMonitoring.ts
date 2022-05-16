@@ -7,7 +7,7 @@ export abstract class UplinkMonitor {
 
     private static timeMonitoringMessageIds = ['UM21', 'UM24', 'UM66', 'UM76', 'UM119', 'UM122', 'UM184'];
 
-    private static levelMonitoringMessageIds = ['UM78', 'UM128', 'UM129', 'UM175', 'UM180'];
+    private static levelMonitoringMessageIds = ['UM78', 'UM128', 'UM129', 'UM130', 'UM175', 'UM180'];
 
     protected atsu: Atsu = null;
 
@@ -97,6 +97,10 @@ class LevelMonitor extends UplinkMonitor {
 
     private reachingLevel = false;
 
+    private leavingLevel = false;
+
+    private reachedLevel = false;
+
     private static extractAltitude(value: string): number {
         let altitude = parseInt(value.match(/[0-9]+/)[0]);
         if (value.startsWith('FL')) {
@@ -118,12 +122,22 @@ class LevelMonitor extends UplinkMonitor {
             this.reachingLevel = true;
         } else if (message.Content[0].TypeId === 'UM128') {
             this.reachingLevel = false;
+        } else if (message.Content[0].TypeId === 'UM130') {
+            this.reachingLevel = true;
+            this.leavingLevel = true;
         }
     }
 
     public conditionsMet(): boolean {
         const currentAltitude = this.atsu.currentFlightState().altitude;
 
+        if (this.reachingLevel && this.leavingLevel) {
+            if (!this.reachedLevel) {
+                this.reachedLevel = Math.abs(currentAltitude - this.lowerLevel) <= 100;
+            } else {
+                return Math.abs(currentAltitude - this.lowerLevel) > 100;
+            }
+        }
         if (!this.reachingLevel) {
             return Math.abs(currentAltitude - this.lowerLevel) > 100;
         }
