@@ -124,29 +124,4 @@ private:
     return (T(0) < val) - (val < T(0));
   }
 
-  /**
-   * Updates data by reading from simconnect
-   * @return success
-   */
-  bool readFromSimConnect();
-
-  /**
-   * Process received simconnect dispatch messages
-   * @param pData
-   * @param cbData
-   */
-  void simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWORD* cbData);
-
-  /**
-   * Process received simconnect data
-   * @param data
-   */
-  void simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data);
-
-  /**
-   * Returns human-readable descriptions of simconnect exceptions
-   * @param exception
-   * @return string describing the exception
-   */
-  static std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception);
 };
