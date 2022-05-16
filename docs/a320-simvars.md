@@ -2571,6 +2571,63 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Landing Gear (ATA 32)
 
+- A32NX_LGCIU_{number}_DISCRETE_WORD_1
+    - Discrete Data word 1 of the LGCIU bus output
+    - Arinc429<Discrete>
+    - {number}
+        - 1
+        - 2
+    - Bit   | Description
+      11    | LH gear not locked up and not selected down
+      12    | RH gear not locked up and not selected down
+      13    | Nose gear not locked up and not selected down
+      14    | LH gear not locked down and selected down
+      15    | RH gear not locked down and selected down
+      16    | Nose gear not locked down and selected down
+      17    | LH gear door not uplocked
+      18    | RH gear door not uplocked
+      19    | Nose gear door not uplocked
+      20    | LH gear uplock locked and gear locked down
+      21    | RH gear uplock locked and gear locked down
+      22    | Nose gear uplock locked and gear locked down
+      23    | LH gear downlocked
+      24    | RH gear downlocked
+      25    | Nose gear downlocked
+      26    | LH gear shock absorber not extended (Treat GND PWR connected as on ground)
+      27    | RH gear shock absorber not extended (Treat GND PWR connected as on ground)
+      28    | Nose gear shock absorber not extended (Treat GND PWR connected as on ground)
+      29    | Gear selected down (Lever Position)
+
+- A32NX_LGCIU_{number}_DISCRETE_WORD_2
+    - Discrete Data word 2 of the LGCIU bus output
+    - Arinc429<Discrete>
+    - {number}
+        - 1
+        - 2
+    - Bit   | Description
+      11    | LH & RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)
+      12    | LH gear shock absorber compressed (Don't treat GND PWR connected as on ground)
+      13    | RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)
+      14    | Nose gear shock absorber compressed (Don't treat GND PWR connected as on ground)
+      15    | LH & RH gear downlocked
+
+
+- A32NX_LGCIU_{number}_DISCRETE_WORD_3
+    - Discrete Data word 3 of the LGCIU bus output
+    - Arinc429<Discrete>
+    - {number}
+        - 1
+        - 2
+    - Bit   | Description
+      11    | LH gear not locked up
+      12    | RH gear not locked up
+      13    | Nose gear not locked up
+      14    | Gear selected up (Lever Position)
+      25    | LH gear door fully open
+      26    | RH gear door fully open
+      27    | LH Nose gear door fully open
+      28    | RH Nose gear door fully open
+
 - A32NX_LGCIU_{number}_{gear}_GEAR_COMPRESSED
     - Indicates if the shock absorber is compressed (not fully extended)
     - Bool
