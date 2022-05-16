@@ -13,6 +13,7 @@
 1. [HYD] Now allowing reverting gravity gear extension - @Crocket63 (crocket)
 1. [TCAS] Fixed issue when turning to STBY while RA is issued - @2hwk (2Cas#1022)
 1. [GPWS] Alt callouts now finish before altitude is reached - @2hwk (2Cas#1022)
+1. [ENGINE] Improved engine model at TOGA - @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.8.0
 
