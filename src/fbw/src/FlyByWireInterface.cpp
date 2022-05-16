@@ -501,6 +501,9 @@ void FlyByWireInterface::setupLocalVariables() {
     idLgciuNoseGearCompressed[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_NOSE_GEAR_COMPRESSED");
     idLgciuLeftMainGearCompressed[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_LEFT_GEAR_COMPRESSED");
     idLgciuRightMainGearCompressed[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_RIGHT_GEAR_COMPRESSED");
+    idLgciuDiscreteWord1[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_1");
+    idLgciuDiscreteWord2[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_2");
+    idLgciuDiscreteWord3[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_3");
   }
 
   for (int i = 0; i < 3; i++) {
@@ -1064,17 +1067,11 @@ bool FlyByWireInterface::updateRa(int raIndex) {
 }
 
 bool FlyByWireInterface::updateLgciu(int lgciuIndex) {
-  bool noseGearPressed = idLgciuNoseGearCompressed[lgciuIndex]->get();
-  bool leftMainGearPressed = idLgciuLeftMainGearCompressed[lgciuIndex]->get();
-  bool rightMainGearPressed = idLgciuRightMainGearCompressed[lgciuIndex]->get();
-
-  lgciuBusOutputs[lgciuIndex].discreteWord1.setSsm(Arinc429SignStatus::NormalOperation);
-  lgciuBusOutputs[lgciuIndex].discreteWord2.setSsm(Arinc429SignStatus::NormalOperation);
-  lgciuBusOutputs[lgciuIndex].discreteWord2.setBit(12, noseGearPressed);
-  lgciuBusOutputs[lgciuIndex].discreteWord2.setBit(13, leftMainGearPressed);
-  lgciuBusOutputs[lgciuIndex].discreteWord2.setBit(14, rightMainGearPressed);
-  lgciuBusOutputs[lgciuIndex].discreteWord3.setSsm(Arinc429SignStatus::NormalOperation);
+  lgciuBusOutputs[lgciuIndex].discreteWord1.setFromSimVar(idLgciuDiscreteWord1[lgciuIndex]->get());
+  lgciuBusOutputs[lgciuIndex].discreteWord2.setFromSimVar(idLgciuDiscreteWord2[lgciuIndex]->get());
+  lgciuBusOutputs[lgciuIndex].discreteWord3.setFromSimVar(idLgciuDiscreteWord3[lgciuIndex]->get());
   lgciuBusOutputs[lgciuIndex].discreteWord4.setSsm(Arinc429SignStatus::NormalOperation);
+  lgciuBusOutputs[lgciuIndex].discreteWord4.setData(0);
 
   if (clientDataEnabled) {
     simConnectInterface.setClientDataLgciu(lgciuBusOutputs[lgciuIndex], lgciuIndex);
