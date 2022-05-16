@@ -18,7 +18,7 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({ message,
 
     if (buttonsBlocked) {
         if (isStatusAvailable('Buttons')) {
-            setStatus('Buttons', 'SENDING', -1);
+            setStatus('Buttons', 'SENDING', Infinity);
         }
     }
 
