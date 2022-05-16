@@ -17,7 +17,7 @@ export const OutputButtons: React.FC<OutputButtonsProps> = ({ message, setStatus
 
     if (buttonsBlocked) {
         if (isStatusAvailable('Buttons')) {
-            setStatus('Buttons', 'SENDING', -1);
+            setStatus('Buttons', 'SENDING', Infinity);
         }
     }
 
