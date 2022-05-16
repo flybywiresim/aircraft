@@ -14,6 +14,7 @@
 1. [TCAS] Fixed issue when turning to STBY while RA is issued - @2hwk (2Cas#1022)
 1. [GPWS] Alt callouts now finish before altitude is reached - @2hwk (2Cas#1022)
 1. [ENGINE] Improved engine model at TOGA - @Taz5150 (TazX [Z+2]#0405)
+1. [FLIGHTMODEL] Improve pitch trim and manual braking level - @donstim (donbikes#4084)
 
 ## 0.8.0
 
