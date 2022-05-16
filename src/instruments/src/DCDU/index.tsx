@@ -77,7 +77,7 @@ const DCDU: React.FC = () => {
             entry[2] = response;
             updateMap.set(uid, entry);
 
-            setMessages(updateMap)
+            setMessages(updateMap);
         }
     };
 
