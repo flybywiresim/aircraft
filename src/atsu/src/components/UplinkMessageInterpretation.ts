@@ -18,37 +18,36 @@ export class UplinkMessageInterpretation {
     ];
 
     private static SemanticAnswerTable = {
-        UM127: { positiveOrNegative: false, messages: ['DM41'] },
-        UM128: { positiveOrNegative: false, messages: ['DM28'] },
-        UM129: { positiveOrNegative: false, messages: ['DM37'] },
-        UM130: { positiveOrNegative: false, messages: ['DM31'] },
-        UM131: { positiveOrNegative: false, messages: ['DM57'] },
-        UM132: { positiveOrNegative: false, messages: ['DM33'] },
-        UM133: { positiveOrNegative: false, messages: ['DM32'] },
-        UM134: { positiveOrNegative: false, messages: ['DM34'] },
-        UM135: { positiveOrNegative: false, messages: ['DM38'] },
-        UM136: { positiveOrNegative: false, messages: ['DM39'] },
-        UM137: { positiveOrNegative: false, messages: ['DM40'] },
-        UM138: { positiveOrNegative: false, messages: ['DM46'] },
-        UM139: { positiveOrNegative: false, messages: ['DM45'] },
-        UM140: { positiveOrNegative: false, messages: ['DM42'] },
-        UM141: { positiveOrNegative: false, messages: ['DM43'] },
-        UM142: { positiveOrNegative: false, messages: ['DM44'] },
-        UM144: { positiveOrNegative: false, messages: ['DM47'] },
-        UM145: { positiveOrNegative: false, messages: ['DM35'] },
-        UM146: { positiveOrNegative: false, messages: ['DM36'] },
-        UM147: { positiveOrNegative: false, messages: ['DM48'] },
-        UM148: { positiveOrNegative: true, messages: ['DM81', 'DM82'] },
-        UM151: { positiveOrNegative: false, messages: ['DM83'] },
-        UM152: { positiveOrNegative: true, messages: ['DM85', 'DM86'] },
-        UM175: { positiveOrNegative: false, messages: ['DM72'] },
-        UM180: { positiveOrNegative: false, messages: ['DM76'] },
-        UM181: { positiveOrNegative: false, messages: ['DM68'] },
-        UM182: { positiveOrNegative: false, messages: ['DM79'] },
-        UM184: { positiveOrNegative: false, messages: ['DM68'] },
-        UM228: { positiveOrNegative: false, messages: ['DM68'] },
-        UM231: { positiveOrNegative: false, messages: ['DM106'] },
-        UM232: { positiveOrNegative: false, messages: ['DM109'] },
+        UM128: { positiveOrNegative: false, modifiable: false, messages: ['DM28'] },
+        UM129: { positiveOrNegative: false, modifiable: false, messages: ['DM37'] },
+        UM130: { positiveOrNegative: false, modifiable: false, messages: ['DM31'] },
+        UM131: { positiveOrNegative: false, modifiable: true, messages: ['DM57'] },
+        UM132: { positiveOrNegative: false, modifiable: true, messages: ['DM33'] },
+        UM133: { positiveOrNegative: false, modifiable: true, messages: ['DM32'] },
+        UM134: { positiveOrNegative: false, modifiable: true, messages: ['DM34'] },
+        UM135: { positiveOrNegative: false, modifiable: true, messages: ['DM38'] },
+        UM136: { positiveOrNegative: false, modifiable: true, messages: ['DM39'] },
+        UM137: { positiveOrNegative: false, modifiable: true, messages: ['DM40'] },
+        UM138: { positiveOrNegative: false, modifiable: true, messages: ['DM46'] },
+        UM139: { positiveOrNegative: false, modifiable: true, messages: ['DM45'] },
+        UM140: { positiveOrNegative: false, modifiable: true, messages: ['DM42'] },
+        UM141: { positiveOrNegative: false, modifiable: true, messages: ['DM43'] },
+        UM142: { positiveOrNegative: false, modifiable: true, messages: ['DM44'] },
+        UM144: { positiveOrNegative: false, modifiable: true, messages: ['DM47'] },
+        UM145: { positiveOrNegative: false, modifiable: true, messages: ['DM35'] },
+        UM146: { positiveOrNegative: false, modifiable: true, messages: ['DM36'] },
+        UM147: { positiveOrNegative: false, modifiable: true, messages: ['DM48'] },
+        UM148: { positiveOrNegative: true, modifiable: true, messages: ['DM81', 'DM82'] },
+        UM151: { positiveOrNegative: false, modifiable: true, messages: ['DM83'] },
+        UM152: { positiveOrNegative: true, modifiable: true, messages: ['DM85', 'DM86'] },
+        UM175: { positiveOrNegative: false, modifiable: false, messages: ['DM72'] },
+        UM180: { positiveOrNegative: false, modifiable: false, messages: ['DM76'] },
+        UM181: { positiveOrNegative: false, modifiable: true, messages: ['DM68'] },
+        UM182: { positiveOrNegative: false, modifiable: true, messages: ['DM79'] },
+        UM184: { positiveOrNegative: false, modifiable: true, messages: ['DM68'] },
+        UM228: { positiveOrNegative: false, modifiable: true, messages: ['DM68'] },
+        UM231: { positiveOrNegative: false, modifiable: true, messages: ['DM106'] },
+        UM232: { positiveOrNegative: false, modifiable: true, messages: ['DM109'] },
     };
 
     public static MessageRemainsOnDcdu(message: CpdlcMessage): boolean {
@@ -137,7 +136,7 @@ export class UplinkMessageInterpretation {
     }
 
     private static FillReportingRelatedData(message: CpdlcMessage): boolean {
-        if (message.Content[0].TypeId === 'UM128' || message.Content[0].TypeId === 'UM175') {
+        if (message.Content[0].TypeId === 'UM128' || message.Content[0].TypeId === 'UM129' || message.Content[0].TypeId === 'UM130' || message.Content[0].TypeId === 'UM175') {
             message.Response.Content[0].Content[0].Value = message.Content[0].Content[0].Value;
             return true;
         }
