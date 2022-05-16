@@ -44,15 +44,14 @@ bool FlyPadBackend::initialize() {
   }
   isConnected = true;
 
-  lightPresetPtr = std::make_unique<LightPreset>(hSimConnect);
-  aircraftPresetPtr = std::make_unique<AircraftPreset>(hSimConnect);
+  // Create submodules and provide pointers to data required structures
+  lightPresetPtr = std::make_unique<LightPreset>();
+  aircraftPresetPtr = std::make_unique<AircraftPreset>();
   pushbackPtr = std::make_unique<Pushback>(hSimConnect, &pushbackData);
 
-  HRESULT result = S_OK;
-
   // Simulation data to local data structure mapping
+  HRESULT result = S_OK;
   result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::SimulationDataID, "SIMULATION TIME", "NUMBER");
-  // Pushback data to local data structure mapping
   result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "Pushback Wait", "BOOLEAN", SIMCONNECT_DATATYPE_INT64);
   result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "ROTATION VELOCITY BODY Y", "FEET/SECOND", SIMCONNECT_DATATYPE_FLOAT64);
   result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "VELOCITY BODY Z", "FEET/SECOND", SIMCONNECT_DATATYPE_FLOAT64);
@@ -61,7 +60,7 @@ bool FlyPadBackend::initialize() {
     std::cout << "FLYPAD_BACKEND: Data definition failed! " << std::endl;
   }
 
-  // initialize sub modules
+  // initialize submodules
   lightPresetPtr->initialize();
   aircraftPresetPtr->initialize();
   pushbackPtr->initialize();
@@ -109,6 +108,7 @@ bool FlyPadBackend::shutdown() {
 bool FlyPadBackend::simConnectRequestData() const {
   HRESULT result = S_OK;
 
+  // Request data for each data structure - remember to increase the request id.
   result &= SimConnect_RequestDataOnSimObject(hSimConnect, 0, DataStructureIDs::SimulationDataID, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
   result &= SimConnect_RequestDataOnSimObject(hSimConnect, 1, DataStructureIDs::PushbackDataID, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
 

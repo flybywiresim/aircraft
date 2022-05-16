@@ -25,7 +25,6 @@ void Pushback::initialize() {
   // LVARs are initialized here
   // Simvars in FlyPadBackend via simconnect data definitions
   pushbackSystemEnabled = register_named_variable("A32NX_PUSHBACK_SYSTEM_ENABLED");
-  pushbackPaused = register_named_variable("A32NX_PUSHBACK_PAUSED");
   updateDelta = register_named_variable("A32NX_PUSHBACK_UPDT_DELTA");
   parkingBrakeEngaged = register_named_variable("A32NX_PARK_BRAKE_LEVER_POS");
   tugCommandedSpeedFactor = register_named_variable("A32NX_PUSHBACK_SPD_FACTOR");

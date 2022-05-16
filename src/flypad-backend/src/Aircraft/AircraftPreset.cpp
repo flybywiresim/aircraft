@@ -6,7 +6,7 @@
 
 #include "AircraftPreset.h"
 
-AircraftPreset::AircraftPreset(HANDLE handle) {
+AircraftPreset::AircraftPreset() {
   m_Units = new Units();
 }
 

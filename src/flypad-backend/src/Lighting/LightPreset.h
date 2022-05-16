@@ -67,7 +67,7 @@ public:
    * @param simVars pointer to the LightSimVars object for reading and writing
    * the simulation variables.
    */
-  LightPreset(HANDLE handle) : simVars(new LightingSimVars()) {};
+  LightPreset() : simVars(new LightingSimVars()) {};
 
   /**
    * Called when SimConnect is initialized

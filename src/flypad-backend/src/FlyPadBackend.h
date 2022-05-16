@@ -65,6 +65,7 @@ private:
   // Storing previous simulation allows for Pause detection
   double previousSimulationTime = 0;
 
+  // Pointers to the flypad backend submodules
   std::unique_ptr<LightPreset> lightPresetPtr;
   std::unique_ptr<AircraftPreset> aircraftPresetPtr;
   std::unique_ptr<Pushback> pushbackPtr;
@@ -123,5 +124,5 @@ private:
    * @param exception
    * @return string describing the exception
    */
-  std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception);
+  static std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception);
 };

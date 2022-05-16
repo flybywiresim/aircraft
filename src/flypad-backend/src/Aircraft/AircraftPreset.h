@@ -56,7 +56,7 @@ public:
   /**
    * Creates an instance of the LightPreset class.
    */
-  AircraftPreset(HANDLE handle);
+  AircraftPreset();
 
   /**
    * Destructor

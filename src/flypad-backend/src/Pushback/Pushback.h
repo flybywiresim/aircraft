@@ -36,7 +36,6 @@ private:
 
   // LVARs
   ID pushbackSystemEnabled{};
-  ID nwStrgDiscMemo{};
   ID pushbackPaused{};
   ID tugCommandedHeadingFactor{};
   ID tugCommandedHeading{};
@@ -82,18 +81,19 @@ public:
 
 private:
   // @formatter:off
+  // LVAR getter
   inline bool isPushbackPaused() const { return static_cast<bool>(get_named_variable_value(pushbackPaused)); }
   inline bool isPushbackSystemEnabled() const { return static_cast<bool>(get_named_variable_value(pushbackSystemEnabled)); }
   inline bool isParkingBrakeEngaged() const { return static_cast<bool>(get_named_variable_value(parkingBrakeEngaged)); }
   inline FLOAT64 getTugCmdSpdFactor() const { return static_cast<FLOAT64>(get_named_variable_value(tugCommandedSpeedFactor)); }
   inline FLOAT64 getTugCmdHdgFactor() const { return static_cast<FLOAT64>(get_named_variable_value(tugCommandedHeadingFactor)); }
-
+  // Simvar getter
   inline bool isPushbackAttached() const { return static_cast<bool>(aircraft_varget(pushbackAttached, m_Units->Bool, 0)); }
   inline bool isSimOnGround() const { return static_cast<bool>(aircraft_varget(simOnGround, m_Units->Bool, 0)); }
   inline FLOAT64 getAircraftTrueHeading() const {
     return (180.0 / PI) * static_cast<FLOAT64>(aircraft_varget(aircraftHeading, m_Units->Number, 0));
   }
-
+  // Sim data getter
   inline bool isPushbackWaiting() const { return static_cast<bool>(pushbackDataPtr->pushbackWait); }
   // @formatter:on
 
