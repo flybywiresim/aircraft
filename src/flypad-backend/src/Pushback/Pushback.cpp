@@ -9,8 +9,8 @@
 
 using namespace std::chrono;
 
-constexpr static const double SPEED_RATIO = 15.0;
-constexpr static const double TURN_SPEED_RATIO = 0.15;
+constexpr static const double SPEED_RATIO = 18.0;
+constexpr static const double TURN_SPEED_RATIO = 0.16;
 
 Pushback::Pushback(HANDLE hdl, PushbackData* data) {
   hSimConnect = hdl;
@@ -71,13 +71,24 @@ void Pushback::onUpdate(double deltaTime) {
   static const int32_t headingToInt32 = 0xffffffff / 360;
   const auto convertedComputedHeading = static_cast<int32_t >(static_cast<uint32_t>(computedHdg * headingToInt32));
 
+  // send K:KEY_TUG_HEADING event
+  HRESULT result = SimConnect_TransmitClientEvent(
+    hSimConnect,
+    0,
+    Events::KEY_TUG_HEADING_EVENT,
+    convertedComputedHeading,
+    SIMCONNECT_GROUP_PRIORITY_HIGHEST,
+    SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
+
+  //  K:KEY_TUG_SPEED - seems to actually do nothing
+  //  result &= SimConnect_TransmitClientEvent(hSimConnect, 0, Events::KEY_TUG_SPEED_EVENT, inertiaSpeed, SIMCONNECT_GROUP_PRIORITY_HIGHEST, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
+
   // Update sim data
   pushbackDataPtr->pushbackWait = inertiaSpeed == 0 ? 1 : 0;
   pushbackDataPtr->rotVelBodyY = computedRotationVelocity;
   pushbackDataPtr->velBodyZ = inertiaSpeed;
   pushbackDataPtr->rotAccelBodyX = inertiaSpeed > 0 ? -1 : (inertiaSpeed < 0 ? 2 : 0);
-
-  HRESULT result = SimConnect_SetDataOnSimObject(
+  result &= SimConnect_SetDataOnSimObject(
     hSimConnect,
     DataStructureIDs::PushbackDataID,
     SIMCONNECT_OBJECT_ID_USER,
@@ -85,16 +96,6 @@ void Pushback::onUpdate(double deltaTime) {
     0,
     sizeof(*pushbackDataPtr),
     pushbackDataPtr);
-
-  FLOAT64 fvalue = 0;
-  SINT32 ivalue = 0;
-  PCSTRINGZ svalue = "";
-
-  std::string code = std::to_string(convertedComputedHeading) + " (>K:KEY_TUG_HEADING)";
-  result &= execute_calculator_code(code.c_str(), &fvalue, &ivalue, &svalue);
-
-  code = std::to_string(inertiaSpeed) + " (>K:KEY_TUG_SPEED)";
-  result &= execute_calculator_code(code.c_str(), &fvalue, &ivalue, &svalue);
 
   // check result of data request
   if (result != S_OK) {

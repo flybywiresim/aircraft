@@ -60,6 +60,9 @@ bool FlyPadBackend::initialize() {
     std::cout << "FLYPAD_BACKEND: Data definition failed! " << std::endl;
   }
 
+  result &= SimConnect_MapClientEventToSimEvent(hSimConnect, Events::KEY_TUG_HEADING_EVENT, "KEY_TUG_HEADING");
+  result &= SimConnect_MapClientEventToSimEvent(hSimConnect, Events::KEY_TUG_SPEED_EVENT, "KEY_TUG_SPEED");
+
   // initialize submodules
   lightPresetPtr->initialize();
   aircraftPresetPtr->initialize();

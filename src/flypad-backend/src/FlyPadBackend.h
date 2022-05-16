@@ -45,6 +45,11 @@ struct PushbackData {
   FLOAT64 rotAccelBodyX;
 };
 
+enum Events {
+  KEY_TUG_HEADING_EVENT,
+  KEY_TUG_SPEED_EVENT
+};
+
 class LightPreset;
 class AircraftPreset;
 class Pushback;
