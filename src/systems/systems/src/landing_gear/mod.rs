@@ -757,7 +757,7 @@ impl LandingGearControlInterfaceUnit {
         self.status
     }
 
-    fn discrete_word_1(&self) -> Arinc429Word<u32> {
+    pub fn discrete_word_1(&self) -> Arinc429Word<u32> {
         if !self.is_powered {
             Arinc429Word::new(0, SignStatus::FailureWarning)
         } else {
@@ -805,7 +805,7 @@ impl LandingGearControlInterfaceUnit {
         }
     }
 
-    fn discrete_word_2(&self) -> Arinc429Word<u32> {
+    pub fn discrete_word_2(&self) -> Arinc429Word<u32> {
         if !self.is_powered {
             Arinc429Word::new(0, SignStatus::FailureWarning)
         } else {
@@ -827,7 +827,7 @@ impl LandingGearControlInterfaceUnit {
         }
     }
 
-    fn discrete_word_3(&self) -> Arinc429Word<u32> {
+    pub fn discrete_word_3(&self) -> Arinc429Word<u32> {
         if !self.is_powered {
             Arinc429Word::new(0, SignStatus::FailureWarning)
         } else {
