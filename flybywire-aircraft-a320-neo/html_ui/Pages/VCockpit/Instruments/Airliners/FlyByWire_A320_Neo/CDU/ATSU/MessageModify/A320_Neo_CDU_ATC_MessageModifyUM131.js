@@ -10,6 +10,11 @@ class CDUAtcMessageModifyUM131 {
         return data.personsOnBoard && data.endurance;
     }
 
+    static UpdateResponseMessage(message, data) {
+        message.Response.Content[0].Content[0].Value = data.endurance;
+        message.Response.Content[0].Content[1].Value = data.personsOnBoard;
+    }
+
     static ShowPage(mcdu, message, data = CDUAtcMessageModifyUM131.CreateDataBlock(message)) {
         let cancel = "\xa0CANCEL";
         let addText = "ADD TEXT\xa0";
