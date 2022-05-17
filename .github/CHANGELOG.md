@@ -15,6 +15,7 @@
 1. [GPWS] Alt callouts now finish before altitude is reached - @2hwk (2Cas#1022)
 1. [ENGINE] Improved engine model at TOGA - @Taz5150 (TazX [Z+2]#0405)
 1. [FLIGHTMODEL] Improve pitch trim and manual braking level - @donstim (donbikes#4084)
+1. [ATSU] Fix cargo weight is not set on manually PAX - @Revyn112 (Revyn112#1010)
 
 ## 0.8.0
 
