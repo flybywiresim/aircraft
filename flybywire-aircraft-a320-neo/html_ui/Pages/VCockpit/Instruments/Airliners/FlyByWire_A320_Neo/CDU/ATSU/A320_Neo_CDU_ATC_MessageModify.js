@@ -240,7 +240,7 @@ class CDUAtcMessageModify {
         const lutEntry = ModifyLookupTable[message.Content[0].TypeId];
 
         return {
-            value: message.Response.Content[0].Content.length > lutEntry[0].valueIndex ? message.Response.Content[0].Content[lutEntry[0].valueIndex].Value : '',
+            value: (message.Response.Content[0].Content.length > lutEntry[0].valueIndex && message.Response.Content[0].TypeId !== "DM67") ? message.Response.Content[0].Content[lutEntry[0].valueIndex].Value : '',
             modified: false,
             multiSelection: lutEntry.length > 1,
             selectedToggles: [false, false]
@@ -248,7 +248,7 @@ class CDUAtcMessageModify {
     }
 
     static CreateDescriptionLine(message, entry) {
-        if (entry.textIndex) {
+        if (entry.textIndex !== null) {
             return entry.text.replace("%s", message.Content[0].Content[entry.textIndex].Value);
         }
         return entry.text;
@@ -349,12 +349,13 @@ class CDUAtcMessageModify {
         const newContent = Atsu.CpdlcMessagesDownlink[lutEntry[lutIndex].response][1].deepCopy();
         if (newContent.TypeId === "DM67") {
             let freetext = lutEntry[lutIndex].freetext;
-            if (lutEntry[lutIndex].textIndex) {
+            if (lutEntry[lutIndex].textIndex !== null) {
                 freetext = freetext.replace("%s", message.Content[0].Content[lutEntry[lutIndex].textIndex].Value);
             }
-            if (lutEntry[lutIndex].valueIndex) {
+            if (lutEntry[lutIndex].valueIndex !== null) {
                 freetext = freetext.replace("%v", data.value);
             }
+            newContent.Content[0].Value = freetext;
         } else if (newContent.TypeId === "DM104") {
             newContent.Content[0].Value = message.Content[0].Content[lutEntry[lutIndex].textIndex].Value;
             newContent.Content[1].Value = data.value;
