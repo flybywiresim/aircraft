@@ -111,7 +111,7 @@ class CDUAtcMessageMonitoring {
 
             mcdu.onLeftInput[i] = () => {
                 if (messages[offset + i]) {
-                    CDUAtcMessage.ShowPage(mcdu, messages, offset + i);
+                    CDUAtcMessage.ShowPage(mcdu, messages, offset + i, false);
                 }
             };
 
