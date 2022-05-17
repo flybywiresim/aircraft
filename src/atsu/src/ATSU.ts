@@ -73,13 +73,17 @@ export class Atsu {
             }
         }
 
-        // define the overhead
-        let extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-        extension.Content[0].Value = `OVHD:${atsu.flightStateObserver.LastWaypoint.ident}`;
-        message.Content.push(extension);
-        extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-        extension.Content[0].Value = `AT ${timestampToString(atsu.flightStateObserver.LastWaypoint.utc)}Z/${passedAltitude}`;
-        message.Content.push(extension);
+        let extension = null;
+        if (atsu.flightStateObserver.LastWaypoint) {
+            // define the overhead
+            extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
+            extension.Content[0].Value = `OVHD:${atsu.flightStateObserver.LastWaypoint.ident}`;
+            message.Content.push(extension);
+            extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
+            extension.Content[0].Value = `AT ${timestampToString(atsu.flightStateObserver.LastWaypoint.utc)}Z/${passedAltitude}`;
+            message.Content.push(extension);
+        }
+
         // define the present position
         extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
         extension.Content[0].Value = `PPOS:${coordinateToString({ lat: atsu.flightStateObserver.PresentPosition.lat, lon: atsu.flightStateObserver.PresentPosition.lon }, false)}`;
@@ -87,22 +91,30 @@ export class Atsu {
         extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
         extension.Content[0].Value = `AT ${timestampToString(SimVar.GetSimVarValue('E:ZULU TIME', 'seconds'))}Z/${currentAltitude}`;
         message.Content.push(extension);
-        // define the active position
-        extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-        extension.Content[0].Value = `NEXT:${atsu.flightStateObserver.ActiveWaypoint.ident}`;
-        message.Content.push(extension);
-        extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-        extension.Content[0].Value = `AT ${timestampToString(atsu.flightStateObserver.ActiveWaypoint.utc)}Z`;
-        message.Content.push(extension);
-        // define the next position
-        extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-        extension.Content[0].Value = `ENSUING:${atsu.flightStateObserver.NextWaypoint.ident}`;
-        message.Content.push(extension);
 
+        if (atsu.flightStateObserver.ActiveWaypoint) {
+        // define the active position
+            extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
+            extension.Content[0].Value = `NEXT:${atsu.flightStateObserver.ActiveWaypoint.ident}`;
+            message.Content.push(extension);
+            extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
+            extension.Content[0].Value = `AT ${timestampToString(atsu.flightStateObserver.ActiveWaypoint.utc)}Z`;
+            message.Content.push(extension);
+        }
+
+        if (atsu.flightStateObserver.NextWaypoint) {
+        // define the next position
+            extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
+            extension.Content[0].Value = `ENSUING:${atsu.flightStateObserver.NextWaypoint.ident}`;
+            message.Content.push(extension);
+        }
+
+        if (atsu.destinationWaypoint()) {
         // define ETA
-        extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
-        extension.Content[0].Value = `DEST ETA:${timestampToString(atsu.destinationWaypoint().utc)}Z`;
-        message.Content.push(extension);
+            extension = CpdlcMessagesDownlink.DM67[1].deepCopy();
+            extension.Content[0].Value = `DEST ETA:${timestampToString(atsu.destinationWaypoint().utc)}Z`;
+            message.Content.push(extension);
+        }
 
         // TODO define deviating
 
