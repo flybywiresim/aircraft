@@ -957,6 +957,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     /**
+     * Tries to show the MODIFY page if the MCDU is in the ATC COM system
+     */
+    tryToShowAtcModifyPage() {
+        if (this.page.Current >= this.page.ATCMenu && this.page.Current < this.page.ATCComLastId) {
+            CDUAtcMessageModify.ShowPage(this, this.atsu.modificationMessage);
+        }
+    }
+
+    /**
      * General ATSU message handler which converts ATSU status codes to new MCDU messages
      * @param code ATSU status code
      */
