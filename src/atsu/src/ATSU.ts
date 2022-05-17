@@ -252,6 +252,7 @@ export class Atsu {
 
     public modifyDcduMessage(message: CpdlcMessage): void {
         this.modificationMessage = message;
+        this.mcdu.tryToShowAtcModifyPage();
     }
 
     public async isRemoteStationAvailable(callsign: string): Promise<AtsuStatusCodes> {
