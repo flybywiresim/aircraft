@@ -173,6 +173,15 @@ export class UplinkMessageInterpretation {
                     break;
                 }
             }
+
+            if (!message.Response) {
+                const response = new CpdlcMessage();
+                response.Station = message.Station;
+                response.PreviousTransmissionId = message.CurrentTransmissionId;
+                response.Content.push(CpdlcMessagesDownlink.DM67[1].deepCopy());
+                response.Content[0].Content[0].Value = 'NO REQUEST TRANSMITTED';
+                message.Response = response;
+            }
         } else if (message.Content[0].TypeId in UplinkMessageInterpretation.SemanticAnswerTable) {
             const lutEntry = UplinkMessageInterpretation.SemanticAnswerTable[message.Content[0].TypeId];
             if (lutEntry.positiveOrNegative) {
