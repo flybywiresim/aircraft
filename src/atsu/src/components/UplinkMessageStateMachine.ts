@@ -32,7 +32,6 @@ export class UplinkMessageStateMachine {
         } else if (message.MessageMonitoring === CpdlcMessageMonitoringState.Monitoring) {
             if (message.Response?.ComStatus === AtsuMessageComStatus.Sending || message.Response?.ComStatus === AtsuMessageComStatus.Sent) {
                 message.MessageMonitoring = CpdlcMessageMonitoringState.Cancelled;
-                message.SemanticResponseRequired = UplinkMessageInterpretation.SemanticAnswerRequired(message);
             } else {
                 message.MessageMonitoring = CpdlcMessageMonitoringState.Required;
             }
