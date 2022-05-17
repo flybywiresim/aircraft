@@ -73,7 +73,7 @@ class CDUAtcPositionReport {
         }
     }
 
-    static CreateDataBlock(mcdu, autoFill) {
+    static CreateDataBlock(mcdu, requestMessage, autoFill) {
         const retval = {
             passedWaypoint: [null, null, null, !autoFill],
             activeWaypoint: [null, null, !autoFill],
@@ -101,11 +101,11 @@ class CDUAtcPositionReport {
             setTimeout(() => {
                 CDUAtcPositionReport.FillDataBlock(mcdu, retval);
                 if (mcdu.page.Current === mcdu.page.ATCPositionReport1) {
-                    CDUAtcPositionReport.ShowPage1(mcdu, retval);
+                    CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, retval);
                 } else if (mcdu.page.Current === mcdu.page.ATCPositionReport2) {
-                    CDUAtcPositionReport.ShowPage2(mcdu, retval);
+                    CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, retval);
                 } else if (mcdu.page.Current === mcdu.page.ATCPositionReport3) {
-                    CDUAtcPositionReport.ShowPage3(mcdu, retval);
+                    CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, retval);
                 }
             }, 1500);
         }
@@ -242,7 +242,7 @@ class CDUAtcPositionReport {
         return retval;
     }
 
-    static ShowPage1(mcdu, requestMessage = null, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
+    static ShowPage1(mcdu, requestMessage = null, data = CDUAtcPositionReport.CreateDataBlock(mcdu, requestMessage, true)) {
         mcdu.page.Current = mcdu.page.ATCPositionReport1;
 
         let text = "ADD TEXT\xa0";
@@ -298,7 +298,7 @@ class CDUAtcPositionReport {
             [`{cyan}${next}{end}`],
             ["\xa0ALL FIELDS"],
             [erase, text],
-            ["\xa0ATC REPORTS", "XFR TO\xa0[color]cyan"],
+            [`${requestMessage ? "\xa0ATC MENU" : "\xa0ATC REPORTS"}`, "XFR TO\xa0[color]cyan"],
             ["<RETURN", reqDisplay]
         ]);
 
@@ -442,14 +442,18 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
+            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, CDUAtcPositionReport.CreateDataBlock(mcdu, requestMessage, false));
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcReports.ShowPage(mcdu);
+            if (requestMessage) {
+                CDUAtcMenu.ShowPage(mcdu);
+            } else {
+                CDUAtcReports.ShowPage(mcdu);
+            }
         };
 
         mcdu.rightInputDelay[0] = () => {
@@ -559,7 +563,7 @@ class CDUAtcPositionReport {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
                     if (requestMessage) {
                         requestMessage.Response = report;
-                        mcdu.atsu.updateMessage(requestMessage);
+                        mcdu.atsu.atc.updateMessage(requestMessage);
                     } else {
                         mcdu.atsu.registerMessages([report]);
                     }
@@ -576,7 +580,7 @@ class CDUAtcPositionReport {
         };
     }
 
-    static ShowPage2(mcdu, requestMessage = null, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
+    static ShowPage2(mcdu, requestMessage = null, data = CDUAtcPositionReport.CreateDataBlock(mcdu, requestMessage, true)) {
         mcdu.page.Current = mcdu.page.ATCPositionReport2;
 
         const wind = data.wind[0] ? data.wind[0].split("/") : ["[  ]", "[  ]"];
@@ -609,7 +613,7 @@ class CDUAtcPositionReport {
             [""],
             ["\xa0ALL FIELDS"],
             [erase, text],
-            ["\xa0ATC REPORTS", "XFR TO\xa0[color]cyan"],
+            [`${requestMessage ? "\xa0ATC MENU" : "\xa0ATC REPORTS"}`, "XFR TO\xa0[color]cyan"],
             ["<RETURN", reqDisplay]
         ]);
 
@@ -659,14 +663,18 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
+            CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, CDUAtcPositionReport.CreateDataBlock(mcdu, requestMessage, false));
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcReports.ShowPage(mcdu);
+            if (requestMessage) {
+                CDUAtcMenu.ShowPage(mcdu);
+            } else {
+                CDUAtcReports.ShowPage(mcdu);
+            }
         };
 
         mcdu.rightInputDelay[0] = () => {
@@ -740,7 +748,7 @@ class CDUAtcPositionReport {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
                     if (requestMessage) {
                         requestMessage.Response = report;
-                        mcdu.atsu.updateMessage(requestMessage);
+                        mcdu.atsu.atc.updateMessage(requestMessage);
                     } else {
                         mcdu.atsu.registerMessages([report]);
                     }
@@ -757,7 +765,7 @@ class CDUAtcPositionReport {
         };
     }
 
-    static ShowPage3(mcdu, requestMessage = null, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
+    static ShowPage3(mcdu, requestMessage = null, data = CDUAtcPositionReport.CreateDataBlock(mcdu, requestMessage, true)) {
         mcdu.page.Current = mcdu.page.ATCPositionReport3;
 
         const indicatedAirspeed = data.indicatedAirspeed[0] ? data.indicatedAirspeed[0] : "[  ]";
@@ -805,7 +813,7 @@ class CDUAtcPositionReport {
             [`{cyan}${descending[1]}{end}`, `{cyan}${climbing[1]}{end}`],
             ["\xa0ALL FIELDS"],
             [erase, text],
-            ["\xa0ATC REPORTS", "XFR TO\xa0[color]cyan"],
+            [`${requestMessage ? "\xa0ATC MENU" : "\xa0ATC REPORTS"}`, "XFR TO\xa0[color]cyan"],
             ["<RETURN", reqDisplay]
         ]);
 
@@ -890,14 +898,18 @@ class CDUAtcPositionReport {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
+            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, CDUAtcPositionReport.CreateDataBlock(mcdu, requestMessage, false));
         };
 
         mcdu.leftInputDelay[5] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcReports.ShowPage(mcdu);
+            if (requestMessage) {
+                CDUAtcMenu.ShowPage(mcdu);
+            } else {
+                CDUAtcReports.ShowPage(mcdu);
+            }
         };
 
         mcdu.rightInputDelay[0] = () => {
@@ -1003,7 +1015,7 @@ class CDUAtcPositionReport {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
                     if (requestMessage) {
                         requestMessage.Response = report;
-                        mcdu.atsu.updateMessage(requestMessage);
+                        mcdu.atsu.atc.updateMessage(requestMessage);
                     } else {
                         mcdu.atsu.registerMessages([report]);
                     }
