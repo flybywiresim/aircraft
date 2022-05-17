@@ -138,8 +138,8 @@ class CDUAtcMessageMonitoring {
         };
         mcdu.onRightInput[5] = () => {
             if (cancelIndex > -1) {
-                Atsu.UplinkMessageStateMachine.update(mcdu.atsu, messages[offset + i], false);
-                mcdu.atsu.atc.updateMessage(messages[offset + i]);
+                Atsu.UplinkMessageStateMachine.update(mcdu.atsu, messages[cancelIndex], false);
+                mcdu.atsu.atc.updateMessage(messages[cancelIndex]);
                 CDUAtcMessageMonitoring.ShowPage(mcdu);
             }
         };
