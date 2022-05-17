@@ -104,7 +104,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
     }
 
     if (messages[0].Content[0].Urgent) {
-        content = `   ***HIGH PRIORITY***\n${content}`;
+        content = `_____***HIGH PRIORITY***\n${content}`;
     }
 
     return (
