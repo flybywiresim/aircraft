@@ -18,6 +18,7 @@ type MessageVisualizationProps = {
     message: string,
     backgroundColor: [number, number, number],
     keepNewlines?: boolean,
+    messageIsReminder: boolean,
     ignoreHighlight: boolean,
     cssClass: string,
     yStart: number,
@@ -27,7 +28,7 @@ type MessageVisualizationProps = {
     updateSystemStatusMessage: (status: DcduStatusMessage) => void
 }
 
-function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, deltaY: number, useDeltaY: boolean, ignoreHighlight: boolean, backgroundActive: boolean) {
+function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, deltaY: number, useDeltaY: boolean, reminder: boolean, ignoreHighlight: boolean, backgroundActive: boolean) {
     if (startIdx >= line.length) {
         return <></>;
     }
@@ -35,12 +36,14 @@ function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, 
     const highlight = line[startIdx].highlight && !ignoreHighlight;
     const monitoring = line[startIdx].watchdog && !ignoreHighlight;
     let className = 'message-tspan';
-    if (backgroundActive) {
-        className += ' message-onbackground';
-    } else if (monitoring) {
-        className += ' message-monitoring';
-    } else if (highlight) {
-        className += ' message-highlight';
+    if (!reminder) {
+        if (backgroundActive) {
+            className += ' message-onbackground';
+        } else if (monitoring) {
+            className += ' message-monitoring';
+        } else if (highlight) {
+            className += ' message-highlight';
+        }
     }
     let nextIdx = line.length;
     let message = '';
@@ -58,14 +61,14 @@ function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, 
             return (
                 <>
                     <tspan x="224" dy={deltaY} className={className}>{message}</tspan>
-                    {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight, backgroundActive)}
+                    {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, reminder, ignoreHighlight, backgroundActive)}
                 </>
             );
         }
         return (
             <>
                 <tspan x="224" y={startY} className={className}>{message}</tspan>
-                {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight, backgroundActive)}
+                {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, reminder, ignoreHighlight, backgroundActive)}
             </>
         );
     }
@@ -74,12 +77,12 @@ function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, 
     return (
         <>
             <tspan className={className}>{message}</tspan>
-            {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight, backgroundActive)}
+            {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, reminder, ignoreHighlight, backgroundActive)}
         </>
     );
 }
 
-function visualizeLines(lines: ColorizedLine[], backgroundIdx: number, yStart: number, deltaY: number, ignoreHighlight: boolean) {
+function visualizeLines(lines: ColorizedLine[], backgroundIdx: number, yStart: number, deltaY: number, reminder: boolean, ignoreHighlight: boolean) {
     if (lines.length === 0) {
         return <></>;
     }
@@ -90,10 +93,10 @@ function visualizeLines(lines: ColorizedLine[], backgroundIdx: number, yStart: n
     let lineCount = 0;
     return (
         <>
-            {visualizeLine(firstLine.words, 0, yStart, deltaY, false, ignoreHighlight, backgroundIdx <= 0)}
+            {visualizeLine(firstLine.words, 0, yStart, deltaY, false, reminder, ignoreHighlight, backgroundIdx <= 0)}
             {lines.map((line) => {
                 lineCount += 1;
-                return visualizeLine(line.words, 0, yStart, deltaY, true, ignoreHighlight, backgroundIdx <= lineCount);
+                return visualizeLine(line.words, 0, yStart, deltaY, true, reminder, ignoreHighlight, backgroundIdx <= lineCount);
             })}
         </>
     );
@@ -237,7 +240,7 @@ function createVisualizationLines(message: string, keepNewlines: boolean, watchd
 }
 
 export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
-    message, backgroundColor, keepNewlines = false, ignoreHighlight, cssClass, yStart, deltaY,
+    message, backgroundColor, messageIsReminder, keepNewlines = false, ignoreHighlight, cssClass, yStart, deltaY,
     seperatorLine = null, watchdogIndices = [], updateSystemStatusMessage,
 }) => {
     const [pageIndex, setPageIndex] = useState(0);
@@ -339,7 +342,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
                 />
             )}
             <text className={cssClass}>
-                {visualizeLines(lines, backgroundIdx, yStart, deltaY, ignoreHighlight)}
+                {visualizeLines(lines, backgroundIdx, yStart, deltaY, messageIsReminder, ignoreHighlight)}
             </text>
             {pageCount > 1 && (
                 <>

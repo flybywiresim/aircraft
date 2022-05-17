@@ -37,10 +37,11 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
     }
 
     // define the text color
+    const messageIsReminder = !messages[0].SemanticResponseRequired && messages[0].MessageMonitoring === CpdlcMessageMonitoringState.Finished;
     let messageClass = 'message-content';
     if (messages[0].Direction === AtsuMessageDirection.Downlink) {
         messageClass += ' message-content-other message-content-out';
-    } else if (ignoreHighlight) {
+    } else if (ignoreHighlight && !messageIsReminder) {
         messageClass += ' message-content-sent';
     } else {
         messageClass += ' message-content-other message-content-in';
@@ -116,6 +117,7 @@ export const DatalinkMessage: React.FC<DatalinkMessageProps> = ({ messages, upda
                 message={content}
                 seperatorLine={messageSeperatorLine}
                 backgroundColor={backgroundColor}
+                messageIsReminder={messageIsReminder}
                 keepNewlines
                 ignoreHighlight={ignoreHighlight}
                 cssClass={messageClass}

@@ -65,6 +65,8 @@ const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage 
 };
 
 export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedResponse }) => {
+    const messageIsReminder = !message.SemanticResponseRequired && message.MessageMonitoring === CpdlcMessageMonitoringState.Finished;
+
     let statusClass = 'status-message ';
     if (message.Direction === AtsuMessageDirection.Uplink) {
         if (!message.SemanticResponseRequired) {
@@ -86,7 +88,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
 
     // calculate the position of the background rectangle
     let text = '';
-    if (message.Direction === AtsuMessageDirection.Uplink) {
+    if (message.Direction === AtsuMessageDirection.Uplink && !messageIsReminder) {
         if (selectedResponse !== -1) {
             text = translateResponseId(selectedResponse, message);
         } else {
