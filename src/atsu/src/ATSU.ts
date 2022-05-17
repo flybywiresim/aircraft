@@ -48,7 +48,11 @@ export class Atsu {
         let passedAltitude: string = '';
         let currentAltitude: string = '';
         if (Simplane.getPressureSelectedMode(Aircraft.A320_NEO) === 'STD') {
-            passedAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(atsu.flightStateObserver.LastWaypoint.altitude / 100)}`);
+            if (atsu.flightStateObserver.LastWaypoint) {
+                passedAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(atsu.flightStateObserver.LastWaypoint.altitude / 100)}`);
+            } else {
+                passedAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(atsu.flightStateObserver.PresentPosition.altitude / 100)}`);
+            }
             currentAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(atsu.flightStateObserver.PresentPosition.altitude / 100)}`);
             if (atsu.flightStateObserver.FcuSettings.altitude) {
                 targetAltitude = InputValidation.formatScratchpadAltitude(`FL${Math.round(atsu.flightStateObserver.FcuSettings.altitude / 100)}`);
@@ -56,7 +60,11 @@ export class Atsu {
                 targetAltitude = currentAltitude;
             }
         } else {
-            passedAltitude = InputValidation.formatScratchpadAltitude(atsu.flightStateObserver.LastWaypoint.altitude.toString());
+            if (atsu.flightStateObserver.LastWaypoint) {
+                passedAltitude = InputValidation.formatScratchpadAltitude(atsu.flightStateObserver.LastWaypoint.altitude.toString());
+            } else {
+                passedAltitude = InputValidation.formatScratchpadAltitude(atsu.flightStateObserver.PresentPosition.altitude.toString());
+            }
             currentAltitude = InputValidation.formatScratchpadAltitude(atsu.flightStateObserver.PresentPosition.altitude.toString());
             if (atsu.flightStateObserver.FcuSettings.altitude) {
                 targetAltitude = InputValidation.formatScratchpadAltitude(atsu.flightStateObserver.FcuSettings.altitude.toString());
