@@ -635,4 +635,16 @@ export class InputValidation {
         const entries = InputValidation.decodeOffsetString(offset);
         return `${entries[0]}${entries[1]} ${entries[2] === 'L' ? 'LEFT' : 'RIGHT'}`;
     }
+
+    /**
+     * Formats a valid scratchpad distance entry to a normalized distance entry
+     * @param {string} value The scratchpad entry
+     * @returns The normalized distance entry
+     */
+    public static formatScratchpadDistance(distance: string): string {
+        if (distance.endsWith('NM') || distance.endsWith('KM')) {
+            return distance;
+        }
+        return `${distance}NM`;
+    }
 }
