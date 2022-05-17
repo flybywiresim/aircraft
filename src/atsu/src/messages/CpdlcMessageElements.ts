@@ -158,7 +158,8 @@ export class CpdlcMessageContentPosition extends CpdlcMessageContent {
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
         let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
-            if (InputValidation.validateScratchpadWaypoint(value[this.IndexStart]) === AtsuStatusCodes.Ok) {
+            if (InputValidation.validateScratchpadWaypoint(value[this.IndexStart]) === AtsuStatusCodes.Ok
+            && InputValidation.validateScratchpadTime(value[this.IndexStart]) !== AtsuStatusCodes.Ok) {
                 this.Value = value[this.IndexStart];
                 value[this.IndexStart] = '%s';
                 retval = true;
