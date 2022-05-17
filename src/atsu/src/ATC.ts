@@ -248,6 +248,10 @@ export class Atc {
             this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sending);
             this.dcduLink.update(message);
 
+            if (this.parent.modificationMessage?.UniqueMessageID === uid) {
+                this.parent.modificationMessage = null;
+            }
+
             if (message.Response !== undefined) {
                 this.datalink.sendMessage(message.Response, false).then((code) => {
                     if (code === AtsuStatusCodes.Ok) {
@@ -298,6 +302,10 @@ export class Atc {
                 }
                 this.dcduLink.update(message);
             });
+
+            if (this.parent.modificationMessage?.UniqueMessageID === uid) {
+                this.parent.modificationMessage = null;
+            }
         }
     }
 
@@ -317,6 +325,10 @@ export class Atc {
         if ((message as CpdlcMessage).DcduRelevantMessage) {
             this.dcduLink.updateDcduStatusMessage(message.UniqueMessageID, DcduStatusMessage.Sending);
             this.dcduLink.update(message as CpdlcMessage);
+        }
+
+        if (this.parent.modificationMessage?.UniqueMessageID === message.UniqueMessageID) {
+            this.parent.modificationMessage = null;
         }
 
         return this.datalink.sendMessage(message, false).then((code) => {
