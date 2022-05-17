@@ -56,10 +56,10 @@ export const WilcoUnableButtons: React.FC<WilcoUnableButtonsProps> = ({
         } else if (showSend) {
             if (index === 'L1') {
                 setMessageStatus(message.UniqueMessageID, -1);
-            } else {
                 if (UplinkMonitor.relevantMessage(message)) {
                     cancelMessageMonitoring(message.UniqueMessageID);
                 }
+            } else {
                 sendResponse(message.UniqueMessageID, selectedResponse);
             }
         } else if (index === 'R2') {
