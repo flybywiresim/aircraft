@@ -69,7 +69,11 @@ export class CpdlcMessage extends AtsuMessage {
             if (format === AtsuMessageSerializationFormat.Network) {
                 content = `${content.substring(0, idx)}${entry.Value}${content.substring(idx + 2)}`;
             } else if (entry.Value !== '') {
-                content = `${content.substring(0, idx)}@${entry.Value}@${content.substring(idx + 2)}`;
+                if (this.MessageMonitoring === CpdlcMessageMonitoringState.Monitoring && format === AtsuMessageSerializationFormat.MCDUMonitored) {
+                    content = `${content.substring(0, idx)}{magenta}${entry.Value}{end}${content.substring(idx + 2)}`;
+                } else {
+                    content = `${content.substring(0, idx)}@${entry.Value}@${content.substring(idx + 2)}`;
+                }
             } else {
                 content = `${content.substring(0, idx)}[      ]${content.substring(idx + 2)}`;
             }
@@ -113,7 +117,7 @@ export class CpdlcMessage extends AtsuMessage {
             message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${this.Content[0].ExpectedResponse}/${lines.join(' ')}`;
         } else if (format === AtsuMessageSerializationFormat.DCDU) {
             message = lines.join('\n');
-        } else if (format === AtsuMessageSerializationFormat.MCDU) {
+        } else if (format === AtsuMessageSerializationFormat.MCDU || format === AtsuMessageSerializationFormat.MCDUMonitored) {
             if (this.Direction === AtsuMessageDirection.Uplink) {
                 message += `{cyan}${this.Timestamp.dcduTimestamp()} FROM ${this.Station}{end}\n`;
             } else {

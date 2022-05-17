@@ -17,7 +17,7 @@ export class FreetextMessage extends AtsuMessage {
     public serialize(format: AtsuMessageSerializationFormat) {
         let message = '';
 
-        if (format === AtsuMessageSerializationFormat.MCDU) {
+        if (format === AtsuMessageSerializationFormat.MCDU || format === AtsuMessageSerializationFormat.MCDUMonitored) {
             wordWrap(this.Message, 25).forEach((line) => {
                 message += `{green}${line}{end}\n`;
             });
