@@ -303,16 +303,16 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
             backgroundNeeded = true;
             if (seperatorLine <= startIndex) {
                 // first line contains downlink message
-                contentHeight += lines.length * 210;
+                contentHeight += lines.length * 220;
             } else if (seperatorLine < endIndex) {
                 // mix of uplink and downlink message
-                contentHeight += (endIndex - seperatorLine) * 210;
-                backgroundY += (lines.length - (endIndex - seperatorLine)) * 210;
+                contentHeight += (endIndex - seperatorLine) * 220;
+                backgroundY += (lines.length - (endIndex - seperatorLine)) * 220;
             } else {
                 backgroundNeeded = false;
             }
         } else {
-            contentHeight += lines.length * 230;
+            contentHeight += lines.length * 220;
             backgroundNeeded = true;
         }
     }
@@ -321,7 +321,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     if (backgroundNeeded) {
         if (seperatorLine && seperatorLine >= startIndex) {
             backgroundIdx = (seperatorLine - startIndex) >= maxLines ? 0 : (seperatorLine - startIndex);
-        } else if (!seperatorLine) {
+        } else if (seperatorLine) {
             backgroundIdx = 0;
         }
     }
