@@ -51,7 +51,7 @@ export const useSimVar = (
     const updateCallback = useCallback(() => {
         const delta = Date.now() - lastUpdate.current;
 
-        if (delta > refreshInterval) {
+        if (delta >= refreshInterval) {
             lastUpdate.current = Date.now();
 
             const newValue = SimVar.GetSimVarValue(name, unit);
@@ -105,7 +105,7 @@ export const useGlobalVar = (
     const updateCallback = useCallback(() => {
         const delta = Date.now() - lastUpdate.current;
 
-        if (delta > refreshInterval) {
+        if (delta >= refreshInterval) {
             lastUpdate.current = Date.now();
 
             const newValue = SimVar.GetGlobalVarValue(name, unit);
@@ -149,7 +149,7 @@ export const useGameVar = (
     const updateCallback = useCallback(() => {
         const delta = Date.now() - lastUpdate.current;
 
-        if (delta > refreshInterval) {
+        if (delta >= refreshInterval) {
             lastUpdate.current = Date.now();
 
             const newValue = SimVar.GetGameVarValue(name, unit);
@@ -208,7 +208,7 @@ export const useInteractionSimVar = (
     const updateCallback = useCallback(() => {
         const delta = Date.now() - lastUpdate.current;
 
-        if (delta > refreshInterval) {
+        if (delta >= refreshInterval) {
             lastUpdate.current = Date.now();
 
             const newValue = SimVar.GetSimVarValue(name, unit);
