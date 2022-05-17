@@ -540,7 +540,7 @@ class CDUAtcMessageModify {
             if (CDUAtcMessageModify.CanUpdateMessage(data)) {
                 CDUAtcMessageModify.UpdateResponseMessage(message, data);
                 mcdu.atsu.atc.updateMessage(message);
-                CDUAtcMessageModify.ShowPage(mcdu, message);
+                CDUAtcMenu.ShowPage(mcdu, message);
             }
         };
     }

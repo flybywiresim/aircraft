@@ -122,7 +122,7 @@ class CDUAtcMessageModifyUM131 {
             if (CDUAtcMessageModifyUM131.CanUpdateMessage(data)) {
                 CDUAtcMessageModifyUM131.UpdateResponseMessage(message, data);
                 mcdu.atsu.atc.updateMessage(message);
-                CDUAtcMessageModifyUM131.ShowPage(mcdu, message);
+                CDUAtcMenu.ShowPage(mcdu, message);
             }
         };
     }
