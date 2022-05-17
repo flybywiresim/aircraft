@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useInteractionEvents, useUpdate } from './hooks';
 
 type SimVarSetter = <T extends SimVarValue>(oldValue: T) => T;
@@ -268,8 +268,21 @@ export const useSplitSimVar = (
     refreshInterval = 0,
 ): [SimVarValue, (newValueOrSetter: SimVarValue | SimVarSetter
 ) => void] => {
-    const [value] = useSimVar(readName, readUnit, refreshInterval);
-    const [, setter] = useSimVar(writeName, writeUnit || readUnit);
+    const [readValue] = useSimVar(readName, readUnit, refreshInterval);
+    const [, writeSetter] = useSimVar(writeName, writeUnit || readUnit);
 
-    return [value, setter];
+    const [stateValue, setStateValue] = useState(readValue);
+
+    useEffect(() => {
+        setStateValue(readValue);
+    }, [readValue]);
+
+    const setter = useCallback((valueOrSetter: any | SimVarSetter) => {
+        const executedValue = typeof valueOrSetter === 'function' ? valueOrSetter(stateValue) : valueOrSetter;
+
+        writeSetter(executedValue);
+        setStateValue(executedValue);
+    }, [stateValue, writeName]);
+
+    return [stateValue, setter];
 };
