@@ -68,13 +68,15 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
     let statusClass = 'status-message ';
     if (message.Direction === AtsuMessageDirection.Uplink) {
         if (!message.SemanticResponseRequired) {
-            if (message.Response && selectedResponse === -1) {
-                statusClass += 'status-open';
-            } else {
+            if (message.Response || selectedResponse !== -1) {
                 statusClass += 'status-other';
+            } else {
+                statusClass += 'status-open';
             }
-        } else if (message.Response?.ComStatus !== AtsuMessageComStatus.Sent) {
+        } else if (message.Response?.ComStatus === AtsuMessageComStatus.Open) {
             statusClass += 'status-open';
+        } else {
+            statusClass += 'status-other';
         }
     } else if (message.ComStatus === AtsuMessageComStatus.Sent) {
         statusClass += 'status-other';
