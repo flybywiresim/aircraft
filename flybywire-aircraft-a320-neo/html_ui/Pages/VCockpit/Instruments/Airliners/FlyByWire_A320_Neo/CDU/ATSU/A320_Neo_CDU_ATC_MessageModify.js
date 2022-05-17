@@ -201,8 +201,7 @@ const ModifyLookupTable = {
     }]
 };
 
-// TODO UM131 -> present fuel&people
-// TODO UM147 -> request pos-rep
+// UM131: { positiveOrNegative: false, messages: ['DM57'] }, -> present fuel&people
 
 class CDUAtcMessageModify {
     static CreateDataBlock(message) {
@@ -327,6 +326,12 @@ class CDUAtcMessageModify {
     }
 
     static ShowPage(mcdu, message, data = CDUAtcMessageModify.CreateDataBlock(message)) {
+        if (message.Content[0].TypeId === "UM147") {
+            // modify the position report
+            CDUAtcPositionReport.ShowPage1(mcdu, message);
+            return;
+        }
+
         mcdu.page.Current = mcdu.page.ATCModify;
 
         const visualization = CDUAtcMessageModify.CreateVisualization(message, data);
