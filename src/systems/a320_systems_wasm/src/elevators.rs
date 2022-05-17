@@ -38,47 +38,13 @@ pub(super) fn elevators(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn E
     builder.map(
         ExecuteOn::PostTick,
         Variable::aspect("HYD_ELEV_LEFT_DEFLECTION"),
-        |value| {
-            const min_msfs_angle: f64 = 11.5;
-            const max_msfs_angle: f64 = 16.;
-            const elevator_range: f64 = max_msfs_angle + min_msfs_angle;
-
-            let msfs_angle_zero_offset = value * elevator_range;
-            let msfs_angle = msfs_angle_zero_offset - min_msfs_angle;
-
-            let final_msfs_angle_output = if msfs_angle <= 0. {
-                msfs_angle / min_msfs_angle
-            } else {
-                msfs_angle / max_msfs_angle
-            };
-            final_msfs_angle_output
-        },
+        |value| hyd_deflection_to_msfs_deflection(value),
         Variable::named("HYD_ELEVATOR_LEFT_DEFLECTION"),
     );
     builder.map(
         ExecuteOn::PostTick,
         Variable::aspect("HYD_ELEV_RIGHT_DEFLECTION"),
-        |value| {
-            const min_msfs_angle: f64 = 11.5;
-            const max_msfs_angle: f64 = 16.;
-            const elevator_range: f64 = max_msfs_angle + min_msfs_angle;
-
-            let msfs_angle_zero_offset = value * elevator_range;
-            let msfs_angle = msfs_angle_zero_offset - min_msfs_angle;
-
-            let final_msfs_angle_output = if msfs_angle <= 0. {
-                msfs_angle / min_msfs_angle
-            } else {
-                msfs_angle / max_msfs_angle
-            };
-
-            println!(
-                "ELEVATOR_RIGHT HYD POS {:.2} msfs_angle  {:.2} final_msfs_dmnd {:.2}",
-                value, msfs_angle, final_msfs_angle_output,
-            );
-
-            final_msfs_angle_output
-        },
+        |value| hyd_deflection_to_msfs_deflection(value),
         Variable::named("HYD_ELEVATOR_RIGHT_DEFLECTION"),
     );
 
@@ -125,4 +91,26 @@ impl VariablesToObject for PitchSimOutput {
     }
 
     set_data_on_sim_object!();
+}
+
+fn hyd_deflection_to_msfs_deflection(hyd_deflection: f64) -> f64 {
+    const min_msfs_angle: f64 = 11.5;
+    const max_msfs_angle: f64 = 16.;
+    const elevator_range: f64 = max_msfs_angle + min_msfs_angle;
+
+    let msfs_angle_zero_offset = hyd_deflection * elevator_range;
+    let msfs_angle = msfs_angle_zero_offset - min_msfs_angle;
+
+    let final_msfs_angle_output = if msfs_angle <= 0. {
+        msfs_angle / min_msfs_angle
+    } else {
+        msfs_angle / max_msfs_angle
+    };
+
+    println!(
+        "ELEVATOR HYD POS {:.2} msfs_angle  {:.2} final_msfs_dmnd {:.2}",
+        hyd_deflection, msfs_angle, final_msfs_angle_output,
+    );
+
+    final_msfs_angle_output
 }
