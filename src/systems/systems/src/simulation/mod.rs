@@ -38,17 +38,17 @@ pub trait VariableRegistry {
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
-pub struct VariableIdentifier(u8, usize);
+pub struct VariableIdentifier(usize, usize);
 
 impl VariableIdentifier {
-    pub fn new<T: Into<u8>>(variable_type: T) -> Self {
+    pub fn new<T: Into<usize>>(variable_type: T) -> Self {
         Self {
             0: variable_type.into(),
             1: 0,
         }
     }
 
-    pub fn identifier_type(&self) -> u8 {
+    pub fn identifier_type(&self) -> usize {
         self.0
     }
 
@@ -775,6 +775,18 @@ read_write_uom!(MassDensity, slug_per_cubic_foot);
 
 read_write_into!(MachNumber);
 read_write_into!(StartState);
+
+impl<T: Reader> Read<Arinc429Word<u32>> for T {
+    fn convert(&mut self, value: f64) -> Arinc429Word<u32> {
+        value.into()
+    }
+}
+
+impl<T: Writer> Write<Arinc429Word<u32>> for T {
+    fn convert(&mut self, value: Arinc429Word<u32>) -> f64 {
+        value.into()
+    }
+}
 
 impl<T: Reader> Read<f64> for T {
     fn convert(&mut self, value: f64) -> f64 {
