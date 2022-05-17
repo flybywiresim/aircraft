@@ -64,8 +64,8 @@ export class Atc {
             ids.forEach((id) => {
                 const message = this.messageQueue.find((element) => id === element.UniqueMessageID);
                 if (message) {
-                    UplinkMessageStateMachine.update(this.parent, message, true);
-                    this.dcduLink.update(message);
+                    UplinkMessageStateMachine.update(this.parent, message, false, true);
+                    this.dcduLink.update(message, true);
                 }
             });
         }, 5000);
