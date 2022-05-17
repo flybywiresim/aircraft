@@ -189,7 +189,8 @@ const ModifyLookupTable = {
         type: Atsu.CpdlcMessageContentType.Distance,
         textIndex: 0,
         valueIndex: 0,
-        emptyLength: 3
+        emptyLength: 3,
+        freetext: "DISTANCE TO %s %v"
     }],
     UM182: [{
         response: "DM79",
@@ -340,24 +341,32 @@ class CDUAtcMessageModify {
     static UpdateResponseMessage(message, data) {
         const lutEntry = ModifyLookupTable[message.Content[0].TypeId];
 
+        let lutIndex = 0;
         if (data.selectedToggles[0]) {
-            const freetext = "WE CAN ACCEPT %s NOW".replace("%s", message.Content[0].Content[lutEntry[1].textIndex].Value);
-            message.Response.Content = [Atsu.CpdlcMessagesDownlink[lutEntry[1].response][1].deepCopy()];
-            message.Response.Content[0].Content[0].Value = freetext;
-            return;
+            lutIndex = 1;
+        } else if (data.selectedToggles[1]) {
+            lutIndex = 2;
         }
 
-        let newContent = null;
-        if (data.selectedToggles[1]) {
-            newContent = Atsu.CpdlcMessagesDownlink[lutEntry[2].response][1].deepCopy();
+        const newContent = Atsu.CpdlcMessagesDownlink[lutEntry[lutIndex].response][1].deepCopy();
+        if (newContent.TypeId === "DM67") {
+            let freetext = lutEntry[lutIndex].freetext;
+            if (lutEntry[lutIndex].textIndex) {
+                freetext = freetext.replace("%s", message.Content[0].Content[lutEntry[lutIndex].textIndex].Value);
+            }
+            if (lutEntry[lutIndex].valueIndex) {
+                freetext = freetext.replace("%v", data.value);
+            }
+        } else if (newContent.TypeId === "DM104") {
+            newContent.Content[0].Value = message.Content[0].Content[lutEntry[lutIndex].textIndex].Value;
+            newContent.Content[1].Value = data.value;
         } else {
-            newContent = Atsu.CpdlcMessagesDownlink[lutEntry[0].response][1].deepCopy();
-            newContent.Content[lutEntry[0].valueIndex].Value = data.value;
+            newContent.Content[lutEntry[lutIndex].valueIndex].Value = data.value;
+            for (let i = 0; i < lutEntry[lutIndex].valueIndex; ++i) {
+                newContent.Content[i].Value = message.Content[0].Content[lutEntry[lutIndex].textIndex + i].Value;
+            }
         }
 
-        for (let i = 0; i < lutEntry[0].valueIndex; ++i) {
-            newContent.Content[i].Value = message.Content[0].Content[lutEntry[0].textIndex + i].Value;
-        }
         message.Response.Content = [newContent];
     }
 
