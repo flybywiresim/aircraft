@@ -45,10 +45,10 @@ class CDUAtcMessageModifyUM131 {
             ["<RETURN", `{cyan}${transfer}{end}`]
         ]);
 
-        mcdu.leftInputDelay[2] = () => {
+        mcdu.leftInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onLeftInput[2] = (value) => {
+        mcdu.onLeftInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.personsOnBoard = null;
             } else {
@@ -79,10 +79,10 @@ class CDUAtcMessageModifyUM131 {
             CDUAtcMenu.ShowPage(mcdu);
         };
 
-        mcdu.rightInputDelay[2] = () => {
+        mcdu.rightInputDelay[1] = () => {
             return mcdu.getDelaySwitchPage();
         };
-        mcdu.onRightInput[2] = (value) => {
+        mcdu.onRightInput[1] = (value) => {
             if (value === FMCMainDisplay.clrValue) {
                 data.endurance = null;
             } else {
