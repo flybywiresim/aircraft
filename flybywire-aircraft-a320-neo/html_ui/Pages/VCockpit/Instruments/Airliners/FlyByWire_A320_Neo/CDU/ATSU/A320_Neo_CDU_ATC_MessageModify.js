@@ -3,7 +3,7 @@ const ModifyLookupTable = {
         response: "DM33",
         text: "PRESENT POSITION",
         type: Atsu.CpdlcMessageContentType.Position,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 5
     }],
@@ -11,7 +11,7 @@ const ModifyLookupTable = {
         response: "DM32",
         text: "PRESENT LEVEL",
         type: Atsu.CpdlcMessageContentType.Level,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 5
     }],
@@ -19,7 +19,7 @@ const ModifyLookupTable = {
         response: "DM34",
         text: "PRESENT SPEED",
         type: Atsu.CpdlcMessageContentType.Speed,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 4
     }],
@@ -27,7 +27,7 @@ const ModifyLookupTable = {
         response: "DM38",
         text: "ASSIGNED LEVEL",
         type: Atsu.CpdlcMessageContentType.Level,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 5
     }],
@@ -35,7 +35,7 @@ const ModifyLookupTable = {
         response: "DM39",
         text: "ASSIGNED SPEED",
         type: Atsu.CpdlcMessageContentType.Speed,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 4
     }],
@@ -43,7 +43,7 @@ const ModifyLookupTable = {
         response: "DM45",
         text: "ASSIGNED ROUTE",
         type: Atsu.CpdlcMessageContentType.Freetext,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 6
     }],
@@ -51,7 +51,7 @@ const ModifyLookupTable = {
         response: "DM46",
         text: "REPORTED TIME",
         type: Atsu.CpdlcMessageContentType.Time,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 4
     }],
@@ -59,7 +59,7 @@ const ModifyLookupTable = {
         response: "DM45",
         text: "REPORTED WAYPOINT",
         type: Atsu.CpdlcMessageContentType.Position,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 5
     }],
@@ -67,7 +67,7 @@ const ModifyLookupTable = {
         response: "DM42",
         text: "NEXT WAYPOINT",
         type: Atsu.CpdlcMessageContentType.Position,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 5
     }],
@@ -75,7 +75,7 @@ const ModifyLookupTable = {
         response: "DM43",
         text: "NEXT WAYPOINT ETA",
         type: Atsu.CpdlcMessageContentType.Time,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 4
     }],
@@ -83,7 +83,7 @@ const ModifyLookupTable = {
         response: "DM44",
         text: "ENSUING WAYPOINT",
         type: Atsu.CpdlcMessageContentType.Position,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 5
     }],
@@ -91,7 +91,7 @@ const ModifyLookupTable = {
         response: "DM47",
         text: "PRESENT SQUAWK",
         type: Atsu.CpdlcMessageContentType.Squawk,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 4
     }],
@@ -99,7 +99,7 @@ const ModifyLookupTable = {
         response: "DM35",
         text: "PRESENT HEADING",
         type: Atsu.CpdlcMessageContentType.Degree,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 3
     }],
@@ -107,7 +107,7 @@ const ModifyLookupTable = {
         response: "DM36",
         text: "PRESENT GROUND TRACK",
         type: Atsu.CpdlcMessageContentType.Degree,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 3
     }],
@@ -123,14 +123,15 @@ const ModifyLookupTable = {
         text: "CAN %s NOW",
         type: Atsu.CpdlcMessageContentType.Unknown,
         textIndex: 0,
-        valueIndex: -1,
-        emptyLength: 0
+        valueIndex: null,
+        emptyLength: 0,
+        freetext: "WE CAN ACCEPT %s NOW"
     }, {
         response: "DM82",
         text: "CANNOT %s",
         type: Atsu.CpdlcMessageContentType.Unknown,
         textIndex: 0,
-        valueIndex: -1,
+        valueIndex: null,
         emptyLength: 0
     }
     ],
@@ -146,14 +147,15 @@ const ModifyLookupTable = {
         text: "CAN %s NOW",
         type: Atsu.CpdlcMessageContentType.Unknown,
         textIndex: 0,
-        valueIndex: -1,
-        emptyLength: 0
+        valueIndex: null,
+        emptyLength: 0,
+        freetext: "WE CAN ACCEPT %s NOW"
     }, {
         response: "DM94",
         text: "CANNOT %s",
         type: Atsu.CpdlcMessageContentType.Unknown,
         textIndex: 0,
-        valueIndex: -1,
+        valueIndex: null,
         emptyLength: 0
     }
     ],
@@ -169,14 +171,15 @@ const ModifyLookupTable = {
         text: "CAN %s NOW",
         type: Atsu.CpdlcMessageContentType.Unknown,
         textIndex: 0,
-        valueIndex: -1,
-        emptyLength: 0
+        valueIndex: null,
+        emptyLength: 0,
+        freetext: "WE CAN ACCEPT %s NOW"
     }, {
         response: "DM86",
         text: "CANNOT %s",
         type: Atsu.CpdlcMessageContentType.Unknown,
         textIndex: 0,
-        valueIndex: -1,
+        valueIndex: null,
         emptyLength: 0
     }
     ],
@@ -192,7 +195,7 @@ const ModifyLookupTable = {
         response: "DM79",
         text: "ATIS",
         type: Atsu.CpdlcMessageContentType.Atis,
-        textIndex: -1,
+        textIndex: null,
         valueIndex: 0,
         emptyLength: 1
     }]
@@ -214,7 +217,7 @@ class CDUAtcMessageModify {
     }
 
     static CreateDescriptionLine(message, entry) {
-        if (entry.textIndex >= 0) {
+        if (entry.textIndex) {
             return entry.text.replace("%s", message.Content[0].Content[entry.textIndex].Value);
         }
         return entry.text;
