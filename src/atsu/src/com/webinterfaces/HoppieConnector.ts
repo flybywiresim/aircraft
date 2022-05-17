@@ -359,11 +359,11 @@ export class HoppieConnector {
                     if (elements[3] !== '') {
                         cpdlc.PreviousTransmissionId = parseInt(elements[3]);
                     }
-                    cpdlc.Content.push(HoppieConnector.cpdlcMessageClassification(elements[5]));
+                    cpdlc.Message = elements[5].replace(/@/g, '').replace(/_/g, '\n');
+                    cpdlc.Content.push(HoppieConnector.cpdlcMessageClassification(cpdlc.Message));
                     if ((elements[4] as CpdlcMessageExpectedResponseType) !== cpdlc.Content[0].ExpectedResponse) {
                         cpdlc.Content[0].ExpectedResponse = (elements[4] as CpdlcMessageExpectedResponseType);
                     }
-                    cpdlc.Message = elements[5].replace(/@/g, '').replace(/_/g, '\n');
 
                     retval.push(cpdlc);
                     break;
