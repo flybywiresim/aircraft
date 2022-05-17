@@ -5,6 +5,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.8.2
+
+1. [FMGC] Map leg course with station declination where required - @tracernz (Mike)
+
 ## 0.8.1
 
 1. [GENERAL] Ensure notifications are dismissed on exit to main menu

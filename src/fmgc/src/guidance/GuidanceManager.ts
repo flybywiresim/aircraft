@@ -80,7 +80,7 @@ export class GuidanceManager {
 
         if (to.additionalData) {
             if (to.additionalData.legType === LegType.AF) {
-                return new AFLeg(to, to.additionalData.recommendedLocation, to.additionalData.rho, to.additionalData.theta, to.additionalData.course, metadata, segment);
+                return new AFLeg(to, to.additionalData.recommendedLocation, to.additionalData.rho, to.additionalData.thetaTrue, to.additionalData.course, metadata, segment);
             }
 
             if (to.additionalData.legType === LegType.CF) {
@@ -117,7 +117,7 @@ export class GuidanceManager {
             if (to.additionalData.legType === LegType.CR) {
                 // TODO clean this whole thing up
                 const course = to.additionalData.course;
-                const radial = to.additionalData.radial;
+                const radial = to.additionalData.thetaTrue;
                 const theta = to.additionalData.theta;
                 const ident = WayPoint.formatIdentFromIcao(to.additionalData.recommendedIcao);
 
