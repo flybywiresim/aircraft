@@ -126,7 +126,11 @@ export class CpdlcMessage extends AtsuMessage {
 
             lines.forEach((line) => {
                 line = line.replace(/@/gi, '');
-                message += `{green}${line}{end}\n`;
+                if (format === AtsuMessageSerializationFormat.MCDUMonitored) {
+                    message += line;
+                } else {
+                    message += `{green}${line}{end}\n`;
+                }
             });
 
             message += '{white}------------------------{end}\n';
