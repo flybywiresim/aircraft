@@ -10,7 +10,7 @@ import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { keyboardLayoutOptions } from '../../UtilComponents/KeyboardWrapper';
-import { languageOptions, t } from '../../translation';
+import { languageOptions, tt } from '../../translation';
 
 export const FlyPadPage = () => {
     const [brightnessSetting, setBrightnessSetting] = usePersistentNumberProperty('EFB_BRIGHTNESS', 0);
@@ -26,21 +26,24 @@ export const FlyPadPage = () => {
     const [keyboardLayout, setKeyboardLayout] = usePersistentProperty('EFB_KEYBOARD_LAYOUT_IDENT', 'english');
     const [batteryLifeEnabled, setBatteryLifeEnabled] = usePersistentNumberProperty('EFB_BATTERY_LIFE_ENABLED', 1);
 
+    // the tt() is a special case to update the page with the correct language after user
+    // changes the language. the change to simvar hooks changed timing/order of updates.
+
     const themeButtons: ButtonType[] = [
-        { name: t('Settings.flyPad.Blue'), setting: 'blue' },
-        { name: t('Settings.flyPad.Dark'), setting: 'dark' },
-        { name: t('Settings.flyPad.Light'), setting: 'light' },
+        { name: tt('Settings.flyPad.Blue', language), setting: 'blue' },
+        { name: tt('Settings.flyPad.Dark', language), setting: 'dark' },
+        { name: tt('Settings.flyPad.Light', language), setting: 'light' },
     ];
 
     const timeDisplayButtons: ButtonType[] = [
-        { name: t('Settings.flyPad.Utc'), setting: 'utc' },
-        { name: t('Settings.flyPad.Local'), setting: 'local' },
-        { name: t('Settings.flyPad.UtcAndLocal'), setting: 'both' },
+        { name: tt('Settings.flyPad.Utc', language), setting: 'utc' },
+        { name: tt('Settings.flyPad.Local', language), setting: 'local' },
+        { name: tt('Settings.flyPad.UtcAndLocal', language), setting: 'both' },
     ];
 
     const timeFormatButtons: ButtonType[] = [
-        { name: t('Settings.flyPad.TwelveHours'), setting: '12' },
-        { name: t('Settings.flyPad.TwentyFourHours'), setting: '24' },
+        { name: tt('Settings.flyPad.TwelveHours', language), setting: '12' },
+        { name: tt('Settings.flyPad.TwentyFourHours', language), setting: '24' },
     ];
 
     const handleThemeSelect = (theme: string) => {
@@ -60,9 +63,8 @@ export const FlyPadPage = () => {
     const brightnessSliderRef = useRef<any>(null);
 
     return (
-        <SettingsPage name={t('Settings.flyPad.Title')}>
-
-            <SettingItem name={t('Settings.flyPad.Language')}>
+        <SettingsPage name={tt('Settings.flyPad.Title', language)}>
+            <SettingItem name={tt('Settings.flyPad.Language', language)}>
                 <SelectInput
                     className="w-72"
                     value={language}
@@ -72,7 +74,7 @@ export const FlyPadPage = () => {
                 />
             </SettingItem>
 
-            <SettingItem name={t('Settings.flyPad.OnscreenKeyboardLayout')}>
+            <SettingItem name={tt('Settings.flyPad.OnscreenKeyboardLayout', language)}>
                 <SelectInput
                     className="w-64"
                     value={keyboardLayout}
@@ -82,16 +84,16 @@ export const FlyPadPage = () => {
                 />
             </SettingItem>
 
-            <SettingItem name={t('Settings.flyPad.AutomaticallyShowOnscreenKeyboard')}>
+            <SettingItem name={tt('Settings.flyPad.AutomaticallyShowOnscreenKeyboard', language)}>
                 <Toggle value={!!autoOSK} onToggle={(value) => setAutoOSK(value ? 1 : 0)} />
             </SettingItem>
 
             <SettingGroup>
-                <SettingItem name={t('Settings.flyPad.AutoBrightness')} groupType="parent">
+                <SettingItem name={tt('Settings.flyPad.AutoBrightness', language)} groupType="parent">
                     <Toggle value={!!usingAutobrightness} onToggle={(value) => setUsingAutobrightness(value ? 1 : 0)} />
                 </SettingItem>
                 {!usingAutobrightness && (
-                    <SettingItem name={t('Settings.flyPad.Brightness')} disabled={!!usingAutobrightness} groupType="parent">
+                    <SettingItem name={tt('Settings.flyPad.Brightness', language)} disabled={!!usingAutobrightness} groupType="parent">
                         <div className="flex flex-row items-center space-x-8">
                             <>
                                 <Slider
@@ -116,20 +118,20 @@ export const FlyPadPage = () => {
                 )}
             </SettingGroup>
 
-            <SettingItem name={t('Settings.flyPad.BatteryLifeEnabled')}>
+            <SettingItem name={tt('Settings.flyPad.BatteryLifeEnabled', language)}>
                 <Toggle value={!!batteryLifeEnabled} onToggle={(value) => setBatteryLifeEnabled(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name={t('Settings.flyPad.ShowStatusBarFlightProgressIndicator')}>
+            <SettingItem name={tt('Settings.flyPad.ShowStatusBarFlightProgressIndicator', language)}>
                 <Toggle value={!!showStatusBarFlightProgress} onToggle={(value) => setShowStatusBarFlightProgress(value ? 1 : 0)} />
             </SettingItem>
 
-            <SettingItem name={t('Settings.flyPad.ShowColoredRawMetar')}>
+            <SettingItem name={tt('Settings.flyPad.ShowColoredRawMetar', language)}>
                 <Toggle value={!!usingColoredMetar} onToggle={(value) => setUsingColoredMetar(value ? 1 : 0)} />
             </SettingItem>
 
             <SettingGroup>
-                <SettingItem name={t('Settings.flyPad.TimeDisplayed')} groupType="parent">
+                <SettingItem name={tt('Settings.flyPad.TimeDisplayed', language)} groupType="parent">
                     <SelectGroup>
                         {timeDisplayButtons.map((button) => (
                             <SelectItem
@@ -142,7 +144,7 @@ export const FlyPadPage = () => {
                     </SelectGroup>
                 </SettingItem>
                 {timeDisplayed !== 'utc' && (
-                    <SettingItem name={t('Settings.flyPad.LocalTimeFormat')} groupType="sub" disabled={timeDisplayed === 'utc'}>
+                    <SettingItem name={tt('Settings.flyPad.LocalTimeFormat', language)} groupType="sub" disabled={timeDisplayed === 'utc'}>
                         <SelectGroup>
                             {timeFormatButtons.map((button) => (
                                 <SelectItem
@@ -157,7 +159,7 @@ export const FlyPadPage = () => {
                 )}
             </SettingGroup>
 
-            <SettingItem name={t('Settings.flyPad.Theme')}>
+            <SettingItem name={tt('Settings.flyPad.Theme', language)}>
                 <SelectGroup>
                     {themeButtons.map((button) => (
                         <SelectItem
