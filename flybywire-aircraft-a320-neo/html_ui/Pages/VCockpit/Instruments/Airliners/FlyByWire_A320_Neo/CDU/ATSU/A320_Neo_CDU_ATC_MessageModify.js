@@ -369,6 +369,8 @@ class CDUAtcMessageModify {
     }
 
     static ShowPage(mcdu, message, data = CDUAtcMessageModify.CreateDataBlock(message)) {
+        mcdu.page.Current = mcdu.page.ATCModify;
+
         if (message.Content[0].TypeId === "UM147") {
             // modify the position report
             CDUAtcPositionReport.ShowPage1(mcdu, message);
@@ -378,8 +380,6 @@ class CDUAtcMessageModify {
             CDUAtcMessageModifyUM131.ShowPage(mcdu, message);
             return;
         }
-
-        mcdu.page.Current = mcdu.page.ATCModify;
 
         const visualization = CDUAtcMessageModify.CreateVisualization(message, data);
 
