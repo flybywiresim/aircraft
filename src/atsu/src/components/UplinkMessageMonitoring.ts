@@ -64,6 +64,10 @@ class PositionMonitor extends UplinkMonitor {
 }
 
 class TimeMonitor extends UplinkMonitor {
+    private static deferredMessageIDs = ['UM66', 'UM69', 'UM119', 'UM122'];
+
+    private timeOffset = 0;
+
     private timeMonitor = -1;
 
     private static extractSeconds(value: string): number {
@@ -75,13 +79,16 @@ class TimeMonitor extends UplinkMonitor {
 
     constructor(atsu: Atsu, message: CpdlcMessage) {
         super(atsu, message);
+        if (TimeMonitor.deferredMessageIDs.findIndex((id) => id === message.Content[0].TypeId) === -1) {
+            this.timeOffset = 30;
+        }
         this.timeMonitor = TimeMonitor.extractSeconds(message.Content[0].Content[0].Value);
     }
 
     public conditionsMet(): boolean {
         const currentTime = SimVar.GetSimVarValue('E:ZULU TIME', 'seconds');
 
-        if (currentTime >= this.timeMonitor) {
+        if ((currentTime + this.timeOffset) >= this.timeMonitor) {
             // avoid errors due to day change (2359 to 0001)
             return (currentTime - this.timeMonitor) < 30;
         }
