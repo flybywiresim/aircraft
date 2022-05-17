@@ -7,15 +7,19 @@ import { Button } from './Button';
 type SemanticResponseButtonsProps = {
     message: CpdlcMessage,
     dataIncomplete: boolean,
+    messageUnderModification: boolean,
     invertResponse: (message: number) => void,
     modifyResponse: (message: number) => void,
     sendMessage: (message: number) => void,
     closeMessage: (message: number) => void
 }
 
-export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = ({ message, dataIncomplete, invertResponse, modifyResponse, sendMessage, closeMessage }) => {
+export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = ({
+    message, dataIncomplete, messageUnderModification, invertResponse,
+    modifyResponse, sendMessage, closeMessage,
+}) => {
     const showAnswers = !message.Response || (message.Response.ComStatus !== AtsuMessageComStatus.Sending && message.Response.ComStatus !== AtsuMessageComStatus.Sent);
-    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending;
+    const buttonsBlocked = message.Response?.ComStatus === AtsuMessageComStatus.Sending || messageUnderModification;
 
     const clicked = (index: string) : void => {
         if (message.UniqueMessageID === -1 || buttonsBlocked) {
@@ -65,7 +69,7 @@ export const SemanticResponseButtons: React.FC<SemanticResponseButtonsProps> = (
                         messageId={message.UniqueMessageID}
                         index="R2"
                         content="SEND"
-                        active={!dataIncomplete}
+                        active={!dataIncomplete && !buttonsBlocked}
                         onClick={clicked}
                     />
                 </>

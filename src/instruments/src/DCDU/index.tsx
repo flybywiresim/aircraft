@@ -513,6 +513,7 @@ const DCDU: React.FC = () => {
                     && visibleMessages[0].Direction === AtsuMessageDirection.Uplink && (
                         <SemanticResponseButtons
                             message={visibleMessages[0]}
+                            messageUnderModification={visibleMessageStatus === DcduStatusMessage.McduForModification || visibleMessageStatus === DcduStatusMessage.McduForText}
                             dataIncomplete={visibleMessagesSemanticResponseIncomplete}
                             invertResponse={invertResponse}
                             modifyResponse={modifyResponse}
