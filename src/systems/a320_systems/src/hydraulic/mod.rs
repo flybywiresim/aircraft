@@ -209,7 +209,6 @@ impl A320CargoDoorFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
-            true,
         )
     }
 
@@ -301,7 +300,6 @@ impl A320AileronFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
-            false,
             false,
         )
     }
@@ -401,7 +399,6 @@ impl A320SpoilerFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
-            true,
         )
     }
 
@@ -509,7 +506,6 @@ impl A320ElevatorFactory {
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
             false,
-            false,
         )
     }
 
@@ -597,7 +593,6 @@ impl A320RudderFactory {
             Self::FLOW_CONTROL_PROPORTIONAL_GAIN,
             Self::FLOW_CONTROL_INTEGRAL_GAIN,
             Self::FLOW_CONTROL_FORCE_GAIN,
-            false,
             false,
         )
     }
@@ -689,7 +684,6 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
-            true,
         )
     }
 
@@ -716,7 +710,6 @@ impl A320GearDoorFactory {
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
-            true,
             true,
         )
     }
@@ -828,7 +821,6 @@ impl A320GearFactory {
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
             true,
-            true,
         )
     }
 
@@ -853,7 +845,6 @@ impl A320GearFactory {
             FLOW_CONTROL_PROPORTIONAL_GAIN,
             FLOW_CONTROL_INTEGRAL_GAIN,
             FLOW_CONTROL_FORCE_GAIN,
-            true,
             true,
         )
     }
@@ -1734,6 +1725,9 @@ impl A320Hydraulic {
             context,
             &self.braking_circuit_norm,
             &self.braking_circuit_altn,
+            engine1,
+            engine2,
+            &self.pushback_tug,
         );
 
         self.slats_flaps_complex
@@ -3416,10 +3410,16 @@ struct A320BrakingForce {
     trailing_edge_flaps_left_percent_id: VariableIdentifier,
     trailing_edge_flaps_right_percent_id: VariableIdentifier,
 
+    enabled_chocks_id: VariableIdentifier,
+    light_beacon_on_id: VariableIdentifier,
+
     left_braking_force: f64,
     right_braking_force: f64,
 
     flap_position: f64,
+
+    is_chocks_enabled: bool,
+    is_light_beacon_on: bool,
 }
 impl A320BrakingForce {
     const REFERENCE_PRESSURE_FOR_MAX_FORCE: f64 = 2538.;
@@ -3438,10 +3438,16 @@ impl A320BrakingForce {
             trailing_edge_flaps_right_percent_id: context
                 .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
 
+            enabled_chocks_id: context.get_identifier("MODEL_WHEELCHOCKS_ENABLED".to_owned()),
+            light_beacon_on_id: context.get_identifier("LIGHT BEACON ON".to_owned()),
+
             left_braking_force: 0.,
             right_braking_force: 0.,
 
             flap_position: 0.,
+
+            is_chocks_enabled: false,
+            is_light_beacon_on: false,
         }
     }
 
@@ -3450,6 +3456,9 @@ impl A320BrakingForce {
         context: &UpdateContext,
         norm_brakes: &BrakeCircuit,
         altn_brakes: &BrakeCircuit,
+        engine1: &impl Engine,
+        engine2: &impl Engine,
+        pushback_tug: &PushbackTug,
     ) {
         // Base formula for output force is output_force[0:1] = 50 * sqrt(current_pressure) / Max_brake_pressure
         // This formula gives a bit more punch for lower brake pressures (like 1000 psi alternate braking), as linear formula
@@ -3470,6 +3479,8 @@ impl A320BrakingForce {
         self.right_braking_force = self.right_braking_force.max(0.).min(1.);
 
         self.correct_with_flaps_state(context);
+
+        self.update_chocks_braking(context, engine1, engine2, pushback_tug);
     }
 
     fn correct_with_flaps_state(&mut self, context: &UpdateContext) {
@@ -3493,6 +3504,25 @@ impl A320BrakingForce {
         self.right_braking_force = self.right_braking_force
             - (self.right_braking_force * final_flaps_correction_with_speed.get::<ratio>());
     }
+
+    fn update_chocks_braking(
+        &mut self,
+        context: &UpdateContext,
+        engine1: &impl Engine,
+        engine2: &impl Engine,
+        pushback_tug: &PushbackTug,
+    ) {
+        let chocks_on_wheels = context.is_on_ground()
+            && engine1.corrected_n1().get::<percent>() < 3.5
+            && engine2.corrected_n1().get::<percent>() < 3.5
+            && !pushback_tug.is_nose_wheel_steering_pin_inserted()
+            && !self.is_light_beacon_on;
+
+        if self.is_chocks_enabled && chocks_on_wheels {
+            self.left_braking_force = 1.;
+            self.right_braking_force = 1.;
+        }
+    }
 }
 
 impl SimulationElement for A320BrakingForce {
@@ -3506,6 +3536,9 @@ impl SimulationElement for A320BrakingForce {
         let left_flap: f64 = reader.read(&self.trailing_edge_flaps_left_percent_id);
         let right_flap: f64 = reader.read(&self.trailing_edge_flaps_right_percent_id);
         self.flap_position = (left_flap + right_flap) / 2.;
+
+        self.is_chocks_enabled = reader.read(&self.enabled_chocks_id);
+        self.is_light_beacon_on = reader.read(&self.light_beacon_on_id);
     }
 }
 
@@ -5268,9 +5301,9 @@ struct A320GravityExtension {
 }
 impl A320GravityExtension {
     const INCREMENT_ANGLE_DEGREE_PER_SECOND: f64 = 220.;
-
-    // Can be allowed when handle animation is available
-    const ALLOW_RETURNING_TO_STOWED_HANDLE_POSITION: bool = false;
+    const MAX_CRANK_HANDLE_ANGLE_DEGREE: f64 = 360. * 3.;
+    const MIN_CRANK_HANDLE_ANGLE_DEGREE: f64 = 0.;
+    const CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE: f64 = 0.1;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -5298,11 +5331,26 @@ impl A320GravityExtension {
             }
         }
 
-        if Self::ALLOW_RETURNING_TO_STOWED_HANDLE_POSITION
-            && self.handle_angle.get::<degree>() > 360. * 3.3
+        self.handle_angle = self
+            .handle_angle
+            .min(Angle::new::<degree>(
+                Self::MAX_CRANK_HANDLE_ANGLE_DEGREE
+                    + Self::CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE,
+            ))
+            .max(Angle::new::<degree>(
+                Self::MIN_CRANK_HANDLE_ANGLE_DEGREE
+                    - Self::CRANK_HANDLE_ANGLE_MARGIN_AT_MAX_ROTATION_DEGREE,
+            ));
+
+        if self.handle_angle.get::<degree>() > Self::MAX_CRANK_HANDLE_ANGLE_DEGREE
+            && !self.is_turned
+            && self.is_extending_gear
         {
             self.is_extending_gear = false;
-        } else if self.handle_angle.get::<degree>() < -0.2 {
+        } else if self.handle_angle.get::<degree>() < Self::MIN_CRANK_HANDLE_ANGLE_DEGREE
+            && !self.is_turned
+            && !self.is_extending_gear
+        {
             self.is_extending_gear = true;
         }
     }
@@ -6603,6 +6651,21 @@ mod tests {
             fn turn_emergency_gear_extension_n_turns(mut self, number_of_turns: u8) -> Self {
                 let mut number_of_loops = 0;
                 while self.get_emergency_handle_number_of_turns() < number_of_turns {
+                    self = self
+                        .set_gear_emergency_extension_active(true)
+                        .run_waiting_for(Duration::from_secs_f64(0.5));
+                    number_of_loops += 1;
+                    assert!(number_of_loops < 50);
+                }
+
+                self = self.set_gear_emergency_extension_active(false);
+
+                self
+            }
+
+            fn stow_emergency_gear_extension(mut self) -> Self {
+                let mut number_of_loops = 0;
+                while self.get_emergency_handle_number_of_turns() != 0 {
                     self = self
                         .set_gear_emergency_extension_active(true)
                         .run_waiting_for(Duration::from_secs_f64(0.5));
@@ -10201,6 +10264,7 @@ mod tests {
             let mut test_bed = test_bed_with()
                 .set_cold_dark_inputs()
                 .in_flight()
+                .with_worst_case_ptu()
                 .set_gear_lever_down()
                 .set_green_ed_pump(false)
                 .set_yellow_ed_pump(false)
@@ -10211,7 +10275,7 @@ mod tests {
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
 
             test_bed = test_bed.set_gear_lever_up();
-            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(60.));
+            test_bed = test_bed.run_waiting_for(Duration::from_secs_f64(80.));
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
         }
@@ -10286,6 +10350,46 @@ mod tests {
             let downlocked_fluid_quantity = test_bed.get_green_reservoir_volume();
             assert!(
                 (initial_fluid_quantity - downlocked_fluid_quantity).abs()
+                    < Volume::new::<gallon>(0.01)
+            );
+        }
+
+        #[test]
+        fn reverting_emergency_extension_do_not_change_fluid_volume() {
+            let mut test_bed = test_bed_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .set_gear_lever_down()
+                .run_waiting_for(Duration::from_secs_f64(5.));
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
+
+            test_bed = test_bed
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(20.));
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+            assert!(test_bed.is_all_doors_really_up());
+
+            let initial_uplocked_fluid_quantity = test_bed.get_green_reservoir_volume();
+
+            test_bed = test_bed
+                .set_gear_lever_down()
+                .turn_emergency_gear_extension_n_turns(3)
+                .run_waiting_for(Duration::from_secs_f64(20.));
+            assert!(test_bed.is_all_gears_really_down());
+            assert!(test_bed.is_all_doors_really_down());
+
+            test_bed = test_bed
+                .stow_emergency_gear_extension()
+                .set_gear_lever_up()
+                .run_waiting_for(Duration::from_secs_f64(20.));
+            assert!(test_bed.is_all_gears_really_up());
+            assert!(test_bed.is_all_doors_really_up());
+
+            let final_uplocked_fluid_quantity = test_bed.get_green_reservoir_volume();
+
+            assert!(
+                (initial_uplocked_fluid_quantity - final_uplocked_fluid_quantity).abs()
                     < Volume::new::<gallon>(0.01)
             );
         }

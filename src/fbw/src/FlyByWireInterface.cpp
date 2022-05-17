@@ -446,6 +446,10 @@ void FlyByWireInterface::setupLocalVariables() {
   idRadioReceiverLocalizerDistance = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
   idRadioReceiverGlideSlopeValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_IS_VALID");
   idRadioReceiverGlideSlopeDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_DEVIATION");
+
+  idRealisticTillerEnabled = make_unique<LocalVariable>("A32NX_REALISTIC_TILLER_ENABLED");
+  idTillerHandlePosition = make_unique<LocalVariable>("A32NX_TILLER_HANDLE_POSITION");
+  idNoseWheelPosition = make_unique<LocalVariable>("A32NX_NOSE_WHEEL_POSITION");
 }
 
 bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
@@ -744,6 +748,10 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.assistanceTakeoffEnabled = simData.assistanceTakeoffEnabled;
   additionalData.assistanceLandingEnabled = simData.assistanceLandingEnabled;
   additionalData.aiAutoTrimActive = simData.aiAutoTrimActive;
+  additionalData.aiControlsActive = simData.aiControlsActive;
+  additionalData.realisticTillerEnabled = idRealisticTillerEnabled->get() == 1;
+  additionalData.tillerHandlePosition = idTillerHandlePosition->get();
+  additionalData.noseWheelPosition = idNoseWheelPosition->get();
 
   return true;
 }

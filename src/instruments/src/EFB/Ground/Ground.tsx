@@ -1,7 +1,11 @@
 import { connect } from 'react-redux';
 import React, { useEffect, useState } from 'react';
-import { IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase, IconBuildingArch, IconArchive, IconPlug, IconTir } from '@tabler/icons';
+import {
+    IconCornerDownLeft, IconCornerDownRight, IconArrowDown, IconHandStop, IconTruck, IconBriefcase,
+    IconBuildingArch, IconArchive, IconPlug, IconTir, IconTrafficCone, IconTriangle, IconCircle,
+} from '@tabler/icons';
 import './Ground.scss';
+import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import fuselage from '../Assets/320neo-outline-upright.svg';
 import { useSimVar, useSplitSimVar } from '../../Common/simVars';
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
@@ -37,6 +41,9 @@ export const Ground = ({
 
     const [tugDirection, setTugDirection] = useState(0);
     const [tugActive, setTugActive] = useState(false);
+
+    const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 0);
+    const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 0);
 
     const buttonBlue = ' border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 text-blue-darkest disabled:bg-grey-600';
     const buttonActive = ' text-white bg-green-600 border-green-600';
@@ -166,6 +173,8 @@ export const Ground = ({
             : buttonBlue);
     };
 
+    const applyWithSync = (className: string, syncValue: number) => `${className} ${syncValue !== 0 ? buttonActive : buttonBlue}`;
+
     return (
         <div className="relative h-full flex-grow flex flex-col">
             <div className="flex">
@@ -259,6 +268,35 @@ export const Ground = ({
                         id="catering"
                     >
                         <IconArchive size="2.825rem" stroke="1.5" />
+                    </Button>
+                </div>
+            </div>
+
+            <div className="left-0 grid grid-cols-2 control-grid absolute top-80">
+                <div>
+                    <h1 className="text-white font-medium text-lg text-center pb-1">Wheel Chocks</h1>
+                    <Button
+                        onClick={(e) => handleClick(() => setWheelChocksEnabled(wheelChocksEnabled ? 0 : 1), e)}
+                        className={applyWithSync('w-32', wheelChocksEnabled)}
+                        type={BUTTON_TYPE.NONE}
+                        id="wheel-chocks"
+                    >
+                        <div className="flex justify-center items-end">
+                            <IconTriangle size="1.125rem" stroke="4" />
+                            <IconCircle size="2.825rem" stroke="5" className="-mx-0.5" />
+                            <IconTriangle size="1.125rem" stroke="4" />
+                        </div>
+                    </Button>
+                </div>
+                <div>
+                    <h1 className="text-white font-medium text-lg text-center pb-1">Safety Cones</h1>
+                    <Button
+                        onClick={(e) => handleClick(() => setConesEnabled(conesEnabled ? 0 : 1), e)}
+                        className={applyWithSync('w-32', conesEnabled)}
+                        type={BUTTON_TYPE.NONE}
+                        id="safety-cones"
+                    >
+                        <IconTrafficCone size="2.825rem" stroke="1.5" />
                     </Button>
                 </div>
             </div>

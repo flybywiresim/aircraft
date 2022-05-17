@@ -1209,7 +1209,7 @@ export class FlightPlanManager {
                 .departures[currentFlightPlan.procedureDetails.departureIndex]
                 .runwayTransitions[currentFlightPlan.procedureDetails.departureRunwayIndex];
             const runways = (currentFlightPlan.originAirfield.infos as AirportInfo).oneWayRunways;
-            await this.setOriginRunwayIndex(runways.findIndex(r => r.number === transition.runwayNumber && r.designator === transition.runwayDesignator));
+            await this.setOriginRunwayIndex(runways.findIndex(r => r.number === transition.runwayNumber && r.designator === transition.runwayDesignation));
         }
     }
 

@@ -180,6 +180,6 @@ export class CALeg extends Leg {
     }
 
     get repr(): string {
-        return `CA(${this.course.toFixed(1)}°) TO ${Math.round(this.altitude)} FT`;
+        return `CA(${this.course.toFixed(1)}T) TO ${Math.round(this.altitude)} FT`;
     }
 }
