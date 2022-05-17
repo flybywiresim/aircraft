@@ -49,13 +49,13 @@ export function getAltitudeConstraintFromWaypoint(wp: WayPoint): AltitudeConstra
             ac.type = AltitudeConstraintType.at;
             break;
         case 2:
-        case 7:
             ac.type = AltitudeConstraintType.atOrAbove;
             break;
         case 3:
             ac.type = AltitudeConstraintType.atOrBelow;
             break;
         case 4:
+        case 7:
             ac.type = AltitudeConstraintType.range;
             ac.altitude2 = wp.legAltitude2;
             break;
