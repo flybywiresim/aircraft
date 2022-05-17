@@ -24,11 +24,16 @@ enum DataTypesID {
   StartCN2Left,
   StartCN2Right,
   SimulationDataTypeId,
+  AcftInfo,
 };
 
 struct SimulationData {
   double simulationTime;
   double simulationRate;
+};
+
+struct SimulationDataLivery {
+  char atc_id[32] = "";
 };
 
 /// <summary>
