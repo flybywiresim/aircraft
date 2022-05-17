@@ -83,7 +83,7 @@ export class CpdlcMessage extends AtsuMessage {
     }
 
     protected extendSerializationWithResponse(): boolean {
-        if (this.Response?.Content.length === 0) {
+        if (!this.Response || this.Response.Content.length === 0) {
             return false;
         }
 
