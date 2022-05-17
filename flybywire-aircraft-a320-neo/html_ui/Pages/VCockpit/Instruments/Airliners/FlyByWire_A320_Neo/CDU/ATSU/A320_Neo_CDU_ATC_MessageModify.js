@@ -198,6 +198,39 @@ const ModifyLookupTable = {
         textIndex: null,
         valueIndex: 0,
         emptyLength: 1
+    }],
+    UM184: [{
+        response: "DM67",
+        text: "DISTANCE TO %s",
+        type: Atsu.CpdlcMessageContentType.Distance,
+        textIndex: 1,
+        valueIndex: 0,
+        emptyLength: 3,
+        freetext: "DISTANCE TO %s IS %v"
+    }],
+    UM228: [{
+        response: "DM104",
+        text: "ETA TO %s",
+        type: Atsu.CpdlcMessageContentType.Time,
+        textIndex: 0,
+        valueIndex: 0,
+        emptyLength: 4
+    }],
+    UM231: [{
+        response: "DM106",
+        text: "PREFERRED LEVEL",
+        type: Atsu.CpdlcMessageContentType.Level,
+        textIndex: null,
+        valueIndex: 0,
+        emptyLength: 5
+    }],
+    UM232: [{
+        response: "DM109",
+        text: "TIME TO TOP OF DESCENT",
+        type: Atsu.CpdlcMessageContentType.Time,
+        textIndex: null,
+        valueIndex: 0,
+        emptyLength: 5
     }]
 };
 
@@ -279,6 +312,9 @@ class CDUAtcMessageModify {
         }
         if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Atis) {
             return Atsu.InputValidation.validateScratchpadAtis(value);
+        }
+        if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Distance) {
+            return Atsu.InputValidation.validateScratchpadDistance(value);
         }
 
         return Atsu.AtsuStatusCodes.UnknownMessage;
