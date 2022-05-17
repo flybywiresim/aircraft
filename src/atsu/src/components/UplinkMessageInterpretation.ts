@@ -128,6 +128,9 @@ export class UplinkMessageInterpretation {
         } else if (message.Content[0].TypeId === 'UM152') {
             message.Response.Content[0].Content[0].Value = message.Content[0].Content[0].Value;
             message.Response.Content[0].Content[1].Value = message.Content[0].Content[1].Value;
+        } else if (message.Content[0].TypeId === 'UM228') {
+            message.Response.Content[0].Content[0].Value = atsu.destinationWaypoint().ident;
+            message.Response.Content[0].Content[1].Value = `${timestampToString(atsu.destinationWaypoint().utc)}Z`;
         } else {
             return false;
         }
