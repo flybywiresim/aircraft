@@ -1,6 +1,6 @@
 class CDUAtcMessagesRecord {
     static TranslateCpdlcResponse(response) {
-        if (response !== undefined) {
+        if (response) {
             if (response.Content[0].TypeId === "DM0") {
                 return "WILC";
             }
