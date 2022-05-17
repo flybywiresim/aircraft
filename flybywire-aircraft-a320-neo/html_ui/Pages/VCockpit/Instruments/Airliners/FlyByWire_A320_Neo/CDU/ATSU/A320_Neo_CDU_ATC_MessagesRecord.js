@@ -31,7 +31,13 @@ class CDUAtcMessagesRecord {
         if (!messages) {
             messages = mcdu.atsu.atc.messages();
         }
-        mcdu.clearDisplay();
+
+        // regular update due to showing dynamic data on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.ATCMessageRecord) {
+                CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset, confirmErase);
+            }
+        }, mcdu.PageTimeout.Slow);
 
         let eraseRecordTitle = "\xa0MSG RECORD";
         let eraseRecordButton = "*ERASE";
@@ -39,10 +45,6 @@ class CDUAtcMessagesRecord {
             eraseRecordTitle = "\xa0ERASE MSG RECORD";
             eraseRecordButton = "*CONFIRM";
         }
-
-        mcdu.refreshPageCallback = () => {
-            this.ShowPage(mcdu, null, offset, false);
-        };
 
         const msgHeadersLeft = [], msgHeadersRight = [], msgStart = [];
         msgHeadersLeft.length = msgHeadersRight.length = msgStart.length = 4;

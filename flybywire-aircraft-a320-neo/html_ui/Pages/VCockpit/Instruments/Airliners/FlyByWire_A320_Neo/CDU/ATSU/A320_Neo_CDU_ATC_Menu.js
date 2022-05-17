@@ -3,9 +3,12 @@ class CDUAtcMenu {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCMenu;
 
-        mcdu.refreshPageCallback = () => {
-            this.ShowPage(mcdu);
-        };
+        // regular update due to showing dynamic data on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.ATCMenu) {
+                CDUAtcMenu.ShowPage(mcdu);
+            }
+        }, mcdu.PageTimeout.Slow);
 
         let modif = "";
         if (mcdu.atsu.modificationMessage) {

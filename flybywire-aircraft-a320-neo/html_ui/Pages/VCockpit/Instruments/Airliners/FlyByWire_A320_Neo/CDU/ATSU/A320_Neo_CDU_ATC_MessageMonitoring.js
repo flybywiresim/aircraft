@@ -31,11 +31,13 @@ class CDUAtcMessageMonitoring {
         if (!messages) {
             messages = mcdu.atsu.atc.monitoredMessages();
         }
-        mcdu.clearDisplay();
 
-        mcdu.refreshPageCallback = () => {
-            this.ShowPage(mcdu, null, offset, false);
-        };
+        // regular update due to showing dynamic data on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.ATCMessageMonitoring) {
+                CDUAtcMessageMonitoring.ShowPage(mcdu, messages, offset, cancelIndex);
+            }
+        }, mcdu.PageTimeout.Slow);
 
         let cancelHeader = "";
         let cancelMessage = "";
