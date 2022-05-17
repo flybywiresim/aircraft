@@ -139,10 +139,9 @@ const watchLanguageChanges = () => {
     NXDataStore.getAndSubscribe(
         'EFB_LANGUAGE',
         (_, value) => {
-            // eslint-disable-next-line no-console
-            console.log(`language changed to ${value}`);
             currentEfbLanguage = value;
             currentLanguageMap = allLanguagesMap.get(currentEfbLanguage) || defaultLanguage;
+            console.log(`language changed to ${value}`);
         },
         'en',
     );
@@ -168,5 +167,15 @@ if (process.env.VITE_BUILD) {
  *         language, or key string
  */
 export function t(key: string): string {
+    return currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
+}
+
+// Workaround after simvar hook changes - only required on FlyPadPage.tsx from flypad settings
+// to ensure correct update of the page when user changes language. Update timing/order changed
+// with simvar hook change and the page was refreshing before the t() function had the updated
+// language code.
+export function tt(key: string, lang: string): string {
+    currentEfbLanguage = lang;
+    currentLanguageMap = allLanguagesMap.get(currentEfbLanguage) || currentLanguageMap;
     return currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
 }
