@@ -242,7 +242,7 @@ class CDUAtcPositionReport {
         return retval;
     }
 
-    static ShowPage1(mcdu, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
+    static ShowPage1(mcdu, requestMessage = null, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
         mcdu.page.Current = mcdu.page.ATCPositionReport1;
 
         let text = "ADD TEXT\xa0";
@@ -331,12 +331,12 @@ class CDUAtcPositionReport {
                             data.passedWaypoint[3] = true;
                         }
 
-                        CDUAtcPositionReport.ShowPage1(mcdu, data);
+                        CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
                     });
                 }
             }
 
-            CDUAtcPositionReport.ShowPage1(mcdu, data);
+            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
         };
 
         mcdu.leftInputDelay[1] = () => {
@@ -361,7 +361,7 @@ class CDUAtcPositionReport {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             }
 
-            CDUAtcPositionReport.ShowPage1(mcdu, data);
+            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
         };
 
         mcdu.leftInputDelay[2] = () => {
@@ -393,12 +393,12 @@ class CDUAtcPositionReport {
                             data.activeWaypoint[2] = true;
                         }
 
-                        CDUAtcPositionReport.ShowPage1(mcdu, data);
+                        CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
                     });
                 }
             }
 
-            CDUAtcPositionReport.ShowPage1(mcdu, data);
+            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
         };
 
         mcdu.leftInputDelay[3] = () => {
@@ -430,19 +430,19 @@ class CDUAtcPositionReport {
                             data.nextWaypoint[1] = true;
                         }
 
-                        CDUAtcPositionReport.ShowPage1(mcdu, data);
+                        CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
                     });
                 }
             }
 
-            CDUAtcPositionReport.ShowPage1(mcdu, data);
+            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
         };
 
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcPositionReport.ShowPage1(mcdu, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
+            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -480,7 +480,7 @@ class CDUAtcPositionReport {
                 }
             }
 
-            CDUAtcPositionReport.ShowPage1(mcdu, data);
+            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
         };
 
         mcdu.rightInputDelay[1] = () => {
@@ -509,7 +509,7 @@ class CDUAtcPositionReport {
                 }
             }
 
-            CDUAtcPositionReport.ShowPage1(mcdu, data);
+            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
         };
 
         mcdu.rightInputDelay[2] = () => {
@@ -530,7 +530,7 @@ class CDUAtcPositionReport {
                 }
             }
 
-            CDUAtcPositionReport.ShowPage1(mcdu, data);
+            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
         };
 
         mcdu.rightInputDelay[4] = () => {
@@ -539,7 +539,12 @@ class CDUAtcPositionReport {
         mcdu.onRightInput[4] = () => {
             if (CDUAtcPositionReport.CanSendData(data)) {
                 const report = CDUAtcPositionReport.CreateReport(mcdu, data);
-                CDUAtcTextFansA.ShowPage1(mcdu, [report]);
+                if (requestMessage) {
+                    requestMessage.Response = report;
+                    CDUAtcTextFansA.ShowPage1(mcdu, [requestMessage]);
+                } else {
+                    CDUAtcTextFansA.ShowPage1(mcdu, [report]);
+                }
             }
         };
 
@@ -552,21 +557,26 @@ class CDUAtcPositionReport {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
-                    mcdu.atsu.registerMessages([report]);
+                    if (requestMessage) {
+                        requestMessage.Response = report;
+                        mcdu.atsu.updateMessage(requestMessage);
+                    } else {
+                        mcdu.atsu.registerMessages([report]);
+                    }
                     CDUAtcPositionReport.ShowPage1(mcdu);
                 }
             }
         };
 
         mcdu.onPrevPage = () => {
-            CDUAtcPositionReport.ShowPage3(mcdu, data);
+            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, data);
         };
         mcdu.onNextPage = () => {
-            CDUAtcPositionReport.ShowPage2(mcdu, data);
+            CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, data);
         };
     }
 
-    static ShowPage2(mcdu, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
+    static ShowPage2(mcdu, requestMessage = null, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
         mcdu.page.Current = mcdu.page.ATCPositionReport2;
 
         const wind = data.wind[0] ? data.wind[0].split("/") : ["[  ]", "[  ]"];
@@ -614,7 +624,7 @@ class CDUAtcPositionReport {
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             }
-            CDUAtcPositionReport.ShowPage2(mcdu, data);
+            CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, data);
         };
 
         mcdu.leftInputDelay[1] = () => {
@@ -628,7 +638,7 @@ class CDUAtcPositionReport {
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             }
-            CDUAtcPositionReport.ShowPage2(mcdu, data);
+            CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, data);
         };
 
         mcdu.leftInputDelay[2] = () => {
@@ -642,14 +652,14 @@ class CDUAtcPositionReport {
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             }
-            CDUAtcPositionReport.ShowPage2(mcdu, data);
+            CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, data);
         };
 
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcPositionReport.ShowPage2(mcdu, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
+            CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -673,7 +683,7 @@ class CDUAtcPositionReport {
                     mcdu.addNewAtsuMessage(error);
                 }
             }
-            CDUAtcPositionReport.ShowPage2(mcdu, data);
+            CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, data);
         };
 
         mcdu.rightInputDelay[1] = () => {
@@ -687,7 +697,7 @@ class CDUAtcPositionReport {
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             }
-            CDUAtcPositionReport.ShowPage2(mcdu, data);
+            CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, data);
         };
 
         mcdu.rightInputDelay[2] = () => {
@@ -701,7 +711,7 @@ class CDUAtcPositionReport {
             } else {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             }
-            CDUAtcPositionReport.ShowPage2(mcdu, data);
+            CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, data);
         };
 
         mcdu.rightInputDelay[4] = () => {
@@ -710,7 +720,12 @@ class CDUAtcPositionReport {
         mcdu.onRightInput[4] = () => {
             if (CDUAtcPositionReport.CanSendData(data)) {
                 const report = CDUAtcPositionReport.CreateReport(mcdu, data);
-                CDUAtcTextFansA.ShowPage1(mcdu, [report]);
+                if (requestMessage) {
+                    requestMessage.Response = report;
+                    CDUAtcTextFansA.ShowPage1(mcdu, [requestMessage]);
+                } else {
+                    CDUAtcTextFansA.ShowPage1(mcdu, [report]);
+                }
             }
         };
 
@@ -723,21 +738,26 @@ class CDUAtcPositionReport {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
-                    mcdu.atsu.registerMessages([report]);
-                    CDUAtcPositionReport.ShowPage2(mcdu);
+                    if (requestMessage) {
+                        requestMessage.Response = report;
+                        mcdu.atsu.updateMessage(requestMessage);
+                    } else {
+                        mcdu.atsu.registerMessages([report]);
+                    }
+                    CDUAtcPositionReport.ShowPage1(mcdu);
                 }
             }
         };
 
         mcdu.onPrevPage = () => {
-            CDUAtcPositionReport.ShowPage1(mcdu, data);
+            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
         };
         mcdu.onNextPage = () => {
-            CDUAtcPositionReport.ShowPage3(mcdu, data);
+            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, data);
         };
     }
 
-    static ShowPage3(mcdu, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
+    static ShowPage3(mcdu, requestMessage = null, data = CDUAtcPositionReport.CreateDataBlock(mcdu, true)) {
         mcdu.page.Current = mcdu.page.ATCPositionReport3;
 
         const indicatedAirspeed = data.indicatedAirspeed[0] ? data.indicatedAirspeed[0] : "[  ]";
@@ -804,7 +824,7 @@ class CDUAtcPositionReport {
                 }
             }
 
-            CDUAtcPositionReport.ShowPage3(mcdu, data);
+            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, data);
         };
 
         mcdu.leftInputDelay[1] = () => {
@@ -822,7 +842,7 @@ class CDUAtcPositionReport {
                 }
             }
 
-            CDUAtcPositionReport.ShowPage3(mcdu, data);
+            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, data);
         };
 
         mcdu.leftInputDelay[2] = () => {
@@ -840,7 +860,7 @@ class CDUAtcPositionReport {
                 }
             }
 
-            CDUAtcPositionReport.ShowPage3(mcdu, data);
+            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, data);
         };
 
         mcdu.leftInputDelay[3] = () => {
@@ -863,14 +883,14 @@ class CDUAtcPositionReport {
                 }
             }
 
-            CDUAtcPositionReport.ShowPage3(mcdu, data);
+            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, data);
         };
 
         mcdu.leftInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[4] = () => {
-            CDUAtcPositionReport.ShowPage3(mcdu, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
+            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, CDUAtcPositionReport.CreateDataBlock(mcdu, false));
         };
 
         mcdu.leftInputDelay[5] = () => {
@@ -895,7 +915,7 @@ class CDUAtcPositionReport {
                 }
             }
 
-            CDUAtcPositionReport.ShowPage3(mcdu, data);
+            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, data);
         };
 
         mcdu.rightInputDelay[1] = () => {
@@ -913,7 +933,7 @@ class CDUAtcPositionReport {
                 }
             }
 
-            CDUAtcPositionReport.ShowPage3(mcdu, data);
+            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, data);
         };
 
         mcdu.rightInputDelay[2] = () => {
@@ -931,7 +951,7 @@ class CDUAtcPositionReport {
                 }
             }
 
-            CDUAtcPositionReport.ShowPage3(mcdu, data);
+            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, data);
         };
 
         mcdu.rightInputDelay[3] = () => {
@@ -954,7 +974,7 @@ class CDUAtcPositionReport {
                 }
             }
 
-            CDUAtcPositionReport.ShowPage3(mcdu, data);
+            CDUAtcPositionReport.ShowPage3(mcdu, requestMessage, data);
         };
 
         mcdu.rightInputDelay[4] = () => {
@@ -963,7 +983,12 @@ class CDUAtcPositionReport {
         mcdu.onRightInput[4] = () => {
             if (CDUAtcPositionReport.CanSendData(data)) {
                 const report = CDUAtcPositionReport.CreateReport(mcdu, data);
-                CDUAtcTextFansA.ShowPage1(mcdu, [report]);
+                if (requestMessage) {
+                    requestMessage.Response = report;
+                    CDUAtcTextFansA.ShowPage1(mcdu, [requestMessage]);
+                } else {
+                    CDUAtcTextFansA.ShowPage1(mcdu, [report]);
+                }
             }
         };
 
@@ -976,17 +1001,22 @@ class CDUAtcPositionReport {
                     mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const report = CDUAtcPositionReport.CreateReport(mcdu, data);
-                    mcdu.atsu.registerMessages([report]);
-                    CDUAtcPositionReport.ShowPage3(mcdu);
+                    if (requestMessage) {
+                        requestMessage.Response = report;
+                        mcdu.atsu.updateMessage(requestMessage);
+                    } else {
+                        mcdu.atsu.registerMessages([report]);
+                    }
+                    CDUAtcPositionReport.ShowPage1(mcdu);
                 }
             }
         };
 
         mcdu.onPrevPage = () => {
-            CDUAtcPositionReport.ShowPage2(mcdu, data);
+            CDUAtcPositionReport.ShowPage2(mcdu, requestMessage, data);
         };
         mcdu.onNextPage = () => {
-            CDUAtcPositionReport.ShowPage1(mcdu, data);
+            CDUAtcPositionReport.ShowPage1(mcdu, requestMessage, data);
         };
     }
 }
