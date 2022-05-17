@@ -468,7 +468,7 @@ export class InputValidation {
      */
     public static validateScratchpadEndurance(value: string): AtsuStatusCodes {
         if (/^([0-9]{1}H|[0-9]{2}(H)*)[0-9]{2}(M|MIN|MN)*$/.test(value)) {
-            const matches = value.match(/[0-9]{2}/g);
+            const matches = value.match(/[0-9]{1,2}/g);
 
             const hours = parseInt(matches[0]);
             if (hours < 0 || hours >= 24) {
