@@ -349,7 +349,8 @@ const DCDU: React.FC = () => {
                         && cpdlcMessage.Response?.ComStatus === AtsuMessageComStatus.Sent) {
                         message.automaticCloseTimeout = new Date().getTime() / 1000;
                     }
-                } else if (message.automaticCloseTimeout > 0 && (currentTime - message.automaticCloseTimeout) >= 2.0) {
+                } else if (message.automaticCloseTimeout > 0 && (currentTime - message.automaticCloseTimeout) >= 2.0
+                && message.messages[0].MessageMonitoring !== CpdlcMessageMonitoringState.Finished) {
                     // check if the timeout is reached
                     closeMessage(message.messages[0].UniqueMessageID);
                 } else if (!message.messageVisible) {
