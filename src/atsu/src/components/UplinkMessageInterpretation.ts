@@ -45,7 +45,7 @@ export class UplinkMessageInterpretation {
         UM181: { positiveOrNegative: false, modifiable: true, messages: ['DM67'] },
         UM182: { positiveOrNegative: false, modifiable: true, messages: ['DM79'] },
         UM184: { positiveOrNegative: false, modifiable: true, messages: ['DM67'] },
-        UM228: { positiveOrNegative: false, modifiable: true, messages: ['DM68'] },
+        UM228: { positiveOrNegative: false, modifiable: true, messages: ['DM104'] },
         UM231: { positiveOrNegative: false, modifiable: true, messages: ['DM106'] },
         UM232: { positiveOrNegative: false, modifiable: true, messages: ['DM109'] },
     };
