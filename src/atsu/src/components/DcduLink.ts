@@ -399,12 +399,14 @@ export class DcduLink {
         this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', messages);
     }
 
-    public update(message: CpdlcMessage) {
+    public update(message: CpdlcMessage, insertIfNeeded: boolean = false) {
         // the assumption is that the first message in the block is the UID for the complete block
         const uplinkIdx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === message.UniqueMessageID);
         const downlinkIdx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === message.UniqueMessageID);
         if (uplinkIdx !== -1 || downlinkIdx !== -1) {
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', [message]);
+        } else if (insertIfNeeded) {
+            this.enqueue([message]);
         }
     }
 
