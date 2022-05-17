@@ -79,14 +79,6 @@
     - Position (0-2)
     - 0 is LO, 1 is NORM, 2 is HI
 
-- A32NX_AIRCOND_PACK1_FAULT
-    - Bool
-    - True if fault in pack 1
-
-- A32NX_AIRCOND_PACK2_FAULT
-    - Bool
-    - True if fault in pack 2
-
 - A32NX_AIRCOND_HOTAIR_FAULT
     - Bool
     - True if fault in hot air system
