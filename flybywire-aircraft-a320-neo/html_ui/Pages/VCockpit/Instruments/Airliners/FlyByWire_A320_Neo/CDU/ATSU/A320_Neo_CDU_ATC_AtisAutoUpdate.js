@@ -9,7 +9,6 @@ class CDUAtcAtisAutoUpdate {
 
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ATCAtisAutoUpdate;
 
         let arrAtis = "{inop}\xa0[  ]/[ ]{end}";
         let arrAtisState = "";

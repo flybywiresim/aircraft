@@ -84,7 +84,6 @@ class CDUAtcOceanicReq {
 
     static ShowPage1(mcdu, store = CDUAtcOceanicReq.CreateDataBlock()) {
         mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ATCOceanicReq;
 
         let flightNo = "{white}-------{end}";
         let atcStation = "{white}----{end}";

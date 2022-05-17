@@ -1,6 +1,7 @@
 class CDUAtcEmergencyFansB {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCEmergency;
 
         mcdu.setTemplate([
             ["{amber}EMERGENCY{end}"],

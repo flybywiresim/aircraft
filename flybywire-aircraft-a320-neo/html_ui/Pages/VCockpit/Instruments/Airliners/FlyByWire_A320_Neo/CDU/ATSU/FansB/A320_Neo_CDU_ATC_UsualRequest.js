@@ -68,6 +68,7 @@ class CDUAtcUsualRequestFansB {
 
     static ShowPage(mcdu, data = CDUAtcUsualRequestFansB.CreateDataBlock()) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCUsualRequest;
 
         let addText = "ADD TEXT\xa0";
         let erase = "\xa0ERASE";

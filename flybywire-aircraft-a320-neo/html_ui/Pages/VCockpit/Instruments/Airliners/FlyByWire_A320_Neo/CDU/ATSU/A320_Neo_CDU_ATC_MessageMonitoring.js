@@ -25,6 +25,9 @@ class CDUAtcMessageMonitoring {
     }
 
     static ShowPage(mcdu, messages = null, offset = 0, cancelIndex = -1) {
+        mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCMessageMonitoring;
+
         if (!messages) {
             messages = mcdu.atsu.atc.monitoredMessages();
         }

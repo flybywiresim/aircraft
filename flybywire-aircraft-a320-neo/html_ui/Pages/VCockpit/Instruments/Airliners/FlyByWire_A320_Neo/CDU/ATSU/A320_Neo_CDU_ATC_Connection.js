@@ -1,6 +1,8 @@
 class CDUAtcConnection {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCConnection;
+
         mcdu.setTemplate([
             ["\xa0CONNECTION"],
             [""],

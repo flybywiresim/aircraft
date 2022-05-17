@@ -19,6 +19,7 @@ class CDUAtcClearanceReq {
 
     static ShowPage(mcdu, title, data = CDUAtcClearanceReq.CreateDataBlock()) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCGroundRequest;
 
         let addText = "ADD TEXT\xa0";
         let clearance = "{cyan}{{end}CLEARANCE";

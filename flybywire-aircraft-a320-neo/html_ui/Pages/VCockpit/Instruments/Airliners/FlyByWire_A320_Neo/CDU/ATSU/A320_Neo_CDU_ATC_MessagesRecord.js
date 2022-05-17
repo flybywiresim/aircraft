@@ -25,6 +25,9 @@ class CDUAtcMessagesRecord {
     }
 
     static ShowPage(mcdu, messages = null, offset = 0, confirmErase = false) {
+        mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCMessageRecord;
+
         if (!messages) {
             messages = mcdu.atsu.atc.messages();
         }

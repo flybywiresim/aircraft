@@ -72,6 +72,7 @@ class CDUAtcEmergencyFansA {
 
     static ShowPage1(mcdu, data = CDUAtcEmergencyFansA.CreateDataBlock()) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCEmergency;
 
         let mayday = "{cyan}{{end}{red}MAYDAY{end}";
         let panpan = "{cyan}{{end}{amber}PANPAN{end}";

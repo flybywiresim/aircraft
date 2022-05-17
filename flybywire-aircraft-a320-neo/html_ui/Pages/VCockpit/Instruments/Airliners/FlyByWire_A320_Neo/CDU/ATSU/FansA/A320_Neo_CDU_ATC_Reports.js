@@ -38,6 +38,7 @@ class CDUAtcReports {
 
     static ShowPage(mcdu, data = CDUAtcReports.CreateDataBlock()) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCReports;
 
         let backOnRoute = "{cyan}{{end}BACK ON RTE";
         if (data.backOnRoute) {

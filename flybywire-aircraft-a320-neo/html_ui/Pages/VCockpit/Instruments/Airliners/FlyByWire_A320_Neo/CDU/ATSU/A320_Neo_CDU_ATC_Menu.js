@@ -1,5 +1,6 @@
 class CDUAtcMenu {
     static ShowPage(mcdu) {
+        mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCMenu;
 
         mcdu.refreshPageCallback = () => {
