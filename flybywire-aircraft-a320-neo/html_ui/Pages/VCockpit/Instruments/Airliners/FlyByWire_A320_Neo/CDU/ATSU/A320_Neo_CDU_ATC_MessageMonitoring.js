@@ -49,7 +49,7 @@ class CDUAtcMessageMonitoring {
             if (messages.length > (offset + i) && messages[offset + i]) {
                 headerLeft = `${messages[offset + i].Timestamp.dcduTimestamp()} ${messages[offset + i].Direction === Atsu.AtsuMessageDirection.Input ? "FROM" : "TO"} `;
                 headerLeft += messages[offset + i].Station;
-                headerRight = CDUAtcMessagesRecord.TranslateCpdlcResponse(messages[offset + i].Response);
+                headerRight = CDUAtcMessageMonitoring.TranslateCpdlcResponse(messages[offset + i].Response);
 
                 // ignore the headline with the station and the timestamp
                 const lines = messages[offset + i].serialize(Atsu.AtsuMessageSerializationFormat.Printer).split("\n");
@@ -76,13 +76,13 @@ class CDUAtcMessageMonitoring {
         let left = false, right = false;
         if (messages.length > offset + 4) {
             mcdu.onNextPage = () => {
-                CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset + 4, false);
+                CDUAtcMessageMonitoring.ShowPage(mcdu, messages, offset + 4, false);
             };
             right = true;
         }
         if (offset > 0) {
             mcdu.onPrevPage = () => {
-                CDUAtcMessagesRecord.ShowPage(mcdu, messages, offset - 4, false);
+                CDUAtcMessageMonitoring.ShowPage(mcdu, messages, offset - 4, false);
             };
             left = true;
         }
