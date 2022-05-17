@@ -235,8 +235,6 @@ const ModifyLookupTable = {
     }]
 };
 
-// UM131: { positiveOrNegative: false, messages: ['DM57'] }, -> present fuel&people
-
 class CDUAtcMessageModify {
     static CreateDataBlock(message) {
         const lutEntry = ModifyLookupTable[message.Content[0].TypeId];
@@ -374,6 +372,10 @@ class CDUAtcMessageModify {
         if (message.Content[0].TypeId === "UM147") {
             // modify the position report
             CDUAtcPositionReport.ShowPage1(mcdu, message);
+            return;
+        } else if (message.Content[0].TypeId === "UM131") {
+            // report persons on board and fuel remaining
+            CDUAtcMessageModifyUM131.ShowPage(mcdu, message);
             return;
         }
 
