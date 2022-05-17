@@ -111,15 +111,15 @@ export class UplinkMessageInterpretation {
     }
 
     private static FillPositionReportRelatedData(atsu: Atsu, message: CpdlcMessage): boolean {
-        if (message.Content[0].TypeId === 'UM138') {
+        if (message.Content[0].TypeId === 'UM138' && atsu.lastWaypoint()) {
             message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.lastWaypoint().utc)}Z`;
-        } else if (message.Content[0].TypeId === 'UM139') {
+        } else if (message.Content[0].TypeId === 'UM139' && atsu.lastWaypoint()) {
             message.Response.Content[0].Content[0].Value = atsu.lastWaypoint().ident;
-        } else if (message.Content[0].TypeId === 'UM140') {
+        } else if (message.Content[0].TypeId === 'UM140' && atsu.activeWaypoint()) {
             message.Response.Content[0].Content[0].Value = atsu.activeWaypoint().ident;
-        } else if (message.Content[0].TypeId === 'UM141') {
+        } else if (message.Content[0].TypeId === 'UM141' && atsu.activeWaypoint()) {
             message.Response.Content[0].Content[0].Value = `${timestampToString(atsu.activeWaypoint().utc)}Z`;
-        } else if (message.Content[0].TypeId === 'UM142') {
+        } else if (message.Content[0].TypeId === 'UM142' && atsu.nextWaypoint()) {
             message.Response.Content[0].Content[0].Value = atsu.nextWaypoint().ident;
         } else if (message.Content[0].TypeId === 'UM147') {
             message.Response = Atsu.createAutomatedPositionReport(atsu);
@@ -128,7 +128,7 @@ export class UplinkMessageInterpretation {
         } else if (message.Content[0].TypeId === 'UM152') {
             message.Response.Content[0].Content[0].Value = message.Content[0].Content[0].Value;
             message.Response.Content[0].Content[1].Value = message.Content[0].Content[1].Value;
-        } else if (message.Content[0].TypeId === 'UM228') {
+        } else if (message.Content[0].TypeId === 'UM228' && atsu.destinationWaypoint()) {
             message.Response.Content[0].Content[0].Value = atsu.destinationWaypoint().ident;
             message.Response.Content[0].Content[1].Value = `${timestampToString(atsu.destinationWaypoint().utc)}Z`;
         } else {
