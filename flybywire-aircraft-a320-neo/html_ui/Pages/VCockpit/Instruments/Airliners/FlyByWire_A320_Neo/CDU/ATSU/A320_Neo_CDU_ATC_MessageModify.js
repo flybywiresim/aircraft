@@ -368,7 +368,7 @@ class CDUAtcMessageModify {
         message.Response.Content = [newContent];
     }
 
-    static ShowPage(mcdu, message, data = CDUAtcMessageModify.CreateDataBlock(message)) {
+    static ShowPage(mcdu, message, data = null) {
         mcdu.page.Current = mcdu.page.ATCModify;
 
         if (message.Content[0].TypeId === "UM147") {
@@ -381,6 +381,9 @@ class CDUAtcMessageModify {
             return;
         }
 
+        if (!data) {
+            data = CDUAtcMessageModify.CreateDataBlock(message);
+        }
         const visualization = CDUAtcMessageModify.CreateVisualization(message, data);
 
         let cancel = "\xa0CANCEL";
