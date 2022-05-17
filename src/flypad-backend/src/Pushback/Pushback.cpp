@@ -9,8 +9,8 @@
 
 using namespace std::chrono;
 
-constexpr static const double SPEED_RATIO = 18.0;
-constexpr static const double TURN_SPEED_RATIO = 0.16;
+static constexpr double SPEED_RATIO = 18.0;
+static constexpr double TURN_SPEED_RATIO = 0.16;
 
 Pushback::Pushback(HANDLE hdl, PushbackData* data) {
   hSimConnect = hdl;
