@@ -328,6 +328,9 @@ class CDUAtcMessageModify {
         if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Level) {
             return Atsu.InputValidation.formatScratchpadAltitude(value);
         }
+        if (lutEntry[0].type === Atsu.CpdlcMessageContentType.Distance) {
+            return Atsu.InputValidation.formatScratchpadDistance(value);
+        }
 
         return value;
     }
