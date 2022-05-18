@@ -9,6 +9,7 @@ type DoorToggleProps = {
     selectionCallback: (className: string, id: string, doorState: any, disabledId: string) => string,
     id: string,
     tugActive: boolean,
+    inTransit: boolean,
     disabled?
 }
 
@@ -37,6 +38,7 @@ export const DoorToggle = (props: DoorToggleProps) => {
             type={BUTTON_TYPE.NONE}
             id={props.id}
             disabled={props.disabled}
+            inTransit={props.inTransit}
         >
             <IconLayoutSidebar size="2.825rem" stroke="1.5" />
         </Button>

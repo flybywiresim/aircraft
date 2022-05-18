@@ -26,7 +26,7 @@ export const Ground = ({
     activeButtons, disabledButtons, pushBackWaitTimerHandle, setPushBackWaitTimerHandle,
     tugRequestOnly, setTugRequestOnly, addActiveButton, removeActiveButton, setActiveButtons, addDisabledButton, removeDisabledButton,
 }) => {
-    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 1_000);
+    const [groundSpeed] = useSimVar('GROUND VELOCITY', 'number', 1_000);
 
     const [jetWayActive, setJetWayActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_JETWAY', 'bool', 1000);
     const [, setRampActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
@@ -47,7 +47,7 @@ export const Ground = ({
     const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 0);
     const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 0);
 
-    const buttonBlue = ' border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 text-blue-darkest disabled:bg-grey-600';
+    const buttonBlue = ' border-blue-500 bg-blue-500 hover:bg-blue-600 hover:border-blue-600 text-blue-darkest';
     const buttonActive = ' text-white bg-green-600 border-green-600';
 
     const STATE_WAITING = 'WAITING';
@@ -96,7 +96,7 @@ export const Ground = ({
     };
 
     const handleClick = (callBack: () => void, event: React.MouseEvent, disabledButton?: string) => {
-        if (!tugActive && isOnGround) {
+        if (!tugActive) {
             if (!activeButtons.map((b: StatefulButton) => b.id).includes(event.currentTarget.id)) {
                 addActiveButton({ id: event.currentTarget.id, state: STATE_WAITING });
                 if (disabledButton) {
@@ -122,23 +122,21 @@ export const Ground = ({
      * So all highlighting should be removed as well
      */
     const handlePushBackClick = (callBack: () => void, event: React.MouseEvent) => {
-        if (isOnGround) {
-            const tugRequest = 'tug-request';
-            if (activeButtons.map((b: StatefulButton) => b.id).includes(tugRequest)) {
-                if (event.currentTarget.id === tugRequest) {
-                    setActiveButtons([]);
-                    callBack();
-                } else {
-                    setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
-                    callBack();
-                }
-            } else if (event.currentTarget.id === tugRequest) {
+        const tugRequest = 'tug-request';
+        if (activeButtons.map((b: StatefulButton) => b.id).includes(tugRequest)) {
+            if (event.currentTarget.id === tugRequest) {
+                setActiveButtons([]);
+                callBack();
+            } else {
                 setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
-                disabledButtons.forEach((b, index) => {
-                    removeDisabledButton(index);
-                });
                 callBack();
             }
+        } else if (event.currentTarget.id === tugRequest) {
+            setActiveButtons([{ id: event.currentTarget.id, state: STATE_ACTIVE }, { id: tugRequest, state: STATE_WAITING }]);
+            disabledButtons.forEach((b, index) => {
+                removeDisabledButton(index);
+            });
+            callBack();
         }
     };
 
@@ -196,6 +194,7 @@ export const Ground = ({
                         className={applySelectedWithSync('w-32 ', 'jetway', jetWayActive, 'door-fwd-left')}
                         type={BUTTON_TYPE.NONE}
                         id="jetway"
+                        disabled={groundSpeed > 1 || pushBackAttached}
                     >
                         <IconBuildingArch size="2.825rem" stroke="1.5" />
                     </Button>
@@ -208,7 +207,8 @@ export const Ground = ({
                         onClick={handleClick}
                         selectionCallback={applySelectedWithSync}
                         id="door-fwd-left"
-                        disabled={disabledButtons.includes('door-fwd-left')}
+                        disabled={groundSpeed > 1 || pushBackAttached}
+                        inTransit={disabledButtons.includes('door-fwd-left')}
                     />
                 </div>
             </div>
@@ -221,6 +221,7 @@ export const Ground = ({
                         className={applySelectedWithSync('w-32', 'fuel', fuelingActive)}
                         type={BUTTON_TYPE.NONE}
                         id="fuel"
+                        disabled={groundSpeed > 1 || pushBackAttached}
                     >
                         <IconTruck size="2.825rem" stroke="1.5" />
                     </Button>
@@ -235,6 +236,7 @@ export const Ground = ({
                         className={applySelectedWithSync('w-32', 'baggage', cargoActive)}
                         type={BUTTON_TYPE.NONE}
                         id="baggage"
+                        disabled={groundSpeed > 1 || pushBackAttached}
                     >
                         <IconBriefcase size="2.825rem" stroke="1.5" />
                     </Button>
@@ -246,6 +248,7 @@ export const Ground = ({
                         className={applySelectedWithSync('w-32', 'power', powerActive)}
                         type={BUTTON_TYPE.NONE}
                         id="power"
+                        disabled={groundSpeed > 1 || pushBackAttached}
                     >
                         <IconPlug size="2.825rem" stroke="1.5" />
                     </Button>
@@ -260,7 +263,8 @@ export const Ground = ({
                         onClick={handleClick}
                         selectionCallback={applySelectedWithSync}
                         id="door-aft-right"
-                        disabled={disabledButtons.includes('door-aft-right')}
+                        inTransit={disabledButtons.includes('door-aft-right')}
+                        disabled={groundSpeed > 1 || pushBackAttached}
                     />
                 </div>
                 <div>
@@ -270,6 +274,7 @@ export const Ground = ({
                         className={applySelectedWithSync('w-32', 'catering', cateringActive, 'door-aft-right')}
                         type={BUTTON_TYPE.NONE}
                         id="catering"
+                        disabled={groundSpeed > 1 || pushBackAttached}
                     >
                         <IconArchive size="2.825rem" stroke="1.5" />
                     </Button>
@@ -284,6 +289,7 @@ export const Ground = ({
                         className={applyWithSync('w-32', wheelChocksEnabled)}
                         type={BUTTON_TYPE.NONE}
                         id="wheel-chocks"
+                        disabled={groundSpeed > 1 || pushBackAttached}
                     >
                         <div className="flex justify-center items-end">
                             <IconTriangle size="1.125rem" stroke="4" />
@@ -299,6 +305,7 @@ export const Ground = ({
                         className={applyWithSync('w-32', conesEnabled)}
                         type={BUTTON_TYPE.NONE}
                         id="safety-cones"
+                        disabled={groundSpeed > 1 || pushBackAttached}
                     >
                         <IconTrafficCone size="2.825rem" stroke="1.5" />
                     </Button>
@@ -313,6 +320,7 @@ export const Ground = ({
                         onClick={(e) => handlePushBackClick(() => togglePushback(true), e)}
                         className={applySelectedWithSync('w-32', 'tug-request', pushBackAttached)}
                         type={BUTTON_TYPE.NONE}
+                        disabled={groundSpeed > 1 && !tugActive}
                     >
                         <IconTir size="2.825rem" stroke="1.5" />
                     </Button>
@@ -328,6 +336,7 @@ export const Ground = ({
                         }, e)}
                         className={applySelected('w-32 stop bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600 text-blue-darkest')}
                         type={BUTTON_TYPE.NONE}
+                        disabled={groundSpeed > 1 && !tugActive}
                     >
                         <IconHandStop size="2.825rem" stroke="1.5" />
                     </Button>
@@ -337,6 +346,7 @@ export const Ground = ({
                     type={BUTTON_TYPE.NONE}
                     onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(90), e)}
                     className={applySelected('w-32 down-left', 'down-left')}
+                    disabled={groundSpeed > 1 && !tugActive}
                 >
                     <IconCornerDownLeft size="2.825rem" stroke="1.5" />
                 </Button>
@@ -345,6 +355,7 @@ export const Ground = ({
                     type={BUTTON_TYPE.NONE}
                     onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(0), e)}
                     className={applySelected('down w-32', 'down')}
+                    disabled={groundSpeed > 1 && !tugActive}
                 >
                     <IconArrowDown size="2.825rem" stroke="1.5" />
                 </Button>
@@ -353,6 +364,7 @@ export const Ground = ({
                     type={BUTTON_TYPE.NONE}
                     onClick={(e) => handlePushBackClick(() => computeAndSetTugHeading(270), e)}
                     className={applySelected('w-32 down-right', 'down-right')}
+                    disabled={groundSpeed > 1 && !tugActive}
                 >
                     <IconCornerDownRight size="2.825rem" stroke="1.5" />
                 </Button>

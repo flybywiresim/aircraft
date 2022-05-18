@@ -20,9 +20,16 @@
   grid-column: 2 / 3;
 }
 
-button:active {
+button:enabled:active {
   @apply transform;
   @apply translate-y-1;
+}
+
+button:disabled {
+  color: rgb(82 82 91);
+  border-color: rgb(82 82 91);
+  background: transparent;
+  pointer-events: none;
 }
 
 .down-left {

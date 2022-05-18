@@ -10,10 +10,11 @@ type props = {
     className?: any,
     id?: any,
     disabled?,
-    children?: any
+    children?: any,
+    inTransit?: boolean
 };
 
-const Button = ({ text, type = BUTTON_TYPE.BLUE, onClick, className, ...props }: props) => (
+const Button = ({ text, type = BUTTON_TYPE.BLUE, onClick, className, inTransit, ...props }: props) => (
     <button
         type="button"
         onMouseDown={onClick}
@@ -28,6 +29,7 @@ const Button = ({ text, type = BUTTON_TYPE.BLUE, onClick, className, ...props }:
                 '': type === BUTTON_TYPE.NONE,
             },
             'font-medium text-lg py-2 px-4 text-white flex items-center justify-center rounded-lg focus:outline-none border-4',
+            inTransit ? ' bg-grey-600' : ' ',
             className,
         ])}
         {...props}
