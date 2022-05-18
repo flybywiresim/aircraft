@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as Defaults from './defaults';
-import { SimVarProvider } from './simVars';
 import { FbwAircraftSentryClient } from '../../../sentry-client/src/FbwAircraftSentryClient';
 
 declare const process: any;
@@ -17,7 +16,7 @@ export const render = (Slot: React.ReactElement, enableSentryTracing = false, se
         root: sentryRootClient,
     });
 
-    ReactDOM.render(<SimVarProvider>{Slot}</SimVarProvider>, Defaults.getRenderTarget());
+    ReactDOM.render(Slot, Defaults.getRenderTarget());
 };
 
 /**

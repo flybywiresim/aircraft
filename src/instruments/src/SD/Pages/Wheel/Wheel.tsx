@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@instruments/common/index';
 import classNames from 'classnames';
-import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '@instruments/common/simVars';
 import { setIsEcamPage } from '@instruments/common/defaults';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { Arinc429Word } from '@shared/arinc429';
@@ -513,4 +513,4 @@ const Wheels = ({ x, y, left, right }: WheelsProps) => {
     );
 };
 
-render(<SimVarProvider><WheelPage /></SimVarProvider>);
+render(<WheelPage />);

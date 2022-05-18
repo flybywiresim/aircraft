@@ -2,7 +2,7 @@ import './Door.scss';
 import React from 'react';
 import { render } from '@instruments/common/index';
 import { setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+import { useSimVar } from '../../../Common/simVars';
 
 setIsEcamPage('door_page');
 
@@ -88,4 +88,4 @@ export const DoorPage = () => {
     );
 };
 
-render(<SimVarProvider><DoorPage /></SimVarProvider>);
+render(<DoorPage />);
