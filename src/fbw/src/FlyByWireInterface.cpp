@@ -1492,7 +1492,7 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   // set outputs
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
     // object to write with trim
-    SimOutput output = {flyByWireOutput.output.eta_pos, flyByWireOutput.output.xi_pos, flyByWireOutput.output.zeta_pos};
+    SimOutput output = {flyByWireOutput.output.zeta_pos};
 
     // send data via sim connect
     if (!simConnectInterface.sendData(output)) {
@@ -1558,7 +1558,6 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
 
   // set elevator demand
   idElevatorPosition->set(flyByWireOutput.output.eta_pos);
-
 
   // determine if beta target needs to be active (blue)
   bool conditionDifferenceEngineN1Larger35 = (abs(simData.engine_N1_1_percent - simData.engine_N1_2_percent) > 35);

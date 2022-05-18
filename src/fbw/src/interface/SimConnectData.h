@@ -159,8 +159,6 @@ struct SimInputThrottles {
 };
 
 struct SimOutput {
-  double eta;
-  double xi;
   double zeta;
 };
 
