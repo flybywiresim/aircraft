@@ -892,6 +892,7 @@ export class ManagedFlightPlan {
         const selectedOriginRunwayIndex = this.procedureDetails.originRunwayIndex;
 
         const airportInfo = origin.infos as AirportInfo;
+        const airportMagVar = Facilities.getMagVar(airportInfo.coordinates.lat, airportInfo.coordinates.long);
 
         // Make origin fix an IF leg
         if (origin) {
@@ -949,7 +950,7 @@ export class ManagedFlightPlan {
 
         if (legs.length > 0 || selectedOriginRunwayIndex !== -1 || (departureIndex !== -1 && runwayIndex !== -1)) {
             segment = this.addSegment(SegmentType.Departure);
-            let procedure = new LegsProcedure(legs, origin, this._parentInstrument, undefined, legAnnotations);
+            let procedure = new LegsProcedure(legs, origin, this._parentInstrument, airportMagVar, undefined, legAnnotations);
 
             const runway: OneWayRunway | null = this.getOriginRunway();
 
@@ -1016,6 +1017,7 @@ export class ManagedFlightPlan {
         const { arrivalTransitionIndex } = this.procedureDetails;
 
         const destinationInfo = destination.infos as AirportInfo;
+        const airportMagVar = Facilities.getMagVar(destinationInfo.coordinates.lat, destinationInfo.coordinates.long);
 
         if (arrivalIndex !== -1 && arrivalTransitionIndex !== -1) {
             const transition: RawEnRouteTransition = destinationInfo.arrivals[arrivalIndex].enRouteTransitions[arrivalTransitionIndex];
@@ -1051,7 +1053,7 @@ export class ManagedFlightPlan {
                 _startIndex = segment.offset;
             }
 
-            const procedure = new LegsProcedure(legs, this.getWaypoint(segment.offset - 1), this._parentInstrument, undefined, legAnnotations);
+            const procedure = new LegsProcedure(legs, this.getWaypoint(segment.offset - 1), this._parentInstrument, airportMagVar, undefined, legAnnotations);
 
             let waypointIndex = segment.offset;
             // console.log('MFP: buildArrival - ADDING WAYPOINTS ------------------------');
@@ -1086,6 +1088,7 @@ export class ManagedFlightPlan {
         const { destinationRunwayIndex } = this.procedureDetails;
 
         const destinationInfo = destination.infos as AirportInfo;
+        const airportMagVar = Facilities.getMagVar(destinationInfo.coordinates.lat, destinationInfo.coordinates.long);
 
         const approach: RawApproach = destinationInfo.approaches[approachIndex];
         const approachName = approach && approach.approachType !== ApproachType.APPROACH_TYPE_UNKNOWN ? approach.name : '';
@@ -1123,7 +1126,7 @@ export class ManagedFlightPlan {
 
             const runway: OneWayRunway | null = this.getDestinationRunway();
 
-            const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument, this.procedureDetails.approachType, legAnnotations);
+            const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument, airportMagVar, this.procedureDetails.approachType, legAnnotations);
 
             if (runway) {
                 procedure.calculateApproachData(runway);
@@ -1200,7 +1203,7 @@ export class ManagedFlightPlan {
 
             let waypointIndex = _startIndex;
 
-            const missedProcedure = new LegsProcedure(missedLegs, this.getWaypoint(_startIndex - 1), this._parentInstrument);
+            const missedProcedure = new LegsProcedure(missedLegs, this.getWaypoint(_startIndex - 1), this._parentInstrument, airportMagVar);
             while (missedProcedure.hasNext()) {
                 // eslint-disable-next-line no-await-in-loop
                 const waypoint = await missedProcedure.getNext().catch(console.error);
