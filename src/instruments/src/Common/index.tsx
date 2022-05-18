@@ -17,8 +17,8 @@ export const render = (Slot: React.ReactElement, enableSentryTracing = false, se
             root: sentryRootClient,
         });
 
-    ReactDOM.render(Slot, Defaults.getRenderTarget());
-};
+        ReactDOM.render(Slot, Defaults.getRenderTarget());
+    };
 
     if (process.env.VITE_BUILD) {
         window.addEventListener('AceInitialized', () => doRender());
