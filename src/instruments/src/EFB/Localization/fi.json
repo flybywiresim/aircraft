@@ -139,14 +139,14 @@
     "Services": {
       "BaggageTruck": "Matkatavarat",
       "CateringTruck": "Ateriapalvelut",
-      "Cones": "Safety Cones",
+      "Cones": "Varoituskartiot",
       "DoorAft": "Takaovi",
       "DoorFwd": "Etuovi",
       "ExternalPower": "Maasähkö",
       "FuelTruck": "Polttoainerekka",
       "JetBridge": "Matkustajasilta",
       "Title": "Palvelut",
-      "WheelChocks": "Wheel Chocks"
+      "WheelChocks": "Pyöräkiilat"
     },
     "Title": "Maa"
   },
@@ -351,7 +351,7 @@
     "Title": "Esiasetukset"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "Työntöasetuksia voi käyttää vain maassa",
     "Backward": "Taaksepäin",
     "CallTug": "Kutsu työntöauto",
     "DisableSystemMessageBody": "Haluatko varmasti poistaa työntöjärjestelmän käytöstä? Tämä vapauttaisi myös työntöauton.",
@@ -459,7 +459,7 @@
       "Active": "Aktiivinen",
       "Auto": "Automaattinen",
       "Calibrate": "Kalibroi",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "Varoituskartiot",
       "DefaultBarometerUnit": "Paineen oletusyksikkö",
       "DynamicRegistrationDecal": "Dynaaminen rekisteröintimerkintä",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ota lentotietokoneen palvelinyhteys käyttöön (yhdistysyritykset loppuvat 5 minuutin kuluttua, jos yhdistäminen ei onnistu)",
@@ -474,7 +474,7 @@
       "ThrottleDetents": "Kaasupykälät",
       "Title": "Sim -asetukset",
       "UseCalculatedIlsSignals": "Käytä laskettuja ILS-signaaleja",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "Pyöräkiilat",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
