@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { render } from '@instruments/common/index';
-import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '@instruments/common/simVars';
 import { setIsEcamPage } from '@instruments/common/defaults';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { usePersistentProperty } from '../../../Common/persistence';
@@ -359,4 +359,4 @@ const Pump = ({ x, y, onBus = 'DC_ESS', pumpNumber, centreTank, tankQuantity }: 
     );
 };
 
-render(<SimVarProvider><FuelPage /></SimVarProvider>);
+render(<FuelPage />);

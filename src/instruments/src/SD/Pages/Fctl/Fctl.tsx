@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@instruments/common/index';
 import { setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+import { useSimVar } from '../../../Common/simVars';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
@@ -286,4 +286,4 @@ const Note: React.FunctionComponent<ComponentPositionProps> = ({ x, y, children 
     <text x={x} y={y} className="Note" textAnchor="middle" alignmentBaseline="central">{children}</text>
 );
 
-render(<SimVarProvider><FctlPage /></SimVarProvider>);
+render(<FctlPage />);

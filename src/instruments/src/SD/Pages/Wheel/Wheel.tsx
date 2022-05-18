@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { render } from '@instruments/common/index';
 import classNames from 'classnames';
-import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '@instruments/common/simVars';
 import { setIsEcamPage } from '@instruments/common/defaults';
 import { PageTitle } from '../../Common/PageTitle';
 import './Wheel.scss';
@@ -338,4 +338,4 @@ const Wheels = ({ x, y, left, right }: WheelsProps) => {
     );
 };
 
-render(<SimVarProvider><WheelPage /></SimVarProvider>);
+render(<WheelPage />);
