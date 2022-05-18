@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { render } from '@instruments/common/index';
-import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '@instruments/common/simVars';
 import { setIsEcamPage } from '@instruments/common/defaults';
 import HydYellowElecPump from './elements/HydYellowElecPump';
 import HydSys from './elements/HydSys';
@@ -117,5 +117,6 @@ export const HydPage = () => {
         </>
     );
 };
+
 
 render(<SimVarProvider><HydPage /></SimVarProvider>);
