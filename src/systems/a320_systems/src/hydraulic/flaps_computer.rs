@@ -1,3 +1,4 @@
+use crate::systems::shared::arinc429::{Arinc429Word, SignStatus};
 use systems::shared::FeedbackPositionPickoffUnit;
 
 use systems::simulation::{
@@ -70,6 +71,10 @@ struct SlatFlapControlComputer {
     left_slats_target_angle_id: VariableIdentifier,
     right_slats_target_angle_id: VariableIdentifier,
     flaps_conf_index_id: VariableIdentifier,
+    slats_fppu_angle_id: VariableIdentifier,
+    flaps_fppu_angle_id: VariableIdentifier,
+    slat_flap_system_status_word_id: VariableIdentifier,
+    slat_flap_actual_position_word_id: VariableIdentifier,
 
     flaps_demanded_angle: Angle,
     slats_demanded_angle: Angle,
@@ -94,6 +99,12 @@ impl SlatFlapControlComputer {
             right_slats_target_angle_id: context
                 .get_identifier("RIGHT_SLATS_TARGET_ANGLE".to_owned()),
             flaps_conf_index_id: context.get_identifier("FLAPS_CONF_INDEX".to_owned()),
+            slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
+            flaps_fppu_angle_id: context.get_identifier("FLAPS_FPPU_ANGLE".to_owned()),
+            slat_flap_system_status_word_id: context
+                .get_identifier("SLATS_FLAPS_SYSTEM_STATUS_WORD".to_owned()),
+            slat_flap_actual_position_word_id: context
+                .get_identifier("SLATS_FLAPS_ACTUAL_POSITION_WORD".to_owned()),
 
             flaps_demanded_angle: Angle::new::<degree>(0.),
             slats_demanded_angle: Angle::new::<degree>(0.),
@@ -176,6 +187,97 @@ impl SlatFlapControlComputer {
         self.flaps_feedback_angle = flaps_feedback.angle();
         self.slats_feedback_angle = slats_feedback.angle();
     }
+
+    fn slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
+        let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+        word.set_bit(11, false);
+        word.set_bit(12, false);
+        word.set_bit(13, false);
+        word.set_bit(14, false);
+        word.set_bit(15, false);
+        word.set_bit(16, false);
+        word.set_bit(17, self.flaps_conf == FlapsConf::Conf0);
+        word.set_bit(
+            18,
+            self.flaps_conf == FlapsConf::Conf1 || self.flaps_conf == FlapsConf::Conf1F,
+        );
+        word.set_bit(19, self.flaps_conf == FlapsConf::Conf2);
+        word.set_bit(20, self.flaps_conf == FlapsConf::Conf3);
+        word.set_bit(21, self.flaps_conf == FlapsConf::ConfFull);
+        word.set_bit(22, false);
+        word.set_bit(23, false);
+        word.set_bit(24, false);
+        word.set_bit(25, false);
+        word.set_bit(26, false);
+        word.set_bit(27, false);
+        word.set_bit(28, true);
+        word.set_bit(29, true);
+
+        word
+    }
+
+    fn slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
+        let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+        word.set_bit(11, true);
+        word.set_bit(
+            12,
+            self.slats_feedback_angle > Angle::new::<degree>(-5.0)
+                && self.slats_feedback_angle < Angle::new::<degree>(6.2),
+        );
+        word.set_bit(
+            13,
+            self.slats_feedback_angle > Angle::new::<degree>(210.4)
+                && self.slats_feedback_angle < Angle::new::<degree>(337.),
+        );
+        word.set_bit(
+            14,
+            self.slats_feedback_angle > Angle::new::<degree>(321.8)
+                && self.slats_feedback_angle < Angle::new::<degree>(337.),
+        );
+        word.set_bit(
+            15,
+            self.slats_feedback_angle > Angle::new::<degree>(327.4)
+                && self.slats_feedback_angle < Angle::new::<degree>(337.),
+        );
+        word.set_bit(16, false);
+        word.set_bit(17, false);
+        word.set_bit(18, true);
+        word.set_bit(
+            19,
+            self.slats_feedback_angle > Angle::new::<degree>(-5.0)
+                && self.slats_feedback_angle < Angle::new::<degree>(2.5),
+        );
+        word.set_bit(
+            20,
+            self.slats_feedback_angle > Angle::new::<degree>(140.7)
+                && self.slats_feedback_angle < Angle::new::<degree>(254.),
+        );
+        word.set_bit(
+            21,
+            self.slats_feedback_angle > Angle::new::<degree>(163.7)
+                && self.slats_feedback_angle < Angle::new::<degree>(254.),
+        );
+        word.set_bit(
+            22,
+            self.slats_feedback_angle > Angle::new::<degree>(247.8)
+                && self.slats_feedback_angle < Angle::new::<degree>(254.),
+        );
+        word.set_bit(
+            23,
+            self.slats_feedback_angle > Angle::new::<degree>(250.)
+                && self.slats_feedback_angle < Angle::new::<degree>(254.),
+        );
+        word.set_bit(24, false);
+        word.set_bit(25, false);
+        word.set_bit(26, false);
+        word.set_bit(27, false);
+        word.set_bit(28, false);
+        word.set_bit(29, false);
+
+        word
+    }
 }
 
 trait SlatFlapLane {
@@ -216,6 +318,18 @@ impl SimulationElement for SlatFlapControlComputer {
         writer.write(&self.right_slats_target_angle_id, self.slats_demanded_angle);
 
         writer.write(&self.flaps_conf_index_id, self.flaps_conf as u8);
+
+        writer.write(&self.slats_fppu_angle_id, self.slats_feedback_angle);
+        writer.write(&self.flaps_fppu_angle_id, self.flaps_feedback_angle);
+
+        writer.write(
+            &self.slat_flap_system_status_word_id,
+            self.slat_flap_system_status_word(),
+        );
+        writer.write(
+            &self.slat_flap_actual_position_word_id,
+            self.slat_flap_actual_position_word(),
+        );
     }
 }
 
