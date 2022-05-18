@@ -60,10 +60,10 @@ pub(super) fn elevators(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn E
         |values| {
             let mean_elevator_position = (values[1] + values[0]) / 2.;
 
-            println!(
-                "MSFSdmnd {:.2} FBW elev {:.2} Mean elev {:.2} --> SIM Elev output {:.2}",
-                values[3], values[2], mean_elevator_position, mean_elevator_position
-            );
+            // println!(
+            //     "MSFSdmnd {:.2} FBW elev {:.2} Mean elev {:.2} --> SIM Elev output {:.2}",
+            //     values[3], values[2], mean_elevator_position, mean_elevator_position
+            // );
             mean_elevator_position
         },
         Variable::aspect("HYD_FINAL_ELEVATOR_FEEDBACK"),
@@ -107,10 +107,10 @@ fn hyd_deflection_to_msfs_deflection(hyd_deflection: f64) -> f64 {
         msfs_angle / max_msfs_angle
     };
 
-    println!(
-        "ELEVATOR HYD POS {:.2} msfs_angle  {:.2} final_msfs_dmnd {:.2}",
-        hyd_deflection, msfs_angle, final_msfs_angle_output,
-    );
+    // println!(
+    //     "ELEVATOR HYD POS {:.2} msfs_angle  {:.2} final_msfs_dmnd {:.2}",
+    //     hyd_deflection, msfs_angle, final_msfs_angle_output,
+    // );
 
     final_msfs_angle_output
 }
