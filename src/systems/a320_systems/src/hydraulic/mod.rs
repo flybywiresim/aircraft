@@ -525,7 +525,7 @@ impl A320ElevatorFactory {
             anchor,
             Angle::new::<degree>(-11.5),
             Angle::new::<degree>(27.5),
-            Angle::new::<degree>(-11.5.),
+            Angle::new::<degree>(-11.5),
             100.,
             false,
             Vector3::new(1., 0., 0.),
