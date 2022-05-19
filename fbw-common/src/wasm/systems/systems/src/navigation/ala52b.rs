@@ -199,7 +199,7 @@ struct Ala52BRadioAltimeterRuntime {
 }
 
 impl Ala52BRadioAltimeterRuntime {
-    const ARINC_429_REFRESH_INTERVAL: Duration = Duration::from_millis(80);
+    const ARINC_429_REFRESH_INTERVAL: Duration = Duration::from_millis(60);
     const OPERATING_RANGE_MAX_FEET: f64 = 8192.;
 
     fn new(self_check_time: Duration, aid: Ala52BAircraftInstallationDelay) -> Self {
