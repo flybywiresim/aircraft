@@ -209,7 +209,7 @@ impl SlatFlapControlComputer {
         word.set_bit(23, false);
         word.set_bit(24, false);
         word.set_bit(25, false);
-        word.set_bit(26, false);
+        word.set_bit(26, self.flaps_conf == FlapsConf::Conf1);
         word.set_bit(27, false);
         word.set_bit(28, true);
         word.set_bit(29, true);
