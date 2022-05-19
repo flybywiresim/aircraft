@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
 import { render } from '../../../Common';
 import { setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+import { useSimVar } from '../../../Common/simVars';
 import { usePersistentProperty } from '../../../Common/persistence';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
@@ -232,4 +232,4 @@ export const CondComponent = () => {
     );
 };
 
-render(<SimVarProvider><CrzPage /></SimVarProvider>);
+render(<CrzPage />);

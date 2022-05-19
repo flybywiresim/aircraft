@@ -17,6 +17,7 @@
 1. [FLIGHTMODEL] Improve pitch trim and manual braking level - @donstim (donbikes#4084)
 1. [ATSU] Fix cargo weight is not set on manually PAX - @Revyn112 (Revyn112#1010)
 1. [CDSS] When off no longer displays door video - @davidwalschots (David Walschots)
+1. [FMGC] Map leg course with station declination where required - @tracernz (Mike)
 
 ## 0.8.0
 
