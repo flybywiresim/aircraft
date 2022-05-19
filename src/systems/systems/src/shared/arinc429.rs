@@ -155,7 +155,7 @@ mod tests {
         let mut rng = rand::thread_rng();
         let expected_value: f64 = rng.gen_range(0.0..10000.0);
 
-        let mut word = Arinc429Word::new(expected_value, expected_ssm);
+        let word = Arinc429Word::new(expected_value, expected_ssm);
 
         let result: Arinc429Word<f64> = Arinc429Word::from(f64::from(word));
 
