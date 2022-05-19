@@ -1,5 +1,4 @@
 import { useArinc429Var } from '@instruments/common/arinc429';
-import { useSimVar } from '@instruments/common/simVars';
 import React, { useEffect, useState } from 'react';
 
 type SlatsProps = {
@@ -22,8 +21,10 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
 
     // Same as above, the IPPU angle should come from the FWCs, or as a backup the FPPU angle from the
     // SDACs/SFFCs can be used.
-    const [slatsIppuAngle] = useSimVar('L:A32NX_SLATS_FPPU_ANGLE', 'number');
-    const [flapsIppuAngle] = useSimVar('L:A32NX_FLAPS_FPPU_ANGLE', 'number');
+    const slatsActualPositionWord = useArinc429Var('L:A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD');
+    const flapsActualPositionWord = useArinc429Var('L:A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD');
+    const slatsIppuAngle = slatsActualPositionWord.valueOr(0);
+    const flapsIppuAngle = flapsActualPositionWord.valueOr(0);
 
     let flapText = '';
     if (cleanConfigSelected) {
