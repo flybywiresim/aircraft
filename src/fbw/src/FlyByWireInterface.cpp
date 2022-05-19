@@ -245,6 +245,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idPerformanceWarningActive = make_unique<LocalVariable>("A32NX_PERFORMANCE_WARNING_ACTIVE");
 
   // register L variable for external override
+  idTrackingMode = make_unique<LocalVariable>("A32NX_FLIGHT_CONTROLS_TRACKING_MODE");
   idExternalOverride = make_unique<LocalVariable>("A32NX_EXTERNAL_OVERRIDE");
 
   // register L variable for FDR event
@@ -1491,17 +1492,8 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
   idRudderPedalPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]))));
   idRudderPedalAnimationPosition->set(max(-100, min(100, (-100.0 * simInput.inputs[2]) + (100.0 * simData.zeta_trim_pos))));
 
-  // set outputs
-  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
-    // object to write with trim
-    SimOutput output = {flyByWireOutput.output.zeta_pos};
-
-    // send data via sim connect
-    if (!simConnectInterface.sendData(output)) {
-      cout << "WASM: Write data failed!" << endl;
-      return false;
-    }
-  }
+  // provide tracking mode state
+  idTrackingMode->set(flyByWireOutput.sim.data_computed.tracking_mode_on);
 
   // determine if nosewheel demand shall be set
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {

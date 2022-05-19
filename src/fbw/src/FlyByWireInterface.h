@@ -123,6 +123,7 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idPerformanceWarningActive;
 
+  std::unique_ptr<LocalVariable> idTrackingMode;
   std::unique_ptr<LocalVariable> idExternalOverride;
 
   std::unique_ptr<LocalVariable> idFdrEvent;
