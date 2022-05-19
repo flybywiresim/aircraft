@@ -1321,8 +1321,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_1_pos_deg = -idRightSpoilerPosition[splrIndex]->get() * 50;
   secs[secIndex].modelInputs.in.analog_inputs.left_spoiler_2_pos_deg = -idLeftSpoilerPosition[splrIndex + 1]->get() * 50;
   secs[secIndex].modelInputs.in.analog_inputs.right_spoiler_2_pos_deg = -idRightSpoilerPosition[splrIndex + 1]->get() * 50;
-  secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_left = simData.V_gnd_kn;   // TODO: Placeholder, should be gear rotation speed
-  secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_right = simData.V_gnd_kn;  // TODO: Placeholder, should be gear rotation speed
+  secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_left = simData.wheelRpmLeft * 0.118921;
+  secs[secIndex].modelInputs.in.analog_inputs.wheel_speed_right = simData.wheelRpmRight * 0.118921;
 
   if (secIndex == 0) {
     secs[secIndex].modelInputs.in.bus_inputs.adr_1_bus = adirsBusOutputs[0].adrBus;
