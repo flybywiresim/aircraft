@@ -119,10 +119,6 @@ export const StandbyFrequency = (props: Props) => {
     // Handle inner knob turned.
     const innerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
         const frequency = Math.round(props.value / 1000);
-        // if (Math.sign(offset) === 1 && frequency === 136975) {
-        //     return;
-        // }
-
         if (props.value !== 0) {
             const integer = Math.floor(frequency / 1000);
             // @todo determine correct frequency spacing depending on mode.
