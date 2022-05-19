@@ -132,8 +132,8 @@ pub struct FlapSlatAssembly {
     left_motor: FlapSlatHydraulicMotor,
     right_motor: FlapSlatHydraulicMotor,
 
-    synchro_gear_breakpoints: [f64; 5],
-    final_surface_angle_carac: [f64; 5],
+    synchro_gear_breakpoints: [f64; 12],
+    final_surface_angle_carac: [f64; 12],
 }
 impl FlapSlatAssembly {
     const LOW_PASS_FILTER_SURFACE_POSITION_TRANSIENT_TIME_CONSTANT: Duration =
@@ -153,8 +153,8 @@ impl FlapSlatAssembly {
         synchro_gear_ratio: Ratio,
         gearbox_ratio: Ratio,
         surface_gear_ratio: Ratio,
-        synchro_gear_breakpoints: [f64; 5],
-        final_surface_angle_carac: [f64; 5],
+        synchro_gear_breakpoints: [f64; 12],
+        final_surface_angle_carac: [f64; 12],
     ) -> Self {
         Self {
             position_left_percent_id: context
