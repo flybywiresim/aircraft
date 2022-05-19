@@ -16,7 +16,7 @@ const N1Limit: React.FC<N1LimitProps> = ({ x, y, active }) => {
     const [N1ThrustLimit] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT', 'number', 100);
     const N1ThrustLimitSplit = splitDecimals(N1ThrustLimit);
     const thrustLimitTypeArray = ['', 'CLB', 'MCT', 'FLX', 'TOGA', 'MREV'];
-    const [flexTemp] = useSimVar('L:AIRLINER_TO_FLEX_TEMP', 'number', 1000);
+    const [flexTemp] = useSimVar('L:A32NX_TO_FLEX_TEMP', 'number', 1000);
     const sat: Arinc429Word = useArinc429Var('L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE', 500);
     const displayFlexTemp: boolean = flexTemp !== 0 && (flexTemp >= (sat.value - 10)) && N1LimitType === 3;
 
