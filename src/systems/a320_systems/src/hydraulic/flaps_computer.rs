@@ -75,6 +75,8 @@ struct SlatFlapControlComputer {
     flaps_fppu_angle_id: VariableIdentifier,
     slat_flap_system_status_word_id: VariableIdentifier,
     slat_flap_actual_position_word_id: VariableIdentifier,
+    slat_actual_position_word_id: VariableIdentifier,
+    flap_actual_position_word_id: VariableIdentifier,
 
     flaps_demanded_angle: Angle,
     slats_demanded_angle: Angle,
@@ -102,9 +104,13 @@ impl SlatFlapControlComputer {
             slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
             flaps_fppu_angle_id: context.get_identifier("FLAPS_FPPU_ANGLE".to_owned()),
             slat_flap_system_status_word_id: context
-                .get_identifier("SLATS_FLAPS_SYSTEM_STATUS_WORD".to_owned()),
+                .get_identifier("SLAT_FLAP_SYSTEM_STATUS_WORD".to_owned()),
             slat_flap_actual_position_word_id: context
-                .get_identifier("SLATS_FLAPS_ACTUAL_POSITION_WORD".to_owned()),
+                .get_identifier("SLAT_FLAP_ACTUAL_POSITION_WORD".to_owned()),
+            slat_actual_position_word_id: context
+                .get_identifier("SLAT_ACTUAL_POSITION_WORD".to_owned()),
+            flap_actual_position_word_id: context
+                .get_identifier("FLAP_ACTUAL_POSITION_WORD".to_owned()),
 
             flaps_demanded_angle: Angle::new::<degree>(0.),
             slats_demanded_angle: Angle::new::<degree>(0.),
@@ -278,6 +284,20 @@ impl SlatFlapControlComputer {
 
         word
     }
+
+    fn slat_actual_position_word(&self) -> Arinc429Word<f64> {
+        Arinc429Word::new(
+            self.slats_feedback_angle.get::<degree>(),
+            SignStatus::NormalOperation,
+        )
+    }
+
+    fn flap_actual_position_word(&self) -> Arinc429Word<f64> {
+        Arinc429Word::new(
+            self.flaps_feedback_angle.get::<degree>(),
+            SignStatus::NormalOperation,
+        )
+    }
 }
 
 trait SlatFlapLane {
@@ -329,6 +349,14 @@ impl SimulationElement for SlatFlapControlComputer {
         writer.write(
             &self.slat_flap_actual_position_word_id,
             self.slat_flap_actual_position_word(),
+        );
+        writer.write(
+            &self.slat_actual_position_word_id,
+            self.slat_actual_position_word(),
+        );
+        writer.write(
+            &self.flap_actual_position_word_id,
+            self.flap_actual_position_word(),
         );
     }
 }
