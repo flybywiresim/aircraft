@@ -312,12 +312,18 @@ impl A320AileronFactory {
     }
 
     /// Builds an aileron control surface body for A320 Neo
-    fn a320_aileron_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a320_aileron_body(init_drooped_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(3.325, 0.16, 0.58);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
 
         let control_arm = Vector3::new(0., -0.0525, 0.);
         let anchor = Vector3::new(0., -0.0525, 0.33);
+
+        let init_position = if init_drooped_down {
+            Angle::new::<degree>(-25.)
+        } else {
+            Angle::new::<degree>(0.)
+        };
 
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(24.65),
@@ -327,7 +333,7 @@ impl A320AileronFactory {
             anchor,
             Angle::new::<degree>(-25.),
             Angle::new::<degree>(50.),
-            Angle::new::<degree>(-25.),
+            init_position,
             1.,
             false,
             Vector3::new(1., 0., 0.),
@@ -336,8 +342,8 @@ impl A320AileronFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_aileron_assembly() -> HydraulicLinearActuatorAssembly<2> {
-        let aileron_body = Self::a320_aileron_body();
+    fn a320_aileron_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
+        let aileron_body = Self::a320_aileron_body(init_drooped_down);
 
         let aileron_actuator_outward = Self::a320_aileron_actuator(&aileron_body);
         let aileron_actuator_inward = Self::a320_aileron_actuator(&aileron_body);
@@ -349,12 +355,13 @@ impl A320AileronFactory {
     }
 
     fn new_aileron(context: &mut InitContext, id: ActuatorSide) -> AileronAssembly {
-        let assembly = Self::a320_aileron_assembly();
+        let init_drooped_down = !context.is_in_flight();
+        let assembly = Self::a320_aileron_assembly(init_drooped_down);
         AileronAssembly::new(context, id, assembly, Self::new_a320_aileron_aero_model())
     }
 
     fn new_a320_aileron_aero_model() -> AerodynamicModel {
-        let body = Self::a320_aileron_body();
+        let body = Self::a320_aileron_body(true);
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(0., 1., 0.)),
@@ -517,12 +524,18 @@ impl A320ElevatorFactory {
     }
 
     /// Builds an aileron control surface body for A320 Neo
-    fn a320_elevator_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a320_elevator_body(init_drooped_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(6., 0.405, 1.125);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
 
         let control_arm = Vector3::new(0., -0.091, 0.);
         let anchor = Vector3::new(0., -0.091, 0.41);
+
+        let init_position = if init_drooped_down {
+            Angle::new::<degree>(-17.)
+        } else {
+            Angle::new::<degree>(0.)
+        };
 
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(58.6),
@@ -532,7 +545,7 @@ impl A320ElevatorFactory {
             anchor,
             Angle::new::<degree>(-17.),
             Angle::new::<degree>(47.),
-            Angle::new::<degree>(-17.),
+            init_position,
             100.,
             false,
             Vector3::new(1., 0., 0.),
@@ -541,8 +554,8 @@ impl A320ElevatorFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_elevator_assembly() -> HydraulicLinearActuatorAssembly<2> {
-        let elevator_body = Self::a320_elevator_body();
+    fn a320_elevator_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
+        let elevator_body = Self::a320_elevator_body(init_drooped_down);
 
         let elevator_actuator_outboard = Self::a320_elevator_actuator(&elevator_body);
         let elevator_actuator_inbord = Self::a320_elevator_actuator(&elevator_body);
@@ -554,12 +567,13 @@ impl A320ElevatorFactory {
     }
 
     fn new_elevator(context: &mut InitContext, id: ActuatorSide) -> ElevatorAssembly {
-        let assembly = Self::a320_elevator_assembly();
+        let init_drooped_down = !context.is_in_flight();
+        let assembly = Self::a320_elevator_assembly(init_drooped_down);
         ElevatorAssembly::new(context, id, assembly, Self::new_a320_elevator_aero_model())
     }
 
     fn new_a320_elevator_aero_model() -> AerodynamicModel {
-        let body = Self::a320_elevator_body();
+        let body = Self::a320_elevator_body(true);
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(0., 1., 0.)),
@@ -605,14 +619,18 @@ impl A320RudderFactory {
     }
 
     /// Builds an aileron control surface body for A320 Neo
-    fn a320_rudder_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a320_rudder_body(init_at_center: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(0.42, 6.65, 1.8);
         let cg_offset = Vector3::new(0., 0.5 * size[1], -0.5 * size[2]);
 
         let control_arm = Vector3::new(-0.144, 0., 0.);
         let anchor = Vector3::new(-0.144, 0., 0.50);
 
-        let randomized_init_position_angle_degree = random_from_range(-15., 15.);
+        let randomized_init_position_angle_degree = if init_at_center {
+            0.
+        } else {
+            random_from_range(-15., 15.)
+        };
 
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(95.),
@@ -631,8 +649,8 @@ impl A320RudderFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_rudder_assembly() -> HydraulicLinearActuatorAssembly<3> {
-        let rudder_body = Self::a320_rudder_body();
+    fn a320_rudder_assembly(init_at_center: bool) -> HydraulicLinearActuatorAssembly<3> {
+        let rudder_body = Self::a320_rudder_body(init_at_center);
 
         let elevator_actuator_green = Self::a320_rudder_actuator(&rudder_body);
         let elevator_actuator_blue = Self::a320_rudder_actuator(&rudder_body);
@@ -649,12 +667,16 @@ impl A320RudderFactory {
     }
 
     fn new_rudder(context: &mut InitContext) -> RudderAssembly {
-        let assembly = Self::a320_rudder_assembly();
+        let init_at_center = context.start_state() == StartState::Taxi
+            || context.start_state() == StartState::Runway
+            || context.is_in_flight();
+
+        let assembly = Self::a320_rudder_assembly(init_at_center);
         RudderAssembly::new(context, assembly, Self::new_a320_rudder_aero_model())
     }
 
     fn new_a320_rudder_aero_model() -> AerodynamicModel {
-        let body = Self::a320_rudder_body();
+        let body = Self::a320_rudder_body(true);
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(1., 0., 0.)),
