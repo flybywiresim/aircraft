@@ -308,7 +308,7 @@ export default class NavigraphClient {
         return emptyNavigraphCharts;
     }
 
-    public async getAirportInfo(icao: string): Promise<AirportInfo> {
+    public async getAirportInfo(icao: string): Promise<AirportInfo | null> {
         if (this.hasToken) {
             const chartJsonUrl = await this.chartCall(icao, 'airport.json');
 
@@ -321,7 +321,7 @@ export default class NavigraphClient {
             }
         }
 
-        return { name: t('NavigationAndCharts.Navigraph.AirportDoesNotExist') };
+        return null;
     }
 
     public get hasToken(): boolean {

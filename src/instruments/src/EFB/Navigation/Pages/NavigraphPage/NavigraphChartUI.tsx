@@ -43,7 +43,7 @@ export const NavigraphChartUI = () => {
         setIcaoAndNameDisagree(true);
 
         const airportInfo = await navigraph.getAirportInfo(searchQuery);
-        setStatusBarInfo(airportInfo.name);
+        setStatusBarInfo(airportInfo?.name || t('NavigationAndCharts.Navigraph.AirportDoesNotExist'));
 
         setIcaoAndNameDisagree(false);
     };
@@ -117,7 +117,7 @@ export const NavigraphChartUI = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     return (
-        <div className="flex overflow-x-hidden flex-row w-full h-content-section-reduced rounded-lg">
+        <div className="flex overflow-x-hidden flex-row w-full rounded-lg h-content-section-reduced">
             <>
                 {!isFullScreen && (
                     <div className="flex-shrink-0" style={{ width: '450px' }}>
