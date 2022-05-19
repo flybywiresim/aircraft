@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import pkce from '@navigraph/pkce';
 
 import { NXDataStore } from '@shared/persistence';
-import { t } from '../translation';
 
 export interface NavigraphBoundingBox {
     bottomLeft: { lat: number, lon: number, xPx: number, yPx: number },
