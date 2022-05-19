@@ -70,7 +70,14 @@ export class LegsProcedure {
    * @param instrument The instrument that is attached to the flight plan.
    * @param approachType The approach type if this is an approach procedure
    */
-  constructor(private _legs: RawProcedureLeg[], private _previousFix: WayPoint, private _instrument: BaseInstrument, private approachType?: ApproachType, private legAnnotations?: string[]) {
+  constructor(
+      private _legs: RawProcedureLeg[],
+      private _previousFix: WayPoint,
+      private _instrument: BaseInstrument,
+      private airportMagVar: number,
+      private approachType?: ApproachType,
+      private legAnnotations?: string[],
+    ) {
       for (const leg of this._legs) {
           if (this.isIcaoValid(leg.fixIcao)) {
               this._facilitiesToLoad.set(leg.fixIcao, this._instrument.facilityLoader.getFacilityRaw(leg.fixIcao, 2000));
@@ -208,6 +215,8 @@ export class LegsProcedure {
               }
 
               if (mappedLeg !== undefined) {
+                  const magCorrection = this.getMagCorrection(currentLeg);
+
                   if (this.approachType === ApproachType.APPROACH_TYPE_ILS && (currentLeg.fixTypeFlags & FixTypeFlags.FAF) > 0) {
                       if (currentLeg.altDesc === AltitudeDescriptor.At) {
                           mappedLeg.legAltitudeDescription = AltitudeDescriptor.G;
@@ -223,19 +232,19 @@ export class LegsProcedure {
                   mappedLeg.turnDirection = currentLeg.turnDirection;
 
                   const recNavaid: RawVor | RawNdb | undefined = this._facilities.get(currentLeg.originIcao);
-                  const thetaMagVar = recNavaid ? Facilities.getMagVar(recNavaid.lat, recNavaid.lon) : Facilities.getMagVar(mappedLeg.infos.coordinates.lat, mappedLeg.infos.coordinates.long);
 
                   mappedLeg.additionalData.legType = currentLeg.type;
                   mappedLeg.additionalData.overfly = currentLeg.flyOver;
                   mappedLeg.additionalData.fixTypeFlags = currentLeg.fixTypeFlags;
                   mappedLeg.additionalData.distance = currentLeg.distanceMinutes ? undefined : currentLeg.distance / 1852;
                   mappedLeg.additionalData.distanceInMinutes = currentLeg.distanceMinutes ? currentLeg.distance : undefined;
-                  mappedLeg.additionalData.course = currentLeg.trueDegrees ? currentLeg.course : A32NX_Util.magneticToTrue(currentLeg.course, Facilities.getMagVar(mappedLeg.infos.coordinates.lat, mappedLeg.infos.coordinates.long));
+                  mappedLeg.additionalData.course = currentLeg.trueDegrees ? currentLeg.course : A32NX_Util.magneticToTrue(currentLeg.course, magCorrection);
                   mappedLeg.additionalData.recommendedIcao = currentLeg.originIcao.trim().length > 0 ? currentLeg.originIcao : undefined;
                   mappedLeg.additionalData.recommendedFrequency = recNavaid ? recNavaid.freqMHz : undefined;
                   mappedLeg.additionalData.recommendedLocation = recNavaid ? { lat: recNavaid.lat, long: recNavaid.lon } : undefined;
                   mappedLeg.additionalData.rho = currentLeg.rho / 1852;
-                  mappedLeg.additionalData.theta = A32NX_Util.magneticToTrue(currentLeg.theta, thetaMagVar);
+                  mappedLeg.additionalData.theta = currentLeg.theta;
+                  mappedLeg.additionalData.thetaTrue = A32NX_Util.magneticToTrue(currentLeg.theta, magCorrection);
                   mappedLeg.additionalData.annotation = currentAnnotation;
               }
 
@@ -249,6 +258,67 @@ export class LegsProcedure {
       }
 
       return undefined;
+  }
+
+  private getMagCorrection(currentLeg: RawProcedureLeg): number {
+    // we try to interpret PANS OPs as accurately as possible within the limits of available data
+
+    // magnetic tracks to/from a VOR always use VOR station declination
+    if (currentLeg.fixIcao.charAt(0) === 'V') {
+      const vor: RawVor = this._facilities.get(currentLeg.fixIcao);
+      if (!vor || vor.magneticVariation === undefined) {
+        console.warn('Leg coded incorrectly (missing vor fix or station declination)', currentLeg, vor);
+        return this.airportMagVar;
+      }
+      return 360 - vor.magneticVariation;
+    }
+
+    // we use station declination for VOR/DME approaches
+    if (this.approachType === ApproachType.APPROACH_TYPE_VORDME) {
+      // find a leg with the reference navaid for the procedure
+      for (let i = this._legs.length - 1; i >= 0; i--) {
+        if (this._legs[i].originIcao.trim().length > 0) {
+          const recNavaid: RawVor = this._facilities.get(currentLeg.originIcao);
+          if (recNavaid && recNavaid.magneticVariation !== undefined) {
+            return 360 - recNavaid.magneticVariation;
+          }
+        }
+      }
+      console.warn('VOR/DME approach coded incorrectly (missing recommended navaid or station declination)', currentLeg);
+      return this.airportMagVar;
+    }
+
+    // for RNAV procedures use recommended navaid station declination for these leg types
+    let useStationDeclination = (currentLeg.type === LegType.CF || currentLeg.type === LegType.FA || currentLeg.type === LegType.FM);
+
+    // for localiser bearings (i.e. at or beyond FACF), always use airport value
+    if (this.approachType === ApproachType.APPROACH_TYPE_ILS || this.approachType === ApproachType.APPROACH_TYPE_LOCALIZER) {
+      useStationDeclination = useStationDeclination && this._legs.indexOf(currentLeg) < this.getFacfIndex();
+    }
+
+    if (useStationDeclination) {
+      const recNavaid: RawVor = this._facilities.get(currentLeg.originIcao);
+      if (!recNavaid || recNavaid.magneticVariation === undefined) {
+        console.warn('Leg coded incorrectly (missing recommended navaid or station declination)', currentLeg, recNavaid);
+        return this.airportMagVar;
+      }
+      return 360 - recNavaid.magneticVariation;
+    }
+
+    // for all other terminal procedure legs we use airport magnetic variation
+    return this.airportMagVar;
+  }
+
+  private getFacfIndex(): number {
+    if (this.approachType !== undefined) {
+      for (let i = this._legs.length - 1; i >= 0; i--) {
+        if (this._legs[i].fixTypeFlags & FixTypeFlags.IF) {
+          return i;
+        }
+      }
+    }
+
+    return undefined;
   }
 
   /**
@@ -397,8 +467,6 @@ export class LegsProcedure {
       );
 
       const waypoint = this.buildWaypoint(`${this.getIdent(origin.icao)}${leg.theta}`, coordinates);
-
-      waypoint.additionalData.radial = A32NX_Util.magneticToTrue(leg.theta, Facilities.getMagVar(origin.lat, origin.lon));
 
       return waypoint;
   }

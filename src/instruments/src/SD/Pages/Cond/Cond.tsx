@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '../../../Common';
 import { setIsEcamPage } from '../../../Common/defaults';
-import { SimVarProvider, useSimVar } from '../../../Common/simVars';
+import { useSimVar } from '../../../Common/simVars';
 
 import './Cond.scss';
 
@@ -118,4 +118,4 @@ const CondUnit = ({ title, selectedTemp, cabinTemp, trimTemp, x, offset, hotAir 
     );
 };
 
-render(<SimVarProvider><CondPage /></SimVarProvider>);
+render(<CondPage />);

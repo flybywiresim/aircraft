@@ -245,12 +245,7 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
         func: Box<dyn Fn(&[f64], &[f64])>,
     ) {
         let observed = self.variables.register_many(&observed);
-        let starting_values = self
-            .variables
-            .read_many(&observed)
-            .iter_mut()
-            .map(|v| v.unwrap_or(0.))
-            .collect();
+        let starting_values = self.variables.read_many(&observed);
 
         self.actions.push((
             OnChange::new(observed, starting_values, func).into(),
@@ -392,11 +387,7 @@ impl ExecutableVariableAction for Map {
         _: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
     ) -> Result<(), Box<dyn Error>> {
-        let value = match variables.read(&self.input_variable_identifier) {
-            Some(value) => value,
-            None => panic!("Attempted to map a variable which is unavailable."),
-        };
-
+        let value = variables.read(&self.input_variable_identifier);
         variables.write(&self.output_variable_identifier, (self.func)(value));
 
         Ok(())
@@ -446,11 +437,8 @@ impl ExecutableVariableAction for MapMany {
         _: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
     ) -> Result<(), Box<dyn Error>> {
-        let values: Vec<f64> = variables
-            .read_many(&self.input_variable_identifiers)
-            .iter()
-            .map(|&x| x.unwrap())
-            .collect();
+        let values: Vec<f64> = variables.read_many(&self.input_variable_identifiers);
+
         let result = (self.func)(&values);
         variables.write(&self.output_variable_identifier, result);
 
@@ -491,8 +479,6 @@ impl ExecutableVariableAction for Reduce {
     ) -> Result<(), Box<dyn Error>> {
         let result = variables
             .read_many(&self.input_variable_identifiers)
-            .iter()
-            .map(|&x| x.unwrap())
             .into_iter()
             .fold(self.init, self.func);
 
@@ -539,14 +525,7 @@ impl ExecutableVariableAction for ToObject {
         let values: Vec<f64> = self
             .variables
             .iter()
-            .map(
-                |variable_identifier| match variables.read(variable_identifier) {
-                    Some(value) => value,
-                    None => {
-                        panic!("Attempted to access variables which are unavailable.")
-                    }
-                },
-            )
+            .map(|variable_identifier| variables.read(variable_identifier))
             .collect();
 
         self.target_object.write(values);
@@ -779,13 +758,11 @@ impl EventToVariable {
                 sim_connect_32k_pos_inv_to_f64(e.data())
             }
             EventToVariableMapping::EventDataToValue(func) => func(e.data()),
-            EventToVariableMapping::CurrentValueToValue(func) => {
-                func(variables.read(&self.target).unwrap_or(0.))
-            }
+            EventToVariableMapping::CurrentValueToValue(func) => func(variables.read(&self.target)),
             EventToVariableMapping::EventDataAndCurrentValueToValue(func) => {
-                func(e.data(), variables.read(&self.target).unwrap_or(0.))
+                func(e.data(), variables.read(&self.target))
             }
-            EventToVariableMapping::SmoothPress(..) => variables.read(&self.target).unwrap_or(0.),
+            EventToVariableMapping::SmoothPress(..) => variables.read(&self.target),
         }
     }
 
@@ -795,7 +772,7 @@ impl EventToVariable {
         variables: &mut MsfsVariableRegistry,
     ) {
         if let EventToVariableMapping::SmoothPress(press_factor, release_factor) = self.mapping {
-            let mut value = variables.read(&self.target).unwrap_or(0.);
+            let mut value = variables.read(&self.target);
             if self.event_handled_before_tick {
                 value += delta.as_secs_f64() * press_factor;
             } else {
@@ -902,7 +879,7 @@ impl ExecutableVariableAction for ToEvent {
         sim_connect: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
     ) -> Result<(), Box<dyn Error>> {
-        let value = variables.read(&self.input).unwrap_or(0.);
+        let value = variables.read(&self.input);
         let should_write = match self.write_on {
             VariableToEventWriteOn::EveryTick => true,
             VariableToEventWriteOn::Change => match self.last_written_value {
@@ -959,11 +936,7 @@ impl ExecutableVariableAction for OnChange {
         _: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
     ) -> Result<(), Box<dyn Error>> {
-        let current_values: Vec<f64> = variables
-            .read_many(&self.observed_variables)
-            .iter_mut()
-            .map(|v| v.unwrap_or(0.))
-            .collect();
+        let current_values: Vec<f64> = variables.read_many(&self.observed_variables);
 
         // Allow floating point equality comparison, because we really care about the
         // value being exactly equal and assume that the code that changes this value

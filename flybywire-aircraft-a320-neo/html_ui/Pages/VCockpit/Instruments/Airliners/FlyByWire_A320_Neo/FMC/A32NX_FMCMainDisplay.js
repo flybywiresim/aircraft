@@ -2236,7 +2236,7 @@ class FMCMainDisplay extends BaseAirliners {
             // for unknown reasons, the approach returned here doesn't have the approach waypoints which we need
             const appr = this.flightPlanManager.getApproach();
             if (appr) {
-                if (appr.approachType !== ApproachType.APPROACH_TYPE_ILS && appr.approachType !== ApproachType.APPROACH_TYPE_LOC) {
+                if (appr.approachType !== ApproachType.APPROACH_TYPE_ILS && appr.approachType !== ApproachType.APPROACH_TYPE_LOCALIZER) {
                     return;
                 }
                 airport = this.flightPlanManager.getDestination();
@@ -2272,7 +2272,7 @@ class FMCMainDisplay extends BaseAirliners {
                 // We are a little more lenient than ARINC424 in an effort to match non-perfect navdata, so we allow dashes, spaces, or nothing before the suffix
                 if (appr && appr.finalLegs) {
                     if (
-                        (appr.approachType === ApproachType.APPROACH_TYPE_ILS || appr.approachType === ApproachType.APPROACH_TYPE_LOC)
+                        (appr.approachType === ApproachType.APPROACH_TYPE_ILS || appr.approachType === ApproachType.APPROACH_TYPE_LOCALIZER)
                         && appr.runwayNumber === runway.number
                         && appr.runwayDesignator === runway.designator
                         && appr.finalLegs.length > 0
