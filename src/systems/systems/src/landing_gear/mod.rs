@@ -1111,7 +1111,8 @@ mod tests {
     use std::time::Duration;
 
     use crate::simulation::{
-        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
+        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, StartState,
+        UpdateContext,
     };
 
     use crate::electrical::{test::TestElectricitySource, ElectricalBus, Electricity};
@@ -1261,9 +1262,12 @@ mod tests {
         test_bed: SimulationTestBed<TestGearAircraft>,
     }
     impl LgciusTestBed {
-        fn new() -> Self {
+        fn new(start_state: StartState) -> Self {
             Self {
-                test_bed: SimulationTestBed::new(TestGearAircraft::new),
+                test_bed: SimulationTestBed::new_with_start_state(
+                    start_state,
+                    TestGearAircraft::new,
+                ),
             }
         }
 
@@ -1316,12 +1320,16 @@ mod tests {
         }
     }
 
-    fn test_bed() -> LgciusTestBed {
-        LgciusTestBed::new()
+    fn test_bed(start_state: StartState) -> LgciusTestBed {
+        LgciusTestBed::new(start_state)
     }
 
-    fn test_bed_with() -> LgciusTestBed {
-        test_bed()
+    fn test_bed_on_ground_with() -> LgciusTestBed {
+        test_bed(StartState::Apron)
+    }
+
+    fn test_bed_in_flight_with() -> LgciusTestBed {
+        test_bed(StartState::Cruise)
     }
 
     #[test]
@@ -1365,7 +1373,7 @@ mod tests {
 
     #[test]
     fn gear_lever_init_down_and_locked_on_ground() {
-        let mut test_bed = test_bed_with().on_the_ground().run_one_tick();
+        let mut test_bed = test_bed_on_ground_with().on_the_ground().run_one_tick();
 
         assert!(test_bed.is_gear_handle_lock_down_active());
 
@@ -1374,7 +1382,7 @@ mod tests {
 
     #[test]
     fn gear_lever_up_and_locked_can_go_down_but_not_up() {
-        let mut test_bed = test_bed_with().in_flight().run_one_tick();
+        let mut test_bed = test_bed_in_flight_with().in_flight().run_one_tick();
 
         test_bed = test_bed.set_gear_handle_up().run_one_tick();
 
@@ -1402,7 +1410,7 @@ mod tests {
 
     #[test]
     fn gear_lever_down_not_locked_in_flight() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_in_flight_with()
             .in_flight()
             .set_gear_handle_down()
             .run_one_tick();
@@ -1422,7 +1430,7 @@ mod tests {
 
     #[test]
     fn gear_up_when_lever_up_down_when_lever_down() {
-        let mut test_bed = test_bed_with().in_flight().set_gear_handle_down();
+        let mut test_bed = test_bed_in_flight_with().in_flight().set_gear_handle_down();
 
         for _ in 0..2 {
             test_bed.run_without_delta();
@@ -1450,7 +1458,7 @@ mod tests {
 
     #[test]
     fn lgciu_master_switch_on_gear_up() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_in_flight_with()
             .in_flight()
             .set_gear_handle_down()
             .run_one_tick();
@@ -1469,7 +1477,7 @@ mod tests {
 
     #[test]
     fn lgciu_master_switch_if_failed_lgciu_power_and_stays_on_same_lgciu() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_in_flight_with()
             .in_flight()
             .set_gear_handle_down()
             .run_one_tick();
@@ -1494,7 +1502,7 @@ mod tests {
 
     #[test]
     fn lgciu_master_switch_if_unfailed_lgciu_power() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_in_flight_with()
             .in_flight()
             .set_gear_handle_down()
             .run_one_tick();
@@ -1521,7 +1529,7 @@ mod tests {
 
     #[test]
     fn lgciu_master_fails_but_do_not_switch_if_gear_not_up_in_30s() {
-        let mut test_bed = test_bed_with()
+        let mut test_bed = test_bed_in_flight_with()
             .in_flight()
             .set_gear_handle_down()
             .run_one_tick();
