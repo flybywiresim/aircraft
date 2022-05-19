@@ -104,13 +104,13 @@ impl SlatFlapControlComputer {
             slats_fppu_angle_id: context.get_identifier("SLATS_FPPU_ANGLE".to_owned()),
             flaps_fppu_angle_id: context.get_identifier("FLAPS_FPPU_ANGLE".to_owned()),
             slat_flap_system_status_word_id: context
-                .get_identifier("SLAT_FLAP_SYSTEM_STATUS_WORD".to_owned()),
+                .get_identifier("SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD".to_owned()),
             slat_flap_actual_position_word_id: context
-                .get_identifier("SLAT_FLAP_ACTUAL_POSITION_WORD".to_owned()),
+                .get_identifier("SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD".to_owned()),
             slat_actual_position_word_id: context
-                .get_identifier("SLAT_ACTUAL_POSITION_WORD".to_owned()),
+                .get_identifier("SFCC_SLAT_ACTUAL_POSITION_WORD".to_owned()),
             flap_actual_position_word_id: context
-                .get_identifier("FLAP_ACTUAL_POSITION_WORD".to_owned()),
+                .get_identifier("SFCC_FLAP_ACTUAL_POSITION_WORD".to_owned()),
 
             flaps_demanded_angle: Angle::new::<degree>(0.),
             slats_demanded_angle: Angle::new::<degree>(0.),

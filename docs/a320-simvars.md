@@ -16,6 +16,7 @@
   - [Engine and FADEC System](#engine-and-fadec-system)
   - [Air Conditioning / Pressurisation / Ventilation](#air-conditioning--pressurisation--ventilation)
   - [Pneumatic](#pneumatic)
+  - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
@@ -2563,6 +2564,72 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_HAS_FAULT:
     - Indicates whether the fault light is on for the engine bleed push button
     - Bool
+
+## Flaps / Slats (ATA 27)
+
+- A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD
+    - Slat/Flap system status discrete word of the SFCC bus output
+    - Arinc429<Discrete>
+    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
+    - | Bit |            Description            |
+      |:---:|:---------------------------------:|
+      | 11  | Slat Fault                        |
+      | 12  | Flap Fault                        |
+      | 13  | Slat Jam                          |
+      | 14  | Flap Jam                          |
+      | 15  | Slat WTB engaged                  |
+      | 16  | Flap WTB engaged                  |
+      | 17  | Lever in Config 0                 |
+      | 18  | Lever in Config 1                 |
+      | 19  | Lever in Config 2                 |
+      | 20  | Lever in Config 3                 |
+      | 21  | Lever in Config FULL              |
+      | 22  | Slat Relief Engaged               |
+      | 23  | Flap Attachement Failure          |
+      | 24  | Slat Alpha lock Engaged           |
+      | 25  | Slat Baulk Engaged                |
+      | 26  | Flap Auto-retract Engaged         |
+      | 27  | CSU out of detent longer than 10s |
+      | 28  | Slat Data Valid                   |
+      | 29  | Flap Data Valid                   |
+
+- A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD
+    - Slat/Flap actual position discrete word of the SFCC bus output
+    - Arinc429<Discrete>
+    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
+    - | Bit |      Description     |
+      |:---:|:--------------------:|
+      | 11  | Slat Data Valid      |
+      | 12  | Slats Retracted 0°   |
+      | 13  | Slats >= 17°         |
+      | 14  | Slats >= 26°         |
+      | 15  | Slats Extended 27°   |
+      | 16  | Slat WTB Engaged     |
+      | 17  | Slat Fault           |
+      | 18  | Flap Data Valid      |
+      | 19  | Flaps Retracted 0°   |
+      | 20  | Flaps >= 14°         |
+      | 21  | Flaps >= 19°         |
+      | 22  | Flaps >= 39°         |
+      | 23  | Flaps Extended 40°   |
+      | 24  | Flap WTB engaged     |
+      | 25  | Flap Fault           |
+      | 26  | Spoiler Lift Demand  |
+      | 27  | Spoiler Limit Demand |
+      | 28  | Slat System Jam      |
+      | 29  | Flap System Jam      |
+
+- A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD
+    - Slat actual position word of the SFCC bus output
+    - Arinc429<Degrees>
+    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
+    - The Slat FPPU angle, ranges from 0° to 360°
+
+- A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD
+    - Flap actual position word of the SFCC bus output
+    - Arinc429<Degrees>
+    - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
+    - The Flap FPPU angle, ranges from 0° to 360°
 
 ## Landing Gear (ATA 32)
 

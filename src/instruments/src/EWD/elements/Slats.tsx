@@ -10,7 +10,7 @@ type SlatsProps = {
 const Slats: React.FC<SlatsProps> = ({ x, y }) => {
     // The SFCC bus data should come from the SDACs, and also of course from both SFCCs. As these things are not simulated
     // yet, we just use the word directly here. The SDAC just copies the words 1 to 1, so the bit allocation should not change.
-    const sfccSlatFlapSystemStatusWord = useArinc429Var('L:A32NX_SLAT_FLAP_SYSTEM_STATUS_WORD');
+    const sfccSlatFlapSystemStatusWord = useArinc429Var('L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD');
     const cleanConfigSelected = sfccSlatFlapSystemStatusWord.getBitValue(17);
     const config1Selected = sfccSlatFlapSystemStatusWord.getBitValue(18);
     const config2Selected = sfccSlatFlapSystemStatusWord.getBitValue(19);
