@@ -85,7 +85,7 @@ impl From<Arinc429Word<f64>> for f64 {
     fn from(value: Arinc429Word<f64>) -> f64 {
         let status: u64 = value.ssm.into();
 
-        let bits = (value.value.to_bits() as u64) << 32 | status;
+        let bits = ((value.value as f32).to_bits() as u64) << 32 | status;
 
         f64::from_bits(bits)
     }
