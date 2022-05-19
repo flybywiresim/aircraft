@@ -314,17 +314,16 @@ const Efb = () => {
         const pushbackAttached = SimVar.GetSimVarValue('Pushback Attached', 'bool');
         const simOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
 
-        // Just a reminder that these exist
-        // SimVar.SetSimVarValue('ACCELERATION BODY Z', 'feet per second squared', 0);
-        // SimVar.SetSimVarValue('ROTATION ACCELERATION BODY Y', 'radians per second squared', 0);
-
         const SpeedRatio = 8;
+        const RotationSpeedRatio = 0.08;
+        const ParkingBrakeRatio = 15;
         if (pushbackAttached && simOnGround) {
             // compute heading and speed
             const parkingBrakeEngaged = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
             const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
 
-            const tugCommandedSpeed = tugCommandedSpeedFactorRef.current * (parkingBrakeEngaged ? (SpeedRatio / 10) : SpeedRatio);
+            const tugCommandedSpeed = tugCommandedSpeedFactorRef.current
+                * (parkingBrakeEngaged ? (SpeedRatio / ParkingBrakeRatio) : SpeedRatio);
             dispatch(setTugCommandedSpeed(tugCommandedSpeed)); // debug info
 
             const inertiaSpeed = inertialDampener.updateSpeed(tugCommandedSpeed);
@@ -336,7 +335,7 @@ const Efb = () => {
             // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
             const convertedComputedHeading = (computedTugHeading * (0xffffffff / 360)) & 0xffffffff;
             const computedRotationVelocity = Math.sign(tugCommandedSpeed) * tugCommandedHeadingFactorRef.current
-                                                * (parkingBrakeEngaged ? 0.008 : 0.08);
+                                                * (parkingBrakeEngaged ? (RotationSpeedRatio / ParkingBrakeRatio) : RotationSpeedRatio);
 
             SimVar.SetSimVarValue('Pushback Wait', 'bool', inertiaSpeed === 0);
             // Set tug heading
