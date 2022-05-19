@@ -24,12 +24,12 @@ pub(super) fn elevators(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn E
 
             let final_hyd_demand = msfs_angle_zero_offset / elevator_range;
 
-            println!(
-                "ELEVATOR_DEFLECTION_DEMAND {:.2} msfs_angle_zero_offset {:.2} hyd_pos_demand {:.2}",
-                value,
-                msfs_angle_zero_offset,
-                final_hyd_demand,
-            );
+            // println!(
+            //     "ELEVATOR_DEFLECTION_DEMAND {:.2} msfs_angle_zero_offset {:.2} hyd_pos_demand {:.2}",
+            //     value,
+            //     msfs_angle_zero_offset,
+            //     final_hyd_demand,
+            // );
             final_hyd_demand
         },
         Variable::aspect("HYD_ELEVATOR_DEMAND"),

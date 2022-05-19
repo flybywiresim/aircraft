@@ -320,6 +320,8 @@ class FlyByWireInterface {
 
   std::unique_ptr<LocalVariable> idElevatorPosition;
 
+  std::unique_ptr<LocalVariable> idRudderPosition;
+
   std::unique_ptr<LocalVariable> idRadioReceiverUsageEnabled;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerValid;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerDeviation;

@@ -442,6 +442,8 @@ void FlyByWireInterface::setupLocalVariables() {
 
   idElevatorPosition = make_unique<LocalVariable>("A32NX_ELEVATOR_DEFLECTION_DEMAND");
 
+  idRudderPosition = make_unique<LocalVariable>("A32NX_RUDDER_DEFLECTION_DEMAND");
+
   idRadioReceiverUsageEnabled = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_USAGE_ENABLED");
   idRadioReceiverLocalizerValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_IS_VALID");
   idRadioReceiverLocalizerDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DEVIATION");
@@ -1558,6 +1560,9 @@ bool FlyByWireInterface::updateFlyByWire(double sampleTime) {
 
   // set elevator demand
   idElevatorPosition->set(flyByWireOutput.output.eta_pos);
+
+  // set rudder demand
+  idRudderPosition->set(flyByWireOutput.output.zeta_pos);
 
   // determine if beta target needs to be active (blue)
   bool conditionDifferenceEngineN1Larger35 = (abs(simData.engine_N1_1_percent - simData.engine_N1_2_percent) > 35);
