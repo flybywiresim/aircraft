@@ -191,7 +191,7 @@ export class ArincValueProvider {
 
         subscriber.on('fcdc1FoPitchCommandRaw').handle((word) => {
             if (this.fcdcToUse === 1) {
-                publisher.pub('fcdcCaptPitchCommand', new Arinc429Word(word));
+                publisher.pub('fcdcFoPitchCommand', new Arinc429Word(word));
             }
         });
 
@@ -215,7 +215,7 @@ export class ArincValueProvider {
 
         subscriber.on('fcdc1FoRollCommandRaw').handle((word) => {
             if (this.fcdcToUse === 1) {
-                publisher.pub('fcdcCaptRollCommand', new Arinc429Word(word));
+                publisher.pub('fcdcFoRollCommand', new Arinc429Word(word));
             }
         });
 
