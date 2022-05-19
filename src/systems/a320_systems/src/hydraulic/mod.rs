@@ -9442,7 +9442,7 @@ mod tests {
 
             test_bed = test_bed
                 .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(80));
+                .run_waiting_for(Duration::from_secs(90));
 
             assert!(test_bed.get_flaps_left_position_percent() > 99.);
             assert!(test_bed.get_flaps_right_position_percent() > 99.);
@@ -9488,7 +9488,7 @@ mod tests {
 
             test_bed = test_bed
                 .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(35));
+                .run_waiting_for(Duration::from_secs(50));
 
             assert!(test_bed.get_flaps_left_position_percent() <= 1.);
             assert!(test_bed.get_flaps_right_position_percent() <= 1.);
