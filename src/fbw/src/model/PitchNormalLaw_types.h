@@ -23,7 +23,6 @@ struct pitch_normal_input
   real_T nz_g;
   real_T Theta_deg;
   real_T Phi_deg;
-  real_T p_deg_s;
   real_T qk_deg_s;
   real_T qk_dot_deg_s2;
   real_T eta_deg;

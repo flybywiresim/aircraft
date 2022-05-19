@@ -41,8 +41,6 @@ class ElacComputer final
   struct D_Work_ElacComputer_T {
     boolean_T Delay_DSTATE;
     boolean_T Delay1_DSTATE;
-    uint8_T is_active_c8_ElacComputer;
-    uint8_T is_c8_ElacComputer;
     boolean_T Memory_PreviousInput;
     boolean_T Memory_PreviousInput_n;
     boolean_T Memory_PreviousInput_o;
@@ -116,6 +114,7 @@ class ElacComputer final
     real_T SourceMonitoringbyVote1_confirmTime;
     real_T AlphaMonitoring_confirmTime;
     real_T CompareToConstant_const;
+    real_T CompareToConstant_const_m;
     real_T CompareToConstant_const_f;
     real_T CompareToConstant2_const;
     real_T CompareToConstant3_const;
