@@ -17,6 +17,7 @@
   - [Pneumatic](#pneumatic)
   - [Flaps / Slats (ATA 27)](#flaps--slats-ata-27)
   - [Flight Controls (ATA 27)](#flight-controls-ata-27)
+  - [Flight Warning System (ATA 31)](#flight-warning-system-ata-31)
   - [Landing Gear (ATA 32)](#landing-gear-ata-32)
   - [ATC (ATA 34)](#atc-ata-34)
   - [Radio Altimeter (ATA 34)](#radio-altimeter-ata-34)
@@ -243,27 +244,6 @@
 - A32NX_DEPARTURE_ELEVATION
     - Feet
     - Departure runway elevation as calculated by the FMC
-
-- A32NX_FWC_FLIGHT_PHASE
-    - Enum
-    - Contains the numeric flight phase as determined by the FWC
-    - Input for: systems.wasm
-
-- A32NX_FWC_SKIP_STARTUP
-    - Bool
-    - Set to true in a non-cold and dark flight phase to skip the initial memorization step
-
-- A32NX_FWC_TOMEMO
-    - Bool
-    - True when the FWC decides that the takeoff memo should be shown
-
-- A32NX_FWC_LDGMEMO
-    - Bool
-    - True when the FWC decides that the landing memo should be shown
-
-- A32NX_FWC_INHIBOVRD
-    - Bool
-    - True when the FWC decides that flight phase inhibits should be overridden (and ignored)
 
 - A32NX_SPEEDS_VS
     - Number
@@ -1233,6 +1213,19 @@
     - Bool
     - Persistent
     - Enables developer-specific options like direct payload adjustments
+
+- A32NX_DECISION_HEIGHT
+    - Number
+    - The decision height for an approach in feet, as entered on the PERF page.
+    - Value | Meaning
+      --- | ---
+      0 or greater | The decision height in feet
+      -1 | The pilot has not entered a decision height
+      -2 | The special value "NO" has been explicitly entered as the decision deight
+
+- A32NX_MINIMUM_DESCENT_ALTITUDE
+    - Number
+    - The minimum descent altitude for a non-precision approach in feet, as entered on the PERF page.
 
 ## EIS Display System
 
@@ -3051,6 +3044,70 @@ In the variables below, {number} should be replaced with one item in the set: { 
       0.0 | neutral
       1.0 | full right
 
+## Flight Warning System (ATA 31)
+
+- A32NX_FWC_FLIGHT_PHASE
+    - Enum
+    - Contains the numeric flight phase as determined by the FWC
+    - **WARNING:** This value may be nonsensical or unset if the FWCs have lost power or have failed. Only use this if you're modeling a screen or system that truly retrieves this from an FWC.
+    - **DEPRECATED:** You should be using A32NX_FWS_FWC_{1|2}_FLIGHT_PHASE instead.
+
+- A32NX_FWS_ANY_FWC_NORMAL
+    - Bool
+    - True when either FWC is working.
+
+- A32NX_FWS_MW_CANCEL_ON_{CAPT,FO}
+    - Bool
+    - True while the captain/first officer Master Warning cancel button is depressed.
+
+- A32NX_FWS_MC_CANCEL_ON_{CAPT,FO}
+    - Bool
+    - True while the captain/first officer Master Caution cancel button is depressed.
+
+- A32NX_FWS_TOMEMO
+    - Bool
+    - True when the FWC responsible for the ECAM determines that the takeoff memo should be shown
+
+- A32NX_FWS_LDGMEMO
+    - Bool
+    - True when the FWC responsible for the ECAM determines that the landing memo should be shown
+
+- A32NX_FWS_TOINHIBIT
+    - Bool
+    - True when the FWC responsible for the ECAM determines that the special line T.O INHIBIT should be shown
+
+- A32NX_FWS_LDGMEMO
+    - Bool
+    - True when the FWC responsible for the ECAM determines that the special line LDG INHIBIT should be shown
+
+- A32NX_FWS_INHIBOVRD
+    - Bool
+    - True when the FWC responsible for the ECAM determines that flight phase inhibits should be overridden (and ignored)
+
+- A32NX_FWS_FWC_{1|2}_NORMAL
+    - Bool
+    - True when the corresponding FWC is working.
+
+- A32NX_FWS_FWC_{1|2}_FLIGHT_PHASE
+    - Enum
+    - The flight phase as determined by the corresponding FWC, or 0 if the FWC is not ready.
+
+- A32NX_FWS_FWC_{1|2}_AUDIO_ATTENUATION
+    - Bool
+    - True when the corresponding FWC has determined that aural warnings should be 6dB quieter.
+
+- A32NX_FWS_FWC_{1|2}_SYNTHETIC_VOICE
+    - Enum
+    - The specific synthetic voice line that should be played, or 0 when none should be played.
+
+- A32NX_FWS_FWC_{1|2}_ALT_ALERT_PULSING
+    - Bool
+    - True when the altitude window should be pulsing due to an altitude alert, as determined the corresponding FWC.
+
+- A32NX_FWS_FWC_{1|2}_ALT_ALERT_FLASHING
+    - Enum
+    - True when the altitude window should be flashing due to an altitude alert, as determined the corresponding FWC.
+
 ## Landing Gear (ATA 32)
 
 - A32NX_LGCIU_{number}_DISCRETE_WORD_1
@@ -3256,6 +3313,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 0
         - 1
+
+- A32NX_TCAS_AURAL_ADVISORY_OUTPUT
+  - boolean
+  - Populated by TCAS, Read-Only for other systems
+  - Whether TCAS is currently playing an aural advisory. True for the duration of the synthetic voice.
 
 ## Radio Altimeter (ATA 34)
 

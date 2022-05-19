@@ -17,7 +17,7 @@ type ArtificialHorizonDisplayProps = {
 
 export const ArtificialHorizonDisplay: React.FC<ArtificialHorizonDisplayProps> = ({ indicatedAirspeed, bugs }) => {
     const [alt] = useSimVar('INDICATED ALTITUDE:2', 'feet');
-    const [mda] = useSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
+    const [mda] = useSimVar('L:A32NX_MINIMUM_DESCENT_ALTITUDE', 'feet');
 
     return (
         <g id="ArtificialHorizonDisplay">

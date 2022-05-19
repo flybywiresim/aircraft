@@ -356,7 +356,7 @@ void FlyByWireInterface::setupLocalVariables() {
   idFmgcAccelerationAltitudeGoAround = make_unique<LocalVariable>("AIRLINER_ACC_ALT_GOAROUND");
   idFmgcAccelerationAltitudeGoAroundEngineOut = make_unique<LocalVariable>("AIRLINER_ENG_OUT_ACC_ALT_GOAROUND");
   idFmgcCruiseAltitude = make_unique<LocalVariable>("AIRLINER_CRUISE_ALTITUDE");
-  idFmgcFlexTemperature = make_unique<LocalVariable>("AIRLINER_TO_FLEX_TEMP");
+  idFmgcFlexTemperature = make_unique<LocalVariable>("A32NX_TO_FLEX_TEMP");
 
   idFlightGuidanceAvailable = make_unique<LocalVariable>("A32NX_FG_AVAIL");
   idFlightGuidanceCrossTrackError = make_unique<LocalVariable>("A32NX_FG_CROSS_TRACK_ERROR");

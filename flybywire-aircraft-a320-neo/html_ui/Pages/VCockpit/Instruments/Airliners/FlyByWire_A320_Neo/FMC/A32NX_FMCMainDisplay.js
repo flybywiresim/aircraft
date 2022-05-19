@@ -558,8 +558,8 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
         SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
 
-        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
-        SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
+        SimVar.SetSimVarValue("L:A32NX_DECISION_HEIGHT", "feet", -1);
+        SimVar.SetSimVarValue("L:A32NX_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
 
         SimVar.SetSimVarValue("L:A32NX_FG_ALTITUDE_CONSTRAINT", "feet", this.constraintAlt);
         SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
@@ -3093,7 +3093,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfTOTemp = NaN;
             // In future we probably want a better way of checking this, as 0 is
             // in the valid flex temperature range (-99 to 99).
-            SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", 0);
+            SimVar.SetSimVarValue("L:A32NX_TO_FLEX_TEMP", "Number", 0);
             return true;
         }
         let value = parseInt(s);
@@ -3112,7 +3112,7 @@ class FMCMainDisplay extends BaseAirliners {
             value = 0.1;
         }
         this.perfTOTemp = value;
-        SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", value);
+        SimVar.SetSimVarValue("L:A32NX_TO_FLEX_TEMP", "Number", value);
         return true;
     }
 
@@ -3789,7 +3789,7 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprMDA(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.perfApprMDA = NaN;
-            SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
+            SimVar.SetSimVarValue("L:A32NX_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
             return true;
         } else if (s.match(/^[0-9]{1,5}$/) !== null) {
             const value = parseInt(s);
@@ -3804,7 +3804,7 @@ class FMCMainDisplay extends BaseAirliners {
             const limitHi = ldgRwy ? ldgRwy.elevation * 3.28084 + 5000 : 39000;
             if (value >= limitLo && value <= limitHi) {
                 this.perfApprMDA = value;
-                SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", this.perfApprMDA);
+                SimVar.SetSimVarValue("L:A32NX_MINIMUM_DESCENT_ALTITUDE", "feet", this.perfApprMDA);
                 return true;
             }
             this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -3818,19 +3818,19 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprDH(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.perfApprDH = NaN;
-            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
+            SimVar.SetSimVarValue("L:A32NX_DECISION_HEIGHT", "feet", -1);
             return true;
         }
 
         if (s === "NO" || s === "NO DH" || s === "NODH") {
             this.perfApprDH = "NO DH";
-            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -2);
+            SimVar.SetSimVarValue("L:A32NX_DECISION_HEIGHT", "feet", -2);
             return true;
         } else if (s.match(/^[0-9]{1,5}$/) !== null) {
             const value = parseInt(s);
             if (value >= 0 && value <= 5000) {
                 this.perfApprDH = value;
-                SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", this.perfApprDH);
+                SimVar.SetSimVarValue("L:A32NX_DECISION_HEIGHT", "feet", this.perfApprDH);
                 return true;
             } else {
                 this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);

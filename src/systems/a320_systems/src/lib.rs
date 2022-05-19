@@ -2,6 +2,7 @@ extern crate systems;
 
 mod air_conditioning;
 mod electrical;
+mod flight_warning;
 mod fuel;
 pub mod hydraulic;
 mod navigation;
@@ -17,6 +18,7 @@ use electrical::{
     A320Electrical, A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
 };
+use flight_warning::A320FlightWarningSystem;
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
 use navigation::A320RadioAltimeters;
 use power_consumption::A320PowerConsumption;
@@ -49,6 +51,7 @@ pub struct A320 {
     pneumatic_overhead: A320PneumaticOverheadPanel,
     electrical_overhead: A320ElectricalOverheadPanel,
     emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel,
+    flight_warning_system: A320FlightWarningSystem,
     fuel: A320Fuel,
     engine_1: LeapEngine,
     engine_2: LeapEngine,
@@ -82,6 +85,7 @@ impl A320 {
             apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(context),
             apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(context),
             pneumatic_overhead: A320PneumaticOverheadPanel::new(context),
+            flight_warning_system: A320FlightWarningSystem::new(context),
             electrical_overhead: A320ElectricalOverheadPanel::new(context),
             emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel::new(context),
             fuel: A320Fuel::new(context),
@@ -193,6 +197,17 @@ impl Aircraft for A320 {
         self.adirs.update(context, &self.adirs_overhead);
         self.adirs_overhead.update(context, &self.adirs);
 
+        self.flight_warning_system.update(
+            context,
+            &self.lgcius,
+            &self.adirs,
+            &self.radio_altimeters,
+            &self.engine_1,
+            &self.engine_2,
+            &self.engine_fire_overhead,
+            &self.hydraulic,
+        );
+
         self.power_consumption.update(context);
 
         self.pneumatic.update(
@@ -243,6 +258,7 @@ impl SimulationElement for A320 {
         self.pressurization.accept(visitor);
         self.pressurization_overhead.accept(visitor);
         self.pneumatic.accept(visitor);
+        self.flight_warning_system.accept(visitor);
 
         visitor.visit(self);
     }

@@ -219,6 +219,11 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('upperSpeedMargin');
         this.simVarPublisher.subscribe('lowerSpeedMargin');
 
+        this.simVarPublisher.subscribe('fwc1AltAlertPulsing');
+        this.simVarPublisher.subscribe('fwc2AltAlertPulsing');
+        this.simVarPublisher.subscribe('fwc1AltAlertFlashing');
+        this.simVarPublisher.subscribe('fwc2AltAlertFlashing');
+
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
     }
 
