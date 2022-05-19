@@ -9,7 +9,7 @@ use crate::{
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, StartState, UpdateContext, VariableIdentifier, Write,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 use uom::si::{
@@ -489,7 +489,7 @@ struct LandingGearHandleUnit {
 }
 impl LandingGearHandleUnit {
     fn new(context: &mut InitContext) -> Self {
-        let init_gear_down = context.is_on_ground() || context.start_state() == StartState::Final;
+        let init_gear_down = context.start_gear_down();
 
         Self {
             gear_handle_real_position_id: context.get_identifier("GEAR_HANDLE_POSITION".to_owned()),

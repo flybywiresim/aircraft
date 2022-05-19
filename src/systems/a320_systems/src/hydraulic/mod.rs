@@ -71,12 +71,11 @@ use systems::hydraulic::PressureSwitchState;
 struct A320HydraulicReservoirFactory {}
 impl A320HydraulicReservoirFactory {
     fn new_green_reservoir(context: &mut InitContext) -> Reservoir {
-        let reservoir_offset_when_gear_up =
-            if context.is_on_ground() || context.start_state() == StartState::Final {
-                Volume::new::<gallon>(0.)
-            } else {
-                Volume::new::<gallon>(-1.3)
-            };
+        let reservoir_offset_when_gear_up = if context.start_gear_down() {
+            Volume::new::<gallon>(0.)
+        } else {
+            Volume::new::<gallon>(-1.3)
+        };
 
         Reservoir::new(
             context,
@@ -981,7 +980,7 @@ impl A320GearFactory {
 struct A320GearSystemFactory {}
 impl A320GearSystemFactory {
     fn a320_gear_system(context: &mut InitContext) -> HydraulicGearSystem {
-        let init_downlocked = context.is_on_ground() || context.start_state() == StartState::Final;
+        let init_downlocked = context.start_gear_down();
 
         HydraulicGearSystem::new(
             context,
@@ -10518,10 +10517,11 @@ mod tests {
                 .in_flight()
                 .run_one_tick();
 
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.51);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.51);
-            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.49);
-            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.49);
+            // Elevator deflection is assymetrical so middle is below 0.5
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.45);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.45);
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.35);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.35);
         }
     }
 }

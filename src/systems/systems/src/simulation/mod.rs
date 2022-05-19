@@ -143,6 +143,10 @@ impl<'a> InitContext<'a> {
         self.start_state
     }
 
+    pub fn start_gear_down(&self) -> bool {
+        self.is_on_ground() || self.start_state == StartState::Final
+    }
+
     pub fn is_in_flight(&self) -> bool {
         matches!(
             self.start_state,
