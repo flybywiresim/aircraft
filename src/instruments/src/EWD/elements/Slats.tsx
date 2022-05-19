@@ -18,6 +18,8 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
     const configFullSelected = sfccSlatFlapSystemStatusWord.getBitValue(21);
     const flapAutoRetractConfig1 = sfccSlatFlapSystemStatusWord.getBitValue(26);
 
+    const alphaLockEngaged = sfccSlatFlapSystemStatusWord.getBitValue(24); // TODO: this SimVar is part of PR #6647
+
     // Same as above, the IPPU angle should come from the FWCs, or as a backup the FPPU angle from the
     // SDACs/SFFCs can be used.
     const [slatsIppuAngle] = useSimVar('L:A32NX_SLATS_FPPU_ANGLE', 'number');
@@ -46,8 +48,6 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
 
     const [flapsPos, setFlapsPos] = useState([0, 0]);
     const [hideTargetFlapIndex, setHideTargetFlapIndex] = useState(false);
-
-    const [alphaLockEngaged] = useSimVar('L:A32NX_SFCC_1_ALPHA_LOCK_ENGAGED', 'bool', 500); // TODO: this SimVar is part of PR #6647
 
     useEffect(() => {
         const xFactor = -4.66637;
@@ -161,9 +161,9 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
                 <path d={`M ${x - 92},${y + 46} l -7,2 l -1,4 l 7,-2 Z`} className={`SlatsSmallCyan ${(config2Selected || config3Selected) && !hideTargetSlatIndex ? 'Show' : 'Hide'}`} />
                 <path d={`M ${x - 126},${y + 57} l -7,2 l -1,4 l 7,-2 Z`} className={`SlatsSmallCyan ${configFullSelected && !hideTargetSlatIndex ? 'Show' : 'Hide'}`} />
             </g>
-            {alphaLockEngaged === 1 && <text className="Medium Center GreenPulseNoFill" x={x - 95} y={y - 10}>A LOCK</text>}
-            <path className={`Slats ${alphaLockEngaged === 1 ? 'GreenPulseNoFill' : ''}`} d={`M ${slatPos[0]},${slatPos[1]} l -19,7 l -4,13 l 19,-7 Z`} />
-            <line className={`GreenLine ${alphaLockEngaged === 1 ? 'GreenPulse' : ''}`} x1={x - 16} y1={y} x2={slatPos[0]} y2={slatPos[1]} />
+            {alphaLockEngaged && <text className="Medium Center GreenPulseNoFill" x={x - 95} y={y - 10}>A LOCK</text>}
+            <path className={`Slats ${alphaLockEngaged ? 'GreenPulseNoFill' : ''}`} d={`M ${slatPos[0]},${slatPos[1]} l -19,7 l -4,13 l 19,-7 Z`} />
+            <line className={`GreenLine ${alphaLockEngaged ? 'GreenPulse' : ''}`} x1={x - 16} y1={y} x2={slatPos[0]} y2={slatPos[1]} />
             {/* Flaps */}
             <g id="Flaps" className={flapsOut || slatsOut || !cleanConfigSelected ? 'Show' : 'Hide'}>
                 <path d={`M ${x + 61},${y + 17} l 3,5 l 5,1 l 0,-4 Z`} className="FlapsSmallWhite" />
