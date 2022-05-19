@@ -6108,6 +6108,10 @@ mod tests {
                 Ratio::new::<ratio>(self.read_by_name("HYD_ELEV_RIGHT_DEFLECTION"))
             }
 
+            fn get_rudder_position(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("HYD_RUD_DEFLECTION"))
+            }
+
             fn get_nose_steering_ratio(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("NOSE_WHEEL_POSITION_RATIO"))
             }
@@ -10471,6 +10475,53 @@ mod tests {
 
             assert!(test_bed.get_spoiler_right_mean_position().get::<ratio>() > 0.48);
             assert!(test_bed.get_spoiler_right_mean_position().get::<ratio>() < 0.52);
+        }
+
+        #[test]
+        fn gear_init_up_if_spawning_in_air() {
+            let test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_one_tick();
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+        }
+
+        #[test]
+        fn aileron_init_centered_if_spawning_in_air() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_one_tick();
+
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.51);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.51);
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.49);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.49);
+        }
+
+        #[test]
+        fn rudder_init_centered_if_spawning_in_air() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_one_tick();
+
+            assert!(test_bed.get_rudder_position().get::<ratio>() > 0.49);
+            assert!(test_bed.get_rudder_position().get::<ratio>() < 0.51);
+        }
+
+        #[test]
+        fn elevator_init_centered_if_spawning_in_air() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_one_tick();
+
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.51);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.51);
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.49);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.49);
         }
     }
 }
