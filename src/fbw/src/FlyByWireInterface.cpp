@@ -1591,8 +1591,9 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
                                   elacsAnalogOutputs[1].right_elev_pos_order_deg + secsAnalogOutputs[1].right_elev_pos_order_deg;
 
     SimInput simInput = simConnectInterface.getSimInput();
-    SimOutput output = {(-leftElevatorCommand - rightElevatorCommand) / (2 * 30), (leftAileronCommand - rightAileronCommand) / (2 * 25),
-                        -simInput.inputs[2]};
+    SimOutput output = {
+        (-leftElevatorCommand - rightElevatorCommand) / (2 * 30), (leftAileronCommand - rightAileronCommand) / (2 * 25),
+        -simInput.inputs[2] - (elacsBusOutputs[0].yaw_damper_command_deg.Data + elacsBusOutputs[1].yaw_damper_command_deg.Data) / 30};
 
     // send data via sim connect
     if (!simConnectInterface.sendData(output)) {
