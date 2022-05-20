@@ -1410,7 +1410,7 @@ const PseudoFWC: React.FC = () => {
     }, [
         engine1Generator, engine2Generator, blueLP, greenLP, yellowLP, eng1pumpPBisAuto, eng2pumpPBisAuto,
         flapsMcdu, flapsMcduEntered, speedBrake, parkBrake, v1Speed, vrSpeed, v2Speed, cabin,
-        catering, cargoaftLocked, cargofwdLocked, toconfigBtn,
+        catering, cargoaftLocked, cargofwdLocked, toconfigBtn, tomemo, flapsHandle, brakesHot,
     ]);
 
     useEffect(() => {
