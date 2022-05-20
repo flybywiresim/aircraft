@@ -94,6 +94,8 @@ class SecComputer final
     real_T BitfromLabel2_bit;
     real_T BitfromLabel1_bit_a;
     real_T BitfromLabel3_bit;
+    real_T BitfromLabel4_bit_m;
+    real_T BitfromLabel5_bit_h;
     real_T BitfromLabel_bit_a;
     real_T BitfromLabel1_bit_c;
     real_T BitfromLabel2_bit_o;
@@ -169,9 +171,12 @@ class SecComputer final
     real_T Constant1_Value;
     real_T Constant2_Value;
     real_T Constant3_Value;
+    real_T Gain_Gain;
+    real_T Constant4_Value_k;
+    real_T Constant5_Value;
     real_T uDLookupTable_tableData[5];
     real_T uDLookupTable_bp01Data[5];
-    real_T Constant5_Value;
+    real_T Constant5_Value_m;
     real_T Constant6_Value;
     real_T Constant1_Value_d;
     real_T Constant2_Value_b;
@@ -195,7 +200,7 @@ class SecComputer final
     real_T Constant_Value_a;
     real_T Constant_Value_h;
     real_T Constant2_Value_f;
-    real32_T Gain_Gain;
+    real32_T Gain_Gain_b;
     real32_T Gain1_Gain;
     real32_T Gain2_Gain;
     real32_T Gain3_Gain;

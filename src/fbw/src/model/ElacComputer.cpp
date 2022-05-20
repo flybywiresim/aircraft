@@ -757,15 +757,16 @@ void ElacComputer::step()
     NormalLaw));
   abnormalCondition_tmp = rtb_DataTypeConversion3;
   ElacComputer_Y.out.logic.total_sidestick_roll_command = rtb_DataTypeConversion8;
-  rtb_NOT_h = (rtb_OR4 || (static_cast<real_T>(rtb_activeLateralLaw) != ElacComputer_P.CompareToConstant_const_m));
+  rtb_OR6 = (rtb_OR4 || (static_cast<real_T>(rtb_activeLateralLaw) != ElacComputer_P.CompareToConstant_const_m));
   rtb_Y = ElacComputer_U.in.bus_inputs.fmgc_1_bus.delta_p_ail_cmd_deg.Data;
-  rtb_OR6 = ((!ElacComputer_U.in.discrete_inputs.ap_1_disengaged) || (!ElacComputer_U.in.discrete_inputs.ap_2_disengaged));
+  rtb_AND4 = ((!ElacComputer_U.in.discrete_inputs.ap_1_disengaged) ||
+              (!ElacComputer_U.in.discrete_inputs.ap_2_disengaged));
   LawMDLOBJ2.step(&ElacComputer_U.in.time.dt, &rtb_Y_o_tmp_tmp, &rtb_Y_tmp_tmp, &rtb_xi_deg_m, &rtb_zeta_deg_f,
                   &rtb_BusConversion_InsertedFor_BusAssignment_at_inport_8_BusCreator1_V_ias_kn,
                   &rtb_BusConversion_InsertedFor_BusAssignment_at_inport_8_BusCreator1_V_tas_kn,
                   &rtb_logic_crg1_ra_computation_data_ft, &rtb_DataTypeConversion8,
-                  &ElacComputer_U.in.analog_inputs.rudder_pedal_pos, &rtb_ra2Invalid, &rtb_NOT_h, (const_cast<boolean_T*>
-    (&ElacComputer_BGND)), (const_cast<boolean_T*>(&ElacComputer_BGND)), &rtb_Y, &rtb_OR6, &rtb_xi_deg, &rtb_zeta_deg);
+                  &ElacComputer_U.in.analog_inputs.rudder_pedal_pos, &rtb_ra2Invalid, &rtb_OR6, (const_cast<boolean_T*>(
+    &ElacComputer_BGND)), (const_cast<boolean_T*>(&ElacComputer_BGND)), &rtb_Y, &rtb_AND4, &rtb_xi_deg, &rtb_zeta_deg);
   LawMDLOBJ1.step(&ElacComputer_U.in.time.dt, &rtb_DataTypeConversion8, &rtb_xi_deg_m, &rtb_zeta_deg_f);
   switch (static_cast<int32_T>(rtb_activeLateralLaw)) {
    case 0:
@@ -874,7 +875,7 @@ void ElacComputer::step()
 
   rtb_DataTypeConversion3 = rtb_y_li;
   rtb_DataTypeConversion8 = rtb_tla2;
-  rtb_NOT_h = (rtb_OR4 || (static_cast<real_T>(priorityPitchPitchLawCap) != ElacComputer_P.CompareToConstant_const_f));
+  rtb_OR6 = (rtb_OR4 || (static_cast<real_T>(priorityPitchPitchLawCap) != ElacComputer_P.CompareToConstant_const_f));
   rtb_DataTypeConversion6_g = ElacComputer_U.in.bus_inputs.fmgc_1_bus.delta_q_cmd_deg.Data;
   LawMDLOBJ5.step(&ElacComputer_U.in.time.dt, &ElacComputer_U.in.time.simulation_time,
                   &rtb_logic_crg1_ir_computation_data_n_z_g_tmp_tmp, &rtb_Y_o_tmp_tmp, &rtb_Y_tmp_tmp,
@@ -886,10 +887,10 @@ void ElacComputer::step()
                   &rtb_logic_crg1_ra_computation_data_ft, (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>
     (&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), &rtb_DataTypeConversion3, &rtb_DataTypeConversion8,
                   &ElacComputer_U.in.sim_data.tailstrike_protection_on, (const_cast<real_T*>(&ElacComputer_RGND)),
-                  &abnormalCondition_tmp, &rtb_ra2Invalid, &rtb_NOT_h, (const_cast<boolean_T*>(&ElacComputer_BGND)), (
+                  &abnormalCondition_tmp, &rtb_ra2Invalid, &rtb_OR6, (const_cast<boolean_T*>(&ElacComputer_BGND)), (
     const_cast<boolean_T*>(&ElacComputer_BGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>
     (&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>(&ElacComputer_RGND)),
-                  &rtb_DataTypeConversion6_g, &rtb_OR6, &rtb_eta_deg, &rtb_eta_trim_deg);
+                  &rtb_DataTypeConversion6_g, &rtb_AND4, &rtb_eta_deg, &rtb_eta_trim_deg);
   rtb_OR6 = (rtb_OR4 || ((static_cast<real_T>(priorityPitchPitchLawCap) != ElacComputer_P.CompareToConstant2_const) && (
     static_cast<real_T>(priorityPitchPitchLawCap) != ElacComputer_P.CompareToConstant3_const)));
   LawMDLOBJ3.step(&ElacComputer_U.in.time.dt, &rtb_logic_crg1_ir_computation_data_n_z_g_tmp_tmp, &rtb_Y_o_tmp_tmp,
@@ -1135,7 +1136,7 @@ void ElacComputer::step()
   rtb_VectorConcatenate_a[8] = ElacComputer_DWork.Delay_DSTATE;
   rtb_VectorConcatenate_a[9] = ElacComputer_DWork.Delay1_DSTATE;
   rtb_VectorConcatenate_a[10] = ElacComputer_P.Constant10_Value;
-  rtb_VectorConcatenate_a[11] = ElacComputer_P.Constant10_Value;
+  rtb_VectorConcatenate_a[11] = rtb_AND4;
   rtb_VectorConcatenate_a[12] = ElacComputer_P.Constant10_Value;
   rtb_VectorConcatenate_a[13] = ElacComputer_P.Constant10_Value;
   rtb_VectorConcatenate_a[14] = ElacComputer_P.Constant10_Value;
