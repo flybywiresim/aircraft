@@ -252,28 +252,28 @@ impl SlatFlapControlComputer {
         word.set_bit(18, true);
         word.set_bit(
             19,
-            self.slats_feedback_angle > Angle::new::<degree>(-5.0)
-                && self.slats_feedback_angle < Angle::new::<degree>(2.5),
+            self.flaps_feedback_angle > Angle::new::<degree>(-5.0)
+                && self.flaps_feedback_angle < Angle::new::<degree>(2.5),
         );
         word.set_bit(
             20,
-            self.slats_feedback_angle > Angle::new::<degree>(140.7)
-                && self.slats_feedback_angle < Angle::new::<degree>(254.),
+            self.flaps_feedback_angle > Angle::new::<degree>(140.7)
+                && self.flaps_feedback_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(
             21,
-            self.slats_feedback_angle > Angle::new::<degree>(163.7)
-                && self.slats_feedback_angle < Angle::new::<degree>(254.),
+            self.flaps_feedback_angle > Angle::new::<degree>(163.7)
+                && self.flaps_feedback_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(
             22,
-            self.slats_feedback_angle > Angle::new::<degree>(247.8)
-                && self.slats_feedback_angle < Angle::new::<degree>(254.),
+            self.flaps_feedback_angle > Angle::new::<degree>(247.8)
+                && self.flaps_feedback_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(
             23,
-            self.slats_feedback_angle > Angle::new::<degree>(250.)
-                && self.slats_feedback_angle < Angle::new::<degree>(254.),
+            self.flaps_feedback_angle > Angle::new::<degree>(250.)
+                && self.flaps_feedback_angle < Angle::new::<degree>(254.),
         );
         word.set_bit(24, false);
         word.set_bit(25, false);
