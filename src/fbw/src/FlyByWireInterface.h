@@ -112,6 +112,8 @@ class FlyByWireInterface {
 
   LgciuBus lgciuBusOutputs[2] = {};
 
+  FmgcBBus fmgcBBusOutputs = {};
+
   AdirsBusses adirsBusOutputs[3] = {};
 
   Elac elacs[2] = {Elac(true), Elac(false)};

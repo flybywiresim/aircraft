@@ -184,6 +184,19 @@ struct base_ir_bus
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
+#define DEFINED_TYPEDEF_FOR_base_fmgc_b_bus_
+
+struct base_fmgc_b_bus
+{
+  base_arinc_429 delta_p_ail_cmd_deg;
+  base_arinc_429 delta_p_splr_cmd_deg;
+  base_arinc_429 delta_r_cmd_deg;
+  base_arinc_429 delta_q_cmd_deg;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_ra_bus_
 #define DEFINED_TYPEDEF_FOR_base_ra_bus_
 
@@ -302,6 +315,8 @@ struct base_elac_bus_inputs
   base_ir_bus ir_1_bus;
   base_ir_bus ir_2_bus;
   base_ir_bus ir_3_bus;
+  base_fmgc_b_bus fmgc_1_bus;
+  base_fmgc_b_bus fmgc_2_bus;
   base_ra_bus ra_1_bus;
   base_ra_bus ra_2_bus;
   base_sfcc_bus sfcc_1_bus;
@@ -551,6 +566,8 @@ struct lateral_normal_input
   boolean_T tracking_mode_on;
   boolean_T high_aoa_prot_active;
   boolean_T high_speed_prot_active;
+  real_T ap_phi_c_deg;
+  boolean_T any_ap_engaged;
 };
 
 #endif
@@ -724,6 +741,8 @@ struct pitch_normal_input
   real_T alpha_max;
   real_T high_speed_prot_high_kn;
   real_T high_speed_prot_low_kn;
+  real_T ap_theta_c_deg;
+  boolean_T any_ap_engaged;
 };
 
 #endif

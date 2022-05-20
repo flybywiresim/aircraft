@@ -33,6 +33,8 @@ struct lateral_normal_input
   boolean_T tracking_mode_on;
   boolean_T high_aoa_prot_active;
   boolean_T high_speed_prot_active;
+  real_T ap_phi_c_deg;
+  boolean_T any_ap_engaged;
 };
 
 #endif

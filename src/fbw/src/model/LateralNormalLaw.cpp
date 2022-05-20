@@ -175,8 +175,8 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   const real_T *rtu_In_r_deg_s, const real_T *rtu_In_pk_deg_s, const real_T *rtu_In_V_ias_kn, const real_T
   *rtu_In_V_tas_kn, const real_T *rtu_In_H_radio_ft, const real_T *rtu_In_delta_xi_pos, const real_T
   *rtu_In_delta_zeta_pos, const boolean_T *rtu_In_on_ground, const boolean_T *rtu_In_tracking_mode_on, const boolean_T
-  *rtu_In_high_aoa_prot_active, const boolean_T *rtu_In_high_speed_prot_active, real_T *rty_Out_xi_deg, real_T
-  *rty_Out_zeta_deg)
+  *rtu_In_high_aoa_prot_active, const boolean_T *rtu_In_high_speed_prot_active, const real_T *rtu_In_ap_phi_c_deg, const
+  boolean_T *rtu_In_any_ap_engaged, real_T *rty_Out_xi_deg, real_T *rty_Out_zeta_deg)
 {
   static const int16_T b[4]{ 0, 120, 150, 380 };
 
@@ -193,8 +193,8 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   real_T rtb_Gain1;
   real_T rtb_Gain1_f;
   real_T rtb_Product1;
-  real_T rtb_Saturation2;
   real_T rtb_Saturation_j;
+  real_T rtb_Y_e;
   real_T rtb_Y_i;
   real_T rtb_Y_j;
   int32_T low_i;
@@ -221,19 +221,19 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   }
 
   if (rtb_in_flight > LateralNormalLaw_rtP.Saturation_UpperSat) {
-    rtb_Saturation_j = LateralNormalLaw_rtP.Saturation_UpperSat;
+    rtb_Y_e = LateralNormalLaw_rtP.Saturation_UpperSat;
   } else if (rtb_in_flight < LateralNormalLaw_rtP.Saturation_LowerSat) {
-    rtb_Saturation_j = LateralNormalLaw_rtP.Saturation_LowerSat;
+    rtb_Y_e = LateralNormalLaw_rtP.Saturation_LowerSat;
   } else {
-    rtb_Saturation_j = rtb_in_flight;
+    rtb_Y_e = rtb_in_flight;
   }
 
-  LateralNormalLaw_RateLimiter(rtb_Saturation_j, LateralNormalLaw_rtP.RateLimiterVariableTs_up,
+  LateralNormalLaw_RateLimiter(rtb_Y_e, LateralNormalLaw_rtP.RateLimiterVariableTs_up,
     LateralNormalLaw_rtP.RateLimiterVariableTs_lo, rtu_In_time_dt,
     LateralNormalLaw_rtP.RateLimiterVariableTs_InitialCondition, &rtb_Y_i, &LateralNormalLaw_DWork.sf_RateLimiter);
-  rtb_Saturation_j = LateralNormalLaw_rtP.Gain_Gain * *rtu_In_delta_xi_pos;
+  rtb_Y_e = LateralNormalLaw_rtP.Gain_Gain * *rtu_In_delta_xi_pos;
   rtb_Product1 = *rtu_In_V_ias_kn;
-  rtb_Saturation2 = *rtu_In_delta_zeta_pos;
+  rtb_Saturation_j = *rtu_In_delta_zeta_pos;
   Vias = std::fmax(rtb_Product1, 60.0);
   rtb_Product1 = 0.0;
   if (Vias <= 380.0) {
@@ -264,24 +264,24 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
 
   Vias *= 0.5144;
   LateralNormalLaw_RateLimiter(0.814 / std::sqrt(1.3734E+6 / (149.45000000000002 * (Vias * Vias))) * (rtb_Product1 *
-    rtb_Saturation2), LateralNormalLaw_rtP.RateLimiterVariableTs1_up, LateralNormalLaw_rtP.RateLimiterVariableTs1_lo,
+    rtb_Saturation_j), LateralNormalLaw_rtP.RateLimiterVariableTs1_up, LateralNormalLaw_rtP.RateLimiterVariableTs1_lo,
     rtu_In_time_dt, LateralNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition, &rtb_Y_j,
     &LateralNormalLaw_DWork.sf_RateLimiter_d);
   if (rtb_Y_i > LateralNormalLaw_rtP.Saturation1_UpperSat) {
-    rtb_Saturation2 = LateralNormalLaw_rtP.Saturation1_UpperSat;
+    rtb_Saturation_j = LateralNormalLaw_rtP.Saturation1_UpperSat;
   } else if (rtb_Y_i < LateralNormalLaw_rtP.Saturation1_LowerSat) {
-    rtb_Saturation2 = LateralNormalLaw_rtP.Saturation1_LowerSat;
+    rtb_Saturation_j = LateralNormalLaw_rtP.Saturation1_LowerSat;
   } else {
-    rtb_Saturation2 = rtb_Y_i;
+    rtb_Saturation_j = rtb_Y_i;
   }
 
-  if (rtb_Saturation2 > LateralNormalLaw_rtP.Saturation_UpperSat_l) {
-    rtb_Saturation2 = LateralNormalLaw_rtP.Saturation_UpperSat_l;
-  } else if (rtb_Saturation2 < LateralNormalLaw_rtP.Saturation_LowerSat_o) {
-    rtb_Saturation2 = LateralNormalLaw_rtP.Saturation_LowerSat_o;
+  if (rtb_Saturation_j > LateralNormalLaw_rtP.Saturation_UpperSat_l) {
+    rtb_Saturation_j = LateralNormalLaw_rtP.Saturation_UpperSat_l;
+  } else if (rtb_Saturation_j < LateralNormalLaw_rtP.Saturation_LowerSat_o) {
+    rtb_Saturation_j = LateralNormalLaw_rtP.Saturation_LowerSat_o;
   }
 
-  rtb_Product1 = (LateralNormalLaw_rtP.Constant_Value_l - rtb_Saturation2) * rtb_Saturation_j;
+  rtb_Product1 = (LateralNormalLaw_rtP.Constant_Value_l - rtb_Saturation_j) * rtb_Y_e;
   Vias = std::fmax(*rtu_In_V_ias_kn, 80.0) * 0.5144;
   rtb_Y_j = Vias * Vias * 0.6125;
   L_xi = rtb_Y_j * 122.0 * 17.9 * -0.090320788790706555 / 1.0E+6;
@@ -315,41 +315,41 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   k_phi = -(r * r) / L_xi;
   rtb_Gain1 = LateralNormalLaw_rtP.Gain1_Gain * *rtu_In_delta_xi_pos;
   if (*rtu_In_high_speed_prot_active) {
-    rtb_Saturation_j = look1_binlxpw(*rtu_In_Phi_deg, LateralNormalLaw_rtP.BankAngleProtection2_bp01Data,
+    rtb_Y_e = look1_binlxpw(*rtu_In_Phi_deg, LateralNormalLaw_rtP.BankAngleProtection2_bp01Data,
       LateralNormalLaw_rtP.BankAngleProtection2_tableData, 4U);
   } else if (*rtu_In_high_aoa_prot_active) {
-    rtb_Saturation_j = look1_binlxpw(*rtu_In_Phi_deg, LateralNormalLaw_rtP.BankAngleProtection_bp01Data,
+    rtb_Y_e = look1_binlxpw(*rtu_In_Phi_deg, LateralNormalLaw_rtP.BankAngleProtection_bp01Data,
       LateralNormalLaw_rtP.BankAngleProtection_tableData, 8U);
   } else {
-    rtb_Saturation_j = look1_binlxpw(*rtu_In_Phi_deg, LateralNormalLaw_rtP.BankAngleProtection1_bp01Data,
+    rtb_Y_e = look1_binlxpw(*rtu_In_Phi_deg, LateralNormalLaw_rtP.BankAngleProtection1_bp01Data,
       LateralNormalLaw_rtP.BankAngleProtection1_tableData, 8U);
   }
 
-  rtb_Saturation_j += rtb_Gain1;
-  rtb_Gain1 = 15.0;
+  rtb_Gain1 += rtb_Y_e;
+  rtb_Y_e = 15.0;
   rtb_Gain1_f = -15.0;
   if (LateralNormalLaw_DWork.Delay_DSTATE >= 25.0) {
     rtb_Gain1_f = *rtu_In_pk_deg_s;
   } else if (LateralNormalLaw_DWork.Delay_DSTATE <= -25.0) {
-    rtb_Gain1 = *rtu_In_pk_deg_s;
+    rtb_Y_e = *rtu_In_pk_deg_s;
   }
 
-  if (rtb_Saturation_j > LateralNormalLaw_rtP.Saturation_UpperSat_a) {
-    rtb_Saturation_j = LateralNormalLaw_rtP.Saturation_UpperSat_a;
-  } else if (rtb_Saturation_j < LateralNormalLaw_rtP.Saturation_LowerSat_ov) {
-    rtb_Saturation_j = LateralNormalLaw_rtP.Saturation_LowerSat_ov;
+  if (rtb_Gain1 > LateralNormalLaw_rtP.Saturation_UpperSat_a) {
+    rtb_Gain1 = LateralNormalLaw_rtP.Saturation_UpperSat_a;
+  } else if (rtb_Gain1 < LateralNormalLaw_rtP.Saturation_LowerSat_ov) {
+    rtb_Gain1 = LateralNormalLaw_rtP.Saturation_LowerSat_ov;
   }
 
-  rtb_Saturation_j = std::fmin(rtb_Gain1, std::fmax(rtb_Gain1_f, rtb_Saturation_j * rtb_Y_i)) *
+  rtb_Y_e = std::fmin(rtb_Y_e, std::fmax(rtb_Gain1_f, rtb_Gain1 * rtb_Y_i)) *
     LateralNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_Gain * *rtu_In_time_dt;
   rtb_OR = ((rtb_Y_i == 0.0) || (*rtu_In_tracking_mode_on));
-  rtb_Y_i = *rtu_In_Phi_deg - rtb_Saturation_j;
+  rtb_Y_i = *rtu_In_Phi_deg - rtb_Y_e;
   LateralNormalLaw_DWork.icLoad = (rtb_OR || LateralNormalLaw_DWork.icLoad);
   if (LateralNormalLaw_DWork.icLoad) {
     LateralNormalLaw_DWork.Delay_DSTATE_d = rtb_Y_i;
   }
 
-  LateralNormalLaw_DWork.Delay_DSTATE_d += rtb_Saturation_j;
+  LateralNormalLaw_DWork.Delay_DSTATE_d += rtb_Y_e;
   if (LateralNormalLaw_DWork.Delay_DSTATE_d > LateralNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_UpperLimit) {
     LateralNormalLaw_DWork.Delay_DSTATE_d = LateralNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_UpperLimit;
   } else if (LateralNormalLaw_DWork.Delay_DSTATE_d < LateralNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_LowerLimit) {
@@ -357,49 +357,57 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   }
 
   if (LateralNormalLaw_DWork.Delay_DSTATE_d > LateralNormalLaw_rtP.Saturation_UpperSat_g) {
-    rtb_Saturation_j = LateralNormalLaw_rtP.Saturation_UpperSat_g;
+    rtb_Y_i = LateralNormalLaw_rtP.Saturation_UpperSat_g;
   } else if (LateralNormalLaw_DWork.Delay_DSTATE_d < LateralNormalLaw_rtP.Saturation_LowerSat_e) {
-    rtb_Saturation_j = LateralNormalLaw_rtP.Saturation_LowerSat_e;
+    rtb_Y_i = LateralNormalLaw_rtP.Saturation_LowerSat_e;
   } else {
-    rtb_Saturation_j = LateralNormalLaw_DWork.Delay_DSTATE_d;
+    rtb_Y_i = LateralNormalLaw_DWork.Delay_DSTATE_d;
   }
 
-  LateralNormalLaw_RateLimiter(rtb_Saturation_j, LateralNormalLaw_rtP.RateLimiterVariableTs_up_m,
+  LateralNormalLaw_RateLimiter(rtb_Y_i, LateralNormalLaw_rtP.RateLimiterVariableTs_up_m,
     LateralNormalLaw_rtP.RateLimiterVariableTs_lo_k, rtu_In_time_dt,
-    LateralNormalLaw_rtP.RateLimiterVariableTs_InitialCondition_m, &rtb_Y_i, &LateralNormalLaw_DWork.sf_RateLimiter_n);
+    LateralNormalLaw_rtP.RateLimiterVariableTs_InitialCondition_m, &rtb_Y_e, &LateralNormalLaw_DWork.sf_RateLimiter_n);
+  if (*rtu_In_any_ap_engaged) {
+    if (*rtu_In_tracking_mode_on) {
+      rtb_Y_e = *rtu_In_Phi_deg;
+    } else {
+      rtb_Y_e = *rtu_In_ap_phi_c_deg;
+    }
+  }
+
   rtb_Gain1 = LateralNormalLaw_rtP.Gain1_Gain_b * *rtu_In_Phi_deg;
   rtb_Gain1_f = LateralNormalLaw_rtP.Gain1_Gain_c * *rtu_In_pk_deg_s;
-  rtb_Saturation_j = look1_binlxpw(*rtu_In_time_dt, LateralNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1,
+  rtb_Y_i = look1_binlxpw(*rtu_In_time_dt, LateralNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1,
     LateralNormalLaw_rtP.ScheduledGain_Table, 4U);
   LateralNormalLaw_DWork.Delay_DSTATE = ((-(rtb_Y_j / Vias * 122.0 * 320.40999999999997 * -0.487 / 1.0E+6 + 1.414 * r) /
-    L_xi * rtb_Gain1_f + k_phi * rtb_Gain1) + LateralNormalLaw_rtP.Gain1_Gain_n * rtb_Y_i * -k_phi) * rtb_Saturation_j *
+    L_xi * rtb_Gain1_f + k_phi * rtb_Gain1) + LateralNormalLaw_rtP.Gain1_Gain_n * rtb_Y_e * -k_phi) * rtb_Y_i *
     LateralNormalLaw_rtP.Gain_Gain_p;
   if (LateralNormalLaw_DWork.Delay_DSTATE > LateralNormalLaw_rtP.Limiterxi_UpperSat) {
-    rtb_Saturation_j = LateralNormalLaw_rtP.Limiterxi_UpperSat;
+    rtb_Y_i = LateralNormalLaw_rtP.Limiterxi_UpperSat;
   } else if (LateralNormalLaw_DWork.Delay_DSTATE < LateralNormalLaw_rtP.Limiterxi_LowerSat) {
-    rtb_Saturation_j = LateralNormalLaw_rtP.Limiterxi_LowerSat;
+    rtb_Y_i = LateralNormalLaw_rtP.Limiterxi_LowerSat;
   } else {
-    rtb_Saturation_j = LateralNormalLaw_DWork.Delay_DSTATE;
+    rtb_Y_i = LateralNormalLaw_DWork.Delay_DSTATE;
   }
 
-  LateralNormalLaw_RateLimiter(rtb_Saturation_j * rtb_Saturation2 + rtb_Product1,
+  LateralNormalLaw_RateLimiter(rtb_Y_i * rtb_Saturation_j + rtb_Product1,
     LateralNormalLaw_rtP.RateLimiterVariableTs_up_d, LateralNormalLaw_rtP.RateLimiterVariableTs_lo_b, rtu_In_time_dt,
     LateralNormalLaw_rtP.RateLimiterVariableTs_InitialCondition_k, rty_Out_xi_deg,
     &LateralNormalLaw_DWork.sf_RateLimiter_j);
-  rtb_Saturation2 = LateralNormalLaw_rtP.Gain1_Gain_l * *rtu_In_Theta_deg;
-  rtb_Saturation_j = *rtu_In_V_tas_kn;
-  if (rtb_Saturation_j > LateralNormalLaw_rtP.Saturation_UpperSat_e) {
-    rtb_Saturation_j = LateralNormalLaw_rtP.Saturation_UpperSat_e;
-  } else if (rtb_Saturation_j < LateralNormalLaw_rtP.Saturation_LowerSat_j) {
-    rtb_Saturation_j = LateralNormalLaw_rtP.Saturation_LowerSat_j;
+  rtb_Saturation_j = LateralNormalLaw_rtP.Gain1_Gain_l * *rtu_In_Theta_deg;
+  rtb_Gain1 = *rtu_In_V_tas_kn;
+  if (rtb_Gain1 > LateralNormalLaw_rtP.Saturation_UpperSat_e) {
+    rtb_Gain1 = LateralNormalLaw_rtP.Saturation_UpperSat_e;
+  } else if (rtb_Gain1 < LateralNormalLaw_rtP.Saturation_LowerSat_j) {
+    rtb_Gain1 = LateralNormalLaw_rtP.Saturation_LowerSat_j;
   }
 
-  rtb_Saturation_j = *rtu_In_r_deg_s - std::sin(LateralNormalLaw_rtP.Gain1_Gain_f * rtb_Y_i) *
-    LateralNormalLaw_rtP.Constant2_Value * std::cos(rtb_Saturation2) / (LateralNormalLaw_rtP.Gain6_Gain *
-    rtb_Saturation_j) * LateralNormalLaw_rtP.Gain_Gain_i;
-  rtb_Saturation2 = look1_binlxpw(*rtu_In_V_tas_kn, LateralNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_a,
+  rtb_Y_e = *rtu_In_r_deg_s - std::sin(LateralNormalLaw_rtP.Gain1_Gain_f * rtb_Y_e) *
+    LateralNormalLaw_rtP.Constant2_Value * std::cos(rtb_Saturation_j) / (LateralNormalLaw_rtP.Gain6_Gain * rtb_Gain1) *
+    LateralNormalLaw_rtP.Gain_Gain_i;
+  rtb_Y_i = look1_binlxpw(*rtu_In_V_tas_kn, LateralNormalLaw_rtP.ScheduledGain_BreakpointsForDimension1_a,
     LateralNormalLaw_rtP.ScheduledGain_Table_e, 6U);
-  rtb_Y_i = rtb_Saturation_j * rtb_Saturation2;
+  rtb_Y_e *= rtb_Y_i;
   rtb_OR = !*rtu_In_on_ground;
   if (!LateralNormalLaw_DWork.pY_not_empty) {
     LateralNormalLaw_DWork.pY = LateralNormalLaw_rtP.RateLimiterVariableTs1_InitialCondition_m;
@@ -417,23 +425,22 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
     rtb_Saturation_j = LateralNormalLaw_DWork.pY;
   }
 
-  rtb_Saturation2 = look1_binlxpw(*rtu_In_V_tas_kn, LateralNormalLaw_rtP.ScheduledGain1_BreakpointsForDimension1,
+  rtb_Y_i = look1_binlxpw(*rtu_In_V_tas_kn, LateralNormalLaw_rtP.ScheduledGain1_BreakpointsForDimension1,
     LateralNormalLaw_rtP.ScheduledGain1_Table, 6U);
-  rtb_Saturation2 *= *rtu_In_r_deg_s;
-  if (rtb_Y_i > LateralNormalLaw_rtP.Saturation1_UpperSat_j) {
-    rtb_Y_i = LateralNormalLaw_rtP.Saturation1_UpperSat_j;
-  } else if (rtb_Y_i < LateralNormalLaw_rtP.Saturation1_LowerSat_a) {
-    rtb_Y_i = LateralNormalLaw_rtP.Saturation1_LowerSat_a;
+  rtb_Y_i *= *rtu_In_r_deg_s;
+  if (rtb_Y_e > LateralNormalLaw_rtP.Saturation1_UpperSat_j) {
+    rtb_Y_e = LateralNormalLaw_rtP.Saturation1_UpperSat_j;
+  } else if (rtb_Y_e < LateralNormalLaw_rtP.Saturation1_LowerSat_a) {
+    rtb_Y_e = LateralNormalLaw_rtP.Saturation1_LowerSat_a;
   }
 
-  if (rtb_Saturation2 > LateralNormalLaw_rtP.Saturation2_UpperSat) {
-    rtb_Saturation2 = LateralNormalLaw_rtP.Saturation2_UpperSat;
-  } else if (rtb_Saturation2 < LateralNormalLaw_rtP.Saturation2_LowerSat) {
-    rtb_Saturation2 = LateralNormalLaw_rtP.Saturation2_LowerSat;
+  if (rtb_Y_i > LateralNormalLaw_rtP.Saturation2_UpperSat) {
+    rtb_Y_i = LateralNormalLaw_rtP.Saturation2_UpperSat;
+  } else if (rtb_Y_i < LateralNormalLaw_rtP.Saturation2_LowerSat) {
+    rtb_Y_i = LateralNormalLaw_rtP.Saturation2_LowerSat;
   }
 
-  *rty_Out_zeta_deg = (LateralNormalLaw_rtP.Constant_Value_k - rtb_Saturation_j) * rtb_Saturation2 + rtb_Y_i *
-    rtb_Saturation_j;
+  *rty_Out_zeta_deg = (LateralNormalLaw_rtP.Constant_Value_k - rtb_Saturation_j) * rtb_Y_i + rtb_Y_e * rtb_Saturation_j;
   LateralNormalLaw_DWork.icLoad = false;
 }
 

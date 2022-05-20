@@ -104,7 +104,8 @@ class LateralNormalLaw final
             *rtu_In_r_deg_s, const real_T *rtu_In_pk_deg_s, const real_T *rtu_In_V_ias_kn, const real_T *rtu_In_V_tas_kn,
             const real_T *rtu_In_H_radio_ft, const real_T *rtu_In_delta_xi_pos, const real_T *rtu_In_delta_zeta_pos,
             const boolean_T *rtu_In_on_ground, const boolean_T *rtu_In_tracking_mode_on, const boolean_T
-            *rtu_In_high_aoa_prot_active, const boolean_T *rtu_In_high_speed_prot_active, real_T *rty_Out_xi_deg, real_T
+            *rtu_In_high_aoa_prot_active, const boolean_T *rtu_In_high_speed_prot_active, const real_T
+            *rtu_In_ap_phi_c_deg, const boolean_T *rtu_In_any_ap_engaged, real_T *rty_Out_xi_deg, real_T
             *rty_Out_zeta_deg);
   LateralNormalLaw();
   ~LateralNormalLaw();

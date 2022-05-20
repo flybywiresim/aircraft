@@ -50,6 +50,8 @@ struct pitch_normal_input
   real_T alpha_max;
   real_T high_speed_prot_high_kn;
   real_T high_speed_prot_low_kn;
+  real_T ap_theta_c_deg;
+  boolean_T any_ap_engaged;
 };
 
 #endif

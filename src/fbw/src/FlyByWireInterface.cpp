@@ -1138,8 +1138,8 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.discrete_inputs.is_unit_1 = elacIndex == 0;
   elacs[elacIndex].modelInputs.in.discrete_inputs.is_unit_2 = elacIndex == 1;
   elacs[elacIndex].modelInputs.in.discrete_inputs.opp_axis_pitch_failure = !elacsDiscreteOutputs[oppElacIndex].pitch_axis_ok;
-  elacs[elacIndex].modelInputs.in.discrete_inputs.ap_1_disengaged = true;
-  elacs[elacIndex].modelInputs.in.discrete_inputs.ap_2_disengaged = true;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.ap_1_disengaged = !autopilotStateMachineOutput.enabled_AP1;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.ap_2_disengaged = !autopilotStateMachineOutput.enabled_AP2;
   elacs[elacIndex].modelInputs.in.discrete_inputs.opp_left_aileron_lost = !elacsDiscreteOutputs[oppElacIndex].left_aileron_ok;
   elacs[elacIndex].modelInputs.in.discrete_inputs.opp_right_aileron_lost = !elacsDiscreteOutputs[oppElacIndex].right_aileron_ok;
   elacs[elacIndex].modelInputs.in.discrete_inputs.fac_1_yaw_control_lost = !facsDiscreteOutputs[0].yawDamperNormalLawAvail;
@@ -1190,8 +1190,8 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.bus_inputs.ir_1_bus = adirsBusOutputs[0].irsBus;
   elacs[elacIndex].modelInputs.in.bus_inputs.ir_2_bus = adirsBusOutputs[1].irsBus;
   elacs[elacIndex].modelInputs.in.bus_inputs.ir_3_bus = adirsBusOutputs[2].irsBus;
-  // elacs[elacIndex].modelInputs.in.busInputs.fmgc1 = {};
-  // elacs[elacIndex].modelInputs.in.busInputs.fmgc2 = {};
+  elacs[elacIndex].modelInputs.in.bus_inputs.fmgc_1_bus = fmgcBBusOutputs;
+  elacs[elacIndex].modelInputs.in.bus_inputs.fmgc_2_bus = fmgcBBusOutputs;
   elacs[elacIndex].modelInputs.in.bus_inputs.ra_1_bus = raBusOutputs[0];
   elacs[elacIndex].modelInputs.in.bus_inputs.ra_2_bus = raBusOutputs[1];
   elacs[elacIndex].modelInputs.in.bus_inputs.sfcc_1_bus = {};
@@ -2126,6 +2126,19 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsOutput.Phi_loc_c = clientDataLaws.locPhiCommand;
     autopilotLawsOutput.Nosewheel_c = clientDataLaws.nosewheelCommand;
     autopilotLawsOutput.flare_law.condition_Flare = clientDataLaws.conditionFlare;
+  }
+
+  fmgcBBusOutputs.deltaPAileronCmd.setSsm(Arinc429SignStatus::NormalOperation);
+  fmgcBBusOutputs.deltaPAileronCmd.setData(autopilotLawsOutput.autopilot.Phi_c_deg);
+  fmgcBBusOutputs.deltaPSpoilerCmd.setSsm(Arinc429SignStatus::NormalOperation);
+  fmgcBBusOutputs.deltaPSpoilerCmd.setData(0);
+  fmgcBBusOutputs.deltaRCmd.setSsm(Arinc429SignStatus::NormalOperation);
+  fmgcBBusOutputs.deltaRCmd.setData(0);
+  fmgcBBusOutputs.deltaQCmd.setSsm(Arinc429SignStatus::NormalOperation);
+  fmgcBBusOutputs.deltaQCmd.setData(autopilotLawsOutput.autopilot.Theta_c_deg);
+
+  if (elacDisabled != -1) {
+    simConnectInterface.setClientDataFmgcB(fmgcBBusOutputs, 0);
   }
 
   // update flight director -------------------------------------------------------------------------------------------

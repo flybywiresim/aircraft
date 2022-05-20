@@ -363,6 +363,19 @@ struct FmgcABus {
   Arinc429NumericWord fpa;
 };
 
+struct FmgcBBus {
+  // Label 310
+  Arinc429DiscreteWord deltaPAileronCmd;
+  // Label 311
+  Arinc429DiscreteWord deltaPSpoilerCmd;
+  // Label 312
+  Arinc429DiscreteWord deltaRCmd;
+  // Label 313
+  Arinc429DiscreteWord deltaQCmd;
+
+  operator base_fmgc_b_bus() { return *reinterpret_cast<base_fmgc_b_bus*>(this); }
+};
+
 struct FacBus {
   // Label 47
   Arinc429DiscreteWord discreteWord1;
