@@ -5,7 +5,7 @@ use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 
 use systems::shared::to_bool;
 use systems_wasm::aspects::{
-    EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, VariableToEventMapping,
+    EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariableToEventMapping,
     VariableToEventWriteOn, VariablesToObject,
 };
 use systems_wasm::{set_data_on_sim_object, Variable};
@@ -114,10 +114,12 @@ impl VariablesToObject for GearPosition {
         ]
     }
 
-    fn write(&mut self, values: Vec<f64>) {
+    fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
         self.nose_position = values[0] / 100.;
         self.left_position = values[1] / 100.;
         self.right_position = values[2] / 100.;
+
+        ObjectWrite::default()
     }
 
     set_data_on_sim_object!();

@@ -1,6 +1,7 @@
 use std::error::Error;
-use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder, VariablesToObject};
 
+use systems::shared::to_bool;
+use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariablesToObject};
 use systems_wasm::{set_data_on_sim_object, Variable};
 
 use msfs::sim_connect;
@@ -39,6 +40,8 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
     );
 
     // AILERON POSITION FEEDBACK TO SIM
+    // Here we separate ailerons from spoiler to build a unique roll torque
+    // Assymetry of elevator adds a part in roll torque
     builder.map_many(
         ExecuteOn::PostTick,
         vec![
@@ -48,7 +51,6 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
             Variable::aspect("HYD_ELEV_RIGHT_DEFLECTION"),
             Variable::named("HYD_SPOILERS_LEFT_DEFLECTION"),
             Variable::named("HYD_SPOILERS_RIGHT_DEFLECTION"),
-            Variable::named("AILERON_LEFT_DEFLECTION_DEMAND"),
         ],
         |values| {
             const SPOILER_ROLL_COEFF: f64 = 0.5;
@@ -58,14 +60,6 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
             let aileron_roll_asymetry = AILERON_ROLL_COEFF * (values[1] - values[0]);
             let spoiler_roll_asymetry = SPOILER_ROLL_COEFF * (values[5] - values[4]);
 
-            // println!(
-            //     "FBW ail {:.2} Ail roll {:.2} Spoil roll {:.2} Elev roll {:.2} --> SIM Roll output {:.2}",
-            //     values[6],
-            //     aileron_roll_asymetry,
-            //     spoiler_roll_asymetry,
-            //     elevator_roll_component,
-            //     aileron_roll_asymetry
-            // );
             aileron_roll_asymetry + spoiler_roll_asymetry + elevator_roll_component
         },
         Variable::aspect("HYD_FINAL_AILERON_FEEDBACK"),
@@ -84,11 +78,17 @@ struct RollSimOutput {
 }
 impl VariablesToObject for RollSimOutput {
     fn variables(&self) -> Vec<Variable> {
-        vec![Variable::aspect("HYD_FINAL_AILERON_FEEDBACK")]
+        vec![
+            Variable::aspect("HYD_FINAL_AILERON_FEEDBACK"),
+            Variable::aspect("FLIGHT_CONTROLS_TRACKING_MODE"),
+        ]
     }
 
-    fn write(&mut self, values: Vec<f64>) {
+    fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
         self.ailerons = values[0];
+
+        // Not writing control feedback when in tracking mode
+        ObjectWrite::on(!to_bool(values[1]))
     }
 
     set_data_on_sim_object!();

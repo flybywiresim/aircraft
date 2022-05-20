@@ -1,5 +1,7 @@
 use std::error::Error;
-use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder, VariablesToObject};
+
+use systems::shared::to_bool;
+use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariablesToObject};
 use systems_wasm::{set_data_on_sim_object, Variable};
 
 use msfs::sim_connect;
@@ -24,12 +26,6 @@ pub(super) fn elevators(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn E
 
             let final_hyd_demand = msfs_angle_zero_offset / elevator_range;
 
-            // println!(
-            //     "ELEVATOR_DEFLECTION_DEMAND {:.2} msfs_angle_zero_offset {:.2} hyd_pos_demand {:.2}",
-            //     value,
-            //     msfs_angle_zero_offset,
-            //     final_hyd_demand,
-            // );
             final_hyd_demand
         },
         Variable::aspect("HYD_ELEVATOR_DEMAND"),
@@ -60,16 +56,11 @@ pub(super) fn elevators(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn E
         |values| {
             let mean_elevator_position = (values[1] + values[0]) / 2.;
 
-            // println!(
-            //     "MSFSdmnd {:.2} FBW elev {:.2} Mean elev {:.2} --> SIM Elev output {:.2}",
-            //     values[3], values[2], mean_elevator_position, mean_elevator_position
-            // );
             mean_elevator_position
         },
         Variable::aspect("HYD_FINAL_ELEVATOR_FEEDBACK"),
     );
 
-    //Uncomment to write back position to sim
     builder.variables_to_object(Box::new(PitchSimOutput { elevator: 0. }));
 
     Ok(())
@@ -83,11 +74,17 @@ struct PitchSimOutput {
 }
 impl VariablesToObject for PitchSimOutput {
     fn variables(&self) -> Vec<Variable> {
-        vec![Variable::aspect("HYD_FINAL_ELEVATOR_FEEDBACK")]
+        vec![
+            Variable::aspect("HYD_FINAL_ELEVATOR_FEEDBACK"),
+            Variable::aspect("FLIGHT_CONTROLS_TRACKING_MODE"),
+        ]
     }
 
-    fn write(&mut self, values: Vec<f64>) {
+    fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
         self.elevator = values[0];
+
+        // Not writing control feedback when in tracking mode
+        ObjectWrite::on(!to_bool(values[1]))
     }
 
     set_data_on_sim_object!();
@@ -106,11 +103,6 @@ fn hyd_deflection_to_msfs_deflection(hyd_deflection: f64) -> f64 {
     } else {
         msfs_angle / max_msfs_angle
     };
-
-    // println!(
-    //     "ELEVATOR HYD POS {:.2} msfs_angle  {:.2} final_msfs_dmnd {:.2}",
-    //     hyd_deflection, msfs_angle, final_msfs_angle_output,
-    // );
 
     final_msfs_angle_output
 }

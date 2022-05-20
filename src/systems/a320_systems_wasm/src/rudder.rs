@@ -1,5 +1,7 @@
 use std::error::Error;
-use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder, VariablesToObject};
+
+use systems::shared::to_bool;
+use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariablesToObject};
 
 use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
@@ -24,13 +26,7 @@ pub(super) fn rudder(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Erro
     builder.map_many(
         ExecuteOn::PostTick,
         vec![Variable::aspect("HYD_RUD_DEFLECTION")],
-        |values| {
-            // println!(
-            //     "WRITING RUDDER VAL TO SIM --> SIM Yaw output {:.2}",
-            //     values[0] * 2. - 1.,
-            // );
-            values[0] * 2. - 1.
-        },
+        |values| values[0] * 2. - 1.,
         Variable::aspect("HYD_FINAL_RUDDER_FEEDBACK"),
     );
 
@@ -47,11 +43,17 @@ struct YawSimOutput {
 }
 impl VariablesToObject for YawSimOutput {
     fn variables(&self) -> Vec<Variable> {
-        vec![Variable::aspect("HYD_FINAL_RUDDER_FEEDBACK")]
+        vec![
+            Variable::aspect("HYD_FINAL_RUDDER_FEEDBACK"),
+            Variable::aspect("FLIGHT_CONTROLS_TRACKING_MODE"),
+        ]
     }
 
-    fn write(&mut self, values: Vec<f64>) {
+    fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
         self.rudder = values[0];
+
+        // Not writing control feedback when in tracking mode
+        ObjectWrite::on(!to_bool(values[1]))
     }
 
     set_data_on_sim_object!();
