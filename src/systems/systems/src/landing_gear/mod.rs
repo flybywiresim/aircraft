@@ -810,13 +810,10 @@ impl LandingGearControlInterfaceUnit {
             Arinc429Word::new(0, SignStatus::FailureWarning)
         } else {
             let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
-            word.set_bit(
-                11,
-                !self.sensor_inputs.left_and_right_gear_compressed(false),
-            );
-            word.set_bit(12, !self.sensor_inputs.nose_gear_compressed(false));
-            word.set_bit(13, !self.sensor_inputs.left_gear_compressed(false));
-            word.set_bit(14, !self.sensor_inputs.right_gear_compressed(false));
+            word.set_bit(11, self.sensor_inputs.left_and_right_gear_compressed(false));
+            word.set_bit(12, self.sensor_inputs.nose_gear_compressed(false));
+            word.set_bit(13, self.sensor_inputs.left_gear_compressed(false));
+            word.set_bit(14, self.sensor_inputs.right_gear_compressed(false));
             word.set_bit(
                 15,
                 self.sensor_inputs.left_gear_down_and_locked
