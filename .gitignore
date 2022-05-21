@@ -62,6 +62,7 @@ node_modules
 /src/fbw/obj/
 /src/fdr2csv/build/
 /src/presets/obj/
+/src/flypad-backend/obj/
 /src/fadec/obj/
 .env
 src/instruments/buildSrc/custom/*

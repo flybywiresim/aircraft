@@ -67,6 +67,9 @@ export const PushbackMap = () => {
     const [planeLatitude] = useSimVar('A:PLANE LATITUDE', 'degrees latitude', 50);
     const [planeLongitude] = useSimVar('A:PLANE LONGITUDE', 'degrees longitude', 50);
 
+    const [tugCmdHdgFactor] = useSimVar('L:A32NX_PUSHBACK_HDG_FACTOR', 'bool', 50);
+    const [tugCmdSpdFactor] = useSimVar('L:A32NX_PUSHBACK_SPD_FACTOR', 'bool', 50);
+
     // This constant has been determined via testing - needs more "thought"
     // It describes the ratio between the map and real distance
     const someConstant = 0.48596;
@@ -77,8 +80,6 @@ export const PushbackMap = () => {
         centerPlaneMode,
         actualMapLatLon,
         aircraftIconPosition,
-        tugCommandedHeadingFactor,
-        tugCommandedSpeedFactor,
     } = useAppSelector((state) => state.pushback.pushbackState);
 
     // Map
@@ -196,7 +197,7 @@ export const PushbackMap = () => {
     }, [dragging, mouseDown, mouseCoords]);
 
     const mapRangeCompensationScalar = mapRange / someConstant;
-    const turningRadius = calculateTurningRadius(13, Math.abs(tugCommandedHeadingFactor * 90)) / mapRangeCompensationScalar * (Math.abs(tugCommandedSpeedFactor) / 0.2);
+    const turningRadius = calculateTurningRadius(13, Math.abs(tugCmdHdgFactor * 90)) / mapRangeCompensationScalar * (Math.abs(tugCmdSpdFactor) / 0.2);
 
     return (
         <>
@@ -241,8 +242,8 @@ export const PushbackMap = () => {
                                 className="absolute"
                                 style={{
                                     transform: `rotate(-90deg) 
-                                scaleX(${tugCommandedSpeedFactor >= 0 ? 1 : -1}) 
-                                scaleY(${tugCommandedHeadingFactor >= 0 ? 1 : -1}) 
+                                scaleX(${tugCmdSpdFactor >= 0 ? 1 : -1}) 
+                                scaleY(${tugCmdHdgFactor >= 0 ? 1 : -1}) 
                                 translateY(${turningRadius}px)`,
                                 }}
                             >

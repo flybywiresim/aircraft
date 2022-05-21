@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Redirect, Route, Switch } from 'react-router-dom';
 import { useSimVar } from '@instruments/common/simVars';
@@ -39,15 +39,6 @@ import { setFlightPlanProgress } from './Store/features/flightProgress';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
-import {
-    setUpdateIntervalID,
-    setUpdateDeltaTime,
-    setLastTimestamp,
-    setTugCommandedHeading,
-    setTugCommandedSpeed,
-    setTugInertiaSpeed,
-} from './Store/features/pushback';
-import { InertialDampener } from './Ground/Pages/InertialDampener';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
@@ -273,101 +264,7 @@ const Efb = () => {
 
     // =========================================================================
     // <Pushback>
-    const [pushbackSystemEnabled] = useSimVar('L:A32NX_PUSHBACK_SYSTEM_ENABLED', 'bool', 100);
-    const [pushBackAttached] = useSimVar('Pushback Attached', 'bool', 100);
     const [nwStrgDisc] = useSimVar('L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO', 'Bool', 100);
-
-    const inertialDampener = new InertialDampener(0, 0.1);
-
-    const {
-        pushbackPaused,
-        updateIntervalID,
-        lastTimeStamp,
-        tugCommandedHeadingFactor,
-        tugCommandedSpeedFactor,
-    } = useAppSelector((state) => state.pushback.pushbackState);
-
-    // Required so these can be used inside the setInterval callback function
-    // for the pushback movement update
-    const pushbackSystemEnabledRef = useRef(pushbackSystemEnabled);
-    pushbackSystemEnabledRef.current = pushbackSystemEnabled;
-    const lastTimeStampRef = useRef(lastTimeStamp);
-    lastTimeStampRef.current = lastTimeStamp;
-    const pushbackPausedRef = useRef(pushbackPaused);
-    pushbackPausedRef.current = pushbackPaused;
-    const tugCommandedHeadingFactorRef = useRef(tugCommandedHeadingFactor);
-    tugCommandedHeadingFactorRef.current = tugCommandedHeadingFactor;
-    const tugCommandedSpeedFactorRef = useRef(tugCommandedSpeedFactor);
-    tugCommandedSpeedFactorRef.current = tugCommandedSpeedFactor;
-
-    // Callback function for the setInterval to update the movement of the aircraft independent of
-    // the refresh rate of the Glass Cockpit Refresh Rate in internal and external view.
-    const movementUpdate = () => {
-        if (!pushbackSystemEnabledRef.current) {
-            return;
-        }
-
-        const startTime = Date.now();
-        dispatch(setUpdateDeltaTime(startTime - lastTimeStampRef.current));
-        dispatch(setLastTimestamp(startTime));
-
-        const pushbackAttached = SimVar.GetSimVarValue('Pushback Attached', 'bool');
-        const simOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'bool');
-
-        const SpeedRatio = 8;
-        const RotationSpeedRatio = 0.08;
-        const ParkingBrakeRatio = 15;
-        if (pushbackAttached && simOnGround) {
-            // compute heading and speed
-            const parkingBrakeEngaged = SimVar.GetSimVarValue('L:A32NX_PARK_BRAKE_LEVER_POS', 'Bool');
-            const aircraftHeading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degrees');
-
-            const tugCommandedSpeed = tugCommandedSpeedFactorRef.current
-                * (parkingBrakeEngaged ? (SpeedRatio / ParkingBrakeRatio) : SpeedRatio);
-            dispatch(setTugCommandedSpeed(tugCommandedSpeed)); // debug info
-
-            const inertiaSpeed = inertialDampener.updateSpeed(tugCommandedSpeed);
-            dispatch(setTugInertiaSpeed(inertiaSpeed)); // debug info
-
-            const computedTugHeading = (aircraftHeading - (50 * tugCommandedHeadingFactorRef.current)) % 360;
-            dispatch(setTugCommandedHeading(computedTugHeading)); // debug info
-
-            // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
-            const convertedComputedHeading = (computedTugHeading * (0xffffffff / 360)) & 0xffffffff;
-            const computedRotationVelocity = Math.sign(tugCommandedSpeed) * tugCommandedHeadingFactorRef.current
-                                                * (parkingBrakeEngaged ? (RotationSpeedRatio / ParkingBrakeRatio) : RotationSpeedRatio);
-
-            SimVar.SetSimVarValue('Pushback Wait', 'bool', inertiaSpeed === 0);
-            // Set tug heading
-            SimVar.SetSimVarValue('K:KEY_TUG_HEADING', 'Number', inertiaSpeed !== 0 ? convertedComputedHeading : 0);
-            SimVar.SetSimVarValue('ROTATION VELOCITY BODY Y', 'Number', computedRotationVelocity);
-            // Set tug speed
-            SimVar.SetSimVarValue('K:KEY_TUG_SPEED', 'Number', inertiaSpeed);
-            SimVar.SetSimVarValue('VELOCITY BODY Z', 'Number', inertiaSpeed);
-            // prevents the aircraft to lift front wheel when pushing backwards
-            SimVar.SetSimVarValue('ROTATION ACCELERATION BODY X',
-                'radians per second squared',
-                // eslint-disable-next-line no-nested-ternary
-                inertiaSpeed > 0
-                    ? -1
-                    : inertiaSpeed < 0
-                        ? 2
-                        : 0);
-        }
-    };
-
-    // Set up an update interval to ensure smooth movement independent of
-    // Glass Cockpit Refresh Rate. This is required as the refresh rate is
-    // 10x lower in external view which leads to jerky movements otherwise.
-    useEffect(() => {
-        if (pushbackSystemEnabled && pushBackAttached && updateIntervalID === 0) {
-            const interval = setInterval(movementUpdate, 50);
-            dispatch(setUpdateIntervalID(Number(interval)));
-        } else if (!pushBackAttached) {
-            clearInterval(updateIntervalID);
-            dispatch(setUpdateIntervalID(0));
-        }
-    }, [pushBackAttached, pushbackSystemEnabled]);
 
     // Required to fully release the tug and restore steering capabilities
     // Must not be fired too early after disconnect therefore we wait until

@@ -7,7 +7,7 @@
  * A collection of SimVar unit enums.
  */
 class Units {
- public:
+public:
   ENUM Percent = get_units_enum("Percent");
   ENUM Number = get_units_enum("Number");
   ENUM Bool = get_units_enum("Bool");
@@ -18,9 +18,9 @@ class Units {
   ENUM Feet = get_units_enum("Feet");
   ENUM FootPounds = get_units_enum("Foot pounds");
   ENUM FeetMin = get_units_enum("Feet per minute");
+  ENUM FeetSec = get_units_enum("Feet per second");
   ENUM Mach = get_units_enum("Mach");
   ENUM Millibars = get_units_enum("Millibars");
-  ENUM SluggerSlugs = get_units_enum("Slug per cubic feet");
   ENUM Celsius = get_units_enum("Celsius");
   ENUM Hours = get_units_enum("Hours");
   ENUM Seconds = get_units_enum("Seconds");

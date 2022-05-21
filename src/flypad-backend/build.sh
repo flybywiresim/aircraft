@@ -3,7 +3,7 @@
 # get directory of this script relative to root
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-OUTPUT="${DIR}/../../flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/presets.wasm"
+OUTPUT="${DIR}/../../flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm"
 
 if [ "$1" == "--debug" ]; then
   CLANG_ARGS="-g -DDEBUG"
@@ -41,9 +41,12 @@ clang++ \
   -I "${DIR}/src" \
   -I "${DIR}/src/Lighting" \
   -I "${DIR}/src/Aircraft" \
-  "${DIR}/src/Presets.cpp" \
+  "${DIR}/src/FlyPadBackend.cpp" \
   "${DIR}/src/Lighting/LightPreset.cpp" \
-  "${DIR}/src/Aircraft/AircraftPreset.cpp"
+  "${DIR}/src/Aircraft/AircraftPreset.cpp" \
+  "${DIR}/src/Pushback/Pushback.cpp" \
+  "${DIR}/src/Pushback/InertialDampener.cpp"
+
 
 # restore directory
 popd

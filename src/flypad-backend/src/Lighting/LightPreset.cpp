@@ -8,7 +8,7 @@
 
 void LightPreset::initialize() {
   isInitialized = true;
-  std::cout << "PRESETS: LightPresets initialized" << std::endl;
+  std::cout << "FLYPAD_BACKEND: LightPresets initialized" << std::endl;
 }
 
 void LightPreset::onUpdate(__attribute__((unused)) double deltaTime) {
@@ -40,29 +40,31 @@ void LightPreset::onUpdate(__attribute__((unused)) double deltaTime) {
 
 void LightPreset::shutdown() {
   isInitialized = false;
-  std::cout << "PRESETS: LightPresets shutdown" << std::endl;
+  std::cout << "FLYPAD_BACKEND: LightPresets shutdown" << std::endl;
 }
 
 void LightPreset::loadLightingPreset(int64_t loadPresetRequest) {
-  std::cout << "PRESETS: Loading preset: " << loadPresetRequest << std::endl;
+  std::cout << "FLYPAD_BACKEND: Loading preset: " << loadPresetRequest << std::endl;
   if (readFromStore(loadPresetRequest)) {
     applyToAircraft();
-    std::cout << "PRESETS: Lighting Preset: " << loadPresetRequest << " successfully loaded."
+    std::cout << "FLYPAD_BACKEND: Lighting Preset: " << loadPresetRequest << " successfully loaded."
               << std::endl;
     return;
   }
-  std::cout << "PRESETS: Loading Lighting Preset: " << loadPresetRequest << " failed." << std::endl;
+  std::cout << "FLYPAD_BACKEND: Loading Lighting Preset: " << loadPresetRequest << " failed."
+            << std::endl;
 }
 
 void LightPreset::saveLightingPreset(int64_t savePresetRequest) {
-  std::cout << "PRESETS: Save to Lighting Preset: " << savePresetRequest << std::endl;
+  std::cout << "FLYPAD_BACKEND: Save to Lighting Preset: " << savePresetRequest << std::endl;
   readFromAircraft();
   if (saveToStore(savePresetRequest)) {
-    std::cout << "PRESETS: Lighting Preset: " << savePresetRequest << " successfully saved."
+    std::cout << "FLYPAD_BACKEND: Lighting Preset: " << savePresetRequest << " successfully saved."
               << std::endl;
     return;
   }
-  std::cout << "PRESETS: Saving Lighting Preset: " << savePresetRequest << " failed." << std::endl;
+  std::cout << "FLYPAD_BACKEND: Saving Lighting Preset: " << savePresetRequest << " failed."
+            << std::endl;
 }
 
 void LightPreset::readFromAircraft() {
@@ -209,8 +211,7 @@ void LightPreset::loadFromData(LightingValues lv) {
   lightValues = lv;
 }
 
-__attribute__((unused))
-std::string LightPreset::sprint() const {
+__attribute__((unused)) std::string LightPreset::sprint() const {
   std::ostringstream os;
   os << "EFB Brightness: " << lightValues.efbBrightness << std::endl;
   os << "Cabin Light: " << lightValues.cabinLightLevel << std::endl;
@@ -252,7 +253,7 @@ double LightPreset::iniGetOrDefault(const mINI::INIStructure &ini,
       return value;
     }
     else {
-      std::cout << "PRESETS: reading ini value for \""
+      std::cout << "FLYPAD_BACKEND: reading ini value for \""
                 << "[" << section << "] " << key << " = " << ini.get(section).get(key)
                 << "\" failed." << std::endl;
     }

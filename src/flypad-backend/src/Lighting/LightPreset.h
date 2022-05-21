@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-#include "../Presets.h"
+#include "../FlyPadBackend.h"
 #include "../inih/ini.h"
 #include "LightingSimVars.h"
 
@@ -90,8 +90,7 @@ public:
    * Produces a string with the current settings and their values.
    * @return string with the current settings and their values.
    */
-  __attribute__((unused))
-  std::string sprint() const;
+  __attribute__((unused)) std::string sprint() const;
 
 private:
   /**
@@ -149,82 +148,20 @@ private:
                   double defaultValue);
 
   // formatter:off
-  const LightingValues DEFAULT_50 = {50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     0.5,
-                                     0.5,
-                                     0.5,
-                                     0.5,
-                                     50.0,
-                                     50.0,
-                                     50.0,
-                                     50.0,
+  const LightingValues DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
+                                     50.0, 50.0,
+                                     50.0, 50.0, 50.0, 0.5, 0.5, 0.5, 0.5, 50.0, 50.0, 50.0, 50.0,
                                      50.0};
 
-  __attribute__((unused))
-  const LightingValues DEFAULT_10 = {10.0,
-                                     0.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     0.1,
-                                     0.1,
-                                     0.1,
-                                     0.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     10.0,
-                                     10.0};
+  __attribute__((unused)) const LightingValues DEFAULT_10 = {10.0, 0.0, 10.0, 10.0, 10.0, 10.0,
+                                                             10.0, 10.0, 10.0, 10.0, 10.0, 10.0,
+                                                             10.0, 10.0, 10.0, 0.1, 0.1, 0.1, 0.0,
+                                                             10.0, 10.0, 10.0, 10.0, 10.0};
 
   __attribute__((unused))
-  const LightingValues DEFAULT_100 = {100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      1.0,
-                                      1.0,
-                                      1.0,
-                                      1.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0,
-                                      100.0};
+  const LightingValues DEFAULT_100 = {100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0,
+                                      100.0, 100.0, 100.0,
+                                      100.0, 100.0, 100.0, 1.0, 1.0, 1.0, 1.0, 100.0, 100.0, 100.0,
+                                      100.0, 100.0};
   // @formatter:on
-
 };
