@@ -481,7 +481,7 @@ const AddSID = (RWEnd, fix, mcdu) => {
 
                         for (t = 0; t < departure.enRouteTransitions.length; t++) {
                             const enRouteTransition = departure.enRouteTransitions[t];
-                            if (enRouteTransition.commonLegs[enRouteTransition.commonLegs.length - 1].fixIcao.substr(7, 12).trim() === fixx) {
+                            if (enRouteTransition.legs[enRouteTransition.legs.length - 1].fixIcao.substr(7, 12).trim() === fixx) {
                                 FindSid = true;
                                 FindTrans = true;
                                 break;
@@ -498,7 +498,7 @@ const AddSID = (RWEnd, fix, mcdu) => {
 
                         for (t = 0; t < departure.enRouteTransitions.length; t++) {
                             const enRouteTransition = departure.enRouteTransitions[t];
-                            if (enRouteTransition.commonLegs[enRouteTransition.commonLegs.length - 1].fixIcao.substr(7, 12).trim() === fixx) {
+                            if (enRouteTransition.legs[enRouteTransition.legs.length - 1].fixIcao.substr(7, 12).trim() === fixx) {
                                 FindSid = true;
                                 FindTrans = true;
                                 break;
