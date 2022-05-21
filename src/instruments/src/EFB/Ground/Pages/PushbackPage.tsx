@@ -601,6 +601,9 @@ export const PushbackPage = () => {
                             <div className="flex flex-row items-center space-x-4">
                                 <p className="font-bold text-unselected"><ChevronDoubleDown /></p>
                                 <Slider
+                                    ref={speedSliderRef}
+                                    onChange={(value) => handleTugSpeed(value)}
+                                    onAfterChange={() => speedSliderRef.current.blur()}
                                     min={-1}
                                     step={0.1}
                                     max={1}
