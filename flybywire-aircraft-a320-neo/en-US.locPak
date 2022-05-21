@@ -17,11 +17,21 @@
       "COCKPIT.TOOLTIPS.LIGHTS_NOSMOKE_AUTO": "Set \"no smoke\" prompt light to AUTO",
       "COCKPIT.TOOLTIPS.APU_AVAILABLE": "APU available",
       "A32NX.LOADING.TIPS.A320NEO_001": "The FlyByWire A32NX is a collaboration between hundreds of individual contributors.",
-      "A32NX.LOADING.TIPS.A320NEO_002": "Did you know? The A320 can land at crosswinds up to 38 knots and tailwinds of up to 15 knots!",
-      "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire is named after the fly-by-wire controls first introduced in the Airbus A320.",
-      "A32NX.LOADING.TIPS.A320NEO_004": "More than 9900 aircraft of the A320 family have been built! That's almost as much as the population of Tuvalu!",
-      "A32NX.LOADING.TIPS.A320NEO_005": "Airbus A320neo aircraft have a range of 3500 NM or 6500 KM. That's enough to fly from New York to Paris!",
-      "A32NX.LOADING.TIPS.A320NEO_006": "Did you know? The A320 family has 4 variants: The A318, A319, A320, and A321."
+      "A32NX.LOADING.TIPS.A320NEO_002": "The FlyByWire team regularly consults with type-rated Airbus pilots and technicians for utmost accuracy in development.",
+      "A32NX.LOADING.TIPS.A320NEO_003": "FlyByWire uses modern programming languages including TypeScript and Rust for better performance and stability.",
+      "A32NX.LOADING.TIPS.A320NEO_004": "The temperature control system in the A32NX simulates heat from individual passengers and heat flow from open doors!",
+      "A32NX.LOADING.TIPS.A320NEO_005": "The A32NX has a physically modeled hydraulic system that affects control surfaces and supports failures.",
+      "A32NX.LOADING.TIPS.A320NEO_006": "The A32NX has a completely custom engine and flight model, accurate to within a 1% margin to the real aircraft!",
+      "A32NX.LOADING.TIPS.A320NEO_006": "The A32NX flyPad is currently the only flight sim EFB to offer translations in multiple languages.",
+      "A32NX.LOADING.TIPS.A320NEO_007": "The A32NX accurately simulates the APS3200 APU, including a delay in shutdown when bleed air is drawn from it.",
+      "A32NX.LOADING.TIPS.A320NEO_008": "Pressing the brakes too much without engines or the yellow pump running can drain the accumulator and lead to loss of braking power.",
+      "A32NX.LOADING.TIPS.A320NEO_010": "Lost hydraulic pressure and can't lower the gear? Remember to use the gravity gear extension crank on the pedestal",
+      "A32NX.LOADING.TIPS.A320NEO_011": "Lost electrical power mid-flight? Don't worry, the RAT will deploy and keep your critical systems running.",
+      "A32NX.LOADING.TIPS.A320NEO_012": "The latest installment of our custom FMS now supports direct-to's, holding patterns, and overfly waypoints.",
+      "A32NX.LOADING.TIPS.A320NEO_013": "Our developers have faithfully recreated the fly-by-wire and autopilot systems, including all normal law protections and autoland support.",
+      "A32NX.LOADING.TIPS.A320NEO_014": "The A32NX features a state-of-the-art soundscape, with recordings taken in high quality from the real aircraft using professional equipment.",
+      "A32NX.LOADING.TIPS.A320NEO_015": "The A32NX makes use of completely custom, pixel-perfect fonts and display elements for absolute immersion.",
+      "A32NX.LOADING.TIPS.A320NEO_016": "Received a METAR or ATIS in the MCDU? Press the PRINT button to save it somewhere handy!",
     }
   }
 }
