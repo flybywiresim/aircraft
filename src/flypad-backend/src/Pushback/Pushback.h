@@ -44,11 +44,14 @@ private:
   ID tugInertiaSpeed{};
   ID parkingBrakeEngaged{};
   ID updateDelta{};
+  ID rotXInput{};
+  ID rotXOut{};
 
   // Simvars
   ENUM simOnGround{};
   ENUM pushbackAttached{};
   ENUM aircraftHeading{};
+  ENUM windVelBodyZ{};
 
 public:
   /**
@@ -87,12 +90,18 @@ private:
   inline bool isParkingBrakeEngaged() const { return static_cast<bool>(get_named_variable_value(parkingBrakeEngaged)); }
   inline FLOAT64 getTugCmdSpdFactor() const { return static_cast<FLOAT64>(get_named_variable_value(tugCommandedSpeedFactor)); }
   inline FLOAT64 getTugCmdHdgFactor() const { return static_cast<FLOAT64>(get_named_variable_value(tugCommandedHeadingFactor)); }
+
+  inline FLOAT64 getRotXInput() const { return static_cast<FLOAT64>(get_named_variable_value(rotXInput)); }
+  inline FLOAT64 getRotXOut() const { return static_cast<FLOAT64>(get_named_variable_value(rotXOut)); }
+  inline void setRotXOut(FLOAT64 value) const { set_named_variable_value(rotXOut, value); }
+
   // Simvar getter
   inline bool isPushbackAttached() const { return static_cast<bool>(aircraft_varget(pushbackAttached, m_Units->Bool, 0)); }
   inline bool isSimOnGround() const { return static_cast<bool>(aircraft_varget(simOnGround, m_Units->Bool, 0)); }
   inline FLOAT64 getAircraftTrueHeading() const {
     return (180.0 / PI) * static_cast<FLOAT64>(aircraft_varget(aircraftHeading, m_Units->Number, 0));
   }
+  inline FLOAT64 getWindVelBodyZ() const { return static_cast<FLOAT64>(aircraft_varget(windVelBodyZ, m_Units->FeetSec, 0)); }
   // Sim data getter
   inline bool isPushbackWaiting() const { return static_cast<bool>(pushbackDataPtr->pushbackWait); }
   // @formatter:on

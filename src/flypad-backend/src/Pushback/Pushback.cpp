@@ -23,7 +23,6 @@ Pushback::~Pushback() = default;;
 
 void Pushback::initialize() {
   // LVARs are initialized here
-  // Simvars in FlyPadBackend via simconnect data definitions
   pushbackSystemEnabled = register_named_variable("A32NX_PUSHBACK_SYSTEM_ENABLED");
   updateDelta = register_named_variable("A32NX_PUSHBACK_UPDT_DELTA");
   parkingBrakeEngaged = register_named_variable("A32NX_PARK_BRAKE_LEVER_POS");
@@ -33,9 +32,16 @@ void Pushback::initialize() {
   tugCommandedHeading = register_named_variable("A32NX_PUSHBACK_HDG");
   tugInertiaSpeed = register_named_variable("A32NX_PUSHBACK_INERTIA_SPD");
 
+  rotXInput = register_named_variable("A32NX_PUSHBACK_R_X");
+  rotXOut = register_named_variable("A32NX_PUSHBACK_R_X_OUT");
+
+  // Read only Simvars
   pushbackAttached = get_aircraft_var_enum("Pushback Attached");
   simOnGround = get_aircraft_var_enum("SIM ON GROUND");
   aircraftHeading = get_aircraft_var_enum("PLANE HEADING DEGREES TRUE");
+  windVelBodyZ = get_aircraft_var_enum("RELATIVE WIND VELOCITY BODY Z");
+
+  // Writable Simvars in FlyPadBackend via simconnect data definitions
 
   isInitialized = true;
   std::cout << "FLYPAD_BACKEND: Pushback initialized" << std::endl;
@@ -67,6 +73,16 @@ void Pushback::onUpdate(double deltaTime) {
                                            * getTugCmdHdgFactor()
                                            * (parkBrakeEngaged ? (TURN_SPEED_RATIO / 10) : TURN_SPEED_RATIO);
 
+  const FLOAT64 windCounterRotAccel = getWindVelBodyZ() / 1000.0;
+  FLOAT64 movementCounterRotAccel = getRotXInput();
+  if (inertiaSpeed >= 0) {
+    movementCounterRotAccel -= 0.9 + (2.0 * windCounterRotAccel);
+  }
+  else {
+    movementCounterRotAccel += 1.0 + (1.4 * windCounterRotAccel);
+  };
+  setRotXOut(movementCounterRotAccel);
+
   // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
   static const int32_t headingToInt32 = 0xffffffff / 360;
   const auto convertedComputedHeading = static_cast<int32_t >(static_cast<uint32_t>(computedHdg * headingToInt32));
@@ -85,9 +101,18 @@ void Pushback::onUpdate(double deltaTime) {
 
   // Update sim data
   pushbackDataPtr->pushbackWait = inertiaSpeed == 0 ? 1 : 0;
-  pushbackDataPtr->rotVelBodyY = computedRotationVelocity;
+  pushbackDataPtr->velBodyX = 0;
+  pushbackDataPtr->velBodyY = 0;
   pushbackDataPtr->velBodyZ = inertiaSpeed;
-  pushbackDataPtr->rotAccelBodyX = inertiaSpeed > 0 ? -1 : (inertiaSpeed < 0 ? 2 : 0);
+  pushbackDataPtr->accelBodyX = 0;
+  pushbackDataPtr->accelBodyY = 0;
+  pushbackDataPtr->accelBodyZ = 0;
+  pushbackDataPtr->rotVelBodyX = 0;
+  pushbackDataPtr->rotVelBodyY = computedRotationVelocity;
+  pushbackDataPtr->rotVelBodyZ = 0;
+  pushbackDataPtr->rotAccelBodyX = movementCounterRotAccel;
+  pushbackDataPtr->rotAccelBodyY = 0;
+  pushbackDataPtr->rotAccelBodyZ = 0;
   result &= SimConnect_SetDataOnSimObject(
     hSimConnect,
     DataStructureIDs::PushbackDataID,
