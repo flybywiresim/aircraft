@@ -51,8 +51,8 @@ export const PushbackPage = () => {
     const [pushbackAttached] = useSimVar('Pushback Attached', 'bool', 100);
     const [pushbackAngle] = useSimVar('PUSHBACK ANGLE', 'Radians', 100);
 
-    const [rudderPosition] = useSimVar('A:RUDDER POSITION', 'number', 50);
-    const [elevatorPosition] = useSimVar('A:ELEVATOR POSITION', 'number', 50);
+    const [rudderPosition] = useSimVar('L:A32NX_RUDDER_PEDAL_POSITION', 'number', 50);
+    const [elevatorPosition] = useSimVar('L:A32NX_SIDESTICK_POSITION_Y', 'number', 50);
 
     const [planeGroundSpeed] = useSimVar('GROUND VELOCITY', 'Knots', 50);
     const [planeHeadingTrue] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 50);
@@ -193,7 +193,7 @@ export const PushbackPage = () => {
             dispatch(setTugCommandedHeadingFactor(0));
             return;
         }
-        dispatch(setTugCommandedHeadingFactor(rudderPosition));
+        dispatch(setTugCommandedHeadingFactor(rudderPosition / 100));
     }, [rudderPosition]);
 
     // Update commanded speed from elevator input
@@ -602,6 +602,7 @@ export const PushbackPage = () => {
                             <div className="flex flex-row items-center space-x-4">
                                 <p className="font-bold text-unselected"><ChevronDoubleDown /></p>
                                 <Slider
+                                    ref={speedSliderRef}
                                     min={-1}
                                     step={0.1}
                                     max={1}
