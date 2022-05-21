@@ -52,7 +52,9 @@ base_sec_logic_outputs rtP_sec_logic_output_MATLABStruct{
     0.0,
     0.0,
     0.0
-  }
+  },
+  false,
+  false
 } ;
 
 base_sec_analog_outputs rtP_sec_analog_output_MATLABStruct{
@@ -111,6 +113,38 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   13.0,
 
   13.0,
+
+  11.0,
+
+  12.0,
+
+  13.0,
+
+  11.0,
+
+  12.0,
+
+  13.0,
+
+  14.0,
+
+  11.0,
+
+  12.0,
+
+  13.0,
+
+  14.0,
+
+  14.0,
+
+  11.0,
+
+  12.0,
+
+  13.0,
+
+  14.0,
 
   20.0,
 
@@ -212,6 +246,10 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   1.0,
 
+  10.0,
+
+  10.0,
+
   0.5,
 
   0.5,
@@ -247,6 +285,10 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   false,
 
   false,
+
+  true,
+
+  true,
 
   true,
 

@@ -105,6 +105,10 @@ class ElacComputer final
     real_T BitfromLabel6_bit;
     real_T BitfromLabel7_bit;
     real_T BitfromLabel8_bit;
+    real_T BitfromLabel4_bit_d;
+    real_T BitfromLabel5_bit_e;
+    real_T BitfromLabel6_bit_k;
+    real_T BitfromLabel7_bit_h;
     real_T BitfromLabel_bit_h;
     real_T BitfromLabel1_bit_e;
     real_T BitfromLabel2_bit_k;

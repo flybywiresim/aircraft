@@ -409,6 +409,8 @@ struct base_sec_logic_outputs
   boolean_T ir_disagree;
   base_sec_adr_computation_data adr_computation_data;
   base_sec_ir_computation_data ir_computation_data;
+  boolean_T any_landing_gear_not_uplocked;
+  boolean_T lgciu_uplock_disagree_or_fault;
 };
 
 #endif
