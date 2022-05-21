@@ -40,18 +40,9 @@ struct SimulationData {
 // Data structure for PushbackDataID
 struct PushbackData {
   INT64 pushbackWait;
-  FLOAT64 velBodyX;
-  FLOAT64 velBodyY;
   FLOAT64 velBodyZ;
-  FLOAT64 accelBodyX;
-  FLOAT64 accelBodyY;
-  FLOAT64 accelBodyZ;
-  FLOAT64 rotVelBodyX;
   FLOAT64 rotVelBodyY;
-  FLOAT64 rotVelBodyZ;
   FLOAT64 rotAccelBodyX;
-  FLOAT64 rotAccelBodyY;
-  FLOAT64 rotAccelBodyZ;
 };
 
 enum Events {

@@ -91,10 +91,6 @@ private:
   inline FLOAT64 getTugCmdSpdFactor() const { return static_cast<FLOAT64>(get_named_variable_value(tugCommandedSpeedFactor)); }
   inline FLOAT64 getTugCmdHdgFactor() const { return static_cast<FLOAT64>(get_named_variable_value(tugCommandedHeadingFactor)); }
 
-  inline FLOAT64 getRotXInput() const { return static_cast<FLOAT64>(get_named_variable_value(rotXInput)); }
-  inline FLOAT64 getRotXOut() const { return static_cast<FLOAT64>(get_named_variable_value(rotXOut)); }
-  inline void setRotXOut(FLOAT64 value) const { set_named_variable_value(rotXOut, value); }
-
   // Simvar getter
   inline bool isPushbackAttached() const { return static_cast<bool>(aircraft_varget(pushbackAttached, m_Units->Bool, 0)); }
   inline bool isSimOnGround() const { return static_cast<bool>(aircraft_varget(simOnGround, m_Units->Bool, 0)); }

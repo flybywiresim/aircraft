@@ -31,8 +31,6 @@ void Pushback::initialize() {
   tugCommandedSpeed = register_named_variable("A32NX_PUSHBACK_SPD");
   tugCommandedHeading = register_named_variable("A32NX_PUSHBACK_HDG");
   tugInertiaSpeed = register_named_variable("A32NX_PUSHBACK_INERTIA_SPD");
-
-  rotXInput = register_named_variable("A32NX_PUSHBACK_R_X");
   rotXOut = register_named_variable("A32NX_PUSHBACK_R_X_OUT");
 
   // Read only Simvars
@@ -73,15 +71,17 @@ void Pushback::onUpdate(double deltaTime) {
                                            * getTugCmdHdgFactor()
                                            * (parkBrakeEngaged ? (TURN_SPEED_RATIO / 10) : TURN_SPEED_RATIO);
 
+  // As we might use the elevator for taxiing we compensate for wind to avoid
+  // the aircraft lifting any gears.
   const FLOAT64 windCounterRotAccel = getWindVelBodyZ() / 1000.0;
-  FLOAT64 movementCounterRotAccel = getRotXInput();
+  FLOAT64 movementCounterRotAccel = windCounterRotAccel;
   if (inertiaSpeed >= 0) {
-    movementCounterRotAccel -= 0.9 + (2.0 * windCounterRotAccel);
+    movementCounterRotAccel -= 1.0;
   }
   else {
-    movementCounterRotAccel += 1.0 + (1.4 * windCounterRotAccel);
+    movementCounterRotAccel += 2.0;
   };
-  setRotXOut(movementCounterRotAccel);
+  set_named_variable_value(rotXOut, movementCounterRotAccel); // debug
 
   // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
   static const int32_t headingToInt32 = 0xffffffff / 360;
@@ -97,22 +97,15 @@ void Pushback::onUpdate(double deltaTime) {
     SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
 
   //  K:KEY_TUG_SPEED - seems to actually do nothing
-  //  result &= SimConnect_TransmitClientEvent(hSimConnect, 0, Events::KEY_TUG_SPEED_EVENT, inertiaSpeed, SIMCONNECT_GROUP_PRIORITY_HIGHEST, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
+  //  result &= SimConnect_TransmitClientEvent(hSimConnect,
+  //  0, Events::KEY_TUG_SPEED_EVENT, inertiaSpeed,
+  //  SIMCONNECT_GROUP_PRIORITY_HIGHEST, SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
 
   // Update sim data
   pushbackDataPtr->pushbackWait = inertiaSpeed == 0 ? 1 : 0;
-  pushbackDataPtr->velBodyX = 0;
-  pushbackDataPtr->velBodyY = 0;
   pushbackDataPtr->velBodyZ = inertiaSpeed;
-  pushbackDataPtr->accelBodyX = 0;
-  pushbackDataPtr->accelBodyY = 0;
-  pushbackDataPtr->accelBodyZ = 0;
-  pushbackDataPtr->rotVelBodyX = 0;
   pushbackDataPtr->rotVelBodyY = computedRotationVelocity;
-  pushbackDataPtr->rotVelBodyZ = 0;
   pushbackDataPtr->rotAccelBodyX = movementCounterRotAccel;
-  pushbackDataPtr->rotAccelBodyY = 0;
-  pushbackDataPtr->rotAccelBodyZ = 0;
   result &= SimConnect_SetDataOnSimObject(
     hSimConnect,
     DataStructureIDs::PushbackDataID,
