@@ -228,7 +228,7 @@ class SecComputer final
     real32_T Gain3_Gain;
     real32_T Gain4_Gain;
     boolean_T Constant_Value_c;
-    boolean_T Constant_Value_f;
+    boolean_T Constant_Value_l;
     boolean_T Delay_InitialCondition;
     boolean_T Delay1_InitialCondition;
     boolean_T Logic_table[16];

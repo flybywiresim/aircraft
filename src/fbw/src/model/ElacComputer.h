@@ -232,7 +232,7 @@ class ElacComputer final
     boolean_T Logic_table_g0[16];
     boolean_T Logic_table_e1[16];
     boolean_T Logic_table_n4[16];
-    boolean_T Constant_Value_j;
+    boolean_T Constant_Value_ad;
     boolean_T Delay_InitialCondition;
     boolean_T Delay1_InitialCondition;
     boolean_T Constant_Value_i;
