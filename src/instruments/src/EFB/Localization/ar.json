@@ -139,14 +139,14 @@
     "Services": {
       "BaggageTruck": "شاحنة الأمتعة",
       "CateringTruck": "شاحنة التموين",
-      "Cones": "Safety Cones",
+      "Cones": "اقماع الامان",
       "DoorAft": "الباب الخلفي ",
       "DoorFwd": "الباب الامامي ",
       "ExternalPower": "الطاقة الخارجية",
       "FuelTruck": "شاحنة وقود",
       "JetBridge": "جسر الصعود ",
       "Title": "الخدمات",
-      "WheelChocks": "Wheel Chocks"
+      "WheelChocks": "مثبتات العجلات "
     },
     "Title": "الأرضي"
   },
@@ -379,7 +379,7 @@
       "Left": "انتقل إلى اليسار",
       "PausePushback": "الإيقاف المؤقت أو إلغاء الإيقاف المؤقت للدفع ",
       "Right": "اتجه إلى اليمين",
-      "SetReleaseParkingBrake": "Set or release parking brake",
+      "SetReleaseParkingBrake": "ضبط أو تحرير فرامل الانتظار",
       "SliderDirection": "تحرك للاتجاه المطلوب",
       "SliderSpeed": "تحرك للحصول على السرعة المطلوبة",
       "SystemEnabledOff": "انقر لتشغيل نظام الدفع.",
@@ -459,7 +459,7 @@
       "Active": "نشط",
       "Auto": "تلقائي",
       "Calibrate": "تعيّر ",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "اقماع الامان",
       "DefaultBarometerUnit": "وحدة البارومتر الافتراضية",
       "DynamicRegistrationDecal": "ملصق تسجيل ديناميكي",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "تمكين اتصال خادم MCDU (إلغاء التنشيط التلقائي بعد 5 دقائق إذا لم يكن هناك اتصال ناجح)",
@@ -468,13 +468,13 @@
       "Inactive": "غير نشط",
       "LoadOnly": "تحميل فقط",
       "None": "لا شيء",
-      "Off": "Off",
+      "Off": "إيقاف",
       "Save": "حفظ",
       "SyncMsfsFlightPlan": "مزامنة خطة رحلة MSFS",
       "ThrottleDetents": "محددات دفة تحكم النفاث ",
       "Title": "خيارات المحاكاة ",
       "UseCalculatedIlsSignals": "استخدم إشارات ILS المحسوبة",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "مثبتات العجلات ",
       "inHg": "زنج"
     },
     "ThrottleConfig": {
