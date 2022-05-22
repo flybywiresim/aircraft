@@ -49,7 +49,7 @@ interface GroundServiceButtonProps {
 const GroundServiceButton: FC<GroundServiceButtonProps> = ({ children, className, name, onClick, disabled, id }) => (
     <div
         id={id}
-        className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${className}`}
+        className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer  ${disabled && 'opacity-40 pointer-events-none'} ${className}`}
         onClick={disabled ? undefined : onClick}
     >
         {children}
@@ -63,25 +63,34 @@ export const ServicesPage = () => {
     const activeButtons = useAppSelector((state) => state.buttons.activeButtons);
     const disabledButtons = useAppSelector((state) => state.buttons.disabledButtons);
 
+    // Flight state
+    const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 250);
+    const [aircraftIsStationary] = useSimVar('L:A32NX_IS_STATIONARY', 'bool', 250);
+    const [groundServicesAvailable, setGroundServicesAvailable] = useState(simOnGround && aircraftIsStationary);
+
+    // Ground Services
     const [jetWayActive, setJetWayActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_JETWAY', 'bool', 1000);
     const [, setRampActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
     const [cargoActive, setCargoActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 'K:REQUEST_LUGGAGE', 'bool', 1000);
     const [cateringActive, setCateringActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 'K:REQUEST_CATERING', 'bool', 1000);
-
     const [fuelingActive, setFuelingActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:9', 'Percent over 100', 'K:REQUEST_FUEL_KEY', 'bool', 1000);
     const [pushBack] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 1000);
     const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 'K:REQUEST_POWER_SUPPLY', 'bool', 1000);
 
+    // Wheel Chocks and Cones
+    const [isGroundEquipmentVisible] = useSimVar('L:A32NX_GND_EQP_IS_VISIBLE', 'bool', 500);
     const [wheelChocksEnabled] = useSimVar('L:A32NX_MODEL_WHEELCHOCKS_ENABLED', 'bool', 500);
     const [conesEnabled] = useSimVar('L:A32NX_MODEL_CONES_ENABLED', 'bool', 500);
-    const [isGroundEquipmentVisible] = useSimVar('L:A32NX_GND_EQP_IS_VISIBLE', 'bool', 500);
-
     const [wheelChocksVisible, setWheelChocksVisible] = useState(wheelChocksEnabled && isGroundEquipmentVisible);
     const [conesVisible, setConesVisible] = useState(conesEnabled && isGroundEquipmentVisible);
 
     const [tugActive] = useState(false);
 
     const STATE_WAITING = 'WAITING';
+
+    useEffect(() => {
+        setGroundServicesAvailable(simOnGround && aircraftIsStationary);
+    }, [simOnGround, aircraftIsStationary]);
 
     useEffect(() => {
         setWheelChocksVisible(wheelChocksEnabled && isGroundEquipmentVisible);
@@ -133,6 +142,7 @@ export const ServicesPage = () => {
                     }, e, jetWayActive, 'door-fwd-left')}
                     className={applySelectedWithSync('', 'jetway', jetWayActive, 'door-fwd-left')}
                     id="jetway"
+                    disabled={!groundServicesAvailable}
                 >
                     <PersonPlusFill size={36} />
                 </GroundServiceButton>
@@ -143,13 +153,14 @@ export const ServicesPage = () => {
                     onClick={handleClick}
                     selectionCallback={applySelectedWithSync}
                     id="door-fwd-left"
-                    disabled={disabledButtons.includes('door-fwd-left')}
+                    disabled={!groundServicesAvailable || disabledButtons.includes('door-fwd-left')}
                 />
                 <GroundServiceButton
                     name={t('Ground.Services.FuelTruck')}
                     onClick={(e) => handleClick(() => setFuelingActive(1), e)}
                     className={applySelectedWithSync('', 'fuel', fuelingActive)}
                     id="fuel"
+                    disabled={!groundServicesAvailable}
                 >
                     <Truck size={36} />
                 </GroundServiceButton>
@@ -161,6 +172,7 @@ export const ServicesPage = () => {
                     onClick={(e) => handleClick(() => setPowerActive(1), e)}
                     className={applySelectedWithSync('', 'power', powerActive)}
                     id="power"
+                    disabled={!groundServicesAvailable}
                 >
                     <PlugFill size={36} />
                 </GroundServiceButton>
@@ -169,6 +181,7 @@ export const ServicesPage = () => {
                     onClick={(e) => handleClick(() => setCargoActive(1), e)}
                     className={applySelectedWithSync('', 'baggage', cargoActive)}
                     id="baggage"
+                    disabled={!groundServicesAvailable}
                 >
                     <HandbagFill size={36} />
                 </GroundServiceButton>
@@ -208,13 +221,14 @@ export const ServicesPage = () => {
                     onClick={handleClick}
                     selectionCallback={applySelectedWithSync}
                     id="door-aft-right"
-                    disabled={disabledButtons.includes('door-aft-right')}
+                    disabled={!groundServicesAvailable || disabledButtons.includes('door-aft-right')}
                 />
                 <GroundServiceButton
                     name={t('Ground.Services.CateringTruck')}
                     onClick={(e) => handleClick(() => setCateringActive(1), e, 'door-aft-right')}
                     className={applySelectedWithSync('', 'catering', cateringActive, 'door-aft-right')}
                     id="catering"
+                    disabled={!groundServicesAvailable}
                 >
                     <ArchiveFill size={36} />
                 </GroundServiceButton>
