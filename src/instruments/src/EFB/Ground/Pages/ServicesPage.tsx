@@ -1,26 +1,15 @@
 import React, { useState, FC, useEffect } from 'react';
-import { useSimVar, useSplitSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '@instruments/common/simVars';
 import {
-    DoorOpenFill,
     Truck,
     PersonPlusFill,
     PlugFill,
     HandbagFill,
-    ArchiveFill, ConeStriped, VinylFill as Wheel, TriangleFill as Chock,
+    ArchiveFill, ConeStriped, VinylFill as Wheel, TriangleFill as Chock, DoorClosedFill,
 } from 'react-bootstrap-icons';
 
 import { t } from '../../translation';
 import { UprightOutline } from '../../Assets/UprightOutline';
-
-import { useAppDispatch, useAppSelector } from '../../Store/store';
-import {
-    addActiveButton,
-    removeActiveButton,
-    addDisabledButton,
-    removeDisabledButton,
-    updateButton,
-} from '../../Store/features/buttons';
-import { applySelectedWithSync, StatefulButton } from '../Ground';
 
 interface ServiceButtonWrapperProps {
     className?: string,
@@ -38,44 +27,65 @@ const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, classNa
     </div>
 );
 
-interface GroundServiceButtonProps {
-    className?: string,
-    name: string,
-    onClick: (e: React.MouseEvent<HTMLDivElement>) => void,
-    disabled?: boolean,
-    id: string,
+enum ServiceButtonState {
+    HIDDEN,
+    DISABLED,
+    INACTIVE,
+    TRIGGERED,
+    ACTIVE,
 }
 
-const GroundServiceButton: FC<GroundServiceButtonProps> = ({ children, className, name, onClick, disabled, id }) => (
-    <div
-        id={id}
-        className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer  ${disabled && 'opacity-40 pointer-events-none'} ${className}`}
-        onClick={disabled ? undefined : onClick}
-    >
-        {children}
-        <h1 className="flex-shrink-0 text-2xl font-medium text-current">{name}</h1>
-    </div>
-);
+interface GroundServiceButtonProps {
+    id: string,
+    name: string,
+    state: ServiceButtonState,
+    onClick: () => void,
+    className?: string,
+}
+
+const classes = [
+    // HIDDEN
+    '',
+    // DISABLED
+    'opacity-40 pointer-events-none',
+    // INACTIVE
+    'hover:bg-theme-highlight text-theme-text hover:text-theme-secondary transition duration-200 disabled:bg-grey-600',
+    // TRIGGERED
+    'text-white bg-amber-600 border-amber-600',
+    // ACTIVE
+    'text-white bg-green-600 border-green-600',
+];
+
+const GroundServiceButton: React.FC<GroundServiceButtonProps> = ({ children, id, name, state, onClick, className }) => {
+    if (state === ServiceButtonState.HIDDEN) {
+        return (<></>);
+    }
+
+    return (
+        <div
+            id={id}
+            className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${classes[state]} ${className}`}
+            onClick={state === ServiceButtonState.DISABLED ? undefined : onClick}
+        >
+            {children}
+            <h1 className="flex-shrink-0 text-2xl font-medium text-current">{name}</h1>
+        </div>
+    );
+};
 
 export const ServicesPage = () => {
-    const dispatch = useAppDispatch();
-
-    const activeButtons = useAppSelector((state) => state.buttons.activeButtons);
-    const disabledButtons = useAppSelector((state) => state.buttons.disabledButtons);
-
     // Flight state
     const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 250);
     const [aircraftIsStationary] = useSimVar('L:A32NX_IS_STATIONARY', 'bool', 250);
-    const [groundServicesAvailable, setGroundServicesAvailable] = useState(simOnGround && aircraftIsStationary);
+    const [pushBackAttached] = useSimVar('Pushback Attached', 'enum', 1000);
+    const [groundServicesAvailable, setGroundServicesAvailable] = useState(simOnGround && aircraftIsStationary && !pushBackAttached);
 
     // Ground Services
-    const [jetWayActive, setJetWayActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_JETWAY', 'bool', 1000);
-    const [, setRampActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 'K:TOGGLE_RAMPTRUCK', 'bool', 1000);
-    const [cargoActive, setCargoActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 'K:REQUEST_LUGGAGE', 'bool', 1000);
-    const [cateringActive, setCateringActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 'K:REQUEST_CATERING', 'bool', 1000);
-    const [fuelingActive, setFuelingActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:9', 'Percent over 100', 'K:REQUEST_FUEL_KEY', 'bool', 1000);
-    const [pushBack] = useSplitSimVar('PUSHBACK STATE', 'enum', 'K:TOGGLE_PUSHBACK', 'bool', 1000);
-    const [powerActive, setPowerActive] = useSplitSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 'K:REQUEST_POWER_SUPPLY', 'bool', 1000);
+    const [cabinDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 1000);
+    const [aftDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 1000);
+    const [cargoDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 1000);
+    const [gpuActive] = useSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 1000);
+    const [fuelingActive] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'Percent over 100', 1000);
 
     // Wheel Chocks and Cones
     const [isGroundEquipmentVisible] = useSimVar('L:A32NX_GND_EQP_IS_VISIBLE', 'bool', 500);
@@ -84,107 +94,235 @@ export const ServicesPage = () => {
     const [wheelChocksVisible, setWheelChocksVisible] = useState(wheelChocksEnabled && isGroundEquipmentVisible);
     const [conesVisible, setConesVisible] = useState(conesEnabled && isGroundEquipmentVisible);
 
-    const [tugActive] = useState(false);
-
-    const STATE_WAITING = 'WAITING';
-
     useEffect(() => {
-        setGroundServicesAvailable(simOnGround && aircraftIsStationary);
-    }, [simOnGround, aircraftIsStationary]);
+        setGroundServicesAvailable(simOnGround && aircraftIsStationary && !pushBackAttached);
+    }, [simOnGround, aircraftIsStationary, pushBackAttached]);
 
     useEffect(() => {
         setWheelChocksVisible(wheelChocksEnabled && isGroundEquipmentVisible);
         setConesVisible(conesEnabled && isGroundEquipmentVisible);
     }, [isGroundEquipmentVisible, wheelChocksEnabled, conesEnabled]);
 
-    useEffect(() => {
-        for (const button of activeButtons) {
-            if (button.value > 0.5) {
-                dispatch(updateButton(button));
-            }
+    const getInteractiveOpeningState = (value) => {
+        if (value === 0) {
+            return ServiceButtonState.INACTIVE;
         }
-    }, [jetWayActive, cargoActive, cateringActive, fuelingActive, powerActive, pushBack, wheelChocksEnabled, conesEnabled]);
-
-    const handleClick = (callBack: () => void, event: React.MouseEvent, gameSync?, disabledButton?: string) => {
-        if (!tugActive) {
-            if (!activeButtons.map((b: StatefulButton) => b.id).includes(event.currentTarget.id)) {
-                dispatch(addActiveButton({ id: event.currentTarget.id, state: STATE_WAITING, callBack, value: gameSync }));
-                if (disabledButton) {
-                    dispatch(addDisabledButton(disabledButton));
-                }
-                callBack();
-            } else {
-                const index = activeButtons.map((b: StatefulButton) => b.id).indexOf(event.currentTarget.id);
-
-                if (index > -1) {
-                    dispatch(removeActiveButton(index));
-                }
-                if (disabledButton) {
-                    const disabledIndex = disabledButtons.indexOf(disabledButton);
-                    dispatch(removeDisabledButton(disabledIndex));
-                }
-                callBack();
-            }
+        if (value > 0 && value < 1) {
+            return ServiceButtonState.TRIGGERED;
         }
+        return ServiceButtonState.ACTIVE;
     };
+
+    // JetBridge Button
+    const [jetWayButtonState, setJetWayButtonState] = useState(ServiceButtonState.INACTIVE);
+    useEffect(() => {
+        if (!groundServicesAvailable) {
+            setJetWayButtonState(ServiceButtonState.DISABLED);
+            return;
+        }
+        if (jetWayButtonState < ServiceButtonState.TRIGGERED) {
+            return;
+        }
+        setJetWayButtonState(getInteractiveOpeningState(cabinDoorOpen));
+    }, [groundServicesAvailable, cabinDoorOpen]);
+
+    // Cabin Door Button
+    const [cabinDoorButtonState, setCabinDoorButtonState] = useState(cabinDoorOpen ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE);
+    useEffect(() => {
+        if (!groundServicesAvailable) {
+            setCabinDoorButtonState(ServiceButtonState.DISABLED);
+            return;
+        }
+        setCabinDoorButtonState(getInteractiveOpeningState(cabinDoorOpen));
+    }, [groundServicesAvailable, cabinDoorOpen]);
+
+    // Fuel Truck Button
+    const [fuelTruckButtonState, setFuelTruckButtonState] = useState(fuelingActive ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE);
+    useEffect(() => {
+        if (!groundServicesAvailable) {
+            setFuelTruckButtonState(ServiceButtonState.DISABLED);
+            return;
+        }
+        setFuelTruckButtonState(getInteractiveOpeningState(fuelingActive));
+    }, [groundServicesAvailable, fuelingActive]);
+
+    // GPU Button
+    const [gpuButtonState, setGpuButtonState] = useState(gpuActive ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE);
+    useEffect(() => {
+        if (!groundServicesAvailable) {
+            setGpuButtonState(ServiceButtonState.DISABLED);
+            return;
+        }
+        setGpuButtonState(getInteractiveOpeningState(gpuActive));
+    }, [groundServicesAvailable, gpuActive]);
+
+    // Cargo Door Button
+    const [cargoDoorButtonState, setCargoDoorButtonState] = useState(cargoDoorOpen ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE);
+    useEffect(() => {
+        if (!groundServicesAvailable) {
+            setCargoDoorButtonState(ServiceButtonState.DISABLED);
+            return;
+        }
+        setCargoDoorButtonState(getInteractiveOpeningState(cargoDoorOpen));
+    }, [groundServicesAvailable, cargoDoorOpen]);
+
+    // Baggage Button
+    const [baggageButtonState, setBaggageButtonState] = useState(ServiceButtonState.INACTIVE);
+    useEffect(() => {
+        if (!groundServicesAvailable) {
+            setBaggageButtonState(ServiceButtonState.DISABLED);
+            return;
+        }
+        if (baggageButtonState < ServiceButtonState.TRIGGERED) {
+            return;
+        }
+        setBaggageButtonState(getInteractiveOpeningState(cargoDoorOpen));
+    }, [groundServicesAvailable, cargoDoorOpen]);
+
+    // Aft Door Button
+    const [aftDoorButtonState, setAftDoorButtonState] = useState(aftDoorOpen ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE);
+    useEffect(() => {
+        if (!groundServicesAvailable) {
+            setAftDoorButtonState(ServiceButtonState.DISABLED);
+            return;
+        }
+        setAftDoorButtonState(getInteractiveOpeningState(aftDoorOpen));
+    }, [groundServicesAvailable, aftDoorOpen]);
+
+    // Catering Button
+    const [cateringButtonState, setCateringButtonState] = useState(ServiceButtonState.INACTIVE);
+    useEffect(() => {
+        if (!groundServicesAvailable) {
+            setCateringButtonState(ServiceButtonState.DISABLED);
+            return;
+        }
+        if (cateringButtonState < ServiceButtonState.TRIGGERED) {
+            return;
+        }
+        setCateringButtonState(getInteractiveOpeningState(aftDoorOpen));
+    }, [groundServicesAvailable, aftDoorOpen]);
+
+    // Pushback or movement start --> close doors
+    useEffect(() => {
+        if (pushBackAttached || !aircraftIsStationary) {
+            if (cabinDoorOpen === 1) {
+                SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 1);
+            }
+            if (aftDoorOpen === 1) {
+                SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 4);
+            }
+            if (cargoDoorOpen === 1) {
+                SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 6);
+            }
+        }
+    }, [pushBackAttached, aircraftIsStationary]);
 
     return (
         <div className="relative h-content-section-reduced">
-            {/* TODO: Replace with JIT value */}
             <UprightOutline className="inset-x-0 mx-auto w-full h-full text-theme-text" />
 
+            {pushBackAttached && (
+                <div
+                    className="text-2xl font-bold text-utility-amber"
+                    style={{ position: 'absolute', left: 540, right: 0, top: 0 }}
+                >
+                    TUG
+                </div>
+            )}
+
             <ServiceButtonWrapper xr={880} y={64}>
+
+                {/* JET BRIDGE */}
                 <GroundServiceButton
-                    name={t('Ground.Services.JetBridge')}
-                    onClick={(e) => handleClick(() => {
-                        setJetWayActive(1);
-                        setRampActive(1);
-                    }, e, jetWayActive, 'door-fwd-left')}
-                    className={applySelectedWithSync('', 'jetway', jetWayActive, 'door-fwd-left')}
                     id="jetway"
-                    disabled={!groundServicesAvailable}
+                    name={t('Ground.Services.JetBridge')}
+                    state={jetWayButtonState}
+                    onClick={() => {
+                        setJetWayButtonState(ServiceButtonState.TRIGGERED);
+                        SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
+                        SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
+                    }}
                 >
                     <PersonPlusFill size={36} />
                 </GroundServiceButton>
-                <DoorToggle
-                    name={t('Ground.Services.DoorFwd')}
-                    index={0}
-                    tugActive={tugActive}
-                    onClick={handleClick}
-                    selectionCallback={applySelectedWithSync}
-                    id="door-fwd-left"
-                    disabled={!groundServicesAvailable || disabledButtons.includes('door-fwd-left')}
-                />
+
+                {/* CABIN DOOR */}
                 <GroundServiceButton
-                    name={t('Ground.Services.FuelTruck')}
-                    onClick={(e) => handleClick(() => setFuelingActive(1), e)}
-                    className={applySelectedWithSync('', 'fuel', fuelingActive)}
+                    id="cabinDoor"
+                    name={t('Ground.Services.DoorFwd')}
+                    state={cabinDoorButtonState}
+                    onClick={() => {
+                        setCabinDoorButtonState(ServiceButtonState.TRIGGERED);
+                        SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 1);
+                        // closing the door also should retract the jet bridge if we used it before
+                        if (jetWayButtonState > ServiceButtonState.INACTIVE) {
+                            SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', true);
+                            SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', true);
+                        }
+                    }}
+                >
+                    <DoorClosedFill size={36} />
+                </GroundServiceButton>
+
+                {/* FUEL TRUCK */}
+                <GroundServiceButton
                     id="fuel"
-                    disabled={!groundServicesAvailable}
+                    name={t('Ground.Services.FuelTruck')}
+                    state={fuelTruckButtonState}
+                    onClick={() => {
+                        setFuelTruckButtonState(ServiceButtonState.TRIGGERED);
+                        SimVar.SetSimVarValue('K:REQUEST_FUEL_KEY', 'bool', true);
+                    }}
                 >
                     <Truck size={36} />
                 </GroundServiceButton>
+
             </ServiceButtonWrapper>
 
-            <ServiceButtonWrapper xl={770} y={64} className="">
+            {/* GPU */}
+            <ServiceButtonWrapper xl={850} y={64} className="">
                 <GroundServiceButton
-                    name={t('Ground.Services.ExternalPower')}
-                    onClick={(e) => handleClick(() => setPowerActive(1), e)}
-                    className={applySelectedWithSync('', 'power', powerActive)}
                     id="power"
-                    disabled={!groundServicesAvailable}
+                    name={t('Ground.Services.ExternalPower')}
+                    state={gpuButtonState}
+                    onClick={() => {
+                        setGpuButtonState(ServiceButtonState.TRIGGERED);
+                        SimVar.SetSimVarValue('K:REQUEST_POWER_SUPPLY', 'bool', true);
+                    }}
                 >
                     <PlugFill size={36} />
                 </GroundServiceButton>
+
+                {/* CARGO DOOR */}
                 <GroundServiceButton
-                    name={t('Ground.Services.BaggageTruck')}
-                    onClick={(e) => handleClick(() => setCargoActive(1), e)}
-                    className={applySelectedWithSync('', 'baggage', cargoActive)}
+                    id="door-cargo"
+                    name={t('Ground.Services.DoorCargo')}
+                    state={cargoDoorButtonState}
+                    onClick={() => {
+                        setCargoDoorButtonState(ServiceButtonState.TRIGGERED);
+                        SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 6);
+                        // closing the door also should cancel the catering if we used it before
+                        if (baggageButtonState > ServiceButtonState.INACTIVE) {
+                            SimVar.SetSimVarValue('K:REQUEST_LUGGAGE', 'bool', true);
+                        }
+                    }}
+                >
+                    <DoorClosedFill size={36} />
+                </GroundServiceButton>
+
+                {/* BAGGAGE TRUCK */}
+                <GroundServiceButton
                     id="baggage"
-                    disabled={!groundServicesAvailable}
+                    name={t('Ground.Services.BaggageTruck')}
+                    state={baggageButtonState}
+                    onClick={() => {
+                        setBaggageButtonState(ServiceButtonState.TRIGGERED);
+                        SimVar.SetSimVarValue('K:REQUEST_LUGGAGE', 'bool', true);
+                    }}
                 >
                     <HandbagFill size={36} />
                 </GroundServiceButton>
+
             </ServiceButtonWrapper>
 
             {/* Wheel Chocks and Security Cones are only visual information. To reuse styling */}
@@ -214,72 +352,38 @@ export const ServicesPage = () => {
             </ServiceButtonWrapper>
 
             <ServiceButtonWrapper xl={770} y={600} className="">
-                <DoorToggle
-                    tugActive={tugActive}
-                    name={t('Ground.Services.DoorAft')}
-                    index={3}
-                    onClick={handleClick}
-                    selectionCallback={applySelectedWithSync}
-                    id="door-aft-right"
-                    disabled={!groundServicesAvailable || disabledButtons.includes('door-aft-right')}
-                />
+
+                {/* AFT DOOR */}
                 <GroundServiceButton
-                    name={t('Ground.Services.CateringTruck')}
-                    onClick={(e) => handleClick(() => setCateringActive(1), e, 'door-aft-right')}
-                    className={applySelectedWithSync('', 'catering', cateringActive, 'door-aft-right')}
+                    id="door-aft-right"
+                    name={t('Ground.Services.DoorAft')}
+                    state={aftDoorButtonState}
+                    onClick={() => {
+                        setAftDoorButtonState(ServiceButtonState.TRIGGERED);
+                        SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 4);
+                        // closing the door also should cancel the catering if we used it before
+                        if (cateringButtonState > ServiceButtonState.INACTIVE) {
+                            SimVar.SetSimVarValue('K:REQUEST_CATERING', 'bool', true);
+                        }
+                    }}
+                >
+                    <DoorClosedFill size={36} />
+                </GroundServiceButton>
+
+                {/* CATERING TRUCK */}
+                <GroundServiceButton
                     id="catering"
-                    disabled={!groundServicesAvailable}
+                    name={t('Ground.Services.CateringTruck')}
+                    state={cateringButtonState}
+                    onClick={() => {
+                        setCateringButtonState(ServiceButtonState.TRIGGERED);
+                        SimVar.SetSimVarValue('K:REQUEST_CATERING', 'bool', true);
+                    }}
                 >
                     <ArchiveFill size={36} />
                 </GroundServiceButton>
+
             </ServiceButtonWrapper>
         </div>
-    );
-};
-
-interface DoorToggleProps {
-    index: number;
-    onClick: (callback: () => void, e: React.MouseEvent) => void;
-    selectionCallback: (className: string, id: string, doorState: any, disabledId: string) => string;
-    id: string;
-    tugActive: boolean;
-    disabled?: boolean;
-    name: string;
-}
-
-const DoorToggle = ({ index, onClick, selectionCallback, id, tugActive, disabled, name }: DoorToggleProps) => {
-    const [doorState, setDoorState] = useSplitSimVar(
-        `A:INTERACTIVE POINT OPEN:${index}`,
-        'Percent over 100',
-        'K:TOGGLE_AIRCRAFT_EXIT',
-        'Enum',
-        500,
-    );
-    const [previousDoorState, setPreviousDoorState] = useState(doorState);
-
-    useEffect(() => {
-        if (tugActive && previousDoorState) {
-            setDoorState(index + 1);
-            setPreviousDoorState(!previousDoorState);
-        } else if (tugActive) {
-            setPreviousDoorState(false);
-        } else {
-            setPreviousDoorState(doorState);
-        }
-    }, [tugActive, index, previousDoorState, setDoorState, doorState]);
-
-    return (
-        <GroundServiceButton
-            name={name}
-            onClick={(e) => onClick(() => {
-                setDoorState(index + 1);
-                setPreviousDoorState(true);
-            }, e)}
-            className={selectionCallback('', id, doorState, id)}
-            disabled={disabled}
-            id={id}
-        >
-            <DoorOpenFill size={36} />
-        </GroundServiceButton>
     );
 };
