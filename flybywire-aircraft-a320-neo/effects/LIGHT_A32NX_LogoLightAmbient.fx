@@ -7,7 +7,7 @@ Priority=0
 [Properties]
 
 [Emitter.0]
-Lifetime=0.0, 0.0
+Lifetime=0.5, 0.5
 Delay=0.0, 0.0
 Bounce=0.0
 Light=1
