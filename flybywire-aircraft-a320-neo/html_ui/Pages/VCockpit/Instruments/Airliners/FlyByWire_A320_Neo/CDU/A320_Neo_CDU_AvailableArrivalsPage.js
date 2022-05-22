@@ -365,7 +365,7 @@ class CDUAvailableArrivalsPage {
 
             if (pageCurrent < selectedApproach.transitions.length - 3) {
                 mcdu.onUp = () => {
-                    pageCurrent += 4;
+                    pageCurrent += 3;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
@@ -375,7 +375,7 @@ class CDUAvailableArrivalsPage {
             }
             if (pageCurrent > 0) {
                 mcdu.onDown = () => {
-                    pageCurrent -= 4;
+                    pageCurrent -= 3;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
