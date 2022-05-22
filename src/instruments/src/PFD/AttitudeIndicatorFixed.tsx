@@ -444,7 +444,7 @@ class SidestickIndicator extends DisplayComponent<{ bus: EventBus }> {
         const foStickDisabled = foStickDisabledFcdc1 || foStickDisabledFcdc2;
         const captStickDisabled = captStickDisabledFcdc1 || captStickDisabledFcdc2;
 
-        const totalPitchCommand = Math.max(Math.min(((foStickDisabled ? 0 : this.foPitchCommand.value) + (captStickDisabled ? 0 : this.captPitchCommand.value)), 16), -16) * 1.43875;
+        const totalPitchCommand = Math.max(Math.min(((foStickDisabled ? 0 : this.foPitchCommand.value) + (captStickDisabled ? 0 : this.captPitchCommand.value)), 16), -16) * -1.43875;
         const totalRollCommand = Math.max(Math.min((foStickDisabled ? 0 : this.foRollCommand.value) + (captStickDisabled ? 0 : this.captRollCommand.value), 20), -20) * 1.478;
 
         if (!showIndicator) {

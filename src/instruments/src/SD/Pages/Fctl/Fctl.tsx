@@ -125,7 +125,7 @@ const PitchTrim = ({ x, y, fcdcDiscreteWord2 }: PitchTrimProps) => {
                 textAnchor="middle"
                 alignmentBaseline="central"
             >
-                {Math.sign(thsPositionToUse.valueOr(0)) === -1 ? 'DN' : 'UP'}
+                {Math.sign(thsPositionToUse.valueOr(0)) === 1 ? 'DN' : 'UP'}
             </text>
 
             <HydraulicIndicator x={80} y={0} type="G" />
