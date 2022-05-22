@@ -18,7 +18,7 @@ export const useUpdate = (handler: (deltaTime: number) => void) => {
         return () => {
             getRootElement().removeEventListener('update', wrappedHandler);
         };
-    });
+    }, []);
 };
 
 export const useInteractionEvent = (event: string, handler: (any?) => void): void => {

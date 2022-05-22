@@ -1217,7 +1217,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.socket.onopen = () => {
             console.log(`Websocket connection to MCDU Server established. (${url})`);
-            (new NXNotif).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
+            (new NXNotifManager).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
             this.sendToSocket("mcduConnected");
             this.sendUpdate();
             this.socketConnectionAttempts = 0;

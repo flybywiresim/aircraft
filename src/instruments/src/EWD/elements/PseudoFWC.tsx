@@ -284,8 +284,8 @@ const PseudoFWC: React.FC = () => {
     const [eng1BleedPbFault] = useSimVar('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT', 'bool', 500);
     const [eng2Bleed] = useSimVar('A:BLEED AIR ENGINE:2', 'bool', 100);
     const [eng2BleedPbFault] = useSimVar('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT', 'bool', 500);
-    const [pack1Fault] = useSimVar('L:A32NX_AIRCOND_PACK1_FAULT', 'bool');
-    const [pack2Fault] = useSimVar('L:A32NX_AIRCOND_PACK2_FAULT', 'bool');
+    const [pack1Fault] = useSimVar('L:A32NX_OVHD_COND_PACK_1_PB_HAS_FAULT', 'bool');
+    const [pack2Fault] = useSimVar('L:A32NX_OVHD_COND_PACK_2_PB_HAS_FAULT', 'bool');
     const [pack1On] = useSimVar('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool');
     const [pack2On] = useSimVar('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool');
     const [excessPressure] = useSimVar('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool', 500);
@@ -1410,7 +1410,7 @@ const PseudoFWC: React.FC = () => {
     }, [
         engine1Generator, engine2Generator, blueLP, greenLP, yellowLP, eng1pumpPBisAuto, eng2pumpPBisAuto,
         flapsMcdu, flapsMcduEntered, speedBrake, parkBrake, v1Speed, vrSpeed, v2Speed, cabin,
-        catering, cargoaftLocked, cargofwdLocked, toconfigBtn,
+        catering, cargoaftLocked, cargofwdLocked, toconfigBtn, tomemo, flapsHandle, brakesHot,
     ]);
 
     useEffect(() => {

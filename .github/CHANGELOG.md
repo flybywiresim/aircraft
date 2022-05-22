@@ -5,7 +5,19 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 ## 0.9.0
+
 1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
+1. [MCDU] Allow Wind Request from Simbrief flight plan - @USA-RedDragon (Jacob McSwain)
+1. [HYD] Fix fluid return handling of actuators - @Crocket63 (crocket)
+1. [ENGINE] Fuel persistency between each flight - @juliansebline (Julian Sebline#8476)
+1. [HYD] Now allowing reverting gravity gear extension - @Crocket63 (crocket)
+1. [TCAS] Fixed issue when turning to STBY while RA is issued - @2hwk (2Cas#1022)
+1. [GPWS] Alt callouts now finish before altitude is reached - @2hwk (2Cas#1022)
+1. [ENGINE] Improved engine model at TOGA - @Taz5150 (TazX [Z+2]#0405)
+1. [FLIGHTMODEL] Improve pitch trim and manual braking level - @donstim (donbikes#4084)
+1. [ATSU] Fix cargo weight is not set on manually PAX - @Revyn112 (Revyn112#1010)
+1. [CDSS] When off no longer displays door video - @davidwalschots (David Walschots)
+1. [FMGC] Map leg course with station declination where required - @tracernz (Mike)
 
 ## 0.8.0
 
@@ -250,7 +262,8 @@
 1. [MISC] Added custom Autobrake event for SimConnect - @aguther (Andreas Guther)
 1. [EWD] Fixed failures not re-triggering when resolved - @tricky_dicky (Richard Pilbery)
 1. [SOUND] Prevent autopilot disconnect from sounding on C+D spawn - @tricky_dicky (Richard Pilbery) and @saschl (saschl#9432)
-1. [MCDU] Allow Wind Request from Simbrief flight plan - @USA-RedDragon (Jacob McSwain)
+1. [FMGC] Removed flight phase transition from TAKEOFF to PREFLIGHT - @beheh (Benedict Etzel)
+1. [FMGC] Added flight phase transition to DONE when on ground > 30 s and engines off - @aguther (Andreas Guther)
 
 ## 0.7.0
 

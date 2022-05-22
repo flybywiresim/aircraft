@@ -892,6 +892,7 @@ export class ManagedFlightPlan {
         const selectedOriginRunwayIndex = this.procedureDetails.originRunwayIndex;
 
         const airportInfo = origin.infos as AirportInfo;
+        const airportMagVar = Facilities.getMagVar(airportInfo.coordinates.lat, airportInfo.coordinates.long);
 
         // Make origin fix an IF leg
         if (origin) {
@@ -949,7 +950,7 @@ export class ManagedFlightPlan {
 
         if (legs.length > 0 || selectedOriginRunwayIndex !== -1 || (departureIndex !== -1 && runwayIndex !== -1)) {
             segment = this.addSegment(SegmentType.Departure);
-            let procedure = new LegsProcedure(legs, origin, this._parentInstrument, undefined, legAnnotations);
+            let procedure = new LegsProcedure(legs, origin, this._parentInstrument, airportMagVar, undefined, legAnnotations);
 
             const runway: OneWayRunway | null = this.getOriginRunway();
 
@@ -1016,6 +1017,7 @@ export class ManagedFlightPlan {
         const { arrivalTransitionIndex } = this.procedureDetails;
 
         const destinationInfo = destination.infos as AirportInfo;
+        const airportMagVar = Facilities.getMagVar(destinationInfo.coordinates.lat, destinationInfo.coordinates.long);
 
         if (arrivalIndex !== -1 && arrivalTransitionIndex !== -1) {
             const transition: RawEnRouteTransition = destinationInfo.arrivals[arrivalIndex].enRouteTransitions[arrivalTransitionIndex];
@@ -1051,7 +1053,7 @@ export class ManagedFlightPlan {
                 _startIndex = segment.offset;
             }
 
-            const procedure = new LegsProcedure(legs, this.getWaypoint(segment.offset - 1), this._parentInstrument, undefined, legAnnotations);
+            const procedure = new LegsProcedure(legs, this.getWaypoint(segment.offset - 1), this._parentInstrument, airportMagVar, undefined, legAnnotations);
 
             let waypointIndex = segment.offset;
             // console.log('MFP: buildArrival - ADDING WAYPOINTS ------------------------');
@@ -1086,6 +1088,7 @@ export class ManagedFlightPlan {
         const { destinationRunwayIndex } = this.procedureDetails;
 
         const destinationInfo = destination.infos as AirportInfo;
+        const airportMagVar = Facilities.getMagVar(destinationInfo.coordinates.lat, destinationInfo.coordinates.long);
 
         const approach: RawApproach = destinationInfo.approaches[approachIndex];
         const approachName = approach && approach.approachType !== ApproachType.APPROACH_TYPE_UNKNOWN ? approach.name : '';
@@ -1123,7 +1126,7 @@ export class ManagedFlightPlan {
 
             const runway: OneWayRunway | null = this.getDestinationRunway();
 
-            const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument, this.procedureDetails.approachType, legAnnotations);
+            const procedure = new LegsProcedure(legs, this.getWaypoint(_startIndex - 1), this._parentInstrument, airportMagVar, this.procedureDetails.approachType, legAnnotations);
 
             if (runway) {
                 procedure.calculateApproachData(runway);
@@ -1200,7 +1203,7 @@ export class ManagedFlightPlan {
 
             let waypointIndex = _startIndex;
 
-            const missedProcedure = new LegsProcedure(missedLegs, this.getWaypoint(_startIndex - 1), this._parentInstrument);
+            const missedProcedure = new LegsProcedure(missedLegs, this.getWaypoint(_startIndex - 1), this._parentInstrument, airportMagVar);
             while (missedProcedure.hasNext()) {
                 // eslint-disable-next-line no-await-in-loop
                 const waypoint = await missedProcedure.getNext().catch(console.error);
@@ -1472,16 +1475,67 @@ export class ManagedFlightPlan {
         return plan;
     }
 
+    private legDataMatches(a: WayPoint, b: WayPoint, fields: string[]) {
+        return fields.every((field) => a.additionalData[field] === b.additionalData[field]);
+    }
+
+    private isLegDuplicate(a: WayPoint, b: WayPoint): boolean {
+        if (a.additionalData.legType === b.additionalData.legType) {
+            switch (a.additionalData.legType) {
+            case LegType.AF:
+            case LegType.CR:
+            case LegType.VR:
+                return this.legDataMatches(a, b, ['course', 'theta', 'recommendedIcao']);
+            case LegType.CA:
+            case LegType.VA:
+                return this.legDataMatches(a, b, ['course']) && a.legAltitude1 === b.legAltitude1;
+            case LegType.CD:
+            case LegType.VD:
+                return this.legDataMatches(a, b, ['course', 'distance', 'recommendedIcao']);
+            case LegType.CF:
+                return this.legDataMatches(a, b, ['course']) && a.icao === b.icao;
+            case LegType.CI:
+            case LegType.VI:
+            case LegType.VM:
+                return this.legDataMatches(a, b, ['course']);
+            case LegType.DF:
+            case LegType.IF:
+            case LegType.TF:
+                return a.icao === b.icao;
+            case LegType.FA:
+                return a.icao === b.icao && a.legAltitude1 === b.legAltitude1;
+            case LegType.FC:
+                return this.legDataMatches(a, b, ['course', 'distance']) && a.icao === b.icao;
+            case LegType.FD:
+                return this.legDataMatches(a, b, ['course', 'distance', 'recommendedIcao']) && a.icao === b.icao;
+            case LegType.FM:
+                return this.legDataMatches(a, b, ['course']) && a.icao === b.icao;
+            case LegType.HA:
+                return this.legDataMatches(a, b, ['course', 'distance', 'distanceInMinutes']) && a.icao === b.icao && a.legAltitude1 === b.legAltitude1;
+            case LegType.HF:
+            case LegType.HM:
+            case LegType.PI:
+                return this.legDataMatches(a, b, ['course', 'distance', 'distanceInMinutes']) && a.icao === b.icao;
+            case LegType.RF:
+                return this.legDataMatches(a, b, ['center', 'radius']) && a.icao === b.icao;
+            default:
+            }
+        } else if (ManagedFlightPlan.isXfLeg(a) && ManagedFlightPlan.isXfLeg(b)
+            || ManagedFlightPlan.isFxLeg(a) && ManagedFlightPlan.isFxLeg(b))
+        {
+            return a.icao === b.icao;
+        }
+
+        return false;
+    }
+
     private addWaypointAvoidingDuplicates(waypoint: WayPoint, waypointIndex: number, segment: FlightPlanSegment): void {
-        const dupWp = this.waypoints.find((wp) => wp.ident === waypoint.ident);
-        const index = this.waypoints.findIndex((wp) => wp.ident === waypoint.ident); // FIXME this should really compare icaos...
+        const index = this.waypoints.findIndex((wp) => this.isLegDuplicate(waypoint, wp));
 
         // FIXME this should collapse any legs between the old position and the newly inserted position
         const wptDist = Math.abs(index - waypointIndex);
 
-        const wptSameLegTypes = dupWp?.additionalData?.legType === waypoint.additionalData?.legType;
-
-        if (wptSameLegTypes && wptDist <= 2) {
+        if (index !== -1 && wptDist <= 2) {
             // console.log('  -------> MFP: addWaypointAvoidingDuplicates: removing duplicate waypoint ', this.getWaypoint(index).ident);
             const removedWp = this.getWaypoint(index);
             if (waypoint.legAltitudeDescription === AltitudeDescriptor.Empty && removedWp.legAltitudeDescription !== AltitudeDescriptor.Empty) {

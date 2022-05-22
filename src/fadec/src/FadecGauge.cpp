@@ -13,8 +13,15 @@ __attribute__((export_name("FadecGauge_gauge_callback"))) extern "C" bool FadecG
       return FADEC_GAUGE.initializeFADEC();
     } break;
     case PANEL_SERVICE_PRE_DRAW: {
-      sGaugeDrawData* drawData = static_cast<sGaugeDrawData*>(pData);
-      return FADEC_GAUGE.onUpdate(drawData->dt);
+      /* Start updating the engines only if all needed data was fetched */
+      /* Due to the data fetching feature from the sim being available at this stage only (from what I have observed) */
+      /* Event SIMCONNECT_RECV_ID_OPEN received after the first PANEL_SERVICE_POST_INSTALL */
+      if(FADEC_GAUGE.isReady()) {
+        sGaugeDrawData* drawData = static_cast<sGaugeDrawData*>(pData);
+        return FADEC_GAUGE.onUpdate(drawData->dt);
+      } else {
+        return FADEC_GAUGE.fetchNeededData();
+      }
     } break;
     case PANEL_SERVICE_PRE_KILL: {
       FADEC_GAUGE.killFADEC();

@@ -13,7 +13,7 @@ jobs:
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
       STABLE_PRE_RELEASE_ID: 66067814
       STABLE_PRE_RELEASE_TAG: assets/stable
-      RELEASE_ZIP_NAME: A32NX-stable.zip
+      STABLE_ZIP_NAME: A32NX-stable.zip
       BUILD_DIR_NAME: stable
     steps:
       - name: Checkout source
@@ -37,7 +37,7 @@ jobs:
           cp ./build-modules/modules.json ./flybywire-aircraft-a320-neo/install.json
           ./scripts/dev-env/run.sh node ./scripts/install-source.js
           mkdir ./${{ env.BUILD_DIR_NAME }}
-          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
+          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.STABLE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -45,7 +45,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          release_name: ${{ github.ref }}
           draft: false
           prerelease: false
       - name: Upload release asset
@@ -54,8 +54,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }}
-          asset_name: ${{ env.RELEASE_ZIP_NAME }}
+          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.STABLE_ZIP_NAME }}
+          asset_name: ${{ env.STABLE_ZIP_NAME }}
           asset_content_type: application/zip
       - name: Upload to Bunny CDN
         env:
@@ -77,9 +77,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.MAIN_PRE_RELEASE_ID }}/assets{?name,label}
-          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MAIN_ZIP_NAME }}
-          asset_name: ${{ env.MAIN_ZIP_NAME }}
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.STABLE_PRE_RELEASE_ID }}/assets{?name,label}
+          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.STABLE_ZIP_NAME }}
+          asset_name: ${{ env.STABLE_ZIP_NAME }}
           asset_content_type: application/zip
       - name: Upload fragments to GitHub Pre-Release Assets
         uses: dwenegar/upload-release-assets@v1
