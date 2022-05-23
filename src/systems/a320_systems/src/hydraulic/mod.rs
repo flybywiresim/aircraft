@@ -220,9 +220,11 @@ impl A320CargoDoorFactory {
         let control_arm = Vector3::new(-0.1597, -0.1614, 0.);
         let anchor = Vector3::new(-0.7596, -0.086, 0.);
         let axis_direction = Vector3::new(0., 0., 1.);
+
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(130.),
             size,
+            cg_offset,
             cg_offset,
             control_arm,
             anchor,
@@ -307,7 +309,10 @@ impl A320AileronFactory {
     /// Builds an aileron control surface body for A320 Neo
     fn a320_aileron_body() -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(3.325, 0.16, 0.58);
+
+        // CG at half the size
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+        let aero_center = Vector3::new(0., 0., -0.4 * size[2]);
 
         let control_arm = Vector3::new(0., -0.0525, 0.);
         let anchor = Vector3::new(0., -0.0525, 0.33);
@@ -316,6 +321,7 @@ impl A320AileronFactory {
             Mass::new::<kilogram>(24.65),
             size,
             cg_offset,
+            aero_center,
             control_arm,
             anchor,
             Angle::new::<degree>(-25.),
@@ -406,6 +412,7 @@ impl A320SpoilerFactory {
     fn a320_spoiler_body() -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(1.785, 0.1, 0.685);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+        let aero_center = Vector3::new(0., 0., -0.4 * size[2]);
 
         let control_arm = Vector3::new(0., -0.067 * size[2], -0.26 * size[2]);
         let anchor = Vector3::new(0., -0.26 * size[2], 0.26 * size[2]);
@@ -414,6 +421,7 @@ impl A320SpoilerFactory {
             Mass::new::<kilogram>(16.),
             size,
             cg_offset,
+            aero_center,
             control_arm,
             anchor,
             Angle::new::<degree>(-10.),
@@ -513,6 +521,7 @@ impl A320ElevatorFactory {
     fn a320_elevator_body() -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(6., 0.405, 1.125);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
+        let aero_center = Vector3::new(0., 0., -0.3 * size[2]);
 
         let control_arm = Vector3::new(0., -0.091, 0.);
         let anchor = Vector3::new(0., -0.091, 0.41);
@@ -521,6 +530,7 @@ impl A320ElevatorFactory {
             Mass::new::<kilogram>(58.6),
             size,
             cg_offset,
+            aero_center,
             control_arm,
             anchor,
             Angle::new::<degree>(-11.5),
@@ -601,6 +611,7 @@ impl A320RudderFactory {
     fn a320_rudder_body() -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(0.42, 6.65, 1.8);
         let cg_offset = Vector3::new(0., 0.5 * size[1], -0.5 * size[2]);
+        let aero_center = Vector3::new(0., 0.5 * size[1], -0.3 * size[2]);
 
         let control_arm = Vector3::new(-0.144, 0., 0.);
         let anchor = Vector3::new(-0.144, 0., 0.50);
@@ -611,6 +622,7 @@ impl A320RudderFactory {
             Mass::new::<kilogram>(95.),
             size,
             cg_offset,
+            aero_center,
             control_arm,
             anchor,
             Angle::new::<degree>(-25.),
@@ -627,15 +639,15 @@ impl A320RudderFactory {
     fn a320_rudder_assembly() -> HydraulicLinearActuatorAssembly<3> {
         let rudder_body = Self::a320_rudder_body();
 
-        let elevator_actuator_green = Self::a320_rudder_actuator(&rudder_body);
-        let elevator_actuator_blue = Self::a320_rudder_actuator(&rudder_body);
-        let elevator_actuator_yellow = Self::a320_rudder_actuator(&rudder_body);
+        let rudder_actuator_green = Self::a320_rudder_actuator(&rudder_body);
+        let rudder_actuator_blue = Self::a320_rudder_actuator(&rudder_body);
+        let rudder_actuator_yellow = Self::a320_rudder_actuator(&rudder_body);
 
         HydraulicLinearActuatorAssembly::new(
             [
-                elevator_actuator_green,
-                elevator_actuator_blue,
-                elevator_actuator_yellow,
+                rudder_actuator_green,
+                rudder_actuator_blue,
+                rudder_actuator_yellow,
             ],
             rudder_body,
         )
@@ -725,6 +737,7 @@ impl A320GearDoorFactory {
             Mass::new::<kilogram>(50.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(0.),
@@ -747,6 +760,7 @@ impl A320GearDoorFactory {
             Mass::new::<kilogram>(50.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-85.),
@@ -768,6 +782,7 @@ impl A320GearDoorFactory {
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(40.),
             size,
+            cg_offset,
             cg_offset,
             control_arm,
             anchor,
@@ -860,6 +875,7 @@ impl A320GearFactory {
             Mass::new::<kilogram>(700.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(0.),
@@ -882,6 +898,7 @@ impl A320GearFactory {
             Mass::new::<kilogram>(700.),
             size,
             cg_offset,
+            cg_offset,
             control_arm,
             anchor,
             Angle::new::<degree>(-80.),
@@ -903,6 +920,7 @@ impl A320GearFactory {
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(300.),
             size,
+            cg_offset,
             cg_offset,
             control_arm,
             anchor,
