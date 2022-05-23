@@ -58,7 +58,7 @@ use systems::{
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+        SimulatorWriter, StartState, UpdateContext, VariableIdentifier, Write,
     },
 };
 
@@ -71,12 +71,18 @@ use systems::hydraulic::PressureSwitchState;
 struct A320HydraulicReservoirFactory {}
 impl A320HydraulicReservoirFactory {
     fn new_green_reservoir(context: &mut InitContext) -> Reservoir {
+        let reservoir_offset_when_gear_up = if context.start_gear_down() {
+            Volume::new::<gallon>(0.)
+        } else {
+            Volume::new::<gallon>(-1.3)
+        };
+
         Reservoir::new(
             context,
             HydraulicColor::Green,
             Volume::new::<liter>(23.),
             Volume::new::<liter>(18.),
-            Volume::new::<gallon>(3.6),
+            Volume::new::<gallon>(3.6) + reservoir_offset_when_gear_up,
             vec![PressureSwitch::new(
                 Pressure::new::<psi>(25.),
                 Pressure::new::<psi>(22.),
@@ -307,7 +313,7 @@ impl A320AileronFactory {
     }
 
     /// Builds an aileron control surface body for A320 Neo
-    fn a320_aileron_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a320_aileron_body(init_drooped_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(3.325, 0.16, 0.58);
 
         // CG at half the size
@@ -316,6 +322,12 @@ impl A320AileronFactory {
 
         let control_arm = Vector3::new(0., -0.0525, 0.);
         let anchor = Vector3::new(0., -0.0525, 0.33);
+
+        let init_position = if init_drooped_down {
+            Angle::new::<degree>(-25.)
+        } else {
+            Angle::new::<degree>(0.)
+        };
 
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(24.65),
@@ -326,7 +338,7 @@ impl A320AileronFactory {
             anchor,
             Angle::new::<degree>(-25.),
             Angle::new::<degree>(50.),
-            Angle::new::<degree>(-25.),
+            init_position,
             1.,
             false,
             Vector3::new(1., 0., 0.),
@@ -335,8 +347,8 @@ impl A320AileronFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_aileron_assembly() -> HydraulicLinearActuatorAssembly<2> {
-        let aileron_body = Self::a320_aileron_body();
+    fn a320_aileron_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
+        let aileron_body = Self::a320_aileron_body(init_drooped_down);
 
         let aileron_actuator_outward = Self::a320_aileron_actuator(&aileron_body);
         let aileron_actuator_inward = Self::a320_aileron_actuator(&aileron_body);
@@ -348,12 +360,13 @@ impl A320AileronFactory {
     }
 
     fn new_aileron(context: &mut InitContext, id: ActuatorSide) -> AileronAssembly {
-        let assembly = Self::a320_aileron_assembly();
+        let init_drooped_down = !context.is_in_flight();
+        let assembly = Self::a320_aileron_assembly(init_drooped_down);
         AileronAssembly::new(context, id, assembly, Self::new_a320_aileron_aero_model())
     }
 
     fn new_a320_aileron_aero_model() -> AerodynamicModel {
-        let body = Self::a320_aileron_body();
+        let body = Self::a320_aileron_body(true);
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(0., 1., 0.)),
@@ -518,13 +531,19 @@ impl A320ElevatorFactory {
     }
 
     /// Builds an aileron control surface body for A320 Neo
-    fn a320_elevator_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a320_elevator_body(init_drooped_down: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(6., 0.405, 1.125);
         let cg_offset = Vector3::new(0., 0., -0.5 * size[2]);
         let aero_center = Vector3::new(0., 0., -0.3 * size[2]);
 
         let control_arm = Vector3::new(0., -0.091, 0.);
         let anchor = Vector3::new(0., -0.091, 0.41);
+
+        let init_position = if init_drooped_down {
+            Angle::new::<degree>(-11.5)
+        } else {
+            Angle::new::<degree>(0.)
+        };
 
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(58.6),
@@ -535,7 +554,7 @@ impl A320ElevatorFactory {
             anchor,
             Angle::new::<degree>(-11.5),
             Angle::new::<degree>(27.5),
-            Angle::new::<degree>(-11.5),
+            init_position,
             100.,
             false,
             Vector3::new(1., 0., 0.),
@@ -544,8 +563,8 @@ impl A320ElevatorFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_elevator_assembly() -> HydraulicLinearActuatorAssembly<2> {
-        let elevator_body = Self::a320_elevator_body();
+    fn a320_elevator_assembly(init_drooped_down: bool) -> HydraulicLinearActuatorAssembly<2> {
+        let elevator_body = Self::a320_elevator_body(init_drooped_down);
 
         let elevator_actuator_outboard = Self::a320_elevator_actuator(&elevator_body);
         let elevator_actuator_inbord = Self::a320_elevator_actuator(&elevator_body);
@@ -557,12 +576,13 @@ impl A320ElevatorFactory {
     }
 
     fn new_elevator(context: &mut InitContext, id: ActuatorSide) -> ElevatorAssembly {
-        let assembly = Self::a320_elevator_assembly();
+        let init_drooped_down = !context.is_in_flight();
+        let assembly = Self::a320_elevator_assembly(init_drooped_down);
         ElevatorAssembly::new(context, id, assembly, Self::new_a320_elevator_aero_model())
     }
 
     fn new_a320_elevator_aero_model() -> AerodynamicModel {
-        let body = Self::a320_elevator_body();
+        let body = Self::a320_elevator_body(true);
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(0., 1., 0.)),
@@ -608,7 +628,7 @@ impl A320RudderFactory {
     }
 
     /// Builds an aileron control surface body for A320 Neo
-    fn a320_rudder_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a320_rudder_body(init_at_center: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(0.42, 6.65, 1.8);
         let cg_offset = Vector3::new(0., 0.5 * size[1], -0.5 * size[2]);
         let aero_center = Vector3::new(0., 0.5 * size[1], -0.3 * size[2]);
@@ -616,7 +636,11 @@ impl A320RudderFactory {
         let control_arm = Vector3::new(-0.144, 0., 0.);
         let anchor = Vector3::new(-0.144, 0., 0.50);
 
-        let randomized_init_position_angle_degree = random_from_range(-15., 15.);
+        let randomized_init_position_angle_degree = if init_at_center {
+            0.
+        } else {
+            random_from_range(-15., 15.)
+        };
 
         LinearActuatedRigidBodyOnHingeAxis::new(
             Mass::new::<kilogram>(95.),
@@ -636,8 +660,8 @@ impl A320RudderFactory {
 
     /// Builds an aileron assembly consisting of the aileron physical rigid body and two hydraulic actuators connected
     /// to it
-    fn a320_rudder_assembly() -> HydraulicLinearActuatorAssembly<3> {
-        let rudder_body = Self::a320_rudder_body();
+    fn a320_rudder_assembly(init_at_center: bool) -> HydraulicLinearActuatorAssembly<3> {
+        let rudder_body = Self::a320_rudder_body(init_at_center);
 
         let rudder_actuator_green = Self::a320_rudder_actuator(&rudder_body);
         let rudder_actuator_blue = Self::a320_rudder_actuator(&rudder_body);
@@ -654,12 +678,16 @@ impl A320RudderFactory {
     }
 
     fn new_rudder(context: &mut InitContext) -> RudderAssembly {
-        let assembly = Self::a320_rudder_assembly();
+        let init_at_center = context.start_state() == StartState::Taxi
+            || context.start_state() == StartState::Runway
+            || context.is_in_flight();
+
+        let assembly = Self::a320_rudder_assembly(init_at_center);
         RudderAssembly::new(context, assembly, Self::new_a320_rudder_aero_model())
     }
 
     fn new_a320_rudder_aero_model() -> AerodynamicModel {
-        let body = Self::a320_rudder_body();
+        let body = Self::a320_rudder_body(true);
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(1., 0., 0.)),
@@ -864,7 +892,7 @@ impl A320GearFactory {
         )
     }
 
-    fn a320_left_gear_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a320_left_gear_body(init_downlocked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(0.3, 3.453, 0.3);
         let cg_offset = Vector3::new(0., -3. / 4. * size[1], 0.);
 
@@ -880,14 +908,18 @@ impl A320GearFactory {
             anchor,
             Angle::new::<degree>(0.),
             Angle::new::<degree>(80.),
-            Angle::new::<degree>(0.),
+            if init_downlocked {
+                Angle::new::<degree>(0.)
+            } else {
+                Angle::new::<degree>(80.)
+            },
             150.,
             true,
             Vector3::new(0., 0., 1.),
         )
     }
 
-    fn a320_right_gear_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a320_right_gear_body(init_downlocked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(0.3, 3.453, 0.3);
         let cg_offset = Vector3::new(0., -3. / 4. * size[1], 0.);
 
@@ -903,14 +935,18 @@ impl A320GearFactory {
             anchor,
             Angle::new::<degree>(-80.),
             Angle::new::<degree>(80.),
-            Angle::new::<degree>(0.),
+            if init_downlocked {
+                Angle::new::<degree>(0.)
+            } else {
+                Angle::new::<degree>(-80.)
+            },
             150.,
             true,
             Vector3::new(0., 0., 1.),
         )
     }
 
-    fn a320_nose_gear_body() -> LinearActuatedRigidBodyOnHingeAxis {
+    fn a320_nose_gear_body(init_downlocked: bool) -> LinearActuatedRigidBodyOnHingeAxis {
         let size = Vector3::new(0.3, 2.453, 0.3);
         let cg_offset = Vector3::new(0., -2. / 3. * size[1], 0.);
 
@@ -926,20 +962,27 @@ impl A320GearFactory {
             anchor,
             Angle::new::<degree>(-101.),
             Angle::new::<degree>(92.),
-            Angle::new::<degree>(-9.),
+            if init_downlocked {
+                Angle::new::<degree>(-9.)
+            } else {
+                Angle::new::<degree>(-101.)
+            },
             150.,
             true,
             Vector3::new(1., 0., 0.),
         )
     }
 
-    fn a320_gear_assembly(wheel_id: GearWheel) -> HydraulicLinearActuatorAssembly<1> {
+    fn a320_gear_assembly(
+        wheel_id: GearWheel,
+        init_downlocked: bool,
+    ) -> HydraulicLinearActuatorAssembly<1> {
         let gear_body = match wheel_id {
-            GearWheel::NOSE => Self::a320_nose_gear_body(),
+            GearWheel::NOSE => Self::a320_nose_gear_body(init_downlocked),
 
-            GearWheel::LEFT => Self::a320_left_gear_body(),
+            GearWheel::LEFT => Self::a320_left_gear_body(init_downlocked),
 
-            GearWheel::RIGHT => Self::a320_right_gear_body(),
+            GearWheel::RIGHT => Self::a320_right_gear_body(init_downlocked),
         };
 
         let gear_actuator = match wheel_id {
@@ -955,14 +998,16 @@ impl A320GearFactory {
 struct A320GearSystemFactory {}
 impl A320GearSystemFactory {
     fn a320_gear_system(context: &mut InitContext) -> HydraulicGearSystem {
+        let init_downlocked = context.start_gear_down();
+
         HydraulicGearSystem::new(
             context,
             A320GearDoorFactory::a320_gear_door_assembly(GearWheel::NOSE),
             A320GearDoorFactory::a320_gear_door_assembly(GearWheel::LEFT),
             A320GearDoorFactory::a320_gear_door_assembly(GearWheel::RIGHT),
-            A320GearFactory::a320_gear_assembly(GearWheel::NOSE),
-            A320GearFactory::a320_gear_assembly(GearWheel::LEFT),
-            A320GearFactory::a320_gear_assembly(GearWheel::RIGHT),
+            A320GearFactory::a320_gear_assembly(GearWheel::NOSE, init_downlocked),
+            A320GearFactory::a320_gear_assembly(GearWheel::LEFT, init_downlocked),
+            A320GearFactory::a320_gear_assembly(GearWheel::RIGHT, init_downlocked),
         )
     }
 }
@@ -5881,9 +5926,12 @@ mod tests {
             test_bed: SimulationTestBed<A320HydraulicsTestAircraft>,
         }
         impl A320HydraulicsTestBed {
-            fn new() -> Self {
+            fn new_with_start_state(start_state: StartState) -> Self {
                 Self {
-                    test_bed: SimulationTestBed::new(A320HydraulicsTestAircraft::new),
+                    test_bed: SimulationTestBed::new_with_start_state(
+                        start_state,
+                        A320HydraulicsTestAircraft::new,
+                    ),
                 }
             }
 
@@ -6075,6 +6123,10 @@ mod tests {
 
             fn get_right_elevator_position(&mut self) -> Ratio {
                 Ratio::new::<ratio>(self.read_by_name("HYD_ELEV_RIGHT_DEFLECTION"))
+            }
+
+            fn get_rudder_position(&mut self) -> Ratio {
+                Ratio::new::<ratio>(self.read_by_name("HYD_RUD_DEFLECTION"))
             }
 
             fn get_nose_steering_ratio(&mut self) -> Ratio {
@@ -6715,17 +6767,25 @@ mod tests {
             }
         }
 
-        fn test_bed() -> A320HydraulicsTestBed {
-            A320HydraulicsTestBed::new()
+        fn test_bed_on_ground() -> A320HydraulicsTestBed {
+            A320HydraulicsTestBed::new_with_start_state(StartState::Apron)
         }
 
-        fn test_bed_with() -> A320HydraulicsTestBed {
-            test_bed()
+        fn test_bed_in_flight() -> A320HydraulicsTestBed {
+            A320HydraulicsTestBed::new_with_start_state(StartState::Cruise)
+        }
+
+        fn test_bed_on_ground_with() -> A320HydraulicsTestBed {
+            test_bed_on_ground()
+        }
+
+        fn test_bed_in_flight_with() -> A320HydraulicsTestBed {
+            test_bed_in_flight()
         }
 
         #[test]
         fn pressure_state_at_init_one_simulation_step() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -6743,7 +6803,7 @@ mod tests {
 
         #[test]
         fn pressure_state_after_5s() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -6761,7 +6821,7 @@ mod tests {
 
         #[test]
         fn ptu_inhibited_by_overhead_off_push_button() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -6779,7 +6839,7 @@ mod tests {
 
         #[test]
         fn ptu_inhibited_on_ground_when_only_one_engine_on_and_park_brake_on() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -6797,7 +6857,7 @@ mod tests {
 
         #[test]
         fn ptu_inhibited_on_ground_is_activated_when_nose_gear_in_air() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -6812,7 +6872,7 @@ mod tests {
 
         #[test]
         fn ptu_unpowered_cant_inhibit() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -6835,7 +6895,7 @@ mod tests {
 
         #[test]
         fn ptu_cargo_operation_inhibit() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -6858,7 +6918,7 @@ mod tests {
 
         #[test]
         fn nose_wheel_pin_detection() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -6887,7 +6947,7 @@ mod tests {
 
         #[test]
         fn cargo_door_yellow_epump_powering() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -6914,7 +6974,7 @@ mod tests {
 
         #[test]
         fn ptu_pressurise_green_from_yellow_epump() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -6960,7 +7020,7 @@ mod tests {
 
         #[test]
         fn ptu_pressurise_green_from_yellow_epump_and_edp2() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .start_eng2(Ratio::new::<percent>(100.))
@@ -6983,7 +7043,7 @@ mod tests {
 
         #[test]
         fn green_edp_buildup() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7031,7 +7091,7 @@ mod tests {
 
         #[test]
         fn green_edp_no_fault_on_ground_eng_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7045,7 +7105,7 @@ mod tests {
 
         #[test]
         fn green_edp_fault_not_on_ground_eng_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .engines_off()
@@ -7062,7 +7122,7 @@ mod tests {
 
         #[test]
         fn green_edp_fault_on_ground_eng_starting() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7095,7 +7155,7 @@ mod tests {
 
         #[test]
         fn yellow_edp_no_fault_on_ground_eng_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7109,7 +7169,7 @@ mod tests {
 
         #[test]
         fn yellow_edp_fault_not_on_ground_eng_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .engines_off()
@@ -7126,7 +7186,7 @@ mod tests {
 
         #[test]
         fn yellow_edp_fault_on_ground_eng_starting() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7159,7 +7219,7 @@ mod tests {
 
         #[test]
         fn blue_epump_no_fault_on_ground_eng_starting() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7190,7 +7250,7 @@ mod tests {
 
         #[test]
         fn blue_epump_fault_on_ground_using_override() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7214,7 +7274,7 @@ mod tests {
 
         #[test]
         fn green_edp_press_low_engine_off_to_on() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7253,7 +7313,7 @@ mod tests {
 
         #[test]
         fn green_edp_press_low_engine_on_to_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .start_eng1(Ratio::new::<percent>(75.))
@@ -7284,7 +7344,7 @@ mod tests {
 
         #[test]
         fn yellow_edp_press_low_engine_on_to_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .start_eng2(Ratio::new::<percent>(75.))
@@ -7315,7 +7375,7 @@ mod tests {
 
         #[test]
         fn yellow_edp_press_low_engine_off_to_on() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7354,7 +7414,7 @@ mod tests {
 
         #[test]
         fn yellow_edp_press_low_engine_off_to_on_with_e_pump() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7397,7 +7457,7 @@ mod tests {
 
         #[test]
         fn green_edp_press_low_engine_off_to_on_with_ptu() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .set_park_brake(false)
@@ -7438,7 +7498,7 @@ mod tests {
 
         #[test]
         fn yellow_epump_press_low_at_pump_on() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7470,7 +7530,7 @@ mod tests {
 
         #[test]
         fn blue_epump_press_low_at_pump_on() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7504,7 +7564,7 @@ mod tests {
 
         #[test]
         fn blue_epump_override_switches_to_off_when_losing_relay_power_and_stays_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7532,7 +7592,7 @@ mod tests {
 
         #[test]
         fn blue_epump_override_switches_to_off_when_pump_forced_off_on_hyd_panel() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7551,7 +7611,7 @@ mod tests {
 
         #[test]
         fn edp_deactivation() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7593,7 +7653,7 @@ mod tests {
 
         #[test]
         fn yellow_edp_buildup() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7641,7 +7701,7 @@ mod tests {
         #[test]
         fn when_yellow_edp_solenoid_main_power_bus_unavailable_backup_bus_keeps_pump_in_unpressurised_state(
         ) {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7670,7 +7730,7 @@ mod tests {
 
         #[test]
         fn when_yellow_edp_solenoid_both_bus_unpowered_yellow_hydraulic_system_is_pressurised() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7700,7 +7760,7 @@ mod tests {
 
         #[test]
         fn when_green_edp_solenoid_unpowered_yellow_hydraulic_system_is_pressurised() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7731,7 +7791,7 @@ mod tests {
         #[ignore]
         // Checks numerical stability of reservoir level: level should remain after multiple pressure cycles
         fn yellow_circuit_reservoir_coherency() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7810,7 +7870,7 @@ mod tests {
         #[ignore]
         // Checks numerical stability of reservoir level: level should remain after multiple pressure cycles
         fn green_circuit_reservoir_coherency() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7865,7 +7925,7 @@ mod tests {
         #[ignore]
         // Checks numerical stability of reservoir level: level should remain after multiple pressure cycles
         fn blue_circuit_reservoir_coherency() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -7937,7 +7997,7 @@ mod tests {
 
         #[test]
         fn yellow_green_edp_firevalve() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -8000,7 +8060,7 @@ mod tests {
 
         #[test]
         fn yellow_brake_accumulator() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -8078,7 +8138,7 @@ mod tests {
 
         #[test]
         fn norm_brake_vs_altn_brake() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -8146,7 +8206,7 @@ mod tests {
 
         #[test]
         fn no_brake_inversion() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -8207,7 +8267,7 @@ mod tests {
 
         #[test]
         fn auto_brake_at_gear_retraction() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -8259,7 +8319,7 @@ mod tests {
 
         #[test]
         fn alternate_brake_accumulator_is_emptying_while_braking() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .start_eng1(Ratio::new::<percent>(100.))
@@ -8302,7 +8362,7 @@ mod tests {
 
         #[test]
         fn brakes_inactive_in_flight() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_lever_up()
@@ -8335,7 +8395,7 @@ mod tests {
 
         #[test]
         fn brakes_norm_active_in_flight_gear_down() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_lever_up()
@@ -8358,7 +8418,7 @@ mod tests {
 
         #[test]
         fn brakes_alternate_active_in_flight_gear_down() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_lever_up()
@@ -8383,7 +8443,7 @@ mod tests {
         #[test]
         // Testing that green for brakes is only available if park brake is on while altn pressure is at too low level
         fn brake_logic_green_backup_emergency() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -8426,7 +8486,7 @@ mod tests {
 
         #[test]
         fn autobrakes_arms_in_flight_lo_or_med() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_lever_up()
@@ -8449,7 +8509,7 @@ mod tests {
 
         #[test]
         fn autobrakes_arming_according_to_set_variable() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .set_park_brake(false)
@@ -8493,7 +8553,7 @@ mod tests {
 
         #[test]
         fn autobrakes_disarms_if_green_pressure_low() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_lever_up()
@@ -8517,7 +8577,7 @@ mod tests {
 
         #[test]
         fn autobrakes_does_not_disarm_if_askid_off_but_sim_not_ready() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .sim_not_ready()
@@ -8547,7 +8607,7 @@ mod tests {
 
         #[test]
         fn autobrakes_disarms_if_askid_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_lever_up()
@@ -8570,7 +8630,7 @@ mod tests {
 
         #[test]
         fn autobrakes_max_wont_arm_in_flight() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_lever_up()
@@ -8594,7 +8654,7 @@ mod tests {
 
         #[test]
         fn autobrakes_taxiing_wont_disarm_when_braking() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .start_eng1(Ratio::new::<percent>(60.))
@@ -8617,7 +8677,7 @@ mod tests {
 
         #[test]
         fn autobrakes_activates_on_ground_on_spoiler_deploy() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .set_park_brake(false)
@@ -8645,7 +8705,7 @@ mod tests {
 
         #[test]
         fn autobrakes_disengage_on_spoiler_retract() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .set_park_brake(false)
@@ -8677,7 +8737,7 @@ mod tests {
         #[test]
         // Should disable with one pedal > 61° over max range of 79.4° thus 77%
         fn autobrakes_max_disengage_at_77_on_one_pedal_input() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .set_park_brake(false)
@@ -8722,7 +8782,7 @@ mod tests {
 
         #[test]
         fn autobrakes_max_disengage_at_52_on_both_pedal_input() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .set_park_brake(false)
@@ -8770,7 +8830,7 @@ mod tests {
         #[test]
         // Should disable with one pedals > 42° over max range of 79.4° thus 52%
         fn autobrakes_med_disengage_at_52_on_one_pedal_input() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .set_park_brake(false)
@@ -8815,7 +8875,7 @@ mod tests {
 
         #[test]
         fn autobrakes_med_disengage_at_11_on_both_pedal_input() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .set_park_brake(false)
@@ -8862,7 +8922,7 @@ mod tests {
 
         #[test]
         fn autobrakes_max_disarm_after_10s_in_flight() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .set_park_brake(false)
@@ -8887,7 +8947,7 @@ mod tests {
 
         #[test]
         fn autobrakes_does_not_disarm_after_10s_when_started_in_flight() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_in_flight_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .run_waiting_for(Duration::from_secs(1));
@@ -8909,7 +8969,7 @@ mod tests {
 
         #[test]
         fn controller_blue_epump_activates_when_no_weight_on_nose_wheel() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -8924,7 +8984,7 @@ mod tests {
 
         #[test]
         fn controller_blue_epump_split_engine_states() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -8948,7 +9008,7 @@ mod tests {
 
         #[test]
         fn controller_blue_epump_on_off_engines() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -8965,7 +9025,7 @@ mod tests {
 
         #[test]
         fn controller_blue_epump_override() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -8983,7 +9043,7 @@ mod tests {
 
         #[test]
         fn controller_blue_epump_override_without_power_shall_not_run_blue_pump() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -8999,7 +9059,7 @@ mod tests {
 
         #[test]
         fn controller_yellow_epump_is_activated_by_overhead_button() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9018,7 +9078,7 @@ mod tests {
 
         #[test]
         fn controller_yellow_epump_unpowered_cant_command_pump() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9034,7 +9094,7 @@ mod tests {
 
         #[test]
         fn controller_yellow_epump_can_operate_from_cargo_door_without_main_control_power_bus() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9054,7 +9114,7 @@ mod tests {
 
         #[test]
         fn controller_engine_driven_pump1_overhead_button_logic_with_eng_on() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9076,7 +9136,7 @@ mod tests {
 
         #[test]
         fn controller_engine_driven_pump1_fire_overhead_released_stops_pump() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9092,7 +9152,7 @@ mod tests {
 
         #[test]
         fn controller_engine_driven_pump2_overhead_button_logic_with_eng_on() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9114,7 +9174,7 @@ mod tests {
 
         #[test]
         fn controller_engine_driven_pump2_fire_overhead_released_stops_pump() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9130,7 +9190,7 @@ mod tests {
 
         #[test]
         fn controller_ptu_on_off_with_overhead_pushbutton() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9149,7 +9209,7 @@ mod tests {
 
         #[test]
         fn controller_ptu_off_when_cargo_door_is_moved() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9171,7 +9231,7 @@ mod tests {
 
         #[test]
         fn controller_ptu_disabled_when_tug_attached() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9200,7 +9260,7 @@ mod tests {
 
         #[test]
         fn rat_does_not_deploy_on_ground_at_eng_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .start_eng1(Ratio::new::<percent>(80.))
@@ -9223,7 +9283,7 @@ mod tests {
 
         #[test]
         fn rat_does_not_deploy_when_sim_not_ready() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .sim_not_ready()
@@ -9247,7 +9307,7 @@ mod tests {
 
         #[test]
         fn rat_deploys_on_both_ac_lost() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .start_eng1(Ratio::new::<percent>(80.))
@@ -9273,7 +9333,7 @@ mod tests {
 
         #[test]
         fn blue_epump_unavailable_if_unpowered() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9303,7 +9363,7 @@ mod tests {
 
         #[test]
         fn yellow_epump_unavailable_if_unpowered() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9334,7 +9394,7 @@ mod tests {
 
         #[test]
         fn flaps_and_slats_declare_moving() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9361,7 +9421,7 @@ mod tests {
 
         #[test]
         fn yellow_epump_can_deploy_flaps_and_slats() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9386,7 +9446,7 @@ mod tests {
 
         #[test]
         fn yellow_epump_can_deploy_flaps_and_slats_on_worst_case_ptu() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9412,7 +9472,7 @@ mod tests {
 
         #[test]
         fn yellow_epump_no_ptu_can_deploy_flaps_less_33s() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9437,7 +9497,7 @@ mod tests {
 
         #[test]
         fn blue_epump_can_deploy_slats_in_less_35_s_and_no_flaps() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .set_blue_e_pump_ovrd_pressed(true)
@@ -9458,7 +9518,7 @@ mod tests {
 
         #[test]
         fn blue_epump_cannot_deploy_slats_in_less_28_s_and_no_flaps() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .set_blue_e_pump_ovrd_pressed(true)
@@ -9479,7 +9539,7 @@ mod tests {
 
         #[test]
         fn yellow_plus_blue_epumps_can_deploy_flaps_and_slats() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9505,7 +9565,7 @@ mod tests {
 
         #[test]
         fn no_pressure_no_flap_slats() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .run_waiting_for(Duration::from_secs(5));
@@ -9525,7 +9585,7 @@ mod tests {
 
         #[test]
         fn emergency_gen_is_started_on_both_ac_lost_in_flight() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .start_eng1(Ratio::new::<percent>(80.))
@@ -9551,7 +9611,7 @@ mod tests {
 
         #[test]
         fn cargo_door_stays_closed_at_init() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9568,7 +9628,7 @@ mod tests {
 
         #[test]
         fn cargo_door_unlocks_when_commanded() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9592,7 +9652,7 @@ mod tests {
 
         #[test]
         fn cargo_door_controller_opens_the_door() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9624,7 +9684,7 @@ mod tests {
 
         #[test]
         fn fwd_cargo_door_controller_opens_fwd_door_only() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9644,7 +9704,7 @@ mod tests {
 
         #[test]
         fn cargo_door_opened_uses_correct_reservoir_amount() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9676,7 +9736,7 @@ mod tests {
 
         #[test]
         fn cargo_door_controller_closes_the_door() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9699,7 +9759,7 @@ mod tests {
 
         #[test]
         fn cargo_door_controller_closes_the_door_after_yellow_pump_auto_shutdown() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9726,7 +9786,7 @@ mod tests {
 
         #[test]
         fn nose_steering_responds_to_tiller_demand_if_yellow_pressure_and_engines() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9752,7 +9812,7 @@ mod tests {
 
         #[test]
         fn nose_steering_does_not_move_if_yellow_pressure_but_no_engine() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9776,7 +9836,7 @@ mod tests {
 
         #[test]
         fn nose_steering_does_not_move_when_a_skid_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9796,7 +9856,7 @@ mod tests {
 
         #[test]
         fn nose_steering_centers_itself_when_a_skid_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9823,7 +9883,7 @@ mod tests {
 
         #[test]
         fn nose_steering_responds_to_autopilot_demand() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9848,7 +9908,7 @@ mod tests {
 
         #[test]
         fn ptu_pressurise_green_from_yellow_edp() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .start_eng2(Ratio::new::<percent>(60.))
@@ -9874,7 +9934,7 @@ mod tests {
 
         #[test]
         fn ptu_pressurise_yellow_from_green_edp() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .start_eng1(Ratio::new::<percent>(60.))
@@ -9900,7 +9960,7 @@ mod tests {
 
         #[test]
         fn yellow_epump_has_cavitation_at_low_air_press() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9923,7 +9983,7 @@ mod tests {
 
         #[test]
         fn low_air_press_fault_causes_ptu_fault() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9946,7 +10006,7 @@ mod tests {
 
         #[test]
         fn low_air_press_fault_causes_yellow_blue_epump_fault() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9974,7 +10034,7 @@ mod tests {
 
         #[test]
         fn no_yellow_epump_fault_after_brake_accumulator_is_filled() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9987,7 +10047,7 @@ mod tests {
 
         #[test]
         fn ailerons_are_dropped_down_in_cold_and_dark() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9999,7 +10059,7 @@ mod tests {
 
         #[test]
         fn ailerons_do_not_respond_in_cold_and_dark() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -10022,7 +10082,7 @@ mod tests {
 
         #[test]
         fn ailerons_do_not_respond_if_only_yellow_pressure() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -10042,7 +10102,7 @@ mod tests {
 
         #[test]
         fn ailerons_respond_if_green_pressure() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -10071,7 +10131,7 @@ mod tests {
 
         #[test]
         fn ailerons_droop_down_after_pressure_is_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -10099,7 +10159,7 @@ mod tests {
 
         #[test]
         fn elevators_droop_down_after_pressure_is_off() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -10127,7 +10187,7 @@ mod tests {
 
         #[test]
         fn cargo_door_operation_closes_yellow_leak_meas_valve() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -10144,7 +10204,7 @@ mod tests {
 
         #[test]
         fn cargo_door_operation_but_yellow_epump_on_opens_yellow_leak_meas_valve() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -10162,7 +10222,7 @@ mod tests {
 
         #[test]
         fn leak_meas_valve_cant_be_closed_in_flight() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -10182,7 +10242,7 @@ mod tests {
 
         #[test]
         fn leak_meas_valve_can_be_closed_on_ground() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -10201,7 +10261,7 @@ mod tests {
 
         #[test]
         fn nose_wheel_steers_with_pushback_tug() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .engines_off()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -10239,7 +10299,7 @@ mod tests {
 
         #[test]
         fn high_pitch_ptu_simvar_on_ptu_first_start() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .start_eng2(Ratio::new::<percent>(60.))
@@ -10257,7 +10317,7 @@ mod tests {
 
         #[test]
         fn nominal_gear_retraction_extension_cycles_in_flight() {
-            let mut test_bed = test_bed_with().set_cold_dark_inputs().in_flight();
+            let mut test_bed = test_bed_on_ground_with().set_cold_dark_inputs().in_flight();
 
             assert!(test_bed.gear_system_state() == GearSystemState::AllDownLocked);
 
@@ -10279,7 +10339,7 @@ mod tests {
 
         #[test]
         fn gear_retracts_using_yellow_epump_plus_ptu() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .with_worst_case_ptu()
@@ -10300,7 +10360,7 @@ mod tests {
 
         #[test]
         fn emergency_gear_extension_at_2_turns_open_doors() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .on_the_ground()
                 .turn_emergency_gear_extension_n_turns(1)
@@ -10317,7 +10377,7 @@ mod tests {
 
         #[test]
         fn emergency_gear_extension_at_3_turns_release_gear() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_lever_up()
@@ -10338,7 +10398,7 @@ mod tests {
 
         #[test]
         fn complete_gear_cycle_do_not_change_fluid_volume() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_lever_down()
@@ -10374,7 +10434,7 @@ mod tests {
 
         #[test]
         fn reverting_emergency_extension_do_not_change_fluid_volume() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .set_gear_lever_down()
@@ -10414,7 +10474,7 @@ mod tests {
 
         #[test]
         fn spoilers_move_to_requested_position() {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = test_bed_on_ground_with()
                 .set_cold_dark_inputs()
                 .in_flight()
                 .run_waiting_for(Duration::from_secs(10));
@@ -10432,6 +10492,54 @@ mod tests {
 
             assert!(test_bed.get_spoiler_right_mean_position().get::<ratio>() > 0.48);
             assert!(test_bed.get_spoiler_right_mean_position().get::<ratio>() < 0.52);
+        }
+
+        #[test]
+        fn gear_init_up_if_spawning_in_air() {
+            let test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_one_tick();
+
+            assert!(test_bed.gear_system_state() == GearSystemState::AllUpLocked);
+        }
+
+        #[test]
+        fn aileron_init_centered_if_spawning_in_air() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_one_tick();
+
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() < 0.51);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() < 0.51);
+            assert!(test_bed.get_left_aileron_position().get::<ratio>() > 0.49);
+            assert!(test_bed.get_right_aileron_position().get::<ratio>() > 0.49);
+        }
+
+        #[test]
+        fn rudder_init_centered_if_spawning_in_air() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_one_tick();
+
+            assert!(test_bed.get_rudder_position().get::<ratio>() > 0.49);
+            assert!(test_bed.get_rudder_position().get::<ratio>() < 0.51);
+        }
+
+        #[test]
+        fn elevator_init_centered_if_spawning_in_air() {
+            let mut test_bed = test_bed_in_flight_with()
+                .set_cold_dark_inputs()
+                .in_flight()
+                .run_one_tick();
+
+            // Elevator deflection is assymetrical so middle is below 0.5
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() < 0.45);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() < 0.45);
+            assert!(test_bed.get_left_elevator_position().get::<ratio>() > 0.35);
+            assert!(test_bed.get_right_elevator_position().get::<ratio>() > 0.35);
         }
     }
 }
