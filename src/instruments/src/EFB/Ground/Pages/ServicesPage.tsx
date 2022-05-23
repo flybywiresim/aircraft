@@ -29,7 +29,7 @@ interface ServiceButtonWrapperProps {
     y: number
 }
 
-// Groups buttons and sets a border and divider line
+// Group buttons and sets a border and divider line
 const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, className, xl, xr, y }) => (
     <div
         className={`flex flex-col rounded-xl border-2 border-theme-accent divide-y-2 divide-theme-accent overflow-hidden ${className}`}
@@ -74,7 +74,7 @@ const buttonsStyles = [
     // INACTIVE
     'hover:bg-theme-highlight text-theme-text hover:text-theme-secondary transition duration-200 disabled:bg-grey-600',
     // CALLED
-    'text-white bg-amber-600 border-amber-600 pointer-events-none',
+    'text-white bg-amber-600 border-amber-600',
     // ACTIVE
     'text-white bg-green-700 border-green-700 hover:bg-green-500 hover:text-theme-secondary',
     // RELEASED
@@ -91,11 +91,7 @@ const GroundServiceButton: React.FC<GroundServiceButtonProps> = ({ children, nam
             onClick={state === ServiceButtonState.DISABLED ? undefined : onClick}
         >
             {children}
-            <h1 className="flex-shrink-0 text-2xl font-medium text-current">
-                {name}
-                {' '}
-                {state}
-            </h1>
+            <h1 className="flex-shrink-0 text-2xl font-medium text-current">{name}</h1>
         </div>
     );
 };
@@ -157,6 +153,8 @@ export const ServicesPage = () => {
             // Toggle called/released
             if (jetWayButtonState < ServiceButtonState.CALLED) {
                 dispatch(setJetWayButtonState(ServiceButtonState.CALLED));
+            } else if (jetWayButtonState === ServiceButtonState.CALLED) {
+                dispatch(setJetWayButtonState(ServiceButtonState.INACTIVE));
             } else {
                 dispatch(setJetWayButtonState(ServiceButtonState.RELEASED));
             }
@@ -180,6 +178,8 @@ export const ServicesPage = () => {
             // Toggle called/released
             if (fuelTruckButtonState < ServiceButtonState.CALLED) {
                 dispatch(setFuelTruckButtonState(ServiceButtonState.CALLED));
+            } else if (fuelTruckButtonState === ServiceButtonState.CALLED) {
+                dispatch(setFuelTruckButtonState(ServiceButtonState.INACTIVE));
             } else {
                 dispatch(setFuelTruckButtonState(ServiceButtonState.RELEASED));
             }
@@ -189,6 +189,8 @@ export const ServicesPage = () => {
             // Toggle called/released
             if (gpuButtonState < ServiceButtonState.CALLED) {
                 dispatch(setGpuButtonState(ServiceButtonState.CALLED));
+            } else if (gpuButtonState === ServiceButtonState.CALLED) {
+                dispatch(setGpuButtonState(ServiceButtonState.INACTIVE));
             } else {
                 dispatch(setGpuButtonState(ServiceButtonState.RELEASED));
             }
@@ -202,6 +204,8 @@ export const ServicesPage = () => {
             // Toggle called/released
             if (baggageButtonState < ServiceButtonState.CALLED) {
                 dispatch(setBaggageButtonState(ServiceButtonState.CALLED));
+            } else if (baggageButtonState === ServiceButtonState.CALLED) {
+                dispatch(setBaggageButtonState(ServiceButtonState.INACTIVE));
             } else {
                 dispatch(setBaggageButtonState(ServiceButtonState.RELEASED));
             }
@@ -229,6 +233,8 @@ export const ServicesPage = () => {
             // Toggle called/released
             if (cateringButtonState < ServiceButtonState.CALLED) {
                 dispatch(setCateringButtonState(ServiceButtonState.CALLED));
+            } else if (cateringButtonState === ServiceButtonState.CALLED) {
+                dispatch(setCateringButtonState(ServiceButtonState.INACTIVE));
             } else {
                 dispatch(setCateringButtonState(ServiceButtonState.RELEASED));
             }
