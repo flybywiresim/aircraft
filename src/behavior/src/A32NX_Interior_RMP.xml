@@ -149,8 +149,8 @@
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                     let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
                     // @todo abnormal defined differently with NAV modes available.
-                    let rmpLeftAbnormal = selectedModeLeft != 1;
-                    let rmpRightAbnormal = selectedModeRight != 2;
+                    let rmpLeftAbnormal = selectedModeLeft != 1 or selectedModeRight == 1;
+                    let rmpRightAbnormal = selectedModeRight != 2 or selectedModeLeft == 2;
                     let sideLeftCheck = id == 1;
                     let sideRightCheck = id == 2;
                     (if (toggleSwitch and ((rmpLeftAbnormal and sideLeftCheck) or (rmpRightAbnormal and sideRightCheck)) or (annunciatorLight == 0)) and indicatorsPowered {
