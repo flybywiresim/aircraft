@@ -1,4 +1,4 @@
-import React, { useState, FC, useEffect } from 'react';
+import React, { useState, FC, useEffect, useRef } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
     Truck,
@@ -74,7 +74,7 @@ const buttonsStyles = [
     // INACTIVE
     'hover:bg-theme-highlight text-theme-text hover:text-theme-secondary transition duration-200 disabled:bg-grey-600',
     // CALLED
-    'text-white bg-amber-600 border-amber-600',
+    'text-white bg-amber-600 border-amber-600 hover:bg-amber-400',
     // ACTIVE
     'text-white bg-green-700 border-green-700 hover:bg-green-500 hover:text-theme-secondary',
     // RELEASED
@@ -142,6 +142,14 @@ export const ServicesPage = () => {
     const aftDoorButtonState = useAppSelector((state) => state.groundServicePage.aftDoorButtonState);
     const cateringButtonState = useAppSelector((state) => state.groundServicePage.cateringButtonState);
 
+    // Required so these can be used inside the useTimeout callback
+    const jetWayButtonStateRef = useRef(jetWayButtonState);
+    jetWayButtonStateRef.current = jetWayButtonState;
+    const baggageButtonStateRef = useRef(baggageButtonState);
+    baggageButtonStateRef.current = baggageButtonState;
+    const cateringButtonStateRef = useRef(cateringButtonState);
+    cateringButtonStateRef.current = cateringButtonState;
+
     // Centralized handler for managing clicks to any button
     const handleButtonClick = (id: ServiceButton) => {
         switch (id) {
@@ -154,14 +162,22 @@ export const ServicesPage = () => {
             if (jetWayButtonState < ServiceButtonState.CALLED) {
                 dispatch(setJetWayButtonState(ServiceButtonState.CALLED));
             } else if (jetWayButtonState === ServiceButtonState.CALLED) {
-                dispatch(setJetWayButtonState(ServiceButtonState.INACTIVE));
+                // prevent to click again after a called has been cancelled
+                // to avoid state getting out of sync.
+                dispatch(setJetWayButtonState(ServiceButtonState.DISABLED));
+                setTimeout(() => {
+                    dispatch(setJetWayButtonState(ServiceButtonState.INACTIVE));
+                }, 6000);
             } else {
                 dispatch(setJetWayButtonState(ServiceButtonState.RELEASED));
             }
             // enable/disable cabin door button after a timeout
             if (cabinDoorButtonState === ServiceButtonState.DISABLED) {
                 setTimeout(() => {
-                    dispatch(setCabinDoorButtonState(ServiceButtonState.INACTIVE));
+                    // jet-bridge button could have been pressed again in the meantime
+                    if (jetWayButtonStateRef.current < ServiceButtonState.CALLED) {
+                        dispatch(setCabinDoorButtonState(ServiceButtonState.INACTIVE));
+                    }
                 }, 5000);
             } else {
                 dispatch(setCabinDoorButtonState(ServiceButtonState.DISABLED));
@@ -205,14 +221,22 @@ export const ServicesPage = () => {
             if (baggageButtonState < ServiceButtonState.CALLED) {
                 dispatch(setBaggageButtonState(ServiceButtonState.CALLED));
             } else if (baggageButtonState === ServiceButtonState.CALLED) {
-                dispatch(setBaggageButtonState(ServiceButtonState.INACTIVE));
+                // prevent to click again after a called has been cancelled
+                // to avoid state getting out of sync.
+                dispatch(setBaggageButtonState(ServiceButtonState.DISABLED));
+                setTimeout(() => {
+                    dispatch(setBaggageButtonState(ServiceButtonState.INACTIVE));
+                }, 6000);
             } else {
                 dispatch(setBaggageButtonState(ServiceButtonState.RELEASED));
             }
             // enable/disable cabin door button after a timeout
             if (cargoDoorButtonState === ServiceButtonState.DISABLED) {
                 setTimeout(() => {
-                    dispatch(setCargoDoorButtonState(ServiceButtonState.INACTIVE));
+                    // jet-bridge button could have been pressed again in the meantime
+                    if (baggageButtonStateRef.current < ServiceButtonState.CALLED) {
+                        dispatch(setCargoDoorButtonState(ServiceButtonState.INACTIVE));
+                    }
                 }, 5000);
             } else {
                 dispatch(setCargoDoorButtonState(ServiceButtonState.DISABLED));
@@ -234,14 +258,22 @@ export const ServicesPage = () => {
             if (cateringButtonState < ServiceButtonState.CALLED) {
                 dispatch(setCateringButtonState(ServiceButtonState.CALLED));
             } else if (cateringButtonState === ServiceButtonState.CALLED) {
-                dispatch(setCateringButtonState(ServiceButtonState.INACTIVE));
+                // prevent to click again after a called has been cancelled
+                // to avoid state getting out of sync.
+                dispatch(setCateringButtonState(ServiceButtonState.DISABLED));
+                setTimeout(() => {
+                    dispatch(setCateringButtonState(ServiceButtonState.INACTIVE));
+                }, 6000);
             } else {
                 dispatch(setCateringButtonState(ServiceButtonState.RELEASED));
             }
             // enable/disable cabin door button after a timeout
             if (aftDoorButtonState === ServiceButtonState.DISABLED) {
                 setTimeout(() => {
-                    dispatch(setAftDoorButtonState(ServiceButtonState.INACTIVE));
+                    // jet-bridge button could have been pressed again in the meantime
+                    if (cateringButtonStateRef.current < ServiceButtonState.CALLED) {
+                        dispatch(setAftDoorButtonState(ServiceButtonState.INACTIVE));
+                    }
                 }, 5000);
             } else {
                 dispatch(setAftDoorButtonState(ServiceButtonState.DISABLED));
@@ -318,7 +350,7 @@ export const ServicesPage = () => {
         setServiceState(gpuButtonState, setGpuButtonState, gpuActive);
     }, [cabinDoorOpen, cargoDoorOpen, aftDoorOpen, fuelingActive, gpuActive]);
 
-    // JetBridge Button - linked to cabin door
+    // Cabin Door listener for JetBridge Button
     useEffect(() => {
         setServiceState(jetWayButtonState, setJetWayButtonState, cabinDoorOpen);
         // enable cabin door button in case door has been closed by other means (e.g. pushback)
@@ -326,12 +358,15 @@ export const ServicesPage = () => {
             && jetWayButtonState >= ServiceButtonState.ACTIVE
             && cabinDoorButtonState === ServiceButtonState.DISABLED) {
             setTimeout(() => {
-                dispatch(setCabinDoorButtonState(ServiceButtonState.INACTIVE));
+                // jet-bridge button could have been pressed again in the meantime
+                if (jetWayButtonStateRef.current < ServiceButtonState.CALLED) {
+                    dispatch(setCabinDoorButtonState(ServiceButtonState.INACTIVE));
+                }
             }, 5000);
         }
     }, [cabinDoorOpen]);
 
-    // Baggage Button - linked to cargo door
+    // Cargo Door listener for Baggage Button
     useEffect(() => {
         setServiceState(baggageButtonState, setBaggageButtonState, cargoDoorOpen);
         // enable cabin door button in case door has been closed by other means (e.g. pushback)
@@ -339,20 +374,26 @@ export const ServicesPage = () => {
             && baggageButtonState >= ServiceButtonState.ACTIVE
             && cargoDoorButtonState === ServiceButtonState.DISABLED) {
             setTimeout(() => {
-                dispatch(setCargoDoorButtonState(ServiceButtonState.INACTIVE));
+                // jet-bridge button could have been pressed again in the meantime
+                if (baggageButtonStateRef.current < ServiceButtonState.CALLED) {
+                    dispatch(setCargoDoorButtonState(ServiceButtonState.INACTIVE));
+                }
             }, 5000);
         }
     }, [cargoDoorOpen]);
 
-    // Catering Button - linked to aft right cabin door
+    // Aft Cabin Door listener fo rCatering Button
     useEffect(() => {
         setServiceState(cateringButtonState, setCateringButtonState, aftDoorOpen);
         // enable cabin door button in case door has been closed by other means (e.g. pushback)
         if (aftDoorOpen < 1.0
             && cateringButtonState >= ServiceButtonState.ACTIVE
-            && cateringButtonState === ServiceButtonState.DISABLED) {
+            && aftDoorButtonState === ServiceButtonState.DISABLED) {
             setTimeout(() => {
-                dispatch(setCateringButtonState(ServiceButtonState.INACTIVE));
+                // jet-bridge button could have been pressed again in the meantime
+                if (cateringButtonStateRef.current < ServiceButtonState.CALLED) {
+                    dispatch(setAftDoorButtonState(ServiceButtonState.INACTIVE));
+                }
             }, 5000);
         }
     }, [aftDoorOpen]);
