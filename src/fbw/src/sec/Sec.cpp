@@ -23,9 +23,7 @@ void Sec::initSelfTests() {
 }
 
 // After the self-test is complete, erase all data in RAM.
-void Sec::clearMemory() {
-  secComputer.initialize();
-}
+void Sec::clearMemory() {}
 
 // Main update cycle. Surface position through parameters here is temporary.
 void Sec::update(double deltaTime, double simulationTime, bool faultActive, bool isPowered) {
@@ -34,16 +32,17 @@ void Sec::update(double deltaTime, double simulationTime, bool faultActive, bool
   updateSelfTest(deltaTime);
   monitorSelf(faultActive);
 
-  if (monitoringHealthy) {
-    secComputer.setExternalInputs(&modelInputs);
-    secComputer.step();
-    modelOutputs = secComputer.getExternalOutputs().out;
-  }
+  secComputer.setExternalInputs(&modelInputs);
+  secComputer.step();
+  modelOutputs = secComputer.getExternalOutputs().out;
 }
 
 // Perform self monitoring. If
 void Sec::monitorSelf(bool faultActive) {
   cpuStopped = cpuStoppedFlipFlop.update(faultActive || powerSupplyFault, cpuStopped && selfTestComplete && !powerSupplyFault);
+  if (cpuStopped) {
+    modelInputs.in.sim_data.computer_running = false;
+  }
 
   bool shouldReset = cpuStopped && resetPulseNode.update(modelInputs.in.discrete_inputs.sec_engaged_from_switch) && !powerSupplyFault;
   if (shouldReset) {
@@ -78,13 +77,14 @@ void Sec::updateSelfTest(double deltaTime) {
 
     // If the self-test sequence has just been completed, reset RAM.
     if (selfTestTimer <= 0) {
-      clearMemory();
     }
   }
   if (selfTestTimer <= 0) {
     selfTestComplete = true;
+    modelInputs.in.sim_data.computer_running = true;
   } else {
     selfTestComplete = false;
+    modelInputs.in.sim_data.computer_running = false;
   }
 }
 

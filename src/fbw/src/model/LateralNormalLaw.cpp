@@ -7,6 +7,8 @@ const uint8_T LateralNormalLaw_IN_FlightMode{ 1U };
 
 const uint8_T LateralNormalLaw_IN_GroundMode{ 2U };
 
+const uint8_T LateralNormalLaw_IN_NO_ACTIVE_CHILD{ 0U };
+
 LateralNormalLaw::Parameters_LateralNormalLaw_T LateralNormalLaw::LateralNormalLaw_rtP{
 
   { 0.0, 0.06, 0.1, 0.2, 1.0 },
@@ -153,6 +155,11 @@ LateralNormalLaw::Parameters_LateralNormalLaw_T LateralNormalLaw::LateralNormalL
   1.0
 };
 
+void LateralNormalLaw::LateralNormalLaw_RateLimiter_Reset(rtDW_RateLimiter_LateralNormalLaw_T *localDW)
+{
+  localDW->pY_not_empty = false;
+}
+
 void LateralNormalLaw::LateralNormalLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts,
   real_T rtu_init, real_T *rty_Y, rtDW_RateLimiter_LateralNormalLaw_T *localDW)
 {
@@ -169,6 +176,19 @@ void LateralNormalLaw::init(void)
 {
   LateralNormalLaw_DWork.Delay_DSTATE = LateralNormalLaw_rtP.Delay_InitialCondition;
   LateralNormalLaw_DWork.icLoad = true;
+}
+
+void LateralNormalLaw::reset(void)
+{
+  LateralNormalLaw_DWork.Delay_DSTATE = LateralNormalLaw_rtP.Delay_InitialCondition;
+  LateralNormalLaw_DWork.icLoad = true;
+  LateralNormalLaw_DWork.is_active_c5_LateralNormalLaw = 0U;
+  LateralNormalLaw_DWork.is_c5_LateralNormalLaw = LateralNormalLaw_IN_NO_ACTIVE_CHILD;
+  LateralNormalLaw_RateLimiter_Reset(&LateralNormalLaw_DWork.sf_RateLimiter);
+  LateralNormalLaw_RateLimiter_Reset(&LateralNormalLaw_DWork.sf_RateLimiter_d);
+  LateralNormalLaw_RateLimiter_Reset(&LateralNormalLaw_DWork.sf_RateLimiter_n);
+  LateralNormalLaw_RateLimiter_Reset(&LateralNormalLaw_DWork.sf_RateLimiter_j);
+  LateralNormalLaw_DWork.pY_not_empty = false;
 }
 
 void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_Theta_deg, const real_T *rtu_In_Phi_deg,

@@ -16,6 +16,8 @@ const uint8_T PitchNormalLaw_IN_Flight_Low{ 5U };
 
 const uint8_T PitchNormalLaw_IN_Ground{ 6U };
 
+const uint8_T PitchNormalLaw_IN_NO_ACTIVE_CHILD{ 0U };
+
 const uint8_T PitchNormalLaw_IN_frozen{ 1U };
 
 const uint8_T PitchNormalLaw_IN_running{ 2U };
@@ -783,6 +785,12 @@ PitchNormalLaw::Parameters_PitchNormalLaw_T PitchNormalLaw::PitchNormalLaw_rtP{
   1U
 };
 
+void PitchNormalLaw::PitchNormalLaw_LagFilter_Reset(rtDW_LagFilter_PitchNormalLaw_T *localDW)
+{
+  localDW->pY_not_empty = false;
+  localDW->pU_not_empty = false;
+}
+
 void PitchNormalLaw::PitchNormalLaw_LagFilter(const real_T *rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
   rtDW_LagFilter_PitchNormalLaw_T *localDW)
 {
@@ -802,6 +810,11 @@ void PitchNormalLaw::PitchNormalLaw_LagFilter(const real_T *rtu_U, real_T rtu_C1
   localDW->pU = *rtu_U;
 }
 
+void PitchNormalLaw::PitchNormalLaw_RateLimiter_Reset(rtDW_RateLimiter_PitchNormalLaw_T *localDW)
+{
+  localDW->pY_not_empty = false;
+}
+
 void PitchNormalLaw::PitchNormalLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts, real_T
   rtu_init, real_T *rty_Y, rtDW_RateLimiter_PitchNormalLaw_T *localDW)
 {
@@ -814,6 +827,11 @@ void PitchNormalLaw::PitchNormalLaw_RateLimiter(real_T rtu_u, real_T rtu_up, rea
   *rty_Y = localDW->pY;
 }
 
+void PitchNormalLaw::PitchNormalLaw_eta_trim_limit_lofreeze_Reset(rtDW_eta_trim_limit_lofreeze_PitchNormalLaw_T *localDW)
+{
+  localDW->frozen_eta_trim_not_empty = false;
+}
+
 void PitchNormalLaw::PitchNormalLaw_eta_trim_limit_lofreeze(const real_T *rtu_eta_trim, const boolean_T *rtu_trigger,
   real_T *rty_y, rtDW_eta_trim_limit_lofreeze_PitchNormalLaw_T *localDW)
 {
@@ -823,6 +841,12 @@ void PitchNormalLaw::PitchNormalLaw_eta_trim_limit_lofreeze(const real_T *rtu_et
   }
 
   *rty_y = localDW->frozen_eta_trim;
+}
+
+void PitchNormalLaw::PitchNormalLaw_LagFilter_i_Reset(rtDW_LagFilter_PitchNormalLaw_d_T *localDW)
+{
+  localDW->pY_not_empty = false;
+  localDW->pU_not_empty = false;
 }
 
 void PitchNormalLaw::PitchNormalLaw_LagFilter_n(real_T rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
@@ -844,6 +868,12 @@ void PitchNormalLaw::PitchNormalLaw_LagFilter_n(real_T rtu_U, real_T rtu_C1, con
   localDW->pU = rtu_U;
 }
 
+void PitchNormalLaw::PitchNormalLaw_WashoutFilter_Reset(rtDW_WashoutFilter_PitchNormalLaw_T *localDW)
+{
+  localDW->pY_not_empty = false;
+  localDW->pU_not_empty = false;
+}
+
 void PitchNormalLaw::PitchNormalLaw_WashoutFilter(real_T rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
   rtDW_WashoutFilter_PitchNormalLaw_T *localDW)
 {
@@ -861,6 +891,11 @@ void PitchNormalLaw::PitchNormalLaw_WashoutFilter(real_T rtu_U, real_T rtu_C1, c
   *rty_Y = (2.0 - denom_tmp) / (denom_tmp + 2.0) * localDW->pY + (rtu_U * ca - localDW->pU * ca);
   localDW->pY = *rty_Y;
   localDW->pU = rtu_U;
+}
+
+void PitchNormalLaw::PitchNormalLaw_RateLimiter_l_Reset(rtDW_RateLimiter_PitchNormalLaw_o_T *localDW)
+{
+  localDW->pY_not_empty = false;
 }
 
 void PitchNormalLaw::PitchNormalLaw_RateLimiter_c(const real_T *rtu_u, real_T rtu_up, real_T rtu_lo, const real_T
@@ -941,6 +976,96 @@ void PitchNormalLaw::init(void)
   PitchNormalLaw_DWork.Delay_DSTATE_ej = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_b;
   PitchNormalLaw_DWork.Delay_DSTATE_e4 = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_p;
   PitchNormalLaw_DWork.icLoad_pu = true;
+}
+
+void PitchNormalLaw::reset(void)
+{
+  real_T rtb_nz_limit_up_g;
+  real_T rtb_nz_limit_lo_g;
+  real_T rtb_in_flare;
+  PitchNormalLaw_DWork.Delay_DSTATE = PitchNormalLaw_rtP.RateLimiterDynamicVariableTs_InitialCondition;
+  PitchNormalLaw_DWork.Delay_DSTATE_h = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_InitialCondition;
+  PitchNormalLaw_DWork.Delay_DSTATE_n = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition;
+  PitchNormalLaw_DWork.Delay_DSTATE_c = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition;
+  PitchNormalLaw_DWork.Delay_DSTATE_l = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_InitialCondition_l;
+  PitchNormalLaw_DWork.Delay_DSTATE_k = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_o;
+  PitchNormalLaw_DWork.Delay_DSTATE_d = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_d;
+  PitchNormalLaw_DWork.Delay_DSTATE_f = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_h;
+  PitchNormalLaw_DWork.Delay_DSTATE_g = PitchNormalLaw_rtP.Delay_InitialCondition;
+  PitchNormalLaw_DWork.Delay1_DSTATE = PitchNormalLaw_rtP.Delay1_InitialCondition;
+  PitchNormalLaw_DWork.Delay_DSTATE_j = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_m;
+  PitchNormalLaw_DWork.Delay_DSTATE_ca = PitchNormalLaw_rtP.Delay_InitialCondition_e;
+  PitchNormalLaw_DWork.Delay1_DSTATE_i = PitchNormalLaw_rtP.Delay1_InitialCondition_g;
+  PitchNormalLaw_DWork.Delay_DSTATE_e = PitchNormalLaw_rtP.RateLimiterVariableTs5_InitialCondition;
+  PitchNormalLaw_DWork.Delay_DSTATE_kd = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_InitialCondition_j;
+  PitchNormalLaw_DWork.Delay_DSTATE_b = PitchNormalLaw_rtP.RateLimiterVariableTs3_InitialCondition_e;
+  PitchNormalLaw_DWork.Delay_DSTATE_ku = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_f;
+  PitchNormalLaw_DWork.Delay_DSTATE_gl = PitchNormalLaw_rtP.Delay_InitialCondition_c;
+  PitchNormalLaw_DWork.Delay1_DSTATE_l = PitchNormalLaw_rtP.Delay1_InitialCondition_gf;
+  PitchNormalLaw_DWork.Delay_DSTATE_m = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_e;
+  PitchNormalLaw_DWork.Delay_DSTATE_k2 = PitchNormalLaw_rtP.Delay_InitialCondition_h;
+  PitchNormalLaw_DWork.Delay1_DSTATE_n = PitchNormalLaw_rtP.Delay1_InitialCondition_e;
+  PitchNormalLaw_DWork.Delay_DSTATE_mz = PitchNormalLaw_rtP.RateLimiterVariableTs4_InitialCondition;
+  PitchNormalLaw_DWork.Delay_DSTATE_jh = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_a;
+  PitchNormalLaw_DWork.Delay_DSTATE_dy = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_di;
+  PitchNormalLaw_DWork.Delay_DSTATE_e5 = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_InitialCondition_f;
+  PitchNormalLaw_DWork.Delay_DSTATE_gz = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_g;
+  PitchNormalLaw_DWork.Delay_DSTATE_lf = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_c;
+  PitchNormalLaw_DWork.Delay_DSTATE_ho = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs1_InitialCondition_g;
+  PitchNormalLaw_DWork.Delay_DSTATE_ds = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_h;
+  PitchNormalLaw_DWork.Delay_DSTATE_jt = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_a;
+  PitchNormalLaw_DWork.icLoad = true;
+  PitchNormalLaw_DWork.icLoad_p = true;
+  PitchNormalLaw_DWork.Delay_DSTATE_aa = PitchNormalLaw_rtP.RateLimiterDynamicVariableTs_InitialCondition_m;
+  PitchNormalLaw_DWork.Delay_DSTATE_ej = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_b;
+  PitchNormalLaw_DWork.Delay_DSTATE_e4 = PitchNormalLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_p;
+  PitchNormalLaw_DWork.icLoad_pu = true;
+  PitchNormalLaw_LagFilter_Reset(&PitchNormalLaw_DWork.sf_LagFilter);
+  PitchNormalLaw_DWork.is_active_c3_PitchNormalLaw = 0U;
+  PitchNormalLaw_DWork.is_c3_PitchNormalLaw = PitchNormalLaw_IN_NO_ACTIVE_CHILD;
+  PitchNormalLaw_DWork.on_ground_time = 0.0;
+  PitchNormalLaw_B.in_flight = 0.0;
+  PitchNormalLaw_DWork.is_active_c2_PitchNormalLaw = 0U;
+  PitchNormalLaw_DWork.is_c2_PitchNormalLaw = PitchNormalLaw_IN_NO_ACTIVE_CHILD;
+  rtb_in_flare = 0.0;
+  PitchNormalLaw_B.flare_Theta_c_deg = 0.0;
+  PitchNormalLaw_B.flare_Theta_c_rate_deg_s = 0.0;
+  PitchNormalLaw_DWork.is_active_c9_PitchNormalLaw = 0U;
+  PitchNormalLaw_DWork.is_c9_PitchNormalLaw = PitchNormalLaw_IN_NO_ACTIVE_CHILD;
+  PitchNormalLaw_DWork.is_active_c8_PitchNormalLaw = 0U;
+  PitchNormalLaw_DWork.is_c8_PitchNormalLaw = PitchNormalLaw_IN_NO_ACTIVE_CHILD;
+  PitchNormalLaw_DWork.is_active_c7_PitchNormalLaw = 0U;
+  PitchNormalLaw_DWork.is_c7_PitchNormalLaw = PitchNormalLaw_IN_NO_ACTIVE_CHILD;
+  rtb_nz_limit_up_g = 0.0;
+  rtb_nz_limit_lo_g = 0.0;
+  PitchNormalLaw_RateLimiter_Reset(&PitchNormalLaw_DWork.sf_RateLimiter);
+  PitchNormalLaw_DWork.is_active_c6_PitchNormalLaw = 0U;
+  PitchNormalLaw_DWork.is_c6_PitchNormalLaw = PitchNormalLaw_IN_NO_ACTIVE_CHILD;
+  PitchNormalLaw_RateLimiter_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_p);
+  PitchNormalLaw_RateLimiter_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_c);
+  PitchNormalLaw_RateLimiter_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_n);
+  PitchNormalLaw_eta_trim_limit_lofreeze_Reset(&PitchNormalLaw_DWork.sf_eta_trim_limit_lofreeze);
+  PitchNormalLaw_eta_trim_limit_lofreeze_Reset(&PitchNormalLaw_DWork.sf_eta_trim_limit_upfreeze);
+  PitchNormalLaw_RateLimiter_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_o);
+  PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_k);
+  PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter_k);
+  PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_g3);
+  PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter_c);
+  PitchNormalLaw_RateLimiter_l_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_nx);
+  PitchNormalLaw_LagFilter_Reset(&PitchNormalLaw_DWork.sf_LagFilter_m);
+  PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter_h);
+  PitchNormalLaw_RateLimiter_l_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_d);
+  PitchNormalLaw_RateLimiter_l_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_c2);
+  PitchNormalLaw_RateLimiter_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_l);
+  PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_i);
+  PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter_l);
+  PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_g);
+  PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter_d);
+  PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_n);
+  PitchNormalLaw_WashoutFilter_Reset(&PitchNormalLaw_DWork.sf_WashoutFilter);
+  PitchNormalLaw_RateLimiter_l_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_ct);
+  PitchNormalLaw_LagFilter_i_Reset(&PitchNormalLaw_DWork.sf_LagFilter_f);
+  PitchNormalLaw_RateLimiter_Reset(&PitchNormalLaw_DWork.sf_RateLimiter_b);
 }
 
 void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_time_simulation_time, const real_T

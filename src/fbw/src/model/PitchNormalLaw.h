@@ -493,22 +493,29 @@ class PitchNormalLaw final
             real_T *rtu_In_high_speed_prot_high_kn, const real_T *rtu_In_high_speed_prot_low_kn, const real_T
             *rtu_In_ap_theta_c_deg, const boolean_T *rtu_In_any_ap_engaged, real_T *rty_Out_eta_deg, real_T
             *rty_Out_eta_trim_deg);
+  void reset();
   PitchNormalLaw();
   ~PitchNormalLaw();
  private:
   BlockIO_PitchNormalLaw_T PitchNormalLaw_B;
   D_Work_PitchNormalLaw_T PitchNormalLaw_DWork;
   static Parameters_PitchNormalLaw_T PitchNormalLaw_rtP;
+  static void PitchNormalLaw_LagFilter_Reset(rtDW_LagFilter_PitchNormalLaw_T *localDW);
   static void PitchNormalLaw_LagFilter(const real_T *rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
     rtDW_LagFilter_PitchNormalLaw_T *localDW);
+  static void PitchNormalLaw_RateLimiter_Reset(rtDW_RateLimiter_PitchNormalLaw_T *localDW);
   static void PitchNormalLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts, real_T
     rtu_init, real_T *rty_Y, rtDW_RateLimiter_PitchNormalLaw_T *localDW);
+  static void PitchNormalLaw_eta_trim_limit_lofreeze_Reset(rtDW_eta_trim_limit_lofreeze_PitchNormalLaw_T *localDW);
   static void PitchNormalLaw_eta_trim_limit_lofreeze(const real_T *rtu_eta_trim, const boolean_T *rtu_trigger, real_T
     *rty_y, rtDW_eta_trim_limit_lofreeze_PitchNormalLaw_T *localDW);
+  static void PitchNormalLaw_LagFilter_i_Reset(rtDW_LagFilter_PitchNormalLaw_d_T *localDW);
   static void PitchNormalLaw_LagFilter_n(real_T rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
     rtDW_LagFilter_PitchNormalLaw_d_T *localDW);
+  static void PitchNormalLaw_WashoutFilter_Reset(rtDW_WashoutFilter_PitchNormalLaw_T *localDW);
   static void PitchNormalLaw_WashoutFilter(real_T rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
     rtDW_WashoutFilter_PitchNormalLaw_T *localDW);
+  static void PitchNormalLaw_RateLimiter_l_Reset(rtDW_RateLimiter_PitchNormalLaw_o_T *localDW);
   static void PitchNormalLaw_RateLimiter_c(const real_T *rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts,
     real_T rtu_init, real_T *rty_Y, rtDW_RateLimiter_PitchNormalLaw_o_T *localDW);
   static void PitchNormalLaw_VoterAttitudeProtection(real_T rtu_input, real_T rtu_input_l, real_T rtu_input_o, real_T

@@ -107,11 +107,13 @@ class LateralNormalLaw final
             *rtu_In_high_aoa_prot_active, const boolean_T *rtu_In_high_speed_prot_active, const real_T
             *rtu_In_ap_phi_c_deg, const boolean_T *rtu_In_any_ap_engaged, real_T *rty_Out_xi_deg, real_T
             *rty_Out_zeta_deg);
+  void reset();
   LateralNormalLaw();
   ~LateralNormalLaw();
  private:
   D_Work_LateralNormalLaw_T LateralNormalLaw_DWork;
   static Parameters_LateralNormalLaw_T LateralNormalLaw_rtP;
+  static void LateralNormalLaw_RateLimiter_Reset(rtDW_RateLimiter_LateralNormalLaw_T *localDW);
   static void LateralNormalLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts, real_T
     rtu_init, real_T *rty_Y, rtDW_RateLimiter_LateralNormalLaw_T *localDW);
 };

@@ -26,6 +26,7 @@ class PitchDirectLaw final
   PitchDirectLaw& operator= (PitchDirectLaw &&) = delete;
   void step(const real_T *rtu_In_time_dt, const real_T *rtu_In_delta_eta_pos, real_T *rty_Out_eta_deg, real_T
             *rty_Out_eta_trim_deg);
+  void reset();
   PitchDirectLaw();
   ~PitchDirectLaw();
  private:

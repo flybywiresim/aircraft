@@ -15,6 +15,11 @@ PitchDirectLaw::Parameters_PitchDirectLaw_T PitchDirectLaw::PitchDirectLaw_rtP{
   -30.0
 };
 
+void PitchDirectLaw::reset(void)
+{
+  PitchDirectLaw_DWork.pY_not_empty = false;
+}
+
 void PitchDirectLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_delta_eta_pos, real_T *rty_Out_eta_deg,
   real_T *rty_Out_eta_trim_deg)
 {

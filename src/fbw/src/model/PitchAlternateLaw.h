@@ -202,15 +202,19 @@ class PitchAlternateLaw final
             *rtu_In_eta_trim_deg, const real_T *rtu_In_V_tas_kn, const real_T *rtu_In_flaps_handle_index, const real_T
             *rtu_In_spoilers_left_pos, const real_T *rtu_In_spoilers_right_pos, const real_T *rtu_In_delta_eta_pos,
             const boolean_T *rtu_In_tracking_mode_on, real_T *rty_Out_eta_deg, real_T *rty_Out_eta_trim_deg);
+  void reset();
   PitchAlternateLaw();
   ~PitchAlternateLaw();
  private:
   D_Work_PitchAlternateLaw_T PitchAlternateLaw_DWork;
   static Parameters_PitchAlternateLaw_T PitchAlternateLaw_rtP;
+  static void PitchAlternateLaw_RateLimiter_Reset(rtDW_RateLimiter_PitchAlternateLaw_T *localDW);
   static void PitchAlternateLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts, real_T
     rtu_init, real_T *rty_Y, rtDW_RateLimiter_PitchAlternateLaw_T *localDW);
+  static void PitchAlternateLaw_LagFilter_Reset(rtDW_LagFilter_PitchAlternateLaw_T *localDW);
   static void PitchAlternateLaw_LagFilter(real_T rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
     rtDW_LagFilter_PitchAlternateLaw_T *localDW);
+  static void PitchAlternateLaw_WashoutFilter_Reset(rtDW_WashoutFilter_PitchAlternateLaw_T *localDW);
   static void PitchAlternateLaw_WashoutFilter(real_T rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
     rtDW_WashoutFilter_PitchAlternateLaw_T *localDW);
 };

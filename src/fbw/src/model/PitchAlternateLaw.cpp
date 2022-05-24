@@ -3,6 +3,8 @@
 #include <cmath>
 #include "look1_binlxpw.h"
 
+const uint8_T PitchAlternateLaw_IN_NO_ACTIVE_CHILD{ 0U };
+
 const uint8_T PitchAlternateLaw_IN_frozen{ 1U };
 
 const uint8_T PitchAlternateLaw_IN_running{ 2U };
@@ -303,6 +305,11 @@ PitchAlternateLaw::Parameters_PitchAlternateLaw_T PitchAlternateLaw::PitchAltern
   true
 };
 
+void PitchAlternateLaw::PitchAlternateLaw_RateLimiter_Reset(rtDW_RateLimiter_PitchAlternateLaw_T *localDW)
+{
+  localDW->pY_not_empty = false;
+}
+
 void PitchAlternateLaw::PitchAlternateLaw_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, const real_T *rtu_Ts,
   real_T rtu_init, real_T *rty_Y, rtDW_RateLimiter_PitchAlternateLaw_T *localDW)
 {
@@ -313,6 +320,12 @@ void PitchAlternateLaw::PitchAlternateLaw_RateLimiter(real_T rtu_u, real_T rtu_u
 
   localDW->pY += std::fmax(std::fmin(rtu_u - localDW->pY, std::abs(rtu_up) * *rtu_Ts), -std::abs(rtu_lo) * *rtu_Ts);
   *rty_Y = localDW->pY;
+}
+
+void PitchAlternateLaw::PitchAlternateLaw_LagFilter_Reset(rtDW_LagFilter_PitchAlternateLaw_T *localDW)
+{
+  localDW->pY_not_empty = false;
+  localDW->pU_not_empty = false;
 }
 
 void PitchAlternateLaw::PitchAlternateLaw_LagFilter(real_T rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
@@ -332,6 +345,12 @@ void PitchAlternateLaw::PitchAlternateLaw_LagFilter(real_T rtu_U, real_T rtu_C1,
   *rty_Y = (2.0 - denom_tmp) / (denom_tmp + 2.0) * localDW->pY + (rtu_U * ca + localDW->pU * ca);
   localDW->pY = *rty_Y;
   localDW->pU = rtu_U;
+}
+
+void PitchAlternateLaw::PitchAlternateLaw_WashoutFilter_Reset(rtDW_WashoutFilter_PitchAlternateLaw_T *localDW)
+{
+  localDW->pY_not_empty = false;
+  localDW->pU_not_empty = false;
 }
 
 void PitchAlternateLaw::PitchAlternateLaw_WashoutFilter(real_T rtu_U, real_T rtu_C1, const real_T *rtu_dt, real_T *rty_Y,
@@ -367,6 +386,42 @@ void PitchAlternateLaw::init(void)
   PitchAlternateLaw_DWork.icLoad = true;
   PitchAlternateLaw_DWork.icLoad_p = true;
   PitchAlternateLaw_DWork.Delay_DSTATE_aa = PitchAlternateLaw_rtP.RateLimiterDynamicVariableTs_InitialCondition;
+}
+
+void PitchAlternateLaw::reset(void)
+{
+  real_T rtb_nz_limit_up_g;
+  real_T rtb_nz_limit_lo_g;
+  PitchAlternateLaw_DWork.Delay_DSTATE = PitchAlternateLaw_rtP.DiscreteDerivativeVariableTs1_InitialCondition;
+  PitchAlternateLaw_DWork.Delay_DSTATE_k = PitchAlternateLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition;
+  PitchAlternateLaw_DWork.Delay_DSTATE_d = PitchAlternateLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition;
+  PitchAlternateLaw_DWork.Delay_DSTATE_kd = PitchAlternateLaw_rtP.DiscreteDerivativeVariableTs1_InitialCondition_j;
+  PitchAlternateLaw_DWork.Delay_DSTATE_j = PitchAlternateLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_a;
+  PitchAlternateLaw_DWork.Delay_DSTATE_dy = PitchAlternateLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_d;
+  PitchAlternateLaw_DWork.Delay_DSTATE_e = PitchAlternateLaw_rtP.DiscreteDerivativeVariableTs1_InitialCondition_f;
+  PitchAlternateLaw_DWork.Delay_DSTATE_g = PitchAlternateLaw_rtP.DiscreteDerivativeVariableTs_InitialCondition_g;
+  PitchAlternateLaw_DWork.Delay_DSTATE_l = PitchAlternateLaw_rtP.DiscreteDerivativeVariableTs2_InitialCondition_c;
+  PitchAlternateLaw_DWork.icLoad = true;
+  PitchAlternateLaw_DWork.icLoad_p = true;
+  PitchAlternateLaw_DWork.Delay_DSTATE_aa = PitchAlternateLaw_rtP.RateLimiterDynamicVariableTs_InitialCondition;
+  PitchAlternateLaw_DWork.is_active_c9_PitchAlternateLaw = 0U;
+  PitchAlternateLaw_DWork.is_c9_PitchAlternateLaw = PitchAlternateLaw_IN_NO_ACTIVE_CHILD;
+  PitchAlternateLaw_DWork.is_active_c8_PitchAlternateLaw = 0U;
+  PitchAlternateLaw_DWork.is_c8_PitchAlternateLaw = PitchAlternateLaw_IN_NO_ACTIVE_CHILD;
+  PitchAlternateLaw_DWork.is_active_c7_PitchAlternateLaw = 0U;
+  PitchAlternateLaw_DWork.is_c7_PitchAlternateLaw = PitchAlternateLaw_IN_NO_ACTIVE_CHILD;
+  rtb_nz_limit_up_g = 0.0;
+  rtb_nz_limit_lo_g = 0.0;
+  PitchAlternateLaw_RateLimiter_Reset(&PitchAlternateLaw_DWork.sf_RateLimiter);
+  PitchAlternateLaw_LagFilter_Reset(&PitchAlternateLaw_DWork.sf_LagFilter_g3);
+  PitchAlternateLaw_WashoutFilter_Reset(&PitchAlternateLaw_DWork.sf_WashoutFilter_c);
+  PitchAlternateLaw_DWork.pY_not_empty = false;
+  PitchAlternateLaw_LagFilter_Reset(&PitchAlternateLaw_DWork.sf_LagFilter);
+  PitchAlternateLaw_WashoutFilter_Reset(&PitchAlternateLaw_DWork.sf_WashoutFilter);
+  PitchAlternateLaw_RateLimiter_Reset(&PitchAlternateLaw_DWork.sf_RateLimiter_n);
+  PitchAlternateLaw_LagFilter_Reset(&PitchAlternateLaw_DWork.sf_LagFilter_g);
+  PitchAlternateLaw_WashoutFilter_Reset(&PitchAlternateLaw_DWork.sf_WashoutFilter_d);
+  PitchAlternateLaw_RateLimiter_Reset(&PitchAlternateLaw_DWork.sf_RateLimiter_b);
 }
 
 void PitchAlternateLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_g, const real_T *rtu_In_Theta_deg,

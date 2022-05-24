@@ -36,6 +36,7 @@ struct base_sim_data
   boolean_T pause_on;
   boolean_T tracking_mode_on_override;
   boolean_T tailstrike_protection_on;
+  boolean_T computer_running;
 };
 
 #endif

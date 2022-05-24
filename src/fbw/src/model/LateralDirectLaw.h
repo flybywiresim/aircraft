@@ -26,6 +26,7 @@ class LateralDirectLaw final
   LateralDirectLaw& operator= (LateralDirectLaw &&) = delete;
   void step(const real_T *rtu_In_time_dt, const real_T *rtu_In_delta_xi_pos, real_T *rty_Out_xi_deg, real_T
             *rty_Out_zeta_deg);
+  void reset();
   LateralDirectLaw();
   ~LateralDirectLaw();
  private:

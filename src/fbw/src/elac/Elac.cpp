@@ -9,9 +9,7 @@ Elac::Elac(const Elac& obj) : isUnit1(obj.isUnit1) {
   elacComputer.initialize();
 }
 
-void Elac::clearMemory() {
-  elacComputer.initialize();
-}
+void Elac::clearMemory() {}
 
 // If the power supply is valid, perform the self-test-sequence.
 // If at least one hydraulic source is pressurised, perform a short test.
@@ -38,17 +36,16 @@ void Elac::update(double deltaTime, double simulationTime, bool faultActive, boo
   updateSelfTest(deltaTime);
   monitorSelf(faultActive);
 
-  if (monitoringHealthy) {
-    elacComputer.setExternalInputs(&modelInputs);
-    elacComputer.step();
-    modelOutputs = elacComputer.getExternalOutputs().out;
-  }
+  elacComputer.setExternalInputs(&modelInputs);
+  elacComputer.step();
+  modelOutputs = elacComputer.getExternalOutputs().out;
 }
 
 // Perform self monitoring
 void Elac::monitorSelf(bool faultActive) {
   if (faultActive || powerSupplyFault || !selfTestComplete || !modelInputs.in.discrete_inputs.elac_engaged_from_switch) {
     monitoringHealthy = false;
+    modelInputs.in.sim_data.computer_running = false;
   } else {
     monitoringHealthy = true;
   }
@@ -88,7 +85,7 @@ void Elac::updateSelfTest(double deltaTime) {
 
     // If the self-test sequence has just been completed, reset RAM.
     if (selfTestTimer <= 0) {
-      clearMemory();
+      modelInputs.in.sim_data.computer_running = true;
     }
   }
   if (selfTestTimer <= 0) {

@@ -15,6 +15,11 @@ LateralDirectLaw::Parameters_LateralDirectLaw_T LateralDirectLaw::LateralDirectL
   -25.0
 };
 
+void LateralDirectLaw::reset(void)
+{
+  LateralDirectLaw_DWork.pY_not_empty = false;
+}
+
 void LateralDirectLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_delta_xi_pos, real_T *rty_Out_xi_deg,
   real_T *rty_Out_zeta_deg)
 {
