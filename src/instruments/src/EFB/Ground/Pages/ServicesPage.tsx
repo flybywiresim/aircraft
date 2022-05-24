@@ -29,7 +29,7 @@ interface ServiceButtonWrapperProps {
     y: number
 }
 
-// Group buttons and sets a border and divider line
+// This groups buttons and sets a border and divider line
 const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, className, xl, xr, y }) => (
     <div
         className={`flex flex-col rounded-xl border-2 border-theme-accent divide-y-2 divide-theme-accent overflow-hidden ${className}`}
@@ -66,6 +66,7 @@ interface GroundServiceButtonProps {
     className?: string,
 }
 
+// Button styles based on ServiceButtonState enum
 const buttonsStyles = [
     // HIDDEN
     '',
@@ -150,149 +151,75 @@ export const ServicesPage = () => {
     const cateringButtonStateRef = useRef(cateringButtonState);
     cateringButtonStateRef.current = cateringButtonState;
 
-    // Centralized handler for managing clicks to any button
-    const handleButtonClick = (id: ServiceButton) => {
-        switch (id) {
-        case ServiceButton.CabinDoor:
-            updateButtonState(cabinDoorButtonState, setCabinDoorButtonState);
-            toggleCabinDoor();
-            break;
-        case ServiceButton.JetBridge:
-            // Toggle called/released
-            if (jetWayButtonState < ServiceButtonState.CALLED) {
-                dispatch(setJetWayButtonState(ServiceButtonState.CALLED));
-            } else if (jetWayButtonState === ServiceButtonState.CALLED) {
-                // prevent to click again after a called has been cancelled
-                // to avoid state getting out of sync.
-                dispatch(setJetWayButtonState(ServiceButtonState.DISABLED));
+    // handles state changes to complex services: Jetway, Stairs, Baggage, Catering
+    const handleComplexService = (
+        serviceButtonStateRef: React.MutableRefObject<ServiceButtonState>,
+        setButtonState: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
+        doorButtonState: ServiceButtonState,
+        setDoorButtonState: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
+        doorOpenState: number,
+    ) => {
+        // Service Button handling
+        if (serviceButtonStateRef.current < ServiceButtonState.CALLED) {
+            dispatch(setButtonState(ServiceButtonState.CALLED));
+            // If door was already open use a timer to set to active
+            // as the useEffect will never be called.
+            if (doorOpenState > 0.9) {
                 setTimeout(() => {
-                    dispatch(setJetWayButtonState(ServiceButtonState.INACTIVE));
-                }, 6000);
-            } else {
-                dispatch(setJetWayButtonState(ServiceButtonState.RELEASED));
+                    dispatch(setButtonState(ServiceButtonState.ACTIVE));
+                }, 5000);
             }
-            // enable/disable cabin door button after a timeout
-            if (cabinDoorButtonState === ServiceButtonState.DISABLED) {
-                setTimeout(() => {
-                    // jet-bridge button could have been pressed again in the meantime
-                    if (jetWayButtonStateRef.current < ServiceButtonState.CALLED) {
-                        dispatch(setCabinDoorButtonState(ServiceButtonState.INACTIVE));
+        } else if (serviceButtonStateRef.current === ServiceButtonState.CALLED) {
+            // prevent to click again after a called has been cancelled
+            // to avoid state getting out of sync.
+            dispatch(setButtonState(ServiceButtonState.DISABLED));
+            setTimeout(() => {
+                dispatch(setButtonState(ServiceButtonState.INACTIVE));
+            }, 5500);
+        } else {
+            dispatch(setButtonState(ServiceButtonState.RELEASED));
+            // If there is not jet-bridge or stairs the door would never close
+            setTimeout(() => {
+                if (doorOpenState > 0.9) {
+                    dispatch(setButtonState(ServiceButtonState.INACTIVE));
+                }
+            }, 5000);
+        }
+
+        // Door Button: enable/disable cabin door button after a timeout
+        if (doorButtonState === ServiceButtonState.DISABLED) {
+            setTimeout(() => {
+                // service button could have been pressed again in the meantime
+                if (serviceButtonStateRef.current < ServiceButtonState.CALLED) {
+                    if (doorOpenState > 0.9) {
+                        dispatch(setDoorButtonState(ServiceButtonState.ACTIVE));
+                    } else {
+                        dispatch(setDoorButtonState(ServiceButtonState.INACTIVE));
                     }
-                }, 5000);
-            } else {
-                dispatch(setCabinDoorButtonState(ServiceButtonState.DISABLED));
-            }
-            // if door was already open use a timer to set to active
-            if (jetWayButtonState <= ServiceButtonState.CALLED && cabinDoorOpen > 0.9) {
-                setTimeout(() => {
-                    dispatch(setJetWayButtonState(ServiceButtonState.ACTIVE));
-                }, 5000);
-            }
-            toggleJetBridgeAndStairs();
-            break;
-        case ServiceButton.FuelTruck:
-            // Toggle called/released
-            if (fuelTruckButtonState < ServiceButtonState.CALLED) {
-                dispatch(setFuelTruckButtonState(ServiceButtonState.CALLED));
-            } else if (fuelTruckButtonState === ServiceButtonState.CALLED) {
-                dispatch(setFuelTruckButtonState(ServiceButtonState.INACTIVE));
-            } else {
-                dispatch(setFuelTruckButtonState(ServiceButtonState.RELEASED));
-            }
-            toggleFuelTruck();
-            break;
-        case ServiceButton.Gpu:
-            // Toggle called/released
-            if (gpuButtonState < ServiceButtonState.CALLED) {
-                dispatch(setGpuButtonState(ServiceButtonState.CALLED));
-            } else if (gpuButtonState === ServiceButtonState.CALLED) {
-                dispatch(setGpuButtonState(ServiceButtonState.INACTIVE));
-            } else {
-                dispatch(setGpuButtonState(ServiceButtonState.RELEASED));
-            }
-            toggleGpu();
-            break;
-        case ServiceButton.CargoDoor:
-            updateButtonState(cargoDoorButtonState, setCargoDoorButtonState);
-            toggleCargoDoor();
-            break;
-        case ServiceButton.BaggageTruck:
-            // Toggle called/released
-            if (baggageButtonState < ServiceButtonState.CALLED) {
-                dispatch(setBaggageButtonState(ServiceButtonState.CALLED));
-            } else if (baggageButtonState === ServiceButtonState.CALLED) {
-                // prevent to click again after a called has been cancelled
-                // to avoid state getting out of sync.
-                dispatch(setBaggageButtonState(ServiceButtonState.DISABLED));
-                setTimeout(() => {
-                    dispatch(setBaggageButtonState(ServiceButtonState.INACTIVE));
-                }, 6000);
-            } else {
-                dispatch(setBaggageButtonState(ServiceButtonState.RELEASED));
-            }
-            // enable/disable cabin door button after a timeout
-            if (cargoDoorButtonState === ServiceButtonState.DISABLED) {
-                setTimeout(() => {
-                    // jet-bridge button could have been pressed again in the meantime
-                    if (baggageButtonStateRef.current < ServiceButtonState.CALLED) {
-                        dispatch(setCargoDoorButtonState(ServiceButtonState.INACTIVE));
-                    }
-                }, 5000);
-            } else {
-                dispatch(setCargoDoorButtonState(ServiceButtonState.DISABLED));
-            }
-            // if door was already open use a timer to set to active
-            if (baggageButtonState <= ServiceButtonState.CALLED && cargoDoorOpen > 0.9) {
-                setTimeout(() => {
-                    dispatch(setBaggageButtonState(ServiceButtonState.ACTIVE));
-                }, 5000);
-            }
-            toggleBaggageTruck();
-            break;
-        case ServiceButton.AftDoor:
-            updateButtonState(aftDoorButtonState, setAftDoorButtonState);
-            toggleAftDoor();
-            break;
-        case ServiceButton.CateringTruck:
-            // Toggle called/released
-            if (cateringButtonState < ServiceButtonState.CALLED) {
-                dispatch(setCateringButtonState(ServiceButtonState.CALLED));
-            } else if (cateringButtonState === ServiceButtonState.CALLED) {
-                // prevent to click again after a called has been cancelled
-                // to avoid state getting out of sync.
-                dispatch(setCateringButtonState(ServiceButtonState.DISABLED));
-                setTimeout(() => {
-                    dispatch(setCateringButtonState(ServiceButtonState.INACTIVE));
-                }, 6000);
-            } else {
-                dispatch(setCateringButtonState(ServiceButtonState.RELEASED));
-            }
-            // enable/disable cabin door button after a timeout
-            if (aftDoorButtonState === ServiceButtonState.DISABLED) {
-                setTimeout(() => {
-                    // jet-bridge button could have been pressed again in the meantime
-                    if (cateringButtonStateRef.current < ServiceButtonState.CALLED) {
-                        dispatch(setAftDoorButtonState(ServiceButtonState.INACTIVE));
-                    }
-                }, 5000);
-            } else {
-                dispatch(setAftDoorButtonState(ServiceButtonState.DISABLED));
-            }
-            // if door was already open use a timer to set to active
-            if (cateringButtonState <= ServiceButtonState.CALLED && aftDoorOpen > 0.9) {
-                setTimeout(() => {
-                    dispatch(setCateringButtonState(ServiceButtonState.ACTIVE));
-                }, 5000);
-            }
-            toggleCateringTruck();
-            break;
-        default:
-            break;
+                }
+            }, 5000);
+        } else {
+            dispatch(setDoorButtonState(ServiceButtonState.DISABLED));
         }
     };
 
-    // Changes the state of a button based on the current state
-    const updateButtonState = (
+    // handles state changes for simple services: fuel, gpu
+    const handleSimpleService = (
+        buttonState: ServiceButtonState,
+        setButtonState: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
+    ) => {
+        // Toggle called/released
+        if (buttonState < ServiceButtonState.CALLED) {
+            dispatch(setButtonState(ServiceButtonState.CALLED));
+        } else if (buttonState === ServiceButtonState.CALLED) {
+            dispatch(setButtonState(ServiceButtonState.INACTIVE));
+        } else {
+            dispatch(setButtonState(ServiceButtonState.RELEASED));
+        }
+    };
+
+    // handles state changes to doors
+    const handleDoors = (
         buttonState: ServiceButtonState,
         setter: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
     ) => {
@@ -317,7 +244,7 @@ export const ServicesPage = () => {
     // Determines the state of a service based on a given door state input
     // All services are basically active and terminated based on a
     // door state (INTERACTION POINT OPEN)
-    const setServiceState = (
+    const updateServiceStateFromDoorChange = (
         state: ServiceButtonState,
         setter: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
         doorState: number,
@@ -329,6 +256,7 @@ export const ServicesPage = () => {
             break;
         case ServiceButtonState.CALLED:
             if (doorState >= 0.9) dispatch(setter(ServiceButtonState.ACTIVE));
+            if (doorState < 0.1) dispatch(setter(ServiceButtonState.INACTIVE));
             break;
         case ServiceButtonState.ACTIVE:
             if (doorState < 0.9 && doorState > 0.1) dispatch(setter(ServiceButtonState.RELEASED));
@@ -341,18 +269,76 @@ export const ServicesPage = () => {
         }
     };
 
+    // Centralized handler for managing clicks to any button
+    const handleButtonClick = (id: ServiceButton) => {
+        switch (id) {
+        case ServiceButton.CabinDoor:
+            handleDoors(cabinDoorButtonState, setCabinDoorButtonState);
+            toggleCabinDoor();
+            break;
+        case ServiceButton.JetBridge:
+            handleComplexService(
+                jetWayButtonStateRef,
+                setJetWayButtonState,
+                cabinDoorButtonState,
+                setCabinDoorButtonState,
+                cabinDoorOpen,
+            );
+            toggleJetBridgeAndStairs();
+            break;
+        case ServiceButton.FuelTruck:
+            handleSimpleService(fuelTruckButtonState, setFuelTruckButtonState);
+            toggleFuelTruck();
+            break;
+        case ServiceButton.Gpu:
+            handleSimpleService(gpuButtonState, setGpuButtonState);
+            toggleGpu();
+            break;
+        case ServiceButton.CargoDoor:
+            handleDoors(cargoDoorButtonState, setCargoDoorButtonState);
+            toggleCargoDoor();
+            break;
+        case ServiceButton.BaggageTruck:
+            handleComplexService(
+                baggageButtonStateRef,
+                setBaggageButtonState,
+                cargoDoorButtonState,
+                setCargoDoorButtonState,
+                cargoDoorOpen,
+            );
+            toggleBaggageTruck();
+            break;
+        case ServiceButton.AftDoor:
+            handleDoors(aftDoorButtonState, setAftDoorButtonState);
+            toggleAftDoor();
+            break;
+        case ServiceButton.CateringTruck:
+            handleComplexService(
+                cateringButtonStateRef,
+                setCateringButtonState,
+                aftDoorButtonState,
+                setAftDoorButtonState,
+                aftDoorOpen,
+            );
+            toggleCateringTruck();
+            break;
+        default:
+            break;
+        }
+    };
+
     // Door and simple door-like services
     useEffect(() => {
-        setServiceState(cabinDoorButtonState, setCabinDoorButtonState, cabinDoorOpen);
-        setServiceState(cargoDoorButtonState, setCargoDoorButtonState, cargoDoorOpen);
-        setServiceState(aftDoorButtonState, setAftDoorButtonState, aftDoorOpen);
-        setServiceState(fuelTruckButtonState, setFuelTruckButtonState, fuelingActive);
-        setServiceState(gpuButtonState, setGpuButtonState, gpuActive);
+        updateServiceStateFromDoorChange(cabinDoorButtonState, setCabinDoorButtonState, cabinDoorOpen);
+        updateServiceStateFromDoorChange(cargoDoorButtonState, setCargoDoorButtonState, cargoDoorOpen);
+        updateServiceStateFromDoorChange(aftDoorButtonState, setAftDoorButtonState, aftDoorOpen);
+        updateServiceStateFromDoorChange(fuelTruckButtonState, setFuelTruckButtonState, fuelingActive);
+        updateServiceStateFromDoorChange(gpuButtonState, setGpuButtonState, gpuActive);
     }, [cabinDoorOpen, cargoDoorOpen, aftDoorOpen, fuelingActive, gpuActive]);
 
     // Cabin Door listener for JetBridge Button
     useEffect(() => {
-        setServiceState(jetWayButtonState, setJetWayButtonState, cabinDoorOpen);
+        updateServiceStateFromDoorChange(jetWayButtonState, setJetWayButtonState, cabinDoorOpen);
         // enable cabin door button in case door has been closed by other means (e.g. pushback)
         if (cabinDoorOpen < 1.0
             && jetWayButtonState >= ServiceButtonState.ACTIVE
@@ -368,7 +354,7 @@ export const ServicesPage = () => {
 
     // Cargo Door listener for Baggage Button
     useEffect(() => {
-        setServiceState(baggageButtonState, setBaggageButtonState, cargoDoorOpen);
+        updateServiceStateFromDoorChange(baggageButtonState, setBaggageButtonState, cargoDoorOpen);
         // enable cabin door button in case door has been closed by other means (e.g. pushback)
         if (cargoDoorOpen < 1.0
             && baggageButtonState >= ServiceButtonState.ACTIVE
@@ -384,7 +370,7 @@ export const ServicesPage = () => {
 
     // Aft Cabin Door listener fo rCatering Button
     useEffect(() => {
-        setServiceState(cateringButtonState, setCateringButtonState, aftDoorOpen);
+        updateServiceStateFromDoorChange(cateringButtonState, setCateringButtonState, aftDoorOpen);
         // enable cabin door button in case door has been closed by other means (e.g. pushback)
         if (aftDoorOpen < 1.0
             && cateringButtonState >= ServiceButtonState.ACTIVE
