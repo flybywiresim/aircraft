@@ -3,7 +3,7 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Layer, getSmallestAngle } from '@instruments/common/utils';
 import { MathUtils } from '@shared/MathUtils';
 import { TuningMode } from '@fmgc/radionav';
-import { Mode, EfisSide, NdSymbol, RangeSetting } from '@shared/NavigationDisplay';
+import { Mode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';
@@ -14,7 +14,6 @@ import { CrossTrack } from '../elements/CrossTrack';
 import { TrackLine } from '../elements/TrackLine';
 import { Traffic } from '../elements/Traffic';
 import { TerrainMap } from '../elements/TerrainMap';
-import { TerrainMapMessages } from '../elements/messages/TerrainMapMessages';
 
 export interface RoseModeProps {
     symbols: NdSymbol[],
@@ -60,10 +59,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     if (adirsAlign) {
         return (
             <>
-                <g id="map" clipPath="url(#rose-mode-map-clip)">
-                    <TerrainMap x={0} y={134} width={768} height={250} range={rangeSetting as RangeSetting} side={side} mapParams={mapParams} displayMode={mode} />
-                </g>
-                <TerrainMapMessages range={rangeSetting as RangeSetting} side={side} mapParams={mapParams} displayMode={Mode.ARC} />
+                <TerrainMap x={0} y={134} width={768} height={250} side={side} ppos={ppos} clipName="rose-mode-map-clip" />
                 <Overlay
                     heading={heading}
                     rangeSetting={rangeSetting}
