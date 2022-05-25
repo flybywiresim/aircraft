@@ -34,6 +34,7 @@ clang \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
+  -O3 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${DIR}/src/zlib" \
   "${DIR}/src/zlib/adler32.c" \
@@ -69,6 +70,7 @@ clang++ \
   -fno-exceptions \
   -fms-extensions \
   -fvisibility=hidden \
+  -O3 \
   -I "${MSFS_SDK}/WASM/include" \
   -I "${MSFS_SDK}/SimConnect SDK/include" \
   -I "${DIR}/src/inih" \
