@@ -9476,7 +9476,7 @@ mod tests {
         }
 
         #[test]
-        fn blue_epump_can_deploy_slats_in_less_35_s_and_no_flaps() {
+        fn blue_epump_can_deploy_slats_in_less_50_s_and_no_flaps() {
             let mut test_bed = test_bed_on_ground_with()
                 .on_the_ground()
                 .set_cold_dark_inputs()
