@@ -233,7 +233,7 @@ class CDUAvailableArrivalsPage {
             const maxPage = starSelection ? (selectedArrival ? Math.max(selectedArrival.enRouteTransitions.length - 2, matchingArrivals.length - 2) : matchingArrivals.length - 2) : (pageCurrent, airportInfo.approaches.length - 3);
             if (pageCurrent < maxPage) {
                 mcdu.onUp = () => {
-                    pageCurrent++;
+                    pageCurrent += 3;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
@@ -243,7 +243,7 @@ class CDUAvailableArrivalsPage {
             }
             if (pageCurrent > 0) {
                 mcdu.onDown = () => {
-                    pageCurrent--;
+                    pageCurrent -= 3;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
@@ -365,7 +365,7 @@ class CDUAvailableArrivalsPage {
 
             if (pageCurrent < selectedApproach.transitions.length - 3) {
                 mcdu.onUp = () => {
-                    pageCurrent++;
+                    pageCurrent += 4;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
@@ -375,7 +375,7 @@ class CDUAvailableArrivalsPage {
             }
             if (pageCurrent > 0) {
                 mcdu.onDown = () => {
-                    pageCurrent--;
+                    pageCurrent -= 4;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
