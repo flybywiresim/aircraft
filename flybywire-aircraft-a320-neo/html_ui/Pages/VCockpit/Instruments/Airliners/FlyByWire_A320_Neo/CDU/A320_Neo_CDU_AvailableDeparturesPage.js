@@ -150,7 +150,7 @@ class CDUAvailableDeparturesPage {
             }
             if (pageCurrent < maxPage) {
                 mcdu.onUp = () => {
-                    pageCurrent++;
+                    pageCurrent += (sidSelection) ? 3 : 4;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
@@ -160,7 +160,7 @@ class CDUAvailableDeparturesPage {
             }
             if (pageCurrent > 0) {
                 mcdu.onDown = () => {
-                    pageCurrent--;
+                    pageCurrent -= (sidSelection) ? 3 : 4;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
