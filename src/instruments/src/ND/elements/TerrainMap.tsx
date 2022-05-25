@@ -17,10 +17,10 @@ export interface TerrainMapProps {
 }
 
 export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, side, clipName, ppos }) => {
-    const [terrOnNdActive, setTerrOnNdActive] = useState<boolean>(SimVar.GetSimVarValue(`L:A32NX_TERRONND_${side === 'L' ? '1' : '2'}_ACTIVE`, 'number') === 1);
+    const [terrOnNdActive] = useSimVar(`L:A32NX_EFIS_TERR_${side}_ACTIVE`, 'boolean', 100);
     const [renderingTimestamp, setRenderingTimestamp] = useState<number | null>(null);
-    const [rangeIndex] = useSimVar(side === 'L' ? 'L:A32NX_EFIS_L_ND_RANGE' : 'L:A32NX_EFIS_R_ND_RANGE', 'number', 100);
-    const [modeIndex] = useSimVar(side === 'R' ? 'L:A32NX_EFIS_L_ND_MODE' : 'L:A32NX_EFIS_R_ND_MODE', 'number', 100);
+    const [rangeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number', 100);
+    const [modeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_MODE`, 'number', 100);
     const [verticalSpeed] = useSimVar('VERTICAL SPEED', 'feet per second', 100);
     const [minimumElevation, setMinimumElevation] = useState<number>(Infinity);
     const [maximumElevation, setMaximumElevation] = useState<number>(Infinity);
@@ -28,15 +28,6 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
     const [gearMode] = useSimVar('GEAR POSITION:0', 'Enum', 100);
     const [altitude] = useSimVar('PLANE ALTITUDE', 'feet', 100);
     const [updateMap, setUpdateMap] = useState<boolean>(false);
-
-    useInteractionEvent(`A320_Neo_MFD_BTN_TERRONND_${side === 'L' ? '1' : '2'}`, () => {
-        if (terrOnNdActive) {
-            SimVar.SetSimVarValue(`BTN_TERRONND_${side === 'L' ? '1' : '2'}_ACTIVE`, 'number', 0);
-        } else {
-            SimVar.SetSimVarValue(`BTN_TERRONND_${side === 'L' ? '1' : '2'}_ACTIVE`, 'number', 1);
-        }
-        setTerrOnNdActive(!terrOnNdActive);
-    });
 
     // update the map if needed
     if (side === 'L') {
