@@ -139,10 +139,11 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         context.translate(236, -6);
         context.clip(this.props.mapClip.get());
         context.resetTransform();
-
+        context.beginPath();
         for (const vector of this.activeVectors) {
             this.drawVector(context, vector, 0);
         }
+        context.stroke();
 
         this.waypointLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.waypointLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
@@ -218,8 +219,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             context.beginPath();
             context.moveTo(cx, cy);
             context.lineTo(x2, y2);
-            context.closePath();
-
             context.stroke();
         }
 
@@ -251,13 +250,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             const rex = ex + this.props.width / 2;
             const rey = ey + this.props.height / 2;
 
-            context.beginPath();
             context.moveTo(rsx, rsy);
             context.lineTo(rex, rey);
-            context.closePath();
-
-            context.stroke();
-
             break;
         }
         case 1: {
@@ -271,6 +265,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
             const pathRadius = distanceTo(vector.centrePoint, vector.endPoint) * this.mapParams.nmToPx;
 
+            // TODO find a way to batch that as well?
+            // TODO beginPath needed here?
             context.stroke(new Path2D(`M ${rsx} ${rsy} A ${pathRadius} ${pathRadius} 0 ${Math.abs(vector.sweepAngle) >= 180 ? 1 : 0} ${vector.sweepAngle > 0 ? 1 : 0} ${rex} ${rey}`));
 
             break;
