@@ -126,7 +126,7 @@
       "RightInnerTank": "우측 내부 탱크",
       "RightOuterTank": "우측 외부 탱크",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "급유 시간을 변경하려면 항공기가 Cold and Dark 상태여야 합니다",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "급유 시간을 변경하려면 항공기의 엔진이 꺼진 상태로 지상에 있어야 합니다.",
         "FillBlockFuelFromSimBrief": "SimBrief 데이터를 바탕으로 연료 채우기"
       },
       "Title": "연료",
@@ -142,7 +142,7 @@
       "Cones": "안전콘",
       "DoorAft": "뒤쪽 문",
       "DoorFwd": "앞쪽 문",
-      "ExternalPower": "외부 전원",
+      "ExternalPower": "지상 전원 공급 장비",
       "FuelTruck": "연료 트럭",
       "JetBridge": "탑승교",
       "Title": "서비스",

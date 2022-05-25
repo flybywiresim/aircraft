@@ -139,14 +139,14 @@
     "Services": {
       "BaggageTruck": "Veículo de Bagagem",
       "CateringTruck": "Veículo de Catering",
-      "Cones": "Safety Cones",
+      "Cones": "Cones de segurança",
       "DoorAft": "Porta Traseira",
       "DoorFwd": "Porta Dianteira",
-      "ExternalPower": "Alimentação Externa",
+      "ExternalPower": "Gerador de energia terrestre",
       "FuelTruck": "Cisterna de Combustível",
       "JetBridge": "Manga de Embarque",
       "Title": "Serviços",
-      "WheelChocks": "Wheel Chocks"
+      "WheelChocks": "Calços do trem de aterragem"
     },
     "Title": "Assistentes de terra"
   },
@@ -351,13 +351,13 @@
     "Title": "Predefinições"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Pushback controls are only available on the ground",
+    "AvailableOnlyOnGround": "Os controlos pushback só estão disponíveis em terra",
     "Backward": "Reverso",
     "CallTug": "Ligar para o Reboque",
-    "DisableSystemMessageBody": "Are you sure you want to disable the Pushback System? This will also release the tug.",
-    "DisableSystemMessageTitle": "Disable Pushback System",
-    "EnableSystemMessageBody": "The new flyPadOS 3 Pushback System can cause conflicts with other pushback add-ons. We recommend not to enable the system if you plan to use another pushback add-on. ",
-    "EnableSystemMessageTitle": "Enable Pushback System",
+    "DisableSystemMessageBody": "Tem certeza  que deseja desativar o Sistema Pushback? O rebocador será desconectado",
+    "DisableSystemMessageTitle": "Desativar sistema de pushback",
+    "EnableSystemMessageBody": "O novo Sistema Pushback FlyPadOS 3 pode causar conflitos com outros add-ons de pushback. Recomendamos não ativar o sistema se  pretender usar outro add-on de pushback.",
+    "EnableSystemMessageTitle": "Ativar sistema de pushback",
     "Forward": "Frontal",
     "Halt": "Parar",
     "LeavePageMessage": "Interromper o pushback",
@@ -369,27 +369,27 @@
       "Title": "Travão de Estacionamento"
     },
     "Right": "Direita",
-    "SystemEnabledOff": "Pushback System Off",
-    "SystemEnabledOn": "Pushback System On",
+    "SystemEnabledOff": "Sistema de pushback desligado",
+    "SystemEnabledOn": "Sistema de pushback ativado",
     "TT": {
       "CallReleaseTug": "Ligue ou liberte o rebocador",
       "CenterPlaneMode": "Mapa central no avião Ligado/Desligado",
-      "DecreaseSpeed": "Para trás ou para frente mais devagar (clique duas vezes para definir a velocidade como 0)",
-      "IncreaseSpeed": "Para frente ou para trás mais devagar (clique duas vezes para definir a velocidade como 0)",
-      "Left": "Vá para a esquerda (clique duas vezes para seguir em frente)",
+      "DecreaseSpeed": "Para trás ou para frente mais devagar",
+      "IncreaseSpeed": "Para frente ou para trás mais devagar",
+      "Left": "Vá para a esquerda",
       "PausePushback": "Parar ou retomar o pushback",
-      "Right": "Vá para a direita (clique duas vezes para em recta)",
+      "Right": "Vá para a direita",
       "SetReleaseParkingBrake": "Acione ou solte o freio de estacionamento",
       "SliderDirection": "Mova para a direção desejada",
       "SliderSpeed": "Mova para a velocidade desejada",
-      "SystemEnabledOff": "Click to turn the pushback system on.",
-      "SystemEnabledOn": "Click to turn the pushback system completely off.",
+      "SystemEnabledOff": "Clique para ativar o sistema de pushback.",
+      "SystemEnabledOn": "Clique para desligar completamente o sistema de pushback.",
       "ZoomIn": "Ampliar",
       "ZoomOut": "Reduzir"
     },
-    "TugAttached": "Tug is attached",
+    "TugAttached": "O rebocador está conetado",
     "TugDirection": "Direção do Reboque",
-    "TugInTransit": "Waiting for Tug/Pin",
+    "TugInTransit": "À espera do Rebocador/Pino",
     "TugSpeed": "Velocidade do Reboque"
   },
   "Settings": {
@@ -459,7 +459,7 @@
       "Active": "Ativo",
       "Auto": "Automático",
       "Calibrate": "Calibrar",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "Cones de segurança",
       "DefaultBarometerUnit": "Unidade de Barómetro Padrão",
       "DynamicRegistrationDecal": "Decalque de Registro Dinâmico",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ativar conexão com o servidor MCDU (desativa automaticamente após 5 minutos se não houver conexão bem-sucedida)",
@@ -474,7 +474,7 @@
       "ThrottleDetents": "Retentores da Manete",
       "Title": "Opções de Sim",
       "UseCalculatedIlsSignals": "Usar sinais ILS calculados",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "Calços do trem de aterragem",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
