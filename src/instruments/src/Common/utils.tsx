@@ -1,9 +1,9 @@
 import React from 'react';
 
-export type LayerProps = { x: number, y: number }
+export type LayerProps = { x: number, y: number, id?: string, className?: string }
 
-export const Layer: React.FC<LayerProps> = ({ x = 0, y = 0, children }) => (
-    <g transform={`translate(${x}, ${y})`}>
+export const Layer: React.FC<LayerProps> = ({ x = 0, y = 0, id, className, children }) => (
+    <g transform={`translate(${x}, ${y})`} id={id} className={className}>
         {children}
     </g>
 );

@@ -3,6 +3,7 @@ import {
     GaugeMarkerComponent, splitDecimals, GaugeMaxComponent, ThrottlePositionDonutComponent, valueRadianAngleConverter,
 } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
+import { Layer } from '@instruments/common/utils';
 import React from 'react';
 
 interface AvailRevProps {
@@ -56,20 +57,20 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
 
     const n1CommandArrow = valueRadianAngleConverter({ value: N1Commanded / 10, min, max, endAngle, startAngle, perpendicular: false });
     const n1ActualArrowXY = {
-        x: x + (n1CommandPlusArrow.x * radius * 0.50),
-        y: y + (n1CommandPlusArrow.y * radius * 0.50),
+        x: (n1CommandPlusArrow.x * radius * 0.50),
+        y: (n1CommandPlusArrow.y * radius * 0.50),
     };
     const n1CommandArrowXY = {
-        x: x + (n1CommandArrow.x * radius * 0.50), // Based on 20 degree angle and hypotenuse of 0.5
-        y: y + (n1CommandArrow.y * radius * 0.50),
+        x: (n1CommandArrow.x * radius * 0.50), // Based on 20 degree angle and hypotenuse of 0.5
+        y: (n1CommandArrow.y * radius * 0.50),
     };
 
     const radiusDivide = radius / 5;
     const commandAndTrendRadius = [radius - radiusDivide, radius - (2 * radiusDivide), radius - (3 * radiusDivide), radius - (4 * radiusDivide)];
     const N1CommandArray : any[] = [];
     commandAndTrendRadius.forEach((commandradius) => N1CommandArray.push(<GaugeComponent
-        x={x}
-        y={y}
+        x={0}
+        y={0}
         radius={radius - commandradius}
         startAngle={N1Actual > (N1Commanded / 10) ? n1CommandXY.angle : n1ActualXY.angle}
         endAngle={N1Actual > (N1Commanded / 10) ? n1ActualXY.angle : n1CommandXY.angle}
@@ -78,12 +79,11 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
     />));
 
     return (
-
-        <g className={autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3 ? 'Show' : 'Hide'}>
+        <Layer x={x} y={y} className={autothrustStatus === 2 && Math.abs(N1Actual - (N1Commanded / 10)) > 0.3 ? 'Show' : 'Hide'}>
             <GaugeMarkerComponent
                 value={N1Commanded / 10}
-                x={x}
-                y={y}
+                x={0}
+                y={0}
                 min={min}
                 max={max}
                 radius={radius}
@@ -95,8 +95,8 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
             />
             <GaugeMarkerComponent
                 value={N1Commanded / 10}
-                x={x}
-                y={y}
+                x={0}
+                y={0}
                 min={min}
                 max={max}
                 radius={radius}
@@ -114,8 +114,7 @@ const N1CommandAndTrend: React.FC<N1CommandAndTrendProps> = ({ x, y, radius, sta
                 className="GreenLine"
             />
             {N1CommandArray}
-        </g>
-
+        </Layer>
     );
 };
 
@@ -149,28 +148,27 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
     const max = 11;
 
     return (
-        <>
-            <g id={`N1-indicator-${engine}`}>
-                {!active
+        <Layer x={x} y={y} id={`N1-indicator-${engine}`}>
+            {!active
                     && (
                         <>
-                            <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent GaugeInactive" />
-                            <AvailRev x={x} y={y} mesg={availRevText} visible={availRevVisible} active={active} revDoorOpen={revDoorOpenPercentage} />
-                            <text className="Medium End Amber Spread" x={x + 45} y={y + 45}>XX</text>
+                            <GaugeComponent x={0} y={0} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent GaugeInactive" />
+                            <AvailRev x={0} y={0} mesg={availRevText} visible={availRevVisible} active={active} revDoorOpen={revDoorOpenPercentage} />
+                            <text className="Medium End Amber Spread" x={45} y={45}>XX</text>
                         </>
                     )}
-                {active
+            {active
                 && (
                     <>
-                        <text className="Large End Green" x={x + 40} y={y + 45}>{N1PercentSplit[0]}</text>
-                        <text className="Large End Green" x={x + 54} y={y + 45}>.</text>
-                        <text className="Medium End Green" x={x + 70} y={y + 45}>{N1PercentSplit[1]}</text>
-                        <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
-                            <GaugeComponent x={x} y={y} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge RedLine" />
+                        <text className="Large End Green" x={40} y={45}>{N1PercentSplit[0]}</text>
+                        <text className="Large End Green" x={54} y={45}>.</text>
+                        <text className="Medium End Green" x={70} y={45}>{N1PercentSplit[1]}</text>
+                        <GaugeComponent x={0} y={0} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
+                            <GaugeComponent x={0} y={0} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge RedLine" />
                             <GaugeMarkerComponent
                                 value={5}
-                                x={x}
-                                y={y}
+                                x={0}
+                                y={0}
                                 min={min}
                                 max={max}
                                 radius={radius}
@@ -184,8 +182,8 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                             />
                             <GaugeMarkerComponent
                                 value={6}
-                                x={x}
-                                y={y}
+                                x={0}
+                                y={0}
                                 min={min}
                                 max={max}
                                 radius={radius}
@@ -196,8 +194,8 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                             />
                             <GaugeMarkerComponent
                                 value={7}
-                                x={x}
-                                y={y}
+                                x={0}
+                                y={0}
                                 min={min}
                                 max={max}
                                 radius={radius}
@@ -208,8 +206,8 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                             />
                             <GaugeMarkerComponent
                                 value={8}
-                                x={x}
-                                y={y}
+                                x={0}
+                                y={0}
                                 min={min}
                                 max={max}
                                 radius={radius}
@@ -220,8 +218,8 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                             />
                             <GaugeMarkerComponent
                                 value={9}
-                                x={x}
-                                y={y}
+                                x={0}
+                                y={0}
                                 min={min}
                                 max={max}
                                 radius={radius}
@@ -232,8 +230,8 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                             />
                             <GaugeMarkerComponent
                                 value={10}
-                                x={x}
-                                y={y}
+                                x={0}
+                                y={0}
                                 min={min}
                                 max={max}
                                 radius={radius}
@@ -247,8 +245,8 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                             />
                             <GaugeMarkerComponent
                                 value={11}
-                                x={x}
-                                y={y}
+                                x={0}
+                                y={0}
                                 min={min}
                                 max={max}
                                 radius={radius}
@@ -257,12 +255,12 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                                 className="GaugeText Gauge RedLine"
                                 multiplierInner={0.9}
                             />
-                            <rect x={x - 19} y={y + 19} width={96} height={30} className="DarkGreyBox" />
+                            <rect x={-19} y={19} width={96} height={30} className="DarkGreyBox" />
                             {/* N1 max limit */}
                             <GaugeMarkerComponent
                                 value={Math.abs(N1ThrustLimit / 10)}
-                                x={x}
-                                y={y}
+                                x={0}
+                                y={0}
                                 min={min}
                                 max={max}
                                 radius={radius}
@@ -272,8 +270,8 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                             />
                             <GaugeMaxComponent
                                 value={Math.abs(N1ThrustLimit / 10)}
-                                x={x}
-                                y={y}
+                                x={0}
+                                y={0}
                                 min={min}
                                 max={max}
                                 radius={radius}
@@ -283,8 +281,8 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                             />
                             <GaugeMarkerComponent
                                 value={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
-                                x={x}
-                                y={y}
+                                x={0}
+                                y={0}
                                 min={min}
                                 max={max}
                                 radius={radius}
@@ -293,11 +291,11 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                                 className="GaugeIndicator Gauge"
                                 indicator
                             />
-                            <AvailRev x={x} y={y} mesg={availRevText} visible={availRevVisible} active={active} revDoorOpen={revDoorOpenPercentage} />
+                            <AvailRev x={0} y={0} mesg={availRevText} visible={availRevVisible} active={active} revDoorOpen={revDoorOpenPercentage} />
                             <N1CommandAndTrend
                                 N1Actual={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
-                                x={x}
-                                y={y}
+                                x={0}
+                                y={0}
                                 min={min}
                                 max={max}
                                 radius={radius}
@@ -308,8 +306,8 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                         </GaugeComponent>
                         <ThrottlePositionDonutComponent
                             value={throttlePosition / 10}
-                            x={x}
-                            y={y}
+                            x={0}
+                            y={0}
                             min={min}
                             max={max}
                             radius={radius}
@@ -320,8 +318,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
 
                     </>
                 )}
-            </g>
-        </>
+        </Layer>
     );
 };
 
