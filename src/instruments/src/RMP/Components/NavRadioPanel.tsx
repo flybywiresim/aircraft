@@ -69,7 +69,7 @@ const useSetActiveFrequency = (transceiver: number, index: number) => {
         return useSimVar(`K:ADF${index === 1 ? '' : index}_ACTIVE_SET`, 'Frequency ADF BCD32', 100);
     }
 
-    return useSimVar(`K:NAV${index}_RADIO_SET_HZ`, 'Frequency ADF BCD32', 100);
+    return useSimVar(`K:NAV${index}_RADIO_SET_HZ`, 'Hz', 100);
 };
 
 const useSetStandbyFrequency = (transceiver: number, index: number) => {
@@ -77,7 +77,7 @@ const useSetStandbyFrequency = (transceiver: number, index: number) => {
         return useSimVar(`K:ADF${index === 1 ? '' : index}_STBY_SET`, 'Frequency ADF BCD32', 100);
     }
 
-    return useSimVar(`K:NAV${index}_STBY_SET_HZ`, 'Frequency ADF BCD32', 100);
+    return useSimVar(`K:NAV${index}_STBY_SET_HZ`, 'Hz', 100);
 };
 
 const useGetActiveFrequency = (transceiver: number, index: number) => {
@@ -139,14 +139,19 @@ export const NavRadioPanel = (props: Props) => {
         if (mode === Mode.FREQUENCY) {
             if (props.transceiver !== TransceiverType.ADF) {
                 setMode(Mode.COURSE);
+                setActive(standbyHz);
+            } else {
+                setActive(Avionics.Utils.make_adf_bcd32(standbyHz));
             }
-            setActive(Avionics.Utils.make_adf_bcd32(standbyHz));
         } else {
             setCourse(course);
             setMode(Mode.FREQUENCY);
         }
-
-        setStandbyFrequency(Avionics.Utils.make_adf_bcd32(activeHz));
+        if (props.transceiver !== TransceiverType.ADF) {
+            setStandbyFrequency(activeHz);
+        } else {
+            setStandbyFrequency(Avionics.Utils.make_adf_bcd32(activeHz));
+        }
     });
 
     if (mode === Mode.FREQUENCY) {
