@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { render } from '@instruments/common/index';
-import { SimVarProvider, useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '@instruments/common/simVars';
 import { setIsEcamPage } from '@instruments/common/defaults';
 import { ptuArray, levels } from './common';
 import { Triangle } from '../../Common/Shapes';
@@ -449,4 +449,4 @@ const PTU = ({ x, y, ptuScenario } : PTUProps) => {
     );
 };
 
-render(<SimVarProvider><HydPage /></SimVarProvider>);
+render(<HydPage />);

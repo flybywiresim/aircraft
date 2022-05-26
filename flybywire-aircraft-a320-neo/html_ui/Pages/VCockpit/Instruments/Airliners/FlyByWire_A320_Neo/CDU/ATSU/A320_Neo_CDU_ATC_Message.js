@@ -2,33 +2,24 @@ class CDUAtcMessage {
     static TranslateCpdlcResponse(message) {
         let retval;
 
-        switch (message.ResponseType) {
-            case Atsu.CpdlcMessageResponse.Standby:
-                retval = "STBY";
-                break;
-            case Atsu.CpdlcMessageResponse.Wilco:
+        if (message.Content !== undefined) {
+            if (message.Content.TypeId === "DM0") {
                 retval = "WILC";
-                break;
-            case Atsu.CpdlcMessageResponse.Roger:
-                retval = "ROGR";
-                break;
-            case Atsu.CpdlcMessageResponse.Negative:
-                retval = "NEG";
-                break;
-            case Atsu.CpdlcMessageResponse.Unable:
+            } else if (message.Content.TypeId === "UM0" || message.Content.TypeId === "DM1") {
                 retval = "UNBL";
-                break;
-            case Atsu.CpdlcMessageResponse.Acknowledge:
-                retval = "ACK";
-                break;
-            case Atsu.CpdlcMessageResponse.Affirm:
+            } else if (message.Content.TypeId === "UM1" || message.Content.TypeId === "DM2") {
+                retval = "STBY";
+            } else if (message.Content.TypeId === "UM3" || message.Content.TypeId === "DM3") {
+                retval = "ROGR";
+            } else if (message.Content.TypeId === "UM4" || message.Content.TypeId === "DM4") {
                 retval = "AFRM";
-                break;
-            case Atsu.CpdlcMessageResponse.Refuse:
-                retval = "REF";
-                break;
-            default:
+            } else if (message.Content.TypeId === "UM5" || message.Content.TypeId === "DM5") {
+                retval = "NEG";
+            } else {
                 return "";
+            }
+        } else {
+            return "";
         }
 
         let color = '{cyan}';

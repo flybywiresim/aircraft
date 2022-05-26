@@ -1,4 +1,5 @@
 const EWDMessages = {
+    '000000001': '              \x1b<3mNORMAL',
     '000001001': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK\x1b<5m.....MAX',
     '000001002': '\x1b<3m\x1b4mT.O\x1bm AUTO BRK MAX',
     '000001003': '    \x1b<3mSIGNS\x1b<5m.........ON',
@@ -191,6 +192,12 @@ const EWDMessages = {
     '320005001': '\x1b<2m\x1b4mCONFIG\x1bm PARK BRK ON',
     '320006001': '\x1b<4m\x1b4mBRAKES\x1bm A/SKID N/WS FAULT',
     '320006002': '\x1b<5m MAX BRK PR......1000 PSI',
+    '320018001': '\x1b<4m\x1b4mL/G\x1bm LGCIU 1 FAULT',
+    '320018002': '\x1b<5m -GPWS SYS...........OFF',
+    '320019001': '\x1b<4m\x1b4mL/G\x1bm LGCIU 2 FAULT',
+    '320019501': '\x1b<4m\x1b4mL/G\x1bm LGCIU 1+2 FAULT',
+    '320019502': '\x1b<5m -L/G........GRVTY EXTN',
+    '320019503': '\x1b<5m -GPWS SYS...........OFF',
     '340014001': '\x1b<4m\x1b4mNAV\x1bm RA 1 FAULT',
     '340015001': '\x1b<4m\x1b4mNAV\x1bm RA 2 FAULT',
     '340050001': '\x1b<4m\x1b4mNAV\x1bm TCAS FAULT',

@@ -80,7 +80,7 @@ export class GuidanceManager {
 
         if (to.additionalData) {
             if (to.additionalData.legType === LegType.AF) {
-                return new AFLeg(to, to.additionalData.navaid, to.additionalData.rho, to.additionalData.theta, to.additionalData.vectorsCourse, metadata, segment);
+                return new AFLeg(to, to.additionalData.recommendedLocation, to.additionalData.rho, to.additionalData.thetaTrue, to.additionalData.course, metadata, segment);
             }
 
             if (to.additionalData.legType === LegType.CF) {
@@ -95,11 +95,13 @@ export class GuidanceManager {
                 return new RFLeg(from, to, to.additionalData.center, metadata, segment);
             }
 
-            if (to.additionalData.legType === LegType.CA) {
-                const course = to.additionalData.vectorsCourse;
+            // FIXME VALeg should be implemented to give proper heading guidance
+            if (to.additionalData.legType === LegType.CA || to.additionalData.legType === LegType.VA) {
+                const course = to.additionalData.course;
                 const altitude = to.additionalData.vectorsAltitude;
+                const extraLength = (from.additionalData.runwayLength ?? 0) / (2 * 1852);
 
-                return new CALeg(course, altitude, metadata, segment);
+                return new CALeg(course, altitude, metadata, segment, extraLength);
             }
 
             if (to.additionalData.legType === LegType.CI || to.additionalData.legType === LegType.VI) {
@@ -107,18 +109,19 @@ export class GuidanceManager {
                     return null;
                 }
 
-                const course = to.additionalData.vectorsCourse;
+                const course = to.additionalData.course;
 
                 return new CILeg(course, nextLeg, metadata, segment);
             }
 
             if (to.additionalData.legType === LegType.CR) {
-                const course = to.additionalData.vectorsCourse;
-                const origin = to.additionalData.origin as RawFacility;
-                const radial = to.additionalData.radial;
+                // TODO clean this whole thing up
+                const course = to.additionalData.course;
+                const radial = to.additionalData.thetaTrue;
                 const theta = to.additionalData.theta;
+                const ident = WayPoint.formatIdentFromIcao(to.additionalData.recommendedIcao);
 
-                const originObj = { coordinates: { lat: origin.lat, long: origin.lon }, ident: origin.icao.substring(7, 12).trim(), theta };
+                const originObj = { coordinates: to.additionalData.recommendedLocation, ident, theta };
 
                 return new CRLeg(course, originObj, radial, metadata, segment);
             }
@@ -137,7 +140,7 @@ export class GuidanceManager {
         }
 
         if (to.isVectors) {
-            return new VMLeg(to.additionalData.vectorsHeading, to.additionalData.vectorsCourse, metadata, segment);
+            return new VMLeg(to.additionalData.course, metadata, segment);
         }
 
         return new TFLeg(from, to, metadata, segment);

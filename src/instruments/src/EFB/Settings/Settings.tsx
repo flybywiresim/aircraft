@@ -4,6 +4,7 @@ import { Hoppie } from '@flybywiresim/api-client';
 import { useSimVar } from '@instruments/common/simVars';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons';
 import { PopUp } from '@shared/popup';
+import { HoppieConnector } from '@atsu/com/webinterfaces/HoppieConnector';
 import { SelectGroup, SelectItem } from '../Components/Form/Select';
 import { usePersistentNumberProperty, usePersistentProperty } from '../../Common/persistence';
 import Button, { BUTTON_TYPE } from '../Components/Button/Button';
@@ -131,6 +132,7 @@ const AircraftConfigurationPage = () => {
     const [isisBaro, setIsisBaro] = usePersistentProperty('ISIS_BARO_UNIT_INHG', '0');
     const [isisMetricAltitude, setIsisMetricAltitude] = usePersistentProperty('ISIS_METRIC_ALTITUDE', '0');
     const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
+    const [latLonExtended, setLatLonExtended] = usePersistentProperty('LATLON_EXT_FMT', '0');
 
     const paxSignsButtons: ButtonType[] = [
         { name: 'No Smoking', setting: '0' },
@@ -155,6 +157,11 @@ const AircraftConfigurationPage = () => {
     const vhfSpacingButtons: ButtonType[] = [
         { name: '8.33 kHz', setting: '0' },
         { name: '25 kHz', setting: '1' },
+    ];
+
+    const latLonExtendedButtons: ButtonType[] = [
+        { name: 'LLnn', setting: '0' },
+        { name: 'AxxByyy', setting: '1' },
     ];
 
     return (
@@ -227,6 +234,21 @@ const AircraftConfigurationPage = () => {
                             enabled
                             onSelect={() => setVhfSpacing(button.setting)}
                             selected={vhfSpacing === button.setting}
+                        >
+                            {button.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </div>
+
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">FMGC Lat/Lon Waypoint Format</span>
+                <SelectGroup>
+                    {latLonExtendedButtons.map((button) => (
+                        <SelectItem
+                            enabled
+                            onSelect={() => setLatLonExtended(button.setting)}
+                            selected={latLonExtended === button.setting}
                         >
                             {button.name}
                         </SelectItem>
@@ -391,8 +413,6 @@ const RealismPage = () => {
     const [mcduTimeout, setMcduTimeout] = usePersistentProperty('CONFIG_MCDU_KB_TIMEOUT', '60');
     const [realisticTiller, setRealisticTiller] = usePersistentProperty('REALISTIC_TILLER_ENABLED', '0');
     const [homeCockpit, setHomeCockpit] = usePersistentProperty('HOME_COCKPIT_ENABLED', '0');
-    const [datalinkTransmissionTime, setDatalinkTransmissionTime] = usePersistentProperty('CONFIG_DATALINK_TRANSMISSION_TIME', 'FAST');
-    const [, setDatalinkTransmissionTimeSimVar] = useSimVar('L:A32NX_CONFIG_DATALINK_TIME', 'number', 0);
 
     const adirsAlignTimeButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
@@ -415,12 +435,6 @@ const RealismPage = () => {
     const steeringSeparationButtons: (ButtonType & SimVarButton)[] = [
         { name: 'Disabled', setting: '0', simVarValue: 0 },
         { name: 'Enabled', setting: '1', simVarValue: 1 },
-    ];
-
-    const datalinkTransmissionTimeButtons: (ButtonType & SimVarButton)[] = [
-        { name: 'Instant', setting: 'INSTANT', simVarValue: 1 },
-        { name: 'Fast', setting: 'FAST', simVarValue: 2 },
-        { name: 'Real', setting: 'REAL', simVarValue: 0 },
     ];
 
     return (
@@ -524,24 +538,6 @@ const RealismPage = () => {
                         <span className="text-lg text-gray-300 mr-1">Home Cockpit Mode</span>
                         <Toggle value={homeCockpit === '1'} onToggle={(value) => setHomeCockpit(value ? '1' : '0')} />
                     </div>
-
-                    <div className="py-4 flex flex-row justify-between items-center">
-                        <span className="text-lg text-gray-300">DATALINK transmission time</span>
-                        <SelectGroup>
-                            {datalinkTransmissionTimeButtons.map((button) => (
-                                <SelectItem
-                                    enabled
-                                    onSelect={() => {
-                                        setDatalinkTransmissionTime(button.setting);
-                                        setDatalinkTransmissionTimeSimVar(button.simVarValue);
-                                    }}
-                                    selected={datalinkTransmissionTime === button.setting}
-                                >
-                                    {button.name}
-                                </SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </div>
                 </div>
             </>
         )}
@@ -561,6 +557,7 @@ const ATSUAOCPage = () => {
     const { simbriefUserId, setSimbriefUserId } = useContext(SimbriefUserIdContext);
     const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
 
+    const [hoppieEnabled, setHoppieEnabled] = usePersistentProperty('CONFIG_HOPPIE_ENABLED', 'DISABLED');
     const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
     const [hoppieError, setHoppieError] = useState(false);
 
@@ -711,6 +708,34 @@ const ATSUAOCPage = () => {
         }
     }
 
+    function handleWeatherSource(source: string, type: string) {
+        if (type !== 'TAF') {
+            HoppieConnector.deactivateHoppie();
+        }
+
+        if (type === 'ATIS') {
+            setAtisSource(source);
+        } else if (type === 'METAR') {
+            setMetarSource(source);
+        } else if (type === 'TAF') {
+            setTafSource(source);
+        }
+
+        if (type !== 'TAF') {
+            HoppieConnector.activateHoppie();
+        }
+    }
+
+    function handleHoppieEnabled(toggleValue: boolean) {
+        if (toggleValue) {
+            setHoppieEnabled('ENABLED');
+            HoppieConnector.activateHoppie();
+        } else {
+            setHoppieEnabled('DISABLED');
+            HoppieConnector.deactivateHoppie();
+        }
+    }
+
     return (
         <div className="bg-navy-lighter rounded-xl px-6 divide-y divide-gray-700 flex flex-col">
             <div className="py-4 flex flex-row justify-between items-center">
@@ -719,7 +744,7 @@ const ATSUAOCPage = () => {
                     {atisSourceButtons.map((button) => (
                         <SelectItem
                             enabled
-                            onSelect={() => setAtisSource(button.setting)}
+                            onSelect={() => handleWeatherSource(button.setting, 'ATIS')}
                             selected={atisSource === button.setting}
                         >
                             {button.name}
@@ -733,7 +758,7 @@ const ATSUAOCPage = () => {
                     {metarSourceButtons.map((button) => (
                         <SelectItem
                             enabled
-                            onSelect={() => setMetarSource(button.setting)}
+                            onSelect={() => handleWeatherSource(button.setting, 'METAR')}
                             selected={metarSource === button.setting}
                         >
                             {button.name}
@@ -747,7 +772,7 @@ const ATSUAOCPage = () => {
                     {tafSourceButtons.map((button) => (
                         <SelectItem
                             enabled
-                            onSelect={() => setTafSource(button.setting)}
+                            onSelect={() => handleWeatherSource(button.setting, 'TAF')}
                             selected={tafSource === button.setting}
                         >
                             {button.name}
@@ -801,6 +826,10 @@ const ATSUAOCPage = () => {
                         onChange={(value) => setHoppieUserId(value)}
                     />
                 </div>
+            </div>
+            <div className="py-4 flex flex-row justify-between items-center">
+                <span className="text-lg text-gray-300">Hoppie enabled</span>
+                <Toggle value={hoppieEnabled === 'ENABLED'} onToggle={(toggleValue) => handleHoppieEnabled(toggleValue)} />
             </div>
         </div>
     );

@@ -13,6 +13,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._pageCount = undefined;
         this._labels = [];
         this._lines = [];
+        this._keypad = new Keypad(this);
         this.scratchpad = null;
         this._arrows = [false, false, false, false];
         this.onLeftInput = [];
@@ -20,7 +21,6 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.leftInputDelay = [];
         this.rightInputDelay = [];
         this.activeSystem = 'FMGC';
-        this.messageQueue = [];
         this.inFocus = false;
         this.lastInput = 0;
         this.clrStop = false;
@@ -133,7 +133,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
     setupFmgcTriggers() {
         Coherent.on('A32NX_FMGC_SEND_MESSAGE_TO_MCDU', (message) => {
-            this.addNewMessage(new McduMessage(message.text, message.color === 'Amber', true), () => false , () => {
+            this.addMessageToQueue(new TypeIIMessage(message.text, message.color === 'Amber'), () => false , () => {
                 if (message.clearable) {
                     Fmgc.recallMessageById(message.id);
                 }
@@ -141,7 +141,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         });
 
         Coherent.on('A32NX_FMGC_RECALL_MESSAGE_FROM_MCDU_WITH_ID', (text) => {
-            this.tryRemoveMessage(text);
+            this.removeMessageFromQueue(text);
         });
     }
 
@@ -163,7 +163,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     initMcduVariables() {
-        this.messageQueue = [];
+        this.setScratchpadText("");
     }
 
     Init() {
@@ -197,21 +197,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         const display = new ScratchpadDisplay(this.getChildById("in-out"));
         this.scratchpad = new ScratchpadDataLink(this, display);
-        this.setupFmgcTriggers();
-
-        this.setupFmgcTriggers();
 
         this.setTimeout = (func) => {
             setTimeout(() => {
                 func;
             }, this.getDelaySwitchPage());
         };
-        this.onMenu = () => {
-            FMCMainDisplayPages.MenuPage(this);
-        };
+
+        /** The following events remain due to shared use by the keypad and keyboard type entry */
         this.onLetterInput = (l) => this.scratchpad.addChar(l);
         this.onSp = () => this.scratchpad.addChar(" ");
-        this.onDel = () => this.scratchpad.delChar();
         this.onDiv = () => this.scratchpad.addChar("/");
         this.onDot = () => this.scratchpad.addChar(".");
         this.onClr = () => this.scratchpad.clear();
@@ -220,53 +215,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onLeftFunction = (f) => this.onLsk(this.onLeftInput[f], this.leftInputDelay[f]);
         this.onRightFunction = (f) => this.onLsk(this.onRightInput[f], this.rightInputDelay[f]);
         this.onOvfy = () => this.scratchpad.addChar('Δ');
-
-        const flightNo = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string");
-
-        this.onDir = () => {
-            CDUDirectToPage.ShowPage(this);
-        };
-        this.onProg = () => {
-            CDUProgressPage.ShowPage(this);
-        };
-        this.onPerf = () => {
-            CDUPerformancePage.ShowPage(this);
-        };
-        this.onInit = () => {
-            CDUInitPage.ShowPage1(this);
-        };
-        this.onData = () => {
-            CDUDataIndexPage.ShowPage1(this);
-        };
-        this.onFpln = () => {
-            CDUFlightPlanPage.ShowPage(this);
-        };
-        this.onSec = () => {
-            CDUSecFplnMain.ShowPage(this);
-        };
-        this.onRad = () => {
-            CDUNavRadioPage.ShowPage(this);
-        };
-        this.onFuel = () => {
-            this.goToFuelPredPage();
-        };
-        this.onAtc = () => {
-            CDUAtcMenu.ShowPage1(this);
-        };
-        this.onMenu = () => {
-            const cur = this.page.Current;
-            setTimeout(() => {
-                if (this.page.Current === cur) {
-                    CDUMenuPage.ShowPage(this);
-                }
-            }, this.getDelaySwitchPage());
-        };
+        this.onUnload = () => {};
 
         CDUMenuPage.ShowPage(this);
-
-        this.onAirport = () => {
-            this.addNewMessage(NXFictionalMessages.notYetImplemented);
-        };
 
         // If the consent is not set, show telex page
         const onlineFeaturesStatus = NXDataStore.get("CONFIG_ONLINE_FEATURES_STATUS", "UNKNOWN");
@@ -647,7 +598,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         }
         if (template[13]) {
-            this.scratchpad.setText(template[13][0]);
+            this.setScratchpadText(template[13][0]);
         }
         SimVar.SetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number", this.currentFlightPlanWaypointIndex).then();
         // Apply formatting helper to title page, lines and labels
@@ -702,6 +653,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     clearDisplay(webSocketDraw = false) {
+        this.onUnload();
+        this.onUnload = () => {};
         this.setTitle("");
         this.setTitleLeft("");
         this.setPageCurrent(0);
@@ -722,15 +675,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.pageRedrawCallback = null;
         this.refreshPageCallback = undefined;
         if (this.page.Current === this.page.MenuPage) {
-            this.scratchpad.setText("");
+            this.setScratchpadText("");
         }
         this.page.Current = this.page.Clear;
         this.setArrows(false, false, false, false);
         this.tryDeleteTimeout();
-        this.onUp = undefined;
-        this.onDown = undefined;
-        this.onLeft = undefined;
-        this.onRight = undefined;
+        this.onUp = () => {};
+        this.onDown = () => {};
         this.updateRequest = false;
     }
 
@@ -895,7 +846,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.allSelected = !this.allSelected;
                     this.scratchpad.setDisplayStyle(`display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`);
                 } else if (e.shiftKey && e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
-                    this.scratchpad.setText("");
+                    this.setScratchpadText("");
                 } else if (e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
                     const scratchpadTextContent = this.scratchpad.getText();
                     let wordFlag = !scratchpadTextContent.includes(' ');
@@ -940,7 +891,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_2_SLASH", "Number", 1);
                 } else if (keycode === KeyCode.KEY_BACK_SPACE || keycode === KeyCode.KEY_DELETE) {
                     if (this.allSelected) {
-                        this.scratchpad.setText("");
+                        this.setScratchpadText("");
                     } else if (!this.clrStop) {
                         this.onClr();
                         SimVar.SetSimVarValue("L:A32NX_MCDU_PUSH_ANIM_1_CLR", "Number", 1);
@@ -989,22 +940,19 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     /* MCDU MESSAGE SYSTEM */
 
     /**
-     * General message handler
-     * @param message {{text, isAmber, isTypeTwo}} Message Object
-     * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
-     * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
+     * Display a type I message on the scratch pad
+     * @param message {TypeIMessage}
      */
-    addNewMessage(message, isResolved = () => false, onClear = () => {}) {
-        if (message.isTypeTwo) {
-            if (isResolved()) {
-                // This will trigger an internal health check
-                this.tryShowMessage();
-            } else {
-                this._addTypeTwoMessage(message.text, message.isAmber, isResolved, onClear);
-            }
-        } else {
-            this.scratchpad.setMessage(message);
-        }
+    setScratchpadMessage(message) {
+        this.scratchpad.setMessage(message);
+    }
+
+    removeScratchpadMessage(value) {
+        this.scratchpad.removeMessage(value);
+    }
+
+    setScratchpadText(value) {
+        this.scratchpad.setText(value);
     }
 
     /**
@@ -1014,120 +962,52 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     addNewAtsuMessage(code) {
         switch (code) {
             case Atsu.AtsuStatusCodes.CallsignInUse:
-                this.addNewMessage(NXFictionalMessages.fltNbrInUse);
+                this.setScratchpadMessage(NXFictionalMessages.fltNbrInUse);
                 break;
             case Atsu.AtsuStatusCodes.NoHoppieConnection:
-                this.addNewMessage(NXFictionalMessages.noHoppieConnection);
+                this.setScratchpadMessage(NXFictionalMessages.noHoppieConnection);
                 break;
             case Atsu.AtsuStatusCodes.ComFailed:
-                this.addNewMessage(NXSystemMessages.comUnavailable);
+                this.setScratchpadMessage(NXSystemMessages.comUnavailable);
                 break;
             case Atsu.AtsuStatusCodes.NoAtc:
-                this.addNewMessage(NXFictionalMessages.noAtc);
+                this.setScratchpadMessage(NXSystemMessages.noAtc);
                 break;
             case Atsu.AtsuStatusCodes.DcduFull:
-                this.addNewMessage(NXSystemMessages.dcduFileFull);
+                this.setScratchpadMessage(NXSystemMessages.dcduFileFull);
                 break;
             case Atsu.AtsuStatusCodes.UnknownMessage:
-                this.addNewMessage(NXFictionalMessages.unknownAtsuMessage);
+                this.setScratchpadMessage(NXFictionalMessages.unknownAtsuMessage);
                 break;
             case Atsu.AtsuStatusCodes.ProxyError:
-                this.addNewMessage(NXFictionalMessages.reverseProxy);
+                this.setScratchpadMessage(NXFictionalMessages.reverseProxy);
                 break;
             case Atsu.AtsuStatusCodes.NoTelexConnection:
-                this.addNewMessage(NXFictionalMessages.telexNotEnabled);
+                this.setScratchpadMessage(NXFictionalMessages.telexNotEnabled);
                 break;
             case Atsu.AtsuStatusCodes.OwnCallsign:
-                this.addNewMessage(NXFictionalMessages.noAtc);
+                this.setScratchpadMessage(NXSystemMessages.noAtc);
                 break;
             case Atsu.AtsuStatusCodes.SystemBusy:
-                this.addNewMessage(NXSystemMessages.systemBusy);
+                this.setScratchpadMessage(NXSystemMessages.systemBusy);
                 break;
             case Atsu.AtsuStatusCodes.NewAtisReceived:
-                this.addNewMessage(NXSystemMessages.newAtisReceived);
+                this.setScratchpadMessage(NXSystemMessages.newAtisReceived);
                 break;
             case Atsu.AtsuStatusCodes.NoAtisReceived:
-                this.addNewMessage(NXSystemMessages.noAtisReceived);
+                this.setScratchpadMessage(NXSystemMessages.noAtisReceived);
                 break;
+            case Atsu.AtsuStatusCodes.EntryOutOfRange:
+                this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                break;
+            case Atsu.AtsuStatusCodes.FormatError:
+                this.setScratchpadMessage(NXSystemMessages.formatError);
+                break;
+            case Atsu.AtsuStatusCodes.NotInDatabase:
+                this.setScratchpadMessage(NXSystemMessages.notInDatabase);
             default:
                 break;
         }
-    }
-
-    /**
-     * Add Type II Message
-     * @param message {string} Message to be displayed
-     * @param isAmber {boolean} Is color amber
-     * @param isResolved {function} Function that determines if the error is resolved at this moment (type II only).
-     * @param onClear {function} Function that executes when the error is actively cleared by the pilot (type II only).
-     */
-    _addTypeTwoMessage(message, isAmber, isResolved, onClear) {
-        if (this.checkForMessage(message)) {
-            // Before adding message to queue, check other messages in queue for validity
-            for (let i = 0; i < this.messageQueue.length; i++) {
-                if (this.messageQueue[i][2](this)) {
-                    this.messageQueue.splice(i, 1);
-                }
-            }
-            this.messageQueue.unshift([message, isAmber, isResolved, onClear]);
-            if (this.messageQueue.length > 5) {
-                this.messageQueue.splice(5, 1);
-            }
-            this.tryShowMessage();
-        }
-    }
-
-    tryShowMessage() {
-        if (this.messageQueue.length > 0) {
-            const message = this.messageQueue[0];
-
-            if (message[2](this)) {
-                this.scratchpad.removeMessage(message[0]);
-                this.messageQueue.splice(0, 1);
-                return this.tryShowMessage();
-            }
-
-            this.scratchpad.setMessage({
-                text: message[0],
-                isAmber: message[1],
-                isTypeTwo: true
-            });
-        }
-    }
-
-    /**
-     * Removes Type II Message
-     * @param message {string} Message to be removed
-     */
-    tryRemoveMessage(message) {
-        for (let i = 0; i < this.messageQueue.length; i++) {
-            if (this.messageQueue[i][0] === message) {
-                this.messageQueue[i][3](this);
-                this.messageQueue.splice(i, 1);
-                if (i === 0) {
-                    this.scratchpad.removeMessage(message);
-                    this.tryShowMessage();
-                }
-                break;
-            }
-        }
-    }
-
-    checkForMessage(message) {
-        if (!message) {
-            return false;
-        }
-        for (let i = 0; i < this.messageQueue.length; i++) {
-            if (this.messageQueue[i][0] === message) {
-                if (i !== 0) {
-                    this.messageQueue.unshift(this.messageQueue[i]);
-                    this.messageQueue.splice(i + 1, 1);
-                    this.tryShowMessage();
-                }
-                return false;
-            }
-        }
-        return true;
     }
 
     /* END OF MCDU MESSAGE SYSTEM */
@@ -1147,70 +1027,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         if (_event.indexOf("1_BTN_") !== -1 || _event.indexOf("2_BTN_") !== -1 || _event.indexOf("BTN_") !== -1) {
             const input = _event.replace("1_BTN_", "").replace("2_BTN_", "").replace("BTN_", "");
-            if (this.onInputAircraftSpecific(input)) {
+            if (this._keypad.onKeyPress(input)) {
                 return;
             }
-            if (input === "INIT") {
-                this.onInit();
-            } else if (input === "DEPARR") {
-                this.onDepArr();
-            } else if (input === "ATC") {
-                this.onAtc();
-            } else if (input === "FIX") {
-                this.onFix();
-            } else if (input === "HOLD") {
-                this.onHold();
-            } else if (input === "FMCCOMM") {
-                this.onFmcComm();
-            } else if (input === "PROG") {
-                this.onProg();
-            } else if (input === "MENU") {
-                this.onMenu();
-            } else if (input === "NAVRAD") {
-                this.onRad();
-            } else if (input === "PREVPAGE") {
-                const cur = this.page.Current;
-                setTimeout(() => {
-                    if (this.page.Current === cur) {
-                        this.onPrevPage();
-                    }
-                }, this.getDelaySwitchPage());
-            } else if (input === "NEXTPAGE") {
-                const cur = this.page.Current;
-                setTimeout(() => {
-                    if (this.page.Current === cur) {
-                        this.onNextPage();
-                    }
-                }, this.getDelaySwitchPage());
-            } else if (input === "SP") {
-                setTimeout(() => {
-                    this.onSp();
-                }, this.getDelaySwitchPage());
-            } else if (input === "DEL") {
-                setTimeout(() => {
-                    this.onDel();
-                }, this.getDelaySwitchPage());
-            } else if (input === "CLR") {
-                setTimeout(() => {
-                    this.onClr();
-                }, this.getDelaySwitchPage());
-            } else if (input === "CLR_Held") {
-                this.onClrHeld();
-            } else if (input === "DIV") {
-                setTimeout(() => {
-                    this.onDiv();
-                }, this.getDelaySwitchPage());
-            } else if (input === "DOT") {
-                setTimeout(() => {
-                    this.onDot();
-                }, this.getDelaySwitchPage());
-            } else if (input === "PLUSMINUS") {
-                setTimeout(() => {
-                    this.onPlusMinus("-");
-                }, this.getDelaySwitchPage());
-            } else if (input === "Localizer") {
-                this._apLocalizerOn = !this._apLocalizerOn;
-            } else if (input.length === 2 && input[0] === "L") {
+
+            if (input.length === 2 && input[0] === "L") {
                 const v = parseInt(input[1]) - 1;
                 if (isFinite(v)) {
                     this.onLeftFunction(v);
@@ -1220,114 +1041,10 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 if (isFinite(v)) {
                     this.onRightFunction(v);
                 }
-            } else if (input.length === 1 && FMCMainDisplay._AvailableKeys.indexOf(input) !== -1) {
-                setTimeout(() => {
-                    this.onLetterInput(input);
-                }, this.getDelaySwitchPage());
             } else {
                 console.log("'" + input + "'");
             }
         }
-    }
-
-    onInputAircraftSpecific(input) {
-        if (input === "DIR") {
-            if (this.onDir) {
-                this.onDir();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "PROG") {
-            if (this.onProg) {
-                this.onProg();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "PERF") {
-            if (this.onPerf) {
-                this.onPerf();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "INIT") {
-            if (this.onInit) {
-                this.onInit();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "DATA") {
-            if (this.onData) {
-                this.onData();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "FPLN") {
-            if (this.onFpln) {
-                this.onFpln();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "RAD") {
-            if (this.onRad) {
-                this.onRad();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "FUEL") {
-            if (this.onFuel) {
-                this.onFuel();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "SEC") {
-            if (this.onSec) {
-                this.onSec();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "ATC") {
-            if (this.onAtc) {
-                this.onAtc();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "MENU") {
-            if (this.onMenu) {
-                this.onMenu();
-            }
-            return true;
-        } else if (input === "AIRPORT") {
-            if (this.onAirport) {
-                this.onAirport();
-                this.activeSystem = 'FMGC';
-            }
-            return true;
-        } else if (input === "UP") {
-            if (this.onUp) {
-                this.onUp();
-            }
-            return true;
-        } else if (input === "DOWN") {
-            if (this.onDown) {
-                this.onDown();
-            }
-            return true;
-        } else if (input === "LEFT") {
-            if (this.onLeft) {
-                this.onLeft();
-            }
-            return true;
-        } else if (input === "RIGHT") {
-            if (this.onRight) {
-                this.onRight();
-            }
-        } else if (input === "OVFY") {
-            if (this.onOvfy) {
-                this.onOvfy();
-            }
-            return true;
-        }
-        return false;
     }
 
     onLsk(fncAction, fncActionDelay = this.getDelayBasic) {
@@ -1500,7 +1217,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.socket.onopen = () => {
             console.log(`Websocket connection to MCDU Server established. (${url})`);
-            (new NXNotif).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
+            (new NXNotifManager).showNotification({title: "MCDU CONNECTED", message: "Successfully connected to MCDU server.", timeout: 5000});
             this.sendToSocket("mcduConnected");
             this.sendUpdate();
             this.socketConnectionAttempts = 0;

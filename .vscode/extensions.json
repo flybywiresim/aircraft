@@ -2,7 +2,7 @@
   "recommendations": [
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "matklad.rust-analyzer",
+    "rust-lang.rust-analyzer",
     "vadimcn.vscode-lldb",
     "xaver.clang-format"
   ]

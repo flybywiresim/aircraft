@@ -15,7 +15,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v2
       - name: install
-        run: npm install --no-optional
+        run: ./scripts/dev-env/run.sh ./scripts/setup.sh
       - name: npm run lint
         run: ./scripts/dev-env/run.sh npm run lint
       - name: lint-rust.sh
@@ -37,7 +37,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v2
       - name: npm install
-        run: npm install --no-optional
+        run: ./scripts/dev-env/run.sh ./scripts/setup.sh
       - name: npm test
         run: npm test
   build:
@@ -46,8 +46,6 @@ jobs:
     env:
       A32NX_PRODUCTION_BUILD: 1
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
-      ZIP_NAME: A32NX.zip
-      BUILD_DIR_NAME: zip-build
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
@@ -62,11 +60,14 @@ jobs:
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
-      - name: Generate ZIP file
+      - name: Generate install.json
         run: |
-          mkdir ./${{ env.BUILD_DIR_NAME }}
-          zip -r ./${{ env.BUILD_DIR_NAME }}/${{ env.ZIP_NAME }} ./flybywire-aircraft-a320-neo/
-      - uses: actions/upload-artifact@v2
+          ./scripts/dev-env/run.sh node ./scripts/fragment.js
+
+          cp ./build-modules/modules.json ./flybywire-aircraft-a320-neo/install.json
+          ./scripts/dev-env/run.sh node ./scripts/install-source.js
+      - name: Upload PR artifact
+        uses: actions/upload-artifact@v2
         with:
           name: A32NX
-          path: ${{ env.BUILD_DIR_NAME }}/${{ env.ZIP_NAME }}
+          path: ./**/flybywire-aircraft-a320-neo/

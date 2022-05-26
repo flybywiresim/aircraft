@@ -8,7 +8,6 @@ import { SegmentType } from '@fmgc/wtsdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 
 /**
@@ -21,8 +20,7 @@ export class VMLeg extends Leg {
     predictedPath: PathVector[] = [];
 
     constructor(
-        public heading: DegreesMagnetic,
-        public course: DegreesTrue,
+        public heading: DegreesTrue,
         public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,
     ) {
@@ -46,20 +44,15 @@ export class VMLeg extends Leg {
 
     getPathEndPoint(): Coordinates | undefined {
         return Avionics.Utils.bearingDistanceToCoordinates(
-            this.course,
+            this.heading,
             VM_LEG_SIZE,
             this.getPathStartPoint().lat,
             this.getPathStartPoint().long,
         );
     }
 
-    private inboundGuidable: Guidable | undefined;
-
-    private outboundGuidable: Guidable | undefined;
-
-    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue, _previousGuidable: Guidable, _nextGuidable: Guidable) {
-        this.inboundGuidable = _previousGuidable;
-        this.outboundGuidable = _nextGuidable;
+    recomputeWithParameters(_isActive: boolean, _tas: Knots, _gs: Knots, _ppos: Coordinates, _trueTrack: DegreesTrue) {
+        // FIXME course based on predicted wind
 
         this.predictedPath.length = 0;
         this.predictedPath.push(
@@ -120,6 +113,6 @@ export class VMLeg extends Leg {
     }
 
     get repr(): string {
-        return `VM(${this.heading.toFixed(1)}°)`;
+        return `VM(${this.heading.toFixed(1)}T)`;
     }
 }

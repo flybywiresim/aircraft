@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage, CpdlcMessageRequestedResponseType, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
+import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
+import { CpdlcMessageExpectedResponseType } from '@atsu/messages/CpdlcMessageElements';
+import { RequestMessage } from '@atsu/messages/RequestMessage';
 import { DclMessage } from '@atsu/messages/DclMessage';
 import { OclMessage } from '@atsu/messages/OclMessage';
 import { OutputButtons } from './elements/OutputButtons';
@@ -17,38 +19,37 @@ import { DcduLines } from './elements/DcduLines';
 import { DatalinkMessage } from './elements/DatalinkMessage';
 import { MessageStatus } from './elements/MessageStatus';
 import { AtcStatus } from './elements/AtcStatus';
-import { getSimVar, useUpdate } from '../util.js';
 
 import './style.scss';
 
 enum DcduState {
-    Default,
     Off,
     On,
+    Selftest,
     Waiting,
-    Active,
+    Standby
 }
 
-function powerAvailable() {
-    // Each DCDU is powered by a different DC BUS. Sadly the cockpit only contains a single DCDU emissive.
-    // Once we have two DCDUs running, the capt. DCDU should be powered by DC 1, and F/O by DC 2.
-    return getSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'Bool') || getSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool');
-}
-
-const sortedMessageArray = (messages: Map<number, [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined]>): [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined][] => {
+const sortedMessageArray = (messages: Map<number, [CpdlcMessage[], number, number]>): [CpdlcMessage[], number, number][] => {
     const arrMessages = Array.from(messages.values());
     arrMessages.sort((a, b) => a[1] - b[1]);
     return arrMessages;
 };
 
 const DCDU: React.FC = () => {
+    const [electricityState] = useSimVar('L:A32NX_ELEC_DC_1_BUS_IS_POWERED', 'bool', 200);
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
-    const [state, setState] = useState(isColdAndDark ? DcduState.Off : DcduState.Active);
-    const [messages, setMessages] = useState(new Map<number, [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined]>());
-    const [statusMessage, setStatusMessage] = useState({ sender: '', message: '', remainingMilliseconds: 0 });
+    const [state, setState] = useState((isColdAndDark) ? DcduState.Off : DcduState.On);
+    const [messages, setMessages] = useState(new Map<number, [CpdlcMessage[], number, number]>());
+    const [statusMessage, setStatusMessage] = useState({ sender: '', message: '' });
     const [events] = useState(RegisterViewListener('JS_LISTENER_SIMVARS', undefined, true));
     const [messageUid, setMessageUid] = useState(-1);
     const [atcMessage, setAtcMessage] = useState('');
+    const [screenTimeout, setScreenTimeout] = useState<NodeJS.Timeout | null>(null);
+    const [messageStatusTimeout, setMessageStatusTimeout] = useState<NodeJS.Timeout | null>(null);
+    const messagesRef = useRef<Map<number, [CpdlcMessage[], number, number]>>();
+
+    messagesRef.current = messages;
 
     // functions to handle the status area
     const isStatusAvailable = (sender: string) => statusMessage.sender === sender || statusMessage.message.length === 0;
@@ -58,40 +59,58 @@ const DCDU: React.FC = () => {
         if (sender.length === 0 || sender === statusMessage.sender) {
             state.sender = '';
             state.message = '';
-            state.remainingMilliseconds = 0;
             setStatusMessage(state);
+            if (messageStatusTimeout) {
+                clearTimeout(messageStatusTimeout);
+                setMessageStatusTimeout(null);
+            }
         }
     };
-    const setStatus = (sender: string, message: string) => {
+    const setStatus = (sender: string, message: string, duration: number) => {
         const state = statusMessage;
         state.sender = sender;
         state.message = message;
-        state.remainingMilliseconds = 5000;
         setStatusMessage(state);
+        if (Number.isFinite(duration)) {
+            if (messageStatusTimeout) {
+                clearTimeout(messageStatusTimeout);
+            }
+
+            setMessageStatusTimeout(setTimeout(() => {
+                const state = statusMessage;
+                state.sender = '';
+                state.message = '';
+                setStatusMessage(state);
+                setMessageStatusTimeout(null);
+            }, duration * 1000));
+        }
     };
 
-    const setMessageStatus = (uid: number, response: CpdlcMessageResponse | undefined) => {
-        const updateMap = messages;
+    const setMessageStatus = (uid: number, response: number) => {
+        const updateMap = new Map<number, [CpdlcMessage[], number, number]>(messages);
 
         const entry = updateMap.get(uid);
         if (entry !== undefined) {
             events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_READ', uid);
-            entry[3] = response;
-            entry[2] = true;
+            entry[2] = response;
             updateMap.set(uid, entry);
-        }
 
-        setMessages(updateMap);
+            setMessages(updateMap);
+        }
     };
 
     const deleteMessage = (uid: number) => events.triggerToAllSubscribers('A32NX_ATSU_DELETE_MESSAGE', uid);
     const sendMessage = (uid: number) => events.triggerToAllSubscribers('A32NX_ATSU_SEND_MESSAGE', uid);
-    const sendResponse = (uid: number, response: CpdlcMessageResponse) => events.triggerToAllSubscribers('A32NX_ATSU_SEND_RESPONSE', uid, response);
+    const sendResponse = (uid: number, response: number) => events.triggerToAllSubscribers('A32NX_ATSU_SEND_RESPONSE', uid, response);
 
     // functions to handle the internal queue
     const closeMessage = (uid: number) => {
-        const sortedMessages = sortedMessageArray(messages);
-        const index = sortedMessages.findIndex((element) => element[0].UniqueMessageID === uid);
+        if (!messagesRef.current) {
+            return;
+        }
+
+        const sortedMessages = sortedMessageArray(messagesRef.current);
+        const index = sortedMessages.findIndex((element) => element[0][0].UniqueMessageID === uid);
 
         events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_CLOSED', uid);
 
@@ -100,15 +119,15 @@ const DCDU: React.FC = () => {
 
             // define the next visible message
             if (index + 1 < sortedMessages.length) {
-                setMessageUid(sortedMessages[index + 1][0].UniqueMessageID);
+                setMessageUid(sortedMessages[index + 1][0][0].UniqueMessageID);
             } else if (index !== 0) {
-                setMessageUid(sortedMessages[index - 1][0].UniqueMessageID);
+                setMessageUid(sortedMessages[index - 1][0][0].UniqueMessageID);
             } else {
                 setMessageUid(-1);
             }
 
             // update the map
-            const updatedMap = messages;
+            const updatedMap = new Map<number, [CpdlcMessage[], number, number]>(messagesRef.current);
             updatedMap.delete(uid);
             setMessages(updatedMap);
         }
@@ -116,48 +135,48 @@ const DCDU: React.FC = () => {
 
     // the message scroll button handling
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0MINUS', 'A32NX_DCDU_BTN_MPR_MS0MINUS'], () => {
-        if (messages.size === 0) {
+        if (!messagesRef.current || messagesRef.current.size === 0) {
             return;
         }
 
-        const sortedMessages = sortedMessageArray(messages);
+        const sortedMessages = sortedMessageArray(messagesRef.current);
         let index = 0;
         if (messageUid !== -1) {
-            index = sortedMessages.findIndex((element) => messageUid === element[0].UniqueMessageID);
+            index = sortedMessages.findIndex((element) => messageUid === element[0][0].UniqueMessageID);
         }
 
         if (index === 0) {
             if (isStatusAvailable('Mainpage') === true) {
-                setStatus('Mainpage', 'NO MORE MSG');
+                setStatus('Mainpage', 'NO MORE MSG', 5);
             }
         } else {
             resetStatus('');
             index -= 1;
         }
 
-        setMessageUid(sortedMessages[index][0].UniqueMessageID);
+        setMessageUid(sortedMessages[index][0][0].UniqueMessageID);
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0PLUS', 'A32NX_DCDU_BTN_MPR_MS0PLUS'], () => {
-        if (messages.size === 0) {
+        if (!messagesRef.current || messagesRef.current.size === 0) {
             return;
         }
 
-        const sortedMessages = sortedMessageArray(messages);
+        const sortedMessages = sortedMessageArray(messagesRef.current);
         let index = 0;
         if (messageUid !== -1) {
-            index = sortedMessages.findIndex((element) => messageUid === element[0].UniqueMessageID);
+            index = sortedMessages.findIndex((element) => messageUid === element[0][0].UniqueMessageID);
         }
 
         if (index + 1 >= sortedMessages.length) {
             if (isStatusAvailable('Mainpage') === true) {
-                setStatus('Mainpage', 'NO MORE MSG');
+                setStatus('Mainpage', 'NO MORE MSG', 5);
             }
         } else {
             resetStatus('');
             index += 1;
         }
 
-        setMessageUid(sortedMessages[index][0].UniqueMessageID);
+        setMessageUid(sortedMessages[index][0][0].UniqueMessageID);
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_PRINT', 'A32NX_DCDU_BTN_MPR_PRINT'], () => {
         if (messageUid !== -1) {
@@ -167,66 +186,85 @@ const DCDU: React.FC = () => {
 
     useCoherentEvent('A32NX_DCDU_RESET', () => {
         setMessageUid(-1);
-        setMessages(new Map<number, [CpdlcMessage, number, boolean, CpdlcMessageResponse | undefined]>());
+        setMessages(new Map<number, [CpdlcMessage[], number, number]>());
         setAtcMessage('');
         resetStatus('');
     });
 
     // resynchronization with ATSU
-    useCoherentEvent('A32NX_DCDU_MSG', (serialized: any) => {
-        let cpdlcMessage : CpdlcMessage | undefined = undefined;
-        if (serialized.Type === AtsuMessageType.CPDLC) {
-            cpdlcMessage = new CpdlcMessage();
-        } else if (serialized.Type === AtsuMessageType.DCL) {
-            cpdlcMessage = new DclMessage();
-        } else if (serialized.Type === AtsuMessageType.OCL) {
-            cpdlcMessage = new OclMessage();
-        }
+    useCoherentEvent('A32NX_DCDU_MSG', (serializedMessages: any) => {
+        const cpdlcMessages: CpdlcMessage[] = [];
 
-        if (cpdlcMessage !== undefined && serialized.UniqueMessageID !== undefined) {
-            cpdlcMessage.deserialize(serialized);
+        serializedMessages.forEach((serialized) => {
+            if (serialized.UniqueMessageID !== undefined) {
+                let cpdlcMessage : CpdlcMessage | undefined = undefined;
+                if (serialized.Type === AtsuMessageType.CPDLC) {
+                    cpdlcMessage = new CpdlcMessage();
+                } else if (serialized.Type === AtsuMessageType.Request) {
+                    cpdlcMessage = new RequestMessage();
+                } else if (serialized.Type === AtsuMessageType.DCL) {
+                    cpdlcMessage = new DclMessage();
+                } else if (serialized.Type === AtsuMessageType.OCL) {
+                    cpdlcMessage = new OclMessage();
+                }
 
-            const oldMessage = messages.get(cpdlcMessage.UniqueMessageID);
-            let dcduTimestamp = new Date().getTime();
-            let readMessage = false;
+                if (cpdlcMessage !== undefined) {
+                    cpdlcMessage.deserialize(serialized);
+                    cpdlcMessages.push(cpdlcMessage);
+                }
+            }
+        });
 
-            if (oldMessage !== undefined) {
-                dcduTimestamp = oldMessage[1];
-                readMessage = oldMessage[2];
+        if (cpdlcMessages.length !== 0) {
+            const newMessageMap = new Map(messagesRef.current);
+            const dcduBlock = newMessageMap.get(cpdlcMessages[0].UniqueMessageID);
 
-                // check if we have to show the status of an output message
-                if (oldMessage[0].Direction === AtsuMessageDirection.Output) {
-                    if (oldMessage[0].ComStatus !== cpdlcMessage.ComStatus) {
-                        if (cpdlcMessage.ComStatus === AtsuMessageComStatus.Failed) {
-                            setStatus('Mainpage', 'COM FAILED');
-                        } else if (cpdlcMessage.ComStatus === AtsuMessageComStatus.Sent) {
-                            setStatus('Mainpage', 'SENT');
+            if (dcduBlock !== undefined) {
+                // update the status entry
+                if (dcduBlock[0][0].Direction === AtsuMessageDirection.Downlink) {
+                    if (dcduBlock[0][0].ComStatus !== cpdlcMessages[0].ComStatus) {
+                        if (cpdlcMessages[0].ComStatus === AtsuMessageComStatus.Failed) {
+                            setStatus('Mainpage', 'COM FAILED', 5);
+                        } else if (cpdlcMessages[0].ComStatus === AtsuMessageComStatus.Sent) {
+                            setStatus('Mainpage', 'SENT', 5);
                         }
                     }
-                } else if (cpdlcMessage.Response !== undefined) {
+                } else if (cpdlcMessages[0].Response !== undefined) {
                     // received an update for a response
-                    if (oldMessage[0].Response !== undefined) {
-                        if (oldMessage[0].Response.ComStatus !== cpdlcMessage.Response.ComStatus) {
-                            if (cpdlcMessage.Response.ComStatus === AtsuMessageComStatus.Failed) {
-                                setStatus('Mainpage', 'COM FAILED');
-                            } else if (cpdlcMessage.Response.ComStatus === AtsuMessageComStatus.Sent) {
-                                setStatus('Mainpage', 'SENT');
+                    if (dcduBlock[0][0].Response !== undefined) {
+                        if (dcduBlock[0][0].Response.ComStatus !== cpdlcMessages[0].Response.ComStatus) {
+                            if (cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Failed) {
+                                setStatus('Mainpage', 'COM FAILED', 5);
+                            } else if (cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Sent) {
+                                setStatus('Mainpage', 'SENT', 5);
                             }
                         }
-                    } else if (cpdlcMessage.Response.ComStatus === AtsuMessageComStatus.Failed) {
-                        setStatus('Mainpage', 'COM FAILED');
-                    } else if (cpdlcMessage.Response.ComStatus === AtsuMessageComStatus.Sent) {
-                        setStatus('Mainpage', 'SENT');
+                    } else if (cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Failed) {
+                        setStatus('Mainpage', 'COM FAILED', 5);
+                    } else if (cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Sent) {
+                        setStatus('Mainpage', 'SENT', 5);
                     }
                 }
-            } else {
-                readMessage = cpdlcMessage.Response !== undefined || cpdlcMessage.ResponseType !== undefined;
-            }
 
-            setMessages(messages.set(cpdlcMessage.UniqueMessageID, [cpdlcMessage, dcduTimestamp, readMessage, undefined]));
+                // update the communication states and response
+                dcduBlock[0].forEach((message) => {
+                    if (cpdlcMessages[0].ComStatus !== undefined) {
+                        message.ComStatus = cpdlcMessages[0].ComStatus;
+                    }
+                    message.Response = cpdlcMessages[0].Response;
+                });
+
+                // response sent
+                if (cpdlcMessages[0].Response !== undefined && cpdlcMessages[0].Response.ComStatus === AtsuMessageComStatus.Sent) {
+                    dcduBlock[2] = -1;
+                }
+            } else {
+                newMessageMap.set(cpdlcMessages[0].UniqueMessageID, [cpdlcMessages, new Date().getTime(), -1]);
+            }
+            setMessages(newMessageMap);
 
             if (messageUid === -1) {
-                setMessageUid(cpdlcMessage.UniqueMessageID);
+                setMessageUid(cpdlcMessages[0].UniqueMessageID);
             }
         }
     });
@@ -237,55 +275,55 @@ const DCDU: React.FC = () => {
         setAtcMessage(message);
     });
 
-    useUpdate((_deltaTime) => {
-        if (state === DcduState.Off) {
-            if (powerAvailable()) {
-                setState(DcduState.On);
+    useEffect(() => {
+        if (state === DcduState.On && electricityState === 0) {
+            setState(DcduState.Standby);
+            setScreenTimeout(setTimeout(() => setState(DcduState.Off), 10000));
+        } else if (state === DcduState.Standby && electricityState !== 0) {
+            setState(DcduState.On);
+            if (screenTimeout) {
+                clearTimeout(screenTimeout);
+                setScreenTimeout(null);
             }
-        } else if (!powerAvailable()) {
+        } else if (state === DcduState.Off && electricityState !== 0) {
+            setState(DcduState.Selftest);
+            setScreenTimeout(setTimeout(() => {
+                setState(DcduState.Waiting);
+                setScreenTimeout(setTimeout(() => setState(DcduState.On), 12000));
+            }, 6000));
+        } else if ((state === DcduState.Selftest || state === DcduState.Waiting) && electricityState === 0) {
             setState(DcduState.Off);
-        }
-
-        // check if the status is outdated
-        const status = statusMessage;
-        if (status.message !== '') {
-            status.remainingMilliseconds -= _deltaTime;
-            if (status.remainingMilliseconds <= 0) {
-                resetStatus('');
+            if (screenTimeout) {
+                clearTimeout(screenTimeout);
+                setScreenTimeout(null);
             }
         }
-    });
+    }, [electricityState]);
 
     // prepare the data
     let messageIndex = -1;
-    let message: CpdlcMessage | undefined = undefined;
-    let response: CpdlcMessageResponse | undefined = undefined;
-    if (state === DcduState.Active && messages.size !== 0) {
-        const arrMessages = sortedMessageArray(messages);
+    let visibleMessages: CpdlcMessage[] | undefined = undefined;
+    let response: number = -1;
+    if (state === DcduState.On && messagesRef.current?.size !== 0) {
+        const arrMessages = sortedMessageArray(messagesRef.current);
 
         if (messageUid !== -1) {
-            messageIndex = arrMessages.findIndex((element) => messageUid === element[0].UniqueMessageID);
+            messageIndex = arrMessages.findIndex((element) => messageUid === element[0][0].UniqueMessageID);
             if (messageIndex !== -1) {
-                message = arrMessages[messageIndex][0];
-                response = arrMessages[messageIndex][3];
+                visibleMessages = arrMessages[messageIndex][0];
+                response = arrMessages[messageIndex][2];
             }
         }
     }
 
     let answerRequired = false;
-    if (message !== undefined && message.Direction === AtsuMessageDirection.Input) {
-        answerRequired = message.RequestedResponses !== CpdlcMessageRequestedResponseType.NotRequired && message.RequestedResponses !== CpdlcMessageRequestedResponseType.No;
+    if (visibleMessages !== undefined && visibleMessages[0].Direction === AtsuMessageDirection.Uplink) {
+        answerRequired = visibleMessages[0].Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired
+                         && visibleMessages[0].Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
     }
 
     switch (state) {
-    case DcduState.Off:
-        return <></>;
-    case DcduState.On:
-        setTimeout(() => {
-            if (powerAvailable()) {
-                setState(DcduState.Waiting);
-            }
-        }, 8000);
+    case DcduState.Selftest:
         return (
             <>
                 <div className="BacklightBleed" />
@@ -293,45 +331,42 @@ const DCDU: React.FC = () => {
             </>
         );
     case DcduState.Waiting:
-        setTimeout(() => {
-            if (powerAvailable()) {
-                setState(DcduState.Active);
-            }
-        }, 12000);
         return (
             <>
                 <div className="BacklightBleed" />
                 <WaitingForData />
             </>
         );
-    case DcduState.Active:
+    case DcduState.Off:
+        return <></>;
+    default:
         return (
             <>
                 <div className="BacklightBleed" />
                 <svg className="dcdu">
-                    {(message === undefined && atcMessage !== '' && (
+                    {(visibleMessages === undefined && atcMessage !== '' && (
                         <>
                             <AtcStatus message={atcMessage} />
                         </>
                     )
                     )}
-                    {(message !== undefined && (
+                    {(visibleMessages !== undefined && (
                         <>
                             <MessageStatus
-                                message={message}
+                                message={visibleMessages[0]}
                                 selectedResponse={response}
                             />
                             <DatalinkMessage
-                                message={message}
+                                messages={visibleMessages}
                                 setStatus={setStatus}
                                 isStatusAvailable={isStatusAvailable}
                                 resetStatus={resetStatus}
                             />
                         </>
                     ))}
-                    {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.WilcoUnable && (
+                    {(visibleMessages !== undefined && answerRequired && visibleMessages[0].Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.WilcoUnable && (
                         <WilcoUnableButtons
-                            message={message}
+                            message={visibleMessages[0]}
                             selectedResponse={response}
                             setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
@@ -340,9 +375,9 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.AffirmNegative && (
+                    {(visibleMessages !== undefined && answerRequired && visibleMessages[0].Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.AffirmNegative && (
                         <AffirmNegativeButtons
-                            message={message}
+                            message={visibleMessages[0]}
                             selectedResponse={response}
                             setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
@@ -351,9 +386,9 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(message !== undefined && answerRequired && message.RequestedResponses === CpdlcMessageRequestedResponseType.Roger && (
+                    {(visibleMessages !== undefined && answerRequired && visibleMessages[0].Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.Roger && (
                         <RogerButtons
-                            message={message}
+                            message={visibleMessages[0]}
                             selectedResponse={response}
                             setMessageStatus={setMessageStatus}
                             setStatus={setStatus}
@@ -362,9 +397,9 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(message !== undefined && !answerRequired && message.Direction === AtsuMessageDirection.Output && (
+                    {(visibleMessages !== undefined && !answerRequired && visibleMessages[0].Direction === AtsuMessageDirection.Downlink && (
                         <OutputButtons
-                            message={message}
+                            message={visibleMessages[0]}
                             setStatus={setStatus}
                             isStatusAvailable={isStatusAvailable}
                             sendMessage={sendMessage}
@@ -372,9 +407,9 @@ const DCDU: React.FC = () => {
                             closeMessage={closeMessage}
                         />
                     ))}
-                    {(message !== undefined && !answerRequired && message.Direction === AtsuMessageDirection.Input && (
+                    {(visibleMessages !== undefined && !answerRequired && visibleMessages[0].Direction === AtsuMessageDirection.Uplink && (
                         <CloseButtons
-                            message={message}
+                            message={visibleMessages[0]}
                             closeMessage={closeMessage}
                         />
                     ))}
@@ -387,7 +422,7 @@ const DCDU: React.FC = () => {
                     )}
                     <DcduLines />
                     {
-                        (messages.size > 1
+                        (messagesRef.current.size > 1
                         && (
                             <>
                                 <g>
@@ -397,7 +432,7 @@ const DCDU: React.FC = () => {
                                         {' '}
                                         /
                                         {' '}
-                                        {messages.size}
+                                        {messagesRef.current.size}
                                     </text>
                                 </g>
                             </>
@@ -406,8 +441,6 @@ const DCDU: React.FC = () => {
                 </svg>
             </>
         );
-    default:
-        throw new RangeError();
     }
 };
 

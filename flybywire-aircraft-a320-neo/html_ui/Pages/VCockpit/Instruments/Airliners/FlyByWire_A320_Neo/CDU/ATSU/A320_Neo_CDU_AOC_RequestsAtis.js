@@ -50,11 +50,6 @@ class CDUAocRequestsAtis {
             enrouteText = "ENROUTE[color]cyan";
         }
 
-        let sendMessage = "SEND*[color]cyan";
-        if (store.selected !== "") {
-            sendMessage = "SEND\xa0[color]cyan";
-        }
-
         let arrText = "[ ]";
         if (store.selected !== "") {
             arrText = store.selected;
@@ -65,6 +60,11 @@ class CDUAocRequestsAtis {
 
         const updateView = () => {
             if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
+                let sendMessage = "SEND*[color]cyan";
+                if (store.selected === "" || store.sendStatus === "SENDING") {
+                    sendMessage = "SEND\xa0[color]cyan";
+                }
+
                 mcdu.setTemplate([
                     ["AOC ATIS REQUEST"],
                     ["\xa0AIRPORT", "↓FORMAT FOR\xa0"],
@@ -101,7 +101,7 @@ class CDUAocRequestsAtis {
                             CDUAocRequestsAtis.ShowPage(mcdu, store);
                         }
                     } else {
-                        mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                        mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                     }
                 });
             }
@@ -161,16 +161,20 @@ class CDUAocRequestsAtis {
             store.sendStatus = "SENDING";
             updateView();
 
-            setTimeout(() => {
+            const onRequestSent = () => {
                 store.sendStatus = "SENT";
-                updateView();
-            }, 1000);
-
-            mcdu.atsu.aoc.receiveAtis(store.selected, store.requestId).then((retval) => {
-                if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
-                    mcdu.atsu.registerMessage(retval[1]);
-                    store.sendStatus = "";
+                if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
                     updateView();
+                }
+            };
+
+            mcdu.atsu.aoc.receiveAtis(store.selected, store.requestId, onRequestSent).then((retval) => {
+                if (retval[0] === Atsu.AtsuStatusCodes.Ok) {
+                    mcdu.atsu.registerMessages([retval[1]]);
+                    store.sendStatus = "";
+                    if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
+                        CDUAocRequestsAtis.ShowPage(mcdu, store);
+                    }
 
                     // print the message
                     if (store.formatID === 0) {
@@ -178,8 +182,12 @@ class CDUAocRequestsAtis {
                         mcdu.atsu.printMessage(retval[1]);
                     }
                 } else {
-                    store.sendStatus = "FAILED";
                     mcdu.addNewAtsuMessage(retval[0]);
+
+                    if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
+                        store.sendStatus = "FAILED";
+                        CDUAocRequestsAtis.ShowPage(mcdu, store);
+                    }
                 }
             });
         };

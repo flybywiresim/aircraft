@@ -143,7 +143,7 @@ class A32NX_GPWS {
 
         this.GPWSComputeLightsAndCallouts();
 
-        if ((mda !== 0 || dh !== -1) && phase === FmgcFlightPhases.APPROACH) {
+        if ((mda !== 0 || (dh !== -1 && dh !== -2) && phase === FmgcFlightPhases.APPROACH)) {
             let minimumsDA; //MDA or DH
             let minimumsIA; //radio or baro altitude
             const baroAlt = SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet");
@@ -436,14 +436,14 @@ class A32NX_GPWS {
         }
         switch (this.AltCallState.value) {
             case "ground":
-                if (radioAlt > 5) {
+                if (radioAlt > 6) {
                     this.AltCallState.action("up");
                 }
                 break;
             case "over5":
-                if (radioAlt > 10) {
+                if (radioAlt > 12) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 5) {
+                } else if (radioAlt <= 6) {
                     if (this.RetardState.value !== "retardPlaying") {
                         this.core.soundManager.tryPlaySound(soundList.alt_5);
                     }
@@ -451,9 +451,9 @@ class A32NX_GPWS {
                 }
                 break;
             case "over10":
-                if (radioAlt > 20) {
+                if (radioAlt > 22) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 10) {
+                } else if (radioAlt <= 12) {
                     if (this.RetardState.value !== "retardPlaying") {
                         this.core.soundManager.tryPlaySound(soundList.alt_10);
                     }
@@ -461,87 +461,87 @@ class A32NX_GPWS {
                 }
                 break;
             case "over20":
-                if (radioAlt > 30) {
+                if (radioAlt > 32) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 20) {
+                } else if (radioAlt <= 22) {
                     this.core.soundManager.tryPlaySound(soundList.alt_20);
                     this.AltCallState.action("down");
                 }
                 break;
             case "over30":
-                if (radioAlt > 40) {
+                if (radioAlt > 42) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 30) {
+                } else if (radioAlt <= 32) {
                     this.core.soundManager.tryPlaySound(soundList.alt_30);
                     this.AltCallState.action("down");
                 }
                 break;
             case "over40":
-                if (radioAlt > 50) {
+                if (radioAlt > 53) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 40) {
+                } else if (radioAlt <= 42) {
                     this.core.soundManager.tryPlaySound(soundList.alt_40);
                     this.AltCallState.action("down");
                 }
                 break;
             case "over50":
-                if (radioAlt > 100) {
+                if (radioAlt > 110) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 50) {
+                } else if (radioAlt <= 53) {
                     this.core.soundManager.tryPlaySound(soundList.alt_50);
                     this.AltCallState.action("down");
                 }
                 break;
             case "over100":
-                if (radioAlt > 200) {
+                if (radioAlt > 210) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 100) {
+                } else if (radioAlt <= 110) {
                     this.core.soundManager.tryPlaySound(soundList.alt_100);
                     this.AltCallState.action("down");
                 }
                 break;
             case "over200":
-                if (radioAlt > 300) {
+                if (radioAlt > 310) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 200) {
+                } else if (radioAlt <= 210) {
                     this.core.soundManager.tryPlaySound(soundList.alt_200);
                     this.AltCallState.action("down");
                 }
                 break;
             case "over300":
-                if (radioAlt > 400) {
+                if (radioAlt > 410) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 300) {
+                } else if (radioAlt <= 310) {
                     this.core.soundManager.tryPlaySound(soundList.alt_300);
                     this.AltCallState.action("down");
                 }
                 break;
             case "over400":
-                if (radioAlt > 500) {
+                if (radioAlt > 513) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 400) {
+                } else if (radioAlt <= 410) {
                     this.core.soundManager.tryPlaySound(soundList.alt_400);
                     this.AltCallState.action("down");
                 }
                 break;
             case "over500":
-                if (radioAlt > 1000) {
+                if (radioAlt > 1020) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 500) {
+                } else if (radioAlt <= 513) {
                     this.core.soundManager.tryPlaySound(soundList.alt_500);
                     this.AltCallState.action("down");
                 }
                 break;
             case "over1000":
-                if (radioAlt > 2500) {
+                if (radioAlt > 2530) {
                     this.AltCallState.action("up");
-                } else if (radioAlt <= 1000) {
+                } else if (radioAlt <= 1020) {
                     this.core.soundManager.tryPlaySound(soundList.alt_1000);
                     this.AltCallState.action("down");
                 }
                 break;
             case "over2500":
-                if (radioAlt <= 2500) {
+                if (radioAlt <= 2530) {
                     this.core.soundManager.tryPlaySound(soundList.alt_2500);
                     this.AltCallState.action("down");
                 }

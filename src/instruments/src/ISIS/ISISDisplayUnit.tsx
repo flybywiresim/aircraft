@@ -37,6 +37,11 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
                 setTimer(null);
             }
         }
+
+        // override MSFS menu animations setting for this instrument
+        if (!document.documentElement.classList.contains('animationsEnabled')) {
+            document.documentElement.classList.add('animationsEnabled');
+        }
     });
 
     useEffect(() => {
@@ -58,7 +63,7 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
     if (state === DisplayUnitState.Selftest) {
         return (
             <>
-                <svg id="SelfTest" className="SelfTest" version="1.1" viewBox="0 0 512 512">
+                <svg id="SelfTest" style={{ backgroundColor: 'black' }} className="SelfTest" version="1.1" viewBox="0 0 512 512">
                     <g id="AttFlag">
                         <rect id="AttTest" className="FillYellow" width="84" height="40" x="214" y="174" />
                         <text id="AltTestTxt" className="TextBackground" textAnchor="middle" x="256" y="206">ATT</text>

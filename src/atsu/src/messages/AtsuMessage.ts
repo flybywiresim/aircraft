@@ -9,8 +9,8 @@ export enum AtsuMessageNetwork {
 }
 
 export enum AtsuMessageDirection {
-    Input,
-    Output
+    Uplink,
+    Downlink
 }
 
 export enum AtsuMessageType {
@@ -22,7 +22,8 @@ export enum AtsuMessageType {
     CPDLC = 5,
     DCL = 6,
     OCL = 7,
-    ATC = 8
+    Request = 8,
+    ATC = 9
 }
 
 export enum AtsuMessageComStatus {

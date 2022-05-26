@@ -1,0 +1,109 @@
+@import "../../style";
+@import "../../../Common/definitions";
+
+@font-face {
+    font-family: "Ecam";
+    //noinspection CssUnknownTarget
+    src: url("/fonts/ECAMFontRegular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+  }
+
+
+#main-status {
+    font-family: "Ecam", monospace !important;
+
+    tspan {
+        white-space: pre;
+    }
+
+    text, tspan {
+        fill: $display-white;
+        stroke: none !important;
+
+        &.Standard {
+            font-size: 22px;
+        }
+
+        &.Medium {
+            font-size: 20px;
+        }
+
+        &.Large {
+            font-size: 26px;
+        }
+
+        &.EWDWarn {
+            font-size: 19px;
+            letter-spacing: 1px;
+        }
+
+        &.Huge {
+            font-size: 31px;
+        }
+
+        &.Cyan {
+            fill: $display-cyan !important;
+        }
+
+        &.Green {
+            fill: $display-green !important;
+        }
+
+        &.Amber {
+            fill: $display-amber;
+        }
+
+        &.Red {
+            fill: $display-red;
+        }
+
+        &.Magenta {
+            fill: $display-magenta;
+        }
+
+        &.Center {
+            text-anchor: middle !important;
+        }
+
+        &.End {
+            text-anchor: end !important;
+        }
+    }
+
+    .Underline {
+        text-decoration: underline;
+    }
+
+    .AmberLine {
+        stroke: $display-amber !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .GreenLine {
+        stroke: $display-green !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .WhiteLine {
+        stroke: $display-white !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .RedLine {
+        stroke: $display-red !important;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .Separator {
+        stroke: $display-light-grey;
+        stroke-width: 3;
+        fill: none;
+        stroke-linecap: "round"
+    }
+
+    }

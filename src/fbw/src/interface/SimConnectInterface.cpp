@@ -241,6 +241,10 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "BRAKE RIGHT POSITION", "POSITION");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "FLAPS HANDLE INDEX", "NUMBER");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GEAR HANDLE POSITION", "POSITION");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ASSISTANCE TAKEOFF ENABLED", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ASSISTANCE LANDING ENABLED", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AI AUTOTRIM ACTIVE", "BOOL");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AI CONTROLS", "BOOL");
 
   return result;
 }
@@ -323,6 +327,9 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_APPR_PUSH, "A32NX.FCU_APPR_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FCU_EXPED_PUSH, "A32NX.FCU_EXPED_PUSH", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_FMGC_DIR_TO_TRIGGER, "A32NX.FMGC_DIR_TO_TRIGGER", false);
+
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_L_CHRONO_PUSHED, "A32NX.EFIS_L_CHRONO_PUSHED", false);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::A32NX_EFIS_R_CHRONO_PUSHED, "A32NX.EFIS_R_CHRONO_PUSHED", false);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPEED_SLOT_INDEX_SET, "SPEED_SLOT_INDEX_SET", false);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_SPD_VAR_INC, "AP_SPD_VAR_INC", true);
@@ -1738,6 +1745,18 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     case Events::A32NX_FMGC_DIR_TO_TRIGGER: {
       simInputAutopilot.DIR_TO_trigger = 1;
       cout << "WASM: event triggered: A32NX_FMGC_DIR_TO_TRIGGER" << endl;
+      break;
+    }
+
+    case Events::A32NX_EFIS_L_CHRONO_PUSHED: {
+      execute_calculator_code("(>H:A32NX_EFIS_L_CHRONO_PUSHED)", nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_EFIS_L_CHRONO_PUSHED" << endl;
+      break;
+    }
+
+    case Events::A32NX_EFIS_R_CHRONO_PUSHED: {
+      execute_calculator_code("(>H:A32NX_EFIS_R_CHRONO_PUSHED)", nullptr, nullptr, nullptr);
+      cout << "WASM: event triggered: A32NX_EFIS_R_CHRONO_PUSHED" << endl;
       break;
     }
 

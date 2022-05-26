@@ -108,6 +108,10 @@ pub trait TestBed {
         self.test_bed_mut().ambient_temperature()
     }
 
+    fn set_sim_is_ready(&mut self, is_ready: bool) {
+        self.test_bed_mut().set_is_ready(is_ready);
+    }
+
     fn set_on_ground(&mut self, on_ground: bool) {
         self.test_bed_mut().set_on_ground(on_ground);
     }
@@ -239,6 +243,7 @@ impl<T: Aircraft> SimulationTestBed<T> {
         test_bed.set_ambient_pressure(Pressure::new::<inch_of_mercury>(29.92));
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
         test_bed.set_on_ground(false);
+        test_bed.set_is_ready(true);
         test_bed.seed();
 
         test_bed
@@ -266,7 +271,7 @@ impl<T: Aircraft> SimulationTestBed<T> {
     }
 
     pub fn run_with_delta(&mut self, delta: Duration) {
-        self.simulation.tick(delta, &mut self.reader_writer);
+        self.simulation.tick(delta, 100., &mut self.reader_writer);
     }
 
     /// Runs a multiple [Simulation] ticks by subdividing given delta on the contained [Aircraft].
@@ -284,11 +289,16 @@ impl<T: Aircraft> SimulationTestBed<T> {
             if executed_duration + current_delta > delta {
                 self.simulation.tick(
                     (executed_duration + current_delta) - delta,
+                    10. + executed_duration.as_secs_f64(),
                     &mut self.reader_writer,
                 );
                 break;
             } else {
-                self.simulation.tick(current_delta, &mut self.reader_writer);
+                self.simulation.tick(
+                    current_delta,
+                    10. + executed_duration.as_secs_f64(),
+                    &mut self.reader_writer,
+                );
             }
             executed_duration += current_delta;
         }
@@ -327,6 +337,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
         func: U,
     ) -> Ref<'a, Potential> {
         (func)(self.simulation.aircraft(), self.simulation.electricity())
+    }
+
+    fn set_is_ready(&mut self, is_ready: bool) {
+        self.write_by_name(UpdateContext::IS_READY_KEY, is_ready);
     }
 
     fn set_indicated_airspeed(&mut self, indicated_airspeed: Velocity) {

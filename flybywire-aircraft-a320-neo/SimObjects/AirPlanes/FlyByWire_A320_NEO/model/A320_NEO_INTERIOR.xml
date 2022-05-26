@@ -807,28 +807,28 @@
                 <TOOLTIPID>%((L:A32NX_BRAKE_FAN_BTN_PRESSED, Bool))%{if}Turn OFF brake fan%{else}Turn ON brake fan%{end}</TOOLTIPID>
             </UseTemplate>
 
-            <UseTemplate Name="ASOBO_LANDING_GEAR_Lever_Gear_Template">
+            <UseTemplate Name="FBW_LANDING_GEAR_Gear_Lever_Template">
                 <ANIM_NAME>lever_landing_gear</ANIM_NAME>
                 <NODE_ID>LEVER_LANDINGGEAR</NODE_ID>
                 <WWISE_EVENT>gearleverclick</WWISE_EVENT>
-                <NO_GEARUP_ON_GROUND/>
+                <NO_GEARUP_IF_LOCKED/>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
                 <ID>1</ID>
-                <GEAR_ID>1</GEAR_ID>
+                <GEAR_ID>LEFT</GEAR_ID>
                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_2</NODE_ID>
                 <ID>2</ID>
-                <GEAR_ID>0</GEAR_ID>
+                <GEAR_ID>NOSE</GEAR_ID>
                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
             </UseTemplate>
             <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_3</NODE_ID>
                 <ID>3</ID>
-                <GEAR_ID>2</GEAR_ID>
+                <GEAR_ID>RIGHT</GEAR_ID>
                 <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
             </UseTemplate>
             <UseTemplate Name="ASOBO_LANDING_GEAR_Warning_Template">
@@ -2143,6 +2143,20 @@
                             <ROUND />
                         </UseTemplate>
 
+                        <!-- EMERGENCY EXTENSION PLACEHOLDER -->
+                        <UseTemplate Name="FBW_Anim_Interactions">
+                            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+                            <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                            <NODE_ID>GEAR_EXTN_Decal</NODE_ID>
+                            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_GEAR_EMERGENCY_EXTENSION_CLICKED)</LEFT_SINGLE_CODE>
+                            <LEFT_LEAVE_CODE>0 (&gt;L:A32NX_GEAR_EMERGENCY_EXTENSION_CLICKED)</LEFT_LEAVE_CODE>
+                            <TOOLTIPID>Emergency Extension (click and hold to turn)</TOOLTIPID>
+                            <MOMENTARY/>
+                            <NO_SEQ1 />
+                            <NO_SEQ2 />
+                            <ROUND />
+                        </UseTemplate>
+
                         <!-- EVAC CAPT & PURS -->
                         <UseTemplate Name="FBW_Anim_Interactions">
                             <ANIM_TYPE>SWITCH</ANIM_TYPE>
@@ -2315,7 +2329,7 @@
                         <PART_ID>AIRCOND_PACK1</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_COND_PACK_1_PB_IS_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                        <SEQ1_CODE>(L:A32NX_AIRCOND_PACK1_FAULT, Bool)</SEQ1_CODE>
+                        <SEQ1_CODE>(L:A32NX_OVHD_COND_PACK_1_PB_HAS_FAULT, Bool)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_OVHD_COND_PACK_1_PB_IS_ON, Bool) !</SEQ2_CODE>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -2331,7 +2345,7 @@
                         <PART_ID>AIRCOND_PACK2</PART_ID>
                         <TOGGLE_SIMVAR>L:A32NX_OVHD_COND_PACK_2_PB_IS_ON</TOGGLE_SIMVAR>
                         <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or</SEQ_POWERED>
-                        <SEQ1_CODE>(L:A32NX_AIRCOND_PACK2_FAULT, Bool)</SEQ1_CODE>
+                        <SEQ1_CODE>(L:A32NX_OVHD_COND_PACK_2_PB_HAS_FAULT, Bool)</SEQ1_CODE>
                         <SEQ2_CODE>(L:A32NX_OVHD_COND_PACK_2_PB_IS_ON, Bool) !</SEQ2_CODE>
                         <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                         <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>

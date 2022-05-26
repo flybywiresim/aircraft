@@ -1,35 +1,32 @@
 import React from 'react';
 import { AtsuMessageComStatus } from '@atsu/messages/AtsuMessage';
-import { CpdlcMessage, CpdlcMessageResponse } from '@atsu/messages/CpdlcMessage';
-import { useUpdate } from '@instruments/common/hooks.js';
+import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
 import { Button } from './Button';
 
 type RogerButtonsProps = {
     message: CpdlcMessage,
-    selectedResponse: CpdlcMessageResponse | undefined,
-    setMessageStatus(message: number, response: CpdlcMessageResponse | undefined),
-    setStatus: (sender: string, message: string) => void,
+    selectedResponse: number,
+    setMessageStatus(message: number, response: number),
+    setStatus: (sender: string, message: string, duration: number) => void,
     isStatusAvailable: (sender: string) => boolean,
-    sendResponse: (message: number, response: CpdlcMessageResponse) => void,
+    sendResponse: (message: number, response: number) => void,
     closeMessage: (message: number) => void
 }
 
 export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedResponse, setMessageStatus, setStatus, isStatusAvailable, sendResponse, closeMessage }) => {
     const buttonsBlocked = message.Response !== undefined && message.Response.ComStatus === AtsuMessageComStatus.Sending;
 
-    useUpdate(() => {
-        if (buttonsBlocked) {
-            if (isStatusAvailable('Buttons')) {
-                setStatus('Buttons', 'SENDING');
-            }
+    if (buttonsBlocked) {
+        if (isStatusAvailable('Buttons')) {
+            setStatus('Buttons', 'SENDING', Infinity);
         }
-    });
+    }
 
     // define the rules for the visualization of the buttons
     let showAnswers = false;
     let showSend = false;
 
-    if (selectedResponse === undefined && message.Response === undefined) {
+    if (selectedResponse === -1 && message.Response === undefined) {
         showAnswers = true;
     } else if (message.Response === undefined) {
         showSend = true;
@@ -42,13 +39,13 @@ export const RogerButtons: React.FC<RogerButtonsProps> = ({ message, selectedRes
 
         if (showAnswers) {
             if (index === 'R2') {
-                setMessageStatus(message.UniqueMessageID, CpdlcMessageResponse.Roger);
+                setMessageStatus(message.UniqueMessageID, 3);
             }
         } else if (showSend) {
             if (index === 'L1') {
-                setMessageStatus(message.UniqueMessageID, undefined);
+                setMessageStatus(message.UniqueMessageID, -1);
             } else if (index === 'R2') {
-                sendResponse(message.UniqueMessageID, selectedResponse as CpdlcMessageResponse);
+                sendResponse(message.UniqueMessageID, selectedResponse);
             }
         } else if (index === 'R2') {
             closeMessage(message.UniqueMessageID);

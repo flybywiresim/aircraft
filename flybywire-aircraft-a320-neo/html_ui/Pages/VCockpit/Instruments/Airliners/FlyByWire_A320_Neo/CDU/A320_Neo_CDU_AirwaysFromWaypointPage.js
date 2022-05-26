@@ -1,14 +1,18 @@
 class A320_Neo_CDU_AirwaysFromWaypointPage {
-    static ShowPage(mcdu, waypoint, offset = 0, pendingAirway) {
+    static ShowPage(mcdu, reviseIndex, pendingAirway, lastIndex) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AirwaysFromWaypointPage;
+
+        const waypoint = mcdu.flightPlanManager.getWaypoint(reviseIndex);
+        const fpIsTmpy = mcdu.flightPlanManager.getCurrentFlightPlanIndex() === FlightPlans.Temporary;
+        let prevIcao = waypoint.infos.icao;
+        let prevFpIndex = reviseIndex;
+
         const rows = [["----"], [""], [""], [""], [""]];
         const subRows = [["VIA", ""], [""], [""], [""], [""]];
-        const allRows = A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(mcdu,waypoint);
-        const page = (2 + (Math.floor(offset / 4)));
-        const pageCount = (Math.floor(allRows.length / 4) + 2);
+        const allRows = lastIndex ? A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(mcdu, reviseIndex, lastIndex) : [];
         let rowBottomLine = ["<RETURN"];
-        if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
+        if (fpIsTmpy) {
             rowBottomLine = ["{ERASE[color]amber", "INSERT*[color]amber"];
             mcdu.onRightInput[5] = async () => {
                 mcdu.insertTemporaryFlightPlan(() => {
@@ -23,38 +27,27 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                 CDUFlightPlanPage.ShowPage(mcdu, 0);
             });
         };
-        allRows.forEach((r, idx) => {
-            if (r[0] != "" && r[1] != "") {
-                subRows[idx] = ["\xa0VIA", "TO\xa0"];
-            }
-        });
         let showInput = false;
         for (let i = 0; i < rows.length; i++) {
-            if (allRows[i + offset]) {
-                rows[i] = allRows[i + offset];
+            if (allRows[i]) {
+                const [airwayIdent, termIdent, fromIcao, fromIndex] = allRows[i];
+                rows[i] = [airwayIdent, termIdent];
+                subRows[i] = ["\xa0VIA", "TO\xa0"];
+                prevIcao = fromIcao;
+                prevFpIndex = fromIndex;
             } else if (!showInput) {
                 showInput = true;
                 if (!pendingAirway) {
                     subRows[i] = ["\xa0VIA", ""];
                     rows[i] = ["[\xa0\xa0\xa0][color]cyan", ""];
-                    mcdu.onRightInput[i] = async (value, scratchpadCallback) => {
-                        if (value.length > 0) {
-                            mcdu.insertWaypoint(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, (success) => {
-                                if (!success) {
-                                    scratchpadCallback();
-                                }
-                                A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
-                            });
-                        }
-                    };
                     mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
                         if (value.length > 0) {
                             mcdu.ensureCurrentFlightPlanIsTemporary(async () => {
-                                const airway = await this._getAirway(mcdu, value).catch(console.error);
+                                const airway = await this._getAirway(mcdu, prevFpIndex, value).catch(console.error);
                                 if (airway) {
-                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
+                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, lastIndex);
                                 } else {
-                                    mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
+                                    mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
                                     scratchpadCallback();
                                 }
                             });
@@ -66,11 +59,11 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                     mcdu.onRightInput[i] = (value, scratchpadCallback) => {
                         if (value.length > 0) {
                             mcdu.ensureCurrentFlightPlanIsTemporary(() => {
-                                mcdu.insertWaypointsAlongAirway(value, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, pendingAirway.name, (result) => {
-                                    if (result) {
-                                        A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset);
+                                mcdu.insertWaypointsAlongAirway(value, prevFpIndex + 1, pendingAirway.name).then((result) => {
+                                    if (result >= 0) {
+                                        A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, undefined, result);
                                     } else {
-                                        mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
+                                        mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
                                         scratchpadCallback();
                                     }
                                 }).catch(console.error);
@@ -82,30 +75,30 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         subRows[i + 1] = ["\xa0VIA", ""];
                         mcdu.onLeftInput[i + 1] = async (value, scratchpadCallback) => {
                             if (value.length > 0) {
-                                const toWp = await this._getFirstIntersection(mcdu.flightPlanManager, value, pendingAirway.icaos).catch(console.error);
+                                const toWp = await this._getFirstIntersection(mcdu, pendingAirway, prevIcao, value).catch(console.error);
                                 if (toWp) {
                                     mcdu.ensureCurrentFlightPlanIsTemporary(() => {
-                                        mcdu.insertWaypointsAlongAirway(toWp, mcdu.flightPlanManager.getEnRouteWaypointsLastIndex() + 1, pendingAirway.name, async (result) => {
-                                            if (result) {
-                                                const airway = await this._getAirway(mcdu, value).catch(console.error);
+                                        mcdu.insertWaypointsAlongAirway(toWp, prevFpIndex + 1, pendingAirway.name, true).then(async (result) => {
+                                            if (result >= 0) {
+                                                const airway = await this._getAirway(mcdu, result, value).catch(console.error);
                                                 if (airway) {
-                                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypoint, offset, airway);
+                                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, result);
                                                 } else {
-                                                    mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
+                                                    mcdu.setScratchpadMessage(NXSystemMessages.noIntersectionFound);
                                                     scratchpadCallback();
                                                 }
                                             } else {
-                                                mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
+                                                mcdu.setScratchpadMessage(NXSystemMessages.noIntersectionFound);
                                                 scratchpadCallback();
                                             }
                                         }).catch(console.error);
                                     });
                                 } else {
-                                    mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
+                                    mcdu.setScratchpadMessage(NXSystemMessages.noIntersectionFound);
                                     scratchpadCallback();
                                 }
                             } else {
-                                mcdu.addNewMessage(NXSystemMessages.noIntersectionFound);
+                                mcdu.setScratchpadMessage(NXSystemMessages.noIntersectionFound);
                                 scratchpadCallback();
                             }
                         };
@@ -129,41 +122,21 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
             rowBottomLine
         ]);
     }
-    static _GetAllRows(mcdu, currentWP) {
+    static _GetAllRows(mcdu, reviseIndex, lastIndex) {
         const allRows = [];
-        const flightPlan = mcdu.flightPlanManager;
-        if (flightPlan) {
-            const routeWaypoints = flightPlan.getEnRouteWaypoints([]);
-            let indexOfWP = 0;
-            routeWaypoints.forEach((wyp, idx) => {
-                if (wyp.ident === currentWP.ident) {
-                    indexOfWP = idx;
-                }
-            });
-            let inx = indexOfWP === -1 ? 1 : indexOfWP + 1;
-            inx = mcdu.flightPlanManager.getDepartureWaypoints().length ? inx - 1 : inx;
-            for (let i = inx; i < routeWaypoints.length; i++) {
-                const wp = routeWaypoints[i];
-                if (wp) {
-                    let color = 'green';
-                    if (mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1) {
-                        color = 'cyan';
-                    }
-                    if (wp.infos.airwayIn === undefined) {
-                        // allRows.push(["DIRECT", wp.ident]);
-                    } else {
-                        if (wp.infos.airwayIn !== wp.infos.airwayOut) {
-                            allRows.push([`${wp.infos.airwayIn}[color]${color}`, `${wp.ident}[color]${color}`]);
-                        }
-                    }
+        for (let i = reviseIndex + 1; i <= lastIndex; i++) {
+            const wp = mcdu.flightPlanManager.getWaypoint(i);
+            if (wp) {
+                if (wp.infos.airwayIn !== wp.infos.airwayOut) {
+                    allRows.push([`{cyan}${wp.infos.airwayIn}{end}`, `{cyan}${wp.additionalData.smartAirway ? '{small}' : '{big}'}${wp.ident}{end}{end}`, wp.infos.icao, i]);
                 }
             }
         }
         return allRows;
     }
 
-    static async _getAirway(mcdu, value) {
-        const lastWaypoint = mcdu.flightPlanManager.getWaypoints()[mcdu.flightPlanManager.getEnRouteWaypointsLastIndex()];
+    static async _getAirway(mcdu, fromFpIndex, value) {
+        const lastWaypoint = mcdu.flightPlanManager.getWaypoint(fromFpIndex);
         await lastWaypoint.infos.UpdateAirway(value).catch(console.error);
         if (lastWaypoint.infos instanceof IntersectionInfo || lastWaypoint.infos instanceof VORInfo || lastWaypoint.infos instanceof NDBInfo) {
             return lastWaypoint.infos.airways.find(a => {
@@ -176,26 +149,32 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
      * Distance is measured in number of fixes, not a real distance unit.
      * Searching around current fixes index.
      */
-    static async _getFirstIntersection(fpm, value, icaos) {
-        const ident = fpm.getWaypoints()[fpm.getEnRouteWaypointsLastIndex()].ident;
-        const identIdx = icaos.findIndex(x => x.substring(4).trim() === ident);
-        for (let i = 0; i < icaos.length - identIdx; i++) {
-            let res = await this._getRoute(fpm, value, icaos[identIdx + i]).catch(console.error);
-            if (res) {
-                return icaos[identIdx + i].substring(4).trim();
+    static async _getFirstIntersection(mcdu, prevAirway, prevAirwayFromIcao, nextAirwayIdent) {
+        const prevIcaos = prevAirway.icaos;
+
+        const prevAirwayStartIndex = prevIcaos.findIndex(icao => icao === prevAirwayFromIcao);
+        if (prevAirwayStartIndex < 0) {
+            throw new Error(`Cannot find waypoint ${icao} in airway ${prevAirway.name}`);
+        }
+
+        for (let i = 0; i < prevIcaos.length; i++) {
+            if ((prevAirwayStartIndex + i) < prevIcaos.length) {
+                const res = await this._getRoute(mcdu, nextAirwayIdent, prevIcaos[prevAirwayStartIndex + i]).catch(console.error);
+                if (res) {
+                    return prevIcaos[prevAirwayStartIndex + i].substring(4).trim();
+                }
             }
-            if (identIdx - i < 0 || i === 0) {
-                continue;
-            }
-            res = await this._getRoute(fpm, value, icaos[identIdx - i]).catch(console.error);
-            if (res) {
-                return icaos[identIdx - i].substring(4).trim();
+            if ((prevAirwayStartIndex - i) >= 0) {
+                const res = await this._getRoute(mcdu, nextAirwayIdent, prevIcaos[prevAirwayStartIndex - i]).catch(console.error);
+                if (res) {
+                    return prevIcaos[prevAirwayStartIndex - i].substring(4).trim();
+                }
             }
         }
     }
 
-    static async _getRoute(fpm, value, ident) {
-        return (await fpm.instrument.facilityLoader.getIntersectionData(ident)).routes.find(a => {
+    static async _getRoute(mcdu, value, icao) {
+        return (await mcdu.facilityLoader.getIntersectionData(icao)).routes.find(a => {
             return a.name === value;
         });
     }

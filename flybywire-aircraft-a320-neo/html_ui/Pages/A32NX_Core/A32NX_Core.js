@@ -93,6 +93,7 @@ class A32NX_Core {
         const deltaTime = this.getDeltaTime();
 
         this.soundManager.update(deltaTime);
+        this.tipsManager.update(deltaTime);
 
         let updatedModules = 0;
         this.modules.forEach(moduleDefinition => {

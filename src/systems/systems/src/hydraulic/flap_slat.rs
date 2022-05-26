@@ -37,7 +37,7 @@ impl FlapSlatHydraulicMotor {
     const MIN_MOTOR_RPM: f64 = 20.;
 
     // Corrective factor to adjust final flow consumption to tune the model
-    const FLOW_CORRECTION_FACTOR: f64 = 0.85;
+    const FLOW_CORRECTION_FACTOR: f64 = 0.6;
 
     fn new(displacement: Volume) -> Self {
         Self {
@@ -142,7 +142,7 @@ impl FlapSlatAssembly {
     const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
     const ANGLE_THRESHOLD_FOR_REDUCED_SPEED_DEGREES: f64 = 6.69;
     const ANGULAR_SPEED_LIMIT_FACTOR_WHEN_APROACHING_POSITION: f64 = 0.5;
-    const MIN_TOTAL_MOTOR_RPM_TO_REPORT_MOVING: f64 = 20.;
+    const MIN_ANGULAR_SPEED_TO_REPORT_MOVING: f64 = 0.01;
 
     pub fn new(
         context: &mut InitContext,
@@ -307,7 +307,7 @@ impl FlapSlatAssembly {
         let press_corrected =
             current_pressure.get::<psi>() - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI;
         if current_pressure > Pressure::new::<psi>(Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI) {
-            (0.0006 * (press_corrected * press_corrected)
+            (0.0004 * press_corrected.powi(2)
                 / (Self::MAX_CIRCUIT_PRESSURE_PSI - Self::BRAKE_PRESSURE_MIN_TO_ALLOW_MOVEMENT_PSI))
                 .min(1.)
                 .max(0.)
@@ -435,8 +435,7 @@ impl FlapSlatAssembly {
     }
 
     fn is_surface_moving(&self) -> bool {
-        (self.left_motor_rpm() + self.right_motor_rpm()).abs()
-            > Self::MIN_TOTAL_MOTOR_RPM_TO_REPORT_MOVING
+        self.speed.abs().get::<radian_per_second>() > Self::MIN_ANGULAR_SPEED_TO_REPORT_MOVING
     }
 }
 impl SimulationElement for FlapSlatAssembly {
@@ -652,13 +651,13 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.flaps_slats.left_motor.flow())
-                >= VolumeRate::new::<gallon_per_minute>(3.)
+                >= VolumeRate::new::<gallon_per_minute>(2.)
                 && test_bed.query(|a| a.flaps_slats.left_motor.flow())
                     <= VolumeRate::new::<gallon_per_minute>(8.)
         );
         assert!(
             test_bed.query(|a| a.flaps_slats.right_motor.flow())
-                >= VolumeRate::new::<gallon_per_minute>(3.)
+                >= VolumeRate::new::<gallon_per_minute>(2.)
                 && test_bed.query(|a| a.flaps_slats.right_motor.flow())
                     <= VolumeRate::new::<gallon_per_minute>(8.)
         );
@@ -703,13 +702,13 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.flaps_slats.left_motor.flow())
-                >= VolumeRate::new::<gallon_per_minute>(3.)
+                >= VolumeRate::new::<gallon_per_minute>(2.)
                 && test_bed.query(|a| a.flaps_slats.left_motor.flow())
                     <= VolumeRate::new::<gallon_per_minute>(8.)
         );
         assert!(
             test_bed.query(|a| a.flaps_slats.right_motor.flow())
-                >= VolumeRate::new::<gallon_per_minute>(3.)
+                >= VolumeRate::new::<gallon_per_minute>(2.)
                 && test_bed.query(|a| a.flaps_slats.right_motor.flow())
                     <= VolumeRate::new::<gallon_per_minute>(8.)
         );
@@ -753,7 +752,7 @@ mod tests {
         );
         assert!(
             test_bed.query(|a| a.flaps_slats.right_motor.flow())
-                >= VolumeRate::new::<gallon_per_minute>(3.)
+                >= VolumeRate::new::<gallon_per_minute>(2.)
                 && test_bed.query(|a| a.flaps_slats.right_motor.flow())
                     <= VolumeRate::new::<gallon_per_minute>(8.)
         );
@@ -797,7 +796,7 @@ mod tests {
         );
         assert!(
             test_bed.query(|a| a.flaps_slats.left_motor.flow())
-                >= VolumeRate::new::<gallon_per_minute>(3.)
+                >= VolumeRate::new::<gallon_per_minute>(2.)
                 && test_bed.query(|a| a.flaps_slats.left_motor.flow())
                     <= VolumeRate::new::<gallon_per_minute>(8.)
         );

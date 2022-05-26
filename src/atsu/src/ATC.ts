@@ -1,15 +1,17 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { HoppieConnector } from './com/HoppieConnector';
+import { InputValidation } from './InputValidation';
 import { AtsuStatusCodes } from './AtsuStatusCodes';
 import { AtisMessage, AtisType } from './messages/AtisMessage';
 import { AtsuTimestamp } from './messages/AtsuTimestamp';
 import { AtsuMessageComStatus, AtsuMessage, AtsuMessageType, AtsuMessageDirection } from './messages/AtsuMessage';
-import { CpdlcMessageResponse, CpdlcMessageRequestedResponseType, CpdlcMessage } from './messages/CpdlcMessage';
+import { CpdlcMessagesDownlink, CpdlcMessageExpectedResponseType } from './messages/CpdlcMessageElements';
+import { CpdlcMessage } from './messages/CpdlcMessage';
 import { Datalink } from './com/Datalink';
 import { Atsu } from './ATSU';
 import { DcduLink } from './components/DcduLink';
+import { FansMode, FutureAirNavigationSystem } from './com/FutureAirNavigationSystem';
 
 /*
  * Defines the ATC system for CPDLC communication
@@ -21,7 +23,9 @@ export class Atc {
 
     private dcduLink: DcduLink | undefined = undefined;
 
-    private cdplcResetRequired = false;
+    private handoverInterval: number | undefined = 0;
+
+    private handoverOngoing = false;
 
     private currentAtc = '';
 
@@ -41,39 +45,21 @@ export class Atc {
 
     public maxUplinkDelay: number = -1;
 
+    private currentFansMode: FansMode = FansMode.FansNone;
+
     constructor(parent: Atsu, datalink: Datalink) {
         this.parent = parent;
         this.datalink = datalink;
         this.dcduLink = new DcduLink(parent, this);
     }
 
-    public resetAtc() {
-        if (this.cdplcResetRequired) {
-            if (this.currentAtc !== '') {
-                this.logoff();
-            }
-            if (this.nextAtc !== '') {
-                this.resetLogon();
-            }
-
-            this.cdplcResetRequired = false;
-        }
-    }
-
-    public async connect(flightNo: string): Promise<AtsuStatusCodes> {
+    public async disconnect(): Promise<void> {
         if (this.currentAtc !== '') {
             await this.logoff();
         }
-        return HoppieConnector.connect(flightNo).then((code) => {
-            if (code === AtsuStatusCodes.Ok) {
-                this.cdplcResetRequired = true;
-            }
-            return code;
-        });
-    }
-
-    public async disconnect(): Promise<AtsuStatusCodes> {
-        return HoppieConnector.disconnect();
+        if (this.nextAtc !== '') {
+            this.resetLogon();
+        }
     }
 
     public currentStation(): string {
@@ -104,24 +90,25 @@ export class Atc {
             return AtsuStatusCodes.SystemBusy;
         }
 
-        if (this.currentAtc !== '') {
+        if (!this.handoverOngoing && this.currentAtc !== '') {
             const retval = await this.logoff();
             if (retval !== AtsuStatusCodes.Ok) {
                 return retval;
             }
         }
+        this.handoverOngoing = false;
 
         const message = new CpdlcMessage();
         message.Station = station;
         message.CurrentTransmissionId = ++this.cpdlcMessageId;
-        message.Direction = AtsuMessageDirection.Output;
-        message.RequestedResponses = CpdlcMessageRequestedResponseType.Yes;
+        message.Direction = AtsuMessageDirection.Downlink;
+        message.Content = CpdlcMessagesDownlink.DM9998[1];
         message.ComStatus = AtsuMessageComStatus.Sending;
         message.Message = 'REQUEST LOGON';
         message.DcduRelevantMessage = false;
 
         this.nextAtc = station;
-        this.parent.registerMessage(message);
+        this.parent.registerMessages([message]);
         this.dcduLink.setAtcLogonMessage(`NEXT ATC: ${station}`);
         this.notificationTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
 
@@ -147,14 +134,32 @@ export class Atc {
             return AtsuStatusCodes.SystemBusy;
         }
 
-        if (this.currentAtc !== '') {
-            const retval = await this.logoffWithoutReset();
-            if (retval !== AtsuStatusCodes.Ok) {
-                return retval;
-            }
-        }
+        return new Promise((resolve, _reject) => {
+            // add an interval to check if all messages are answered or sent to ATC
+            this.handoverInterval = setInterval(() => {
+                if (!this.dcduLink.openMessagesForStation(this.currentAtc)) {
+                    clearInterval(this.handoverInterval);
+                    this.handoverInterval = undefined;
 
-        return this.logon(station);
+                    // add a timer to ensure that the last transmission is already received to avoid ATC software warnings
+                    setTimeout(() => {
+                        if (this.currentAtc !== '') {
+                            this.logoffWithoutReset().then((code) => {
+                                if (code !== AtsuStatusCodes.Ok) {
+                                    resolve(code);
+                                }
+
+                                this.handoverOngoing = true;
+                                this.logon(station).then((code) => resolve(code));
+                            });
+                        } else {
+                            this.handoverOngoing = true;
+                            this.logon(station).then((code) => resolve(code));
+                        }
+                    }, 15000);
+                }
+            }, 1000);
+        });
     }
 
     private async logoffWithoutReset(): Promise<AtsuStatusCodes> {
@@ -165,81 +170,62 @@ export class Atc {
         const message = new CpdlcMessage();
         message.Station = this.currentAtc;
         message.CurrentTransmissionId = ++this.cpdlcMessageId;
-        message.Direction = AtsuMessageDirection.Output;
-        message.RequestedResponses = CpdlcMessageRequestedResponseType.No;
+        message.Direction = AtsuMessageDirection.Downlink;
+        message.Content = CpdlcMessagesDownlink.DM9999[1];
         message.ComStatus = AtsuMessageComStatus.Sending;
-        message.Message = 'LOGOFF';
         message.DcduRelevantMessage = false;
 
         this.maxUplinkDelay = -1;
-        this.parent.registerMessage(message);
+        this.parent.registerMessages([message]);
 
         return this.datalink.sendMessage(message, true).then((error) => error);
     }
 
     public async logoff(): Promise<AtsuStatusCodes> {
+        // abort a handover run
+        if (this.handoverInterval !== undefined) {
+            clearInterval(this.handoverInterval);
+            this.handoverInterval = undefined;
+        }
+
         return this.logoffWithoutReset().then((error) => {
             this.dcduLink.setAtcLogonMessage('');
+            this.currentFansMode = FansMode.FansNone;
             this.currentAtc = '';
             this.nextAtc = '';
             return error;
         });
     }
 
-    private createCpdlcResponse(request: CpdlcMessage) {
-        // create the meta information of the response
-        const response = new CpdlcMessage();
-        response.Direction = AtsuMessageDirection.Output;
-        response.CurrentTransmissionId = ++this.cpdlcMessageId;
-        response.PreviousTransmissionId = request.CurrentTransmissionId;
-        response.RequestedResponses = CpdlcMessageRequestedResponseType.No;
-        response.Station = request.Station;
-
-        // create the answer text
-        switch (request.ResponseType) {
-        case CpdlcMessageResponse.Acknowledge:
-            response.Message = 'ACKNOWLEDGE';
-            break;
-        case CpdlcMessageResponse.Affirm:
-            response.Message = 'AFFIRM';
-            break;
-        case CpdlcMessageResponse.Negative:
-            response.Message = 'NEGATIVE';
-            break;
-        case CpdlcMessageResponse.Refuse:
-            response.Message = 'REFUSE';
-            break;
-        case CpdlcMessageResponse.Roger:
-            response.Message = 'ROGER';
-            break;
-        case CpdlcMessageResponse.Standby:
-            response.Message = 'STANDBY';
-            break;
-        case CpdlcMessageResponse.Unable:
-            response.Message = 'UNABLE';
-            break;
-        case CpdlcMessageResponse.Wilco:
-            response.Message = 'WILCO';
-            break;
-        default:
+    private createCpdlcResponse(request: CpdlcMessage, response: number): CpdlcMessage | undefined {
+        const downlinkId = `DM${response}`;
+        if (!(downlinkId in CpdlcMessagesDownlink)) {
             return undefined;
         }
 
-        return response;
+        // create the meta information of the response
+        const responseMessage = new CpdlcMessage();
+        responseMessage.Direction = AtsuMessageDirection.Downlink;
+        responseMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
+        responseMessage.PreviousTransmissionId = request.CurrentTransmissionId;
+        responseMessage.Station = request.Station;
+        responseMessage.Content = CpdlcMessagesDownlink[downlinkId][1];
+
+        return responseMessage;
     }
 
-    public sendResponse(uid: number, response: CpdlcMessageResponse): void {
+    public sendResponse(uid: number, response: number): void {
         const message = this.messageQueue.find((element) => element.UniqueMessageID === uid);
         if (message !== undefined) {
-            // avoid double sends
-            if (message.ResponseType === response) {
-                if (message.Response !== undefined && (message.Response.ComStatus === AtsuMessageComStatus.Sending || message.Response.ComStatus === AtsuMessageComStatus.Sent)) {
-                    return;
-                }
+            const responseMsg = this.createCpdlcResponse(message, response);
+
+            // avoid double-sents
+            if (message.Response !== undefined && message.Response.Content.TypeId === responseMsg.Content.TypeId
+                 && (message.Response.ComStatus === AtsuMessageComStatus.Sending || message.Response.ComStatus === AtsuMessageComStatus.Sent)) {
+                return;
             }
 
-            message.ResponseType = response;
-            message.Response = this.createCpdlcResponse(message);
+            message.Response = responseMsg;
             message.Response.ComStatus = AtsuMessageComStatus.Sending;
             this.dcduLink.update(message);
 
@@ -312,9 +298,10 @@ export class Atc {
     }
 
     private analyzeMessage(request: CpdlcMessage, response: CpdlcMessage): boolean {
-        if (request.RequestedResponses === CpdlcMessageRequestedResponseType.NotRequired && response === undefined) {
+        if (request.Content?.ExpectedResponse === CpdlcMessageExpectedResponseType.NotRequired && response === undefined) {
             // received the station message for the DCDU
-            if (request.Message.includes('CURRENT ATC')) {
+            if (request.Content?.TypeId === 'UM9999') {
+                request.DcduRelevantMessage = false;
                 if (this.currentAtc !== '') {
                     this.dcduLink.setAtcLogonMessage(request.Message);
                 }
@@ -322,7 +309,8 @@ export class Atc {
             }
 
             // received a logoff message
-            if (request.Message.includes('LOGOFF')) {
+            if (request.Content?.TypeId === 'UM9995') {
+                request.DcduRelevantMessage = false;
                 this.dcduLink.setAtcLogonMessage('');
                 this.currentAtc = '';
                 return true;
@@ -330,15 +318,17 @@ export class Atc {
 
             // received a service terminated message
             if (request.Message.includes('TERMINATED')) {
+                request.DcduRelevantMessage = false;
                 this.dcduLink.setAtcLogonMessage('');
                 this.currentAtc = '';
                 return true;
             }
 
             // process the handover message
-            if (request.Message.includes('HANDOVER')) {
+            if (request.Content?.TypeId === 'UM9998') {
                 const entries = request.Message.split(' ');
                 if (entries.length >= 2) {
+                    request.DcduRelevantMessage = false;
                     const station = entries[1].replace(/@/gi, '');
                     this.handover(station);
                     return true;
@@ -348,17 +338,21 @@ export class Atc {
 
         // expecting a LOGON or denied message
         if (this.nextAtc !== '' && request !== undefined && response !== undefined) {
-            if (request.Message === 'REQUEST LOGON') {
+            if (request.Content?.TypeId === 'DM9998') {
                 // logon accepted by ATC
-                if (response.Message.includes('LOGON ACCEPTED')) {
+                if (response.Content?.TypeId === 'UM9997') {
+                    response.DcduRelevantMessage = false;
                     this.dcduLink.setAtcLogonMessage(`CURRENT ATC UNIT @${this.nextAtc}@`);
+                    this.currentFansMode = FutureAirNavigationSystem.currentFansMode(this.nextAtc);
+                    InputValidation.FANS = this.currentFansMode;
                     this.currentAtc = this.nextAtc;
                     this.nextAtc = '';
                     return true;
                 }
 
                 // logon rejected
-                if (response.Message.includes('UNABLE')) {
+                if (response.Content?.TypeId === 'UM9996' || response.Content?.TypeId === 'UM0') {
+                    response.DcduRelevantMessage = false;
                     this.dcduLink.setAtcLogonMessage('');
                     this.currentAtc = '';
                     this.nextAtc = '';
@@ -371,51 +365,51 @@ export class Atc {
         return false;
     }
 
-    public insertMessage(message: AtsuMessage): void {
-        const cpdlcMessage = message as CpdlcMessage;
-        let analyzed = false;
+    public insertMessages(messages: AtsuMessage[]): void {
+        messages.forEach((message) => {
+            const cpdlcMessage = message as CpdlcMessage;
 
-        if (cpdlcMessage.Direction === AtsuMessageDirection.Output && cpdlcMessage.CurrentTransmissionId === -1) {
-            cpdlcMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
-        }
+            let concatMessages = true;
+            if (cpdlcMessage.Direction === AtsuMessageDirection.Uplink && cpdlcMessage.Content !== undefined) {
+                // filter all standard messages and LOGON-related messages
+                concatMessages = cpdlcMessage.Content.TypeId === 'UM0' || cpdlcMessage.Content.TypeId === 'UM1' || cpdlcMessage.Content.TypeId === 'UM3'
+                                 || cpdlcMessage.Content.TypeId === 'UM4' || cpdlcMessage.Content.TypeId === 'UM5' || cpdlcMessage.Content.TypeId === 'UM9995'
+                                 || cpdlcMessage.Content.TypeId === 'UM9996' || cpdlcMessage.Content.TypeId === 'UM9997';
+            }
 
-        // search corresponding request, if previous ID is set
-        if (cpdlcMessage.PreviousTransmissionId !== -1) {
-            this.messageQueue.forEach((element) => {
-                // ensure that the sending and receiving stations are the same to avoid CPDLC ID overlaps
-                if (element.Station === cpdlcMessage.Station) {
-                    while (element !== undefined) {
-                        if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
-                            if (element.ResponseType === undefined) {
-                                element.ResponseType = CpdlcMessageResponse.Other;
+            if (cpdlcMessage.Direction === AtsuMessageDirection.Downlink && cpdlcMessage.CurrentTransmissionId === -1) {
+                cpdlcMessage.CurrentTransmissionId = ++this.cpdlcMessageId;
+            }
+
+            // search corresponding request, if previous ID is set
+            if (concatMessages && cpdlcMessage.PreviousTransmissionId !== -1) {
+                this.messageQueue.forEach((element) => {
+                    // ensure that the sending and receiving stations are the same to avoid CPDLC ID overlaps
+                    if (element.Station === cpdlcMessage.Station) {
+                        while (element !== undefined) {
+                            if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
+                                element.Response = cpdlcMessage;
+                                this.analyzeMessage(element, cpdlcMessage);
+                                break;
                             }
-                            element.Response = cpdlcMessage;
-                            analyzed = this.analyzeMessage(element, cpdlcMessage);
-                            break;
+                            element = element.Response;
                         }
-                        element = element.Response;
                     }
-                }
-            });
-        } else {
-            this.messageQueue.unshift(cpdlcMessage);
-            analyzed = this.analyzeMessage(cpdlcMessage, undefined);
-        }
-
-        if (!analyzed) {
-            if (cpdlcMessage.Direction === AtsuMessageDirection.Output && cpdlcMessage.Station === '') {
-                cpdlcMessage.Station = this.currentAtc;
+                });
+            } else {
+                this.messageQueue.unshift(cpdlcMessage);
+                this.analyzeMessage(cpdlcMessage, undefined);
             }
+        });
 
-            if (cpdlcMessage.DcduRelevantMessage) {
-                this.dcduLink.enqueue(cpdlcMessage);
-            }
+        if (messages.length !== 0 && (messages[0] as CpdlcMessage).DcduRelevantMessage) {
+            this.dcduLink.enqueue(messages);
         }
     }
 
     public messageRead(uid: number): boolean {
         const index = this.messageQueue.findIndex((element) => element.UniqueMessageID === uid);
-        if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Input) {
+        if (index !== -1 && this.messageQueue[index].Direction === AtsuMessageDirection.Uplink) {
             this.messageQueue[index].Confirmed = true;
         }
 
@@ -423,7 +417,7 @@ export class Atc {
     }
 
     private async updateAtis(icao: string, type: AtisType, overwrite: boolean): Promise<AtsuStatusCodes> {
-        return this.datalink.receiveAtis(icao, type).then((retval) => {
+        return this.datalink.receiveAtis(icao, type, () => { }).then((retval) => {
             if (retval[0] === AtsuStatusCodes.Ok) {
                 let code = AtsuStatusCodes.Ok;
                 const atis = retval[1] as AtisMessage;
@@ -522,5 +516,9 @@ export class Atc {
             clearInterval(this.atisAutoUpdateIcaos[idx][2]);
             this.atisAutoUpdateIcaos.splice(idx, 1);
         }
+    }
+
+    public fansMode(): FansMode {
+        return this.currentFansMode;
     }
 }

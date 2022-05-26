@@ -176,7 +176,7 @@ impl MsfsHandler {
                         Self::read_failures_into_simulation(failures, simulation);
                     }
 
-                    simulation.tick(delta_time, self);
+                    simulation.tick(delta_time, self.time.simulation_time(), self);
                     self.post_tick(sim_connect)?;
                 }
             }
@@ -259,7 +259,7 @@ impl SimulatorReaderWriter for MsfsHandler {
             .unwrap_or_else(|| {
                 self.variables
                     .as_ref()
-                    .map(|registry| registry.read(identifier).unwrap_or(0.))
+                    .map(|registry| registry.read(identifier))
                     .unwrap_or(0.)
             })
     }
@@ -382,14 +382,14 @@ pub enum VariableType {
     Aspect = 2,
 }
 
-impl From<VariableType> for u8 {
+impl From<VariableType> for usize {
     fn from(value: VariableType) -> Self {
-        value as u8
+        value as usize
     }
 }
 
-impl From<u8> for VariableType {
-    fn from(value: u8) -> Self {
+impl From<usize> for VariableType {
+    fn from(value: usize) -> Self {
         match value {
             0 => Self::Aircraft,
             1 => Self::Named,
@@ -433,7 +433,7 @@ pub struct MsfsVariableRegistry {
     named_variable_prefix: String,
     name_to_identifier: FxHashMap<String, VariableIdentifier>,
     next_variable_identifier: FxHashMap<VariableType, VariableIdentifier>,
-    variables: FxHashMap<VariableIdentifier, VariableValue>,
+    variables: [Vec<VariableValue>; 3],
 }
 
 impl MsfsVariableRegistry {
@@ -442,7 +442,7 @@ impl MsfsVariableRegistry {
             named_variable_prefix,
             name_to_identifier: FxHashMap::default(),
             next_variable_identifier: FxHashMap::default(),
-            variables: FxHashMap::default(),
+            variables: [vec![], vec![], vec![]],
         }
     }
 
@@ -489,20 +489,19 @@ impl MsfsVariableRegistry {
                 }
 
                 let value: VariableValue = (&variable).into();
-                self.variables.insert(identifier, value);
+                self.variables[identifier.identifier_type()]
+                    .insert(identifier.identifier_index(), value);
 
                 identifier
             }
         }
     }
 
-    fn read(&self, identifier: &VariableIdentifier) -> Option<f64> {
-        self.variables
-            .get(identifier)
-            .map(|variable_value| variable_value.read())
+    fn read(&self, identifier: &VariableIdentifier) -> f64 {
+        self.variables[identifier.identifier_type()][identifier.identifier_index()].read()
     }
 
-    fn read_many(&self, identifiers: &[VariableIdentifier]) -> Vec<Option<f64>> {
+    fn read_many(&self, identifiers: &[VariableIdentifier]) -> Vec<f64> {
         identifiers
             .iter()
             .map(|identifier| self.read(identifier))
@@ -510,9 +509,7 @@ impl MsfsVariableRegistry {
     }
 
     fn write(&mut self, identifier: &VariableIdentifier, value: f64) {
-        if let Some(variable_value) = self.variables.get_mut(identifier) {
-            variable_value.write(value);
-        }
+        self.variables[identifier.identifier_type()][identifier.identifier_index()].write(value);
     }
 }
 
@@ -562,6 +559,10 @@ impl Time {
         self.previous_simulation_time_value = simulation_time.value;
     }
 
+    fn simulation_time(&self) -> f64 {
+        self.previous_simulation_time_value
+    }
+
     fn is_pausing(&self) -> bool {
         self.next_delta == 0.
     }
@@ -590,7 +591,13 @@ pub fn sim_connect_32k_pos_to_f64(sim_connect_axis_value: sys::DWORD) -> f64 {
     let casted_value = (sim_connect_axis_value as i32) as f64;
     let scaled_value =
         (casted_value + OFFSET_32KPOS_VAL_FROM_SIMCONNECT) / RANGE_32KPOS_VAL_FROM_SIMCONNECT;
-
+    scaled_value.min(1.).max(0.)
+}
+// Takes a 32k position type from simconnect, returns a value from scaled from 0 to 1 (inverted)
+pub fn sim_connect_32k_pos_inv_to_f64(sim_connect_axis_value: sys::DWORD) -> f64 {
+    let casted_value = -1. * (sim_connect_axis_value as i32) as f64;
+    let scaled_value =
+        (casted_value + OFFSET_32KPOS_VAL_FROM_SIMCONNECT) / RANGE_32KPOS_VAL_FROM_SIMCONNECT;
     scaled_value.min(1.).max(0.)
 }
 // Takes a [0:1] f64 and returns a simconnect 32k position type

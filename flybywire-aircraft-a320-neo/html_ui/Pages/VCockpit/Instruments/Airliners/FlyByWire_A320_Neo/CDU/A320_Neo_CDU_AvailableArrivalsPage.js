@@ -52,7 +52,7 @@ class CDUAvailableArrivalsPage {
             let selectedTransitionCellColor = "white";
             const selectedApproach = mcdu.flightPlanManager.getApproach();
             if (selectedApproach && selectedApproach.name) {
-                selectedApproachCell = Avionics.Utils.formatRunway(selectedApproach.name);
+                selectedApproachCell = selectedApproach.name;
                 selectedApproachCellColor = mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1 ? "yellow" : "green";
                 const selectedApproachTransition = selectedApproach.transitions[mcdu.flightPlanManager.getApproachTransitionIndex()];
                 if (selectedApproachTransition) {
@@ -88,19 +88,15 @@ class CDUAvailableArrivalsPage {
                     const index = i + pageCurrent;
                     const approach = sortedApproaches[index];
                     if (approach) {
-                        const runways = airportInfo.oneWayRunways;
-                        const approachRunwayName = Avionics.Utils.formatRunway(approach.name.split(" ")[1] || "0");
-                        let runwayLength = 0;
-                        let runwayCourse = 0;
-                        for (const runway of runways) {
-                            const runwayName = Avionics.Utils.formatRunway(runway.designation);
-                            if (runwayName.match("^" + approachRunwayName + "C?$")) {
-                                runwayLength = runway.length.toFixed(0);
-                                const magVar = Facilities.getMagVar(runway.latitude, runway.longitude);
-                                runwayCourse = Utils.leadingZeros(Math.round(A32NX_Util.trueToMagnetic(runway.direction, magVar)), 3);
-                            }
+                        let runwayLength = '----';
+                        let runwayCourse = '---';
+                        const runway = airportInfo.oneWayRunways.find((rw) => rw.number === approach.runwayNumber && rw.designator === approach.runwayDesignator);
+                        if (runway) {
+                            runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
+                            const magVar = Facilities.getMagVar(runway.latitude, runway.longitude);
+                            runwayCourse = Utils.leadingZeros(Math.round(A32NX_Util.trueToMagnetic(runway.direction, magVar)), 3);
                         }
-                        rows[2 * i] = ["{" + Avionics.Utils.formatRunway(approach.name.replace(/\s+/g, '')) + "[color]cyan", "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                        rows[2 * i] = [`{cyan}{${approach.name}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
                         rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(approach.index, () => {
@@ -162,7 +158,7 @@ class CDUAvailableArrivalsPage {
                             mcdu.onLeftInput[i + 2] = () => {
                                 const destinationRunway = mcdu.flightPlanManager.getDestinationRunway();
                                 const arrivalRunwayIndex = destinationRunway ? star.runwayTransitions.findIndex(t => {
-                                    return t.name.indexOf("RW" + destinationRunway.designation) !== -1;
+                                    return t.runwayNumber === destinationRunway.number && t.runwayDesignation === destinationRunway.designator;
                                 }) : -1;
                                 if (arrivalRunwayIndex !== -1) {
                                     mcdu.flightPlanManager.setArrivalRunwayIndex(arrivalRunwayIndex);
@@ -237,7 +233,7 @@ class CDUAvailableArrivalsPage {
             const maxPage = starSelection ? (selectedArrival ? Math.max(selectedArrival.enRouteTransitions.length - 2, matchingArrivals.length - 2) : matchingArrivals.length - 2) : (pageCurrent, airportInfo.approaches.length - 3);
             if (pageCurrent < maxPage) {
                 mcdu.onUp = () => {
-                    pageCurrent++;
+                    pageCurrent += 3;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
@@ -247,7 +243,7 @@ class CDUAvailableArrivalsPage {
             }
             if (pageCurrent > 0) {
                 mcdu.onDown = () => {
-                    pageCurrent--;
+                    pageCurrent -= 3;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
@@ -289,7 +285,7 @@ class CDUAvailableArrivalsPage {
             let selectedViasCellColor = "white";
             const selectedApproach = mcdu.flightPlanManager.getApproach();
             if (selectedApproach) {
-                selectedApproachCell = Avionics.Utils.formatRunway(selectedApproach.name);
+                selectedApproachCell = selectedApproach.name;
                 selectedApproachCellColor = mcdu.flightPlanManager.getCurrentFlightPlanIndex() === 1 ? "yellow" : "green";
                 const selectedApproachTransition = selectedApproach.transitions[mcdu.flightPlanManager.getApproachTransitionIndex()];
                 if (selectedApproachTransition) {
@@ -369,7 +365,7 @@ class CDUAvailableArrivalsPage {
 
             if (pageCurrent < selectedApproach.transitions.length - 3) {
                 mcdu.onUp = () => {
-                    pageCurrent++;
+                    pageCurrent += 4;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
@@ -379,7 +375,7 @@ class CDUAvailableArrivalsPage {
             }
             if (pageCurrent > 0) {
                 mcdu.onDown = () => {
-                    pageCurrent--;
+                    pageCurrent -= 4;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
