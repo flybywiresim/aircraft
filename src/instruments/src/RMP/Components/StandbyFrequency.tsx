@@ -6,6 +6,14 @@ import { RateMultiplierKnob, UpdateValueCallback } from '../../Common/RateMultip
 
 declare const Utils; // this can also be replaced once /typings are available
 
+export enum TransceiverType {
+    RADIO_VHF,
+    VOR,
+    ILS,
+    MLS,
+    ADF
+}
+
 interface Props {
     /**
      * The RMP side (e.g. 'L' or 'R').
@@ -16,6 +24,11 @@ interface Props {
      * The current standby frequency value in Hz.
      */
     value: number,
+
+    /**
+     * Type of transceiver (e.g VHF, HF, VOR, ILS, MLS, ADF)
+     */
+    transceiver: TransceiverType,
 
     /**
      * A callback to set the current standby frequency value in Hz.
@@ -37,8 +50,10 @@ const findNearestInArray = (value: number, array: number[]): number => array.red
  * High Frequency communications use 10 kHz spacing.
  * Vatsim VHF communications use 25 kHz spacing.
  * VOR / ILS frequencies use 50 kHz spacing.
+ * ADF frequencies use 1kHz spacing.
+ * MLS frequencies use 300kHz spacing
  */
-type ChannelSpacing = 8.33 | 10 | 25 | 50;
+type ChannelSpacing = 1 | 8.33 | 10 | 25 | 50 | 300;
 
 /**
  * Calculate the offset of a given frequency channel given a variable spacing.
@@ -60,10 +75,11 @@ const offsetFrequencyChannel = (spacing: ChannelSpacing, channel: number, offset
     if (spacing === 10) endings = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
     // VOR/ILS Frequency Endings.
     if (spacing === 50) endings = [0, 50];
+    // MLS Frequency Endings.
 
     // Special cases, such as ADF, do not use the ending algorithm to find frequencies.
     if (endings === null) {
-        return (Math.floor(channel / 100) + spacing * offset) * 100;
+        return (Math.floor(channel % 100) + spacing * offset);
     }
 
     // Reverse the channel order if we're going backwards.
@@ -100,32 +116,76 @@ const offsetFrequencyChannel = (spacing: ChannelSpacing, channel: number, offset
  * Renders standby frequency RadioPanelDisplay sub-component.
  */
 export const StandbyFrequency = (props: Props) => {
-    const spacing = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0')[0] === '0' ? 8.33 : 25;
+    let spacing: ChannelSpacing;
+
+    switch (props.transceiver) {
+    case TransceiverType.ILS:
+        spacing = 25;
+        break;
+    case TransceiverType.VOR:
+        spacing = 50;
+        break;
+    case TransceiverType.ADF:
+        spacing = 1;
+        break;
+    case TransceiverType.MLS:
+        spacing = 300;
+        break;
+    default:
+        spacing = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0')[0] === '0' ? 8.33 : 25;
+    }
+
     // Handle outer knob turned.
     const outerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
-        const frequency = Math.round(props.value / 1000);
-        const integer = Math.floor(frequency / 1000);
-        const decimal = frequency % 1000;
-        // @todo determine min/max depending on mode.
-        const maxInteger = decimal > 975 ? 135 : 136;
-        const newInteger = Utils.Clamp(integer + offset, 118, maxInteger);
-        props.setValue((newInteger * 1000 + decimal) * 1000);
+        if (props.value !== 0) {
+            const frequency = Math.round(props.value / 1000); // To kHz
+
+            if (props.transceiver !== TransceiverType.ADF) {
+                const integer = Math.floor(frequency / 1000) + offset;
+                const decimal = frequency % 1000;
+
+                // @todo determine min/max depending on mode.
+                let newInteger = 0;
+                if (props.transceiver === TransceiverType.RADIO_VHF) {
+                    newInteger = Utils.Clamp(integer, 118, 136);
+                } else if (props.transceiver === TransceiverType.ILS) {
+                    newInteger = Utils.Clamp(integer, 108, 111);
+                } else if (props.transceiver === TransceiverType.VOR) {
+                    newInteger = Utils.Clamp(integer, 108, 117);
+                }
+
+                props.setValue((newInteger * 1000 + decimal) * 1000);
+            } else {
+                const hundreds = Math.floor(frequency / 100) + offset;
+                const tens = frequency % 100;
+                const max = tens > 50 ? 16 : 17;
+                const min = tens < 90 ? 2 : 1;
+
+                props.setValue(Avionics.Utils.make_adf_bcd32((Utils.Clamp(hundreds, min, max) * 100 + tens) * 1000));
+            }
+        } else {
+            props.setValue(0);
+        }
     }, [props.value]);
 
     // Handle inner knob turned.
     const innerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
-        const frequency = Math.round(props.value / 1000);
-        if (Math.sign(offset) === 1 && frequency === 136975) {
-            return;
-        }
+        const frequency = Math.round(props.value / 1000); // kHz
 
-        const integer = Math.floor(frequency / 1000);
-        // @todo determine correct frequency spacing depending on mode.
-        const decimal = offsetFrequencyChannel(spacing, frequency % 1000, offset);
-        // @todo determine min/max depending on mode.
-        const maxDecimal = integer === 136 ? 975 : 1000;
-        const newDecimal = Utils.Clamp(decimal, 0, maxDecimal);
-        props.setValue((integer * 1000 + newDecimal) * 1000);
+        if (props.value !== 0) {
+            // Tested in real life:
+            // Integer cannot return to 118 from 136 to the right
+            // Decimal can return to 0 from 975 to the right
+            if (props.transceiver !== TransceiverType.ADF) {
+                const integer = Math.floor(frequency / 1000);
+                const decimal = offsetFrequencyChannel(spacing, frequency % 1000, offset);
+                props.setValue((integer * 1000 + decimal % 1000) * 1000);
+            } else {
+                props.setValue(Avionics.Utils.make_adf_bcd32(Utils.Clamp(frequency + offset, 190, 1750) * 1000));
+            }
+        } else {
+            props.setValue(0);
+        }
     }, [props.value]);
 
     // Used to change integer value of freq.
@@ -142,5 +202,5 @@ export const StandbyFrequency = (props: Props) => {
     useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_CLOCKWISE`, () => innerKnob.current.increase());
     useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_ANTICLOCKWISE`, () => innerKnob.current.decrease());
 
-    return (<RadioPanelDisplay value={props.value} />);
+    return (<RadioPanelDisplay value={props.value} transceiver={props.transceiver} />);
 };
