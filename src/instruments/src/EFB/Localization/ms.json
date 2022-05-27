@@ -126,7 +126,7 @@
       "RightInnerTank": "Right Inner Tank",
       "RightOuterTank": "Right Outer Tank",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Changing the refueling duration only on the ground with engines shut down",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Refueling Duration",
         "FillBlockFuelFromSimBrief": "Fill Block Fuel from SimBrief"
       },
       "Title": "Fuel",

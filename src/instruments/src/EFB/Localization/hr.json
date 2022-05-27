@@ -126,7 +126,7 @@
       "RightInnerTank": "Desni unutarnji spremnik",
       "RightOuterTank": "Desni vanjski spremnik",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Changing the refueling duration only on the ground with engines shut down",
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Refueling Duration",
         "FillBlockFuelFromSimBrief": "Ispunite \"Block\" gorivo sa SimBrief-a"
       },
       "Title": "Gorivo",
