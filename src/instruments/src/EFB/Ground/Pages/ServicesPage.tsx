@@ -157,6 +157,7 @@ export const ServicesPage = () => {
 
     // handles state changes to complex services: Jetway, Stairs, Baggage, Catering
     const handleComplexService = (
+        serviceButton: ServiceButton,
         serviceButtonStateRef: React.MutableRefObject<ServiceButtonState>,
         setButtonState: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
         doorButtonState: ServiceButtonState,
@@ -164,7 +165,7 @@ export const ServicesPage = () => {
         doorOpenState: number,
     ) => {
         // Service Button handling
-        if (serviceButtonStateRef.current < ServiceButtonState.CALLED) {
+        if (serviceButtonStateRef.current === ServiceButtonState.INACTIVE) {
             dispatch(setButtonState(ServiceButtonState.CALLED));
             // If door was already open use a timer to set to active
             // as the useEffect will never be called.
@@ -174,15 +175,21 @@ export const ServicesPage = () => {
                 }, 5000);
             }
         } else if (serviceButtonStateRef.current === ServiceButtonState.CALLED) {
-            // prevent to click again after a called has been cancelled
+            // prevent to click again after a "called" has been cancelled
             // to avoid state getting out of sync.
             dispatch(setButtonState(ServiceButtonState.DISABLED));
             setTimeout(() => {
                 dispatch(setButtonState(ServiceButtonState.INACTIVE));
             }, 5500);
         } else {
+            console.assert(serviceButtonStateRef.current === ServiceButtonState.ACTIVE,
+                'Expected %s to be in state %s but was in state %s',
+                ServiceButton[serviceButton],
+                ServiceButtonState[ServiceButtonState.ACTIVE],
+                ServiceButtonState[serviceButtonStateRef.current]);
             dispatch(setButtonState(ServiceButtonState.RELEASED));
-            // If there is no jet-bridge or stairs the door would never close
+            // If there is no service vehicle/jet-bridge availbel the door would
+            // never receive a close event, so we need to set the button state to inactive.
             setTimeout(() => {
                 if (doorOpenState === 1) {
                     dispatch(setButtonState(ServiceButtonState.INACTIVE));
@@ -209,6 +216,7 @@ export const ServicesPage = () => {
 
     // handles state changes for simple services: fuel, gpu
     const handleSimpleService = (
+        button: ServiceButton,
         buttonState: ServiceButtonState,
         setButtonState: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
     ) => {
@@ -218,6 +226,11 @@ export const ServicesPage = () => {
         } else if (buttonState === ServiceButtonState.CALLED) {
             dispatch(setButtonState(ServiceButtonState.INACTIVE));
         } else {
+            console.assert(buttonState === ServiceButtonState.ACTIVE,
+                'Expected %s to be in state %s but was in state %s',
+                ServiceButton[button],
+                ServiceButtonState[ServiceButtonState.ACTIVE],
+                ServiceButtonState[buttonState]);
             dispatch(setButtonState(ServiceButtonState.RELEASED));
         }
     };
@@ -261,41 +274,23 @@ export const ServicesPage = () => {
             toggleAftDoor();
             break;
         case ServiceButton.FuelTruck:
-            handleSimpleService(fuelTruckButtonState, setFuelTruckButtonState);
+            handleSimpleService(ServiceButton.FuelTruck, fuelTruckButtonState, setFuelTruckButtonState);
             toggleFuelTruck();
             break;
         case ServiceButton.Gpu:
-            handleSimpleService(gpuButtonState, setGpuButtonState);
+            handleSimpleService(ServiceButton.Gpu, gpuButtonState, setGpuButtonState);
             toggleGpu();
             break;
         case ServiceButton.JetBridge:
-            handleComplexService(
-                jetWayButtonStateRef,
-                setJetWayButtonState,
-                cabinDoorButtonState,
-                setCabinDoorButtonState,
-                cabinDoorOpen,
-            );
+            handleComplexService(ServiceButton.JetBridge, jetWayButtonStateRef, setJetWayButtonState, cabinDoorButtonState, setCabinDoorButtonState, cabinDoorOpen);
             toggleJetBridgeAndStairs();
             break;
         case ServiceButton.BaggageTruck:
-            handleComplexService(
-                baggageButtonStateRef,
-                setBaggageButtonState,
-                cargoDoorButtonState,
-                setCargoDoorButtonState,
-                cargoDoorOpen,
-            );
+            handleComplexService(ServiceButton.BaggageTruck, baggageButtonStateRef, setBaggageButtonState, cargoDoorButtonState, setCargoDoorButtonState, cargoDoorOpen);
             toggleBaggageTruck();
             break;
         case ServiceButton.CateringTruck:
-            handleComplexService(
-                cateringButtonStateRef,
-                setCateringButtonState,
-                aftDoorButtonState,
-                setAftDoorButtonState,
-                aftDoorOpen,
-            );
+            handleComplexService(ServiceButton.CateringTruck, cateringButtonStateRef, setCateringButtonState, aftDoorButtonState, setAftDoorButtonState, aftDoorOpen);
             toggleCateringTruck();
             break;
         default:
@@ -303,10 +298,11 @@ export const ServicesPage = () => {
         }
     };
 
+    // Called by useEffect listeners for simple services and doors
     // Determines the state of a door or simple service based on a given
-    // door state input. All services are basically active and terminated
+    // door state input. All services are basically active and ter.minated
     // based on a door state (INTERACTION POINT OPEN)
-    const updateSimpleServiceStateFromDoorChange = (
+    const simpleServiceListenerHandling = (
         state: ServiceButtonState,
         setter: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
         doorState: number,
@@ -332,7 +328,7 @@ export const ServicesPage = () => {
     };
 
     // Called by useEffect listeners for complex services
-    const complexListenerHandling = (
+    const complexServiceListenerHandling = (
         serviceButtonStateRef: React.MutableRefObject<ServiceButtonState>,
         setterServiceButtonState: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
         doorButtonState: ServiceButtonState,
@@ -371,26 +367,26 @@ export const ServicesPage = () => {
         }
     };
 
-    // Door and simple door-like services
+    // Doors
     useEffect(() => {
-        updateSimpleServiceStateFromDoorChange(cabinDoorButtonState, setCabinDoorButtonState, cabinDoorOpen);
-        updateSimpleServiceStateFromDoorChange(cargoDoorButtonState, setCargoDoorButtonState, cargoDoorOpen);
-        updateSimpleServiceStateFromDoorChange(aftDoorButtonState, setAftDoorButtonState, aftDoorOpen);
+        simpleServiceListenerHandling(cabinDoorButtonState, setCabinDoorButtonState, cabinDoorOpen);
+        simpleServiceListenerHandling(cargoDoorButtonState, setCargoDoorButtonState, cargoDoorOpen);
+        simpleServiceListenerHandling(aftDoorButtonState, setAftDoorButtonState, aftDoorOpen);
     }, [cabinDoorOpen, cargoDoorOpen, aftDoorOpen]);
 
     // Gpu
     useEffect(() => {
-        updateSimpleServiceStateFromDoorChange(fuelTruckButtonState, setFuelTruckButtonState, fuelingActive);
+        simpleServiceListenerHandling(fuelTruckButtonState, setFuelTruckButtonState, fuelingActive);
     }, [fuelingActive]);
 
     // Fuel
     useEffect(() => {
-        updateSimpleServiceStateFromDoorChange(gpuButtonState, setGpuButtonState, gpuActive);
+        simpleServiceListenerHandling(gpuButtonState, setGpuButtonState, gpuActive);
     }, [gpuActive]);
 
     // Cabin Door listener for JetBridge Button
     useEffect(() => {
-        complexListenerHandling(
+        complexServiceListenerHandling(
             jetWayButtonStateRef,
             setJetWayButtonState,
             cabinDoorButtonState,
@@ -401,7 +397,7 @@ export const ServicesPage = () => {
 
     // Cargo Door listener for Baggage Button
     useEffect(() => {
-        complexListenerHandling(
+        complexServiceListenerHandling(
             baggageButtonStateRef,
             setBaggageButtonState,
             cargoDoorButtonState,
@@ -412,7 +408,7 @@ export const ServicesPage = () => {
 
     // Aft Cabin Door listener fo rCatering Button
     useEffect(() => {
-        complexListenerHandling(
+        complexServiceListenerHandling(
             cateringButtonStateRef,
             setCateringButtonState,
             aftDoorButtonState,
