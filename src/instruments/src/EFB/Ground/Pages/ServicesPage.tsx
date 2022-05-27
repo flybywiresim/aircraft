@@ -1,25 +1,29 @@
-import React, { useState, FC, useEffect, useRef } from 'react';
+import React, { FC, useEffect, useRef } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
-    Truck,
+    ArchiveFill,
+    ConeStriped,
+    DoorClosedFill,
+    HandbagFill,
     PersonPlusFill,
     PlugFill,
-    HandbagFill,
-    ArchiveFill, ConeStriped, VinylFill as Wheel, TriangleFill as Chock, DoorClosedFill,
+    TriangleFill as Chock,
+    Truck,
+    VinylFill as Wheel,
 } from 'react-bootstrap-icons';
 import { ActionCreatorWithOptionalPayload } from '@reduxjs/toolkit';
 import { t } from '../../translation';
 import { UprightOutline } from '../../Assets/UprightOutline';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
-    setJetWayButtonState,
+    setAftDoorButtonState,
+    setBaggageButtonState,
     setCabinDoorButtonState,
+    setCargoDoorButtonState,
+    setCateringButtonState,
     setFuelTruckButtonState,
     setGpuButtonState,
-    setCargoDoorButtonState,
-    setBaggageButtonState,
-    setAftDoorButtonState,
-    setCateringButtonState,
+    setJetWayButtonState,
 } from '../../Store/features/groundServicePage';
 
 interface ServiceButtonWrapperProps {
@@ -103,22 +107,22 @@ export const ServicesPage = () => {
     // Flight state
     const [simOnGround] = useSimVar('SIM ON GROUND', 'bool', 250);
     const [aircraftIsStationary] = useSimVar('L:A32NX_IS_STATIONARY', 'bool', 250);
-    const [pushBackAttached] = useSimVar('Pushback Attached', 'enum', 1000);
-    const [groundServicesAvailable] = useState(simOnGround && aircraftIsStationary && !pushBackAttached);
+    const [pushBackAttached] = useSimVar('Pushback Attached', 'enum', 250);
+    const groundServicesAvailable = simOnGround && aircraftIsStationary && !pushBackAttached;
 
     // Ground Services
-    const [cabinDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 1000);
-    const [aftDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 1000);
-    const [cargoDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 1000);
-    const [gpuActive] = useSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 1000);
-    const [fuelingActive] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'Percent over 100', 1000);
+    const [cabinDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 100);
+    const [aftDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 100);
+    const [cargoDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 100);
+    const [gpuActive] = useSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 100);
+    const [fuelingActive] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'Percent over 100', 100);
 
     // Wheel Chocks and Cones
     const [isGroundEquipmentVisible] = useSimVar('L:A32NX_GND_EQP_IS_VISIBLE', 'bool', 500);
     const [wheelChocksEnabled] = useSimVar('L:A32NX_MODEL_WHEELCHOCKS_ENABLED', 'bool', 500);
     const [conesEnabled] = useSimVar('L:A32NX_MODEL_CONES_ENABLED', 'bool', 500);
-    const [wheelChocksVisible] = useState(wheelChocksEnabled && isGroundEquipmentVisible);
-    const [conesVisible] = useState(conesEnabled && isGroundEquipmentVisible);
+    const wheelChocksVisible = wheelChocksEnabled && isGroundEquipmentVisible;
+    const conesVisible = conesEnabled && isGroundEquipmentVisible;
 
     // Service events
     const toggleCabinDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 1);
@@ -126,12 +130,12 @@ export const ServicesPage = () => {
         SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
         SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
     };
-    const toggleFuelTruck = () => SimVar.SetSimVarValue('K:REQUEST_FUEL_KEY', 'bool', true);
-    const toggleGpu = () => SimVar.SetSimVarValue('K:REQUEST_POWER_SUPPLY', 'bool', true);
     const toggleCargoDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 6);
     const toggleBaggageTruck = () => SimVar.SetSimVarValue('K:REQUEST_LUGGAGE', 'bool', true);
     const toggleAftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 4);
     const toggleCateringTruck = () => SimVar.SetSimVarValue('K:REQUEST_CATERING', 'bool', true);
+    const toggleFuelTruck = () => SimVar.SetSimVarValue('K:REQUEST_FUEL_KEY', 'bool', true);
+    const toggleGpu = () => SimVar.SetSimVarValue('K:REQUEST_POWER_SUPPLY', 'bool', true);
 
     // Button states
     const cabinDoorButtonState = useAppSelector((state) => state.groundServicePage.cabinDoorButtonState);
@@ -164,7 +168,7 @@ export const ServicesPage = () => {
             dispatch(setButtonState(ServiceButtonState.CALLED));
             // If door was already open use a timer to set to active
             // as the useEffect will never be called.
-            if (doorOpenState > 0.9) {
+            if (doorOpenState === 1) {
                 setTimeout(() => {
                     dispatch(setButtonState(ServiceButtonState.ACTIVE));
                 }, 5000);
@@ -178,9 +182,9 @@ export const ServicesPage = () => {
             }, 5500);
         } else {
             dispatch(setButtonState(ServiceButtonState.RELEASED));
-            // If there is not jet-bridge or stairs the door would never close
+            // If there is no jet-bridge or stairs the door would never close
             setTimeout(() => {
-                if (doorOpenState > 0.9) {
+                if (doorOpenState === 1) {
                     dispatch(setButtonState(ServiceButtonState.INACTIVE));
                 }
             }, 5000);
@@ -191,7 +195,7 @@ export const ServicesPage = () => {
             setTimeout(() => {
                 // service button could have been pressed again in the meantime
                 if (serviceButtonStateRef.current < ServiceButtonState.CALLED) {
-                    if (doorOpenState > 0.9) {
+                    if (doorOpenState === 1) {
                         dispatch(setDoorButtonState(ServiceButtonState.ACTIVE));
                     } else {
                         dispatch(setDoorButtonState(ServiceButtonState.INACTIVE));
@@ -209,7 +213,7 @@ export const ServicesPage = () => {
         setButtonState: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
     ) => {
         // Toggle called/released
-        if (buttonState < ServiceButtonState.CALLED) {
+        if (buttonState === ServiceButtonState.INACTIVE) {
             dispatch(setButtonState(ServiceButtonState.CALLED));
         } else if (buttonState === ServiceButtonState.CALLED) {
             dispatch(setButtonState(ServiceButtonState.INACTIVE));
@@ -241,40 +245,28 @@ export const ServicesPage = () => {
         }
     };
 
-    // Determines the state of a service based on a given door state input
-    // All services are basically active and terminated based on a
-    // door state (INTERACTION POINT OPEN)
-    const updateServiceStateFromDoorChange = (
-        state: ServiceButtonState,
-        setter: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
-        doorState: number,
-    ) => {
-        switch (state) {
-        case ServiceButtonState.HIDDEN:
-        case ServiceButtonState.DISABLED:
-        case ServiceButtonState.INACTIVE:
-            break;
-        case ServiceButtonState.CALLED:
-            if (doorState >= 0.9) dispatch(setter(ServiceButtonState.ACTIVE));
-            if (doorState < 0.1) dispatch(setter(ServiceButtonState.INACTIVE));
-            break;
-        case ServiceButtonState.ACTIVE:
-            if (doorState < 0.9 && doorState > 0.1) dispatch(setter(ServiceButtonState.RELEASED));
-            if (doorState <= 0.1) dispatch(setter(ServiceButtonState.INACTIVE));
-            break;
-        case ServiceButtonState.RELEASED:
-            if (doorState <= 0.1) dispatch(setter(ServiceButtonState.INACTIVE));
-            break;
-        default:
-        }
-    };
-
     // Centralized handler for managing clicks to any button
     const handleButtonClick = (id: ServiceButton) => {
         switch (id) {
         case ServiceButton.CabinDoor:
             handleDoors(cabinDoorButtonState, setCabinDoorButtonState);
             toggleCabinDoor();
+            break;
+        case ServiceButton.CargoDoor:
+            handleDoors(cargoDoorButtonState, setCargoDoorButtonState);
+            toggleCargoDoor();
+            break;
+        case ServiceButton.AftDoor:
+            handleDoors(aftDoorButtonState, setAftDoorButtonState);
+            toggleAftDoor();
+            break;
+        case ServiceButton.FuelTruck:
+            handleSimpleService(fuelTruckButtonState, setFuelTruckButtonState);
+            toggleFuelTruck();
+            break;
+        case ServiceButton.Gpu:
+            handleSimpleService(gpuButtonState, setGpuButtonState);
+            toggleGpu();
             break;
         case ServiceButton.JetBridge:
             handleComplexService(
@@ -286,18 +278,6 @@ export const ServicesPage = () => {
             );
             toggleJetBridgeAndStairs();
             break;
-        case ServiceButton.FuelTruck:
-            handleSimpleService(fuelTruckButtonState, setFuelTruckButtonState);
-            toggleFuelTruck();
-            break;
-        case ServiceButton.Gpu:
-            handleSimpleService(gpuButtonState, setGpuButtonState);
-            toggleGpu();
-            break;
-        case ServiceButton.CargoDoor:
-            handleDoors(cargoDoorButtonState, setCargoDoorButtonState);
-            toggleCargoDoor();
-            break;
         case ServiceButton.BaggageTruck:
             handleComplexService(
                 baggageButtonStateRef,
@@ -307,10 +287,6 @@ export const ServicesPage = () => {
                 cargoDoorOpen,
             );
             toggleBaggageTruck();
-            break;
-        case ServiceButton.AftDoor:
-            handleDoors(aftDoorButtonState, setAftDoorButtonState);
-            toggleAftDoor();
             break;
         case ServiceButton.CateringTruck:
             handleComplexService(
@@ -327,61 +303,122 @@ export const ServicesPage = () => {
         }
     };
 
-    // Door and simple door-like services
-    useEffect(() => {
-        updateServiceStateFromDoorChange(cabinDoorButtonState, setCabinDoorButtonState, cabinDoorOpen);
-        updateServiceStateFromDoorChange(cargoDoorButtonState, setCargoDoorButtonState, cargoDoorOpen);
-        updateServiceStateFromDoorChange(aftDoorButtonState, setAftDoorButtonState, aftDoorOpen);
-        updateServiceStateFromDoorChange(fuelTruckButtonState, setFuelTruckButtonState, fuelingActive);
-        updateServiceStateFromDoorChange(gpuButtonState, setGpuButtonState, gpuActive);
-    }, [cabinDoorOpen, cargoDoorOpen, aftDoorOpen, fuelingActive, gpuActive]);
+    // Determines the state of a door or simple service based on a given
+    // door state input. All services are basically active and terminated
+    // based on a door state (INTERACTION POINT OPEN)
+    const updateSimpleServiceStateFromDoorChange = (
+        state: ServiceButtonState,
+        setter: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
+        doorState: number,
+    ) => {
+        if (state <= ServiceButtonState.DISABLED) {
+            return;
+        }
+        switch (doorState) {
+        case 0:
+            if (state !== ServiceButtonState.CALLED) {
+                dispatch(setter(ServiceButtonState.INACTIVE));
+            }
+            break;
+        case 1:
+            dispatch(setter(ServiceButtonState.ACTIVE));
+            break;
+        default:
+            if (state === ServiceButtonState.ACTIVE) {
+                dispatch(setter(ServiceButtonState.RELEASED));
+            }
+            break;
+        }
+    };
 
-    // Cabin Door listener for JetBridge Button
-    useEffect(() => {
-        updateServiceStateFromDoorChange(jetWayButtonState, setJetWayButtonState, cabinDoorOpen);
-        // enable cabin door button in case door has been closed by other means (e.g. pushback)
-        if (cabinDoorOpen < 1.0
-            && jetWayButtonState >= ServiceButtonState.ACTIVE
-            && cabinDoorButtonState === ServiceButtonState.DISABLED) {
+    // Called by useEffect listeners for complex services
+    const complexListenerHandling = (
+        serviceButtonStateRef: React.MutableRefObject<ServiceButtonState>,
+        setterServiceButtonState: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
+        doorButtonState: ServiceButtonState,
+        setterDoorButtonState1: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
+        doorState: number,
+    ) => {
+        switch (serviceButtonStateRef.current) {
+        case ServiceButtonState.HIDDEN:
+        case ServiceButtonState.DISABLED:
+        case ServiceButtonState.INACTIVE:
+            break;
+        case ServiceButtonState.CALLED:
+            if (doorState === 1) dispatch(setterServiceButtonState(ServiceButtonState.ACTIVE));
+            if (doorState === 0) dispatch(setterServiceButtonState(ServiceButtonState.INACTIVE));
+            break;
+        case ServiceButtonState.ACTIVE:
+            if (doorState < 1 && doorState > 0) dispatch(setterServiceButtonState(ServiceButtonState.RELEASED));
+            if (doorState === 0) dispatch(setterServiceButtonState(ServiceButtonState.INACTIVE));
+            break;
+        case ServiceButtonState.RELEASED:
+            if (doorState === 0) dispatch(setterServiceButtonState(ServiceButtonState.INACTIVE));
+            break;
+        default:
+        }
+        // enable door button in case door has been closed by other means (e.g. pushback)
+        if (doorState < 1
+            && serviceButtonStateRef.current >= ServiceButtonState.ACTIVE
+            && doorButtonState === ServiceButtonState.DISABLED) {
             setTimeout(() => {
-                // jet-bridge button could have been pressed again in the meantime
-                if (jetWayButtonStateRef.current < ServiceButtonState.CALLED) {
-                    dispatch(setCabinDoorButtonState(ServiceButtonState.INACTIVE));
+                // button could have been pressed again in the meantime
+                if (groundServicesAvailable
+                    && serviceButtonStateRef.current < ServiceButtonState.CALLED) {
+                    dispatch(setterDoorButtonState1(ServiceButtonState.INACTIVE));
                 }
             }, 5000);
         }
+    };
+
+    // Door and simple door-like services
+    useEffect(() => {
+        updateSimpleServiceStateFromDoorChange(cabinDoorButtonState, setCabinDoorButtonState, cabinDoorOpen);
+        updateSimpleServiceStateFromDoorChange(cargoDoorButtonState, setCargoDoorButtonState, cargoDoorOpen);
+        updateSimpleServiceStateFromDoorChange(aftDoorButtonState, setAftDoorButtonState, aftDoorOpen);
+    }, [cabinDoorOpen, cargoDoorOpen, aftDoorOpen]);
+
+    // Gpu
+    useEffect(() => {
+        updateSimpleServiceStateFromDoorChange(fuelTruckButtonState, setFuelTruckButtonState, fuelingActive);
+    }, [fuelingActive]);
+
+    // Fuel
+    useEffect(() => {
+        updateSimpleServiceStateFromDoorChange(gpuButtonState, setGpuButtonState, gpuActive);
+    }, [gpuActive]);
+
+    // Cabin Door listener for JetBridge Button
+    useEffect(() => {
+        complexListenerHandling(
+            jetWayButtonStateRef,
+            setJetWayButtonState,
+            cabinDoorButtonState,
+            setCabinDoorButtonState,
+            cabinDoorOpen,
+        );
     }, [cabinDoorOpen]);
 
     // Cargo Door listener for Baggage Button
     useEffect(() => {
-        updateServiceStateFromDoorChange(baggageButtonState, setBaggageButtonState, cargoDoorOpen);
-        // enable cabin door button in case door has been closed by other means (e.g. pushback)
-        if (cargoDoorOpen < 1.0
-            && baggageButtonState >= ServiceButtonState.ACTIVE
-            && cargoDoorButtonState === ServiceButtonState.DISABLED) {
-            setTimeout(() => {
-                // jet-bridge button could have been pressed again in the meantime
-                if (baggageButtonStateRef.current < ServiceButtonState.CALLED) {
-                    dispatch(setCargoDoorButtonState(ServiceButtonState.INACTIVE));
-                }
-            }, 5000);
-        }
+        complexListenerHandling(
+            baggageButtonStateRef,
+            setBaggageButtonState,
+            cargoDoorButtonState,
+            setCargoDoorButtonState,
+            cargoDoorOpen,
+        );
     }, [cargoDoorOpen]);
 
     // Aft Cabin Door listener fo rCatering Button
     useEffect(() => {
-        updateServiceStateFromDoorChange(cateringButtonState, setCateringButtonState, aftDoorOpen);
-        // enable cabin door button in case door has been closed by other means (e.g. pushback)
-        if (aftDoorOpen < 1.0
-            && cateringButtonState >= ServiceButtonState.ACTIVE
-            && aftDoorButtonState === ServiceButtonState.DISABLED) {
-            setTimeout(() => {
-                // jet-bridge button could have been pressed again in the meantime
-                if (cateringButtonStateRef.current < ServiceButtonState.CALLED) {
-                    dispatch(setAftDoorButtonState(ServiceButtonState.INACTIVE));
-                }
-            }, 5000);
-        }
+        complexListenerHandling(
+            cateringButtonStateRef,
+            setCateringButtonState,
+            aftDoorButtonState,
+            setAftDoorButtonState,
+            aftDoorOpen,
+        );
     }, [aftDoorOpen]);
 
     // Pushback or movement start --> disable buttons and close doors
@@ -515,7 +552,7 @@ export const ServicesPage = () => {
             {/* Wheel Chocks and Security Cones are only visual information. To reuse styling */}
             {/* the ServiceButtonWrapper has been re-used. */}
             <ServiceButtonWrapper xr={800} y={600} className="border-0 divide-y-0">
-                {wheelChocksEnabled === 1 && (
+                {!!wheelChocksEnabled && (
                     <div className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
                         <div className={`flex justify-center items-end -ml-2 -mr-[2px] ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
                             <Chock size="12" stroke="4" />
@@ -528,7 +565,7 @@ export const ServicesPage = () => {
                     </div>
                 )}
 
-                {conesEnabled === 1 && (
+                {!!conesEnabled && (
                     <div className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${(conesVisible) ? 'text-green-500' : 'text-gray-500'}`}>
                         <ConeStriped size="38" stroke="1.5" className="mr-2" />
                         <h1 className="flex-shrink-0 text-2xl font-medium text-current">
@@ -547,7 +584,7 @@ export const ServicesPage = () => {
                     TUG
                 </div>
             )}
-            {cabinDoorOpen > 0 && (
+            {!!cabinDoorOpen && (
                 <div
                     className="text-xl font-bold text-utility-amber"
                     style={{ position: 'absolute', left: 515, right: 0, top: 105 }}
@@ -555,7 +592,7 @@ export const ServicesPage = () => {
                     CABIN
                 </div>
             )}
-            {aftDoorOpen > 0 && (
+            {!!aftDoorOpen && (
                 <div
                     className="text-xl font-bold text-utility-amber"
                     style={{ position: 'absolute', left: 705, right: 0, top: 665 }}
@@ -563,7 +600,7 @@ export const ServicesPage = () => {
                     CABIN
                 </div>
             )}
-            {cargoDoorOpen > 0 && (
+            {!!cargoDoorOpen && (
                 <div
                     className="text-xl font-bold text-utility-amber"
                     style={{ position: 'absolute', left: 705, right: 0, top: 200 }}
@@ -571,7 +608,7 @@ export const ServicesPage = () => {
                     CARGO
                 </div>
             )}
-            {gpuActive > 0 && (
+            {!!gpuActive && (
                 <div
                     className="text-xl font-bold text-utility-amber"
                     style={{ position: 'absolute', left: 705, right: 0, top: 70 }}
