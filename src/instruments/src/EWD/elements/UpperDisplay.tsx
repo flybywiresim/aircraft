@@ -38,27 +38,27 @@ const UpperDisplay: React.FC = () => {
                 <text className="Medium Center Cyan" x={384} y={45}>%</text>
             </Layer>
 
-            <Layer x={0} y={246}>
+            <Layer x={0} y={248}>
                 <EGT engine={1} x={234} y={0} active={isActive} />
                 <EGT engine={2} x={533} y={0} active={isActive} />
-                <text className="Large Center" x={384} y={-15}>EGT</text>
-                <text className="Medium Center Cyan" x={379} y={8}>&deg;C</text>
+                <text className="Large Center" x={385} y={-16}>EGT</text>
+                <text className="Medium Center Cyan" x={379} y={6}>&deg;C</text>
             </Layer>
 
-            <Layer x={0} y={275}>
+            <Layer x={0} y={276}>
                 <N2 engine={1} x={192} y={0} active={isActive} />
                 <N2 engine={2} x={493} y={0} active={isActive} />
-                <text className="Large Center" x={385} y={35}>N2</text>
-                <text className="Medium Center Cyan" x={383} y={55}>%</text>
+                <text className="Large Center" x={386} y={33}>N2</text>
+                <text className="Medium Center Cyan" x={385} y={53}>%</text>
                 <line className="Separator" x1="311" y1="37" x2="343" y2="28" strokeLinecap="round" />
                 <line className="Separator" x1="424" y1="28" x2="456" y2="37" strokeLinecap="round" />
             </Layer>
 
-            <Layer x={0} y={380}>
+            <Layer x={0} y={381}>
                 <FF engine={1} x={273} y={0} unit={unit} active={isActive} />
                 <FF engine={2} x={576} y={0} unit={unit} active={isActive} />
-                <text className="Large Center" x={385} y={-11}>FF</text>
-                <text className="Medium Center Cyan" x={384} y={11}>
+                <text className="Large Center" x={386} y={-10}>FF</text>
+                <text className="Standard Center Cyan" x={385} y={10}>
                     {unit === '1' ? 'KG' : 'LBS'}
                     /H
                 </text>
