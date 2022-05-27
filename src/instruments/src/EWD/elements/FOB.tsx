@@ -14,12 +14,12 @@ const FOB: React.FC<FOBProps> = ({ unit, x, y }) => {
 
     return (
         <Layer x={x} y={y}>
-            <text id="FobLabel" x={0} y={0}>FOB</text>
-            <text id="FobColon" x={69} y={0}>:</text>
+            <text className="Huge Center Green" x={-1} y={0}>FOB</text>
+            <text className="Huge Center" x={52} y={0}>:</text>
 
-            <text id="FobValue" x={198} y={0}>{fuelForDisplay(fob, unit, 1, 2)}</text>
+            <text className="Huge Center Green" x={134} y={0}>{fuelForDisplay(fob, unit, 1, 2)}</text>
 
-            <text id="FobUnit" x={227} y={0}>{unit === '1' ? 'KG' : 'LBS'}</text>
+            <text className="Standard Center Cyan" x={212} y={-1}>{unit === '1' ? 'KG' : 'LBS'}</text>
         </Layer>
     );
 };

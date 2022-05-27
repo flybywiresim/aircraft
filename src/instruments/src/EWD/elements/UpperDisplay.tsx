@@ -45,7 +45,7 @@ const UpperDisplay: React.FC = () => {
                 <text className="Medium Center Cyan" x={379} y={6}>&deg;C</text>
             </Layer>
 
-            <Layer x={0} y={276}>
+            <Layer x={0} y={275}>
                 <N2 engine={1} x={192} y={0} active={isActive} />
                 <N2 engine={2} x={493} y={0} active={isActive} />
                 <text className="Large Center" x={386} y={33}>N2</text>
@@ -54,7 +54,7 @@ const UpperDisplay: React.FC = () => {
                 <line className="Separator" x1="424" y1="28" x2="456" y2="37" strokeLinecap="round" />
             </Layer>
 
-            <Layer x={0} y={381}>
+            <Layer x={0} y={380}>
                 <FF engine={1} x={273} y={0} unit={unit} active={isActive} />
                 <FF engine={2} x={576} y={0} unit={unit} active={isActive} />
                 <text className="Large Center" x={386} y={-10}>FF</text>
@@ -68,7 +68,7 @@ const UpperDisplay: React.FC = () => {
 
             <Slats x={536} y={443} />
 
-            <FOB unit={unit} x={14} y={490} />
+            <FOB unit={unit} x={40} y={490} />
 
             {debugFlag && <text className="Medium Center White" x={320} y={528}>{flightPhase}</text>}
         </>

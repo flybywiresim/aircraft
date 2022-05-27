@@ -32,17 +32,17 @@ const N1Limit: React.FC<N1LimitProps> = ({ x, y, active }) => {
             {active
                 && (
                     <>
-                        <text className="Huge Center Cyan" x={0} y={0}>{thrustLimitTypeArray[N1LimitType]}</text>
-                        <text className="Large End Green Spread" x={5} y={28}>{N1ThrustLimitSplit[0]}</text>
+                        <text className="Huge Center Cyan" x={0} y={-1}>{thrustLimitTypeArray[N1LimitType]}</text>
+                        <text className="Huge End Green" x={5} y={28}>{N1ThrustLimitSplit[0]}</text>
                         <text className="Large End Green" x={18} y={28}>.</text>
-                        <text className="Medium End Green" x={32} y={28}>{N1ThrustLimitSplit[1]}</text>
-                        <text className="Medium End Cyan" x={49} y={28}>%</text>
+                        <text className="Standard End Green" x={34} y={28}>{N1ThrustLimitSplit[1]}</text>
+                        <text className="Medium End Cyan" x={49} y={27}>%</text>
                     </>
                 )}
             {active && displayFlexTemp
                 && (
                     <>
-                        <text className="Medium Cyan" x={-20} y={55}>
+                        <text className="Standard Cyan" x={-23} y={57}>
                             {Math.round(flexTemp)}
                             &deg;C
                         </text>
