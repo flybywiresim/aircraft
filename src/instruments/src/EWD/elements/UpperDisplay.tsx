@@ -29,23 +29,23 @@ const UpperDisplay: React.FC = () => {
             <PacksNaiWai x={492} y={27} flightPhase={flightPhase} />
             <Idle x={374} y={55} />
 
-            <N1Limit x={693} y={30} active={isActive} />
+            <N1Limit x={698} y={28} active={isActive} />
 
-            <Layer x={0} y={98}>
+            <Layer x={0} y={96}>
                 <N1 engine={1} x={234} y={0} active={isActive} />
                 <N1 engine={2} x={534} y={0} active={isActive} />
                 <text className="Large Center" x={387} y={26}>N1</text>
                 <text className="Medium Center Cyan" x={384} y={45}>%</text>
             </Layer>
 
-            <Layer x={0} y={252}>
+            <Layer x={0} y={246}>
                 <EGT engine={1} x={234} y={0} active={isActive} />
                 <EGT engine={2} x={533} y={0} active={isActive} />
                 <text className="Large Center" x={384} y={-15}>EGT</text>
                 <text className="Medium Center Cyan" x={379} y={8}>&deg;C</text>
             </Layer>
 
-            <Layer x={0} y={281}>
+            <Layer x={0} y={275}>
                 <N2 engine={1} x={192} y={0} active={isActive} />
                 <N2 engine={2} x={493} y={0} active={isActive} />
                 <text className="Large Center" x={385} y={35}>N2</text>
@@ -54,7 +54,7 @@ const UpperDisplay: React.FC = () => {
                 <line className="Separator" x1="424" y1="28" x2="456" y2="37" strokeLinecap="round" />
             </Layer>
 
-            <Layer x={0} y={388}>
+            <Layer x={0} y={380}>
                 <FF engine={1} x={273} y={0} unit={unit} active={isActive} />
                 <FF engine={2} x={576} y={0} unit={unit} active={isActive} />
                 <text className="Large Center" x={385} y={-11}>FF</text>
@@ -66,9 +66,9 @@ const UpperDisplay: React.FC = () => {
                 <line className="Separator" x1="424" y1="-20" x2="456" y2="-11" strokeLinecap="round" />
             </Layer>
 
-            <Slats x={536} y={453} />
+            <Slats x={536} y={443} />
 
-            <FOB unit={unit} x={16} y={500} />
+            <FOB unit={unit} x={14} y={490} />
 
             {debugFlag && <text className="Medium Center White" x={320} y={528}>{flightPhase}</text>}
         </>
