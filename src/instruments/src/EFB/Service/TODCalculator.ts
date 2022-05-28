@@ -1,14 +1,14 @@
 import { get, orderBy, min, max, inRange, set, last, head } from 'lodash';
 
-type groundSpeed = {from: number, groundSpeed: number};
+export type groundSpeed = {from: number, groundSpeed: number};
 type groundSpeedRange= {groundSpeed: number, range: [number, number]};
 
-export default class TODCalculator {
+export class TODCalculator {
     private readonly avgGroundSpeed;
 
     public constructor(private from: number, private to: number, groundSpeeds: groundSpeed[]) {
-        const groundSpeedRanges = this.findGroundSpeedRanges(groundSpeeds);
-        const filteredGroundSpeedRanges = this.filterGroundSpeedRanges(from, to, groundSpeedRanges);
+        const groundSpeedRanges = TODCalculator.findGroundSpeedRanges(groundSpeeds);
+        const filteredGroundSpeedRanges = TODCalculator.filterGroundSpeedRanges(from, to, groundSpeedRanges);
 
         this.avgGroundSpeed = this.findAverageGroundSpeed(filteredGroundSpeedRanges);
     }
@@ -25,7 +25,7 @@ export default class TODCalculator {
         return (Math.atan(verticalDistance / (distance * 6076.12)) * 180) / Math.PI;
     }
 
-    public calculateDistance(input: number, unit: 'FTM' | 'DEGREE'): number|null {
+    public calculateDistance(input: number, unit: 'FTM' | 'DEGREE'): number {
         const verticalDistance = Math.abs(this.from - this.to);
 
         if (unit === 'FTM') {
@@ -34,11 +34,7 @@ export default class TODCalculator {
             return (this.avgGroundSpeed / 60) * verticalDistanceTime;
         }
 
-        if (unit === 'DEGREE') {
-            return (verticalDistance / Math.tan((input * Math.PI) / 180)) * 0.000164579;
-        }
-
-        return null;
+        return (verticalDistance / Math.tan((input * Math.PI) / 180)) * 0.000164579;
     }
 
     private findAverageGroundSpeed(groundSpeedsRanges: groundSpeedRange[]) {
@@ -53,7 +49,7 @@ export default class TODCalculator {
         return sum / totalVerticalDistance;
     }
 
-    private findGroundSpeedRanges(groundSpeeds: groundSpeed[]): groundSpeedRange[] {
+    private static findGroundSpeedRanges(groundSpeeds: groundSpeed[]): groundSpeedRange[] {
         groundSpeeds = orderBy(groundSpeeds, 'from', 'asc');
 
         const ranges: groundSpeedRange[] = [];
@@ -71,7 +67,7 @@ export default class TODCalculator {
         return ranges;
     }
 
-    private filterGroundSpeedRanges(from: number, to: number, groundSpeedsArg: groundSpeedRange[]) {
+    private static filterGroundSpeedRanges(from: number, to: number, groundSpeedsArg: groundSpeedRange[]) {
         const groundSpeeds = [...groundSpeedsArg];
 
         const bottom = min([from, to]);
