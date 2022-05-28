@@ -166,6 +166,18 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                         <GaugeComponent x={0} y={0} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
                             <GaugeComponent x={0} y={0} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge RedLine" />
                             <GaugeMarkerComponent
+                                value={2}
+                                x={0}
+                                y={0}
+                                min={min}
+                                max={max}
+                                radius={radius}
+                                startAngle={startAngle}
+                                endAngle={endAngle}
+                                className="GaugeText Gauge"
+                                multiplierInner={0.9}
+                            />
+                            <GaugeMarkerComponent
                                 value={5}
                                 x={0}
                                 y={0}
