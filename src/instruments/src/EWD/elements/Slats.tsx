@@ -161,18 +161,18 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
         <Layer x={x} y={y}>
             <path d="M0, 0l -16,0 l -4,13 l 26,0 Z" className="DarkGreyBox" />
             <text
-                className={`Large Center
+                className={`Huge Center
                 ${flapsMoving || slatsMoving ? 'Cyan' : 'Green'}
                 ${!flapsPowered || (!flapsMoving && !slatsMoving && handleIndex === 0) ? 'Hide' : 'Show'}`}
-                x={-5}
-                y={60}
+                x={0}
+                y={57}
             >
                 {flapText[handleIndex]}
 
             </text>
             <g id="SlatsPositionIndicators" className={(flapsPowered || slatsPowered) && (flapsAngle > 0 || slatsAngle > 0) ? 'Show' : 'Hide'}>
-                <text className="Medium Center" x={-100} y={14}>S</text>
-                <text className="Medium Center" x={102} y={14}>F</text>
+                <text className="Standard Center" x={-100} y={14}>S</text>
+                <text className="Standard Center" x={102} y={14}>F</text>
             </g>
             {/* Slats */}
             <g id="SlatsPositionIndicators" className={(flapsPowered || slatsPowered) && (flapsAngle > 0 || slatsAngle > 0) ? 'Show' : 'Hide'}>
