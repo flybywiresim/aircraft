@@ -394,7 +394,7 @@ abstract class HXLeg extends XFLeg {
     updatePrediction() {
         const windDirection = SimVar.GetSimVarValue('AMBIENT WIND DIRECTION', 'Degrees');
         const windSpeed = SimVar.GetSimVarValue('AMBIENT WIND VELOCITY', 'Knots');
-        const windAngleToInbound = Math.abs(Avionics.Utils.diffAngle(windDirection, this.inboundCourse));
+        const windAngleToInbound = Math.abs(Avionics.Utils.diffAngle((180 + windDirection) % 360, this.inboundLegCourse));
         this.inboundWindSpeed = Math.cos(windAngleToInbound * Math.PI / 180) * windSpeed;
 
         this.currentPredictedTas = this.nextPredictedTas;
