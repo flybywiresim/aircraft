@@ -45,7 +45,7 @@ class CDUAvailableDeparturesPage {
                     const runway = runways[index];
                     if (runway) {
                         rows[2 * i] = [
-                            "{" + Avionics.Utils.formatRunway(runway.designation) + "".padStart(4) + NXUnits.mToUser(runway.length).toFixed(0).padStart(6) + "{small}" + NXUnits.userDistanceUnit().padEnd(2) + "{end}" + "".padEnd(11) + "[color]cyan"
+                            "{" + Avionics.Utils.formatRunway(runway.designation).padEnd(4) + "".padStart(4) + NXUnits.mToUser(runway.length).toFixed(0).padStart(6) + "{small}" + NXUnits.userDistanceUnit().padEnd(2) + "{end}" + "".padEnd(11) + "[color]cyan"
                         ];
                         rows[2 * i + 1] = ["{sp}{sp}{sp}" + Utils.leadingZeros(Math.round((runway.direction)), 3) + "[color]cyan",];
                         mcdu.onLeftInput[i + 1] = async () => {
