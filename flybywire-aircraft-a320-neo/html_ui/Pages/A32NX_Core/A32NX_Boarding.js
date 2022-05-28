@@ -10,8 +10,8 @@ function airplaneCanBoard() {
 }
 
 function setDefaultWeights(simbriefPaxWeight, simbriefBagWeight) {
-    const perPaxWeight = (simbriefPaxWeight === 0) ? 84 : simbriefPaxWeight;
-    const perBagWeight = (simbriefBagWeight === 0) ? 20 : simbriefBagWeight;
+    const perPaxWeight = (simbriefPaxWeight === 0) ? Math.round(NXUnits.kgToUser(84)) : simbriefPaxWeight;
+    const perBagWeight = (simbriefBagWeight === 0) ? Math.round(NXUnits.kgToUser(20)) : simbriefBagWeight;
     SimVar.SetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number", parseInt(perPaxWeight));
     SimVar.SetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number", parseInt(perBagWeight));
 }
@@ -67,18 +67,18 @@ class A32NX_Boarding {
     loadPaxPayload() {
         const PAX_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number");
         return Promise.all(Object.values(this.paxStations).map(paxStation => {
-            return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${paxStation.stationIndex}`, "kilograms", paxStation.pax * PAX_WEIGHT);
+            return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${paxStation.stationIndex}`, getUserUnit(), paxStation.pax * PAX_WEIGHT);
         }));
     }
     loadCargoPayload() {
         return Promise.all(Object.values(this.cargoStations).map(loadStation => {
-            return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${loadStation.stationIndex}`, "kilograms", loadStation.load);
+            return SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${loadStation.stationIndex}`, getUserUnit(), loadStation.load);
         }));
     }
 
     loadCargoZero() {
         for (const station of Object.values(this.cargoStations)) {
-            SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "kilograms", 0);
+            SimVar.SetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "Kilograms", 0);
             SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", 0);
             SimVar.SetSimVarValue(`L:${station.simVar}`, "Number", 0);
         }

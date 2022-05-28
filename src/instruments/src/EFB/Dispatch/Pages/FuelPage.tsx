@@ -30,7 +30,7 @@ export const FuelPage = () => {
         if (usingMetrics === '1') {
             return 1;
         }
-        return 2.204617615;
+        return 2.204625;
     };
 
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 1_000);

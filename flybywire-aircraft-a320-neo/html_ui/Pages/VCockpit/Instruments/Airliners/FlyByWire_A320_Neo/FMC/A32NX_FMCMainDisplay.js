@@ -4801,7 +4801,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     //TODO: Can this be util?
     getGW() {
-        return (SimVar.GetSimVarValue("TOTAL WEIGHT", "Pounds") * 0.45359237) / 1000;
+        return (SimVar.GetSimVarValue("TOTAL WEIGHT", "Pounds") * 0.453592) / 1000;
     }
 
     //TODO: Can this be util?

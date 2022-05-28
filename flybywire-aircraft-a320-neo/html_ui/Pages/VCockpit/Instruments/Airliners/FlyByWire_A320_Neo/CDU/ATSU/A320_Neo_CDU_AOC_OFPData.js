@@ -104,7 +104,7 @@ class CDUAocOfpData {
         async function setTargetCargo(numberOfPax, simbriefFreight) {
             const BAG_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number");
             const bagWeight = numberOfPax * BAG_WEIGHT;
-            const maxLoadInCargoHold = 9435; // from flight_model.cfg
+            const maxLoadInCargoHold = Math.round(NXUnits.kgToUser(9435)); // from flight_model.cfg
             const loadableCargoWeight = Math.min(bagWeight + parseInt(simbriefFreight), maxLoadInCargoHold);
 
             let remainingWeight = loadableCargoWeight;
@@ -183,9 +183,9 @@ class CDUAocOfpData {
         const display = [
             ["W/B"],
             ["TOTAL PAX", "PAYLOAD"],
-            [buildTotalPaxValue(), `${Math.round(NXUnits.kgToUser(getTotalPayload()))}[color]green`],
+            [buildTotalPaxValue(), `${Math.round(getTotalPayload())}[color]green`],
             [paxStations.rows1_6.name, "ZFW"],
-            [buildStationValue(paxStations.rows1_6), `${Math.round(NXUnits.kgToUser(getZfw()))}[color]green`],
+            [buildStationValue(paxStations.rows1_6), `${Math.round(getZfw())}[color]green`],
             [paxStations.rows7_13.name, "ZFW CG"],
             [buildStationValue(paxStations.rows7_13), zfwcg],
             [paxStations.rows14_21.name, "CARGO HOLD"],
