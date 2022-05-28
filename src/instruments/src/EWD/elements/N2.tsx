@@ -25,7 +25,7 @@ const N2: React.FC<N2Props> = ({ x, y, engine, active }) => {
             {active
                     && (
                         <>
-                            <rect x={-6} y={22} width={80} height={25} className={`LightGreyBox ${starting ? 'Show' : 'Hide'}`} />
+                            <rect x={-9} y={22} width={80} height={25} className={`LightGreyBox ${starting ? 'Show' : 'Hide'}`} />
                             <text className="Large End Green" x={42} y={45}>{N2percentSplit[0]}</text>
                             <text className="Large End Green" x={54} y={45}>.</text>
                             <text className="Medium End Green" x={70} y={45}>{N2percentSplit[1]}</text>
