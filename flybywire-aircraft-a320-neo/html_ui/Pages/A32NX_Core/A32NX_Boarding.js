@@ -30,9 +30,9 @@ class A32NX_Boarding {
         if (!inDeveloperState) {
             // Set default pax (0)
             await this.setPax(0);
-            await this.loadPaxPayload();
+            this.loadPaxPayload();
             this.loadCargoZero();
-            await this.loadCargoPayload();
+            this.loadCargoPayload();
         }
     }
 
@@ -165,8 +165,8 @@ class A32NX_Boarding {
                 const stationCurrentLoadTarget = SimVar.GetSimVarValue(`L:${loadStation.simVar}_DESIRED`, "Number");
                 await this.fillCargoStation(loadStation, stationCurrentLoadTarget);
             }
-            await this.loadPaxPayload();
-            await this.loadCargoPayload();
+            this.loadPaxPayload();
+            this.loadCargoPayload();
             return;
         }
 
@@ -215,8 +215,8 @@ class A32NX_Boarding {
                 }
             }
 
-            await this.loadPaxPayload();
-            await this.loadCargoPayload();
+            this.loadPaxPayload();
+            this.loadCargoPayload();
         }
     }
 }
