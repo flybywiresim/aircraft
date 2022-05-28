@@ -160,6 +160,7 @@ class CDUAocOfpData {
             const loadTarget = Object.values(cargoStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
             const paxTarget = Object.values(paxStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
             const suffix = loadTarget === currentLoad ? "[color]green" : "[color]cyan";
+            const unitMaximum = (getUserUnit()) == "Kilograms" ? 9.5 : 20.8;
 
             return new CDU_SingleValueField(mcdu,
                 "number",
@@ -170,7 +171,7 @@ class CDUAocOfpData {
                     suffix: suffix,
                     maxLength: 4,
                     minValue: 0.0,
-                    maxValue: 9.4,
+                    maxValue: unitMaximum,
                 },
                 async (value) => {
                     await setTargetPax(paxTarget);
