@@ -14,7 +14,7 @@ const FOB: React.FC<FOBProps> = ({ unit, x, y }) => {
 
     return (
         <Layer x={x} y={y}>
-            <text className="Huge Center Green" x={-1} y={0}>FOB</text>
+            <text className="Huge Center" x={-1} y={0}>FOB</text>
             <text className="Huge Center" x={52} y={0}>:</text>
 
             <text className="Huge Center Green" x={134} y={0}>{fuelForDisplay(fob, unit, 1, 2)}</text>
