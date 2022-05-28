@@ -18,11 +18,11 @@ interface AvailRevProps {
 const AvailRev: React.FC<AvailRevProps> = ({ x, y, mesg, visible, active, revDoorOpen }) => (
     <>
         <g className={visible || !active ? 'Show' : 'Hide'}>
-            <rect x={x - 17} y={y - 13} width={96} height={34} className="DarkGreyBox BackgroundFill" />
+            <rect x={x - 17} y={y - 16} width={96} height={34} className="DarkGreyBox BackgroundFill" />
             {mesg === 'REV'
-            && <text className={`Large End Spread ${active && Math.round(revDoorOpen) > 5 ? 'Green' : 'Amber'}`} x={active ? x + 60 : x + 50} y={y + 13}>{active ? 'REV' : 'XX'}</text>}
+            && <text className={`Huge Center ${active && Math.round(revDoorOpen) > 5 ? 'Green' : 'Amber'}`} x={x + 34} y={y + 13}>{active ? 'REV' : 'XX'}</text>}
             {mesg === 'AVAIL'
-            && <text className="Large End Spread Green" x={x + 74} y={y + 13}>AVAIL</text>}
+            && <text className="Huge End Green" x={x + 79} y={y + 13}>AVAIL</text>}
         </g>
     </>
 );
@@ -154,7 +154,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                         <>
                             <GaugeComponent x={0} y={0} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent GaugeInactive" />
                             <AvailRev x={0} y={0} mesg={availRevText} visible={availRevVisible} active={active} revDoorOpen={revDoorOpenPercentage} />
-                            <text className="Standard End Amber Spread" x={48} y={46}>XX</text>
+                            <text className="Standard End Amber" x={48} y={46}>XX</text>
                         </>
                     )}
             {active
