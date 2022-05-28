@@ -56,12 +56,12 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
                     && (
                         <>
                             <GaugeComponent x={0} y={0} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent GaugeInactive" />
-                            <text className="Large End Amber" x={20} y={7.7}>XX</text>
+                            <text className="Large End Amber" x={20} y={6}>XX</text>
                         </>
                     )}
             {active && (
                 <>
-                    <text className={`Large End ${EGTColour}`} x={33} y={7.7}>{Math.round(EGTemperature)}</text>
+                    <text className={`Large End ${EGTColour}`} x={35} y={6}>{Math.round(EGTemperature)}</text>
                     <GaugeComponent x={0} y={0} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
                         <GaugeComponent x={0} y={0} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge RedLine" />
                         <GaugeMarkerComponent
@@ -99,7 +99,7 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
                             endAngle={endAngle}
                             className="GaugeThrustLimitIndicatorFill Gauge"
                         />
-                        <rect x={-36} y={-15} width={72} height={26} className="DarkGreyBox" />
+                        <rect x={-34} y={-16} width={69} height={24} className="DarkGreyBox" />
                         <GaugeMarkerComponent
                             value={EGTemperature}
                             x={0}
@@ -111,8 +111,10 @@ const EGT: React.FC<EGTProps> = ({ x, y, engine, active }) => {
                             endAngle={endAngle}
                             className={`GaugeIndicator Gauge ${EGTColour}`}
                             multiplierInner={0.6}
+                            multiplierOuter={1.08}
                             indicator
                             halfIndicator
+                            roundLinecap
                         />
                     </GaugeComponent>
                 </>

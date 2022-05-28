@@ -18,7 +18,7 @@ interface AvailRevProps {
 const AvailRev: React.FC<AvailRevProps> = ({ x, y, mesg, visible, active, revDoorOpen }) => (
     <>
         <g className={visible || !active ? 'Show' : 'Hide'}>
-            <rect x={x - 19} y={y - 13} width={96} height={32} className="DarkGreyBox BackgroundFill" />
+            <rect x={x - 17} y={y - 13} width={96} height={34} className="DarkGreyBox BackgroundFill" />
             {mesg === 'REV'
             && <text className={`Large End Spread ${active && Math.round(revDoorOpen) > 5 ? 'Green' : 'Amber'}`} x={active ? x + 60 : x + 50} y={y + 13}>{active ? 'REV' : 'XX'}</text>}
             {mesg === 'AVAIL'
@@ -126,13 +126,13 @@ interface N1Props {
 }
 
 const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
-    const [N1Percent] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
+    const [N1Percent] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 60);
     const [N1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 1000);
     const N1PercentSplit = splitDecimals(N1Percent);
 
     const [engineState] = useSimVar(`L:A32NX_ENGINE_STATE:${engine}`, 'bool', 500);
-    const [throttlePosition] = useSimVar(`L:A32NX_AUTOTHRUST_TLA_N1:${engine}`, 'number', 100);
-    const [N1ThrustLimit] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA', 'number', 100);
+    const [throttlePosition] = useSimVar(`L:A32NX_AUTOTHRUST_TLA_N1:${engine}`, 'number', 60);
+    const [N1ThrustLimit] = useSimVar('L:A32NX_AUTOTHRUST_THRUST_LIMIT_TOGA', 'number', 60);
 
     const availVisible = !!(N1Percent > Math.floor(N1Idle) && engineState === 2); // N1Percent sometimes does not reach N1Idle by .005 or so
     const [revVisible] = useSimVar(`L:A32NX_AUTOTHRUST_REVERSE:${engine}`, 'bool', 500);
@@ -141,10 +141,10 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
     const availRevVisible = availVisible || revVisible;
     const availRevText = availVisible ? 'AVAIL' : 'REV';
 
-    const radius = 64;
+    const radius = 66;
     const startAngle = 220;
     const endAngle = 70;
-    const min = 1.5;
+    const min = 1.6;
     const max = 11;
 
     return (
@@ -154,15 +154,15 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                         <>
                             <GaugeComponent x={0} y={0} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent GaugeInactive" />
                             <AvailRev x={0} y={0} mesg={availRevText} visible={availRevVisible} active={active} revDoorOpen={revDoorOpenPercentage} />
-                            <text className="Medium End Amber Spread" x={45} y={45}>XX</text>
+                            <text className="Standard End Amber Spread" x={48} y={46}>XX</text>
                         </>
                     )}
             {active
                 && (
                     <>
-                        <text className="Large End Green" x={40} y={45}>{N1PercentSplit[0]}</text>
-                        <text className="Large End Green" x={54} y={45}>.</text>
-                        <text className="Medium End Green" x={70} y={45}>{N1PercentSplit[1]}</text>
+                        <text className="Large End Green" x={42} y={46}>{N1PercentSplit[0]}</text>
+                        <text className="Large End Green" x={56} y={46}>.</text>
+                        <text className="Standard End Green" x={72} y={46}>{N1PercentSplit[1]}</text>
                         <GaugeComponent x={0} y={0} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
                             <GaugeComponent x={0} y={0} radius={radius} startAngle={endAngle - 20} endAngle={endAngle} visible className="GaugeComponent Gauge RedLine" />
                             <GaugeMarkerComponent
@@ -175,8 +175,10 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                                 startAngle={startAngle}
                                 endAngle={endAngle}
                                 className="GaugeText Gauge Medium"
+                                textClassName="Standard"
+                                useCentralAlignmentBaseline={false}
                                 showValue
-                                textNudgeY={6}
+                                textNudgeY={17}
                                 textNudgeX={13}
                                 multiplierInner={0.9}
                             />
@@ -238,9 +240,11 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                                 startAngle={startAngle}
                                 endAngle={endAngle}
                                 className="GaugeText Gauge Medium"
+                                textClassName="Standard"
+                                useCentralAlignmentBaseline={false}
                                 showValue
-                                textNudgeY={6}
-                                textNudgeX={-13}
+                                textNudgeY={16}
+                                textNudgeX={-14}
                                 multiplierInner={0.9}
                             />
                             <GaugeMarkerComponent
@@ -255,7 +259,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                                 className="GaugeText Gauge RedLine"
                                 multiplierInner={0.9}
                             />
-                            <rect x={-19} y={19} width={96} height={30} className="DarkGreyBox" />
+                            <rect x={-17} y={18} width={96} height={34} className="DarkGreyBox" />
                             {/* N1 max limit */}
                             <GaugeMarkerComponent
                                 value={Math.abs(N1ThrustLimit / 10)}
@@ -280,7 +284,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                                 className="GaugeThrustLimitIndicatorFill Gauge"
                             />
                             <GaugeMarkerComponent
-                                value={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
+                                value={Math.max(Math.min(N1Percent, 110), 20) / 10}
                                 x={0}
                                 y={0}
                                 min={min}
@@ -290,10 +294,11 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                                 endAngle={endAngle}
                                 className="GaugeIndicator Gauge"
                                 indicator
+                                roundLinecap
                             />
                             <AvailRev x={0} y={0} mesg={availRevText} visible={availRevVisible} active={active} revDoorOpen={revDoorOpenPercentage} />
                             <N1CommandAndTrend
-                                N1Actual={N1Percent <= N1Idle ? N1Idle / 10 : N1Percent / 10}
+                                N1Actual={Math.max(Math.min(N1Percent, 110), 20) / 10}
                                 x={0}
                                 y={0}
                                 min={min}
@@ -305,12 +310,12 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
                             />
                         </GaugeComponent>
                         <ThrottlePositionDonutComponent
-                            value={throttlePosition / 10}
+                            value={Math.max(Math.min(throttlePosition, 110), 20) / 10}
                             x={0}
                             y={0}
                             min={min}
                             max={max}
-                            radius={radius}
+                            radius={radius * 1.03}
                             startAngle={startAngle}
                             endAngle={endAngle}
                             className="DonutThrottleIndicator"
