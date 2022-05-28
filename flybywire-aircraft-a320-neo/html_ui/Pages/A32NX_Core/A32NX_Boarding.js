@@ -30,9 +30,9 @@ class A32NX_Boarding {
         if (!inDeveloperState) {
             // Set default pax (0)
             await this.setPax(0);
-            await this.loadPaxPayload();
+            this.loadPaxPayload();
             this.loadCargoZero();
-            await this.loadCargoPayload();
+            this.loadCargoPayload();
         }
     }
 
