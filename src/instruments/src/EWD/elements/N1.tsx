@@ -160,7 +160,7 @@ const N1: React.FC<N1Props> = ({ x, y, engine, active }) => {
             {active
                 && (
                     <>
-                        <text className="Large End Green" x={42} y={46}>{N1PercentSplit[0]}</text>
+                        <text className="Huge End Green" x={44} y={47}>{N1PercentSplit[0]}</text>
                         <text className="Large End Green" x={56} y={46}>.</text>
                         <text className="Standard End Green" x={72} y={46}>{N1PercentSplit[1]}</text>
                         <GaugeComponent x={0} y={0} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="GaugeComponent Gauge">
