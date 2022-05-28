@@ -155,6 +155,11 @@ animation: pulsingS 1s step-end infinite;
         fill: $display-background !important;
     }
 
+    .GreenFill {
+        fill: $display-green !important;
+        stroke: none;
+    }
+
     .Show {
         display:block;
     }

@@ -1,3 +1,4 @@
+import { Layer } from '@instruments/common/utils';
 import React from 'react';
 
 type STSProps = {
@@ -9,16 +10,15 @@ type STSProps = {
 const STS: React.FC<STSProps> = ({ x, y, active }) => (
     <>
         { active && (
-            <g id="STS">
-                <text x={x} y={y} className="White EWDWarn" textAnchor="middle">
+            <Layer x={x} y={y} id="STS">
+                <text x={1} y={0} className="Standard White" textAnchor="middle">
                     STS
                 </text>
                 <path
                     className="WhiteLine"
-                    d={`M ${x - 28} ${y + 3} h 55 v -24 h -55 v 24`}
-                    strokeLinecap="round"
+                    d="M -24 3 h 48 v -24 h -48 z"
                 />
-            </g>
+            </Layer>
         ) }
     </>
 );

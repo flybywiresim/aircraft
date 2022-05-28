@@ -29,9 +29,9 @@ export const EWD: React.FC = () => {
                 <line className="Separator" x1="484" y1="540" x2="484" y2="730" strokeLinecap="round" />
                 <LowerLeftDisplay x={14} y={554} />
                 <LowerRightDisplay x={520} y={554} />
-                <STS x={484} y={753} active={false} />
-                <ADV x={483} y={543} active={false} />
-                <DownArrow x={481} y={729} active={false} />
+                <STS x={483} y={757} active={false} />
+                <ADV x={483} y={530} active={false} />
+                <DownArrow x={481} y={736} active={false} />
                 <PseudoFWC />
                 {/* sd */}
             </svg>
