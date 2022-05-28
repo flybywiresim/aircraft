@@ -20,7 +20,6 @@ const UpperDisplay: React.FC = () => {
 
     const [fadecEng1Active] = useSimVar('L:A32NX_FADEC_POWERED_ENG1', 'bool', 500);
     const [fadecEng2Active] = useSimVar('L:A32NX_FADEC_POWERED_ENG2', 'bool', 500);
-    const isActive = fadecEng1Active === 1 || fadecEng2Active === 1;
 
     return (
         <>
@@ -29,25 +28,25 @@ const UpperDisplay: React.FC = () => {
             <PacksNaiWai x={492} y={27} flightPhase={flightPhase} />
             <Idle x={374} y={55} />
 
-            <N1Limit x={698} y={28} active={isActive} />
+            <N1Limit x={698} y={28} active={fadecEng1Active === 1 || fadecEng2Active === 1} />
 
             <Layer x={0} y={96}>
-                <N1 engine={1} x={234} y={0} active={isActive} />
-                <N1 engine={2} x={534} y={0} active={isActive} />
+                <N1 engine={1} x={234} y={0} active={fadecEng1Active === 1} />
+                <N1 engine={2} x={534} y={0} active={fadecEng2Active === 1} />
                 <text className="Large Center" x={387} y={26}>N1</text>
                 <text className="Medium Center Cyan" x={384} y={45}>%</text>
             </Layer>
 
             <Layer x={0} y={248}>
-                <EGT engine={1} x={234} y={0} active={isActive} />
-                <EGT engine={2} x={533} y={0} active={isActive} />
+                <EGT engine={1} x={234} y={0} active={fadecEng1Active === 1} />
+                <EGT engine={2} x={533} y={0} active={fadecEng2Active === 1} />
                 <text className="Large Center" x={385} y={-16}>EGT</text>
                 <text className="Medium Center Cyan" x={379} y={6}>&deg;C</text>
             </Layer>
 
             <Layer x={0} y={275}>
-                <N2 engine={1} x={192} y={0} active={isActive} />
-                <N2 engine={2} x={493} y={0} active={isActive} />
+                <N2 engine={1} x={192} y={0} active={fadecEng1Active === 1} />
+                <N2 engine={2} x={493} y={0} active={fadecEng2Active === 1} />
                 <text className="Large Center" x={386} y={33}>N2</text>
                 <text className="Medium Center Cyan" x={385} y={53}>%</text>
                 <line className="Separator" x1="311" y1="37" x2="343" y2="28" strokeLinecap="round" />
@@ -55,8 +54,8 @@ const UpperDisplay: React.FC = () => {
             </Layer>
 
             <Layer x={0} y={380}>
-                <FF engine={1} x={273} y={0} unit={unit} active={isActive} />
-                <FF engine={2} x={576} y={0} unit={unit} active={isActive} />
+                <FF engine={1} x={273} y={0} unit={unit} active={fadecEng1Active === 1} />
+                <FF engine={2} x={576} y={0} unit={unit} active={fadecEng2Active === 1} />
                 <text className="Large Center" x={386} y={-10}>FF</text>
                 <text className="Standard Center Cyan" x={385} y={10}>
                     {unit === '1' ? 'KG' : 'LBS'}
