@@ -1,4 +1,11 @@
 {
-  "index": "./index.tsx",
-  "isInteractive": true
+    "index": "./index.tsx",
+    "isInteractive": true,
+    "dimensions": {
+        "width": 1430,
+        "height": 1000
+    },
+    "additionalImports": [
+        "/Pages/VCockpit/Instruments/Shared/Map/MapInstrument.html"
+    ]
 }
