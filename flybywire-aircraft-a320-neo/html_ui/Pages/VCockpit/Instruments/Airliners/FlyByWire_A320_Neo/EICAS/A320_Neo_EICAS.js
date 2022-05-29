@@ -302,6 +302,14 @@ class A320_Neo_EICAS extends Airliners.BaseEICAS {
     setDoorVideo() {
         this.doorVideoWrapper.style.visibility = this.doorVideoEnabled && this.doorVideoPressed ? "visible" : "hidden";
     }
+
+    SwitchToPageName(_menu, _page) {
+        if (this.doorVideoPressed) {
+            SimVar.SetSimVarValue("L:PUSH_DOORPANEL_VIDEO", "Bool", 0);
+        }
+
+        super.SwitchToPageName(_menu, _page);
+    }
 }
 
 registerInstrument("a320-neo-eicas-element", A320_Neo_EICAS);
