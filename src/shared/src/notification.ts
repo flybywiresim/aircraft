@@ -43,10 +43,10 @@ export class NotificationManager {
     }
 
     registerIntercepts() {
-        this.manager.interceptKey('PAUSE_TOGGLE', true);
-        this.manager.interceptKey('PAUSE_ON', true);
-        this.manager.interceptKey('PAUSE_OFF', true);
-        this.manager.interceptKey('PAUSE_SET', true);
+        this.manager.interceptKey('PAUSE_TOGGLE', false);
+        this.manager.interceptKey('PAUSE_ON', false);
+        this.manager.interceptKey('PAUSE_OFF', false);
+        this.manager.interceptKey('PAUSE_SET', false);
 
         const subscriber = this.eventBus.getSubscriber<KeyEvents>();
         subscriber.on('key_intercept').handle((keyData) => {
