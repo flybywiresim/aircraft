@@ -7,7 +7,9 @@
 
 ## 0.8.2
 
-1. [FMGC] Map leg course with station declination where required - @tracernz (Mike)
+1. [GENERAL] Optimize simulation variable hooks - @Benjozork (Benjamin Dupont)
+2. [LIGHTS] Remove infinite emitter from logo light - @bouveng (Johan Bouveng)
+3. [FMGC] Map leg course with station declination where required - @tracernz (Mike)
 
 ## 0.8.1
 
