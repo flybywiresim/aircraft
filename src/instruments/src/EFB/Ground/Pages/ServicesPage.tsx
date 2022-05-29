@@ -188,7 +188,7 @@ export const ServicesPage = () => {
                 ServiceButtonState[ServiceButtonState.ACTIVE],
                 ServiceButtonState[serviceButtonStateRef.current]);
             dispatch(setButtonState(ServiceButtonState.RELEASED));
-            // If there is no service vehicle/jet-bridge availbel the door would
+            // If there is no service vehicle/jet-bridge available the door would
             // never receive a close event, so we need to set the button state to inactive.
             setTimeout(() => {
                 if (doorOpenState === 1) {
