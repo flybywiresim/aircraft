@@ -9,8 +9,9 @@ describe('FailuresOrchestrator', () => {
         const allFailures = o.getAllFailures();
         expect(allFailures).toHaveLength(1);
         expect(allFailures[0]).toMatchObject({
-            identifier,
-            name,
+            ata: 0,
+            identifier: 123,
+            name: 'test',
         });
     });
 
@@ -85,7 +86,7 @@ const identifier = 123;
 const name = 'test';
 
 function orchestrator() {
-    return new FailuresOrchestrator(prefix, [[identifier, name]]);
+    return new FailuresOrchestrator(prefix, [[0, identifier, name]]);
 }
 
 function activateFailure(o: FailuresOrchestrator) {

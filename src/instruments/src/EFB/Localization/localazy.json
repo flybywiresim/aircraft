@@ -1,0 +1,22 @@
+{
+  "upload": {
+    "skipFailedAutodetection": true,
+    "importAsNew": false,
+    "forceCurrent": false,
+    "appVersion": 0,
+    "keySeparator": ".",
+    "features": [],
+    "folder": ".",
+    "type": "json",
+    "files": [
+      "flybywireos3.json"
+    ]
+  },
+  "download": {
+    "folder": "downloaded",
+    "includeSourceLang": true,
+    "files": {
+      "output": "${lang}.json"
+    }
+  }
+}
