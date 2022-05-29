@@ -25,10 +25,14 @@ declare global {
         VERTICAL = "Vertical"
     }
 
-    class BingMapsBinder {
-    }
+    class BingMapsBinder {}
+
+    class BingMapConfig {}
 
     class BingMapElement extends HTMLElement {
+        m_configs: BingMapConfig[];
+        m_configId: number;
+        m_params: Record<string, unknown>;
         onListenerRegistered: () => void;
         onListenerBinded: (binder: { friendlyName: any; is3D: boolean }, uid: any) => void;
         updateMapImage: (uid: any, img: string) => void;
@@ -55,6 +59,17 @@ declare global {
         updateVisibility(): void;
         updateIsolines(): void;
         updateWeather(): void;
+    }
+
+    class SvgMapConfig {
+        generateBingMap(bingMap: NetBingMap): void;
+        load(path: string, callback): BingMapConfig;
+    }
+
+    class LatLongAlt {
+        lat: number;
+        long: number;
+        constructor(lat: number, long: number);
     }
 }
 
