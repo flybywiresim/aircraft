@@ -85,7 +85,7 @@ class EngineControl {
   double paramImbalance;
 
   const double LBS_TO_KGS = 0.453592;
-  const double KGS_TO_LBS = 2.20462;
+  const double KGS_TO_LBS = 2.204625;
   const double FUEL_THRESHOLD = 661;  // lbs/sec
 
   bool isFlexActive = false;

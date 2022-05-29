@@ -60,7 +60,7 @@ export const FuelPage = () => {
 
     const { usingMetric } = Units;
     const [currentUnit] = useState(usingMetric ? 'KG' : 'LB');
-    const [convertUnit] = useState(usingMetric ? 1 : 2.204617615);
+    const [convertUnit] = useState(usingMetric ? 1 : 2.204625);
 
     const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'kilograms', 1_000);
     const outerCell = () => OUTER_CELL_GALLONS * galToKg * convertUnit;
