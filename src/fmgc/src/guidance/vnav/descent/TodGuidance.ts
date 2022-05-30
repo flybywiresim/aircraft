@@ -70,7 +70,7 @@ export class TodGuidance {
                     if (this.apEngaged && !apActive) {
                         this.showPausePopup(
                             'AP PROTECTION',
-                            `Autopilot or lateral guindace disengaged before the calculated top of descent. System Time was ${new Date().toLocaleTimeString()}.`,
+                            `Autopilot or lateral guidance disengaged before the calculated top of descent. System Time was ${new Date().toLocaleTimeString()}.`,
                         );
                     }
 
@@ -92,8 +92,7 @@ export class TodGuidance {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    updateTdReached(deltaTime: number) {
+    updateTdReached(_deltaTime: number) {
         const tdReached = this.observer.get().flightPhase >= FmgcFlightPhase.Climb
             && this.observer.get().flightPhase <= FmgcFlightPhase.Cruise
             && Simplane.getAutoPilotAirspeedManaged()
