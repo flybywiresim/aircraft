@@ -1,14 +1,25 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
-import { IconCloud, IconDroplet, IconGauge, IconPoint, IconTemperature, IconWind } from '@tabler/icons';
+import { Droplet, Speedometer2, ThermometerHalf, Wind } from 'react-bootstrap-icons';
+import useInterval from '@instruments/common/useInterval';
+import { t } from '../../translation';
 import { parseMetar } from '../../Utils/parseMetar';
 import { MetarParserType } from '../../../Common/metarTypes';
 import { usePersistentNumberProperty, usePersistentProperty } from '../../../Common/persistence';
-import SimpleInput from '../../Components/Form/SimpleInput/SimpleInput';
+import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ColoredMetar } from './ColorMetar';
+import { useAppDispatch, useAppSelector } from '../../Store/store';
+import {
+    setDepartureMetar,
+    setDestinationMetar,
+    setUserDepartureIcao,
+    setUserDestinationIcao,
+} from '../../Store/features/dashboard';
+import { Toggle } from '../../UtilComponents/Form/Toggle';
+import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 
 const MetarParserTypeProp: MetarParserType = {
     raw_text: '',
@@ -55,19 +66,28 @@ const MetarParserTypeProp: MetarParserType = {
     flight_category: '',
 };
 
-type WeatherWidgetProps = { name: string, editIcao: string, icao: string };
+interface WeatherWidgetProps {
+    name: 'origin'|'destination';
+    simbriefIcao: string;
+    userIcao?: string
+}
 
-const WeatherWidget = (props: WeatherWidgetProps) => {
-    const [metar, setMetar] = useState<MetarParserType>(MetarParserTypeProp);
-    const [showMetar, setShowMetar] = usePersistentProperty(`CONFIG_SHOW_METAR_${props.name}`, 'DISABLED');
+export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, userIcao }) => {
     const [baroType] = usePersistentProperty('CONFIG_INIT_BARO_UNIT', 'HPA');
+    const dispatch = useAppDispatch();
+    const [simbriefIcaoAtLoading, setSimbriefIcaoAtLoading] = useState(simbriefIcao);
     const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
-    const source = metarSource === 'MSFS' ? 'MS' : metarSource;
-    const [metarError, setErrorMetar] = useState('NO ICAO PROVIDED');
+    const [metarError, setErrorMetar] = useState('');
     const [usingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
+    const source = metarSource === 'MSFS' ? 'MS' : metarSource;
 
     const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
         .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
+
+    const metar = useAppSelector((state) => (name === 'origin' ? state.dashboard.departureMetar : state.dashboard.destinationMetar)) ?? MetarParserTypeProp;
+    const setMetar = name === 'origin' ? setDepartureMetar : setDestinationMetar;
+
+    const [showMetar, setShowMetar] = usePersistentNumberProperty(`CONFIG_SHOW_METAR_${name}`, 0);
 
     const BaroValue = () => {
         const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
@@ -90,18 +110,24 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
     };
 
     const handleIcao = (icao: string) => {
+        if (name === 'origin') {
+            dispatch(setUserDepartureIcao(icao));
+        } else {
+            dispatch(setUserDestinationIcao(icao));
+        }
+
         if (icao.length > 0) {
             getMetar(icao, source);
         } else if (icao.length === 0) {
-            getMetar(props.icao, source);
+            getMetar(simbriefIcao, source);
         }
     };
 
     function getMetar(icao: any, source: any) {
         if (icao.length !== 4 || icao === '----') {
             return new Promise(() => {
-                setErrorMetar('NO ICAO PROVIDED');
-                setMetar(MetarParserTypeProp);
+                setErrorMetar(t('Dashboard.ImportantInformation.Weather.NoIcaoProvided'));
+                dispatch(setMetar(MetarParserTypeProp));
             });
         }
 
@@ -111,177 +137,140 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                 // For the other METAR sources an error is thrown (Request failed with status code 404)
                 // and caught in the catch clause.
                 if (!result.metar) {
-                    setErrorMetar('ICAO INVALID OR NO METAR AVAILABLE');
-                    setMetar(MetarParserTypeProp);
+                    setErrorMetar(t('Dashboard.ImportantInformation.Weather.IcaoInvalid'));
+                    dispatch(setMetar(MetarParserTypeProp));
                     return;
                 }
                 // Catch parsing error separately
                 try {
                     const metarParse = parseMetar(result.metar);
-                    setMetar(metarParse);
+                    dispatch(setMetar(metarParse));
                 } catch (err) {
                     console.log(`Error while parsing Metar ("${result.metar}"): ${err}`);
-                    setErrorMetar(`RECEIVED METAR COULD NOT BE PARSED: ${err.toString().replace(/^Error: /, '').toUpperCase()}`);
-                    setMetar(MetarParserTypeProp);
+                    setErrorMetar(`${t('Dashboard.ImportantInformation.Weather.MetarParsingError')}: ${err.toString().replace(/^Error: /, '').toUpperCase()}`);
+                    dispatch(setMetar(MetarParserTypeProp));
                 }
             })
             // catch retrieving metar errors
             .catch((err) => {
                 console.log(`Error while retrieving Metar: ${err}`);
                 if (err.toString().match(/^Error:/)) {
-                    setErrorMetar('ICAO INVALID OR NO METAR AVAILABLE');
+                    setErrorMetar(t('Dashboard.ImportantInformation.Weather.IcaoInvalid'));
                 } else {
                     setErrorMetar(`${err.toString().replace(/^Error: /, '')}`);
                 }
-                setMetar(MetarParserTypeProp);
+                dispatch(setMetar(MetarParserTypeProp));
             });
     }
 
     useEffect(() => {
-        getMetar(props.icao, source);
-    }, [props.icao, source]);
+        // if we have new simbrief data that is different from the simbrief data at
+        // loading of the widget we overwrite the user input once. After that
+        // user input has priority.
+        if (simbriefIcao !== simbriefIcaoAtLoading) {
+            dispatch(setUserDepartureIcao(''));
+            dispatch(setUserDestinationIcao(''));
+            getMetar(simbriefIcao, source);
+            setSimbriefIcaoAtLoading(simbriefIcao);
+        } else {
+            getMetar(userIcao || simbriefIcao, source);
+        }
+    }, [simbriefIcao, userIcao, source]);
+
+    useInterval(() => {
+        handleIcao(userIcao ?? simbriefIcao);
+    }, 60_000);
 
     return (
-        <div className="text-white">
+        <div>
             {metar === undefined
-                ? <p>Loading ...</p>
+                ? <p>{t('Dashboard.ImportantInformation.Weather.Loading')}</p>
                 : (
                     <>
-                        <div className="mb-8 inline-flex items-center w-80">
-                            <div className="ml-6">
-                                <IconCloud size={35} stroke={1.5} strokeLinejoin="miter" />
-                            </div>
+                        <div className="flex flex-row justify-between items-center">
                             <SimpleInput
-                                noLabel
-                                className="text-center w-32 ml-4 text-2xl font-medium uppercase"
-                                placeholder={props.icao}
-                                value={props.icao === '----' ? '' : props.icao}
+                                className="w-32 !text-2xl font-medium text-center uppercase"
+                                placeholder={simbriefIcao || 'ICAO'}
+                                value={userIcao ?? simbriefIcao}
                                 onChange={(value) => handleIcao(value)}
                                 maxLength={4}
                             />
-                            <div className="ml-6">
-                                <button
-                                    type="button"
-                                    className="mr-1 w-24 bg-gray-600 p-2 flex items-center justify-center rounded-lg focus:outline-none text-lg"
-                                    onClick={() => setShowMetar(showMetar === 'ENABLED' ? 'DISABLED' : 'ENABLED')}
-                                >
-                                    {showMetar === 'ENABLED' ? 'Metar' : 'Summary'}
-                                </button>
-                            </div>
+                            <TooltipWrapper
+                                text={showMetar
+                                    ? t('Dashboard.ImportantInformation.Weather.TT.SwitchToIconView')
+                                    : t('Dashboard.ImportantInformation.Weather.TT.SwitchToRawMetarView')}
+                            >
+                                <div className="flex flex-row space-x-2">
+                                    <p>{t('Dashboard.ImportantInformation.Weather.Raw')}</p>
+                                    <Toggle value={!!showMetar} onToggle={(value) => setShowMetar(value ? 1 : 0)} />
+                                </div>
+                            </TooltipWrapper>
                         </div>
-                        {showMetar === 'DISABLED'
-                            ? (
-                                <>
-                                    <div className="grid grid-cols-2 h-40">
-                                        <div className="justify-left text-center text-lg">
-                                            <div className="flex justify-center">
-                                                <IconGauge
-                                                    className="mb-2"
-                                                    size={35}
-                                                    stroke={1.5}
-                                                    strokeLinejoin="miter"
-                                                />
-                                            </div>
-                                            {metar.raw_text ? (
-                                                <>
-                                                    {metar.barometer ? <BaroValue /> : 'N/A'}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    N/A
-                                                </>
-                                            )}
-                                        </div>
-                                        <div className="justify-left text-center text-lg">
-                                            <div className="flex justify-center">
-                                                <IconWind
-                                                    className="mb-2"
-                                                    size={35}
-                                                    stroke={1.5}
-                                                    strokeLinejoin="miter"
-                                                />
-                                            </div>
-                                            {metar.raw_text
-                                                ? (
+                        <div style={{ minHeight: '100px' }}>
+                            {!showMetar
+                                ? (
+                                    <>
+                                        <div
+                                            className="flex flex-row justify-between items-center mt-4 w-full"
+                                        >
+                                            <div className="flex flex-col items-center space-y-1">
+                                                <Speedometer2 size={35} />
+                                                <p className="text-center">{t('Dashboard.ImportantInformation.Weather.AirPressure')}</p>
+                                                {metar.raw_text ? (
                                                     <>
-                                                        {metar.wind.degrees.toFixed(0)}
-                                                        {' '}
-                                                        <IconPoint
-                                                            className="inline-block -mx-1 -mt-3"
-                                                            size={20}
-                                                            stroke={2}
-                                                            strokeLinejoin="miter"
-                                                        />
-                                                        {' '}
-                                                        /
-                                                        {' '}
-                                                        {metar.wind.speed_kts.toFixed(0)}
-                                                        {' '}
-                                                        kts
+                                                        {metar.barometer ? <BaroValue /> : 'N/A'}
                                                     </>
-                                                ) : 'N/A'}
-                                        </div>
-                                        <div className="text-center text-lg mt-6">
-                                            <div className="flex justify-center">
-                                                <IconTemperature
-                                                    className="mb-2"
-                                                    size={35}
-                                                    stroke={1.5}
-                                                    strokeLinejoin="miter"
-                                                />
+                                                ) : t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}
                                             </div>
-                                            {metar.raw_text
-                                                ? (
-                                                    <>
-                                                        {metar.temperature.celsius.toFixed(0)}
-                                                        {' '}
-                                                        <IconPoint
-                                                            className="inline-block -mx-1 -mt-3"
-                                                            size={20}
-                                                            stroke={2}
-                                                            strokeLinejoin="miter"
-                                                        />
-                                                        {' '}
-                                                        {' '}
-                                                        C
-                                                    </>
-                                                ) : 'N/A'}
-                                        </div>
-                                        <div className="overflow-y-scroll text-center text-lg mt-6">
-                                            <div className="flex justify-center">
-                                                <IconDroplet
-                                                    className="mb-2"
-                                                    size={35}
-                                                    stroke={1.5}
-                                                    strokeLinejoin="miter"
-                                                />
+                                            <div className="flex flex-col items-center space-y-1">
+                                                <Wind size={35} />
+                                                <p className="text-center">{t('Dashboard.ImportantInformation.Weather.WindSpeed')}</p>
+                                                {metar.raw_text
+                                                    ? (
+                                                        <>
+                                                            {metar.wind.degrees.toFixed(0)}
+                                                            &deg;
+                                                            {' '}
+                                                            /
+                                                            {' '}
+                                                            {metar.wind.speed_kts.toFixed(0)}
+                                                            {' '}
+                                                            kts
+                                                        </>
+                                                    ) : t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}
                                             </div>
-                                            {metar.raw_text
-                                                ? (
-                                                    <>
-                                                        {metar.dewpoint.celsius.toFixed(0)}
-                                                        {' '}
-                                                        <IconPoint
-                                                            className="inline-block -mx-1 -mt-3"
-                                                            size={20}
-                                                            stroke={2}
-                                                            strokeLinejoin="miter"
-                                                        />
-                                                        {' '}
-                                                        {' '}
-                                                        C
-                                                    </>
-                                                ) : 'N/A'}
+                                            <div className="flex flex-col items-center space-y-1">
+                                                <ThermometerHalf size={35} />
+                                                <p className="text-center">{t('Dashboard.ImportantInformation.Weather.Temperature')}</p>
+                                                {metar.raw_text
+                                                    ? (
+                                                        <>
+                                                            {metar.temperature.celsius.toFixed(0)}
+                                                            {' '}
+                                                            &deg;C
+                                                        </>
+                                                    ) : t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}
+                                            </div>
+                                            <div className="flex flex-col items-center space-y-1">
+                                                <Droplet size={35} />
+                                                <p className="text-center">{t('Dashboard.ImportantInformation.Weather.DewPoint')}</p>
+                                                {metar.raw_text
+                                                    ? (
+                                                        <>
+                                                            {metar.dewpoint.celsius.toFixed(0)}
+                                                            {' '}
+                                                            &deg;C
+                                                        </>
+                                                    ) : t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}
+                                            </div>
                                         </div>
-                                    </div>
-                                </>
-                            )
-                            : (
-                                <>
-                                    <div className="font-mono scrollbar text-left ml-8 mr-4 h-40 text-xl">
+                                    </>
+                                )
+                                : (
+                                    <>
                                         {metar.raw_text
                                             ? (
-                                                <>
+                                                <div className="mt-4 font-mono text-xl">
                                                     {usingColoredMetar
                                                         ? (
                                                             <>
@@ -292,19 +281,17 @@ const WeatherWidget = (props: WeatherWidgetProps) => {
                                                                 {metar.raw_text}
                                                             </>
                                                         )}
-                                                </>
+                                                </div>
                                             ) : (
-                                                <>
+                                                <div className="mt-4 text-xl">
                                                     {metarError}
-                                                </>
+                                                </div>
                                             )}
-                                    </div>
-                                </>
-                            )}
+                                    </>
+                                )}
+                        </div>
                     </>
                 )}
         </div>
     );
 };
-
-export default WeatherWidget;

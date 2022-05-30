@@ -1,4 +1,6 @@
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+// do not use @fmgc shortcut - breaks units tests with jest
+// noinspection ES6PreferShortImport
+import { TurnDirection } from '../../fmgc/src/types/fstypes/FSEnums';
 
 export class MathUtils {
    static DEGREES_TO_RADIANS = Math.PI / 180;
@@ -33,6 +35,22 @@ export class MathUtils {
        }
 
        return (Math.round(val * coefficient) / coefficient);
+   }
+
+   /**
+     * Adds two angles with wrap around to result in 0-360°
+     * @param a - positive or negative angle
+     * @param b - positive or negative angle
+     */
+   public static angleAdd(a: number, b: number): number {
+       let r = a + b;
+       while (r > 360) {
+           r -= 360;
+       }
+       while (r < 0) {
+           r += 360;
+       }
+       return r;
    }
 
    public static diffAngle(a: number, b: number, direction?: TurnDirection): number {
@@ -376,5 +394,25 @@ export class MathUtils {
            ret = MathUtils.intersect(x1, y1, x2, y2, x3, y3, x4, y4);
        });
        return ret;
+   }
+
+   /**
+     * Returns the given value if the value is >=lower or <= upper. Otherwise returns the boundary value.
+     * @param value the value to be clamped
+     * @param lower lowest boundary value
+     * @param upper highest boundary value
+     */
+   public static clamp(value, lower, upper) {
+       return Math.min(Math.max(value, lower), upper);
+   }
+
+   /**
+     * Returns a value rounded to the given number of decimal precission.
+     * @param value
+     * @param decimalPrecision
+     */
+   public static round(value: number, decimalPrecision: number) {
+       const shift = 10 ** decimalPrecision;
+       return Math.round((value + Number.EPSILON) * shift) / shift;
    }
 }
