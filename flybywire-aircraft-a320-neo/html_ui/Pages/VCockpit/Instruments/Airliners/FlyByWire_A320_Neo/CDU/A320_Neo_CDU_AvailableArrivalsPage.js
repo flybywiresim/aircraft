@@ -96,7 +96,7 @@ class CDUAvailableArrivalsPage {
                             const magVar = Facilities.getMagVar(runway.latitude, runway.longitude);
                             runwayCourse = Utils.leadingZeros(Math.round(A32NX_Util.trueToMagnetic(runway.direction, magVar)), 3);
                         }
-                        rows[2 * i] = [`{cyan}{${approach.name}{end}` + runwayLength.padStart(8) + "{small}" + NXUnits.userDistanceUnit().padEnd(2) + "{end}[color]cyan", "", ""];
+                        rows[2 * i] = [`{cyan}{${approach.name.padEnd(9)}{end}` + runwayLength.padStart(5) + "{small}" + NXUnits.userDistanceUnit().padEnd(2) + "{end}[color]cyan", "", ""];
                         rows[2 * i + 1] = ["{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(approach.index, () => {
