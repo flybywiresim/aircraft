@@ -151,7 +151,7 @@ export const ATC = () => {
     useEffect(() => {
         const currentControllerFrequency = currentAtc?.frequency;
 
-        if(currentControllerFrequency) {
+        if (currentControllerFrequency) {
             const controllerWithFrequency = controllers?.find((c) => c.frequency === currentControllerFrequency);
 
             if (controllerWithFrequency) {
