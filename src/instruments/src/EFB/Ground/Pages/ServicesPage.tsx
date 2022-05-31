@@ -175,7 +175,8 @@ export const ServicesPage = () => {
                 }, 5000);
             }
         } else if (serviceButtonStateRef.current === ServiceButtonState.CALLED) {
-            // prevent to click again after a "called" has been cancelled
+            // When in state CALLED another click on the button cancels the request.
+            // This prevents another click after a "called" has been cancelled
             // to avoid state getting out of sync.
             dispatch(setButtonState(ServiceButtonState.DISABLED));
             setTimeout(() => {
@@ -189,7 +190,8 @@ export const ServicesPage = () => {
                 ServiceButtonState[serviceButtonStateRef.current]);
             dispatch(setButtonState(ServiceButtonState.RELEASED));
             // If there is no service vehicle/jet-bridge available the door would
-            // never receive a close event, so we need to set the button state to inactive.
+            // never receive a close event, so we need to set the button state
+            // to inactive after a timeout.
             setTimeout(() => {
                 if (doorOpenState === 1) {
                     dispatch(setButtonState(ServiceButtonState.INACTIVE));
@@ -197,7 +199,7 @@ export const ServicesPage = () => {
             }, 5000);
         }
 
-        // Door Button: enable/disable cabin door button after a timeout
+        // Door Button: enable door button after a timeout if it was disabled
         if (doorButtonState === ServiceButtonState.DISABLED) {
             setTimeout(() => {
                 // service button could have been pressed again in the meantime
@@ -210,6 +212,7 @@ export const ServicesPage = () => {
                 }
             }, 5000);
         } else {
+            // disable the door button if the service button has been pressed
             dispatch(setDoorButtonState(ServiceButtonState.DISABLED));
         }
     };
@@ -282,15 +285,24 @@ export const ServicesPage = () => {
             toggleGpu();
             break;
         case ServiceButton.JetBridge:
-            handleComplexService(ServiceButton.JetBridge, jetWayButtonStateRef, setJetWayButtonState, cabinDoorButtonState, setCabinDoorButtonState, cabinDoorOpen);
+            handleComplexService(ServiceButton.JetBridge,
+                jetWayButtonStateRef, setJetWayButtonState,
+                cabinDoorButtonState, setCabinDoorButtonState,
+                cabinDoorOpen);
             toggleJetBridgeAndStairs();
             break;
         case ServiceButton.BaggageTruck:
-            handleComplexService(ServiceButton.BaggageTruck, baggageButtonStateRef, setBaggageButtonState, cargoDoorButtonState, setCargoDoorButtonState, cargoDoorOpen);
+            handleComplexService(ServiceButton.BaggageTruck,
+                baggageButtonStateRef, setBaggageButtonState,
+                cargoDoorButtonState, setCargoDoorButtonState,
+                cargoDoorOpen);
             toggleBaggageTruck();
             break;
         case ServiceButton.CateringTruck:
-            handleComplexService(ServiceButton.CateringTruck, cateringButtonStateRef, setCateringButtonState, aftDoorButtonState, setAftDoorButtonState, aftDoorOpen);
+            handleComplexService(ServiceButton.CateringTruck,
+                cateringButtonStateRef, setCateringButtonState,
+                aftDoorButtonState, setAftDoorButtonState,
+                aftDoorOpen);
             toggleCateringTruck();
             break;
         default:
@@ -300,7 +312,7 @@ export const ServicesPage = () => {
 
     // Called by useEffect listeners for simple services and doors
     // Determines the state of a door or simple service based on a given
-    // door state input. All services are basically active and ter.minated
+    // door state input. All services are basically active and terminated
     // based on a door state (INTERACTION POINT OPEN)
     const simpleServiceListenerHandling = (
         state: ServiceButtonState,
@@ -311,15 +323,15 @@ export const ServicesPage = () => {
             return;
         }
         switch (doorState) {
-        case 0:
+        case 0: // closed
             if (state !== ServiceButtonState.CALLED) {
                 dispatch(setter(ServiceButtonState.INACTIVE));
             }
             break;
-        case 1:
+        case 1: // open
             dispatch(setter(ServiceButtonState.ACTIVE));
             break;
-        default:
+        default: // in between
             if (state === ServiceButtonState.ACTIVE) {
                 dispatch(setter(ServiceButtonState.RELEASED));
             }
@@ -358,7 +370,7 @@ export const ServicesPage = () => {
             && serviceButtonStateRef.current >= ServiceButtonState.ACTIVE
             && doorButtonState === ServiceButtonState.DISABLED) {
             setTimeout(() => {
-                // button could have been pressed again in the meantime
+                // double-check as button could have been pressed again in the meantime
                 if (groundServicesAvailable
                     && serviceButtonStateRef.current < ServiceButtonState.CALLED) {
                     dispatch(setterDoorButtonState1(ServiceButtonState.INACTIVE));
@@ -374,12 +386,12 @@ export const ServicesPage = () => {
         simpleServiceListenerHandling(aftDoorButtonState, setAftDoorButtonState, aftDoorOpen);
     }, [cabinDoorOpen, cargoDoorOpen, aftDoorOpen]);
 
-    // Gpu
+    // Fuel
     useEffect(() => {
         simpleServiceListenerHandling(fuelTruckButtonState, setFuelTruckButtonState, fuelingActive);
     }, [fuelingActive]);
 
-    // Fuel
+    // Gpu
     useEffect(() => {
         simpleServiceListenerHandling(gpuButtonState, setGpuButtonState, gpuActive);
     }, [gpuActive]);
