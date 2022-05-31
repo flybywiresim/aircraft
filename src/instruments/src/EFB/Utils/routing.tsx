@@ -42,9 +42,11 @@ export const PageRedirect = ({ basePath, tabs }: PageRouteProps) => {
     const redirectPathname = useRef(getRedirectPathname());
 
     useEffect(() => {
-        history.listen(() => {
+        const unregisterHistoryListener = history.listen(() => {
             redirectPathname.current = getRedirectPathname();
         });
+
+        return unregisterHistoryListener;
     }, []);
 
     return (
