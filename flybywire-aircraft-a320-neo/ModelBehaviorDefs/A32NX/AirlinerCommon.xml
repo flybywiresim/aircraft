@@ -409,12 +409,11 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_VOR1#</ANIM_NAME_SWITCH>
             <INSTRUMENT>VOR1</INSTRUMENT>
             <ONCLICK>
-                <!-- Basically the same result to reduce maintenance complexity -->
+                <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
                 (A:NAV SOUND:1, Bool) 1 == (L:XMLVAR_NAV_L_VOR1_Switch_Down) 0 == (L:XMLVAR_NAV_R_VOR1_Switch_Down) 0 == and and if{
                     1 (&gt;K:RADIO_VOR1_IDENT_TOGGLE)
                 }
 
-                <!-- Basically the same result to reduce maintenance complexity -->
                 (A:NAV SOUND:1, Bool) 0 == (L:XMLVAR_NAV_L_VOR1_Switch_Down) 1 == (L:XMLVAR_NAV_R_VOR1_Switch_Down) 1 == or and if{
                     1 (&gt;K:RADIO_VOR1_IDENT_TOGGLE)
                 }
@@ -437,12 +436,11 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_VOR2#</ANIM_NAME_SWITCH>
             <INSTRUMENT>VOR2</INSTRUMENT>
             <ONCLICK>
-                <!-- Basically the same result to reduce maintenance complexity -->
+                <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
                 (A:NAV SOUND:2, Bool) 1 == (L:XMLVAR_NAV_L_VOR2_Switch_Down) 0 == (L:XMLVAR_NAV_R_VOR2_Switch_Down) 0 == and and if{
                     1 (&gt;K:RADIO_VOR2_IDENT_TOGGLE)
                 }
 
-                <!-- Basically the same result to reduce maintenance complexity -->
                 (A:NAV SOUND:2, Bool) 0 == (L:XMLVAR_NAV_L_VOR2_Switch_Down) 1 == (L:XMLVAR_NAV_R_VOR2_Switch_Down) 1 == or and if{
                     1 (&gt;K:RADIO_VOR2_IDENT_TOGGLE)
                 }
