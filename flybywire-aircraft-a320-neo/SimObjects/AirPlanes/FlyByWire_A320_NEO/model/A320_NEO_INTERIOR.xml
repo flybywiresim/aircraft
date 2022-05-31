@@ -4345,6 +4345,12 @@
                     </UseTemplate>
                 </Component>
             </Component>
+            <Update Once="True">
+                <!-- DEFAULT VALUE IS 1 BUT IT IS UNDESIRED -->
+                (A:MARKER SOUND, Bool) 1 == {
+                    (&gt;K:MARKER_SOUND_TOGGLE)
+                }
+            </Update>
         </Component>
 
         <Component ID="Airbus_ATC">

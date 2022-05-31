@@ -454,7 +454,7 @@
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
         </UseTemplate>
 
-        <!-- <UseTemplate Name="FBW_Anim_Interactions">
+        <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_MKR#</NODE_ID>
@@ -463,14 +463,26 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_MKR#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_MKR#</NODE_ID_LED>
             <INSTRUMENT>MKR</INSTRUMENT>
-            <ONCLICK></ONCLICK>
+            <ONCLICK>
+                (A:MARKER SOUND, Bool) 1 == (L:XMLVAR_NAV_L_MKR_Switch_Down) 0 == (L:XMLVAR_NAV_R_MKR_Switch_Down) 0 == and and if{
+                    1 (&gt;K:MARKER_SOUND_TOGGLE)
+                }
+
+                (A:MARKER SOUND, Bool) 0 == (L:XMLVAR_NAV_L_MKR_Switch_Down) 1 == (L:XMLVAR_NAV_R_MKR_Switch_Down) 1 == or and if{
+                    1 (&gt;K:MARKER_SOUND_TOGGLE)
+                }
+            </ONCLICK>
+            <!-- Have to use a local var because marker volume is not used in the simulation yet -->
+            <FROM_VOLUME>(L:XMLVAR_NAV_#SIDE#_MKR_Volume) 100 *</FROM_VOLUME>
+            <INC_VOLUME>(L:XMLVAR_NAV_#SIDE#_MKR_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_MKR_Volume)</INC_VOLUME>
+            <DEC_VOLUME>(L:XMLVAR_NAV_#SIDE#_MKR_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_MKR_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_Anim_Interactions">
+        <!-- <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_ILS#</NODE_ID>
