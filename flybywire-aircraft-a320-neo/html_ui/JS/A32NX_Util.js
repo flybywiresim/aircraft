@@ -299,10 +299,10 @@ class NXNotifManager {
 
     constructor() {
         Coherent.on("keyIntercepted", (key) => this.registerIntercepts(key));
-        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_TOGGLE", 1);
-        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_ON", 1);
-        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_OFF", 1);
-        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_SET", 1);
+        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_TOGGLE", 0);
+        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_ON", 0);
+        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_OFF", 0);
+        Coherent.call("INTERCEPT_KEY_EVENT", "PAUSE_SET", 0);
         this.notifications = [];
     }
 

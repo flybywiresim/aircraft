@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { useCoherentEvent, useInteractionEvents } from '@instruments/common/hooks';
 import { AtsuMessageComStatus, AtsuMessageDirection, AtsuMessageType } from '@atsu/messages/AtsuMessage';
@@ -62,12 +62,14 @@ const DCDU: React.FC = () => {
     const [isColdAndDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', 200);
     const [state, setState] = useState((isColdAndDark) ? DcduState.Off : DcduState.On);
     const [events] = useState(RegisterViewListener('JS_LISTENER_SIMVARS', undefined, true));
-    const [timer, setTimer] = useState<number | null>(null);
-
     const [systemStatusMessage, setSystemStatusMessage] = useState(DcduStatusMessage.NoMessage);
     const [systemStatusTimer, setSystemStatusTimer] = useState<number | null>(null);
+    const [screenTimeout, setScreenTimeout] = useState<number | null>(null);
     const [messages, setMessages] = useState(new Map<number, DcduMessageBlock>());
+    const messagesRef = useRef<Map<number, [CpdlcMessage[], number, number]>>();
     const [atcMessage, setAtcMessage] = useState('');
+
+    messagesRef.current = messages;
 
     const updateSystemStatusMessage = (status: DcduStatusMessage) => {
         setSystemStatusMessage(status);
@@ -75,7 +77,11 @@ const DCDU: React.FC = () => {
     };
 
     const setMessageStatus = (uid: number, response: number) => {
-        const updateMap = messages;
+        if (!messagesRef.current) {
+            return;
+        }
+
+        const updateMap = new Map<number, DcduMessageBlock>(messagesRef.current);
 
         const entry = updateMap.get(uid);
         if (entry !== undefined) {
@@ -95,17 +101,27 @@ const DCDU: React.FC = () => {
         events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_INVERT_SEMANTIC_RESPONSE', uid);
     };
     const modifyResponse = (uid: number) => {
-        const message = messages.get(uid);
+        if (!messagesRef.current) {
+            return;
+        }
+
+        const message = messagesRef.current.get(uid);
         if (message) {
             message.statusMessage = DcduStatusMessage.McduForModification;
             events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_MODIFY_RESPONSE', uid);
         }
+
+        setMessages(new Map<number, DcduMessageBlock>(messagesRef.current));
     };
     const recallMessage = () => {
         events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_RECALL');
     };
     const closeMessage = (uid: number) => {
-        const sortedMessages = sortedMessageArray(messages);
+        if (!messagesRef.current) {
+            return;
+        }
+
+        const sortedMessages = sortedMessageArray(messagesRef.current);
         const index = sortedMessages.findIndex((element) => element.messages[0].UniqueMessageID === uid);
 
         events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_CLOSED', uid);
@@ -115,7 +131,7 @@ const DCDU: React.FC = () => {
             setSystemStatusTimer(null);
 
             // update the map
-            const updatedMap = messages;
+            const updatedMap = new Map<number, DcduMessageBlock>(messages);
 
             // define the next visible message
             if (index > 0) {
@@ -143,31 +159,31 @@ const DCDU: React.FC = () => {
 
     // the message scroll button handling
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0MINUS', 'A32NX_DCDU_BTN_MPR_MS0MINUS'], () => {
-        if (messages.size === 0) {
+        if (!messagesRef.current || messagesRef.current.size === 0) {
             return;
         }
 
-        const sortedMessages = sortedMessageArray(messages);
+        const sortedMessages = sortedMessageArray(messagesRef.current);
         const index = sortedMessages.findIndex((element) => element.messageVisible);
 
-        if (index === 0) {
+        if (index <= 0) {
             setSystemStatusMessage(DcduStatusMessage.NoMoreMessages);
             setSystemStatusTimer(DcduSystemStatusDuration);
         } else {
             setSystemStatusMessage(DcduStatusMessage.NoMessage);
             setSystemStatusTimer(null);
 
-            const oldMessage = messages.get(sortedMessages[index].messages[0].UniqueMessageID);
-            const newMessage = messages.get(sortedMessages[index - 1].messages[0].UniqueMessageID);
+            const oldMessage = messagesRef.current.get(sortedMessages[index].messages[0].UniqueMessageID);
+            const newMessage = messagesRef.current.get(sortedMessages[index - 1].messages[0].UniqueMessageID);
             if (oldMessage && newMessage) {
                 oldMessage.messageVisible = false;
                 newMessage.messageVisible = true;
-                setMessages(messages);
+                setMessages(new Map<number, DcduMessageBlock>(messagesRef.current));
             }
         }
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_MS0PLUS', 'A32NX_DCDU_BTN_MPR_MS0PLUS'], () => {
-        if (messages.size === 0) {
+        if (!messagesRef.current || messagesRef.current.size === 0) {
             return;
         }
 
@@ -181,17 +197,21 @@ const DCDU: React.FC = () => {
             setSystemStatusMessage(DcduStatusMessage.NoMessage);
             setSystemStatusTimer(null);
 
-            const oldMessage = messages.get(sortedMessages[index].messages[0].UniqueMessageID);
-            const newMessage = messages.get(sortedMessages[index + 1].messages[0].UniqueMessageID);
+            const oldMessage = messagesRef.current.get(sortedMessages[index].messages[0].UniqueMessageID);
+            const newMessage = messagesRef.current.get(sortedMessages[index + 1].messages[0].UniqueMessageID);
             if (oldMessage && newMessage) {
                 oldMessage.messageVisible = false;
                 newMessage.messageVisible = true;
-                setMessages(messages);
+                setMessages(new Map<number, DcduMessageBlock>(messagesRef.current));
             }
         }
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_PRINT', 'A32NX_DCDU_BTN_MPR_PRINT'], () => {
-        const sortedMessages = sortedMessageArray(messages);
+        if (!messagesRef.current || messagesRef.current.size === 0) {
+            return;
+        }
+
+        const sortedMessages = sortedMessageArray(messagesRef.current);
         const index = sortedMessages.findIndex((element) => element.messageVisible);
         if (index !== -1) {
             events.triggerToAllSubscribers('A32NX_ATSU_PRINT_MESSAGE', sortedMessages[index].messages[0].UniqueMessageID);
@@ -207,6 +227,10 @@ const DCDU: React.FC = () => {
 
     // resynchronization with ATSU
     useCoherentEvent('A32NX_DCDU_MSG', (serializedMessages: any) => {
+        if (!messagesRef.current) {
+            return;
+        }
+
         const cpdlcMessages: CpdlcMessage[] = [];
 
         serializedMessages.forEach((serialized) => {
@@ -228,7 +252,9 @@ const DCDU: React.FC = () => {
         });
 
         if (cpdlcMessages.length !== 0) {
-            const dcduBlock = messages.get(cpdlcMessages[0].UniqueMessageID);
+            const newMessageMap = new Map<number, DcduMessageBlock>(messagesRef.current);
+            const dcduBlock = newMessageMap.get(cpdlcMessages[0].UniqueMessageID);
+
             if (dcduBlock !== undefined) {
                 // update the communication states and response
                 dcduBlock.messages = cpdlcMessages;
@@ -262,19 +288,12 @@ const DCDU: React.FC = () => {
                 } else if (cpdlcMessages[0].MessageMonitoring === CpdlcMessageMonitoringState.Cancelled) {
                     message.statusMessage = DcduStatusMessage.MonitoringCancelled;
                 }
-                messages.set(cpdlcMessages[0].UniqueMessageID, message);
-            }
-
-            if (messages.size === 1) {
-                const message = messages.get(cpdlcMessages[0].UniqueMessageID);
-                if (message) {
-                    message.messageVisible = true;
-                }
+                newMessageMap.set(cpdlcMessages[0].UniqueMessageID, message);
             }
 
             // check if we have a semantic response and all data is available
             if (cpdlcMessages[0].SemanticResponseRequired && cpdlcMessages[0].Response && cpdlcMessages[0].Response.Content) {
-                const dcduBlock = messages.get(cpdlcMessages[0].UniqueMessageID);
+                const dcduBlock = newMessageMap.get(cpdlcMessages[0].UniqueMessageID);
                 if (dcduBlock) {
                     dcduBlock.semanticResponseIncomplete = false;
                     if (dcduBlock.statusMessage === DcduStatusMessage.NoFmData || dcduBlock.statusMessage === DcduStatusMessage.McduForModification) {
@@ -291,7 +310,14 @@ const DCDU: React.FC = () => {
                 }
             }
 
-            setMessages(messages);
+            if (newMessageMap.size === 1) {
+                const message = newMessageMap.get(cpdlcMessages[0].UniqueMessageID);
+                if (message) {
+                    message.messageVisible = true;
+                }
+            }
+
+            setMessages(newMessageMap);
         }
     });
     useCoherentEvent('A32NX_DCDU_MSG_DELETE_UID', (uid: number) => {
@@ -305,7 +331,11 @@ const DCDU: React.FC = () => {
         setSystemStatusTimer(5000);
     });
     useCoherentEvent('A32NX_DCDU_MSG_ATSU_STATUS', (uid: number, status: DcduStatusMessage) => {
-        const dcduBlock = messages.get(uid);
+        if (!messagesRef.current) {
+            return;
+        }
+
+        const dcduBlock = messagesRef.current.get(uid);
         if (dcduBlock !== undefined) {
             dcduBlock.statusMessage = status;
             if (status === DcduStatusMessage.NoMessage) {
@@ -315,26 +345,11 @@ const DCDU: React.FC = () => {
                     dcduBlock.statusMessage = DcduStatusMessage.MonitoringCancelled;
                 }
             }
-            setMessages(messages);
+            setMessages(new Map<number, DcduMessageBlock>(messagesRef.current));
         }
     });
 
     useUpdate((deltaTime) => {
-        if (timer !== null) {
-            if (timer > 0) {
-                setTimer(timer - (deltaTime / 1000));
-            } else if (state === DcduState.Off && electricityState !== 0) {
-                setState(DcduState.Selftest);
-                setTimer(6);
-            } else if (state === DcduState.Selftest) {
-                setState(DcduState.Waiting);
-                setTimer(12);
-            } else if (state === DcduState.Waiting) {
-                setState(DcduState.On);
-                setTimer(null);
-            }
-        }
-
         // check if the timeout of messages is triggered
         const currentTime = new Date().getTime() / 1000;
         const sortedArray = sortedMessageArray(messages);
@@ -373,15 +388,25 @@ const DCDU: React.FC = () => {
     useEffect(() => {
         if (state === DcduState.On && electricityState === 0) {
             setState(DcduState.Standby);
-        } else if (state === DcduState.Off && electricityState !== 0) {
-            setState(DcduState.Selftest);
-            setTimer(6);
+            setScreenTimeout(setTimeout(() => setState(DcduState.Off), 10000));
         } else if (state === DcduState.Standby && electricityState !== 0) {
             setState(DcduState.On);
-            setTimer(null);
-        } else if (electricityState === 0) {
+            if (screenTimeout) {
+                clearTimeout(screenTimeout);
+                setScreenTimeout(null);
+            }
+        } else if (state === DcduState.Off && electricityState !== 0) {
+            setState(DcduState.Selftest);
+            setScreenTimeout(setTimeout(() => {
+                setState(DcduState.Waiting);
+                setScreenTimeout(setTimeout(() => setState(DcduState.On), 12000));
+            }, 6000));
+        } else if ((state === DcduState.Selftest || state === DcduState.Waiting) && electricityState === 0) {
             setState(DcduState.Off);
-            setTimer(null);
+            if (screenTimeout) {
+                clearTimeout(screenTimeout);
+                setScreenTimeout(null);
+            }
         }
     }, [electricityState]);
 
@@ -392,7 +417,7 @@ const DCDU: React.FC = () => {
     let visibleMessageStatus: DcduStatusMessage = DcduStatusMessage.NoMessage;
     let response: number = -1;
     if (state === DcduState.On && messages.size !== 0) {
-        const arrMessages = sortedMessageArray(messages);
+        const arrMessages = sortedMessageArray(messagesRef.current);
 
         messageIndex = arrMessages.findIndex((element) => element.messageVisible);
         if (messageIndex !== -1) {
@@ -533,7 +558,7 @@ const DCDU: React.FC = () => {
                     <AtsuStatusMessage visibleMessage={visibleMessageStatus} systemMessage={systemStatusMessage} />
                     <DcduLines />
                     {
-                        (messages.size > 1
+                        (messagesRef.current.size > 1
                         && (
                             <>
                                 <g>
@@ -543,7 +568,7 @@ const DCDU: React.FC = () => {
                                         {' '}
                                         /
                                         {' '}
-                                        {messages.size}
+                                        {messagesRef.current.size}
                                     </text>
                                 </g>
                             </>

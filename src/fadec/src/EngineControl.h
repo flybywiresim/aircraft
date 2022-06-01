@@ -20,11 +20,11 @@
 
 /* Values in gallons */
 struct Configuration {
-    double fuelCenter = 0;
-    double fuelLeft = 400;
-    double fuelRight = fuelLeft;
-    double fuelLeftAux = 228;
-    double fuelRightAux = fuelLeftAux;
+  double fuelCenter = 0;
+  double fuelLeft = 400;
+  double fuelRight = fuelLeft;
+  double fuelLeftAux = 228;
+  double fuelRightAux = fuelLeftAux;
 };
 
 class EngineControl {
@@ -34,6 +34,7 @@ class EngineControl {
   Polynomial* poly;
   Timer timerLeft;
   Timer timerRight;
+  Timer timerFuel;
 
   std::string confFilename = FILENAME_FADEC_CONF_DIRECTORY;
 
@@ -821,11 +822,13 @@ class EngineControl {
         fuelLeftAux = (fuelAuxLeftPre / fuelWeightGallon);    // USG
         fuelRightAux = (fuelAuxRightPre / fuelWeightGallon);  // USG
 
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelCenter);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                      &fuelCenter);
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeft);
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRight);
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeftAux);
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRightAux);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                      &fuelRightAux);
       }
     } else if (!uiFuelTamper && refuelStartedByUser == 1) {  // Detects refueling from the EFB
       simVars->setFuelLeftPre(leftQuantity);                 // in LBS
@@ -932,9 +935,9 @@ class EngineControl {
     }
 
     // Will save the current fuel quantities if on the ground AND engines being shutdown
-    if(simVars->getSimOnGround() &&
-        (engine1State == 0 || engine1State == 10 || engine1State == 4 || engine1State == 14 ||
-        engine2State == 0 || engine2State == 10 || engine2State == 4 || engine2State == 14)) {
+    if (timerFuel.elapsed() >= 1000 && simVars->getSimOnGround() &&
+        (engine1State == 0 || engine1State == 10 || engine1State == 4 || engine1State == 14 || engine2State == 0 || engine2State == 10 ||
+         engine2State == 4 || engine2State == 14)) {
       Configuration configuration;
 
       configuration.fuelLeft = simVars->getFuelLeftPre() / simVars->getFuelWeightGallon();
@@ -944,6 +947,7 @@ class EngineControl {
       configuration.fuelRightAux = simVars->getFuelAuxRightPre() / simVars->getFuelWeightGallon();
 
       saveFuelInConfiguration(configuration);
+      timerFuel.reset();
     }
   }
 
@@ -1056,7 +1060,7 @@ class EngineControl {
   /// <summary>
   /// Initialize the FADEC and Fuel model
   /// </summary>
-  void initialize(const char * acftRegistration) {
+  void initialize(const char* acftRegistration) {
     std::cout << "FADEC: Initializing EngineControl" << std::endl;
 
     simVars = new SimVars();
@@ -1250,8 +1254,9 @@ class EngineControl {
     mINI::INIFile iniFile(confFilename);
 
     if (!iniFile.read(stInitStructure)) {
-      std::cout << "EngineControl: failed to read configuration file " << confFilename << " due to error \"" << strerror(errno) << "\" -> use default main/aux/center: " <<
-        configuration.fuelLeft << "/" << configuration.fuelLeftAux << "/" << configuration.fuelCenter << std::endl;
+      std::cout << "EngineControl: failed to read configuration file " << confFilename << " due to error \"" << strerror(errno)
+                << "\" -> use default main/aux/center: " << configuration.fuelLeft << "/" << configuration.fuelLeftAux << "/"
+                << configuration.fuelCenter << std::endl;
     } else {
       configuration = loadConfiguration(stInitStructure);
     }
@@ -1261,11 +1266,11 @@ class EngineControl {
 
   Configuration loadConfiguration(const mINI::INIStructure& structure) {
     return {
-      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY, 0),
-      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY, 400.0),
-      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY, 400.0),
-      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY, 228.0),
-      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY, 228.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY, 0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY, 400.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY, 400.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY, 228.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY, 228.0),
     };
   }
 
@@ -1282,8 +1287,9 @@ class EngineControl {
     stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY] = std::to_string(configuration.fuelLeftAux);
     stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY] = std::to_string(configuration.fuelRightAux);
 
-    if(!iniFile.write(stInitStructure, true)) {
-      std::cout << "EngineControl: failed to write engine conf " << confFilename << " due to error \"" << strerror(errno) << "\"" << std::endl;
+    if (!iniFile.write(stInitStructure, true)) {
+      std::cout << "EngineControl: failed to write engine conf " << confFilename << " due to error \"" << strerror(errno) << "\""
+                << std::endl;
     }
   }
 };

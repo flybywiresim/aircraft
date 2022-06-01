@@ -92,12 +92,12 @@ class CDUAvailableArrivalsPage {
                         let runwayCourse = '---';
                         const runway = airportInfo.oneWayRunways.find((rw) => rw.number === approach.runwayNumber && rw.designator === approach.runwayDesignator);
                         if (runway) {
-                            runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
+                            runwayLength = NXUnits.mToUser(runway.length).toFixed(0);
                             const magVar = Facilities.getMagVar(runway.latitude, runway.longitude);
                             runwayCourse = Utils.leadingZeros(Math.round(A32NX_Util.trueToMagnetic(runway.direction, magVar)), 3);
                         }
-                        rows[2 * i] = [`{cyan}{${approach.name}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
-                        rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
+                        rows[2 * i] = [`{cyan}{${approach.name.padEnd(9)}{end}` + runwayLength.padStart(5) + "{small}" + NXUnits.userDistanceUnit().padEnd(2) + "{end}[color]cyan", "", ""];
+                        rows[2 * i + 1] = ["{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(approach.index, () => {
                                 mcdu.flightPlanManager.setDestinationRunwayIndexFromApproach();
@@ -233,7 +233,7 @@ class CDUAvailableArrivalsPage {
             const maxPage = starSelection ? (selectedArrival ? Math.max(selectedArrival.enRouteTransitions.length - 2, matchingArrivals.length - 2) : matchingArrivals.length - 2) : (pageCurrent, airportInfo.approaches.length - 3);
             if (pageCurrent < maxPage) {
                 mcdu.onUp = () => {
-                    pageCurrent++;
+                    pageCurrent += 3;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
@@ -243,7 +243,7 @@ class CDUAvailableArrivalsPage {
             }
             if (pageCurrent > 0) {
                 mcdu.onDown = () => {
-                    pageCurrent--;
+                    pageCurrent -= 3;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
@@ -258,7 +258,7 @@ class CDUAvailableArrivalsPage {
                 [selectedApproachCell + "[color]" + selectedApproachCellColor, selectedStarCell + "[color]" + selectedStarCellColor, "{sp}" + selectedViasCell + "[color]" + selectedViasCellColor],
                 [viasPageLabel, "TRANS{sp}"],
                 [viasPageLine, selectedTransitionCell + "[color]" + selectedTransitionCellColor],
-                [starSelection ? "STARS" : "APPR", starSelection ? "TRANS" : "", "AVAILABLE"],
+                [(starSelection ? "STARS" : "APPR").padStart(5) + "{sp}{sp}AVAILABLE", starSelection ? "TRANS" : "", ""],
                 rows[0],
                 rows[1],
                 rows[2],
@@ -365,7 +365,7 @@ class CDUAvailableArrivalsPage {
 
             if (pageCurrent < selectedApproach.transitions.length - 3) {
                 mcdu.onUp = () => {
-                    pageCurrent++;
+                    pageCurrent += 4;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
@@ -375,7 +375,7 @@ class CDUAvailableArrivalsPage {
             }
             if (pageCurrent > 0) {
                 mcdu.onDown = () => {
-                    pageCurrent--;
+                    pageCurrent -= 4;
                     if (pageCurrent < 0) {
                         pageCurrent = 0;
                     }
