@@ -45,11 +45,9 @@ class CDUAvailableDeparturesPage {
                     const runway = runways[index];
                     if (runway) {
                         rows[2 * i] = [
-                            "{" + Avionics.Utils.formatRunway(runway.designation) + "[color]cyan",
-                            "",
-                            runway.length.toFixed(0) + "{small}M{end}[color]cyan"
+                            "{" + Avionics.Utils.formatRunway(runway.designation).padEnd(8) + NXUnits.mToUser(runway.length).toFixed(0).padStart(5) + "{small}" + NXUnits.userDistanceUnit().padEnd(2) + "{end}" + "".padEnd(11) + "[color]cyan"
                         ];
-                        rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + Utils.leadingZeros(Math.round((runway.direction)), 3) + "[color]cyan",];
+                        rows[2 * i + 1] = ["{sp}{sp}{sp}" + Utils.leadingZeros(Math.round((runway.direction)), 3) + "[color]cyan",];
                         mcdu.onLeftInput[i + 1] = async () => {
                             mcdu.setOriginRunwayIndex(index, () => {
                                 CDUAvailableDeparturesPage.ShowPage(mcdu, airport, 0, true);
@@ -170,10 +168,10 @@ class CDUAvailableDeparturesPage {
             }
             mcdu.setArrows(up, down, true, true);
             mcdu.setTemplate([
-                ["DEPARTURES {small}FROM{end} {green}" + airport.ident + "{end}"],
+                ["{sp}DEPARTURES {small}FROM{end} {green}" + airport.ident + "{sp}{sp}{sp}"],
                 ["{sp}RWY", "TRANS{sp}", "{sp}SID"],
                 [selectedRunwayCell + "[color]" + selectedRunwayCellColor, selectedTransCell + "[color]" + selectedTransCellColor, selectedSidCell + "[color]" + selectedSidCellColor],
-                sidSelection ? ["SIDS", "TRANS", "AVAILABLE"] : ["", "", "RUNWAYS AVAILABLE"],
+                sidSelection ? ["SIDS", "TRANS", "AVAILABLE"] : ["", "", "AVAILABLE RUNWAYS{sp}"],
                 rows[0],
                 rows[1],
                 rows[2],
