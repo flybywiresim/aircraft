@@ -482,7 +482,7 @@
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
         </UseTemplate>
 
-        <!-- <UseTemplate Name="FBW_Anim_Interactions">
+        <!--<UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_ILS#</NODE_ID>
@@ -498,7 +498,7 @@
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
         </UseTemplate>
 
-        <UseTemplate Name="FBW_Anim_Interactions">
+         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_MLS#</NODE_ID>
@@ -512,7 +512,7 @@
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
-        </UseTemplate>
+        </UseTemplate> -->
 
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
@@ -523,7 +523,19 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_ADF1#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_ADF1#</NODE_ID_LED>
             <INSTRUMENT>ADF1</INSTRUMENT>
-            <ONCLICK></ONCLICK>
+            <ONCLICK>
+                <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
+                (A:ADF SOUND, Bool) 1 == (L:XMLVAR_NAV_L_ADF1_Switch_Down) 0 == (L:XMLVAR_NAV_R_ADF1_Switch_Down) 0 == and and if{
+                    1 (&gt;K:RADIO_ADF_IDENT_TOGGLE)
+                }
+
+                (A:ADF SOUND, Bool) 0 == (L:XMLVAR_NAV_L_ADF1_Switch_Down) 1 == (L:XMLVAR_NAV_R_ADF1_Switch_Down) 1 == or and if{
+                    1 (&gt;K:RADIO_ADF_IDENT_TOGGLE)
+                }
+            </ONCLICK>
+            <FROM_VOLUME>(A:ADF VOLUME:1, percent)</FROM_VOLUME>
+            <INC_VOLUME>(&gt;K:ADF_VOLUME_INC)</INC_VOLUME>
+            <DEC_VOLUME>(&gt;K:ADF_VOLUME_DEC)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
@@ -539,12 +551,25 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_ADF2#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_ADF2#</NODE_ID_LED>
             <INSTRUMENT>ADF2</INSTRUMENT>
-            <ONCLICK></ONCLICK>
+            <ONCLICK>
+                <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
+                (A:ADF SOUND:2, Bool) 1 == (L:XMLVAR_NAV_L_ADF2_Switch_Down) 0 == (L:XMLVAR_NAV_R_ADF2_Switch_Down) 0 == and and if{
+                    1 (&gt;K:RADIO_ADF2_IDENT_TOGGLE)
+                }
+
+                (A:ADF SOUND:2, Bool) 0 == (L:XMLVAR_NAV_L_ADF2_Switch_Down) 1 == (L:XMLVAR_NAV_R_ADF2_Switch_Down) 1 == or and if{
+                    1 (&gt;K:RADIO_ADF2_IDENT_TOGGLE)
+                }
+            </ONCLICK>
+            <!-- Have to use an external var because we are unable to set ADF 2 volume even though it's set at 100 by default -->
+            <FROM_VOLUME>(L:XMLVAR_NAV_#SIDE#_ADF2_Volume) 100 *</FROM_VOLUME>
+            <INC_VOLUME>(L:XMLVAR_NAV_#SIDE#_ADF2_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_ADF2_Volume)</INC_VOLUME>
+            <DEC_VOLUME>(L:XMLVAR_NAV_#SIDE#_ADF2_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_ADF2_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
-        </UseTemplate> -->
+        </UseTemplate>
 
 
     </Template>
