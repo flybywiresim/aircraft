@@ -108,6 +108,7 @@ const DCDU: React.FC = () => {
         const message = messagesRef.current.get(uid);
         if (message) {
             message.statusMessage = DcduStatusMessage.McduForModification;
+            events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_READ', uid);
             events.triggerToAllSubscribers('A32NX_ATSU_DCDU_MESSAGE_MODIFY_RESPONSE', uid);
         }
 
