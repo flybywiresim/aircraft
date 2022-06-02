@@ -29,7 +29,7 @@ function fetchTimeValue() {
  * @param {string | number} value
  */
 const lbsToKg = (value) => {
-    return (+value * 0.453592).toString();
+    return (+value * 0.4535934).toString();
 };
 
 /**
