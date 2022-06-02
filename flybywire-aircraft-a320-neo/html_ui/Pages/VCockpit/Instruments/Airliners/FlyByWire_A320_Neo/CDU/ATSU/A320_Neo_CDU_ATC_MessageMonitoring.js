@@ -1,23 +1,26 @@
 class CDUAtcMessageMonitoring {
     static TranslateCpdlcResponse(response) {
         if (response) {
-            if (response.Content[0].TypeId === "DM0") {
-                return "WILC";
-            }
-            if (response.Content[0].TypeId === "UM0" || response.Content[0].TypeId === "DM1") {
-                return "UNBL";
-            }
-            if (response.Content[0].TypeId === "UM1" || response.Content[0].TypeId === "DM2") {
-                return "STBY";
-            }
-            if (response.Content[0].TypeId === "UM3" || response.Content[0].TypeId === "DM3") {
-                return "ROGR";
-            }
-            if (response.Content[0].TypeId === "UM4" || response.Content[0].TypeId === "DM4") {
-                return "AFRM";
-            }
-            if (response.Content[0].TypeId === "UM5" || response.Content[0].TypeId === "DM5") {
-                return "NEG";
+            switch (response.Content[0].TypeId) {
+                case "DM0":
+                    return "WILC";
+                case "UM0":
+                case "DM1":
+                    return "UNBL";
+                case "UM1":
+                case "DM2":
+                    return "STBY";
+                case "UM3":
+                case "DM3":
+                    return "ROGR";
+                case "UM4":
+                case "DM4":
+                    return "AFRM";
+                case "UM5":
+                case "DM5":
+                    return "NEG";
+                default:
+                    return "";
             }
         }
 

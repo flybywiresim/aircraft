@@ -2,20 +2,32 @@ class CDUAtcMessage {
     static TranslateCpdlcResponse(message) {
         let retval;
 
-        if (message.Content[0].TypeId === "DM0") {
-            retval = "WILC";
-        } else if (message.Content[0].TypeId === "UM0" || message.Content[0].TypeId === "DM1") {
-            retval = "UNBL";
-        } else if (message.Content[0].TypeId === "UM1" || message.Content[0].TypeId === "DM2") {
-            retval = "STBY";
-        } else if (message.Content[0].TypeId === "UM3" || message.Content[0].TypeId === "DM3") {
-            retval = "ROGR";
-        } else if (message.Content[0].TypeId === "UM4" || message.Content[0].TypeId === "DM4") {
-            retval = "AFRM";
-        } else if (message.Content[0].TypeId === "UM5" || message.Content[0].TypeId === "DM5") {
-            retval = "NEG";
-        } else {
-            return "";
+        switch (message.Content[0].TypeId) {
+            case "DM0":
+                retval = "WILC";
+                break;
+            case "UM0":
+            case "DM1":
+                retval = "UNBL";
+                break;
+            case "UM1":
+            case "DM2":
+                retval = "STBY";
+                break;
+            case "UM3":
+            case "DM3":
+                retval = "ROGR";
+                break;
+            case "UM4":
+            case "DM4":
+                retval = "AFRM";
+                break;
+            case "UM5":
+            case "DM5":
+                retval = "NEG";
+                break;
+            default:
+                return "";
         }
 
         let color = '{cyan}';
