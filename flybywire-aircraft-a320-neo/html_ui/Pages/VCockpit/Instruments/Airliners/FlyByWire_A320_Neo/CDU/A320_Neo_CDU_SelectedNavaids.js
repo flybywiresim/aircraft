@@ -3,9 +3,23 @@ class CDUSelectedNavaids {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.SelectedNavaids;
 
+        const isNavButtonPushed = SimVar.GetSimVarValue("L:A32NX_RMP_L_NAV_BUTTON_SELECTED", "Boolean") ||
+                                    SimVar.GetSimVarValue("L:A32NX_RMP_R_NAV_BUTTON_SELECTED", "Boolean");
+
+        let mode = "AUTO";
+        if (isNavButtonPushed) {
+            mode = "RMP";
+        } else if (mcdu.vor1IdIsPilotEntered || mcdu.vor1FreqIsPilotEntered ||
+                    mcdu.vor2IdIsPilotEntered || mcdu.vor2FreqIsPilotEntered ||
+                    mcdu._ilsFrequencyPilotEntered || mcdu._ilsIdentPilotEntered ||
+                    mcdu.adf1IdIsPilotEntered || mcdu.adf1FreqIsPilotEntered ||
+                    mcdu.adf2IdIsPilotEntered || mcdu.adf2FreqIsPilotEntered) {
+            mode = "MAN";
+        }
+
         mcdu.setTemplate([
             ["\xa0SELECTED NAVAIDS"],
-            ["\xa0VOR/TAC", "DESELECT", "AUTO"],
+            ["\xa0VOR/TAC", "DESELECT", mode],
             [``, `[\xa0\xa0\xa0]{small}*{end}[color]cyan`, ""],
             [""],
             [""],
