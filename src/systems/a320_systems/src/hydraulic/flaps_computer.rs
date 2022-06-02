@@ -402,6 +402,8 @@ impl SimulationElement for SlatFlapComplex {
 
 #[cfg(test)]
 mod tests {
+    use crate::hydraulic::A320Hydraulic;
+
     use super::*;
     use ntest::assert_about_eq;
     use std::time::Duration;
@@ -409,6 +411,7 @@ mod tests {
         test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
         Aircraft,
     };
+    use systems::shared::interpolation;
 
     use uom::si::{angular_velocity::degree_per_second, pressure::psi};
 
@@ -424,7 +427,17 @@ mod tests {
     }
     impl FeedbackPositionPickoffUnit for SlatFlapGear {
         fn angle(&self) -> Angle {
-            self.current_angle
+            let synchro_gear_breakpoints = match self.surface_type.as_str() {
+                "FLAPS" => A320Hydraulic::FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
+                "SLATS" => A320Hydraulic::SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
+                _ => panic!(),
+            };
+            let synchro_gear_degrees = match self.surface_type.as_str() {
+                "FLAPS" => A320Hydraulic::FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES,
+                "SLATS" => A320Hydraulic::SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES,
+                _ => panic!(),
+            };
+            Angle::new::<degree>(interpolation(&synchro_gear_degrees, &synchro_gear_breakpoints, self.current_angle.get::<degree>()))
         }
     }
 
@@ -778,7 +791,7 @@ mod tests {
         assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(26), true);
 
         test_bed = test_bed.run_waiting_for(Duration::from_secs(30));
-        println!("fppu angle: {}", test_bed.read_slat_fppu_angle());
+
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(12), false);
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(13), true);
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(14), false);
@@ -810,7 +823,7 @@ mod tests {
         test_bed = test_bed.run_waiting_for(Duration::from_secs(30));
 
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(12), false);
-        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(13), false);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(13), true);
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(14), false);
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(15), false);
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(19), false);
@@ -840,14 +853,74 @@ mod tests {
         test_bed = test_bed.run_waiting_for(Duration::from_secs(30));
 
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(12), false);
-        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(13), false);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(13), true);
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(14), false);
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(15), false);
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(19), false);
-        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(20), false);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(20), true);
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(21), false);
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(22), false);
         assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(23), false);
+    }
+
+    #[test]
+    fn flaps_test_correct_bus_output_config_3() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_yellow_hyd_pressure()
+            .set_blue_hyd_pressure()
+            .set_indicated_airspeed(0.)
+            .set_flaps_handle_position(3)
+            .run_one_tick();
+
+        assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(17), false);
+        assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(18), false);
+        assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(19), false);
+        assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(20), true);
+        assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(21), false);
+        assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(26), false);
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(30));
+
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(12), false);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(13), true);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(14), false);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(15), false);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(19), false);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(20), true);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(21), true);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(22), false);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(23), false);
+    }
+
+    #[test]
+    fn flaps_test_correct_bus_output_config_full() {
+        let mut test_bed = test_bed_with()
+            .set_green_hyd_pressure()
+            .set_yellow_hyd_pressure()
+            .set_blue_hyd_pressure()
+            .set_indicated_airspeed(0.)
+            .set_flaps_handle_position(4)
+            .run_one_tick();
+
+        assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(17), false);
+        assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(18), false);
+        assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(19), false);
+        assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(20), false);
+        assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(21), true);
+        assert_eq!(test_bed.read_slat_flap_system_status_word().get_bit(26), false);
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(30));
+
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(12), false);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(13), true);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(14), true);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(15), true);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(19), false);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(20), true);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(21), true);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(22), true);
+        assert_eq!(test_bed.read_slat_flap_actual_position_word().get_bit(23), true);
     }
 
     // Tests flaps configuration and angles for regular
