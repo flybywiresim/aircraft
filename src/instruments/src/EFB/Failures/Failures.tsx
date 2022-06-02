@@ -61,10 +61,11 @@ export const Failures = () => {
                     <Navbar basePath="/failures" tabs={tabs} />
                 </div>
 
+                <Route path="/failures/comfort">
+                    <ComfortUI filteredChapters={filteredChapters} allChapters={chapters} failures={filteredFailures} />
+                </Route>
+
                 <ScrollableContainer height={48}>
-                    <Route path="/failures/comfort">
-                        <ComfortUI filteredChapters={filteredChapters} allChapters={chapters} failures={filteredFailures} />
-                    </Route>
                     <Route path="/failures/compact">
                         <CompactUI chapters={filteredChapters} failures={filteredFailures} />
                     </Route>
