@@ -59,7 +59,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     if (adirsAlign) {
         return (
             <>
-                <TerrainMap x={0} y={134} width={768} height={250} side={side} ppos={ppos} clipName="rose-mode-map-clip" />
+                <TerrainMap x={0} y={134} width={768} height={250} side={side} clipName="rose-mode-map-clip" />
                 <Overlay
                     heading={heading}
                     rangeSetting={rangeSetting}

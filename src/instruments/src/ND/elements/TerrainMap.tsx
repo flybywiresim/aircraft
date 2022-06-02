@@ -1,10 +1,46 @@
 import React, { useEffect, useState } from 'react';
+import { useArinc429Var } from '@instruments/common/arinc429';
 import { useSimVar } from '@instruments/common/simVars';
 import { Mode, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
-import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { useInteractionEvent } from '@instruments/common/hooks';
+import { useUpdate } from '@instruments/common/hooks';
 
-const MapRenderingTime = 1.5;
+export interface TerrainMapProviderProps {
+    side: EfisSide,
+}
+
+export const TerrainMapProvider: React.FC<TerrainMapProviderProps> = ({ side }) => {
+    const arincLat = useArinc429Var('L:A32NX_ADIRS_IR_1_LATITUDE', 1000);
+    const arincLong = useArinc429Var('L:A32NX_ADIRS_IR_1_LONGITUDE', 1000);
+    const [verticalSpeed] = useSimVar('VERTICAL SPEED', 'feet per second', 1000);
+    const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees', 1000);
+    const [altitude] = useSimVar('PLANE ALTITUDE', 'feet', 1000);
+    const [updateTime, setUpdateTime] = useState<number>(0);
+
+    useEffect(() => {
+        const currentTime = new Date().getTime();
+
+        // do not more than every 500 ms (unneeded due to system design)
+        if (side === 'L' && arincLat.isNormalOperation() && arincLong.isNormalOperation() && (currentTime - updateTime) >= 500) {
+            setUpdateTime(currentTime);
+
+            const currentPosition = {
+                latitude: arincLat.value,
+                longitude: arincLong.value,
+                heading: trueHeading,
+                altitude: Math.round(altitude),
+                verticalSpeed: Math.round(verticalSpeed * 60.0),
+            };
+
+            fetch('http://localhost:8080/api/v1/terrain/position', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentPosition),
+            });
+        }
+    }, [arincLat, arincLong, verticalSpeed, trueHeading, altitude]);
+
+    return <></>;
+};
 
 export interface TerrainMapProps {
     x: number,
@@ -13,95 +49,97 @@ export interface TerrainMapProps {
     height: number,
     side: EfisSide,
     clipName: string,
-    ppos: LatLongData,
 }
 
-export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, side, clipName, ppos }) => {
+export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, side, clipName }) => {
+    const [currentMapTimestamp, setCurrentMapTimestamp] = useState<number | null>(null);
     const [terrOnNdActive] = useSimVar(`L:A32NX_EFIS_TERR_${side}_ACTIVE`, 'boolean', 100);
-    const [renderingTimestamp, setRenderingTimestamp] = useState<number | null>(null);
     const [rangeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number', 100);
     const [modeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_MODE`, 'number', 100);
-    const [verticalSpeed] = useSimVar('VERTICAL SPEED', 'feet per second', 100);
     const [minimumElevation, setMinimumElevation] = useState<number>(Infinity);
     const [maximumElevation, setMaximumElevation] = useState<number>(Infinity);
-    const [trueHeading] = useSimVar('PLANE HEADING DEGREES TRUE', 'degrees');
+    const [rerenderTimeout, setRerenderTimeout] = useState<number | null>(null);
     const [gearMode] = useSimVar('GEAR POSITION:0', 'Enum', 100);
-    const [altitude] = useSimVar('PLANE ALTITUDE', 'feet', 100);
-    const [updateMap, setUpdateMap] = useState<boolean>(false);
 
-    // update the map if needed
-    if (side === 'L') {
-        useEffect(() => {
-            if (side === 'L') {
-                const currentPosition = {
-                    latitude: ppos.lat,
-                    longitude: ppos.long,
-                    heading: trueHeading,
-                    altitude: Math.round(altitude),
-                    verticalSpeed: Math.round(verticalSpeed * 60.0),
-                };
-                fetch('http://localhost:8080/api/v1/terrain/position', {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    cache: 'no-cache',
-                    body: JSON.stringify(currentPosition),
-                }).then(() => setUpdateMap(!updateMap));
+    const syncWithRenderer = (timestamp: number) => {
+        // wait until the rendering is done
+        setTimeout(() => {
+            fetch(`http://localhost:8080/api/v1/terrain/ndMapAvailable?display=${side}&timestamp=${timestamp}`).then((response) => {
+                if (response.ok) {
+                    response.text().then((text) => {
+                        if (text !== 'true') {
+                            syncWithRenderer(timestamp);
+                            return;
+                        }
+
+                        fetch(`http://localhost:8080/api/v1/terrain/terrainRange?display=${side}&timestamp=${timestamp}`, {
+                            method: 'GET',
+                            headers: { Accept: 'application/json' },
+                        }).then((response) => response.json().then((data) => {
+                            if (response.ok) {
+                                if ('minElevation' in data && data.minElevation && 'maxElevation' in data && data.maxElevation) {
+                                    setMinimumElevation(data.minElevation);
+                                    setMaximumElevation(data.maxElevation);
+                                } else {
+                                    setMinimumElevation(Infinity);
+                                    setMaximumElevation(Infinity);
+                                }
+
+                                setCurrentMapTimestamp(timestamp);
+                                setRerenderTimeout(4000);
+                            }
+                        }));
+                    });
+                }
+            });
+        }, 200);
+    };
+
+    // update every 2.5 seconds and 1.5 seconds fade duration
+    useUpdate((deltaTime) => {
+        if (terrOnNdActive && rerenderTimeout !== null) {
+            if (rerenderTimeout <= 0) {
+                setRerenderTimeout(null);
+
+                fetch(`http://127.0.0.1:8080/api/v1/terrain/renderMap?display=${side}`).then((response) => response.text().then((text) => {
+                    const timestamp = parseInt(text);
+                    if (timestamp < 0) {
+                        return;
+                    }
+                    syncWithRenderer(timestamp);
+                }));
+            } else {
+                setRerenderTimeout(rerenderTimeout - deltaTime);
             }
-        }, [altitude, verticalSpeed, ppos.lat, ppos.long, trueHeading]);
-    }
+        } else if (!terrOnNdActive && rerenderTimeout !== null) {
+            setRerenderTimeout(null);
+        }
+    });
 
     useEffect(() => {
-        if (modeIndex === Mode.PLAN || !terrOnNdActive) {
-            setRenderingTimestamp(null);
+        if (!terrOnNdActive) {
+            setCurrentMapTimestamp(null);
+            setRerenderTimeout(null);
+        } else if (rerenderTimeout === null) {
+            setRerenderTimeout(1500);
         }
 
         const displayConfiguration = {
-            display: side,
-            active: modeIndex !== Mode.PLAN && terrOnNdActive,
+            active: modeIndex !== Mode.PLAN && terrOnNdActive !== 0,
             mapWidth: width,
             mapHeight: height,
             meterPerPixel: rangeSettings[rangeIndex] * 1852 / height,
             arcMode: modeIndex === Mode.ARC,
             gearDown: SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum') !== 1,
         };
-        fetch('http://localhost:8080/api/v1/terrain/configureDisplay', {
+        fetch(`http://localhost:8080/api/v1/terrain/displaysettings?display=${side}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            cache: 'no-cache',
             body: JSON.stringify(displayConfiguration),
-        }).then(() => setTimeout(() => {
-            fetch(`http://localhost:8080/api/v1/terrain/terrainRange?display=${side}`, {
-                method: 'GET',
-                headers: { Accept: 'application/json' },
-            }).then((response) => response.json().then((data) => {
-                if ('minElevation' in data && data.minElevation && 'maxElevation' in data && data.maxElevation) {
-                    setMinimumElevation(data.minElevation);
-                    setMaximumElevation(data.maxElevation);
-                } else {
-                    setMinimumElevation(Infinity);
-                    setMaximumElevation(Infinity);
-                }
-                setRenderingTimestamp(new Date().getTime());
-            }));
-        }, MapRenderingTime * 1000));
-    }, [terrOnNdActive, rangeIndex, modeIndex, gearMode, updateMap]);
-
-    // update the system based on the left ND
-    if (side === 'L' && renderingTimestamp === 0) {
-        const cachingConfiguration = {
-            reset: false,
-            ndMapUpdateInterval: MapRenderingTime,
-            visibilityRange: 400,
-        };
-        fetch('http://localhost:8080/api/v1/terrain/configure', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            cache: 'no-cache',
-            body: JSON.stringify(cachingConfiguration),
         });
-    }
+    }, [terrOnNdActive, rangeIndex, modeIndex, gearMode]);
 
-    if (!terrOnNdActive || modeIndex === Mode.PLAN || renderingTimestamp === null || !Number.isFinite(minimumElevation) || !Number.isFinite(maximumElevation)) {
+    if (!terrOnNdActive || modeIndex === Mode.PLAN || currentMapTimestamp === null) {
         return <></>;
     }
 
@@ -111,7 +149,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
     return (
         <>
             <g id="map" clipPath={`url(#${clipName})`}>
-                <image x={x} y={y} width={width} height={height} xlinkHref={`http://localhost:8080/api/v1/terrain/${side === 'L' ? 'left' : 'right'}.png?${renderingTimestamp}`} />
+                <image x={x} y={y} width={width} height={height} xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${currentMapTimestamp}`} />
             </g>
             <text x={688} y={612} fontSize={23} fill="rgb(0,255,255)">
                 TERR
