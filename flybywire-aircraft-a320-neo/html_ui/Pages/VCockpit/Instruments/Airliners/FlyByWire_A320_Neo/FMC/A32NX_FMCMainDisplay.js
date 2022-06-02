@@ -3726,7 +3726,12 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    setIlsFrequency(s, callback) {
+    setIlsFrequency(s, navpushbutton, callback) {
+        if (navpushbutton) {
+            this.setScratchpadMessage(NXSystemMessages.notAllowed);
+            return callback(false);
+        }
+
         if (s === FMCMainDisplay.clrValue) {
             if (!this._ilsIdentPilotEntered && !this._ilsFrequencyPilotEntered) {
                 this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -3800,8 +3805,9 @@ class FMCMainDisplay extends BaseAirliners {
         }
     }
 
-    setLsCourse(s, callback) {
-        if (!this.ilsAutoTuned && !this._ilsFrequencyPilotEntered && !this._ilsIdentPilotEntered) {
+    setLsCourse(s, navpushbutton, callback) {
+        if ((!this.ilsAutoTuned && !this._ilsFrequencyPilotEntered && !this._ilsIdentPilotEntered) ||
+                navpushbutton) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return callback(false);
         }
