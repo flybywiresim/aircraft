@@ -19,6 +19,7 @@
 1. [CDSS] When off no longer displays door video - @davidwalschots (David Walschots)
 1. [FMGC] Map leg course with station declination where required - @tracernz (Mike)
 1. [HYD] Gear system now supports spawning in flight gear up - @Crocket63 (crocket)
+1. [MCDU] Added imperial runway length - @derl30n (Leon)
 1. [FLIGHTMODEL] Improve flight handling characteristics and landing gear simulation - @donstim (donbikes#4084)
 
 ## 0.8.0
