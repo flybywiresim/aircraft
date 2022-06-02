@@ -141,6 +141,7 @@
       "CateringTruck": "餐车",
       "Cones": "安全锥",
       "DoorAft": "后门",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "前门",
       "ExternalPower": "外部电源",
       "FuelTruck": "加油车",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "世界标准时间 (UTC) 与本地时间"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "模拟电池电量",
   "StatusBar": {
     "Apr": "四月",

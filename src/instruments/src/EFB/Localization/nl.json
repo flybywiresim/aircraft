@@ -141,6 +141,7 @@
       "CateringTruck": "Catering Truck",
       "Cones": "Safety Cones",
       "DoorAft": "Deur achter",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Deur voor",
       "ExternalPower": "Externe voeding",
       "FuelTruck": "Brandstof Wagen",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC en lokaal"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Levensduur batterij gesimuleerd",
   "StatusBar": {
     "Apr": "Apr.",

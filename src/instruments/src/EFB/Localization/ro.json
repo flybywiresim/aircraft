@@ -141,6 +141,7 @@
       "CateringTruck": "Camion de Catering",
       "Cones": "Safety Cones",
       "DoorAft": "Uşa din spate",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Uşa din față",
       "ExternalPower": "Unitate externă",
       "FuelTruck": "Camion de combustibil",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC și local"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Viată baterie simulată",
   "StatusBar": {
     "Apr": "Apr",

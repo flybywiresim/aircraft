@@ -141,6 +141,7 @@
       "CateringTruck": "Cateringový vůz",
       "Cones": "Výstražné kužely",
       "DoorAft": "Zadní dveře",
+      "DoorCargo": "Nákladní dveře",
       "DoorFwd": "Přední dveře",
       "ExternalPower": "Externí napájení",
       "FuelTruck": "Cisterna",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC a místní"
     }
   },
+  "Settings.Realism.PauseAtTod": "Pauza na T/D",
+  "Settings.Realism.PauseAtTodDistance": "Vzdálenost zapauzování před T/D (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Simulace výdrže baterie",
   "StatusBar": {
     "Apr": "Dub",

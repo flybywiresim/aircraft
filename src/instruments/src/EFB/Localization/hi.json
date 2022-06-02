@@ -141,6 +141,7 @@
       "CateringTruck": "खानपान ट्रक",
       "Cones": "सुरक्षा कोन",
       "DoorAft": "पिछला दरवाज़ा",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "अगला दरवाज़ा",
       "ExternalPower": "ग्राउंड पावर यूनिट",
       "FuelTruck": "ईंधन ट्रक",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "यूटीसी और लोकल"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "बैटरी लाइफ सिमुलेट",
   "StatusBar": {
     "Apr": "अप्रैल",

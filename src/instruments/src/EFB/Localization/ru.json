@@ -141,6 +141,7 @@
       "CateringTruck": "Кейтеринг грузовик",
       "Cones": "Предохранительные конусы",
       "DoorAft": "Задняя дверь",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Передняя дверь",
       "ExternalPower": "Внешнее питание",
       "FuelTruck": "Топливная тележка",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC и местное"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Имитация расхода батареи",
   "StatusBar": {
     "Apr": "Апр",

@@ -141,6 +141,7 @@
       "CateringTruck": "Catering kamioia",
       "Cones": "Safety Cones",
       "DoorAft": "Atz. Atea",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Aurr. Atea",
       "ExternalPower": "Kanpo elikatze elektrikoa",
       "FuelTruck": "Erregai kamioia",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC and Local"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Battery Life Simulated",
   "StatusBar": {
     "Apr": "Apr",

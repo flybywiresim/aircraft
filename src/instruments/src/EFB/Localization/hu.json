@@ -141,6 +141,7 @@
       "CateringTruck": "Utasellátó",
       "Cones": "Safety Cones",
       "DoorAft": "Hátsó ajtó",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Első ajtó",
       "ExternalPower": "Külső áramforrás",
       "FuelTruck": "Tartálykocsi",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC és helyi"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Akkumulátor élettartam szimulálva",
   "StatusBar": {
     "Apr": "Ápr.",

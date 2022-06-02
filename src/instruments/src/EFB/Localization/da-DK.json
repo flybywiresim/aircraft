@@ -141,6 +141,7 @@
       "CateringTruck": "Catering Truck",
       "Cones": "Safety Cones",
       "DoorAft": "Bagdør",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Front Dør",
       "ExternalPower": "Ekstern Strøm",
       "FuelTruck": "Brændstof Lastbil",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC og Lokal"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Batterilevetid simuleret",
   "StatusBar": {
     "Apr": "Apr",

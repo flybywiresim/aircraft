@@ -141,8 +141,9 @@
       "CateringTruck": "Ateriapalvelut",
       "Cones": "Varoituskartiot",
       "DoorAft": "Takaovi",
+      "DoorCargo": "Rahtiovi",
       "DoorFwd": "Etuovi",
-      "ExternalPower": "Maasähkö",
+      "ExternalPower": "Maavirtayksikkö",
       "FuelTruck": "Polttoainerekka",
       "JetBridge": "Matkustajasilta",
       "Title": "Palvelut",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC ja paikallinen"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Akun keston simulointi",
   "StatusBar": {
     "Apr": "Huhti",

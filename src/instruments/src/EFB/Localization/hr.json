@@ -141,6 +141,7 @@
       "CateringTruck": "Catering kamion",
       "Cones": "Safety Cones",
       "DoorAft": "Stražnja vrata",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Prednja vrata",
       "ExternalPower": "Vanjsko napajanje",
       "FuelTruck": "Kamion za gorivo",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC and Local"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Battery Life Simulated",
   "StatusBar": {
     "Apr": "Apr",

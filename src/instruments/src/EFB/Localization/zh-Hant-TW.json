@@ -141,6 +141,7 @@
       "CateringTruck": "餐食車",
       "Cones": "Safety Cones",
       "DoorAft": "後門",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "前門",
       "ExternalPower": "外部電源",
       "FuelTruck": "加油車",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC and Local"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Battery Life Simulated",
   "StatusBar": {
     "Apr": "Apr",

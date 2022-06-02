@@ -141,6 +141,7 @@
       "CateringTruck": "Truk Katering",
       "Cones": "Safety Cones",
       "DoorAft": "Pintu Belakang",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Pintu Depan",
       "ExternalPower": "Daya Eksternal",
       "FuelTruck": "Truk Bahan Bakar",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC dan Lokal"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Daya Baterai Disimulasikan",
   "StatusBar": {
     "Apr": "Apr",

@@ -141,6 +141,7 @@
       "CateringTruck": "Ciężarówka Gastronomiczna",
       "Cones": "Pachołki Bezpieczeństwa",
       "DoorAft": "Drzwi Rufowe",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Przednie Drzwi",
       "ExternalPower": "Zewnętrzne Zasilanie",
       "FuelTruck": "Cysterna z Paliwem",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC i Lokalny"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Symuluj Zużycie Baterii",
   "StatusBar": {
     "Apr": "Kwi",

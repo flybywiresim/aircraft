@@ -141,8 +141,9 @@
       "CateringTruck": "Xe cung cấp thức ăn",
       "Cones": "Chóp nón An toàn",
       "DoorAft": "Cửa phía sau",
+      "DoorCargo": "Cửa hàng hóa vận chuyển",
       "DoorFwd": "Cửa phía trước",
-      "ExternalPower": "Nguồn điện ngoài",
+      "ExternalPower": "Nguồn điện phía ngoài",
       "FuelTruck": "Xe chở nhiên liệu",
       "JetBridge": "Ống lồng",
       "Title": "Các dịch vụ",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC và địa phương"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Giả lập mức pin",
   "StatusBar": {
     "Apr": "Thg 4",

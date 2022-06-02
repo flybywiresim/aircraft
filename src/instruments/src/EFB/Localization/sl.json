@@ -141,6 +141,7 @@
       "CateringTruck": "Gostinski tovornjak",
       "Cones": "Varnostni stožci",
       "DoorAft": "Zadnja vrata",
+      "DoorCargo": "Tovorna vrata",
       "DoorFwd": "Sprednja vrata",
       "ExternalPower": "Zunanje napajanje",
       "FuelTruck": "Tovornjak z gorivom",
@@ -459,7 +460,7 @@
       "Active": "Aktivno",
       "Auto": "Samodejno",
       "Calibrate": "Kalibracija",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "Varnostni stožci",
       "DefaultBarometerUnit": "Privzeta barometrična enota",
       "DynamicRegistrationDecal": "Dinamična registrska nalepka",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Omogoči povezavo s strežnikom MCDU (samodejna deaktivacija po 5 minutah, če ni uspešne povezave)",
@@ -474,7 +475,7 @@
       "ThrottleDetents": "Odkloni plinske ročke",
       "Title": "Nastavitve simulatorja",
       "UseCalculatedIlsSignals": "Uporaba izračunanih signalov ILS",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "Kolesne zagozde",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC in lokalni čas"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Simulirano trajanje baterije",
   "StatusBar": {
     "Apr": "Apr",

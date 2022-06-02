@@ -141,6 +141,7 @@
       "CateringTruck": "Veicolo Catering",
       "Cones": "Coni di Sicurezza",
       "DoorAft": "Porta Post.",
+      "DoorCargo": "Porta Cargo",
       "DoorFwd": "Porta Ant.",
       "ExternalPower": "Unità di Alimentazione Esterna",
       "FuelTruck": "Veicolo Carburante",
@@ -239,7 +240,7 @@
       "OverweightProcedure": "Procedura Sovraccarico",
       "Qnh": "QNH",
       "ReverseThrust": "Inversori di Spinta",
-      "RunwayAltitude": "Altitudine Pista",
+      "RunwayAltitude": "Elevazione Pista",
       "RunwayAltitudeUnit": "ASL ft",
       "RunwayCondition": "Condizioni Pista",
       "RunwayConditions": {
@@ -315,7 +316,7 @@
   "Presets": {
     "AircraftStates": {
       "Cancel": "Annulla",
-      "ColdDark": "Spento",
+      "ColdDark": "Cold & Dark",
       "ConfirmationDialogMsg": "Prego conferma caricamento del preset.",
       "CurrentProcedureStep": "Stato Processo in Corso",
       "PleaseConfirmLoadingOfPreset": "Prego conferma caricamento del preset.",
@@ -383,7 +384,7 @@
       "SliderDirection": "Sposta per direzione desiderata",
       "SliderSpeed": "Sposta per velocità desiderata",
       "SystemEnabledOff": "Clicca per attivare il sistema pushback.",
-      "SystemEnabledOn": "Clicca per spegner completamente il sistema pushback.",
+      "SystemEnabledOn": "Clicca per disattivare completamente il sistema pushback.",
       "ZoomIn": "Ingrandisci",
       "ZoomOut": "Rimpicciolisci"
     },
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC e Locale"
     }
   },
+  "Settings.Realism.PauseAtTod": "Interruzione T/D",
+  "Settings.Realism.PauseAtTodDistance": "Distanza Interruzione T/D (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Durata Batteria Simulata",
   "StatusBar": {
     "Apr": "Apr",

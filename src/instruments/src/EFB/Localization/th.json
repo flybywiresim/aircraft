@@ -141,6 +141,7 @@
       "CateringTruck": "รถบรรทุกอาหาร",
       "Cones": "กรวยนิรภัย",
       "DoorAft": "ประตูท้าย",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "ประตูหน้า",
       "ExternalPower": "พลังงานภาคพื้น",
       "FuelTruck": "รถบรรทุกน้ำมัน",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC และท้องถิ่น"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "จำลองการใช้งานแบตเตอรี่",
   "StatusBar": {
     "Apr": "เม.ย.",

@@ -141,6 +141,7 @@
       "CateringTruck": "Camión de catering",
       "Cones": "Conos de seguridad",
       "DoorAft": "Puerta trasera",
+      "DoorCargo": "Puerta de Carga",
       "DoorFwd": "Puerta delantera",
       "ExternalPower": "Alimentación externa",
       "FuelTruck": "Camión de combustible",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC y local"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Duración de la batería simulada",
   "StatusBar": {
     "Apr": "Abr",

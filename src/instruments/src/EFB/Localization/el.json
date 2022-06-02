@@ -141,6 +141,7 @@
       "CateringTruck": "Φορτηγό Τροφοδοσίας",
       "Cones": "Safety Cones",
       "DoorAft": "Πίσω Πόρτα",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Μπροστινή Πόρτα",
       "ExternalPower": "Εξωτερική Ισχύος ",
       "FuelTruck": "Φορτηγό Καυσίμων",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC και Τοπική"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Προσομοίωση Διάρκειας Zωής Mπαταρίας",
   "StatusBar": {
     "Apr": "Απρ",

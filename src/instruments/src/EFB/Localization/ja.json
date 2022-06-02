@@ -141,6 +141,7 @@
       "CateringTruck": "機内食トラック",
       "Cones": "セーフティコーン",
       "DoorAft": "後部ドア",
+      "DoorCargo": "貨物ドア",
       "DoorFwd": "前部ドア",
       "ExternalPower": "地上電源装置",
       "FuelTruck": "燃料トラック",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTCとローカル"
     }
   },
+  "Settings.Realism.PauseAtTod": "降下開始地点で一時停止",
+  "Settings.Realism.PauseAtTodDistance": "降下開始地点の手前で一時停止する距離(nm)",
   "Settings.flyPad.BatteryLifeEnabled": "バッテリー消耗のシミュレーション",
   "StatusBar": {
     "Apr": "4月",

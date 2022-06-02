@@ -141,6 +141,7 @@
       "CateringTruck": "Yemek Servis Aracı",
       "Cones": "Safety Cones",
       "DoorAft": "Arka Giriş Kapısı",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Ön Giriş Kapısı",
       "ExternalPower": "Harici Güç",
       "FuelTruck": "Yakıt Kamyonu",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC ve Yerel"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Pil Ömrü Simülasyonu Etkin",
   "StatusBar": {
     "Apr": "Nis",

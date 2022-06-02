@@ -141,6 +141,7 @@
       "CateringTruck": "Catering Truck",
       "Cones": "Safety Cones",
       "DoorAft": "Door Aft",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Pintu dpn.",
       "ExternalPower": "Ground Power Unit",
       "FuelTruck": "Fuel Truck",
@@ -522,6 +523,8 @@
       "UtcAndLocal": "UTC and Local"
     }
   },
+  "Settings.Realism.PauseAtTod": "T/D Pause",
+  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Battery Life Simulated",
   "StatusBar": {
     "Apr": "Apr",
