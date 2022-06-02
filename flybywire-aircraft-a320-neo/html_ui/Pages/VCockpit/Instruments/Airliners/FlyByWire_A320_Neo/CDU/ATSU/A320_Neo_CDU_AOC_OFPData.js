@@ -74,7 +74,6 @@ class CDUAocOfpData {
                 async (value) => {
                     setDefaultWeights(0, 0);
                     await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", value);
-                    await setTargetCargo(value, 0);
                     updateView();
                 }
             );
@@ -174,8 +173,7 @@ class CDUAocOfpData {
                     maxValue: unitMaximum,
                 },
                 async (value) => {
-                    await setTargetPax(paxTarget);
-                    await setTargetCargo(paxTarget, (value * 1000));
+                    await setTargetCargo(0, (value * 1000));
                     updateView();
                 }
             );
