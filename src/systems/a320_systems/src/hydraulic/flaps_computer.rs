@@ -634,14 +634,6 @@ mod tests {
             self.read_by_name("SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD")
         }
 
-        fn read_slat_fppu_angle(&mut self) -> f64 {
-            self.read_by_name("SLATS_FPPU_ANGLE")
-        }
-
-        fn read_flap_fppu_angle(&mut self) -> f64 {
-            self.read_by_name("FLAPS_FPPU_ANGLE")
-        }
-
         fn set_indicated_airspeed(mut self, indicated_airspeed: f64) -> Self {
             self.write_by_name("AIRSPEED INDICATED", indicated_airspeed);
             self
