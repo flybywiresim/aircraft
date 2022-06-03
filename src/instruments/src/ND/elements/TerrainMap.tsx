@@ -53,6 +53,7 @@ export interface TerrainMapProps {
 
 export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, side, clipName }) => {
     const [currentMapTimestamp, setCurrentMapTimestamp] = useState<number | null>(null);
+    const [lastMapTimestamp, setLastMapTimestamp] = useState<number | null>(null);
     const [terrOnNdActive] = useSimVar(`L:A32NX_EFIS_TERR_${side}_ACTIVE`, 'boolean', 100);
     const [rangeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number', 100);
     const [modeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_MODE`, 'number', 100);
@@ -101,6 +102,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                                 }
 
                                 setCurrentMapTimestamp(timestamp);
+                                setTimeout(() => setLastMapTimestamp(timestamp), 1000);
                                 setRerenderTimeout(2500);
                             }
                         }));
@@ -164,6 +166,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
     return (
         <>
             <g id="map" clipPath={`url(#${clipName})`}>
+                <image x={x} y={y} width={width} height={height} xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${lastMapTimestamp}`} />
                 <image x={x} y={y} width={width} height={height} xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${currentMapTimestamp}`} />
             </g>
             <text x={688} y={612} fontSize={23} fill="rgb(0,255,255)">
