@@ -400,6 +400,50 @@
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
         </UseTemplate>
 
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <NODE_ID>#NODE_ID_RECEIVER_VOICE#</NODE_ID>
+            <ANIM_NAME>#ANIM_NAME_PUSH_RECEIVER_VOICE#</ANIM_NAME>
+            <SEQ1_NODE_ID>#NODE_ID_BUTTON_VOICE_SEQ1#</SEQ1_NODE_ID>
+            <SEQ2_NODE_ID>#NODE_ID_BUTTON_VOICE_SEQ2#</SEQ2_NODE_ID>
+            <LEFT_SINGLE_CODE>
+                (L:XMLVAR_NAV_#SIDE#_VOICE_Switch_Down) ! (&gt;L:XMLVAR_NAV_#SIDE#_VOICE_Switch_Down)
+                (L:XMLVAR_NAV_L_VOICE_Switch_Down) (L:XMLVAR_NAV_R_VOICE_Switch_Down) or (&gt;L:XMLVAR_NAV_VOICE_Switch_Down)
+
+                (L:XMLVAR_NAV_VOICE_Switch_Down) 0 == if{
+                    (L:XMLVAR_NAV_L_VOR1_Switch_Down) (L:XMLVAR_NAV_R_VOR1_Switch_Down) or if{
+                        1 (&gt;K:RADIO_VOR1_IDENT_ENABLE)
+                    }
+                    (L:XMLVAR_NAV_L_VOR2_Switch_Down) (L:XMLVAR_NAV_R_VOR2_Switch_Down) or if{
+                        1 (&gt;K:RADIO_VOR2_IDENT_ENABLE)
+                    }
+
+                    (L:XMLVAR_NAV_L_ADF1_Switch_Down) (L:XMLVAR_NAV_R_ADF1_Switch_Down) or if{
+                        1 (&gt;K:RADIO_ADF_IDENT_ENABLE)
+                    }
+                    (L:XMLVAR_NAV_L_ADF2_Switch_Down) (L:XMLVAR_NAV_R_ADF2_Switch_Down) or if{
+                        1 (&gt;K:RADIO_ADF2_IDENT_ENABLE)
+                    }
+                }
+
+                (L:XMLVAR_NAV_VOICE_Switch_Down) 1 == if{
+                    1 (&gt;K:RADIO_VOR1_IDENT_DISABLE)
+                    1 (&gt;K:RADIO_VOR2_IDENT_DISABLE)
+                    1 (&gt;K:RADIO_ADF_IDENT_DISABLE)
+                    1 (&gt;K:RADIO_ADF2_IDENT_DISABLE)
+                }
+            </LEFT_SINGLE_CODE>
+            <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <SEQ1_EMISSIVE_CODE>(L:XMLVAR_NAV_#SIDE#_VOICE_Switch_Down)</SEQ1_EMISSIVE_CODE>
+            <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
+            <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
+            <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
+            <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
+        </UseTemplate>
+
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
@@ -410,12 +454,14 @@
             <INSTRUMENT>VOR1</INSTRUMENT>
             <ONCLICK>
                 <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
-                (A:NAV SOUND:1, Bool) 1 == (L:XMLVAR_NAV_L_VOR1_Switch_Down) 0 == (L:XMLVAR_NAV_R_VOR1_Switch_Down) 0 == and and if{
-                    1 (&gt;K:RADIO_VOR1_IDENT_TOGGLE)
-                }
+                (L:XMLVAR_NAV_VOICE_Switch_Down) 0 == if{
+                    (A:NAV SOUND:1, Bool) 1 == (L:XMLVAR_NAV_L_VOR1_Switch_Down) 0 == (L:XMLVAR_NAV_R_VOR1_Switch_Down) 0 == and and if{
+                        1 (&gt;K:RADIO_VOR1_IDENT_TOGGLE)
+                    }
 
-                (A:NAV SOUND:1, Bool) 0 == (L:XMLVAR_NAV_L_VOR1_Switch_Down) 1 == (L:XMLVAR_NAV_R_VOR1_Switch_Down) 1 == or and if{
-                    1 (&gt;K:RADIO_VOR1_IDENT_TOGGLE)
+                    (A:NAV SOUND:1, Bool) 0 == (L:XMLVAR_NAV_L_VOR1_Switch_Down) 1 == (L:XMLVAR_NAV_R_VOR1_Switch_Down) 1 == or and if{
+                        1 (&gt;K:RADIO_VOR1_IDENT_TOGGLE)
+                    }
                 }
             </ONCLICK>
             <FROM_VOLUME>(A:NAV VOLUME:1, percent)</FROM_VOLUME>
@@ -437,12 +483,14 @@
             <INSTRUMENT>VOR2</INSTRUMENT>
             <ONCLICK>
                 <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
-                (A:NAV SOUND:2, Bool) 1 == (L:XMLVAR_NAV_L_VOR2_Switch_Down) 0 == (L:XMLVAR_NAV_R_VOR2_Switch_Down) 0 == and and if{
-                    1 (&gt;K:RADIO_VOR2_IDENT_TOGGLE)
-                }
+                (L:XMLVAR_NAV_VOICE_Switch_Down) 0 == if{
+                    (A:NAV SOUND:2, Bool) 1 == (L:XMLVAR_NAV_L_VOR2_Switch_Down) 0 == (L:XMLVAR_NAV_R_VOR2_Switch_Down) 0 == and and if{
+                        1 (&gt;K:RADIO_VOR2_IDENT_TOGGLE)
+                    }
 
-                (A:NAV SOUND:2, Bool) 0 == (L:XMLVAR_NAV_L_VOR2_Switch_Down) 1 == (L:XMLVAR_NAV_R_VOR2_Switch_Down) 1 == or and if{
-                    1 (&gt;K:RADIO_VOR2_IDENT_TOGGLE)
+                    (A:NAV SOUND:2, Bool) 0 == (L:XMLVAR_NAV_L_VOR2_Switch_Down) 1 == (L:XMLVAR_NAV_R_VOR2_Switch_Down) 1 == or and if{
+                        1 (&gt;K:RADIO_VOR2_IDENT_TOGGLE)
+                    }
                 }
             </ONCLICK>
             <FROM_VOLUME>(A:NAV VOLUME:2, percent)</FROM_VOLUME>
@@ -525,12 +573,14 @@
             <INSTRUMENT>ADF1</INSTRUMENT>
             <ONCLICK>
                 <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
-                (A:ADF SOUND, Bool) 1 == (L:XMLVAR_NAV_L_ADF1_Switch_Down) 0 == (L:XMLVAR_NAV_R_ADF1_Switch_Down) 0 == and and if{
-                    1 (&gt;K:RADIO_ADF_IDENT_TOGGLE)
-                }
+                (L:XMLVAR_NAV_VOICE_Switch_Down) 0 == if{
+                    (A:ADF SOUND, Bool) 1 == (L:XMLVAR_NAV_L_ADF1_Switch_Down) 0 == (L:XMLVAR_NAV_R_ADF1_Switch_Down) 0 == and and if{
+                        1 (&gt;K:RADIO_ADF_IDENT_TOGGLE)
+                    }
 
-                (A:ADF SOUND, Bool) 0 == (L:XMLVAR_NAV_L_ADF1_Switch_Down) 1 == (L:XMLVAR_NAV_R_ADF1_Switch_Down) 1 == or and if{
-                    1 (&gt;K:RADIO_ADF_IDENT_TOGGLE)
+                    (A:ADF SOUND, Bool) 0 == (L:XMLVAR_NAV_L_ADF1_Switch_Down) 1 == (L:XMLVAR_NAV_R_ADF1_Switch_Down) 1 == or and if{
+                        1 (&gt;K:RADIO_ADF_IDENT_TOGGLE)
+                    }
                 }
             </ONCLICK>
             <FROM_VOLUME>(A:ADF VOLUME:1, percent)</FROM_VOLUME>
@@ -553,12 +603,14 @@
             <INSTRUMENT>ADF2</INSTRUMENT>
             <ONCLICK>
                 <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
-                (A:ADF SOUND:2, Bool) 1 == (L:XMLVAR_NAV_L_ADF2_Switch_Down) 0 == (L:XMLVAR_NAV_R_ADF2_Switch_Down) 0 == and and if{
-                    1 (&gt;K:RADIO_ADF2_IDENT_TOGGLE)
-                }
+                (L:XMLVAR_NAV_VOICE_Switch_Down) 0 == if{
+                    (A:ADF SOUND:2, Bool) 1 == (L:XMLVAR_NAV_L_ADF2_Switch_Down) 0 == (L:XMLVAR_NAV_R_ADF2_Switch_Down) 0 == and and if{
+                        1 (&gt;K:RADIO_ADF2_IDENT_TOGGLE)
+                    }
 
-                (A:ADF SOUND:2, Bool) 0 == (L:XMLVAR_NAV_L_ADF2_Switch_Down) 1 == (L:XMLVAR_NAV_R_ADF2_Switch_Down) 1 == or and if{
-                    1 (&gt;K:RADIO_ADF2_IDENT_TOGGLE)
+                    (A:ADF SOUND:2, Bool) 0 == (L:XMLVAR_NAV_L_ADF2_Switch_Down) 1 == (L:XMLVAR_NAV_R_ADF2_Switch_Down) 1 == or and if{
+                        1 (&gt;K:RADIO_ADF2_IDENT_TOGGLE)
+                    }
                 }
             </ONCLICK>
             <!-- Have to use an external var because we are unable to set ADF 2 volume even though it's set at 100 by default -->

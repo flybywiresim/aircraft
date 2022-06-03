@@ -4092,6 +4092,11 @@
                     <NODE_ID_BUTTON_VHF_R>PUSH_AUDIOL_CALL3</NODE_ID_BUTTON_VHF_R>
                     <ANIM_NAME_BUTTON_VHF_R>PUSH_AUDIOL_CALL3</ANIM_NAME_BUTTON_VHF_R>
 
+                    <NODE_ID_RECEIVER_VOICE>PUSH_AUDIOL_VOICE</NODE_ID_RECEIVER_VOICE>
+                    <ANIM_NAME_PUSH_RECEIVER_VOICE>PUSH_AUDIOL_VOICE</ANIM_NAME_PUSH_RECEIVER_VOICE>
+                    <NODE_ID_BUTTON_VOICE_SEQ1>PUSH_AUDIOL_VOICE_SEQ1</NODE_ID_BUTTON_VOICE_SEQ1>
+                    <NODE_ID_BUTTON_VOICE_SEQ2>PUSH_AUDIOL_VOICE_SEQ2</NODE_ID_BUTTON_VOICE_SEQ2>
+
                     <NODE_ID_RECEIVER_MKR>KNOB_AUDIOL_MKR</NODE_ID_RECEIVER_MKR>
                     <NODE_ID_LIGHT_RECEIVER_MKR>PUSH_AUDIOL_MKR_EMIS</NODE_ID_LIGHT_RECEIVER_MKR>
                     <ANIM_NAME_KNOB_RECEIVER_MKR>KNOB_AUDIOL_MKR</ANIM_NAME_KNOB_RECEIVER_MKR>
@@ -4146,11 +4151,6 @@
                         <NODE_ID>PUSH_AUDIOL_RESET</NODE_ID>
                         <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         <NO_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOL_VOICE</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOL_PA</NODE_ID>
@@ -4242,6 +4242,11 @@
                     <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                     <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
 
+                    <NODE_ID_RECEIVER_VOICE>PUSH_AUDIOR_VOICE</NODE_ID_RECEIVER_VOICE>
+                    <ANIM_NAME_PUSH_RECEIVER_VOICE>PUSH_AUDIOR_VOICE</ANIM_NAME_PUSH_RECEIVER_VOICE>
+                    <NODE_ID_BUTTON_VOICE_SEQ1>PUSH_AUDIOR_VOICE_SEQ1</NODE_ID_BUTTON_VOICE_SEQ1>
+                    <NODE_ID_BUTTON_VOICE_SEQ2>PUSH_AUDIOR_VOICE_SEQ2</NODE_ID_BUTTON_VOICE_SEQ2>
+
                     <NODE_ID_RECEIVER_MKR>KNOB_AUDIOR_MKR</NODE_ID_RECEIVER_MKR>
                     <NODE_ID_LIGHT_RECEIVER_MKR>PUSH_AUDIOR_MKR_EMIS</NODE_ID_LIGHT_RECEIVER_MKR>
                     <ANIM_NAME_KNOB_RECEIVER_MKR>KNOB_AUDIOR_MKR</ANIM_NAME_KNOB_RECEIVER_MKR>
@@ -4290,11 +4295,6 @@
                         <NODE_ID>PUSH_AUDIOR_RESET</NODE_ID>
                         <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                         <NO_SEQ1/>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOR_VOICE</NODE_ID>
-                        <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
-                        <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOR_PA</NODE_ID>
@@ -4790,9 +4790,6 @@
                 <NODE_ID>PUSH_AUDIOL_RESET</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_VOICE</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUDIOL_PA</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -4824,9 +4821,6 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUDIOR_RESET</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_VOICE</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUDIOR_PA</NODE_ID>
