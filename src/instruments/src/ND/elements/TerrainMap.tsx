@@ -68,7 +68,9 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                 if (response.ok) {
                     response.text().then((text) => {
                         if (text !== 'true') {
-                            syncWithRenderer(timestamp);
+                            if (terrOnNdActive) {
+                                syncWithRenderer(timestamp);
+                            }
                             return;
                         }
 
@@ -77,16 +79,29 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                             headers: { Accept: 'application/json' },
                         }).then((response) => response.json().then((data) => {
                             if (response.ok) {
-                                if ('minElevation' in data && data.minElevation && 'maxElevation' in data && data.maxElevation) {
-                                    setMinimumElevation(data.minElevation);
-                                    setMaximumElevation(data.maxElevation);
+                                if ('minElevation' in data && data.minElevation !== Infinity && 'maxElevation' in data && data.maxElevation !== Infinity) {
+                                    let minimumColor = 'rgb(0, 255, 0)';
+                                    if (data.minElevationIsWarning) {
+                                        minimumColor = 'rgb(255, 255, 0)';
+                                    } else if (data.minElevationIsCaution) {
+                                        minimumColor = 'rgb(255, 0, 0)';
+                                    }
+                                    let maximumColor = 'rgb(0, 255, 0)';
+                                    if (data.maxElevationIsWarning) {
+                                        maximumColor = 'rgb(255, 255, 0)';
+                                    } else if (data.maxElevationIsCaution) {
+                                        maximumColor = 'rgb(255, 0, 0)';
+                                    }
+
+                                    setMinimumElevation({ altitude: data.minElevation, color: minimumColor});
+                                    setMaximumElevation({ altitude: data.maxElevation, color: maximumColor});
                                 } else {
-                                    setMinimumElevation(Infinity);
-                                    setMaximumElevation(Infinity);
+                                    setMinimumElevation({ altitude: Infinity, color: 'rgb(0, 0, 0)' });
+                                    setMaximumElevation({ altitude: Infinity, color: 'rgb(0, 0, 0)' });
                                 }
 
                                 setCurrentMapTimestamp(timestamp);
-                                setRerenderTimeout(4000);
+                                setRerenderTimeout(2500);
                             }
                         }));
                     });
