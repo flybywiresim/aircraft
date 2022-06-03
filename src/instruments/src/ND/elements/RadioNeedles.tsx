@@ -1,7 +1,6 @@
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
-import { EfisNdMode, EfisSide } from '@shared/NavigationDisplay';
-import { NavAidMode } from './RadioNavInfo';
+import { EfisNdMode, EfisSide, NavAidMode } from '@shared/NavigationDisplay';
 
 type RadioNavPointerProps = { index: 1 | 2, side: EfisSide, displayMode: EfisNdMode, centreHeight: number };
 
@@ -36,12 +35,12 @@ const AdfNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displa
             <path
                 d={paths[index - 1]}
                 strokeWidth={3.7}
-                className="shadow rounded"
+                className="rounded shadow"
             />
             <path
                 d={paths[index - 1]}
                 strokeWidth={3.2}
-                className="Green rounded"
+                className="rounded Green"
             />
         </g>
     );
@@ -78,12 +77,12 @@ const VorNeedle: React.FC<Omit<RadioNavPointerProps, 'side'>> = ({ index, displa
             <path
                 d={paths[index - 1]}
                 strokeWidth={3.7}
-                className="shadow rounded"
+                className="rounded shadow"
             />
             <path
                 d={paths[index - 1]}
                 strokeWidth={3.2}
-                className="White rounded"
+                className="rounded White"
             />
         </g>
     );
