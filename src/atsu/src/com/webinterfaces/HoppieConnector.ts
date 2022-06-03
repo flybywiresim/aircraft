@@ -361,7 +361,7 @@ export class HoppieConnector {
                     }
                     cpdlc.Message = elements[5].replace(/@/g, '').replace(/_/g, '\n');
                     cpdlc.Content.push(HoppieConnector.cpdlcMessageClassification(cpdlc.Message));
-                    if ((elements[4] as CpdlcMessageExpectedResponseType) !== cpdlc.Content[0].ExpectedResponse) {
+                    if ((elements[4] as CpdlcMessageExpectedResponseType) !== cpdlc.Content[0]?.ExpectedResponse) {
                         cpdlc.Content[0].ExpectedResponse = (elements[4] as CpdlcMessageExpectedResponseType);
                     }
 

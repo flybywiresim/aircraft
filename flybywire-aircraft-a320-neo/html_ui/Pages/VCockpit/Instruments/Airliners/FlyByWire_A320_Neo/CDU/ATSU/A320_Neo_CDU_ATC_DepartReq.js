@@ -163,9 +163,9 @@ class CDUAtcDepartReq {
                 } else {
                     mcdu.dataManager.GetAirportByIdent(airports[0]).then((from) => {
                         mcdu.dataManager.GetAirportByIdent(airports[1]).then((to) => {
-                            if (from && to) {
-                                store.from = from;
-                                store.to = to;
+                            if (from.ident && to.ident) {
+                                store.from = from.ident;
+                                store.to = to.ident;
                                 CDUAtcDepartReq.ShowPage1(mcdu, store);
                             } else {
                                 mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);

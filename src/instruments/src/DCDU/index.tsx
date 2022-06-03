@@ -431,7 +431,7 @@ const DCDU: React.FC = () => {
         // check if PRIORITY MSG + needs to be visualized
         let noUrgentMessage = true;
         arrMessages.forEach((message) => {
-            if (message.messages[0].Content[0].Urgent && !message.messageVisible) {
+            if (message.messages[0].Content[0]?.Urgent && !message.messageVisible) {
                 if (systemStatusMessage !== DcduStatusMessage.PriorityMessage) {
                     setSystemStatusMessage(DcduStatusMessage.PriorityMessage);
                     setSystemStatusTimer(-1);

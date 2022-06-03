@@ -19,9 +19,9 @@ export abstract class UplinkMonitor {
     }
 
     public static relevantMessage(message: CpdlcMessage): boolean {
-        if (UplinkMonitor.positionMonitoringMessageIds.findIndex((id) => id === message.Content[0].TypeId) === -1
-        && UplinkMonitor.timeMonitoringMessageIds.findIndex((id) => id === message.Content[0].TypeId) === -1
-        && UplinkMonitor.levelMonitoringMessageIds.findIndex((id) => id === message.Content[0].TypeId) === -1) {
+        if (UplinkMonitor.positionMonitoringMessageIds.findIndex((id) => id === message.Content[0]?.TypeId) === -1
+        && UplinkMonitor.timeMonitoringMessageIds.findIndex((id) => id === message.Content[0]?.TypeId) === -1
+        && UplinkMonitor.levelMonitoringMessageIds.findIndex((id) => id === message.Content[0]?.TypeId) === -1) {
             return false;
         }
 
@@ -29,13 +29,13 @@ export abstract class UplinkMonitor {
     }
 
     public static createMessageMonitor(atsu: Atsu, message: CpdlcMessage): UplinkMonitor {
-        if (UplinkMonitor.positionMonitoringMessageIds.findIndex((id) => id === message.Content[0].TypeId) !== -1) {
+        if (UplinkMonitor.positionMonitoringMessageIds.findIndex((id) => id === message.Content[0]?.TypeId) !== -1) {
             return new PositionMonitor(atsu, message);
         }
-        if (UplinkMonitor.timeMonitoringMessageIds.findIndex((id) => id === message.Content[0].TypeId) !== -1) {
+        if (UplinkMonitor.timeMonitoringMessageIds.findIndex((id) => id === message.Content[0]?.TypeId) !== -1) {
             return new TimeMonitor(atsu, message);
         }
-        if (UplinkMonitor.levelMonitoringMessageIds.findIndex((id) => id === message.Content[0].TypeId) !== -1) {
+        if (UplinkMonitor.levelMonitoringMessageIds.findIndex((id) => id === message.Content[0]?.TypeId) !== -1) {
             return new LevelMonitor(atsu, message);
         }
 
@@ -50,7 +50,7 @@ class PositionMonitor extends UplinkMonitor {
 
     constructor(atsu: Atsu, message: CpdlcMessage) {
         super(atsu, message);
-        this.positionMonitor = message.Content[0].Content[0].Value;
+        this.positionMonitor = message.Content[0]?.Content[0]?.Value;
     }
 
     public conditionsMet(): boolean {
@@ -79,10 +79,10 @@ class TimeMonitor extends UplinkMonitor {
 
     constructor(atsu: Atsu, message: CpdlcMessage) {
         super(atsu, message);
-        if (TimeMonitor.deferredMessageIDs.findIndex((id) => id === message.Content[0].TypeId) === -1) {
+        if (TimeMonitor.deferredMessageIDs.findIndex((id) => id === message.Content[0]?.TypeId) === -1) {
             this.timeOffset = 30;
         }
-        this.timeMonitor = TimeMonitor.extractSeconds(message.Content[0].Content[0].Value);
+        this.timeMonitor = TimeMonitor.extractSeconds(message.Content[0]?.Content[0]?.Value);
     }
 
     public conditionsMet(): boolean {
@@ -121,15 +121,15 @@ class LevelMonitor extends UplinkMonitor {
     constructor(atsu: Atsu, message: CpdlcMessage) {
         super(atsu, message);
 
-        this.lowerLevel = LevelMonitor.extractAltitude(message.Content[0].Content[0].Value);
-        if (message.Content[0].TypeId === 'UM180') {
-            this.upperLevel = LevelMonitor.extractAltitude(message.Content[0].Content[1].Value);
+        this.lowerLevel = LevelMonitor.extractAltitude(message.Content[0]?.Content[0]?.Value);
+        if (message.Content[0]?.TypeId === 'UM180') {
+            this.upperLevel = LevelMonitor.extractAltitude(message.Content[0]?.Content[1].Value);
             this.reachingLevel = true;
-        } else if (message.Content[0].TypeId === 'UM78' || message.Content[0].TypeId === 'UM129' || message.Content[0].TypeId === 'UM175') {
+        } else if (message.Content[0]?.TypeId === 'UM78' || message.Content[0]?.TypeId === 'UM129' || message.Content[0]?.TypeId === 'UM175') {
             this.reachingLevel = true;
-        } else if (message.Content[0].TypeId === 'UM128') {
+        } else if (message.Content[0]?.TypeId === 'UM128') {
             this.reachingLevel = false;
-        } else if (message.Content[0].TypeId === 'UM130') {
+        } else if (message.Content[0]?.TypeId === 'UM130') {
             this.reachingLevel = true;
             this.leavingLevel = true;
         }

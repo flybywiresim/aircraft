@@ -88,10 +88,10 @@ export class CpdlcMessage extends AtsuMessage {
         }
 
         // ignore the standard responses
-        return this.Response.Content[0].TypeId !== 'DM0' && this.Response.Content[0].TypeId !== 'DM1' && this.Response.Content[0].TypeId !== 'DM2'
-            && this.Response.Content[0].TypeId !== 'DM3' && this.Response.Content[0].TypeId !== 'DM4' && this.Response.Content[0].TypeId !== 'DM5'
-            && this.Response.Content[0].TypeId !== 'UM0' && this.Response.Content[0].TypeId !== 'UM1' && this.Response.Content[0].TypeId !== 'UM3'
-            && this.Response.Content[0].TypeId !== 'UM4' && this.Response.Content[0].TypeId !== 'UM5';
+        return this.Response.Content[0]?.TypeId !== 'DM0' && this.Response.Content[0]?.TypeId !== 'DM1' && this.Response.Content[0]?.TypeId !== 'DM2'
+            && this.Response.Content[0]?.TypeId !== 'DM3' && this.Response.Content[0]?.TypeId !== 'DM4' && this.Response.Content[0]?.TypeId !== 'DM5'
+            && this.Response.Content[0]?.TypeId !== 'UM0' && this.Response.Content[0]?.TypeId !== 'UM1' && this.Response.Content[0]?.TypeId !== 'UM3'
+            && this.Response.Content[0]?.TypeId !== 'UM4' && this.Response.Content[0]?.TypeId !== 'UM5';
     }
 
     public serialize(format: AtsuMessageSerializationFormat) {
@@ -114,7 +114,7 @@ export class CpdlcMessage extends AtsuMessage {
         }
 
         if (format === AtsuMessageSerializationFormat.Network) {
-            message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${this.Content[0].ExpectedResponse}/${lines.join(' ')}`;
+            message = `/data2/${this.CurrentTransmissionId}/${this.PreviousTransmissionId !== -1 ? this.PreviousTransmissionId : ''}/${this.Content[0]?.ExpectedResponse}/${lines.join(' ')}`;
         } else if (format === AtsuMessageSerializationFormat.DCDU) {
             message = lines.join('\n');
         } else if (format === AtsuMessageSerializationFormat.MCDU || format === AtsuMessageSerializationFormat.MCDUMonitored) {
