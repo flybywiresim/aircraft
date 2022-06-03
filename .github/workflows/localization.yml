@@ -1,0 +1,39 @@
+name: 'FlyPad Localazy Download'
+on:
+  schedule:
+    # https://crontab.guru/
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  localization-update:
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'flybywiresim'
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - name: Install Localazy CLI
+        run: npm install -g @localazy/cli
+      - name: Download Translations
+        run: cd src/instruments/src/EFB/Localization && node build-translation.js
+      - name: Print git status
+        run: git status
+      - name: Create PR
+        uses: gr2m/create-or-update-pull-request-action@v1.x  # Generate a PR or updates an existing PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: src/instruments/src/EFB/Localization/*.json
+          branch: efb-localazy-update # Specify branch that this action uses.
+          commit-message: 'automatically updated flyPadOS 3 localization'
+          title: 'build: update flyPadOS 3 localization'
+          body: >
+            This PR automatically downloads and updates the approved changes from Localazy translations for 
+            the flyPadOS3 for persisting these changes in the repo. 
+            Changes will be collected in this PR and this PR needs to be manually merged to master eventually.
+            Ask on Discord #efb if you have questions about this.
+          labels: |
+            EFB,
+            i18n
