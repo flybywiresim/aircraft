@@ -56,21 +56,18 @@ const PoweredRadioPanel = (props: Props) => {
     useInteractionEvent(`A32NX_RMP_${props.side}_VHF1_BUTTON_PRESSED`, () => {
         setPanelMode(1);
         setPreviousPanelMode(1);
-        setNavButton(false);
         setNavTransceiverType(TransceiverType.RADIO_VHF);
     });
 
     useInteractionEvent(`A32NX_RMP_${props.side}_VHF2_BUTTON_PRESSED`, () => {
         setPanelMode(2);
         setPreviousPanelMode(2);
-        setNavButton(false);
         setNavTransceiverType(TransceiverType.RADIO_VHF);
     });
 
     useInteractionEvent(`A32NX_RMP_${props.side}_VHF3_BUTTON_PRESSED`, () => {
         setPanelMode(3);
         setPreviousPanelMode(3);
-        setNavButton(false);
         setNavTransceiverType(TransceiverType.RADIO_VHF);
     });
 
