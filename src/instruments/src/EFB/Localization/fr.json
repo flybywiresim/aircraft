@@ -64,7 +64,7 @@
     "YourFlight": {
       "Alternate": "Alternate",
       "AverageWind": "Vent moyen",
-      "CompanyRoute": "Route de la compagnie",
+      "CompanyRoute": "Route de compagnie",
       "CostIndex": "Cost Index",
       "CruiseAlt": "Altitude de croisière",
       "ImportSimBriefData": "Importer les données depuis SimBrief",
@@ -214,7 +214,7 @@
       "ZoomIn": "Zoom avant",
       "ZoomOut": "Zoom arrière"
     },
-    "ThereAreNoChartsToDisplay": "Il n'y a aucune cartes à afficher.",
+    "ThereAreNoChartsToDisplay": "Il n'y a aucune carte à afficher.",
     "ThereIsNoChartToDisplay": "Il n'y a aucune carte à afficher.",
     "Title": "Navigation et Cartes",
     "To": "TO"
@@ -523,8 +523,8 @@
       "UtcAndLocal": "UTC et local"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
+  "Settings.Realism.PauseAtTod": "Pause au T/D",
+  "Settings.Realism.PauseAtTodDistance": "Distance de pause au T/D (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "Simuler la décharge de batterie",
   "StatusBar": {
     "Apr": "Avr",
