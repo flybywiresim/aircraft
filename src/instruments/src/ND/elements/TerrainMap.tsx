@@ -56,8 +56,8 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
     const [terrOnNdActive] = useSimVar(`L:A32NX_EFIS_TERR_${side}_ACTIVE`, 'boolean', 100);
     const [rangeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number', 100);
     const [modeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_MODE`, 'number', 100);
-    const [minimumElevation, setMinimumElevation] = useState<number>(Infinity);
-    const [maximumElevation, setMaximumElevation] = useState<number>(Infinity);
+    const [minimumElevation, setMinimumElevation] = useState<{ altitude: number, color: string }>({ altitude: Infinity, color: 'rgb(0, 0, 0)' });
+    const [maximumElevation, setMaximumElevation] = useState<{ altitude: number, color: string }>({ altitude: Infinity, color: 'rgb(0, 0, 0)' });
     const [rerenderTimeout, setRerenderTimeout] = useState<number | null>(null);
     const [gearMode] = useSimVar('GEAR POSITION:0', 'Enum', 100);
 
@@ -143,8 +143,8 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
         return <></>;
     }
 
-    const lowerBorder = String(Math.floor(minimumElevation / 100)).padStart(3, '0');
-    const upperBorder = String(Math.round(maximumElevation / 100 + 0.5)).padStart(3, '0');
+    const lowerBorder = String(Math.floor(minimumElevation.altitude / 100)).padStart(3, '0');
+    const upperBorder = String(Math.round(maximumElevation.altitude / 100 + 0.5)).padStart(3, '0');
 
     return (
         <>
@@ -154,11 +154,11 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
             <text x={688} y={612} fontSize={23} fill="rgb(0,255,255)">
                 TERR
             </text>
-            <text x={709} y={639} fontSize={22} fill="rgb(0,255,0)">
+            <text x={709} y={639} fontSize={22} fill={maximumElevation.color}>
                 {upperBorder}
             </text>
             <rect x={700} y={619} width={54} height={24} strokeWidth={3} stroke="rgb(255,255,0)" fillOpacity={0} />
-            <text x={709} y={663} fontSize={23} fill="rgb(0,255,0)">
+            <text x={709} y={663} fontSize={23} fill={minimumElevation.color}>
                 {lowerBorder}
             </text>
             <rect x={700} y={643} width={54} height={24} strokeWidth={3} stroke="rgb(255,255,0)" fillOpacity={0} />
