@@ -55,13 +55,6 @@ class CDUAocOfpData {
             loadButton = "STOP*[color]yellow";
         }
 
-        async function setDefaultWeights(simbriefPaxWeight, simbriefBagWeight) {
-            const perPaxWeight = (simbriefPaxWeight === 0) ? 84 : simbriefPaxWeight;
-            const perBagWeight = (simbriefBagWeight === 0) ? 20 : simbriefBagWeight;
-            SimVar.SetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number", parseInt(perPaxWeight));
-            SimVar.SetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number", parseInt(perBagWeight));
-        }
-
         function buildStationValue(station) {
             const targetPax = SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number");
             const pax = SimVar.GetSimVarValue(`L:${station.simVar}`, "Number");
@@ -79,9 +72,8 @@ class CDUAocOfpData {
                     maxValue: station.seats,
                 },
                 async (value) => {
-                    await setDefaultWeights(0, 0);
+                    setDefaultWeights(0, 0);
                     await SimVar.SetSimVarValue(`L:${station.simVar}_DESIRED`, "Number", value);
-                    await setTargetCargo(value, 0);
                     updateView();
                 }
             );
@@ -111,7 +103,7 @@ class CDUAocOfpData {
         async function setTargetCargo(numberOfPax, simbriefFreight) {
             const BAG_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_BAG_WEIGHT", "Number");
             const bagWeight = numberOfPax * BAG_WEIGHT;
-            const maxLoadInCargoHold = 9435; // from flight_model.cfg
+            const maxLoadInCargoHold = Math.round(NXUnits.kgToUser(9435)); // from flight_model.cfg
             const loadableCargoWeight = Math.min(bagWeight + parseInt(simbriefFreight), maxLoadInCargoHold);
 
             let remainingWeight = loadableCargoWeight;
@@ -153,7 +145,7 @@ class CDUAocOfpData {
                     maxValue: MAX_SEAT_AVAILABLE,
                 },
                 async (value) => {
-                    await setDefaultWeights(0, 0);
+                    setDefaultWeights(0, 0);
                     await setTargetPax(value);
                     await setTargetCargo(value, 0);
                     updateView();
@@ -167,6 +159,7 @@ class CDUAocOfpData {
             const loadTarget = Object.values(cargoStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
             const paxTarget = Object.values(paxStations).map((station) => SimVar.GetSimVarValue(`L:${station.simVar}_DESIRED`, "Number")).reduce((acc, cur) => acc + cur);
             const suffix = loadTarget === currentLoad ? "[color]green" : "[color]cyan";
+            const unitMaximum = (getUserUnit()) == "Kilograms" ? 9.5 : 20.8;
 
             return new CDU_SingleValueField(mcdu,
                 "number",
@@ -177,11 +170,10 @@ class CDUAocOfpData {
                     suffix: suffix,
                     maxLength: 4,
                     minValue: 0.0,
-                    maxValue: 9.4,
+                    maxValue: unitMaximum,
                 },
                 async (value) => {
-                    await setTargetPax(paxTarget);
-                    await setTargetCargo(paxTarget, (value * 1000));
+                    await setTargetCargo(0, (value * 1000));
                     updateView();
                 }
             );
@@ -190,9 +182,9 @@ class CDUAocOfpData {
         const display = [
             ["W/B"],
             ["TOTAL PAX", "PAYLOAD"],
-            [buildTotalPaxValue(), `${Math.round(NXUnits.kgToUser(getTotalPayload()))}[color]green`],
+            [buildTotalPaxValue(), `${Math.round(getTotalPayload())}[color]green`],
             [paxStations.rows1_6.name, "ZFW"],
-            [buildStationValue(paxStations.rows1_6), `${Math.round(NXUnits.kgToUser(getZfw()))}[color]green`],
+            [buildStationValue(paxStations.rows1_6), `${Math.round(getZfw())}[color]green`],
             [paxStations.rows7_13.name, "ZFW CG"],
             [buildStationValue(paxStations.rows7_13), zfwcg],
             [paxStations.rows14_21.name, "CARGO HOLD"],
@@ -237,57 +229,4 @@ class CDUAocOfpData {
             CDUAocOfpData.ShowPage(mcdu);
         };
     }
-}
-
-const payloadConstruct = new A32NX_PayloadConstructor();
-const paxStations = payloadConstruct.paxStations;
-const cargoStations = payloadConstruct.cargoStations;
-const MAX_SEAT_AVAILABLE = 174;
-
-/**
-     * Calculate %MAC ZWFCG of all stations
-     */
-function getZfwcg() {
-
-    const leMacZ = -5.386; // Accurate to 3 decimals, replaces debug weight values
-    const macSize = 13.454; // Accurate to 3 decimals, replaces debug weight values
-
-    const emptyWeight = (SimVar.GetSimVarValue("EMPTY WEIGHT", "Kilograms"));
-    const emptyPosition = -8.75; // Value from flight_model.cfg
-    const emptyMoment = emptyPosition * emptyWeight;
-    const PAX_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number");
-
-    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * PAX_WEIGHT)).reduce((acc, cur) => acc + cur, 0);
-    const paxTotalMoment = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * PAX_WEIGHT) * station.position).reduce((acc, cur) => acc + cur, 0);
-
-    const cargoTotalMass = Object.values(cargoStations).map((station) => SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "Number")).reduce((acc, cur) => acc + cur, 0);
-    const cargoTotalMoment = Object.values(cargoStations).map((station) => (SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "Number") * station.position)).reduce((acc, cur) => acc + cur, 0);
-
-    const totalMass = emptyWeight + paxTotalMass + cargoTotalMass;
-    const totalMoment = emptyMoment + paxTotalMoment + cargoTotalMoment;
-
-    const cgPosition = totalMoment / totalMass;
-    const cgPositionToLemac = cgPosition - leMacZ;
-    const cgPercentMac = -100 * (cgPositionToLemac / macSize);
-
-    return cgPercentMac;
-}
-
-function getTotalCargo() {
-    const cargoTotalMass = Object.values(cargoStations).filter((station) => station.visible).map((station) => SimVar.GetSimVarValue(`PAYLOAD STATION WEIGHT:${station.stationIndex}`, "Number")).reduce((acc, cur) => acc + cur, 0);
-
-    return cargoTotalMass;
-}
-
-function getTotalPayload() {
-    const PAX_WEIGHT = SimVar.GetSimVarValue("L:A32NX_WB_PER_PAX_WEIGHT", "Number");
-    const paxTotalMass = Object.values(paxStations).map((station) => (SimVar.GetSimVarValue(`L:${station.simVar}`, "Number") * PAX_WEIGHT)).reduce((acc, cur) => acc + cur, 0);
-    const cargoTotalMass = getTotalCargo();
-
-    return paxTotalMass + cargoTotalMass;
-}
-
-function getZfw() {
-    const emptyWeight = (SimVar.GetSimVarValue("EMPTY WEIGHT", "Kilograms"));
-    return emptyWeight + getTotalPayload();
 }
