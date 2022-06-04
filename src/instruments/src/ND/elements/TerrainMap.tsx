@@ -102,7 +102,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                                 }
 
                                 setCurrentMapTimestamp(timestamp);
-                                setTimeout(() => setLastMapTimestamp(timestamp), 1000);
+                                setTimeout(() => setLastMapTimestamp(timestamp), 1600);
                                 setRerenderTimeout(2500);
                             }
                         }));
