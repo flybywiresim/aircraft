@@ -105,7 +105,7 @@ class CDUAtcFlightReq {
         };
         mcdu.onRightInput[4] = () => {
             if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
-                CDUAtcClearanceReq.ShowPage1(mcdu, "CLEARANCE");
+                CDUAtcClearanceReq.ShowPage(mcdu, "CLEARANCE");
             }
         };
     }
