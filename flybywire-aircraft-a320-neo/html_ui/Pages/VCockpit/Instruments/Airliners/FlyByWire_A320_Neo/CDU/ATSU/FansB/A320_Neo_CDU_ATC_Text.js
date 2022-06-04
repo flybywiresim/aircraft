@@ -20,7 +20,7 @@ class CDUAtcTextFansB {
 
         let updated = false;
         for (const message of messages) {
-            if (message.Content.TypeId.includes("UM")) {
+            if (message.Content[0].TypeId.includes("UM")) {
                 message.Response.Content.push(extension);
                 updated = true;
             } else {

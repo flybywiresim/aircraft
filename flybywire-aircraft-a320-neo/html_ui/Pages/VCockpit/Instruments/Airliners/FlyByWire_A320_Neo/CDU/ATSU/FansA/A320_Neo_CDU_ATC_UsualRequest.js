@@ -58,7 +58,7 @@ class CDUAtcUsualRequestFansA {
         }
         if (data.requestDescent) {
             retval.push(CDUAtcUsualRequestFansA.CreateRequest(mcdu, "DM67"));
-            retval[retval.length - 1].Content.Content[0].Value = "REQUEST DESCENT";
+            retval[retval.length - 1].Content[0].Content[0].Value = "REQUEST DESCENT";
         }
         if (data.speed) {
             retval.push(CDUAtcUsualRequestFansA.CreateRequest(mcdu, "DM18", [data.speed]));
