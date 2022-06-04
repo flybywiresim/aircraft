@@ -426,8 +426,15 @@ export class DcduLink {
     public updateDcduStatusMessage(uid: number, status: DcduStatusMessage): void {
         // the assumption is that the first message in the block is the UID for the complete block
         const uplinkIdx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === uid);
+        if (uplinkIdx !== -1) {
+            this.uplinkMessages[uplinkIdx][0].Status = status;
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_ATSU_STATUS', uid, status);
+            return;
+        }
+
         const downlinkIdx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === uid);
-        if (uplinkIdx !== -1 || downlinkIdx !== -1) {
+        if (downlinkIdx !== -1) {
+            this.downlinkMessages[downlinkIdx][0].Status = status;
             this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG_ATSU_STATUS', uid, status);
         }
     }
