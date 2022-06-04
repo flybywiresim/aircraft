@@ -453,7 +453,7 @@
       "HomeCockpitMode": "Način \"Home Cockpit\"",
       "McduFocusTimeout": "MCDU časovna omejitev fokusa (sekunde)",
       "McduKeyboardInput": "MCDU vnos s tipkovnico",
-      "PauseAtTod": "T/D Pause",
+      "PauseAtTod": "T/D pavza",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Ločite delovanje krmilnika od krmila",
       "Title": "Realizem"
@@ -526,9 +526,6 @@
       "UtcAndLocal": "UTC in lokalni čas"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
-  "Settings.flyPad.BatteryLifeEnabled": "Simulirano trajanje baterije",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Avg",

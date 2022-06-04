@@ -526,9 +526,6 @@
       "UtcAndLocal": "UTC și local"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
-  "Settings.flyPad.BatteryLifeEnabled": "Viată baterie simulată",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",

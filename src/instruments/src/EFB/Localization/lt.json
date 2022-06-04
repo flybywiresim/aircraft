@@ -526,9 +526,6 @@
       "UtcAndLocal": "UTC ir vietinis"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
-  "Settings.flyPad.BatteryLifeEnabled": "Baterijos veikimo laikas simuliuotas",
   "StatusBar": {
     "Apr": "Bal",
     "Aug": "Rgp",

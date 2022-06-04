@@ -526,9 +526,6 @@
       "UtcAndLocal": "UTC 및 현지 시간"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D 일시정지",
-  "Settings.Realism.PauseAtTodDistance": "T/D 일시정지 거리 (nm)",
-  "Settings.flyPad.BatteryLifeEnabled": "배터리 수명 시뮬레이션",
   "StatusBar": {
     "Apr": "4월",
     "Aug": "8월",

@@ -526,9 +526,6 @@
       "UtcAndLocal": "UTC 和本地時間"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
-  "Settings.flyPad.BatteryLifeEnabled": "模擬電池充量",
   "StatusBar": {
     "Apr": "四月",
     "Aug": "八月",

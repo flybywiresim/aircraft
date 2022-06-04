@@ -526,9 +526,6 @@
       "UtcAndLocal": "UTC és helyi"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
-  "Settings.flyPad.BatteryLifeEnabled": "Akkumulátor élettartam szimulálva",
   "StatusBar": {
     "Apr": "Ápr.",
     "Aug": "Aug.",

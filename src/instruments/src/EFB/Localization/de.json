@@ -506,7 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automatische Helligkeit",
       "AutomaticallyShowOnscreenKeyboard": "Bildschirmtastatur automatisch anzeigen",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "Batterieentladung simulieren",
       "Blue": "Blau",
       "Brightness": "Helligkeit",
       "Dark": "Dunkel",
@@ -526,9 +526,6 @@
       "UtcAndLocal": "UTC und Lokal"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
-  "Settings.flyPad.BatteryLifeEnabled": "Batterieentladung simulieren",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",

@@ -506,7 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automatisk ljusstyrka",
       "AutomaticallyShowOnscreenKeyboard": "Visa automatiskt skärmtangentbordet",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "Simulerad batteritid",
       "Blue": "Blå",
       "Brightness": "Ljusstyrka",
       "Dark": "Mörk",
@@ -526,9 +526,6 @@
       "UtcAndLocal": "UTC och lokal"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
-  "Settings.flyPad.BatteryLifeEnabled": "Simulerad batteritid",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",

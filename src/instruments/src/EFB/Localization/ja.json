@@ -526,9 +526,6 @@
       "UtcAndLocal": "UTCとローカル"
     }
   },
-  "Settings.Realism.PauseAtTod": "降下開始地点で一時停止",
-  "Settings.Realism.PauseAtTodDistance": "降下開始地点の手前で一時停止する距離(nm)",
-  "Settings.flyPad.BatteryLifeEnabled": "バッテリー消耗のシミュレーション",
   "StatusBar": {
     "Apr": "4月",
     "Aug": "8月",

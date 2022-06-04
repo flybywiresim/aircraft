@@ -526,9 +526,6 @@
       "UtcAndLocal": "UTC ve Yerel"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
-  "Settings.flyPad.BatteryLifeEnabled": "Pil Ömrü Simülasyonu Etkin",
   "StatusBar": {
     "Apr": "Nis",
     "Aug": "Ağu",

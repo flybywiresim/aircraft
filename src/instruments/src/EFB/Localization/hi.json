@@ -526,9 +526,6 @@
       "UtcAndLocal": "यूटीसी और लोकल"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
-  "Settings.flyPad.BatteryLifeEnabled": "बैटरी लाइफ सिमुलेट",
   "StatusBar": {
     "Apr": "अप्रैल",
     "Aug": "अगस्त",

@@ -526,9 +526,6 @@
       "UtcAndLocal": "世界标准时间 (UTC) 与本地时间"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
-  "Settings.flyPad.BatteryLifeEnabled": "模拟电池电量",
   "StatusBar": {
     "Apr": "四月",
     "Aug": "八月",

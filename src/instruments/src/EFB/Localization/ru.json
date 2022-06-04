@@ -526,9 +526,6 @@
       "UtcAndLocal": "UTC и местное"
     }
   },
-  "Settings.Realism.PauseAtTod": "Т/Д Пауза",
-  "Settings.Realism.PauseAtTodDistance": "Расстояние паузы Т/Д (нм)",
-  "Settings.flyPad.BatteryLifeEnabled": "Имитация расхода батареи",
   "StatusBar": {
     "Apr": "Апр",
     "Aug": "Авг",
