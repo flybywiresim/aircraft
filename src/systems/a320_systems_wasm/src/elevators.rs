@@ -48,8 +48,8 @@ pub(super) fn elevators(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn E
     builder.map_many(
         ExecuteOn::PostTick,
         vec![
-            Variable::aspect("HYD_ELEVATOR_LEFT_DEFLECTION"),
-            Variable::aspect("HYD_ELEVATOR_RIGHT_DEFLECTION"),
+            Variable::named("HYD_ELEVATOR_LEFT_DEFLECTION"),
+            Variable::named("HYD_ELEVATOR_RIGHT_DEFLECTION"),
             Variable::named("ELEVATOR_DEFLECTION_DEMAND"),
             Variable::aircraft("ELEVATOR DEFLECTION PCT", "Percent", 0),
         ],
