@@ -22,7 +22,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
         if (this.lsButtonPressedVisibility || (this.pitch.isNormalOperation() && this.roll.isNormalOperation())) {
             this.gsReferenceLine.instance.style.display = 'inline';
         } else if (!this.lsButtonPressedVisibility) {
-            this.gsReferenceLine.instance.style.display = 'hidden';
+            this.gsReferenceLine.instance.style.display = 'none';
         }
     }
 
@@ -74,9 +74,8 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
                         <VDevIndicator bus={this.props.bus} />
                         <LDevIndicator />
                     </g>
-
-                    <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
                 </g>
+                <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
             </>
         );
     }
