@@ -401,11 +401,47 @@ export class DcduLink {
 
     public update(message: CpdlcMessage, insertIfNeeded: boolean = false) {
         // the assumption is that the first message in the block is the UID for the complete block
+
         const uplinkIdx = this.uplinkMessages.findIndex((elem) => elem[0].MessageId === message.UniqueMessageID);
+        if (uplinkIdx !== -1) {
+            const messages = [];
+
+            // create all messages and overwrite the first because this is the updated
+            this.uplinkMessages[uplinkIdx].forEach((dcduMessage) => {
+                const msg = this.atc.messages().find((elem) => elem.UniqueMessageID === dcduMessage.MessageId);
+                if (msg !== undefined) {
+                    if (message.UniqueMessageID !== msg.UniqueMessageID) {
+                        messages.push(msg as CpdlcMessage);
+                    } else {
+                        messages.push(message);
+                    }
+                }
+            });
+
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', messages);
+            return;
+        }
+
         const downlinkIdx = this.downlinkMessages.findIndex((elem) => elem[0].MessageId === message.UniqueMessageID);
-        if (uplinkIdx !== -1 || downlinkIdx !== -1) {
-            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', [message]);
-        } else if (insertIfNeeded) {
+        if (downlinkIdx !== -1) {
+            const messages = [];
+
+            // create all messages and overwrite the first because this is the updated
+            this.downlinkMessages[downlinkIdx].forEach((dcduMessage) => {
+                const msg = this.atc.messages().find((elem) => elem.UniqueMessageID === dcduMessage.MessageId);
+                if (message.UniqueMessageID !== msg.UniqueMessageID) {
+                    messages.push(msg as CpdlcMessage);
+                } else {
+                    messages.push(message);
+                }
+            });
+            messages[0] = message;
+
+            this.listener.triggerToAllSubscribers('A32NX_DCDU_MSG', messages);
+            return;
+        }
+
+        if (insertIfNeeded) {
             this.enqueue([message]);
         }
     }
