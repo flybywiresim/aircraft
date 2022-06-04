@@ -1,5 +1,6 @@
 import { fuelForDisplay } from '@instruments/common/fuel';
 import { useSimVar } from '@instruments/common/simVars';
+import { Layer } from '@instruments/common/utils';
 import React from 'react';
 
 type FFProps = {
@@ -15,12 +16,12 @@ const FF: React.FC<FFProps> = ({ unit, x, y, engine, active }) => {
 
     return (
         <>
-            <g id={`FF-indicator-${engine}`}>
+            <Layer x={x} y={y} id={`FF-indicator-${engine}`}>
                 {!active
-                    && <text className="Large End Amber" x={x - 20} y={y}>XX</text>}
+                    && <text className="Large End Amber" x={-20} y={0}>XX</text>}
                 {active
-                && <text className="Large End Green" x={x} y={y}>{fuelForDisplay(fuelFlow, unit)}</text>}
-            </g>
+                && <text className="Large End Green" x={0} y={0}>{fuelForDisplay(fuelFlow, unit)}</text>}
+            </Layer>
         </>
     );
 };
