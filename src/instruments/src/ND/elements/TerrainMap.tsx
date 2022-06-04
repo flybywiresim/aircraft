@@ -162,12 +162,52 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
 
     const lowerBorder = String(Math.floor(minimumElevation.altitude / 100)).padStart(3, '0');
     const upperBorder = String(Math.round(maximumElevation.altitude / 100 + 0.5)).padStart(3, '0');
+    const halfWidth = Math.round(width / 2);
 
     return (
         <>
+            <defs>
+                <clipPath id="fadeout">
+                    <path>
+                        <animate
+                            id="curtain"
+                            attributeName="d"
+                            begin="0s"
+                            dur="1.5s"
+                            keyTimes="0; 0.5; 1"
+                            values={`M ${x} ${y + height} L ${x + width} ${y + height} L ${x + width} ${y} L ${halfWidth} ${y} L ${halfWidth} ${y + height} L ${halfWidth} ${y} L ${x} ${y} z;
+                         M ${x} ${y + height} L ${x + width} ${y + height} L ${x + width} ${y} L ${x + width} ${y} L ${halfWidth} ${y + height} L ${x} ${y} L ${x} ${y} z;
+                         M ${x} ${y + height} L ${x + width} ${y + height} L ${x + width} ${y + height} L ${x + width} ${y + height} L ${halfWidth} ${y + height} L ${x} ${y + height} L ${x} ${y + height} z`}
+                        />
+                    </path>
+                </clipPath>
+            </defs>
             <g id="map" clipPath={`url(#${clipName})`}>
-                <image x={x} y={y} width={width} height={height} xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${lastMapTimestamp}`} />
                 <image x={x} y={y} width={width} height={height} xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${currentMapTimestamp}`} />
+                {lastMapTimestamp !== currentMapTimestamp
+                    ? (
+                        <>
+                            <image
+                                clipPath="url(#fadeout)"
+                                x={x}
+                                y={y}
+                                width={width}
+                                height={height}
+                                xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${lastMapTimestamp}`}
+                            />
+                        </>
+                    )
+                    : (
+                        <>
+                            <image
+                                x={x}
+                                y={y}
+                                width={width}
+                                height={height}
+                                xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${lastMapTimestamp}`}
+                            />
+                        </>
+                    )}
             </g>
             <text x={688} y={612} fontSize={23} fill="rgb(0,255,255)">
                 TERR
