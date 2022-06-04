@@ -44,7 +44,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
         sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button').whenChanged().handle((lsButton) => {
             this.lsButtonPressedVisibility = lsButton;
             this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
-            this.gsReferenceLine.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
+            this.handleGsReferenceLine();
         });
 
         sub.on('pitchAr').handle((pitch) => {
