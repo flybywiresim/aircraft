@@ -180,6 +180,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.efisSymbols = undefined;
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
+        this.backupNavTuning = undefined;
 
         // ATSU data
         this.atsu = undefined;
@@ -1238,6 +1239,9 @@ class FMCMainDisplay extends BaseAirliners {
                 SimVar.SetSimVarValue("K:TOGGLE_GPS_DRIVES_NAV1", "Bool", 0);
             }
         }
+
+        this.backupNavTuning = SimVar.GetSimVarValue("L:A32NX_RMP_L_NAV_BUTTON_SELECTED", "Bool")
+            || SimVar.GetSimVarValue("L:A32NX_RMP_R_NAV_BUTTON_SELECTED", "Bool");
     }
 
     updateAutopilot() {
@@ -2223,6 +2227,13 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async updateIls() {
+        if (this.backupNavTuning) {
+            if (this.ilsAutoTuned) {
+                this.clearAutotunedIls();
+            }
+            return;
+        }
+
         await this.updateIlsCourse();
 
         let airport;
@@ -2297,7 +2308,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     isRunwayLsMismatched() {
-        if (!this.ilsAutoTuned || this.flightPhaseManager.phase === FmgcFlightPhases.DONE) {
+        if (this.backupNavTuning || !this.ilsAutoTuned || this.flightPhaseManager.phase === FmgcFlightPhases.DONE) {
             return false;
         }
 
@@ -2305,7 +2316,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     isRunwayLsCourseMismatched() {
-        if (!this.ilsAutoTuned || this.ilsCourse === undefined) {
+        if (this.backupNavTuning || !this.ilsAutoTuned || this.ilsCourse === undefined) {
             return false;
         }
 
