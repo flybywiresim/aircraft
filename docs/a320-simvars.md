@@ -2666,13 +2666,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Slat actual position word of the SFCC bus output
     - Arinc429<Degrees>
     - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
-    - The Slat FPPU angle, ranges from 0° to 360°
+    - The Slat FPPU angle ranges from 0° to 360°
 
 - A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD
     - Flap actual position word of the SFCC bus output
     - Arinc429<Degrees>
     - Note that multiple SFCC are not yet implemented, thus no {number} in the name.
-    - The Flap FPPU angle, ranges from 0° to 360°
+    - The Flap FPPU angle ranges from 0° to 360°
 
 ## Landing Gear (ATA 32)
 
