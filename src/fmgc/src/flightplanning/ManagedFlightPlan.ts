@@ -1590,4 +1590,22 @@ export class ManagedFlightPlan {
         }
         return -1;
     }
+
+    get finalApproachActive(): boolean {
+        const appr = this.getSegment(SegmentType.Approach);
+        if (appr === FlightPlanSegment.Empty) {
+            return false;
+        }
+
+        const offset = this.activeWaypointIndex - appr.offset;
+        if (offset >= 0 && offset < appr.waypoints.length) {
+            for (const [index, wp] of appr.waypoints.entries()) {
+                if (wp.additionalData.fixTypeFlags & FixTypeFlags.FAF) {
+                    return offset >= index;
+                }
+            }
+        }
+
+        return false;
+    }
 }

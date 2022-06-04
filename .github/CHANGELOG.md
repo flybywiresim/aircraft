@@ -26,6 +26,7 @@
 1. [ECAM] Fix erroneous SLATS NOT IN T.O CONFIG warning during flaps 3 takeoff - @beheh (Benedict Etzel)
 1. [MODEL] Improved rivet mesh with more variation and detail - @Grinde (Grinde#4017)
 1. [ELEC] Make battery voltmeters update one digit at a time - @beheh (Benedict Etzel)
+1. [FMGC] Basic RNP at or below 0.3 support - @tracernz (Mike)
 
 ## 0.8.0
 
