@@ -29,7 +29,7 @@ function fetchTimeValue() {
  * @param {string | number} value
  */
 const lbsToKg = (value) => {
-    return (+value * 0.453592).toString();
+    return (+value * 0.4535934).toString();
 };
 
 /**
@@ -65,10 +65,10 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
             mcdu.simbrief["estZfw"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.est_zfw : lbsToKg(data.weights.est_zfw);
             mcdu.simbrief["paxCount"] = data.weights.pax_count_actual;
             mcdu.simbrief["bagCount"] = data.weights.bag_count_actual;
-            mcdu.simbrief["paxWeight"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.pax_weight : lbsToKg(data.weights.pax_weight);
-            mcdu.simbrief["bagWeight"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.bag_weight : lbsToKg(data.weights.bag_weight);
-            mcdu.simbrief["freight"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.freight_added : lbsToKg(data.weights.freight_added);
-            mcdu.simbrief["cargo"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.cargo : lbsToKg(data.weights.cargo);
+            mcdu.simbrief["paxWeight"] = data.weights.pax_weight;
+            mcdu.simbrief["bagWeight"] = data.weights.bag_weight;
+            mcdu.simbrief["freight"] = data.weights.freight_added;
+            mcdu.simbrief["cargo"] = data.weights.cargo;
             mcdu.simbrief["costIndex"] = data.general.costindex;
             mcdu.simbrief["navlog"] = data.navlog.fix;
             mcdu.simbrief["callsign"] = data.atc.callsign;
