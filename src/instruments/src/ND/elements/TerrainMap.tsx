@@ -94,8 +94,8 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                                         maximumColor = 'rgb(255, 0, 0)';
                                     }
 
-                                    setMinimumElevation({ altitude: data.minElevation, color: minimumColor});
-                                    setMaximumElevation({ altitude: data.maxElevation, color: maximumColor});
+                                    setMinimumElevation({ altitude: data.minElevation, color: minimumColor });
+                                    setMaximumElevation({ altitude: data.maxElevation, color: maximumColor });
                                 } else {
                                     setMinimumElevation({ altitude: Infinity, color: 'rgb(0, 0, 0)' });
                                     setMaximumElevation({ altitude: Infinity, color: 'rgb(0, 0, 0)' });
