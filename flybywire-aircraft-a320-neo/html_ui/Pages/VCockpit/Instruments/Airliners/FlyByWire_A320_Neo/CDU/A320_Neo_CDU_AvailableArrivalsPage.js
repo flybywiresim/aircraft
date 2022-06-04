@@ -37,13 +37,12 @@ const ApproachTypeOrder = Object.freeze([
     ApproachType.APPROACH_TYPE_UNKNOWN, // should be "runway by itself"...
 ]);
 
-const Pagination = Object.freeze(
+const ArrivalPagination = Object.freeze(
     {
         ARR_PAGE: 3,
         TRNS_PAGE: 2
     }
 );
-
 class CDUAvailableArrivalsPage {
     static ShowPage(mcdu, airport, pageCurrent = 0, starSelection = false) {
         const selectedStarIndex = mcdu.flightPlanManager.getArrivalProcIndex();
@@ -92,8 +91,8 @@ class CDUAvailableArrivalsPage {
             const rows = [[""], [""], [""], [""], [""], [""], [""], [""]];
             const matchingArrivals = [];
             if (!starSelection) {
-                for (let i = 0; i < Pagination.ARR_PAGE; i++) {
-                    const index = i + pageCurrent * Pagination.ARR_PAGE;
+                for (let i = 0; i < ArrivalPagination.ARR_PAGE; i++) {
+                    const index = i + pageCurrent * ArrivalPagination.ARR_PAGE;
                     const approach = sortedApproaches[index];
                     if (approach) {
                         let runwayLength = "----";
@@ -140,8 +139,8 @@ class CDUAvailableArrivalsPage {
                         matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
                     }
                 }
-                for (let i = 0; i < Pagination.ARR_PAGE; i++) {
-                    let index = i + (pageCurrent * Pagination.ARR_PAGE);
+                for (let i = 0; i < ArrivalPagination.ARR_PAGE; i++) {
+                    let index = i + (pageCurrent * ArrivalPagination.ARR_PAGE);
                     if (index === 0) {
                         rows[2 * i] = ["{NO STAR[color]cyan"];
                         mcdu.onLeftInput[i + 2] = () => {
@@ -182,8 +181,8 @@ class CDUAvailableArrivalsPage {
                         CDUAvailableArrivalsPage.ShowPage(mcdu, airport);
                     });
                 };
-                for (let i = 0; i < Pagination.TRNS_PAGE; i++) {
-                    const index = i + pageCurrent * Pagination.TRNS_PAGE;
+                for (let i = 0; i < ArrivalPagination.TRNS_PAGE; i++) {
+                    const index = i + pageCurrent * ArrivalPagination.TRNS_PAGE;
                     if (selectedArrival) {
                         const transition = selectedArrival.enRouteTransitions[index];
                         if (transition) {
@@ -231,7 +230,7 @@ class CDUAvailableArrivalsPage {
             }
             let up = false;
             let down = false;
-            const maxPage = starSelection ? (selectedArrival ? Math.max(Math.ceil(selectedArrival.enRouteTransitions.length / Pagination.TRNS_PAGE) - 1, Math.ceil(matchingArrivals.length / Pagination.ARR_PAGE) - 1) : Math.ceil(matchingArrivals.length / Pagination.ARR_PAGE) - 1) : (pageCurrent, Math.ceil(airportInfo.approaches.length / Pagination.ARR_PAGE) - 1);
+            const maxPage = starSelection ? (selectedArrival ? Math.max(Math.ceil(selectedArrival.enRouteTransitions.length / ArrivalPagination.TRNS_PAGE) - 1, Math.ceil(matchingArrivals.length / ArrivalPagination.ARR_PAGE) - 1) : Math.ceil(matchingArrivals.length / ArrivalPagination.ARR_PAGE) - 1) : (pageCurrent, Math.ceil(airportInfo.approaches.length / ArrivalPagination.ARR_PAGE) - 1);
             if (pageCurrent < maxPage) {
                 mcdu.onUp = () => {
                     pageCurrent++;
