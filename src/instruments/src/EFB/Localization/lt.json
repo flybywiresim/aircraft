@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Namų kabinos režimas",
       "McduFocusTimeout": "MCDU fokuso praradimas (sekundės)",
       "McduKeyboardInput": "MCDU duomenų įvedimas klaviatūra",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Išskirti tiller iš krypties vairo komandų",
       "Title": "Realizmas"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automatinis ryškumas",
       "AutomaticallyShowOnscreenKeyboard": "Automatiškai rodyti ekrano klaviatūrą",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Mėlyna",
       "Brightness": "Ryškumas",
       "Dark": "Tamsi",

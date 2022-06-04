@@ -141,9 +141,9 @@
       "CateringTruck": "Кейтеринг грузовик",
       "Cones": "Предохранительные конусы",
       "DoorAft": "Задняя дверь",
-      "DoorCargo": "Cargo Door",
+      "DoorCargo": "Грузовая дверь",
       "DoorFwd": "Передняя дверь",
-      "ExternalPower": "Внешнее питание",
+      "ExternalPower": "Наземный блок питания",
       "FuelTruck": "Топливная тележка",
       "JetBridge": "Джет Бридж",
       "Title": "Сервисы",
@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Режим домашней кабины",
       "McduFocusTimeout": "Тайм-аут фокуса MCDU (секунды)",
       "McduKeyboardInput": "Ввод с клавиатуры MCDU",
+      "PauseAtTod": "Т/Д Пауза",
+      "PauseAtTodDistance": "Расстояние паузы Т/Д (нм)",
       "SeparateTillerFromRudderInputs": "Отдельный румпель от входов руля",
       "Title": "Реализм"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Автояркость",
       "AutomaticallyShowOnscreenKeyboard": "Автоматически показывать экранную клавиатуру",
+      "BatteryLifeEnabled": "Имитация расхода батареи",
       "Blue": "Синяя",
       "Brightness": "Яркость",
       "Dark": "Темная",
@@ -523,8 +526,8 @@
       "UtcAndLocal": "UTC и местное"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
+  "Settings.Realism.PauseAtTod": "Т/Д Пауза",
+  "Settings.Realism.PauseAtTodDistance": "Расстояние паузы Т/Д (нм)",
   "Settings.flyPad.BatteryLifeEnabled": "Имитация расхода батареи",
   "StatusBar": {
     "Apr": "Апр",

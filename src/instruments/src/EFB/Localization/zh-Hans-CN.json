@@ -453,6 +453,8 @@
       "HomeCockpitMode": "家用驾驶舱模式",
       "McduFocusTimeout": "MCDU 对焦超时 (秒)",
       "McduKeyboardInput": "MCDU 键盘输入",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "将舵柄与脚舵输入分开",
       "Title": "仿真度"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "自动调节亮度",
       "AutomaticallyShowOnscreenKeyboard": "自动显示屏幕键盘",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "蓝色",
       "Brightness": "亮度",
       "Dark": "深色",

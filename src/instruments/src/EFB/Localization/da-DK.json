@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Hjemmecockpit tilstand",
       "McduFocusTimeout": "MCDU Fokus Timeout (sekunder)",
       "McduKeyboardInput": "MCDU Tastatur Input",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separat Tiller fra Rudder Inputs",
       "Title": "Realisme"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automatisk lysstyrke",
       "AutomaticallyShowOnscreenKeyboard": "Vis automatisk tastatur på skærmen",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Blå",
       "Brightness": "Lysstyrke",
       "Dark": "Mørk",

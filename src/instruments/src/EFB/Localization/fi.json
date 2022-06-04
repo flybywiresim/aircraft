@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Kotiohjaamo-tila",
       "McduFocusTimeout": "Lentotietokone poissa käytöstä tarkennuksen aikana (sekunteina)",
       "McduKeyboardInput": "MCDU näppäimistö syöttö",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Erota nokkapyörän ohjaus peräsimestä",
       "Title": "Realismi"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automaattinen kirkkaus",
       "AutomaticallyShowOnscreenKeyboard": "Näytä näyttönäppäimistö automaattisesti",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Sininen",
       "Brightness": "Kirkkaus",
       "Dark": "Tumma",

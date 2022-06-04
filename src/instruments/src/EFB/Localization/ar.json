@@ -453,6 +453,8 @@
       "HomeCockpitMode": "وضع قمرة القيادة المنزلية",
       "McduFocusTimeout": "مهلة التركيز MCDU (ثواني)",
       "McduKeyboardInput": "لوحة مفاتيح تدخيل MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "فصل الحارث عن مدخلات الدفة",
       "Title": "الواقعية"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "الإضاءة التلقائية",
       "AutomaticallyShowOnscreenKeyboard": "عرض لوحة المفاتيح على الشاشة تلقائيًا",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "أزرق",
       "Brightness": "السطوع",
       "Dark": "داكن",

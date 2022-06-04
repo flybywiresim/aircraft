@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Chế độ buồng lái tại nhà",
       "McduFocusTimeout": "Thời gian chờ MCDU chỉnh (giây)",
       "McduKeyboardInput": "Dùng bàn phím cho MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Tách rời Điều Khiển Bánh Mũi với Bàn Đạp",
       "Title": "Mức thực tế"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Tự động điều chỉnh độ sáng",
       "AutomaticallyShowOnscreenKeyboard": "Tự động hiển thị bàn phím trên màn hình",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Xanh lam",
       "Brightness": "Độ sáng",
       "Dark": "Tối",

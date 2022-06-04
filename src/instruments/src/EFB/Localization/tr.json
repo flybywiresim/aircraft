@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Ev Kokpit Modu",
       "McduFocusTimeout": "MCDU Focus Zaman Aşımı (saniye)",
       "McduKeyboardInput": "MCDU Klavye Girişi",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Tiller'ı Rudder Girişlerinden Ayır",
       "Title": "Gerçekçilik"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Otomatik Parlaklık",
       "AutomaticallyShowOnscreenKeyboard": "Ekran Klavyesini Otomatik Olarak Göster",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Mavi",
       "Brightness": "Parlaklık",
       "Dark": "Koyu",

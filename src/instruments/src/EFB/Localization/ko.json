@@ -453,6 +453,8 @@
       "HomeCockpitMode": "실내 조종석 모드",
       "McduFocusTimeout": "MCDU 포커스 타임아웃 (초)",
       "McduKeyboardInput": "MCDU 키보드 입력",
+      "PauseAtTod": "T/D 일시정지",
+      "PauseAtTodDistance": "T/D 일시정지 거리 (nm)",
       "SeparateTillerFromRudderInputs": "러더 입력과 틸러 입력 분리",
       "Title": "리얼리즘"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "자동 밝기",
       "AutomaticallyShowOnscreenKeyboard": "온스크린 키보드 자동 표시",
+      "BatteryLifeEnabled": "배터리 수명 시뮬레이션",
       "Blue": "블루",
       "Brightness": "밝기",
       "Dark": "다크",
@@ -523,8 +526,8 @@
       "UtcAndLocal": "UTC 및 현지 시간"
     }
   },
-  "Settings.Realism.PauseAtTod": "T/D Pause",
-  "Settings.Realism.PauseAtTodDistance": "T/D Pause Distance (nm)",
+  "Settings.Realism.PauseAtTod": "T/D 일시정지",
+  "Settings.Realism.PauseAtTodDistance": "T/D 일시정지 거리 (nm)",
   "Settings.flyPad.BatteryLifeEnabled": "배터리 수명 시뮬레이션",
   "StatusBar": {
     "Apr": "4월",

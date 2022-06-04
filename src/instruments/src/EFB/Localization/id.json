@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Mode Kokpit Rumah",
       "McduFocusTimeout": "Batas Waktu Fokus MCDU (detik)",
       "McduKeyboardInput": "Input Keyboard MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Pisahkan Tiller dari Input Rudder",
       "Title": "Realisme"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Kecerahan Otomatis",
       "AutomaticallyShowOnscreenKeyboard": "Otomatis Menampilkan Keyboard Pada Layar",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Biru",
       "Brightness": "Kecerahan",
       "Dark": "Gelap",

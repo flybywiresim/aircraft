@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Modalità Home Cockpit",
       "McduFocusTimeout": "Rilascio Selezione su MCDU (secondi)",
       "McduKeyboardInput": "Input Tastiera su MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separa gli Input del Tiller e dei Pedali",
       "Title": "Realismo"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Luminosità Automatica",
       "AutomaticallyShowOnscreenKeyboard": "Visualizza Tastiera a Schermo Automaticamente",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Blu",
       "Brightness": "Luminosità",
       "Dark": "Scuro",

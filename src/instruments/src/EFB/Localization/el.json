@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Λειτουργία θαλάμου πιλοτηρίου οικιακής χρήσης",
       "McduFocusTimeout": "Χρονικό Όριο Εστίασης MCDU (δευτερόλεπτα)",
       "McduKeyboardInput": "Είσαγωγή Πληκτρολογίου MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Ξεχωριστό Οιακοστροφίο απο τις Εισαγωγές Πηδαλίου",
       "Title": "Ρεαλισμός"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Αυτόματη Φωτεινότητα",
       "AutomaticallyShowOnscreenKeyboard": "Αυτόματη Εμφάνιση Πληκτρολογίου Οθόνης",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Μπλέ",
       "Brightness": "Φωτεινότητα",
       "Dark": "Σκοτεινό",

@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Režim domácího kokpitu",
       "McduFocusTimeout": "Časový limit vstupu MCDU z klávesnice (sekundy)",
       "McduKeyboardInput": "MCDU zadávání pomocí klávesnice",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Oddělit vstupy pro tiller a směrovku",
       "Title": "Realismus"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automatický jas",
       "AutomaticallyShowOnscreenKeyboard": "Automaticky zobrazit klávesnici na obrazovce",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Modrý",
       "Brightness": "Jas",
       "Dark": "Tmavý",

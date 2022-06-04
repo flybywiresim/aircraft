@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Home Cockpit Modus",
       "McduFocusTimeout": "MCDU Focus Time-out (seconden)",
       "McduKeyboardInput": "MCDU Toetsenbordinvoer",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Scheid Tiller van Roer invoer",
       "Title": "Realisme"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Auto helderheid",
       "AutomaticallyShowOnscreenKeyboard": "Automatisch toetsenbord op scherm weergeven",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Blauw",
       "Brightness": "Helderheid",
       "Dark": "Donker",

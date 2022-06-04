@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Tryb Kokpitu Domowego",
       "McduFocusTimeout": "Czas Aktywności MCDU (sekundy)",
       "McduKeyboardInput": "Wprowadzanie Danych Fizyczną Klawiaturą do MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Oddziel Sterowanie Kołem od Steru Kierunku",
       "Title": "Realizm"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automatyczna Jasność",
       "AutomaticallyShowOnscreenKeyboard": "Automatycznie Pokazuj Klawiaturę Ekranową",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Niebieski",
       "Brightness": "Jasnosć",
       "Dark": "Ciemny",

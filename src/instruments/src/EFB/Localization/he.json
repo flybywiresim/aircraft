@@ -453,6 +453,8 @@
       "HomeCockpitMode": "מצב תא טייס ביתי",
       "McduFocusTimeout": "MCDU - זמן לשחרור מקלדת",
       "McduKeyboardInput": "MCDU - קלט מקלדת",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "היגוי גלגל האף נפרד מהפדלים",
       "Title": "מציאותיות"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "בהירות אוטומטית",
       "AutomaticallyShowOnscreenKeyboard": "הצג אוטומטית מקלדת על המסך",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "כחול",
       "Brightness": "בהירות",
       "Dark": "כהה",

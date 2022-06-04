@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Mod cabină de pilotaj de casă",
       "McduFocusTimeout": "MCDU Focus Timeout (secunde)",
       "McduKeyboardInput": "Intrare tastatură MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separați cârma de intrările cârmei",
       "Title": "Realism"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Luminozitate automatică",
       "AutomaticallyShowOnscreenKeyboard": "Afișează automat tastatura de pe ecran",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Albastru",
       "Brightness": "Luminozitate",
       "Dark": "Întuneric",

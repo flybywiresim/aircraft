@@ -453,6 +453,8 @@
       "HomeCockpitMode": "होम कॉकपिट मोड",
       "McduFocusTimeout": "एमसीडीयू फोकस टाइमआउट (सेकंड)",
       "McduKeyboardInput": "MCDU कीबोर्ड इनपुट",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "रडर इनपुट्स से अलग टिलर",
       "Title": "यथार्थवाद"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "स्वतः उज्ज्वलता",
       "AutomaticallyShowOnscreenKeyboard": "स्वचालित रूप से ऑनस्क्रीन कीबोर्ड दिखाएँ",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "नीला",
       "Brightness": "चमक",
       "Dark": "गहरा",

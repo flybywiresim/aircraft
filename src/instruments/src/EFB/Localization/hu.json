@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Épített kabin mód",
       "McduFocusTimeout": "MCDU Fókusz időtúllépés (másodperc)",
       "McduKeyboardInput": "MCDU Billentyűzet bevitel",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Orrkerék kormányzás leválasztása az oldalkormányzásról",
       "Title": "Realizmus"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Auto. fényerő",
       "AutomaticallyShowOnscreenKeyboard": "Képernyőn megjelenő billentyűzet automatikus megjelenítése",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Kék",
       "Brightness": "Fényerő",
       "Dark": "Sötét",

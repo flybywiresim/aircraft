@@ -453,6 +453,8 @@
       "HomeCockpitMode": "Način \"Home Cockpit\"",
       "McduFocusTimeout": "MCDU časovna omejitev fokusa (sekunde)",
       "McduKeyboardInput": "MCDU vnos s tipkovnico",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Ločite delovanje krmilnika od krmila",
       "Title": "Realizem"
     },
@@ -504,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Samodejna svetlost",
       "AutomaticallyShowOnscreenKeyboard": "Samodejno prikaži zaslonsko tipkovnico",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Modro",
       "Brightness": "Svetlost",
       "Dark": "Temno",
