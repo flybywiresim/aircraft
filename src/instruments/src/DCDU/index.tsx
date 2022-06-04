@@ -64,9 +64,9 @@ const DCDU: React.FC = () => {
     const [events] = useState(RegisterViewListener('JS_LISTENER_SIMVARS', undefined, true));
     const [systemStatusMessage, setSystemStatusMessage] = useState(DcduStatusMessage.NoMessage);
     const [systemStatusTimer, setSystemStatusTimer] = useState<number | null>(null);
-    const [screenTimeout, setScreenTimeout] = useState<number | null>(null);
+    const [screenTimeout, setScreenTimeout] = useState<NodeJS.Timeout | null>(null);
     const [messages, setMessages] = useState(new Map<number, DcduMessageBlock>());
-    const messagesRef = useRef<Map<number, [CpdlcMessage[], number, number]>>();
+    const messagesRef = useRef<Map<number, DcduMessageBlock>>();
     const [atcMessage, setAtcMessage] = useState('');
 
     messagesRef.current = messages;
