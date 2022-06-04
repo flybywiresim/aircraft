@@ -94,7 +94,7 @@ export const ArcMode: React.FC<ArcModeProps> = ({ symbols, adirsAlign, rangeSett
                 { lsDisplayed && <LsCourseBug heading={heading} lsCourse={lsCourse} /> }
                 <SelectedHeadingBug heading={heading} selected={selectedHeading} />
                 <Plane />
-                <CrossTrack x={390} y={646} />
+                <CrossTrack x={390} y={646} side={side} />
                 <g clipPath="url(#arc-mode-tcas-clip)">
                     <Traffic mode={Mode.ARC} mapParams={mapParams} />
                 </g>

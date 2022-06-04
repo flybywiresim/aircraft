@@ -51,7 +51,7 @@ export const PlanMode: FC<PlanModeProps> = ({ side, symbols, adirsAlign, rangeSe
 
             <ToWaypointIndicator side={side} />
 
-            <CrossTrack x={44} y={690} isPlanMode />
+            <CrossTrack x={44} y={690} side={side} isPlanMode />
         </>
     );
 };
