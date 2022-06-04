@@ -342,7 +342,7 @@ export class DcduLink {
             }, 100);
         }
 
-        if (!this.atcRingInterval) {
+        if (this.atcRingInterval) {
             clearInterval(this.atcRingInterval);
         }
 
