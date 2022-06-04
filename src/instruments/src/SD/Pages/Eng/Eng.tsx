@@ -270,7 +270,7 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
     // Fuel used has a step of 10 when in Kilograms and 20 when in imperial pounds
     const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
     const [fuelUsed] = useSimVar(`L:A32NX_FUEL_USED:${engineNumber}`, 'number', 500);
-    const displayedFuelUsed = parseInt(weightUnit) === 1 ? Math.round(fuelUsed / 10) * 10 : Math.round(fuelUsed * 2.20462 / 20) * 20;
+    const displayedFuelUsed = parseInt(weightUnit) === 1 ? Math.round(fuelUsed / 10) * 10 : Math.round(fuelUsed / 0.4535934 / 20) * 20;
 
     const [engineOilTemperature] = useSimVar(`GENERAL ENG OIL TEMPERATURE:${engineNumber}`, 'celsius', 250);
     const OIL_TEMP_LOW_TAKEOFF = 38;

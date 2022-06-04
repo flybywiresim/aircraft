@@ -28,11 +28,11 @@ export class Units {
     }
 
     static poundToKilogram(value: Pound): KiloGram {
-        return value / 2.204625;
+        return value * 0.4535934;
     }
 
     static kilogramToPound(value: KiloGram): Pound {
-        return value * 2.204625;
+        return value / 0.4535934;
     }
 
     static userToKilogram(value: Pound): KiloGram {
