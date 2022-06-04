@@ -91,8 +91,8 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
     }, [slatsIppuAngle]);
 
     useEffect(() => {
-        const xFactor = 4.6256;
-        const yFactor = 1.0192;
+        const xFactor = 4.71;
+        const yFactor = 0.97;
 
         const synchroFactor = 0.22;
         const synchroConstant = 15.88;
@@ -133,7 +133,7 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
         }
 
         const value = Math.max((flapsIppuAngle * synchroFactor - synchroConstant - synchroOffset) * positionFactor + positionOffset, 0);
-        setFlapsPos([xFactor * value, yFactor * value]);
+        setFlapsPos([xFactor * value, yFactor * value + 1]);
     }, [flapsIppuAngle]);
 
     return (
@@ -180,7 +180,7 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
                 <path d="M 133,48 l 3,5 l 5,1 l 0,-4 Z" className={`FlapsSmallCyan ${config3Selected && !hideTargetFlapIndex ? 'Show' : 'Hide'}`} />
                 <path d="M 170,56 l 3,5 l 5,1 l 0,-4 Z" className={`FlapsSmallCyan ${configFullSelected && !hideTargetFlapIndex ? 'Show' : 'Hide'}`} />
             </g>
-            <path d={`M${flapsPos[0]},${flapsPos[1]} l 26,6 l 0,13 l -18,-3 Z`} className="Flaps" />
+            <path d={`M${flapsPos[0]},${flapsPos[1]} l 24.5,6 l 0,13.5 l -18,-4 Z`} className="Flaps" />
             <line className="GreenLine" x1={0} y1={0} x2={flapsPos[0]} y2={flapsPos[1]} />
         </Layer>
     );
