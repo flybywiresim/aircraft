@@ -112,6 +112,9 @@ export interface PFDSimvars {
     daRaw: number;
     ls1Button: boolean;
     ls2Button: boolean;
+    xtk: number;
+    ldevRequestLeft: boolean;
+    ldevRequestRight: boolean;
   }
 
 export enum PFDVars {
@@ -226,6 +229,9 @@ export enum PFDVars {
     daRaw = 'L:A32NX_ADIRS_IR_1_DRIFT_ANGLE',
     ls1Button = 'L:BTN_LS_1_FILTER_ACTIVE',
     ls2Button = 'L:BTN_LS_2_FILTER_ACTIVE',
+    xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
+    ldevLeft = 'L:A32NX_FMGC_L_LDEV_REQUEST',
+    ldevRight = 'L:A32NX_FMGC_R_LDEV_REQUEST',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -342,6 +348,9 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['daRaw', { name: PFDVars.daRaw, type: SimVarValueType.Number }],
         ['ls1Button', { name: PFDVars.ls1Button, type: SimVarValueType.Bool }],
         ['ls2Button', { name: PFDVars.ls2Button, type: SimVarValueType.Bool }],
+        ['xtk', { name: PFDVars.xtk, type: SimVarValueType.NM }],
+        ['ldevRequestLeft', { name: PFDVars.ldevLeft, type: SimVarValueType.Bool }],
+        ['ldevRequestRight', { name: PFDVars.ldevRight, type: SimVarValueType.Bool }],
     ])
 
     public constructor(bus: EventBus) {
