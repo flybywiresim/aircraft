@@ -1,3 +1,9 @@
+const Pagination = Object.freeze(
+    {
+        DEPT_PAGE: 4,
+    }
+);
+
 class CDUAvailableDeparturesPage {
     static ShowPage(mcdu, airport, pageCurrent = 0, sidSelection = false) {
         const airportInfo = airport.infos;
@@ -40,11 +46,10 @@ class CDUAvailableDeparturesPage {
             const rows = [[""], [""], [""], [""], [""], [""], [""], [""]];
             const selectedSidIndex = mcdu.flightPlanManager.getDepartureProcIndex();
             const selectedEnRouteIndex = mcdu.flightPlanManager.getDepartureEnRouteTransitionIndex();
-            const pagination = 4;
 
             if (!sidSelection) {
-                for (let i = 0; i < pagination; i++) {
-                    const index = i + pageCurrent * pagination;
+                for (let i = 0; i < Pagination.DEPT_PAGE; i++) {
+                    const index = i + pageCurrent * Pagination.DEPT_PAGE;
                     const runway = runways[index];
                     if (runway) {
                         rows[2 * i] = [
@@ -71,8 +76,8 @@ class CDUAvailableDeparturesPage {
                     });
                 };
 
-                const lower = pageCurrent * pagination;
-                const upper = (pageCurrent + 1) * pagination;
+                const lower = pageCurrent * Pagination.DEPT_PAGE;
+                const upper = (pageCurrent + 1) * Pagination.DEPT_PAGE;
                 let nextDep = 0;
                 for (let depI = 0; nextDep < upper && depI < airportInfo.departures.length; depI++) {
                     const sid = airportInfo.departures[depI];
@@ -114,8 +119,8 @@ class CDUAvailableDeparturesPage {
                     };
                 }
                 if (selectedDeparture) {
-                    for (let i = 0; i < pagination; i++) {
-                        const enRouteTransitionIndex = i + pageCurrent * pagination;
+                    for (let i = 0; i < Pagination.DEPT_PAGE; i++) {
+                        const enRouteTransitionIndex = i + pageCurrent * Pagination.DEPT_PAGE;
                         const enRouteTransition = selectedDeparture.enRouteTransitions[enRouteTransitionIndex];
                         if (enRouteTransition) {
                             rows[2 * i][1] = `${enRouteTransition.name}${selectedEnRouteIndex === enRouteTransitionIndex ? " " : "}"}[color]cyan`;
@@ -141,16 +146,16 @@ class CDUAvailableDeparturesPage {
                             }
                         }
                     }
-                    maxPage = Math.ceil(maxPage / pagination) - ((maxPage % pagination === 0) ? 0 : 1);
+                    maxPage = Math.ceil(maxPage / Pagination.DEPT_PAGE) - ((maxPage % Pagination.DEPT_PAGE === 0) ? 0 : 1);
                 } else {
-                    maxPage = Math.ceil(airportInfo.departures.length / pagination) - ((airportInfo.departures.length % pagination === 0) ? 0 : 1);
+                    maxPage = Math.ceil(airportInfo.departures.length / Pagination.DEPT_PAGE) - ((airportInfo.departures.length % Pagination.DEPT_PAGE === 0) ? 0 : 1);
                 }
 
                 if (selectedDeparture) {
-                    maxPage = Math.max(maxPage, Math.ceil(selectedDeparture.enRouteTransitions.length / pagination) - ((selectedDeparture.enRouteTransitions.length % pagination === 0) ? 0 : 1));
+                    maxPage = Math.max(maxPage, Math.ceil(selectedDeparture.enRouteTransitions.length / Pagination.DEPT_PAGE) - ((selectedDeparture.enRouteTransitions.length % Pagination.DEPT_PAGE === 0) ? 0 : 1));
                 }
             } else {
-                maxPage = Math.ceil(airportInfo.oneWayRunways.length / pagination) - 1;
+                maxPage = Math.ceil(airportInfo.oneWayRunways.length / Pagination.DEPT_PAGE) - 1;
             }
             if (pageCurrent < maxPage) {
                 mcdu.onUp = () => {
