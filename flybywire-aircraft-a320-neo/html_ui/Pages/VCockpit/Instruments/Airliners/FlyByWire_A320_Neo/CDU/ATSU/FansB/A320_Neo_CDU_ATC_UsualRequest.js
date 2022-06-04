@@ -58,7 +58,7 @@ class CDUAtcUsualRequestFansB {
         if (extension) {
             retval.forEach((message) => {
                 if (message.Content[0].TypeId !== "DM27") {
-                    message.Extensions.push(extension);
+                    message.Content.push(extension);
                 }
             });
         }
