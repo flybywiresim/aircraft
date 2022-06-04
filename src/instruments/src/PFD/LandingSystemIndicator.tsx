@@ -1,5 +1,6 @@
 import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from 'msfssdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
@@ -13,6 +14,18 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
 
     private deviationGroup = FSComponent.createRef<SVGGElement>();
 
+    private roll = Arinc429Word.empty();
+
+    private pitch = Arinc429Word.empty();
+
+    private handleGsReferenceLine() {
+        if (this.lsButtonPressedVisibility || (this.pitch.isNormalOperation() && this.roll.isNormalOperation())) {
+            this.gsReferenceLine.instance.style.display = 'inline';
+        } else if (!this.lsButtonPressedVisibility) {
+            this.gsReferenceLine.instance.style.display = 'hidden';
+        }
+    }
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -24,7 +37,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
                 SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', this.lsButtonPressedVisibility);
 
                 this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
-                this.gsReferenceLine.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
+                this.handleGsReferenceLine();
             }
         });
 
@@ -32,6 +45,16 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
             this.lsButtonPressedVisibility = lsButton;
             this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
             this.gsReferenceLine.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
+        });
+
+        sub.on('pitchAr').handle((pitch) => {
+            this.pitch = pitch;
+            this.handleGsReferenceLine();
+        });
+
+        sub.on('rollAr').handle((roll) => {
+            this.roll = roll;
+            this.handleGsReferenceLine();
         });
     }
 
