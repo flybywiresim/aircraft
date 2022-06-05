@@ -21,6 +21,7 @@
 1. [HYD] Gear system now supports spawning in flight gear up - @Crocket63 (crocket)
 1. [MCDU] Added imperial runway length - @derl30n (Leon)
 1. [MCDU] Refactor and improve input handling and conversions in MCDU W&B - @sidnov (Sid)
+1. [MODEL] Improved rivet mesh with more variation and detail - @Grinde (Grinde#4017)
 
 ## 0.8.0
 
