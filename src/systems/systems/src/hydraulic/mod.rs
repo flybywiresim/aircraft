@@ -31,6 +31,7 @@ pub mod flap_slat;
 pub mod landing_gear;
 pub mod linear_actuator;
 pub mod nose_steering;
+pub mod ths;
 
 /// Indicates the pressure sensors info of an hydraulic circuit at different locations
 /// Information can be wrong in case of sensor failure -> do not use for physical pressure
