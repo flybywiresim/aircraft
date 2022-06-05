@@ -88,7 +88,10 @@ export class DcduLink {
     private closeMessage(messages: (DcduMessage[])[], backlog: (DcduMessage[])[], uid: number, uplink: boolean): boolean {
         const idx = messages.findIndex((elem) => elem[0].MessageId === uid);
         if (idx !== -1) {
-            if (!this.lastClosedMessage || this.lastClosedMessage[0][0].MessageId !== uid) {
+            // validate that message exists in the queue
+            const message = this.atc.messages().find((elem) => elem.UniqueMessageID === uid);
+
+            if ((!this.lastClosedMessage || this.lastClosedMessage[0][0].MessageId !== uid) && message !== undefined) {
                 this.lastClosedMessage = [messages[idx], new Date().getTime()];
             }
 
