@@ -351,9 +351,13 @@ const DCDU: React.FC = () => {
     });
 
     useUpdate((deltaTime) => {
+        if (messagesRef.current === undefined) {
+            return;
+        }
+
         // check if the timeout of messages is triggered
         const currentTime = new Date().getTime() / 1000;
-        const sortedArray = sortedMessageArray(messages);
+        const sortedArray = sortedMessageArray(messagesRef.current);
         sortedArray.forEach((message) => {
             if (message.messages[0].CloseAutomatically) {
                 if (message.messageVisible && message.automaticCloseTimeout < 0) {
