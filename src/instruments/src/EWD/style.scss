@@ -73,7 +73,7 @@ animation: pulsingS 1s step-end infinite;
         }
 
         &.Huge {
-            font-size: 31px;
+            font-size: 30px;
         }
 
         &.Cyan {
@@ -116,7 +116,7 @@ animation: pulsingS 1s step-end infinite;
 
     .Separator {
       stroke: $display-light-grey;
-      stroke-width: 3;
+      stroke-width: 4;
       fill: none;
     }
 
@@ -155,16 +155,17 @@ animation: pulsingS 1s step-end infinite;
         fill: $display-background !important;
     }
 
+    .GreenFill {
+        fill: $display-green !important;
+        stroke: none;
+    }
+
     .Show {
         display:block;
     }
 
     .Hide {
         display: none;
-    }
-
-    .Spread {
-        letter-spacing: 2px;
     }
 
     .DonutThrottleIndicator {
@@ -215,27 +216,6 @@ animation: pulsingS 1s step-end infinite;
         stroke: none;
         fill: $display-light-grey;
         opacity: 0.2
-    }
-
-    #FobLabel {
-        font-size: 28px;
-        fill: $display-white;
-    }
-
-    #FobColon {
-        font-size: 28px;
-        fill: $display-white;
-    }
-
-    #FobValue {
-        fill: $display-green;
-        font-size: 28px;
-        text-anchor: end;
-    }
-
-    #FobUnit {
-        fill: $display-cyan;
-        font-size: 20px;
     }
 
     .SlatsSmallWhite, .FlapsSmallWhite {
