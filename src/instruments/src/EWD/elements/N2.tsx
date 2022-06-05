@@ -1,5 +1,6 @@
 import { splitDecimals } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
+import { Layer } from '@instruments/common/utils';
 import React from 'react';
 
 interface N2Props {
@@ -18,19 +19,19 @@ const N2: React.FC<N2Props> = ({ x, y, engine, active }) => {
     // N1Percent sometimes does not reach N1Idle by .005 or so
 
     return (
-        <g id={`N2-indicator-${engine}`}>
+        <Layer x={x} y={y} id={`N2-indicator-${engine}`}>
             {!active
-                    && <text className="Large End Amber" x={x + 60} y={y + 45}>XX</text>}
+                    && <text className="Large End Amber" x={60} y={45}>XX</text>}
             {active
                     && (
                         <>
-                            <rect x={x - 6} y={y + 22} width={80} height={25} className={`LightGreyBox ${starting ? 'Show' : 'Hide'}`} />
-                            <text className="Large End Green" x={x + 42} y={y + 45}>{N2percentSplit[0]}</text>
-                            <text className="Large End Green" x={x + 54} y={y + 45}>.</text>
-                            <text className="Medium End Green" x={x + 70} y={y + 45}>{N2percentSplit[1]}</text>
+                            <rect x={-9} y={22} width={80} height={25} className={`LightGreyBox ${starting ? 'Show' : 'Hide'}`} />
+                            <text className="Large End Green" x={42} y={45}>{N2percentSplit[0]}</text>
+                            <text className="Large End Green" x={54} y={45}>.</text>
+                            <text className="Medium End Green" x={70} y={45}>{N2percentSplit[1]}</text>
                         </>
                     ) }
-        </g>
+        </Layer>
     );
 };
 
