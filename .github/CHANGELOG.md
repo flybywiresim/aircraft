@@ -21,6 +21,9 @@
 1. [HYD] Gear system now supports spawning in flight gear up - @Crocket63 (crocket)
 1. [MCDU] Added imperial runway length - @derl30n (Leon)
 1. [MCDU] Refactor and improve input handling and conversions in MCDU W&B - @sidnov (Sid)
+1. [EWD] E/WD visual improvements - @lukecologne (luke)
+1. [SFCC] Add SFCC bus outputs  - @lukecologne (luke)
+1. [EWD] Use FPPU angles for flaps/slats display  - @lukecologne (luke)
 
 ## 0.8.0
 
