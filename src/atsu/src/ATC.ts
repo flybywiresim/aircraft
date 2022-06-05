@@ -485,7 +485,7 @@ export class Atc {
                 this.messageQueue.forEach((element) => {
                     // ensure that the sending and receiving stations are the same to avoid CPDLC ID overlaps
                     if (element.Station === cpdlcMessage.Station) {
-                        while (element !== undefined) {
+                        while (element !== null) {
                             if (element.CurrentTransmissionId === cpdlcMessage.PreviousTransmissionId) {
                                 element.Response = cpdlcMessage;
                                 this.analyzeMessage(element, cpdlcMessage);
