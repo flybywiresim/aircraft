@@ -147,11 +147,18 @@ export const ATC = () => {
         setCurrentAtc(controllers?.find((c) => c.frequency === converted));
     }, [stanbdyFrequency]);
 
+    // Update selected controller info when controllers change
     useEffect(() => {
-        if (activeFrequency) {
-            setCurrentAtc(controllers?.find((c) => c.frequency === fromFrequency(activeFrequency)));
+        const currentControllerFrequency = currentAtc?.frequency;
+
+        if (currentControllerFrequency) {
+            const controllerWithFrequency = controllers?.find((c) => c.frequency === currentControllerFrequency);
+
+            if (controllerWithFrequency) {
+                setCurrentAtc(controllerWithFrequency);
+            }
         }
-    }, [controllers, activeFrequency]);
+    }, [controllers]);
 
     useInterval(() => {
         loadAtc();
