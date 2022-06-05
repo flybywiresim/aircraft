@@ -269,7 +269,7 @@ class CDUAtcUsualRequestFansB {
         };
         mcdu.onRightInput[5] = () => {
             if (CDUAtcUsualRequestFansB.CDUAtcUsualRequestFansB(data)) {
-                const requests = CDUAtcUsualRequestFansA.CreateRequests(mcdu, data);
+                const requests = CDUAtcUsualRequestFansB.CreateRequests(mcdu, data);
                 if (requests.length !== 0) {
                     mcdu.atsu.registerMessages(requests);
                     CDUAtcUsualRequestFansB.ShowPage(mcdu);
