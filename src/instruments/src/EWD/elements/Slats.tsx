@@ -1,4 +1,5 @@
 import { useSimVar } from '@instruments/common/simVars';
+import { Layer } from '@instruments/common/utils';
 import React, { useEffect, useState } from 'react';
 
 type SlatsProps = {
@@ -26,10 +27,10 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
     const [flapsInitial, setFlapsInitial] = useState(true);
     const [slatsInitial, setSlatsInitial] = useState(true);
 
-    const [slatPos, setSlatPos] = useState([x - 15, y]);
+    const [slatPos, setSlatPos] = useState([-15, 0]);
     const [deltaSlatsAngle, setDeltaSlatsAngle] = useState(slatsAngle);
 
-    const [flapsPos, setFlapsPos] = useState([x, y]);
+    const [flapsPos, setFlapsPos] = useState([0, 0]);
     const [deltaFlapsAngle, setDeltaFlapsAngle] = useState(flapsAngle);
 
     const [alphaLockEngaged] = useSimVar('L:A32NX_SFCC_1_ALPHA_LOCK_ENGAGED', 'bool', 500); // TODO: this SimVar is part of PR #6647
@@ -46,16 +47,16 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
             if (handleIndex) {
                 switch (true) {
                 case (slatsAngle === 18):
-                    setSlatPos([x - 49, y + 12]);
+                    setSlatPos([-49, 12]);
                     break;
                 case (slatsAngle === 22):
-                    setSlatPos([x - 83, y + 24]);
+                    setSlatPos([-83, 24]);
                     break;
                 case (slatsAngle === 27):
-                    setSlatPos([x - 117, y + 36]);
+                    setSlatPos([-117, 36]);
                     break;
                 default:
-                    setSlatPos([x - 15, y]);
+                    setSlatPos([-15, 0]);
                     break;
                 }
             }
@@ -88,7 +89,7 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
         }
         // Hack to cater for strange behaviour when loading in on approach
         if (slatsAngle === 27) {
-            setSlatPos([x - 117, y + 36]);
+            setSlatPos([-117, 36]);
         } else {
             setDeltaSlatsAngle(slatsAngle);
         }
@@ -106,19 +107,19 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
             if (handleIndex) {
                 switch (true) {
                 case (flapsAngle === 10):
-                    setFlapsPos([x + 43, y + 9]);
+                    setFlapsPos([43, 9]);
                     break;
                 case (flapsAngle === 15):
-                    setFlapsPos([x + 86, y + 18]);
+                    setFlapsPos([86, 18]);
                     break;
                 case (flapsAngle === 20):
-                    setFlapsPos([x + 129, y + 27]);
+                    setFlapsPos([129, 27]);
                     break;
                 case (flapsAngle === 40):
-                    setFlapsPos([x + 172, y + 36]);
+                    setFlapsPos([172, 36]);
                     break;
                 default:
-                    setFlapsPos([x, y]);
+                    setFlapsPos([0, 0]);
                     break;
                 }
             }
@@ -151,56 +152,56 @@ const Slats: React.FC<SlatsProps> = ({ x, y }) => {
         }
 
         if (flapsAngle === 40) {
-            setFlapsPos([x + 172, y + 36]);
+            setFlapsPos([172, 36]);
         }
         setDeltaFlapsAngle(flapsAngle);
     }, [flapsAngle]);
 
     return (
-        <>
-            <path d={`M ${x},${y} l -16,0 l -4,13 l 26,0 Z`} className="DarkGreyBox" />
+        <Layer x={x} y={y}>
+            <path d="M0, 0l -16,0 l -4,13 l 26,0 Z" className="DarkGreyBox" />
             <text
-                className={`Large Center
+                className={`Huge Center
                 ${flapsMoving || slatsMoving ? 'Cyan' : 'Green'}
                 ${!flapsPowered || (!flapsMoving && !slatsMoving && handleIndex === 0) ? 'Hide' : 'Show'}`}
-                x={x - 5}
-                y={y + 60}
+                x={0}
+                y={57}
             >
                 {flapText[handleIndex]}
 
             </text>
             <g id="SlatsPositionIndicators" className={(flapsPowered || slatsPowered) && (flapsAngle > 0 || slatsAngle > 0) ? 'Show' : 'Hide'}>
-                <text className="Medium Center" x={x - 100} y={y + 14}>S</text>
-                <text className="Medium Center" x={x + 102} y={y + 14}>F</text>
+                <text className="Standard Center" x={-100} y={14}>S</text>
+                <text className="Standard Center" x={102} y={14}>F</text>
             </g>
             {/* Slats */}
             <g id="SlatsPositionIndicators" className={(flapsPowered || slatsPowered) && (flapsAngle > 0 || slatsAngle > 0) ? 'Show' : 'Hide'}>
-                <path d={`M ${x - 58},${y + 19} l -7,2 l -1,4 l 7,-2 Z`} className="SlatsSmallWhite" />
-                <path d={`M ${x - 92},${y + 31} l -7,2 l -1,4 l 7,-2 Z`} className="SlatsSmallWhite" />
-                <path d={`M ${x - 126},${y + 43} l -7,2 l -1,4 l 7,-2 Z`} className="SlatsSmallWhite" />
-                <path d={`M ${x - 26},${y + 23} l -7,2 l -1,4 l 7,-2 Z`} className={`SlatsSmallCyan ${targetSlatsAngle === 0 && slatsAngle > 0.5 ? 'Show' : 'Hide'}`} />
-                <path d={`M ${x - 58},${y + 34} l -7,2 l -1,4 l 7,-2 Z`} className={`SlatsSmallCyan ${targetSlatsAngle === 18 && slatsAngle !== 18 ? 'Show' : 'Hide'}`} />
-                <path d={`M ${x - 92},${y + 46} l -7,2 l -1,4 l 7,-2 Z`} className={`SlatsSmallCyan ${targetSlatsAngle === 22 && slatsAngle !== 22 ? 'Show' : 'Hide'}`} />
-                <path d={`M ${x - 126},${y + 57} l -7,2 l -1,4 l 7,-2 Z`} className={`SlatsSmallCyan ${targetSlatsAngle === 27 && slatsAngle !== 27 ? 'Show' : 'Hide'}`} />
+                <path d="M -58,19 l -7,2 l -1,4 l 7,-2 Z" className="SlatsSmallWhite" />
+                <path d="M -92,31 l -7,2 l -1,4 l 7,-2 Z" className="SlatsSmallWhite" />
+                <path d="M -126,43 l -7,2 l -1,4 l 7,-2 Z" className="SlatsSmallWhite" />
+                <path d="M -26,23 l -7,2 l -1,4 l 7,-2 Z" className={`SlatsSmallCyan ${targetSlatsAngle === 0 && slatsAngle > 0.5 ? 'Show' : 'Hide'}`} />
+                <path d="M -58,34 l -7,2 l -1,4 l 7,-2 Z" className={`SlatsSmallCyan ${targetSlatsAngle === 18 && slatsAngle !== 18 ? 'Show' : 'Hide'}`} />
+                <path d="M -92,46 l -7,2 l -1,4 l 7,-2 Z" className={`SlatsSmallCyan ${targetSlatsAngle === 22 && slatsAngle !== 22 ? 'Show' : 'Hide'}`} />
+                <path d="M -126,57 l -7,2 l -1,4 l 7,-2 Z" className={`SlatsSmallCyan ${targetSlatsAngle === 27 && slatsAngle !== 27 ? 'Show' : 'Hide'}`} />
             </g>
-            {alphaLockEngaged === 1 && <text className="Medium Center GreenPulseNoFill" x={x - 95} y={y - 10}>A LOCK</text>}
+            {alphaLockEngaged === 1 && <text className="Medium Center GreenPulseNoFill" x={-95} y={-10}>A LOCK</text>}
             <path className={`Slats ${alphaLockEngaged === 1 ? 'GreenPulseNoFill' : ''}`} d={`M ${slatPos[0]},${slatPos[1]} l -19,7 l -4,13 l 19,-7 Z`} />
-            <line className={`GreenLine ${alphaLockEngaged === 1 ? 'GreenPulse' : ''}`} x1={x - 16} y1={y} x2={slatPos[0]} y2={slatPos[1]} />
+            <line className={`GreenLine ${alphaLockEngaged === 1 ? 'GreenPulse' : ''}`} x1={-16} y1={0} x2={slatPos[0]} y2={slatPos[1]} />
             {/* Flaps */}
             <g id="Flaps" className={(flapsPowered || slatsPowered) && (flapsAngle > 0 || slatsAngle > 0) ? 'Show' : 'Hide'}>
-                <path d={`M ${x + 52},${y + 15} l 3,5 l 5,1 l 0,-4 Z`} className="FlapsSmallWhite" />
-                <path d={`M ${x + 95},${y + 24} l 3,5 l 5,1 l 0,-4 Z`} className="FlapsSmallWhite" />
-                <path d={`M ${x + 138},${y + 33} l 3,5 l 5,1 l 0,-4 Z`} className="FlapsSmallWhite" />
-                <path d={`M ${x + 181},${y + 42} l 3,5 l 5,1 l 0,-4 Z`} className="FlapsSmallWhite" />
-                <path d={`M ${x + 12},${y + 23} l 3,5 l 5,1 l 0,-4 Z`} className={`FlapsSmallCyan ${targetFlapsAngle === 0 && flapsAngle > 0.5 ? 'Show' : 'Hide'}`} />
-                <path d={`M ${x + 52},${y + 30} l 3,5 l 5,1 l 0,-4 Z`} className={`FlapsSmallCyan ${targetFlapsAngle === 10 && flapsAngle !== 10 ? 'Show' : 'Hide'}`} />
-                <path d={`M ${x + 95},${y + 39} l 3,5 l 5,1 l 0,-4 Z`} className={`FlapsSmallCyan ${Math.round(targetFlapsAngle) === 15 && Math.round(flapsAngle) !== 15 ? 'Show' : 'Hide'}`} />
-                <path d={`M ${x + 138},${y + 48} l 3,5 l 5,1 l 0,-4 Z`} className={`FlapsSmallCyan ${targetFlapsAngle === 20 && flapsAngle !== 20 ? 'Show' : 'Hide'}`} />
-                <path d={`M ${x + 181},${y + 57} l 3,5 l 5,1 l 0,-4 Z`} className={`FlapsSmallCyan ${targetFlapsAngle === 40 && flapsAngle !== 40 ? 'Show' : 'Hide'}`} />
+                <path d="M 52,15 l 3,5 l 5,1 l 0,-4 Z" className="FlapsSmallWhite" />
+                <path d="M 95,24 l 3,5 l 5,1 l 0,-4 Z" className="FlapsSmallWhite" />
+                <path d="M 138,33 l 3,5 l 5,1 l 0,-4 Z" className="FlapsSmallWhite" />
+                <path d="M 181,42 l 3,5 l 5,1 l 0,-4 Z" className="FlapsSmallWhite" />
+                <path d="M 12,23 l 3,5 l 5,1 l 0,-4 Z" className={`FlapsSmallCyan ${targetFlapsAngle === 0 && flapsAngle > 0.5 ? 'Show' : 'Hide'}`} />
+                <path d="M 52,30 l 3,5 l 5,1 l 0,-4 Z" className={`FlapsSmallCyan ${targetFlapsAngle === 10 && flapsAngle !== 10 ? 'Show' : 'Hide'}`} />
+                <path d="M 95,39 l 3,5 l 5,1 l 0,-4 Z" className={`FlapsSmallCyan ${Math.round(targetFlapsAngle) === 15 && Math.round(flapsAngle) !== 15 ? 'Show' : 'Hide'}`} />
+                <path d="M 138,48 l 3,5 l 5,1 l 0,-4 Z" className={`FlapsSmallCyan ${targetFlapsAngle === 20 && flapsAngle !== 20 ? 'Show' : 'Hide'}`} />
+                <path d="M 181,57 l 3,5 l 5,1 l 0,-4 Z" className={`FlapsSmallCyan ${targetFlapsAngle === 40 && flapsAngle !== 40 ? 'Show' : 'Hide'}`} />
             </g>
             <path d={`M${flapsPos[0]},${flapsPos[1]} l 22,5 l 0,12, l -15,-3 Z`} className="Flaps" />
-            <line className="GreenLine" x1={x} y1={y} x2={flapsPos[0]} y2={flapsPos[1]} />
-        </>
+            <line className="GreenLine" x1={0} y1={0} x2={flapsPos[0]} y2={flapsPos[1]} />
+        </Layer>
     );
 };
 
