@@ -453,8 +453,8 @@
       "HomeCockpitMode": "Homecockpit-Modus",
       "McduFocusTimeout": "MCDU Fokusdauer (Sekunden)",
       "McduKeyboardInput": "MCDU-Tastatureingabe",
-      "PauseAtTod": "T/D Pause",
-      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PauseAtTod": "T/D-Pause",
+      "PauseAtTodDistance": "Zielentfernung für T/D Pause (NM)",
       "SeparateTillerFromRudderInputs": "Trennung von Tiller und Seitenruder Eingaben",
       "Title": "Realismus"
     },
