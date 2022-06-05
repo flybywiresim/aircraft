@@ -132,7 +132,7 @@ const DCDU: React.FC = () => {
             setSystemStatusTimer(null);
 
             // update the map
-            const updatedMap = new Map<number, DcduMessageBlock>(messages);
+            const updatedMap = new Map<number, DcduMessageBlock>(messagesRef.current);
 
             // define the next visible message
             if (index > 0) {
@@ -188,7 +188,7 @@ const DCDU: React.FC = () => {
             return;
         }
 
-        const sortedMessages = sortedMessageArray(messages);
+        const sortedMessages = sortedMessageArray(messagesRef.current);
         const index = sortedMessages.findIndex((element) => element.messageVisible);
 
         if (index + 1 >= sortedMessages.length) {
