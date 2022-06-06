@@ -46,6 +46,8 @@ class FlyByWireInterface {
   double previousSimulationTime = 0;
   double calculatedSampleTime = 0;
 
+  double monotonicTime = 0;
+
   int currentApproachCapability = 0;
   double previousApproachCapabilityUpdateTime = 0;
 

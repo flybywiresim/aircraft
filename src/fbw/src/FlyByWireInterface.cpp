@@ -848,6 +848,8 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // calculate delta time (and ensure it does not get 0 -> max 500 fps)
   calculatedSampleTime = max(0.002, simData.simulationTime - previousSimulationTime);
 
+  monotonicTime += calculatedSampleTime;
+
   // store previous simulation time
   previousSimulationTime = simData.simulationTime;
 
@@ -1149,7 +1151,7 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
 
   elacs[elacIndex].modelInputs.in.time.dt = sampleTime;
   elacs[elacIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
-  elacs[elacIndex].modelInputs.in.time.monotonic_time = 0;
+  elacs[elacIndex].modelInputs.in.time.monotonic_time = monotonicTime;
 
   elacs[elacIndex].modelInputs.in.sim_data.slew_on = simData.slew_on;
   elacs[elacIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
@@ -1259,7 +1261,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
 
   secs[secIndex].modelInputs.in.time.dt = sampleTime;
   secs[secIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
-  secs[secIndex].modelInputs.in.time.monotonic_time = 0;
+  secs[secIndex].modelInputs.in.time.monotonic_time = monotonicTime;
 
   secs[secIndex].modelInputs.in.sim_data.slew_on = simData.slew_on;
   secs[secIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
