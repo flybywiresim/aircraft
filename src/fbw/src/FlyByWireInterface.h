@@ -112,6 +112,8 @@ class FlyByWireInterface {
 
   LgciuBus lgciuBusOutputs[2] = {};
 
+  SfccBus sfccBusOutputs[2] = {};
+
   FmgcBBus fmgcBBusOutputs = {};
 
   AdirsBusses adirsBusOutputs[3] = {};
@@ -377,6 +379,13 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idLgciuDiscreteWord2[2];
   std::unique_ptr<LocalVariable> idLgciuDiscreteWord3[2];
 
+  // SFCC inputs
+  std::unique_ptr<LocalVariable> idSfccSlatFlapComponentStatusWord;
+  std::unique_ptr<LocalVariable> idSfccSlatFlapSystemStatusWord;
+  std::unique_ptr<LocalVariable> idSfccSlatFlapActualPositionWord;
+  std::unique_ptr<LocalVariable> idSfccSlatActualPositionWord;
+  std::unique_ptr<LocalVariable> idSfccFlapActualPositionWord;
+
   // ADR bus inputs
   std::unique_ptr<LocalVariable> idAdrAltitudeCorrected[3];
   std::unique_ptr<LocalVariable> idAdrMach[3];
@@ -560,6 +569,8 @@ class FlyByWireInterface {
   bool updateRa(int raIndex);
 
   bool updateLgciu(int lgciuIndex);
+
+  bool updateSfcc(int sfccIndex);
 
   bool updateAdirs(int adirsIndex);
 

@@ -114,6 +114,10 @@ bool FlyByWireInterface::update(double sampleTime) {
     result &= updateLgciu(i);
   }
 
+  for (int i = 0; i < 2; i++) {
+    result &= updateSfcc(i);
+  }
+
   for (int i = 0; i < 3; i++) {
     result &= updateAdirs(i);
   }
@@ -505,6 +509,12 @@ void FlyByWireInterface::setupLocalVariables() {
     idLgciuDiscreteWord2[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_2");
     idLgciuDiscreteWord3[i] = make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_3");
   }
+
+  idSfccSlatFlapComponentStatusWord = make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_COMPONENT_STATUS_WORD");
+  idSfccSlatFlapSystemStatusWord = make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD");
+  idSfccSlatFlapActualPositionWord = make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD");
+  idSfccSlatActualPositionWord = make_unique<LocalVariable>("A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD");
+  idSfccFlapActualPositionWord = make_unique<LocalVariable>("A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD");
 
   for (int i = 0; i < 3; i++) {
     string idString = std::to_string(i + 1);
@@ -1080,6 +1090,20 @@ bool FlyByWireInterface::updateLgciu(int lgciuIndex) {
   return true;
 }
 
+bool FlyByWireInterface::updateSfcc(int sfccIndex) {
+  sfccBusOutputs[sfccIndex].slatFlapComponentStatus.setFromSimVar(idSfccSlatFlapComponentStatusWord->get());
+  sfccBusOutputs[sfccIndex].slatFlapSystemStatus.setFromSimVar(idSfccSlatFlapSystemStatusWord->get());
+  sfccBusOutputs[sfccIndex].slatFlapActualPosition.setFromSimVar(idSfccSlatFlapActualPositionWord->get());
+  sfccBusOutputs[sfccIndex].slatActualPosition.setFromSimVar(idSfccSlatActualPositionWord->get());
+  sfccBusOutputs[sfccIndex].flapActualPosition.setFromSimVar(idSfccFlapActualPositionWord->get());
+
+  if (clientDataEnabled) {
+    simConnectInterface.setClientDataSfcc(sfccBusOutputs[sfccIndex], sfccIndex);
+  }
+
+  return true;
+}
+
 bool FlyByWireInterface::updateAdirs(int adirsIndex) {
   adirsBusOutputs[adirsIndex].adrBus.altitudeCorrected.setFromSimVar(idAdrAltitudeCorrected[adirsIndex]->get());
   adirsBusOutputs[adirsIndex].adrBus.mach.setFromSimVar(idAdrMach[adirsIndex]->get());
@@ -1194,8 +1218,8 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.bus_inputs.fmgc_2_bus = fmgcBBusOutputs;
   elacs[elacIndex].modelInputs.in.bus_inputs.ra_1_bus = raBusOutputs[0];
   elacs[elacIndex].modelInputs.in.bus_inputs.ra_2_bus = raBusOutputs[1];
-  elacs[elacIndex].modelInputs.in.bus_inputs.sfcc_1_bus = {};
-  elacs[elacIndex].modelInputs.in.bus_inputs.sfcc_2_bus = {};
+  elacs[elacIndex].modelInputs.in.bus_inputs.sfcc_1_bus = sfccBusOutputs[0];
+  elacs[elacIndex].modelInputs.in.bus_inputs.sfcc_2_bus = sfccBusOutputs[1];
   elacs[elacIndex].modelInputs.in.bus_inputs.fcdc_1_bus = fcdcsBusOutputs[0];
   elacs[elacIndex].modelInputs.in.bus_inputs.fcdc_2_bus = fcdcsBusOutputs[1];
   elacs[elacIndex].modelInputs.in.bus_inputs.sec_1_bus = secsBusOutputs[0];
@@ -1345,8 +1369,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
   secs[secIndex].modelInputs.in.bus_inputs.fcdc_2_bus = fcdcsBusOutputs[1];
   secs[secIndex].modelInputs.in.bus_inputs.elac_1_bus = elacsBusOutputs[0];
   secs[secIndex].modelInputs.in.bus_inputs.elac_2_bus = elacsBusOutputs[1];
-  secs[secIndex].modelInputs.in.bus_inputs.sfcc_1_bus = {};
-  secs[secIndex].modelInputs.in.bus_inputs.sfcc_2_bus = {};
+  secs[secIndex].modelInputs.in.bus_inputs.sfcc_1_bus = sfccBusOutputs[0];
+  secs[secIndex].modelInputs.in.bus_inputs.sfcc_2_bus = sfccBusOutputs[1];
   secs[secIndex].modelInputs.in.bus_inputs.lgciu_1_bus = lgciuBusOutputs[0];
   secs[secIndex].modelInputs.in.bus_inputs.lgciu_2_bus = lgciuBusOutputs[1];
 
