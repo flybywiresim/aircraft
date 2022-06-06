@@ -1,4 +1,5 @@
 use uom::si::{
+    angle::radian,
     angular_acceleration::radian_per_second_squared,
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
@@ -14,14 +15,18 @@ use crate::simulation::{
     InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
-struct TrimmingWheels {
+use crate::shared::{interpolation, low_pass_filter::LowPassFilter};
+
+use std::time::Duration;
+
+struct TrimWheels {
     position: Angle,
     speed: AngularVelocity,
 
     min_angle: Angle,
     max_angle: Angle,
 }
-impl TrimmingWheels {
+impl TrimWheels {
     fn new(context: &InitContext, min_angle: Angle, max_angle: Angle) -> Self {
         Self {
             position: Angle::default(),
@@ -31,10 +36,15 @@ impl TrimmingWheels {
             max_angle,
         }
     }
+
+    fn update(&mut self, pta: &PitchTrimActuator) {
+        self.position = pta.position;
+        self.speed = pta.speed;
+    }
 }
 
 struct ElectricDriveMotor {
-    speed: AngularVelocity,
+    speed: LowPassFilter<AngularVelocity>,
     position_request: Angle,
 
     is_active: bool,
@@ -42,18 +52,18 @@ struct ElectricDriveMotor {
 
     ratio_to_trimwheel: Ratio,
 
-    speed_target_map: [f64; 7],
-    speed_error_map: [f64; 7],
+    speed_regulation_coef_map: [f64; 7],
+    speed_error_breakpoint: [f64; 7],
 }
 impl ElectricDriveMotor {
     fn new(
         max_speed: AngularVelocity,
         ratio_to_trimwheel: Ratio,
-        speed_target_map: [f64; 7],
-        speed_error_map: [f64; 7],
+        speed_error_breakpoint: [f64; 7],
+        speed_regulation_coef_map: [f64; 7],
     ) -> Self {
         Self {
-            speed: AngularVelocity::default(),
+            speed: LowPassFilter::new(Duration::from_millis(50)),
             position_request: Angle::default(),
 
             is_active: false,
@@ -61,8 +71,412 @@ impl ElectricDriveMotor {
 
             ratio_to_trimwheel,
 
-            speed_target_map,
-            speed_error_map,
+            speed_regulation_coef_map,
+            speed_error_breakpoint,
         }
+    }
+
+    fn set_active_state(&mut self, is_active: bool) {
+        self.is_active = is_active;
+    }
+
+    fn set_position_request(&mut self, position_requested: Angle) {
+        self.position_request = position_requested;
+    }
+
+    fn update(&mut self, context: &UpdateContext, measured_position: Angle) {
+        let new_speed = if self.is_active {
+            let position_error = self.position_request - measured_position;
+
+            let speed_coef = interpolation(
+                &self.speed_error_breakpoint,
+                &self.speed_regulation_coef_map,
+                position_error.get::<radian>(),
+            );
+            self.max_speed * speed_coef
+        } else {
+            AngularVelocity::default()
+        };
+
+        self.speed.update(context.delta(), new_speed);
+    }
+}
+
+#[derive(Clone, Copy)]
+struct ElectricMotorClutch {
+    is_powered: bool,
+    is_energized: bool,
+}
+impl ElectricMotorClutch {
+    fn default() -> Self {
+        Self {
+            is_powered: true,
+            is_energized: false,
+        }
+    }
+
+    fn is_clutch_engaged(&self) -> bool {
+        self.is_powered && self.is_energized
+    }
+
+    fn set_energized(&mut self, is_energized: bool) {
+        self.is_energized = is_energized;
+    }
+}
+
+trait PitchTrimActuatorController {
+    fn commanded_position(&self) -> Angle;
+    fn energised_motor(&self) -> [bool; 3];
+}
+
+trait ManualPitchTrimController {
+    fn is_manually_moved(&self) -> bool;
+    fn moving_speed(&self) -> AngularVelocity;
+}
+
+struct PitchTrimActuator {
+    electric_motors: [ElectricDriveMotor; 3],
+    electric_clutches: [ElectricMotorClutch; 3],
+    position_request: Angle,
+    position: Angle,
+    speed: AngularVelocity,
+}
+impl PitchTrimActuator {
+    const ELECTRIC_MOTOR_POSITION_ERROR_BREAKPOINT: [f64; 7] = [-50., -1., -0.5, 0., 0.5, 1., 50.];
+    const ELECTRIC_MOTOR_SPEED_REGULATION_COEF_MAP: [f64; 7] = [-1., -1., -0.05, 0., 0.05, 1., 1.];
+
+    fn new(max_elec_motor_speed: AngularVelocity, elec_motor_ratio_to_trimwheel: Ratio) -> Self {
+        Self {
+            electric_motors: [
+                ElectricDriveMotor::new(
+                    max_elec_motor_speed,
+                    elec_motor_ratio_to_trimwheel,
+                    Self::ELECTRIC_MOTOR_POSITION_ERROR_BREAKPOINT,
+                    Self::ELECTRIC_MOTOR_SPEED_REGULATION_COEF_MAP,
+                ),
+                ElectricDriveMotor::new(
+                    max_elec_motor_speed,
+                    elec_motor_ratio_to_trimwheel,
+                    Self::ELECTRIC_MOTOR_POSITION_ERROR_BREAKPOINT,
+                    Self::ELECTRIC_MOTOR_SPEED_REGULATION_COEF_MAP,
+                ),
+                ElectricDriveMotor::new(
+                    max_elec_motor_speed,
+                    elec_motor_ratio_to_trimwheel,
+                    Self::ELECTRIC_MOTOR_POSITION_ERROR_BREAKPOINT,
+                    Self::ELECTRIC_MOTOR_SPEED_REGULATION_COEF_MAP,
+                ),
+            ],
+            electric_clutches: [ElectricMotorClutch::default(); 3],
+            position_request: Angle::default(),
+            position: Angle::default(),
+            speed: AngularVelocity::default(),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        electric_controller: &impl PitchTrimActuatorController,
+        manual_controller: &impl ManualPitchTrimController,
+    ) {
+        self.update_clutches_state(electric_controller);
+        self.update_motors(context, electric_controller);
+
+        self.update_speed(electric_controller, manual_controller);
+
+        self.update_position(context);
+    }
+
+    fn update_position(&mut self, context: &UpdateContext) {
+        self.position = self.position
+            + Angle::new::<radian>(
+                self.speed.get::<radian_per_second>() / context.delta_as_secs_f64(),
+            );
+    }
+
+    fn update_speed(
+        &mut self,
+        electric_controller: &impl PitchTrimActuatorController,
+        manual_controller: &impl ManualPitchTrimController,
+    ) {
+        if manual_controller.is_manually_moved() {
+            self.speed = manual_controller.moving_speed();
+        } else {
+            let mut sum_of_speeds = AngularVelocity::default();
+
+            for (motor_index, motor) in self.electric_motors.iter_mut().enumerate() {
+                if self.electric_clutches[motor_index].is_clutch_engaged() {
+                    sum_of_speeds += motor.speed.output() / motor.ratio_to_trimwheel.get::<ratio>();
+                }
+            }
+
+            self.speed = sum_of_speeds;
+        }
+    }
+
+    fn update_clutches_state(&mut self, controller: &impl PitchTrimActuatorController) {
+        for (clutch_index, clutch) in self.electric_clutches.iter_mut().enumerate() {
+            clutch.set_energized(controller.energised_motor()[clutch_index]);
+        }
+    }
+
+    fn update_motors(
+        &mut self,
+        context: &UpdateContext,
+        controller: &impl PitchTrimActuatorController,
+    ) {
+        for (motor_index, motor) in self.electric_motors.iter_mut().enumerate() {
+            motor.set_active_state(controller.energised_motor()[motor_index]);
+            motor.set_position_request(controller.commanded_position());
+            motor.update(context, self.position);
+        }
+    }
+}
+
+struct TrimInputAssembly {
+    pitch_trim_actuator: PitchTrimActuator,
+    trim_wheel: TrimWheels,
+}
+impl TrimInputAssembly {
+    fn new(
+        context: &InitContext,
+        min_angle: Angle,
+        max_angle: Angle,
+        max_elec_motor_speed: AngularVelocity,
+        elec_motor_ratio_to_trimwheel: Ratio,
+    ) -> Self {
+        Self {
+            pitch_trim_actuator: PitchTrimActuator::new(
+                max_elec_motor_speed,
+                elec_motor_ratio_to_trimwheel,
+            ),
+            trim_wheel: TrimWheels::new(context, min_angle, max_angle),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        electric_controller: &impl PitchTrimActuatorController,
+        manual_controller: &impl ManualPitchTrimController,
+    ) {
+        self.pitch_trim_actuator
+            .update(context, electric_controller, manual_controller);
+
+        self.trim_wheel.update(&self.pitch_trim_actuator);
+    }
+}
+impl SimulationElement for TrimInputAssembly {}
+
+#[cfg(test)]
+mod tests {
+    use uom::si::angle::degree;
+    use uom::si::angular_velocity::degree_per_second;
+
+    use super::*;
+    use crate::shared::update_iterator::FixedStepLoop;
+    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
+    use std::time::Duration;
+
+    struct TestElecTrimControl {
+        control_active: bool,
+        position_request: Angle,
+        motor_idx_in_control: usize,
+    }
+    impl TestElecTrimControl {
+        fn with_motor_idx_and_pos_demand(
+            motor_idx_in_control: usize,
+            position_request: Angle,
+        ) -> Self {
+            Self {
+                control_active: true,
+                position_request,
+                motor_idx_in_control,
+            }
+        }
+
+        fn inactive_control() -> Self {
+            Self {
+                control_active: false,
+                position_request: Angle::default(),
+                motor_idx_in_control: 0,
+            }
+        }
+    }
+    impl PitchTrimActuatorController for TestElecTrimControl {
+        fn commanded_position(&self) -> Angle {
+            self.position_request
+        }
+
+        fn energised_motor(&self) -> [bool; 3] {
+            if !self.control_active {
+                [false, false, false]
+            } else {
+                let mut energized_array = [false, false, false];
+                energized_array[self.motor_idx_in_control] = true;
+                energized_array
+            }
+        }
+    }
+
+    struct TestManualTrimControl {
+        control_active: bool,
+        speed: AngularVelocity,
+    }
+    impl TestManualTrimControl {
+        fn with_manual_input(speed: AngularVelocity) -> Self {
+            Self {
+                control_active: true,
+                speed,
+            }
+        }
+
+        fn without_manual_input() -> Self {
+            Self {
+                control_active: false,
+                speed: AngularVelocity::default(),
+            }
+        }
+    }
+    impl ManualPitchTrimController for TestManualTrimControl {
+        fn is_manually_moved(&self) -> bool {
+            self.control_active
+        }
+
+        fn moving_speed(&self) -> AngularVelocity {
+            self.speed
+        }
+    }
+
+    struct TestAircraft {
+        updater_fixed_step: FixedStepLoop,
+
+        elec_trim_control: TestElecTrimControl,
+        manual_trim_control: TestManualTrimControl,
+
+        trim_assembly: TrimInputAssembly,
+    }
+    impl TestAircraft {
+        fn new(context: &mut InitContext) -> Self {
+            Self {
+                updater_fixed_step: FixedStepLoop::new(Duration::from_millis(33)),
+                elec_trim_control: TestElecTrimControl::inactive_control(),
+                manual_trim_control: TestManualTrimControl::without_manual_input(),
+                trim_assembly: TrimInputAssembly::new(
+                    context,
+                    Angle::new::<degree>(360. * -1.),
+                    Angle::new::<degree>(360. * 5.13),
+                    AngularVelocity::new::<revolution_per_minute>(20000.),
+                    Ratio::new::<ratio>(20000. / 1.),
+                ),
+            }
+        }
+
+        fn new_with_elec_trim_demand(
+            context: &mut InitContext,
+            angle_request: Angle,
+            motor_idx: usize,
+        ) -> Self {
+            Self {
+                updater_fixed_step: FixedStepLoop::new(Duration::from_millis(33)),
+                elec_trim_control: TestElecTrimControl::with_motor_idx_and_pos_demand(
+                    motor_idx,
+                    angle_request,
+                ),
+                manual_trim_control: TestManualTrimControl::without_manual_input(),
+                trim_assembly: TrimInputAssembly::new(
+                    context,
+                    Angle::new::<degree>(360. * -1.),
+                    Angle::new::<degree>(360. * 5.13),
+                    AngularVelocity::new::<revolution_per_minute>(2000.),
+                    Ratio::new::<ratio>(20000. / 1.),
+                ),
+            }
+        }
+
+        fn set_manual_trim_input(&mut self, trim_up: bool) {
+            self.manual_trim_control.control_active = true;
+            self.manual_trim_control.speed = if trim_up {
+                AngularVelocity::new::<degree_per_second>(30.)
+            } else {
+                AngularVelocity::new::<degree_per_second>(-30.)
+            }
+        }
+
+        fn set_elec_trim_input(&mut self, trim_angle: Angle, motor_idx: usize) {
+            self.elec_trim_control.position_request = trim_angle;
+            self.elec_trim_control.motor_idx_in_control = motor_idx;
+        }
+    }
+    impl Aircraft for TestAircraft {
+        fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.updater_fixed_step.update(context);
+
+            for cur_time_step in &mut self.updater_fixed_step {
+                self.trim_assembly.update(
+                    &context.with_delta(cur_time_step),
+                    &self.elec_trim_control,
+                    &self.manual_trim_control,
+                );
+
+                println!(
+                    "TW pos: {:.1} ,PTA position {:.1} Motors rpm {:.0}/{:.0}/{:.0}",
+                    self.trim_assembly.trim_wheel.position.get::<degree>(),
+                    self.trim_assembly
+                        .pitch_trim_actuator
+                        .position
+                        .get::<degree>(),
+                    self.trim_assembly.pitch_trim_actuator.electric_motors[0]
+                        .speed
+                        .output()
+                        .get::<revolution_per_minute>(),
+                    self.trim_assembly.pitch_trim_actuator.electric_motors[1]
+                        .speed
+                        .output()
+                        .get::<revolution_per_minute>(),
+                    self.trim_assembly.pitch_trim_actuator.electric_motors[2]
+                        .speed
+                        .output()
+                        .get::<revolution_per_minute>(),
+                );
+            }
+        }
+    }
+    impl SimulationElement for TestAircraft {
+        fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+            self.trim_assembly.accept(visitor);
+
+            visitor.visit(self);
+        }
+    }
+
+    #[test]
+    fn trim_assembly_init_state() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.run_with_delta(Duration::from_millis(100));
+
+        // assert!(test_bed.query(|a| {
+        //     a.emergency_gen.speed() == AngularVelocity::new::<radian_per_second>(0.)
+        // }));
+
+        // assert!(test_bed.query(|a| a.gcu.valve_position_command() == Ratio::new::<ratio>(0.)));
+    }
+
+    #[test]
+    fn trim_assembly_trim_up_motor_0() {
+        let mut test_bed = SimulationTestBed::new(|context| {
+            TestAircraft::new_with_elec_trim_demand(context, Angle::new::<degree>(360. * 5.13), 0)
+        });
+
+        test_bed.run_with_delta(Duration::from_millis(8000));
+
+        // assert!(test_bed.query(|a| {
+        //     a.emergency_gen.speed() == AngularVelocity::new::<radian_per_second>(0.)
+        // }));
+
+        // assert!(test_bed.query(|a| a.gcu.valve_position_command() == Ratio::new::<ratio>(0.)));
     }
 }
