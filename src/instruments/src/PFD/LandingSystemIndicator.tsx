@@ -14,12 +14,10 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
 
     private deviationGroup = FSComponent.createRef<SVGGElement>();
 
-    private roll = Arinc429Word.empty();
-
-    private pitch = Arinc429Word.empty();
+    private altitude = Arinc429Word.empty();
 
     private handleGsReferenceLine() {
-        if (this.lsButtonPressedVisibility || (this.pitch.isNormalOperation() && this.roll.isNormalOperation())) {
+        if (this.lsButtonPressedVisibility || (this.altitude.isNormalOperation())) {
             this.gsReferenceLine.instance.style.display = 'inline';
         } else if (!this.lsButtonPressedVisibility) {
             this.gsReferenceLine.instance.style.display = 'none';
@@ -47,13 +45,8 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
             this.handleGsReferenceLine();
         });
 
-        sub.on('pitchAr').handle((pitch) => {
-            this.pitch = pitch;
-            this.handleGsReferenceLine();
-        });
-
-        sub.on('rollAr').handle((roll) => {
-            this.roll = roll;
+        sub.on('altitudeAr').handle((altitude) => {
+            this.altitude = altitude;
             this.handleGsReferenceLine();
         });
     }
