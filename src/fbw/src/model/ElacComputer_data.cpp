@@ -34,6 +34,13 @@ base_elac_logic_outputs rtP_elac_logic_output_MATLABStruct{
   false,
   false,
   false,
+  0.0,
+  0.0,
+  false,
+  0.0,
+  0.0,
+  false,
+  false,
   false,
   false,
   false,
@@ -108,6 +115,10 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   0.0,
 
+  0.0,
+
+  0.0,
+
   15.0,
 
   16.0,
@@ -134,6 +145,10 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   18.0,
 
+  20.0,
+
+  20.0,
+
   11.0,
 
   12.0,
@@ -141,6 +156,38 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   13.0,
 
   14.0,
+
+  17.0,
+
+  18.0,
+
+  19.0,
+
+  20.0,
+
+  21.0,
+
+  26.0,
+
+  19.0,
+
+  19.0,
+
+  23.0,
+
+  23.0,
+
+  17.0,
+
+  18.0,
+
+  19.0,
+
+  20.0,
+
+  21.0,
+
+  26.0,
 
   16.0,
 
@@ -151,6 +198,8 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   1.0,
 
   50.0,
+
+  5.0,
 
   0.0,
 
@@ -169,6 +218,10 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   1750.0,
 
   1750.0,
+
+  -1.0,
+
+  -1.0,
 
   -1.0,
 
@@ -205,6 +258,10 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   30.0,
 
   30.0,
+
+  1.0,
+
+  1.0,
 
   1.0,
 
@@ -1588,6 +1645,13 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
       false,
       false,
       false,
+      0.0,
+      0.0,
+      false,
+      0.0,
+      0.0,
+      false,
+      false,
       false,
       false,
       false,
@@ -1796,17 +1860,17 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   -5.0,
 
-  40.0,
+  20.0,
 
   0.0,
 
-  1.1428571428571428,
+  1.25,
 
   5.0,
 
   0.0,
 
-  -25.0,
+  -30.0,
 
   0.0,
 
@@ -1839,6 +1903,54 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   1.0,
 
   -1.0,
+
+
+  { 8.7, 8.7, 6.4, 6.4, 13.6, 13.6, 13.6, 13.6, 13.6, 13.6, 13.6, 13.6, 14.2, 14.2, 14.2, 14.2, 13.1, 13.1, 13.1, 13.1,
+    13.0, 13.0, 13.0, 13.0 },
+
+
+  { 0.0, 0.5, 0.9, 1.0 },
+
+
+  { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
+
+
+  { 6.5, 6.5, 4.6, 4.6, 11.7, 11.7, 11.7, 11.7, 11.7, 11.7, 11.7, 11.7, 11.9, 11.9, 11.9, 11.9, 11.0, 11.0, 11.0, 11.0,
+    10.6, 10.6, 10.6, 10.6 },
+
+
+  { 0.0, 0.5, 0.9, 1.0 },
+
+
+  { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 },
+
+  350.0,
+
+  0.82,
+
+  380.0,
+
+  0.88,
+
+  0.017453292519943295,
+
+
+  { 0.82, 0.82, 0.85, 0.85 },
+
+
+  { -4.0, -3.0, -1.0, 0.0 },
+
+
+  { 350.0, 350.0, 356.0, 356.0 },
+
+
+  { -4.0, -3.0, -1.0, 0.0 },
+
+
+  { 0.82, 0.82, 0.83, 0.83 },
+
+
+  { -4.0, -3.0, -1.0, 0.0 },
 
   0.0,
 
@@ -1870,16 +1982,11 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   30.0F,
 
-  false,
+
+  { 3U, 5U },
 
 
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+  { 3U, 5U },
 
   false,
 
@@ -1904,6 +2011,15 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   false,
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   false,
 

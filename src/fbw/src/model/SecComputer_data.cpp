@@ -106,6 +106,14 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   0.0,
 
+  23.0,
+
+  23.0,
+
+  23.0,
+
+  23.0,
+
   14.0,
 
   14.0,
@@ -149,6 +157,18 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   20.0,
 
   20.0,
+
+  20.0,
+
+  20.0,
+
+  17.0,
+
+  18.0,
+
+  17.0,
+
+  18.0,
 
   13.0,
 
@@ -260,6 +280,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   30.0,
 
+  10.0,
+
   20.0,
 
   5.0,
@@ -285,6 +307,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   false,
 
   false,
+
+  true,
 
   true,
 
@@ -1617,8 +1641,6 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   20.0F,
 
   30.0F,
-
-  false,
 
   false,
 

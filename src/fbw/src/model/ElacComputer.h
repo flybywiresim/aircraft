@@ -9,7 +9,6 @@
 #include "PitchDirectLaw.h"
 
 extern const real_T ElacComputer_RGND;
-extern const boolean_T ElacComputer_BGND;
 extern base_elac_logic_outputs rtP_elac_logic_output_MATLABStruct;
 extern base_elac_laws_outputs rtP_elac_laws_output_MATLABStruct;
 extern base_elac_analog_outputs rtP_elac_analog_output_MATLABStruct;
@@ -561,8 +560,13 @@ class ElacComputer final
   };
 
   struct D_Work_ElacComputer_T {
+    real_T eventTime;
+    real_T resetEventTime;
+    real_T eventTime_g;
     boolean_T Delay_DSTATE;
     boolean_T Delay1_DSTATE;
+    uint8_T is_active_c28_ElacComputer;
+    uint8_T is_c28_ElacComputer;
     boolean_T Memory_PreviousInput;
     boolean_T Memory_PreviousInput_n;
     boolean_T Memory_PreviousInput_o;
@@ -576,6 +580,11 @@ class ElacComputer final
     boolean_T pRightStickDisabled;
     boolean_T ra1CoherenceRejected;
     boolean_T ra2CoherenceRejected;
+    boolean_T sProtActive;
+    boolean_T eventTime_not_empty;
+    boolean_T resetEventTime_not_empty;
+    boolean_T sProtActive_m;
+    boolean_T eventTime_not_empty_a;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
     rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_nu;
@@ -585,20 +594,22 @@ class ElacComputer final
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_lf;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_jl;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_jz;
+    rtDW_RateLimiter_ElacComputer_T sf_RateLimiter_p;
+    rtDW_RateLimiter_ElacComputer_T sf_RateLimiter_e;
     rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_br;
-    rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_jg;
+    rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_jgo;
     rtDW_MATLABFunction_ElacComputer_o_T sf_MATLABFunction_mi;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_gfx;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_g2;
-    rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_c;
-    rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_o;
+    rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_cj;
+    rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_oy;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_ei;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_h;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_b;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_k;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_pu;
-    rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_a;
-    rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_e;
+    rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_ad;
+    rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_eo;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_d;
     rtDW_RateLimiter_ElacComputer_T sf_RateLimiter_b;
     rtDW_RateLimiter_ElacComputer_T sf_RateLimiter_c;
@@ -616,8 +627,10 @@ class ElacComputer final
 
   struct Parameters_ElacComputer_T {
     real_T RateLimiterVariableTs2_InitialCondition;
-    real_T RateLimiterVariableTs3_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition;
+    real_T RateLimiterVariableTs2_InitialCondition_f;
+    real_T RateLimiterVariableTs3_InitialCondition;
+    real_T RateLimiterVariableTs_InitialCondition_e;
     real_T RateLimiterVariableTs1_InitialCondition;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit;
@@ -632,15 +645,34 @@ class ElacComputer final
     real_T BitfromLabel5_bit_e;
     real_T BitfromLabel6_bit_k;
     real_T BitfromLabel7_bit_h;
+    real_T BitfromLabel_bit_a;
+    real_T BitfromLabel1_bit_j;
     real_T BitfromLabel_bit_h;
     real_T BitfromLabel1_bit_e;
     real_T BitfromLabel2_bit_k;
     real_T BitfromLabel3_bit_m;
+    real_T BitfromLabel_bit_h2;
+    real_T BitfromLabel1_bit_g;
+    real_T BitfromLabel2_bit_n;
+    real_T BitfromLabel3_bit_g;
+    real_T BitfromLabel4_bit_e;
+    real_T BitfromLabel5_bit_a;
     real_T BitfromLabel_bit_e;
+    real_T BitfromLabel1_bit_d;
+    real_T BitfromLabel_bit_a2;
+    real_T BitfromLabel1_bit_p;
+    real_T BitfromLabel_bit_p;
+    real_T BitfromLabel1_bit_h;
+    real_T BitfromLabel2_bit_f;
+    real_T BitfromLabel3_bit_c;
+    real_T BitfromLabel4_bit_n;
+    real_T BitfromLabel5_bit_p;
+    real_T BitfromLabel_bit_es;
     real_T SourceMonitoringbyVote_confirmTime;
     real_T SourceMonitoringbyVote1_confirmTime;
     real_T AlphaMonitoring_confirmTime;
     real_T CompareToConstant_const;
+    real_T CompareToConstant_const_l;
     real_T CompareToConstant_const_m;
     real_T CompareToConstant_const_f;
     real_T CompareToConstant2_const;
@@ -651,8 +683,10 @@ class ElacComputer final
     real_T HysteresisNode1_highTrigger;
     real_T HysteresisNode3_highTrigger;
     real_T RateLimiterVariableTs2_lo;
-    real_T RateLimiterVariableTs3_lo;
     real_T RateLimiterVariableTs_lo;
+    real_T RateLimiterVariableTs2_lo_o;
+    real_T RateLimiterVariableTs3_lo;
+    real_T RateLimiterVariableTs_lo_g;
     real_T RateLimiterVariableTs1_lo;
     real_T HysteresisNode2_lowTrigger;
     real_T HysteresisNode1_lowTrigger;
@@ -669,13 +703,15 @@ class ElacComputer final
     real_T ConfirmNode1_timeDelay_a;
     real_T ConfirmNode_timeDelay_a;
     real_T RateLimiterVariableTs2_up;
-    real_T RateLimiterVariableTs3_up;
     real_T RateLimiterVariableTs_up;
+    real_T RateLimiterVariableTs2_up_k;
+    real_T RateLimiterVariableTs3_up;
+    real_T RateLimiterVariableTs_up_i;
     real_T RateLimiterVariableTs1_up;
     SignStatusMatrix EnumeratedConstant_Value;
     SignStatusMatrix EnumeratedConstant1_Value;
     lateral_efcs_law EnumeratedConstant2_Value;
-    real32_T CompareToConstant_const_l;
+    real32_T CompareToConstant_const_ll;
     boolean_T SRFlipFlop2_initial_condition;
     boolean_T SRFlipFlop1_initial_condition;
     boolean_T SRFlipFlop_initial_condition;
@@ -729,12 +765,29 @@ class ElacComputer final
     real_T Constant1_Value_p;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
+    real_T alphamax_tableData[24];
+    real_T alphamax_bp01Data[4];
+    real_T alphamax_bp02Data[6];
+    real_T alphaprotection_tableData[24];
+    real_T alphaprotection_bp01Data[4];
+    real_T alphaprotection_bp02Data[6];
+    real_T Constant5_Value_k;
+    real_T Constant6_Value_b;
+    real_T Constant7_Value_g;
+    real_T Constant8_Value;
+    real_T Gain1_Gain;
+    real_T uDLookupTable_tableData[4];
+    real_T uDLookupTable_bp01Data[4];
+    real_T uDLookupTable1_tableData[4];
+    real_T uDLookupTable1_bp01Data[4];
+    real_T uDLookupTable2_tableData[4];
+    real_T uDLookupTable2_bp01Data[4];
     real_T Constant_Value_c;
     real_T Saturation1_UpperSat_g;
     real_T Saturation1_LowerSat_n;
     real_T Saturation2_UpperSat;
     real_T Saturation2_LowerSat;
-    real_T Gain1_Gain;
+    real_T Gain1_Gain_b;
     real_T Constant_Value_a;
     real_T Constant_Value_b;
     real_T Switch12_Threshold;
@@ -744,6 +797,8 @@ class ElacComputer final
     real32_T Gain2_Gain_c;
     real32_T Gain3_Gain;
     real32_T Gain4_Gain;
+    uint32_T alphamax_maxIndex[2];
+    uint32_T alphaprotection_maxIndex[2];
     boolean_T Constant5_Value_d;
     boolean_T Logic_table[16];
     boolean_T Logic_table_a[16];
@@ -759,7 +814,6 @@ class ElacComputer final
     boolean_T Constant_Value_ad;
     boolean_T Delay_InitialCondition;
     boolean_T Delay1_InitialCondition;
-    boolean_T Constant_Value_i;
     boolean_T Constant10_Value;
     boolean_T Constant9_Value;
     boolean_T Constant1_Value_e;
@@ -790,19 +844,22 @@ class ElacComputer final
   BlockIO_ElacComputer_T ElacComputer_B;
   D_Work_ElacComputer_T ElacComputer_DWork;
   static Parameters_ElacComputer_T ElacComputer_P;
+  static void ElacComputer_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
+  static void ElacComputer_MATLABFunction_j(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
   static void ElacComputer_RateLimiter_Reset(rtDW_RateLimiter_ElacComputer_T *localDW);
   static void ElacComputer_RateLimiter(real_T rtu_u, real_T rtu_up, real_T rtu_lo, real_T rtu_Ts, real_T rtu_init,
     real_T *rty_Y, rtDW_RateLimiter_ElacComputer_T *localDW);
-  static void ElacComputer_MATLABFunction(const base_arinc_429 *rtu_u, boolean_T *rty_y);
+  static void ElacComputer_MATLABFunction_p(boolean_T rtu_bit1, boolean_T rtu_bit2, boolean_T rtu_bit3, boolean_T
+    rtu_bit4, boolean_T rtu_bit5, boolean_T rtu_bit6, real_T *rty_handleIndex);
   static void ElacComputer_MATLABFunction_f_Reset(rtDW_MATLABFunction_ElacComputer_f_T *localDW);
   static void ElacComputer_MATLABFunction_d(boolean_T rtu_u, real_T rtu_Ts, boolean_T rtu_isRisingEdge, real_T
     rtu_timeDelay, boolean_T *rty_y, rtDW_MATLABFunction_ElacComputer_f_T *localDW);
   static void ElacComputer_Voter(real32_T rtu_u, real32_T rtu_u_k, real32_T rtu_u_d, real32_T *rty_y);
-  static void ElacComputer_MATLABFunction_o(const base_arinc_429 *rtu_u, real_T rtu_bit, uint32_T *rty_y);
-  static void ElacComputer_MATLABFunction_kr_Reset(rtDW_MATLABFunction_ElacComputer_o_T *localDW);
+  static void ElacComputer_MATLABFunction_k_Reset(rtDW_MATLABFunction_ElacComputer_o_T *localDW);
   static void ElacComputer_MATLABFunction_m(real_T rtu_u, real_T rtu_highTrigger, real_T rtu_lowTrigger, boolean_T
     *rty_y, rtDW_MATLABFunction_ElacComputer_o_T *localDW);
-  static void ElacComputer_MATLABFunction_a_Reset(rtDW_MATLABFunction_ElacComputer_b_T *localDW);
+  static void ElacComputer_GetIASforMach4(real_T rtu_m, real_T rtu_m_t, real_T rtu_v, real_T *rty_v_t);
+  static void ElacComputer_MATLABFunction_ax_Reset(rtDW_MATLABFunction_ElacComputer_b_T *localDW);
   static void ElacComputer_MATLABFunction_g(boolean_T rtu_u, boolean_T rtu_isRisingEdge, boolean_T *rty_y,
     rtDW_MATLABFunction_ElacComputer_b_T *localDW);
   static void ElacComputer_MATLABFunction_c(const boolean_T rtu_u[19], real32_T *rty_y);

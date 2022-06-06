@@ -362,7 +362,7 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
 
   rtb_Y_e = std::fmin(rtb_Y_e, std::fmax(rtb_Gain1_f, rtb_Gain1 * rtb_Y_i)) *
     LateralNormalLaw_rtP.DiscreteTimeIntegratorVariableTs_Gain * *rtu_In_time_dt;
-  rtb_OR = ((rtb_Y_i == 0.0) || (*rtu_In_tracking_mode_on));
+  rtb_OR = ((rtb_Y_i == 0.0) || (*rtu_In_tracking_mode_on) || (*rtu_In_any_ap_engaged));
   rtb_Y_i = *rtu_In_Phi_deg - rtb_Y_e;
   LateralNormalLaw_DWork.icLoad = (rtb_OR || LateralNormalLaw_DWork.icLoad);
   if (LateralNormalLaw_DWork.icLoad) {
