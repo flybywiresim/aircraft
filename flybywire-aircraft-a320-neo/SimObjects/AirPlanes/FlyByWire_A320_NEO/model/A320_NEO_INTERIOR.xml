@@ -4345,15 +4345,20 @@
                     </UseTemplate>
                 </Component>
             </Component>
+            <!-- MARKER DEFAULT VALUE IS 1 BUT IT IS UNDESIRED -->
+            <!-- ADF2 volume set do not exist in the sdk for now. Hopefully in the future -->
             <Update Once="True">
-                <!-- DEFAULT VALUE IS 1 BUT IT IS UNDESIRED -->
                 (A:MARKER SOUND, Bool) 1 == {
                     (&gt;K:MARKER_SOUND_TOGGLE)
                 }
 
                 0 (&gt;K:NAV1_VOLUME_SET)
                 0 (&gt;K:NAV2_VOLUME_SET)
+                0 (&gt;K:NAV3_VOLUME_SET)
+                0 (&gt;K:NAV4_VOLUME_SET)
+
                 0 (&gt;K:ADF_VOLUME_SET)
+                0 (&gt;K:ADF2_VOLUME_SET)
             </Update>
         </Component>
 
