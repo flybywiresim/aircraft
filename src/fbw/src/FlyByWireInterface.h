@@ -135,9 +135,9 @@ class FlyByWireInterface {
   FcdcBus fcdcsBusOutputs[2] = {};
 
   Fac facs[2] = {Fac(true), Fac(false)};
-  FacDiscreteOutputs facsDiscreteOutputs[2] = {};
-  FacAnalogOutputs facsAnalogOutputs[2] = {};
-  FacBus facsBusOutputs[2] = {};
+  base_fac_discrete_outputs facsDiscreteOutputs[2] = {};
+  base_fac_analog_outputs facsAnalogOutputs[2] = {};
+  base_fac_bus facsBusOutputs[2] = {};
 
   InterpolatingLookupTable throttleLookupTable;
 

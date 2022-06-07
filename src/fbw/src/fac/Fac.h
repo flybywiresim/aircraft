@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Arinc429.h"
+#include "../model/FacComputer.h"
 #include "../utils/PulseNode.h"
 #include "../utils/SRFlipFlop.h"
 #include "FacIO.h"
@@ -9,19 +10,17 @@ class Fac {
  public:
   Fac(bool isUnit1);
 
-  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered, double surfaceCommands[2]);
+  Fac(const Fac&);
 
-  FacBus getBusOutputs();
+  void update(double deltaTime, double simulationTime, bool faultActive, bool isPowered);
 
-  FacDiscreteOutputs getDiscreteOutputs();
+  base_fac_bus getBusOutputs();
 
-  FacAnalogOutputs getAnalogOutputs();
+  base_fac_discrete_outputs getDiscreteOutputs();
 
-  FacDiscreteInputs discreteInputs;
+  base_fac_analog_outputs getAnalogOutputs();
 
-  FacAnalogInputs analogInputs;
-
-  FacBusInputs busInputs;
+  FacComputer::ExternalInputs_FacComputer_T modelInputs = {};
 
  private:
   void initSelfTests();
@@ -34,47 +33,9 @@ class Fac {
 
   void updateSelfTest(double deltaTime);
 
-  void computeComputerEngagementYawDamper();
-
-  void computeComputerEngagementRudderTrim();
-
-  void computeComputerEngagementRudderTravelLim();
-
-  void computeSurfaceSlaving(double surfaceCommands[2]);
-
-  // Yaw damper engagement logic vars
-  bool yawDamperEngaged;
-
-  bool yawDamperHasPriority;
-
-  bool yawDamperCanEngage;
-
-  bool yawDamperServoAvail;
-
-  // Rudder trim engagement logic vars
-  bool rudderTrimEngaged;
-
-  bool rudderTrimHasPriority;
-
-  bool rudderTrimCanEngage;
-
-  bool rudderTrimServoAvail;
-
-  // Rudder travel lim engagement logic vars
-  bool rudderTravelLimEngaged;
-
-  bool rudderTravelLimHasPriority;
-
-  bool rudderTravelLimCanEngage;
-
-  bool rudderTravelLimServoAvail;
-
-  // Surface slaving vars
-  double yawDamperPosCommand;
-
-  double rudderTrimPosCommand;
-
-  double rudderTravelLimPosCommand;
+  // Model
+  FacComputer facComputer;
+  fac_outputs modelOutputs;
 
   // Computer Self-monitoring vars
   bool facHealthy;

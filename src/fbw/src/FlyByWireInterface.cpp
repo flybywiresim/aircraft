@@ -1168,10 +1168,10 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
   elacs[elacIndex].modelInputs.in.discrete_inputs.ap_2_disengaged = !autopilotStateMachineOutput.enabled_AP2;
   elacs[elacIndex].modelInputs.in.discrete_inputs.opp_left_aileron_lost = !elacsDiscreteOutputs[oppElacIndex].left_aileron_ok;
   elacs[elacIndex].modelInputs.in.discrete_inputs.opp_right_aileron_lost = !elacsDiscreteOutputs[oppElacIndex].right_aileron_ok;
-  elacs[elacIndex].modelInputs.in.discrete_inputs.fac_1_yaw_control_lost = !facsDiscreteOutputs[0].yawDamperNormalLawAvail;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.fac_1_yaw_control_lost = !facsDiscreteOutputs[0].yaw_damper_avail_for_norm_law;
   elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_1_nose_gear_pressed = idLgciuNoseGearCompressed[0]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_2_nose_gear_pressed = idLgciuNoseGearCompressed[1]->get();
-  elacs[elacIndex].modelInputs.in.discrete_inputs.fac_2_yaw_control_lost = !facsDiscreteOutputs[1].yawDamperNormalLawAvail;
+  elacs[elacIndex].modelInputs.in.discrete_inputs.fac_2_yaw_control_lost = !facsDiscreteOutputs[1].yaw_damper_avail_for_norm_law;
   elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_1_right_main_gear_pressed = idLgciuRightMainGearCompressed[0]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_2_right_main_gear_pressed = idLgciuRightMainGearCompressed[1]->get();
   elacs[elacIndex].modelInputs.in.discrete_inputs.lgciu_1_left_main_gear_pressed = idLgciuLeftMainGearCompressed[0]->get();
@@ -1472,81 +1472,84 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   const int oppFacIndex = facIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
 
-  facs[facIndex].discreteInputs.apOwnEngaged = false;
-  facs[facIndex].discreteInputs.apOppEngaged = false;
-  facs[facIndex].discreteInputs.yawDamperOppEngaged = facsDiscreteOutputs[oppFacIndex].yawDamperEngaged;
-  facs[facIndex].discreteInputs.rudderTrimOppEngaged = facsDiscreteOutputs[oppFacIndex].rudderTrimEngaged;
-  facs[facIndex].discreteInputs.rudderTravelLimOppEngaged = facsDiscreteOutputs[oppFacIndex].rudderTravelLimEngaged;
-  facs[facIndex].discreteInputs.elac1Healthy = elacsDiscreteOutputs[0].digital_output_validated;
-  facs[facIndex].discreteInputs.elac2Healthy = elacsDiscreteOutputs[1].digital_output_validated;
-  facs[facIndex].discreteInputs.engine1Stopped = true;
-  facs[facIndex].discreteInputs.engine2Stopped = true;
-  facs[facIndex].discreteInputs.rudderTrimSwitchLeft = false;
-  facs[facIndex].discreteInputs.rudderTrimSwitchRight = false;
-  facs[facIndex].discreteInputs.rudderTrimButtonReset = false;
-  facs[facIndex].discreteInputs.facEngagedFromSwitch = idFacPushbuttonStatus[facIndex]->get();
-  facs[facIndex].discreteInputs.rudderTrimActuatorHealthy = true;
-  facs[facIndex].discreteInputs.rudderTravelLimActuatorHealthy = true;
-  facs[facIndex].discreteInputs.slatsExtended = false;
-  facs[facIndex].discreteInputs.noseGearPressed = idLgciuNoseGearCompressed[facIndex]->get();
-  facs[facIndex].discreteInputs.ir3Switch = false;
-  facs[facIndex].discreteInputs.adr3Switch = false;
-  facs[facIndex].discreteInputs.yawDamperHasHydPress = facIndex == 0 ? idHydGreenPressurised->get() : idHydYellowPressurised->get();
+  facs[facIndex].modelInputs.in.discrete_inputs.ap_own_engaged =
+      facIndex == 0 ? autopilotStateMachineOutput.enabled_AP1 : autopilotStateMachineOutput.enabled_AP2;
+  facs[facIndex].modelInputs.in.discrete_inputs.ap_opp_engaged =
+      facIndex == 0 ? autopilotStateMachineOutput.enabled_AP2 : autopilotStateMachineOutput.enabled_AP1;
+  facs[facIndex].modelInputs.in.discrete_inputs.yaw_damper_opp_engaged = facsDiscreteOutputs[oppFacIndex].yaw_damper_engaged;
+  facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_opp_engaged = facsDiscreteOutputs[oppFacIndex].rudder_trim_engaged;
+  facs[facIndex].modelInputs.in.discrete_inputs.rudder_travel_lim_opp_engaged = facsDiscreteOutputs[oppFacIndex].rudder_travel_lim_engaged;
+  facs[facIndex].modelInputs.in.discrete_inputs.elac_1_healthy = elacsDiscreteOutputs[0].digital_output_validated;
+  facs[facIndex].modelInputs.in.discrete_inputs.elac_2_healthy = elacsDiscreteOutputs[1].digital_output_validated;
+  facs[facIndex].modelInputs.in.discrete_inputs.engine_1_stopped = true;
+  facs[facIndex].modelInputs.in.discrete_inputs.engine_2_stopped = true;
+  facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_switch_left = false;
+  facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_switch_right = false;
+  facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_reset_button = false;
+  facs[facIndex].modelInputs.in.discrete_inputs.fac_engaged_from_switch = idFacPushbuttonStatus[facIndex]->get();
+  facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_actuator_healthy = true;
+  facs[facIndex].modelInputs.in.discrete_inputs.rudder_travel_lim_actuator_healthy = true;
+  facs[facIndex].modelInputs.in.discrete_inputs.slats_extended = false;
+  facs[facIndex].modelInputs.in.discrete_inputs.nose_gear_pressed = idLgciuNoseGearCompressed[facIndex]->get();
+  facs[facIndex].modelInputs.in.discrete_inputs.ir_3_switch = false;
+  facs[facIndex].modelInputs.in.discrete_inputs.adr_3_switch = false;
+  facs[facIndex].modelInputs.in.discrete_inputs.yaw_damper_has_hyd_press =
+      facIndex == 0 ? idHydGreenPressurised->get() : idHydYellowPressurised->get();
 
-  facs[facIndex].analogInputs.yawDamperPosition = 0;
-  facs[facIndex].analogInputs.rudderTrimPosition = 0;
-  facs[facIndex].analogInputs.rudderTravelLimPosition = 0;
+  facs[facIndex].modelInputs.in.analog_inputs.yaw_damper_position_deg = 0;
+  facs[facIndex].modelInputs.in.analog_inputs.rudder_trim_position_deg = 0;
+  facs[facIndex].modelInputs.in.analog_inputs.rudder_travel_lim_position_deg = 0;
 
-  facs[facIndex].busInputs.fmgcOwn = {};
-  facs[facIndex].busInputs.fmgcOpp = {};
-  facs[facIndex].busInputs.adirsOwn = {};
-  facs[facIndex].busInputs.adirsOpp = {};
-  facs[facIndex].busInputs.adirs3 = {};
-  facs[facIndex].busInputs.elac1 = elacsBusOutputs[0];
-  facs[facIndex].busInputs.elac2 = elacsBusOutputs[1];
-
-  double surfaceCommands[2] = {
-      flyByWireOutput.output.zeta_pos,
-      flyByWireOutput.output.zeta_trim_pos,
-  };
+  facs[facIndex].modelInputs.in.bus_inputs.fmgc_own_bus = {};
+  facs[facIndex].modelInputs.in.bus_inputs.fmgc_opp_bus = {};
+  facs[facIndex].modelInputs.in.bus_inputs.adr_own_bus = facIndex == 0 ? adirsBusOutputs[0].adrBus : adirsBusOutputs[1].adrBus;
+  facs[facIndex].modelInputs.in.bus_inputs.adr_opp_bus = facIndex == 0 ? adirsBusOutputs[1].adrBus : adirsBusOutputs[0].adrBus;
+  facs[facIndex].modelInputs.in.bus_inputs.adr_3_bus = adirsBusOutputs[2].adrBus;
+  facs[facIndex].modelInputs.in.bus_inputs.ir_own_bus = facIndex == 0 ? adirsBusOutputs[0].irsBus : adirsBusOutputs[1].irsBus;
+  facs[facIndex].modelInputs.in.bus_inputs.ir_opp_bus = facIndex == 0 ? adirsBusOutputs[1].irsBus : adirsBusOutputs[0].irsBus;
+  facs[facIndex].modelInputs.in.bus_inputs.ir_3_bus = adirsBusOutputs[2].irsBus;
+  facs[facIndex].modelInputs.in.bus_inputs.elac_1_bus = elacsBusOutputs[0];
+  facs[facIndex].modelInputs.in.bus_inputs.elac_2_bus = elacsBusOutputs[1];
 
   facs[facIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(facIndex == 0 ? Failures::Fac1 : Failures::Fac2),
-                        facIndex == 0 ? idElecDcEssShedBusPowered->get() : idElecDcBus2Powered->get(), surfaceCommands);
+                        facIndex == 0 ? idElecDcEssShedBusPowered->get() : idElecDcBus2Powered->get());
 
   facsDiscreteOutputs[facIndex] = facs[facIndex].getDiscreteOutputs();
   facsAnalogOutputs[facIndex] = facs[facIndex].getAnalogOutputs();
   facsBusOutputs[facIndex] = facs[facIndex].getBusOutputs();
 
-  idFacFaultLightOn[facIndex]->set(!facsDiscreteOutputs[facIndex].facHealthy);
+  idFacFaultLightOn[facIndex]->set(!facsDiscreteOutputs[facIndex].fac_healthy);
 
-  idFacDiscreteWord1[facIndex]->set(facsBusOutputs[facIndex].discreteWord1.toSimVar());
-  idFacGammaA[facIndex]->set(facsBusOutputs[facIndex].gammaA.toSimVar());
-  idFacGammaT[facIndex]->set(facsBusOutputs[facIndex].gammaT.toSimVar());
-  idFacWeight[facIndex]->set(facsBusOutputs[facIndex].weight.toSimVar());
-  idFacCenterOfGravity[facIndex]->set(facsBusOutputs[facIndex].centerOfGravity.toSimVar());
-  idFacSideslipTarget[facIndex]->set(facsBusOutputs[facIndex].sideslipTarget.toSimVar());
-  idFacSlatAngle[facIndex]->set(facsBusOutputs[facIndex].facSlatAngle.toSimVar());
-  idFacFlapAngle[facIndex]->set(facsBusOutputs[facIndex].facFlapAngle.toSimVar());
-  idFacDiscreteWord2[facIndex]->set(facsBusOutputs[facIndex].discreteWord2.toSimVar());
-  idFacRudderTravelLimitCommand[facIndex]->set(facsBusOutputs[facIndex].rudderTravelLimitCommand.toSimVar());
-  idFacDeltaRYawDamperVoted[facIndex]->set(facsBusOutputs[facIndex].deltaRYawDamperVoted.toSimVar());
-  idFacEstimatedSideslip[facIndex]->set(facsBusOutputs[facIndex].estimatedSideslip.toSimVar());
-  idFacVAlphaLim[facIndex]->set(facsBusOutputs[facIndex].vAlphaLim.toSimVar());
-  idFacVLs[facIndex]->set(facsBusOutputs[facIndex].vLs.toSimVar());
-  idFacVStall[facIndex]->set(facsBusOutputs[facIndex].vStall.toSimVar());
-  idFacVAlphaProt[facIndex]->set(facsBusOutputs[facIndex].vAlphaProt.toSimVar());
-  idFacVStallWarn[facIndex]->set(facsBusOutputs[facIndex].vStallWarn.toSimVar());
-  idFacSpeedTrend[facIndex]->set(facsBusOutputs[facIndex].speedTrend.toSimVar());
-  idFacV3[facIndex]->set(facsBusOutputs[facIndex].v3.toSimVar());
-  idFacV4[facIndex]->set(facsBusOutputs[facIndex].v4.toSimVar());
-  idFacVMan[facIndex]->set(facsBusOutputs[facIndex].vMan.toSimVar());
-  idFacVMax[facIndex]->set(facsBusOutputs[facIndex].vMax.toSimVar());
-  idFacVFeNext[facIndex]->set(facsBusOutputs[facIndex].vFeNext.toSimVar());
-  idFacDiscreteWord3[facIndex]->set(facsBusOutputs[facIndex].discreteWord3.toSimVar());
-  idFacDiscreteWord4[facIndex]->set(facsBusOutputs[facIndex].discreteWord4.toSimVar());
-  idFacDiscreteWord5[facIndex]->set(facsBusOutputs[facIndex].discreteWord5.toSimVar());
-  idFacDeltaRRudderTrim[facIndex]->set(facsBusOutputs[facIndex].deltaRRudderTrim.toSimVar());
-  idFacRudderTrimPos[facIndex]->set(facsBusOutputs[facIndex].rudderTrimPos.toSimVar());
+  FacBus bus = *reinterpret_cast<FacBus*>(&facsBusOutputs[facIndex]);
+
+  idFacDiscreteWord1[facIndex]->set(bus.discreteWord1.toSimVar());
+  idFacGammaA[facIndex]->set(bus.gammaA.toSimVar());
+  idFacGammaT[facIndex]->set(bus.gammaT.toSimVar());
+  idFacWeight[facIndex]->set(bus.weight.toSimVar());
+  idFacCenterOfGravity[facIndex]->set(bus.centerOfGravity.toSimVar());
+  idFacSideslipTarget[facIndex]->set(bus.sideslipTarget.toSimVar());
+  idFacSlatAngle[facIndex]->set(bus.facSlatAngle.toSimVar());
+  idFacFlapAngle[facIndex]->set(bus.facFlapAngle.toSimVar());
+  idFacDiscreteWord2[facIndex]->set(bus.discreteWord2.toSimVar());
+  idFacRudderTravelLimitCommand[facIndex]->set(bus.rudderTravelLimitCommand.toSimVar());
+  idFacDeltaRYawDamperVoted[facIndex]->set(bus.deltaRYawDamperVoted.toSimVar());
+  idFacEstimatedSideslip[facIndex]->set(bus.estimatedSideslip.toSimVar());
+  idFacVAlphaLim[facIndex]->set(bus.vAlphaLim.toSimVar());
+  idFacVLs[facIndex]->set(bus.vLs.toSimVar());
+  idFacVStall[facIndex]->set(bus.vStall.toSimVar());
+  idFacVAlphaProt[facIndex]->set(bus.vAlphaProt.toSimVar());
+  idFacVStallWarn[facIndex]->set(bus.vStallWarn.toSimVar());
+  idFacSpeedTrend[facIndex]->set(bus.speedTrend.toSimVar());
+  idFacV3[facIndex]->set(bus.v3.toSimVar());
+  idFacV4[facIndex]->set(bus.v4.toSimVar());
+  idFacVMan[facIndex]->set(bus.vMan.toSimVar());
+  idFacVMax[facIndex]->set(bus.vMax.toSimVar());
+  idFacVFeNext[facIndex]->set(bus.vFeNext.toSimVar());
+  idFacDiscreteWord3[facIndex]->set(bus.discreteWord3.toSimVar());
+  idFacDiscreteWord4[facIndex]->set(bus.discreteWord4.toSimVar());
+  idFacDiscreteWord5[facIndex]->set(bus.discreteWord5.toSimVar());
+  idFacDeltaRRudderTrim[facIndex]->set(bus.deltaRRudderTrim.toSimVar());
+  idFacRudderTrimPos[facIndex]->set(bus.rudderTrimPos.toSimVar());
 
   return true;
 }
@@ -1592,18 +1595,18 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
   idTHSActiveModeCommanded[2]->set(secsDiscreteOutputs[1].ths_active);
   idTHSCommandedPosition[2]->set(-secsAnalogOutputs[1].ths_pos_order_deg);
 
-  idYawDamperSolenoidEnergized[0]->set(facsDiscreteOutputs[0].yawDamperEngaged);
-  idYawDamperCommandedPosition[0]->set(facsAnalogOutputs[0].yawDamperOrder);
-  idYawDamperSolenoidEnergized[1]->set(facsDiscreteOutputs[1].yawDamperEngaged);
-  idYawDamperCommandedPosition[1]->set(facsAnalogOutputs[1].yawDamperOrder);
-  idRudderTrimActiveModeCommanded[0]->set(facsDiscreteOutputs[0].rudderTrimEngaged);
-  idRudderTravelLimCommandedPosition[0]->set(facsAnalogOutputs[0].rudderTrimOrder);
-  idRudderTrimActiveModeCommanded[1]->set(facsDiscreteOutputs[1].rudderTrimEngaged);
-  idRudderTravelLimCommandedPosition[1]->set(facsAnalogOutputs[1].rudderTrimOrder);
-  idRudderTravelLimitActiveModeCommanded[0]->set(facsDiscreteOutputs[0].rudderTravelLimEngaged);
-  idRudderTravelLimCommandedPosition[0]->set(facsAnalogOutputs[0].rudderTravelLimOrder);
-  idRudderTravelLimitActiveModeCommanded[1]->set(facsDiscreteOutputs[1].rudderTravelLimEngaged);
-  idRudderTravelLimCommandedPosition[1]->set(facsAnalogOutputs[1].rudderTravelLimOrder);
+  idYawDamperSolenoidEnergized[0]->set(facsDiscreteOutputs[0].yaw_damper_engaged);
+  idYawDamperCommandedPosition[0]->set(facsAnalogOutputs[0].yaw_damper_order_deg);
+  idYawDamperSolenoidEnergized[1]->set(facsDiscreteOutputs[1].yaw_damper_engaged);
+  idYawDamperCommandedPosition[1]->set(facsAnalogOutputs[1].yaw_damper_order_deg);
+  idRudderTrimActiveModeCommanded[0]->set(facsDiscreteOutputs[0].rudder_trim_engaged);
+  idRudderTravelLimCommandedPosition[0]->set(facsAnalogOutputs[0].rudder_trim_order_deg);
+  idRudderTrimActiveModeCommanded[1]->set(facsDiscreteOutputs[1].rudder_trim_engaged);
+  idRudderTravelLimCommandedPosition[1]->set(facsAnalogOutputs[1].rudder_trim_order_deg);
+  idRudderTravelLimitActiveModeCommanded[0]->set(facsDiscreteOutputs[0].rudder_travel_lim_engaged);
+  idRudderTravelLimCommandedPosition[0]->set(facsAnalogOutputs[0].rudder_travel_limit_order_deg);
+  idRudderTravelLimitActiveModeCommanded[1]->set(facsDiscreteOutputs[1].rudder_travel_lim_engaged);
+  idRudderTravelLimCommandedPosition[1]->set(facsAnalogOutputs[1].rudder_travel_limit_order_deg);
 
   // set outputs
   if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {

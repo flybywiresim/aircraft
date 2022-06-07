@@ -111,6 +111,8 @@ clang++ \
   "${DIR}/src/model/PitchDirectLaw.cpp" \
   "${DIR}/src/model/LateralNormalLaw.cpp" \
   "${DIR}/src/model/LateralDirectLaw.cpp" \
+  "${DIR}/src/model/FacComputer_data.cpp" \
+  "${DIR}/src/model/FacComputer.cpp" \
   "${DIR}/src/model/look1_binlxpw.cpp" \
   "${DIR}/src/model/look2_binlcpw.cpp" \
   "${DIR}/src/model/look2_binlxpw.cpp" \
