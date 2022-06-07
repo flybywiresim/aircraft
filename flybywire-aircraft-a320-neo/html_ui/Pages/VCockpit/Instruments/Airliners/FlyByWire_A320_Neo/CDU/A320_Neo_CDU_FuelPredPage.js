@@ -28,7 +28,7 @@ class CDUFuelPredPage {
         mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
             if (value === "") {
                 mcdu.setScratchpadText(
-                    (isFinite(getZfw()) ? (NXUnits.kgToUser(getZfw() / 1000)).toFixed(1) : "") +
+                    (isFinite(getZfw()) ? (getZfw() / 1000).toFixed(1) : "") +
                     "/" +
                     (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));
             } else {
