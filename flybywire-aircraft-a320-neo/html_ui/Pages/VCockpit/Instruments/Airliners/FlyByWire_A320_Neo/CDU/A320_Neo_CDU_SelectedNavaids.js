@@ -3,11 +3,8 @@ class CDUSelectedNavaids {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.SelectedNavaids;
 
-        const isNavButtonPushed = SimVar.GetSimVarValue("L:A32NX_RMP_L_NAV_BUTTON_SELECTED", "Boolean") ||
-                                    SimVar.GetSimVarValue("L:A32NX_RMP_R_NAV_BUTTON_SELECTED", "Boolean");
-
         let mode = "AUTO";
-        if (isNavButtonPushed) {
+        if (mcdu.backupNavTuning) {
             mode = "RMP";
         } else if (mcdu.vor1IdIsPilotEntered || mcdu.vor1FreqIsPilotEntered ||
                     mcdu.vor2IdIsPilotEntered || mcdu.vor2FreqIsPilotEntered ||

@@ -10,12 +10,6 @@ class CDUNavRadioPage {
             CDUNavRadioPage.ShowPage(mcdu);
         };
 
-        // @TODO Once MCDUs are separated, isNavButtonPushed should be something like this
-        // const isNavButtonPushed = (mcdu.side == left && leftNavButtonPushed) || (mcdu.side == right && rightNavButtonPushed);
-        // For now, the two MCDUs are blank
-        const isNavButtonPushed = SimVar.GetSimVarValue("L:A32NX_RMP_L_NAV_BUTTON_SELECTED", "Boolean") ||
-                                    SimVar.GetSimVarValue("L:A32NX_RMP_R_NAV_BUTTON_SELECTED", "Boolean");
-
         const radioOn = mcdu.isRadioNavActive();
         let vor1FrequencyCell = "";
         let vor1CourseCell = "";
@@ -36,7 +30,7 @@ class CDUNavRadioPage {
         }, mcdu.PageTimeout.Default);
 
         if (!radioOn) {
-            if (!isNavButtonPushed) {
+            if (!mcdu.backupNavTuning) {
                 vor1FrequencyCell = "[\xa0]/[\xa0\xa0.\xa0]";
                 const vor1Beacon = mcdu.radioNav.getVORBeacon(1);
                 const vor1Ident = vor1Beacon && vor1Beacon.ident.length >= 2 && vor1Beacon.ident.length <= 3 ? vor1Beacon.ident : "";
@@ -48,7 +42,7 @@ class CDUNavRadioPage {
             }
 
             mcdu.onLeftInput[0] = (value, scratchpadCallback) => {
-                if (isNavButtonPushed) {
+                if (mcdu.backupNavTuning) {
                     mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     scratchpadCallback();
                     return false;
@@ -113,14 +107,14 @@ class CDUNavRadioPage {
                     scratchpadCallback();
                 }
             };
-            if (!isNavButtonPushed) {
+            if (!mcdu.backupNavTuning) {
                 vor1CourseCell = "[\xa0]";
                 if (mcdu.vor1Course > 0) {
                     vor1CourseCell = mcdu.vor1Course.toFixed(0).padStart(3, "0");
                 }
             }
             mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-                if (isNavButtonPushed) {
+                if (mcdu.backupNavTuning) {
                     mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     scratchpadCallback();
                     return false;
@@ -143,7 +137,7 @@ class CDUNavRadioPage {
                 }
             };
 
-            if (!isNavButtonPushed) {
+            if (!mcdu.backupNavTuning) {
                 ilsFrequencyCell = "[\xa0\xa0]/[\xa0\xa0.\xa0]";
                 if (mcdu.ilsFrequency != 0) {
                     if (mcdu._ilsFrequencyPilotEntered) {
@@ -166,7 +160,7 @@ class CDUNavRadioPage {
             }
 
             mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
-                mcdu.setIlsFrequency(value, isNavButtonPushed, (result) => {
+                mcdu.setIlsFrequency(value, mcdu.backupNavTuning, (result) => {
                     if (result) {
                         mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
@@ -177,7 +171,7 @@ class CDUNavRadioPage {
                 });
             };
             mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
-                mcdu.setLsCourse(value, isNavButtonPushed, (result) => {
+                mcdu.setLsCourse(value, mcdu.backupNavTuning, (result) => {
                     if (result) {
                         mcdu.requestCall(() => {
                             CDUNavRadioPage.ShowPage(mcdu);
@@ -188,7 +182,7 @@ class CDUNavRadioPage {
                 });
             };
 
-            if (!isNavButtonPushed) {
+            if (!mcdu.backupNavTuning) {
                 adf1FrequencyCell = "[\xa0]/[\xa0\xa0\xa0.]";
                 const adf1Ident = SimVar.GetSimVarValue(`ADF IDENT:1`, "string");
                 if (mcdu.adf1Frequency != 0 && !mcdu.adf1IdIsPilotEntered && mcdu.adf1FreqIsPilotEntered) {
@@ -200,7 +194,7 @@ class CDUNavRadioPage {
                 }
             }
             mcdu.onLeftInput[4] = (value, scratchpadCallback) => {
-                if (isNavButtonPushed) {
+                if (mcdu.backupNavTuning) {
                     mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     scratchpadCallback();
                     return false;
@@ -256,7 +250,7 @@ class CDUNavRadioPage {
         }
 
         if (!radioOn) {
-            if (!isNavButtonPushed) {
+            if (!mcdu.backupNavTuning) {
                 vor2FrequencyCell = "[\xa0\xa0.\xa0]/[\xa0]";
                 const vor2Beacon = mcdu.radioNav.getVORBeacon(2);
                 const vor2Ident = vor2Beacon && vor2Beacon.ident.length >= 2 && vor2Beacon.ident.length <= 3 ? vor2Beacon.ident : "";
@@ -268,7 +262,7 @@ class CDUNavRadioPage {
             }
 
             mcdu.onRightInput[0] = (value, scratchpadCallback) => {
-                if (isNavButtonPushed) {
+                if (mcdu.backupNavTuning) {
                     mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     scratchpadCallback();
                     return false;
@@ -334,14 +328,14 @@ class CDUNavRadioPage {
                 }
             };
 
-            if (!isNavButtonPushed) {
+            if (!mcdu.backupNavTuning) {
                 vor2CourseCell = "[\xa0]";
                 if (mcdu.vor2Course > 0) {
                     vor2CourseCell = mcdu.vor2Course.toFixed(0).padStart(3, "0");
                 }
             }
             mcdu.onRightInput[1] = (value, scratchpadCallback) => {
-                if (isNavButtonPushed) {
+                if (mcdu.backupNavTuning) {
                     mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     scratchpadCallback();
                     return false;
@@ -364,7 +358,7 @@ class CDUNavRadioPage {
                 }
             };
 
-            if (!isNavButtonPushed) {
+            if (!mcdu.backupNavTuning) {
                 adf2FrequencyCell = "[\xa0\xa0\xa0.]/[\xa0]";
                 const adf2Ident = SimVar.GetSimVarValue(`ADF IDENT:2`, "string");
                 if (mcdu.adf2Frequency > 0 && mcdu.adf2FreqIsPilotEntered && !mcdu.adf2IdIsPilotEntered) {
@@ -376,7 +370,7 @@ class CDUNavRadioPage {
                 }
             }
             mcdu.onRightInput[4] = (value, scratchpadCallback) => {
-                if (isNavButtonPushed) {
+                if (mcdu.backupNavTuning) {
                     mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     scratchpadCallback();
                     return false;
