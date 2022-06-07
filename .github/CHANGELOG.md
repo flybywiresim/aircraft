@@ -22,6 +22,7 @@
 1. [MCDU] Added imperial runway length - @derl30n (Leon)
 1. [MCDU] Refactor and improve input handling and conversions in MCDU W&B - @sidnov (Sid)
 1. [MCDU] Improved arrivals/departure page scrolling, more true-to-life behaviour and cosmetic apperance - @2hwk (2Cas#1022)
+1. [PFD] Show yellow GS reference line in correct conditions - @saschl (saschl#9432)
 
 ## 0.8.0
 
