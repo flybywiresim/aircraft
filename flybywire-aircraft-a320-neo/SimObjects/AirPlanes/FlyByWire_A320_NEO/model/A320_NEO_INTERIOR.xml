@@ -4350,6 +4350,10 @@
                 (A:MARKER SOUND, Bool) 1 == {
                     (&gt;K:MARKER_SOUND_TOGGLE)
                 }
+
+                0 (&gt;K:NAV1_VOLUME_SET)
+                0 (&gt;K:NAV2_VOLUME_SET)
+                0 (&gt;K:ADF_VOLUME_SET)
             </Update>
         </Component>
 
