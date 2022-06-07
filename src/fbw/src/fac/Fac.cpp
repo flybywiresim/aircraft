@@ -47,6 +47,8 @@ void Fac::monitorSelf(bool faultActive) {
 
   facHealthy = facHealthyFlipFlop.update(softwareHealthy && (softwareResetCondition || modelInputs.in.discrete_inputs.nose_gear_pressed),
                                          longPowerFailure || !softwareHealthy);
+
+  modelInputs.in.sim_data.computer_running = facHealthy;
 }
 
 // Monitor the power supply and record the outage time (healthy logic).

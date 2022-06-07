@@ -1474,6 +1474,15 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   const int oppFacIndex = facIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
 
+  facs[facIndex].modelInputs.in.time.dt = sampleTime;
+  facs[facIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
+  facs[facIndex].modelInputs.in.time.monotonic_time = monotonicTime;
+
+  facs[facIndex].modelInputs.in.sim_data.slew_on = simData.slew_on;
+  facs[facIndex].modelInputs.in.sim_data.pause_on = pauseDetected;
+  facs[facIndex].modelInputs.in.sim_data.tracking_mode_on_override = false;
+  facs[facIndex].modelInputs.in.sim_data.tailstrike_protection_on = tailstrikeProtectionEnabled;
+
   facs[facIndex].modelInputs.in.discrete_inputs.ap_own_engaged =
       facIndex == 0 ? autopilotStateMachineOutput.enabled_AP1 : autopilotStateMachineOutput.enabled_AP2;
   facs[facIndex].modelInputs.in.discrete_inputs.ap_opp_engaged =
@@ -1489,6 +1498,8 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_switch_right = false;
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_reset_button = false;
   facs[facIndex].modelInputs.in.discrete_inputs.fac_engaged_from_switch = idFacPushbuttonStatus[facIndex]->get();
+  facs[facIndex].modelInputs.in.discrete_inputs.fac_opp_healthy = facsDiscreteOutputs[oppFacIndex].fac_healthy;
+  facs[facIndex].modelInputs.in.discrete_inputs.is_unit_1 = facIndex == 0;
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_actuator_healthy = true;
   facs[facIndex].modelInputs.in.discrete_inputs.rudder_travel_lim_actuator_healthy = true;
   facs[facIndex].modelInputs.in.discrete_inputs.slats_extended = false;
