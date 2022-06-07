@@ -62,6 +62,7 @@ class FlyByWireInterface {
   bool flyByWireEnabled = false;
   int elacDisabled = -1;
   int secDisabled = -1;
+  int facDisabled = -1;
   bool autoThrustEnabled = false;
   bool tailstrikeProtectionEnabled = true;
 

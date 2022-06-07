@@ -37,7 +37,7 @@ bool FlyByWireInterface::connect() {
 
   // connect to sim connect
   return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, elacDisabled,
-                                     secDisabled, throttleAxis, spoilersHandler, elevatorTrimHandler, rudderTrimHandler,
+                                     secDisabled, facDisabled, throttleAxis, spoilersHandler, elevatorTrimHandler, rudderTrimHandler,
                                      flightControlsKeyChangeAileron, flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
                                      disableXboxCompatibilityRudderAxisPlusMinus, idMinimumSimulationRate->get(),
                                      idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
@@ -178,11 +178,12 @@ void FlyByWireInterface::loadConfiguration() {
   flyByWireEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "FLY_BY_WIRE_ENABLED", true);
   elacDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "ELAC_DISABLED", -1);
   secDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "SEC_DISABLED", -1);
+  facDisabled = INITypeConversion::getInteger(iniStructure, "MODEL", "FAC_DISABLED", -1);
   tailstrikeProtectionEnabled = INITypeConversion::getBoolean(iniStructure, "MODEL", "TAILSTRIKE_PROTECTION_ENABLED", false);
 
   // if any model is deactivated we need to enable client data
-  clientDataEnabled = (elacDisabled != -1 || secDisabled != -1 || !autopilotStateMachineEnabled || !autopilotLawsEnabled ||
-                       !autoThrustEnabled || !flyByWireEnabled);
+  clientDataEnabled = (elacDisabled != -1 || secDisabled != -1 || facDisabled != -1 || !autopilotStateMachineEnabled ||
+                       !autopilotLawsEnabled || !autoThrustEnabled || !flyByWireEnabled);
 
   // print configuration into console
   cout << "WASM: MODEL     : CLIENT_DATA_ENABLED (auto)           = " << clientDataEnabled << endl;
@@ -192,6 +193,7 @@ void FlyByWireInterface::loadConfiguration() {
   cout << "WASM: MODEL     : FLY_BY_WIRE_ENABLED                  = " << flyByWireEnabled << endl;
   cout << "WASM: MODEL     : ELAC_DISABLED                        = " << elacDisabled << endl;
   cout << "WASM: MODEL     : SEC_DISABLED                         = " << secDisabled << endl;
+  cout << "WASM: MODEL     : FAC_DISABLED                         = " << facDisabled << endl;
   cout << "WASM: MODEL     : TAILSTRIKE_PROTECTION_ENABLED        = " << tailstrikeProtectionEnabled << endl;
 
   // --------------------------------------------------------------------------
@@ -1511,12 +1513,25 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].modelInputs.in.bus_inputs.elac_1_bus = elacsBusOutputs[0];
   facs[facIndex].modelInputs.in.bus_inputs.elac_2_bus = elacsBusOutputs[1];
 
-  facs[facIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(facIndex == 0 ? Failures::Fac1 : Failures::Fac2),
-                        facIndex == 0 ? idElecDcEssShedBusPowered->get() : idElecDcBus2Powered->get());
+  if (facIndex == facDisabled) {
+    simConnectInterface.setClientDataFacDiscretes(facs[facIndex].modelInputs.in.discrete_inputs);
+    simConnectInterface.setClientDataFacAnalog(facs[facIndex].modelInputs.in.analog_inputs);
 
-  facsDiscreteOutputs[facIndex] = facs[facIndex].getDiscreteOutputs();
-  facsAnalogOutputs[facIndex] = facs[facIndex].getAnalogOutputs();
-  facsBusOutputs[facIndex] = facs[facIndex].getBusOutputs();
+    facsDiscreteOutputs[facIndex] = simConnectInterface.getClientDataFacDiscretesOutput();
+    facsAnalogOutputs[facIndex] = simConnectInterface.getClientDataFacAnalogsOutput();
+    facsBusOutputs[facIndex] = simConnectInterface.getClientDataFacBusOutput();
+  } else {
+    facs[facIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(facIndex == 0 ? Failures::Fac1 : Failures::Fac2),
+                          facIndex == 0 ? idElecDcEssShedBusPowered->get() : idElecDcBus2Powered->get());
+
+    facsDiscreteOutputs[facIndex] = facs[facIndex].getDiscreteOutputs();
+    facsAnalogOutputs[facIndex] = facs[facIndex].getAnalogOutputs();
+    facsBusOutputs[facIndex] = facs[facIndex].getBusOutputs();
+  }
+
+  if (oppFacIndex == facDisabled) {
+    simConnectInterface.setClientDataFacBus(facsBusOutputs[facIndex], facIndex);
+  }
 
   idFacFaultLightOn[facIndex]->set(!facsDiscreteOutputs[facIndex].fac_healthy);
 

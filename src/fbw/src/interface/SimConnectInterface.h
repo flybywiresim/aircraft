@@ -13,6 +13,7 @@
 #include "SimConnectData.h"
 
 #include "../model/ElacComputer_types.h"
+#include "../model/FacComputer_types.h"
 #include "../model/SecComputer_types.h"
 
 class SimConnectInterface {
@@ -192,6 +193,7 @@ class SimConnectInterface {
                bool flyByWireEnabled,
                int elacDisabled,
                int secDisabled,
+               int facDisabled,
                const std::vector<std::shared_ptr<ThrottleAxisMapping>>& throttleAxis,
                std::shared_ptr<SpoilersHandler> spoilersHandler,
                std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler,
@@ -279,6 +281,14 @@ class SimConnectInterface {
   base_sec_analog_outputs getClientDataSecAnalogsOutput();
   base_sec_out_bus getClientDataSecBusOutput();
 
+  bool setClientDataFacDiscretes(base_fac_discrete_inputs output);
+  bool setClientDataFacAnalog(base_fac_analog_inputs output);
+  bool setClientDataFacBus(base_fac_bus output, int facIndex);
+
+  base_fac_discrete_outputs getClientDataFacDiscretesOutput();
+  base_fac_analog_outputs getClientDataFacAnalogsOutput();
+  base_fac_bus getClientDataFacBusOutput();
+
   bool setClientDataAdr(base_adr_bus output, int adrIndex);
   bool setClientDataIr(base_ir_bus output, int irIndex);
   bool setClientDataRa(base_ra_bus output, int raIndex);
@@ -316,6 +326,12 @@ class SimConnectInterface {
     SEC_ANALOG_OUTPUTS,
     SEC_1_BUS_OUTPUT,
     SEC_2_BUS_OUTPUT,
+    FAC_DISCRETE_INPUTS,
+    FAC_ANALOG_INPUTS,
+    FAC_DISCRETE_OUTPUTS,
+    FAC_ANALOG_OUTPUTS,
+    FAC_1_BUS_OUTPUT,
+    FAC_2_BUS_OUTPUT,
     ADR_1_INPUTS,
     ADR_2_INPUTS,
     ADR_3_INPUTS,
@@ -346,6 +362,7 @@ class SimConnectInterface {
 
   int elacDisabled = -1;
   int secDisabled = -1;
+  int facDisabled = -1;
 
   // change to non-static when aileron events can be processed via SimConnect
   static bool loggingFlightControlsEnabled;
@@ -375,6 +392,10 @@ class SimConnectInterface {
   base_sec_discrete_outputs clientDataSecDiscreteOutputs = {};
   base_sec_analog_outputs clientDataSecAnalogOutputs = {};
   base_sec_out_bus clientDataSecBusOutputs = {};
+
+  base_fac_discrete_outputs clientDataFacDiscreteOutputs = {};
+  base_fac_analog_outputs clientDataFacAnalogOutputs = {};
+  base_fac_bus clientDataFacBusOutputs = {};
 
   // change to non-static when aileron events can be processed via SimConnect
   static double flightControlsKeyChangeAileron;
