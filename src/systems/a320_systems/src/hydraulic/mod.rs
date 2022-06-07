@@ -1217,16 +1217,16 @@ impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
     const HIGH_PITCH_PTU_SOUND_DURATION: Duration = Duration::from_millis(3000);
 
-    const FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+    const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
         0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
     ];
-    const FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+    const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
         [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
 
-    const SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+    const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
         0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16,
     ];
-    const SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+    const SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
         [0., 5.4, 13.5, 18., 22., 27., 27., 27., 27., 27., 27., 27.];
 
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
@@ -1392,8 +1392,8 @@ impl A320Hydraulic {
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
-                Self::FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
-                Self::FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES,
+                Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+                Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
             ),
             slat_system: FlapSlatAssembly::new(
                 context,
@@ -1404,8 +1404,8 @@ impl A320Hydraulic {
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
-                Self::SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
-                Self::SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES,
+                Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+                Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
 

@@ -428,13 +428,13 @@ mod tests {
     impl FeedbackPositionPickoffUnit for SlatFlapGear {
         fn angle(&self) -> Angle {
             let synchro_gear_breakpoints = match self.surface_type.as_str() {
-                "FLAPS" => A320Hydraulic::FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
-                "SLATS" => A320Hydraulic::SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
+                "FLAPS" => A320Hydraulic::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+                "SLATS" => A320Hydraulic::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
                 _ => panic!(),
             };
             let synchro_gear_degrees = match self.surface_type.as_str() {
-                "FLAPS" => A320Hydraulic::FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES,
-                "SLATS" => A320Hydraulic::SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES,
+                "FLAPS" => A320Hydraulic::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
+                "SLATS" => A320Hydraulic::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
                 _ => panic!(),
             };
             Angle::new::<degree>(interpolation(
