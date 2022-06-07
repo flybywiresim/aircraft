@@ -137,6 +137,12 @@ struct SimInput {
   double inputs[3];
 };
 
+struct SimInputRudderTrim {
+  bool rudderTrimSwitchLeft;
+  bool rudderTrimSwitchRight;
+  bool rudderTrimReset;
+};
+
 struct SimInputAutopilot {
   double AP_engage;
   double AP_1_push;

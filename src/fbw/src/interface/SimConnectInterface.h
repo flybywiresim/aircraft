@@ -240,6 +240,8 @@ class SimConnectInterface {
 
   bool setClientDataLocalVariablesAutothrust(ClientDataLocalVariablesAutothrust output);
 
+  void resetSimInputRudderTrim();
+
   void resetSimInputAutopilot();
 
   void resetSimInputThrottles();
@@ -249,6 +251,8 @@ class SimConnectInterface {
   SimInput getSimInput();
 
   SimInputAutopilot getSimInputAutopilot();
+
+  SimInputRudderTrim getSimInputRudderTrim();
 
   SimInputThrottles getSimInputThrottles();
 
@@ -371,6 +375,7 @@ class SimConnectInterface {
   SimData simData = {};
   // change to non-static when aileron events can be processed via SimConnect
   static SimInput simInput;
+  SimInputRudderTrim simInputRudderTrim = {};
   SimInputAutopilot simInputAutopilot = {};
 
   SimInputThrottles simInputThrottles = {};

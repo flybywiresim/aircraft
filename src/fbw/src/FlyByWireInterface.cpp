@@ -773,6 +773,8 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   // reset input
   simConnectInterface.resetSimInputAutopilot();
 
+  simConnectInterface.resetSimInputRudderTrim();
+
   // set logging options
   simConnectInterface.setLoggingFlightControlsEnabled(idLoggingFlightControlsEnabled->get() == 1);
   simConnectInterface.setLoggingThrottlesEnabled(idLoggingThrottlesEnabled->get() == 1);
@@ -1473,6 +1475,7 @@ bool FlyByWireInterface::updateFcdc(double sampleTime, int fcdcIndex) {
 bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   const int oppFacIndex = facIndex == 0 ? 1 : 0;
   SimData simData = simConnectInterface.getSimData();
+  SimInputRudderTrim trimInput = simConnectInterface.getSimInputRudderTrim();
 
   facs[facIndex].modelInputs.in.time.dt = sampleTime;
   facs[facIndex].modelInputs.in.time.simulation_time = simData.simulationTime;
@@ -1494,9 +1497,9 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
   facs[facIndex].modelInputs.in.discrete_inputs.elac_2_healthy = elacsDiscreteOutputs[1].digital_output_validated;
   facs[facIndex].modelInputs.in.discrete_inputs.engine_1_stopped = true;
   facs[facIndex].modelInputs.in.discrete_inputs.engine_2_stopped = true;
-  facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_switch_left = false;
-  facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_switch_right = false;
-  facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_reset_button = false;
+  facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_switch_left = trimInput.rudderTrimSwitchLeft;
+  facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_switch_right = trimInput.rudderTrimSwitchRight;
+  facs[facIndex].modelInputs.in.discrete_inputs.rudder_trim_reset_button = trimInput.rudderTrimReset;
   facs[facIndex].modelInputs.in.discrete_inputs.fac_engaged_from_switch = idFacPushbuttonStatus[facIndex]->get();
   facs[facIndex].modelInputs.in.discrete_inputs.fac_opp_healthy = facsDiscreteOutputs[oppFacIndex].fac_healthy;
   facs[facIndex].modelInputs.in.discrete_inputs.is_unit_1 = facIndex == 0;

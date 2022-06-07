@@ -1287,6 +1287,10 @@ SimInputAutopilot SimConnectInterface::getSimInputAutopilot() {
   return simInputAutopilot;
 }
 
+SimInputRudderTrim SimConnectInterface::getSimInputRudderTrim() {
+  return simInputRudderTrim;
+}
+
 SimInputThrottles SimConnectInterface::getSimInputThrottles() {
   return simInputThrottles;
 }
@@ -1306,6 +1310,12 @@ void SimConnectInterface::resetSimInputAutopilot() {
   simInputAutopilot.APPR_push = 0;
   simInputAutopilot.EXPED_push = 0;
   simInputAutopilot.DIR_TO_trigger = 0;
+}
+
+void SimConnectInterface::resetSimInputRudderTrim() {
+  simInputRudderTrim.rudderTrimSwitchLeft = false;
+  simInputRudderTrim.rudderTrimSwitchRight = false;
+  simInputRudderTrim.rudderTrimReset = false;
 }
 
 void SimConnectInterface::resetSimInputThrottles() {
@@ -1661,6 +1671,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     }
 
     case Events::RUDDER_TRIM_LEFT: {
+      simInputRudderTrim.rudderTrimSwitchLeft = true;
       rudderTrimHandler->onEventRudderTrimLeft(sampleTime);
       if (loggingFlightControlsEnabled) {
         cout << "WASM: RUDDER_TRIM_LEFT: ";
@@ -1673,6 +1684,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     }
 
     case Events::RUDDER_TRIM_RESET: {
+      simInputRudderTrim.rudderTrimReset = true;
       rudderTrimHandler->onEventRudderTrimReset();
       if (loggingFlightControlsEnabled) {
         cout << "WASM: RUDDER_TRIM_RESET: ";
@@ -1685,6 +1697,7 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
     }
 
     case Events::RUDDER_TRIM_RIGHT: {
+      simInputRudderTrim.rudderTrimSwitchRight = true;
       rudderTrimHandler->onEventRudderTrimRight(sampleTime);
       if (loggingFlightControlsEnabled) {
         cout << "WASM: RUDDER_TRIM_RIGHT: ";

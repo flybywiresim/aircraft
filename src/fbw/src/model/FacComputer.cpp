@@ -24,13 +24,338 @@ void FacComputer::step()
   if (FacComputer_U.in.sim_data.computer_running) {
     real_T rtb_Switch1_a;
     real_T rtb_Switch4;
+    boolean_T yawDamperCanEngage;
+    boolean_T yawDamperHasPriority;
+    boolean_T yawDamperHasPriority_tmp;
     if (!FacComputer_DWork.Runtime_MODE) {
-      FacComputer_DWork.Delay_DSTATE = FacComputer_P.RateLimiterDynamicEqualVariableTs_InitialCondition;
-      FacComputer_DWork.Delay_DSTATE_m = FacComputer_P.RateLimiterDynamicEqualVariableTs_InitialCondition_d;
+      FacComputer_DWork.Delay1_DSTATE = FacComputer_P.Delay1_InitialCondition;
+      FacComputer_DWork.Memory_PreviousInput = FacComputer_P.SRFlipFlop_initial_condition;
+      FacComputer_DWork.Delay2_DSTATE = FacComputer_P.Delay2_InitialCondition;
+      FacComputer_DWork.Delay_DSTATE = FacComputer_P.DiscreteTimeIntegratorVariableTs_InitialCondition;
+      FacComputer_DWork.Delay_DSTATE_m = FacComputer_P.RateLimiterDynamicEqualVariableTs_InitialCondition;
+      FacComputer_DWork.Delay_DSTATE_k = FacComputer_P.RateLimiterDynamicEqualVariableTs_InitialCondition_a;
+      FacComputer_DWork.output_not_empty = false;
+      FacComputer_DWork.previousInput_not_empty = false;
       FacComputer_DWork.pY_not_empty = false;
       FacComputer_DWork.Runtime_MODE = true;
     }
 
+    if (!FacComputer_DWork.output_not_empty) {
+      FacComputer_DWork.output = FacComputer_U.in.discrete_inputs.rudder_trim_reset_button;
+      FacComputer_DWork.output_not_empty = true;
+    }
+
+    if (!FacComputer_DWork.previousInput_not_empty) {
+      FacComputer_DWork.previousInput = FacComputer_P.PulseNode_isRisingEdge;
+      FacComputer_DWork.previousInput_not_empty = true;
+    }
+
+    if (FacComputer_P.PulseNode_isRisingEdge) {
+      yawDamperHasPriority_tmp = (FacComputer_U.in.discrete_inputs.rudder_trim_reset_button &&
+        (!FacComputer_DWork.previousInput));
+    } else {
+      yawDamperHasPriority_tmp = ((!FacComputer_U.in.discrete_inputs.rudder_trim_reset_button) &&
+        FacComputer_DWork.previousInput);
+    }
+
+    FacComputer_DWork.output = ((!FacComputer_DWork.output) && yawDamperHasPriority_tmp);
+    FacComputer_DWork.previousInput = FacComputer_U.in.discrete_inputs.rudder_trim_reset_button;
+    rtb_Switch4 = FacComputer_P.Gain1_Gain * FacComputer_DWork.Delay1_DSTATE;
+    if (rtb_Switch4 > FacComputer_P.Saturation_UpperSat_e) {
+      rtb_Switch4 = FacComputer_P.Saturation_UpperSat_e;
+    } else if (rtb_Switch4 < FacComputer_P.Saturation_LowerSat_i) {
+      rtb_Switch4 = FacComputer_P.Saturation_LowerSat_i;
+    }
+
+    FacComputer_DWork.Memory_PreviousInput = FacComputer_P.Logic_table
+      [(((FacComputer_U.in.discrete_inputs.rudder_trim_switch_left ||
+          FacComputer_U.in.discrete_inputs.rudder_trim_switch_right || (std::abs(rtb_Switch4) <=
+           FacComputer_P.CompareToConstant_const)) + (static_cast<uint32_T>(FacComputer_DWork.output) << 1)) << 1) +
+      FacComputer_DWork.Memory_PreviousInput];
+    FacComputer_B.logic.on_ground = false;
+    FacComputer_B.logic.tracking_mode_on = (FacComputer_U.in.sim_data.slew_on || FacComputer_U.in.sim_data.pause_on ||
+      FacComputer_U.in.sim_data.tracking_mode_on_override);
+    yawDamperCanEngage = (FacComputer_U.in.discrete_inputs.yaw_damper_has_hyd_press &&
+                          FacComputer_U.in.discrete_inputs.fac_engaged_from_switch);
+    yawDamperHasPriority_tmp = !FacComputer_U.in.discrete_inputs.is_unit_1;
+    yawDamperHasPriority = (FacComputer_U.in.discrete_inputs.is_unit_1 || (yawDamperHasPriority_tmp &&
+      (!FacComputer_U.in.discrete_inputs.yaw_damper_opp_engaged)));
+    FacComputer_B.logic.yaw_damper_engaged = (yawDamperCanEngage && yawDamperHasPriority);
+    FacComputer_B.logic.yaw_damper_can_engage = yawDamperCanEngage;
+    FacComputer_B.logic.yaw_damper_has_priority = yawDamperHasPriority;
+    yawDamperCanEngage = (FacComputer_U.in.discrete_inputs.rudder_trim_actuator_healthy &&
+                          FacComputer_U.in.discrete_inputs.fac_engaged_from_switch);
+    yawDamperHasPriority = (FacComputer_U.in.discrete_inputs.is_unit_1 || (yawDamperHasPriority_tmp &&
+      (!FacComputer_U.in.discrete_inputs.rudder_trim_opp_engaged)));
+    FacComputer_B.logic.rudder_trim_engaged = (yawDamperCanEngage && yawDamperHasPriority);
+    FacComputer_B.logic.rudder_trim_can_engage = yawDamperCanEngage;
+    FacComputer_B.logic.rudder_trim_has_priority = yawDamperHasPriority;
+    yawDamperCanEngage = (FacComputer_U.in.discrete_inputs.rudder_travel_lim_actuator_healthy &&
+                          FacComputer_U.in.discrete_inputs.fac_engaged_from_switch);
+    yawDamperHasPriority_tmp = (FacComputer_U.in.discrete_inputs.is_unit_1 || (yawDamperHasPriority_tmp &&
+      (!FacComputer_U.in.discrete_inputs.rudder_travel_lim_opp_engaged)));
+    FacComputer_B.logic.rudder_travel_lim_engaged = (yawDamperCanEngage && yawDamperHasPriority_tmp);
+    FacComputer_B.logic.rudder_travel_lim_can_engage = yawDamperCanEngage;
+    FacComputer_B.logic.rudder_travel_lim_has_priority = yawDamperHasPriority_tmp;
+    FacComputer_B.flight_envelope.v_alpha_max_kn = 0.0;
+    FacComputer_B.flight_envelope.v_alpha_prot_kn = 0.0;
+    FacComputer_B.flight_envelope.v_stall_warn_kn = 0.0;
+    FacComputer_B.flight_envelope.computed_weight_lbs = 0.0;
+    FacComputer_B.flight_envelope.computed_cg_percent = 0.0;
+    FacComputer_B.flight_envelope.v_ls_kn = 0.0;
+    FacComputer_B.flight_envelope.v_stall_kn = 0.0;
+    FacComputer_B.flight_envelope.v_3_kn = 0.0;
+    FacComputer_B.flight_envelope.v_4_kn = 0.0;
+    FacComputer_B.flight_envelope.v_man_kn = 0.0;
+    FacComputer_B.flight_envelope.v_max_kn = 0.0;
+    FacComputer_B.flight_envelope.v_c_trend_kn = 0.0;
+    if (!FacComputer_DWork.Memory_PreviousInput) {
+      if (FacComputer_B.logic.rudder_trim_engaged) {
+        if (FacComputer_P.Constant1_Value_c) {
+          rtb_Switch4 = FacComputer_P.Constant2_Value;
+        } else if (FacComputer_U.in.discrete_inputs.rudder_trim_switch_left) {
+          rtb_Switch4 = -1.0;
+        } else {
+          rtb_Switch4 = FacComputer_U.in.discrete_inputs.rudder_trim_switch_right;
+        }
+      } else {
+        rtb_Switch4 = (FacComputer_U.in.analog_inputs.rudder_trim_position_deg - FacComputer_DWork.Delay2_DSTATE) *
+          FacComputer_P.Gain_Gain;
+      }
+    }
+
+    FacComputer_DWork.Delay_DSTATE += FacComputer_P.DiscreteTimeIntegratorVariableTs_Gain * rtb_Switch4 *
+      FacComputer_U.in.time.dt;
+    if (FacComputer_DWork.Delay_DSTATE > FacComputer_P.DiscreteTimeIntegratorVariableTs_UpperLimit) {
+      FacComputer_DWork.Delay_DSTATE = FacComputer_P.DiscreteTimeIntegratorVariableTs_UpperLimit;
+    } else if (FacComputer_DWork.Delay_DSTATE < FacComputer_P.DiscreteTimeIntegratorVariableTs_LowerLimit) {
+      FacComputer_DWork.Delay_DSTATE = FacComputer_P.DiscreteTimeIntegratorVariableTs_LowerLimit;
+    }
+
+    rtb_Switch4 = std::abs(FacComputer_P.Constant_Value);
+    FacComputer_DWork.Delay_DSTATE_m += std::fmax(std::fmin(FacComputer_DWork.Delay_DSTATE -
+      FacComputer_DWork.Delay_DSTATE_m, rtb_Switch4 * FacComputer_U.in.time.dt), FacComputer_P.Gain_Gain_b * rtb_Switch4
+      * FacComputer_U.in.time.dt);
+    if (FacComputer_B.logic.yaw_damper_engaged) {
+      rtb_Switch4 = 0.0;
+    } else {
+      rtb_Switch4 = FacComputer_U.in.analog_inputs.yaw_damper_position_deg;
+    }
+
+    rtb_Switch1_a = std::abs(FacComputer_P.Constant_Value_k);
+    if (rtb_Switch4 > FacComputer_P.Saturation_UpperSat_ew) {
+      rtb_Switch4 = FacComputer_P.Saturation_UpperSat_ew;
+    } else if (rtb_Switch4 < FacComputer_P.Saturation_LowerSat_o) {
+      rtb_Switch4 = FacComputer_P.Saturation_LowerSat_o;
+    }
+
+    FacComputer_DWork.Delay_DSTATE_k += std::fmax(std::fmin(rtb_Switch4 - FacComputer_DWork.Delay_DSTATE_k,
+      rtb_Switch1_a * FacComputer_U.in.time.dt), FacComputer_P.Gain_Gain_m * rtb_Switch1_a * FacComputer_U.in.time.dt);
+    if (FacComputer_B.logic.rudder_travel_lim_engaged) {
+      rtb_Switch4 = look1_binlxpw(0.0, FacComputer_P.uDLookupTable_bp01Data, FacComputer_P.uDLookupTable_tableData, 10U);
+      if (rtb_Switch4 > FacComputer_P.Saturation_UpperSat) {
+        rtb_Switch4 = FacComputer_P.Saturation_UpperSat;
+      } else if (rtb_Switch4 < FacComputer_P.Saturation_LowerSat) {
+        rtb_Switch4 = FacComputer_P.Saturation_LowerSat;
+      }
+    } else {
+      rtb_Switch4 = FacComputer_U.in.analog_inputs.rudder_travel_lim_position_deg;
+    }
+
+    if (!FacComputer_DWork.pY_not_empty) {
+      FacComputer_DWork.pY = FacComputer_P.RateLimiterVariableTs_InitialCondition;
+      FacComputer_DWork.pY_not_empty = true;
+    }
+
+    FacComputer_DWork.pY += std::fmax(std::fmin(rtb_Switch4 - FacComputer_DWork.pY, std::abs
+      (FacComputer_P.RateLimiterVariableTs_up) * FacComputer_U.in.time.dt), -std::abs
+      (FacComputer_P.RateLimiterVariableTs_lo) * FacComputer_U.in.time.dt);
+    FacComputer_B.laws.yaw_damper_command_deg = FacComputer_DWork.Delay_DSTATE_k;
+    FacComputer_B.laws.rudder_trim_command_deg = FacComputer_DWork.Delay_DSTATE_m;
+    FacComputer_B.laws.rudder_travel_lim_command_deg = FacComputer_DWork.pY;
+    if (FacComputer_B.logic.yaw_damper_engaged) {
+      FacComputer_Y.out.analog_outputs.yaw_damper_order_deg = FacComputer_B.laws.yaw_damper_command_deg;
+    } else {
+      FacComputer_Y.out.analog_outputs.yaw_damper_order_deg = FacComputer_P.Constant_Value_b;
+    }
+
+    if (FacComputer_B.logic.rudder_trim_engaged) {
+      FacComputer_Y.out.analog_outputs.rudder_trim_order_deg = FacComputer_B.laws.rudder_trim_command_deg;
+    } else {
+      FacComputer_Y.out.analog_outputs.rudder_trim_order_deg = FacComputer_P.Constant_Value_b;
+    }
+
+    if (FacComputer_B.logic.rudder_travel_lim_engaged) {
+      FacComputer_Y.out.analog_outputs.rudder_travel_limit_order_deg = FacComputer_B.laws.rudder_travel_lim_command_deg;
+    } else {
+      FacComputer_Y.out.analog_outputs.rudder_travel_limit_order_deg = FacComputer_P.Constant_Value_b;
+    }
+
+    rtb_VectorConcatenate_a[0] = FacComputer_B.logic.yaw_damper_engaged;
+    rtb_VectorConcatenate_a[2] = FacComputer_B.logic.rudder_trim_engaged;
+    rtb_VectorConcatenate_a[4] = FacComputer_B.logic.rudder_travel_lim_engaged;
+    FacComputer_Y.out.discrete_outputs.fac_healthy = FacComputer_P.Constant2_Value_o;
+    FacComputer_Y.out.discrete_outputs.yaw_damper_engaged = FacComputer_B.logic.yaw_damper_engaged;
+    FacComputer_Y.out.discrete_outputs.rudder_trim_engaged = FacComputer_B.logic.rudder_trim_engaged;
+    FacComputer_Y.out.discrete_outputs.rudder_travel_lim_engaged = FacComputer_B.logic.rudder_travel_lim_engaged;
+    FacComputer_Y.out.discrete_outputs.rudder_travel_lim_emergency_reset = FacComputer_P.Constant1_Value_d;
+    FacComputer_Y.out.discrete_outputs.yaw_damper_avail_for_norm_law = FacComputer_B.logic.yaw_damper_can_engage;
+    rtb_VectorConcatenate_a[9] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_a[10] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_a[11] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_a[12] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_a[13] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_a[14] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_a[15] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_a[16] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_a[17] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_a[18] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_a[6] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_a[7] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_a[8] = FacComputer_P.Constant10_Value;
+    rtb_VectorConcatenate_p[0] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[9] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[10] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[11] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[12] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[13] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[14] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[15] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[16] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[17] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[18] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[1] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[2] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[3] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[4] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[5] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[6] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[7] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_p[8] = FacComputer_P.Constant18_Value;
+    rtb_VectorConcatenate_l[0] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[9] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[10] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[11] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[12] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[13] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[14] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[15] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[16] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[17] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[18] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[1] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[2] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[3] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[4] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[5] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[6] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[7] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_l[8] = FacComputer_P.Constant9_Value;
+    rtb_VectorConcatenate_m[0] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[9] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[10] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[11] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[12] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[13] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[14] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[15] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[16] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[17] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[18] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[1] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[2] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[3] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[4] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[5] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[6] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[7] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate_m[8] = FacComputer_P.Constant19_Value;
+    rtb_VectorConcatenate[0] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[9] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[10] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[11] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[12] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[13] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[14] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[15] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[16] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[17] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[18] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[1] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[2] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[3] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[4] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[5] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[6] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[7] = FacComputer_P.Constant20_Value;
+    rtb_VectorConcatenate[8] = FacComputer_P.Constant20_Value;
+    FacComputer_MATLABFunction(rtb_VectorConcatenate, &FacComputer_Y.out.bus_outputs.discrete_word_1.Data);
+    rtb_VectorConcatenate_a[1] = FacComputer_U.in.discrete_inputs.yaw_damper_opp_engaged;
+    rtb_VectorConcatenate_a[3] = FacComputer_U.in.discrete_inputs.rudder_trim_opp_engaged;
+    rtb_VectorConcatenate_a[5] = FacComputer_U.in.discrete_inputs.rudder_travel_lim_opp_engaged;
+    FacComputer_MATLABFunction(rtb_VectorConcatenate_a, &FacComputer_Y.out.bus_outputs.discrete_word_2.Data);
+    FacComputer_MATLABFunction(rtb_VectorConcatenate_p, &FacComputer_Y.out.bus_outputs.discrete_word_3.Data);
+    FacComputer_MATLABFunction(rtb_VectorConcatenate_l, &FacComputer_Y.out.bus_outputs.discrete_word_4.Data);
+    FacComputer_MATLABFunction(rtb_VectorConcatenate_m, &FacComputer_Y.out.bus_outputs.discrete_word_5.Data);
+    FacComputer_Y.out.bus_outputs.discrete_word_1.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.gamma_a_deg.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.gamma_a_deg.Data = FacComputer_P.Constant28_Value;
+    FacComputer_Y.out.bus_outputs.gamma_t_deg.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.gamma_t_deg.Data = FacComputer_P.Constant22_Value;
+    FacComputer_Y.out.bus_outputs.total_weight_lbs.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.total_weight_lbs.Data = FacComputer_P.Constant21_Value;
+    FacComputer_Y.out.bus_outputs.center_of_gravity_pos_percent.SSM = static_cast<uint32_T>
+      (FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.center_of_gravity_pos_percent.Data = FacComputer_P.Constant4_Value_b;
+    FacComputer_Y.out.bus_outputs.sideslip_target_deg.SSM = static_cast<uint32_T>
+      (FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.sideslip_target_deg.Data = FacComputer_P.Constant3_Value;
+    FacComputer_Y.out.bus_outputs.fac_slat_angle_deg.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.fac_slat_angle_deg.Data = FacComputer_P.Constant2_Value_b;
+    FacComputer_Y.out.bus_outputs.fac_flap_angle.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.fac_flap_angle.Data = FacComputer_P.Constant1_Value;
+    FacComputer_Y.out.bus_outputs.discrete_word_2.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.rudder_travel_limit_command_deg.SSM = static_cast<uint32_T>
+      (FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.rudder_travel_limit_command_deg.Data = FacComputer_P.Constant27_Value;
+    FacComputer_Y.out.bus_outputs.delta_r_yaw_damper_deg.SSM = static_cast<uint32_T>
+      (FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.delta_r_yaw_damper_deg.Data = FacComputer_P.Constant26_Value;
+    FacComputer_Y.out.bus_outputs.estimated_sideslip_deg.SSM = static_cast<uint32_T>
+      (FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.estimated_sideslip_deg.Data = FacComputer_P.Constant23_Value;
+    FacComputer_Y.out.bus_outputs.v_alpha_lim_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.v_alpha_lim_kn.Data = FacComputer_P.Constant16_Value;
+    FacComputer_Y.out.bus_outputs.v_ls_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.v_ls_kn.Data = FacComputer_P.Constant15_Value;
+    FacComputer_Y.out.bus_outputs.v_stall_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.v_stall_kn.Data = FacComputer_P.Constant14_Value;
+    FacComputer_Y.out.bus_outputs.v_alpha_prot_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.v_alpha_prot_kn.Data = FacComputer_P.Constant13_Value;
+    FacComputer_Y.out.bus_outputs.v_stall_warn_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.v_stall_warn_kn.Data = FacComputer_P.Constant12_Value;
+    FacComputer_Y.out.bus_outputs.speed_trend_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.speed_trend_kn.Data = FacComputer_P.Constant11_Value;
+    FacComputer_Y.out.bus_outputs.v_3_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.v_3_kn.Data = FacComputer_P.Constant8_Value;
+    FacComputer_Y.out.bus_outputs.v_4_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.v_4_kn.Data = FacComputer_P.Constant7_Value;
+    FacComputer_Y.out.bus_outputs.v_man_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.v_man_kn.Data = FacComputer_P.Constant6_Value;
+    FacComputer_Y.out.bus_outputs.v_max_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.v_max_kn.Data = FacComputer_P.Constant5_Value;
+    FacComputer_Y.out.bus_outputs.v_fe_next_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.v_fe_next_kn.Data = FacComputer_P.Constant17_Value;
+    FacComputer_Y.out.bus_outputs.discrete_word_3.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.discrete_word_4.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.discrete_word_5.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.delta_r_rudder_trim_deg.SSM = static_cast<uint32_T>
+      (FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.delta_r_rudder_trim_deg.Data = FacComputer_P.Constant24_Value;
+    FacComputer_Y.out.bus_outputs.rudder_trim_pos_deg.SSM = static_cast<uint32_T>
+      (FacComputer_P.EnumeratedConstant1_Value);
+    FacComputer_Y.out.bus_outputs.rudder_trim_pos_deg.Data = static_cast<real32_T>
+      (FacComputer_U.in.analog_inputs.rudder_trim_position_deg);
     FacComputer_B.dt = FacComputer_U.in.time.dt;
     FacComputer_B.ap_opp_engaged = FacComputer_U.in.discrete_inputs.ap_opp_engaged;
     FacComputer_B.SSM = FacComputer_U.in.bus_inputs.adr_own_bus.vertical_speed_ft_min.SSM;
@@ -443,263 +768,8 @@ void FacComputer::step()
     FacComputer_B.Data_myb = FacComputer_U.in.bus_inputs.adr_own_bus.airspeed_computed_kn.Data;
     FacComputer_B.SSM_ag = FacComputer_U.in.bus_inputs.adr_own_bus.airspeed_true_kn.SSM;
     FacComputer_B.Data_l2 = FacComputer_U.in.bus_inputs.adr_own_bus.airspeed_true_kn.Data;
-    FacComputer_B.flight_envelope.v_alpha_max_kn = 0.0;
-    FacComputer_B.flight_envelope.v_alpha_prot_kn = 0.0;
-    FacComputer_B.flight_envelope.v_stall_warn_kn = 0.0;
-    FacComputer_B.flight_envelope.computed_weight_lbs = 0.0;
-    FacComputer_B.flight_envelope.computed_cg_percent = 0.0;
-    FacComputer_B.flight_envelope.v_ls_kn = 0.0;
-    FacComputer_B.flight_envelope.v_stall_kn = 0.0;
-    FacComputer_B.flight_envelope.v_3_kn = 0.0;
-    FacComputer_B.flight_envelope.v_4_kn = 0.0;
-    FacComputer_B.flight_envelope.v_man_kn = 0.0;
-    FacComputer_B.flight_envelope.v_max_kn = 0.0;
-    FacComputer_B.flight_envelope.v_c_trend_kn = 0.0;
-    FacComputer_B.logic.on_ground = false;
-    FacComputer_B.logic.tracking_mode_on = (FacComputer_U.in.sim_data.slew_on || FacComputer_U.in.sim_data.pause_on ||
-      FacComputer_U.in.sim_data.tracking_mode_on_override);
-    FacComputer_B.logic.rudder_trim_can_engage = FacComputer_P.fac_logic_output_MATLABStruct.rudder_trim_can_engage;
-    FacComputer_B.logic.rudder_trim_has_priority = FacComputer_P.fac_logic_output_MATLABStruct.rudder_trim_has_priority;
-    FacComputer_B.logic.rudder_travel_lim_can_engage =
-      FacComputer_P.fac_logic_output_MATLABStruct.rudder_travel_lim_can_engage;
-    FacComputer_B.logic.rudder_travel_lim_has_priority =
-      FacComputer_P.fac_logic_output_MATLABStruct.rudder_travel_lim_has_priority;
-    FacComputer_B.logic.yaw_damper_engaged = false;
-    FacComputer_B.logic.yaw_damper_can_engage = false;
-    FacComputer_B.logic.yaw_damper_has_priority = false;
-    FacComputer_B.logic.rudder_trim_engaged = false;
-    FacComputer_B.logic.rudder_travel_lim_engaged = false;
-    if (FacComputer_B.logic.yaw_damper_engaged) {
-      rtb_Switch4 = 0.0;
-    } else {
-      rtb_Switch4 = FacComputer_U.in.analog_inputs.yaw_damper_position_deg;
-    }
-
-    rtb_Switch1_a = std::abs(FacComputer_P.Constant_Value);
-    if (rtb_Switch4 > FacComputer_P.Saturation_UpperSat_e) {
-      rtb_Switch4 = FacComputer_P.Saturation_UpperSat_e;
-    } else if (rtb_Switch4 < FacComputer_P.Saturation_LowerSat_o) {
-      rtb_Switch4 = FacComputer_P.Saturation_LowerSat_o;
-    }
-
-    FacComputer_DWork.Delay_DSTATE += std::fmax(std::fmin(rtb_Switch4 - FacComputer_DWork.Delay_DSTATE, rtb_Switch1_a *
-      FacComputer_U.in.time.dt), FacComputer_P.Gain_Gain * rtb_Switch1_a * FacComputer_U.in.time.dt);
-    rtb_Switch1_a = std::abs(FacComputer_P.Constant_Value_b);
-    if (FacComputer_P.Saturation_UpperSat_a < 0.0) {
-      rtb_Switch4 = FacComputer_P.Saturation_UpperSat_a;
-    } else if (FacComputer_P.Saturation_LowerSat_p > 0.0) {
-      rtb_Switch4 = FacComputer_P.Saturation_LowerSat_p;
-    } else {
-      rtb_Switch4 = 0.0;
-    }
-
-    FacComputer_DWork.Delay_DSTATE_m += std::fmax(std::fmin(rtb_Switch4 - FacComputer_DWork.Delay_DSTATE_m,
-      rtb_Switch1_a * FacComputer_U.in.time.dt), FacComputer_P.Gain_Gain_b * rtb_Switch1_a * FacComputer_U.in.time.dt);
-    if (FacComputer_B.logic.rudder_travel_lim_engaged) {
-      rtb_Switch1_a = look1_binlxpw(0.0, FacComputer_P.uDLookupTable_bp01Data, FacComputer_P.uDLookupTable_tableData,
-        10U);
-      if (rtb_Switch1_a > FacComputer_P.Saturation_UpperSat) {
-        rtb_Switch1_a = FacComputer_P.Saturation_UpperSat;
-      } else if (rtb_Switch1_a < FacComputer_P.Saturation_LowerSat) {
-        rtb_Switch1_a = FacComputer_P.Saturation_LowerSat;
-      }
-    } else {
-      rtb_Switch1_a = FacComputer_U.in.analog_inputs.rudder_travel_lim_position_deg;
-    }
-
-    if (!FacComputer_DWork.pY_not_empty) {
-      FacComputer_DWork.pY = FacComputer_P.RateLimiterVariableTs_InitialCondition;
-      FacComputer_DWork.pY_not_empty = true;
-    }
-
-    FacComputer_DWork.pY += std::fmax(std::fmin(rtb_Switch1_a - FacComputer_DWork.pY, std::abs
-      (FacComputer_P.RateLimiterVariableTs_up) * FacComputer_U.in.time.dt), -std::abs
-      (FacComputer_P.RateLimiterVariableTs_lo) * FacComputer_U.in.time.dt);
-    FacComputer_B.laws.yaw_damper_command_deg = FacComputer_DWork.Delay_DSTATE;
-    FacComputer_B.laws.rudder_trim_command_deg = FacComputer_DWork.Delay_DSTATE_m;
-    FacComputer_B.laws.rudder_travel_lim_command_deg = FacComputer_DWork.pY;
-    if (FacComputer_B.logic.yaw_damper_engaged) {
-      FacComputer_Y.out.analog_outputs.yaw_damper_order_deg = FacComputer_B.laws.yaw_damper_command_deg;
-    } else {
-      FacComputer_Y.out.analog_outputs.yaw_damper_order_deg = FacComputer_P.Constant_Value_bu;
-    }
-
-    if (FacComputer_B.logic.rudder_trim_engaged) {
-      FacComputer_Y.out.analog_outputs.rudder_trim_order_deg = FacComputer_B.laws.rudder_trim_command_deg;
-    } else {
-      FacComputer_Y.out.analog_outputs.rudder_trim_order_deg = FacComputer_P.Constant_Value_bu;
-    }
-
-    if (FacComputer_B.logic.rudder_travel_lim_engaged) {
-      FacComputer_Y.out.analog_outputs.rudder_travel_limit_order_deg = FacComputer_B.laws.rudder_travel_lim_command_deg;
-    } else {
-      FacComputer_Y.out.analog_outputs.rudder_travel_limit_order_deg = FacComputer_P.Constant_Value_bu;
-    }
-
-    rtb_VectorConcatenate_a[0] = FacComputer_B.logic.yaw_damper_engaged;
-    rtb_VectorConcatenate_a[2] = FacComputer_B.logic.rudder_trim_engaged;
-    rtb_VectorConcatenate_a[4] = FacComputer_B.logic.rudder_travel_lim_engaged;
-    FacComputer_Y.out.discrete_outputs.fac_healthy = FacComputer_P.Constant2_Value_o;
-    FacComputer_Y.out.discrete_outputs.yaw_damper_engaged = FacComputer_B.logic.yaw_damper_engaged;
-    FacComputer_Y.out.discrete_outputs.rudder_trim_engaged = FacComputer_B.logic.rudder_trim_engaged;
-    FacComputer_Y.out.discrete_outputs.rudder_travel_lim_engaged = FacComputer_B.logic.rudder_travel_lim_engaged;
-    FacComputer_Y.out.discrete_outputs.rudder_travel_lim_emergency_reset = FacComputer_P.Constant1_Value_d;
-    FacComputer_Y.out.discrete_outputs.yaw_damper_avail_for_norm_law = FacComputer_B.logic.yaw_damper_can_engage;
-    rtb_VectorConcatenate_a[9] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_a[10] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_a[11] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_a[12] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_a[13] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_a[14] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_a[15] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_a[16] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_a[17] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_a[18] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_a[6] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_a[7] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_a[8] = FacComputer_P.Constant10_Value;
-    rtb_VectorConcatenate_p[0] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[9] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[10] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[11] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[12] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[13] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[14] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[15] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[16] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[17] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[18] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[1] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[2] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[3] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[4] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[5] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[6] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[7] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_p[8] = FacComputer_P.Constant18_Value;
-    rtb_VectorConcatenate_l[0] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[9] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[10] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[11] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[12] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[13] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[14] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[15] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[16] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[17] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[18] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[1] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[2] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[3] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[4] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[5] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[6] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[7] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_l[8] = FacComputer_P.Constant9_Value;
-    rtb_VectorConcatenate_m[0] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[9] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[10] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[11] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[12] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[13] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[14] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[15] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[16] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[17] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[18] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[1] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[2] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[3] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[4] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[5] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[6] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[7] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate_m[8] = FacComputer_P.Constant19_Value;
-    rtb_VectorConcatenate[0] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[9] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[10] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[11] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[12] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[13] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[14] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[15] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[16] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[17] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[18] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[1] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[2] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[3] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[4] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[5] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[6] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[7] = FacComputer_P.Constant20_Value;
-    rtb_VectorConcatenate[8] = FacComputer_P.Constant20_Value;
-    FacComputer_MATLABFunction(rtb_VectorConcatenate, &FacComputer_Y.out.bus_outputs.discrete_word_1.Data);
-    rtb_VectorConcatenate_a[1] = FacComputer_U.in.discrete_inputs.yaw_damper_opp_engaged;
-    rtb_VectorConcatenate_a[3] = FacComputer_U.in.discrete_inputs.rudder_trim_opp_engaged;
-    rtb_VectorConcatenate_a[5] = FacComputer_U.in.discrete_inputs.rudder_travel_lim_opp_engaged;
-    FacComputer_MATLABFunction(rtb_VectorConcatenate_a, &FacComputer_Y.out.bus_outputs.discrete_word_2.Data);
-    FacComputer_MATLABFunction(rtb_VectorConcatenate_p, &FacComputer_Y.out.bus_outputs.discrete_word_3.Data);
-    FacComputer_MATLABFunction(rtb_VectorConcatenate_l, &FacComputer_Y.out.bus_outputs.discrete_word_4.Data);
-    FacComputer_MATLABFunction(rtb_VectorConcatenate_m, &FacComputer_Y.out.bus_outputs.discrete_word_5.Data);
-    FacComputer_Y.out.bus_outputs.discrete_word_1.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.gamma_a_deg.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.gamma_a_deg.Data = FacComputer_P.Constant28_Value;
-    FacComputer_Y.out.bus_outputs.gamma_t_deg.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.gamma_t_deg.Data = FacComputer_P.Constant22_Value;
-    FacComputer_Y.out.bus_outputs.total_weight_lbs.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.total_weight_lbs.Data = FacComputer_P.Constant21_Value;
-    FacComputer_Y.out.bus_outputs.center_of_gravity_pos_percent.SSM = static_cast<uint32_T>
-      (FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.center_of_gravity_pos_percent.Data = FacComputer_P.Constant4_Value;
-    FacComputer_Y.out.bus_outputs.sideslip_target_deg.SSM = static_cast<uint32_T>
-      (FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.sideslip_target_deg.Data = FacComputer_P.Constant3_Value;
-    FacComputer_Y.out.bus_outputs.fac_slat_angle_deg.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.fac_slat_angle_deg.Data = FacComputer_P.Constant2_Value;
-    FacComputer_Y.out.bus_outputs.fac_flap_angle.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.fac_flap_angle.Data = FacComputer_P.Constant1_Value;
-    FacComputer_Y.out.bus_outputs.discrete_word_2.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.rudder_travel_limit_command_deg.SSM = static_cast<uint32_T>
-      (FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.rudder_travel_limit_command_deg.Data = FacComputer_P.Constant27_Value;
-    FacComputer_Y.out.bus_outputs.delta_r_yaw_damper_deg.SSM = static_cast<uint32_T>
-      (FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.delta_r_yaw_damper_deg.Data = FacComputer_P.Constant26_Value;
-    FacComputer_Y.out.bus_outputs.estimated_sideslip_deg.SSM = static_cast<uint32_T>
-      (FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.estimated_sideslip_deg.Data = FacComputer_P.Constant23_Value;
-    FacComputer_Y.out.bus_outputs.v_alpha_lim_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.v_alpha_lim_kn.Data = FacComputer_P.Constant16_Value;
-    FacComputer_Y.out.bus_outputs.v_ls_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.v_ls_kn.Data = FacComputer_P.Constant15_Value;
-    FacComputer_Y.out.bus_outputs.v_stall_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.v_stall_kn.Data = FacComputer_P.Constant14_Value;
-    FacComputer_Y.out.bus_outputs.v_alpha_prot_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.v_alpha_prot_kn.Data = FacComputer_P.Constant13_Value;
-    FacComputer_Y.out.bus_outputs.v_stall_warn_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.v_stall_warn_kn.Data = FacComputer_P.Constant12_Value;
-    FacComputer_Y.out.bus_outputs.speed_trend_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.speed_trend_kn.Data = FacComputer_P.Constant11_Value;
-    FacComputer_Y.out.bus_outputs.v_3_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.v_3_kn.Data = FacComputer_P.Constant8_Value;
-    FacComputer_Y.out.bus_outputs.v_4_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.v_4_kn.Data = FacComputer_P.Constant7_Value;
-    FacComputer_Y.out.bus_outputs.v_man_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.v_man_kn.Data = FacComputer_P.Constant6_Value;
-    FacComputer_Y.out.bus_outputs.v_max_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.v_max_kn.Data = FacComputer_P.Constant5_Value;
-    FacComputer_Y.out.bus_outputs.v_fe_next_kn.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.v_fe_next_kn.Data = FacComputer_P.Constant17_Value;
-    FacComputer_Y.out.bus_outputs.discrete_word_3.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.discrete_word_4.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.discrete_word_5.SSM = static_cast<uint32_T>(FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.delta_r_rudder_trim_deg.SSM = static_cast<uint32_T>
-      (FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.delta_r_rudder_trim_deg.Data = FacComputer_P.Constant24_Value;
-    FacComputer_Y.out.bus_outputs.rudder_trim_pos_deg.SSM = static_cast<uint32_T>
-      (FacComputer_P.EnumeratedConstant1_Value);
-    FacComputer_Y.out.bus_outputs.rudder_trim_pos_deg.Data = FacComputer_P.Constant25_Value;
+    FacComputer_DWork.Delay1_DSTATE = FacComputer_DWork.Delay_DSTATE;
+    FacComputer_DWork.Delay2_DSTATE = FacComputer_DWork.Delay_DSTATE_m;
   } else {
     FacComputer_DWork.Runtime_MODE = false;
   }
@@ -1123,8 +1193,12 @@ void FacComputer::step()
 
 void FacComputer::initialize()
 {
-  FacComputer_DWork.Delay_DSTATE = FacComputer_P.RateLimiterDynamicEqualVariableTs_InitialCondition;
-  FacComputer_DWork.Delay_DSTATE_m = FacComputer_P.RateLimiterDynamicEqualVariableTs_InitialCondition_d;
+  FacComputer_DWork.Delay1_DSTATE = FacComputer_P.Delay1_InitialCondition;
+  FacComputer_DWork.Memory_PreviousInput = FacComputer_P.SRFlipFlop_initial_condition;
+  FacComputer_DWork.Delay2_DSTATE = FacComputer_P.Delay2_InitialCondition;
+  FacComputer_DWork.Delay_DSTATE = FacComputer_P.DiscreteTimeIntegratorVariableTs_InitialCondition;
+  FacComputer_DWork.Delay_DSTATE_m = FacComputer_P.RateLimiterDynamicEqualVariableTs_InitialCondition;
+  FacComputer_DWork.Delay_DSTATE_k = FacComputer_P.RateLimiterDynamicEqualVariableTs_InitialCondition_a;
   FacComputer_B.dt = FacComputer_P.out_Y0.data.time.dt;
   FacComputer_B.simulation_time = FacComputer_P.out_Y0.data.time.simulation_time;
   FacComputer_B.monotonic_time = FacComputer_P.out_Y0.data.time.monotonic_time;

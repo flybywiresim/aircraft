@@ -19,6 +19,20 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
 
   {
+    0.0,
+    0.0,
+    0.0
+  },
+
+
+  {
+    0.0,
+    0.0,
+    0.0
+  },
+
+
+  {
     false,
     false,
     false,
@@ -32,17 +46,41 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
     false
   },
 
+
+  {
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  },
+
+  1.0,
+
+  0.0,
+
   0.0,
 
   0.0,
 
   0.0,
+
+  -20.0,
+
+  20.0,
+
+  0.05,
 
   -1.0,
 
   1.0,
 
   SignStatusMatrix::NormalOperation,
+
+  false,
+
+  true,
 
 
   {
@@ -1260,6 +1298,149 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
   },
 
 
+  {
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    },
+
+    {
+      0U,
+      0.0F
+    }
+  },
+
+
   { -0.99990920426259511, -0.999329299739067, -0.99505475368673046, -0.9640275800758169, -0.76159415595576485, 0.0,
     0.76159415595576485, 0.9640275800758169, 0.99505475368673046, 0.999329299739067, 0.99990920426259511 },
 
@@ -1272,11 +1453,21 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   0.0,
 
-  20.0,
+  1.0,
 
-  -20.0,
+  0.0,
 
-  40.0,
+  0.0,
+
+  -1.0,
+
+  1.5,
+
+  -1.5,
+
+  0.0,
+
+  2.0,
 
   -1.0,
 
@@ -1334,7 +1525,10 @@ FacComputer::Parameters_FacComputer_T FacComputer::FacComputer_P{
 
   0.0F,
 
-  0.0F,
+  false,
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   true,
 
