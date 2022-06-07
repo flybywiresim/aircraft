@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { useSimVar } from '@instruments/common/simVars';
 import { Mode, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
 import { useUpdate } from '@instruments/common/hooks';
+
+const RerenderingTimeout = 2500;
 
 export interface TerrainMapProviderProps {
     side: EfisSide,
@@ -42,6 +44,31 @@ export const TerrainMapProvider: React.FC<TerrainMapProviderProps> = ({ side }) 
     return <></>;
 };
 
+class MapVisualizationData {
+    public LastMapTimestamp: number | undefined = undefined;
+
+    public CurrentMapTimestamp: number | undefined = undefined;
+
+    public MapChangeInProgress: boolean = false;
+
+    public RerenderTimeout: number | undefined = undefined;
+
+    public MinimumElevation: { altitude: number, color: string } = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
+
+    public MaximumElevation: { altitude: number, color: string } = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
+
+    constructor(...args) {
+        if (args.length !== 0 && args[0] instanceof MapVisualizationData) {
+            this.LastMapTimestamp = args[0].LastMapTimestamp;
+            this.CurrentMapTimestamp = args[0].CurrentMapTimestamp;
+            this.MapChangeInProgress = args[0].MapChangeInProgress;
+            this.RerenderTimeout = args[0].RerenderTimeout;
+            this.MinimumElevation = args[0].MinimumElevation;
+            this.MaximumElevation = args[0].MaximumElevation;
+        }
+    }
+}
+
 export interface TerrainMapProps {
     x: number,
     y: number,
@@ -52,15 +79,13 @@ export interface TerrainMapProps {
 }
 
 export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, side, clipName }) => {
-    const [currentMapTimestamp, setCurrentMapTimestamp] = useState<number | null>(null);
-    const [lastMapTimestamp, setLastMapTimestamp] = useState<number | null>(null);
+    const [mapVisualization, setMapVisualization] = useState<MapVisualizationData>(new MapVisualizationData());
     const [terrOnNdActive] = useSimVar(`L:A32NX_EFIS_TERR_${side}_ACTIVE`, 'boolean', 100);
     const [rangeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number', 100);
     const [modeIndex] = useSimVar(`L:A32NX_EFIS_${side}_ND_MODE`, 'number', 100);
-    const [minimumElevation, setMinimumElevation] = useState<{ altitude: number, color: string }>({ altitude: Infinity, color: 'rgb(0, 0, 0)' });
-    const [maximumElevation, setMaximumElevation] = useState<{ altitude: number, color: string }>({ altitude: Infinity, color: 'rgb(0, 0, 0)' });
-    const [rerenderTimeout, setRerenderTimeout] = useState<number | null>(null);
     const [gearMode] = useSimVar('GEAR POSITION:0', 'Enum', 100);
+    const mapVisualizationRef = useRef<MapVisualizationData>();
+    mapVisualizationRef.current = mapVisualization;
 
     const syncWithRenderer = (timestamp: number) => {
         // wait until the rendering is done
@@ -94,16 +119,34 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                                         maximumColor = 'rgb(255, 0, 0)';
                                     }
 
-                                    setMinimumElevation({ altitude: data.minElevation, color: minimumColor });
-                                    setMaximumElevation({ altitude: data.maxElevation, color: maximumColor });
-                                } else {
-                                    setMinimumElevation({ altitude: Infinity, color: 'rgb(0, 0, 0)' });
-                                    setMaximumElevation({ altitude: Infinity, color: 'rgb(0, 0, 0)' });
+                                    if (mapVisualizationRef.current) {
+                                        mapVisualizationRef.current.MinimumElevation = { altitude: data.minElevation, color: minimumColor };
+                                        mapVisualizationRef.current.MaximumElevation = { altitude: data.maxElevation, color: maximumColor };
+                                    }
+                                } else if (mapVisualizationRef.current) {
+                                    mapVisualizationRef.current.MinimumElevation = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
+                                    mapVisualizationRef.current.MaximumElevation = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
                                 }
 
-                                setCurrentMapTimestamp(timestamp);
-                                setTimeout(() => setLastMapTimestamp(timestamp), 1600);
-                                setRerenderTimeout(2500);
+                                const newVisualization = new MapVisualizationData(mapVisualizationRef.current);
+                                newVisualization.MapChangeInProgress = true;
+                                newVisualization.CurrentMapTimestamp = timestamp;
+                                setMapVisualization(newVisualization);
+
+                                // execute the renderer
+                                setTimeout(() => {
+                                    const rerenderVisualization = new MapVisualizationData(mapVisualizationRef.current);
+                                    rerenderVisualization.LastMapTimestamp = timestamp;
+                                    setMapVisualization(rerenderVisualization);
+
+                                    // preload the "new" old timestamp to avoid flickering
+                                    setTimeout(() => {
+                                        const finalizeMapChange = new MapVisualizationData(mapVisualizationRef.current);
+                                        finalizeMapChange.RerenderTimeout = RerenderingTimeout;
+                                        finalizeMapChange.MapChangeInProgress = false;
+                                        setMapVisualization(finalizeMapChange);
+                                    }, 200);
+                                }, 2000);
                             }
                         }));
                     });
@@ -112,11 +155,12 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
         }, 200);
     };
 
-    // update every 2.5 seconds and 1.5 seconds fade duration
     useUpdate((deltaTime) => {
-        if (terrOnNdActive && rerenderTimeout !== null) {
-            if (rerenderTimeout <= 0) {
-                setRerenderTimeout(null);
+        if (terrOnNdActive && mapVisualizationRef.current?.RerenderTimeout !== undefined) {
+            if (mapVisualizationRef.current.RerenderTimeout <= 0) {
+                const newVisualizationData = new MapVisualizationData(mapVisualizationRef.current);
+                newVisualizationData.RerenderTimeout = undefined;
+                setMapVisualization(newVisualizationData);
 
                 fetch(`http://127.0.0.1:8080/api/v1/terrain/renderMap?display=${side}`).then((response) => response.text().then((text) => {
                     const timestamp = parseInt(text);
@@ -126,19 +170,26 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                     syncWithRenderer(timestamp);
                 }));
             } else {
-                setRerenderTimeout(rerenderTimeout - deltaTime);
+                const newVisualizationData = new MapVisualizationData(mapVisualizationRef.current);
+                if (newVisualizationData.RerenderTimeout !== undefined) {
+                    newVisualizationData.RerenderTimeout -= deltaTime;
+                }
+                setMapVisualization(newVisualizationData);
             }
-        } else if (!terrOnNdActive && rerenderTimeout !== null) {
-            setRerenderTimeout(null);
+        } else if (!terrOnNdActive && mapVisualizationRef.current?.RerenderTimeout !== undefined) {
+            const newVisualizationData = new MapVisualizationData(mapVisualizationRef.current);
+            newVisualizationData.RerenderTimeout = undefined;
+            setMapVisualization(newVisualizationData);
         }
     });
 
     useEffect(() => {
         if (!terrOnNdActive) {
-            setCurrentMapTimestamp(null);
-            setRerenderTimeout(null);
-        } else if (rerenderTimeout === null) {
-            setRerenderTimeout(1500);
+            setMapVisualization(new MapVisualizationData());
+        } else if (mapVisualizationRef.current?.RerenderTimeout === undefined) {
+            const newVisualizationData = new MapVisualizationData(mapVisualizationRef.current);
+            newVisualizationData.RerenderTimeout = RerenderingTimeout;
+            setMapVisualization(newVisualizationData);
         }
 
         const displayConfiguration = {
@@ -156,67 +207,79 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
         });
     }, [terrOnNdActive, rangeIndex, modeIndex, gearMode]);
 
-    if (!terrOnNdActive || modeIndex === Mode.PLAN || currentMapTimestamp === null) {
+    if (!terrOnNdActive || modeIndex === Mode.PLAN || mapVisualizationRef.current.CurrentMapTimestamp === undefined) {
         return <></>;
     }
 
-    const lowerBorder = String(Math.floor(minimumElevation.altitude / 100)).padStart(3, '0');
-    const upperBorder = String(Math.round(maximumElevation.altitude / 100 + 0.5)).padStart(3, '0');
-    const halfWidth = Math.round(width / 2);
+    const lowerBorder = String(Math.floor(mapVisualizationRef.current.MinimumElevation.altitude / 100)).padStart(3, '0');
+    const upperBorder = String(Math.round(mapVisualizationRef.current.MaximumElevation.altitude / 100 + 0.5)).padStart(3, '0');
+    const xCenter = x + Math.round(width / 2);
+    const bottom = y + height;
 
     return (
         <>
-            <defs>
-                <clipPath id="fadeout">
-                    <path>
-                        <animate
-                            id="curtain"
-                            attributeName="d"
-                            begin="0s"
-                            dur="1.5s"
-                            keyTimes="0; 0.5; 1"
-                            values={`M ${x} ${y + height} L ${x + width} ${y + height} L ${x + width} ${y} L ${halfWidth} ${y} L ${halfWidth} ${y + height} L ${halfWidth} ${y} L ${x} ${y} z;
-                         M ${x} ${y + height} L ${x + width} ${y + height} L ${x + width} ${y} L ${x + width} ${y} L ${halfWidth} ${y + height} L ${x} ${y} L ${x} ${y} z;
-                         M ${x} ${y + height} L ${x + width} ${y + height} L ${x + width} ${y + height} L ${x + width} ${y + height} L ${halfWidth} ${y + height} L ${x} ${y + height} L ${x} ${y + height} z`}
-                        />
-                    </path>
-                </clipPath>
-            </defs>
             <g id="map" clipPath={`url(#${clipName})`}>
-                <image x={x} y={y} width={width} height={height} xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${currentMapTimestamp}`} />
-                {lastMapTimestamp !== currentMapTimestamp
+                {mapVisualizationRef.current.LastMapTimestamp !== undefined
                     ? (
                         <>
                             <image
-                                clipPath="url(#fadeout)"
                                 x={x}
                                 y={y}
                                 width={width}
                                 height={height}
-                                xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${lastMapTimestamp}`}
+                                xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${mapVisualizationRef.current.LastMapTimestamp}`}
                             />
                         </>
                     )
-                    : (
-                        <>
-                            <image
-                                x={x}
-                                y={y}
-                                width={width}
-                                height={height}
-                                xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${lastMapTimestamp}`}
-                            />
-                        </>
-                    )}
+                    : <></>}
+                {mapVisualizationRef.current.MapChangeInProgress ? (
+                    <>
+                        <defs>
+                            <clipPath id={`maptransition${mapVisualizationRef.current.CurrentMapTimestamp}`}>
+                                <path>
+                                    <animate
+                                        attributeName="d"
+                                        begin="0s"
+                                        dur="2.5s"
+                                        keyTimes="0; 0.08; 0.48; 0.88; 1"
+                                        repeatCount="indefinite"
+                                        values={`M ${xCenter} ${bottom} L ${xCenter} ${y} L ${xCenter} ${y} L ${xCenter} ${y} L ${xCenter} ${y} z;
+                                                 M ${xCenter} ${bottom} L ${xCenter} ${y} L ${xCenter} ${y} L ${xCenter} ${y} L ${xCenter} ${y} z;
+                                                 M ${xCenter} ${bottom} L ${x + width} ${y} L ${x + width} ${y} L ${x} ${y} L ${x} ${y} z;
+                                                 M ${xCenter} ${bottom} L ${x + width} ${bottom} L ${x + width} ${y} L ${x} ${y} L ${x} ${bottom} z;
+                                                 M ${xCenter} ${bottom} L ${x + width} ${bottom} L ${x + width} ${y} L ${x} ${y} L ${x} ${bottom} z
+                                    `}
+                                    />
+                                </path>
+                            </clipPath>
+                        </defs>
+                        <image
+                            clipPath={`url(#maptransition${mapVisualizationRef.current.CurrentMapTimestamp})`}
+                            x={x}
+                            y={y}
+                            width={width}
+                            height={height}
+                            xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${mapVisualizationRef.current.CurrentMapTimestamp}`}
+                        />
+                    </>
+                ) : (
+                    <image
+                        x={x}
+                        y={y}
+                        width={width}
+                        height={height}
+                        xlinkHref={`http://localhost:8080/api/v1/terrain/ndmap.png?display=${side}&timestamp=${mapVisualizationRef.current.CurrentMapTimestamp}`}
+                    />
+                )}
             </g>
             <text x={688} y={612} fontSize={23} fill="rgb(0,255,255)">
                 TERR
             </text>
-            <text x={709} y={639} fontSize={22} fill={maximumElevation.color}>
+            <text x={709} y={639} fontSize={22} fill={mapVisualizationRef.current.MaximumElevation.color}>
                 {upperBorder}
             </text>
             <rect x={700} y={619} width={54} height={24} strokeWidth={3} stroke="rgb(255,255,0)" fillOpacity={0} />
-            <text x={709} y={663} fontSize={23} fill={minimumElevation.color}>
+            <text x={709} y={663} fontSize={23} fill={mapVisualizationRef.current.MinimumElevation.color}>
                 {lowerBorder}
             </text>
             <rect x={700} y={643} width={54} height={24} strokeWidth={3} stroke="rgb(255,255,0)" fillOpacity={0} />
