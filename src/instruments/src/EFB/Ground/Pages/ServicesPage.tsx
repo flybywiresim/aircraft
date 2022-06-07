@@ -1,3 +1,7 @@
+// Copyright (c) 2022 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
+/* eslint-disable no-console */
 import React, { FC, useEffect, useRef } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import {
@@ -54,6 +58,8 @@ enum ServiceButton {
     CateringTruck
 }
 
+// Possible states of buttons
+// Order is important to allow simpler if-statements to check for button state
 enum ServiceButtonState {
     HIDDEN,
     DISABLED,
@@ -71,25 +77,20 @@ interface GroundServiceButtonProps {
 }
 
 // Button styles based on ServiceButtonState enum
-const buttonsStyles = [
-    // HIDDEN
-    '',
-    // DISABLED
-    'opacity-20 pointer-events-none',
-    // INACTIVE
-    'hover:bg-theme-highlight text-theme-text hover:text-theme-secondary transition duration-200 disabled:bg-grey-600',
-    // CALLED
-    'text-white bg-amber-600 border-amber-600 hover:bg-amber-400',
-    // ACTIVE
-    'text-white bg-green-700 border-green-700 hover:bg-green-500 hover:text-theme-secondary',
-    // RELEASED
-    'text-white bg-amber-600 border-amber-600 pointer-events-none',
-];
+const buttonsStyles: Record<ServiceButtonState, string> = {
+    [ServiceButtonState.HIDDEN]: '',
+    [ServiceButtonState.DISABLED]: 'opacity-20 pointer-events-none',
+    [ServiceButtonState.INACTIVE]: 'hover:bg-theme-highlight text-theme-text hover:text-theme-secondary transition duration-200 disabled:bg-grey-600',
+    [ServiceButtonState.CALLED]: 'text-white bg-amber-600 border-amber-600 hover:bg-amber-400',
+    [ServiceButtonState.ACTIVE]: 'text-white bg-green-700 border-green-700 hover:bg-green-500 hover:text-theme-secondary',
+    [ServiceButtonState.RELEASED]: 'text-white bg-amber-600 border-amber-600 pointer-events-none',
+};
 
 const GroundServiceButton: React.FC<GroundServiceButtonProps> = ({ children, name, state, onClick, className }) => {
     if (state === ServiceButtonState.HIDDEN) {
         return (<></>);
     }
+
     return (
         <div
             className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${buttonsStyles[state]} ${className}`}
@@ -138,14 +139,16 @@ export const ServicesPage = () => {
     const toggleGpu = () => SimVar.SetSimVarValue('K:REQUEST_POWER_SUPPLY', 'bool', true);
 
     // Button states
-    const cabinDoorButtonState = useAppSelector((state) => state.groundServicePage.cabinDoorButtonState);
-    const jetWayButtonState = useAppSelector((state) => state.groundServicePage.jetWayButtonState);
-    const fuelTruckButtonState = useAppSelector((state) => state.groundServicePage.fuelTruckButtonState);
-    const gpuButtonState = useAppSelector((state) => state.groundServicePage.gpuButtonState);
-    const cargoDoorButtonState = useAppSelector((state) => state.groundServicePage.cargoDoorButtonState);
-    const baggageButtonState = useAppSelector((state) => state.groundServicePage.baggageButtonState);
-    const aftDoorButtonState = useAppSelector((state) => state.groundServicePage.aftDoorButtonState);
-    const cateringButtonState = useAppSelector((state) => state.groundServicePage.cateringButtonState);
+    const {
+        cabinDoorButtonState,
+        jetWayButtonState,
+        fuelTruckButtonState,
+        gpuButtonState,
+        cargoDoorButtonState,
+        baggageButtonState,
+        aftDoorButtonState,
+        cateringButtonState,
+    } = useAppSelector((state) => state.groundServicePage);
 
     // Required so these can be used inside the useTimeout callback
     const jetWayButtonStateRef = useRef(jetWayButtonState);
@@ -248,8 +251,6 @@ export const ServicesPage = () => {
             dispatch(setter(ServiceButtonState.CALLED));
             break;
         case ServiceButtonState.CALLED:
-            dispatch(setter(ServiceButtonState.RELEASED));
-            break;
         case ServiceButtonState.ACTIVE:
             dispatch(setter(ServiceButtonState.RELEASED));
             break;
@@ -310,7 +311,8 @@ export const ServicesPage = () => {
         }
     };
 
-    // Called by useEffect listeners for simple services and doors
+    // Called by useEffect listeners  whenever a specific door state for
+    // simple services and doors changes.
     // Determines the state of a door or simple service based on a given
     // door state input. All services are basically active and terminated
     // based on a door state (INTERACTION POINT OPEN)
@@ -339,7 +341,7 @@ export const ServicesPage = () => {
         }
     };
 
-    // Called by useEffect listeners for complex services
+    // Called by useEffect listeners whenever a specific door state for a complex services changes
     const complexServiceListenerHandling = (
         serviceButtonStateRef: React.MutableRefObject<ServiceButtonState>,
         setterServiceButtonState: ActionCreatorWithOptionalPayload<ServiceButtonState, string>,
@@ -370,7 +372,7 @@ export const ServicesPage = () => {
             && serviceButtonStateRef.current >= ServiceButtonState.ACTIVE
             && doorButtonState === ServiceButtonState.DISABLED) {
             setTimeout(() => {
-                // double-check as button could have been pressed again in the meantime
+                // double-check as service button could have been pressed again in the meantime
                 if (groundServicesAvailable
                     && serviceButtonStateRef.current < ServiceButtonState.CALLED) {
                     dispatch(setterDoorButtonState1(ServiceButtonState.INACTIVE));
@@ -450,14 +452,16 @@ export const ServicesPage = () => {
             if (cargoDoorOpen === 1) {
                 SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 6);
             }
-        } else if (cateringButtonState === ServiceButtonState.DISABLED
-            && jetWayButtonState === ServiceButtonState.DISABLED
-            && fuelTruckButtonState === ServiceButtonState.DISABLED
-            && gpuButtonState === ServiceButtonState.DISABLED
-            && cargoDoorButtonState === ServiceButtonState.DISABLED
-            && baggageButtonState === ServiceButtonState.DISABLED
-            && aftDoorButtonState === ServiceButtonState.DISABLED
-            && cateringButtonState === ServiceButtonState.DISABLED
+        } else if (
+            [cateringButtonState,
+                jetWayButtonState,
+                fuelTruckButtonState,
+                gpuButtonState,
+                cargoDoorButtonState,
+                baggageButtonState,
+                aftDoorButtonState,
+                cateringButtonState]
+                .every((buttonState) => buttonState === ServiceButtonState.DISABLED)
         ) {
             dispatch(setCabinDoorButtonState(ServiceButtonState.INACTIVE));
             dispatch(setJetWayButtonState(ServiceButtonState.INACTIVE));
