@@ -2191,7 +2191,7 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
   fmgcBBusOutputs.deltaPSpoilerCmd.setSsm(Arinc429SignStatus::NormalOperation);
   fmgcBBusOutputs.deltaPSpoilerCmd.setData(0);
   fmgcBBusOutputs.deltaRCmd.setSsm(Arinc429SignStatus::NormalOperation);
-  fmgcBBusOutputs.deltaRCmd.setData(0);
+  fmgcBBusOutputs.deltaRCmd.setData(autopilotLawsOutput.autopilot.Beta_c_deg);
   fmgcBBusOutputs.deltaQCmd.setSsm(Arinc429SignStatus::NormalOperation);
   fmgcBBusOutputs.deltaQCmd.setData(autopilotLawsOutput.autopilot.Theta_c_deg);
 
