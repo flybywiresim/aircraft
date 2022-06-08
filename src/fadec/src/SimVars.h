@@ -153,6 +153,8 @@ class SimVars {
   ID Engine2Timer;
   ID PumpStateLeft;
   ID PumpStateRight;
+  ID ConversionFactor;
+  ID PerPaxWeight;
   ID PaxRows1to6Actual;
   ID PaxRows7to13Actual;
   ID PaxRows14to21Actual;
@@ -217,6 +219,8 @@ class SimVars {
     Engine2Timer = register_named_variable("A32NX_ENGINE_TIMER:2");
     PumpStateLeft = register_named_variable("A32NX_PUMP_STATE:1");
     PumpStateRight = register_named_variable("A32NX_PUMP_STATE:2");
+    ConversionFactor = register_named_variable("A32NX_EFB_UNIT_CONVERSION_FACTOR");
+    PerPaxWeight = register_named_variable("A32NX_WB_PER_PAX_WEIGHT");
     PaxRows1to6Actual = register_named_variable("A32NX_PAX_TOTAL_ROWS_1_6");
     PaxRows7to13Actual = register_named_variable("A32NX_PAX_TOTAL_ROWS_7_13");
     PaxRows14to21Actual = register_named_variable("A32NX_PAX_TOTAL_ROWS_14_21");
@@ -359,6 +363,8 @@ class SimVars {
   FLOAT64 getRefuelStartedByUser() { return get_named_variable_value(RefuelStartedByUser); }
   FLOAT64 getPumpStateLeft() { return get_named_variable_value(PumpStateLeft); }
   FLOAT64 getPumpStateRight() { return get_named_variable_value(PumpStateRight); }
+  FLOAT64 getPerPaxWeight() { return get_named_variable_value(PerPaxWeight); }
+  FLOAT64 getConversionFactor() { return get_named_variable_value(ConversionFactor); }
   FLOAT64 getPaxRows1to6Actual() { return get_named_variable_value(PaxRows1to6Actual); }
   FLOAT64 getPaxRows7to13Actual() { return get_named_variable_value(PaxRows7to13Actual); }
   FLOAT64 getPaxRows14to21Actual() { return get_named_variable_value(PaxRows14to21Actual); }
