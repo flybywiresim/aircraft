@@ -79,7 +79,7 @@ class TimeMonitor extends UplinkMonitor {
 
     constructor(atsu: Atsu, message: CpdlcMessage) {
         super(atsu, message);
-        if (TimeMonitor.deferredMessageIDs.findIndex((id) => id === message.Content[0]?.TypeId) === -1) {
+        if (TimeMonitor.deferredMessageIDs.findIndex((id) => id === message.Content[0]?.TypeId) !== -1) {
             this.timeOffset = 30;
         }
         this.timeMonitor = TimeMonitor.extractSeconds(message.Content[0]?.Content[0]?.Value);
