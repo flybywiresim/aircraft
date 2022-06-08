@@ -46,7 +46,8 @@ impl TrimWheels {
     }
 }
 
-struct ElectricDriveMotor {
+#[derive(Clone, Copy)]
+struct DriveMotor {
     speed: LowPassFilter<AngularVelocity>,
     position_request: Angle,
 
@@ -56,7 +57,7 @@ struct ElectricDriveMotor {
     speed_regulation_coef_map: [f64; 7],
     speed_error_breakpoint: [f64; 7],
 }
-impl ElectricDriveMotor {
+impl DriveMotor {
     fn new(
         max_speed: AngularVelocity,
 
@@ -98,6 +99,81 @@ impl ElectricDriveMotor {
         };
 
         self.speed.update(context.delta(), new_speed);
+    }
+
+    fn speed(&self) -> AngularVelocity {
+        self.speed.output()
+    }
+
+    fn set_max_speed(&mut self, new_max_speed: AngularVelocity) {
+        self.max_speed = new_max_speed;
+    }
+}
+
+struct ElectricDriveMotor {
+    motor: DriveMotor,
+
+    is_powered: bool,
+}
+impl ElectricDriveMotor {
+    fn new(
+        max_speed: AngularVelocity,
+
+        speed_error_breakpoint: [f64; 7],
+        speed_regulation_coef_map: [f64; 7],
+    ) -> Self {
+        Self {
+            motor: DriveMotor::new(max_speed, speed_error_breakpoint, speed_regulation_coef_map),
+            is_powered: true,
+        }
+    }
+
+    fn set_active_state(&mut self, is_active: bool) {
+        self.motor.set_active_state(is_active && self.is_powered);
+    }
+
+    fn set_position_request(&mut self, position_requested: Angle) {
+        self.motor.set_position_request(position_requested);
+    }
+
+    fn update(&mut self, context: &UpdateContext, measured_position: Angle) {
+        self.motor.update(context, measured_position);
+    }
+
+    fn speed(&self) -> AngularVelocity {
+        self.motor.speed()
+    }
+}
+
+#[derive(Clone, Copy)]
+struct HydraulicDriveMotor {
+    motor: DriveMotor,
+}
+impl HydraulicDriveMotor {
+    fn new(
+        max_speed: AngularVelocity,
+
+        speed_error_breakpoint: [f64; 7],
+        speed_regulation_coef_map: [f64; 7],
+    ) -> Self {
+        Self {
+            motor: DriveMotor::new(max_speed, speed_error_breakpoint, speed_regulation_coef_map),
+        }
+    }
+
+    fn set_position_request(&mut self, position_requested: Angle) {
+        self.motor.set_position_request(position_requested);
+    }
+
+    fn update(&mut self, context: &UpdateContext, measured_position: Angle, pressure: Pressure) {
+        self.motor
+            .set_active_state(pressure > Pressure::new::<psi>(1450.));
+
+        self.motor.update(context, measured_position);
+    }
+
+    fn speed(&self) -> AngularVelocity {
+        self.motor.speed()
     }
 }
 
@@ -224,8 +300,8 @@ impl PitchTrimActuator {
 
             for (motor_index, motor) in self.electric_motors.iter_mut().enumerate() {
                 if self.electric_clutches[motor_index].is_clutch_engaged() {
-                    sum_of_speeds += motor.speed.output()
-                        / self.elec_motor_over_trim_actuator_ratio.get::<ratio>();
+                    sum_of_speeds +=
+                        motor.speed() / self.elec_motor_over_trim_actuator_ratio.get::<ratio>();
                 }
             }
 
@@ -249,6 +325,15 @@ impl PitchTrimActuator {
             motor.set_position_request(controller.commanded_position());
             motor.update(context, self.position);
         }
+    }
+
+    fn position_normalized(&self) -> Ratio {
+        let range = self.max_actuator_angle - self.min_actuator_angle;
+
+        Ratio::new::<ratio>(
+            (self.position.get::<radian>() - self.min_actuator_angle.get::<radian>())
+                / range.get::<radian>(),
+        )
     }
 }
 
@@ -296,8 +381,87 @@ impl TrimInputAssembly {
 
         self.trim_wheel.update(&self.pitch_trim_actuator);
     }
+
+    fn position_normalized(&self) -> Ratio {
+        self.pitch_trim_actuator.position_normalized()
+    }
 }
 impl SimulationElement for TrimInputAssembly {}
+
+struct ThsHydraulicAssembly {
+    hydraulic_motors: [HydraulicDriveMotor; 2],
+
+    speed: AngularVelocity,
+    actual_deflection: Angle,
+
+    min_deflection: Angle,
+    max_deflection: Angle,
+    deflection_range: Angle,
+}
+impl ThsHydraulicAssembly {
+    const HYDRAULIC_MOTOR_POSITION_ERROR_BREAKPOINT: [f64; 7] = [-50., -1., -0.1, 0., 0.1, 1., 50.];
+    const HYDRAULIC_MOTOR_SPEED_REGULATION_COEF_MAP: [f64; 7] = [-1., -1., -1., 0., 1., 1., 1.];
+
+    const HYD_MOTOR_SPEED_TO_THS_DEFLECTION_SPEED_GAIN: f64 = 0.0000005;
+
+    fn new(min_deflection: Angle, deflection_range: Angle) -> Self {
+        Self {
+            hydraulic_motors: [HydraulicDriveMotor::new(
+                AngularVelocity::new::<revolution_per_minute>(2000.),
+                Self::HYDRAULIC_MOTOR_POSITION_ERROR_BREAKPOINT,
+                Self::HYDRAULIC_MOTOR_SPEED_REGULATION_COEF_MAP,
+            ); 2],
+
+            speed: AngularVelocity::default(),
+            actual_deflection: Angle::default(),
+            min_deflection,
+            max_deflection: min_deflection + deflection_range,
+            deflection_range,
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        pressures: [Pressure; 2],
+        trim_actuator_output_position_normalized: Ratio,
+    ) {
+        let deflection_demand = self.deflection_range
+            * trim_actuator_output_position_normalized.get::<ratio>()
+            + self.min_deflection;
+
+        for (motor_index, motor) in self.hydraulic_motors.iter_mut().enumerate() {
+            motor.set_position_request(deflection_demand);
+            motor.update(context, self.actual_deflection, pressures[motor_index])
+        }
+
+        self.update_speed();
+
+        self.update_position(context);
+    }
+
+    fn update_speed(&mut self) {
+        let mut sum_of_speeds = AngularVelocity::default();
+
+        for motor in self.hydraulic_motors {
+            sum_of_speeds += motor.speed() * Self::HYD_MOTOR_SPEED_TO_THS_DEFLECTION_SPEED_GAIN;
+        }
+
+        self.speed = sum_of_speeds;
+    }
+
+    fn update_position(&mut self, context: &UpdateContext) {
+        self.actual_deflection = self.actual_deflection
+            + Angle::new::<radian>(
+                self.speed.get::<radian_per_second>() * context.delta_as_secs_f64(),
+            );
+
+        self.actual_deflection = self
+            .actual_deflection
+            .min(self.max_deflection)
+            .max(self.min_deflection);
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -387,6 +551,10 @@ mod tests {
         manual_trim_control: TestManualTrimControl,
 
         trim_assembly: TrimInputAssembly,
+
+        ths_assembly: ThsHydraulicAssembly,
+
+        hydraulic_pressures: [Pressure; 2],
     }
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
@@ -403,6 +571,12 @@ mod tests {
                     AngularVelocity::new::<revolution_per_minute>(10000.),
                     Ratio::new::<ratio>(2035. / 6.13),
                 ),
+                ths_assembly: ThsHydraulicAssembly::new(
+                    Angle::new::<degree>(-4.),
+                    Angle::new::<degree>(17.5),
+                ),
+
+                hydraulic_pressures: [Pressure::new::<psi>(3000.); 2],
             }
         }
 
@@ -427,6 +601,12 @@ mod tests {
                     AngularVelocity::new::<revolution_per_minute>(10000.),
                     Ratio::new::<ratio>(2035. / 6.13),
                 ),
+                ths_assembly: ThsHydraulicAssembly::new(
+                    Angle::new::<degree>(-4.),
+                    Angle::new::<degree>(17.5),
+                ),
+
+                hydraulic_pressures: [Pressure::new::<psi>(3000.); 2],
             }
         }
 
@@ -455,26 +635,34 @@ mod tests {
                     &self.manual_trim_control,
                 );
 
+                self.ths_assembly.update(
+                    context,
+                    self.hydraulic_pressures,
+                    self.trim_assembly.position_normalized(),
+                );
+
                 println!(
-                    "TW turns: {:.3} ,PTA turns {:.3} Motors rpm {:.0}/{:.0}/{:.0}",
+                    "TW turns: {:.3} ,PTA turns {:.3}, PTA norm {:.2} EMotors rpm {:.0}/{:.0}/{:.0} HydMotors rpm {:.0} {:.0} THS Deg {:.1}",
                     self.trim_assembly.trim_wheel.position.get::<degree>() / 360.,
                     self.trim_assembly
                         .pitch_trim_actuator
                         .position
                         .get::<degree>()
                         / 360.,
+                    self.trim_assembly.position_normalized().get::<ratio>(),
                     self.trim_assembly.pitch_trim_actuator.electric_motors[0]
-                        .speed
-                        .output()
+                        .speed()
                         .get::<revolution_per_minute>(),
                     self.trim_assembly.pitch_trim_actuator.electric_motors[1]
-                        .speed
-                        .output()
+                        .speed()
                         .get::<revolution_per_minute>(),
                     self.trim_assembly.pitch_trim_actuator.electric_motors[2]
-                        .speed
-                        .output()
+                        .speed()
                         .get::<revolution_per_minute>(),
+                    self.ths_assembly.hydraulic_motors[0].speed().get::<revolution_per_minute>(),
+                    self.ths_assembly.hydraulic_motors[1].speed().get::<revolution_per_minute>(),
+                    self.ths_assembly.actual_deflection.get::<degree>()
+
                 );
             }
         }
@@ -503,7 +691,7 @@ mod tests {
     #[test]
     fn trim_assembly_trim_up_motor_0() {
         let mut test_bed = SimulationTestBed::new(|context| {
-            TestAircraft::new_with_elec_trim_demand(context, Angle::new::<degree>(360. * 4.4), 0)
+            TestAircraft::new_with_elec_trim_demand(context, Angle::new::<degree>(360. * 4.5), 0)
         });
 
         test_bed.run_with_delta(Duration::from_millis(15000));
