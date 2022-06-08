@@ -1363,53 +1363,53 @@ void SimConnectInterface::simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* ev
       break;
     }
 
-    case Events::ELEV_TRIM_DN: {
-      elevatorTrimHandler->onEventElevatorTrimDown();
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: ELEV_TRIM_DN: ";
-        cout << "(no data)";
-        cout << " -> ";
-        cout << elevatorTrimHandler->getPosition();
-        cout << endl;
-      }
-      break;
-    }
+    // case Events::ELEV_TRIM_DN: {
+    //   elevatorTrimHandler->onEventElevatorTrimDown();
+    //   if (loggingFlightControlsEnabled) {
+    //     cout << "WASM: ELEV_TRIM_DN: ";
+    //     cout << "(no data)";
+    //     cout << " -> ";
+    //     cout << elevatorTrimHandler->getPosition();
+    //     cout << endl;
+    //   }
+    //   break;
+    // }
 
-    case Events::ELEV_TRIM_UP: {
-      elevatorTrimHandler->onEventElevatorTrimUp();
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: ELEV_TRIM_UP: ";
-        cout << "(no data)";
-        cout << " -> ";
-        cout << elevatorTrimHandler->getPosition();
-        cout << endl;
-      }
-      break;
-    }
+    // case Events::ELEV_TRIM_UP: {
+    //   elevatorTrimHandler->onEventElevatorTrimUp();
+    //   if (loggingFlightControlsEnabled) {
+    //     cout << "WASM: ELEV_TRIM_UP: ";
+    //     cout << "(no data)";
+    //     cout << " -> ";
+    //     cout << elevatorTrimHandler->getPosition();
+    //     cout << endl;
+    //   }
+    //   break;
+    // }
 
-    case Events::ELEVATOR_TRIM_SET: {
-      elevatorTrimHandler->onEventElevatorTrimSet(static_cast<long>(event->dwData));
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: ELEVATOR_TRIM_SET: ";
-        cout << static_cast<long>(event->dwData);
-        cout << " -> ";
-        cout << elevatorTrimHandler->getPosition();
-        cout << endl;
-      }
-      break;
-    }
+    // case Events::ELEVATOR_TRIM_SET: {
+    //   elevatorTrimHandler->onEventElevatorTrimSet(static_cast<long>(event->dwData));
+    //   if (loggingFlightControlsEnabled) {
+    //     cout << "WASM: ELEVATOR_TRIM_SET: ";
+    //     cout << static_cast<long>(event->dwData);
+    //     cout << " -> ";
+    //     cout << elevatorTrimHandler->getPosition();
+    //     cout << endl;
+    //   }
+    //   break;
+    // }
 
-    case Events::AXIS_ELEV_TRIM_SET: {
-      elevatorTrimHandler->onEventElevatorTrimAxisSet(static_cast<long>(event->dwData));
-      if (loggingFlightControlsEnabled) {
-        cout << "WASM: AXIS_ELEV_TRIM_SET: ";
-        cout << static_cast<long>(event->dwData);
-        cout << " -> ";
-        cout << elevatorTrimHandler->getPosition();
-        cout << endl;
-      }
-      break;
-    }
+    // case Events::AXIS_ELEV_TRIM_SET: {
+    //   elevatorTrimHandler->onEventElevatorTrimAxisSet(static_cast<long>(event->dwData));
+    //   if (loggingFlightControlsEnabled) {
+    //     cout << "WASM: AXIS_ELEV_TRIM_SET: ";
+    //     cout << static_cast<long>(event->dwData);
+    //     cout << " -> ";
+    //     cout << elevatorTrimHandler->getPosition();
+    //     cout << endl;
+    //   }
+    //   break;
+    // }
 
     case Events::AUTOPILOT_OFF: {
       simInputAutopilot.AP_disconnect = 1;
