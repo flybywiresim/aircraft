@@ -159,7 +159,8 @@ export class CpdlcMessageContentPosition extends CpdlcMessageContent {
         let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
             if (InputValidation.validateScratchpadWaypoint(value[this.IndexStart]) === AtsuStatusCodes.Ok
-            && InputValidation.validateScratchpadTime(value[this.IndexStart]) !== AtsuStatusCodes.Ok) {
+            && InputValidation.validateScratchpadTime(value[this.IndexStart], true) !== AtsuStatusCodes.Ok
+            && InputValidation.validateScratchpadTime(value[this.IndexStart], false) !== AtsuStatusCodes.Ok) {
                 this.Value = value[this.IndexStart];
                 value[this.IndexStart] = '%s';
                 retval = true;
@@ -177,8 +178,12 @@ export class CpdlcMessageContentTime extends CpdlcMessageContent {
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
         let retval = false;
         if (this.IndexStart < value.length && this.IndexStart > -1) {
-            if (InputValidation.validateScratchpadTime(value[this.IndexStart]) === AtsuStatusCodes.Ok) {
+            if (InputValidation.validateScratchpadTime(value[this.IndexStart], true) === AtsuStatusCodes.Ok) {
                 this.Value = value[this.IndexStart];
+                value[this.IndexStart] = '%s';
+                retval = true;
+            } else if (InputValidation.validateScratchpadTime(value[this.IndexStart], false) === AtsuStatusCodes.Ok) {
+                this.Value = `${value[this.IndexStart]}Z`;
                 value[this.IndexStart] = '%s';
                 retval = true;
             }
@@ -321,8 +326,13 @@ export class CpdlcMessageContentAtcUnit extends CpdlcMessageContent {
 
     public validateAndReplaceContent(value: string[]): { matched: boolean, remaining: string[] } {
         let retval = false;
-        if (this.IndexStart < value.length && this.IndexStart > -1 && /^[0-9A-Z]{4}$/.test(value[this.IndexStart])) {
-            this.Value = value[this.IndexStart];
+        if (this.IndexStart < value.length && this.IndexStart > -1) {
+            if (this.IndexStart + 1 < value.length && value[this.IndexStart + 1] === 'CTR') {
+                this.Value = `${value[this.IndexStart]} ${value[this.IndexStart + 1]}`;
+                value.splice(this.IndexStart + 1, 1);
+            } else {
+                this.Value = value[this.IndexStart];
+            }
             value[this.IndexStart] = '%s';
             retval = true;
         }
