@@ -1095,8 +1095,8 @@ void ElacComputer::step()
                       ElacComputer_P.uDLookupTable2_tableData, 3U))) || ElacComputer_DWork.sProtActive);
     }
 
-    rtb_AND2_p = (ElacComputer_U.in.discrete_inputs.ap_1_disengaged && ElacComputer_U.in.discrete_inputs.ap_2_disengaged);
-    ElacComputer_DWork.sProtActive = ((rtb_y_li >= rtb_Switch1) && (rtb_AND2_p && ElacComputer_DWork.sProtActive));
+    rtb_AND4 = (ElacComputer_U.in.discrete_inputs.ap_1_disengaged && ElacComputer_U.in.discrete_inputs.ap_2_disengaged);
+    ElacComputer_DWork.sProtActive = ((rtb_y_li >= rtb_Switch1) && (rtb_AND4 && ElacComputer_DWork.sProtActive));
     if (!ElacComputer_DWork.resetEventTime_not_empty) {
       ElacComputer_DWork.resetEventTime = ElacComputer_U.in.time.simulation_time;
       ElacComputer_DWork.resetEventTime_not_empty = true;
@@ -1106,7 +1106,7 @@ void ElacComputer::step()
       ElacComputer_DWork.resetEventTime = ElacComputer_U.in.time.simulation_time;
     }
 
-    ElacComputer_DWork.sProtActive_m = ((rtb_AND3_b && rtb_AND2_p && (rtb_alpha > rtb_DataTypeConversion8_b) &&
+    ElacComputer_DWork.sProtActive_m = ((rtb_AND3_b && rtb_AND4 && (rtb_alpha > rtb_DataTypeConversion8_b) &&
       (ElacComputer_U.in.time.monotonic_time > 10.0)) || ElacComputer_DWork.sProtActive_m);
     ElacComputer_DWork.sProtActive_m = ((ElacComputer_U.in.time.simulation_time - ElacComputer_DWork.resetEventTime <=
       0.5) && (rtb_xi_deg_m >= -0.5) && ((rtb_raComputationValue >= 200.0F) || (rtb_xi_deg_m >= 0.5) || (rtb_alpha >=
@@ -1128,6 +1128,7 @@ void ElacComputer::step()
       ElacComputer_P.BitfromLabel1_bit_d, &rtb_Switch11);
     rtb_AND_ai = (rtb_Switch11 != 0U);
     ElacComputer_MATLABFunction(&ElacComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word, &rtb_AND_ai);
+    rtb_NOT_j = ((rtb_NOT_j && rtb_AND2_p) || ((rtb_Switch11 == 0U) && rtb_AND_ai));
     ElacComputer_B.logic.on_ground = rtb_OR3;
     ElacComputer_B.logic.tracking_mode_on = (ElacComputer_U.in.sim_data.slew_on || ElacComputer_U.in.sim_data.pause_on ||
       ElacComputer_U.in.sim_data.tracking_mode_on_override);
@@ -1161,9 +1162,9 @@ void ElacComputer::step()
     ElacComputer_B.logic.has_priority_in_roll = hasPriorityInRoll;
     ElacComputer_B.logic.left_aileron_avail = leftAileronAvail;
     ElacComputer_B.logic.right_aileron_avail = rightAileronAvail;
-    ElacComputer_B.logic.aileron_droop_active = ((rtb_NOT_j && rtb_AND2_p) || ((rtb_Switch11 == 0U) && rtb_AND_ai));
-    ElacComputer_B.logic.aileron_antidroop_active = (rtb_OR1 && (rtb_theta < 2.5F) && (rtb_activeLateralLaw ==
-      lateral_efcs_law::NormalLaw));
+    ElacComputer_B.logic.aileron_droop_active = rtb_NOT_j;
+    ElacComputer_B.logic.aileron_antidroop_active = (rtb_OR1 && rtb_NOT_j && (rtb_theta < 2.5F) && rtb_AND4 &&
+      (rtb_activeLateralLaw == lateral_efcs_law::NormalLaw));
     ElacComputer_B.logic.is_green_hydraulic_power_avail = rtb_OR4;
     ElacComputer_B.logic.left_sidestick_disabled = ElacComputer_DWork.pLeftStickDisabled;
     ElacComputer_B.logic.right_sidestick_disabled = ElacComputer_DWork.pRightStickDisabled;
