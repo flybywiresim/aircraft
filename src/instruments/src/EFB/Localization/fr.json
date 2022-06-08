@@ -6,7 +6,7 @@
     "NoInformationAvailableForThisFrequency": "Aucune information disponible pour cette fréquence",
     "SelectCorrectATISATCSource": "Cette page est uniquement disponible lorsque IVAO ou VATSIM est sélectionné comme source ATIS/ATC dans la page des paramètres.",
     "SetActive": "Activer",
-    "SetStandby": "Mettre en veille",
+    "SetStandby": "Passer en Standby",
     "Standby": "Veille",
     "Title": "Contrôle du trafic aérien"
   },
@@ -64,7 +64,7 @@
     "YourFlight": {
       "Alternate": "Alternate",
       "AverageWind": "Vent moyen",
-      "CompanyRoute": "Route de la compagnie",
+      "CompanyRoute": "Route de compagnie",
       "CostIndex": "Cost Index",
       "CruiseAlt": "Altitude de croisière",
       "ImportSimBriefData": "Importer les données depuis SimBrief",
@@ -141,6 +141,7 @@
       "CateringTruck": "Camion d'approvisionnement",
       "Cones": "Cônes de sécurité",
       "DoorAft": "Porte arrière",
+      "DoorCargo": "Porte cargo",
       "DoorFwd": "Porte avant",
       "ExternalPower": "Alimentation externe",
       "FuelTruck": "Camion de carburant",
@@ -159,7 +160,7 @@
     "All": "Tout",
     "Altn": "Altn",
     "ExitFullscreenMode": "Quitter le mode plein-écran",
-    "From": "De",
+    "From": "FROM",
     "LocalFiles": {
       "Both": "Les deux",
       "EstablishingConnection": "Connexion en cours",
@@ -213,10 +214,10 @@
       "ZoomIn": "Zoom avant",
       "ZoomOut": "Zoom arrière"
     },
-    "ThereAreNoChartsToDisplay": "Il n'y a aucune cartes à afficher.",
+    "ThereAreNoChartsToDisplay": "Il n'y a aucune carte à afficher.",
     "ThereIsNoChartToDisplay": "Il n'y a aucune carte à afficher.",
     "Title": "Navigation et Cartes",
-    "To": "À"
+    "To": "TO"
   },
   "Performance": {
     "Data": "Données",
@@ -264,7 +265,7 @@
       "Title": "Atterrissage",
       "UnitFt": "pieds",
       "UnitMeter": "m",
-      "Weight": "Poids",
+      "Weight": "Masse",
       "WindDirection": "Direction du vent",
       "WindDirectionUnit": "°",
       "WindMagnitude": "Force du vent",
@@ -326,7 +327,7 @@
       "TheAircraftMustBeOnTheGroundToLoadAPreset": "L'avion doit être au sol pour charger un préréglage.",
       "TheAircraftMustBeOntheGroundToLoadAPreset": "L'avion doit être au sol pour charger un préréglage.",
       "Title": "Préréglages de l'avion",
-      "Turnaround": "Disponibilité"
+      "Turnaround": "Disponibilité (Turnaround)"
     },
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "L'avion doit être alimenté pour charger des préréglages",
@@ -345,7 +346,7 @@
         "LoadThisPreset": "Charger ce préréglage",
         "SaveTheCurrentLightingLevels": "Enregistrer les niveaux d'éclairage actuels"
       },
-      "TheAircraftMustBePoweredForInteriorLightingPresets": "L'avion doit être alimenté pour les préréglages d'éclairage intérieur.",
+      "TheAircraftMustBePoweredForInteriorLightingPresets": "L'avion doit être alimenté pour utiliser les préréglages d'éclairage intérieur.",
       "Title": "Éclairage intérieur"
     },
     "Title": "Préréglages"
@@ -398,15 +399,15 @@
     },
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Acceleration Height (pi)",
-      "EngineOutAccelerationHeight": "Hauteur d'accélération du moteur en panne (pi)",
+      "EngineOutAccelerationHeight": "Engine-Out Acceleration Height (pi)",
       "IsisBaroUnit": "Unité Baromètre ISIS",
       "IsisMetricAltitude": "Altitude métrique ISIS",
       "LatLonExtendedFormat": "Format de point de cheminement lat/long FMGC",
-      "PaxSigns": "Panneaux PAX",
+      "PaxSigns": "Voyants passagers",
       "RmpVhfSpacing": "Espacement VHF RMP",
-      "ThrustReductionHeight": "Hauteur de réduction de poussée (pi)",
+      "ThrustReductionHeight": "Thrust Reduction Height (pi)",
       "Title": "Options de l'avion/configuration matérielle",
-      "WeightUnit": "Unité de poids"
+      "WeightUnit": "Unité de masse"
     },
     "AtsuAoc": {
       "AtisAtcSource": "Source ATIS/ATC",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Mode home cockpit",
       "McduFocusTimeout": "Délai d'attente du focus MCDU (secondes)",
       "McduKeyboardInput": "Entrée clavier MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Séparer le tiller du palonnier",
       "Title": "Réalisme"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Luminosité automatique",
       "AutomaticallyShowOnscreenKeyboard": "Afficher automatiquement le clavier à l'écran",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Bleu",
       "Brightness": "Luminosité",
       "Dark": "Sombre",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC et local"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Simuler la décharge de batterie",
   "StatusBar": {
     "Apr": "Avr",
     "Aug": "Août",
