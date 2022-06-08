@@ -65,14 +65,12 @@ const TerrainMapTransition: React.FC<TerrainMapTransitionProps> = ({ x, y, width
                             attributeName="d"
                             begin="0s"
                             dur="2.5s"
-                            keyTimes="0; 0.08; 0.48; 0.88; 1"
+                            keyTimes="0; 0.48; 0.88; 1"
                             repeatCount="indefinite"
                             values={`M ${xCenter} ${bottom} L ${xCenter} ${y} L ${xCenter} ${y} L ${xCenter} ${y} L ${xCenter} ${y} z;
-                                     M ${xCenter} ${bottom} L ${xCenter} ${y} L ${xCenter} ${y} L ${xCenter} ${y} L ${xCenter} ${y} z;
                                      M ${xCenter} ${bottom} L ${x + width} ${y} L ${x + width} ${y} L ${x} ${y} L ${x} ${y} z;
                                      M ${xCenter} ${bottom} L ${x + width} ${bottom} L ${x + width} ${y} L ${x} ${y} L ${x} ${bottom} z;
-                                     M ${xCenter} ${bottom} L ${x + width} ${bottom} L ${x + width} ${y} L ${x} ${y} L ${x} ${bottom} z
-                                    `}
+                                     M ${xCenter} ${bottom} L ${x + width} ${bottom} L ${x + width} ${y} L ${x} ${y} L ${x} ${bottom} z`}
                         />
                     </path>
                 </clipPath>
@@ -199,7 +197,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                                             finalizeMapChange.RerenderTimeout = RerenderingTimeout;
                                             finalizeMapChange.MapChangeInProgress = false;
                                             setMapVisualization(finalizeMapChange);
-                                        }, 200);
+                                        }, 100);
                                     }, 2000);
                                 }
                             }));
