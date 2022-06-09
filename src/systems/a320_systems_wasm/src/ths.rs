@@ -1,18 +1,28 @@
 use std::error::Error;
-use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder};
-use systems_wasm::Variable;
 
 use systems::shared::to_bool;
-use systems_wasm::aspects::{ExecuteOn, MsfsAspectBuilder, ObjectWrite, VariablesToObject};
+use systems_wasm::aspects::{
+    EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, VariablesToObject,
+};
 use systems_wasm::{set_data_on_sim_object, Variable};
 
 use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 
 pub(super) fn ths(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
+    builder.event_to_variable(
+        "ELEV_TRIM_UP",
+        EventToVariableMapping::Value(10.),
+        Variable::aspect("THS_MANUAL_CONTROL_SPEED"),
+        |options| options.mask(),
+    )?;
 
-//     A32NX_THS_" + idString + "_ACTIVE_MODE_COMMANDED
-// A32NX_THS_" + idString + "_COMMANDED_POSITION
+    builder.event_to_variable(
+        "ELEV_TRIM_DN",
+        EventToVariableMapping::Value(-10.),
+        Variable::named("THS_MANUAL_CONTROL_SPEED"),
+        |options| options.mask(),
+    )?;
 
     builder.variables_to_object(Box::new(PitchTrimSimOutput { elevator_trim: 0. }));
 
@@ -33,11 +43,11 @@ impl VariablesToObject for PitchTrimSimOutput {
         ]
     }
 
-    fn write(&mut self, values: Vec<f64>) -> ObjectWrite {
-        self.elevator = values[0];
+    fn write(&mut self, values: Vec<f64>) {
+        self.elevator_trim = values[0];
 
         // Not writing control feedback when in tracking mode
-        ObjectWrite::on(!to_bool(values[1]))
+        //ObjectWrite::on(!to_bool(values[1]))
     }
 
     set_data_on_sim_object!();

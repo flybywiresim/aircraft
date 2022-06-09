@@ -279,10 +279,10 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_DOWN, "ELEV_DOWN", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_UP, "ELEV_UP", true);
 
-  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_DN, "ELEV_TRIM_DN", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_UP, "ELEV_TRIM_UP", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::ELEVATOR_TRIM_SET, "ELEVATOR_TRIM_SET", true);
-  result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_ELEV_TRIM_SET, "AXIS_ELEV_TRIM_SET", true);
+  // result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_DN, "ELEV_TRIM_DN", true);
+  // result &= addInputDataDefinition(hSimConnect, 0, Events::ELEV_TRIM_UP, "ELEV_TRIM_UP", true);
+  // result &= addInputDataDefinition(hSimConnect, 0, Events::ELEVATOR_TRIM_SET, "ELEVATOR_TRIM_SET", true);
+  // result &= addInputDataDefinition(hSimConnect, 0, Events::AXIS_ELEV_TRIM_SET, "AXIS_ELEV_TRIM_SET", true);
 
   result &= addInputDataDefinition(hSimConnect, 0, Events::AP_MASTER, "AP_MASTER", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::AUTOPILOT_OFF, "AUTOPILOT_OFF", false);
@@ -869,10 +869,10 @@ bool SimConnectInterface::sendData(SimOutput output) {
   return sendData(1, sizeof(output), &output);
 }
 
-bool SimConnectInterface::sendData(SimOutputEtaTrim output) {
-  // write data and return result
-  return sendData(2, sizeof(output), &output);
-}
+// bool SimConnectInterface::sendData(SimOutputEtaTrim output) {
+//   // write data and return result
+//   return sendData(2, sizeof(output), &output);
+// }
 
 bool SimConnectInterface::sendData(SimOutputZetaTrim output) {
   // write data and return result

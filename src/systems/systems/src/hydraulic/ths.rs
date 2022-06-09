@@ -199,12 +199,12 @@ impl ElectricMotorClutch {
     }
 }
 
-trait PitchTrimActuatorController {
+pub trait PitchTrimActuatorController {
     fn commanded_position(&self) -> Angle;
     fn energised_motor(&self) -> [bool; 3];
 }
 
-trait ManualPitchTrimController {
+pub trait ManualPitchTrimController {
     fn is_manually_moved(&self) -> bool;
     fn moving_speed(&self) -> AngularVelocity;
 }

@@ -7,6 +7,7 @@ mod gear;
 mod nose_wheel_steering;
 mod rudder;
 mod spoilers;
+mod ths;
 
 use a320_systems::A320;
 use ailerons::ailerons;
@@ -23,6 +24,7 @@ use systems::failures::FailureType;
 use systems::shared::{ElectricalBusType, HydraulicColor, LgciuId, ProximityDetectorId};
 use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
+use ths::ths;
 
 #[msfs::gauge(name=systems)]
 async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
@@ -209,6 +211,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(rudder)?
     .with_aspect(spoilers)?
     .with_aspect(gear)?
+    .with_aspect(ths)?
     .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {
