@@ -141,6 +141,7 @@
       "CateringTruck": "飲食服務車",
       "Cones": "Safety Cones",
       "DoorAft": "後門",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "正門",
       "ExternalPower": "外部電源",
       "FuelTruck": "燃油車",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "砌機駕駛艙模式",
       "McduFocusTimeout": "MCDU 對焦超時 (秒)",
       "McduKeyboardInput": "MCDU 鍵盤輸入",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "將舵柄與腳踏輸入分開",
       "Title": "仿真度"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "自動調整亮度",
       "AutomaticallyShowOnscreenKeyboard": "自動顯示屏幕鍵盤",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "藍色",
       "Brightness": "亮度",
       "Dark": "深色",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC 和本地時間"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "模擬電池充量",
   "StatusBar": {
     "Apr": "四月",
     "Aug": "八月",

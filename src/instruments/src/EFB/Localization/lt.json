@@ -141,8 +141,9 @@
       "CateringTruck": "Maitinimo sunkvežimis",
       "Cones": "Saugumo kūgiai",
       "DoorAft": "Galinės durys",
+      "DoorCargo": "Bagažo durys",
       "DoorFwd": "Priekinės durys",
-      "ExternalPower": "Išorinė energija",
+      "ExternalPower": "Išorinė elektros energija",
       "FuelTruck": "Kuro cisterna",
       "JetBridge": "Rankovė",
       "Title": "Aptarnavimas",
@@ -356,7 +357,7 @@
     "CallTug": "Iškviesti vilkiką",
     "DisableSystemMessageBody": "Ar tikrai norite išjunti išstumimo sistemą? Vilkikas bus paleistas.",
     "DisableSystemMessageTitle": "Išjungti išstumimo sistemą",
-    "EnableSystemMessageBody": "Nauja flyPadOS 3 išstumimo sistema dar nebaigta. Ji nesuderinama su kitais išstumimo papildymais ir gali sukelti problemų.",
+    "EnableSystemMessageBody": "Nauja flyPadOS 3 išstumimo sistema yra nesuderinama su kitais išstumimo papildymais ir gali sukelti problemų.",
     "EnableSystemMessageTitle": "Įjungti išstumimo sistemą",
     "Forward": "Pirmyn",
     "Halt": "Pristabdyta",
@@ -376,9 +377,9 @@
       "CenterPlaneMode": "Centruoti žemėlapį",
       "DecreaseSpeed": "Atgal arba lėčiau pirmyn",
       "IncreaseSpeed": "Pirmyn arba lėčiau atgal",
-      "Left": "Dešinėn (paspausti du kartus norint tiesaus)",
+      "Left": "Dešinėn",
       "PausePushback": "Pristabdyti ar atstabdyti išstumimą",
-      "Right": "Dešinėn (paspausti du kartus norint tiesaus)",
+      "Right": "Dešinėn",
       "SetReleaseParkingBrake": "Užtraukti ar atleisti stovėjimo stabdį",
       "SliderDirection": "Pasirinkite norimą kryptį",
       "SliderSpeed": "Pasirinkite norimą greitį",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Namų kabinos režimas",
       "McduFocusTimeout": "MCDU fokuso praradimas (sekundės)",
       "McduKeyboardInput": "MCDU duomenų įvedimas klaviatūra",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Išskirti tiller iš krypties vairo komandų",
       "Title": "Realizmas"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automatinis ryškumas",
       "AutomaticallyShowOnscreenKeyboard": "Automatiškai rodyti ekrano klaviatūrą",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Mėlyna",
       "Brightness": "Ryškumas",
       "Dark": "Tamsi",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC ir vietinis"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Baterijos veikimo laikas simuliuotas",
   "StatusBar": {
     "Apr": "Bal",
     "Aug": "Rgp",

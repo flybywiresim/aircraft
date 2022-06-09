@@ -141,6 +141,7 @@
       "CateringTruck": "機内食トラック",
       "Cones": "セーフティコーン",
       "DoorAft": "後部ドア",
+      "DoorCargo": "貨物ドア",
       "DoorFwd": "前部ドア",
       "ExternalPower": "地上電源装置",
       "FuelTruck": "燃料トラック",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "ホームコックピットモード",
       "McduFocusTimeout": "MCDUへのフォーカスがタイムアウトする時間(秒)",
       "McduKeyboardInput": "MCDUへのキーボード入力",
+      "PauseAtTod": "降下開始地点で一時停止",
+      "PauseAtTodDistance": "一時停止を有効にする降下開始地点からの距離(nm)",
       "SeparateTillerFromRudderInputs": "ティラーをラダー入力から分離",
       "Title": "リアリズム"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "明るさ自動調節",
       "AutomaticallyShowOnscreenKeyboard": "スクリーンキーボードを自動的に表示",
+      "BatteryLifeEnabled": "バッテリー消耗のシミュレーション",
       "Blue": "ブルー",
       "Brightness": "明るさ",
       "Dark": "ダーク",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTCとローカル"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "バッテリー消耗のシミュレーション",
   "StatusBar": {
     "Apr": "4月",
     "Aug": "8月",
