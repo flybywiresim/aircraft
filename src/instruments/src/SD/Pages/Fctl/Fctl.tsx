@@ -112,7 +112,7 @@ const PitchTrim = ({ x, y, fcdcDiscreteWord2 }: PitchTrimProps) => {
     return (
         <SvgGroup x={x} y={y}>
             {/* Should be amber if there is a THS jam */}
-            <Note x={0} y={13}>PITCH TRIM</Note>
+            <text x={0} y={13} className={`Medium ${thsJam ? 'Warning' : 'ValueWhite'}`} textAnchor="middle" alignmentBaseline="central">PITCH TRIM</text>
             <text x={1} y={35} className={`${hydraulicAvailableClass} Standard`} textAnchor="end" alignmentBaseline="central">{pitchIntegral}</text>
             <text x={5} y={35} className={`${hydraulicAvailableClass} Standard`} textAnchor="middle" alignmentBaseline="central">.</text>
             <text x={14} y={37} className={`${hydraulicAvailableClass} Small`} textAnchor="middle" alignmentBaseline="central">{pitchFractional}</text>
