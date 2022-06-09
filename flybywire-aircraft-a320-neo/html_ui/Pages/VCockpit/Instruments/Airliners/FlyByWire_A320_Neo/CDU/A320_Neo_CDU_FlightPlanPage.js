@@ -468,17 +468,10 @@ class CDUFlightPlanPage {
                         });
                 }
 
-                const flightPhaseIsBeyondDescent = mcdu.flightPhaseManager.phase >= FmgcFlightPhases.DESCENT;
-
-                let isConsideredDescentWaypoint = flightPhaseIsBeyondDescent;
-                if (verticalWaypoint) {
-                    isConsideredDescentWaypoint = isConsideredDescentWaypoint || verticalWaypoint.distanceToTopOfDescent < 0;
-                }
-
                 addRskAt(rowI, () => mcdu.getDelaySwitchPage(),
                     (value, scratchpadCallback) => {
                         if (value === "") {
-                            CDUVerticalRevisionPage.ShowPage(mcdu, wp, verticalWaypoint, isConsideredDescentWaypoint);
+                            CDUVerticalRevisionPage.ShowPage(mcdu, wp, verticalWaypoint);
                         } else if (value === FMCMainDisplay.clrValue) {
                             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                         } else {

@@ -5,7 +5,7 @@ const WaypointConstraintType = Object.freeze({
 });
 
 class CDUVerticalRevisionPage {
-    static ShowPage(mcdu, waypoint, verticalWaypoint, isDescentWaypoint, confirmSpeed = undefined, confirmAlt = undefined, confirmCode = undefined) {
+    static ShowPage(mcdu, waypoint, verticalWaypoint, confirmSpeed = undefined, confirmAlt = undefined, confirmCode = undefined) {
         const waypointInfo = waypoint.infos;
         if (waypointInfo instanceof WayPointInfo) {
             mcdu.clearDisplay();
@@ -118,7 +118,7 @@ class CDUVerticalRevisionPage {
                 }
                 mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
                     if (mcdu.setPerfApprQNH(value)) {
-                        CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, confirmSpeed, confirmAlt, confirmCode);
+                        CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, verticalWaypoint, confirmSpeed, confirmAlt, confirmCode);
                     } else {
                         scratchpadCallback();
                     }
@@ -184,7 +184,7 @@ class CDUVerticalRevisionPage {
                         }
                         mcdu.descentSpeedLimitPilot = false;
                     }
-                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, verticalWaypoint, isDescentWaypoint);
+                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, verticalWaypoint);
                     return;
                 }
 
@@ -215,7 +215,7 @@ class CDUVerticalRevisionPage {
                     mcdu.descentSpeedLimitAlt = alt;
                     mcdu.descentSpeedLimitPilot = true;
                 }
-                CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, verticalWaypoint, isDescentWaypoint);
+                CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, verticalWaypoint);
                 return;
             }; // SPD LIM
             mcdu.onRightInput[1] = () => {}; // RTA
@@ -223,7 +223,7 @@ class CDUVerticalRevisionPage {
                 if (value === FMCMainDisplay.clrValue) {
                     mcdu.flightPlanManager.setWaypointSpeed(-1, wpIndex, () => {
                         this.ShowPage(mcdu, waypoint);
-                    });
+                    }, constraintType === WaypointConstraintType.DES);
                     return;
                 }
 
@@ -242,12 +242,12 @@ class CDUVerticalRevisionPage {
                 }
 
                 if (constraintType === WaypointConstraintType.Unknown) {
-                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, verticalWaypoint, isDescentWaypoint, speed);
+                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, verticalWaypoint, speed);
                     return;
                 }
 
                 mcdu.flightPlanManager.setWaypointSpeed(speed, wpIndex, () => {
-                    this.ShowPage(mcdu, waypoint, verticalWaypoint, isDescentWaypoint);
+                    this.ShowPage(mcdu, waypoint, verticalWaypoint);
                 }, constraintType === WaypointConstraintType.DES);
             }; // SPD CSTR
             mcdu.onRightInput[2] = (value, scratchpadCallback) => {
@@ -255,7 +255,7 @@ class CDUVerticalRevisionPage {
                     mcdu.flightPlanManager.setLegAltitudeDescription(waypoint, 0);
                     mcdu.flightPlanManager.setWaypointAltitude(0, wpIndex, () => {
                         mcdu.updateConstraints();
-                        this.ShowPage(mcdu, waypoint, verticalWaypoint, isDescentWaypoint);
+                        this.ShowPage(mcdu, waypoint, verticalWaypoint);
                     });
                     return;
                 }
@@ -277,7 +277,7 @@ class CDUVerticalRevisionPage {
                 }
 
                 if (constraintType === WaypointConstraintType.Unknown) {
-                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, verticalWaypoint, isDescentWaypoint, undefined, altitude, code);
+                    CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, verticalWaypoint, undefined, altitude, code);
                     return;
                 }
 
@@ -396,7 +396,7 @@ class CDUVerticalRevisionPage {
 
         const type = CDUVerticalRevisionPage.constraintType(mcdu, waypoint);
         if (type === WaypointConstraintType.Unknown) {
-            CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, speed, alt, code);
+            CDUVerticalRevisionPage.ShowPage(mcdu, waypoint, verticalWaypoint, speed, alt, code);
             return;
         }
 
