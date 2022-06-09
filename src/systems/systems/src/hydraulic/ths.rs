@@ -1,5 +1,5 @@
 use uom::si::{
-    angle::radian,
+    angle::{degree, radian},
     angular_acceleration::radian_per_second_squared,
     angular_velocity::{radian_per_second, revolution_per_minute},
     f64::*,
@@ -385,6 +385,7 @@ impl TrimInputAssembly {
 impl SimulationElement for TrimInputAssembly {}
 
 struct ThsHydraulicAssembly {
+    deflection_id: VariableIdentifier,
     hydraulic_motors: [HydraulicDriveMotor; 2],
 
     speed: AngularVelocity,
@@ -400,8 +401,9 @@ impl ThsHydraulicAssembly {
 
     const HYD_MOTOR_SPEED_TO_THS_DEFLECTION_SPEED_GAIN: f64 = 0.0000005;
 
-    fn new(min_deflection: Angle, deflection_range: Angle) -> Self {
+    fn new(context: &mut InitContext, min_deflection: Angle, deflection_range: Angle) -> Self {
         Self {
+            deflection_id: context.get_identifier("HYD_FINAL_THS_DEFLECTION".to_owned()),
             hydraulic_motors: [HydraulicDriveMotor::new(
                 AngularVelocity::new::<revolution_per_minute>(2000.),
                 Self::HYDRAULIC_MOTOR_POSITION_ERROR_BREAKPOINT,
@@ -458,6 +460,11 @@ impl ThsHydraulicAssembly {
             .max(self.min_deflection);
     }
 }
+impl SimulationElement for ThsHydraulicAssembly {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.deflection_id, self.actual_deflection.get::<degree>());
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -466,7 +473,7 @@ mod tests {
 
     use super::*;
     use crate::shared::update_iterator::FixedStepLoop;
-    use crate::simulation::test::{SimulationTestBed, TestBed};
+    use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed};
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
@@ -570,6 +577,7 @@ mod tests {
                     Ratio::new::<ratio>(2035. / 6.13),
                 ),
                 ths_assembly: ThsHydraulicAssembly::new(
+                    context,
                     Angle::new::<degree>(-4.),
                     Angle::new::<degree>(17.5),
                 ),
@@ -653,6 +661,7 @@ mod tests {
     impl SimulationElement for TestAircraft {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.trim_assembly.accept(visitor);
+            self.ths_assembly.accept(visitor);
 
             visitor.visit(self);
         }
@@ -662,7 +671,10 @@ mod tests {
     fn trim_assembly_init_state() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.run_with_delta(Duration::from_millis(10000));
+        test_bed.run_with_delta(Duration::from_millis(100));
+
+        let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
+        assert!(deflection.get::<degree>().abs() < 0.01);
     }
 
     #[rstest]
@@ -675,8 +687,16 @@ mod tests {
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * 4.5), motor_idx));
         test_bed.run_with_delta(Duration::from_millis(15000));
 
+        let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
+        assert!(deflection.get::<degree>() > 12.);
+        assert!(deflection.get::<degree>() < 14.);
+
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * -1.), motor_idx));
         test_bed.run_with_delta(Duration::from_millis(15000));
+
+        let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
+        assert!(deflection.get::<degree>() >= -4.);
+        assert!(deflection.get::<degree>() < -2.);
     }
 
     #[test]
@@ -686,10 +706,15 @@ mod tests {
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * 4.5), 0));
         test_bed.run_with_delta(Duration::from_millis(5000));
 
+        let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
+        assert!(deflection.get::<degree>() > 2.);
+
         test_bed.command(|a| {
             a.set_hyd_pressure([Pressure::new::<psi>(1300.), Pressure::new::<psi>(1300.)])
         });
+        test_bed.run_with_delta(Duration::from_millis(15000));
 
-        test_bed.run_with_delta(Duration::from_millis(5000));
+        let deflection_after_hyd_fail: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
+        assert!((deflection - deflection_after_hyd_fail).abs() < Angle::new::<degree>(1.));
     }
 }
