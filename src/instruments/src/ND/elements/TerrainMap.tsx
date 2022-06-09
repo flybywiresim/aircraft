@@ -49,30 +49,53 @@ interface TerrainMapTransitionProps {
     y: number,
     width: number,
     height: number,
-    mapdata: string
+    mapdata: string,
+    onFinished: () => void,
 }
 
-const TerrainMapTransition: React.FC<TerrainMapTransitionProps> = ({ x, y, width, height, mapdata }) => {
-    const xCenter = x + Math.round(width / 2);
+const TerrainMapTransition: React.FC<TerrainMapTransitionProps> = ({ x, y, width, height, mapdata, onFinished }) => {
+    const halfWidth = Math.round(width / 2);
+    const xCenter = x + halfWidth;
     const bottom = y + height;
+
+    const [clipPath, setClipPath] = useState<string>(`M ${xCenter} ${bottom} L ${xCenter} ${y} L ${xCenter} ${y}`);
+    const [passedTime, setPassedTime] = useState<number>(0);
+    const clipPathRef = useRef<string>();
+    clipPathRef.current = clipPath;
+
+    useUpdate((deltaTime) => {
+        const ratio = passedTime / 5000;
+        let newClipPath = '';
+        if (ratio <= 0.5) {
+            const xOffset = Math.max(20, Math.round(width * ratio));
+            newClipPath = `M ${xCenter} ${bottom} L ${xCenter + halfWidth - xOffset} ${y} L ${xCenter - halfWidth + xOffset} ${y}`;
+        } else if (ratio < 1.0) {
+            const yOffset = Math.round(height * (ratio - 0.5) * 2);
+            newClipPath = `M ${x} ${y} L ${x} ${y + yOffset} L ${xCenter} ${bottom} L ${x + width} ${y + yOffset} L ${x + width} ${y}`;
+        } else {
+            const finalPath = `M ${x} ${y} L ${x + width} ${y} L ${x + width} ${bottom} L ${x} ${bottom}`;
+            if (clipPathRef.current !== finalPath) {
+                newClipPath = `M ${x} ${y} L ${x + width} ${y} L ${x + width} ${bottom} L ${x} ${bottom}`;
+                onFinished();
+            } else {
+                return;
+            }
+        }
+
+        // workaround if ratio and pixel-roundings result in the same path string
+        if (newClipPath === clipPathRef.current) {
+            newClipPath = `${newClipPath}z`;
+        }
+
+        setClipPath(newClipPath);
+        setPassedTime(passedTime + deltaTime);
+    });
 
     return (
         <>
             <defs>
                 <clipPath id="maptransition">
-                    <path>
-                        <animate
-                            attributeName="d"
-                            begin="0s"
-                            dur="2.5s"
-                            keyTimes="0; 0.48; 0.88; 1"
-                            repeatCount="indefinite"
-                            values={`M ${xCenter} ${bottom} L ${xCenter} ${y} L ${xCenter} ${y} L ${xCenter} ${y} L ${xCenter} ${y} z;
-                                     M ${xCenter} ${bottom} L ${x + width} ${y} L ${x + width} ${y} L ${x} ${y} L ${x} ${y} z;
-                                     M ${xCenter} ${bottom} L ${x + width} ${bottom} L ${x + width} ${y} L ${x} ${y} L ${x} ${bottom} z;
-                                     M ${xCenter} ${bottom} L ${x + width} ${bottom} L ${x + width} ${y} L ${x} ${y} L ${x} ${bottom} z`}
-                        />
-                    </path>
+                    <path d={clipPath} />
                 </clipPath>
             </defs>
             <image
@@ -92,6 +115,8 @@ class MapVisualizationData {
 
     public CurrentMap: string | undefined = undefined;
 
+    public MapTransitionStart: number = -1;
+
     public MapChangeInProgress: boolean = false;
 
     public RerenderTimeout: number | undefined = undefined;
@@ -108,6 +133,7 @@ class MapVisualizationData {
         if (args.length !== 0 && args[0] instanceof MapVisualizationData) {
             this.LastMap = args[0].LastMap;
             this.CurrentMap = args[0].CurrentMap;
+            this.MapTransitionStart = args[0].MapTransitionStart;
             this.MapChangeInProgress = args[0].MapChangeInProgress;
             this.RerenderTimeout = args[0].RerenderTimeout;
             this.CurrentMinimumElevation = args[0].CurrentMinimumElevation;
@@ -181,24 +207,8 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                                     const newVisualization = new MapVisualizationData(mapVisualizationRef.current);
                                     newVisualization.MapChangeInProgress = true;
                                     newVisualization.CurrentMap = imageBase64;
+                                    newVisualization.MapTransitionStart = new Date().getTime();
                                     setMapVisualization(newVisualization);
-
-                                    // execute the renderer
-                                    setTimeout(() => {
-                                        const rerenderVisualization = new MapVisualizationData(mapVisualizationRef.current);
-                                        rerenderVisualization.LastMap = imageBase64;
-                                        rerenderVisualization.LastMinimumElevation = rerenderVisualization.CurrentMinimumElevation;
-                                        rerenderVisualization.LastMaximumElevation = rerenderVisualization.CurrentMaximumElevation;
-                                        setMapVisualization(rerenderVisualization);
-
-                                        // preload the "new" old timestamp to avoid flickering
-                                        setTimeout(() => {
-                                            const finalizeMapChange = new MapVisualizationData(mapVisualizationRef.current);
-                                            finalizeMapChange.RerenderTimeout = RerenderingTimeout;
-                                            finalizeMapChange.MapChangeInProgress = false;
-                                            setMapVisualization(finalizeMapChange);
-                                        }, 100);
-                                    }, 2000);
                                 }
                             }));
                         }));
@@ -206,6 +216,23 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                 }
             });
         }, 200);
+    };
+
+    const mapTransitionDone = () => {
+        const rerenderVisualization = new MapVisualizationData(mapVisualizationRef.current);
+        rerenderVisualization.LastMap = rerenderVisualization.CurrentMap;
+        rerenderVisualization.LastMinimumElevation = rerenderVisualization.CurrentMinimumElevation;
+        rerenderVisualization.LastMaximumElevation = rerenderVisualization.CurrentMaximumElevation;
+        setMapVisualization(rerenderVisualization);
+
+        // preload the "new" old timestamp to avoid flickering
+        setTimeout(() => {
+            const finalizeMapChange = new MapVisualizationData(mapVisualizationRef.current);
+            finalizeMapChange.RerenderTimeout = RerenderingTimeout;
+            finalizeMapChange.MapChangeInProgress = false;
+            finalizeMapChange.MapTransitionStart = -1;
+            setMapVisualization(finalizeMapChange);
+        }, 100);
     };
 
     useUpdate((deltaTime) => {
@@ -284,7 +311,14 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                     )
                     : <></>}
                 {mapVisualizationRef.current.MapChangeInProgress ? (
-                    <TerrainMapTransition x={x} y={y} width={width} height={height} mapdata={mapVisualizationRef.current.CurrentMap} />
+                    <TerrainMapTransition
+                        x={x}
+                        y={y}
+                        width={width}
+                        height={height}
+                        mapdata={mapVisualizationRef.current.CurrentMap}
+                        onFinished={mapTransitionDone}
+                    />
                 ) : <></>}
             </g>
             <text x={688} y={612} fontSize={23} fill="rgb(0,255,255)">
