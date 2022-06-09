@@ -141,6 +141,7 @@
       "CateringTruck": "Veicolo Catering",
       "Cones": "Coni di Sicurezza",
       "DoorAft": "Porta Post.",
+      "DoorCargo": "Porta Cargo",
       "DoorFwd": "Porta Ant.",
       "ExternalPower": "Unità di Alimentazione Esterna",
       "FuelTruck": "Veicolo Carburante",
@@ -239,7 +240,7 @@
       "OverweightProcedure": "Procedura Sovraccarico",
       "Qnh": "QNH",
       "ReverseThrust": "Inversori di Spinta",
-      "RunwayAltitude": "Altitudine Pista",
+      "RunwayAltitude": "Elevazione Pista",
       "RunwayAltitudeUnit": "ASL ft",
       "RunwayCondition": "Condizioni Pista",
       "RunwayConditions": {
@@ -315,7 +316,7 @@
   "Presets": {
     "AircraftStates": {
       "Cancel": "Annulla",
-      "ColdDark": "Spento",
+      "ColdDark": "Cold & Dark",
       "ConfirmationDialogMsg": "Prego conferma caricamento del preset.",
       "CurrentProcedureStep": "Stato Processo in Corso",
       "PleaseConfirmLoadingOfPreset": "Prego conferma caricamento del preset.",
@@ -383,7 +384,7 @@
       "SliderDirection": "Sposta per direzione desiderata",
       "SliderSpeed": "Sposta per velocità desiderata",
       "SystemEnabledOff": "Clicca per attivare il sistema pushback.",
-      "SystemEnabledOn": "Clicca per spegner completamente il sistema pushback.",
+      "SystemEnabledOn": "Clicca per disattivare completamente il sistema pushback.",
       "ZoomIn": "Ingrandisci",
       "ZoomOut": "Rimpicciolisci"
     },
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Modalità Home Cockpit",
       "McduFocusTimeout": "Rilascio Selezione su MCDU (secondi)",
       "McduKeyboardInput": "Input Tastiera su MCDU",
+      "PauseAtTod": "Interruzione T/D",
+      "PauseAtTodDistance": "Distanza Interruzione T/D (nm)",
       "SeparateTillerFromRudderInputs": "Separa gli Input del Tiller e dei Pedali",
       "Title": "Realismo"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Luminosità Automatica",
       "AutomaticallyShowOnscreenKeyboard": "Visualizza Tastiera a Schermo Automaticamente",
+      "BatteryLifeEnabled": "Durata Batteria Simulata",
       "Blue": "Blu",
       "Brightness": "Luminosità",
       "Dark": "Scuro",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC e Locale"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Durata Batteria Simulata",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Ago",
