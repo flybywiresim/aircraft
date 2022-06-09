@@ -271,7 +271,7 @@ impl PitchTrimActuator {
         self.update_clutches_state(electric_controller);
         self.update_motors(context, electric_controller);
 
-        self.update_speed(electric_controller, manual_controller);
+        self.update_speed(manual_controller);
 
         self.update_position(context);
     }
@@ -288,11 +288,7 @@ impl PitchTrimActuator {
             .max(self.min_actuator_angle);
     }
 
-    fn update_speed(
-        &mut self,
-        electric_controller: &impl PitchTrimActuatorController,
-        manual_controller: &impl ManualPitchTrimController,
-    ) {
+    fn update_speed(&mut self, manual_controller: &impl ManualPitchTrimController) {
         if manual_controller.is_manually_moved() {
             self.speed = manual_controller.moving_speed();
         } else {
