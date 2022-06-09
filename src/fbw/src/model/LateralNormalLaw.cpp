@@ -420,7 +420,7 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
     }
   }
 
-  Vtas *= 0.5144;
+  Vtas = std::fmax(Vtas * 0.5144, 60.0);
   Vias = rtb_Y_j * 0.5144;
   if (rtb_Y_j >= 60.0) {
     rtb_beDot = (Vias * Vias * 0.6125 * 122.0 / (70000.0 * Vtas) * 3.172 * -rtb_beDot * 3.1415926535897931 / 180.0 +
