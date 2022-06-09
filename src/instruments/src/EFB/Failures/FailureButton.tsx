@@ -1,29 +1,36 @@
 import React, { FC, MouseEventHandler } from 'react';
 
-import Button, { BUTTON_TYPE } from '../Components/Button/Button';
-
 export interface FailureButtonProps {
-    name: string,
-    isActive: boolean,
-    isChanging: boolean,
-    onClick: MouseEventHandler<HTMLButtonElement>
+    name: string;
+    isActive: boolean;
+    isChanging: boolean;
+    onClick: MouseEventHandler<HTMLButtonElement>;
+    className: string;
+    highlightedTerm?: string;
 }
 
-export const FailureButton: FC<FailureButtonProps> = ({ name, isActive, isChanging, onClick }) => {
-    let type: BUTTON_TYPE | undefined;
-    if (isChanging) {
-        type = BUTTON_TYPE.NONE;
-    } else {
-        type = isActive ? BUTTON_TYPE.RED : BUTTON_TYPE.GREEN;
+export const FailureButton: FC<FailureButtonProps> = ({ name, isActive, isChanging, onClick, className, highlightedTerm }: FailureButtonProps) => {
+    let color = 'border-0';
+    if (!isChanging) {
+        color = isActive ? 'border-utility-red' : 'border-utility-green';
     }
+
     return (
-        <Button
+        <button
             onClick={onClick}
-            type={type}
+            type="button"
             disabled={isChanging}
-            className="mx-2 my-2"
+            className={`flex rounded-md border-t-4 bg-theme-accent px-2 pt-3 pb-2 text-left ${color} ${className}`}
         >
-            <span>{name}</span>
-        </Button>
+            {highlightedTerm ? (
+                <h2>
+                    {name.substring(0, name.indexOf(highlightedTerm))}
+                    <span className="text-2xl underline">{highlightedTerm}</span>
+                    {name.substring(name.indexOf(highlightedTerm) + highlightedTerm.length)}
+                </h2>
+            ) : (
+                <h2>{name}</h2>
+            )}
+        </button>
     );
 };

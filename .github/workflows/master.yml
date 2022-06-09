@@ -31,6 +31,7 @@ jobs:
           echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
           echo SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> .env
           echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
+          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
