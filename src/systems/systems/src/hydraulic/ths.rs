@@ -470,6 +470,8 @@ mod tests {
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
+    use rstest::rstest;
+
     struct TestElecTrimControl {
         control_active: bool,
         position_request: Angle,
@@ -576,48 +578,33 @@ mod tests {
             }
         }
 
-        fn new_with_elec_trim_demand(
-            context: &mut InitContext,
-            angle_request: Angle,
-            motor_idx: usize,
-        ) -> Self {
-            Self {
-                updater_fixed_step: FixedStepLoop::new(Duration::from_millis(33)),
-                elec_trim_control: TestElecTrimControl::with_motor_idx_and_pos_demand(
-                    motor_idx,
-                    angle_request,
-                ),
-                manual_trim_control: TestManualTrimControl::without_manual_input(),
-                trim_assembly: TrimInputAssembly::new(
-                    context,
-                    Angle::new::<degree>(360. * -1.4),
-                    Angle::new::<degree>(360. * 6.13),
-                    Angle::new::<degree>(360. * -1.87),
-                    Angle::new::<degree>(360. * 6.32),
-                    AngularVelocity::new::<revolution_per_minute>(10000.),
-                    Ratio::new::<ratio>(2035. / 6.13),
-                ),
-                ths_assembly: ThsHydraulicAssembly::new(
-                    Angle::new::<degree>(-4.),
-                    Angle::new::<degree>(17.5),
-                ),
-
-                hydraulic_pressures: [Pressure::new::<psi>(3000.); 2],
-            }
+        fn set_elec_trim_demand(&mut self, angle_request: Angle, motor_idx: usize) {
+            self.elec_trim_control =
+                TestElecTrimControl::with_motor_idx_and_pos_demand(motor_idx, angle_request);
         }
 
         fn set_manual_trim_input(&mut self, trim_up: bool) {
-            self.manual_trim_control.control_active = true;
-            self.manual_trim_control.speed = if trim_up {
-                AngularVelocity::new::<degree_per_second>(30.)
+            self.manual_trim_control = if trim_up {
+                TestManualTrimControl::with_manual_input(AngularVelocity::new::<degree_per_second>(
+                    30.,
+                ))
             } else {
-                AngularVelocity::new::<degree_per_second>(-30.)
+                TestManualTrimControl::with_manual_input(AngularVelocity::new::<degree_per_second>(
+                    -30.,
+                ))
             }
         }
 
-        fn set_elec_trim_input(&mut self, trim_angle: Angle, motor_idx: usize) {
-            self.elec_trim_control.position_request = trim_angle;
-            self.elec_trim_control.motor_idx_in_control = motor_idx;
+        fn set_no_manual_input(&mut self) {
+            self.manual_trim_control = TestManualTrimControl::without_manual_input();
+        }
+
+        fn set_no_elec_input(&mut self) {
+            self.elec_trim_control = TestElecTrimControl::inactive_control();
+        }
+
+        fn set_hyd_pressure(&mut self, pressures: [Pressure; 2]) {
+            self.hydraulic_pressures = pressures;
         }
     }
     impl Aircraft for TestAircraft {
@@ -675,27 +662,34 @@ mod tests {
     fn trim_assembly_init_state() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.run_with_delta(Duration::from_millis(100));
+        test_bed.run_with_delta(Duration::from_millis(10000));
+    }
 
-        // assert!(test_bed.query(|a| {
-        //     a.emergency_gen.speed() == AngularVelocity::new::<radian_per_second>(0.)
-        // }));
+    #[rstest]
+    #[case(0)]
+    #[case(1)]
+    #[case(2)]
+    fn trim_assembly_trim_up_trim_down_motor_n(#[case] motor_idx: usize) {
+        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
 
-        // assert!(test_bed.query(|a| a.gcu.valve_position_command() == Ratio::new::<ratio>(0.)));
+        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * 4.5), motor_idx));
+        test_bed.run_with_delta(Duration::from_millis(15000));
+
+        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * -1.), motor_idx));
+        test_bed.run_with_delta(Duration::from_millis(15000));
     }
 
     #[test]
-    fn trim_assembly_trim_up_motor_0() {
-        let mut test_bed = SimulationTestBed::new(|context| {
-            TestAircraft::new_with_elec_trim_demand(context, Angle::new::<degree>(360. * 4.5), 0)
+    fn trim_assembly_moves_but_ths_stops_with_hyd_press_below_1450psi() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * 4.5), 0));
+        test_bed.run_with_delta(Duration::from_millis(5000));
+
+        test_bed.command(|a| {
+            a.set_hyd_pressure([Pressure::new::<psi>(1300.), Pressure::new::<psi>(1300.)])
         });
 
-        test_bed.run_with_delta(Duration::from_millis(15000));
-
-        // assert!(test_bed.query(|a| {
-        //     a.emergency_gen.speed() == AngularVelocity::new::<radian_per_second>(0.)
-        // }));
-
-        // assert!(test_bed.query(|a| a.gcu.valve_position_command() == Ratio::new::<ratio>(0.)));
+        test_bed.run_with_delta(Duration::from_millis(5000));
     }
 }
