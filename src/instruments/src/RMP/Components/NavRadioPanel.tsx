@@ -6,6 +6,11 @@ import { useSplitSimVar, useSimVar } from '../../Common/simVars';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 import { useInteractionEvent } from '../../Common/hooks';
 
+const DEFAULT_FREQUENCY_VOR = 113000000;
+const DEFAULT_FREQUENCY_ILS = 108900000;
+const DEFAULT_CHANNEL_MLS = 150;
+const DEFAULT_FREQUENCY_ADF = 433000;
+
 interface Props {
     /**
      * The RMP side (e.g. 'L' or 'R').
@@ -24,46 +29,6 @@ enum Mode {
     COURSE = 1
 }
 
-/**
- * React hook for the active VHF frequency SimVar, set via a K SimVar.
- * @param transceiver The VHF transceiver to use (VHF 1, 2, or 3).
- */
-// const useActiveNavFrequency = (transceiver: number, index: number) => {
-//     let variableReadName = '';
-//     let variableWriteName = '';
-
-//     if (transceiver === TransceiverType.ADF) {
-//         variableReadName = `ADF ACTIVE FREQUENCY:${index}`;
-//         variableWriteName = 'K:ADF_ACTIVE_SET';
-//         return useSplitSimVar(variableReadName, 'Hz', variableWriteName, 'Frequency ADF BCD32', 1);
-//     }
-
-//     variableReadName = `NAV ACTIVE FREQUENCY:${index}`;
-//     variableWriteName = `K:NAV${index}_RADIO_SET_HZ`;
-//     return useSplitSimVar(variableReadName, 'Hz', variableWriteName, 'Hz', 1);
-// };
-
-// /**
-//  * React hook for the standby VHF frequency SimVar, set via a K SimVar.
-//  * A custom SimVar is used for abnormal side/transceiver pairs (e.g. VHF 2 for left RMP).
-//  * @param side The RMP side (e.g. 'L' or 'R').
-//  * @param transceiver The VHF transceiver to use (VHF 1, 2, or 3).
-//  */
-// const useStandbyFrequency = (transceiver: number, index: number) => {
-//     let variableReadName = '';
-//     let variableWriteName = '';
-
-//     if (transceiver === TransceiverType.ADF) {
-//         variableReadName = `ADF STANDBY FREQUENCY:${index}`;
-//         variableWriteName = 'K:ADF_STBY_SET';
-//         return useSplitSimVar(variableReadName, 'Hz', variableWriteName, 'Frequency ADF BCD32', 1);
-//     }
-
-//     variableReadName = `NAV STANDBY FREQUENCY:${index}`;
-//     variableWriteName = `K:NAV${index}_STBY_SET_HZ`;
-//     return useSplitSimVar(variableReadName, 'Hz', variableWriteName, 'Hz', 1);
-// };
-
 const useSetActiveFrequency = (transceiver: number, index: number) => {
     if (transceiver === TransceiverType.ADF) {
         return useSimVar(`K:ADF${index === 1 ? '' : index}_ACTIVE_SET`, 'Frequency ADF BCD32', 100);
@@ -81,41 +46,63 @@ const useSetStandbyFrequency = (transceiver: number, index: number) => {
 };
 
 const useGetActiveFrequency = (transceiver: number, index: number) => {
-    if (transceiver === TransceiverType.ADF) {
-        return useSimVar(`ADF ACTIVE FREQUENCY:${index}`, 'Hz', 100);
+    const [frequency] = useSimVar(`${transceiver === TransceiverType.ADF ? 'ADF' : 'NAV'} ACTIVE FREQUENCY:${index}`, 'Hz', 100);
+
+    if (frequency !== 0) {
+        return frequency;
     }
 
-    return useSimVar(`NAV ACTIVE FREQUENCY:${index}`, 'Hz', 100);
+    // If frequency === 0 at startup
+    // Which is the case if the NAV pb is pushed without initializing the RADNAV page
+    switch (transceiver) {
+    case TransceiverType.VOR:
+        return DEFAULT_FREQUENCY_VOR;
+    case TransceiverType.ADF:
+        return DEFAULT_FREQUENCY_ADF;
+    case TransceiverType.MLS:
+        return DEFAULT_CHANNEL_MLS;
+    default:
+        return DEFAULT_FREQUENCY_ILS;
+    }
 };
 
 const useGetStandbyFrequency = (transceiver: number, index: number) => {
-    if (transceiver === TransceiverType.ADF) {
-        return useSimVar(`ADF STANDBY FREQUENCY:${index}`, 'Hz', 100);
+    const [frequency] = useSimVar(`${transceiver === TransceiverType.ADF ? 'ADF' : 'NAV'} STANDBY FREQUENCY:${index}`, 'Hz', 100);
+
+    if (frequency !== 0) {
+        return frequency;
     }
 
-    return useSimVar(`NAV STANDBY FREQUENCY:${index}`, 'Hz', 100);
+    // If frequency === 0 at startup
+    // Which is the case if the NAV pb is pushed without initializing the RADNAV page
+    switch (transceiver) {
+    case TransceiverType.VOR:
+        return DEFAULT_FREQUENCY_VOR;
+    case TransceiverType.ADF:
+        return DEFAULT_FREQUENCY_ADF;
+    case TransceiverType.MLS:
+        return DEFAULT_CHANNEL_MLS;
+    default:
+        return DEFAULT_FREQUENCY_ILS;
+    }
 };
 
 const useCourse = (indexInstrument: number, indexSide: number) => {
     const variableReadName = `NAV OBS:${indexSide}`;
-    let variableWriteName = '';
-
-    if (indexInstrument !== TransceiverType.VOR) {
-        variableWriteName = `K:NAV${indexSide}_SET`;
-    } else {
-        variableWriteName = `K:VOR${indexSide}_SET`;
-    }
-
-    return useSplitSimVar(variableReadName, 'degrees', variableWriteName, 'degrees', 100);
+    return useSplitSimVar(variableReadName, 'degrees', indexInstrument === TransceiverType.VOR ? `K:VOR${indexSide}_SET`
+        : 'L:A32NX_FM_LS_COURSE', 'number', 100);
 };
 
 /**
- * VHF radio management panel React component.
+ * NAV radio management panel React component.
  * Hooks into the mode active and standby frequency SimVars and wires transfer button.
  * Renders active frequency RadioPanelDisplay and appropriate StandbyFrequency sub-components.
  */
 export const NavRadioPanel = (props: Props) => {
-    const index = props.side === 'L' ? 1 : 2;
+    let index = props.side === 'L' ? 1 : 2;
+    if (props.transceiver === TransceiverType.ILS) {
+        index = 3; // Both RMPs manage the same ILS
+    }
 
     const [mode, setMode] = useState<Mode>(Mode.FREQUENCY);
 
@@ -130,8 +117,8 @@ export const NavRadioPanel = (props: Props) => {
     */
     const [, setActive] = useSetActiveFrequency(props.transceiver, index);
     const [, setStandbyFrequency] = useSetStandbyFrequency(props.transceiver, index);
-    const [activeHz] = useGetActiveFrequency(props.transceiver, index);
-    const [standbyHz] = useGetStandbyFrequency(props.transceiver, index);
+    const activeHz = useGetActiveFrequency(props.transceiver, index);
+    const standbyHz = useGetStandbyFrequency(props.transceiver, index);
 
     let standbyWindow: JSX.Element;
 

@@ -3880,6 +3880,10 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
             {
+                if (_boot) {
+                    // Because by default, it's set to a frequency beyond operational range
+                    this.radioNav.setILSStandbyFrequency(1, 108.9);
+                }
                 if (Math.abs(this.radioNav.getVORActiveFrequency(1) - this.vor1Frequency) > 0.005) {
                     this.radioNav.setVORActiveFrequency(1, this.vor1Frequency);
                 }
@@ -3900,18 +3904,13 @@ class FMCMainDisplay extends BaseAirliners {
                 }
             }
             {
-                if (_boot) {
-                    this.adf1Frequency = this.radioNav.getADFActiveFrequency(1);
-                    this.adf2Frequency = this.radioNav.getADFActiveFrequency(2);
-                } else {
-                    if (Math.abs(this.radioNav.getADFActiveFrequency(1) - this.adf1Frequency) > 0.005) {
-                        SimVar.SetSimVarValue("K:ADF_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(this.adf1Frequency * 1000)).then(() => {
-                        });
-                    }
-                    if (Math.abs(this.radioNav.getADFActiveFrequency(2) - this.adf2Frequency) > 0.005) {
-                        SimVar.SetSimVarValue("K:ADF2_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(this.adf2Frequency * 1000)).then(() => {
-                        });
-                    }
+                if (Math.abs(this.radioNav.getADFActiveFrequency(1) - this.adf1Frequency) > 0.005) {
+                    SimVar.SetSimVarValue("K:ADF_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(this.adf1Frequency * 1000)).then(() => {
+                    });
+                }
+                if (Math.abs(this.radioNav.getADFActiveFrequency(2) - this.adf2Frequency) > 0.005) {
+                    SimVar.SetSimVarValue("K:ADF2_COMPLETE_SET", "Frequency ADF BCD32", Avionics.Utils.make_adf_bcd32(this.adf2Frequency * 1000)).then(() => {
+                    });
                 }
             }
             {
