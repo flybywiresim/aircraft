@@ -141,8 +141,9 @@
       "CateringTruck": "Кейтеринг грузовик",
       "Cones": "Предохранительные конусы",
       "DoorAft": "Задняя дверь",
+      "DoorCargo": "Грузовая дверь",
       "DoorFwd": "Передняя дверь",
-      "ExternalPower": "Внешнее питание",
+      "ExternalPower": "Наземный блок питания",
       "FuelTruck": "Топливная тележка",
       "JetBridge": "Джет Бридж",
       "Title": "Сервисы",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Режим домашней кабины",
       "McduFocusTimeout": "Тайм-аут фокуса MCDU (секунды)",
       "McduKeyboardInput": "Ввод с клавиатуры MCDU",
+      "PauseAtTod": "Т/Д Пауза",
+      "PauseAtTodDistance": "Расстояние паузы Т/Д (нм)",
       "SeparateTillerFromRudderInputs": "Отдельный румпель от входов руля",
       "Title": "Реализм"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Автояркость",
       "AutomaticallyShowOnscreenKeyboard": "Автоматически показывать экранную клавиатуру",
+      "BatteryLifeEnabled": "Имитация расхода батареи",
       "Blue": "Синяя",
       "Brightness": "Яркость",
       "Dark": "Темная",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC и местное"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Имитация расхода батареи",
   "StatusBar": {
     "Apr": "Апр",
     "Aug": "Авг",

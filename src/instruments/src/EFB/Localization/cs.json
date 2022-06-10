@@ -66,7 +66,7 @@
       "AverageWind": "Průměrný vítr",
       "CompanyRoute": "Company Route",
       "CostIndex": "Cost Index",
-      "CruiseAlt": "Cestovní hladina",
+      "CruiseAlt": "Letová hladina",
       "ImportSimBriefData": "Importovat SimBrief data",
       "Route": "Trať",
       "SimBriefDataNotYetLoaded": "SimBrief data nejsou načtena.",
@@ -141,6 +141,7 @@
       "CateringTruck": "Cateringový vůz",
       "Cones": "Výstražné kužely",
       "DoorAft": "Zadní dveře",
+      "DoorCargo": "Nákladní dveře",
       "DoorFwd": "Přední dveře",
       "ExternalPower": "Externí napájení",
       "FuelTruck": "Cisterna",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Režim domácího kokpitu",
       "McduFocusTimeout": "Časový limit vstupu MCDU z klávesnice (sekundy)",
       "McduKeyboardInput": "MCDU zadávání pomocí klávesnice",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Oddělit vstupy pro tiller a směrovku",
       "Title": "Realismus"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automatický jas",
       "AutomaticallyShowOnscreenKeyboard": "Automaticky zobrazit klávesnici na obrazovce",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Modrý",
       "Brightness": "Jas",
       "Dark": "Tmavý",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC a místní"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Simulace výdrže baterie",
   "StatusBar": {
     "Apr": "Dub",
     "Aug": "Srp",

@@ -216,8 +216,15 @@ const PseudoFWC: React.FC = () => {
     const [autoBrake] = useSimVar('L:A32NX_AUTOBRAKES_ARMED_MODE', 'enum', 500);
     const [flapsHandle] = useSimVar('L:A32NX_FLAPS_HANDLE_INDEX', 'enum', 500);
     const [flapsIndex] = useSimVar('L:A32NX_FLAPS_CONF_INDEX', 'number', 100);
+
     const [slatsAngle] = useSimVar('L:A32NX_LEFT_SLATS_ANGLE', 'degrees', 100);
+    const slatsInfD = slatsAngle <= 17;
+    const slatsSupG = slatsAngle >= 25;
+
     const [flapsAngle] = useSimVar('L:A32NX_LEFT_FLAPS_ANGLE', 'degrees', 100);
+    const flapsInfA = flapsAngle <= 2;
+    const flapsSupF = flapsAngle >= 24;
+
     const [toconfig] = useSimVar('L:A32NX_TO_CONFIG_NORMAL', 'bool', 100);
 
     const [adirsRemainingAlignTime] = useSimVar('L:A32NX_ADIRS_REMAINING_IR_ALIGNMENT_TIME', 'seconds', 1000);
@@ -639,7 +646,7 @@ const PseudoFWC: React.FC = () => {
                 && toconfigFailed
             )
             || (
-                [3, 4, 5].includes(flightPhase) && (slatsAngle < 18 || slatsAngle > 22)
+                [3, 4, 5].includes(flightPhase) && (slatsInfD || slatsSupG)
             ),
             whichCodeToReturn: [0, 1],
             codesToReturn: ['270008501', '270008502'],
@@ -657,7 +664,7 @@ const PseudoFWC: React.FC = () => {
                 && toconfigFailed
             )
             || (
-                [3, 4, 5].includes(flightPhase) && (flapsAngle < 10 || flapsAngle > 20)
+                [3, 4, 5].includes(flightPhase) && (flapsInfA || flapsSupF)
             ),
             whichCodeToReturn: [0, 1],
             codesToReturn: ['270009001', '270009002'],
@@ -1628,6 +1635,8 @@ const PseudoFWC: React.FC = () => {
         fireButton1,
         fireButton2,
         fireButtonAPU,
+        flapsInfA,
+        flapsSupF,
         flapsHandle,
         flapsIndex,
         flightPhase,
@@ -1671,6 +1680,8 @@ const PseudoFWC: React.FC = () => {
         seatBelt,
         showTakeoffInhibit,
         showLandingInhibit,
+        slatsInfD,
+        slatsSupG,
         speedBrake,
         spoilersArmed,
         strobeLightsOn,
