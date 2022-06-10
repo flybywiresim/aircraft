@@ -2304,6 +2304,8 @@ class FMCMainDisplay extends BaseAirliners {
         } else if (this.ilsFrequency > 0 && SimVar.GetSimVarValue('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number') === 1) {
             course = SimVar.GetSimVarValue('NAV LOCALIZER:3', 'degrees');
         }
+        SimVar.SetSimVarValue('L:A32NX_RMP_ILS_MLS_TUNED', 'boolean', false);
+
         return SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', course);
     }
 

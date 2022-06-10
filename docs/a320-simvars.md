@@ -391,6 +391,14 @@
     - Number
     - The current mode of the right radio management panel.
 
+- A32NX_RMP_L_NAV_BUTTON_SELECTED
+    - Bool
+    - Whether the NAV push button on the left RMP is pushed or not.
+
+- A32NX_RMP_R_NAV_BUTTON_SELECTED
+    - Bool
+    - Whether the NAV push button on the right RMP is pushed or not.
+
 - A32NX_RMP_L_VHF2_STANDBY
     - Hz
     - The VHF 2 standby frequency for the left RMP.
@@ -406,6 +414,10 @@
 - A32NX_RMP_R_VHF3_STANDBY
     - Hz
     - The VHF 3 standby frequency for the right RMP.
+
+- A32NX_RMP_ILS_MLS_TUNED
+    - Bool
+    - If the ILS/MLS is tuned via the RMP
 
 - A32NX_TO_CONFIG_FLAPS_ENTERED
     - Bool

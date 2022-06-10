@@ -130,6 +130,9 @@ export const NavRadioPanel = (props: Props) => {
             } else {
                 setActive(Avionics.Utils.make_adf_bcd32(standbyHz));
             }
+            if (props.transceiver === TransceiverType.ILS || props.transceiver === TransceiverType.MLS) {
+                SimVar.SetSimVarValue('L:A32NX_RMP_ILS_MLS_TUNED', 'boolean', true);
+            }
         } else {
             setCourse(course);
             setMode(Mode.FREQUENCY);
