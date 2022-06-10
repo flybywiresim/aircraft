@@ -166,8 +166,9 @@ class CDUAtcOceanicReq {
                 suffix: "[color]cyan",
                 maxLength: 3,
                 isValid: ((value) => {
-                    if (/^M*.[0-9]{1,2}$/.test(value)) {
-                        let number = parseInt(value.split('.')[1]);
+                    if (value && /^M*.[0-9]{1,2}$/.test(value)) {
+                        const split = value.split('.');
+                        let number = parseInt(split.length > 0 && split[1]);
                         if (number < 10) {
                             number *= 10;
                         }
@@ -177,12 +178,15 @@ class CDUAtcOceanicReq {
                 })
             },
             (value) => {
-                let number = parseInt(value.split('.')[1]);
-                if (number < 10) {
-                    number *= 10;
+                if (value) {
+                    const split = value.split('.');
+                    let number = parseInt(split.length > 0 && split[1]);
+                    if (number < 10) {
+                        number *= 10;
+                    }
+                    store.requestedMach = `M.${number}`;
+                    CDUAtcOceanicReq.ShowPage1(mcdu, store);
                 }
-                store.requestedMach = `M.${number}`;
-                CDUAtcOceanicReq.ShowPage1(mcdu, store);
             });
         const requestedFlightlevel = new CDU_SingleValueField(mcdu,
             "string",
