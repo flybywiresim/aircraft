@@ -141,6 +141,7 @@
       "CateringTruck": "Camion de Catering",
       "Cones": "Safety Cones",
       "DoorAft": "Uşa din spate",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Uşa din față",
       "ExternalPower": "Unitate externă",
       "FuelTruck": "Camion de combustibil",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Mod cabină de pilotaj de casă",
       "McduFocusTimeout": "MCDU Focus Timeout (secunde)",
       "McduKeyboardInput": "Intrare tastatură MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separați cârma de intrările cârmei",
       "Title": "Realism"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Luminozitate automatică",
       "AutomaticallyShowOnscreenKeyboard": "Afișează automat tastatura de pe ecran",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Albastru",
       "Brightness": "Luminozitate",
       "Dark": "Întuneric",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC și local"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Viată baterie simulată",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",
