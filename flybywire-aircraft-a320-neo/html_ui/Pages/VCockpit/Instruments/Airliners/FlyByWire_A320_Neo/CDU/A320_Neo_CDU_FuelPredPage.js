@@ -86,7 +86,7 @@ class CDUFuelPredPage {
                 destIdentCell = dest.ident;
             }
 
-            gwCell = "{small}" + NXUnits.kgToUser(mcdu.getGW()).toFixed(1);
+            gwCell = "{small}" + mcdu.getGW().toFixed(1);
             cgCell = mcdu.getCG().toFixed(1) + "{end}";
             gwCgCellColor = "[color]green";
 
