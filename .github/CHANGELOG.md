@@ -20,7 +20,12 @@
 1. [FMGC] Map leg course with station declination where required - @tracernz (Mike)
 1. [HYD] Gear system now supports spawning in flight gear up - @Crocket63 (crocket)
 1. [MCDU] Added imperial runway length - @derl30n (Leon)
-1. [FLIGHTMODEL] Improve flight handling characteristics and landing gear simulation - @donstim (donbikes#4084)
+1. [MCDU] Refactor and improve input handling and conversions in MCDU W&B - @sidnov (Sid)
+1. [MCDU] Improved arrivals/departure page scrolling, more true-to-life behaviour and cosmetic apperance - @2hwk (2Cas#1022)
+1. [PFD] Show yellow GS reference line in correct conditions - @saschl (saschl#9432)
+1. [ECAM] Fix erroneous SLATS NOT IN T.O CONFIG warning during flaps 3 takeoff - @beheh (Benedict Etzel)
+1. [MODEL] Improved rivet mesh with more variation and detail - @Grinde (Grinde#4017)
+1. [FLIGHTMODEL] Improve flight handling characteristics, ground effect, and landing gear simulation - @donstim (donbikes#4084)
 
 ## 0.8.0
 
@@ -1051,3 +1056,4 @@
 1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
 1. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on Discord)

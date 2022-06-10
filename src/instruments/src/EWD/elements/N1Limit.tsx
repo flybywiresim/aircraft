@@ -1,6 +1,7 @@
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { splitDecimals } from '@instruments/common/gauges';
 import { useSimVar } from '@instruments/common/simVars';
+import { Layer } from '@instruments/common/utils';
 import { Arinc429Word } from '@shared/arinc429';
 import React from 'react';
 
@@ -20,34 +21,34 @@ const N1Limit: React.FC<N1LimitProps> = ({ x, y, active }) => {
     const displayFlexTemp: boolean = flexTemp !== 0 && (flexTemp >= (sat.value - 10)) && N1LimitType === 3;
 
     return (
-        <g id="N1-Limit">
+        <Layer x={x} y={y} id="N1-Limit">
             {!active
                 && (
                     <>
-                        <text className="Large Center Amber" x={x} y={y}>XX</text>
-                        <text className="Large Center Amber" x={x} y={y + 28}>XX</text>
+                        <text className="Large Center Amber" x={0} y={0}>XX</text>
+                        <text className="Large Center Amber" x={0} y={28}>XX</text>
                     </>
                 )}
             {active
                 && (
                     <>
-                        <text className="Huge Center Cyan" x={x} y={y}>{thrustLimitTypeArray[N1LimitType]}</text>
-                        <text className="Large End Green Spread" x={x + 5} y={y + 28}>{N1ThrustLimitSplit[0]}</text>
-                        <text className="Large End Green" x={x + 22} y={y + 28}>.</text>
-                        <text className="Medium End Green" x={x + 38} y={y + 28}>{N1ThrustLimitSplit[1]}</text>
-                        <text className="Medium End Cyan" x={x + 53} y={y + 28}>%</text>
+                        <text className="Huge Center Cyan" x={0} y={-1}>{thrustLimitTypeArray[N1LimitType]}</text>
+                        <text className="Huge End Green" x={5} y={28}>{N1ThrustLimitSplit[0]}</text>
+                        <text className="Large End Green" x={18} y={28}>.</text>
+                        <text className="Standard End Green" x={34} y={28}>{N1ThrustLimitSplit[1]}</text>
+                        <text className="Medium End Cyan" x={49} y={27}>%</text>
                     </>
                 )}
             {active && displayFlexTemp
                 && (
                     <>
-                        <text className="Medium Cyan" x={x - 20} y={y + 55}>
+                        <text className="Standard Cyan" x={-23} y={57}>
                             {Math.round(flexTemp)}
                             &deg;C
                         </text>
                     </>
                 )}
-        </g>
+        </Layer>
     );
 };
 

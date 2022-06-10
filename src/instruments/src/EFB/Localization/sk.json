@@ -141,6 +141,7 @@
       "CateringTruck": "Cateringové vozidlo",
       "Cones": "Safety Cones",
       "DoorAft": "Dvere zadné",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Dvere predné",
       "ExternalPower": "Externé napájanie",
       "FuelTruck": "Cisterna z palivom",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Domáci režim kokpitu",
       "McduFocusTimeout": "Časový limit zaostrenia MCDU (sekundy)",
       "McduKeyboardInput": "Vstup klávesnice MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Oddeľte Tiller od vstupov kormidla",
       "Title": "Realizmus"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automatický jas",
       "AutomaticallyShowOnscreenKeyboard": "Automaticky zobrazovať klávesnicu na obrazovke",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Modrá",
       "Brightness": "Jas",
       "Dark": "Tmavá",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC a lokálne"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Simulovaná životnosť batérie",
   "StatusBar": {
     "Apr": "apr",
     "Aug": "aug",
