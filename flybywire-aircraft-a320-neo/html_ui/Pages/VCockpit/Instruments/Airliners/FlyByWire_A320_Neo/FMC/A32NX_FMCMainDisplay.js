@@ -4804,7 +4804,7 @@ class FMCMainDisplay extends BaseAirliners {
         const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", getUserUnit());
         const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", getUserUnit());
         const payloadWeight = getTotalPayload();
-        return Math.round(emptyWeight + fuelWeight + payloadWeight) / 1000;
+        return (emptyWeight + fuelWeight + payloadWeight) / 1000;
     }
 
     //TODO: Can this be util?
