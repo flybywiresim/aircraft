@@ -1054,3 +1054,4 @@
 1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
 1. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on Discord)
