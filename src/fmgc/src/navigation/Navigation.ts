@@ -15,6 +15,7 @@ export class Navigation {
         this.requiredPerformance = new RequiredPerformance(this.flightPlanManager);
     }
 
+    // eslint-disable-next-line no-empty-function
     init(): void {}
 
     update(deltaTime: number): void {
@@ -24,9 +25,9 @@ export class Navigation {
     }
 
     private updateCurrentPerformance(): void {
-        const gs = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
+        const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
 
-        // fake it until we make it :D
+        // FIXME fake it until we make it :D
         const estimate = 0.03 + Math.random() * 0.02 + gs * 0.00015;
         // basic IIR filter
         this.currentPerformance = this.currentPerformance === undefined ? estimate : this.currentPerformance * 0.9 + estimate * 0.1;

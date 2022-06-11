@@ -112,7 +112,6 @@ class CDUProgressPage {
             rnpCell = rnp.toFixed(2);
         }
 
-        /** @type  */
         mcdu.onLeftInput[5] = (input, scratchpadCallback) => {
             if (input === FMCMainDisplay.clrValue) {
                 mcdu.navigation.requiredPerformance.clearPilotRnp();

@@ -24,7 +24,7 @@ export class RequiredPerformance {
 
     constructor(private flightPlanManager: FlightPlanManager) {}
 
-    update(deltaTime: number): void {
+    update(_deltaTime: number): void {
         this.updateAutoRnp();
 
         this.updateLDev();
