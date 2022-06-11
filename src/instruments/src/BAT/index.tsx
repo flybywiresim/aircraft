@@ -11,7 +11,7 @@ const FULL_DISPLAY_REFRESH_INTERVAL_MS = BASE_DELAY_MS + 2 * DIGIT_REFRESH_INTER
 const BatDisplay = ({ batteryNumber, x, y }) => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 100);
     const [voltage] = useSimVar(`L:A32NX_ELEC_BAT_${batteryNumber}_POTENTIAL`, 'Volts', 100);
-    const [digits, setDigits] = useState<string>('   ');
+    const [digits, setDigits] = useState('   ');
 
     const updated = useRef(0); // how many of the digits have already been updated
     // how much time has passed since we started over - initialize with offsets so the two batteries are not in sync
