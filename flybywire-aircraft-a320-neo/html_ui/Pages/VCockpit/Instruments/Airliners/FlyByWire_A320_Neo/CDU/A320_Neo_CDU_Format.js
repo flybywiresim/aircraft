@@ -10,7 +10,8 @@ class Column {
         this.color = (att.find(e => e.color) || Column.white).color;
         this.length = text.length;
         this.anchorPos = !!att.find(e => e.align) ? index - this.length + 1 : index;
-        this.size = ((size) => !!size ? [`{${size}}`, "{end}"] : ["", ""])((att.find(e => e.size) || "").size);
+        const size = att.find(e => e.size);
+        this.size = !!size ? [`{${size.size}}`, "{end}"] : ["", ""];
     }
 
     get text() {
