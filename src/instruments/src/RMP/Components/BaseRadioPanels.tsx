@@ -75,6 +75,12 @@ const PoweredRadioPanel = (props: Props) => {
         if (navButtonPressed) {
             setPanelMode(previousPanelMode);
             setNavTransceiverType(TransceiverType.RADIO_VHF);
+
+            SimVar.SetSimVarValue('K:ADF1_ACTIVE_SET', 'Frequency ADF BCD32', 0);
+            SimVar.SetSimVarValue('K:ADF2_ACTIVE_SET', 'Frequency ADF BCD32', 0);
+            SimVar.SetSimVarValue('K:NAV1_RADIO_SET_HZ', 'Hz', 0);
+            SimVar.SetSimVarValue('K:NAV2_RADIO_SET_HZ', 'Hz', 0);
+            SimVar.SetSimVarValue('K:NAV3_RADIO_SET_HZ', 'Hz', 0);
         }
 
         setNavButton(!navButtonPressed);
