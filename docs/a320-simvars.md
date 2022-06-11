@@ -1030,6 +1030,14 @@
       GOAROUND  | 6
       DONE      | 7
 
+- A32NX_FMGC_RADIONAV_TUNING_MODE
+    - Enum
+    - Hold the FMGCs current tuning mode
+      Value | Meaning
+      0 | AUTO
+      1 | MANUAL
+      2 | REMOTE VIA RMPs
+
 - A32NX_FLAPS_HANDLE_INDEX
     - Number
     - Indicates the physical flaps handle position

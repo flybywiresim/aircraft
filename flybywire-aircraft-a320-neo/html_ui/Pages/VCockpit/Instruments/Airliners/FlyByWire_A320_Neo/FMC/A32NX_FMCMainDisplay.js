@@ -180,7 +180,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.efisSymbols = undefined;
         this.groundTempAuto = undefined;
         this.groundTempPilot = undefined;
-        this.backupNavTuning = undefined;
+        this.backupNavTuning = false;
+        this.manualNavTuning = false;
 
         // ATSU data
         this.atsu = undefined;
@@ -554,6 +555,8 @@ class FMCMainDisplay extends BaseAirliners {
 
     onUpdate(_deltaTime) {
         super.onUpdate(_deltaTime);
+
+        this.navRadioManager.update(_deltaTime, this.manualNavTuning, this.backupNavTuning);
 
         this.flightPlanManager.update(_deltaTime);
         const flightPlanChanged = this.flightPlanManager.currentFlightPlanVersion !== this.lastFlightPlanVersion;
@@ -1242,6 +1245,12 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.backupNavTuning = SimVar.GetSimVarValue("L:A32NX_RMP_L_NAV_BUTTON_SELECTED", "Bool")
             || SimVar.GetSimVarValue("L:A32NX_RMP_R_NAV_BUTTON_SELECTED", "Bool");
+
+        this.manualNavTuning = this.vor1IdIsPilotEntered || this.vor1FreqIsPilotEntered ||
+                    this.vor2IdIsPilotEntered || this.vor2FreqIsPilotEntered ||
+                    this._ilsFrequencyPilotEntered || this._ilsIdentPilotEntered ||
+                    this.adf1IdIsPilotEntered || this.adf1FreqIsPilotEntered ||
+                    this.adf2IdIsPilotEntered || this.adf2FreqIsPilotEntered;
     }
 
     updateAutopilot() {
