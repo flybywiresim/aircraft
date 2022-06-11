@@ -1,10 +1,16 @@
+/**
+ * Used to displayed data on a mcdu page when using the formatting helper
+ * @param index {integer} valid range from 0 to 23
+ * @param text {str} text to be displayed
+ * @param att {list} attributes of the text, e.g. text size, color and/or alignment
+ */
 class Column {
     constructor(index, text, ...att) {
         this.raw = text;
         this.color = (att.find(e => e.color) || Column.white).color;
         this.length = text.length;
         this.anchorPos = !!att.find(e => e.align) ? index - this.length + 1 : index;
-        this.size = !!att.find(e => e.size) ? ["{small}", "{end}"] : ["", ""];
+        this.size = ((size) => !!size ? [`{${size}}`, "{end}"] : ["", ""])((att.find(e => e.size) || "").size);
     }
 
     get text() {
@@ -13,7 +19,8 @@ class Column {
 }
 
 Column.right = { "align": true };
-Column.small = { "size": true };
+Column.small = { "size": "small" };
+Column.big = { "size": "big" };
 Column.amber = { "color": "amber"};
 Column.red = { "color": "red"};
 Column.green = { "color": "green"};
@@ -32,23 +39,23 @@ const FormatTemplate = lines => lines.map(line => FormatLine(...line));
 
 /**
  * Returns a formatted mcdu line
- * @param params {Column}
+ * @param columns {Column}
  * @returns {string[]}
  */
-function FormatLine(...params) {
-    params.sort((a, b) => a.anchorPos - b.anchorPos);
+function FormatLine(...columns) {
+    columns.sort((a, b) => a.anchorPos - b.anchorPos);
 
     let line = "".padStart(24);
-    let pos = -1; // refers to imaginary index on the 24 digit limited mcdu line
-    let index = 0; // points at "cursor" within predefined line
+    let pos = -1; // refers to an imaginary index on the 24 char limited mcdu line
+    let index = 0; // points at the "cursor" of the actual line
 
-    for (const item of params) {
+    for (const column of columns) {
         /* --------> populating text from left to right --------> */
-        const newStart = item.anchorPos;
-        const newEnd = newStart + item.length;
+        const newStart = column.anchorPos;
+        const newEnd = newStart + column.length;
 
         // prevent adding empty or invalid stuff
-        if (item.length === 0 || newEnd < 0 || newStart > 23 || newEnd <= pos) {
+        if (column.length === 0 || newEnd < 0 || newStart > 23 || newEnd <= pos) {
             continue;
         }
 
@@ -57,13 +64,13 @@ function FormatLine(...params) {
         }
 
         // removes text overlap
-        item.raw = item.raw.slice(Math.max(0, pos - newStart), Math.min(item.length, Math.max(1, item.length + 24 - newEnd)));
+        column.raw = column.raw.slice(Math.max(0, pos - newStart), Math.min(column.length, Math.max(1, column.length + 24 - newEnd)));
 
         const limMin = Math.max(0, newStart - pos);
         const limMax = Math.min(24, newEnd - pos);
 
-        line = line.slice(0, index + limMin) + item.text + line.slice(index + limMax);
-        index += limMin + item.text.length;
+        line = line.slice(0, index + limMin) + column.text + line.slice(index + limMax);
+        index += limMin + column.text.length;
         pos = newEnd;
     }
 
