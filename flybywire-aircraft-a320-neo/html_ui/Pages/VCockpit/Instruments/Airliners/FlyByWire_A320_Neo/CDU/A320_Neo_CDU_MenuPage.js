@@ -3,69 +3,35 @@ class CDUMenuPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.MenuPage;
         const activeSystem = mcdu.activeSystem;
-        let textATSU;
-        let textFMGC;
-        let textAIDS;
-        let textCFDS;
-        let textMaint;
         let selectedFMGC = false;
         let selectedATSU = false;
         let selectedAIDS = false;
         let selectedCFDS = false;
-        const selectedMaint = false;
+        //const selectedMaint = false;
 
         const updateView = () => {
-            textFMGC = "<FMGC (REQ)";
-            textATSU = "<ATSU";
-            textAIDS = "<AIDS";
-            textCFDS = "<CFDS";
-            textMaint = "MCDU MAINT>";
-            if (activeSystem === "FMGC") {
-                textFMGC = "<FMGC (REQ)[color]green";
-            }
-            if (activeSystem === "ATSU") {
-                textATSU = "<ATSU[color]green";
-            }
-            if (activeSystem === "AIDS") {
-                textAIDS = "<AIDS[color]green";
-            }
-            if (activeSystem === "CFDS") {
-                textCFDS = "<CFDS[color]green";
-            }
-            if (activeSystem === "MAINT") {
-                textMaint = "MCDU MAINT>[color]green";
-            }
-            if (selectedFMGC) {
-                textFMGC = "<FMGC (SEL)[color]cyan";
-            }
-            if (selectedATSU) {
-                textATSU = "<ATSU (SEL)[color]cyan";
-            }
-            if (selectedAIDS) {
-                textAIDS = "<AIDS (SEL)[color]cyan";
-            }
-            if (selectedCFDS) {
-                textCFDS = "<CFDS (SEL)[color]cyan";
-            }
-            if (selectedMaint) {
-                textMaint = "(SEL) MCDU MAINT>[color]cyan";
-            }
+            const getText = (name, isSelected, extra = "", isLeft = true) => isSelected ? (isLeft ? name + " (SEL)" : "(SEL) " + name) : name + extra;
+            const getColor = (system, isSelected) => isSelected ? Column.cyan : system === activeSystem ? Column.green : Column.white;
 
-            mcdu.setTemplate([
-                ["MCDU MENU"],
-                ["", "SELECT\xa0"],
-                [textFMGC, "NAV B/UP>"],
+            mcdu.setTemplate(FormatTemplate([
+                [new Column(7, "MCDU MENU")],
+                [new Column(22, "SELECT", Column.right)],
+                [
+                    new Column(0, getText("<FMGC", selectedFMGC, " (REQ)"), getColor("FMGC", selectedFMGC)),
+                    new Column(23, "NAV B/UP>", Column.right)
+                ],
                 [""],
-                [textATSU],
+                [new Column(0, getText("<ATSU", selectedATSU), getColor("ATSU", selectedATSU))],
                 [""],
-                [textAIDS],
+                [new Column(0, getText("<AIDS", selectedAIDS), getColor("AIDS", selectedAIDS))],
                 [""],
-                [textCFDS],
+                [new Column(0, getText("<CFDS", selectedCFDS), getColor("CFDS", selectedCFDS))],
                 [""],
                 [""],
+                //[new Column(0, getText("MCDU MAINT>", selectedMaint, "", false), Column.right, getColor("MAINT", selectedMaint))],
                 [""],
                 [""]
-            ]);
+            ]));
         };
 
         updateView();
