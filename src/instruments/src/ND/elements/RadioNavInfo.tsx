@@ -108,11 +108,10 @@ const AdfInfo: React.FC<{index: 1 | 2}> = ({ index }) => {
                 ADF
                 {index}
             </text>
-            <text x={x} y={722} fontSize={24} className="Green">{adfAvailable ? adfIdent : adfFrequency.toFixed(0)}</text>
             {adfAvailable && (
                 <text x={x} y={722} fontSize={24} className="Green">{adfIdent}</text>
             )}
-            {!adfAvailable && (
+            {!adfAvailable && adfFrequency > 0 && (
                 <text x={x} y={722} fontSize={24} className="Green">{Math.floor(adfFrequency).toFixed(0)}</text>
             )}
             <TuningModeIndicator index={index} />

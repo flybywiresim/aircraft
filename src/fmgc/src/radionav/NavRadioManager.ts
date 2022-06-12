@@ -29,6 +29,16 @@ export class NavRadioManager {
             } else if (rmpTuned) {
                 this.tuningMode = TuningMode.Remote;
             } else {
+                if (this.tuningMode === TuningMode.Remote) {
+                    // Happens when NAV push button is pushed back
+                    // It resets all the frequencies (real life behavior)
+                    SimVar.SetSimVarValue('K:ADF_ACTIVE_SET', 'Frequency ADF BCD32', 0);
+                    SimVar.SetSimVarValue('K:ADF2_ACTIVE_SET', 'Frequency ADF BCD32', 0);
+                    SimVar.SetSimVarValue('K:NAV1_RADIO_SET_HZ', 'Hz', 0);
+                    SimVar.SetSimVarValue('K:NAV2_RADIO_SET_HZ', 'Hz', 0);
+                    SimVar.SetSimVarValue('K:NAV3_RADIO_SET_HZ', 'Hz', 0);
+                }
+
                 this.tuningMode = TuningMode.Auto;
             }
             SimVar.SetSimVarValue('L:A32NX_FMGC_RADIONAV_TUNING_MODE', 'Enum', this.tuningMode);

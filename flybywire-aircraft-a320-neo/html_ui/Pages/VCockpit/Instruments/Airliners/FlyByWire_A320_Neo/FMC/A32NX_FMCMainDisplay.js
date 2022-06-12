@@ -1246,11 +1246,27 @@ class FMCMainDisplay extends BaseAirliners {
         this.backupNavTuning = SimVar.GetSimVarValue("L:A32NX_RMP_L_NAV_BUTTON_SELECTED", "Bool")
             || SimVar.GetSimVarValue("L:A32NX_RMP_R_NAV_BUTTON_SELECTED", "Bool");
 
-        this.manualNavTuning = this.vor1IdIsPilotEntered || this.vor1FreqIsPilotEntered ||
+        // Cannot be manual if RMP tuned. It erases everything
+        if (this.backupNavTuning && this.manualNavTuning) {
+            this.vor1IdIsPilotEntered = false;
+            this.vor1FreqIsPilotEntered = false;
+            this.vor2IdIsPilotEntered = false;
+            this.vor2FreqIsPilotEntered = false;
+            this._ilsFrequencyPilotEntered = false;
+            this._ilsIdentPilotEntered = false;
+            this.adf1IdIsPilotEntered = false;
+            this.adf1FreqIsPilotEntered = false;
+            this.adf2IdIsPilotEntered = false;
+            this.adf2FreqIsPilotEntered = false;
+
+            this.manualNavTuning = false;
+        } else {
+            this.manualNavTuning = this.vor1IdIsPilotEntered || this.vor1FreqIsPilotEntered ||
                     this.vor2IdIsPilotEntered || this.vor2FreqIsPilotEntered ||
                     this._ilsFrequencyPilotEntered || this._ilsIdentPilotEntered ||
                     this.adf1IdIsPilotEntered || this.adf1FreqIsPilotEntered ||
                     this.adf2IdIsPilotEntered || this.adf2FreqIsPilotEntered;
+        }
     }
 
     updateAutopilot() {
