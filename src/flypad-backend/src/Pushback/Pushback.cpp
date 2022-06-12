@@ -75,12 +75,15 @@ void Pushback::onUpdate(double deltaTime) {
   // the aircraft lifting any gears.
   const FLOAT64 windCounterRotAccel = getWindVelBodyZ() / 1000.0;
   FLOAT64 movementCounterRotAccel = windCounterRotAccel;
-  if (inertiaSpeed >= 0) {
-    movementCounterRotAccel -= 1.0;
+  if (inertiaSpeed > 0) {
+    movementCounterRotAccel -= 1.1;
+  }
+  else if (inertiaSpeed < 0) {
+    movementCounterRotAccel += 2.0;
   }
   else {
-    movementCounterRotAccel += 2.0;
-  };
+    movementCounterRotAccel = 0.0;
+  }
   set_named_variable_value(rotXOut, movementCounterRotAccel); // debug
 
   // K:KEY_TUG_HEADING expects an unsigned integer scaling 360° to 0 to 2^32-1 (0xffffffff / 360)
