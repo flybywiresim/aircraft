@@ -12,7 +12,7 @@ export const taxiChecklist: ChecklistDefinition = {
             result: 'CONF _____ (BOTH)',
         },
         {
-            item: 'RADAR & PRED W/A',
+            item: 'RADAR & PRED W/S',
             result: 'ON & AUTO',
             condition: () => {
                 const radarValue = SimVar.GetSimVarValue('L:XMLVAR_A320_WEATHERRADAR_SYS', 'Number');
