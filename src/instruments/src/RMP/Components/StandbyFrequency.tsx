@@ -51,7 +51,7 @@ const findNearestInArray = (value: number, array: number[]): number => array.red
  * VOR / ILS frequencies use 50 kHz spacing.
  * ADF frequencies use 1kHz spacing.
  */
-type ChannelSpacing = 8.33 | 10 | 25 | 50 | 500;
+type ChannelSpacing = 8.33 | 10 | 25 | 50;
 
 /**
  * Calculate the offset of a given frequency channel given a variable spacing.
@@ -73,8 +73,6 @@ const offsetFrequencyChannel = (spacing: ChannelSpacing, channel: number, offset
     if (spacing === 10) endings = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
     // VOR/ILS Frequency Endings.
     if (spacing === 50) endings = [0, 50];
-    // ADF since there is a decimal in the real airplane
-    if (spacing === 500) endings = [0, 500];
 
     // Special cases, such as ADF, do not use the ending algorithm to find frequencies.
     if (endings === null) {
