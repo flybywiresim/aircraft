@@ -141,12 +141,13 @@
       "CateringTruck": "Camión de catering",
       "Cones": "Conos de seguridad",
       "DoorAft": "Puerta trasera",
+      "DoorCargo": "Puerta de Carga",
       "DoorFwd": "Puerta delantera",
-      "ExternalPower": "Alimentación externa",
+      "ExternalPower": "Unidad de alimentación externa",
       "FuelTruck": "Camión de combustible",
       "JetBridge": "Puente de embarque",
       "Title": "Servicios",
-      "WheelChocks": "Calzos de ruedas"
+      "WheelChocks": "Calzos"
     },
     "Title": "Ground"
   },
@@ -351,12 +352,12 @@
     "Title": "Predeterminados"
   },
   "Pushback": {
-    "AvailableOnlyOnGround": "Los controles de remolque sólo están disponibles en tierra",
+    "AvailableOnlyOnGround": "Los controles de pushback solo están disponibles en tierra",
     "Backward": "Atrás",
     "CallTug": "Llamar al remolcador",
     "DisableSystemMessageBody": "¿Está seguro que desea deshabilitar el sistema de remolque? Esto también liberará el remolcador.",
     "DisableSystemMessageTitle": "Deshabilitar sistema de remolque",
-    "EnableSystemMessageBody": "El nuevo Sistema de Remolque de flyPadOS 3 puede causar conflictos con otros add-ons de remolque. Recomendamos no habilitar el sistema si tiene previsto utilizar otro complemento de remolque. ",
+    "EnableSystemMessageBody": "El nuevo sistema de remolque de flyPadOS 3 puede causar conflictos con otros add-ons de pushback. Recomendamos no habilitar el sistema si planeas utilizar otro add-on.",
     "EnableSystemMessageTitle": "Habilitar sistemas de remolque ",
     "Forward": "Adelante",
     "Halt": "En pausa",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Modo Home Cockpit",
       "McduFocusTimeout": "Tiempo de espera del MCDU (segundos)",
       "McduKeyboardInput": "Entrada de teclado MCDU",
+      "PauseAtTod": "Pausa T/D",
+      "PauseAtTodDistance": "Distancia de Pausa T/D (nm)",
       "SeparateTillerFromRudderInputs": "Separar Tiller de la entrada del Timón",
       "Title": "Realismo"
     },
@@ -474,7 +477,7 @@
       "ThrottleDetents": "Throttle Detents",
       "Title": "Opciones de simulación",
       "UseCalculatedIlsSignals": "Usar señales ILS calculadas",
-      "WheelChocksEnabled": "Calzos de ruedas",
+      "WheelChocksEnabled": "Calzos",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Brillo automático",
       "AutomaticallyShowOnscreenKeyboard": "Mostrar automáticamente el teclado en pantalla",
+      "BatteryLifeEnabled": "Duración de la batería simulada",
       "Blue": "Azul",
       "Brightness": "Brillo",
       "Dark": "Oscuro",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC y local"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Duración de la batería simulada",
   "StatusBar": {
     "Apr": "Abr",
     "Aug": "Ago",

@@ -141,6 +141,7 @@
       "CateringTruck": "Caminhão de refeições",
       "Cones": "Safety Cones",
       "DoorAft": "Porta traseira",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Porta Frontal",
       "ExternalPower": "Alimentação externa",
       "FuelTruck": "Caminhão de combustível",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Modo Home Cockpit",
       "McduFocusTimeout": "Tempo limite de foco da MCDU (segundos)",
       "McduKeyboardInput": "Entrada de teclado MCDU",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separar controle de taxi do leme",
       "Title": "Realismo"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Brilho automático",
       "AutomaticallyShowOnscreenKeyboard": "Mostrar automaticamente o teclado na tela",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Azul",
       "Brightness": "Brilho",
       "Dark": "Escuro",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC e local"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Duração da bateria simulada",
   "StatusBar": {
     "Apr": "Abr",
     "Aug": "Ago",

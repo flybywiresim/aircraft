@@ -141,6 +141,7 @@
       "CateringTruck": "Gostinski tovornjak",
       "Cones": "Varnostni stožci",
       "DoorAft": "Zadnja vrata",
+      "DoorCargo": "Tovorna vrata",
       "DoorFwd": "Sprednja vrata",
       "ExternalPower": "Zunanje napajanje",
       "FuelTruck": "Tovornjak z gorivom",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Način \"Home Cockpit\"",
       "McduFocusTimeout": "MCDU časovna omejitev fokusa (sekunde)",
       "McduKeyboardInput": "MCDU vnos s tipkovnico",
+      "PauseAtTod": "T/D pavza",
+      "PauseAtTodDistance": "T/D Razdalja pavze (nm)",
       "SeparateTillerFromRudderInputs": "Ločite delovanje krmilnika od krmila",
       "Title": "Realizem"
     },
@@ -459,7 +462,7 @@
       "Active": "Aktivno",
       "Auto": "Samodejno",
       "Calibrate": "Kalibracija",
-      "ConesEnabled": "Safety Cones",
+      "ConesEnabled": "Varnostni stožci",
       "DefaultBarometerUnit": "Privzeta barometrična enota",
       "DynamicRegistrationDecal": "Dinamična registrska nalepka",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Omogoči povezavo s strežnikom MCDU (samodejna deaktivacija po 5 minutah, če ni uspešne povezave)",
@@ -474,7 +477,7 @@
       "ThrottleDetents": "Odkloni plinske ročke",
       "Title": "Nastavitve simulatorja",
       "UseCalculatedIlsSignals": "Uporaba izračunanih signalov ILS",
-      "WheelChocksEnabled": "Wheel Chocks",
+      "WheelChocksEnabled": "Kolesne zagozde",
       "inHg": "inHg"
     },
     "ThrottleConfig": {
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Samodejna svetlost",
       "AutomaticallyShowOnscreenKeyboard": "Samodejno prikaži zaslonsko tipkovnico",
+      "BatteryLifeEnabled": "Simulirano trajanje baterije",
       "Blue": "Modro",
       "Brightness": "Svetlost",
       "Dark": "Temno",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC in lokalni čas"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Simulirano trajanje baterije",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Avg",

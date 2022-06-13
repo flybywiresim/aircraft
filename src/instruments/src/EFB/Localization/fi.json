@@ -141,8 +141,9 @@
       "CateringTruck": "Ateriapalvelut",
       "Cones": "Varoituskartiot",
       "DoorAft": "Takaovi",
+      "DoorCargo": "Rahtiovi",
       "DoorFwd": "Etuovi",
-      "ExternalPower": "Maasähkö",
+      "ExternalPower": "Maavirtayksikkö",
       "FuelTruck": "Polttoainerekka",
       "JetBridge": "Matkustajasilta",
       "Title": "Palvelut",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Kotiohjaamo-tila",
       "McduFocusTimeout": "Lentotietokone poissa käytöstä tarkennuksen aikana (sekunteina)",
       "McduKeyboardInput": "MCDU näppäimistö syöttö",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Erota nokkapyörän ohjaus peräsimestä",
       "Title": "Realismi"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automaattinen kirkkaus",
       "AutomaticallyShowOnscreenKeyboard": "Näytä näyttönäppäimistö automaattisesti",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Sininen",
       "Brightness": "Kirkkaus",
       "Dark": "Tumma",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC ja paikallinen"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Akun keston simulointi",
   "StatusBar": {
     "Apr": "Huhti",
     "Aug": "Elo",
