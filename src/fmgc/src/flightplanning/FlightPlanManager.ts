@@ -44,6 +44,9 @@ export enum FlightPlans {
     Temporary,
 }
 
+/**
+ * Navigation flight areas defined in the OPC database
+ */
 export enum FlightArea {
     Terminal,
     Takeoff,

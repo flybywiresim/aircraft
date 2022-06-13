@@ -8,7 +8,7 @@ import { LagFilter } from './PFDUtils';
 export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument: BaseInstrument }> {
     private lsButtonPressedVisibility = false;
 
-    private xtkValid = false;
+    private xtkValid = Subject.create(false);
 
     private ldevRequest = false;
 
@@ -65,11 +65,11 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
         });
 
         sub.on('xtk').whenChanged().handle((xtk) => {
-            const xtkValid = Math.abs(xtk) > 0;
-            if (xtkValid !== this.xtkValid) {
-                this.xtkValid = xtkValid;
-                this.updateLdevVisibility();
-            }
+            this.xtkValid.set(Math.abs(xtk) > 0);
+        });
+
+        this.xtkValid.sub(() => {
+            this.updateLdevVisibility();
         });
     }
 
@@ -413,7 +413,7 @@ class LDevIndicator extends DisplayComponent<{bus: EventBus}> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-        sub.on('xtk').whenChanged().handle((xtk) => {
+        sub.on('xtk').whenChanged().withPrecision(3).handle((xtk) => {
             const dots = xtk / 0.1;
 
             if (dots > 2) {
