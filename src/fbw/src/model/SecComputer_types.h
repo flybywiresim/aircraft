@@ -2,6 +2,20 @@
 #define RTW_HEADER_SecComputer_types_h_
 #include "rtwtypes.h"
 
+#ifndef DEFINED_TYPEDEF_FOR_pitch_efcs_law_
+#define DEFINED_TYPEDEF_FOR_pitch_efcs_law_
+
+enum class pitch_efcs_law
+  : int32_T {
+  NormalLaw = 0,
+  AlternateLaw1,
+  AlternateLaw2,
+  DirectLaw,
+  None
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 #define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 
@@ -325,20 +339,6 @@ struct base_sec_laws_outputs
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_pitch_efcs_law_
-#define DEFINED_TYPEDEF_FOR_pitch_efcs_law_
-
-enum class pitch_efcs_law
-  : int32_T {
-  NormalLaw = 0,
-  AlternateLaw1,
-  AlternateLaw2,
-  DirectLaw,
-  None
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_base_sec_adr_computation_data_
 #define DEFINED_TYPEDEF_FOR_base_sec_adr_computation_data_
 
@@ -526,6 +526,7 @@ struct pitch_alternate_input
   real_T eta_deg;
   real_T eta_trim_deg;
   real_T V_ias_kn;
+  real_T mach;
   real_T V_tas_kn;
   real_T CG_percent_MAC;
   real_T total_weight_kg;
@@ -536,6 +537,7 @@ struct pitch_alternate_input
   real_T delta_eta_pos;
   boolean_T on_ground;
   boolean_T tracking_mode_on;
+  boolean_T stabilities_available;
 };
 
 #endif

@@ -107,10 +107,17 @@ class PitchAlternateLaw final
     boolean_T CompareToConstant_const;
     real_T Constant3_Value;
     real_T Constant_Value;
+    real_T Constant5_Value;
+    real_T Gain2_Gain;
+    real_T Constant3_Value_i;
+    real_T uDLookupTable_tableData[6];
+    real_T uDLookupTable_bp01Data[6];
     real_T Gain1_Gain;
+    real_T Constant_Value_n;
+    real_T Gain1_Gain_c;
     real_T Gain1_Gain_l;
-    real_T uDLookupTable_tableData[7];
-    real_T uDLookupTable_bp01Data[7];
+    real_T uDLookupTable_tableData_e[7];
+    real_T uDLookupTable_bp01Data_o[7];
     real_T Saturation3_UpperSat;
     real_T Saturation3_LowerSat;
     real_T Gain5_Gain;
@@ -143,10 +150,9 @@ class PitchAlternateLaw final
     real_T Bias_Bias_f;
     real_T Loaddemand_tableData[3];
     real_T Loaddemand_bp01Data[3];
-    real_T Constant_Value_n;
     real_T Saturation_UpperSat_m;
     real_T Saturation_LowerSat_e;
-    real_T Constant1_Value;
+    real_T Constant6_Value;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
     real_T Saturation_UpperSat_f;
@@ -189,7 +195,7 @@ class PitchAlternateLaw final
     real_T Gain_Gain_c;
     real_T Constant2_Value;
     boolean_T Constant_Value_m;
-    boolean_T Constant1_Value_c;
+    boolean_T Constant1_Value;
   };
 
   void init();
@@ -199,9 +205,11 @@ class PitchAlternateLaw final
   PitchAlternateLaw& operator= (PitchAlternateLaw &&) = delete;
   void step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_g, const real_T *rtu_In_Theta_deg, const real_T
             *rtu_In_Phi_deg, const real_T *rtu_In_qk_deg_s, const real_T *rtu_In_eta_deg, const real_T
-            *rtu_In_eta_trim_deg, const real_T *rtu_In_V_tas_kn, const real_T *rtu_In_flaps_handle_index, const real_T
-            *rtu_In_spoilers_left_pos, const real_T *rtu_In_spoilers_right_pos, const real_T *rtu_In_delta_eta_pos,
-            const boolean_T *rtu_In_tracking_mode_on, real_T *rty_Out_eta_deg, real_T *rty_Out_eta_trim_deg);
+            *rtu_In_eta_trim_deg, const real_T *rtu_In_V_ias_kn, const real_T *rtu_In_mach, const real_T
+            *rtu_In_V_tas_kn, const real_T *rtu_In_flaps_handle_index, const real_T *rtu_In_spoilers_left_pos, const
+            real_T *rtu_In_spoilers_right_pos, const real_T *rtu_In_delta_eta_pos, const boolean_T
+            *rtu_In_tracking_mode_on, const boolean_T *rtu_In_stabilities_available, real_T *rty_Out_eta_deg, real_T
+            *rty_Out_eta_trim_deg);
   void reset();
   PitchAlternateLaw();
   ~PitchAlternateLaw();

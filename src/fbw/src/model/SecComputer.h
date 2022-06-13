@@ -535,6 +535,12 @@ class SecComputer final
     real_T BitfromLabel1_bit_c;
     real_T BitfromLabel2_bit_o;
     real_T BitfromLabel3_bit_j;
+    real_T BitfromLabel_bit_a1;
+    real_T BitfromLabel1_bit_gf;
+    real_T BitfromLabel2_bit_n;
+    real_T BitfromLabel3_bit_l;
+    real_T BitfromLabel4_bit_n;
+    real_T BitfromLabel5_bit_m;
     real_T CompareToConstant3_const;
     real_T CompareToConstant4_const;
     real_T CompareToConstant_const;
@@ -585,6 +591,7 @@ class SecComputer final
     real_T RateLimiterVariableTs5_up;
     SignStatusMatrix EnumeratedConstant_Value;
     SignStatusMatrix EnumeratedConstant1_Value;
+    pitch_efcs_law EnumeratedConstant_Value_i;
     real32_T CompareToConstant_const_n;
     real32_T CompareToConstant1_const_d;
     real32_T CompareToConstant_const_k;

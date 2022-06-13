@@ -28,6 +28,7 @@ struct pitch_alternate_input
   real_T eta_deg;
   real_T eta_trim_deg;
   real_T V_ias_kn;
+  real_T mach;
   real_T V_tas_kn;
   real_T CG_percent_MAC;
   real_T total_weight_kg;
@@ -38,6 +39,7 @@ struct pitch_alternate_input
   real_T delta_eta_pos;
   boolean_T on_ground;
   boolean_T tracking_mode_on;
+  boolean_T stabilities_available;
 };
 
 #endif

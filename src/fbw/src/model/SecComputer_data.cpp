@@ -198,6 +198,18 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   29.0,
 
+  17.0,
+
+  18.0,
+
+  19.0,
+
+  20.0,
+
+  21.0,
+
+  26.0,
+
   35.0,
 
   35.0,
@@ -297,6 +309,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   SignStatusMatrix::NoComputedData,
 
   SignStatusMatrix::NormalOperation,
+
+  pitch_efcs_law::AlternateLaw2,
 
   3.0F,
 

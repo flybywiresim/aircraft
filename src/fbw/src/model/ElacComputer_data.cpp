@@ -189,6 +189,18 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   26.0,
 
+  17.0,
+
+  18.0,
+
+  19.0,
+
+  20.0,
+
+  21.0,
+
+  26.0,
+
   16.0,
 
   1.0,
@@ -276,6 +288,8 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   SignStatusMatrix::NormalOperation,
 
   lateral_efcs_law::NormalLaw,
+
+  pitch_efcs_law::AlternateLaw2,
 
   50.0F,
 
