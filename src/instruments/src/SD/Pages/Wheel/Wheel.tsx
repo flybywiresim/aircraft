@@ -397,7 +397,7 @@ const LandingGearPositionIndicators = ({ x, y, location, lgciu1DiscreteWord1, lg
                 <g>
                     <path className="AmberLine" d="m 0 0 h 27" />
 
-                    <text className="Amber Standard" x={1} y={22} fontSize={17}>XX</text>
+                    <text className="Amber Standard" x={1} y={22}>XX</text>
                 </g>
             )}
 
@@ -405,12 +405,12 @@ const LandingGearPositionIndicators = ({ x, y, location, lgciu1DiscreteWord1, lg
                 <g>
                     <path className="AmberLine" d="m 63 0 h -27" />
 
-                    <text className="Amber Standard" x={36} y={22} fontSize={17}>XX</text>
+                    <text className="Amber Standard" x={36} y={22}>XX</text>
                 </g>
             )}
 
             {upLockFlagShown && (
-                <text className="Amber" x={-10} y={-18} fontSize={17}>UP LOCK</text>
+                <text className="Amber Standard" x={-16} y={-22}>UP LOCK</text>
             )}
         </SvgGroup>
     );
