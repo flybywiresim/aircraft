@@ -12,6 +12,7 @@ import { DecelPathBuilder } from './guidance/vnav/descent/DecelPathBuilder';
 import { VerticalFlightPlanBuilder } from './guidance/vnav/verticalFlightPlan/VerticalFlightPlanBuilder';
 import { initComponents, updateComponents, recallMessageById } from './components';
 import { WaypointBuilder } from './flightplanning/WaypointBuilder';
+import { Navigation } from './navigation/Navigation';
 
 function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanManager: FlightPlanManager): void {
     initComponents(baseInstrument, flightPlanManager);
@@ -38,4 +39,5 @@ export {
     VerticalFlightPlanBuilder,
     WaypointBuilder,
     normaliseApproachName,
+    Navigation,
 };

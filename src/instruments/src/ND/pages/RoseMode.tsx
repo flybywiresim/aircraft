@@ -101,7 +101,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
                 <SelectedHeadingBug heading={heading} selected={selectedHeading} />
                 { mode === Mode.ROSE_ILS && <GlideSlope /> }
                 <Plane />
-                {mode === Mode.ROSE_NAV && <CrossTrack x={390} y={407} />}
+                {mode === Mode.ROSE_NAV && <CrossTrack x={390} y={407} side={side} />}
                 <g clipPath="url(#rose-mode-tcas-clip)">
                     <Traffic mode={mode} mapParams={mapParams} />
                 </g>
