@@ -82,9 +82,9 @@ const PitchTrim = ({ x, y }: ComponentPositionProps) => {
     return (
         <SvgGroup x={x} y={y}>
             <text className="Large Center" x={0} y={22}>PITCH TRIM</text>
-            <text x={1} y={53} className={`${hydraulicAvailableClass} Huge End`}>{pitchIntegral}</text>
+            <text x={-1} y={53} className={`${hydraulicAvailableClass} Huge End`}>{pitchIntegral}</text>
             <text x={4} y={53} className={`${hydraulicAvailableClass} Huge Center`}>.</text>
-            <text x={21} y={52} className={`${hydraulicAvailableClass} Standard Center`}>{pitchFractional}</text>
+            <text x={21} y={53} className={`${hydraulicAvailableClass} Standard Center`}>{pitchFractional}</text>
             <text x={41} y={56} className="Cyan Title Center">°</text>
             <text
                 x={74}
@@ -164,7 +164,7 @@ const Stabilizer = ({ x, y }: ComponentPositionProps) => (
 );
 
 const Aileron = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps) => {
-    const textPositionX = side === 'left' ? -53 : 53;
+    const textPositionX = side === 'left' ? -53 : 54;
 
     const [aileronDeflection] = useSimVar(`L:A32NX_HYD_AILERON_${side.toUpperCase()}_DEFLECTION`, 'number', 50);
     const aileronDeflectPctNormalized = aileronDeflection * 68.5;
@@ -237,7 +237,7 @@ const AileronAxis = ({ x, y, side }: ComponentPositionProps & ComponentSidePosit
 };
 
 const Elevator = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps) => {
-    const textPositionX = side === 'left' ? -59 : 59;
+    const textPositionX = side === 'left' ? -59 : 62;
     const textLetter = side === 'left' ? 'L' : 'R';
 
     const [elevatorDeflection] = useSimVar(`L:A32NX_HYD_ELEVATOR_${side.toUpperCase()}_DEFLECTION`, 'percent over 100', 50);
