@@ -9,7 +9,7 @@ interface Props {
     value: number | string,
 
     /**
-     * Transceiver type (e.g VHF, HF, VOR, ILS, MLS, ADF)
+     * Transceiver type (e.g VHF, HF, VOR, ILS, ADF)
      */
     transceiver?: number
 }

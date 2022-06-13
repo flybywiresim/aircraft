@@ -48,8 +48,11 @@ const UnpoweredRadioPanel = () => (
 const PoweredRadioPanel = (props: Props) => {
     const [navTransceiverType, setNavTransceiverType] = useState(TransceiverType.RADIO_VHF);
 
+    // Used to turn on the associated led
     const [panelMode, setPanelMode] = useSimVar(`L:A32NX_RMP_${props.side}_SELECTED_MODE`, 'Number', 250);
+    // Used to determine (in the FGMC for instance) if the system is in NAV backup mode. L and R simvars have to be checked
     const [navButtonPressed, setNavButton] = useSimVar(`L:A32NX_RMP_${props.side}_NAV_BUTTON_SELECTED`, 'boolean', 250);
+    // Used to return to the selected VHF once NAV is pushed again
     const [previousPanelMode, setPreviousPanelMode] = useState(panelMode);
 
     // Hook radio management panel mode buttons to set panelMode SimVar.
@@ -94,10 +97,12 @@ const PoweredRadioPanel = (props: Props) => {
         }
     });
 
+    // Not enough references to make MLS work
+    // Simulating the MLS system is connectedt to the ILS
     useInteractionEvent(`A32NX_RMP_${props.side}_MLS_BUTTON_PRESSED`, () => {
         if (navButtonPressed) {
             setPanelMode(8);
-            setNavTransceiverType(TransceiverType.MLS);
+            setNavTransceiverType(TransceiverType.ILS);
         }
     });
 
@@ -116,7 +121,6 @@ const PoweredRadioPanel = (props: Props) => {
     case TransceiverType.ILS:
     case TransceiverType.ADF:
         return (<NavRadioPanel side={props.side} transceiver={navTransceiverType} />);
-    case TransceiverType.MLS:
     default:
         // If we reach this block, something's gone wrong. We'll just render a broken panel.
         return (

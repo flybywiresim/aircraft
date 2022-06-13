@@ -10,7 +10,6 @@ export enum TransceiverType {
     RADIO_VHF,
     VOR,
     ILS,
-    MLS,
     ADF
 }
 
@@ -51,9 +50,8 @@ const findNearestInArray = (value: number, array: number[]): number => array.red
  * Vatsim VHF communications use 25 kHz spacing.
  * VOR / ILS frequencies use 50 kHz spacing.
  * ADF frequencies use 1kHz spacing.
- * MLS frequencies use 300kHz spacing
  */
-type ChannelSpacing = 1 | 8.33 | 10 | 25 | 50 | 300;
+type ChannelSpacing = 8.33 | 10 | 25 | 50 | 500;
 
 /**
  * Calculate the offset of a given frequency channel given a variable spacing.
@@ -75,7 +73,8 @@ const offsetFrequencyChannel = (spacing: ChannelSpacing, channel: number, offset
     if (spacing === 10) endings = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
     // VOR/ILS Frequency Endings.
     if (spacing === 50) endings = [0, 50];
-    // MLS Frequency Endings.
+    // ADF since there is a decimal in the real airplane
+    if (spacing === 500) endings = [0, 500];
 
     // Special cases, such as ADF, do not use the ending algorithm to find frequencies.
     if (endings === null) {
@@ -117,6 +116,7 @@ const offsetFrequencyChannel = (spacing: ChannelSpacing, channel: number, offset
  */
 export const StandbyFrequency = (props: Props) => {
     let spacing: ChannelSpacing;
+    let toMhz = 1000;
 
     switch (props.transceiver) {
     case TransceiverType.ILS:
@@ -126,10 +126,8 @@ export const StandbyFrequency = (props: Props) => {
         spacing = 50;
         break;
     case TransceiverType.ADF:
-        spacing = 1;
-        break;
-    case TransceiverType.MLS:
-        spacing = 300;
+        spacing = 500;
+        toMhz = 1;
         break;
     default:
         spacing = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0')[0] === '0' ? 8.33 : 25;
@@ -138,31 +136,27 @@ export const StandbyFrequency = (props: Props) => {
     // Handle outer knob turned.
     const outerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
         if (props.value !== 0) {
-            const frequency = Math.round(props.value / 1000); // To kHz
+            let frequency = props.value;
 
             if (props.transceiver !== TransceiverType.ADF) {
-                const integer = Math.floor(frequency / 1000) + offset;
-                const decimal = frequency % 1000;
-
-                // @todo determine min/max depending on mode.
-                let newInteger = 0;
-                if (props.transceiver === TransceiverType.RADIO_VHF) {
-                    newInteger = Utils.Clamp(integer, 118, 136);
-                } else if (props.transceiver === TransceiverType.ILS) {
-                    newInteger = Utils.Clamp(integer, 108, 111);
-                } else if (props.transceiver === TransceiverType.VOR) {
-                    newInteger = Utils.Clamp(integer, 108, 117);
-                }
-
-                props.setValue((newInteger * 1000 + decimal) * 1000);
-            } else {
-                const hundreds = Math.floor(frequency / 100) + offset;
-                const tens = frequency % 100;
-                const max = tens > 50 ? 16 : 17;
-                const min = tens < 90 ? 2 : 1;
-
-                props.setValue(Avionics.Utils.make_adf_bcd32((Utils.Clamp(hundreds, min, max) * 100 + tens) * 1000));
+                frequency = Math.round(frequency / 1000); // To kHz
             }
+
+            const integer = Math.floor(frequency / 1000) + offset;
+
+            // @todo determine min/max depending on mode.
+            let newInteger = 0;
+            if (props.transceiver === TransceiverType.RADIO_VHF) {
+                newInteger = Utils.Clamp(integer, 118, 136);
+            } else if (props.transceiver === TransceiverType.ILS) {
+                newInteger = Utils.Clamp(integer, 108, 111);
+            } else if (props.transceiver === TransceiverType.VOR) {
+                newInteger = Utils.Clamp(integer, 108, 117);
+            } else if (props.transceiver === TransceiverType.ADF) {
+                newInteger = Utils.Clamp(integer, 190, 1750);
+            }
+
+            props.setValue((newInteger * 1000 + frequency % 1000) * toMhz);
         } else {
             props.setValue(0);
         }
@@ -170,19 +164,25 @@ export const StandbyFrequency = (props: Props) => {
 
     // Handle inner knob turned.
     const innerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
-        const frequency = Math.round(props.value / 1000); // kHz
-
         if (props.value !== 0) {
+            let frequency = props.value;
+
+            if (props.transceiver !== TransceiverType.ADF) {
+                frequency = Math.round(frequency / 1000); // To kHz
+            }
+
             // Tested in real life:
             // Integer cannot return to 118 from 136 to the right
             // Decimal can return to 0 from 975 to the right
+            const integer = Math.floor(frequency / 1000);
+            let decimal = 0;
+
             if (props.transceiver !== TransceiverType.ADF) {
-                const integer = Math.floor(frequency / 1000);
-                const decimal = offsetFrequencyChannel(spacing, frequency % 1000, offset);
-                props.setValue((integer * 1000 + decimal % 1000) * 1000);
-            } else {
-                props.setValue(Avionics.Utils.make_adf_bcd32(Utils.Clamp(frequency + offset, 190, 1750) * 1000));
+                decimal = offsetFrequencyChannel(spacing, frequency % 1000, offset);
+            } else { // offsetFrequencyChannel does not fit ADF needs
+                decimal = frequency % 1000 === 0 ? 500 : 0;
             }
+            props.setValue((integer * 1000 + decimal % 1000) * toMhz);
         } else {
             props.setValue(0);
         }

@@ -415,9 +415,73 @@
     - Hz
     - The VHF 3 standby frequency for the right RMP.
 
-- A32NX_RMP_ILS_MLS_TUNED
+- A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_VOR
+    - Hz
+    - The VOR active frequency that is saved for display for the left RMP.
+
+- A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_ILS
+    - Hz
+    - The ILS active frequency that is saved for display for the left RMP.
+
+- A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_ADF
+    - Hz
+    - The ADF active frequency that is saved for display for the left RMP.
+
+- A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_VOR
+    - Hz
+    - The VOR active frequency that is saved for display for the right RMP.
+
+- A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_ILS
+    - Hz
+    - The ILS active frequency that is saved for display for the right RMP.
+
+- A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_ADF
+    - Hz
+    - The ADF active frequency that is saved for display for the right RMP.
+
+- A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_VOR
+    - Hz
+    - The VOR standby frequency that is saved for display for the left RMP.
+
+- A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_ILS
+    - Hz
+    - The ILS standby frequency that is saved for display for the left RMP.
+
+- A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_ADF
+    - Hz
+    - The ADF standby frequency that is saved for display for the left RMP.
+
+- A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_VOR
+    - Hz
+    - The VOR standby frequency that is saved for display for the right RMP.
+
+- A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_ILS
+    - Hz
+    - The ILS standby frequency that is saved for display for the right RMP.
+
+- A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_ADF
+    - Hz
+    - The ADF standby frequency that is saved for display for the right RMP.
+
+- A32NX_RMP_L_SAVED_COURSE_VOR
+    - Number
+    - The VOR course tuned via the left RMP
+
+- A32NX_RMP_L_SAVED_COURSE_ILS
+    - Number
+    - The ILS course tuned via the left RMP
+
+- A32NX_RMP_R_SAVED_COURSE_VOR
+    - Number
+    - The VOR course tuned via the right RMP
+
+- A32NX_RMP_R_SAVED_COURSE_ILS
+    - Number
+    - The ILS course tuned via the right RMP
+
+- A32NX_RMP_ILS_TUNED
     - Bool
-    - If the ILS/MLS is tuned via the RMP
+    - If the ILS is tuned via the RMP
 
 - A32NX_TO_CONFIG_FLAPS_ENTERED
     - Bool

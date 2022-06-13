@@ -1,15 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { StandbyFrequency, TransceiverType } from './StandbyFrequency';
 import { StandbyCourse } from './StandbyCourse';
-import { useSplitSimVar, useSimVar } from '../../Common/simVars';
+import { useSimVar } from '../../Common/simVars';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
 import { useInteractionEvent } from '../../Common/hooks';
-
-const DEFAULT_FREQUENCY_VOR = 113000000;
-const DEFAULT_FREQUENCY_ILS = 108900000;
-const DEFAULT_CHANNEL_MLS = 150;
-const DEFAULT_FREQUENCY_ADF = 433000;
 
 interface Props {
     /**
@@ -18,7 +13,7 @@ interface Props {
     side: string,
 
     /**
-     * The VHF transceiver mode (VHF 1, 2, or 3).
+     * The NAV transceiver  (VOR, ILS, ADF).
      */
     transceiver: number,
 
@@ -29,68 +24,66 @@ enum Mode {
     COURSE = 1
 }
 
-const useSetActiveFrequency = (transceiver: number, index: number) => {
-    if (transceiver === TransceiverType.ADF) {
-        return useSimVar(`K:ADF${index === 1 ? '' : index}_ACTIVE_SET`, 'Frequency ADF BCD32', 100);
-    }
+/*
+* Had to use this simvars to save the frequencies set via the RMP
+* In real life, if you tune a navaid via the MCDU and then press NAV, the frequency is not the same
+/
 
-    return useSimVar(`K:NAV${index}_RADIO_SET_HZ`, 'Hz', 100);
-};
-
-const useSetStandbyFrequency = (transceiver: number, index: number) => {
-    if (transceiver === TransceiverType.ADF) {
-        return useSimVar(`K:ADF${index === 1 ? '' : index}_STBY_SET`, 'Frequency ADF BCD32', 100);
-    }
-
-    return useSimVar(`K:NAV${index}_STBY_SET_HZ`, 'Hz', 100);
-};
-
-const useGetActiveFrequency = (transceiver: number, index: number) => {
-    const [frequency] = useSimVar(`${transceiver === TransceiverType.ADF ? 'ADF' : 'NAV'} ACTIVE FREQUENCY:${index}`, 'Hz', 100);
-
-    if (frequency !== 0) {
-        return frequency;
-    }
-
-    // If frequency === 0 at startup
-    // Which is the case if the NAV pb is pushed without initializing the RADNAV page
+/**
+ *
+ * @param transceiver The transceiver type (VOR, ADF or ILS)
+ * @param side Side on which the transceiver is (L or R)
+ * @returns a tuble simvar
+ */
+const useActiveFrequency = (transceiver: number, side: string) => {
     switch (transceiver) {
     case TransceiverType.VOR:
-        return DEFAULT_FREQUENCY_VOR;
+        return useSimVar(`L:A32NX_RMP_${side}_SAVED_ACTIVE_FREQUENCY_VOR`, 'number');
     case TransceiverType.ADF:
-        return DEFAULT_FREQUENCY_ADF;
-    case TransceiverType.MLS:
-        return DEFAULT_CHANNEL_MLS;
+        return useSimVar(`L:A32NX_RMP_${side}_SAVED_ACTIVE_FREQUENCY_ADF`, 'number');
     default:
-        return DEFAULT_FREQUENCY_ILS;
+        return useSimVar(`L:A32NX_RMP_${side}_SAVED_ACTIVE_FREQUENCY_ILS`, 'number');
     }
 };
 
-const useGetStandbyFrequency = (transceiver: number, index: number) => {
-    const [frequency] = useSimVar(`${transceiver === TransceiverType.ADF ? 'ADF' : 'NAV'} STANDBY FREQUENCY:${index}`, 'Hz', 100);
-
-    if (frequency !== 0) {
-        return frequency;
-    }
-
-    // If frequency === 0 at startup
-    // Which is the case if the NAV pb is pushed without initializing the RADNAV page
+/**
+ *
+ * @param transceiver The transceiver type (VOR, ADF or ILS)
+ * @param side Side on which the transceiver is (L or R)
+ * @returns a tuble simvar
+ */
+const useStandbyFrequency = (transceiver: number, side: string) => {
     switch (transceiver) {
     case TransceiverType.VOR:
-        return DEFAULT_FREQUENCY_VOR;
+        return useSimVar(`L:A32NX_RMP_${side}_SAVED_STANDBY_FREQUENCY_VOR`, 'number');
     case TransceiverType.ADF:
-        return DEFAULT_FREQUENCY_ADF;
-    case TransceiverType.MLS:
-        return DEFAULT_CHANNEL_MLS;
+        return useSimVar(`L:A32NX_RMP_${side}_SAVED_STANDBY_FREQUENCY_ADF`, 'number');
     default:
-        return DEFAULT_FREQUENCY_ILS;
+        return useSimVar(`L:A32NX_RMP_${side}_SAVED_STANDBY_FREQUENCY_ILS`, 'number');
     }
 };
 
-const useCourse = (indexInstrument: number, indexSide: number) => {
-    const variableReadName = `NAV OBS:${indexSide}`;
-    return useSplitSimVar(variableReadName, 'degrees', indexInstrument === TransceiverType.VOR ? `K:VOR${indexSide}_SET`
-        : 'L:A32NX_FM_LS_COURSE', 'number', 100);
+/**
+ *
+ * @param transceiver The transceiver type (VOR, ADF or ILS)
+ * @param side Side on which the transceiver is (L or R)
+ * @returns a tuble simvar
+ */
+const useCourse = (transceiver: number, side: string) => {
+    switch (transceiver) {
+    case TransceiverType.VOR:
+        return useSimVar(`L:A32NX_RMP_${side}_SAVED_COURSE_VOR`, 'number');
+    default:
+        return useSimVar(`L:A32NX_RMP_${side}_SAVED_COURSE_ILS`, 'number');
+    }
+};
+
+const setActiveFrequencySimVar = (transceiver: number, index: number, frequency: number) => {
+    if (transceiver === TransceiverType.ADF) {
+        SimVar.SetSimVarValue(`K:ADF${index === 1 ? '' : index}_ACTIVE_SET`, 'Frequency ADF BCD32', Avionics.Utils.make_adf_bcd32(frequency));
+    }
+
+    SimVar.SetSimVarValue(`K:NAV${index}_RADIO_SET_HZ`, 'Hz', frequency);
 };
 
 /**
@@ -99,60 +92,48 @@ const useCourse = (indexInstrument: number, indexSide: number) => {
  * Renders active frequency RadioPanelDisplay and appropriate StandbyFrequency sub-components.
  */
 export const NavRadioPanel = (props: Props) => {
+    let standbyWindow: JSX.Element;
+
     let index = props.side === 'L' ? 1 : 2;
     if (props.transceiver === TransceiverType.ILS) {
         index = 3; // Both RMPs manage the same ILS
     }
 
-    const [mode, setMode] = useState<Mode>(Mode.FREQUENCY);
+    const [mode, setMode] = useState(Mode.FREQUENCY);
 
-    const [course, setStandbyCourse] = useState<number>(45);
-    const [, setCourse] = useCourse(props.transceiver, index);
+    const [activeFrequency, setActiveFrequencySaved] = useActiveFrequency(props.transceiver, props.side);
+    const [standbyFrequency, setStandbyFrequencySaved] = useStandbyFrequency(props.transceiver, props.side);
+    const [course, setCourseSaved] = useCourse(props.transceiver, props.side);
 
-    /*
-    * Couldn't use useSplitVar because there was a sync problem with ADF: BCD32 format could be seen before number value on the dial
-    * Fact: You can only write ADF frequency in ADF BCD32 and we want to get the frequency in Hz
-    * When using the setter (therefore BCD32), useSplitSimVar overrides the read value (which we want in Hz) too which leads to temporary wrong value
-    * The solution I found is splitting them for real so there's so override
-    */
-    const [, setActive] = useSetActiveFrequency(props.transceiver, index);
-    const [, setStandbyFrequency] = useSetStandbyFrequency(props.transceiver, index);
-    const activeHz = useGetActiveFrequency(props.transceiver, index);
-    const standbyHz = useGetStandbyFrequency(props.transceiver, index);
-
-    let standbyWindow: JSX.Element;
+    const [, setCourse] = useSimVar(props.transceiver === TransceiverType.VOR ? `K:VOR${index}_SET` : 'L:A32NX_FM_LS_COURSE', 'number', 100);
 
     useInteractionEvent(`A32NX_RMP_${props.side}_TRANSFER_BUTTON_PRESSED`, () => {
         if (mode === Mode.FREQUENCY) {
             if (props.transceiver !== TransceiverType.ADF) {
                 setMode(Mode.COURSE);
-                setActive(standbyHz);
-            } else {
-                setActive(Avionics.Utils.make_adf_bcd32(standbyHz));
             }
-            if (props.transceiver === TransceiverType.ILS || props.transceiver === TransceiverType.MLS) {
+
+            setActiveFrequencySimVar(props.transceiver, index, standbyFrequency);
+            setActiveFrequencySaved(standbyFrequency);
+
+            if (props.transceiver === TransceiverType.ILS) {
                 SimVar.SetSimVarValue('L:A32NX_RMP_ILS_MLS_TUNED', 'boolean', true);
             }
         } else {
             setCourse(course);
             setMode(Mode.FREQUENCY);
         }
-        if (props.transceiver !== TransceiverType.ADF) {
-            setStandbyFrequency(activeHz);
-        } else {
-            setStandbyFrequency(Avionics.Utils.make_adf_bcd32(activeHz));
-        }
     });
 
     if (mode === Mode.FREQUENCY) {
-        standbyWindow = <StandbyFrequency side={props.side} value={standbyHz} setValue={setStandbyFrequency} transceiver={props.transceiver} />;
+        standbyWindow = <StandbyFrequency side={props.side} value={standbyFrequency} setValue={setStandbyFrequencySaved} transceiver={props.transceiver} />;
     } else {
-        standbyWindow = <StandbyCourse side={props.side} value={course} setValue={setStandbyCourse} />;
+        standbyWindow = <StandbyCourse side={props.side} value={course} setValue={setCourseSaved} />;
     }
 
     return (
         <span>
-            <RadioPanelDisplay value={activeHz} transceiver={props.transceiver} />
+            <RadioPanelDisplay value={activeFrequency} transceiver={props.transceiver} />
             {standbyWindow}
         </span>
     );

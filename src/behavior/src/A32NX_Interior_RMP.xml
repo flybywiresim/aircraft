@@ -237,7 +237,7 @@
             <MODE_ID>7</MODE_ID>
         </UseTemplate>
 
-        <!-- Inop MLS mode button and led -->
+        <!-- Inop MLS mode button and led. Underlying JS code acts on ILS -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
