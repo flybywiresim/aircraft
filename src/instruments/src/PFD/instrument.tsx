@@ -180,6 +180,9 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('daRaw');
         this.simVarPublisher.subscribe('ls1Button');
         this.simVarPublisher.subscribe('ls2Button');
+        this.simVarPublisher.subscribe('xtk');
+        this.simVarPublisher.subscribe('ldevRequestLeft');
+        this.simVarPublisher.subscribe('ldevRequestRight');
 
         this.simVarPublisher.subscribe('fcdc1DiscreteWord1Raw');
         this.simVarPublisher.subscribe('fcdc2DiscreteWord1Raw');

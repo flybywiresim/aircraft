@@ -1714,6 +1714,20 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Indicates whether the FMS should switch to APPROACH phase.
     - **WARNING:** This is temporary and internal. Do not use.
 
+- A32NX_FMGC_{side}_LDEV_REQUEST
+    - Bool
+    - Indicates whether the FMGC is requesting L/DEV to be displayed on the PFD
+    - {side}
+        - L
+        - R
+
+- A32NX_FMGC_L_RNP
+    - Number (nautical miles)
+    - The active Required Navigation Performance
+    - {side}
+        - L
+        - R
+
 ## Autopilot System
 
 - A32NX_FMA_LATERAL_MODE

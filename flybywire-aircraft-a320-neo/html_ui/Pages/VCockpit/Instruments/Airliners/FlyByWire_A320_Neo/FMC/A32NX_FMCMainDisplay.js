@@ -206,11 +206,13 @@ class FMCMainDisplay extends BaseAirliners {
         this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager, this);
         this.navRadioManager = new Fmgc.NavRadioManager(this);
         this.efisSymbols = new Fmgc.EfisSymbols(this.flightPlanManager, this.guidanceController);
+        this.navigation = new Fmgc.Navigation(this.flightPlanManager);
 
         Fmgc.initFmgcLoop(this, this.flightPlanManager);
 
         this.guidanceController.init();
         this.efisSymbols.init();
+        this.navigation.init();
 
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
@@ -515,6 +517,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.groundTempPilot = undefined;
         this.onAirport = () => { };
 
+        if (this.navigation) {
+            this.navigation.requiredPerformance.clearPilotRnp();
+        }
+
         // FMGC Message Queue
         this._messageQueue.resetQueue();
 
@@ -579,6 +585,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.fmsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
             this.updateRadioNavState();
             this.checkSpeedLimit();
+            this.navigation.update();
         }
 
         this.A32NXCore.update();

@@ -122,6 +122,9 @@ export interface PFDSimvars {
     fcdc2CaptRollCommandRaw: number;
     fcdc1FoRollCommandRaw: number;
     fcdc2FoRollCommandRaw: number;
+    xtk: number;
+    ldevRequestLeft: boolean;
+    ldevRequestRight: boolean;
   }
 
 export enum PFDVars {
@@ -246,6 +249,9 @@ export enum PFDVars {
     fcdc2CaptRollCommandRaw = 'L:A32NX_FCDC_2_CAPT_ROLL_COMMAND',
     fcdc1FoRollCommandRaw = 'L:A32NX_FCDC_1_FO_ROLL_COMMAND',
     fcdc2FoRollCommandRaw = 'L:A32NX_FCDC_2_FO_ROLL_COMMAND',
+    xtk = 'L:A32NX_FG_CROSS_TRACK_ERROR',
+    ldevLeft = 'L:A32NX_FMGC_L_LDEV_REQUEST',
+    ldevRight = 'L:A32NX_FMGC_R_LDEV_REQUEST',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -372,6 +378,9 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['fcdc2CaptRollCommandRaw', { name: PFDVars.fcdc2CaptRollCommandRaw, type: SimVarValueType.Number }],
         ['fcdc1FoRollCommandRaw', { name: PFDVars.fcdc1FoRollCommandRaw, type: SimVarValueType.Number }],
         ['fcdc2FoRollCommandRaw', { name: PFDVars.fcdc2FoRollCommandRaw, type: SimVarValueType.Number }],
+        ['xtk', { name: PFDVars.xtk, type: SimVarValueType.NM }],
+        ['ldevRequestLeft', { name: PFDVars.ldevLeft, type: SimVarValueType.Bool }],
+        ['ldevRequestRight', { name: PFDVars.ldevRight, type: SimVarValueType.Bool }],
     ])
 
     public constructor(bus: EventBus) {
