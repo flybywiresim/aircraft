@@ -241,8 +241,7 @@ const Elevator = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: Com
     const textLetter = side === 'left' ? 'L' : 'R';
 
     const [elevatorDeflection] = useSimVar(`L:A32NX_HYD_ELEVATOR_${side.toUpperCase()}_DEFLECTION`, 'percent over 100', 50);
-    const elevatorDeflectDeg = elevatorDeflection * (elevatorDeflection > 0 ? 16 : 11.5);
-    const elevatorDeflectPctNormalized = elevatorDeflectDeg * 136 / 27.5;
+    const elevatorDeflectPctNormalized = elevatorDeflection * (elevatorDeflection > 0 ? 1 * 91 : 16 / 11.5 * 45);
     const cursorPath = `M0,${77 - elevatorDeflectPctNormalized} l${side === 'right' ? '-' : ''}15,-9 l0,18Z`;
 
     const hydraulics = useHydraulics();
