@@ -10,7 +10,7 @@ import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
 import { ComponentSidePositionProps } from '../../Common/ComponentSidePositionProps';
 import { Spoilers } from '../../Common/Spoilers';
 
-import './Fctl.scss';
+import '../../Common/CommonStyles.scss';
 
 setIsEcamPage('fctl_page');
 
