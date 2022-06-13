@@ -6,7 +6,9 @@ import { SvgGroup } from '../../Common/SvgGroup';
 import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
 import { ComponentPositionProps } from '../../Common/ComponentPositionProps';
 import { HydraulicSystem } from '../../Common/HydraulicSystem';
+import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
 import { ComponentSidePositionProps } from '../../Common/ComponentSidePositionProps';
+import { Spoilers } from '../../Common/Spoilers';
 
 import './Fctl.scss';
 
@@ -274,92 +276,6 @@ const ElevatorAxis = ({ x, y, side }: ComponentPositionProps & ComponentSidePosi
         <SvgGroup x={x} y={y}>
             <path className="WhiteLine" d={d1} />
             <path className="WhiteLine" d={d2} />
-        </SvgGroup>
-    );
-};
-
-interface HydraulicIndicatorProps extends ComponentPositionProps {
-    type: HydraulicSystem,
-}
-export const HydraulicIndicator = ({ x, y, type }: HydraulicIndicatorProps) => {
-    const hydraulics = useHydraulics();
-
-    return (
-        <SvgGroup x={x} y={y}>
-            <rect x={0} y={0} className="GreyFill" width="23" height="26" rx="0" />
-            <text x={12} y={22} className={`Standard Center ${hydraulics[type].available ? 'Green' : 'Amber'}`}>
-                {type}
-            </text>
-        </SvgGroup>
-    );
-};
-
-export const Spoilers = ({ x, y }: ComponentPositionProps) => {
-    const [aileronLeftDeflectionState] = useSimVar('L:A32NX_HYD_AILERON_LEFT_DEFLECTION', 'number', 50);
-    const [aileronRightDeflectionState] = useSimVar('L:A32NX_HYD_AILERON_RIGHT_DEFLECTION', 'number', 50);
-
-    const [leftSpoilerState] = useSimVar('L:A32NX_HYD_SPOILERS_LEFT_DEFLECTION', 'number', 50);
-    const [rightSpoilerState] = useSimVar('L:A32NX_HYD_SPOILERS_RIGHT_DEFLECTION', 'number', 50);
-    const [speedBrakeHandlePosition] = useSimVar('SPOILERS HANDLE POSITION', 'percent over 100', 100);
-
-    const [spoilersArmed] = useSimVar('L:A32NX_SPOILERS_ARMED', 'boolean', 500);
-
-    const leftSpoilerUp = leftSpoilerState > 0.1;
-    const leftAileronUp = aileronLeftDeflectionState < -0.5;
-    const rightSpoilerUp = rightSpoilerState > 0.1;
-    const rightAileronUp = aileronRightDeflectionState > 0.5;
-
-    const speedBrakeUp = speedBrakeHandlePosition > 0.1;
-
-    return (
-        <SvgGroup x={x} y={y}>
-            <Spoiler x={0} y={26} side="left" number={5} actuatedBy="G" upWhenActuated={(spoilersArmed && leftSpoilerUp) || leftAileronUp} />
-            <Spoiler x={50} y={19} side="left" number={4} actuatedBy="Y" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
-            <Spoiler x={99} y={12} side="left" number={3} actuatedBy="B" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
-            <Spoiler x={147} y={6} side="left" number={2} actuatedBy="Y" upWhenActuated={leftSpoilerUp || speedBrakeUp} />
-            <Spoiler x={197} y={0} side="left" number={1} actuatedBy="G" upWhenActuated={spoilersArmed && leftSpoilerUp} />
-
-            <Spoiler x={304} y={0} side="right" number={1} actuatedBy="G" upWhenActuated={spoilersArmed && rightSpoilerUp} />
-            <Spoiler x={354} y={6} side="right" number={2} actuatedBy="Y" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
-            <Spoiler x={402} y={12} side="right" number={3} actuatedBy="B" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
-            <Spoiler x={452} y={19} side="right" number={4} actuatedBy="Y" upWhenActuated={rightSpoilerUp || speedBrakeUp} />
-            <Spoiler x={501} y={26} side="right" number={5} actuatedBy="G" upWhenActuated={(spoilersArmed && rightSpoilerUp) || rightAileronUp} />
-        </SvgGroup>
-    );
-};
-
-interface SpoilerProps extends ComponentPositionProps, ComponentSidePositionProps {
-    number: number,
-    actuatedBy: HydraulicSystem,
-    upWhenActuated: boolean,
-}
-const Spoiler = ({ x, y, number, side, actuatedBy, upWhenActuated }: SpoilerProps) => {
-    const hydraulics = useHydraulics();
-
-    return (
-        <SvgGroup x={x} y={y}>
-            <path
-                className={`${hydraulics[actuatedBy].available ? 'GreenLine' : 'AmberLine'}`}
-                d={`M 0 0 l ${side === 'right' ? '-' : ''}19 0`}
-            />
-            <path
-                visibility={upWhenActuated ? 'visible' : 'hidden'}
-                className={`${hydraulics[actuatedBy].available ? 'GreenLine' : 'AmberLine'}`}
-                d={`M 0 -31 l ${side === 'left' ? 19 : -19} 0 l ${side === 'left' ? -9.5 : 9.5} -16 z`}
-            />
-            <path
-                visibility={upWhenActuated && hydraulics[actuatedBy].available ? 'visible' : 'hidden'}
-                className="GreenLine"
-                d={`M ${side === 'left' ? 9.5 : -9.5} 0 l 0 -31`}
-            />
-            <text
-                x={side === 'left' ? 12 : -12}
-                y={-4}
-                visibility={hydraulics[actuatedBy].available ? 'hidden' : 'visible'}
-                className="Amber Standard Center"
-            >
-                {number}
-            </text>
         </SvgGroup>
     );
 };

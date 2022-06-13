@@ -1,143 +1,128 @@
 @import "../../style";
-@import "../../../Common/definitions";
+@import "../../../Common/definitions.scss";
 
 #main-wheel {
-  /** Common **/
-  .shape {
-    stroke-width: 1.5;
+
+  .ThickCyanLine {
+    stroke: $display-cyan !important;
+    stroke-width: 6;
+    stroke-linejoin: round;
+    stroke-linecap: round;
     fill: none;
   }
-  .shape path {
-    stroke: inherit;
-  }
 
-  /* Colors */
-  .color-white {
-    fill: var(--displayWhite);
-    stroke: var(--displayWhite);
-  }
-  .color-gray {
-    fill: var(--displayLightGrey);
-    stroke: var(--displayLightGrey);
-  }
-  .shape.color-gray {
+  .AmberLine {
+    stroke: $display-amber !important;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
     fill: none;
   }
-  .color-green {
-    fill: var(--displayGreen);
-    stroke: var(--displayGreen);
-  }
-  .shape.color-green {
+
+  .RedLine {
+    stroke: $display-red !important;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
     fill: none;
   }
-  .color-amber {
-    fill: var(--displayAmber);
-    stroke: var(--displayAmber);
-  }
-  .shape.color-amber {
+
+  .GreenLine {
+    stroke: $display-green !important;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
     fill: none;
   }
-  .color-red {
-    fill: var(--displayRed);
-    stroke: var(--displayRed);
-  }
-  .shape.color-red {
-    fill: transparent !important;
-  }
 
-  /* Big text */
-  .big-text {
-    font-size: 20px;
-    text-anchor: middle;
+  .WhiteLine {
+    stroke: $display-white !important;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    fill: none;
   }
 
-  .medium-text {
-    font-size: 17px;
+  .LightGreyLine {
+    stroke: $display-grey !important;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    fill: none;
   }
 
-  .align-left {
-    text-anchor: start !important;
-  }
-
-  /*  Brake indicators */
-  .wheel-set-brake-arch {
-    transform: scale(0.85, 0.5);
-
-    stroke: hsl(240, 9%, 77%);
+  .ThickGreyLine {
+    stroke: $display-grey;
     stroke-width: 4;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    fill: none;
+  }
 
-    &.green {
-      fill: var(--displayGreen);
-      stroke: var(--displayGreen);
+  .GreyFill {
+    fill: $display-grey;
+    stroke: none;
+  }
+
+  text, tspan {
+    fill: $display-white;
+    stroke: none !important;
+
+    &.Standard {
+        font-size: 22px;
     }
 
-    &.amber {
-      fill: var(--displayAmber);
-      stroke: var(--displayAmber);
+    &.Medium {
+        font-size: 20px;
     }
-  }
-  .wheel-set-brake-number {
-    fill: var(--displayWhite);
-    font-size: 18px;
-    text-anchor: middle !important;
-  }
-  .wheel-set-brake-celsius-marker {
-    fill: var(--displayCyan);
-    font-size: 15px;
-    text-anchor: middle !important;
-  }
-  .wheel-set-brake-rel-marker {
-    fill: var(--displayWhite);
-    font-size: 18px;
-    text-anchor: middle !important;
-  }
-  .wheel-set-brake-temp {
-    fill: var(--displayGreen);
-    stroke: var(--displayGreen);
-    font-size: 18px;
-    text-anchor: end !important;
-  }
-  .wheel-set-brake-temp-amber {
-    fill: var(--displayAmber);
-    stroke: var(--displayAmber);
-    font-size: 18px;
-    text-anchor: end !important;
-  }
 
-  /* Landing gear indicators */
-  .gear-door-side-line {
-    fill: var(--displayWhite);
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-miterlimit: 10;
-    stroke-width: 1.5;
-    stroke: var(--displayWhite);
-  }
-  .gear-door-line {
-    stroke: var(--displayGreen);
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-miterlimit: 10;
-    stroke-width: 1.5;
-  }
-  .gear-door-in-transit-line {
-    stroke: var(--displayAmber);
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-miterlimit: 10;
-    stroke-width: 1.5;
-  }
-  .gear-door-joint {
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-miterlimit: 10;
-    stroke-width: 1.5;
-    stroke: var(--displayWhite);
-  }
-  .gear-failed-lgciu-xx {
-    transform: translateY(-45px) scaleY(1.15);
+    &.MediumLarge {
+      font-size: 24px;
+    }
+
+    &.Large {
+        font-size: 26px;
+    }
+
+    &.Huge {
+        font-size: 30px;
+    }
+
+    &.Title {
+      font-size: 36px;
+    }
+
+    &.Cyan {
+        fill: $display-cyan !important;
+    }
+
+    &.Green {
+        fill: $display-green !important;
+    }
+
+    &.Amber {
+        fill: $display-amber;
+    }
+
+    &.Red {
+        fill: $display-red;
+    }
+
+    &.Magenta {
+        fill: $display-magenta;
+    }
+
+    &.Center {
+        text-anchor: middle !important;
+    }
+
+    &.End {
+        text-anchor: end !important;
+    }
+
+    &.UnderlineWhite {
+        text-decoration: underline;
+        text-decoration-color: $display-white;
+    }
   }
 }
