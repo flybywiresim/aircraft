@@ -119,10 +119,10 @@ const AntiSkid = ({ x, y }: ComponentPositionProps) => {
             <text x={0} y={0} className="Large Amber">ANTI SKID</text>
 
             {/* <!-- Brake and Steering Control Units --> */}
-            <path className="shape LightGreyLine" d="m 166 5 h 22 v -27" />
+            <path className="LightGreyLine" d="m 166 5 h 22 v -27" />
             <text className="Large Green" x={171} y={0}>1</text>
 
-            <path className="shape LightGreyLine" d="m 196 5 h 22 v -27" />
+            <path className="LightGreyLine" d="m 196 5 h 22 v -27" />
             <text className="Large Green" x={200} y={0}>2</text>
         </SvgGroup>
     ) : null;
