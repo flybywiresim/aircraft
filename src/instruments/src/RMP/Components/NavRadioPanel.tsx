@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { StandbyFrequency, TransceiverType } from './StandbyFrequency';
 import { StandbyCourse } from './StandbyCourse';
@@ -133,7 +133,7 @@ export const NavRadioPanel = (props: Props) => {
 
     return (
         <span>
-            <RadioPanelDisplay value={activeFrequency} transceiver={props.transceiver} />
+            <RadioPanelDisplay value={activeFrequency} />
             {standbyWindow}
         </span>
     );

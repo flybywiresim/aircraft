@@ -1,5 +1,4 @@
 import React from 'react';
-import { TransceiverType } from './StandbyFrequency';
 import { useSimVar } from '../../Common/simVars';
 
 interface Props {
@@ -7,11 +6,6 @@ interface Props {
      * The value to display.
      */
     value: number | string,
-
-    /**
-     * Transceiver type (e.g VHF, HF, VOR, ILS, ADF)
-     */
-    transceiver?: number
 }
 
 const TEXT_DATA_MODE_VHF3 = 'DATA';
@@ -21,17 +15,15 @@ const TEXT_DATA_MODE_VHF3 = 'DATA';
  * @param frequency The given frequency number in Hz.
  * @returns The formated frequency string in 123.456
  */
-const formatFrequency = (frequency: number, transceiver: number): string => {
-    if (transceiver === TransceiverType.RADIO_VHF
-        || transceiver === TransceiverType.ILS
-        || transceiver === TransceiverType.VOR) {
+const formatFrequency = (frequency: number): string => {
+    // VHF, VOR, ILS
+    if (frequency > 108000000) {
         return (frequency / 1000000).toFixed(3).padEnd(7, '0');
     }
 
-    if (transceiver === TransceiverType.ADF) {
-        return (frequency / 1000).toFixed(1);
-    }
+    // HF HERE
 
+    // ADF
     return (frequency / 1000).toFixed(1);
 };
 
@@ -60,7 +52,7 @@ export function RadioPanelDisplay(props: Props) {
     } else if (props.value > 0) {
         content = (
             <text x="100%" y="52%">
-                {formatFrequency(props.value, props.transceiver)}
+                {formatFrequency(props.value)}
             </text>
         );
     } else {

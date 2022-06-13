@@ -73,7 +73,7 @@ export const VhfRadioPanel = (props: Props) => {
 
     return (
         <span>
-            <RadioPanelDisplay value={active} transceiver={TransceiverType.RADIO_VHF} />
+            <RadioPanelDisplay value={active} />
             <StandbyFrequency side={props.side} value={standby} setValue={setStandby} transceiver={TransceiverType.RADIO_VHF} />
         </span>
     );

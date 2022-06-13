@@ -124,7 +124,6 @@ export const StandbyFrequency = (props: Props) => {
         spacing = 50;
         break;
     case TransceiverType.ADF:
-        spacing = 500;
         toMhz = 1;
         break;
     default:
@@ -200,5 +199,5 @@ export const StandbyFrequency = (props: Props) => {
     useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_CLOCKWISE`, () => innerKnob.current.increase());
     useInteractionEvent(`A32NX_RMP_${props.side}_INNER_KNOB_TURNED_ANTICLOCKWISE`, () => innerKnob.current.decrease());
 
-    return (<RadioPanelDisplay value={props.value} transceiver={props.transceiver} />);
+    return (<RadioPanelDisplay value={props.value} />);
 };
