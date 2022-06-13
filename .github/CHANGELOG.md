@@ -25,6 +25,7 @@
 1. [PFD] Show yellow GS reference line in correct conditions - @saschl (saschl#9432)
 1. [ECAM] Fix erroneous SLATS NOT IN T.O CONFIG warning during flaps 3 takeoff - @beheh (Benedict Etzel)
 1. [MODEL] Improved rivet mesh with more variation and detail - @Grinde (Grinde#4017)
+1. [ELEC] Make battery voltmeters update one digit at a time - @beheh (Benedict Etzel)
 
 ## 0.8.0
 
