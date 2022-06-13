@@ -792,6 +792,18 @@ impl<T: Writer> Write<Arinc429Word<u32>> for T {
     }
 }
 
+impl<T: Reader> Read<Arinc429Word<f64>> for T {
+    fn convert(&mut self, value: f64) -> Arinc429Word<f64> {
+        value.into()
+    }
+}
+
+impl<T: Writer> Write<Arinc429Word<f64>> for T {
+    fn convert(&mut self, value: Arinc429Word<f64>) -> f64 {
+        value.into()
+    }
+}
+
 impl<T: Reader> Read<f64> for T {
     fn convert(&mut self, value: f64) -> f64 {
         value

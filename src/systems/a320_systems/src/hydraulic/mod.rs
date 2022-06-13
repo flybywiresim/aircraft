@@ -1217,19 +1217,17 @@ impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
     const HIGH_PITCH_PTU_SOUND_DURATION: Duration = Duration::from_millis(3000);
 
-    const FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 65., 115., 120.53, 136., 145.5, 152., 165., 168.3, 179., 231.2, 251.97,
+    const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
     ];
-    const FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] = [
-        0., 10.318, 18.2561, 19.134, 21.59, 23.098, 24.13, 26.196, 26.72, 28.42, 36.703, 40.,
-    ];
+    const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
 
-    const SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 12.5985, 25.197, 37.7955, 50.394, 62.9925, 75.591, 88.1895, 100.788, 113.3865,
-        157.48125, 170.07975,
+    const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16,
     ];
-    const SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 2., 4., 6., 8., 10., 12., 14., 16., 18., 25., 27.];
+    const SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 5.4, 13.5, 18., 22., 27., 27., 27., 27., 27., 27., 27.];
 
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
@@ -1394,20 +1392,20 @@ impl A320Hydraulic {
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
-                Self::FLAP_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
-                Self::FLAP_FFPU_TO_SURFACE_ANGLE_DEGREES,
+                Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+                Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
             ),
             slat_system: FlapSlatAssembly::new(
                 context,
                 "SLATS",
                 Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.09),
-                Angle::new::<degree>(170.07975),
+                AngularVelocity::new::<radian_per_second>(0.13),
+                Angle::new::<degree>(334.16),
                 Ratio::new::<ratio>(140.),
                 Ratio::new::<ratio>(16.632),
                 Ratio::new::<ratio>(314.98),
-                Self::SLAT_FFPU_TO_SURFACE_ANGLE_BREAKPTS,
-                Self::SLAT_FFPU_TO_SURFACE_ANGLE_DEGREES,
+                Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+                Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
             ),
             slats_flaps_complex: SlatFlapComplex::new(context),
 
@@ -9444,7 +9442,7 @@ mod tests {
 
             test_bed = test_bed
                 .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(80));
+                .run_waiting_for(Duration::from_secs(90));
 
             assert!(test_bed.get_flaps_left_position_percent() > 99.);
             assert!(test_bed.get_flaps_right_position_percent() > 99.);
@@ -9478,7 +9476,7 @@ mod tests {
         }
 
         #[test]
-        fn blue_epump_can_deploy_slats_in_less_35_s_and_no_flaps() {
+        fn blue_epump_can_deploy_slats_in_less_50_s_and_no_flaps() {
             let mut test_bed = test_bed_on_ground_with()
                 .on_the_ground()
                 .set_cold_dark_inputs()
@@ -9490,7 +9488,7 @@ mod tests {
 
             test_bed = test_bed
                 .set_flaps_handle_position(4)
-                .run_waiting_for(Duration::from_secs(35));
+                .run_waiting_for(Duration::from_secs(50));
 
             assert!(test_bed.get_flaps_left_position_percent() <= 1.);
             assert!(test_bed.get_flaps_right_position_percent() <= 1.);
