@@ -4,7 +4,9 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Mode, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
 import { useUpdate } from '@instruments/common/hooks';
 
-const RerenderingTimeout = 2500;
+const MapTransitionFramerate = 20;
+const MapTransitionDuration = 1.5;
+const RerenderingTimeout = 2000;
 
 export interface TerrainMapProviderProps {
     side: EfisSide,
@@ -49,97 +51,86 @@ interface TerrainMapTransitionProps {
     y: number,
     width: number,
     height: number,
-    mapdata: string,
+    mapdata: string[],
     onFinished: () => void,
 }
 
 const TerrainMapTransition: React.FC<TerrainMapTransitionProps> = ({ x, y, width, height, mapdata, onFinished }) => {
-    const halfWidth = Math.round(width / 2);
-    const xCenter = x + halfWidth;
-    const bottom = y + height;
+    const frameBuffer: [{ opacity: number, index: number }, React.Dispatch<React.SetStateAction<{ opacity: number, index: number }>>][] = [
+        useState({ opacity: 0.01, index: 0 }),
+        useState({ opacity: 0.01, index: 0 }),
+        useState({ opacity: 0.01, index: 0 }),
+        useState({ opacity: 0.01, index: 0 }),
+    ];
 
-    const [clipPath, setClipPath] = useState<string>(`M ${xCenter} ${bottom} L ${xCenter} ${y} L ${xCenter} ${y}`);
-    const [passedTime, setPassedTime] = useState<number>(0);
-    const clipPathRef = useRef<string>();
-    clipPathRef.current = clipPath;
+    const [frameTimer, setFrameTimer] = useState<NodeJS.Timer | undefined>(undefined);
+    const [currentFrame, setCurrentFrame] = useState<number>(0);
+    const frameTimerRef = useRef<NodeJS.Timer | undefined>();
+    const currentFrameRef = useRef<number>();
 
-    useUpdate((deltaTime) => {
-        const ratio = passedTime / 5000;
-        let newClipPath = '';
-        if (ratio <= 0.5) {
-            const xOffset = Math.max(20, Math.round(width * ratio));
-            newClipPath = `M ${xCenter} ${bottom} L ${xCenter + halfWidth - xOffset} ${y} L ${xCenter - halfWidth + xOffset} ${y}`;
-        } else if (ratio < 1.0) {
-            const yOffset = Math.round(height * (ratio - 0.5) * 2);
-            newClipPath = `M ${x} ${y} L ${x} ${y + yOffset} L ${xCenter} ${bottom} L ${x + width} ${y + yOffset} L ${x + width} ${y}`;
-        } else {
-            const finalPath = `M ${x} ${y} L ${x + width} ${y} L ${x + width} ${bottom} L ${x} ${bottom}`;
-            if (clipPathRef.current !== finalPath) {
-                newClipPath = `M ${x} ${y} L ${x + width} ${y} L ${x + width} ${bottom} L ${x} ${bottom}`;
-                onFinished();
-            } else {
-                return;
+    currentFrameRef.current = currentFrame;
+    frameTimerRef.current = frameTimer;
+
+    if (frameTimerRef.current === undefined) {
+        setFrameTimer(setInterval(() => {
+            if (currentFrameRef.current !== undefined && frameTimerRef.current !== undefined) {
+                if (currentFrameRef.current >= mapdata.length - 1) {
+                    clearInterval(frameTimerRef.current);
+                    onFinished();
+                } else {
+                    for (let i = 0; i < frameBuffer.length; ++i) {
+                        frameBuffer[(currentFrameRef.current + i) % frameBuffer.length][1]({ opacity: i === 0 ? 1 : 0.01, index: currentFrameRef.current + i });
+                    }
+
+                    setCurrentFrame(currentFrameRef.current + 1);
+                }
             }
-        }
-
-        // workaround if ratio and pixel-roundings result in the same path string
-        if (newClipPath === clipPathRef.current) {
-            newClipPath = `${newClipPath}z`;
-        }
-
-        setClipPath(newClipPath);
-        setPassedTime(passedTime + deltaTime);
-    });
+        }, Math.round(1000 / MapTransitionFramerate)));
+    }
 
     return (
         <>
-            <defs>
-                <clipPath id="maptransition">
-                    <path d={clipPath} />
-                </clipPath>
-            </defs>
-            <image
-                clipPath="url(#maptransition)"
-                x={x}
-                y={y}
-                width={width}
-                height={height}
-                xlinkHref={`data:image/png;base64,${mapdata}`}
-            />
+            {frameBuffer.map((frame) => (
+                frame[0].index < mapdata.length && mapdata[frame[0].index] !== undefined
+                    ? (
+                        <image
+                            x={x}
+                            y={y}
+                            width={width}
+                            height={height}
+                            opacity={frame[0].opacity}
+                            xlinkHref={`data:image/png;base64,${mapdata[frame[0].index]}`}
+                        />
+                    ) : <></>
+            ))}
         </>
     );
 };
 
 class MapVisualizationData {
-    public LastMap: string | undefined = undefined;
+    public TerrainMapBuffer: { opacity: number, data: string }[] = [{ opacity: 0.01, data: '' }, { opacity: 0.01, data: '' }];
 
-    public CurrentMap: string | undefined = undefined;
-
-    public MapTransitionStart: number = -1;
-
-    public MapChangeInProgress: boolean = false;
+    public MapTransitionData: string[] = [];
 
     public RerenderTimeout: number | undefined = undefined;
 
-    public CurrentMinimumElevation: { altitude: number, color: string } = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
+    public NextMinimumElevation: { altitude: number, color: string } = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
 
-    public CurrentMaximumElevation: { altitude: number, color: string } = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
+    public NextMaximumElevation: { altitude: number, color: string } = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
 
-    public LastMinimumElevation: { altitude: number, color: string } = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
+    public MinimumElevation: { altitude: number, color: string } = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
 
-    public LastMaximumElevation: { altitude: number, color: string } = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
+    public MaximumElevation: { altitude: number, color: string } = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
 
     constructor(...args) {
         if (args.length !== 0 && args[0] instanceof MapVisualizationData) {
-            this.LastMap = args[0].LastMap;
-            this.CurrentMap = args[0].CurrentMap;
-            this.MapTransitionStart = args[0].MapTransitionStart;
-            this.MapChangeInProgress = args[0].MapChangeInProgress;
+            this.TerrainMapBuffer = args[0].TerrainMapBuffer;
+            this.MapTransitionData = args[0].MapTransitionData;
             this.RerenderTimeout = args[0].RerenderTimeout;
-            this.CurrentMinimumElevation = args[0].CurrentMinimumElevation;
-            this.CurrentMaximumElevation = args[0].CurrentMaximumElevation;
-            this.LastMinimumElevation = args[0].LastMinimumElevation;
-            this.LastMaximumElevation = args[0].LastMaximumElevation;
+            this.NextMinimumElevation = args[0].NextMinimumElevation;
+            this.NextMaximumElevation = args[0].NextMaximumElevation;
+            this.MinimumElevation = args[0].MinimumElevation;
+            this.MaximumElevation = args[0].MaximumElevation;
         }
     }
 }
@@ -175,7 +166,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                             return;
                         }
 
-                        fetch(`http://localhost:8080/api/v1/terrain/ndmap?display=${side}&timestamp=${timestamp}`, { method: 'GET' }).then((response) => response.text().then((imageBase64) => {
+                        fetch(`http://localhost:8080/api/v1/terrain/ndmaps?display=${side}&timestamp=${timestamp}`).then((response) => response.json().then((imageBase64) => {
                             fetch(`http://localhost:8080/api/v1/terrain/terrainRange?display=${side}&timestamp=${timestamp}`, {
                                 method: 'GET',
                                 headers: { Accept: 'application/json' },
@@ -196,18 +187,22 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                                         }
 
                                         if (mapVisualizationRef.current) {
-                                            mapVisualizationRef.current.CurrentMinimumElevation = { altitude: data.minElevation, color: minimumColor };
-                                            mapVisualizationRef.current.CurrentMaximumElevation = { altitude: data.maxElevation, color: maximumColor };
+                                            mapVisualizationRef.current.NextMinimumElevation = { altitude: data.minElevation, color: minimumColor };
+                                            mapVisualizationRef.current.NextMaximumElevation = { altitude: data.maxElevation, color: maximumColor };
                                         }
                                     } else if (mapVisualizationRef.current) {
-                                        mapVisualizationRef.current.CurrentMinimumElevation = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
-                                        mapVisualizationRef.current.CurrentMaximumElevation = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
+                                        mapVisualizationRef.current.NextMinimumElevation = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
+                                        mapVisualizationRef.current.NextMaximumElevation = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
                                     }
 
                                     const newVisualization = new MapVisualizationData(mapVisualizationRef.current);
-                                    newVisualization.MapChangeInProgress = true;
-                                    newVisualization.CurrentMap = imageBase64;
-                                    newVisualization.MapTransitionStart = new Date().getTime();
+                                    newVisualization.MapTransitionData = imageBase64;
+                                    if (newVisualization.TerrainMapBuffer[0].opacity === 0.01) {
+                                        newVisualization.TerrainMapBuffer[0].data = imageBase64[imageBase64.length - 1];
+                                    } else {
+                                        newVisualization.TerrainMapBuffer[1].data = imageBase64[imageBase64.length - 1];
+                                    }
+
                                     setMapVisualization(newVisualization);
                                 }
                             }));
@@ -220,19 +215,18 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
 
     const mapTransitionDone = () => {
         const rerenderVisualization = new MapVisualizationData(mapVisualizationRef.current);
-        rerenderVisualization.LastMap = rerenderVisualization.CurrentMap;
-        rerenderVisualization.LastMinimumElevation = rerenderVisualization.CurrentMinimumElevation;
-        rerenderVisualization.LastMaximumElevation = rerenderVisualization.CurrentMaximumElevation;
+        if (rerenderVisualization.TerrainMapBuffer[0].opacity === 0.01) {
+            rerenderVisualization.TerrainMapBuffer[0].opacity = 1;
+            rerenderVisualization.TerrainMapBuffer[1].opacity = 0.01;
+        } else {
+            rerenderVisualization.TerrainMapBuffer[0].opacity = 0.01;
+            rerenderVisualization.TerrainMapBuffer[1].opacity = 1;
+        }
+        rerenderVisualization.MapTransitionData = [];
+        rerenderVisualization.MinimumElevation = rerenderVisualization.NextMinimumElevation;
+        rerenderVisualization.MaximumElevation = rerenderVisualization.NextMaximumElevation;
+        rerenderVisualization.RerenderTimeout = RerenderingTimeout;
         setMapVisualization(rerenderVisualization);
-
-        // preload the "new" old timestamp to avoid flickering
-        setTimeout(() => {
-            const finalizeMapChange = new MapVisualizationData(mapVisualizationRef.current);
-            finalizeMapChange.RerenderTimeout = RerenderingTimeout;
-            finalizeMapChange.MapChangeInProgress = false;
-            finalizeMapChange.MapTransitionStart = -1;
-            setMapVisualization(finalizeMapChange);
-        }, 100);
     };
 
     useUpdate((deltaTime) => {
@@ -272,11 +266,14 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
             setMapVisualization(newVisualizationData);
         }
 
+        const meterPerPixel = Math.round(rangeSettings[rangeIndex] * 1852 / height);
         const displayConfiguration = {
             active: modeIndex !== Mode.PLAN && terrOnNdActive !== 0,
             mapWidth: width,
             mapHeight: height,
-            meterPerPixel: rangeSettings[rangeIndex] * 1852 / height,
+            meterPerPixel: meterPerPixel + (10 - (meterPerPixel % 10)),
+            mapTransitionTime: MapTransitionDuration,
+            mapTransitionFps: MapTransitionFramerate,
             arcMode: modeIndex === Mode.ARC,
             gearDown: SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum') !== 1,
         };
@@ -287,51 +284,62 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
         });
     }, [terrOnNdActive, rangeIndex, modeIndex, gearMode]);
 
-    if (!terrOnNdActive || modeIndex === Mode.PLAN || mapVisualizationRef.current.CurrentMap === undefined) {
+    if (!terrOnNdActive || modeIndex === Mode.PLAN) {
         return <></>;
     }
 
-    const lowerBorder = String(Math.floor(mapVisualizationRef.current.LastMinimumElevation.altitude / 100)).padStart(3, '0');
-    const upperBorder = String(Math.round(mapVisualizationRef.current.LastMaximumElevation.altitude / 100 + 0.5)).padStart(3, '0');
+    let lowerBorder = '';
+    if (Number.isFinite(mapVisualizationRef.current.MinimumElevation.altitude)) {
+        lowerBorder = String(Math.floor(mapVisualizationRef.current.MinimumElevation.altitude / 100)).padStart(3, '0');
+    }
+    let upperBorder = '';
+    if (Number.isFinite(mapVisualizationRef.current.MaximumElevation.altitude)) {
+        upperBorder = String(Math.round(mapVisualizationRef.current.MaximumElevation.altitude / 100 + 0.5)).padStart(3, '0');
+    }
 
     return (
         <>
             <g id="map" clipPath={`url(#${clipName})`}>
-                {mapVisualizationRef.current.LastMap !== undefined
-                    ? (
-                        <>
+                {mapVisualization.TerrainMapBuffer.map((frame) => (
+                    frame.data !== ''
+                        ? (
                             <image
                                 x={x}
                                 y={y}
                                 width={width}
                                 height={height}
-                                xlinkHref={`data:image/png;base64,${mapVisualizationRef.current.LastMap}`}
+                                opacity={frame.opacity}
+                                xlinkHref={`data:image/png;base64,${frame.data}`}
                             />
-                        </>
-                    )
-                    : <></>}
-                {mapVisualizationRef.current.MapChangeInProgress ? (
+                        ) : <></>
+                ))}
+                {mapVisualization.MapTransitionData.length !== 0 ? (
                     <TerrainMapTransition
                         x={x}
                         y={y}
                         width={width}
                         height={height}
-                        mapdata={mapVisualizationRef.current.CurrentMap}
+                        mapdata={mapVisualization.MapTransitionData}
                         onFinished={mapTransitionDone}
                     />
                 ) : <></>}
             </g>
-            <text x={688} y={612} fontSize={23} fill="rgb(0,255,255)">
-                TERR
-            </text>
-            <text x={709} y={639} fontSize={22} fill={mapVisualizationRef.current.LastMaximumElevation.color}>
-                {upperBorder}
-            </text>
-            <rect x={700} y={619} width={54} height={24} strokeWidth={3} stroke="rgb(255,255,0)" fillOpacity={0} />
-            <text x={709} y={663} fontSize={23} fill={mapVisualizationRef.current.LastMinimumElevation.color}>
-                {lowerBorder}
-            </text>
-            <rect x={700} y={643} width={54} height={24} strokeWidth={3} stroke="rgb(255,255,0)" fillOpacity={0} />
+            {upperBorder !== ''
+                ? (
+                    <>
+                        <text x={688} y={612} fontSize={23} fill="rgb(0,255,255)">
+                            TERR
+                        </text>
+                        <text x={709} y={639} fontSize={22} fill={mapVisualizationRef.current.MaximumElevation.color}>
+                            {upperBorder}
+                        </text>
+                        <rect x={700} y={619} width={54} height={24} strokeWidth={3} stroke="rgb(255,255,0)" fillOpacity={0} />
+                        <text x={709} y={663} fontSize={23} fill={mapVisualizationRef.current.MinimumElevation.color}>
+                            {lowerBorder}
+                        </text>
+                        <rect x={700} y={643} width={54} height={24} strokeWidth={3} stroke="rgb(255,255,0)" fillOpacity={0} />
+                    </>
+                ) : <></>}
         </>
     );
 };
