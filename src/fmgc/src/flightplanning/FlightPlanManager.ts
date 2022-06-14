@@ -32,6 +32,7 @@ import { FlightPlanAsoboSync } from './FlightPlanAsoboSync';
 import { FixInfo } from './FixInfo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ApproachStats, HoldData } from '@fmgc/flightplanning/data/flightplan';
+import { SegmentType } from '@fmgc/wtsdk';
 
 export enum WaypointConstraintType {
     CLB = 1,
@@ -41,6 +42,20 @@ export enum WaypointConstraintType {
 export enum FlightPlans {
     Active,
     Temporary,
+}
+
+/**
+ * Navigation flight areas defined in the OPC database
+ */
+export enum FlightArea {
+    Terminal,
+    Takeoff,
+    Enroute,
+    Oceanic,
+    VorApproach,
+    GpsApproach,
+    PrecisionApproach,
+    NonPrecisionApproach,
 }
 
 /**
@@ -64,6 +79,8 @@ export class FlightPlanManager {
     public static FlightPlanCompressedKey = 'A32NX.FlightPlan.Compressed';
 
     public static FlightPlanVersionKey = 'L:A32NX.FlightPlan.Version';
+
+    public activeArea: FlightArea = FlightArea.Terminal;
 
     /**
      * The current stored flight plan data.
@@ -123,6 +140,8 @@ export class FlightPlanManager {
                 }
             }
         }
+
+        this.updateActiveArea();
     }
 
     public onCurrentGameFlightLoaded(_callback: () => any) {
@@ -1904,5 +1923,54 @@ export class FlightPlanManager {
     getGlideslopeIntercept(flightPlanIndex = this._currentFlightPlanIndex): number | undefined {
         const fp = this._flightPlans[flightPlanIndex];
         return fp?.glideslopeIntercept ?? undefined;
+    }
+
+    private updateActiveArea(): void {
+        const activeFp = this._flightPlans[FlightPlans.Active];
+        if (!activeFp) {
+            this.activeArea = FlightArea.Terminal;
+            return;
+        }
+
+        this.activeArea = this.calculateActiveArea(activeFp);
+    }
+
+    private calculateActiveArea(activeFp: ManagedFlightPlan): FlightArea {
+        const activeIndex = activeFp.activeWaypointIndex;
+
+        const appr = activeFp.getSegment(SegmentType.Approach);
+        const arrival = activeFp.getSegment(SegmentType.Arrival);
+        const departure = activeFp.getSegment(SegmentType.Departure);
+
+        if (departure !== FlightPlanSegment.Empty && activeIndex < (departure.offset + departure.waypoints.length)) {
+            return FlightArea.Terminal;
+        }
+
+        if (arrival !== FlightPlanSegment.Empty
+            && activeIndex >= arrival.offset
+            && activeIndex < (arrival.offset + arrival.waypoints.length)) {
+            return FlightArea.Terminal;
+        }
+
+        if (appr !== FlightPlanSegment.Empty
+            && activeIndex >= appr.offset
+            && activeIndex < (appr.offset + appr.waypoints.length)
+            && activeFp.finalApproachActive) {
+            const apprType = activeFp.procedureDetails.approachType;
+            switch (apprType) {
+            case ApproachType.APPROACH_TYPE_ILS:
+                return FlightArea.PrecisionApproach;
+            case ApproachType.APPROACH_TYPE_GPS:
+            case ApproachType.APPROACH_TYPE_RNAV:
+                return FlightArea.GpsApproach;
+            case ApproachType.APPROACH_TYPE_VOR:
+            case ApproachType.APPROACH_TYPE_VORDME:
+                return FlightArea.VorApproach;
+            default:
+                return FlightArea.NonPrecisionApproach;
+            }
+        }
+
+        return FlightArea.Enroute;
     }
 }
