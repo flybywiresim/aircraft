@@ -267,6 +267,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.updateFuelVars();
         this.updatePerfSpeeds();
+        this.getGW();
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
@@ -4801,10 +4802,17 @@ class FMCMainDisplay extends BaseAirliners {
      */
     //TODO: Can this be util?
     getGW() {
-        const fuelWeight = SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", getUserUnit());
-        const emptyWeight = SimVar.GetSimVarValue("EMPTY WEIGHT", getUserUnit());
-        const payloadWeight = getTotalPayload();
-        return (emptyWeight + fuelWeight + payloadWeight) / 1000;
+        const isOneEngineRunning = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") || SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool");
+        let fmGW = 0;
+        console.log(isOneEngineRunning);
+        if (isOneEngineRunning && isFinite(this.zeroFuelWeight)) {
+            fmGW = (this.getFOB() + this.zeroFuelWeight);
+        } else if (isFinite(this.blockFuel) && isFinite(this.zeroFuelWeight)) {
+            fmGW = (this.blockFuel + this.zeroFuelWeight);
+        }
+
+        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "number", fmGW);
+        return fmGW;
     }
 
     //TODO: Can this be util?
