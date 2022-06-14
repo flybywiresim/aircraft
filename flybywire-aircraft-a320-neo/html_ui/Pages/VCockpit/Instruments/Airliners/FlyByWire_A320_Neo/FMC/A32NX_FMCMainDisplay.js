@@ -4804,14 +4804,15 @@ class FMCMainDisplay extends BaseAirliners {
     getGW() {
         const isOneEngineRunning = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") || SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool");
         let fmGW = 0;
-        console.log(isOneEngineRunning);
         if (isOneEngineRunning && isFinite(this.zeroFuelWeight)) {
             fmGW = (this.getFOB() + this.zeroFuelWeight);
         } else if (isFinite(this.blockFuel) && isFinite(this.zeroFuelWeight)) {
             fmGW = (this.blockFuel + this.zeroFuelWeight);
+        } else {
+            fmGW = 0;
         }
 
-        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "number", fmGW);
+        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", fmGW);
         return fmGW;
     }
 
