@@ -16,8 +16,8 @@ const TEXT_DATA_MODE_VHF3 = 'DATA';
  * @returns The formated frequency string in 123.456
  */
 const formatFrequency = (frequency: number): string => {
-    // VHF, VOR, ILS
-    if (frequency > 108000000) {
+    // VHF COM, VOR, ILS
+    if (frequency >= 108000000) {
         return (frequency / 1000000).toFixed(3).padEnd(7, '0');
     }
 

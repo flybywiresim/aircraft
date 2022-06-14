@@ -413,9 +413,11 @@
                 (L:XMLVAR_NAV_VOICE_Switch_Down) 0 == if{
                     (L:XMLVAR_NAV_L_VOR1_Switch_Down) (L:XMLVAR_NAV_R_VOR1_Switch_Down) or if{
                         1 (&gt;K:RADIO_VOR1_IDENT_ENABLE)
+                        1 (&gt;K:RADIO_DME1_IDENT_ENABLE)
                     }
                     (L:XMLVAR_NAV_L_VOR2_Switch_Down) (L:XMLVAR_NAV_R_VOR2_Switch_Down) or if{
                         1 (&gt;K:RADIO_VOR2_IDENT_ENABLE)
+                        1 (&gt;K:RADIO_DME2_IDENT_ENABLE)
                     }
 
                     (L:XMLVAR_NAV_L_ADF1_Switch_Down) (L:XMLVAR_NAV_R_ADF1_Switch_Down) or if{
@@ -431,6 +433,9 @@
                     1 (&gt;K:RADIO_VOR2_IDENT_DISABLE)
                     1 (&gt;K:RADIO_ADF_IDENT_DISABLE)
                     1 (&gt;K:RADIO_ADF2_IDENT_DISABLE)
+
+                    1 (&gt;K:RADIO_DME1_IDENT_DISABLE)
+                    1 (&gt;K:RADIO_DME2_IDENT_DISABLE)
                 }
             </LEFT_SINGLE_CODE>
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
@@ -457,13 +462,19 @@
                 (L:XMLVAR_NAV_VOICE_Switch_Down) 0 == if{
                     (A:NAV SOUND:1, Bool) 1 == (L:XMLVAR_NAV_L_VOR1_Switch_Down) 0 == (L:XMLVAR_NAV_R_VOR1_Switch_Down) 0 == and and if{
                         1 (&gt;K:RADIO_VOR1_IDENT_TOGGLE)
+                        1 (&gt;K:RADIO_DME1_IDENT_SET)
                     }
 
                     (A:NAV SOUND:1, Bool) 0 == (L:XMLVAR_NAV_L_VOR1_Switch_Down) 1 == (L:XMLVAR_NAV_R_VOR1_Switch_Down) 1 == or and if{
                         1 (&gt;K:RADIO_VOR1_IDENT_TOGGLE)
+                        1 (&gt;K:RADIO_DME1_IDENT_SET)
                     }
                 }
             </ONCLICK>
+            <!-- For knob animation, had to use the A var and not a L var like comms (to be able to get the maximum of RMP1/2).
+                We cannot insert value into the volume simvar but only inc and dec.
+                Therefore for now, the respective knobs on the RMP will be partially independant
+                Once the SDK is update, this should be modified -->
             <FROM_VOLUME>(A:NAV VOLUME:1, percent)</FROM_VOLUME>
             <INC_VOLUME>(&gt;K:NAV1_VOLUME_INC)</INC_VOLUME>
             <DEC_VOLUME>(&gt;K:NAV1_VOLUME_DEC)</DEC_VOLUME>
@@ -486,13 +497,19 @@
                 (L:XMLVAR_NAV_VOICE_Switch_Down) 0 == if{
                     (A:NAV SOUND:2, Bool) 1 == (L:XMLVAR_NAV_L_VOR2_Switch_Down) 0 == (L:XMLVAR_NAV_R_VOR2_Switch_Down) 0 == and and if{
                         1 (&gt;K:RADIO_VOR2_IDENT_TOGGLE)
+                        1 (&gt;K:RADIO_DME2_IDENT_SET)
                     }
 
                     (A:NAV SOUND:2, Bool) 0 == (L:XMLVAR_NAV_L_VOR2_Switch_Down) 1 == (L:XMLVAR_NAV_R_VOR2_Switch_Down) 1 == or and if{
                         1 (&gt;K:RADIO_VOR2_IDENT_TOGGLE)
+                        1 (&gt;K:RADIO_DME2_IDENT_SET)
                     }
                 }
             </ONCLICK>
+            <!-- For knob animation, had to use the A var and not a L var like comms (to be able to get the maximum of RMP1/2).
+                We cannot insert value into the volume simvar but only inc and dec.
+                Therefore for now, the respective knobs on the RMP will be partially independant
+                Once the SDK is update, this should be modified -->
             <FROM_VOLUME>(A:NAV VOLUME:2, percent)</FROM_VOLUME>
             <INC_VOLUME>(&gt;K:NAV2_VOLUME_INC)</INC_VOLUME>
             <DEC_VOLUME>(&gt;K:NAV2_VOLUME_DEC)</DEC_VOLUME>
@@ -530,7 +547,7 @@
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
         </UseTemplate>
 
-        <!--<UseTemplate Name="FBW_Anim_Interactions">
+        <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_ILS#</NODE_ID>
@@ -539,7 +556,12 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_ILS#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_ILS#</NODE_ID_LED>
             <INSTRUMENT>ILS</INSTRUMENT>
-            <ONCLICK></ONCLICK>
+            <ONCLICK>
+                <!-- Fow now, cannot listen to NAV3 ident. We can only push the knob. See where ONCLICK is used -->
+            </ONCLICK>
+            <FROM_VOLUME>(L:XMLVAR_NAV_#SIDE#_ILS_Volume) 100 *</FROM_VOLUME>
+            <INC_VOLUME>(L:XMLVAR_NAV_#SIDE#_ILS_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_ILS_Volume)</INC_VOLUME>
+            <DEC_VOLUME>(L:XMLVAR_NAV_#SIDE#_ILS_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_ILS_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
@@ -555,12 +577,17 @@
             <ANIM_NAME_SWITCH>#ANIM_NAME_PUSH_RECEIVER_MLS#</ANIM_NAME_SWITCH>
             <NODE_ID_LED>#NODE_ID_LED_RECEIVER_MLS#</NODE_ID_LED>
             <INSTRUMENT>MLS</INSTRUMENT>
-            <ONCLICK></ONCLICK>
+            <ONCLICK>
+                <!-- Fow now, cannot listen to MLS ident. We can only push the knob. See where ONCLICK is used -->
+            </ONCLICK>
+            <FROM_VOLUME>(L:XMLVAR_NAV_#SIDE#_MLS_Volume) 100 *</FROM_VOLUME>
+            <INC_VOLUME>(L:XMLVAR_NAV_#SIDE#_MLS_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_MLS_Volume)</INC_VOLUME>
+            <DEC_VOLUME>(L:XMLVAR_NAV_#SIDE#_MLS_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_MLS_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
-        </UseTemplate> -->
+        </UseTemplate>
 
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
@@ -583,6 +610,10 @@
                     }
                 }
             </ONCLICK>
+            <!-- For knob animation, had to use the A var and not a L var like comms (to be able to get the maximum of RMP1/2).
+                We cannot insert value into the volume simvar but only inc and dec.
+                Therefore for now, the respective knobs on the RMP will be partially independant
+                Once the SDK is update, this should be modified -->
             <FROM_VOLUME>(A:ADF VOLUME:1, percent)</FROM_VOLUME>
             <INC_VOLUME>(&gt;K:ADF_VOLUME_INC)</INC_VOLUME>
             <DEC_VOLUME>(&gt;K:ADF_VOLUME_DEC)</DEC_VOLUME>
@@ -613,7 +644,7 @@
                     }
                 }
             </ONCLICK>
-            <!-- Have to use an external var because we are unable to set ADF 2 volume even though it's set at 100 by default -->
+            <!-- Have to use an external var because we are unable to set ADF 2 volume even though it's set to 100 by default -->
             <FROM_VOLUME>(L:XMLVAR_NAV_#SIDE#_ADF2_Volume) 100 *</FROM_VOLUME>
             <INC_VOLUME>(L:XMLVAR_NAV_#SIDE#_ADF2_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_ADF2_Volume)</INC_VOLUME>
             <DEC_VOLUME>(L:XMLVAR_NAV_#SIDE#_ADF2_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_ADF2_Volume)</DEC_VOLUME>
@@ -780,7 +811,7 @@
                 <KNOB_ANIM_CODE>#FROM_VOLUME#</KNOB_ANIM_CODE>
                 <CLOCKWISE_CODE>#INC_VOLUME#</CLOCKWISE_CODE>
                 <ANTICLOCKWISE_CODE>#DEC_VOLUME#</ANTICLOCKWISE_CODE>
-                <ANIM_CODE_SWITCH>  (L:XMLVAR_NAV_#SIDE#_#INSTRUMENT#_Switch_Down) </ANIM_CODE_SWITCH>
+                <ANIM_CODE_SWITCH> (L:XMLVAR_NAV_#SIDE#_#INSTRUMENT#_Switch_Down) 100 *</ANIM_CODE_SWITCH>
                 <ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
                 <LEFT_SINGLE_CODE>
                     (L:XMLVAR_NAV_#SIDE#_#INSTRUMENT#_Switch_Down) ! (&gt;L:XMLVAR_NAV_#SIDE#_#INSTRUMENT#_Switch_Down)
