@@ -545,7 +545,7 @@ impl Time {
         sim_connect.request_data_on_sim_object::<SimulationTime>(
             SimulationTime::REQUEST_ID,
             SIMCONNECT_OBJECT_ID_USER,
-            Period::SimFrame,
+            Period::VisualFrame,
         )?;
 
         Ok(Self {
