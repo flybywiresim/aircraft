@@ -14,7 +14,7 @@ export class Terrain {
         });
     }
 
-    public static async setDisplaySettings(settings: {
+    public static async setDisplaySettings(side: EfisSide, settings: {
         active: boolean,
         mapWidth: number,
         mapHeight: number,
