@@ -560,6 +560,7 @@ class ElacComputer final
   };
 
   struct D_Work_ElacComputer_T {
+    real_T configFullEventTime;
     real_T eventTime;
     real_T resetEventTime;
     real_T eventTime_g;
@@ -578,6 +579,7 @@ class ElacComputer final
     boolean_T Memory_PreviousInput_lo;
     boolean_T pLeftStickDisabled;
     boolean_T pRightStickDisabled;
+    boolean_T configFullEventTime_not_empty;
     boolean_T ra1CoherenceRejected;
     boolean_T ra2CoherenceRejected;
     boolean_T sProtActive;
@@ -634,6 +636,8 @@ class ElacComputer final
     real_T RateLimiterVariableTs1_InitialCondition;
     real_T BitfromLabel_bit;
     real_T BitfromLabel1_bit;
+    real_T BitfromLabel_bit_c;
+    real_T BitfromLabel1_bit_j;
     real_T BitfromLabel2_bit;
     real_T BitfromLabel3_bit;
     real_T BitfromLabel5_bit;
@@ -646,7 +650,7 @@ class ElacComputer final
     real_T BitfromLabel6_bit_k;
     real_T BitfromLabel7_bit_h;
     real_T BitfromLabel_bit_a;
-    real_T BitfromLabel1_bit_j;
+    real_T BitfromLabel1_bit_jr;
     real_T BitfromLabel_bit_h;
     real_T BitfromLabel1_bit_e;
     real_T BitfromLabel2_bit_k;

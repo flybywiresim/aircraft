@@ -233,11 +233,10 @@ void ElacComputer::step()
   uint32_T rtb_y_e;
   boolean_T rtb_VectorConcatenate[19];
   boolean_T rtb_VectorConcatenate_a[19];
-  boolean_T rtb_AND1_h;
+  boolean_T rtb_AND1_kl;
   boolean_T rtb_AND2_p;
   boolean_T rtb_AND3_b;
   boolean_T rtb_AND_ai;
-  boolean_T rtb_doubleAdrFault;
   boolean_T rtb_doubleIrFault;
   boolean_T rtb_tripleAdrFault;
   boolean_T rtb_y_j;
@@ -266,15 +265,16 @@ void ElacComputer::step()
     boolean_T hasPriorityInRoll;
     boolean_T leftAileronAvail;
     boolean_T rightAileronAvail;
-    boolean_T rtb_AND4;
+    boolean_T rtb_AND1_h;
     boolean_T rtb_DataTypeConversion_e;
     boolean_T rtb_NOT1;
-    boolean_T rtb_NOT_j;
+    boolean_T rtb_OR;
     boolean_T rtb_OR1;
     boolean_T rtb_OR3;
     boolean_T rtb_OR4;
     boolean_T rtb_OR6;
     boolean_T rtb_OR7;
+    boolean_T rtb_OR_e1;
     boolean_T rtb_isEngagedInPitch;
     boolean_T rtb_isEngagedInRoll;
     boolean_T rtb_leftElevatorAvail;
@@ -313,6 +313,7 @@ void ElacComputer::step()
       ElacComputer_MATLABFunction_f_Reset(&ElacComputer_DWork.sf_MATLABFunction_jl);
       ElacComputer_DWork.ra1CoherenceRejected = false;
       ElacComputer_DWork.ra2CoherenceRejected = false;
+      ElacComputer_DWork.configFullEventTime_not_empty = false;
       ElacComputer_MATLABFunction_k_Reset(&ElacComputer_DWork.sf_MATLABFunction_jgo);
       ElacComputer_MATLABFunction_f_Reset(&ElacComputer_DWork.sf_MATLABFunction_cj);
       ElacComputer_MATLABFunction_k_Reset(&ElacComputer_DWork.sf_MATLABFunction_mi);
@@ -419,13 +420,13 @@ void ElacComputer::step()
       &ElacComputer_DWork.sf_MATLABFunction_ad);
     ElacComputer_DWork.Memory_PreviousInput_lo = ElacComputer_P.Logic_table_n4[(((static_cast<uint32_T>(rtb_y_j) << 1) +
       ElacComputer_P.Constant5_Value_c) << 1) + ElacComputer_DWork.Memory_PreviousInput_lo];
-    rtb_AND1_h = (ElacComputer_DWork.Memory_PreviousInput || ElacComputer_DWork.Memory_PreviousInput_a);
+    rtb_AND1_kl = (ElacComputer_DWork.Memory_PreviousInput || ElacComputer_DWork.Memory_PreviousInput_a);
     rtb_OR1 = ((ElacComputer_U.in.bus_inputs.adr_1_bus.mach.SSM == static_cast<uint32_T>(SignStatusMatrix::
       FailureWarning)) || (ElacComputer_U.in.bus_inputs.adr_1_bus.airspeed_computed_kn.SSM == static_cast<uint32_T>
                 (SignStatusMatrix::FailureWarning)) || (ElacComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.SSM ==
                 static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) ||
                (ElacComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
-      FailureWarning)) || rtb_AND1_h || ElacComputer_DWork.Memory_PreviousInput_h);
+      FailureWarning)) || rtb_AND1_kl || ElacComputer_DWork.Memory_PreviousInput_h);
     rtb_AND3_b = (ElacComputer_DWork.Memory_PreviousInput_n || ElacComputer_DWork.Memory_PreviousInput_p);
     rtb_OR3 = ((ElacComputer_U.in.bus_inputs.adr_2_bus.mach.SSM == static_cast<uint32_T>(SignStatusMatrix::
       FailureWarning)) || (ElacComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.SSM == static_cast<uint32_T>
@@ -441,20 +442,20 @@ void ElacComputer::step()
                (ElacComputer_U.in.bus_inputs.adr_3_bus.aoa_corrected_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
       FailureWarning)) || rtb_AND2_p || ElacComputer_DWork.Memory_PreviousInput_lo);
     rtb_y_j = (rtb_OR3 && rtb_OR4);
-    rtb_doubleAdrFault = ((rtb_OR1 && rtb_OR3) || rtb_y_j || rtb_y_j);
+    rtb_y_j = ((rtb_OR1 && rtb_OR3) || rtb_y_j || rtb_y_j);
     rtb_tripleAdrFault = (rtb_OR1 && rtb_OR3 && rtb_OR4);
-    rtb_AND1_h = (rtb_AND1_h || rtb_AND3_b || rtb_AND2_p);
-    rtb_y_j = ((ElacComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
-      FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.SSM == static_cast<uint32_T>
-                (SignStatusMatrix::FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.SSM ==
-                static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) ||
-               (ElacComputer_U.in.bus_inputs.ir_1_bus.body_long_accel_g.SSM == static_cast<uint32_T>(SignStatusMatrix::
-      FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_1_bus.body_lat_accel_g.SSM == static_cast<uint32_T>
-                (SignStatusMatrix::FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_1_bus.body_normal_accel_g.SSM ==
-                static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) ||
-               (ElacComputer_U.in.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.SSM == static_cast<uint32_T>(SignStatusMatrix::
-      FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_1_bus.roll_att_rate_deg_s.SSM == static_cast<uint32_T>
-                (SignStatusMatrix::FailureWarning)) || ElacComputer_P.Constant_Value_ad);
+    rtb_AND1_kl = (rtb_AND1_kl || rtb_AND3_b || rtb_AND2_p);
+    rtb_OR = ((ElacComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
+                FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.SSM == static_cast<uint32_T>
+               (SignStatusMatrix::FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_1_bus.body_yaw_rate_deg_s.SSM ==
+               static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) ||
+              (ElacComputer_U.in.bus_inputs.ir_1_bus.body_long_accel_g.SSM == static_cast<uint32_T>(SignStatusMatrix::
+                FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_1_bus.body_lat_accel_g.SSM == static_cast<uint32_T>
+               (SignStatusMatrix::FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_1_bus.body_normal_accel_g.SSM ==
+               static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) ||
+              (ElacComputer_U.in.bus_inputs.ir_1_bus.pitch_att_rate_deg_s.SSM == static_cast<uint32_T>(SignStatusMatrix::
+                FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_1_bus.roll_att_rate_deg_s.SSM ==
+               static_cast<uint32_T>(SignStatusMatrix::FailureWarning)) || ElacComputer_P.Constant_Value_ad);
     rtb_OR6 = ((ElacComputer_U.in.bus_inputs.ir_2_bus.pitch_angle_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
       FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_2_bus.roll_angle_deg.SSM == static_cast<uint32_T>
                 (SignStatusMatrix::FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_2_bus.body_yaw_rate_deg_s.SSM ==
@@ -478,12 +479,12 @@ void ElacComputer::step()
       FailureWarning)) || (ElacComputer_U.in.bus_inputs.ir_3_bus.roll_att_rate_deg_s.SSM == static_cast<uint32_T>
                 (SignStatusMatrix::FailureWarning)) || ElacComputer_P.Constant_Value_ad);
     rtb_doubleIrFault = (rtb_OR6 && rtb_OR7);
-    rtb_tripleIrFault = (rtb_y_j && rtb_OR6);
+    rtb_tripleIrFault = (rtb_OR && rtb_OR6);
     rtb_doubleIrFault = (rtb_tripleIrFault || rtb_doubleIrFault || rtb_doubleIrFault);
     rtb_tripleIrFault = (rtb_tripleIrFault && rtb_OR7);
-    rtb_NOT_j = !rtb_OR4;
+    rtb_AND1_h = !rtb_OR4;
     rtb_AND2_p = !rtb_OR3;
-    if (rtb_OR1 && rtb_AND2_p && rtb_NOT_j) {
+    if (rtb_OR1 && rtb_AND2_p && rtb_AND1_h) {
       rtb_y_li = (ElacComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.Data +
                   ElacComputer_U.in.bus_inputs.adr_3_bus.airspeed_computed_kn.Data) / 2.0F;
       rtb_V_tas = (ElacComputer_U.in.bus_inputs.adr_2_bus.airspeed_true_kn.Data +
@@ -492,7 +493,7 @@ void ElacComputer::step()
         / 2.0F;
       rtb_alpha = (ElacComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.Data +
                    ElacComputer_U.in.bus_inputs.adr_3_bus.aoa_corrected_deg.Data) / 2.0F;
-    } else if ((!rtb_OR1) && rtb_OR3 && rtb_NOT_j) {
+    } else if ((!rtb_OR1) && rtb_OR3 && rtb_AND1_h) {
       rtb_y_li = (ElacComputer_U.in.bus_inputs.adr_1_bus.airspeed_computed_kn.Data +
                   ElacComputer_U.in.bus_inputs.adr_3_bus.airspeed_computed_kn.Data) / 2.0F;
       rtb_V_tas = (ElacComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.Data +
@@ -501,7 +502,7 @@ void ElacComputer::step()
         / 2.0F;
       rtb_alpha = (ElacComputer_U.in.bus_inputs.adr_1_bus.aoa_corrected_deg.Data +
                    ElacComputer_U.in.bus_inputs.adr_3_bus.aoa_corrected_deg.Data) / 2.0F;
-    } else if (((!rtb_OR1) && rtb_AND2_p && rtb_NOT_j) || ((!rtb_OR1) && rtb_AND2_p && rtb_OR4)) {
+    } else if (((!rtb_OR1) && rtb_AND2_p && rtb_AND1_h) || ((!rtb_OR1) && rtb_AND2_p && rtb_OR4)) {
       rtb_y_li = (ElacComputer_U.in.bus_inputs.adr_1_bus.airspeed_computed_kn.Data +
                   ElacComputer_U.in.bus_inputs.adr_2_bus.airspeed_computed_kn.Data) / 2.0F;
       rtb_V_tas = (ElacComputer_U.in.bus_inputs.adr_1_bus.airspeed_true_kn.Data +
@@ -520,7 +521,7 @@ void ElacComputer::step()
       rtb_V_tas = ElacComputer_U.in.bus_inputs.adr_2_bus.airspeed_true_kn.Data;
       rtb_mach_h = ElacComputer_U.in.bus_inputs.adr_2_bus.mach.Data;
       rtb_alpha = ElacComputer_U.in.bus_inputs.adr_2_bus.aoa_corrected_deg.Data;
-    } else if (rtb_OR1 && rtb_OR3 && rtb_NOT_j) {
+    } else if (rtb_OR1 && rtb_OR3 && rtb_AND1_h) {
       rtb_y_li = ElacComputer_U.in.bus_inputs.adr_3_bus.airspeed_computed_kn.Data;
       rtb_V_tas = ElacComputer_U.in.bus_inputs.adr_3_bus.airspeed_true_kn.Data;
       rtb_mach_h = ElacComputer_U.in.bus_inputs.adr_3_bus.mach.Data;
@@ -532,10 +533,10 @@ void ElacComputer::step()
       rtb_alpha = 0.0F;
     }
 
-    rtb_NOT_j = !rtb_OR6;
+    rtb_AND1_h = !rtb_OR6;
     rtb_AND2_p = !rtb_OR7;
-    rtb_OR1 = (rtb_y_j && rtb_AND2_p);
-    if (rtb_OR1 && rtb_NOT_j) {
+    rtb_OR1 = (rtb_OR && rtb_AND2_p);
+    if (rtb_OR1 && rtb_AND1_h) {
       rtb_theta = (ElacComputer_U.in.bus_inputs.ir_2_bus.pitch_angle_deg.Data +
                    ElacComputer_U.in.bus_inputs.ir_3_bus.pitch_angle_deg.Data) / 2.0F;
       rtb_phi = (ElacComputer_U.in.bus_inputs.ir_2_bus.roll_angle_deg.Data +
@@ -555,9 +556,9 @@ void ElacComputer::step()
       rtb_phi_dot = (ElacComputer_U.in.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data +
                      ElacComputer_U.in.bus_inputs.ir_3_bus.roll_att_rate_deg_s.Data) / 2.0F;
     } else {
-      rtb_OR3 = !rtb_y_j;
+      rtb_OR3 = !rtb_OR;
       rtb_OR4 = (rtb_OR3 && rtb_OR7);
-      if (rtb_OR4 && rtb_NOT_j) {
+      if (rtb_OR4 && rtb_AND1_h) {
         rtb_theta = (ElacComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data +
                      ElacComputer_U.in.bus_inputs.ir_2_bus.pitch_angle_deg.Data) / 2.0F;
         rtb_phi = (ElacComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.Data +
@@ -578,7 +579,7 @@ void ElacComputer::step()
                        ElacComputer_U.in.bus_inputs.ir_2_bus.roll_att_rate_deg_s.Data) / 2.0F;
       } else {
         rtb_AND2_p = (rtb_OR3 && rtb_AND2_p);
-        if ((rtb_AND2_p && rtb_NOT_j) || (rtb_AND2_p && rtb_OR6)) {
+        if ((rtb_AND2_p && rtb_AND1_h) || (rtb_AND2_p && rtb_OR6)) {
           rtb_theta = (ElacComputer_U.in.bus_inputs.ir_1_bus.pitch_angle_deg.Data +
                        ElacComputer_U.in.bus_inputs.ir_3_bus.pitch_angle_deg.Data) / 2.0F;
           rtb_phi = (ElacComputer_U.in.bus_inputs.ir_1_bus.roll_angle_deg.Data +
@@ -617,7 +618,7 @@ void ElacComputer::step()
           rtb_n_z = ElacComputer_U.in.bus_inputs.ir_3_bus.body_normal_accel_g.Data;
           rtb_theta_dot = ElacComputer_U.in.bus_inputs.ir_3_bus.pitch_att_rate_deg_s.Data;
           rtb_phi_dot = ElacComputer_U.in.bus_inputs.ir_3_bus.roll_att_rate_deg_s.Data;
-        } else if (rtb_y_j && rtb_OR7 && rtb_NOT_j) {
+        } else if (rtb_OR && rtb_OR7 && rtb_AND1_h) {
           rtb_theta = ElacComputer_U.in.bus_inputs.ir_2_bus.pitch_angle_deg.Data;
           rtb_phi = ElacComputer_U.in.bus_inputs.ir_2_bus.roll_angle_deg.Data;
           rtb_q = ElacComputer_U.in.bus_inputs.ir_2_bus.body_pitch_rate_deg_s.Data;
@@ -641,42 +642,64 @@ void ElacComputer::step()
       }
     }
 
-    rtb_OR6 = rtb_AND1_h;
+    rtb_OR3 = rtb_AND1_kl;
+    ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word,
+      ElacComputer_P.BitfromLabel_bit, &rtb_Switch11);
+    ElacComputer_MATLABFunction(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word, &rtb_AND3_b);
+    rtb_AND1_h = ((rtb_Switch11 != 0U) && rtb_AND3_b);
+    ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word,
+      ElacComputer_P.BitfromLabel1_bit, &rtb_Switch11);
+    rtb_AND2_p = (rtb_Switch11 != 0U);
+    ElacComputer_MATLABFunction(&ElacComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word, &rtb_AND_ai);
+    rtb_OR4 = ((rtb_Switch11 != 0U) && rtb_AND_ai);
     ElacComputer_MATLABFunction_d(std::abs(ElacComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.Data -
       ElacComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.Data) > ElacComputer_P.CompareToConstant_const_ll,
       ElacComputer_U.in.time.dt, ElacComputer_P.ConfirmNode_isRisingEdge_jm, ElacComputer_P.ConfirmNode_timeDelay,
       &rtb_AND3_b, &ElacComputer_DWork.sf_MATLABFunction_jz);
-    rtb_y_j = (rtb_tripleAdrFault || (rtb_doubleAdrFault && rtb_AND1_h));
+    rtb_OR1 = (rtb_tripleAdrFault || (rtb_y_j && rtb_AND1_kl));
     ElacComputer_MATLABFunction_d((ElacComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.Data > 50.0F) &&
       (ElacComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.SSM == static_cast<uint32_T>(SignStatusMatrix::
-      NormalOperation)) && (rtb_y_li > 200.0F) && rtb_y_j, ElacComputer_U.in.time.dt,
+      NormalOperation)) && (rtb_y_li > 200.0F) && rtb_OR1, ElacComputer_U.in.time.dt,
       ElacComputer_P.ConfirmNode2_isRisingEdge_g, ElacComputer_P.ConfirmNode2_timeDelay, &rtb_AND_ai,
       &ElacComputer_DWork.sf_MATLABFunction_lf);
     ElacComputer_MATLABFunction_d((ElacComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.Data > 50.0F) &&
       (ElacComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.SSM == static_cast<uint32_T>(SignStatusMatrix::
-      NormalOperation)) && (rtb_y_li > 200.0F) && rtb_y_j, ElacComputer_U.in.time.dt,
+      NormalOperation)) && (rtb_y_li > 200.0F) && rtb_OR1, ElacComputer_U.in.time.dt,
       ElacComputer_P.ConfirmNode1_isRisingEdge_a, ElacComputer_P.ConfirmNode1_timeDelay, &rtb_AND2_p,
       &ElacComputer_DWork.sf_MATLABFunction_jl);
     ElacComputer_DWork.ra1CoherenceRejected = (rtb_AND_ai || ElacComputer_DWork.ra1CoherenceRejected);
     ElacComputer_DWork.ra2CoherenceRejected = (rtb_AND2_p || ElacComputer_DWork.ra2CoherenceRejected);
-    rtb_OR7 = ((ElacComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.SSM == static_cast<uint32_T>(SignStatusMatrix::
-      FailureWarning)) || ElacComputer_DWork.ra1CoherenceRejected);
-    rtb_OR1 = ((ElacComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.SSM == static_cast<uint32_T>(SignStatusMatrix::
+    rtb_OR = ((ElacComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.SSM == static_cast<uint32_T>(SignStatusMatrix::
+                FailureWarning)) || ElacComputer_DWork.ra1CoherenceRejected);
+    rtb_OR6 = ((ElacComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.SSM == static_cast<uint32_T>(SignStatusMatrix::
       FailureWarning)) || ElacComputer_DWork.ra2CoherenceRejected);
-    rtb_NOT_j = !rtb_OR1;
-    rtb_AND2_p = !rtb_OR7;
-    if (rtb_AND2_p && rtb_NOT_j) {
+    if (!ElacComputer_DWork.configFullEventTime_not_empty) {
+      ElacComputer_DWork.configFullEventTime = ElacComputer_U.in.time.simulation_time;
+      ElacComputer_DWork.configFullEventTime_not_empty = true;
+    }
+
+    if ((!rtb_AND1_h) && (!rtb_OR4)) {
+      ElacComputer_DWork.configFullEventTime = ElacComputer_U.in.time.simulation_time;
+    }
+
+    rtb_AND1_h = !rtb_OR6;
+    rtb_AND2_p = !rtb_OR;
+    if (rtb_AND2_p && rtb_AND1_h) {
       if (rtb_AND3_b) {
-        rtb_raComputationValue = std::fmin(ElacComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.Data,
-          ElacComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.Data);
+        if (ElacComputer_U.in.time.simulation_time > ElacComputer_DWork.configFullEventTime + 10.0) {
+          rtb_raComputationValue = std::fmin(ElacComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.Data,
+            ElacComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.Data);
+        } else {
+          rtb_raComputationValue = 250.0F;
+        }
       } else {
         rtb_raComputationValue = (ElacComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.Data +
           ElacComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.Data) / 2.0F;
       }
-    } else if ((rtb_OR7 && rtb_NOT_j) || (rtb_AND2_p && rtb_OR1)) {
-      if ((rtb_y_li > 180.0F) && rtb_y_j) {
+    } else if ((rtb_OR && rtb_AND1_h) || (rtb_AND2_p && rtb_OR6)) {
+      if ((rtb_y_li > 180.0F) && rtb_OR1) {
         rtb_raComputationValue = 250.0F;
-      } else if (rtb_OR1) {
+      } else if (rtb_OR6) {
         rtb_raComputationValue = ElacComputer_U.in.bus_inputs.ra_1_bus.radio_height_ft.Data;
       } else {
         rtb_raComputationValue = ElacComputer_U.in.bus_inputs.ra_2_bus.radio_height_ft.Data;
@@ -685,24 +708,24 @@ void ElacComputer::step()
       rtb_raComputationValue = 250.0F;
     }
 
-    rtb_OR7 = (rtb_OR7 && rtb_OR1);
-    rtb_AND2_p = ((rtb_raComputationValue < ElacComputer_P.CompareToConstant_const) && (!rtb_OR7));
-    rtb_OR1 = (ElacComputer_U.in.discrete_inputs.ground_spoilers_active_1 &&
-               ElacComputer_U.in.discrete_inputs.ground_spoilers_active_2);
-    rtb_AND1_h = rtb_OR1;
-    rtb_y_j = (ElacComputer_U.in.discrete_inputs.lgciu_1_left_main_gear_pressed &&
+    rtb_OR4 = (rtb_OR && rtb_OR6);
+    rtb_AND2_p = ((rtb_raComputationValue < ElacComputer_P.CompareToConstant_const) && (!rtb_OR4));
+    rtb_OR = (ElacComputer_U.in.discrete_inputs.ground_spoilers_active_1 &&
+              ElacComputer_U.in.discrete_inputs.ground_spoilers_active_2);
+    rtb_AND1_kl = rtb_OR;
+    rtb_OR1 = (ElacComputer_U.in.discrete_inputs.lgciu_1_left_main_gear_pressed &&
                ElacComputer_U.in.discrete_inputs.lgciu_1_right_main_gear_pressed);
-    rtb_AND3_b = ((rtb_y_j && ElacComputer_U.in.discrete_inputs.lgciu_2_left_main_gear_pressed &&
-                   ElacComputer_U.in.discrete_inputs.lgciu_2_right_main_gear_pressed) || ((rtb_y_j ||
+    rtb_AND3_b = ((rtb_OR1 && ElacComputer_U.in.discrete_inputs.lgciu_2_left_main_gear_pressed &&
+                   ElacComputer_U.in.discrete_inputs.lgciu_2_right_main_gear_pressed) || ((rtb_OR1 ||
       (ElacComputer_U.in.discrete_inputs.lgciu_2_left_main_gear_pressed &&
-       ElacComputer_U.in.discrete_inputs.lgciu_2_right_main_gear_pressed)) && rtb_AND2_p) || (rtb_AND2_p && rtb_OR1));
-    rtb_OR3 = rtb_AND3_b;
+       ElacComputer_U.in.discrete_inputs.lgciu_2_right_main_gear_pressed)) && rtb_AND2_p) || (rtb_AND2_p && rtb_OR));
+    rtb_OR6 = rtb_AND3_b;
     ElacComputer_MATLABFunction_m(ElacComputer_U.in.analog_inputs.yellow_hyd_pressure_psi,
       ElacComputer_P.HysteresisNode2_highTrigger, ElacComputer_P.HysteresisNode2_lowTrigger, &rtb_AND_ai,
       &ElacComputer_DWork.sf_MATLABFunction_jgo);
     ElacComputer_MATLABFunction_d((!ElacComputer_U.in.discrete_inputs.yellow_low_pressure) && rtb_AND_ai,
       ElacComputer_U.in.time.dt, ElacComputer_P.ConfirmNode_isRisingEdge_k, ElacComputer_P.ConfirmNode_timeDelay_n,
-      &rtb_AND1_h, &ElacComputer_DWork.sf_MATLABFunction_cj);
+      &rtb_AND1_kl, &ElacComputer_DWork.sf_MATLABFunction_cj);
     ElacComputer_MATLABFunction_m(ElacComputer_U.in.analog_inputs.blue_hyd_pressure_psi,
       ElacComputer_P.HysteresisNode1_highTrigger, ElacComputer_P.HysteresisNode1_lowTrigger, &rtb_AND_ai,
       &ElacComputer_DWork.sf_MATLABFunction_mi);
@@ -716,7 +739,7 @@ void ElacComputer::step()
     ElacComputer_MATLABFunction_d(rtb_AND2_p && rtb_AND_ai, ElacComputer_U.in.time.dt,
       ElacComputer_P.ConfirmNode2_isRisingEdge_j3, ElacComputer_P.ConfirmNode2_timeDelay_k, &rtb_AND_ai,
       &ElacComputer_DWork.sf_MATLABFunction_gfx);
-    rtb_OR4 = rtb_AND_ai;
+    rtb_OR7 = rtb_AND_ai;
     ElacComputer_MATLABFunction_g(ElacComputer_U.in.discrete_inputs.capt_priority_takeover_pressed,
       ElacComputer_P.PulseNode_isRisingEdge, &rtb_AND2_p, &ElacComputer_DWork.sf_MATLABFunction_g4b);
     ElacComputer_MATLABFunction_g(ElacComputer_U.in.discrete_inputs.fo_priority_takeover_pressed,
@@ -786,24 +809,24 @@ void ElacComputer::step()
     if (ElacComputer_U.in.discrete_inputs.is_unit_1) {
       rtb_leftElevatorAvail = ((!ElacComputer_U.in.discrete_inputs.l_elev_servo_failed) && rtb_AND3_b);
       rtb_rightElevatorAvail = ((!ElacComputer_U.in.discrete_inputs.r_elev_servo_failed) && rtb_AND3_b);
-      rtb_NOT_j = rtb_AND3_b;
+      rtb_AND1_h = rtb_AND3_b;
     } else {
-      rtb_leftElevatorAvail = ((!ElacComputer_U.in.discrete_inputs.l_elev_servo_failed) && rtb_OR4);
-      rtb_rightElevatorAvail = ((!ElacComputer_U.in.discrete_inputs.r_elev_servo_failed) && rtb_AND1_h);
-      rtb_NOT_j = ((rtb_AND1_h && rtb_OR4) || ((!rtb_AND3_b) && (rtb_OR4 || rtb_AND1_h)));
+      rtb_leftElevatorAvail = ((!ElacComputer_U.in.discrete_inputs.l_elev_servo_failed) && rtb_OR7);
+      rtb_rightElevatorAvail = ((!ElacComputer_U.in.discrete_inputs.r_elev_servo_failed) && rtb_AND1_kl);
+      rtb_AND1_h = ((rtb_AND1_kl && rtb_OR7) || ((!rtb_AND3_b) && (rtb_OR7 || rtb_AND1_kl)));
     }
 
-    rtb_y_j = !ElacComputer_U.in.discrete_inputs.ths_motor_fault;
+    rtb_OR1 = !ElacComputer_U.in.discrete_inputs.ths_motor_fault;
     canEngageInPitch = ((!ElacComputer_U.in.discrete_inputs.r_elev_servo_failed) &&
-                        (!ElacComputer_U.in.discrete_inputs.l_elev_servo_failed) && rtb_y_j && rtb_NOT_j);
+                        (!ElacComputer_U.in.discrete_inputs.l_elev_servo_failed) && rtb_OR1 && rtb_AND1_h);
     rtb_AND2_p = !ElacComputer_U.in.discrete_inputs.is_unit_1;
     hasPriorityInPitch = (rtb_AND2_p || ElacComputer_U.in.discrete_inputs.opp_axis_pitch_failure);
     rtb_isEngagedInPitch = (canEngageInPitch && hasPriorityInPitch);
     if (ElacComputer_U.in.discrete_inputs.is_unit_1) {
       leftAileronAvail = ((!ElacComputer_U.in.discrete_inputs.l_ail_servo_failed) && rtb_AND3_b);
-      rightAileronAvail = ((!ElacComputer_U.in.discrete_inputs.r_ail_servo_failed) && rtb_OR4);
+      rightAileronAvail = ((!ElacComputer_U.in.discrete_inputs.r_ail_servo_failed) && rtb_OR7);
     } else {
-      leftAileronAvail = ((!ElacComputer_U.in.discrete_inputs.l_ail_servo_failed) && rtb_OR4);
+      leftAileronAvail = ((!ElacComputer_U.in.discrete_inputs.l_ail_servo_failed) && rtb_OR7);
       rightAileronAvail = ((!ElacComputer_U.in.discrete_inputs.r_ail_servo_failed) && rtb_AND3_b);
     }
 
@@ -811,8 +834,8 @@ void ElacComputer::step()
     hasPriorityInRoll = (ElacComputer_U.in.discrete_inputs.is_unit_1 ||
                          (ElacComputer_U.in.discrete_inputs.opp_left_aileron_lost &&
                           ElacComputer_U.in.discrete_inputs.opp_right_aileron_lost));
-    rtb_NOT_j = !hasPriorityInRoll;
-    if (rtb_AND2_p && rtb_NOT_j && (ElacComputer_U.in.bus_inputs.elac_opp_bus.aileron_command_deg.SSM ==
+    rtb_AND1_h = !hasPriorityInRoll;
+    if (rtb_AND2_p && rtb_AND1_h && (ElacComputer_U.in.bus_inputs.elac_opp_bus.aileron_command_deg.SSM ==
          static_cast<uint32_T>(SignStatusMatrix::NormalOperation))) {
       ElacComputer_B.logic.left_aileron_crosscommand_active = (ElacComputer_U.in.discrete_inputs.opp_left_aileron_lost &&
         leftAileronAvail);
@@ -824,25 +847,25 @@ void ElacComputer::step()
     }
 
     rtb_isEngagedInRoll = (canEngageInRoll && hasPriorityInRoll);
-    ElacComputer_B.logic.is_yellow_hydraulic_power_avail = rtb_AND1_h;
+    ElacComputer_B.logic.is_yellow_hydraulic_power_avail = rtb_AND1_kl;
     ElacComputer_B.logic.is_blue_hydraulic_power_avail = rtb_AND3_b;
     rtb_logic_crg14_alpha_disagree = (ElacComputer_DWork.Memory_PreviousInput_h ||
       ElacComputer_DWork.Memory_PreviousInput_i || ElacComputer_DWork.Memory_PreviousInput_lo);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sec_1_bus.discrete_status_word_1,
-      ElacComputer_P.BitfromLabel_bit, &rtb_Switch11);
+      ElacComputer_P.BitfromLabel_bit_c, &rtb_Switch11);
     rtb_AND2_p = (rtb_Switch11 != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sec_1_bus.discrete_status_word_1,
-      ElacComputer_P.BitfromLabel1_bit, &rtb_Switch11);
+      ElacComputer_P.BitfromLabel1_bit_j, &rtb_Switch11);
     rtb_AND3_b = (rtb_Switch11 != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sec_2_bus.discrete_status_word_1,
       ElacComputer_P.BitfromLabel2_bit, &rtb_Switch11);
-    rtb_AND1_h = (rtb_Switch11 != 0U);
+    rtb_AND1_kl = (rtb_Switch11 != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_3,
       ElacComputer_P.BitfromLabel3_bit, &rtb_Switch11);
-    rtb_AND4 = (rtb_Switch11 != 0U);
+    rtb_AND_ai = (rtb_Switch11 != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.fcdc_2_bus.efcs_status_word_3,
       ElacComputer_P.BitfromLabel5_bit, &rtb_Switch11);
-    rtb_AND4 = (rtb_AND4 || (rtb_Switch11 != 0U));
+    rtb_OR_e1 = (rtb_AND_ai || (rtb_Switch11 != 0U));
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.fcdc_1_bus.efcs_status_word_3,
       ElacComputer_P.BitfromLabel4_bit, &rtb_Switch11);
     rtb_AND_ai = (rtb_Switch11 != 0U);
@@ -859,20 +882,20 @@ void ElacComputer::step()
         ((ElacComputer_U.in.bus_inputs.sec_1_bus.discrete_status_word_1.SSM != static_cast<uint32_T>(SignStatusMatrix::
            NormalOperation)) && (ElacComputer_U.in.bus_inputs.sec_2_bus.discrete_status_word_1.SSM !=
           static_cast<uint32_T>(SignStatusMatrix::NormalOperation)) && ((!rtb_NOT1) && (rtb_Switch11 != 0U))) ||
-        ((!rtb_AND2_p) && (!rtb_AND3_b) && (!rtb_AND1_h) && (!rtb_AND4) && (!rtb_AND_ai))) {
+        ((!rtb_AND2_p) && (!rtb_AND3_b) && (!rtb_AND1_kl) && (!rtb_OR_e1) && (!rtb_AND_ai))) {
       rtb_lateralLawCapability = lateral_efcs_law::DirectLaw;
     } else {
       rtb_lateralLawCapability = lateral_efcs_law::NormalLaw;
     }
 
-    ElacComputer_MATLABFunction(&ElacComputer_U.in.bus_inputs.sec_1_bus.discrete_status_word_2, &rtb_AND1_h);
+    ElacComputer_MATLABFunction(&ElacComputer_U.in.bus_inputs.sec_1_bus.discrete_status_word_2, &rtb_AND1_kl);
     ElacComputer_MATLABFunction(&ElacComputer_U.in.bus_inputs.sec_2_bus.discrete_status_word_2, &rtb_AND3_b);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sec_1_bus.discrete_status_word_2,
       ElacComputer_P.BitfromLabel4_bit_d, &rtb_Switch11);
     rtb_AND_ai = (rtb_Switch11 != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sec_2_bus.discrete_status_word_2,
       ElacComputer_P.BitfromLabel5_bit_e, &rtb_Switch11);
-    rtb_AND4 = (((!rtb_AND1_h) && (!rtb_AND3_b)) || (rtb_AND_ai && (rtb_Switch11 != 0U)));
+    rtb_OR_e1 = (((!rtb_AND1_kl) && (!rtb_AND3_b)) || (rtb_AND_ai && (rtb_Switch11 != 0U)));
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sec_1_bus.discrete_status_word_2,
       ElacComputer_P.BitfromLabel6_bit_k, &rtb_Switch11);
     rtb_AND_ai = (rtb_Switch11 != 0U);
@@ -885,27 +908,27 @@ void ElacComputer::step()
     ElacComputer_MATLABFunction(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word, &rtb_AND3_b);
     rtb_NOT1 = ((rtb_Switch11 != 0U) && rtb_AND3_b);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word,
-      ElacComputer_P.BitfromLabel1_bit_j, &rtb_Switch11);
+      ElacComputer_P.BitfromLabel1_bit_jr, &rtb_Switch11);
     ElacComputer_MATLABFunction(&ElacComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word, &rtb_AND2_p);
     rtb_zeta_deg_f = std::abs(static_cast<real_T>(rtb_phi));
-    rtb_AND3_b = !rtb_OR3;
+    rtb_AND3_b = !rtb_OR6;
     abnormalCondition_tmp = !ElacComputer_P.Constant_Value_ad;
-    rtb_AND1_h = (rtb_AND3_b && (((!rtb_tripleAdrFault) && ((rtb_mach_h > 0.91) || (rtb_alpha < -10.0F) || (rtb_alpha >
+    rtb_AND1_kl = (rtb_AND3_b && (((!rtb_tripleAdrFault) && ((rtb_mach_h > 0.91) || (rtb_alpha < -10.0F) || (rtb_alpha >
       40.0F) || (rtb_y_li > 440.0F) || (rtb_y_li < 60.0F))) || ((!rtb_tripleIrFault) && ((!rtb_doubleIrFault) ||
       abnormalCondition_tmp) && ((rtb_zeta_deg_f > 125.0) || ((rtb_theta > 50.0F) || (rtb_theta < -30.0F))))));
-    ElacComputer_DWork.abnormalConditionWasActive = (rtb_AND1_h || (rtb_AND3_b &&
+    ElacComputer_DWork.abnormalConditionWasActive = (rtb_AND1_kl || (rtb_AND3_b &&
       ElacComputer_DWork.abnormalConditionWasActive));
     alternate2Condition_tmp = ((!rtb_leftElevatorAvail) || (!rtb_rightElevatorAvail));
-    rtb_DataTypeConversion_e = ((rtb_doubleAdrFault && rtb_OR6) || rtb_tripleAdrFault ||
+    rtb_DataTypeConversion_e = ((rtb_y_j && rtb_OR3) || rtb_tripleAdrFault ||
       ElacComputer_DWork.abnormalConditionWasActive || ((!leftAileronAvail) && (!rightAileronAvail) &&
       alternate2Condition_tmp));
-    alternate1Condition_tmp = !rtb_OR6;
-    abnormalCondition_tmp = ((rtb_doubleIrFault && abnormalCondition_tmp) || (rtb_doubleAdrFault &&
-      rtb_logic_crg14_alpha_disagree && alternate1Condition_tmp) || (rtb_doubleAdrFault &&
-      (!rtb_logic_crg14_alpha_disagree) && alternate1Condition_tmp) || alternate2Condition_tmp);
-    if (rtb_tripleIrFault || ((rtb_DataTypeConversion_e || abnormalCondition_tmp || rtb_OR7 || (rtb_lateralLawCapability
-           == lateral_efcs_law::DirectLaw)) && ((rtb_AND_ai && (!rtb_AND4)) || ((rtb_NOT1 || ((rtb_Switch11 != 0U) &&
-             rtb_AND2_p)) && rtb_AND4)))) {
+    alternate1Condition_tmp = !rtb_OR3;
+    abnormalCondition_tmp = ((rtb_doubleIrFault && abnormalCondition_tmp) || (rtb_y_j && rtb_logic_crg14_alpha_disagree &&
+      alternate1Condition_tmp) || (rtb_y_j && (!rtb_logic_crg14_alpha_disagree) && alternate1Condition_tmp) ||
+      alternate2Condition_tmp);
+    if (rtb_tripleIrFault || ((rtb_DataTypeConversion_e || abnormalCondition_tmp || rtb_OR4 || (rtb_lateralLawCapability
+           == lateral_efcs_law::DirectLaw)) && ((rtb_AND_ai && (!rtb_OR_e1)) || ((rtb_NOT1 || ((rtb_Switch11 != 0U) &&
+             rtb_AND2_p)) && rtb_OR_e1)))) {
       rtb_pitchLawCapability = pitch_efcs_law::DirectLaw;
     } else if (rtb_DataTypeConversion_e) {
       rtb_pitchLawCapability = pitch_efcs_law::AlternateLaw2;
@@ -953,7 +976,7 @@ void ElacComputer::step()
 
     if (hasPriorityInRoll && rtb_isEngagedInRoll) {
       rtb_oppElacRollCapability = rtb_lateralLawCapability;
-    } else if ((!rtb_NOT_j) && rtb_isEngagedInRoll) {
+    } else if ((!rtb_AND1_h) && rtb_isEngagedInRoll) {
       rtb_oppElacRollCapability = lateral_efcs_law::None;
     }
 
@@ -975,7 +998,7 @@ void ElacComputer::step()
       ElacComputer_DWork.eventTime_not_empty_a = true;
     }
 
-    if (rtb_OR3 || (ElacComputer_DWork.eventTime_g == 0.0)) {
+    if (rtb_OR6 || (ElacComputer_DWork.eventTime_g == 0.0)) {
       ElacComputer_DWork.eventTime_g = ElacComputer_U.in.time.simulation_time;
     }
 
@@ -984,10 +1007,10 @@ void ElacComputer::step()
     rtb_AND2_p = (rtb_Switch11 != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       ElacComputer_P.BitfromLabel1_bit_g, &rtb_Switch11);
-    rtb_AND4 = (rtb_Switch11 != 0U);
+    rtb_AND_ai = (rtb_Switch11 != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       ElacComputer_P.BitfromLabel2_bit_n, &rtb_Switch11);
-    rtb_AND_ai = (rtb_Switch11 != 0U);
+    rtb_OR_e1 = (rtb_Switch11 != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       ElacComputer_P.BitfromLabel3_bit_g, &rtb_Switch11);
     rtb_NOT1 = (rtb_Switch11 != 0U);
@@ -996,7 +1019,7 @@ void ElacComputer::step()
     rtb_DataTypeConversion_e = (rtb_Switch11 != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       ElacComputer_P.BitfromLabel5_bit_a, &rtb_Switch11);
-    ElacComputer_MATLABFunction_o(rtb_AND2_p, rtb_AND4, rtb_AND_ai, rtb_NOT1, rtb_DataTypeConversion_e, rtb_Switch11 !=
+    ElacComputer_MATLABFunction_o(rtb_AND2_p, rtb_AND_ai, rtb_OR_e1, rtb_NOT1, rtb_DataTypeConversion_e, rtb_Switch11 !=
       0U, &rtb_Y);
     ElacComputer_RateLimiter(look2_binlxpw(static_cast<real_T>(rtb_mach_h), rtb_Y, ElacComputer_P.alphamax_bp01Data,
       ElacComputer_P.alphamax_bp02Data, ElacComputer_P.alphamax_tableData, ElacComputer_P.alphamax_maxIndex, 4U),
@@ -1031,7 +1054,7 @@ void ElacComputer::step()
         if (rtb_raComputationValue < 100.0F) {
           ElacComputer_DWork.is_c28_ElacComputer = ElacComputer_IN_Landing100ft;
           rtb_ap_special_disc = 1;
-        } else if (rtb_OR3) {
+        } else if (rtb_OR6) {
           ElacComputer_DWork.is_c28_ElacComputer = ElacComputer_IN_Landed;
           rtb_ap_special_disc = 0;
         } else {
@@ -1040,7 +1063,7 @@ void ElacComputer::step()
         break;
 
        case ElacComputer_IN_Landed:
-        if (!rtb_OR3) {
+        if (!rtb_OR6) {
           ElacComputer_DWork.is_c28_ElacComputer = ElacComputer_IN_Takeoff100ft;
           rtb_ap_special_disc = 0;
         } else {
@@ -1052,7 +1075,7 @@ void ElacComputer::step()
         if (rtb_raComputationValue > 100.0F) {
           ElacComputer_DWork.is_c28_ElacComputer = ElacComputer_IN_Flying;
           rtb_ap_special_disc = 0;
-        } else if (rtb_OR3) {
+        } else if (rtb_OR6) {
           ElacComputer_DWork.is_c28_ElacComputer = ElacComputer_IN_Landed;
           rtb_ap_special_disc = 0;
         } else {
@@ -1061,7 +1084,7 @@ void ElacComputer::step()
         break;
 
        default:
-        if (rtb_OR3) {
+        if (rtb_OR6) {
           ElacComputer_DWork.is_c28_ElacComputer = ElacComputer_IN_Landed;
           rtb_ap_special_disc = 0;
         } else if (rtb_raComputationValue > 100.0F) {
@@ -1095,8 +1118,8 @@ void ElacComputer::step()
                       ElacComputer_P.uDLookupTable2_tableData, 3U))) || ElacComputer_DWork.sProtActive);
     }
 
-    rtb_AND4 = (ElacComputer_U.in.discrete_inputs.ap_1_disengaged && ElacComputer_U.in.discrete_inputs.ap_2_disengaged);
-    ElacComputer_DWork.sProtActive = ((rtb_y_li >= rtb_Switch1) && (rtb_AND4 && ElacComputer_DWork.sProtActive));
+    rtb_OR_e1 = (ElacComputer_U.in.discrete_inputs.ap_1_disengaged && ElacComputer_U.in.discrete_inputs.ap_2_disengaged);
+    ElacComputer_DWork.sProtActive = ((rtb_y_li >= rtb_Switch1) && (rtb_OR_e1 && ElacComputer_DWork.sProtActive));
     if (!ElacComputer_DWork.resetEventTime_not_empty) {
       ElacComputer_DWork.resetEventTime = ElacComputer_U.in.time.simulation_time;
       ElacComputer_DWork.resetEventTime_not_empty = true;
@@ -1106,7 +1129,7 @@ void ElacComputer::step()
       ElacComputer_DWork.resetEventTime = ElacComputer_U.in.time.simulation_time;
     }
 
-    ElacComputer_DWork.sProtActive_m = ((rtb_AND3_b && rtb_AND4 && (rtb_alpha > rtb_DataTypeConversion8_b) &&
+    ElacComputer_DWork.sProtActive_m = ((rtb_AND3_b && rtb_OR_e1 && (rtb_alpha > rtb_DataTypeConversion8_b) &&
       (ElacComputer_U.in.time.monotonic_time > 10.0)) || ElacComputer_DWork.sProtActive_m);
     ElacComputer_DWork.sProtActive_m = ((ElacComputer_U.in.time.simulation_time - ElacComputer_DWork.resetEventTime <=
       0.5) && (rtb_xi_deg_m >= -0.5) && ((rtb_raComputationValue >= 200.0F) || (rtb_xi_deg_m >= 0.5) || (rtb_alpha >=
@@ -1118,18 +1141,18 @@ void ElacComputer::step()
     ElacComputer_B.logic.ap_authorised = ((std::abs(rtb_xi_deg_m) <= 0.5) && (std::abs
       (rtb_logic_crg_total_sidestick_roll_command) <= 0.5) && ((std::abs
       (ElacComputer_U.in.analog_inputs.rudder_pedal_pos) <= 0.4) && ((rtb_theta <= 25.0F) && (rtb_theta >= -13.0F) &&
-      (rtb_zeta_deg_f <= 45.0) && ((!hasPriorityInPitch) || canEngageInPitch) && (rtb_NOT_j || canEngageInRoll) &&
+      (rtb_zeta_deg_f <= 45.0) && ((!hasPriorityInPitch) || canEngageInPitch) && (rtb_AND1_h || canEngageInRoll) &&
       (!rtb_AND_ai))));
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word,
       ElacComputer_P.BitfromLabel_bit_e, &rtb_Switch11);
-    rtb_NOT_j = (rtb_Switch11 == 0U);
+    rtb_AND1_h = (rtb_Switch11 == 0U);
     ElacComputer_MATLABFunction(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_actual_position_word, &rtb_AND2_p);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word,
       ElacComputer_P.BitfromLabel1_bit_d, &rtb_Switch11);
     rtb_AND_ai = (rtb_Switch11 != 0U);
     ElacComputer_MATLABFunction(&ElacComputer_U.in.bus_inputs.sfcc_2_bus.slat_flap_actual_position_word, &rtb_AND_ai);
-    rtb_NOT_j = ((rtb_NOT_j && rtb_AND2_p) || ((rtb_Switch11 == 0U) && rtb_AND_ai));
-    ElacComputer_B.logic.on_ground = rtb_OR3;
+    rtb_AND1_h = ((rtb_AND1_h && rtb_AND2_p) || ((rtb_Switch11 == 0U) && rtb_AND_ai));
+    ElacComputer_B.logic.on_ground = rtb_OR6;
     ElacComputer_B.logic.tracking_mode_on = (ElacComputer_U.in.sim_data.slew_on || ElacComputer_U.in.sim_data.pause_on ||
       ElacComputer_U.in.sim_data.tracking_mode_on_override);
     ElacComputer_B.logic.lateral_law_capability = rtb_lateralLawCapability;
@@ -1151,7 +1174,7 @@ void ElacComputer::step()
       ElacComputer_B.logic.active_pitch_law = pitch_efcs_law::None;
     }
 
-    ElacComputer_B.logic.abnormal_condition_law_active = rtb_AND1_h;
+    ElacComputer_B.logic.abnormal_condition_law_active = rtb_AND1_kl;
     ElacComputer_B.logic.is_engaged_in_pitch = rtb_isEngagedInPitch;
     ElacComputer_B.logic.can_engage_in_pitch = canEngageInPitch;
     ElacComputer_B.logic.has_priority_in_pitch = hasPriorityInPitch;
@@ -1162,10 +1185,10 @@ void ElacComputer::step()
     ElacComputer_B.logic.has_priority_in_roll = hasPriorityInRoll;
     ElacComputer_B.logic.left_aileron_avail = leftAileronAvail;
     ElacComputer_B.logic.right_aileron_avail = rightAileronAvail;
-    ElacComputer_B.logic.aileron_droop_active = rtb_NOT_j;
-    ElacComputer_B.logic.aileron_antidroop_active = (rtb_OR1 && rtb_NOT_j && (rtb_theta < 2.5F) && rtb_AND4 &&
+    ElacComputer_B.logic.aileron_droop_active = rtb_AND1_h;
+    ElacComputer_B.logic.aileron_antidroop_active = (rtb_OR && rtb_AND1_h && (rtb_theta < 2.5F) && rtb_OR_e1 &&
       (rtb_activeLateralLaw == lateral_efcs_law::NormalLaw));
-    ElacComputer_B.logic.is_green_hydraulic_power_avail = rtb_OR4;
+    ElacComputer_B.logic.is_green_hydraulic_power_avail = rtb_OR7;
     ElacComputer_B.logic.left_sidestick_disabled = ElacComputer_DWork.pLeftStickDisabled;
     ElacComputer_B.logic.right_sidestick_disabled = ElacComputer_DWork.pRightStickDisabled;
     ElacComputer_B.logic.left_sidestick_priority_locked = ElacComputer_DWork.Delay_DSTATE;
@@ -1178,9 +1201,9 @@ void ElacComputer::step()
     ElacComputer_B.logic.high_speed_prot_active = ElacComputer_DWork.sProtActive;
     ElacComputer_B.logic.high_speed_prot_lo_thresh_kn = rtb_Switch1;
     ElacComputer_B.logic.high_speed_prot_hi_thresh_kn = rtb_Y;
-    ElacComputer_B.logic.double_adr_failure = rtb_doubleAdrFault;
+    ElacComputer_B.logic.double_adr_failure = rtb_y_j;
     ElacComputer_B.logic.triple_adr_failure = rtb_tripleAdrFault;
-    ElacComputer_B.logic.cas_or_mach_disagree = rtb_OR6;
+    ElacComputer_B.logic.cas_or_mach_disagree = rtb_OR3;
     ElacComputer_B.logic.alpha_disagree = rtb_logic_crg14_alpha_disagree;
     ElacComputer_B.logic.double_ir_failure = rtb_doubleIrFault;
     ElacComputer_B.logic.triple_ir_failure = rtb_tripleIrFault;
@@ -1199,13 +1222,13 @@ void ElacComputer::step()
     ElacComputer_B.logic.ir_computation_data.theta_dot_deg_s = rtb_theta_dot;
     ElacComputer_B.logic.ir_computation_data.phi_dot_deg_s = rtb_phi_dot;
     ElacComputer_B.logic.ra_computation_data_ft = rtb_raComputationValue;
-    ElacComputer_B.logic.dual_ra_failure = rtb_OR7;
+    ElacComputer_B.logic.dual_ra_failure = rtb_OR4;
     rtb_tripleAdrFault = (ElacComputer_B.logic.tracking_mode_on || (static_cast<real_T>
       (ElacComputer_B.logic.active_lateral_law) != ElacComputer_P.CompareToConstant_const_m));
     rtb_Y_c = ElacComputer_U.in.bus_inputs.fmgc_1_bus.delta_p_ail_cmd_deg.Data;
     rtb_Y = ElacComputer_U.in.bus_inputs.fmgc_1_bus.delta_r_cmd_deg.Data;
-    rtb_doubleAdrFault = ((!ElacComputer_U.in.discrete_inputs.ap_1_disengaged) ||
-                          (!ElacComputer_U.in.discrete_inputs.ap_2_disengaged));
+    rtb_y_j = ((!ElacComputer_U.in.discrete_inputs.ap_1_disengaged) ||
+               (!ElacComputer_U.in.discrete_inputs.ap_2_disengaged));
     LawMDLOBJ2.step(&ElacComputer_U.in.time.dt, &ElacComputer_B.logic.ir_computation_data.theta_deg,
                     &ElacComputer_B.logic.ir_computation_data.phi_deg, &ElacComputer_B.logic.ir_computation_data.r_deg_s,
                     &ElacComputer_B.logic.ir_computation_data.phi_dot_deg_s,
@@ -1214,8 +1237,7 @@ void ElacComputer::step()
                     &ElacComputer_B.logic.total_sidestick_roll_command,
                     &ElacComputer_U.in.analog_inputs.rudder_pedal_pos, &ElacComputer_B.logic.on_ground,
                     &rtb_tripleAdrFault, &ElacComputer_B.logic.high_alpha_prot_active,
-                    &ElacComputer_B.logic.high_speed_prot_active, &rtb_Y_c, &rtb_Y, &rtb_doubleAdrFault, &rtb_xi_deg,
-                    &rtb_zeta_deg);
+                    &ElacComputer_B.logic.high_speed_prot_active, &rtb_Y_c, &rtb_Y, &rtb_y_j, &rtb_xi_deg, &rtb_zeta_deg);
     LawMDLOBJ1.step(&ElacComputer_U.in.time.dt, &ElacComputer_B.logic.total_sidestick_roll_command, &rtb_xi_deg_m,
                     &rtb_zeta_deg_f);
     switch (static_cast<int32_T>(ElacComputer_B.logic.active_lateral_law)) {
@@ -1333,13 +1355,13 @@ void ElacComputer::step()
     rtb_tripleIrFault = (rtb_y_e != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       ElacComputer_P.BitfromLabel3_bit_c, &rtb_y_e);
-    rtb_NOT_j = (rtb_y_e != 0U);
+    rtb_AND1_h = (rtb_y_e != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       ElacComputer_P.BitfromLabel4_bit_n, &rtb_y_e);
-    rtb_OR6 = (rtb_y_e != 0U);
+    rtb_OR3 = (rtb_y_e != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       ElacComputer_P.BitfromLabel5_bit_p, &rtb_y_e);
-    ElacComputer_MATLABFunction_o(rtb_tripleAdrFault, rtb_doubleIrFault, rtb_tripleIrFault, rtb_NOT_j, rtb_OR6, rtb_y_e
+    ElacComputer_MATLABFunction_o(rtb_tripleAdrFault, rtb_doubleIrFault, rtb_tripleIrFault, rtb_AND1_h, rtb_OR3, rtb_y_e
       != 0U, &rtb_handleIndex_f);
     if ((ElacComputer_U.in.bus_inputs.sec_1_bus.thrust_lever_angle_1_deg.SSM == static_cast<uint32_T>(SignStatusMatrix::
           NormalOperation)) && (ElacComputer_U.in.bus_inputs.sec_1_bus.thrust_lever_angle_2_deg.SSM ==
@@ -1377,7 +1399,7 @@ void ElacComputer::step()
                     &rtb_tripleAdrFault, &ElacComputer_B.logic.high_alpha_prot_active,
                     &ElacComputer_B.logic.high_speed_prot_active, &ElacComputer_B.logic.alpha_prot_deg,
                     &ElacComputer_B.logic.alpha_max_deg, &ElacComputer_B.logic.high_speed_prot_hi_thresh_kn,
-                    &ElacComputer_B.logic.high_speed_prot_lo_thresh_kn, &rtb_xi_deg_m, &rtb_doubleAdrFault, &rtb_eta_deg,
+                    &ElacComputer_B.logic.high_speed_prot_lo_thresh_kn, &rtb_xi_deg_m, &rtb_y_j, &rtb_eta_deg,
                     &rtb_eta_trim_deg);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       ElacComputer_P.BitfromLabel_bit_n, &rtb_y_e);
@@ -1390,13 +1412,13 @@ void ElacComputer::step()
     rtb_tripleIrFault = (rtb_y_e != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       ElacComputer_P.BitfromLabel3_bit_b, &rtb_y_e);
-    rtb_NOT_j = (rtb_y_e != 0U);
+    rtb_AND1_h = (rtb_y_e != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       ElacComputer_P.BitfromLabel4_bit_i, &rtb_y_e);
-    rtb_OR6 = (rtb_y_e != 0U);
+    rtb_OR3 = (rtb_y_e != 0U);
     ElacComputer_MATLABFunction_j(&ElacComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       ElacComputer_P.BitfromLabel5_bit_l, &rtb_y_e);
-    ElacComputer_MATLABFunction_o(rtb_tripleAdrFault, rtb_doubleIrFault, rtb_tripleIrFault, rtb_NOT_j, rtb_OR6, rtb_y_e
+    ElacComputer_MATLABFunction_o(rtb_tripleAdrFault, rtb_doubleIrFault, rtb_tripleIrFault, rtb_AND1_h, rtb_OR3, rtb_y_e
       != 0U, &rtb_handleIndex_f);
     rtb_tripleAdrFault = (ElacComputer_B.logic.tracking_mode_on || ((static_cast<real_T>
       (ElacComputer_B.logic.active_pitch_law) != ElacComputer_P.CompareToConstant2_const) && (static_cast<real_T>
@@ -1467,14 +1489,14 @@ void ElacComputer::step()
       ElacComputer_Y.out.analog_outputs.right_elev_pos_order_deg = ElacComputer_P.Constant_Value_b;
     }
 
-    if (ElacComputer_B.logic.is_engaged_in_pitch && rtb_y_j) {
+    if (ElacComputer_B.logic.is_engaged_in_pitch && rtb_OR1) {
       ElacComputer_Y.out.analog_outputs.ths_pos_order = ElacComputer_B.laws.pitch_law_outputs.ths_command_deg;
     } else {
       ElacComputer_Y.out.analog_outputs.ths_pos_order = ElacComputer_P.Constant_Value_b;
     }
 
-    rtb_NOT_j = (ElacComputer_B.logic.is_engaged_in_roll || ElacComputer_B.logic.left_aileron_crosscommand_active);
-    if (rtb_NOT_j && ElacComputer_B.logic.left_aileron_avail) {
+    rtb_AND1_h = (ElacComputer_B.logic.is_engaged_in_roll || ElacComputer_B.logic.left_aileron_crosscommand_active);
+    if (rtb_AND1_h && ElacComputer_B.logic.left_aileron_avail) {
       ElacComputer_Y.out.analog_outputs.left_aileron_pos_order =
         ElacComputer_B.laws.lateral_law_outputs.left_aileron_command_deg;
     } else {
@@ -1572,7 +1594,7 @@ void ElacComputer::step()
       (ElacComputer_B.logic.pitch_law_capability == pitch_efcs_law::DirectLaw));
     ElacComputer_LateralLawCaptoBits(ElacComputer_B.logic.lateral_law_capability, &rtb_VectorConcatenate_a[2],
       &rtb_VectorConcatenate_a[3]);
-    rtb_VectorConcatenate_a[11] = rtb_doubleAdrFault;
+    rtb_VectorConcatenate_a[11] = rtb_y_j;
     ElacComputer_MATLABFunction_c(rtb_VectorConcatenate_a, &rtb_V_tas);
     if (ElacComputer_U.in.discrete_inputs.l_ail_servo_failed) {
       ElacComputer_Y.out.bus_outputs.left_aileron_position_deg.SSM = static_cast<uint32_T>
@@ -1681,13 +1703,14 @@ void ElacComputer::step()
     ElacComputer_Y.out.discrete_outputs.digital_output_validated = ElacComputer_P.Constant1_Value_e;
     ElacComputer_Y.out.discrete_outputs.ap_1_authorised = ElacComputer_B.logic.ap_authorised;
     ElacComputer_Y.out.discrete_outputs.ap_2_authorised = ElacComputer_B.logic.ap_authorised;
-    ElacComputer_Y.out.discrete_outputs.left_aileron_active_mode = (rtb_NOT_j && ElacComputer_B.logic.left_aileron_avail);
+    ElacComputer_Y.out.discrete_outputs.left_aileron_active_mode = (rtb_AND1_h &&
+      ElacComputer_B.logic.left_aileron_avail);
     ElacComputer_Y.out.discrete_outputs.right_aileron_active_mode = (rtb_AND2_p &&
       ElacComputer_B.logic.right_aileron_avail);
-    rtb_NOT_j = (ElacComputer_B.logic.is_engaged_in_pitch && ElacComputer_B.logic.left_elevator_avail);
-    ElacComputer_Y.out.discrete_outputs.left_elevator_damping_mode = rtb_NOT_j;
-    ElacComputer_Y.out.discrete_outputs.right_elevator_damping_mode = rtb_NOT_j;
-    ElacComputer_Y.out.discrete_outputs.ths_active = (ElacComputer_B.logic.is_engaged_in_pitch && rtb_y_j);
+    rtb_AND1_h = (ElacComputer_B.logic.is_engaged_in_pitch && ElacComputer_B.logic.left_elevator_avail);
+    ElacComputer_Y.out.discrete_outputs.left_elevator_damping_mode = rtb_AND1_h;
+    ElacComputer_Y.out.discrete_outputs.right_elevator_damping_mode = rtb_AND1_h;
+    ElacComputer_Y.out.discrete_outputs.ths_active = (ElacComputer_B.logic.is_engaged_in_pitch && rtb_OR1);
     ElacComputer_B.dt = ElacComputer_U.in.time.dt;
     ElacComputer_B.ground_spoilers_active_2 = ElacComputer_U.in.discrete_inputs.ground_spoilers_active_2;
     ElacComputer_B.SSM = ElacComputer_U.in.bus_inputs.ir_1_bus.latitude_deg.SSM;
