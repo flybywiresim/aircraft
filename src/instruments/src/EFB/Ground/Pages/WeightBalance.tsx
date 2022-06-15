@@ -17,7 +17,7 @@ export const WeightBalance = () => (
 
                 <TooltipWrapper>
                     <div>
-                        <SelectItem disabled>{t('Settings.Fast')}</SelectItem>
+                        <SelectItem disabled>{t('Settings.Instant')}</SelectItem>
                     </div>
                 </TooltipWrapper>
 
