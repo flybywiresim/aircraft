@@ -61,6 +61,7 @@ const NXSystemMessages = {
     cancelAtisUpdate:       new TypeIMessage("CANCEL UPDATE BEFORE"),
     checkMinDestFob:        new TypeIIMessage("CHECK MIN DEST FOB"),
     checkToData:            new TypeIIMessage("CHECK TAKE OFF DATA", true),
+    checkWeight:            new TypeIIMessage("CHECK WEIGHT", true),
     comUnavailable:         new TypeIMessage("COM UNAVAILABLE"),
     databaseCodingError:    new TypeIIMessage("DATABASE CODING ERROR"),
     dcduFileFull:           new TypeIMessage("DCDU FILE FULL"),

@@ -34,6 +34,9 @@ class CDUFuelPredPage {
             } else {
                 if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
                     CDUFuelPredPage.ShowPage(mcdu);
+                    mcdu.removeMessageFromQueue(NXSystemMessages.initializeWeightOrCg.text);
+                    mcdu.removeMessageFromQueue(NXSystemMessages.checkWeight.text);
+                    mcdu._checkWeightSettable = true;
                 } else {
                     scratchpadCallback();
                 }

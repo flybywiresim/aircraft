@@ -107,6 +107,9 @@ class FMCMainDisplay extends BaseAirliners {
         this._fuelPredDone = undefined;
         this._fuelPlanningPhase = undefined;
         this._blockFuelEntered = undefined;
+        this._initMessageSettable = undefined;
+        this._checkWeightSettable = undefined;
+        this._gwInitDisplayed = undefined;
         /* CPDLC Fields */
         this.tropo = undefined;
         this._destDataChecked = undefined;
@@ -267,7 +270,6 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.updateFuelVars();
         this.updatePerfSpeeds();
-        this.getGW();
 
         CDUPerformancePage.UpdateThrRedAccFromOrigin(this);
         CDUPerformancePage.UpdateEngOutAccFromOrigin(this);
@@ -393,6 +395,9 @@ class FMCMainDisplay extends BaseAirliners {
         this._fuelPredDone = false;
         this._fuelPlanningPhase = this._fuelPlanningPhases.PLANNING;
         this._blockFuelEntered = false;
+        this._initMessageSettable = false;
+        this._checkWeightSettable = true;
+        this._gwInitDisplayed = 0;
         /* CPDLC Fields */
         this.tropo = undefined;
         this._destDataChecked = false;
@@ -544,6 +549,7 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:A32NX_FG_ALTITUDE_CONSTRAINT", "feet", this.constraintAlt);
         SimVar.SetSimVarValue("L:A32NX_TO_CONFIG_NORMAL", "Bool", 0);
         SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
+        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number" , 0);
 
         if (SimVar.GetSimVarValue("L:A32NX_AUTOTHRUST_DISABLED", "number") === 1) {
             SimVar.SetSimVarValue("K:A32NX.ATHR_RESET_DISABLE", "number", 1);
@@ -580,6 +586,8 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.fmsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
             this.updateRadioNavState();
             this.checkSpeedLimit();
+            this.getGW();
+            this.checkGWParams();
         }
 
         this.A32NXCore.update();
@@ -1714,6 +1722,32 @@ class FMCMainDisplay extends BaseAirliners {
         this.addMessageToQueue(NXSystemMessages.enterDestData, () => {
             return isFinite(this.perfApprQNH) && isFinite(this.perfApprTemp) && isFinite(this.perfApprWindHeading) && isFinite(this.perfApprWindSpeed);
         });
+    }
+
+    checkGWParams() {
+        const fmGW = SimVar.GetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number");
+        const eng1state = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:1", "Number");
+        const eng2state = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:2", "Number");
+        const actualGrossWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "Kilograms") / 1000; //TO-DO Source to be replaced with FAC-GW
+        const isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool") === 1;
+        const gwMismatch = (Math.abs(fmGW - actualGrossWeight) > 7) ? true : false;
+
+        if (eng1state == 2 || eng2state == 2) {
+            if (this._gwInitDisplayed < 1 && this.flightPhaseManager.phase < FmgcFlightPhases.TAKEOFF) {
+                this._initMessageSettable = true;
+            }
+        }
+
+        if (this.isAnEngineOn() && fmGW === 0 && this._initMessageSettable) { //INITIALIZE WEIGHT/CG
+            this.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
+            this._gwInitDisplayed++;
+            this._initMessageSettable = false;
+        }
+
+        if (!isOnGround && gwMismatch && this._checkWeightSettable) { //CHECK WEIGHT
+            this.addMessageToQueue(NXSystemMessages.checkWeight);
+            this._checkWeightSettable = false;
+        }
     }
 
     /* END OF FMS CHECK ROUTINE */
@@ -4702,21 +4736,21 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * Returns true if an engine is running (FF > 0)
+     * Returns true if an engine is running (FF > 100)
      * @returns {boolean}
      */
     //TODO: can this be an util?
     isAnEngineOn() {
-        return Simplane.getEngineActive(0) || Simplane.getEngineActive(1);
+        return SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:1", "Number") > 100 || SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:2", "Number") > 100;
     }
 
     /**
-     * Returns true if all engines are running (FF > 0)
+     * Returns true if all engines are running (FF > 100)
      * @returns {boolean}
      */
     //TODO: can this be an util?
     isAllEngineOn() {
-        return Simplane.getEngineActive(0) && Simplane.getEngineActive(1);
+        return SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:1", "Number") > 100 && SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:2", "Number") > 100;
     }
 
     /**
@@ -4802,16 +4836,14 @@ class FMCMainDisplay extends BaseAirliners {
      */
     //TODO: Can this be util?
     getGW() {
-        const isOneEngineRunning = SimVar.GetSimVarValue("ENG COMBUSTION:1", "bool") || SimVar.GetSimVarValue("ENG COMBUSTION:2", "bool");
         let fmGW = 0;
-        if (isOneEngineRunning && isFinite(this.zeroFuelWeight)) {
+        if (this.isAnEngineOn() && isFinite(this.zeroFuelWeight)) {
             fmGW = (this.getFOB() + this.zeroFuelWeight);
         } else if (isFinite(this.blockFuel) && isFinite(this.zeroFuelWeight)) {
             fmGW = (this.blockFuel + this.zeroFuelWeight);
         } else {
             fmGW = 0;
         }
-
         SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", fmGW);
         return fmGW;
     }
