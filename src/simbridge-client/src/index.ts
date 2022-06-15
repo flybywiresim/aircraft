@@ -1,3 +1,4 @@
+import { CompanyRoute } from './components/Coroute';
 import { Terrain } from './components/Terrain';
 
-export { Terrain };
+export { CompanyRoute, Terrain };
