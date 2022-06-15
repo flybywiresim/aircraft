@@ -1,0 +1,51 @@
+import { EfisSide } from '@shared/NavigationDisplay';
+import { simbridgeUrl } from '../common';
+
+export class Terrain {
+    public static async mapdataAvailable(): Promise<boolean> {
+        return fetch(`${simbridgeUrl}/api/v1/terrain/available`).then((response) => response.ok);
+    }
+
+    public static async setCurrentPosition(position: { latitude: number, longitude: number, heading: number, altitude: number, verticalSpeed: number }): Promise<void> {
+        fetch(`${simbridgeUrl}/api/v1/terrain/position`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(position),
+        });
+    }
+
+    public static async ndMapAvailable(side: EfisSide, timestamp: number): Promise<boolean> {
+        return fetch(`${simbridgeUrl}/api/v1/terrain/ndMapAvailable?display=${side}&timestamp=${timestamp}`).then((response) => {
+            if (response.ok) {
+                return response.text().then((text) => text !== 'true');
+            }
+            return false;
+        });
+    }
+
+    public static async ndTransitionMaps(side: EfisSide, timestamp: number): Promise<string[]> {
+        return fetch(`${simbridgeUrl}/api/v1/terrain/ndmaps?display=${side}&timestamp=${timestamp}`, {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+        }).then((response) => response.json().then((imageBase64) => imageBase64));
+    }
+
+    public static async ndTerrainRange(side: EfisSide, timestamp: number):
+    Promise<{
+        minElevation: number,
+        minElevationIsWarning: boolean,
+        minElevationIsCaution: boolean,
+        maxElevation: number,
+        maxElevationIsWarning: boolean,
+        maxElevationIsCaution: boolean
+    }> {
+        return fetch(`${simbridgeUrl}/api/v1/terrain/terrainRange?display=${side}&timestamp=${timestamp}`, {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+        }).then((response) => response.json().then((data) => data));
+    }
+
+    public static async renderNdMap(side: EfisSide): Promise<number> {
+        return fetch(`${simbridgeUrl}/api/v1/terrain/renderMap?display=${side}`).then((response) => response.text().then((text) => parseInt(text)));
+    }
+}
