@@ -276,7 +276,7 @@
     <Template Name="FBW_AIRLINER_Audio_Panel_Template">
         <DefaultTemplateParameters>
             <ID>1</ID>
-            <VOLUME_INCREMENT>0.03</VOLUME_INCREMENT>
+            <VOLUME_INCREMENT>0.02</VOLUME_INCREMENT>
             <PREFIX>AIRLINER</PREFIX>
             <SEQ1_POWERED>1</SEQ1_POWERED>
         </DefaultTemplateParameters>
@@ -471,13 +471,20 @@
                     }
                 }
             </ONCLICK>
-            <!-- For knob animation, had to use the A var and not a L var like comms (to be able to get the maximum of RMP1/2).
-                We cannot insert value into the volume simvar but only inc and dec.
-                Therefore for now, the respective knobs on the RMP will be partially independant
-                Once the SDK is update, this should be modified -->
-            <FROM_VOLUME>(A:NAV VOLUME:1, percent)</FROM_VOLUME>
-            <INC_VOLUME>(&gt;K:NAV1_VOLUME_INC)</INC_VOLUME>
-            <DEC_VOLUME>(&gt;K:NAV1_VOLUME_DEC)</DEC_VOLUME>
+            <!--  We are unable to set the volume with a value, only inc or dec. 
+                Therefore, we have to compare a Lvar and Avar to get the maximum of the two knobs  -->
+            <INC_VOLUME>
+                (L:XMLVAR_NAV_#SIDE#_VOR1_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_VOR1_Volume)
+                (A:NAV VOLUME:1, percent over 100) &lt; (L:XMLVAR_NAV_#SIDE#_VOR1_Volume) if {
+                    (&gt;K:NAV1_VOLUME_INC)
+                }
+            </INC_VOLUME>
+            <DEC_VOLUME>                
+                (L:XMLVAR_NAV_#SIDE#_VOR1_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_VOR1_Volume)
+                (A:NAV VOLUME:1, percent over 100) &gt; (L:XMLVAR_NAV_#SIDE#_VOR1_Volume) if {
+                    (&gt;K:NAV1_VOLUME_DEC)
+                }
+            </DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
@@ -506,13 +513,20 @@
                     }
                 }
             </ONCLICK>
-            <!-- For knob animation, had to use the A var and not a L var like comms (to be able to get the maximum of RMP1/2).
-                We cannot insert value into the volume simvar but only inc and dec.
-                Therefore for now, the respective knobs on the RMP will be partially independant
-                Once the SDK is update, this should be modified -->
-            <FROM_VOLUME>(A:NAV VOLUME:2, percent)</FROM_VOLUME>
-            <INC_VOLUME>(&gt;K:NAV2_VOLUME_INC)</INC_VOLUME>
-            <DEC_VOLUME>(&gt;K:NAV2_VOLUME_DEC)</DEC_VOLUME>
+            <!--  We are unable to set the volume with a value, only inc or dec. 
+                Therefore, we have to compare a Lvar and Avar to get the maximum of the two knobs  -->
+            <INC_VOLUME>
+                (L:XMLVAR_NAV_#SIDE#_VOR2_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_VOR2_Volume)
+                (A:NAV VOLUME:2, percent over 100) &lt; (L:XMLVAR_NAV_#SIDE#_VOR2_Volume) if {
+                    (&gt;K:NAV2_VOLUME_INC)
+                }
+            </INC_VOLUME>
+            <DEC_VOLUME>                
+                (L:XMLVAR_NAV_#SIDE#_VOR2_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_VOR2_Volume)
+                (A:NAV VOLUME:2, percent over 100) &gt; (L:XMLVAR_NAV_#SIDE#_VOR2_Volume) if {
+                    (&gt;K:NAV2_VOLUME_DEC)
+                }
+            </DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
@@ -538,7 +552,6 @@
                 }
             </ONCLICK>
             <!-- Have to use a local var because marker volume is not used in the simulation yet -->
-            <FROM_VOLUME>(L:XMLVAR_NAV_#SIDE#_MKR_Volume) 100 *</FROM_VOLUME>
             <INC_VOLUME>(L:XMLVAR_NAV_#SIDE#_MKR_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_MKR_Volume)</INC_VOLUME>
             <DEC_VOLUME>(L:XMLVAR_NAV_#SIDE#_MKR_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_MKR_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
@@ -559,7 +572,6 @@
             <ONCLICK>
                 <!-- Fow now, cannot listen to NAV3 ident. We can only push the knob. See where ONCLICK is used -->
             </ONCLICK>
-            <FROM_VOLUME>(L:XMLVAR_NAV_#SIDE#_ILS_Volume) 100 *</FROM_VOLUME>
             <INC_VOLUME>(L:XMLVAR_NAV_#SIDE#_ILS_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_ILS_Volume)</INC_VOLUME>
             <DEC_VOLUME>(L:XMLVAR_NAV_#SIDE#_ILS_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_ILS_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
@@ -580,7 +592,6 @@
             <ONCLICK>
                 <!-- Fow now, cannot listen to MLS ident. We can only push the knob. See where ONCLICK is used -->
             </ONCLICK>
-            <FROM_VOLUME>(L:XMLVAR_NAV_#SIDE#_MLS_Volume) 100 *</FROM_VOLUME>
             <INC_VOLUME>(L:XMLVAR_NAV_#SIDE#_MLS_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_MLS_Volume)</INC_VOLUME>
             <DEC_VOLUME>(L:XMLVAR_NAV_#SIDE#_MLS_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_MLS_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
@@ -602,21 +613,28 @@
                 <!-- Basically the same result of the second condition to reduce maintenance complexity due to RNP notation -->
                 (L:XMLVAR_NAV_VOICE_Switch_Down) 0 == if{
                     (A:ADF SOUND, Bool) 1 == (L:XMLVAR_NAV_L_ADF1_Switch_Down) 0 == (L:XMLVAR_NAV_R_ADF1_Switch_Down) 0 == and and if{
-                        1 (&gt;K:RADIO_ADF_IDENT_TOGGLE)
+                        1 (&gt;K:RADIO_ADF_IDENT_DISABLE)
                     }
 
                     (A:ADF SOUND, Bool) 0 == (L:XMLVAR_NAV_L_ADF1_Switch_Down) 1 == (L:XMLVAR_NAV_R_ADF1_Switch_Down) 1 == or and if{
-                        1 (&gt;K:RADIO_ADF_IDENT_TOGGLE)
+                        1 (&gt;K:RADIO_ADF_IDENT_ENABLE)
                     }
                 }
             </ONCLICK>
-            <!-- For knob animation, had to use the A var and not a L var like comms (to be able to get the maximum of RMP1/2).
-                We cannot insert value into the volume simvar but only inc and dec.
-                Therefore for now, the respective knobs on the RMP will be partially independant
-                Once the SDK is update, this should be modified -->
-            <FROM_VOLUME>(A:ADF VOLUME:1, percent)</FROM_VOLUME>
-            <INC_VOLUME>(&gt;K:ADF_VOLUME_INC)</INC_VOLUME>
-            <DEC_VOLUME>(&gt;K:ADF_VOLUME_DEC)</DEC_VOLUME>
+            <!--  We are unable to set the volume with a value, only inc or dec. 
+                Therefore, we have to compare a Lvar and Avar to get the maximum of the two knobs -->
+            <INC_VOLUME>
+                (L:XMLVAR_NAV_#SIDE#_ADF1_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_ADF1_Volume)
+                (A:ADF VOLUME:1, percent over 100) &lt; (L:XMLVAR_NAV_#SIDE#_ADF1_Volume) if {
+                    (&gt;K:ADF_VOLUME_INC)
+                }
+            </INC_VOLUME>
+            <DEC_VOLUME>                
+                (L:XMLVAR_NAV_#SIDE#_ADF1_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_ADF1_Volume)
+                (A:ADF VOLUME:1, percent over 100) &gt; (L:XMLVAR_NAV_#SIDE#_ADF1_Volume) if {
+                    (&gt;K:ADF_VOLUME_INC)
+                }
+            </DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
             <TOOLTIP_RIGHT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_INC</TOOLTIP_RIGHT>
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
@@ -644,8 +662,7 @@
                     }
                 }
             </ONCLICK>
-            <!-- Have to use an external var because we are unable to set ADF 2 volume even though it's set to 100 by default -->
-            <FROM_VOLUME>(L:XMLVAR_NAV_#SIDE#_ADF2_Volume) 100 *</FROM_VOLUME>
+            <!-- We cannot set ADF 2 volume even though it's set to 100 by default -->
             <INC_VOLUME>(L:XMLVAR_NAV_#SIDE#_ADF2_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_ADF2_Volume)</INC_VOLUME>
             <DEC_VOLUME>(L:XMLVAR_NAV_#SIDE#_ADF2_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_ADF2_Volume)</DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
@@ -808,7 +825,7 @@
                 <USE_SIMVAR_FOR_BUTTON_ANIM>False</USE_SIMVAR_FOR_BUTTON_ANIM>
                 <USE_SIMVAR_FOR_KNOB_ANIM>False</USE_SIMVAR_FOR_KNOB_ANIM>
                 <CENTER_RADIUS>0.002</CENTER_RADIUS>
-                <KNOB_ANIM_CODE>#FROM_VOLUME#</KNOB_ANIM_CODE>
+                <KNOB_ANIM_CODE>(L:XMLVAR_NAV_#SIDE#_#INSTRUMENT#_Volume) 100 *</KNOB_ANIM_CODE>
                 <CLOCKWISE_CODE>#INC_VOLUME#</CLOCKWISE_CODE>
                 <ANTICLOCKWISE_CODE>#DEC_VOLUME#</ANTICLOCKWISE_CODE>
                 <ANIM_CODE_SWITCH> (L:XMLVAR_NAV_#SIDE#_#INSTRUMENT#_Switch_Down) 100 *</ANIM_CODE_SWITCH>
