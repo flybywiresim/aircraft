@@ -14,6 +14,23 @@ export class Terrain {
         });
     }
 
+    public static async setDisplaySettings(settings: {
+        active: boolean,
+        mapWidth: number,
+        mapHeight: number,
+        meterPerPixel: number,
+        mapTransitionTime: number,
+        mapTransitionFps: number,
+        arcMode: boolean,
+        gearDown: boolean
+    }): Promise<void> {
+        fetch(`${simbridgeUrl}/api/v1/terrain/displaysettings?display=${side}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings),
+        });
+    }
+
     public static async ndMapAvailable(side: EfisSide, timestamp: number): Promise<boolean> {
         return fetch(`${simbridgeUrl}/api/v1/terrain/ndMapAvailable?display=${side}&timestamp=${timestamp}`).then((response) => {
             if (response.ok) {
