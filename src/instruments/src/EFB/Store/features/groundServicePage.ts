@@ -20,16 +20,37 @@ interface ButtonSelectionState {
     cateringButtonState: ServiceButtonState
 }
 
-const initialState: ButtonSelectionState = {
-    cabinDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-    jetWayButtonState: ServiceButtonState.INACTIVE,
-    fuelTruckButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-    gpuButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:8', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-    cargoDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:5', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-    baggageButtonState: ServiceButtonState.INACTIVE,
-    aftDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:3', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-    cateringButtonState: ServiceButtonState.INACTIVE,
+// hack to fix initialization issue for ACE/vite
+let initialState: ButtonSelectionState = {
+    cabinDoorButtonState: ServiceButtonState.DISABLED,
+    jetWayButtonState: ServiceButtonState.DISABLED,
+    fuelTruckButtonState: ServiceButtonState.DISABLED,
+    gpuButtonState: ServiceButtonState.DISABLED,
+    cargoDoorButtonState: ServiceButtonState.DISABLED,
+    baggageButtonState: ServiceButtonState.DISABLED,
+    aftDoorButtonState: ServiceButtonState.DISABLED,
+    cateringButtonState: ServiceButtonState.DISABLED,
 };
+
+const setInitialState = () => {
+    initialState = {
+        cabinDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        jetWayButtonState: ServiceButtonState.INACTIVE,
+        fuelTruckButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        gpuButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:8', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        cargoDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:5', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        baggageButtonState: ServiceButtonState.INACTIVE,
+        aftDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:3', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        cateringButtonState: ServiceButtonState.INACTIVE,
+    };
+};
+
+// hack to fix initialization issue for ACE/vite
+if (process.env.VITE_BUILD) {
+    window.addEventListener('AceInitialized', setInitialState);
+} else {
+    setInitialState();
+}
 
 export const buttonsSlice = createSlice({
     name: 'ground',
