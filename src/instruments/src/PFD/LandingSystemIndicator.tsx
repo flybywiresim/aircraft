@@ -8,11 +8,19 @@ import { LagFilter } from './PFDUtils';
 export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument: BaseInstrument }> {
     private lsButtonPressedVisibility = false;
 
+    private xtkValid = Subject.create(false);
+
+    private ldevRequest = false;
+
     private lsGroupRef = FSComponent.createRef<SVGGElement>();
 
     private gsReferenceLine = FSComponent.createRef<SVGPathElement>();
 
     private deviationGroup = FSComponent.createRef<SVGGElement>();
+
+    private ldevRef = FSComponent.createRef<SVGGElement>();
+
+    private vdevRef = FSComponent.createRef<SVGGElement>();
 
     private altitude = Arinc429Word.empty();
 
@@ -42,6 +50,7 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
         sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button').whenChanged().handle((lsButton) => {
             this.lsButtonPressedVisibility = lsButton;
             this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
+            this.deviationGroup.instance.style.display = this.lsButtonPressedVisibility ? 'none' : 'inline';
             this.handleGsReferenceLine();
         });
 
@@ -49,12 +58,29 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
             this.altitude = altitude;
             this.handleGsReferenceLine();
         });
+
+        sub.on(getDisplayIndex() === 1 ? 'ldevRequestLeft' : 'ldevRequestRight').whenChanged().handle((ldevRequest) => {
+            this.ldevRequest = ldevRequest;
+            this.updateLdevVisibility();
+        });
+
+        sub.on('xtk').whenChanged().handle((xtk) => {
+            this.xtkValid.set(Math.abs(xtk) > 0);
+        });
+
+        this.xtkValid.sub(() => {
+            this.updateLdevVisibility();
+        });
+    }
+
+    updateLdevVisibility() {
+        this.ldevRef.instance.style.display = this.ldevRequest && this.xtkValid ? 'inline' : 'none';
     }
 
     render(): VNode {
         return (
             <>
-                <g id="LSAndDeviationGroup" ref={this.lsGroupRef} style="display: none">
+                <g id="LSGroup" ref={this.lsGroupRef} style="display: none">
                     <LandingSystemInfo bus={this.props.bus} />
 
                     <g id="LSGroup">
@@ -63,9 +89,14 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
                         <MarkerBeaconIndicator bus={this.props.bus} />
                     </g>
 
-                    <g id="DeviationGroup" ref={this.deviationGroup} style="display: none">
+                    <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
+                </g>
+                <g id="DeviationGroup" ref={this.deviationGroup} style="display: none">
+                    <g id="LateralDeviationGroup" ref={this.ldevRef} style="display: none">
+                        <LDevIndicator bus={this.props.bus} />
+                    </g>
+                    <g id="VerticalDeviationGroup" ref={this.vdevRef} style="display: none">
                         <VDevIndicator bus={this.props.bus} />
-                        <LDevIndicator />
                     </g>
                 </g>
                 <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
@@ -370,19 +401,50 @@ class VDevIndicator extends DisplayComponent<{bus: EventBus}> {
     }
 }
 
-// Not implemented on the FMS side, so this is just static and hidden for now
-class LDevIndicator extends DisplayComponent<any> {
+class LDevIndicator extends DisplayComponent<{bus: EventBus}> {
+    private LDevSymbolLeft = FSComponent.createRef<SVGPathElement>();
+
+    private LDevSymbolRight = FSComponent.createRef<SVGPathElement>();
+
+    private LDevSymbol = FSComponent.createRef<SVGPathElement>();
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<PFDSimvars>();
+
+        sub.on('xtk').whenChanged().withPrecision(3).handle((xtk) => {
+            const dots = xtk / 0.1;
+
+            if (dots > 2) {
+                this.LDevSymbolRight.instance.style.visibility = 'visible';
+                this.LDevSymbolLeft.instance.style.visibility = 'hidden';
+                this.LDevSymbol.instance.style.visibility = 'hidden';
+            } else if (dots < -2) {
+                this.LDevSymbolRight.instance.style.visibility = 'hidden';
+                this.LDevSymbolLeft.instance.style.visibility = 'visible';
+                this.LDevSymbol.instance.style.visibility = 'hidden';
+            } else {
+                this.LDevSymbolRight.instance.style.visibility = 'hidden';
+                this.LDevSymbolLeft.instance.style.visibility = 'hidden';
+                this.LDevSymbol.instance.style.visibility = 'visible';
+                this.LDevSymbol.instance.style.transform = `translate3d(${dots * 30.238 / 2}px, 0px, 0px)`;
+            }
+        });
+    }
+
     render(): VNode {
         return (
-            <g id="LatDeviationSymbolsGroup" style="display: none">
-                <text className="FontSmall AlignRight Green" x="30.888" y="122.639">L/DEV</text>
-                <path className="NormalStroke White" d="m38.686 129.51v2.0158" />
-                <path className="NormalStroke White" d="m53.796 129.51v2.0158" />
-                <path className="NormalStroke White" d="m84.017 129.51v2.0158" />
-                <path className="NormalStroke White" d="m99.127 129.51v2.0158" />
-                <path id="LDevSymbolLeft" className="NormalStroke Green" d="m38.686 127.99h-2.0147v5.0397h2.0147" />
-                <path id="LDevSymbolRight" className="NormalStroke Green" d="m99.127 127.99h2.0147v5.0397h-2.0147" />
-                <path id="LDevSymbol" className="NormalStroke Green" d="m66.892 127.99v5.0397h4.0294v-5.0397h-2.0147z" />
+            <g id="LatDeviationSymbolsGroup">
+                <text class="FontSmall AlignRight Green" x="30.888" y="122.639">L/DEV</text>
+                <path class="NormalStroke White" d="m38.686 129.51v2.0158" />
+                <path class="NormalStroke White" d="m53.796 129.51v2.0158" />
+                <path class="NormalStroke White" d="m84.017 129.51v2.0158" />
+                <path class="NormalStroke White" d="m99.127 129.51v2.0158" />
+                <path id="LDevSymbolLeft" ref={this.LDevSymbolLeft} class="NormalStroke Green" d="m38.686 127.99h-2.0147v5.0397h2.0147" />
+                <path id="LDevSymbolRight" ref={this.LDevSymbolRight} class="NormalStroke Green" d="m99.127 127.99h2.0147v5.0397h-2.0147" />
+                <path id="LDevSymbol" ref={this.LDevSymbol} class="NormalStroke Green" d="m66.892 127.99v5.0397h4.0294v-5.0397h-2.0147z" />
+                <path id="LDevNeutralLine" class="Yellow Fill" d="m68.098 134.5v-8.0635h1.5119v8.0635z" />
             </g>
         );
     }

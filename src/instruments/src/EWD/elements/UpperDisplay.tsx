@@ -65,7 +65,7 @@ const UpperDisplay: React.FC = () => {
                 <line className="Separator" x1="424" y1="-20" x2="456" y2="-11" strokeLinecap="round" />
             </Layer>
 
-            <Slats x={536} y={443} />
+            <Slats x={539} y={442} />
 
             <FOB unit={unit} x={40} y={490} />
 
