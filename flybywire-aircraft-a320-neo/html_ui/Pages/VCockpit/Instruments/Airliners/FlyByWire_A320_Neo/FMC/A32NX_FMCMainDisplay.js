@@ -1359,7 +1359,7 @@ class FMCMainDisplay extends BaseAirliners {
         // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
         // We also fall back to current weight when landing weight is unavailable
         if (this.flightPhaseManager.phase >= FmgcFlightPhases.APPROACH || !isFinite(weight)) {
-            weight = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000;
+            weight = (this.getGW() == 0) ? 50 : this.getGW();
         }
         // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
         if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
@@ -4182,17 +4182,17 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
     }
-
+    //Considers 50T Gross Weight if no weight is derived from the FM
     _getV1Speed() {
-        return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v1;
+        return (new NXSpeedsTo(this.getGW() === 0 ? 50 : this.getGW(), this.flaps, Simplane.getAltitude())).v1;
     }
 
     _getVRSpeed() {
-        return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).vr;
+        return (new NXSpeedsTo(this.getGW() === 0 ? 50 : this.getGW(), this.flaps, Simplane.getAltitude())).vr;
     }
 
     _getV2Speed() {
-        return (new NXSpeedsTo(SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000, this.flaps, Simplane.getAltitude())).v2;
+        return (new NXSpeedsTo(this.getGW() === 0 ? 50 : this.getGW(), this.flaps, Simplane.getAltitude())).v2;
     }
 
     /**
@@ -4760,7 +4760,7 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number} MAX FL
      */
     //TODO: can this be an util?
-    getMaxFL(temp = A32NX_Util.getIsaTempDeviation(), gw = SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") / 1000) {
+    getMaxFL(temp = A32NX_Util.getIsaTempDeviation(), gw = this.getGW()) {
         return Math.round(temp <= 10 ? -2.778 * gw + 578.667 : (temp * (-0.039) - 2.389) * gw + temp * (-0.667) + 585.334);
     }
 
