@@ -1187,6 +1187,20 @@
 
             </Component>
 
+            <Component ID="Hidden">
+                <!-- TODO these can be deleted from the mesh when all branches have the terrain map -->
+                <Component ID="INOP_MAINPANEL-CA" Node="INOP_MAINPANEL-CA">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
+                <Component ID="INOP_MAINPANEL-FO" Node="INOP_MAINPANEL-FO">
+                    <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                        <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                    </UseTemplate>
+                </Component>
+            </Component>
+
             <CameraTitle>ECAM</CameraTitle>
         </Component>
 
