@@ -3,6 +3,7 @@ import { useArinc429Var } from '@instruments/common/arinc429';
 import { useSimVar } from '@instruments/common/simVars';
 import { Mode, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
 import { useUpdate } from '@instruments/common/hooks';
+import { Terrain } from '../../../../simbridge-client/src/index';
 
 const MapTransitionFramerate = 20;
 const MapTransitionDuration = 1.5;
@@ -35,11 +36,7 @@ export const TerrainMapProvider: React.FC<TerrainMapProviderProps> = ({ side }) 
                 verticalSpeed: Math.round(verticalSpeed * 60.0),
             };
 
-            fetch('http://localhost:8080/api/v1/terrain/position', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(currentPosition),
-            });
+            Terrain.setCurrentPosition(currentPosition);
         }
     }, [arincLat, arincLong, verticalSpeed, trueHeading, altitude]);
 
@@ -157,57 +154,47 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
     const syncWithRenderer = (timestamp: number) => {
         // wait until the rendering is done
         setTimeout(() => {
-            fetch(`http://localhost:8080/api/v1/terrain/ndMapAvailable?display=${side}&timestamp=${timestamp}`).then((response) => {
-                if (response.ok) {
-                    response.text().then((text) => {
-                        if (text !== 'true') {
-                            if (terrOnNdActive) {
-                                syncWithRenderer(timestamp);
-                            }
-                            return;
-                        }
-
-                        fetch(`http://localhost:8080/api/v1/terrain/ndmaps?display=${side}&timestamp=${timestamp}`).then((response) => response.json().then((imageBase64) => {
-                            fetch(`http://localhost:8080/api/v1/terrain/terrainRange?display=${side}&timestamp=${timestamp}`, {
-                                method: 'GET',
-                                headers: { Accept: 'application/json' },
-                            }).then((response) => response.json().then((data) => {
-                                if (response.ok) {
-                                    if ('minElevation' in data && data.minElevation !== Infinity && 'maxElevation' in data && data.maxElevation !== Infinity) {
-                                        let minimumColor = 'rgb(0, 255, 0)';
-                                        if (data.minElevationIsWarning) {
-                                            minimumColor = 'rgb(255, 255, 0)';
-                                        } else if (data.minElevationIsCaution) {
-                                            minimumColor = 'rgb(255, 0, 0)';
-                                        }
-                                        let maximumColor = 'rgb(0, 255, 0)';
-                                        if (data.maxElevationIsWarning) {
-                                            maximumColor = 'rgb(255, 255, 0)';
-                                        } else if (data.maxElevationIsCaution) {
-                                            maximumColor = 'rgb(255, 0, 0)';
-                                        }
-
-                                        if (mapVisualizationRef.current) {
-                                            mapVisualizationRef.current.NextMinimumElevation = { altitude: data.minElevation, color: minimumColor };
-                                            mapVisualizationRef.current.NextMaximumElevation = { altitude: data.maxElevation, color: maximumColor };
-                                        }
-                                    } else if (mapVisualizationRef.current) {
-                                        mapVisualizationRef.current.NextMinimumElevation = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
-                                        mapVisualizationRef.current.NextMaximumElevation = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
-                                    }
-
-                                    const newVisualization = new MapVisualizationData(mapVisualizationRef.current);
-                                    newVisualization.MapTransitionData = imageBase64;
-                                    if (newVisualization.TerrainMapBuffer[0].opacity === 0.01) {
-                                        newVisualization.TerrainMapBuffer[0].data = imageBase64[imageBase64.length - 1];
-                                    } else {
-                                        newVisualization.TerrainMapBuffer[1].data = imageBase64[imageBase64.length - 1];
-                                    }
-
-                                    setMapVisualization(newVisualization);
+            Terrain.ndMapAvailable(side, timestamp).then((available) => {
+                if (!available) {
+                    if (terrOnNdActive) {
+                        syncWithRenderer(timestamp);
+                    }
+                } else {
+                    Terrain.ndTransitionMaps(side, timestamp).then((imagesBase64) => {
+                        Terrain.ndTerrainRange(side, timestamp).then((data) => {
+                            if ('minElevation' in data && data.minElevation !== Infinity && 'maxElevation' in data && data.maxElevation !== Infinity) {
+                                let minimumColor = 'rgb(0, 255, 0)';
+                                if (data.minElevationIsWarning) {
+                                    minimumColor = 'rgb(255, 255, 0)';
+                                } else if (data.minElevationIsCaution) {
+                                    minimumColor = 'rgb(255, 0, 0)';
                                 }
-                            }));
-                        }));
+                                let maximumColor = 'rgb(0, 255, 0)';
+                                if (data.maxElevationIsWarning) {
+                                    maximumColor = 'rgb(255, 255, 0)';
+                                } else if (data.maxElevationIsCaution) {
+                                    maximumColor = 'rgb(255, 0, 0)';
+                                }
+
+                                if (mapVisualizationRef.current) {
+                                    mapVisualizationRef.current.NextMinimumElevation = { altitude: data.minElevation, color: minimumColor };
+                                    mapVisualizationRef.current.NextMaximumElevation = { altitude: data.maxElevation, color: maximumColor };
+                                }
+                            } else if (mapVisualizationRef.current) {
+                                mapVisualizationRef.current.NextMinimumElevation = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
+                                mapVisualizationRef.current.NextMaximumElevation = { altitude: Infinity, color: 'rgb(0, 0, 0)' };
+                            }
+
+                            const newVisualization = new MapVisualizationData(mapVisualizationRef.current);
+                            newVisualization.MapTransitionData = imagesBase64;
+                            if (newVisualization.TerrainMapBuffer[0].opacity === 0.01) {
+                                newVisualization.TerrainMapBuffer[0].data = imagesBase64[imagesBase64.length - 1];
+                            } else {
+                                newVisualization.TerrainMapBuffer[1].data = imagesBase64[imagesBase64.length - 1];
+                            }
+
+                            setMapVisualization(newVisualization);
+                        });
                     });
                 }
             });
@@ -237,13 +224,11 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
                 newVisualizationData.RerenderTimeout = undefined;
                 setMapVisualization(newVisualizationData);
 
-                fetch(`http://127.0.0.1:8080/api/v1/terrain/renderMap?display=${side}`).then((response) => response.text().then((text) => {
-                    const timestamp = parseInt(text);
-                    if (timestamp < 0) {
-                        return;
+                Terrain.renderNdMap(side).then((timestamp) => {
+                    if (timestamp > 0) {
+                        syncWithRenderer(timestamp);
                     }
-                    syncWithRenderer(timestamp);
-                }));
+                });
             } else {
                 const newVisualizationData = new MapVisualizationData(mapVisualizationRef.current);
                 if (newVisualizationData.RerenderTimeout !== undefined) {
@@ -278,11 +263,7 @@ export const TerrainMap: React.FC<TerrainMapProps> = ({ x, y, width, height, sid
             arcMode: modeIndex === Mode.ARC,
             gearDown: SimVar.GetSimVarValue('GEAR POSITION:0', 'Enum') !== 1,
         };
-        fetch(`http://localhost:8080/api/v1/terrain/displaysettings?display=${side}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(displayConfiguration),
-        });
+        Terrain.setDisplaySettings(side, displayConfiguration);
     }, [terrOnNdActive, rangeIndex, modeIndex, gearMode]);
 
     if (!terrOnNdActive || modeIndex === Mode.PLAN) {
