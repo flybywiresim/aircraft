@@ -1729,7 +1729,6 @@ class FMCMainDisplay extends BaseAirliners {
         const eng1state = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:1", "Number");
         const eng2state = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:2", "Number");
         const actualGrossWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "Kilograms") / 1000; //TO-DO Source to be replaced with FAC-GW
-        const isOnGround = SimVar.GetSimVarValue("SIM ON GROUND", "Bool") === 1;
         const gwMismatch = (Math.abs(fmGW - actualGrossWeight) > 7) ? true : false;
 
         if (eng1state == 2 || eng2state == 2) {
@@ -1744,7 +1743,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._initMessageSettable = false;
         }
 
-        if (!isOnGround && gwMismatch && this._checkWeightSettable) { //CHECK WEIGHT
+        if (!this.isOnGround() && gwMismatch && this._checkWeightSettable) { //CHECK WEIGHT
             this.addMessageToQueue(NXSystemMessages.checkWeight);
             this._checkWeightSettable = false;
         }
@@ -4734,25 +4733,34 @@ class FMCMainDisplay extends BaseAirliners {
     getNavDataDateRange() {
         return SimVar.GetGameVarValue("FLIGHT NAVDATA DATE RANGE", "string");
     }
-
     /**
-     * Returns true if an engine is running (FF > 100)
+     * Generic function which returns true if engine(index) is ON (N2 > 20)
+     * @returns {boolean}
+     */
+    isEngineOn(index) {
+        return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
+    }
+    /**
+     * Returns true if any one engine is running (N2 > 20)
      * @returns {boolean}
      */
     //TODO: can this be an util?
     isAnEngineOn() {
-        return SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:1", "Number") > 100 || SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:2", "Number") > 100;
+        return this.isEngineOn(1) || this.isEngineOn(2);
     }
 
     /**
-     * Returns true if all engines are running (FF > 100)
+     * Returns true only if all engines are running (N2 > 20)
      * @returns {boolean}
      */
     //TODO: can this be an util?
     isAllEngineOn() {
-        return SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:1", "Number") > 100 && SimVar.GetSimVarValue("L:A32NX_ENGINE_FF:2", "Number") > 100;
+        return this.isEngineOn(1) && this.isEngineOn(2);
     }
 
+    isOnGround() {
+        return SimVar.GetSimVarValue("L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED", "Number") === 1 || SimVar.GetSimVarValue("L:A32NX_LGCIU_2_NOSE_GEAR_COMPRESSED", "Number") === 1;
+    }
     /**
      * Returns the maximum cruise FL for ISA temp and GW
      * @param temp {number} ISA in C°
