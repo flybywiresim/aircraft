@@ -1,10 +1,10 @@
-/**
- * Used to displayed data on a mcdu page when using the formatting helper
- * @param index {integer} valid range from 0 to 23
- * @param text {str} text to be displayed
- * @param att {list} attributes of the text, e.g. text size, color and/or alignment
- */
+/** Used to displayed data on a mcdu page when using the formatting helper */
 class Column {
+    /**
+     * @param {number} index - valid range from 0 to 23
+     * @param {string} text - text to be displayed
+     * @param {...({ color: string } | { size: string } | { align: bool })} att - attributes of the text, e.g. text size, color and/or alignment
+     */
     constructor(index, text, ...att) {
         this.raw = text;
         this.color = (att.find(e => e.color) || Column.white).color;
@@ -22,25 +22,25 @@ class Column {
 Column.right = { "align": true };
 Column.small = { "size": "small" };
 Column.big = { "size": "big" };
-Column.amber = { "color": "amber"};
-Column.red = { "color": "red"};
-Column.green = { "color": "green"};
-Column.cyan = { "color": "cyan"};
-Column.white = { "color": "white"};
-Column.magenta = { "color": "magenta"};
-Column.yellow = { "color": "yellow"};
-Column.inop = { "color": "inop"};
+Column.amber = { "color": "amber" };
+Column.red = { "color": "red" };
+Column.green = { "color": "green" };
+Column.cyan = { "color": "cyan" };
+Column.white = { "color": "white" };
+Column.magenta = { "color": "magenta" };
+Column.yellow = { "color": "yellow" };
+Column.inop = { "color": "inop" };
 
 /**
  * Returns a formatted mcdu page template
- * @param lines {array[Column[]]} mcdu lines
+ * @param {Column[][]} lines - mcdu lines
  * @returns {string[]} mcdu template
  */
 const FormatTemplate = lines => lines.map(line => FormatLine(...line));
 
 /**
  * Returns a formatted mcdu line
- * @param columns {Column}
+ * @param {...Column} columns
  * @returns {string[]}
  */
 function FormatLine(...columns) {
