@@ -11,7 +11,7 @@ class Column {
         this.length = text.length;
         this.anchorPos = !!att.find(e => e.align) ? index - this.length + 1 : index;
         const size = att.find(e => e.size);
-        this.size = !!size ? [`{${size.size}}`, "{end}"] : ["", ""];
+        this.size = !!size ? [`{${size["size"]}}`, "{end}"] : ["", ""];
     }
 
     get text() {
@@ -34,7 +34,7 @@ Column.inop = { "color": "inop" };
 /**
  * Returns a formatted mcdu page template
  * @param {Column[][]} lines - mcdu lines
- * @returns {string[]} mcdu template
+ * @returns {string[][]} mcdu template
  */
 const FormatTemplate = lines => lines.map(line => FormatLine(...line));
 
