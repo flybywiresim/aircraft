@@ -42,6 +42,13 @@ class CDUAtcMessageMonitoring {
             }
         }, mcdu.PageTimeout.Slow);
 
+        // regular update due to showing dynamic data on this page
+        mcdu.page.SelfPtr = setTimeout(() => {
+            if (mcdu.page.Current === mcdu.page.ATCMessageMonitoring) {
+                CDUAtcMessageMonitoring.ShowPage(mcdu, messages, offset, cancelIndex);
+            }
+        }, mcdu.PageTimeout.Slow);
+
         let cancelHeader = "";
         let cancelMessage = "";
         if (cancelIndex > -1) {
