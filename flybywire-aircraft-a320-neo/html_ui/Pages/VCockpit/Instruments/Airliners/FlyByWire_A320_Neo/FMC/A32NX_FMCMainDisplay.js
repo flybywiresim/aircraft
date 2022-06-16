@@ -1364,7 +1364,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         let weight = this.tryEstimateLandingWeight();
         // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
-        // We also fall back to current weight when landing weight is unavailable
+        // Fallback gross weight set to 50T, which is replaced by FMGW once input in FMS to avoid function returning undefined results.
         if (this.flightPhaseManager.phase >= FmgcFlightPhases.APPROACH || !isFinite(weight)) {
             weight = (this.getGW() == 0) ? 50 : this.getGW();
         }
@@ -1735,6 +1735,7 @@ class FMCMainDisplay extends BaseAirliners {
         const fmGW = SimVar.GetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number");
         const eng1state = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:1", "Number");
         const eng2state = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:2", "Number");
+        const gs = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
         const actualGrossWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "Kilograms") / 1000; //TO-DO Source to be replaced with FAC-GW
         const gwMismatch = (Math.abs(fmGW - actualGrossWeight) > 7) ? true : false;
 
@@ -1743,14 +1744,16 @@ class FMCMainDisplay extends BaseAirliners {
                 this._initMessageSettable = true;
             }
         }
-
-        if (this.isAnEngineOn() && fmGW === 0 && this._initMessageSettable) { //INITIALIZE WEIGHT/CG
+        //INITIALIZE WEIGHT/CG
+        if (this.isAnEngineOn() && fmGW === 0 && this._initMessageSettable) {
             this.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
             this._gwInitDisplayed++;
             this._initMessageSettable = false;
         }
 
-        if (!this.isOnGround() && gwMismatch && this._checkWeightSettable) { //CHECK WEIGHT
+        //CHECK WEIGHT
+        //TO-DO Ground Speed used for redundancy and to simulate delay (~10s) for FAC parameters to be calculated, remove once FAC is available.
+        if (!this.isOnGround() && gwMismatch && this._checkWeightSettable && gs > 180) {
             this.addMessageToQueue(NXSystemMessages.checkWeight);
             this._checkWeightSettable = false;
         }
