@@ -18,7 +18,7 @@ TOC:
 
 **Remark:**
 
-The update could be automated via giuthub actions (as the download is - it's basically one command) but this would
+The update could be automated via GitHub actions (as the download is - it's basically one command) but this would
 require the write key to be part of env and is very risky. If a dev removes required keys or even removes everything
 from the en.json then this change will immediately be sent to Localazy by everybody who can trigger the GitHub
 action.<br/>                   
