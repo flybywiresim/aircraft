@@ -1032,6 +1032,7 @@ void SecComputer::step()
       rtb_handleIndex = 0.0;
     }
 
+    rtb_Switch_o = SecComputer_B.logic.pitch_law_in_flight;
     rtb_OR16 = (SecComputer_B.logic.tracking_mode_on || ((static_cast<real_T>(SecComputer_B.logic.active_pitch_law) !=
       SecComputer_P.CompareToConstant2_const_f) && (static_cast<real_T>(SecComputer_B.logic.active_pitch_law) !=
       SecComputer_P.CompareToConstant3_const_o)));
@@ -1042,9 +1043,8 @@ void SecComputer::step()
                     &SecComputer_U.in.analog_inputs.ths_pos_deg, &SecComputer_B.logic.adr_computation_data.V_ias_kn,
                     &SecComputer_B.logic.adr_computation_data.mach, &SecComputer_B.logic.adr_computation_data.V_tas_kn,
                     &rtb_handleIndex, (const_cast<real_T*>(&SecComputer_RGND)), (const_cast<real_T*>(&SecComputer_RGND)),
-                    &SecComputer_B.logic.total_sidestick_pitch_command, (const_cast<real_T*>(&SecComputer_RGND)),
-                    &rtb_OR16, &rtb_OR14, &rtb_eta_deg, &rtb_eta_trim_dot_deg_s, &rtb_eta_trim_limit_lo,
-                    &rtb_eta_trim_limit_up);
+                    &SecComputer_B.logic.total_sidestick_pitch_command, &rtb_Switch_o, &rtb_OR16, &rtb_OR14,
+                    &rtb_eta_deg, &rtb_eta_trim_dot_deg_s, &rtb_eta_trim_limit_lo, &rtb_eta_trim_limit_up);
     LawMDLOBJ3.step(&SecComputer_U.in.time.dt, &SecComputer_B.logic.total_sidestick_pitch_command, &rtb_Switch_o,
                     &rtb_Switch6, &pair2RollCommand, &rtb_handleIndex);
     switch (static_cast<int32_T>(SecComputer_B.logic.active_pitch_law)) {
