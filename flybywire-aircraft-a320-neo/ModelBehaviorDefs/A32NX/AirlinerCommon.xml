@@ -471,18 +471,18 @@
                     }
                 }
             </ONCLICK>
-            <!--  We are unable to set the volume with a value, only inc or dec. 
-                Therefore, we have to compare a Lvar and Avar to get the maximum of the two knobs  -->
+            <!--  We are unable to set the volume with a value, only inc or dec. Once the SDK let us set a value, we will be
+                able to set the maximum of the two knobs straight into the KVar -->
             <INC_VOLUME>
                 (L:XMLVAR_NAV_#SIDE#_VOR1_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_VOR1_Volume)
-                (A:NAV VOLUME:1, percent over 100) &lt; (L:XMLVAR_NAV_#SIDE#_VOR1_Volume) if {
-                    (&gt;K:NAV1_VOLUME_INC)
+                (L:XMLVAR_NAV_#SIDE#_VOR1_Volume) (A:NAV VOLUME:1, percent over 100) &gt; if{
+                   1 (&gt;K:NAV1_VOLUME_INC)
                 }
             </INC_VOLUME>
-            <DEC_VOLUME>                
+            <DEC_VOLUME>
                 (L:XMLVAR_NAV_#SIDE#_VOR1_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_VOR1_Volume)
-                (A:NAV VOLUME:1, percent over 100) &gt; (L:XMLVAR_NAV_#SIDE#_VOR1_Volume) if {
-                    (&gt;K:NAV1_VOLUME_DEC)
+                (L:XMLVAR_NAV_L_VOR1_Volume) (L:XMLVAR_NAV_R_VOR1_Volume) max (A:NAV VOLUME:1, percent over 100) &lt; if{
+                   1 (&gt;K:NAV1_VOLUME_DEC)
                 }
             </DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
@@ -513,18 +513,18 @@
                     }
                 }
             </ONCLICK>
-            <!--  We are unable to set the volume with a value, only inc or dec. 
-                Therefore, we have to compare a Lvar and Avar to get the maximum of the two knobs  -->
+            <!--  We are unable to set the volume with a value, only inc or dec. Once the SDK let us set a value, we will be
+                able to set the maximum of the two knobs straight into the KVar -->
             <INC_VOLUME>
                 (L:XMLVAR_NAV_#SIDE#_VOR2_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_VOR2_Volume)
-                (A:NAV VOLUME:2, percent over 100) &lt; (L:XMLVAR_NAV_#SIDE#_VOR2_Volume) if {
-                    (&gt;K:NAV2_VOLUME_INC)
+                (L:XMLVAR_NAV_#SIDE#_VOR2_Volume) (A:NAV VOLUME:2, percent over 100) &gt; if{
+                   1 (&gt;K:NAV2_VOLUME_INC)
                 }
             </INC_VOLUME>
-            <DEC_VOLUME>                
+            <DEC_VOLUME>
                 (L:XMLVAR_NAV_#SIDE#_VOR2_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_VOR2_Volume)
-                (A:NAV VOLUME:2, percent over 100) &gt; (L:XMLVAR_NAV_#SIDE#_VOR2_Volume) if {
-                    (&gt;K:NAV2_VOLUME_DEC)
+                (L:XMLVAR_NAV_L_VOR2_Volume) (L:XMLVAR_NAV_R_VOR2_Volume) max (A:NAV VOLUME:2, percent over 100) &lt; if{
+                   1 (&gt;K:NAV2_VOLUME_DEC)
                 }
             </DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
@@ -621,18 +621,18 @@
                     }
                 }
             </ONCLICK>
-            <!--  We are unable to set the volume with a value, only inc or dec. 
-                Therefore, we have to compare a Lvar and Avar to get the maximum of the two knobs -->
+            <!--  We are unable to set the volume with a value, only inc or dec. Once the SDK let us set a value, we will be
+                able to set the maximum of the two knobs straight into the KVar -->
             <INC_VOLUME>
                 (L:XMLVAR_NAV_#SIDE#_ADF1_Volume) #VOLUME_INCREMENT# + 1 min (&gt;L:XMLVAR_NAV_#SIDE#_ADF1_Volume)
-                (A:ADF VOLUME:1, percent over 100) &lt; (L:XMLVAR_NAV_#SIDE#_ADF1_Volume) if {
-                    (&gt;K:ADF_VOLUME_INC)
+                (L:XMLVAR_NAV_#SIDE#_ADF1_Volume) (A:ADF VOLUME:1, percent over 100) &gt; if{
+                   1 (&gt;K:ADF_VOLUME_INC)
                 }
             </INC_VOLUME>
-            <DEC_VOLUME>                
+            <DEC_VOLUME>
                 (L:XMLVAR_NAV_#SIDE#_ADF1_Volume) #VOLUME_INCREMENT# - 0 max (&gt;L:XMLVAR_NAV_#SIDE#_ADF1_Volume)
-                (A:ADF VOLUME:1, percent over 100) &gt; (L:XMLVAR_NAV_#SIDE#_ADF1_Volume) if {
-                    (&gt;K:ADF_VOLUME_INC)
+                (L:XMLVAR_NAV_L_ADF1_Volume) (L:XMLVAR_NAV_R_ADF1_Volume) max (A:ADF VOLUME:1, percent over 100) &lt; if{
+                   1 (&gt;K:ADF_VOLUME_DEC)
                 }
             </DEC_VOLUME>
             <TOOLTIP_LEFT>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_VOLUME_DEC</TOOLTIP_LEFT>
