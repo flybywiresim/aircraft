@@ -1262,7 +1262,9 @@ void ElacComputer::step()
     ElacComputer_B.logic.has_priority_in_roll = hasPriorityInRoll;
     ElacComputer_B.logic.left_aileron_avail = leftAileronAvail;
     ElacComputer_B.logic.right_aileron_avail = rightAileronAvail;
-    ElacComputer_B.logic.aileron_droop_active = rtb_AND1_h;
+    ElacComputer_B.logic.aileron_droop_active = (rtb_AND1_h && ((leftAileronAvail && rightAileronAvail) ||
+      ((!ElacComputer_U.in.discrete_inputs.opp_left_aileron_lost) && rightAileronAvail) || (leftAileronAvail &&
+      (!ElacComputer_U.in.discrete_inputs.opp_right_aileron_lost))));
     ElacComputer_B.logic.aileron_antidroop_active = (rtb_OR1 && rtb_AND1_h && (rtb_theta < 2.5F) && rtb_y_e &&
       (rtb_activeLateralLaw == lateral_efcs_law::NormalLaw));
     ElacComputer_B.logic.is_blue_hydraulic_power_avail = rtb_OR4;
