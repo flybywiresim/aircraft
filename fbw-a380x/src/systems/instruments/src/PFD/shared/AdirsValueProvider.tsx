@@ -29,6 +29,14 @@ export class AdirsValueProvider {
             this.pfdSimvar.updateSimVarSource('altitude', { name: `L:A32NX_ADIRS_ADR_${airSource}_ALTITUDE`, type: SimVarValueType.Number });
             this.pfdSimvar.updateSimVarSource('mach', { name: `L:A32NX_ADIRS_ADR_${airSource}_MACH`, type: SimVarValueType.Number });
         });
+
+        sub.on('baroUnit').whenChanged().handle((a) => {
+            this.pfdSimvar.updateSimVarSource('baroPressure', { name: 'KOHLSMAN SETTING HG', type: a === 0 ? SimVarValueType.InHG : SimVarValueType.MB });
+        });
+
+        sub.on('isAirspeedMach').whenChanged().handle((a) => {
+            this.pfdSimvar.updateSimVarSource('airspeedHoldValue', { name: a ? "AUTOPILOT MACH HOLD VAR" : "AUTOPILOT AIRSPEED HOLD VAR",  type: a ? SimVarValueType.Number : SimVarValueType.Knots });
+        });
     }
 }
 

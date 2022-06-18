@@ -8,7 +8,6 @@ import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 
 const ValueSpacing = 10;
@@ -893,10 +892,11 @@ class SpeedTarget extends DisplayComponent <{ bus: ArincEventBus }> {
         super.onAfterRender(node);
         this.needsUpdate = true;
 
-        const sub = this.props.bus.getArincSubscriber<PFDSimvars & SimplaneValues & ClockEvents & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & ClockEvents & Arinc429Values>();
 
-        sub.on('isSelectedSpeed').whenChanged().handle((s) => {
-            this.speedState.isSpeedManaged = !s;
+        sub.on('selectedSpeedMode').whenChanged().handle((s) => {
+            const isSelected = s === 1;
+            this.speedState.isSpeedManaged = !isSelected;
             this.needsUpdate = true;
         });
 
@@ -906,12 +906,12 @@ class SpeedTarget extends DisplayComponent <{ bus: ArincEventBus }> {
             this.needsUpdate = true;
         });
 
-        sub.on('holdValue').whenChanged().handle((s) => {
+        sub.on('airspeedHoldValue').whenChanged().handle((s) => {
             this.speedState.holdValue = s;
             this.needsUpdate = true;
         });
 
-        sub.on('machActive').whenChanged().handle((s) => {
+        sub.on('isAirspeedMach').whenChanged().handle((s) => {
             this.speedState.isMach = s;
             this.needsUpdate = true;
         });

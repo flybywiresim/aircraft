@@ -139,7 +139,16 @@ export interface PFDSimvars {
     fac2EstimatedBetaRaw: number;
     fac1BetaTargetRaw: number;
     fac2BetaTargetRaw: number;
-}
+
+    baroMode: number;
+    baroUnit: number;
+    baroPressure: number;
+    selectedSpeedMode: number;
+    selectedAltitude: number;
+    isAirspeedMach: boolean;
+    selectedHeading: number;
+    airspeedHoldValue: number;
+  }
 
 export enum PFDVars {
     slatsFlapsStatusRaw = 'L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD',
@@ -279,7 +288,16 @@ export enum PFDVars {
     fac2EstimatedBetaRaw = 'L:A32NX_FAC_2_ESTIMATED_SIDESLIP',
     fac1BetaTargetRaw = 'L:A32NX_FAC_1_SIDESLIP_TARGET',
     fac2BetaTargetRaw = 'L:A32NX_FAC_2_SIDESLIP_TARGET',
+    baroMode = 'L:XMLVAR_Baro1_Mode',
+    baroUnit = 'L:XMLVAR_Baro_Selector_HPA_1',
+    baroPressure = 'KOHLSMAN SETTING HG',
+    selectedSpeedMode = 'AUTOPILOT SPEED SLOT INDEX',
+    selectedAltitude = "AUTOPILOT ALTITUDE LOCK VAR:3",
+    isAirspeedMach = 'L:XMLVAR_AirSpeedIsInMach',
+    selectedHeading = 'AUTOPILOT HEADING LOCK DIR:1',
+    airspeedHoldValue = 'AUTOPILOT MACH HOLD VAR',
 }
+
 
 /** A publisher to poll and publish nav/com simvars. */
 export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
@@ -421,6 +439,15 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
         ['fac2EstimatedBetaRaw', { name: PFDVars.fac2EstimatedBetaRaw, type: SimVarValueType.Number }],
         ['fac1BetaTargetRaw', { name: PFDVars.fac1BetaTargetRaw, type: SimVarValueType.Number }],
         ['fac2BetaTargetRaw', { name: PFDVars.fac2BetaTargetRaw, type: SimVarValueType.Number }],
+        ['baroMode', { name: PFDVars.baroMode, type: SimVarValueType.Number }],
+        ['baroUnit', { name: PFDVars.baroUnit, type: SimVarValueType.Number }],
+        ['baroPressure', { name: PFDVars.baroPressure, type: SimVarValueType.InHG }],
+        ['selectedSpeedMode', { name: PFDVars.selectedSpeedMode, type: SimVarValueType.Number }],
+        ['selectedAltitude', { name: PFDVars.selectedAltitude, type: SimVarValueType.Feet }],
+        ['isAirspeedMach', { name: PFDVars.isAirspeedMach, type: SimVarValueType.Bool }],
+        ['selectedHeading', { name: PFDVars.selectedHeading, type: SimVarValueType.Degree }],
+        ['airspeedHoldValue', { name: PFDVars.airspeedHoldValue, type: SimVarValueType.Number }],
+
     ])
 
     public constructor(bus: EventBus) {

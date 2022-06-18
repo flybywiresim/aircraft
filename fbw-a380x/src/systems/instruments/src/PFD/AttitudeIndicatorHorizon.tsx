@@ -10,7 +10,6 @@ import {
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
 import { ArincEventBus } from "@flybywiresim/fbw-sdk";
 
@@ -45,7 +44,7 @@ class HeadingBug extends DisplayComponent<{bus: EventBus, isCaptainSide: boolean
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & SimplaneValues & Arinc429Values>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('selectedHeading').whenChanged().handle((s) => {
             this.selectedHeading = s;

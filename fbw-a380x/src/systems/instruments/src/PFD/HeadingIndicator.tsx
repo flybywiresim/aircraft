@@ -3,7 +3,6 @@ import { HorizontalTape } from './HorizontalTape';
 import { getSmallestAngle } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
 
 const DisplayRange = 24;
@@ -128,9 +127,7 @@ class SelectedHeading extends DisplayComponent<SelectedHeadingProps> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-        const spsub = this.props.bus.getSubscriber<SimplaneValues>();
-
-        spsub.on('selectedHeading').whenChanged().handle((h) => {
+        sub.on('selectedHeading').whenChanged().handle((h) => {
             if (this.showSelectedHeading === 1) {
                 this.selectedHeading = h;
                 this.handleDelta(this.props.heading.get(), this.selectedHeading);
