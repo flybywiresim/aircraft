@@ -38,6 +38,7 @@ struct pitch_alternate_input
   real_T tracking_mode_on_override;
   real_T delta_eta_pos;
   boolean_T on_ground;
+  real_T in_flight;
   boolean_T tracking_mode_on;
   boolean_T stabilities_available;
 };
@@ -104,7 +105,9 @@ struct base_pitch_integrated
 struct base_pitch_output
 {
   real_T eta_deg;
-  real_T eta_trim_deg;
+  real_T eta_trim_dot_deg_s;
+  real_T eta_trim_limit_lo;
+  real_T eta_trim_limit_up;
 };
 
 #endif

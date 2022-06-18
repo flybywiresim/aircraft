@@ -3,10 +3,14 @@
 base_elac_logic_outputs rtP_elac_logic_output_MATLABStruct{
   false,
   false,
+  false,
   lateral_efcs_law::None,
   lateral_efcs_law::None,
   pitch_efcs_law::None,
   pitch_efcs_law::None,
+  false,
+  false,
+  false,
   false,
   false,
   false,
@@ -106,6 +110,8 @@ base_elac_discrete_outputs rtP_elac_discrete_output_MATLABStruct{
 } ;
 
 ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
+
+  1.0,
 
   0.0,
 
@@ -215,6 +221,8 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   50.0,
 
+  0.02,
+
   5.0,
 
   0.0,
@@ -293,6 +301,8 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   lateral_efcs_law::NormalLaw,
 
+  pitch_efcs_law::DirectLaw,
+
   pitch_efcs_law::AlternateLaw2,
 
   50.0F,
@@ -315,7 +325,7 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   false,
 
-  true,
+  false,
 
   true,
 
@@ -352,6 +362,10 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   true,
 
   true,
+
+  true,
+
+  false,
 
 
   {
@@ -1632,10 +1646,14 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
     {
       false,
       false,
+      false,
       lateral_efcs_law::NormalLaw,
       lateral_efcs_law::NormalLaw,
       pitch_efcs_law::NormalLaw,
       pitch_efcs_law::NormalLaw,
+      false,
+      false,
+      false,
       false,
       false,
       false,
@@ -1894,6 +1912,16 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   -1.0,
 
+  3.5,
+
+  -11.0,
+
+  -2.0,
+
+  0.7,
+
+  -0.7,
+
   0.0,
 
   0.0,
@@ -1990,6 +2018,8 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   0.0,
 
+  0.0,
+
   16.0F,
 
   16.0F,
@@ -2044,6 +2074,9 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   false,
 
   false,
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   false,
 

@@ -35,7 +35,9 @@ struct pitch_direct_input
 struct base_pitch_output
 {
   real_T eta_deg;
-  real_T eta_trim_deg;
+  real_T eta_trim_dot_deg_s;
+  real_T eta_trim_limit_lo;
+  real_T eta_trim_limit_up;
 };
 
 #endif

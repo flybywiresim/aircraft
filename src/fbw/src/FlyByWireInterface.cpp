@@ -1662,11 +1662,16 @@ bool FlyByWireInterface::updateServoSolenoidStatus() {
 
   // set trim values
   SimOutputEtaTrim outputEtaTrim = {};
-  outputEtaTrim.eta_trim_deg = -elacsAnalogOutputs[1].ths_pos_order - elacsAnalogOutputs[0].ths_pos_order +
-                               -secsAnalogOutputs[0].ths_pos_order_deg - secsAnalogOutputs[1].ths_pos_order_deg;
 
   if (elacsDiscreteOutputs[0].ths_active || elacsDiscreteOutputs[1].ths_active || secsDiscreteOutputs[0].ths_active ||
       secsDiscreteOutputs[1].ths_active) {
+    outputEtaTrim.eta_trim_deg = -elacsAnalogOutputs[1].ths_pos_order - elacsAnalogOutputs[0].ths_pos_order +
+                                 -secsAnalogOutputs[0].ths_pos_order_deg - secsAnalogOutputs[1].ths_pos_order_deg;
+    elevatorTrimHandler->synchronizeValue(outputEtaTrim.eta_trim_deg);
+  } else {
+    outputEtaTrim.eta_trim_deg = elevatorTrimHandler->getPosition();
+  }
+  if (!flyByWireOutput.sim.data_computed.tracking_mode_on) {
     if (!simConnectInterface.sendData(outputEtaTrim)) {
       cout << "WASM: Write data failed!" << endl;
       return false;

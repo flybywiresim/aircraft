@@ -431,6 +431,7 @@ struct base_elac_ir_computation_data
 struct base_elac_logic_outputs
 {
   boolean_T on_ground;
+  boolean_T pitch_law_in_flight;
   boolean_T tracking_mode_on;
   lateral_efcs_law lateral_law_capability;
   lateral_efcs_law active_lateral_law;
@@ -442,6 +443,9 @@ struct base_elac_logic_outputs
   boolean_T has_priority_in_pitch;
   boolean_T left_elevator_avail;
   boolean_T right_elevator_avail;
+  boolean_T ths_avail;
+  boolean_T ths_active_commanded;
+  boolean_T ths_ground_setting_active;
   boolean_T is_engaged_in_roll;
   boolean_T can_engage_in_roll;
   boolean_T has_priority_in_roll;
@@ -630,6 +634,7 @@ struct pitch_alternate_input
   real_T tracking_mode_on_override;
   real_T delta_eta_pos;
   boolean_T on_ground;
+  real_T in_flight;
   boolean_T tracking_mode_on;
   boolean_T stabilities_available;
 };
@@ -642,7 +647,9 @@ struct pitch_alternate_input
 struct base_pitch_output
 {
   real_T eta_deg;
-  real_T eta_trim_deg;
+  real_T eta_trim_dot_deg_s;
+  real_T eta_trim_limit_lo;
+  real_T eta_trim_limit_up;
 };
 
 #endif
@@ -745,6 +752,7 @@ struct pitch_normal_input
   real_T VLS_kn;
   real_T delta_eta_pos;
   boolean_T on_ground;
+  real_T in_flight;
   boolean_T tracking_mode_on;
   boolean_T high_aoa_prot_active;
   boolean_T high_speed_prot_active;

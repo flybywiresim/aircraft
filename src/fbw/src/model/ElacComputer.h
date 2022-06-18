@@ -58,6 +58,7 @@ class ElacComputer final
     real_T blue_hyd_pressure_psi;
     real_T green_hyd_pressure_psi;
     real_T yellow_hyd_pressure_psi;
+    real_T in_flight;
     uint32_T SSM;
     uint32_T SSM_k;
     uint32_T SSM_kx;
@@ -560,14 +561,19 @@ class ElacComputer final
   };
 
   struct D_Work_ElacComputer_T {
+    real_T Delay_DSTATE;
+    real_T Delay_DSTATE_c;
     real_T configFullEventTime;
     real_T eventTime;
     real_T resetEventTime;
     real_T eventTime_g;
-    boolean_T Delay_DSTATE;
+    real_T on_ground_time;
+    boolean_T Delay_DSTATE_cc;
     boolean_T Delay1_DSTATE;
     uint8_T is_active_c28_ElacComputer;
     uint8_T is_c28_ElacComputer;
+    uint8_T is_active_c30_ElacComputer;
+    uint8_T is_c30_ElacComputer;
     boolean_T Memory_PreviousInput;
     boolean_T Memory_PreviousInput_n;
     boolean_T Memory_PreviousInput_o;
@@ -577,6 +583,8 @@ class ElacComputer final
     boolean_T Memory_PreviousInput_h;
     boolean_T Memory_PreviousInput_i;
     boolean_T Memory_PreviousInput_lo;
+    boolean_T Memory_PreviousInput_no;
+    boolean_T icLoad;
     boolean_T pLeftStickDisabled;
     boolean_T pRightStickDisabled;
     boolean_T configFullEventTime_not_empty;
@@ -589,6 +597,7 @@ class ElacComputer final
     boolean_T eventTime_not_empty_a;
     boolean_T abnormalConditionWasActive;
     boolean_T Runtime_MODE;
+    rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_l0;
     rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_nu;
     rtDW_MATLABFunction_ElacComputer_b_T sf_MATLABFunction_g4b;
     rtDW_MATLABFunction_ElacComputer_f_T sf_MATLABFunction_j2;
@@ -628,6 +637,7 @@ class ElacComputer final
   };
 
   struct Parameters_ElacComputer_T {
+    real_T DiscreteTimeIntegratorVariableTsLimit_Gain;
     real_T RateLimiterVariableTs2_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition;
     real_T RateLimiterVariableTs2_InitialCondition_f;
@@ -682,8 +692,9 @@ class ElacComputer final
     real_T SourceMonitoringbyVote1_confirmTime;
     real_T AlphaMonitoring_confirmTime;
     real_T CompareToConstant_const;
-    real_T CompareToConstant_const_l;
     real_T CompareToConstant_const_m;
+    real_T CompareToConstant_const_l;
+    real_T CompareToConstant_const_m4;
     real_T CompareToConstant_const_f;
     real_T CompareToConstant2_const;
     real_T CompareToConstant3_const;
@@ -721,6 +732,7 @@ class ElacComputer final
     SignStatusMatrix EnumeratedConstant_Value;
     SignStatusMatrix EnumeratedConstant1_Value;
     lateral_efcs_law EnumeratedConstant2_Value;
+    pitch_efcs_law EnumeratedConstant_Value_i;
     pitch_efcs_law EnumeratedConstant_Value_b;
     real32_T CompareToConstant_const_ll;
     boolean_T SRFlipFlop2_initial_condition;
@@ -732,6 +744,7 @@ class ElacComputer final
     boolean_T SRFlipFlop2_initial_condition_o;
     boolean_T SRFlipFlop1_initial_condition_p;
     boolean_T SRFlipFlop_initial_condition_k;
+    boolean_T SRFlipFlop_initial_condition_jn;
     boolean_T ConfirmNode_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge;
     boolean_T ConfirmNode2_isRisingEdge;
@@ -751,6 +764,7 @@ class ElacComputer final
     boolean_T PulseNode1_isRisingEdge;
     boolean_T ConfirmNode1_isRisingEdge_k;
     boolean_T ConfirmNode_isRisingEdge_jw;
+    boolean_T PulseNode_isRisingEdge_g;
     elac_outputs out_Y0;
     base_elac_out_bus Constant4_Value;
     real_T Bias_Bias;
@@ -762,6 +776,11 @@ class ElacComputer final
     real_T Constant4_Value_a;
     real_T Constant3_Value;
     real_T Gain_Gain;
+    real_T Constant2_Value_l;
+    real_T Constant3_Value_h;
+    real_T Gain_Gain_l;
+    real_T Saturation_UpperSat_g;
+    real_T Saturation_LowerSat_o;
     real_T Constant5_Value;
     real_T Constant6_Value;
     real_T Constant7_Value;
@@ -800,6 +819,7 @@ class ElacComputer final
     real_T Saturation2_LowerSat;
     real_T Gain1_Gain_b;
     real_T Constant_Value_a;
+    real_T Delay_InitialCondition;
     real_T Constant_Value_b;
     real_T Switch12_Threshold;
     real_T Switch13_Threshold;
@@ -823,8 +843,9 @@ class ElacComputer final
     boolean_T Logic_table_e1[16];
     boolean_T Logic_table_n4[16];
     boolean_T Constant_Value_ad;
-    boolean_T Delay_InitialCondition;
+    boolean_T Delay_InitialCondition_c;
     boolean_T Delay1_InitialCondition;
+    boolean_T Logic_table_h[16];
     boolean_T Constant10_Value;
     boolean_T Constant9_Value;
     boolean_T Constant1_Value_e;

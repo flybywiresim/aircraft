@@ -3,8 +3,12 @@
 base_sec_logic_outputs rtP_sec_logic_output_MATLABStruct{
   false,
   false,
+  false,
   pitch_efcs_law::None,
   pitch_efcs_law::None,
+  false,
+  false,
+  false,
   false,
   false,
   false,
@@ -94,7 +98,7 @@ base_sec_discrete_outputs rtP_sec_discrete_output_MATLABStruct{
 
 SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
-  0.0,
+  1.0,
 
   0.0,
 
@@ -106,13 +110,7 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   0.0,
 
-  23.0,
-
-  23.0,
-
-  23.0,
-
-  23.0,
+  0.0,
 
   14.0,
 
@@ -161,6 +159,14 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   20.0,
 
   20.0,
+
+  23.0,
+
+  23.0,
+
+  23.0,
+
+  23.0,
 
   17.0,
 
@@ -209,6 +215,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   21.0,
 
   26.0,
+
+  0.02,
 
   35.0,
 
@@ -310,6 +318,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   SignStatusMatrix::NormalOperation,
 
+  pitch_efcs_law::DirectLaw,
+
   pitch_efcs_law::AlternateLaw2,
 
   3.0F,
@@ -322,7 +332,7 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   false,
 
-  true,
+  false,
 
   true,
 
@@ -345,6 +355,10 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   true,
 
   true,
+
+  true,
+
+  false,
 
   true,
 
@@ -1337,8 +1351,12 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
     {
       false,
       false,
+      false,
       pitch_efcs_law::NormalLaw,
       pitch_efcs_law::NormalLaw,
+      false,
+      false,
+      false,
       false,
       false,
       false,
@@ -1598,6 +1616,18 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   { 0.0, 0.05, 0.051, 0.5, 1.0 },
 
+  3.5,
+
+  -11.0,
+
+  -2.0,
+
+  0.7,
+
+  -0.7,
+
+  0.0,
+
   0.0,
 
   0.0,
@@ -1639,6 +1669,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   0.0,
 
   -50.0,
+
+  0.0,
 
   0.0,
 
@@ -1661,6 +1693,9 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   false,
 
   false,
+
+
+  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
 
   { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },

@@ -37,8 +37,6 @@ class PitchAlternateLaw final
     real_T Delay_DSTATE_g;
     real_T Delay_DSTATE_l;
     real_T Delay_DSTATE_o;
-    real_T Delay_DSTATE_a;
-    real_T Delay_DSTATE_aa;
     real_T pY;
     uint8_T is_active_c7_PitchAlternateLaw;
     uint8_T is_c7_PitchAlternateLaw;
@@ -47,7 +45,6 @@ class PitchAlternateLaw final
     uint8_T is_active_c9_PitchAlternateLaw;
     uint8_T is_c9_PitchAlternateLaw;
     boolean_T icLoad;
-    boolean_T icLoad_p;
     boolean_T pY_not_empty;
     rtDW_RateLimiter_PitchAlternateLaw_T sf_RateLimiter_b;
     rtDW_WashoutFilter_PitchAlternateLaw_T sf_WashoutFilter_c;
@@ -78,7 +75,6 @@ class PitchAlternateLaw final
     real_T DiscreteDerivativeVariableTs_Gain_p;
     real_T DiscreteDerivativeVariableTs2_Gain_a;
     real_T DiscreteTimeIntegratorVariableTs_Gain;
-    real_T DiscreteTimeIntegratorVariableTsLimit_Gain;
     real_T RateLimiterVariableTs2_InitialCondition;
     real_T DiscreteDerivativeVariableTs1_InitialCondition;
     real_T DiscreteDerivativeVariableTs_InitialCondition;
@@ -91,7 +87,6 @@ class PitchAlternateLaw final
     real_T RateLimiterVariableTs3_InitialCondition;
     real_T DiscreteDerivativeVariableTs_InitialCondition_g;
     real_T DiscreteDerivativeVariableTs2_InitialCondition_c;
-    real_T RateLimiterDynamicVariableTs_InitialCondition;
     real_T RateLimitereta_InitialCondition;
     real_T DiscreteTimeIntegratorVariableTs_LowerLimit;
     real_T ScheduledGain_Table[5];
@@ -105,11 +100,10 @@ class PitchAlternateLaw final
     real_T RateLimiterVariableTs3_up;
     real_T RateLimitereta_up;
     boolean_T CompareToConstant_const;
-    real_T Constant3_Value;
     real_T Constant_Value;
     real_T Constant5_Value;
     real_T Gain2_Gain;
-    real_T Constant3_Value_i;
+    real_T Constant3_Value;
     real_T uDLookupTable_tableData[6];
     real_T uDLookupTable_bp01Data[6];
     real_T Gain1_Gain;
@@ -194,8 +188,8 @@ class PitchAlternateLaw final
     real_T Saturation_LowerSat_d;
     real_T Gain_Gain_c;
     real_T Constant2_Value;
+    real_T Constant3_Value_j;
     boolean_T Constant_Value_m;
-    boolean_T Constant1_Value;
   };
 
   void init();
@@ -207,9 +201,9 @@ class PitchAlternateLaw final
             *rtu_In_Phi_deg, const real_T *rtu_In_qk_deg_s, const real_T *rtu_In_eta_deg, const real_T
             *rtu_In_eta_trim_deg, const real_T *rtu_In_V_ias_kn, const real_T *rtu_In_mach, const real_T
             *rtu_In_V_tas_kn, const real_T *rtu_In_flaps_handle_index, const real_T *rtu_In_spoilers_left_pos, const
-            real_T *rtu_In_spoilers_right_pos, const real_T *rtu_In_delta_eta_pos, const boolean_T
-            *rtu_In_tracking_mode_on, const boolean_T *rtu_In_stabilities_available, real_T *rty_Out_eta_deg, real_T
-            *rty_Out_eta_trim_deg);
+            real_T *rtu_In_spoilers_right_pos, const real_T *rtu_In_delta_eta_pos, const real_T *rtu_In_in_flight, const
+            boolean_T *rtu_In_tracking_mode_on, const boolean_T *rtu_In_stabilities_available, real_T *rty_Out_eta_deg,
+            real_T *rty_Out_eta_trim_dot_deg_s, real_T *rty_Out_eta_trim_limit_lo, real_T *rty_Out_eta_trim_limit_up);
   void reset();
   PitchAlternateLaw();
   ~PitchAlternateLaw();
