@@ -6,7 +6,7 @@ import { ServicesPage } from './Pages/ServicesPage';
 import { PushbackPage } from './Pages/PushbackPage';
 import { FuelPage } from './Pages/FuelPage';
 import { store, RootState } from '../Store/store';
-import { WeightBalance } from './Pages/WeightBalance';
+import { Payload } from './Pages/Payload';
 
 export interface StatefulButton {
     id: string,
@@ -51,7 +51,7 @@ export const Ground = () => {
         { name: 'Services', alias: t('Ground.Services.Title'), component: <ServicesPage /> },
         { name: 'Pushback', alias: t('Ground.Pushback.Title'), component: <PushbackPage /> },
         { name: 'Fuel', alias: t('Ground.Fuel.Title'), component: <FuelPage /> },
-        { name: 'W+B', alias: 'W+B', component: <WeightBalance /> },
+        { name: 'Payload', alias: 'Payload', component: <Payload /> },
     ];
 
     return (

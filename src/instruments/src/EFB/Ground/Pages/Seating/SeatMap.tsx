@@ -1,93 +1,44 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useRef, useState } from 'react';
 // @ts-ignore
-import Fuselage from '../../../Assets/320neo-outline-fuselage-wb.svg';
-import { SeatConstants } from './Constants';
+import SVGFuselage from '../../../Assets/TopDownPayload.svg';
+import { CanvasX, CanvasY, RowInfo, SeatConstants, SeatInfo, TYPE } from './Constants';
 // @ts-ignore
 import SVGSeat from '../../../Assets/seat.svg';
+// @ts-ignore
+import SVGSeatFilled from '../../../Assets/seatFilled.svg';
 
-const TYPE = { AISLE: 0, ECO: 1, ECO_EMERG: 2 };
-interface SeatInfo {
-    type: number,
+interface SeatMapProps {
     x: number,
     y: number,
-    active: boolean
+    seatMap: RowInfo[]
 }
 
-interface RowInfo {
-    x: number,
-    y: number,
-    xOffset: number,
-    yOffset: number,
-    seats: SeatInfo[],
-}
-
-const defaultRow: RowInfo = {
-    x: 0,
-    y: 0,
-    xOffset: 0,
-    yOffset: 0,
-    seats: [
-        { type: TYPE.ECO, x: 0, y: 0, active: false },
-        { type: TYPE.ECO, x: 0, y: 0, active: false },
-        { type: TYPE.ECO, x: 0, y: 0, active: false },
-        { type: TYPE.AISLE, x: 0, y: 0, active: false },
-        { type: TYPE.ECO, x: 0, y: 0, active: false },
-        { type: TYPE.ECO, x: 0, y: 0, active: false },
-        { type: TYPE.ECO, x: 0, y: 0, active: false },
-    ],
-};
-
-const emergRow: RowInfo = {
-    x: 0,
-    y: 0,
-    xOffset: 0,
-    yOffset: 0,
-    seats: [
-        { type: TYPE.ECO_EMERG, x: 0, y: 0, active: false },
-        { type: TYPE.ECO_EMERG, x: 0, y: 0, active: false },
-        { type: TYPE.ECO_EMERG, x: 0, y: 0, active: false },
-        { type: TYPE.AISLE, x: 0, y: 0, active: false },
-        { type: TYPE.ECO_EMERG, x: 0, y: 0, active: false },
-        { type: TYPE.ECO_EMERG, x: 0, y: 0, active: false },
-        { type: TYPE.ECO_EMERG, x: 0, y: 0, active: false },
-    ],
-};
-
-const defaultSeatMap: RowInfo[] = [
-    defaultRow, defaultRow, defaultRow, defaultRow, defaultRow, defaultRow,
-    defaultRow, defaultRow, defaultRow, defaultRow, defaultRow, emergRow, emergRow,
-    defaultRow, defaultRow, defaultRow, defaultRow, defaultRow, defaultRow, defaultRow, defaultRow,
-    defaultRow, defaultRow, defaultRow, defaultRow, defaultRow, defaultRow, defaultRow, defaultRow,
-];
-
-// 222, 260
-const x = 260;
-const y = 225;
-export const SeatMap = () => { // (x, y) => (
+export const SeatMap: React.FC<SeatMapProps> = ({ x, y, seatMap }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [seatImg, setSeatImg] = useState<HTMLImageElement | null>(null);
+    const [seatFilledImg, setSeatFilledImg] = useState<HTMLImageElement | null>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
-    const [seatMap, setSeatMap] = useState<RowInfo[]>(defaultSeatMap);
 
-    const addXOffset = (xOff, i) => {
-        xOff += seatMap[i].xOffset;
-        let seatType = TYPE.AISLE;
-        for (let j = 0; j < seatMap[i].seats.length; j++) {
-            if (seatType < seatMap[i].seats[j].type) {
-                seatType = seatMap[i].seats[j].type;
+    const addXOffset = (xOff: number, r: number) => {
+        xOff += seatMap[r].xOffset;
+        let seatType = TYPE.ECO;
+        for (let s = 0; s < seatMap[r].seats.length; s++) {
+            if (seatType < seatMap[r].seats[s].type) {
+                seatType = seatMap[r].seats[s].type;
             }
         }
-        if (i !== 0) {
+        if (r !== 0) {
             xOff += (SeatConstants[seatType].padX + SeatConstants[seatType].len);
         }
         return xOff;
     };
 
-    const addYOffset = (yOff, i, j) => {
-        yOff += seatMap[i].yOffset;
-        const seatType = seatMap[i].seats[j].type;
-        if (j !== 0) {
+    const addYOffset = (yOff: number, r: number, s: number) => {
+        yOff += seatMap[r].yOffset;
+        yOff += seatMap[r].seats[s].yOffset;
+        const seatType = seatMap[r].seats[s].type;
+        if (s !== 0) {
             yOff += (SeatConstants[seatType].padY + SeatConstants[seatType].wid);
         }
         return yOff;
@@ -99,31 +50,31 @@ export const SeatMap = () => { // (x, y) => (
             ctx.fillStyle = '#fff';
             ctx.beginPath();
 
-            for (let i = 0, xOff = 0; i < seatMap.length; i++) {
-                xOff = addXOffset(xOff, i);
-                drawRow(i, xOff, seatMap[i].seats);
+            for (let r = 0, xOff = 0; r < seatMap.length; r++) {
+                xOff = addXOffset(xOff, r);
+                drawRow(r, xOff, seatMap[r].seats);
             }
-            drawRow(0, 0, defaultRow.seats);
             ctx.fill();
         }
     };
 
     const drawRow = (rowI: number, x: number, rowInfo: SeatInfo[]) => {
-        for (let j = 0, yOff = 0; j < rowInfo.length; j++) {
-            yOff = addYOffset(yOff, rowI, j);
-            drawSeat(x, yOff, rowInfo[j]);
+        for (let s = 0, yOff = 0; s < rowInfo.length; s++) {
+            yOff = addYOffset(yOff, rowI, s);
+            drawSeat(x, yOff, rowInfo[s]);
         }
     };
 
     const drawSeat = (x: number, y: number, seatInfo: SeatInfo) => {
-        if (ctx && seatImg) {
-            switch (seatInfo.type) {
-            case TYPE.AISLE:
+        if (ctx && seatImg && seatFilledImg) {
+            switch (seatInfo.active) {
+            case true:
+                ctx.drawImage(seatFilledImg, x, y, SeatConstants[seatInfo.type].imageX, SeatConstants[seatInfo.type].imageY);
                 break;
-            case TYPE.ECO:
-            case TYPE.ECO_EMERG:
+            case false:
             default:
-                ctx.drawImage(seatImg, x, y, SeatConstants.ImageX, SeatConstants.ImageY);
+                ctx.drawImage(seatImg, x, y, SeatConstants[seatInfo.type].imageX, SeatConstants[seatInfo.type].imageY);
+                break;
             }
         }
     };
@@ -132,14 +83,18 @@ export const SeatMap = () => { // (x, y) => (
         const seatImg = new Image();
         seatImg.src = SVGSeat;
         setSeatImg(seatImg);
+
+        const seatFilledImg = new Image();
+        seatFilledImg.src = SVGSeatFilled;
+        setSeatFilledImg(seatFilledImg);
     }, []);
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        let animationFrameId;
+        let frameId;
         if (canvas) {
-            const width = 1000;
-            const height = 150;
+            const width = CanvasX;
+            const height = CanvasY;
             const { devicePixelRatio: ratio = 1 } = window;
             setCtx(canvas.getContext('2d'));
             canvas.width = width * ratio;
@@ -147,15 +102,19 @@ export const SeatMap = () => { // (x, y) => (
             ctx?.scale(ratio, ratio);
             const render = () => {
                 draw();
-                animationFrameId = window.requestAnimationFrame(render);
+                // workaround for bug
+                if (!frameId || frameId < 10) {
+                    frameId = window.requestAnimationFrame(render);
+                }
             };
             render();
             return () => {
-                window.cancelAnimationFrame(animationFrameId);
+                if (frameId) {
+                    window.cancelAnimationFrame(frameId);
+                }
             };
         }
         return () => {
-            window.cancelAnimationFrame(animationFrameId);
         };
     }, [draw]);
 
@@ -163,7 +122,7 @@ export const SeatMap = () => { // (x, y) => (
         <div className="flex relative flex-col h-content-section-reduced">
             <img
                 className="absolute w-full"
-                src={Fuselage}
+                src={SVGFuselage}
                 alt="Fuselage"
             />
 

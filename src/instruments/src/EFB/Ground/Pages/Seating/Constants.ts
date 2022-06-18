@@ -1,32 +1,39 @@
+export const TYPE = Object.freeze({ ECO: 0, ECO_EMERG: 1 });
+export interface SeatInfo {
+    type: number,
+    x: number,
+    y: number,
+    yOffset: number,
+    active: boolean
+}
+
+export interface RowInfo {
+    x: number,
+    y: number,
+    section: number,
+    xOffset: number,
+    yOffset: number,
+    seats: SeatInfo[],
+}
+
+export const CanvasX = 1000;
+export const CanvasY = 150;
+
 export const SeatConstants = Object.freeze({
-    AisleGap: 44,
-    ImageX: 25.4,
-    ImageY: 19.2,
-    // AISLE
-    0: {
-        len: 0,
-        wid: 19,
-        padX: 0,
-        padY: 0,
-        ImageX: 25.4,
-        ImageY: 19.2,
-    },
-    // ECO
-    1: {
+    [TYPE.ECO]: {
         len: 19.2,
         wid: 19.2,
-        padX: 10,
+        padX: 13,
         padY: 0,
-        ImageX: 25.4,
-        ImageY: 19.2,
+        imageX: 25.4,
+        imageY: 19.2,
     },
-    // ECO_EMERG
-    2: {
+    [TYPE.ECO_EMERG]: {
         len: 19.2,
         wid: 19.2,
-        padX: 17.5,
+        padX: 20,
         padY: 0,
-        ImageX: 25.4,
-        ImageY: 19.2,
+        imageX: 25.4,
+        imageY: 19.2,
     },
 });
