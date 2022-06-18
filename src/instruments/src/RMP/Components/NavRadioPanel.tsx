@@ -100,6 +100,7 @@ export const NavRadioPanel = (props: Props) => {
     }
 
     const [mode, setMode] = useState(Mode.FREQUENCY);
+    const [currentTransceiver, setCurrentTransceiver] = useState(props.transceiver);
 
     const [activeFrequency, setActiveFrequencySaved] = useActiveFrequency(props.transceiver, props.side);
     const [standbyFrequency, setStandbyFrequencySaved] = useStandbyFrequency(props.transceiver, props.side);
@@ -124,6 +125,11 @@ export const NavRadioPanel = (props: Props) => {
             setMode(Mode.FREQUENCY);
         }
     });
+
+    if (currentTransceiver !== props.transceiver) {
+        setMode(Mode.FREQUENCY);
+        setCurrentTransceiver(props.transceiver);
+    }
 
     if (mode === Mode.FREQUENCY) {
         standbyWindow = <StandbyFrequency side={props.side} value={standbyFrequency} setValue={setStandbyFrequencySaved} transceiver={props.transceiver} />;
