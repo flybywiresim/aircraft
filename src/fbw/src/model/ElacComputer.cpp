@@ -968,8 +968,8 @@ void ElacComputer::step()
       rtb_logic_crg14k2_alpha_disagree && alternate1Condition_tmp) || (rtb_y_j && (!rtb_logic_crg14k2_alpha_disagree) &&
       alternate1Condition_tmp) || rtb_DataTypeConversion_cc);
     if (rtb_tripleIrFault || ((rtb_DataTypeConversion_fj || rtb_DataTypeConversion_f || rtb_AND2_d ||
-          (rtb_lateralLawCapability == lateral_efcs_law::DirectLaw)) && ((rtb_AND_ai && (!rtb_AND3_b)) || ((rtb_AND2_n ||
-            ((rtb_Switch11 != 0U) && rtb_y_e)) && rtb_AND3_b)))) {
+          (rtb_lateralLawCapability == lateral_efcs_law::DirectLaw)) && ((ElacComputer_B.in_flight != 0.0) &&
+          ((rtb_AND_ai && (!rtb_AND3_b)) || ((rtb_AND2_n || ((rtb_Switch11 != 0U) && rtb_y_e)) && rtb_AND3_b))))) {
       rtb_pitchLawCapability = pitch_efcs_law::DirectLaw;
     } else if (rtb_DataTypeConversion_fj) {
       rtb_pitchLawCapability = pitch_efcs_law::AlternateLaw2;

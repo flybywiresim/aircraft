@@ -650,8 +650,8 @@ void SecComputer::step()
       (rtb_theta < -30.0F))))));
     SecComputer_DWork.abnormalConditionWasActive = (rtb_AND13 || (rtb_y_a &&
       SecComputer_DWork.abnormalConditionWasActive));
-    if (rtb_doubleIrFault || (rtb_AND3_b && (!rtb_AND_hp)) || ((rtb_AND4_a || ((rtb_Switch7_c != 0U) && rtb_AND1_h)) &&
-         rtb_AND_hp)) {
+    if (rtb_doubleIrFault || ((SecComputer_B.in_flight != 0.0) && ((rtb_AND3_b && (!rtb_AND_hp)) || ((rtb_AND4_a ||
+            ((rtb_Switch7_c != 0U) && rtb_AND1_h)) && rtb_AND_hp)))) {
       rtb_pitchLawCapability = pitch_efcs_law::DirectLaw;
     } else if ((rtb_OR14 && rtb_logic_crg14k_cas_or_mach_disagree) || rtb_doubleAdrFault ||
                SecComputer_DWork.abnormalConditionWasActive || ((!rtb_y_j) && (!rtb_AND2_j) && ((!rtb_OR1_gd) ||

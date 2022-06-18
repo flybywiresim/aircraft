@@ -108,6 +108,7 @@ class PitchAlternateLaw final
     real_T uDLookupTable_bp01Data[6];
     real_T Gain1_Gain;
     real_T Constant_Value_n;
+    real_T Gain_Gain;
     real_T Gain1_Gain_c;
     real_T Gain1_Gain_l;
     real_T uDLookupTable_tableData_e[7];
@@ -118,7 +119,7 @@ class PitchAlternateLaw final
     real_T Bias_Bias;
     real_T Gain1_Gain_o;
     real_T Vm_currentms_Value;
-    real_T Gain_Gain;
+    real_T Gain_Gain_a;
     real_T PLUT_tableData[2];
     real_T PLUT_bp01Data[2];
     real_T Gain3_Gain;
@@ -186,6 +187,7 @@ class PitchAlternateLaw final
     real_T Gain1_Gain_ov;
     real_T Saturation_UpperSat_j;
     real_T Saturation_LowerSat_d;
+    real_T Switch_Threshold;
     real_T Gain_Gain_c;
     real_T Constant2_Value;
     real_T Constant3_Value_j;
