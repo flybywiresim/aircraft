@@ -1098,6 +1098,7 @@
     - Enum
     - Hold the FMGCs current tuning mode
       Value | Meaning
+      --- | ---
       0 | AUTO
       1 | MANUAL
       2 | REMOTE VIA RMPs
