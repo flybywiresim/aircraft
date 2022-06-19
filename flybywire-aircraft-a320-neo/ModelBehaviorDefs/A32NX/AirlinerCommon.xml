@@ -580,7 +580,7 @@
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
         </UseTemplate>
 
-         <UseTemplate Name="FBW_Anim_Interactions">
+        <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>KNOB</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_AIRLINER_Audio_NAV_Volume_Knob_Template</ANIM_TEMPLATE>
             <NODE_ID>#NODE_ID_RECEIVER_MLS#</NODE_ID>
@@ -670,8 +670,6 @@
             <TOOLTIP_HAND>TT:COCKPIT.TOOLTIPS.TRANSMITTER_VHF_R_AUDIO_TOGGLE</TOOLTIP_HAND>
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP_PB>
         </UseTemplate>
-
-
     </Template>
 
     <Template Name="FBW_AIRLINER_Audio_Volume_Knob_Template">
@@ -783,8 +781,6 @@
             </False>
         </Condition>
     </Template>
-
-
 
     <Template Name="FBW_AIRLINER_Audio_NAV_Volume_Knob_Template">
         <DefaultTemplateParameters>
