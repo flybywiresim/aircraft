@@ -1319,8 +1319,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].modelInputs.in.discrete_inputs.r_spoiler_2_servo_failed = false;
   }
 
-  secs[secIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = false;
-  secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = false;
+  secs[secIndex].modelInputs.in.discrete_inputs.capt_priority_takeover_pressed = idCaptPriorityButtonPressed->get();
+  secs[secIndex].modelInputs.in.discrete_inputs.fo_priority_takeover_pressed = idFoPriorityButtonPressed->get();
 
   if (secIndex < 2) {
     secs[secIndex].modelInputs.in.analog_inputs.capt_pitch_stick_pos = -simInput.inputs[0];
