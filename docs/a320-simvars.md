@@ -415,69 +415,37 @@
     - Hz
     - The VHF 3 standby frequency for the right RMP.
 
-- A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_VOR
+- A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_VOR
     - Hz
-    - The VOR active frequency that is saved for display for the left RMP.
+    - The VOR active frequency that is saved for display for the left/right RMP.
 
-- A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_ILS
+- A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ILS
     - Hz
-    - The ILS active frequency that is saved for display for the left RMP.
+    - The ILS active frequency that is saved for display for the left/right RMP.
 
-- A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_ADF
+- A32NX_RMP_{L,R}_SAVED_ACTIVE_FREQUENCY_ADF
     - Hz
-    - The ADF active frequency that is saved for display for the left RMP.
-
-- A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_VOR
+    - The ADF active frequency that is saved for display for the left/right RMP.
+   
+- A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_VOR
     - Hz
-    - The VOR active frequency that is saved for display for the right RMP.
+    - The VOR standby frequency that is saved for display for the left/right RMP.
 
-- A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_ILS
+- A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_ILS
     - Hz
-    - The ILS active frequency that is saved for display for the right RMP.
+    - The ILS standby frequency that is saved for display for the left/right RMP.
 
-- A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_ADF
+- A32NX_RMP_{L,R}_SAVED_STANDBY_FREQUENCY_ADF
     - Hz
-    - The ADF active frequency that is saved for display for the right RMP.
+    - The ADF standby frequency that is saved for display for the left/right RMP.
 
-- A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_VOR
-    - Hz
-    - The VOR standby frequency that is saved for display for the left RMP.
-
-- A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_ILS
-    - Hz
-    - The ILS standby frequency that is saved for display for the left RMP.
-
-- A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_ADF
-    - Hz
-    - The ADF standby frequency that is saved for display for the left RMP.
-
-- A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_VOR
-    - Hz
-    - The VOR standby frequency that is saved for display for the right RMP.
-
-- A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_ILS
-    - Hz
-    - The ILS standby frequency that is saved for display for the right RMP.
-
-- A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_ADF
-    - Hz
-    - The ADF standby frequency that is saved for display for the right RMP.
-
-- A32NX_RMP_L_SAVED_COURSE_VOR
+- A32NX_RMP_{L,R}_SAVED_COURSE_VOR
     - Number
-    - The VOR course tuned via the left RMP
+    - The VOR course tuned via the left/right RMP
 
-- A32NX_RMP_L_SAVED_COURSE_ILS
+- A32NX_RMP_{L,R}_SAVED_COURSE_ILS
     - Number
-    - The ILS course tuned via the left RMP
-
-- A32NX_RMP_R_SAVED_COURSE_VOR
-    - Number
-    - The VOR course tuned via the right RMP
-
-- A32NX_RMP_R_SAVED_COURSE_ILS
-    - Number
-    - The ILS course tuned via the right RMP
+    - The ILS course tuned via the left/right RMP
 
 - A32NX_RMP_ILS_TUNED
     - Bool
