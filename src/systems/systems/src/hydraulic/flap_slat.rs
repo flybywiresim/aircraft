@@ -442,15 +442,27 @@ impl SimulationElement for FlapSlatAssembly {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
             &self.position_left_percent_id,
-            self.position_feedback().get::<degree>()
-                / self.max_synchro_gear_position.get::<degree>()
-                * 100.,
+            interpolation(
+                &self.synchro_gear_breakpoints,
+                &self.final_surface_angle_carac,
+                self.position_feedback().get::<degree>(),
+            ) / interpolation(
+                &self.synchro_gear_breakpoints,
+                &self.final_surface_angle_carac,
+                self.max_synchro_gear_position.get::<degree>(),
+            ) * 100.,
         );
         writer.write(
             &self.position_right_percent_id,
-            self.position_feedback().get::<degree>()
-                / self.max_synchro_gear_position.get::<degree>()
-                * 100.,
+            interpolation(
+                &self.synchro_gear_breakpoints,
+                &self.final_surface_angle_carac,
+                self.position_feedback().get::<degree>(),
+            ) / interpolation(
+                &self.synchro_gear_breakpoints,
+                &self.final_surface_angle_carac,
+                self.max_synchro_gear_position.get::<degree>(),
+            ) * 100.,
         );
 
         let flaps_surface_angle = self.flap_surface_angle();

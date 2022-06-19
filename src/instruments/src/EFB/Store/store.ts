@@ -4,7 +4,7 @@ import thunk from 'redux-thunk';
 
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import todCalculatorReducer from './features/todCalculator';
-import buttonsReducer from './features/buttons';
+import groundServicePageReducer from './features/groundServicePage';
 import simbriefReducer from './features/simBrief';
 import performanceReducer from './features/performance';
 import flightProgressReducer from './features/flightProgress';
@@ -24,7 +24,7 @@ export const EFB_CLEAR_STATE = 'EFB_CLEAR_STATE';
 
 const combinedReducer = combineReducers({
     todCalculator: todCalculatorReducer,
-    buttons: buttonsReducer,
+    groundServicePage: groundServicePageReducer,
     simbrief: simbriefReducer,
     performance: performanceReducer,
     flightProgress: flightProgressReducer,
