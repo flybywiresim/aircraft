@@ -11,34 +11,35 @@ import SVGSeatFilled from '../../../Assets/seatFilled.svg';
 interface SeatMapProps {
     x: number,
     y: number,
-    seatMap: RowInfo[]
+    seatMap: RowInfo[][],
+    activeFlags: number[][]
 }
 
-export const SeatMap: React.FC<SeatMapProps> = ({ x, y, seatMap }) => {
+export const SeatMap: React.FC<SeatMapProps> = ({ x, y, seatMap, activeFlags }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [seatImg, setSeatImg] = useState<HTMLImageElement | null>(null);
     const [seatFilledImg, setSeatFilledImg] = useState<HTMLImageElement | null>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
 
-    const addXOffset = (xOff: number, r: number) => {
-        xOff += seatMap[r].xOffset;
+    const addXOffset = (xOff: number, sec: number, row: number) => {
         let seatType = TYPE.ECO;
-        for (let s = 0; s < seatMap[r].seats.length; s++) {
-            if (seatType < seatMap[r].seats[s].type) {
-                seatType = seatMap[r].seats[s].type;
+        xOff += seatMap[sec][row].xOffset;
+        for (let seat = 0; seat < seatMap[sec][row].seats.length; seat++) {
+            if (seatType < seatMap[sec][row].seats[seat].type) {
+                seatType = seatMap[sec][row].seats[seat].type;
             }
         }
-        if (r !== 0) {
+        if (row !== 0 || sec !== 0) {
             xOff += (SeatConstants[seatType].padX + SeatConstants[seatType].len);
         }
         return xOff;
     };
 
-    const addYOffset = (yOff: number, r: number, s: number) => {
-        yOff += seatMap[r].yOffset;
-        yOff += seatMap[r].seats[s].yOffset;
-        const seatType = seatMap[r].seats[s].type;
-        if (s !== 0) {
+    const addYOffset = (yOff: number, sec: number, row: number, seat: number) => {
+        yOff += seatMap[sec][row].yOffset;
+        yOff += seatMap[sec][row].seats[seat].yOffset;
+        const seatType = seatMap[sec][row].seats[seat].type;
+        if (seat !== 0) {
             yOff += (SeatConstants[seatType].padY + SeatConstants[seatType].wid);
         }
         return yOff;
@@ -50,31 +51,33 @@ export const SeatMap: React.FC<SeatMapProps> = ({ x, y, seatMap }) => {
             ctx.fillStyle = '#fff';
             ctx.beginPath();
 
-            for (let r = 0, xOff = 0; r < seatMap.length; r++) {
-                xOff = addXOffset(xOff, r);
-                drawRow(r, xOff, seatMap[r].seats);
+            let xOff = 0;
+            for (let sec = 0; sec < seatMap.length; sec++) {
+                let seatId = 0;
+                for (let row = 0; row < seatMap[sec].length; row++) {
+                    xOff = addXOffset(xOff, sec, row);
+                    drawRow(xOff, sec, row, seatMap[sec][row], seatId);
+                    seatId += seatMap[sec][row].seats.length;
+                }
             }
             ctx.fill();
         }
     };
 
-    const drawRow = (rowI: number, x: number, rowInfo: SeatInfo[]) => {
-        for (let s = 0, yOff = 0; s < rowInfo.length; s++) {
-            yOff = addYOffset(yOff, rowI, s);
-            drawSeat(x, yOff, rowInfo[s]);
+    const drawRow = (x: number, sec:number, rowI: number, rowInfo: RowInfo, seatId: number) => {
+        const seatsInfo: SeatInfo[] = rowInfo.seats;
+        for (let seat = 0, yOff = 0; seat < seatsInfo.length; seat++) {
+            yOff = addYOffset(yOff, sec, rowI, seat);
+            drawSeat(x, yOff, SeatConstants[seatsInfo[seat].type].imageX, SeatConstants[seatsInfo[seat].type].imageY, sec, seatId++);
         }
     };
 
-    const drawSeat = (x: number, y: number, seatInfo: SeatInfo) => {
+    const drawSeat = (x: number, y: number, imageX: number, imageY: number, section: number, seatId: number) => {
         if (ctx && seatImg && seatFilledImg) {
-            switch (seatInfo.active) {
-            case true:
-                ctx.drawImage(seatFilledImg, x, y, SeatConstants[seatInfo.type].imageX, SeatConstants[seatInfo.type].imageY);
-                break;
-            case false:
-            default:
-                ctx.drawImage(seatImg, x, y, SeatConstants[seatInfo.type].imageX, SeatConstants[seatInfo.type].imageY);
-                break;
+            if (seatId < 32 ? activeFlags[section][0] & 1 << seatId : activeFlags[section][1] & 1 << seatId - 32) {
+                ctx.drawImage(seatFilledImg, x, y, imageX, imageY);
+            } else {
+                ctx.drawImage(seatImg, x, y, imageX, imageY);
             }
         }
     };

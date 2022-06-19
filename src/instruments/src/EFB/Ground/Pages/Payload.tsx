@@ -19,11 +19,6 @@ interface LabelProps {
     text: string;
 }
 
-interface SeatID {
-    row: number,
-    seat: number
-}
-
 const Label: React.FC<LabelProps> = ({ text, className, children }) => (
     <div className="flex flex-row justify-between items-center">
         <p className={`text-theme-text mx-4 ${className}`}>{text}</p>
@@ -33,13 +28,32 @@ const Label: React.FC<LabelProps> = ({ text, className, children }) => (
 
 export const Payload = () => {
     const { usingMetric } = Units;
+    const plane = 'A32NX';
     const [weightUnit, setWeightUnit] = usePersistentProperty('EFB_PREFERRED_WEIGHT_UNIT', usingMetric ? 'kg' : 'lb');
-    const [paxA, setPaxA] = useSimVar('L:A32NX_PAX_A', 'Number');
-    const [paxB, setPaxB] = useSimVar('L:A32NX_PAX_B', 'Number');
-    const [paxC, setPaxC] = useSimVar('L:A32NX_PAX_C', 'Number');
-    const [paxD, setPaxD] = useSimVar('L:A32NX_PAX_D', 'Number');
+    const [paxA, setPaxA] = useSimVar(`L:${plane}_PAX_TOTAL_ROWS_1_6_DESIRED`, 'Number');
+    const [paxB, setPaxB] = useSimVar(`L:${plane}_PAX_TOTAL_ROWS_7_13_DESIRED`, 'Number');
+    const [paxC, setPaxC] = useSimVar(`L:${plane}_PAX_TOTAL_ROWS_14_21_DESIRED`, 'Number');
+    const [paxD, setPaxD] = useSimVar(`L:${plane}_PAX_TOTAL_ROWS_22_29_DESIRED`, 'Number');
+
+    const [aFlags1, setAFlags1] = useSimVar(`L:${plane}_PAX_FLAGS_A1`, 'Number');
+    const [aFlags2, setAFlags2] = useSimVar(`L:${plane}_PAX_FLAGS_A2`, 'Number');
+    const [bFlags1, setBFlags1] = useSimVar(`L:${plane}_PAX_FLAGS_B1`, 'Number');
+    const [bFlags2, setBFlags2] = useSimVar(`L:${plane}_PAX_FLAGS_B2`, 'Number');
+    const [cFlags1, setCFlags1] = useSimVar(`L:${plane}_PAX_FLAGS_C1`, 'Number');
+    const [cFlags2, setCFlags2] = useSimVar(`L:${plane}_PAX_FLAGS_C2`, 'Number');
+    const [dFlags1, setDFlags1] = useSimVar(`L:${plane}_PAX_FLAGS_D1`, 'Number');
+    const [dFlags2, setDFlags2] = useSimVar(`L:${plane}_PAX_FLAGS_D2`, 'Number');
+
+    const activeFlags = [[aFlags1, aFlags2], [bFlags1, bFlags2], [cFlags1, cFlags2], [dFlags1, dFlags2]];
+    const setActiveFlags = [[setAFlags1, setAFlags2], [setBFlags1, setBFlags2], [setCFlags1, setCFlags2], [setDFlags1, setDFlags2]];
+
+    // const [paxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6', 'Number');
+    // const [paxB] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13', 'Number');
+    // const [paxC] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_21', 'Number');
+    // const [paxD] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_22_29', 'Number');
+
     const [cargo, setCargo] = useSimVar('L:A32NX_CARGO', 'Number');
-    const [sectionLen, setSectionLen] = useState<number[]>([0, 0, 0, 0]);
+    const [sectionLen, setSectionLen] = useState<number[]>([]);
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     const Section = {
@@ -51,108 +65,84 @@ export const Payload = () => {
 
     const defaultRow = (): SeatInfo[] => (
         [
-            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0, active: false },
-            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0, active: false },
-            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0, active: false },
-            { type: TYPE.ECO, x: 0, y: 0, yOffset: 19, active: false },
-            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0, active: false },
-            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0, active: false },
+            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
+            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
+            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
+            { type: TYPE.ECO, x: 0, y: 0, yOffset: 19 },
+            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
+            { type: TYPE.ECO, x: 0, y: 0, yOffset: 0 },
         ]
     );
 
     const emergRow = (): SeatInfo[] => (
         [
-            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0, active: false },
-            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0, active: false },
-            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0, active: false },
-            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 19, active: false },
-            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0, active: false },
-            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0, active: false },
+            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
+            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
+            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
+            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 19 },
+            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
+            { type: TYPE.ECO_EMERG, x: 0, y: 0, yOffset: 0 },
         ]
     );
 
-    const randomRow = (): SeatInfo[] => {
-        const rand = Math.random();
-        return (
-            [
-                { type: TYPE.ECO, x: 0, y: 0, yOffset: 0, active: !!(rand >= 0 && rand <= 0.2) },
-                { type: TYPE.ECO, x: 0, y: 0, yOffset: 0, active: !!(rand >= 0.2 && rand <= 0.4) },
-                { type: TYPE.ECO, x: 0, y: 0, yOffset: 0, active: !!(rand >= 0.4 && rand <= 0.6) },
-                { type: TYPE.ECO, x: 0, y: 0, yOffset: 19, active: !!(rand >= 0.5 && rand <= 0.7) },
-                { type: TYPE.ECO, x: 0, y: 0, yOffset: 0, active: !!(rand >= 0.8 && rand <= 1.0) },
-                { type: TYPE.ECO, x: 0, y: 0, yOffset: 0, active: !!(rand >= 0.1 && rand <= 0.3) },
-            ]
-        );
-    };
-
     const addRow = (
-        section: number = 0,
         seats: SeatInfo[] = defaultRow(),
         x: number = 0,
         y: number = 0,
         xOffset: number = 0,
         yOffset: number = 0,
-    ) => ({ section, seats, x, y, xOffset, yOffset });
+    ) => ({ seats, x, y, xOffset, yOffset });
 
-    const defaultSeatMap: RowInfo[] = [
-        addRow(Section.A), addRow(Section.A), addRow(Section.A), addRow(Section.A), addRow(Section.A), addRow(Section.A),
-        addRow(Section.B), addRow(Section.B), addRow(Section.B), addRow(Section.B), addRow(Section.B), addRow(Section.B, emergRow()), addRow(Section.B, emergRow()),
-        addRow(Section.C), addRow(Section.C), addRow(Section.C), addRow(Section.C), addRow(Section.C), addRow(Section.C), addRow(Section.C), addRow(Section.C),
-        addRow(Section.D), addRow(Section.D), addRow(Section.D), addRow(Section.D), addRow(Section.D), addRow(Section.D), addRow(Section.D), addRow(Section.D),
+    const defaultSeatMap: RowInfo[][] = [
+        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Section A
+        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(emergRow()), addRow(emergRow())], // Section B
+        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Section C
+        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Section D
     ];
 
-    const [seatMap, setSeatMap] = useState<RowInfo[]>(defaultSeatMap);
+    const [seatMap] = useState<RowInfo[][]>(defaultSeatMap);
 
-    const toggleSeat = (row: number, seat: number) => {
-        switch (seatMap[row].section) {
-        case Section.A:
-            setPaxA(seatMap[row].seats[seat].active ? paxA - 1 : paxA + 1);
-            break;
-        case Section.B:
-            setPaxB(seatMap[row].seats[seat].active ? paxA - 1 : paxA + 1);
-            break;
-        case Section.C:
-            setPaxC(seatMap[row].seats[seat].active ? paxA - 1 : paxA + 1);
-            break;
-        case Section.D:
-            setPaxD(seatMap[row].seats[seat].active ? paxA - 1 : paxA + 1);
-            break;
-        default:
-            break;
+    const diffFlags = (bitFlags: number[], seatId: number): number[] => {
+        const flags = bitFlags;
+        if (seatId < 32) {
+            flags[0] = bitFlags[0] ^ 1 << seatId;
+        } else {
+            flags[1] = bitFlags[1] ^ 1 << seatId - 32;
         }
-        seatMap[row].seats[seat].active = !seatMap[row].seats[seat].active;
+
+        return flags;
     };
 
-    const returnSeats = (section: number, active: boolean): SeatInfo[] => {
-        const seats: SeatInfo[] = [];
-        for (let r = 0; r < seatMap.length; r++) {
-            if (seatMap[r].section === section) {
-                for (let s = 0; s < seatMap[r].seats.length; s++) {
-                    if (seatMap[r].seats[s].active === active) {
-                        seats.push(seatMap[r].seats[s]);
-                    }
-                }
+    const isActiveSeat = (flags: number[], seatId: number) => (seatId < 32 ? flags[0] & 1 << seatId : flags[1] & 1 << seatId - 32);
+
+    const returnSeats = (section: number, increase: boolean): number[] => {
+        const seats: number[] = [];
+        const flags = activeFlags[section];
+        for (let seatId = 0; seatId < sectionLen[section]; seatId++) {
+            if (!increase && isActiveSeat(flags, seatId)) {
+                seats.push(seatId);
+            } else if (increase && !isActiveSeat(flags, seatId)) {
+                seats.push(seatId);
             }
         }
         return seats;
     };
 
-    const returnSeatsIndex = (section: number, increase: boolean): SeatID[] => {
-        const seatsIndex: SeatID[] = [];
-        for (let r = 0; r < seatMap.length; r++) {
-            if (seatMap[r].section === section) {
-                for (let s = 0; s < seatMap[r].seats.length; s++) {
-                    if (seatMap[r].seats[s].active === !increase) {
-                        seatsIndex.push({ row: r, seat: s });
-                    }
-                }
+    const chooseRandomSeats = (section: number, choices: number[], numChoose: number) => {
+        let bitFlags = activeFlags[section];
+        for (let i = 0; i < numChoose; i++) {
+            if (choices.length > 0) {
+                const chosen = ~~(Math.random() * choices.length);
+                bitFlags = diffFlags(bitFlags, choices[chosen]);
+                choices.splice(chosen, 1);
             }
+            setActiveFlags[section][0](bitFlags[0]);
+            setActiveFlags[section][1](bitFlags[1]);
         }
-        return seatsIndex;
     };
 
     const changePax = (section: number, newValue: number) => {
-        if (newValue > sectionLen[section] || newValue < 0) return;
+        if (!sectionLen || newValue > sectionLen[section] || newValue < 0) return;
         let setPaxFunc: (value: number) => any = () => {};
         let value: number = 0;
         switch (section) {
@@ -175,35 +165,58 @@ export const Payload = () => {
         default:
             break;
         }
-        const seats: SeatID[] = returnSeatsIndex(section, newValue > value);
-        const diff = Math.abs(value - newValue);
-        for (let i = 0; i < diff; i++) {
-            if (seats && seats.length > 0) {
-                const chosen = ~~(Math.random() * seats.length);
-                toggleSeat(seats[chosen].row, seats[chosen].seat);
-                seats.splice(chosen, 1);
-            }
-        }
+        const seats: number[] = returnSeats(section, newValue > value);
+        chooseRandomSeats(section, seats, Math.abs(value - newValue));
         setPaxFunc(newValue);
     };
 
     useEffect(() => {
         const sectionLen = [0, 0, 0, 0];
-        seatMap.forEach((row) => {
-            row.seats.forEach(() => {
-                sectionLen[row.section]++;
+        seatMap.forEach((section, i) => {
+            section.forEach((row) => {
+                row.seats.forEach(() => {
+                    sectionLen[i]++;
+                });
             });
         });
         setSectionLen(sectionLen);
     }, [seatMap]);
 
     useEffect(() => {
+        const paxCount = returnSeats(Section.A, false).length;
+        if (paxA !== paxCount) {
+            const seats: number[] = returnSeats(Section.A, paxA > paxCount);
+            chooseRandomSeats(Section.A, seats, Math.abs(paxCount - paxA));
+        }
+    }, [paxA]);
 
-    }, [paxA, paxB, paxC, paxD]);
+    useEffect(() => {
+        const paxCount = returnSeats(Section.B, false).length;
+        if (paxB !== paxCount) {
+            const seats: number[] = returnSeats(Section.B, paxB > paxCount);
+            chooseRandomSeats(Section.B, seats, Math.abs(paxCount - paxB));
+        }
+    }, [paxB]);
+
+    useEffect(() => {
+        const paxCount: number = returnSeats(Section.C, false).length;
+        if (paxC !== paxCount) {
+            const seats: number[] = returnSeats(Section.C, paxC > paxCount);
+            chooseRandomSeats(Section.C, seats, Math.abs(paxCount - paxC));
+        }
+    }, [paxC]);
+
+    useEffect(() => {
+        const paxCount: number = returnSeats(Section.D, false).length;
+        if (paxD !== paxCount) {
+            const seats: number[] = returnSeats(Section.D, paxD > paxCount);
+            chooseRandomSeats(Section.D, seats, Math.abs(paxCount - paxD));
+        }
+    }, [paxD]);
 
     return (
         <div>
-            <SeatMap x={243} y={78} seatMap={seatMap} />
+            <SeatMap x={243} y={78} seatMap={seatMap} activeFlags={activeFlags} />
 
             <div className="flex overflow-hidden absolute bottom-0 left-0 flex-row rounded-2xl border border-theme-accent ">
                 <div className="py-3 px-5 space-y-4">
@@ -223,7 +236,7 @@ export const Payload = () => {
                                         placeholder=""
                                         number
                                         min={0}
-                                        max={sectionLen[Section.A]}
+                                        max={(sectionLen && sectionLen[Section.A]) ?? 99}
                                         value={paxA}
                                         onBlur={(x) => changePax(Section.A, parseInt(x))}
                                     />
@@ -234,7 +247,7 @@ export const Payload = () => {
                                         placeholder=""
                                         number
                                         min={0}
-                                        max={sectionLen[Section.B]}
+                                        max={(sectionLen && sectionLen[Section.B]) ?? 99}
                                         value={paxB}
                                         onBlur={(x) => changePax(Section.B, parseInt(x))}
                                     />
@@ -247,7 +260,7 @@ export const Payload = () => {
                                         placeholder=""
                                         number
                                         min={0}
-                                        max={sectionLen[Section.C]}
+                                        max={(sectionLen && sectionLen[Section.C]) ?? 99}
                                         value={paxC}
                                         onBlur={(x) => changePax(Section.C, parseInt(x))}
                                     />
@@ -258,7 +271,7 @@ export const Payload = () => {
                                         placeholder=""
                                         number
                                         min={0}
-                                        max={sectionLen[Section.D]}
+                                        max={(sectionLen && sectionLen[Section.D]) ?? 99}
                                         value={paxD}
                                         onBlur={(x) => changePax(Section.D, parseInt(x))}
                                     />
@@ -294,7 +307,7 @@ export const Payload = () => {
                                             placeholder=""
                                             number
                                             min={0}
-                                            max={sectionLen.reduce((a, b) => a + b, 0)}
+                                            max={(sectionLen && sectionLen.reduce((a, b) => a + b, 0))}
                                             value={paxA + paxB + paxC + paxD}
                                             disabled
                                         />

@@ -3,14 +3,12 @@ export interface SeatInfo {
     type: number,
     x: number,
     y: number,
-    yOffset: number,
-    active: boolean
+    yOffset: number
 }
 
 export interface RowInfo {
     x: number,
     y: number,
-    section: number,
     xOffset: number,
     yOffset: number,
     seats: SeatInfo[],
