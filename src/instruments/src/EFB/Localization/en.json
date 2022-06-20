@@ -141,7 +141,9 @@
       "CateringTruck": "Catering Truck",
       "Cones": "Safety Cones",
       "DoorAft": "Door Aft",
+      "DoorCargo": "Cargo Door",
       "DoorFwd": "Door Fwd",
+      "DoorCargo": "Cargo Door",
       "ExternalPower": "Ground Power Unit",
       "FuelTruck": "Fuel Truck",
       "JetBridge": "Jet Bridge",
@@ -452,6 +454,8 @@
       "HomeCockpitMode": "Home Cockpit Mode",
       "McduFocusTimeout": "MCDU Focus Timeout (seconds)",
       "McduKeyboardInput": "MCDU Keyboard Input",
+      "PauseAtTod": "T/D Pause",
+      "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "SeparateTillerFromRudderInputs": "Separate Tiller from Rudder Inputs",
       "Title": "Realism"
     },
@@ -503,6 +507,7 @@
     "flyPad": {
       "AutoBrightness": "Auto Brightness",
       "AutomaticallyShowOnscreenKeyboard": "Automatically Show Onscreen Keyboard",
+      "BatteryLifeEnabled": "Battery Life Simulated",
       "Blue": "Blue",
       "Brightness": "Brightness",
       "Dark": "Dark",
@@ -522,7 +527,6 @@
       "UtcAndLocal": "UTC and Local"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Battery Life Simulated",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",

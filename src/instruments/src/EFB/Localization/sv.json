@@ -141,8 +141,9 @@
       "CateringTruck": "Cateringlastbil",
       "Cones": "Koner",
       "DoorAft": "Bakre dörr",
+      "DoorCargo": "Cargo Dörr",
       "DoorFwd": "Främre dörr",
-      "ExternalPower": "Extern ström",
+      "ExternalPower": "Mobilt kraftaggregat",
       "FuelTruck": "Bränslebil",
       "JetBridge": "Jetbrygga",
       "Title": "Tjänster",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Hem Cockpit-läge",
       "McduFocusTimeout": "Tidsgräns för MCDU fokus (sekunder)",
       "McduKeyboardInput": "MCDU Tangentbordsinput",
+      "PauseAtTod": "T/D Paus",
+      "PauseAtTodDistance": "Avstånd till målet för T/D-paus (nm)",
       "SeparateTillerFromRudderInputs": "Separera Tiller från roder input",
       "Title": "Realism"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automatisk ljusstyrka",
       "AutomaticallyShowOnscreenKeyboard": "Visa automatiskt skärmtangentbordet",
+      "BatteryLifeEnabled": "Simulerad batteritid",
       "Blue": "Blå",
       "Brightness": "Ljusstyrka",
       "Dark": "Mörk",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC och lokal"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Simulerad batteritid",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",

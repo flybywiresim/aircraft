@@ -141,6 +141,7 @@
       "CateringTruck": "Catering",
       "Cones": "Sicherheitskegel",
       "DoorAft": "Hintere Tür",
+      "DoorCargo": "Frachttür",
       "DoorFwd": "Vordere Tür",
       "ExternalPower": "Bodenstromaggregat",
       "FuelTruck": "Tankwagen",
@@ -452,6 +453,8 @@
       "HomeCockpitMode": "Homecockpit-Modus",
       "McduFocusTimeout": "MCDU Fokusdauer (Sekunden)",
       "McduKeyboardInput": "MCDU-Tastatureingabe",
+      "PauseAtTod": "T/D-Pause",
+      "PauseAtTodDistance": "Zielentfernung für T/D Pause (NM)",
       "SeparateTillerFromRudderInputs": "Trennung von Tiller und Seitenruder Eingaben",
       "Title": "Realismus"
     },
@@ -503,6 +506,7 @@
     "flyPad": {
       "AutoBrightness": "Automatische Helligkeit",
       "AutomaticallyShowOnscreenKeyboard": "Bildschirmtastatur automatisch anzeigen",
+      "BatteryLifeEnabled": "Batterieentladung simulieren",
       "Blue": "Blau",
       "Brightness": "Helligkeit",
       "Dark": "Dunkel",
@@ -522,7 +526,6 @@
       "UtcAndLocal": "UTC und Lokal"
     }
   },
-  "Settings.flyPad.BatteryLifeEnabled": "Batterieentladung simulieren",
   "StatusBar": {
     "Apr": "Apr",
     "Aug": "Aug",
