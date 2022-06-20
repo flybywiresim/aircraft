@@ -21,42 +21,47 @@ interface HydraulicSystemPairProps {
     rightHydraulicSystem: HydraulicSystem,
 }
 
-export const FctlPage = () => (
-    <svg id="ecam-fctl" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
-        <text className="Title UnderlineWhite" x={8} y={33}>F/CTL</text>
+export const FctlPage = () => {
+    const fcdc1DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_1');
+    const fcdc2DiscreteWord1 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_1');
+    const fcdc1DiscreteWord2 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_2');
+    const fcdc2DiscreteWord2 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_2');
+    const fcdc1DiscreteWord3 = useArinc429Var('L:A32NX_FCDC_1_DISCRETE_WORD_3');
+    const fcdc2DiscreteWord3 = useArinc429Var('L:A32NX_FCDC_2_DISCRETE_WORD_3');
 
-        <HydraulicsProvider>
-            <Wings x={124} y={11} />
+    const fcdcDiscreteWord1ToUse = !fcdc1DiscreteWord1.isFailureWarning() ? fcdc1DiscreteWord1 : fcdc2DiscreteWord1;
+    const fcdcDiscreteWord2ToUse = !fcdc1DiscreteWord2.isFailureWarning() ? fcdc1DiscreteWord2 : fcdc2DiscreteWord2;
+    const fcdcDiscreteWord3ToUse = !fcdc1DiscreteWord3.isFailureWarning() ? fcdc1DiscreteWord3 : fcdc2DiscreteWord3;
 
-            <Aileron x={88} y={197} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
-            <Aileron x={678} y={197} side="right" leftHydraulicSystem="G" rightHydraulicSystem="B" />
+    return (
+        <svg id="ecam-fctl" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
+            <text className="Title UnderlineWhite" x={8} y={33}>F/CTL</text>
 
-            <text className="Center Standard" x={248} y={226}>ELAC</text>
-            <Elac x={215} y={234} number={1} />
-            <Elac x={245} y={252} number={2} />
+            <HydraulicsProvider>
+                <Wings x={124} y={11} />
 
-            <text className="Center Standard" x={430} y={226}>SEC</text>
-            <Sec x={395} y={234} number={1} />
-            <Sec x={425} y={252} number={2} />
-            <Sec x={455} y={270} number={3} />
+                <Aileron x={88} y={197} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" fcdcDiscreteWord2={fcdcDiscreteWord2ToUse} fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
+                <Aileron x={678} y={197} side="right" leftHydraulicSystem="G" rightHydraulicSystem="B" fcdcDiscreteWord2={fcdcDiscreteWord2ToUse} fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
 
-            <Elevator x={212} y={424} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" />
-            <Elevator x={555} y={424} side="right" leftHydraulicSystem="Y" rightHydraulicSystem="B" />
+                <text className="Center Standard" x={248} y={226}>ELAC</text>
+                <Elac x={215} y={234} num={1} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
+                <Elac x={245} y={252} num={2} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
 
-            <PitchTrim x={356} y={350} />
+                <text className="Center Standard" x={430} y={226}>SEC</text>
+                <Sec x={395} y={234} num={1} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
+                <Sec x={425} y={252} num={2} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
+                <Sec x={455} y={270} num={3} fcdcDiscreteWord1={fcdcDiscreteWord1ToUse} />
 
-            <Stabilizer x={341} y={446} />
+                <Elevator x={212} y={424} side="left" leftHydraulicSystem="B" rightHydraulicSystem="G" fcdcDiscreteWord2={fcdcDiscreteWord2ToUse} fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
+                <Elevator x={555} y={424} side="right" leftHydraulicSystem="Y" rightHydraulicSystem="B" fcdcDiscreteWord2={fcdcDiscreteWord2ToUse} fcdcDiscreteWord3={fcdcDiscreteWord3ToUse} />
 
-            <Rudder x={384} y={454} />
-        </HydraulicsProvider>
-    </svg>
-);
+                <PitchTrim x={356} y={350} fcdcDiscreteWord2={fcdcDiscreteWord2ToUse} />
 
-                <Stabilizer x={268} y={357} />
+                <Stabilizer x={341} y={446} />
 
-                <Rudder x={250} y={356} />
+                <Rudder x={384} y={454} />
             </HydraulicsProvider>
-        </EcamPage>
+        </svg>
     );
 };
 
@@ -98,13 +103,13 @@ const PitchTrim = ({ x, y, fcdcDiscreteWord2 }: PitchTrimProps) => {
     }
 
     const hydraulics = useHydraulics();
-    const hydraulicAvailableClass = hydraulics.G.available || hydraulics.Y.available ? 'Green' : 'Amber';
+    const hydraulicAvailableClass = thsPositionToUse.isNormalOperation() && (hydraulics.G.available || hydraulics.Y.available) ? 'Green' : 'Amber';
 
     const thsJam = fcdcDiscreteWord2.getBitValueOr(27, false);
 
     return (
         <SvgGroup x={x} y={y}>
-            <text className="Large Center" x={0} y={22}>PITCH TRIM</text>
+            <text className={`Large ${thsJam ? 'Amber ' : ''}Center`} x={0} y={22}>PITCH TRIM</text>
             <text x={-1} y={53} className={`${hydraulicAvailableClass} Huge End`}>{pitchIntegral}</text>
             <text x={4} y={53} className={`${hydraulicAvailableClass} Huge Center`}>.</text>
             <text x={21} y={53} className={`${hydraulicAvailableClass} Standard Center`}>{pitchFractional}</text>
@@ -112,7 +117,7 @@ const PitchTrim = ({ x, y, fcdcDiscreteWord2 }: PitchTrimProps) => {
             <text
                 x={74}
                 y={52}
-                visibility={Math.abs(adjustedPitchTrim) > 0.05 ? 'visible' : 'hidden'}
+                visibility={Math.abs(thsPositionToUse.valueOr(0)) > 0.05 ? 'visible' : 'hidden'}
                 className={`${hydraulicAvailableClass} Standard Center`}
             >
                 {Math.sign(thsPositionToUse.valueOr(0)) === 1 ? 'DN' : 'UP'}
@@ -193,13 +198,12 @@ const RudderTrim = () => {
 
     return (
         <>
-            <g id="rudderTrimCursor" transform={`rotate(${trimPosWord.value} 50 24)`} visibility={trimPosWord.isNormalOperation() ? 'visible' : 'hidden'}>
-                <path className={anyTrimEngaged ? 'RudderTrim' : 'RudderTrimWarning'} d="m50 134 v 8" />
+            <g id="rudderTrimCursor" transform={`rotate(${trimPosWord.value} 0 26)`} visibility={trimPosWord.isNormalOperation() ? 'visible' : 'hidden'}>
+                <path className={anyTrimEngaged ? 'ThickCyanLine' : 'RudderTrimWarning'} d="m0 159 v 11" />
             </g>
             <text
                 id="rudderTrimFailedFlag"
-                className="Warning Medium"
-                textAnchor="middle"
+                className="Medium Amber Center"
                 visibility={trimPosWord.isNormalOperation() ? 'hidden' : 'visible'}
                 x="50"
                 y="150"
@@ -224,15 +228,15 @@ const RudderTravelLimit = () => {
     return (
         <>
             <g visibility={rtluPosWord.isNormalOperation() ? 'visible' : 'hidden'}>
-                <g id="rudderLeftMaxAngle" transform={`rotate(${rtluDisplayAngle} 50 29)`}>
-                    <path className={anyTluEngaged ? 'GreenShape' : 'WarningShape'} d="m50 127 0 14 4.5 0" />
+                <g id="rudderLeftMaxAngle" transform={`rotate(${rtluDisplayAngle} 0 26)`}>
+                    <path className={anyTluEngaged ? 'GreenLine' : 'AmberLine'} d="m0 151 l 0 21 l 7 0" />
                 </g>
 
-                <g id="rudderRightMaxAngle" transform={`rotate(${-rtluDisplayAngle} 50 29)`}>
-                    <path className={anyTluEngaged ? 'GreenShape' : 'WarningShape'} d="m50 127 0 14 -4.5 0" />
+                <g id="rudderRightMaxAngle" transform={`rotate(${-rtluDisplayAngle} 0 26)`}>
+                    <path className={anyTluEngaged ? 'GreenLine' : 'AmberLine'} d="m0 151 l 0 21 l -7 0" />
                 </g>
             </g>
-            <g visibility={rtluPosWord.isNormalOperation() ? 'hidden' : 'visible'} className="Warning Medium" textAnchor="middle">
+            <g visibility={rtluPosWord.isNormalOperation() ? 'hidden' : 'visible'} className="Medium Amber Center">
                 <text x="-10" y="150">TLU</text>
                 <text x="110" y="150">TLU</text>
             </g>
@@ -247,20 +251,32 @@ const Stabilizer = ({ x, y }: ComponentPositionProps) => (
     </SvgGroup>
 );
 
-const Aileron = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps) => {
+interface AileronElevatorProps {
+    fcdcDiscreteWord2: Arinc429Word,
+    fcdcDiscreteWord3: Arinc429Word,
+}
+
+const Aileron = ({
+    x,
+    y,
+    side,
+    leftHydraulicSystem,
+    rightHydraulicSystem,
+    fcdcDiscreteWord2,
+    fcdcDiscreteWord3,
+}: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps & AileronElevatorProps) => {
     const textPositionX = side === 'left' ? -53 : 54;
 
-    const [aileronDeflection] = useSimVar(`L:A32NX_HYD_AILERON_${side.toUpperCase()}_DEFLECTION`, 'number', 50);
-    const aileronDeflectPctNormalized = aileronDeflection * 68.5;
-    const cursorPath = `M0 ${side === 'left' ? 57 + aileronDeflectPctNormalized
-        : 57 - aileronDeflectPctNormalized} l${side === 'right' ? '-' : ''}15 -9 l0 18Z`;
+    const fcdc1AileronDeflection = useArinc429Var(`L:A32NX_FCDC_1_AILERON_${side.toUpperCase()}_POS`);
+    const fcdc2AileronDeflection = useArinc429Var(`L:A32NX_FCDC_2_AILERON_${side.toUpperCase()}_POS`);
+    const aileronDeflection = !fcdc1AileronDeflection.isFailureWarning() ? fcdc1AileronDeflection : fcdc2AileronDeflection;
 
-    const aileronDeflectPctNormalized = aileronDeflection.valueOr(0) * 54 / 25;
-    const cursorPath = `M${side === 'left' ? 1 : -1} ${side === 'left' ? 51
-        : 51} l${side === 'right' ? '-' : ''}15 -7 l0 14Z`;
+    const cursorPath = `M0 57 l${side === 'right' ? '-' : ''}15 -9 l0 18Z`;
+
+    const aileronDeflectPctNormalized = aileronDeflection.valueOr(0) * 68.5 / 25;
     const servcontrol1Avail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 11 : 13);
     const servcontrol2Avail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 12 : 14);
-    const cursorClassName = servcontrol1Avail || servcontrol2Avail ? 'GreenShape' : 'WarningShape';
+    const cursorClassName = servcontrol1Avail || servcontrol2Avail ? 'GreenLine' : 'AmberLine';
     const aileronPositionValid = aileronDeflection.isNormalOperation();
 
     const servcontrol1Fault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 11 : 13, false);
@@ -273,10 +289,23 @@ const Aileron = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: Comp
 
             <AileronAxis side={side} x={0} y={8} />
 
-            <path className={hydraulics[leftHydraulicSystem].available || hydraulics[rightHydraulicSystem].available ? 'GreenLine' : 'AmberLine'} d={cursorPath} />
+            <SvgGroup x={0} y={aileronDeflectPctNormalized}>
+                <path className={cursorClassName} visibility={aileronPositionValid ? 'visible' : 'hidden'} d={cursorPath} />
+            </SvgGroup>
+
+            <text
+                x={side === 'left' ? 26 : -26}
+                y={74}
+                visibility={!aileronPositionValid ? 'visible' : 'hidden'}
+                className="Large Amber Center"
+            >
+                XX
+            </text>
 
             <HydraulicIndicator x={side === 'left' ? 27 : -75} y={96} type={leftHydraulicSystem} />
             <HydraulicIndicator x={side === 'left' ? 52 : -50} y={96} type={rightHydraulicSystem} />
+            <ServoControlIndicator x={side === 'left' ? 27 : -75} y={96} servoFailed={servcontrol1Fault} />
+            <ServoControlIndicator x={side === 'left' ? 52 : -50} y={96} servoFailed={servcontrol2Fault} />
         </SvgGroup>
     );
 };
@@ -309,22 +338,12 @@ interface ElacSecShapeProps {
 
 const ElacSecShape = ({ x, y, num, infoAvailable, computerFailed }: ElacSecShapeProps) => (
     <SvgGroup x={x} y={y}>
-        <path className={!computerFailed || !infoAvailable ? 'MainShape' : 'MainShapeWarning'} d="M0 0 l72,0 l0,-26 l-8,0" />
-        <text x={61} y={-12} className={`Standard ${!computerFailed && infoAvailable ? 'Value' : 'Warning'}`} textAnchor="middle" alignmentBaseline="central">
+        <path className={!computerFailed || !infoAvailable ? 'LightGreyLine' : 'AmberLine'} d="M0 0 l97,0 l0,-33 l-10,0" />
+        <text x={84} y={-7} className={`Large Center ${!computerFailed && infoAvailable ? 'Green' : 'Amber'}`}>
             {infoAvailable ? num : 'X'}
         </text>
     </SvgGroup>
 );
-
-    return (
-        <SvgGroup x={x} y={y}>
-            <path className={on && !failed ? 'LightGreyLine' : 'AmberLine'} d="M0 0 l97,0 l0,-33 l-10,0" />
-            <text x={84} y={-7} className={`Large Center ${on && !failed ? 'Green' : 'Amber'}`}>
-                {number}
-            </text>
-        </SvgGroup>
-    );
-};
 
 const AileronAxis = ({ x, y, side }: ComponentPositionProps & ComponentSidePositionProps) => {
     const d1 = `M0 0 l${
@@ -344,19 +363,30 @@ const AileronAxis = ({ x, y, side }: ComponentPositionProps & ComponentSidePosit
     );
 };
 
-const Elevator = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps) => {
+const Elevator = ({
+    x,
+    y,
+    side,
+    leftHydraulicSystem,
+    rightHydraulicSystem,
+    fcdcDiscreteWord2,
+    fcdcDiscreteWord3,
+}: ComponentPositionProps & ComponentSidePositionProps & HydraulicSystemPairProps & AileronElevatorProps) => {
     const textPositionX = side === 'left' ? -59 : 62;
     const textLetter = side === 'left' ? 'L' : 'R';
 
-    const [elevatorDeflection] = useSimVar(`L:A32NX_HYD_ELEVATOR_${side.toUpperCase()}_DEFLECTION`, 'percent over 100', 50);
-    const elevatorDeflectPctNormalized = elevatorDeflection * (elevatorDeflection > 0 ? 1 * 91 : 16 / 11.5 * 45);
-    const cursorPath = `M0,${77 - elevatorDeflectPctNormalized} l${side === 'right' ? '-' : ''}15,-9 l0,18Z`;
+    const fcdc1ElevatorDeflection = useArinc429Var(`L:A32NX_FCDC_1_ELEVATOR_${side.toUpperCase()}_POS`);
+    const fcdc2ElevatorDeflection = useArinc429Var(`L:A32NX_FCDC_2_ELEVATOR_${side.toUpperCase()}_POS`);
+    const elevatorDeflection = !fcdc1ElevatorDeflection.isFailureWarning() ? fcdc1ElevatorDeflection : fcdc2ElevatorDeflection;
+    const elevatorPositionValid = elevatorDeflection.isNormalOperation();
 
-    const elevatorDeflectPctNormalized = elevatorDeflection.value * 70 / 30;
-    const cursorPath = `M${side === 'left' ? 1 : -1},70 l${side === 'right' ? '-' : ''}15,-7 l0,14Z`;
+    const cursorPath = `M0,77 l${side === 'right' ? '-' : ''}15,-9 l0,18Z`;
+
+    // Need to scale the "nose down" elevator position up, since the current elevator limits are wrong.
+    const elevatorDeflectPctNormalized = elevatorDeflection.value * 90 / 30 * (elevatorDeflection.value > 0 ? 1.27 : 1);
     const servcontrolLeftAvail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 15 : 18);
     const servcontrolRightAvail = fcdcDiscreteWord3.getBitValue(side === 'left' ? 16 : 17);
-    const cursorClassName = servcontrolLeftAvail || servcontrolRightAvail ? 'GreenShape' : 'WarningShape';
+    const cursorClassName = servcontrolLeftAvail || servcontrolRightAvail ? 'GreenLine' : 'AmberLine';
 
     const servcontrolLeftFault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 15 : 18, false);
     const servcontrolRightFault = fcdcDiscreteWord2.getBitValueOr(side === 'left' ? 16 : 17, false);
@@ -368,14 +398,28 @@ const Elevator = ({ x, y, side, leftHydraulicSystem, rightHydraulicSystem }: Com
 
             <ElevatorAxis side={side} x={0} y={5} />
 
-            <path
-                id={`${side}ElevatorCursor`}
-                className={hydraulics[leftHydraulicSystem].available || hydraulics[rightHydraulicSystem].available ? 'GreenLine' : 'AmberLine'}
-                d={cursorPath}
-            />
+            <SvgGroup x={0} y={elevatorDeflectPctNormalized}>
+                <path
+                    id={`${side}ElevatorCursor`}
+                    visibility={elevatorPositionValid ? 'visible' : 'hidden'}
+                    className={cursorClassName}
+                    d={cursorPath}
+                />
+            </SvgGroup>
+
+            <text
+                x={side === 'left' ? 26 : -26}
+                y={86}
+                visibility={!elevatorPositionValid ? 'visible' : 'hidden'}
+                className="Amber Large Center"
+            >
+                XX
+            </text>
 
             <HydraulicIndicator x={side === 'left' ? -78 : 28} y={91} type={leftHydraulicSystem} />
             <HydraulicIndicator x={side === 'left' ? -53 : 53} y={91} type={rightHydraulicSystem} />
+            <ServoControlIndicator x={side === 'left' ? -78 : 28} y={91} servoFailed={servcontrolLeftFault} />
+            <ServoControlIndicator x={side === 'left' ? -53 : 53} y={91} servoFailed={servcontrolRightFault} />
         </SvgGroup>
     );
 };
@@ -393,5 +437,14 @@ const ElevatorAxis = ({ x, y, side }: ComponentPositionProps & ComponentSidePosi
         </SvgGroup>
     );
 };
+
+interface ServoControlIndicatorProps extends ComponentPositionProps {
+    servoFailed: boolean,
+}
+const ServoControlIndicator = ({ x, y, servoFailed }: ServoControlIndicatorProps) => (
+    <SvgGroup x={x} y={y}>
+        <path visibility={servoFailed ? 'visible' : 'hidden'} className="AmberLine" d="m 1 29 l 23 0 l 0 -32 l -23 0" />
+    </SvgGroup>
+);
 
 render(<FctlPage />);
