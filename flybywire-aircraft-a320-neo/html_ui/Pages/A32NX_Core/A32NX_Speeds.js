@@ -37,7 +37,7 @@ class A32NX_Speeds {
             fhi = 5;
         }
         const fmGW = parseFloat((SimVar.GetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number")).toFixed(1));
-        const gw = (fmGW == 0) ? 50 : fmGW;
+        const gw = (fmGW === 0) ? 64.3 : fmGW; // MZFW = 64300KG
         const ldg = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
         const alt = this.round(Simplane.getAltitude());
 

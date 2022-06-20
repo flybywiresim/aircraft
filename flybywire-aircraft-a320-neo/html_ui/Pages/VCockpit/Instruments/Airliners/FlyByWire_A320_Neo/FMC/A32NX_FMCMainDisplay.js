@@ -1364,9 +1364,9 @@ class FMCMainDisplay extends BaseAirliners {
 
         let weight = this.tryEstimateLandingWeight();
         // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
-        // Fallback gross weight set to 50T, which is replaced by FMGW once input in FMS to avoid function returning undefined results.
+        // Fallback gross weight set to 64.3T (MZFW), which is replaced by FMGW once input in FMS to avoid function returning undefined results.
         if (this.flightPhaseManager.phase >= FmgcFlightPhases.APPROACH || !isFinite(weight)) {
-            weight = (this.getGW() == 0) ? 50 : this.getGW();
+            weight = (this.getGW() == 0) ? 64.3 : this.getGW();
         }
         // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
         if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
@@ -4191,17 +4191,16 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
     }
-    //Considers 50T Gross Weight if no weight is derived from the FM
     _getV1Speed() {
-        return (new NXSpeedsTo(this.getGW() === 0 ? 50 : this.getGW(), this.flaps, Simplane.getAltitude())).v1;
+        return (new NXSpeedsTo(this.getGW(), this.flaps, Simplane.getAltitude())).v1;
     }
 
     _getVRSpeed() {
-        return (new NXSpeedsTo(this.getGW() === 0 ? 50 : this.getGW(), this.flaps, Simplane.getAltitude())).vr;
+        return (new NXSpeedsTo(this.getGW(), this.flaps, Simplane.getAltitude())).vr;
     }
 
     _getV2Speed() {
-        return (new NXSpeedsTo(this.getGW() === 0 ? 50 : this.getGW(), this.flaps, Simplane.getAltitude())).v2;
+        return (new NXSpeedsTo(this.getGW(), this.flaps, Simplane.getAltitude())).v2;
     }
 
     /**
