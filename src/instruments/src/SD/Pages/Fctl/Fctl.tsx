@@ -184,6 +184,7 @@ const Rudder = ({ x, y }: ComponentPositionProps) => {
     );
 };
 
+/* This will be used once the FAC is implemented. Saving the code here until that time
 const RudderTrim = () => {
     // Should use data from FAC through FWC, but since that is not implemented yet it is read directly
 
@@ -243,6 +244,7 @@ const RudderTravelLimit = () => {
         </>
     );
 };
+*/
 
 const Stabilizer = ({ x, y }: ComponentPositionProps) => (
     <SvgGroup x={x} y={y}>
