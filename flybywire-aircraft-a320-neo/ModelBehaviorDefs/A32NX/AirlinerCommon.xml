@@ -789,7 +789,9 @@
                     0
                 } els{
                     (L:XMLVAR_NAV_#SIDE#_#INSTRUMENT#_Switch_Down) 1 == (L:A32NX_OVHD_INTLT_ANN) 0 == or if{
-                        5
+                        14 #EMISSIVE_DIM# *
+                    } els{
+                        (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) 0.5 *
                     }
                 }
             </TRANSMIT_EMISSIVE_CODE>
