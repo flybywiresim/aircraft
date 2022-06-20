@@ -30,6 +30,7 @@
 1. [SFCC] Add SFCC bus outputs  - @lukecologne (luke)
 1. [EWD] Use FPPU angles for flaps/slats display  - @lukecologne (luke)
 1. [FMGC] Basic RNP at or below 0.3 support - @tracernz (Mike)
+1. [SD] Improve F/CTL and WHEEL SD pages visuals - @lukecologne (luke)
 
 ## 0.8.0
 
