@@ -67,7 +67,9 @@ class CDUPerformancePage {
                 if (value === "") {
                     if (mcdu._v1Checked) {
                         // not real: v-speed helper
-                        if (mcdu.flaps) {
+                        if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                        } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getV1Speed().toString());
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -98,7 +100,9 @@ class CDUPerformancePage {
             mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
                 if (value === "") {
                     if (mcdu._vRChecked) {
-                        if (mcdu.flaps) {
+                        if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                        } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getVRSpeed().toString());
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -129,7 +133,9 @@ class CDUPerformancePage {
             mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
                 if (value === "") {
                     if (mcdu._v2Checked) {
-                        if (mcdu.flaps) {
+                        if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                        } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getV2Speed().toString());
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
