@@ -4068,6 +4068,7 @@
 
                     1 (&gt;K:COM1_RECEIVE_SELECT)
                     1 (&gt;K:COM2_RECEIVE_SELECT)
+                    1 (&gt;K:COM3_RECEIVE_SELECT)
 
                     0.8 (&gt;L:XMLVAR_COM_1_Volume_VHF_L)
                     0.4 (&gt;L:XMLVAR_COM_1_Volume_VHF_C)

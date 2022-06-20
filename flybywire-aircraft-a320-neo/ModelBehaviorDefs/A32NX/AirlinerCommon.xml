@@ -569,12 +569,15 @@
                 -->
 
                 <!-- For the first condition.... -->
-                <!-- As COM1 is difficult to disable on reception, I chose to force the condition instead of using (A:COM RECEIVE:1, Bool) -->
+                <!-- As COM1 is difficult to disable on reception, I chose to force the condition instead of using (A:COM RECEIVE:1, Bool)
+
+                DO NOT SET  0 (&gt;K:COM3_VOLUME_SET) AS vPilot WOULD NOT BE WORKING ANYMORE
+
+                -->
 
                 (I:XMLVAR_COM_UpdateReceivers) if{
                     (L:XMLVAR_COM_1_VHF_L_Switch_Down) (L:XMLVAR_COM_2_VHF_L_Switch_Down) or (&gt;K:COM1_RECEIVE_SELECT)
                     (L:XMLVAR_COM_1_VHF_C_Switch_Down) (L:XMLVAR_COM_2_VHF_C_Switch_Down) or (&gt;K:COM2_RECEIVE_SELECT)
-                    (L:XMLVAR_COM_1_VHF_R_Switch_Down) (L:XMLVAR_COM_2_VHF_R_Switch_Down) or (&gt;K:COM3_RECEIVE_SELECT)
                     0 (&gt;I:XMLVAR_COM_UpdateReceivers)
                 }
 
@@ -621,8 +624,6 @@
                             }
                         }
                     }
-                } els{
-                    0 (&gt;K:COM3_VOLUME_SET)
                 }
             </UPDATE_CODE>
         </UseTemplate>
