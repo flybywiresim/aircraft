@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { StandbyFrequency, TransceiverType } from './StandbyFrequency';
 import { StandbyCourse } from './StandbyCourse';
@@ -128,6 +128,16 @@ export const NavRadioPanel = (props: Props) => {
             setMode(Mode.FREQUENCY);
         }
     });
+
+    // This effect to display frequency mode instead of course mode when switching between receivers.
+    // After few debug sessions, it was noticed standbyFrequency was the first valuable sign of switch.
+    // I could have listened props.transceiver but this caused flickering (very fast display of previous frequency) due to sequential render
+    useEffect(() => {
+        // Performance purpose. Could set Frequency everytime but setMode fires a render
+        if (mode === Mode.COURSE) {
+            setMode(Mode.FREQUENCY);
+        }
+    }, [standbyFrequency]);
 
     if (mode === Mode.FREQUENCY) {
         standbyWindow = <StandbyFrequency side={props.side} value={standbyFrequency} setValue={setStandbyFrequencySaved} transceiver={props.transceiver} />;
