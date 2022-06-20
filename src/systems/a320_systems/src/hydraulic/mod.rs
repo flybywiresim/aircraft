@@ -36,7 +36,10 @@ use systems::{
             Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
             SteeringRatioToAngle,
         },
-        ths::{ManualPitchTrimController, PitchTrimActuatorController},
+        ths::{
+            ManualPitchTrimController, PitchTrimActuatorController, ThsHydraulicAssembly,
+            TrimInputAssembly,
+        },
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitCharacteristics,
         PowerTransferUnitController, PressureSwitch, PressureSwitchType, PumpController,
@@ -1215,6 +1218,9 @@ pub(super) struct A320Hydraulic {
     ptu_high_pitch_sound_active: DelayedFalseLogicGate,
 
     trim_controller: A320TrimInputController,
+
+    trim_assembly: TrimInputAssembly,
+    ths_assembly: ThsHydraulicAssembly,
 }
 impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
@@ -1461,7 +1467,22 @@ impl A320Hydraulic {
             ptu_high_pitch_sound_active: DelayedFalseLogicGate::new(
                 Self::HIGH_PITCH_PTU_SOUND_DURATION,
             ),
+
             trim_controller: A320TrimInputController::new(context),
+            trim_assembly: TrimInputAssembly::new(
+                context,
+                Angle::new::<degree>(360. * -1.4),
+                Angle::new::<degree>(360. * 6.13),
+                Angle::new::<degree>(360. * -1.87),
+                Angle::new::<degree>(360. * 6.32),
+                AngularVelocity::new::<revolution_per_minute>(5000.),
+                Ratio::new::<ratio>(2035. / 6.13),
+            ),
+            ths_assembly: ThsHydraulicAssembly::new(
+                context,
+                Angle::new::<degree>(-4.),
+                Angle::new::<degree>(17.5),
+            ),
         }
     }
 
@@ -1723,6 +1744,25 @@ impl A320Hydraulic {
             lgciu1,
             lgciu2,
             &self.gear_system_gravity_extension_controller,
+        );
+
+        self.trim_assembly.update(
+            context,
+            &self.trim_controller,
+            &self.trim_controller,
+            &self.ths_assembly,
+        );
+        self.ths_assembly.update(
+            context,
+            [
+                self.green_circuit
+                    .system_section()
+                    .pressure_downstream_leak_valve(),
+                self.yellow_circuit
+                    .system_section()
+                    .pressure_downstream_leak_valve(),
+            ],
+            self.trim_assembly.position_normalized(),
         );
     }
 
@@ -2221,6 +2261,7 @@ impl SimulationElement for A320Hydraulic {
         self.gear_system.accept(visitor);
 
         self.trim_controller.accept(visitor);
+        self.ths_assembly.accept(visitor);
 
         visitor.visit(self);
     }
@@ -5500,6 +5541,13 @@ impl SimulationElement for A320TrimInputController {
 
         self.manual_control = reader.read(&self.manual_control_active_id);
         self.manual_control_speed = reader.read(&self.manual_control_speed_id);
+
+        println!(
+            "MANUAL SPEED: {:.1} Motor0 act {:?}, Motor0pos {:.1}",
+            self.manual_control_speed.get::<degree_per_second>(),
+            self.motor_active[0],
+            self.motor_position[0].get::<degree>(),
+        );
     }
 }
 
