@@ -141,7 +141,7 @@
       "CateringTruck": "รถบรรทุกอาหาร",
       "Cones": "กรวยนิรภัย",
       "DoorAft": "ประตูท้าย",
-      "DoorCargo": "Cargo Door",
+      "DoorCargo": "ประตูคาร์โก้",
       "DoorFwd": "ประตูหน้า",
       "ExternalPower": "พลังงานภาคพื้น",
       "FuelTruck": "รถบรรทุกน้ำมัน",
@@ -453,8 +453,8 @@
       "HomeCockpitMode": "โหมด Home Cockpit",
       "McduFocusTimeout": "หมดเวลาโฟกัส MCDU (วินาที)",
       "McduKeyboardInput": "ป้อนข้อมูลคีย์บอร์ด MCDU",
-      "PauseAtTod": "T/D Pause",
-      "PauseAtTodDistance": "T/D Pause Distance (nm)",
+      "PauseAtTod": "หยุดชั่วคราวที่ T/D",
+      "PauseAtTodDistance": "ระยะทางหยุดชั่วคราว T/D (nm)",
       "SeparateTillerFromRudderInputs": "แยก Tiller ออกจากอินพุต Rudder",
       "Title": "ความสมจริง"
     },
@@ -506,7 +506,7 @@
     "flyPad": {
       "AutoBrightness": "ปรับความสว่างอัตโนมัติ",
       "AutomaticallyShowOnscreenKeyboard": "แสดงแป้นพิมพ์บนหน้าจอโดยอัตโนมัติ",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "จำลองการใช้งานแบตเตอรี่",
       "Blue": "ฟ้า",
       "Brightness": "ความสว่าง",
       "Dark": "ดำ",

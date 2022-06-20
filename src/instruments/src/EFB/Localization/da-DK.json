@@ -139,7 +139,7 @@
     "Services": {
       "BaggageTruck": "Bagage Truck",
       "CateringTruck": "Catering Truck",
-      "Cones": "Safety Cones",
+      "Cones": "Sikkerhed kegler",
       "DoorAft": "Bagdør",
       "DoorCargo": "Cargo Door",
       "DoorFwd": "Front Dør",
@@ -357,7 +357,7 @@
     "CallTug": "Kald skubber",
     "DisableSystemMessageBody": "Er du sikker på, at du vil deaktivere skubbe systemet? Dette frigiver også traktoren",
     "DisableSystemMessageTitle": "Deaktiver skubbe systemet",
-    "EnableSystemMessageBody": "Det nye flyPadOS 3 skubbe-system er endnu ikke færdig. Det er virker ikke i kombination med andre udvidelser til at foretage skubning og kan forårsage andre problemer.",
+    "EnableSystemMessageBody": "Den nye flyPad OS 3 Pushback System kan forårsage konflikter med andre pushback-tilføjelser. Vi anbefaler, at du ikke aktiverer systemet, hvis du planlægger at bruge en anden pushback-tilføjelse. ",
     "EnableSystemMessageTitle": "Aktiver skubbe-systemet",
     "Forward": "Fremad",
     "Halt": "Pauset",
