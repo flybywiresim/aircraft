@@ -621,7 +621,7 @@ impl SimulationElement for ThsHydraulicAssembly {
 #[cfg(test)]
 mod tests {
     use uom::si::angle::degree;
-    use uom::si::angular_velocity::degree_per_second;
+    use uom::si::{angular_velocity::degree_per_second, ratio::percent};
 
     use super::*;
     use crate::shared::update_iterator::FixedStepLoop;
@@ -909,6 +909,14 @@ mod tests {
 
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.5), 0));
         test_bed.run_with_delta(Duration::from_millis(20000));
+
+        let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
+        assert!(deflection.get::<degree>() > 13.45);
+        assert!(deflection.get::<degree>() < 13.55);
+
+        let trim_wheel_position_percent: Ratio = test_bed.read_by_name("HYD_TRIM_WHEEL_PERCENT");
+        assert!(trim_wheel_position_percent.get::<percent>() > 99.9);
+        assert!(trim_wheel_position_percent.get::<percent>() < 100.1);
     }
 
     #[test]
@@ -917,5 +925,13 @@ mod tests {
 
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(-4.), 0));
         test_bed.run_with_delta(Duration::from_millis(20000));
+
+        let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
+        assert!(deflection.get::<degree>() > -4.1);
+        assert!(deflection.get::<degree>() < -3.9);
+
+        let trim_wheel_position_percent: Ratio = test_bed.read_by_name("HYD_TRIM_WHEEL_PERCENT");
+        assert!(trim_wheel_position_percent.get::<percent>() > -0.1);
+        assert!(trim_wheel_position_percent.get::<percent>() < 0.1);
     }
 }
