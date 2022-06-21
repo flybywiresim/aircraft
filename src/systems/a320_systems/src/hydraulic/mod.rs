@@ -36,10 +36,7 @@ use systems::{
             Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
             SteeringRatioToAngle,
         },
-        ths::{
-            ManualPitchTrimController, PitchTrimActuatorController, ThsHydraulicAssembly,
-            TrimInputAssembly,
-        },
+        ths::{ManualPitchTrimController, PitchTrimActuatorController, ThsTrimAssembly},
         ElectricPump, EngineDrivenPump, HydraulicCircuit, HydraulicCircuitController,
         HydraulicPressureSensors, PowerTransferUnit, PowerTransferUnitCharacteristics,
         PowerTransferUnitController, PressureSwitch, PressureSwitchType, PumpController,
@@ -1219,8 +1216,7 @@ pub(super) struct A320Hydraulic {
 
     trim_controller: A320TrimInputController,
 
-    trim_assembly: TrimInputAssembly,
-    ths_assembly: ThsHydraulicAssembly,
+    trim_assembly: ThsTrimAssembly,
 }
 impl A320Hydraulic {
     const HIGH_PITCH_PTU_SOUND_DELTA_PRESS_THRESHOLD_PSI: f64 = 2400.;
@@ -1467,7 +1463,7 @@ impl A320Hydraulic {
             ),
 
             trim_controller: A320TrimInputController::new(context),
-            trim_assembly: TrimInputAssembly::new(
+            trim_assembly: ThsTrimAssembly::new(
                 context,
                 Angle::new::<degree>(360. * -1.4),
                 Angle::new::<degree>(360. * 6.13),
@@ -1475,9 +1471,6 @@ impl A320Hydraulic {
                 Angle::new::<degree>(360. * 6.32),
                 AngularVelocity::new::<revolution_per_minute>(5000.),
                 Ratio::new::<ratio>(2035. / 6.13),
-            ),
-            ths_assembly: ThsHydraulicAssembly::new(
-                context,
                 Angle::new::<degree>(-4.),
                 Angle::new::<degree>(17.5),
             ),
@@ -1748,10 +1741,6 @@ impl A320Hydraulic {
             context,
             &self.trim_controller,
             &self.trim_controller,
-            &self.ths_assembly,
-        );
-        self.ths_assembly.update(
-            context,
             [
                 self.green_circuit
                     .system_section()
@@ -1760,7 +1749,6 @@ impl A320Hydraulic {
                     .system_section()
                     .pressure_downstream_leak_valve(),
             ],
-            self.trim_assembly.position_normalized(),
         );
     }
 
@@ -2259,7 +2247,7 @@ impl SimulationElement for A320Hydraulic {
         self.gear_system.accept(visitor);
 
         self.trim_controller.accept(visitor);
-        self.ths_assembly.accept(visitor);
+        self.trim_assembly.accept(visitor);
 
         visitor.visit(self);
     }

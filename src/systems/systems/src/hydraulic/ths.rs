@@ -12,7 +12,8 @@ use uom::si::{
 };
 
 use crate::simulation::{
-    InitContext, SimulationElement, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+    VariableIdentifier, Write,
 };
 
 use crate::shared::{interpolation, low_pass_filter::LowPassFilter};
@@ -355,13 +356,14 @@ impl PitchTrimActuator {
     }
 }
 
-pub struct TrimInputAssembly {
+pub struct ThsTrimAssembly {
     pitch_trim_actuator: PitchTrimActuator,
     trim_wheel: TrimWheels,
+    ths_assembly: ThsHydraulicAssembly,
 }
-impl TrimInputAssembly {
+impl ThsTrimAssembly {
     pub fn new(
-        context: &InitContext,
+        context: &mut InitContext,
 
         min_actuator_angle: Angle,
         total_actuator_range_angle: Angle,
@@ -371,6 +373,9 @@ impl TrimInputAssembly {
 
         max_elec_motor_speed: AngularVelocity,
         elec_motor_over_trim_actuator_ratio: Ratio,
+
+        min_ths_deflection: Angle,
+        ths_deflection_range: Angle,
     ) -> Self {
         Self {
             pitch_trim_actuator: PitchTrimActuator::new(
@@ -385,6 +390,11 @@ impl TrimInputAssembly {
                 min_trim_wheel_angle,
                 total_trim_wheel_range_angle,
             ),
+            ths_assembly: ThsHydraulicAssembly::new(
+                context,
+                min_ths_deflection,
+                ths_deflection_range,
+            ),
         }
     }
 
@@ -393,25 +403,35 @@ impl TrimInputAssembly {
         context: &UpdateContext,
         electric_controller: &impl PitchTrimActuatorController,
         manual_controller: &impl ManualPitchTrimController,
-        ths_hydraulic_assembly: &ThsHydraulicAssembly,
+        pressures: [Pressure; 2],
     ) {
         self.pitch_trim_actuator.update(
             context,
             electric_controller,
             manual_controller,
-            ths_hydraulic_assembly,
+            &self.ths_assembly,
         );
 
         self.trim_wheel.update(&self.pitch_trim_actuator);
+
+        self.ths_assembly.update(
+            context,
+            pressures,
+            self.pitch_trim_actuator.position_normalized(),
+        )
     }
 
     pub fn position_normalized(&self) -> Ratio {
         self.pitch_trim_actuator.position_normalized()
     }
 }
-impl SimulationElement for TrimInputAssembly {}
+impl SimulationElement for ThsTrimAssembly {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.ths_assembly.accept(visitor);
+    }
+}
 
-pub struct ThsHydraulicAssembly {
+struct ThsHydraulicAssembly {
     deflection_id: VariableIdentifier,
     hydraulic_motors: [HydraulicDriveMotor; 2],
 
@@ -429,7 +449,8 @@ impl ThsHydraulicAssembly {
     const HYDRAULIC_MOTOR_POSITION_ERROR_BREAKPOINT: [f64; 7] = [-50., -1., -0.1, 0., 0.1, 1., 50.];
     const HYDRAULIC_MOTOR_SPEED_REGULATION_COEF_MAP: [f64; 7] = [-1., -1., -0.6, 0., 0.6, 1., 1.];
 
-    const HYD_MOTOR_SPEED_TO_THS_DEFLECTION_SPEED_GAIN: f64 = 0.0000005;
+    // Gain to convert hyd motor speed to ths deflection speed
+    const HYD_MOTOR_SPEED_TO_THS_DEFLECTION_SPEED_GAIN: f64 = 0.000085;
 
     const MAX_DEFLECTION_FOR_FULL_OPEN_SPOOL_VALVE_DEGREES: f64 = 0.2;
 
@@ -468,7 +489,7 @@ impl ThsHydraulicAssembly {
         for (motor_index, motor) in self.hydraulic_motors.iter_mut().enumerate() {
             motor.set_position_request(deflection_demand);
 
-            //println!("HYD motor");
+            // println!("HYD motor");
             motor.update(context, self.actual_deflection, pressures[motor_index])
         }
 
@@ -529,7 +550,7 @@ mod tests {
     use super::*;
     use crate::shared::update_iterator::FixedStepLoop;
     use crate::simulation::test::{ReadByName, SimulationTestBed, TestBed};
-    use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
+    use crate::simulation::{Aircraft, SimulationElement};
     use std::time::Duration;
 
     use rstest::rstest;
@@ -610,9 +631,7 @@ mod tests {
         elec_trim_control: TestElecTrimControl,
         manual_trim_control: TestManualTrimControl,
 
-        trim_assembly: TrimInputAssembly,
-
-        ths_assembly: ThsHydraulicAssembly,
+        trim_assembly: ThsTrimAssembly,
 
         hydraulic_pressures: [Pressure; 2],
     }
@@ -622,7 +641,7 @@ mod tests {
                 updater_fixed_step: FixedStepLoop::new(Duration::from_millis(33)),
                 elec_trim_control: TestElecTrimControl::inactive_control(),
                 manual_trim_control: TestManualTrimControl::without_manual_input(),
-                trim_assembly: TrimInputAssembly::new(
+                trim_assembly: ThsTrimAssembly::new(
                     context,
                     Angle::new::<degree>(360. * -1.4),
                     Angle::new::<degree>(360. * 6.13),
@@ -630,9 +649,6 @@ mod tests {
                     Angle::new::<degree>(360. * 6.32),
                     AngularVelocity::new::<revolution_per_minute>(5000.),
                     Ratio::new::<ratio>(2035. / 6.13),
-                ),
-                ths_assembly: ThsHydraulicAssembly::new(
-                    context,
                     Angle::new::<degree>(-4.),
                     Angle::new::<degree>(17.5),
                 ),
@@ -679,13 +695,7 @@ mod tests {
                     &context.with_delta(cur_time_step),
                     &self.elec_trim_control,
                     &self.manual_trim_control,
-                    &self.ths_assembly,
-                );
-
-                self.ths_assembly.update(
-                    context,
                     self.hydraulic_pressures,
-                    self.trim_assembly.position_normalized(),
                 );
 
                 println!(
@@ -706,9 +716,9 @@ mod tests {
                     self.trim_assembly.pitch_trim_actuator.electric_motors[2]
                         .speed()
                         .get::<revolution_per_minute>(),
-                    self.ths_assembly.hydraulic_motors[0].speed().get::<revolution_per_minute>(),
-                    self.ths_assembly.hydraulic_motors[1].speed().get::<revolution_per_minute>(),
-                    self.ths_assembly.actual_deflection.get::<degree>()
+                    self.trim_assembly.ths_assembly.hydraulic_motors[0].speed().get::<revolution_per_minute>(),
+                    self.trim_assembly.ths_assembly.hydraulic_motors[1].speed().get::<revolution_per_minute>(),
+                    self.trim_assembly.ths_assembly.actual_deflection.get::<degree>()
 
                 );
             }
@@ -717,7 +727,6 @@ mod tests {
     impl SimulationElement for TestAircraft {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.trim_assembly.accept(visitor);
-            self.ths_assembly.accept(visitor);
 
             visitor.visit(self);
         }
@@ -760,18 +769,18 @@ mod tests {
         let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
 
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * 4.5), 0));
-        test_bed.run_with_delta(Duration::from_millis(2000));
+        test_bed.run_with_delta(Duration::from_millis(20000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        // assert!(deflection.get::<degree>() > 12.);
-        // assert!(deflection.get::<degree>() < 14.);
+        assert!(deflection.get::<degree>() > 12.);
+        assert!(deflection.get::<degree>() < 14.);
 
         test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * -1.), 0));
-        test_bed.run_with_delta(Duration::from_millis(2000));
+        test_bed.run_with_delta(Duration::from_millis(25000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        // assert!(deflection.get::<degree>() >= -4.);
-        // assert!(deflection.get::<degree>() < -2.);
+        assert!(deflection.get::<degree>() >= -4.);
+        assert!(deflection.get::<degree>() < -2.);
     }
 
     #[test]
