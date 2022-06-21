@@ -529,7 +529,7 @@
 		<Switch>
 			<Case Check="REF_VALUE_0">
 				<UseTemplate Name="ASOBO_GT_Helper_Non_Linear_Animation_Code">
-					<SELECTION>(L:A32NX_HYD_TRIM_WHEEL_PERCENT) 6.75 -</SELECTION>
+					<SELECTION>(L:A32NX_HYD_TRIM_WHEEL_PERCENT)</SELECTION>
 				</UseTemplate>
 			</Case>
 			<Case Check="DISCRETE_STATES">

@@ -1468,7 +1468,7 @@ impl A320Hydraulic {
                 Angle::new::<degree>(360. * -1.4),
                 Angle::new::<degree>(360. * 6.13),
                 Angle::new::<degree>(360. * -1.87),
-                Angle::new::<degree>(360. * 6.32),
+                Angle::new::<degree>(360. * 8.19), // 1.87 rotations down 6.32 up,
                 AngularVelocity::new::<revolution_per_minute>(5000.),
                 Ratio::new::<ratio>(2035. / 6.13),
                 Angle::new::<degree>(-4.),

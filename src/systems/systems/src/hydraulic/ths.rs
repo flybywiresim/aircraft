@@ -49,14 +49,16 @@ impl TrimWheels {
     fn update(&mut self, pta: &PitchTrimActuator) {
         self.position = pta.position / self.trim_actuator_over_trim_wheel_ratio.get::<ratio>();
 
-        println!(
-            "TRIM WHEEL NORM {:.1}",
-            self.position_normalized().get::<ratio>()
-        );
+        // println!(
+        //     "TRIM WHEEL NORM {:.3}",
+        //     self.position_normalized().get::<ratio>()
+        // );
     }
 
     fn position_normalized(&self) -> Ratio {
-        (self.position - self.min_angle) / (self.max_angle - self.min_angle)
+        ((self.position - self.min_angle) / (self.max_angle - self.min_angle))
+            .min(Ratio::new::<ratio>(100.))
+            .max(Ratio::new::<ratio>(0.))
     }
 }
 impl SimulationElement for TrimWheels {
@@ -410,6 +412,8 @@ impl PitchTrimActuator {
             (self.position.get::<radian>() - self.min_actuator_angle.get::<radian>())
                 / range.get::<radian>(),
         )
+        .min(Ratio::new::<ratio>(100.))
+        .max(Ratio::new::<ratio>(0.))
     }
 }
 impl SimulationElement for PitchTrimActuator {
@@ -718,7 +722,7 @@ mod tests {
                     Angle::new::<degree>(360. * -1.4),
                     Angle::new::<degree>(360. * 6.13),
                     Angle::new::<degree>(360. * -1.87),
-                    Angle::new::<degree>(360. * 6.32),
+                    Angle::new::<degree>(360. * 8.19), // 1.87 rotations down 6.32 up
                     AngularVelocity::new::<revolution_per_minute>(5000.),
                     Ratio::new::<ratio>(2035. / 6.13),
                     Angle::new::<degree>(-4.),
@@ -897,5 +901,21 @@ mod tests {
 
         // let deflection_after_hyd_fail: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
         // assert!((deflection - deflection_after_hyd_fail).abs() < Angle::new::<degree>(1.));
+    }
+
+    #[test]
+    fn trim_assembly_max_motor_0() {
+        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+
+        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.5), 0));
+        test_bed.run_with_delta(Duration::from_millis(20000));
+    }
+
+    #[test]
+    fn trim_assembly_min_motor_0() {
+        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+
+        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(-4.), 0));
+        test_bed.run_with_delta(Duration::from_millis(20000));
     }
 }
