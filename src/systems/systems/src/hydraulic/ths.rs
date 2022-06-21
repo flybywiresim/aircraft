@@ -1,7 +1,7 @@
 use uom::si::{
     angle::{degree, radian},
     angular_acceleration::radian_per_second_squared,
-    angular_velocity::{radian_per_second, revolution_per_minute},
+    angular_velocity::{degree_per_second, radian_per_second, revolution_per_minute},
     f64::*,
     power::watt,
     pressure::psi,
@@ -71,7 +71,6 @@ impl SimulationElement for TrimWheels {
 #[derive(Clone, Copy)]
 struct DriveMotor {
     speed: LowPassFilter<AngularVelocity>,
-    position_request: Angle,
 
     is_active: bool,
     max_speed: AngularVelocity,
@@ -88,7 +87,6 @@ impl DriveMotor {
     ) -> Self {
         Self {
             speed: LowPassFilter::new(Duration::from_millis(50)),
-            position_request: Angle::default(),
 
             is_active: false,
             max_speed,
@@ -100,10 +98,6 @@ impl DriveMotor {
 
     fn set_active_state(&mut self, is_active: bool) {
         self.is_active = is_active;
-    }
-
-    fn set_position_request(&mut self, position_requested: Angle) {
-        self.position_request = position_requested;
     }
 
     fn update(
@@ -250,9 +244,12 @@ pub trait ManualPitchTrimController {
 }
 
 struct PitchTrimActuator {
+    manual_override_id: VariableIdentifier,
+
     electric_motors: [ElectricDriveMotor; 3],
     electric_clutches: [ElectricMotorClutch; 3],
-    position_request: Angle,
+    manual_override_active: bool,
+
     position: Angle,
     speed: AngularVelocity,
 
@@ -266,13 +263,18 @@ impl PitchTrimActuator {
         [-50., -5., -0.05, 0., 0.05, 5., 50.];
     const ELECTRIC_MOTOR_SPEED_REGULATION_COEF_MAP: [f64; 7] = [-1., -1., -0.01, 0., 0.01, 1., 1.];
 
+    const MIN_ELEC_MOTOR_SPEED_FOR_MANUAL_OVERRIDE_DETECTION_RPM: f64 = 10.;
+
     fn new(
+        context: &mut InitContext,
         min_actuator_angle: Angle,
         total_actuator_range_angle: Angle,
         max_elec_motor_speed: AngularVelocity,
         elec_motor_over_trim_actuator_ratio: Ratio,
     ) -> Self {
         Self {
+            manual_override_id: context.get_identifier("HYD_THS_TRIM_MANUAL_OVERRIDE".to_owned()),
+
             electric_motors: [
                 ElectricDriveMotor::new(
                     max_elec_motor_speed,
@@ -291,7 +293,8 @@ impl PitchTrimActuator {
                 ),
             ],
             electric_clutches: [ElectricMotorClutch::default(); 3],
-            position_request: Angle::default(),
+            manual_override_active: false,
+
             position: Angle::default(),
             speed: AngularVelocity::default(),
 
@@ -312,7 +315,7 @@ impl PitchTrimActuator {
         self.update_clutches_state(electric_controller);
         self.update_motors(context, electric_controller, ths_hydraulic_assembly);
 
-        self.update_speed(manual_controller, ths_hydraulic_assembly);
+        self.update_speed_and_override(manual_controller, ths_hydraulic_assembly);
 
         self.update_position(context);
     }
@@ -329,24 +332,20 @@ impl PitchTrimActuator {
             .max(self.min_actuator_angle);
     }
 
-    fn update_speed(
+    fn update_speed_and_override(
         &mut self,
         manual_controller: &impl ManualPitchTrimController,
         ths_hydraulic_assembly: &ThsHydraulicAssembly,
     ) {
+        let elec_drive_speed = self.elec_motor_drive_total_speed();
+
         if manual_controller.is_manually_moved() {
             self.speed = manual_controller.moving_speed();
+            self.manual_override_active = elec_drive_speed.get::<revolution_per_minute>().abs()
+                > Self::MIN_ELEC_MOTOR_SPEED_FOR_MANUAL_OVERRIDE_DETECTION_RPM;
         } else {
-            let mut sum_of_speeds = AngularVelocity::default();
-
-            for (motor_index, motor) in self.electric_motors.iter_mut().enumerate() {
-                if self.electric_clutches[motor_index].is_clutch_engaged() {
-                    sum_of_speeds +=
-                        motor.speed() / self.elec_motor_over_trim_actuator_ratio.get::<ratio>();
-                }
-            }
-
-            self.speed = sum_of_speeds;
+            self.speed = elec_drive_speed;
+            self.manual_override_active = false
         }
 
         if ths_hydraulic_assembly.is_at_max_down_spool_valve
@@ -354,12 +353,25 @@ impl PitchTrimActuator {
             || ths_hydraulic_assembly.is_at_max_up_spool_valve
                 && self.speed.get::<radian_per_second>() > 0.
         {
-            println!(
-                "TRIM LOCK END OF COURSE: speed dmnd {:2}",
-                self.speed.get::<radian_per_second>()
-            );
+            // println!(
+            //     "TRIM LOCK END OF COURSE: speed dmnd {:2}",
+            //     self.speed.get::<radian_per_second>()
+            // );
             self.speed = AngularVelocity::default();
         }
+    }
+
+    fn elec_motor_drive_total_speed(&self) -> AngularVelocity {
+        let mut sum_of_speeds = AngularVelocity::default();
+
+        for (motor_index, motor) in self.electric_motors.iter().enumerate() {
+            if self.electric_clutches[motor_index].is_clutch_engaged() {
+                sum_of_speeds +=
+                    motor.speed() / self.elec_motor_over_trim_actuator_ratio.get::<ratio>();
+            }
+        }
+
+        sum_of_speeds
     }
 
     fn update_clutches_state(&mut self, controller: &impl PitchTrimActuatorController) {
@@ -400,6 +412,11 @@ impl PitchTrimActuator {
         )
     }
 }
+impl SimulationElement for PitchTrimActuator {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.manual_override_id, self.manual_override_active);
+    }
+}
 
 pub struct ThsTrimAssembly {
     pitch_trim_actuator: PitchTrimActuator,
@@ -424,6 +441,7 @@ impl ThsTrimAssembly {
     ) -> Self {
         Self {
             pitch_trim_actuator: PitchTrimActuator::new(
+                context,
                 min_actuator_angle,
                 total_actuator_range_angle,
                 max_elec_motor_speed,
@@ -472,6 +490,7 @@ impl ThsTrimAssembly {
 }
 impl SimulationElement for ThsTrimAssembly {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.pitch_trim_actuator.accept(visitor);
         self.trim_wheel.accept(visitor);
         self.ths_assembly.accept(visitor);
     }
@@ -564,13 +583,13 @@ impl ThsHydraulicAssembly {
         self.is_at_max_down_spool_valve = deflection_error.get::<degree>()
             < -Self::MAX_DEFLECTION_FOR_FULL_OPEN_SPOOL_VALVE_DEGREES;
 
-        println!(
-            "DEFLECT DEMAND {:.2} DEFLECT ERROR {:.2} is_max_up {:?} is_max_down {:?}",
-            deflection_demand.get::<degree>(),
-            deflection_error.get::<degree>(),
-            self.is_at_max_up_spool_valve,
-            self.is_at_max_down_spool_valve
-        );
+        // println!(
+        //     "DEFLECT DEMAND {:.2} DEFLECT ERROR {:.2} is_max_up {:?} is_max_down {:?}",
+        //     deflection_demand.get::<degree>(),
+        //     deflection_error.get::<degree>(),
+        //     self.is_at_max_up_spool_valve,
+        //     self.is_at_max_down_spool_valve
+        // );
     }
 
     fn update_position(&mut self, context: &UpdateContext) {
@@ -865,6 +884,7 @@ mod tests {
         });
 
         println!("MANUAL TRIM UP");
+
         test_bed.command(|a| a.set_manual_trim_input(true));
         test_bed.run_with_delta(Duration::from_millis(2000));
 
