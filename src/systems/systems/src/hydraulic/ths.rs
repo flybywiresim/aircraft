@@ -44,6 +44,15 @@ impl TrimWheels {
 
     fn update(&mut self, pta: &PitchTrimActuator) {
         self.position = pta.position / self.trim_actuator_over_trim_wheel_ratio.get::<ratio>();
+
+        println!(
+            "TRIM WHEEL NORM {:.1}",
+            self.position_normalized().get::<ratio>()
+        );
+    }
+
+    fn position_normalized(&self) -> Ratio {
+        (self.position - self.min_angle) / (self.max_angle - self.min_angle)
     }
 }
 
@@ -333,6 +342,10 @@ impl PitchTrimActuator {
             || ths_hydraulic_assembly.is_at_max_up_spool_valve
                 && self.speed.get::<radian_per_second>() > 0.
         {
+            println!(
+                "TRIM LOCK END OF COURSE: speed dmnd {:2}",
+                self.speed.get::<radian_per_second>()
+            );
             self.speed = AngularVelocity::default();
         }
     }
@@ -538,13 +551,13 @@ impl ThsHydraulicAssembly {
         self.is_at_max_down_spool_valve = deflection_error.get::<degree>()
             < -Self::MAX_DEFLECTION_FOR_FULL_OPEN_SPOOL_VALVE_DEGREES;
 
-        // println!(
-        //     "DEFLECT DEMAND {:.2} DEFLECT ERROR {:.2} is_max_up {:?} is_max_down {:?}",
-        //     deflection_demand.get::<degree>(),
-        //     deflection_error.get::<degree>(),
-        //     self.is_at_max_up_spool_valve,
-        //     self.is_at_max_down_spool_valve
-        // );
+        println!(
+            "DEFLECT DEMAND {:.2} DEFLECT ERROR {:.2} is_max_up {:?} is_max_down {:?}",
+            deflection_demand.get::<degree>(),
+            deflection_error.get::<degree>(),
+            self.is_at_max_up_spool_valve,
+            self.is_at_max_down_spool_valve
+        );
     }
 
     fn update_position(&mut self, context: &UpdateContext) {
@@ -828,5 +841,28 @@ mod tests {
 
         let deflection_after_hyd_fail: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
         assert!((deflection - deflection_after_hyd_fail).abs() < Angle::new::<degree>(1.));
+    }
+
+    #[test]
+    fn trim_wheel_moves_only_by_small_amount_without_hyd_press_if_moved_manually() {
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
+
+        test_bed.command(|a| {
+            a.set_hyd_pressure([Pressure::new::<psi>(300.), Pressure::new::<psi>(300.)])
+        });
+
+        println!("MANUAL TRIM UP");
+        test_bed.command(|a| a.set_manual_trim_input(true));
+        test_bed.run_with_delta(Duration::from_millis(2000));
+
+        // let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
+        // assert!(deflection.get::<degree>() > 2.);
+
+        println!("MANUAL TRIM DOWN");
+        test_bed.command(|a| a.set_manual_trim_input(false));
+        test_bed.run_with_delta(Duration::from_millis(2000));
+
+        // let deflection_after_hyd_fail: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
+        // assert!((deflection - deflection_after_hyd_fail).abs() < Angle::new::<degree>(1.));
     }
 }
