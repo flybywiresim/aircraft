@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useRef, useState } from 'react';
+import { BitFlags } from '@shared/bitFlags';
+import { CanvasX, CanvasY, RowInfo, SeatConstants, SeatInfo, TYPE } from './Constants';
 // @ts-ignore
 import SVGFuselage from '../../../Assets/TopDownPayload.svg';
-import { CanvasX, CanvasY, RowInfo, SeatConstants, SeatInfo, TYPE } from './Constants';
 // @ts-ignore
 import SVGSeat from '../../../Assets/seat.svg';
 // @ts-ignore
@@ -12,7 +13,7 @@ interface SeatMapProps {
     x: number,
     y: number,
     seatMap: RowInfo[][],
-    activeFlags: number[][]
+    activeFlags: BitFlags[],
 }
 
 export const SeatMap: React.FC<SeatMapProps> = ({ x, y, seatMap, activeFlags }) => {
@@ -72,9 +73,9 @@ export const SeatMap: React.FC<SeatMapProps> = ({ x, y, seatMap, activeFlags }) 
         }
     };
 
-    const drawSeat = (x: number, y: number, imageX: number, imageY: number, section: number, seatId: number) => {
+    const drawSeat = (x: number, y: number, imageX: number, imageY: number, station: number, seatId: number) => {
         if (ctx && seatImg && seatFilledImg) {
-            if (seatId < 32 ? activeFlags[section][0] & 1 << seatId : activeFlags[section][1] & 1 << seatId - 32) {
+            if (activeFlags[station].getBitIndex(seatId)) {
                 ctx.drawImage(seatFilledImg, x, y, imageX, imageY);
             } else {
                 ctx.drawImage(seatImg, x, y, imageX, imageY);

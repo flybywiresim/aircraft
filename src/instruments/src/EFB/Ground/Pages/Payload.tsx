@@ -5,6 +5,8 @@ import { useSimVar } from '@instruments/common/simVars';
 import { Units } from '@shared/units';
 import { usePersistentProperty } from '@instruments/common/persistence';
 // import { Label } from '../../Performance/Widgets/LandingWidget';
+import { BitFlags } from '@shared/bitFlags';
+import { useBitFlagsVar } from '@instruments/common/bitFlags';
 import { RowInfo, SeatInfo, TYPE } from './Seating/Constants';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
@@ -28,35 +30,31 @@ const Label: React.FC<LabelProps> = ({ text, className, children }) => (
 
 export const Payload = () => {
     const { usingMetric } = Units;
+    const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
     const plane = 'A32NX';
     const [weightUnit, setWeightUnit] = usePersistentProperty('EFB_PREFERRED_WEIGHT_UNIT', usingMetric ? 'kg' : 'lb');
     const [paxA, setPaxA] = useSimVar(`L:${plane}_PAX_TOTAL_ROWS_1_6_DESIRED`, 'Number');
     const [paxB, setPaxB] = useSimVar(`L:${plane}_PAX_TOTAL_ROWS_7_13_DESIRED`, 'Number');
     const [paxC, setPaxC] = useSimVar(`L:${plane}_PAX_TOTAL_ROWS_14_21_DESIRED`, 'Number');
     const [paxD, setPaxD] = useSimVar(`L:${plane}_PAX_TOTAL_ROWS_22_29_DESIRED`, 'Number');
-
-    const [aFlags1, setAFlags1] = useSimVar(`L:${plane}_PAX_FLAGS_A1`, 'Number');
-    const [aFlags2, setAFlags2] = useSimVar(`L:${plane}_PAX_FLAGS_A2`, 'Number');
-    const [bFlags1, setBFlags1] = useSimVar(`L:${plane}_PAX_FLAGS_B1`, 'Number');
-    const [bFlags2, setBFlags2] = useSimVar(`L:${plane}_PAX_FLAGS_B2`, 'Number');
-    const [cFlags1, setCFlags1] = useSimVar(`L:${plane}_PAX_FLAGS_C1`, 'Number');
-    const [cFlags2, setCFlags2] = useSimVar(`L:${plane}_PAX_FLAGS_C2`, 'Number');
-    const [dFlags1, setDFlags1] = useSimVar(`L:${plane}_PAX_FLAGS_D1`, 'Number');
-    const [dFlags2, setDFlags2] = useSimVar(`L:${plane}_PAX_FLAGS_D2`, 'Number');
-
-    const activeFlags = [[aFlags1, aFlags2], [bFlags1, bFlags2], [cFlags1, cFlags2], [dFlags1, dFlags2]];
-    const setActiveFlags = [[setAFlags1, setAFlags2], [setBFlags1, setBFlags2], [setCFlags1, setCFlags2], [setDFlags1, setDFlags2]];
-
-    // const [paxA] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_1_6', 'Number');
-    // const [paxB] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_7_13', 'Number');
-    // const [paxC] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_14_21', 'Number');
-    // const [paxD] = useSimVar('L:A32NX_PAX_TOTAL_ROWS_22_29', 'Number');
-
     const [cargo, setCargo] = useSimVar('L:A32NX_CARGO', 'Number');
-    const [sectionLen, setSectionLen] = useState<number[]>([]);
+
+    const [stationSize, setSectionLen] = useState<number[]>([]);
+
+    const [aFlags, setAFlags] = useBitFlagsVar(`L:${plane}_PAX_FLAGS_A`);
+    const [bFlags, setBFlags] = useBitFlagsVar(`L:${plane}_PAX_FLAGS_B`);
+    const [cFlags, setCFlags] = useBitFlagsVar(`L:${plane}_PAX_FLAGS_C`);
+    const [dFlags, setDFlags] = useBitFlagsVar(`L:${plane}_PAX_FLAGS_D`);
+
+    const activeFlags = [aFlags, bFlags, cFlags, dFlags];
+    const setActiveFlags = [setAFlags, setBFlags, setCFlags, setDFlags];
+
+    const pax = [paxA, paxB, paxC, paxD];
+    const setPax = [setPaxA, setPaxB, setPaxC, setPaxD];
+
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
-    const Section = {
+    const Station = {
         A: 0,
         B: 1,
         C: 2,
@@ -94,123 +92,108 @@ export const Payload = () => {
     ) => ({ seats, x, y, xOffset, yOffset });
 
     const defaultSeatMap: RowInfo[][] = [
-        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Section A
-        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(emergRow()), addRow(emergRow())], // Section B
-        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Section C
-        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Section D
+        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Station A
+        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(emergRow()), addRow(emergRow())], // Station B
+        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Station C
+        [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Station D
     ];
 
     const [seatMap] = useState<RowInfo[][]>(defaultSeatMap);
 
-    const diffFlags = (bitFlags: number[], seatId: number): number[] => {
-        const flags = bitFlags;
-        if (seatId < 32) {
-            flags[0] = bitFlags[0] ^ 1 << seatId;
-        } else {
-            flags[1] = bitFlags[1] ^ 1 << seatId - 32;
-        }
-
-        return flags;
-    };
-
-    const isActiveSeat = (flags: number[], seatId: number) => (seatId < 32 ? flags[0] & 1 << seatId : flags[1] & 1 << seatId - 32);
-
-    const returnSeats = (section: number, increase: boolean): number[] => {
+    const returnSeats = (station: number, increase: boolean): number[] => {
         const seats: number[] = [];
-        const flags = activeFlags[section];
-        for (let seatId = 0; seatId < sectionLen[section]; seatId++) {
-            if (!increase && isActiveSeat(flags, seatId)) {
+        const bitFlags: BitFlags = activeFlags[station];
+        for (let seatId = 0; seatId < stationSize[station]; seatId++) {
+            if (!increase && bitFlags.getBitIndex(seatId)) {
                 seats.push(seatId);
-            } else if (increase && !isActiveSeat(flags, seatId)) {
+            } else if (increase && !bitFlags.getBitIndex(seatId)) {
                 seats.push(seatId);
             }
         }
         return seats;
     };
 
-    const chooseRandomSeats = (section: number, choices: number[], numChoose: number) => {
-        let bitFlags = activeFlags[section];
+    const chooseRandomSeats = (station: number, choices: number[], numChoose: number) => {
+        const bitFlags: BitFlags = activeFlags[station];
         for (let i = 0; i < numChoose; i++) {
             if (choices.length > 0) {
                 const chosen = ~~(Math.random() * choices.length);
-                bitFlags = diffFlags(bitFlags, choices[chosen]);
+                bitFlags.toggleBitIndex(choices[chosen]);
                 choices.splice(chosen, 1);
             }
-            setActiveFlags[section][0](bitFlags[0]);
-            setActiveFlags[section][1](bitFlags[1]);
         }
+        setActiveFlags[station](bitFlags);
     };
 
-    const changePax = (section: number, newValue: number) => {
-        if (!sectionLen || newValue > sectionLen[section] || newValue < 0) return;
-        let setPaxFunc: (value: number) => any = () => {};
-        let value: number = 0;
-        switch (section) {
-        case Section.A:
-            setPaxFunc = setPaxA;
-            value = paxA;
-            break;
-        case Section.B:
-            setPaxFunc = setPaxB;
-            value = paxB;
-            break;
-        case Section.C:
-            setPaxFunc = setPaxC;
-            value = paxC;
-            break;
-        case Section.D:
-            setPaxFunc = setPaxD;
-            value = paxD;
-            break;
-        default:
-            break;
-        }
-        const seats: number[] = returnSeats(section, newValue > value);
-        chooseRandomSeats(section, seats, Math.abs(value - newValue));
-        setPaxFunc(newValue);
+    /*
+    const changePax = (station: number, newValue: number) => {
+        if (!stationSize || newValue > stationSize[station] || newValue < 0) return;
+        const value = pax[station];
+        const seats: number[] = returnSeats(station, newValue > value);
+        chooseRandomSeats(station, seats, Math.abs(value - newValue));
+
+        setPax[station](newValue);
+    };
+    */
+
+    const setTotalPax = (numOfPax: number) => {
+        if (!stationSize || numOfPax === pax.reduce((a, b) => a + b) || numOfPax > stationSize.reduce((a, b) => a + b) || numOfPax < 0) return;
+
+        let paxRemaining = numOfPax;
+
+        const fillStation = (station, percent, paxToFill) => {
+            const pax = Math.min(Math.trunc(percent * paxToFill), stationSize[station]);
+            setPax[station](pax);
+            paxRemaining -= pax;
+        };
+
+        fillStation(Station.D, 0.28, numOfPax);
+        fillStation(Station.C, 0.28, numOfPax);
+        fillStation(Station.B, 0.25, numOfPax);
+        fillStation(Station.A, 1, paxRemaining);
     };
 
     useEffect(() => {
-        const sectionLen = [0, 0, 0, 0];
-        seatMap.forEach((section, i) => {
-            section.forEach((row) => {
+        const stationSize = [0, 0, 0, 0];
+        seatMap.forEach((station, i) => {
+            station.forEach((row) => {
                 row.seats.forEach(() => {
-                    sectionLen[i]++;
+                    stationSize[i]++;
                 });
             });
         });
-        setSectionLen(sectionLen);
+        setSectionLen(stationSize);
     }, [seatMap]);
 
     useEffect(() => {
-        const paxCount = returnSeats(Section.A, false).length;
+        const paxCount = returnSeats(Station.A, false).length;
         if (paxA !== paxCount) {
-            const seats: number[] = returnSeats(Section.A, paxA > paxCount);
-            chooseRandomSeats(Section.A, seats, Math.abs(paxCount - paxA));
+            const seats: number[] = returnSeats(Station.A, paxA > paxCount);
+            chooseRandomSeats(Station.A, seats, Math.abs(paxCount - paxA));
         }
     }, [paxA]);
 
     useEffect(() => {
-        const paxCount = returnSeats(Section.B, false).length;
+        const paxCount = returnSeats(Station.B, false).length;
         if (paxB !== paxCount) {
-            const seats: number[] = returnSeats(Section.B, paxB > paxCount);
-            chooseRandomSeats(Section.B, seats, Math.abs(paxCount - paxB));
+            const seats: number[] = returnSeats(Station.B, paxB > paxCount);
+            chooseRandomSeats(Station.B, seats, Math.abs(paxCount - paxB));
         }
     }, [paxB]);
 
     useEffect(() => {
-        const paxCount: number = returnSeats(Section.C, false).length;
+        const paxCount: number = returnSeats(Station.C, false).length;
         if (paxC !== paxCount) {
-            const seats: number[] = returnSeats(Section.C, paxC > paxCount);
-            chooseRandomSeats(Section.C, seats, Math.abs(paxCount - paxC));
+            const seats: number[] = returnSeats(Station.C, paxC > paxCount);
+            chooseRandomSeats(Station.C, seats, Math.abs(paxCount - paxC));
         }
     }, [paxC]);
 
     useEffect(() => {
-        const paxCount: number = returnSeats(Section.D, false).length;
+        const paxCount: number = returnSeats(Station.D, false).length;
         if (paxD !== paxCount) {
-            const seats: number[] = returnSeats(Section.D, paxD > paxCount);
-            chooseRandomSeats(Section.D, seats, Math.abs(paxCount - paxD));
+            const seats: number[] = returnSeats(Station.D, paxD > paxCount);
+            chooseRandomSeats(Station.D, seats, Math.abs(paxCount - paxD));
         }
     }, [paxD]);
 
@@ -236,9 +219,9 @@ export const Payload = () => {
                                         placeholder=""
                                         number
                                         min={0}
-                                        max={(sectionLen && sectionLen[Section.A]) ?? 99}
+                                        max={(stationSize && stationSize[Station.A]) ?? 99}
                                         value={paxA}
-                                        onBlur={(x) => changePax(Section.A, parseInt(x))}
+                                        onBlur={(x) => setPaxA(parseInt(x))}
                                     />
                                 </Label>
                                 <Label text="B">
@@ -247,9 +230,9 @@ export const Payload = () => {
                                         placeholder=""
                                         number
                                         min={0}
-                                        max={(sectionLen && sectionLen[Section.B]) ?? 99}
+                                        max={(stationSize && stationSize[Station.B]) ?? 99}
                                         value={paxB}
-                                        onBlur={(x) => changePax(Section.B, parseInt(x))}
+                                        onBlur={(x) => setPaxB(parseInt(x))}
                                     />
                                 </Label>
                             </div>
@@ -260,9 +243,9 @@ export const Payload = () => {
                                         placeholder=""
                                         number
                                         min={0}
-                                        max={(sectionLen && sectionLen[Section.C]) ?? 99}
+                                        max={(stationSize && stationSize[Station.C]) ?? 99}
                                         value={paxC}
-                                        onBlur={(x) => changePax(Section.C, parseInt(x))}
+                                        onBlur={(x) => setPaxC(parseInt(x))}
                                     />
                                 </Label>
                                 <Label text="D">
@@ -271,9 +254,9 @@ export const Payload = () => {
                                         placeholder=""
                                         number
                                         min={0}
-                                        max={(sectionLen && sectionLen[Section.D]) ?? 99}
+                                        max={(stationSize && stationSize[Station.D]) ?? 99}
                                         value={paxD}
-                                        onBlur={(x) => changePax(Section.D, parseInt(x))}
+                                        onBlur={(x) => setPaxD(parseInt(x))}
                                     />
                                 </Label>
                             </div>
@@ -307,13 +290,12 @@ export const Payload = () => {
                                             placeholder=""
                                             number
                                             min={0}
-                                            max={(sectionLen && sectionLen.reduce((a, b) => a + b, 0))}
-                                            value={paxA + paxB + paxC + paxD}
-                                            disabled
+                                            max={stationSize.length > 0 ? stationSize.reduce((a, b) => a + b, 0) : 999}
+                                            value={pax && pax.reduce((a, b) => a + b)}
+                                            onBlur={(x) => setTotalPax(parseInt(x))}
                                         />
-                                        {/* onBlur={(x) => changePax(Section.D, parseInt(x))} */}
                                         {simbriefDataLoaded && (
-                                            <TooltipWrapper text={t('Ground.Fuel.TT.FillBlockFuelFromSimBrief')}>
+                                            <TooltipWrapper text={t('Ground.Payload.TT.FillPaxDataFromSimbrief')}>
                                                 <div
                                                     className="flex justify-center items-center px-2 my-1 h-auto rounded-md rounded-l-none border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                                                     onClick={undefined}
@@ -344,19 +326,9 @@ export const Payload = () => {
                 <h2 className="flex font-medium"> Boarding Time </h2>
 
                 <SelectGroup>
-                    <SelectItem selected>{t('Settings.Instant')}</SelectItem>
-
-                    <TooltipWrapper>
-                        <div>
-                            <SelectItem disabled>{t('Settings.Fast')}</SelectItem>
-                        </div>
-                    </TooltipWrapper>
-
-                    <TooltipWrapper>
-                        <div>
-                            <SelectItem disabled>{t('Settings.Real')}</SelectItem>
-                        </div>
-                    </TooltipWrapper>
+                    <SelectItem selected={boardingRate === 'INSTANT'} onSelect={() => setBoardingRate('INSTANT')}>{t('Settings.Instant')}</SelectItem>
+                    <SelectItem selected={boardingRate === 'FAST'} onSelect={() => setBoardingRate('FAST')}>{t('Settings.Fast')}</SelectItem>
+                    <SelectItem selected={boardingRate === 'REAL'} onSelect={() => setBoardingRate('REAL')}>{t('Settings.Real')}</SelectItem>
                 </SelectGroup>
             </div>
         </div>
