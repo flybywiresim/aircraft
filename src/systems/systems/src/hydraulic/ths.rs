@@ -85,9 +85,14 @@ impl DriveMotor {
         self.position_request = position_requested;
     }
 
-    fn update(&mut self, context: &UpdateContext, measured_position: Angle) {
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        measured_position: Angle,
+        requested_position: Angle,
+    ) {
         let new_speed = if self.is_active {
-            let position_error = self.position_request - measured_position;
+            let position_error = requested_position - measured_position;
 
             let speed_coef = interpolation(
                 &self.speed_error_breakpoint,
@@ -141,12 +146,14 @@ impl ElectricDriveMotor {
         self.motor.set_active_state(is_active && self.is_powered);
     }
 
-    fn set_position_request(&mut self, position_requested: Angle) {
-        self.motor.set_position_request(position_requested);
-    }
-
-    fn update(&mut self, context: &UpdateContext, measured_position: Angle) {
-        self.motor.update(context, measured_position);
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        measured_position: Angle,
+        requested_position: Angle,
+    ) {
+        self.motor
+            .update(context, measured_position, requested_position);
     }
 
     fn speed(&self) -> AngularVelocity {
@@ -170,15 +177,18 @@ impl HydraulicDriveMotor {
         }
     }
 
-    fn set_position_request(&mut self, position_requested: Angle) {
-        self.motor.set_position_request(position_requested);
-    }
-
-    fn update(&mut self, context: &UpdateContext, measured_position: Angle, pressure: Pressure) {
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        measured_position: Angle,
+        position_requested: Angle,
+        pressure: Pressure,
+    ) {
         self.motor
             .set_active_state(pressure > Pressure::new::<psi>(1450.));
 
-        self.motor.update(context, measured_position);
+        self.motor
+            .update(context, measured_position, position_requested);
     }
 
     fn speed(&self) -> AngularVelocity {
@@ -279,7 +289,7 @@ impl PitchTrimActuator {
         ths_hydraulic_assembly: &ThsHydraulicAssembly,
     ) {
         self.update_clutches_state(electric_controller);
-        self.update_motors(context, electric_controller);
+        self.update_motors(context, electric_controller, ths_hydraulic_assembly);
 
         self.update_speed(manual_controller, ths_hydraulic_assembly);
 
@@ -337,12 +347,22 @@ impl PitchTrimActuator {
         &mut self,
         context: &UpdateContext,
         controller: &impl PitchTrimActuatorController,
+        ths_hydraulic_assembly: &ThsHydraulicAssembly,
     ) {
         for (motor_index, motor) in self.electric_motors.iter_mut().enumerate() {
             motor.set_active_state(controller.energised_motor()[motor_index]);
-            motor.set_position_request(controller.commanded_position());
+
+            let trim_actuator_normalized_position_request = ths_hydraulic_assembly
+                .normalized_position_from_ths_deflection(controller.commanded_position());
+
+            let final_trim_actuator_position_request = trim_actuator_normalized_position_request
+                .get::<ratio>()
+                * (self.max_actuator_angle - self.min_actuator_angle)
+                + self.min_actuator_angle;
+
+            //motor.set_position_request(final_trim_actuator_position_request);
             //println!("ELEC motor");
-            motor.update(context, self.position);
+            motor.update(context, self.position, final_trim_actuator_position_request);
         }
     }
 
@@ -487,10 +507,13 @@ impl ThsHydraulicAssembly {
         self.update_spool_valve_lock_position(deflection_demand);
 
         for (motor_index, motor) in self.hydraulic_motors.iter_mut().enumerate() {
-            motor.set_position_request(deflection_demand);
-
             // println!("HYD motor");
-            motor.update(context, self.actual_deflection, pressures[motor_index])
+            motor.update(
+                context,
+                self.actual_deflection,
+                deflection_demand,
+                pressures[motor_index],
+            )
         }
 
         self.update_speed();
@@ -534,6 +557,10 @@ impl ThsHydraulicAssembly {
             .actual_deflection
             .min(self.max_deflection)
             .max(self.min_deflection);
+    }
+
+    fn normalized_position_from_ths_deflection(&self, deflection: Angle) -> Ratio {
+        (deflection - self.min_deflection) / self.deflection_range
     }
 }
 impl SimulationElement for ThsHydraulicAssembly {
@@ -749,45 +776,45 @@ mod tests {
     fn trim_assembly_trim_up_trim_down_motor_n(#[case] motor_idx: usize) {
         let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
 
-        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * 4.5), motor_idx));
+        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.), motor_idx));
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!(deflection.get::<degree>() > 12.);
-        assert!(deflection.get::<degree>() < 14.);
+        assert!(deflection.get::<degree>() > 12.9);
+        assert!(deflection.get::<degree>() < 13.1);
 
-        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * -1.), motor_idx));
-        test_bed.run_with_delta(Duration::from_millis(20000));
+        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(-2.), motor_idx));
+        test_bed.run_with_delta(Duration::from_millis(25000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!(deflection.get::<degree>() >= -4.);
-        assert!(deflection.get::<degree>() < -2.);
+        assert!(deflection.get::<degree>() >= -2.1);
+        assert!(deflection.get::<degree>() < -1.9);
     }
 
     #[test]
     fn trim_assembly_trim_up_trim_down_motor_0() {
         let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
 
-        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * 4.5), 0));
+        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.), 0));
         test_bed.run_with_delta(Duration::from_millis(20000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!(deflection.get::<degree>() > 12.);
-        assert!(deflection.get::<degree>() < 14.);
+        assert!(deflection.get::<degree>() > 12.9);
+        assert!(deflection.get::<degree>() < 13.1);
 
-        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * -1.), 0));
+        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(-2.), 0));
         test_bed.run_with_delta(Duration::from_millis(25000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
-        assert!(deflection.get::<degree>() >= -4.);
-        assert!(deflection.get::<degree>() < -2.);
+        assert!(deflection.get::<degree>() >= -2.1);
+        assert!(deflection.get::<degree>() < -1.9);
     }
 
     #[test]
     fn trim_assembly_moves_but_ths_stops_with_hyd_press_below_1450psi() {
         let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
-        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(360. * 4.5), 0));
+        test_bed.command(|a| a.set_elec_trim_demand(Angle::new::<degree>(13.), 0));
         test_bed.run_with_delta(Duration::from_millis(5000));
 
         let deflection: Angle = test_bed.read_by_name("HYD_FINAL_THS_DEFLECTION");
