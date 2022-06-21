@@ -1054,4 +1054,6 @@
 1. [CDU] Full +/- button functionality - @lhoenig (Lukas Hoenig)
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
 1. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)
-1. [RMP] RMPs can now enter in NAV backup mode and tune/listen the navigation instruments - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [RMP] Fixed behavior (light and function) of volume potentiometers lights and transmit buttons lights - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [RMP] Added VHF 3 voice/data mode + "VHF 3 VOICE" on ECAM if voice mode - Julian Sebline (Julian Sebline#8476 on Discord)
+1. [RMP] Fixed inner frequency button behavior: decimal can return to 0 in all cases - Julian Sebline (Julian Sebline#8476 on Discord)
