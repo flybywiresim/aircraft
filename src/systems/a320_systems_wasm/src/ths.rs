@@ -20,9 +20,48 @@ pub(super) fn ths(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>
     builder.event_to_variable(
         "ELEV_TRIM_DN",
         EventToVariableMapping::Value(-35.),
-        Variable::named("THS_MANUAL_CONTROL_SPEED"),
+        Variable::aspect("THS_MANUAL_CONTROL_SPEED"),
         |options| options.mask().afterwards_reset_to(0.),
     )?;
+
+    builder.event_to_variable(
+        "ELEVATOR_TRIM_SET",
+        EventToVariableMapping::EventDataToValue(|event_data| {
+            println!(
+                "EVENT TRIM SET {:?} converted {:.2}",
+                event_data,
+                (event_data as f64) / 16383.
+            );
+            (event_data as f64) / 16383.
+        }),
+        Variable::named("THS_MAN_POS_SET_16K"),
+        |options| options.mask().afterwards_reset_to(-1.),
+    )?;
+
+    builder.event_to_variable(
+        "AXIS_ELEV_TRIM_SET",
+        EventToVariableMapping::EventData32kPosition,
+        Variable::named("THS_MAN_POS_SET_32K"),
+        |options| options.mask().afterwards_reset_to(-1.),
+    )?;
+
+    builder.map_many(
+        ExecuteOn::PreTick,
+        vec![
+            Variable::named("THS_MAN_POS_SET_16K"),
+            Variable::named("THS_MAN_POS_SET_32K"),
+            Variable::named("HYD_TRIM_WHEEL_PERCENT"),
+        ],
+        |values| {
+            println!(
+                "16K {:.2} 32K {:.2} current trim pos{:.2}",
+                values[0], values[1], values[2]
+            );
+
+            values[1] / 2. + 1.
+        },
+        Variable::aspect("THS_MANUAL_CONTROL_POSITION"),
+    );
 
     builder.variables_to_object(Box::new(PitchTrimSimOutput { elevator_trim: 0. }));
 
