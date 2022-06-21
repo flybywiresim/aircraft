@@ -6,6 +6,13 @@ import { RateMultiplierKnob, UpdateValueCallback } from '../../Common/RateMultip
 
 declare const Utils; // this can also be replaced once /typings are available
 
+export enum TransceiverType {
+    RADIO_VHF,
+    VOR,
+    ILS,
+    ADF
+}
+
 interface Props {
     /**
      * The RMP side (e.g. 'L' or 'R').
@@ -16,6 +23,11 @@ interface Props {
      * The current standby frequency value in Hz.
      */
     value: number,
+
+    /**
+     * Type of transceiver (e.g VHF, HF, VOR, ILS, MLS, ADF)
+     */
+    transceiver: TransceiverType,
 
     /**
      * A callback to set the current standby frequency value in Hz.
@@ -37,6 +49,7 @@ const findNearestInArray = (value: number, array: number[]): number => array.red
  * High Frequency communications use 10 kHz spacing.
  * Vatsim VHF communications use 25 kHz spacing.
  * VOR / ILS frequencies use 50 kHz spacing.
+ * ADF frequencies use 1kHz spacing.
  */
 type ChannelSpacing = 8.33 | 10 | 25 | 50;
 
@@ -63,7 +76,7 @@ const offsetFrequencyChannel = (spacing: ChannelSpacing, channel: number, offset
 
     // Special cases, such as ADF, do not use the ending algorithm to find frequencies.
     if (endings === null) {
-        return (Math.floor(channel / 100) + spacing * offset) * 100;
+        return (Math.floor(channel % 100) + spacing * offset);
     }
 
     // Reverse the channel order if we're going backwards.
@@ -100,17 +113,47 @@ const offsetFrequencyChannel = (spacing: ChannelSpacing, channel: number, offset
  * Renders standby frequency RadioPanelDisplay sub-component.
  */
 export const StandbyFrequency = (props: Props) => {
-    const spacing = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0')[0] === '0' ? 8.33 : 25;
+    let spacing: ChannelSpacing;
+    let toMhz = 1000;
+
+    switch (props.transceiver) {
+    case TransceiverType.ILS:
+        spacing = 25;
+        break;
+    case TransceiverType.VOR:
+        spacing = 50;
+        break;
+    case TransceiverType.ADF:
+        toMhz = 1;
+        break;
+    default:
+        spacing = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0')[0] === '0' ? 8.33 : 25;
+    }
+
     // Handle outer knob turned.
     const outerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
         if (props.value !== 0) {
-            const frequency = Math.round(props.value / 1000);
-            const integer = Math.floor(frequency / 1000);
-            const decimal = frequency % 1000;
+            let frequency = props.value;
+
+            if (props.transceiver !== TransceiverType.ADF) {
+                frequency = Math.round(frequency / 1000); // To kHz
+            }
+
+            const integer = Math.floor(frequency / 1000) + offset;
+
             // @todo determine min/max depending on mode.
-            const maxInteger = decimal > 975 ? 135 : 136;
-            const newInteger = Utils.Clamp(integer + offset, 118, maxInteger);
-            props.setValue((newInteger * 1000 + decimal) * 1000);
+            let newInteger = 0;
+            if (props.transceiver === TransceiverType.RADIO_VHF) {
+                newInteger = Utils.Clamp(integer, 118, 136);
+            } else if (props.transceiver === TransceiverType.ILS) {
+                newInteger = Utils.Clamp(integer, 108, 111);
+            } else if (props.transceiver === TransceiverType.VOR) {
+                newInteger = Utils.Clamp(integer, 108, 117);
+            } else if (props.transceiver === TransceiverType.ADF) {
+                newInteger = Utils.Clamp(integer, 190, 1750);
+            }
+
+            props.setValue((newInteger * 1000 + frequency % 1000) * toMhz);
         } else {
             props.setValue(0);
         }
@@ -118,18 +161,25 @@ export const StandbyFrequency = (props: Props) => {
 
     // Handle inner knob turned.
     const innerKnobUpdateCallback: UpdateValueCallback = useCallback((offset) => {
-        const frequency = Math.round(props.value / 1000);
         if (props.value !== 0) {
-            const integer = Math.floor(frequency / 1000);
-            // @todo determine correct frequency spacing depending on mode.
-            const decimal = offsetFrequencyChannel(spacing, frequency % 1000, offset);
-            // @todo determine min/max depending on mode.
+            let frequency = props.value;
+
+            if (props.transceiver !== TransceiverType.ADF) {
+                frequency = Math.round(frequency / 1000); // To kHz
+            }
+
             // Tested in real life:
             // Integer cannot return to 118 from 136 to the right
             // Decimal can return to 0 from 975 to the right
-            // const maxDecimal = integer === 136 ? 975 : 1000;
-            const newDecimal = Utils.Clamp(decimal, 0, 1000);
-            props.setValue((integer * 1000 + newDecimal) * 1000);
+            const integer = Math.floor(frequency / 1000);
+            let decimal = 0;
+
+            if (props.transceiver !== TransceiverType.ADF) {
+                decimal = offsetFrequencyChannel(spacing, frequency % 1000, offset);
+            } else { // offsetFrequencyChannel does not fit ADF needs
+                decimal = frequency % 1000 === 0 ? 500 : 0;
+            }
+            props.setValue((integer * 1000 + decimal % 1000) * toMhz);
         } else {
             props.setValue(0);
         }

@@ -4114,6 +4114,47 @@
                     <ANIM_NAME_PUSH_RECEIVER_VHF_R>PUSH_AUDIOL_VHF3</ANIM_NAME_PUSH_RECEIVER_VHF_R>
                     <NODE_ID_BUTTON_VHF_R>PUSH_AUDIOL_CALL3</NODE_ID_BUTTON_VHF_R>
                     <ANIM_NAME_BUTTON_VHF_R>PUSH_AUDIOL_CALL3</ANIM_NAME_BUTTON_VHF_R>
+
+                    <NODE_ID_RECEIVER_VOICE>PUSH_AUDIOL_VOICE</NODE_ID_RECEIVER_VOICE>
+                    <ANIM_NAME_PUSH_RECEIVER_VOICE>PUSH_AUDIOL_VOICE</ANIM_NAME_PUSH_RECEIVER_VOICE>
+                    <NODE_ID_BUTTON_VOICE_SEQ1>PUSH_AUDIOL_VOICE_SEQ1</NODE_ID_BUTTON_VOICE_SEQ1>
+                    <NODE_ID_BUTTON_VOICE_SEQ2>PUSH_AUDIOL_VOICE_SEQ2</NODE_ID_BUTTON_VOICE_SEQ2>
+
+                    <NODE_ID_RECEIVER_MKR>KNOB_AUDIOL_MKR</NODE_ID_RECEIVER_MKR>
+                    <NODE_ID_LIGHT_RECEIVER_MKR>PUSH_AUDIOL_MKR_EMIS</NODE_ID_LIGHT_RECEIVER_MKR>
+                    <ANIM_NAME_KNOB_RECEIVER_MKR>KNOB_AUDIOL_MKR</ANIM_NAME_KNOB_RECEIVER_MKR>
+                    <ANIM_NAME_PUSH_RECEIVER_MKR>PUSH_AUDIOL_MKR</ANIM_NAME_PUSH_RECEIVER_MKR>
+
+                    <NODE_ID_RECEIVER_VOR1>KNOB_AUDIOL_VOR1</NODE_ID_RECEIVER_VOR1>
+                    <NODE_ID_LIGHT_RECEIVER_VOR1>PUSH_AUDIOL_VOR1_EMIS</NODE_ID_LIGHT_RECEIVER_VOR1>
+                    <ANIM_NAME_KNOB_RECEIVER_VOR1>KNOB_AUDIOL_VOR1</ANIM_NAME_KNOB_RECEIVER_VOR1>
+                    <ANIM_NAME_PUSH_RECEIVER_VOR1>PUSH_AUDIOL_VOR1</ANIM_NAME_PUSH_RECEIVER_VOR1>
+
+                    <NODE_ID_RECEIVER_VOR2>KNOB_AUDIOL_VOR2</NODE_ID_RECEIVER_VOR2>
+                    <NODE_ID_LIGHT_RECEIVER_VOR2>PUSH_AUDIOL_VOR2_EMIS</NODE_ID_LIGHT_RECEIVER_VOR2>
+                    <ANIM_NAME_KNOB_RECEIVER_VOR2>KNOB_AUDIOL_VOR2</ANIM_NAME_KNOB_RECEIVER_VOR2>
+                    <ANIM_NAME_PUSH_RECEIVER_VOR2>PUSH_AUDIOL_VOR2</ANIM_NAME_PUSH_RECEIVER_VOR2>
+
+                    <NODE_ID_RECEIVER_ILS>KNOB_AUDIOL_ILS</NODE_ID_RECEIVER_ILS>
+                    <NODE_ID_LIGHT_RECEIVER_ILS>PUSH_AUDIOL_ILS_EMIS</NODE_ID_LIGHT_RECEIVER_ILS>
+                    <ANIM_NAME_KNOB_RECEIVER_ILS>KNOB_AUDIOL_ILS</ANIM_NAME_KNOB_RECEIVER_ILS>
+                    <ANIM_NAME_PUSH_RECEIVER_ILS>PUSH_AUDIOL_ILS</ANIM_NAME_PUSH_RECEIVER_ILS>
+
+                    <NODE_ID_RECEIVER_MLS>KNOB_AUDIOL_MLS</NODE_ID_RECEIVER_MLS>
+                    <NODE_ID_LIGHT_RECEIVER_MLS>PUSH_AUDIOL_MLS_EMIS</NODE_ID_LIGHT_RECEIVER_MLS>
+                    <ANIM_NAME_KNOB_RECEIVER_MLS>KNOB_AUDIOL_MLS</ANIM_NAME_KNOB_RECEIVER_MLS>
+                    <ANIM_NAME_PUSH_RECEIVER_MLS>PUSH_AUDIOL_MLS</ANIM_NAME_PUSH_RECEIVER_MLS>
+
+                    <NODE_ID_RECEIVER_ADF1>KNOB_AUDIOL_ADF1</NODE_ID_RECEIVER_ADF1>
+                    <NODE_ID_LIGHT_RECEIVER_ADF1>PUSH_AUDIOL_ADF1_EMIS</NODE_ID_LIGHT_RECEIVER_ADF1>
+                    <ANIM_NAME_KNOB_RECEIVER_ADF1>KNOB_AUDIOL_ADF1</ANIM_NAME_KNOB_RECEIVER_ADF1>
+                    <ANIM_NAME_PUSH_RECEIVER_ADF1>PUSH_AUDIOL_ADF1</ANIM_NAME_PUSH_RECEIVER_ADF1>
+
+                    <NODE_ID_RECEIVER_ADF2>KNOB_AUDIOL_ADF2</NODE_ID_RECEIVER_ADF2>
+                    <NODE_ID_LIGHT_RECEIVER_ADF2>PUSH_AUDIOL_ADF2_EMIS</NODE_ID_LIGHT_RECEIVER_ADF2>
+                    <ANIM_NAME_KNOB_RECEIVER_ADF2>KNOB_AUDIOL_ADF2</ANIM_NAME_KNOB_RECEIVER_ADF2>
+                    <ANIM_NAME_PUSH_RECEIVER_ADF2>PUSH_AUDIOL_ADF2</ANIM_NAME_PUSH_RECEIVER_ADF2>
+
                     <NODE_ID_BUTTON_SEQ1_VHF_R>PUSH_AUDIOL_CALL3_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_R>
                     <NODE_ID_BUTTON_SEQ2_VHF_R>PUSH_AUDIOL_CALL3_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_R>
                 </UseTemplate>
@@ -4128,11 +4169,6 @@
                     </OverrideTemplateParameters>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOL_RESET</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOL_VOICE</NODE_ID>
                         <SEQ1_POWERED>0</SEQ1_POWERED>
                         <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
@@ -4164,27 +4200,7 @@
                 </Component>
                 <Component ID="Audio_Panel_Left_Volume_Dummies">
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOL_VOR1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOL_VOR2_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOL_MKR_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOL_ILS_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_HF1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOL_MLS_EMIS</NODE_ID>
                         <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
@@ -4192,15 +4208,7 @@
                         <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOL_ADF1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOL_INT_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOL_ADF2_EMIS</NODE_ID>
                         <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
@@ -4254,6 +4262,49 @@
                     <ANIM_NAME_BUTTON_VHF_R>PUSH_AUDIOR_CALL3</ANIM_NAME_BUTTON_VHF_R>
                     <NODE_ID_BUTTON_SEQ1_VHF_R>PUSH_AUDIOR_CALL3_SEQ1</NODE_ID_BUTTON_SEQ1_VHF_R>
                     <NODE_ID_BUTTON_SEQ2_VHF_R>PUSH_AUDIOR_CALL3_SEQ2</NODE_ID_BUTTON_SEQ2_VHF_R>
+                    <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+                    <SEQ2_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ2_POWERED>
+                    <AUDIO_KNOB_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</AUDIO_KNOB_POWERED>
+
+                    <NODE_ID_RECEIVER_VOICE>PUSH_AUDIOR_VOICE</NODE_ID_RECEIVER_VOICE>
+                    <ANIM_NAME_PUSH_RECEIVER_VOICE>PUSH_AUDIOR_VOICE</ANIM_NAME_PUSH_RECEIVER_VOICE>
+                    <NODE_ID_BUTTON_VOICE_SEQ1>PUSH_AUDIOR_VOICE_SEQ1</NODE_ID_BUTTON_VOICE_SEQ1>
+                    <NODE_ID_BUTTON_VOICE_SEQ2>PUSH_AUDIOR_VOICE_SEQ2</NODE_ID_BUTTON_VOICE_SEQ2>
+
+                    <NODE_ID_RECEIVER_MKR>KNOB_AUDIOR_MKR</NODE_ID_RECEIVER_MKR>
+                    <NODE_ID_LIGHT_RECEIVER_MKR>PUSH_AUDIOR_MKR_EMIS</NODE_ID_LIGHT_RECEIVER_MKR>
+                    <ANIM_NAME_KNOB_RECEIVER_MKR>KNOB_AUDIOR_MKR</ANIM_NAME_KNOB_RECEIVER_MKR>
+                    <ANIM_NAME_PUSH_RECEIVER_MKR>PUSH_AUDIOR_MKR</ANIM_NAME_PUSH_RECEIVER_MKR>
+
+                    <NODE_ID_RECEIVER_VOR1>KNOB_AUDIOR_VOR1</NODE_ID_RECEIVER_VOR1>
+                    <NODE_ID_LIGHT_RECEIVER_VOR1>PUSH_AUDIOR_VOR1_EMIS</NODE_ID_LIGHT_RECEIVER_VOR1>
+                    <ANIM_NAME_KNOB_RECEIVER_VOR1>KNOB_AUDIOR_VOR1</ANIM_NAME_KNOB_RECEIVER_VOR1>
+                    <ANIM_NAME_PUSH_RECEIVER_VOR1>PUSH_AUDIOR_VOR1</ANIM_NAME_PUSH_RECEIVER_VOR1>
+
+                    <NODE_ID_RECEIVER_VOR2>KNOB_AUDIOR_VOR2</NODE_ID_RECEIVER_VOR2>
+                    <NODE_ID_LIGHT_RECEIVER_VOR2>PUSH_AUDIOR_VOR2_EMIS</NODE_ID_LIGHT_RECEIVER_VOR2>
+                    <ANIM_NAME_KNOB_RECEIVER_VOR2>KNOB_AUDIOR_VOR2</ANIM_NAME_KNOB_RECEIVER_VOR2>
+                    <ANIM_NAME_PUSH_RECEIVER_VOR2>PUSH_AUDIOR_VOR2</ANIM_NAME_PUSH_RECEIVER_VOR2>
+
+                    <NODE_ID_RECEIVER_ILS>KNOB_AUDIOR_ILS</NODE_ID_RECEIVER_ILS>
+                    <NODE_ID_LIGHT_RECEIVER_ILS>PUSH_AUDIOR_ILS_EMIS</NODE_ID_LIGHT_RECEIVER_ILS>
+                    <ANIM_NAME_KNOB_RECEIVER_ILS>KNOB_AUDIOR_ILS</ANIM_NAME_KNOB_RECEIVER_ILS>
+                    <ANIM_NAME_PUSH_RECEIVER_ILS>PUSH_AUDIOR_ILS</ANIM_NAME_PUSH_RECEIVER_ILS>
+
+                    <NODE_ID_RECEIVER_MLS>KNOB_AUDIOR_MLS</NODE_ID_RECEIVER_MLS>
+                    <NODE_ID_LIGHT_RECEIVER_MLS>PUSH_AUDIOR_MLS_EMIS</NODE_ID_LIGHT_RECEIVER_MLS>
+                    <ANIM_NAME_KNOB_RECEIVER_MLS>KNOB_AUDIOR_MLS</ANIM_NAME_KNOB_RECEIVER_MLS>
+                    <ANIM_NAME_PUSH_RECEIVER_MLS>PUSH_AUDIOR_MLS</ANIM_NAME_PUSH_RECEIVER_MLS>
+
+                    <NODE_ID_RECEIVER_ADF1>KNOB_AUDIOR_ADF1</NODE_ID_RECEIVER_ADF1>
+                    <NODE_ID_LIGHT_RECEIVER_ADF1>PUSH_AUDIOR_ADF1_EMIS</NODE_ID_LIGHT_RECEIVER_ADF1>
+                    <ANIM_NAME_KNOB_RECEIVER_ADF1>KNOB_AUDIOR_ADF1</ANIM_NAME_KNOB_RECEIVER_ADF1>
+                    <ANIM_NAME_PUSH_RECEIVER_ADF1>PUSH_AUDIOR_ADF1</ANIM_NAME_PUSH_RECEIVER_ADF1>
+
+                    <NODE_ID_RECEIVER_ADF2>KNOB_AUDIOR_ADF2</NODE_ID_RECEIVER_ADF2>
+                    <NODE_ID_LIGHT_RECEIVER_ADF2>PUSH_AUDIOR_ADF2_EMIS</NODE_ID_LIGHT_RECEIVER_ADF2>
+                    <ANIM_NAME_KNOB_RECEIVER_ADF2>KNOB_AUDIOR_ADF2</ANIM_NAME_KNOB_RECEIVER_ADF2>
+                    <ANIM_NAME_PUSH_RECEIVER_ADF2>PUSH_AUDIOR_ADF2</ANIM_NAME_PUSH_RECEIVER_ADF2>
                 </UseTemplate>
                 <Component ID="Audio_Panel_Right_Dummies">
                     <OverrideTemplateParameters>
@@ -4266,11 +4317,6 @@
                     </OverrideTemplateParameters>
                     <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
                         <NODE_ID>PUSH_AUDIOR_RESET</NODE_ID>
-                        <SEQ1_POWERED>0</SEQ1_POWERED>
-                        <SEQ2_POWERED>0</SEQ2_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="FBW_AIRBUS_Push_Dummy_Template">
-                        <NODE_ID>PUSH_AUDIOR_VOICE</NODE_ID>
                         <SEQ1_POWERED>0</SEQ1_POWERED>
                         <SEQ2_POWERED>0</SEQ2_POWERED>
                     </UseTemplate>
@@ -4302,27 +4348,7 @@
                 </Component>
                 <Component ID="Audio_Panel_Right_Volume_Dummies">
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOR_VOR1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOR_VOR2_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOR_MKR_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOR_ILS_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_HF1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOR_MLS_EMIS</NODE_ID>
                         <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
@@ -4330,15 +4356,7 @@
                         <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOR_ADF1_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
                         <NODE_ID>PUSH_AUDIOR_INT_EMIS</NODE_ID>
-                        <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
-                    </UseTemplate>
-                    <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
-                        <NODE_ID>PUSH_AUDIOR_ADF2_EMIS</NODE_ID>
                         <AUDIO_KNOB_POWERED>0</AUDIO_KNOB_POWERED>
                     </UseTemplate>
                     <UseTemplate Name="A32NX_Audio_Panel_Volume_Dummy">
@@ -4351,6 +4369,41 @@
                     </UseTemplate>
                 </Component>
             </Component>
+            <!-- MARKER DEFAULT VALUE IS 1 BUT IT IS UNDESIRED -->
+            <!-- ADF2 volume set do not exist in the sdk for now. Hopefully in the future -->
+            <Update Once="True">
+                (A:MARKER SOUND, Bool) 1 == {
+                    (&gt;K:MARKER_SOUND_TOGGLE)
+                }
+
+                0 (&gt;K:NAV1_VOLUME_SET)
+                0 (&gt;K:NAV2_VOLUME_SET)
+                0 (&gt;K:NAV3_VOLUME_SET)
+                0 (&gt;K:NAV4_VOLUME_SET)
+
+                0 (&gt;K:ADF_VOLUME_SET)
+                0 (&gt;K:ADF2_VOLUME_SET)
+
+                113000000 (&gt;L:A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_VOR)
+                113000000 (&gt;L:A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_VOR)
+                113000000 (&gt;L:A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_VOR)
+                113000000 (&gt;L:A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_VOR)
+
+                108900000 (&gt;L:A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_ILS)
+                108900000 (&gt;L:A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_ILS)
+                108900000 (&gt;L:A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_ILS)
+                108900000 (&gt;L:A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_ILS)
+
+                433000 (&gt;L:A32NX_RMP_L_SAVED_ACTIVE_FREQUENCY_ADF)
+                433000 (&gt;L:A32NX_RMP_L_SAVED_STANDBY_FREQUENCY_ADF)
+                433000 (&gt;L:A32NX_RMP_R_SAVED_ACTIVE_FREQUENCY_ADF)
+                433000 (&gt;L:A32NX_RMP_R_SAVED_STANDBY_FREQUENCY_ADF)
+
+                22 (&gt;L:A32NX_RMP_L_SAVED_COURSE_VOR)
+                202 (&gt;L:A32NX_RMP_L_SAVED_COURSE_ILS)
+                22 (&gt;L:A32NX_RMP_R_SAVED_COURSE_VOR)
+                202 (&gt;L:A32NX_RMP_R_SAVED_COURSE_ILS)
+            </Update>
         </Component>
 
         <Component ID="Airbus_ATC">
@@ -4790,51 +4843,6 @@
                 <NODE_ID>PUSH_AUDIOL_RESET</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_VOICE</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_ADF2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOL_ADF2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_ADF1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOL_ADF1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_MLS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOL_MLS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_ILS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOL_ILS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_MKR</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOL_MKR</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_VOR1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOL_VOR1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOL_VOR2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOL_VOR2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUDIOL_PA</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
@@ -4866,51 +4874,6 @@
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUDIOR_RESET</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_VOICE</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_ADF2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOR_ADF2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_ADF1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOR_ADF1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_MLS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOR_MLS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_ILS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOR_ILS</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_MKR</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOR_MKR</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_VOR1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOR_VOR1</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>PUSH_AUDIOR_VOR2</NODE_ID>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
-                <NODE_ID>KNOB_AUDIOR_VOR2</NODE_ID>
             </UseTemplate>
             <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">
                 <NODE_ID>PUSH_AUDIOR_PA</NODE_ID>

@@ -1063,3 +1063,4 @@
 1. [OVHD] Fixed fire push button not being able to be stowed - Julian Sebline (Julian Sebline#8476 on Discord)
 1. [RMP] Fixed behavior of RMPs - Julian Sebline (Julian Sebline#8476 on Discord)
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on Discord)
+1. [RMP] RMPs can now enter in NAV backup mode and tune/listen the navigation instruments - Julian Sebline (Julian Sebline#8476 on Discord)
