@@ -29,7 +29,7 @@ function fetchTimeValue() {
  * @param {string | number} value
  */
 const lbsToKg = (value) => {
-    return (+value * 0.453592).toString();
+    return (+value * 0.4535934).toString();
 };
 
 /**
@@ -41,7 +41,7 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
     const simBriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
 
     if (!simBriefUserId) {
-        mcdu.addNewMessage(NXFictionalMessages.noSimBriefUser);
+        mcdu.setScratchpadMessage(NXFictionalMessages.noSimBriefUser);
         throw new Error("No SimBrief pilot ID provided");
     }
 
@@ -65,16 +65,18 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
             mcdu.simbrief["estZfw"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.est_zfw : lbsToKg(data.weights.est_zfw);
             mcdu.simbrief["paxCount"] = data.weights.pax_count_actual;
             mcdu.simbrief["bagCount"] = data.weights.bag_count_actual;
-            mcdu.simbrief["paxWeight"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.pax_weight : lbsToKg(data.weights.pax_weight);
-            mcdu.simbrief["bagWeight"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.bag_weight : lbsToKg(data.weights.bag_weight);
-            mcdu.simbrief["freight"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.freight_added : lbsToKg(data.weights.freight_added);
-            mcdu.simbrief["cargo"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.cargo : lbsToKg(data.weights.cargo);
+            mcdu.simbrief["paxWeight"] = data.weights.pax_weight;
+            mcdu.simbrief["bagWeight"] = data.weights.bag_weight;
+            mcdu.simbrief["freight"] = data.weights.freight_added;
+            mcdu.simbrief["cargo"] = data.weights.cargo;
             mcdu.simbrief["costIndex"] = data.general.costindex;
             mcdu.simbrief["navlog"] = data.navlog.fix;
             mcdu.simbrief["callsign"] = data.atc.callsign;
             mcdu.simbrief["alternateIcao"] = data.alternate.icao_code;
             mcdu.simbrief["alternateTransAlt"] = parseInt(data.alternate.trans_alt, 10);
             mcdu.simbrief["alternateTransLevel"] = parseInt(data.alternate.trans_level, 10);
+            mcdu.simbrief["alternateAvgWindDir"] = parseInt(data.alternate.avg_wind_dir, 10);
+            mcdu.simbrief["alternateAvgWindSpd"] = parseInt(data.alternate.avg_wind_spd, 10);
             mcdu.simbrief["avgTropopause"] = data.general.avg_tropopause;
             mcdu.simbrief["ete"] = data.times.est_time_enroute;
             mcdu.simbrief["blockTime"] = data.times.est_block;
@@ -120,7 +122,7 @@ const insertUplink = (mcdu) => {
 
     const fromTo = `${originIcao}/${destinationIcao}`;
 
-    mcdu.addNewMessage(NXSystemMessages.uplinkInsertInProg);
+    mcdu.setScratchpadMessage(NXSystemMessages.uplinkInsertInProg);
 
     /**
      * AOC ACT F-PLN UPLINK
@@ -141,7 +143,7 @@ const insertUplink = (mcdu) => {
 
             setTimeout(async () => {
                 await uplinkRoute(mcdu);
-                mcdu.addNewMessage(NXSystemMessages.aocActFplnUplink);
+                mcdu.setScratchpadMessage(NXSystemMessages.aocActFplnUplink);
             }, mcdu.getDelayRouteChange());
 
             if (mcdu.page.Current === mcdu.page.InitPageA) {
@@ -180,7 +182,7 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
                     res(true);
                 } else {
                     console.log('AWY/WPT MISMATCH ' + routeIdent + " via " + via);
-                    mcdu.addNewMessage(NXSystemMessages.awyWptMismatch);
+                    mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
                     res(false);
                 }
             });
@@ -199,7 +201,7 @@ const addWaypointAsync = (fix, mcdu, routeIdent, via) => {
                     }).catch(console.error);
                 } else {
                     console.log('NOT IN DATABASE ' + routeIdent);
-                    mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                    mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                     res(false);
                 }
             });
@@ -213,7 +215,7 @@ const addLatLonWaypoint = async (mcdu, lat, lon) => {
         await mcdu.flightPlanManager.addUserWaypoint(wp);
     } catch (err) {
         if (err instanceof McduMessage) {
-            mcdu.addNewMessage(err);
+            mcdu.setScratchpadMessage(err);
         } else {
             console.error(err);
         }
@@ -252,7 +254,7 @@ const uplinkRoute = async (mcdu) => {
             await addWaypointAsync(fix, mcdu, fix.ident);
             continue;
         } else {
-            if (fix.via_airway === 'DCT') {
+            if (fix.via_airway === 'DCT' || fix.via_airway.match(/^NAT[A-Z]$/)) {
                 if (fix.type === 'apt' && nextFix === undefined) {
                     break;
                 }

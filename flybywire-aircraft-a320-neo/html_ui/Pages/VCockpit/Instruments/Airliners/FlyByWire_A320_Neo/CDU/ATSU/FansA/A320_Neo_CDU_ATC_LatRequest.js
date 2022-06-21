@@ -146,14 +146,14 @@ class CDUAtcLatRequest {
                         data.directTo = value;
                     } catch (err) {
                         if (err === NXSystemMessages.formatError) {
-                            mcdu.addNewMessage(err);
+                            mcdu.setScratchpadMessage(err);
                         }
                     };
                 } else if (/^[A-Z0-9]{2,7}/.test(value)) {
                     // place format
                     mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(value).then((waypoints) => {
                         if (waypoints.length === 0) {
-                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                         } else {
                             data.directTo = value;
                         }
@@ -175,11 +175,11 @@ class CDUAtcLatRequest {
                 if (mcdu.flightPlanManager.getOrigin() && mcdu.flightPlanManager.getOrigin().ident) {
                     mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(mcdu.flightPlanManager.getOrigin().ident).then((waypoints) => {
                         if (waypoints.length === 0) {
-                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                         } else if (waypoints[0].infos instanceof AirportInfo) {
                             const airportInfo = waypoints[0].infos;
                             if (airportInfo.departures.findIndex((sid) => sid.name === value) === -1) {
-                                mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                                mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                             } else {
                                 data.sid = value;
                             }
@@ -193,11 +193,11 @@ class CDUAtcLatRequest {
                 if (mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident) {
                     mcdu.dataManager.GetWaypointsByIdent.bind(mcdu.dataManager)(mcdu.flightPlanManager.getDestination().ident).then((waypoints) => {
                         if (waypoints.length === 0) {
-                            mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                            mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                         } else if (waypoints[0].infos instanceof AirportInfo) {
                             const airportInfo = waypoints[0].infos;
                             if (airportInfo.approaches.findIndex((star) => star.name === value) === -1) {
-                                mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                                mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                             } else {
                                 data.sid = value;
                             }
@@ -320,7 +320,7 @@ class CDUAtcLatRequest {
                 } else if (updatedOffset) {
                     data.offset = offset;
                 } else if (error) {
-                    mcdu.addNewMessage(error);
+                    mcdu.setScratchpadMessage(error);
                 }
             }
 
@@ -375,7 +375,7 @@ class CDUAtcLatRequest {
         mcdu.onRightInput[5] = () => {
             if (CDUAtcLatRequest.CanSendData(data)) {
                 if (mcdu.atsu.atc.currentStation() === "") {
-                    mcdu.addNewMessage(NXSystemMessages.noAtc);
+                    mcdu.setScratchpadMessage(NXSystemMessages.noAtc);
                 } else {
                     const messages = CDUAtcLatRequest.CreateRequests(mcdu, data);
                     if (messages) {

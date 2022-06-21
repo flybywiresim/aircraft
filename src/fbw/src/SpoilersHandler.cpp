@@ -131,9 +131,9 @@ void SpoilersHandler::update(double simulationTime_new,
     }
   }
 
-  // manual deployment -------------------------------------------------------------------------------------------------
+  // deployment -------------------------------------------------------------------------------------------------------
 
-  if (isArmed != isArmed_new || handlePosition != handlePosition_new) {
+  if (isArmed != isArmed_new || handlePosition != handlePosition_new || isAutopilotEngaged != isAutopilotEngaged_new) {
     // ensure ground spoilers are only armed when handle is in retracted position
     isArmed = isArmed_new && (handlePosition_new == POSITION_RETRACTED);
     // remember handle position
@@ -147,12 +147,6 @@ void SpoilersHandler::update(double simulationTime_new,
       }
       isGroundSpoilersActive = false;
     }
-  }
-
-  // autopilot limitation on transition --------------------------------------------------------------------------------
-
-  if (isAutopilotEngaged_new && isAutopilotEngaged != isAutopilotEngaged_new) {
-    targetSimPosition = fmin(POSITION_LIMIT_AUTOPILOT, handlePosition_new);
   }
 
   // store simulation variables ----------------------------------------------------------------------------------------

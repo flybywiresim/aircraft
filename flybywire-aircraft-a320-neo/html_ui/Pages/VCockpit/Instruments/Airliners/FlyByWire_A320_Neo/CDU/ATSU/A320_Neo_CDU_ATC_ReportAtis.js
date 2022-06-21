@@ -120,7 +120,7 @@ class CDUAtcReportAtis {
             if (messages.length > (messageIndex + 1)) {
                 CDUAtcReportAtis.ShowPage(mcdu, title, messages, messageIndex + 1, offset);
             } else {
-                mcdu.addNewMessage(NXSystemMessages.noPreviousAtis);
+                mcdu.setScratchpadMessage(NXSystemMessages.noPreviousAtis);
             }
         };
 

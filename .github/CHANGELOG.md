@@ -4,6 +4,26 @@
 <!-- Always use "1." at the start instead of "2. " or "X. " as GitHub will auto renumber everything. -->
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
+## 0.9.0
+
+1. [MODEL] Add Wheel Chocks and GSE Safety Cones - @bouveng (Johan Bouveng)
+1. [MCDU] Allow Wind Request from Simbrief flight plan - @USA-RedDragon (Jacob McSwain)
+1. [HYD] Fix fluid return handling of actuators - @Crocket63 (crocket)
+1. [ENGINE] Fuel persistency between each flight - @juliansebline (Julian Sebline#8476)
+1. [HYD] Now allowing reverting gravity gear extension - @Crocket63 (crocket)
+1. [TCAS] Fixed issue when turning to STBY while RA is issued - @2hwk (2Cas#1022)
+1. [GPWS] Alt callouts now finish before altitude is reached - @2hwk (2Cas#1022)
+1. [ENGINE] Improved engine model at TOGA - @Taz5150 (TazX [Z+2]#0405)
+1. [FLIGHTMODEL] Improve pitch trim and manual braking level - @donstim (donbikes#4084)
+1. [ATSU] Fix cargo weight is not set on manually PAX - @Revyn112 (Revyn112#1010)
+1. [CDSS] When off no longer displays door video - @davidwalschots (David Walschots)
+1. [FMGC] Map leg course with station declination where required - @tracernz (Mike)
+1. [HYD] Gear system now supports spawning in flight gear up - @Crocket63 (crocket)
+1. [MCDU] Added imperial runway length - @derl30n (Leon)
+1. [MCDU] Refactor and improve input handling and conversions in MCDU W&B - @sidnov (Sid)
+1. [MCDU] Improved arrivals/departure page scrolling, more true-to-life behaviour and cosmetic apperance - @2hwk (2Cas#1022)
+1. [PFD] Show yellow GS reference line in correct conditions - @saschl (saschl#9432)
+1. [ECAM] Fix erroneous SLATS NOT IN T.O CONFIG warning during flaps 3 takeoff - @beheh (Benedict Etzel)
 
 ## 0.8.0
 
@@ -237,6 +257,20 @@
 1. [HYD] Adjusted droop characteristics and randomness of surfaces actuators - @Crocket63
 1. [PFD] Reimplement PFD with msfs-avionics framework for improved performance - @saschl (saschl#9432)
 1. [GPWS] Mute "100 above" callout during autoland - @patmack14 (Patrick Macken)
+1. [MCDU] Refactored mcdu key input events - @derl30n - (Leon)
+1. [AUTOTHRUST] Added configuration option to allow change of key increment size - @aguther (Andreas Guther)
+1. [FLIGHTMODEL] Start fuel transfer for both tanks when EITHER inner tank reaches the trigger level - @donstim (
+   donbikes#4084)
+1. [FMGC] Add lat/lon waypoint ident option - @tracernz (Mike)
+1. [HYD] PTU model refinement and simulated potential wear state probabilities - @Crocket63
+1. [HYD] Reduced engine driven pumps efficiency in active regulation area - @Crocket63
+1. [FMGC] Implemented Airport Button - @patmack14 (Patrick Macken)
+1. [RMP] Fixed colour of SEL indicator - @tracernz (Mike)
+1. [MISC] Added custom Autobrake event for SimConnect - @aguther (Andreas Guther)
+1. [EWD] Fixed failures not re-triggering when resolved - @tricky_dicky (Richard Pilbery)
+1. [SOUND] Prevent autopilot disconnect from sounding on C+D spawn - @tricky_dicky (Richard Pilbery) and @saschl (saschl#9432)
+1. [FMGC] Removed flight phase transition from TAKEOFF to PREFLIGHT - @beheh (Benedict Etzel)
+1. [FMGC] Added flight phase transition to DONE when on ground > 30 s and engines off - @aguther (Andreas Guther)
 
 ## 0.7.0
 

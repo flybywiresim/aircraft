@@ -3,6 +3,7 @@ mod autobrakes;
 mod brakes;
 mod elevators;
 mod flaps;
+mod gear;
 mod nose_wheel_steering;
 mod rudder;
 mod spoilers;
@@ -13,12 +14,13 @@ use autobrakes::autobrakes;
 use brakes::brakes;
 use elevators::elevators;
 use flaps::flaps;
+use gear::gear;
 use nose_wheel_steering::nose_wheel_steering;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
-use systems::shared::ElectricalBusType;
-use systems::{failures::FailureType, shared::HydraulicColor};
+use systems::failures::FailureType;
+use systems::shared::{ElectricalBusType, HydraulicColor, LgciuId, ProximityDetectorId};
 use systems_wasm::aspects::ExecuteOn;
 use systems_wasm::{MsfsSimulationBuilder, Variable};
 
@@ -74,6 +76,26 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             29_008,
             FailureType::ReservoirReturnLeak(HydraulicColor::Yellow),
         ),
+        (32_000, FailureType::LgciuPowerSupply(LgciuId::Lgciu1)),
+        (32_001, FailureType::LgciuPowerSupply(LgciuId::Lgciu2)),
+        (32_002, FailureType::LgciuInternalError(LgciuId::Lgciu1)),
+        (32_003, FailureType::LgciuInternalError(LgciuId::Lgciu2)),
+        (
+            32_004,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockGearLeft1),
+        ),
+        (
+            32_005,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::DownlockDoorRight2),
+        ),
+        (
+            32_006,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockGearNose1),
+        ),
+        (
+            32_007,
+            FailureType::GearProxSensorDamage(ProximityDetectorId::UplockDoorLeft2),
+        ),
         (34_000, FailureType::RadioAltimeter(1)),
         (34_001, FailureType::RadioAltimeter(2)),
     ])
@@ -100,7 +122,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("GEAR CENTER POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR LEFT POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR RIGHT POSITION", "Percent", 0)?
-    .provides_aircraft_variable("GEAR HANDLE POSITION", "Bool", 0)?
     .provides_aircraft_variable("GENERAL ENG STARTER ACTIVE", "Bool", 1)?
     .provides_aircraft_variable("GENERAL ENG STARTER ACTIVE", "Bool", 2)?
     .provides_aircraft_variable("GPS GROUND SPEED", "Knots", 0)?
@@ -108,6 +129,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:3", "Percent", 0)?
+    .provides_aircraft_variable("LIGHT BEACON ON", "Bool", 0)?
     .provides_aircraft_variable("PLANE ALT ABOVE GROUND", "Feet", 0)?
     .provides_aircraft_variable("PLANE PITCH DEGREES", "Degrees", 0)?
     .provides_aircraft_variable("PLANE BANK DEGREES", "Degrees", 0)?
@@ -186,6 +208,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(elevators)?
     .with_aspect(rudder)?
     .with_aspect(spoilers)?
+    .with_aspect(gear)?
     .build(A320::new)?;
 
     while let Some(event) = gauge.next_event().await {

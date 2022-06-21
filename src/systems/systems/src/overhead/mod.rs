@@ -501,7 +501,7 @@ impl FirePushButton {
     }
 
     pub fn set_released(&mut self, released: bool) {
-        self.is_released = self.is_released || released;
+        self.is_released = released;
     }
 
     pub fn is_released(&self) -> bool {
@@ -1086,7 +1086,7 @@ mod fire_push_button_tests {
     }
 
     #[test]
-    fn once_released_stays_released() {
+    fn can_be_stowed_after_release() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
             FirePushButton::new(context, "TEST")
         }));
@@ -1094,7 +1094,7 @@ mod fire_push_button_tests {
         test_bed.command_element(|e| e.set_released(true));
         test_bed.command_element(|e| e.set_released(false));
 
-        assert!(test_bed.query_element(|e| e.is_released()));
+        assert!(test_bed.query_element(|e| !e.is_released()));
     }
 
     #[test]

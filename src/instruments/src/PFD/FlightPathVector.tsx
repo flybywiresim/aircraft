@@ -84,9 +84,9 @@ export class FlightPathVector extends DisplayComponent<{bus: EventBus}> {
 
     private moveBird() {
         const daLimConv = Math.max(Math.min(this.data.da.value, 21), -21) * DistanceSpacing / ValueSpacing;
-        const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(-this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value));
+        const pitchSubFpaConv = (calculateHorizonOffsetFromPitch(this.data.pitch.value) - calculateHorizonOffsetFromPitch(this.data.fpa.value));
         const rollCos = Math.cos(this.data.roll.value * Math.PI / 180);
-        const rollSin = Math.sin(this.data.roll.value * Math.PI / 180);
+        const rollSin = Math.sin(-this.data.roll.value * Math.PI / 180);
 
         const xOffset = daLimConv * rollCos - pitchSubFpaConv * rollSin;
         const yOffset = pitchSubFpaConv * rollCos + daLimConv * rollSin;

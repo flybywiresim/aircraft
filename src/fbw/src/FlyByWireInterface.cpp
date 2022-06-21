@@ -74,6 +74,9 @@ bool FlyByWireInterface::update(double sampleTime) {
   // update radio receivers
   result &= updateRadioReceiver(sampleTime);
 
+  // handle initialization
+  result &= handleFcuInitialization(calculatedSampleTime);
+
   // do not process laws in pause or slew
   if (simConnectInterface.getSimData().slew_on) {
     wasInSlew = true;
@@ -218,6 +221,10 @@ void FlyByWireInterface::loadConfiguration() {
 }
 
 void FlyByWireInterface::setupLocalVariables() {
+  // regsiter L variable for init state and ready signal
+  idIsReady = make_unique<LocalVariable>("A32NX_IS_READY");
+  idStartState = make_unique<LocalVariable>("A32NX_START_STATE");
+
   // regsiter L variable for logging
   idLoggingFlightControlsEnabled = make_unique<LocalVariable>("A32NX_LOGGING_FLIGHT_CONTROLS_ENABLED");
   idLoggingThrottlesEnabled = make_unique<LocalVariable>("A32NX_LOGGING_THROTTLES_ENABLED");
@@ -439,6 +446,67 @@ void FlyByWireInterface::setupLocalVariables() {
   idRadioReceiverLocalizerDistance = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_LOC_DISTANCE");
   idRadioReceiverGlideSlopeValid = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_IS_VALID");
   idRadioReceiverGlideSlopeDeviation = make_unique<LocalVariable>("A32NX_RADIO_RECEIVER_GS_DEVIATION");
+
+  idRealisticTillerEnabled = make_unique<LocalVariable>("A32NX_REALISTIC_TILLER_ENABLED");
+  idTillerHandlePosition = make_unique<LocalVariable>("A32NX_TILLER_HANDLE_POSITION");
+  idNoseWheelPosition = make_unique<LocalVariable>("A32NX_NOSE_WHEEL_POSITION");
+}
+
+bool FlyByWireInterface::handleFcuInitialization(double sampleTime) {
+  // init should be run only once and only when is ready is signaled
+  if (wasFcuInitialized || !idIsReady->get()) {
+    return true;
+  }
+
+  // get sim data
+  auto simData = simConnectInterface.getSimData();
+
+  // remember simulation of ready signal
+  if (simulationTimeReady == 0.0) {
+    simulationTimeReady = simData.simulationTime;
+  }
+
+  // time since ready
+  auto timeSinceReady = simData.simulationTime - simulationTimeReady;
+
+  // determine if we need to run init code
+  if (idStartState->get() >= 5 && timeSinceReady > 6.0) {
+    // init FCU for in flight configuration
+    double targetAltitude = round(simData.H_ind_ft / 1000.0) * 1000.0;
+    double targetHeading = fmod(round(simData.Psi_magnetic_deg / 10.0) * 10.0, 360.0);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, targetHeading);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, targetAltitude);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_SET, simData.H_ind_ft < targetAltitude ? 1000 : -1000);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_VS_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ATHR_PUSH);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_AP_1_PUSH);
+    idFcuHeadingSync->set(0);
+    idFcuModeReversionActive->set(0);
+    idFcuModeReversionTargetFpm->set(simData.H_ind_ft < targetAltitude ? 1000 : -1000);
+    wasFcuInitialized = true;
+  } else if (idStartState->get() == 4 && timeSinceReady > 1.0) {
+    // init FCU for on runway -> ready for take-off
+    double targetHeading = fmod(round(simData.Psi_magnetic_deg), 360.0);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_SET, 150);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, targetHeading);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, 15000);
+    wasFcuInitialized = true;
+  } else if (idStartState->get() < 4 && timeSinceReady > 1.0) {
+    // init FCU for on ground -> default FCU values after power-on
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_SET, 100);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_SPD_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_SET, 0);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_HDG_PULL);
+    simConnectInterface.sendEvent(SimConnectInterface::A32NX_FCU_ALT_SET, 100);
+    wasFcuInitialized = true;
+  }
+
+  // success
+  return true;
 }
 
 bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
@@ -677,6 +745,13 @@ bool FlyByWireInterface::updateAdditionalData(double sampleTime) {
   additionalData.throttle_lever_2_pos = simData.throttle_lever_2_pos;
   additionalData.corrected_engine_N1_1_percent = simData.corrected_engine_N1_1_percent;
   additionalData.corrected_engine_N1_2_percent = simData.corrected_engine_N1_2_percent;
+  additionalData.assistanceTakeoffEnabled = simData.assistanceTakeoffEnabled;
+  additionalData.assistanceLandingEnabled = simData.assistanceLandingEnabled;
+  additionalData.aiAutoTrimActive = simData.aiAutoTrimActive;
+  additionalData.aiControlsActive = simData.aiControlsActive;
+  additionalData.realisticTillerEnabled = idRealisticTillerEnabled->get() == 1;
+  additionalData.tillerHandlePosition = idTillerHandlePosition->get();
+  additionalData.noseWheelPosition = idNoseWheelPosition->get();
 
   return true;
 }

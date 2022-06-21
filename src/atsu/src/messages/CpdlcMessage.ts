@@ -51,7 +51,7 @@ export class CpdlcMessage extends AtsuMessage {
         content = template;
         element.Content.forEach((entry) => {
             const idx = content.indexOf('%s');
-            content = `${content.substring(0, idx)}${entry.Value}${content.substring(idx + 2)}`;
+            content = `${content.substring(0, idx)}@${entry.Value}@${content.substring(idx + 2)}`;
         });
 
         return content;

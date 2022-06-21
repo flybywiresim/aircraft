@@ -21,7 +21,7 @@ type MessageVisualizationProps = {
     yStart: number,
     deltaY: number,
     isStatusAvailable: ((sender: string) => boolean) | undefined,
-    setStatus: ((sender: string, message: string) => void) | undefined,
+    setStatus: ((sender: string, message: string, duration: number) => void) | undefined,
     resetStatus: ((sender: string) => void) | undefined,
 }
 
@@ -206,7 +206,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
             }
             setPageIndex(pageIndex - 1);
         } else if (isStatusAvailable !== undefined && setStatus !== undefined && isStatusAvailable('DatalinkMessage') === true) {
-            setStatus('DatalinkMessage', 'NO MORE PGE');
+            setStatus('DatalinkMessage', 'NO MORE PGE', 5);
         }
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_POEPLUS', 'A32NX_DCDU_BTN_MPR_POEPLUS'], () => {
@@ -220,7 +220,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
             }
             setPageIndex(pageIndex + 1);
         } else if (isStatusAvailable !== undefined && setStatus !== undefined && isStatusAvailable('DatalinkMessage') === true) {
-            setStatus('DatalinkMessage', 'NO MORE PGE');
+            setStatus('DatalinkMessage', 'NO MORE PGE', 5);
         }
     });
 

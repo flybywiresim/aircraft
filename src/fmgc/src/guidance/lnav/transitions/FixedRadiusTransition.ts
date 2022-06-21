@@ -10,7 +10,6 @@ import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { arcDistanceToGo, arcGuidance, arcLength, maxBank, minBank } from '@fmgc/guidance/lnav/CommonGeometry';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
@@ -51,7 +50,7 @@ export class FixedRadiusTransition extends Transition {
         public previousLeg: PrevLeg, // FIXME temporary
         public nextLeg: NextLeg, // FIXME temporary
     ) {
-        super();
+        super(previousLeg, nextLeg);
     }
 
     get isReverted(): boolean {
@@ -82,22 +81,13 @@ export class FixedRadiusTransition extends Transition {
         throw Error('?');
     }
 
-    get isNull(): boolean {
-        return this.distance < 0.01;
-    }
-
-    private legIntercept: Coordinates;
-
-    recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable) {
+    recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, trueTrack: DegreesTrue) {
         if (this.isFrozen) {
             if (DEBUG) {
                 console.log('[FMS/Geometry] Not recomputing Type I transition as it is frozen.');
             }
             return;
         }
-
-        this.previousLeg = previousGuidable as PrevLeg;
-        this.nextLeg = nextGuidable as NextLeg;
 
         // Sweep angle
         this.sweepAngle = MathUtils.diffAngle(this.previousLeg.outboundCourse, this.nextLeg.inboundCourse);
@@ -136,13 +126,13 @@ export class FixedRadiusTransition extends Transition {
         const previousLegOvershot = 'overshot' in this.previousLeg && this.previousLeg.overshot;
 
         if (shouldRevert && !previousLegOvershot) {
-            const shouldHaveTad = !this.previousLeg.overflyTermFix && !notLinedUp && tooBigForPrevious;
+            const shouldHaveTad = !this.previousLeg.overflyTermFix && !notLinedUp && (tooBigForPrevious || tooBigForNext);
 
             if (!this.revertTo) {
                 const reverted = new PathCaptureTransition(this.previousLeg, this.nextLeg);
 
                 reverted.startWithTad = shouldHaveTad;
-                reverted.recomputeWithParameters(isActive, tas, gs, ppos, trueTrack, previousGuidable, nextGuidable);
+                reverted.recomputeWithParameters(isActive, tas, gs, ppos, trueTrack);
 
                 const reversionTad = reverted.tad;
                 const fixDtg = this.previousLeg.getDistanceToGo(ppos) + this.tad;
@@ -155,7 +145,7 @@ export class FixedRadiusTransition extends Transition {
                 }
             } else {
                 this.revertTo.startWithTad = shouldHaveTad;
-                this.revertTo.recomputeWithParameters(isActive, tas, gs, ppos, trueTrack, previousGuidable, nextGuidable);
+                this.revertTo.recomputeWithParameters(isActive, tas, gs, ppos, trueTrack);
                 this.isComputed = this.revertTo.isComputed;
                 return;
             }
@@ -167,7 +157,7 @@ export class FixedRadiusTransition extends Transition {
             const fixDtg = this.previousLeg.getDistanceToGo(ppos) + this.revertTo.tad;
 
             // Only de-revert if there is space for the fixed radius TAD
-            if (fixDtg > this.tad + 0.05) {
+            if (fixDtg > this.tad + 0.05 || !isActive) {
                 this.revertTo = undefined;
             }
         }

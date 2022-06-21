@@ -10,7 +10,6 @@ import { Geometry } from '@fmgc/guidance/Geometry';
 import { AltitudeDescriptor, TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { SegmentType } from '@fmgc/wtsdk';
 import { arcDistanceToGo, arcGuidance, courseToFixDistanceToGo, courseToFixGuidance, maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
-import { Guidable } from '@fmgc/guidance/Guidable';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { EntryState, HoldEntryTransition } from '@fmgc/guidance/lnav/transitions/HoldEntryTransition';
@@ -55,13 +54,13 @@ abstract class HXLeg extends XFLeg {
      * Nominal TAS used for the current prediction
      * Not including wind
      */
-    protected predictedTas: Knots = 180;
+    protected currentPredictedTas: Knots = 180;
 
     /**
      * Nominal ground speed used the current prediction
      * including wind
      */
-    protected predictedGs: Knots = 180;
+    protected currentPredictedGs: Knots = 180;
 
     /**
      * Wind velocity along the inbound leg
@@ -124,7 +123,7 @@ abstract class HXLeg extends XFLeg {
 
         // distance is in time then...
         const defaultMinutes = alt < 14000 ? 1 : 1.5;
-        const inboundGroundSpeed = (this.predictedTas + (this.inboundWindSpeed ?? 0));
+        const inboundGroundSpeed = (this.currentPredictedTas + (this.inboundWindSpeed ?? 0));
         return (this.fix.additionalData.distanceInMinutes !== undefined ? this.fix.additionalData.distanceInMinutes : defaultMinutes) * inboundGroundSpeed / 60;
     }
 
@@ -189,8 +188,8 @@ abstract class HXLeg extends XFLeg {
     }
 
     get radius(): NauticalMiles {
-        const gsMs = this.predictedGs / 1.94384;
-        const radius = (gsMs ** 2 / (9.81 * Math.tan(maxBank(this.predictedTas, true) * Math.PI / 180)) / 1852);
+        const gsMs = this.currentPredictedGs / 1.94384;
+        const radius = (gsMs ** 2 / (9.81 * Math.tan(maxBank(this.currentPredictedTas, true) * Math.PI / 180)) / 1852);
 
         return radius;
     }
@@ -377,8 +376,6 @@ abstract class HXLeg extends XFLeg {
         _gs: Knots,
         _ppos: Coordinates,
         _trueTrack: DegreesTrue,
-        _previousGuidable: Guidable,
-        _nextGuidable: Guidable,
         _startAltitude?: Feet,
         _verticalSpeed?: FeetPerMinute,
     ): void {
@@ -400,8 +397,8 @@ abstract class HXLeg extends XFLeg {
         const windAngleToInbound = Math.abs(Avionics.Utils.diffAngle(windDirection, this.inboundCourse));
         this.inboundWindSpeed = Math.cos(windAngleToInbound * Math.PI / 180) * windSpeed;
 
-        this.predictedTas = this.nextPredictedTas;
-        this.predictedGs = this.predictedTas + windSpeed;
+        this.currentPredictedTas = this.nextPredictedTas;
+        this.currentPredictedGs = this.currentPredictedTas + windSpeed;
         this.geometry = this.computeGeometry();
 
         // TODO update entry transition too
@@ -490,9 +487,7 @@ specified in the flight plan before the HA leg is active, the aircraft
 does not enter the hold
 */
 export class HALeg extends HXLeg {
-    private targetAltitude: Feet;
-
-    private isNull = false;
+    private readonly targetAltitude: Feet;
 
     constructor(
         public to: WayPoint,
@@ -516,7 +511,7 @@ export class HALeg extends HXLeg {
         return super.getGuidanceParameters(ppos, trueTrack, tas, gs);
     }
 
-    recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable): void {
+    recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, trueTrack: DegreesTrue): void {
         if (SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') >= this.targetAltitude) {
             this.termConditionMet = true;
         }
@@ -524,7 +519,7 @@ export class HALeg extends HXLeg {
             this.isNull = true;
         }
         this.setPredictedTas(tas);
-        super.recomputeWithParameters(isActive, tas, gs, ppos, trueTrack, previousGuidable, nextGuidable);
+        super.recomputeWithParameters(isActive, tas, gs, ppos, trueTrack);
     }
 
     getDistanceToGo(ppos: LatLongData): NauticalMiles {
@@ -565,13 +560,13 @@ export class HFLeg extends HXLeg {
         return super.getGuidanceParameters(ppos, trueTrack, tas, gs);
     }
 
-    recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, trueTrack: DegreesTrue, previousGuidable: Guidable, nextGuidable: Guidable): void {
-        if (previousGuidable instanceof HoldEntryTransition) {
-            this.entryTransition = previousGuidable;
+    recomputeWithParameters(isActive: boolean, tas: Knots, gs: Knots, ppos: Coordinates, trueTrack: DegreesTrue): void {
+        if (this.inboundGuidable instanceof HoldEntryTransition) {
+            this.entryTransition = this.inboundGuidable;
             this.termConditionMet = this.entryTransition.isNull || this.entryTransition.state === EntryState.Capture || this.entryTransition.state === EntryState.Done;
         }
         this.setPredictedTas(tas);
-        super.recomputeWithParameters(isActive, tas, gs, ppos, trueTrack, previousGuidable, nextGuidable);
+        super.recomputeWithParameters(isActive, tas, gs, ppos, trueTrack);
     }
 
     getDistanceToGo(ppos: LatLongData): NauticalMiles {

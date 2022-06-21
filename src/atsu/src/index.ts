@@ -16,6 +16,7 @@ import { DclMessage } from './messages/DclMessage';
 import { OclMessage } from './messages/OclMessage';
 import { InputValidation, InputWaypointType } from './InputValidation';
 import { FansMode } from './com/FutureAirNavigationSystem';
+import { HoppieConnector } from './com/webinterfaces/HoppieConnector';
 
 export {
     AtsuStatusCodes,
@@ -46,4 +47,5 @@ export {
     RequestMessage,
     InputValidation,
     InputWaypointType,
+    HoppieConnector,
 };

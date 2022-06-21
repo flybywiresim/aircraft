@@ -182,7 +182,7 @@ class CDUVerticalRevisionPage {
 
                 const matchResult = value.match(/^([0-9]{1,3})\/(((FL)?([0-9]{1,3}))|([0-9]{4,5}))$/);
                 if (matchResult === null) {
-                    mcdu.addNewMessage(NXSystemMessages.formatError);
+                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     scratchpadCallback();
                     return;
                 }
@@ -191,7 +191,7 @@ class CDUVerticalRevisionPage {
                 let alt = matchResult[5] !== undefined ? parseInt(matchResult[5]) * 100 : parseInt(matchResult[6]);
 
                 if (speed < 90 || speed > 350 || alt > 45000) {
-                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     scratchpadCallback();
                     return;
                 }
@@ -220,7 +220,7 @@ class CDUVerticalRevisionPage {
                 }
 
                 if (value.match(/^[0-9]{1,3}$/ === null)) {
-                    mcdu.addNewMessage(NXSystemMessages.formatError);
+                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     scratchpadCallback();
                     return;
                 }
@@ -228,7 +228,7 @@ class CDUVerticalRevisionPage {
                 const speed = parseInt(value);
 
                 if (speed < 90 || speed > 350) {
-                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     scratchpadCallback();
                     return;
                 }
@@ -254,7 +254,7 @@ class CDUVerticalRevisionPage {
 
                 const matchResult = value.match(/^([+-])?(((FL)?([0-9]{1,3}))|([0-9]{4,5}))$/);
                 if (matchResult === null) {
-                    mcdu.addNewMessage(NXSystemMessages.formatError);
+                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                     scratchpadCallback();
                     return;
                 }
@@ -263,7 +263,7 @@ class CDUVerticalRevisionPage {
                 const code = matchResult[1] === undefined ? 1 : (matchResult[1] === '-' ? 3 : 2);
 
                 if (altitude > 45000) {
-                    mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+                    mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     scratchpadCallback();
                     return;
                 }
@@ -349,7 +349,7 @@ class CDUVerticalRevisionPage {
     static setConstraints(mcdu, waypoint, value, scratchpadCallback, offset = 0) {
         const matchResult = value.match(/^(([0-9]{1,3})\/?)?(\/([+-])?(((FL)?([0-9]{1,3}))|([0-9]{4,5})))?$/);
         if (matchResult === null) {
-            mcdu.addNewMessage(NXSystemMessages.formatError);
+            mcdu.setScratchpadMessage(NXSystemMessages.formatError);
             scratchpadCallback();
             return;
         }
@@ -372,7 +372,7 @@ class CDUVerticalRevisionPage {
         }
 
         if ((speed !== undefined && (speed < 90 || speed > 350)) || (alt !== undefined && alt > 45000)) {
-            mcdu.addNewMessage(NXSystemMessages.entryOutOfRange);
+            mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             scratchpadCallback();
             return;
         }

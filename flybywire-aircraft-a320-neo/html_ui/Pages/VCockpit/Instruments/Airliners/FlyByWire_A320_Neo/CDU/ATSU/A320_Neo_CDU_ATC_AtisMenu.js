@@ -38,7 +38,7 @@ class CDUAtcAtisMenu {
             // validate the generic format and if the airport is described by four characters
             const entries = value.split("/");
             if (entries.length !== 2 || !/^[A-Z0-9]{4}$/.test(entries[0])) {
-                mcdu.addNewMessage(NXSystemMessages.formatError);
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 return;
             }
 
@@ -50,14 +50,14 @@ class CDUAtcAtisMenu {
                 type = Atsu.AtisType.Departure;
             }
             if (type === null) {
-                mcdu.addNewMessage(NXSystemMessages.formatError);
+                mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 return;
             }
 
             // check that this is setup is not already set
             const currentIndex = airports.findIndex((elem) => elem.icao === entries[0] && elem.type === type);
             if (currentIndex !== -1 && idx !== currentIndex) {
-                mcdu.addNewMessage(NXSystemMessages.arptTypeAlreadyInUse);
+                mcdu.setScratchpadMessage(NXSystemMessages.arptTypeAlreadyInUse);
                 return;
             }
 
@@ -69,7 +69,7 @@ class CDUAtcAtisMenu {
                     airports[idx].type = type;
                     CDUAtcAtisMenu.ShowPage(mcdu, airports);
                 } else {
-                    mcdu.addNewMessage(NXSystemMessages.notInDatabase);
+                    mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                 }
             });
         }

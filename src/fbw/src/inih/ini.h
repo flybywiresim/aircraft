@@ -131,6 +131,26 @@ namespace mINI
 #endif
 	};
 
+	namespace INIDirUtil
+	{
+		/*
+			Create a directory
+
+			@param path The path that may contain a filename
+			@return True if the directory was successfuly created or already exists
+		*/
+		inline bool createDirectory(std::string path) {
+			// Find the last delimiter because the path may contain a filename
+			size_t last = path.find_last_of("/\\");
+			if(last != std::string::npos) {
+				path[last] = '\0';
+			}
+
+			int ret = mkdir(path.c_str(), 777);
+			return ret == 0 || ret == EEXIST;
+		}
+	};
+
 	template<typename T>
 	class INIMap
 	{
@@ -747,7 +767,7 @@ namespace mINI
 		}
 		bool write(INIStructure& data, bool pretty = false) const
 		{
-			if (filename.empty())
+			if (filename.empty() || !INIDirUtil::createDirectory(filename))
 			{
 				return false;
 			}

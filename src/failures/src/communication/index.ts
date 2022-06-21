@@ -1,7 +1,7 @@
 export * from './readers';
 export * from './writers';
 export { SimVarReaderWriter } from './sim-var-reader-writer';
-export { CallbackReader } from './callback-reader';
-export { Reader } from './reader';
-export { Updatable } from './updatable';
-export { Writer } from './writer';
+export type { CallbackReader } from './callback-reader';
+export type { Reader } from './reader';
+export type { Updatable } from './updatable';
+export type { Writer } from './writer';

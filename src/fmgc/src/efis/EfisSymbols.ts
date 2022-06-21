@@ -101,7 +101,7 @@ export class EfisSymbols {
                 case RunwaySurface.Bituminous:
                 case RunwaySurface.Concrete:
                 case RunwaySurface.Tarmac:
-                    if (runway.length >= 1300) {
+                    if (runway.length >= 1500 && runway.width >= 30) {
                         return true;
                     }
                     break;
@@ -267,10 +267,10 @@ export class EfisSymbols {
                 return `${prefix}${Math.round(alt)}`;
             };
 
-            const formatConstraintSpeed = (speed: number, prefix: string = '') => `${prefix}${Math.floor(speed)} KT`;
+            const formatConstraintSpeed = (speed: number, prefix: string = '') => `${prefix}${Math.floor(speed)}KT`;
 
             for (const [index, leg] of this.guidanceController.activeGeometry.legs.entries()) {
-                if (leg.terminationWaypoint && leg.displayedOnMap) {
+                if (!leg.isNull && leg.terminationWaypoint && leg.displayedOnMap) {
                     if (!(leg.terminationWaypoint instanceof WayPoint)) {
                         const isActive = index === this.guidanceController.activeLegIndex;
 
@@ -302,8 +302,13 @@ export class EfisSymbols {
                     const wp = activeFp.getWaypoint(i);
 
                     // Managed by legs
+                    // FIXME these should integrate with the normal algorithms to pick up contraints, not be drawn in enroute ranges, etc.
                     const legType = wp.additionalData.legType;
-                    if (legType === LegType.CA || legType === LegType.CR || legType === LegType.CI || legType === LegType.FM || legType === LegType.VI || legType === LegType.VM) {
+                    if (
+                        legType === LegType.CA || legType === LegType.CR || legType === LegType.CI
+                        || legType === LegType.FM
+                        || legType === LegType.VA || legType === LegType.VI || legType === LegType.VM
+                    ) {
                         continue;
                     }
 

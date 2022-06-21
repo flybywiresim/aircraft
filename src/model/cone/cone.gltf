@@ -1,0 +1,256 @@
+{
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 838,
+            "min": [
+                -0.5034491419792175,
+                -0.68247389793396,
+                -0.5022883415222168
+            ],
+            "max": [
+                0.5034491419792175,
+                1.3748023509979248,
+                0.5097383856773376
+            ],
+            "type": "VEC3",
+            "name": "CONE_vertices#0_POSITION"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 12,
+            "componentType": 5120,
+            "count": 838,
+            "type": "VEC4",
+            "name": "CONE_vertices#0_TANGENT"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 16,
+            "componentType": 5120,
+            "count": 838,
+            "type": "VEC4",
+            "name": "CONE_vertices#0_NORMAL"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 20,
+            "componentType": 5122,
+            "count": 838,
+            "type": "VEC2",
+            "name": "CONE_vertices#0_TEXCOORD_0"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 24,
+            "componentType": 5122,
+            "count": 838,
+            "type": "VEC2",
+            "name": "CONE_vertices#0_TEXCOORD_1"
+        },
+        {
+            "bufferView": 0,
+            "byteOffset": 28,
+            "componentType": 5123,
+            "count": 838,
+            "type": "VEC4",
+            "name": "CONE_vertices#0_COLOR_0"
+        },
+        {
+            "bufferView": 1,
+            "componentType": 5123,
+            "count": 3390,
+            "type": "SCALAR",
+            "name": "CONE_indices#0"
+        }
+    ],
+    "asset": {
+        "generator": "Khronos glTF Blender I/O v1.6.16",
+        "version": "2.0",
+        "extensions": {
+            "ASOBO_asset_optimized": {
+                "BoundingBoxMax": [
+                    0.5034491419792175,
+                    1.3748023509979248,
+                    0.5097383856773376
+                ],
+                "BoundingBoxMin": [
+                    -0.5034491419792175,
+                    -0.68247389793396,
+                    -0.5022883415222168
+                ],
+                "MajorVersion": 4,
+                "MinorVersion": 3,
+                "UseCheckerboardMaterialForMissingTextures": true
+            }
+        }
+    },
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 30168,
+            "byteStride": 36,
+            "target": 34962,
+            "name": "BufferViewVertexND"
+        },
+        {
+            "buffer": 0,
+            "byteLength": 6780,
+            "byteOffset": 30168,
+            "target": 34963,
+            "name": "BufferViewIndex"
+        }
+    ],
+    "extensionsRequired": [
+        "MSFT_texture_dds"
+    ],
+    "materials": [
+        {
+            "name": "CONE",
+            "normalTexture": {
+                "index": 0
+            },
+            "occlusionTexture": {
+                "index": 1
+            },
+            "pbrMetallicRoughness": {
+                "baseColorTexture": {
+                    "index": 2
+                },
+                "metallicRoughnessTexture": {
+                    "index": 1
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "COLOR_0": 5,
+                        "NORMAL": 2,
+                        "POSITION": 0,
+                        "TANGENT": 1,
+                        "TEXCOORD_0": 3,
+                        "TEXCOORD_1": 4
+                    },
+                    "indices": 6,
+                    "material": 0,
+                    "mode": 4,
+                    "extras": {
+                        "ASOBO_primitive": {
+                            "PrimitiveCount": 1130,
+                            "VertexType": "VTX",
+                            "VertexVersion": 2
+                        }
+                    }
+                }
+            ],
+            "name": "CONE"
+        }
+    ],
+    "nodes": [
+        {
+            "rotation": [0.04116, -0.08451, 0.70670, 0.70123],
+            "scale": [0.4, 0.4, 0.4],
+            "translation": [-0.375, -3.700, 22.700],
+            "mesh": 0,
+            "name": "CONE_B"
+        },
+        {
+            "rotation": [0.02399, -0.02395, -0.70652, 0.70687],
+            "scale": [0.4, 0.4, 0.4],
+            "translation": [-0.720, -14.41, -4.180],
+            "mesh": 0,
+            "name": "CONE_L"
+        },
+        {
+            "rotation": [0.08628, -0.13421, 0.70201, 0.69405],
+            "scale": [0.4, 0.4, 0.4],
+            "translation": [0.746, 14.815, 3.973],
+            "mesh": 0,
+            "name": "CONE_R"
+        },
+        {
+            "rotation": [0.08432, 0.03803, -0.70409, 0.70405],
+            "scale": [0.4, 0.4, 0.4],
+            "translation": [-1.433, -1.881, 6.933],
+            "mesh": 0,
+            "name": "CONE_ENG_L"
+        },
+        {
+            "rotation": [0.02434, -0.06770, 0.70696, 0.70357],
+            "scale": [0.4, 0.4, 0.4],
+            "translation": [1.418, 1.873, -6.711],
+            "mesh": 0,
+            "name": "CONE_ENG_R"
+        }
+    ],
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [],
+            "name": "CONE_EQUIPMENT"
+        }
+    ],
+    "textures": [
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 0
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 1
+                }
+            }
+        },
+        {
+            "extensions": {
+                "MSFT_texture_dds": {
+                    "source": 2
+                }
+            }
+        }
+    ],
+    "samplers": [
+        {
+            "magFilter": 9729,
+            "minFilter": 9987,
+            "wrapS": 10497,
+            "wrapT": 10497
+        }
+    ],
+    "extensionsUsed": [
+        "MSFT_texture_dds",
+        "ASOBO_asset_optimized"
+    ],
+    "buffers": [
+        {
+            "byteLength": 36948,
+            "uri": "cone.bin"
+        }
+    ],
+    "images": [
+        {
+            "uri": "CONE_NORM.PNG.DDS",
+            "name": "CONE_NORM",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "CONE_COMP.PNG.DDS",
+            "name": "CONE_COMP",
+            "extras": "ASOBO_image_converted_meta"
+        },
+        {
+            "uri": "CONE_ALBD.PNG.DDS",
+            "name": "CONE_ALBD",
+            "extras": "ASOBO_image_converted_meta"
+        }
+    ]
+}

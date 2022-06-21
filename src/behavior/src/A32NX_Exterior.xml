@@ -198,4 +198,31 @@
         </UseTemplate>
     </Template>
 
+    <!--
+    Template for displayng GND equipment given different conditions
+    and preferences/overrides set in EFB.
+
+    Main Parameters:
+            - NODE_ID               <no default>        .gltf node to hide or show.
+            - GND_ENABLE_OVRD       <no default>        Simvar to toggle logic, where true is enabled.
+            - GND_EQUIPMENT_LOGIC   <current impl>      Logic for when to nodes can appear.
+    -->
+    <Template Name="FBW_Gnd_Equipment">
+        <DefaultTemplateParameters>
+            <GND_ENABLE_OVRD></GND_ENABLE_OVRD>
+            <GND_EQUIPMENT_LOGIC>
+                (A:SIM ON GROUND, bool) (L:A32NX_ENGINE_N1:1, Number) 3.5 &lt; and (L:A32NX_ENGINE_N1:2, Number) 3.5 &lt; and (L:A32NX_HYD_NW_STRG_DISC_ECAM_MEMO, bool) 0 == and (A:LIGHT BEACON ON, bool) 0 == and
+            </GND_EQUIPMENT_LOGIC>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>
+                    #GND_ENABLE_OVRD# if{
+                        #GND_EQUIPMENT_LOGIC#
+                    }
+                </VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
 </ModelBehaviors>

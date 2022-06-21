@@ -176,16 +176,64 @@
         <DefaultTemplateParameters>
             <NODE_ID>LANDING_GEAR_Light_#ID#</NODE_ID>
             <PART_ID>LANDING_GEAR_Light</PART_ID>
-            <SIMVAR>GEAR POSITION:#GEAR_ID#</SIMVAR>
+            <SIMVAR_UNLOCK>A32NX_LGCIU_1_#GEAR_ID#_GEAR_UNLOCKED</SIMVAR_UNLOCK>
+            <SIMVAR_DOWNLOCK>A32NX_LGCIU_1_#GEAR_ID#_GEAR_DOWNLOCKED</SIMVAR_DOWNLOCK>
             <SEQ_POWERED>1</SEQ_POWERED>
             <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <DUMMY_BUTTON>True</DUMMY_BUTTON>
-            <SEQ1_EMISSIVE_CODE>0.01 99.99 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
-            <SEQ2_EMISSIVE_CODE>90 100 (A:#SIMVAR#, Percent) rng (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE> (L:#SIMVAR_UNLOCK#, Bool)  (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+            <SEQ2_EMISSIVE_CODE> (L:#SIMVAR_DOWNLOCK#, Bool)  (L:A32NX_OVHD_INTLT_ANN) 0 == or #SEQ_POWERED# and #EMISSIVE_DIM# *</SEQ2_EMISSIVE_CODE>
         </UseTemplate>
     </Template>
+
+    <!-- GEAR LEVER CUSTOM MODEL LOCKED DOWN WITH SIMVAR FROM SYSTEM WASM -->
+    <Template Name="FBW_LANDING_GEAR_Gear_Lever_Template">
+		<Parameters Type="Default">
+			<ANIM_NAME>LANDING_GEAR_Lever_Gear</ANIM_NAME>
+			<PART_ID>LANDING_GEAR_Lever_Gear</PART_ID>
+			<NODE_ID>LANDING_GEAR_Lever_Gear</NODE_ID>
+			<LIGHT_NODE_ID>LANDING_GEAR_Lever_GearLight</LIGHT_NODE_ID>
+			<ANIM_LAG>400</ANIM_LAG>
+			<DRAG_SCALAR>10</DRAG_SCALAR>
+			<TOOLTIP_LANDING_GEAR_TITLE>@TT_Package.LANDING_GEAR_LEVER_GEAR_TITLE</TOOLTIP_LANDING_GEAR_TITLE>
+			<WWISE_EVENT>gear_lever</WWISE_EVENT>
+			<WWISE_EVENT_1>gear_lever_on</WWISE_EVENT_1>
+			<WWISE_EVENT_2>gear_lever_off</WWISE_EVENT_2>
+			<ALWAYS_USE_ANIM_LAG>True</ALWAYS_USE_ANIM_LAG> <!-- Only 2 positions so anim lag during drags is wanted -->
+		</Parameters>
+		<Parameters Type="Override">
+			<TOOLTIP_TITLE>#TOOLTIP_LANDING_GEAR_TITLE#</TOOLTIP_TITLE>
+			<TOOLTIP_ENTRY_0>LANDING_GEAR_Gear</TOOLTIP_ENTRY_0>
+			<UP_CODE>(&gt;B:LANDING_GEAR_Gear_Inc)</UP_CODE>
+			<DOWN_CODE>(&gt;B:LANDING_GEAR_Gear_Dec)</DOWN_CODE>
+		</Parameters>
+		<Parameters Type="Override">
+			<Condition Check="NO_GEARUP_IF_LOCKED">
+				<True>
+					<UP_CODE>(L:A32NX_GEAR_LEVER_LOCKED, Bool) ! if{ #UP_CODE# }</UP_CODE>
+				</True>
+			</Condition>
+		</Parameters>
+
+		<Component ID="#NODE_ID#" Node="#NODE_ID#">
+			<UseInputEvent ID="LANDING_GEAR">
+				<GEAR_ID>1</GEAR_ID>
+			</UseInputEvent>
+			<UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_Code">
+				<ANIM_CODE>(B:LANDING_GEAR_Gear) 100 *</ANIM_CODE>
+			</UseTemplate>
+		</Component>
+
+		<Condition Check="EMISSIVE_CODE">
+			<Component ID="#LIGHT_NODE_ID#" Node="#LIGHT_NODE_ID#">
+				<UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+					<PART_ID>#LIGHT_NODE_ID#</PART_ID>
+				</UseTemplate>
+			</Component>
+		</Condition>
+	</Template>
 
     <Template Name="FBW_Airbus_Fuel_Pump">
         <UseTemplate Name="FBW_Push_Toggle">

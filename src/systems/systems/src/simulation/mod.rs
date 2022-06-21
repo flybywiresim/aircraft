@@ -38,17 +38,17 @@ pub trait VariableRegistry {
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Hash)]
-pub struct VariableIdentifier(u8, usize);
+pub struct VariableIdentifier(usize, usize);
 
 impl VariableIdentifier {
-    pub fn new<T: Into<u8>>(variable_type: T) -> Self {
+    pub fn new<T: Into<usize>>(variable_type: T) -> Self {
         Self {
             0: variable_type.into(),
             1: 0,
         }
     }
 
-    pub fn identifier_type(&self) -> u8 {
+    pub fn identifier_type(&self) -> usize {
         self.0
     }
 
@@ -141,6 +141,10 @@ impl<'a> InitContext<'a> {
 
     pub fn start_state(&self) -> StartState {
         self.start_state
+    }
+
+    pub fn start_gear_down(&self) -> bool {
+        self.is_on_ground() || self.start_state == StartState::Final
     }
 
     pub fn is_in_flight(&self) -> bool {
@@ -426,14 +430,20 @@ impl<T: Aircraft> Simulation<T> {
     /// let mut simulation = Simulation::new(Default::default(), MyAircraft::new, &mut registry);
     /// let mut reader_writer = MySimulatorReaderWriter::new();
     /// // For each frame, call the tick function.
-    /// simulation.tick(Duration::from_millis(50), &mut reader_writer)
+    /// simulation.tick(Duration::from_millis(50), 20., &mut reader_writer)
     /// ```
     /// [`tick`]: #method.tick
-    pub fn tick(&mut self, delta: Duration, reader_writer: &mut impl SimulatorReaderWriter) {
+    pub fn tick(
+        &mut self,
+        delta: Duration,
+        simulation_time: f64,
+        reader_writer: &mut impl SimulatorReaderWriter,
+    ) {
         self.electricity.pre_tick();
 
         let mut reader = SimulatorReader::new(reader_writer);
-        self.update_context.update(&mut reader, delta);
+        self.update_context
+            .update(&mut reader, delta, simulation_time);
 
         let mut visitor = SimulatorToSimulationVisitor::new(&mut reader);
         self.aircraft.accept(&mut visitor);
@@ -769,6 +779,18 @@ read_write_uom!(MassDensity, slug_per_cubic_foot);
 
 read_write_into!(MachNumber);
 read_write_into!(StartState);
+
+impl<T: Reader> Read<Arinc429Word<u32>> for T {
+    fn convert(&mut self, value: f64) -> Arinc429Word<u32> {
+        value.into()
+    }
+}
+
+impl<T: Writer> Write<Arinc429Word<u32>> for T {
+    fn convert(&mut self, value: Arinc429Word<u32>) -> f64 {
+        value.into()
+    }
+}
 
 impl<T: Reader> Read<f64> for T {
     fn convert(&mut self, value: f64) -> f64 {

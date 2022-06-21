@@ -217,7 +217,7 @@ class CDUInitPage {
                 CDUInitPage.ShowPage1(mcdu);
             } catch (msg) {
                 if (msg instanceof McduMessage) {
-                    mcdu.addNewMessage(msg);
+                    mcdu.setScratchpadMessage(msg);
                     scratchpadCallback();
                 } else {
                     throw msg;
@@ -296,6 +296,7 @@ class CDUInitPage {
     static ShowPage2(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.InitPageB;
+        mcdu.activeSystem = 'FMGC';
         mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage2(mcdu);
 
         let zfwColor = "[color]amber";
@@ -315,8 +316,8 @@ class CDUInitPage {
         }
         mcdu.onRightInput[0] = async (value, scratchpadCallback) => {
             if (value === "") {
-                mcdu.scratchpad.setText(
-                    (isFinite(getZfw()) ? (NXUnits.kgToUser(getZfw() / 1000)).toFixed(1) : "") +
+                mcdu.setScratchpadText(
+                    (isFinite(getZfw()) ? (getZfw() / 1000).toFixed(1) : "") +
                     "/" +
                     (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));
             } else {

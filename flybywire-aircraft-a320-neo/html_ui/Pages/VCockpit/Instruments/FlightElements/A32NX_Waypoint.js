@@ -483,7 +483,7 @@ class AirportInfo extends WayPointInfo {
             for (let i = 0; i < data.approaches.length; i++) {
                 const approachData = data.approaches[i];
                 const approach = new Approach();
-                approach.name = approachData.name;
+                approach.name = Fmgc.normaliseApproachName(approachData.name);
                 // runway name as a string
                 approach.runway = approachData.runway;
                 // runway designator char as an enum

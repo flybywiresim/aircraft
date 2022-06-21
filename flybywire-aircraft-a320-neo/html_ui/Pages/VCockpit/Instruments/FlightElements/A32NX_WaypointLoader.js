@@ -117,10 +117,12 @@ class FacilityLoader {
             }
         }
 
-        const pendingRequest = this._pendingRawRequests.get(`${type}${_data.icaoTrimed}`);
-        if (pendingRequest) {
-            clearTimeout(pendingRequest.timeout);
-            pendingRequest.resolve(_data);
+        const pendingRequests = this._pendingRawRequests.get(`${type}${_data.icaoTrimed}`);
+        if (pendingRequests) {
+            pendingRequests.forEach((pendingRequest) => {
+                clearTimeout(pendingRequest.timeout);
+                pendingRequest.resolve(_data);
+            });
             this._pendingRawRequests.delete(`${type}${_data.icaoTrimed}`);
         }
     }
@@ -138,8 +140,13 @@ class FacilityLoader {
                     icao: icao.trim()
                 };
 
-                this._pendingRawRequests.set(`${type}${request.icao}`, request);
-                Coherent.call(loadCall, icao).catch(console.error);
+                const pendingRequests = this._pendingRawRequests.get(`${type}${request.icao}`);
+                if (pendingRequests) {
+                    pendingRequests.push(request);
+                } else {
+                    this._pendingRawRequests.set(`${type}${request.icao}`, [request]);
+                    Coherent.call(loadCall, icao).catch(console.error);
+                }
             });
         };
 

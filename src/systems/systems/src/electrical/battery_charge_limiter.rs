@@ -4,7 +4,7 @@ use super::{
 };
 use crate::simulation::{InitContext, VariableIdentifier};
 use crate::{
-    shared::{ApuAvailable, ApuMaster, ApuStart, DelayedTrueLogicGate, LandingGearRealPosition},
+    shared::{ApuAvailable, ApuMaster, ApuStart, DelayedTrueLogicGate, LgciuWeightOnWheels},
     simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use std::time::Duration;
@@ -33,7 +33,7 @@ impl State {
         emergency_generator: &impl ElectricitySource,
         battery: &(impl ProvidePotential + ProvideCurrent),
         battery_bus: &impl ElectricalElement,
-        landing_gear: &impl LandingGearRealPosition,
+        lgciu1: &impl LgciuWeightOnWheels,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &(impl ApuMaster + ApuStart),
@@ -49,7 +49,7 @@ impl State {
                 emergency_generator,
                 battery,
                 battery_bus,
-                landing_gear,
+                lgciu1,
                 battery_push_buttons,
                 apu,
                 apu_overhead,
@@ -61,7 +61,7 @@ impl State {
                 battery_number,
                 emergency_elec,
                 battery,
-                landing_gear,
+                lgciu1,
                 battery_push_buttons,
                 apu,
                 apu_overhead,
@@ -102,7 +102,7 @@ impl BatteryChargeLimiter {
         emergency_generator: &impl ElectricitySource,
         battery: &(impl ProvidePotential + ProvideCurrent),
         battery_bus: &impl ElectricalElement,
-        landing_gear: &impl LandingGearRealPosition,
+        lgciu1: &impl LgciuWeightOnWheels,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &(impl ApuMaster + ApuStart),
@@ -119,7 +119,7 @@ impl BatteryChargeLimiter {
                 emergency_generator,
                 battery,
                 battery_bus,
-                landing_gear,
+                lgciu1,
                 battery_push_buttons,
                 apu,
                 apu_overhead,
@@ -240,7 +240,7 @@ impl Open {
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
         emergency_generator: &impl ElectricitySource,
-        landing_gear: &impl LandingGearRealPosition,
+        lgciu1: &impl LgciuWeightOnWheels,
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
@@ -250,7 +250,7 @@ impl Open {
                 electricity,
                 emergency_elec,
                 emergency_generator,
-                landing_gear,
+                lgciu1,
             )
             && !self.open_due_to_discharge_protection
             && (self.should_get_ready_for_apu_start(apu, apu_overhead)
@@ -279,10 +279,10 @@ impl Open {
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
         emergency_generator: &impl ElectricitySource,
-        landing_gear: &impl LandingGearRealPosition,
+        lgciu1: &impl LgciuWeightOnWheels,
     ) -> bool {
         emergency_elec.is_active()
-            && (!landing_gear.is_up_and_locked()
+            && (lgciu1.left_and_right_gear_compressed(false)
                 || (!electricity.is_powered(emergency_generator)
                     && emergency_elec.active_duration()
                         < Duration::from_secs(Self::APU_START_INHIBIT_DELAY_SECONDS)))
@@ -313,7 +313,7 @@ impl Open {
         emergency_generator: &impl ElectricitySource,
         battery: &impl ProvidePotential,
         battery_bus: &impl ElectricalElement,
-        landing_gear: &impl LandingGearRealPosition,
+        lgciu1: &impl LgciuWeightOnWheels,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
@@ -328,7 +328,7 @@ impl Open {
             electricity,
             emergency_elec,
             emergency_generator,
-            landing_gear,
+            lgciu1,
             apu,
             apu_overhead,
             ac_electrical_system,
@@ -420,13 +420,13 @@ impl Closed {
         context: &UpdateContext,
         electricity: &Electricity,
         emergency_elec: &EmergencyElectrical,
-        landing_gear: &impl LandingGearRealPosition,
+        lgciu1: &impl LgciuWeightOnWheels,
         apu: &impl ApuAvailable,
         apu_overhead: &impl ApuMaster,
         ac_electrical_system: &impl AlternatingCurrentElectricalSystem,
     ) -> bool {
         if emergency_elec.is_active() {
-            !apu_overhead.master_sw_is_on() || self.emergency_elec_inhibited(landing_gear)
+            !apu_overhead.master_sw_is_on() || self.emergency_elec_inhibited(lgciu1)
         } else {
             !self.awaiting_apu_start(apu, apu_overhead)
                 && !on_ground_at_low_speed_with_unpowered_ac_buses(
@@ -440,8 +440,8 @@ impl Closed {
         }
     }
 
-    fn emergency_elec_inhibited(&self, landing_gear: &impl LandingGearRealPosition) -> bool {
-        !self.entered_in_emergency_elec || !landing_gear.is_up_and_locked()
+    fn emergency_elec_inhibited(&self, lgciu1: &impl LgciuWeightOnWheels) -> bool {
+        !self.entered_in_emergency_elec || lgciu1.left_and_right_gear_compressed(false)
     }
 
     fn beyond_emergency_elec_closed_time_allowance(&self) -> bool {
@@ -477,7 +477,7 @@ impl Closed {
         battery_number: usize,
         emergency_elec: &EmergencyElectrical,
         battery: &(impl ProvidePotential + ProvideCurrent),
-        landing_gear: &impl LandingGearRealPosition,
+        lgciu1: &impl LgciuWeightOnWheels,
         battery_push_buttons: &impl BatteryPushButtons,
         apu: &impl ApuAvailable,
         apu_overhead: &(impl ApuMaster + ApuStart),
@@ -497,7 +497,7 @@ impl Closed {
             context,
             electricity,
             emergency_elec,
-            landing_gear,
+            lgciu1,
             apu,
             apu_overhead,
             ac_electrical_system,
@@ -829,13 +829,37 @@ mod tests {
                 Self { is_down }
             }
         }
-        impl LandingGearRealPosition for TestLandingGear {
-            fn is_up_and_locked(&self) -> bool {
+        impl LgciuWeightOnWheels for TestLandingGear {
+            fn right_gear_compressed(&self, _: bool) -> bool {
+                self.is_down
+            }
+
+            fn right_gear_extended(&self, _: bool) -> bool {
                 !self.is_down
             }
 
-            fn is_down_and_locked(&self) -> bool {
+            fn left_gear_compressed(&self, _: bool) -> bool {
                 self.is_down
+            }
+
+            fn left_gear_extended(&self, _: bool) -> bool {
+                !self.is_down
+            }
+
+            fn left_and_right_gear_compressed(&self, _: bool) -> bool {
+                self.is_down
+            }
+
+            fn left_and_right_gear_extended(&self, _: bool) -> bool {
+                !self.is_down
+            }
+
+            fn nose_gear_compressed(&self, _: bool) -> bool {
+                self.is_down
+            }
+
+            fn nose_gear_extended(&self, _: bool) -> bool {
+                !self.is_down
             }
         }
 

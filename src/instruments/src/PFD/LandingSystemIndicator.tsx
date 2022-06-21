@@ -1,5 +1,6 @@
 import { DisplayComponent, EventBus, FSComponent, HEvent, Subject, VNode } from 'msfssdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
+import { Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
@@ -13,6 +14,16 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
 
     private deviationGroup = FSComponent.createRef<SVGGElement>();
 
+    private altitude = Arinc429Word.empty();
+
+    private handleGsReferenceLine() {
+        if (this.lsButtonPressedVisibility || (this.altitude.isNormalOperation())) {
+            this.gsReferenceLine.instance.style.display = 'inline';
+        } else if (!this.lsButtonPressedVisibility) {
+            this.gsReferenceLine.instance.style.display = 'none';
+        }
+    }
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -24,14 +35,19 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
                 SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', this.lsButtonPressedVisibility);
 
                 this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
-                this.gsReferenceLine.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
+                this.handleGsReferenceLine();
             }
         });
 
         sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button').whenChanged().handle((lsButton) => {
             this.lsButtonPressedVisibility = lsButton;
             this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
-            this.gsReferenceLine.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
+            this.handleGsReferenceLine();
+        });
+
+        sub.on('altitudeAr').handle((altitude) => {
+            this.altitude = altitude;
+            this.handleGsReferenceLine();
         });
     }
 
@@ -51,9 +67,8 @@ export class LandingSystem extends DisplayComponent<{ bus: EventBus, instrument:
                         <VDevIndicator bus={this.props.bus} />
                         <LDevIndicator />
                     </g>
-
-                    <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
                 </g>
+                <path ref={this.gsReferenceLine} class="Yellow Fill" d="m115.52 80.067v1.5119h-8.9706v-1.5119z" />
             </>
         );
     }

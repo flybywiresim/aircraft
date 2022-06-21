@@ -154,3 +154,42 @@
 
 - A32NX.THROTTLE_MAPPING_SAVE_TO_FILE
     - When triggered the throttle mapping configuration is **saved** from **file**
+
+## Autobrake System
+
+- A32NX.AUTOBRAKE_SET
+  - When triggered the autobrake is set to the desired state
+  - Parameter value can be used to set the decrement:
+      Value | Meaning
+      --- | ---
+      1 | Disarm Autobrake
+      2 | Set Autobrake to LOW
+      3 | Set Autobrake to MED
+      4 | Set Autobrake to MAX (if allowed)
+
+- A32NX.AUTOBRAKE_SET_DISARM
+  - When triggered the autobrake is set to disarmed state
+
+- A32NX.AUTOBRAKE_SET_LO
+  - When triggered the autobrake is set to LO state (if allowed)
+
+- A32NX.AUTOBRAKE_SET_MED
+  - When triggered the autobrake is set to MED state (if allowed)
+
+- A32NX.AUTOBRAKE_SET_MAX
+  - When triggered the autobrake is set to MAX state (if allowed)
+
+- A32NX.AUTOBRAKE_BUTTON_LO
+  - When triggered the autobrake button LO is pressed (as if triggered in the cockpit)
+
+- A32NX.AUTOBRAKE_BUTTON_MED
+  - When triggered the autobrake button MED is pressed (as if triggered in the cockpit)
+
+- A32NX.AUTOBRAKE_BUTTON_MAX
+  - When triggered the autobrake button MAX is pressed (as if triggered in the cockpit)
+
+- A32NX.EFIS_L_CHRONO_PUSHED
+  - When triggered presses the left chrono button (to start the clock on the left ND)
+
+- A32NX.EFIS_R_CHRONO_PUSHED
+  - When triggered presses the right chrono button (to start the clock on the right ND)

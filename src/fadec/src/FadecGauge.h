@@ -27,13 +27,17 @@
 #include "Tables.h"
 #include "common.h"
 
+#define DEFAULT_AIRCRAFT_REGISTRATION "ASX320"
+
 using namespace std;
 
 class FadecGauge {
  private:
   bool isConnected = false;
+  bool _isReady = false;
   double previousSimulationTime = 0;
   SimulationData simulationData = {};
+  SimulationDataLivery simulationDataLivery = {};
 
   /// <summary>
   /// Initializes the connection to SimConnect
@@ -72,10 +76,12 @@ class FadecGauge {
       // SimConnect Engine Start Definitions
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::StartCN2Left, "TURB ENG CORRECTED N2:1", "Percent");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::StartCN2Right, "TURB ENG CORRECTED N2:2", "Percent");
-
       // Simulation Data
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::SimulationDataTypeId, "SIMULATION TIME", "NUMBER");
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::SimulationDataTypeId, "SIMULATION RATE", "NUMBER");
+
+      SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::AcftInfo, "ATC ID", NULL, SIMCONNECT_DATATYPE_STRING32);
+
       std::cout << "FADEC: SimConnect registrations complete." << std::endl;
       return true;
     }
@@ -84,6 +90,8 @@ class FadecGauge {
 
     return false;
   }
+
+  bool isRegistrationFound() { return simulationDataLivery.atc_id[0] != 0; }
 
  public:
   /// <summary>
@@ -95,8 +103,6 @@ class FadecGauge {
       std::cout << "FADEC: Init SimConnect failed." << std::endl;
       return false;
     }
-
-    EngineControlInstance.initialize();
 
     isConnected = true;
 
@@ -127,6 +133,17 @@ class FadecGauge {
 
     return true;
   }
+
+    bool simConnectRequestDataAcftInfo() {
+    // check if we are connected
+    if (!isConnected) {
+      return false;
+    }
+
+    // request data
+    return S_OK == SimConnect_RequestDataOnSimObject(hSimConnect, 8, DataTypesID::AcftInfo, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
+  }
+
 
   bool simConnectRequestData() {
     // check if we are connected
@@ -201,6 +218,13 @@ class FadecGauge {
       case 0:
         // store aircraft data
         simulationData = *((SimulationData*)&data->dwData);
+        return;
+      case 8:
+        simulationDataLivery = *((SimulationDataLivery*)&data->dwData);
+        if(simulationDataLivery.atc_id[0] == '\0') {
+          cout << "FADEC: Use default aircraft registration " << DEFAULT_AIRCRAFT_REGISTRATION << endl;;
+          strncpy(simulationDataLivery.atc_id, DEFAULT_AIRCRAFT_REGISTRATION, sizeof(simulationDataLivery.atc_id));
+        }
         return;
 
       default:
@@ -346,4 +370,30 @@ class FadecGauge {
         return "UNKNOWN";
     }
   }
+
+  /*
+  * This function is to call if some data are needed before initialization of the engine (such as aircraft registration).
+  * This has to be done here due to data fetch feature being available after the first PANEL_SERVICE_PRE_DRAW (from what I have observed)
+  * This problem was observed when engine configuration file was under development
+  * Reach Julian Sebline on Discord if information needed
+  *
+  * Modify this function as needed
+  *
+  * @return true if all the requirements to initialize the engine are fulfilled
+  */
+  bool fetchNeededData() {
+    // This two lines request aircraft registration
+    simConnectRequestDataAcftInfo();
+    simConnectReadData();
+
+    _isReady = isRegistrationFound();
+
+    if(_isReady) {
+      EngineControlInstance.initialize(simulationDataLivery.atc_id);
+    }
+
+    return _isReady;
+  }
+
+  bool isReady() { return _isReady; }
 };

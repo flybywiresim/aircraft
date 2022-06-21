@@ -825,6 +825,7 @@ mod tests {
         UpdateContext::new(
             &mut init_context,
             delta_time,
+            0.,
             Velocity::new::<knot>(0.),
             Velocity::new::<knot>(0.),
             altitude,

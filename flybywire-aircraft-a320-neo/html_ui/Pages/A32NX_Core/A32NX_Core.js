@@ -62,7 +62,7 @@ class A32NX_Core {
                 name: 'Speeds',
                 module: new A32NX_Speeds(),
                 updateInterval: 500,
-            },
+            }
         ];
         this.moduleThrottlers = {};
         for (const moduleDefinition of this.modules) {
@@ -93,6 +93,7 @@ class A32NX_Core {
         const deltaTime = this.getDeltaTime();
 
         this.soundManager.update(deltaTime);
+        this.tipsManager.update(deltaTime);
 
         let updatedModules = 0;
         this.modules.forEach(moduleDefinition => {

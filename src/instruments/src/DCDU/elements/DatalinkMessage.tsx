@@ -6,7 +6,7 @@ import { MessageVisualization } from './MessageVisualization';
 type DatalinkMessageProps = {
     messages: CpdlcMessage[],
     isStatusAvailable: (sender: string) => boolean,
-    setStatus: (sender: string, message: string) => void,
+    setStatus: (sender: string, message: string, duration: number) => void,
     resetStatus: (sender: string) => void
 }
 

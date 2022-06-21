@@ -1,5 +1,6 @@
 class CDUAtcMenu {
     static ShowPage1(mcdu) {
+        mcdu.activeSystem = "ATSU";
         if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansB) {
             CDUAtcMenuFansB.ShowPage(mcdu);
         } else {

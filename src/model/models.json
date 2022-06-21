@@ -826,6 +826,20 @@
           [0.587402, 0.958984],
           [0.621582, 0.973633]
         ]
+      },
+      {
+        "accessors": [
+          "x0_PUSH_RADIOL_SEL_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_RADIOL_SEL_SEQ2_vertices#0_TEXCOORD_1",
+          "x0_PUSH_RADIOR_SEL_SEQ2_vertices#0_TEXCOORD_0",
+          "x0_PUSH_RADIOR_SEL_SEQ2_vertices#0_TEXCOORD_1"
+        ],
+        "data": [
+          [0.400669, 0.736029],
+          [0.382114, 0.753607],
+          [0.382358, 0.736029],
+          [0.400913, 0.753607]
+        ]
       }
     ],
     "splitAnimations": [
@@ -934,6 +948,14 @@
       {
         "gltf": "./rivet-mesh/rivet-mesh.gltf",
         "bin": "./rivet-mesh/rivet-mesh.bin"
+      },
+      {
+        "gltf": "./chocks/chocks.gltf",
+        "bin": "./chocks/chocks.bin"
+      },
+      {
+        "gltf": "./cone/cone.gltf",
+        "bin": "./cone/cone.bin"
       },
       {
         "combineFiles": ["./a320-exterior/A320_NEO_LOD00.gltf"],
@@ -43128,6 +43150,40 @@
             "indices": [3, 4, 5]
           }
         ]
+      }
+    ],
+    "addParentNodes" : [
+      {
+        "name": "CHOCKS_NOSE_GEAR",
+        "parent": "HYDROLIC_C"
+      },
+      {
+        "name": "CHOCKS_MAIN_GEAR_RIGHT",
+        "parent": "HYDROLIC_RIGHT"
+      },
+      {
+        "name": "CHOCKS_MAIN_GEAR_LEFT",
+        "parent": "HYDROLIC_LEFT"
+      },
+      {
+        "name": "CONE_ENG_L",
+        "parent": "HYDROLIC_LEFT"
+      },
+      {
+        "name": "CONE_L",
+        "parent": "HYDROLIC_LEFT"
+      },
+      {
+        "name": "CONE_ENG_R",
+        "parent": "HYDROLIC_RIGHT"
+      },
+      {
+        "name": "CONE_R",
+        "parent": "HYDROLIC_RIGHT"
+      },
+      {
+        "name": "CONE_B",
+        "parent": "HYDROLIC_RIGHT"
       }
     ]
   }

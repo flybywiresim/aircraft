@@ -46,7 +46,7 @@ export class EfisVectors {
         }
 
         const activeFlightPlanVectors = this.guidanceController.activeGeometry?.getAllPathVectors(this.guidanceController.activeLegIndex) ?? [];
-        const temporaryFlightPlanVectors = this.guidanceController.temporaryGeometry?.getAllPathVectors() ?? [];
+        const temporaryFlightPlanVectors = this.guidanceController.temporaryGeometry?.getAllPathVectors(this.guidanceController.temporaryLegIndex) ?? [];
 
         const visibleActiveFlightPlanVectors = activeFlightPlanVectors
             .filter((vector) => EfisVectors.isVectorReasonable(vector));
