@@ -31,6 +31,9 @@ export const ISISDisplay: React.FC = () => {
 
     useInteractionEvent('A32NX_ISIS_KNOB_CLOCKWISE', () => {
         lastPilotInput.current = Date.now();
+        if (!selectedBug.isActive) {
+            return;
+        }
 
         if (selectedBug.value >= selectedBug.max) {
             return;
@@ -42,6 +45,9 @@ export const ISISDisplay: React.FC = () => {
 
     useInteractionEvent('A32NX_ISIS_KNOB_ANTI_CLOCKWISE', () => {
         lastPilotInput.current = Date.now();
+        if (!selectedBug.isActive) {
+            return;
+        }
 
         if (selectedBug.value <= selectedBug.min) {
             return;

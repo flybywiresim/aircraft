@@ -71,6 +71,25 @@ impl From<Arinc429Word<u32>> for f64 {
         f64::from_bits(bits)
     }
 }
+impl From<f64> for Arinc429Word<f64> {
+    fn from(value: f64) -> Arinc429Word<f64> {
+        let bits = value.to_bits();
+
+        let value = (bits >> 32) as u32;
+        let status = bits as u32;
+
+        Arinc429Word::new(f32::from_bits(value) as f64, status.into())
+    }
+}
+impl From<Arinc429Word<f64>> for f64 {
+    fn from(value: Arinc429Word<f64>) -> f64 {
+        let status: u64 = value.ssm.into();
+
+        let bits = ((value.value as f32).to_bits() as u64) << 32 | status;
+
+        f64::from_bits(bits)
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum SignStatus {
@@ -136,15 +155,17 @@ mod tests {
         let mut rng = rand::thread_rng();
         let expected_value: f64 = rng.gen_range(0.0..10000.0);
 
-        let result = from_arinc429(to_arinc429(expected_value, expected_ssm));
+        let word = Arinc429Word::new(expected_value, expected_ssm);
+
+        let result: Arinc429Word<f64> = Arinc429Word::from(f64::from(word));
 
         assert!(
-            (result.0 - expected_value).abs() < 0.001,
+            (result.value - expected_value).abs() < 0.001,
             "Expected: {}, got: {}",
             expected_value,
-            result.0
+            result.value
         );
-        assert_eq!(expected_ssm, result.1);
+        assert_eq!(expected_ssm, result.ssm);
     }
 
     #[rstest]
