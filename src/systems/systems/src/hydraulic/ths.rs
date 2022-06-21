@@ -21,6 +21,8 @@ use crate::shared::{interpolation, low_pass_filter::LowPassFilter};
 use std::time::Duration;
 
 struct TrimWheels {
+    position_percent_id: VariableIdentifier,
+
     position: Angle,
     trim_actuator_over_trim_wheel_ratio: Ratio,
 
@@ -29,12 +31,14 @@ struct TrimWheels {
 }
 impl TrimWheels {
     fn new(
-        context: &InitContext,
+        context: &mut InitContext,
         trim_actuator_over_trim_wheel_ratio: Ratio,
         min_angle: Angle,
         total_range_angle: Angle,
     ) -> Self {
         Self {
+            position_percent_id: context.get_identifier("HYD_TRIM_WHEEL_PERCENT".to_owned()),
+
             position: Angle::default(),
             trim_actuator_over_trim_wheel_ratio,
             min_angle,
@@ -53,6 +57,14 @@ impl TrimWheels {
 
     fn position_normalized(&self) -> Ratio {
         (self.position - self.min_angle) / (self.max_angle - self.min_angle)
+    }
+}
+impl SimulationElement for TrimWheels {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.position_percent_id,
+            self.position_normalized().get::<ratio>() * 100.,
+        );
     }
 }
 
@@ -460,6 +472,7 @@ impl ThsTrimAssembly {
 }
 impl SimulationElement for ThsTrimAssembly {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.trim_wheel.accept(visitor);
         self.ths_assembly.accept(visitor);
     }
 }
@@ -485,7 +498,7 @@ impl ThsHydraulicAssembly {
     // Gain to convert hyd motor speed to ths deflection speed
     const HYD_MOTOR_SPEED_TO_THS_DEFLECTION_SPEED_GAIN: f64 = 0.000085;
 
-    const MAX_DEFLECTION_FOR_FULL_OPEN_SPOOL_VALVE_DEGREES: f64 = 0.2;
+    const MAX_DEFLECTION_FOR_FULL_OPEN_SPOOL_VALVE_DEGREES: f64 = 0.4;
 
     pub fn new(context: &mut InitContext, min_deflection: Angle, deflection_range: Angle) -> Self {
         Self {

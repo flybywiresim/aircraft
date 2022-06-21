@@ -505,8 +505,8 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_EventsSet">
                 <ANIM_LENGTH>200</ANIM_LENGTH>
-                <ANIM_CODE>(A:ELEVATOR TRIM PCT, Percent) 100 +</ANIM_CODE>
-                <DRAG_SIMVAR>ELEVATOR TRIM PCT</DRAG_SIMVAR>
+                <ANIM_CODE>(L:A32NX_HYD_TRIM_WHEEL_PERCENT)</ANIM_CODE>
+                <DRAG_SIMVAR>(L:A32NX_THS_MANUAL_CONTROL_SPEED)</DRAG_SIMVAR>
                 <DRAG_SIMVAR_UNITS>percent</DRAG_SIMVAR_UNITS>
                 <DRAG_EVENTID_SET>ELEVATOR_TRIM_SET</DRAG_EVENTID_SET>
             </UseTemplate>
@@ -514,8 +514,8 @@
         <Component ID="#NODE_ID2#" Node="#NODE_ID2#">
             <UseTemplate Name="ASOBO_GT_Interaction_DraggingYAxis_EventSet">
                 <ANIM_LENGTH>200</ANIM_LENGTH>
-                <ANIM_CODE>(A:ELEVATOR TRIM PCT, Percent) 100 +</ANIM_CODE>
-                <DRAG_SIMVAR>ELEVATOR TRIM PCT</DRAG_SIMVAR>
+                <ANIM_CODE>(L:A32NX_HYD_TRIM_WHEEL_PERCENT)</ANIM_CODE>
+                <DRAG_SIMVAR>(L:A32NX_THS_MANUAL_CONTROL_SPEED)</DRAG_SIMVAR>
                 <DRAG_SIMVAR_UNITS>percent</DRAG_SIMVAR_UNITS>
                 <DRAG_EVENTID_SET>ELEVATOR_TRIM_SET</DRAG_EVENTID_SET>
             </UseTemplate>
