@@ -129,10 +129,10 @@ impl VariablesToObject for PitchTrimSimOutput {
 }
 
 fn pos_error_to_speed(error: f64) -> f64 {
-    // println!(
-    //     "ERROR {:.2} -> trim speed {:.2}",
-    //     error,
-    //     (100000. * error.powi(3)).min(75.).max(-75.)
-    // );
-    (200000. * error.powi(3)).min(45.).max(-45.)
+    //println!(
+    //    "ERROR {:.2} -> trim speed {:.2}",
+    //    error,
+    //    (1000. * error.powi(1)).min(45.).max(-45.)
+    //);
+    (1000. * error).min(45.).max(-45.)
 }

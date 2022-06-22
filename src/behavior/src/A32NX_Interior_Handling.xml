@@ -496,28 +496,33 @@
             <ANIM_NAME>HANDLING_Wheel_ElevatorTrim</ANIM_NAME>
             <NODE_ID>HANDLING_Wheel_ElevatorTrim</NODE_ID>
             <PART_ID>HANDLING_Wheel_ElevatorTrim</PART_ID>
-            <DRAG_MIN_VALUE>-16384</DRAG_MIN_VALUE>
+            <DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
+            <DRAG_MAX_VALUE>100</DRAG_MAX_VALUE>
             <NODE_ID2>HANDLING_Wheel_ElevatorTrim_Pitch_2</NODE_ID2>
-            <DRAG_AXIS_SCALE>100</DRAG_AXIS_SCALE>
-            <DRAG_SCALAR>0.001</DRAG_SCALAR>
+            <DRAG_DELTA>0.001</DRAG_DELTA>
+            <DRAG_SPEED>0.03</DRAG_SPEED>
+            <LEFT_SINGLE_CODE>(L:A32NX_HYD_TRIM_WHEEL_PERCENT) (&gt;O:Position)</LEFT_SINGLE_CODE>
+            <DRAG_CODE>
+                (O:Position) 100 / 16383 * 2 * 16383 - (&gt;K:AXIS_ELEV_TRIM_SET)
+                (O:Position) 100 / 16383 * 2 * 16383 - (&gt;L:TEST)
+            </DRAG_CODE>
+            <REVERSE_INTERACTION />
         </DefaultTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_EventsSet">
-                <ANIM_LENGTH>200</ANIM_LENGTH>
+            <UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_Code">
+                <ANIM_LENGTH>100</ANIM_LENGTH>
                 <ANIM_CODE>(L:A32NX_HYD_TRIM_WHEEL_PERCENT)</ANIM_CODE>
-                <DRAG_SIMVAR>(L:A32NX_THS_MANUAL_CONTROL_SPEED)</DRAG_SIMVAR>
-                <DRAG_SIMVAR_UNITS>percent</DRAG_SIMVAR_UNITS>
-                <DRAG_EVENTID_SET>ELEVATOR_TRIM_SET</DRAG_EVENTID_SET>
+                <UP_CODE>#DRAG_CODE#</UP_CODE>
+                <DOWN_CODE>#DRAG_CODE#</DOWN_CODE>
             </UseTemplate>
         </Component>
         <Component ID="#NODE_ID2#" Node="#NODE_ID2#">
-            <UseTemplate Name="ASOBO_GT_Interaction_DraggingYAxis_EventSet">
-                <ANIM_LENGTH>200</ANIM_LENGTH>
+            <UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_Code">
+                <ANIM_LENGTH>100</ANIM_LENGTH>
                 <ANIM_CODE>(L:A32NX_HYD_TRIM_WHEEL_PERCENT)</ANIM_CODE>
-                <DRAG_SIMVAR>(L:A32NX_THS_MANUAL_CONTROL_SPEED)</DRAG_SIMVAR>
-                <DRAG_SIMVAR_UNITS>percent</DRAG_SIMVAR_UNITS>
-                <DRAG_EVENTID_SET>ELEVATOR_TRIM_SET</DRAG_EVENTID_SET>
+                <UP_CODE>#DRAG_CODE#</UP_CODE>
+                <DOWN_CODE>#DRAG_CODE#</DOWN_CODE>
             </UseTemplate>
         </Component>
     </Template>
