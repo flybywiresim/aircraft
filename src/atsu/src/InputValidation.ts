@@ -61,7 +61,7 @@ export class InputValidation {
      * @returns AtsuStatusCodes.Ok if the format is valid
      */
     public static validateScratchpadTime(value: string, expectZulu: boolean = true): AtsuStatusCodes {
-        if (expectZulu && /^[0-9]{4}Z$/.test(value) || !expectZulu && /^[0-9]{4}$/.test(value)) {
+        if ((expectZulu && /^[0-9]{4}Z$/.test(value)) || (!expectZulu && /^[0-9]{4}$/.test(value))) {
             return AtsuStatusCodes.Ok;
         }
         return AtsuStatusCodes.FormatError;
@@ -504,7 +504,7 @@ export class InputValidation {
             if (fahrenheit && temperature >= -105 && temperature <= 150) {
                 return AtsuStatusCodes.Ok;
             }
-            if (!fahrenheit && temperature >= 80 || temperature < 47) {
+            if (!fahrenheit && (temperature >= 80 || temperature < 47)) {
                 return AtsuStatusCodes.Ok;
             }
 
