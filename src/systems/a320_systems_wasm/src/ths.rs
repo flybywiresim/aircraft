@@ -1,6 +1,5 @@
 use std::error::Error;
 
-use systems::shared::to_bool;
 use systems_wasm::aspects::{
     EventToVariableMapping, ExecuteOn, MsfsAspectBuilder, VariablesToObject,
 };
@@ -13,14 +12,14 @@ pub(super) fn ths(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>
     builder.event_to_variable(
         "ELEV_TRIM_UP",
         EventToVariableMapping::Value(35.),
-        Variable::aspect("THS_MANUAL_CONTROL_SPEED"),
+        Variable::aspect("THS_MANUAL_CONTROL_SPEED_KEY"),
         |options| options.mask().afterwards_reset_to(0.),
     )?;
 
     builder.event_to_variable(
         "ELEV_TRIM_DN",
         EventToVariableMapping::Value(-35.),
-        Variable::aspect("THS_MANUAL_CONTROL_SPEED"),
+        Variable::aspect("THS_MANUAL_CONTROL_SPEED_KEY"),
         |options| options.mask().afterwards_reset_to(0.),
     )?;
 
@@ -45,6 +44,7 @@ pub(super) fn ths(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>
         |options| options.mask().afterwards_reset_to(-1.),
     )?;
 
+    // Sends a trim speed from position error
     builder.map_many(
         ExecuteOn::PreTick,
         vec![
@@ -53,14 +53,50 @@ pub(super) fn ths(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>>
             Variable::named("HYD_TRIM_WHEEL_PERCENT"),
         ],
         |values| {
-            println!(
-                "16K {:.2} 32K {:.2} current trim pos{:.2}",
-                values[0], values[1], values[2]
-            );
-
-            values[1] / 2. + 1.
+            if values[0] >= 0. {
+                pos_error_to_speed(values[0] - values[2] / 100.)
+            } else if values[1] >= 0. {
+                pos_error_to_speed(values[1] - values[2] / 100.)
+            } else {
+                0.
+            }
         },
-        Variable::aspect("THS_MANUAL_CONTROL_POSITION"),
+        Variable::aspect("THS_MANUAL_CONTROL_SPEED_AXIS"),
+    );
+
+    // Selects final speed to use from keys or axis events
+    builder.map_many(
+        ExecuteOn::PreTick,
+        vec![
+            Variable::named("THS_MANUAL_CONTROL_SPEED_KEY"),
+            Variable::named("THS_MANUAL_CONTROL_SPEED_AXIS"),
+        ],
+        |values| {
+            if values[0].abs() > 0. {
+                values[0]
+            } else {
+                values[1]
+            }
+        },
+        Variable::aspect("THS_MANUAL_CONTROL_SPEED"),
+    );
+
+    // Sends manual control state when receiveing event even if position is not moving or when keys event used
+    builder.map_many(
+        ExecuteOn::PreTick,
+        vec![
+            Variable::named("THS_MAN_POS_SET_16K"),
+            Variable::named("THS_MAN_POS_SET_32K"),
+            Variable::named("THS_MANUAL_CONTROL_SPEED_KEY"),
+        ],
+        |values| {
+            if values[0] >= 0. || values[1] >= 0. || values[2].abs() > 0. {
+                1.
+            } else {
+                0.
+            }
+        },
+        Variable::aspect("THS_MANUAL_CONTROL_ACTIVE"),
     );
 
     builder.variables_to_object(Box::new(PitchTrimSimOutput { elevator_trim: 0. }));
@@ -90,4 +126,13 @@ impl VariablesToObject for PitchTrimSimOutput {
     }
 
     set_data_on_sim_object!();
+}
+
+fn pos_error_to_speed(error: f64) -> f64 {
+    // println!(
+    //     "ERROR {:.2} -> trim speed {:.2}",
+    //     error,
+    //     (100000. * error.powi(3)).min(75.).max(-75.)
+    // );
+    (200000. * error.powi(3)).min(45.).max(-45.)
 }
