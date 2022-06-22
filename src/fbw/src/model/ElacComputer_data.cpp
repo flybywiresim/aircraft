@@ -213,12 +213,6 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   16.0,
 
-  1.0,
-
-  1.0,
-
-  1.0,
-
   50.0,
 
   0.02,
@@ -267,12 +261,6 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
 
   1.0,
 
-  1.0,
-
-  1.0,
-
-  1.0,
-
   0.5,
 
   0.5,
@@ -308,42 +296,6 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   50.0F,
 
   false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
-
-  true,
 
   true,
 
@@ -2037,37 +1989,6 @@ ElacComputer::Parameters_ElacComputer_T ElacComputer::ElacComputer_P{
   { 3U, 5U },
 
   false,
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  false,
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-  false,
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
-
-
-  { false, true, false, false, true, true, false, false, true, false, true, true, false, false, false, false },
 
   false,
 

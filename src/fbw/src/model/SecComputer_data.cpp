@@ -280,12 +280,6 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   -50.0,
 
-  1.0,
-
-  1.0,
-
-  1.0,
-
   10.0,
 
   10.0,
@@ -322,23 +316,11 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
 
   pitch_efcs_law::AlternateLaw2,
 
-  3.0F,
-
-  0.05F,
-
-  1.0F,
-
   false,
 
   false,
 
   false,
-
-  true,
-
-  true,
-
-  true,
 
   true,
 
@@ -1687,6 +1669,8 @@ SecComputer::Parameters_SecComputer_T SecComputer::SecComputer_P{
   20.0F,
 
   30.0F,
+
+  false,
 
   false,
 
