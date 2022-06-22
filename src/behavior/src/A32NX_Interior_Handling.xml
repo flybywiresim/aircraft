@@ -502,9 +502,8 @@
             <DRAG_DELTA>0.001</DRAG_DELTA>
             <DRAG_SPEED>0.03</DRAG_SPEED>
             <LEFT_SINGLE_CODE>(L:A32NX_HYD_TRIM_WHEEL_PERCENT) (&gt;O:Position)</LEFT_SINGLE_CODE>
-            <DRAG_CODE>
-                (O:Position) 100 / 16383 * 2 * 16383 - (&gt;K:AXIS_ELEV_TRIM_SET)
-                (O:Position) 100 / 16383 * 2 * 16383 - (&gt;L:TEST)
+            <DRAG_CODE type="rnp">
+                (K:AXIS_ELEV_TRIM_SET) = ((O:Position, number) / 100 * 16383 * 2) - 16383;
             </DRAG_CODE>
             <REVERSE_INTERACTION />
         </DefaultTemplateParameters>
