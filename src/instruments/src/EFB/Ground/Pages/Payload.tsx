@@ -4,9 +4,8 @@ import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons'
 import { useSimVar } from '@instruments/common/simVars';
 import { Units } from '@shared/units';
 import { usePersistentProperty } from '@instruments/common/persistence';
-// import { Label } from '../../Performance/Widgets/LandingWidget';
 import { BitFlags } from '@shared/bitFlags';
-import { useBitFlagsVar } from '@instruments/common/bitFlags';
+import { useBitFlags } from '@instruments/common/bitFlags';
 import { RowInfo, SeatInfo, TYPE } from './Seating/Constants';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
@@ -41,10 +40,10 @@ export const Payload = () => {
 
     const [stationSize, setSectionLen] = useState<number[]>([]);
 
-    const [aFlags, setAFlags] = useBitFlagsVar(`L:${plane}_PAX_FLAGS_A`);
-    const [bFlags, setBFlags] = useBitFlagsVar(`L:${plane}_PAX_FLAGS_B`);
-    const [cFlags, setCFlags] = useBitFlagsVar(`L:${plane}_PAX_FLAGS_C`);
-    const [dFlags, setDFlags] = useBitFlagsVar(`L:${plane}_PAX_FLAGS_D`);
+    const [aFlags, setAFlags] = useBitFlags('PAX_FLAGS_A');
+    const [bFlags, setBFlags] = useBitFlags('PAX_FLAGS_B');
+    const [cFlags, setCFlags] = useBitFlags('PAX_FLAGS_C');
+    const [dFlags, setDFlags] = useBitFlags('PAX_FLAGS_D');
 
     const activeFlags = [aFlags, bFlags, cFlags, dFlags];
     const setActiveFlags = [setAFlags, setBFlags, setCFlags, setDFlags];
@@ -334,5 +333,3 @@ export const Payload = () => {
         </div>
     );
 };
-
-// <Plane className="inset-x-0 mx-auto w-full h-full text-theme-text" />

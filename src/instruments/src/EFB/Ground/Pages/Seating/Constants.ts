@@ -35,3 +35,8 @@ export const SeatConstants = Object.freeze({
         imageY: 19.2,
     },
 });
+
+export const Status = {
+    Planned: 0,
+    Loaded: 1,
+};

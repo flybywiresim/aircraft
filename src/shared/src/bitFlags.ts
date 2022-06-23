@@ -33,4 +33,8 @@ export class BitFlags {
     toDouble(): number {
         return (new Float64Array(Uint32Array.from(this.flags).buffer))[0];
     }
+
+    toString(): string {
+        return (`[ ${this.flags[0].toString(2)} | ${this.flags[1].toString(2)} ]`);
+    }
 }
