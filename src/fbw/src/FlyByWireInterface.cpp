@@ -589,7 +589,7 @@ void FlyByWireInterface::setupLocalVariables() {
     string idString = std::to_string(i + 1);
 
     idElacPushbuttonStatus[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_PUSHBUTTON_STATUS");
-    idElacFaultLightOn[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_FAULT_LIGHT_ON");
+    idElacDigitalOpValidated[i] = make_unique<LocalVariable>("A32NX_ELAC_" + idString + "_DIGITAL_OP_VALIDATED");
   }
 
   for (int i = 0; i < 3; i++) {
@@ -1253,7 +1253,7 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
     simConnectInterface.setClientDataElacBusInput(elacsBusOutputs[elacIndex], elacIndex);
   }
 
-  idElacFaultLightOn[elacIndex]->set(!elacsDiscreteOutputs[elacIndex].digital_output_validated);
+  idElacDigitalOpValidated[elacIndex]->set(elacsDiscreteOutputs[elacIndex].digital_output_validated);
 
   return true;
 }
