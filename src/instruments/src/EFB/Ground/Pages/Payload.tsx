@@ -6,6 +6,7 @@ import { Units } from '@shared/units';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { BitFlags } from '@shared/bitFlags';
 import { useBitFlags } from '@instruments/common/bitFlags';
+import { BalanceWeight } from './BalanceWeight/BalanceWeight';
 import { RowInfo, SeatInfo, TYPE } from './Seating/Constants';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
@@ -198,7 +199,10 @@ export const Payload = () => {
 
     return (
         <div>
-            <SeatMap x={243} y={78} seatMap={seatMap} activeFlags={activeFlags} />
+            <div className="h-content-section-reduced">
+                <SeatMap x={243} y={78} seatMap={seatMap} activeFlags={activeFlags} />
+                <BalanceWeight x={750} y={350} width={500} height={300} />
+            </div>
 
             <div className="flex overflow-hidden absolute bottom-0 left-0 flex-row rounded-2xl border border-theme-accent ">
                 <div className="py-3 px-5 space-y-4">

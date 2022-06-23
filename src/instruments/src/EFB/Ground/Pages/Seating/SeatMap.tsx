@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useRef, useState } from 'react';
 import { BitFlags } from '@shared/bitFlags';
 import { CanvasX, CanvasY, RowInfo, SeatConstants, SeatInfo, TYPE } from './Constants';
@@ -18,9 +17,9 @@ interface SeatMapProps {
 
 export const SeatMap: React.FC<SeatMapProps> = ({ x, y, seatMap, activeFlags }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
     const [seatImg, setSeatImg] = useState<HTMLImageElement | null>(null);
     const [seatFilledImg, setSeatFilledImg] = useState<HTMLImageElement | null>(null);
-    const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
 
     const addXOffset = (xOff: number, sec: number, row: number) => {
         let seatType = TYPE.ECO;
@@ -123,7 +122,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({ x, y, seatMap, activeFlags }) 
     }, [draw]);
 
     return (
-        <div className="flex relative flex-col h-content-section-reduced">
+        <div className="flex relative flex-col">
             <img
                 className="absolute w-full"
                 src={SVGFuselage}
