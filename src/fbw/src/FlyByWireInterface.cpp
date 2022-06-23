@@ -1282,8 +1282,6 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].modelInputs.in.discrete_inputs.pitch_not_avail_elac_2 = !elacsDiscreteOutputs[1].pitch_axis_ok;
     secs[secIndex].modelInputs.in.discrete_inputs.left_elev_not_avail_sec_opp = !secsDiscreteOutputs[oppSecIndex].left_elevator_ok;
     secs[secIndex].modelInputs.in.discrete_inputs.right_elev_not_avail_sec_opp = !secsDiscreteOutputs[oppSecIndex].right_elevator_ok;
-    secs[secIndex].modelInputs.in.discrete_inputs.digital_output_failed_elac_1 = !elacsDiscreteOutputs[0].digital_output_validated;
-    secs[secIndex].modelInputs.in.discrete_inputs.digital_output_failed_elac_2 = !elacsDiscreteOutputs[1].digital_output_validated;
     secs[secIndex].modelInputs.in.discrete_inputs.ths_motor_fault = false;
     secs[secIndex].modelInputs.in.discrete_inputs.l_elev_servo_failed = idElevFaultLeft[secIndex]->get();
     secs[secIndex].modelInputs.in.discrete_inputs.r_elev_servo_failed = idElevFaultRight[secIndex]->get();
@@ -1293,14 +1291,14 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     secs[secIndex].modelInputs.in.discrete_inputs.pitch_not_avail_elac_2 = false;
     secs[secIndex].modelInputs.in.discrete_inputs.left_elev_not_avail_sec_opp = false;
     secs[secIndex].modelInputs.in.discrete_inputs.right_elev_not_avail_sec_opp = false;
-    secs[secIndex].modelInputs.in.discrete_inputs.digital_output_failed_elac_1 = false;
-    secs[secIndex].modelInputs.in.discrete_inputs.digital_output_failed_elac_2 = false;
     secs[secIndex].modelInputs.in.discrete_inputs.ths_motor_fault = false;
     secs[secIndex].modelInputs.in.discrete_inputs.l_elev_servo_failed = false;
     secs[secIndex].modelInputs.in.discrete_inputs.r_elev_servo_failed = false;
     secs[secIndex].modelInputs.in.discrete_inputs.ths_override_active = false;
   }
 
+  secs[secIndex].modelInputs.in.discrete_inputs.digital_output_failed_elac_1 = !elacsDiscreteOutputs[0].digital_output_validated;
+  secs[secIndex].modelInputs.in.discrete_inputs.digital_output_failed_elac_2 = !elacsDiscreteOutputs[1].digital_output_validated;
   secs[secIndex].modelInputs.in.discrete_inputs.green_low_pressure = !idHydGreenPressurised->get();
   secs[secIndex].modelInputs.in.discrete_inputs.blue_low_pressure = !idHydBluePressurised->get();
   secs[secIndex].modelInputs.in.discrete_inputs.yellow_low_pressure = !idHydYellowPressurised->get();
