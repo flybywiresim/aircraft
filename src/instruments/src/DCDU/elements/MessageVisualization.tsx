@@ -1,10 +1,12 @@
 import React, { useState, memo } from 'react';
 import { useInteractionEvents } from '@instruments/common/hooks.js';
+import { DcduStatusMessage } from '@atsu/components/DcduLink';
 import { Checkerboard } from './Checkerboard';
 
 interface ColorizedWord {
     word: string;
     highlight: boolean;
+    watchdog: boolean;
 }
 
 interface ColorizedLine {
@@ -15,25 +17,33 @@ interface ColorizedLine {
 type MessageVisualizationProps = {
     message: string,
     backgroundColor: [number, number, number],
-    keepNewlines: boolean,
+    keepNewlines?: boolean,
+    messageIsReminder: boolean,
     ignoreHighlight: boolean,
     cssClass: string,
     yStart: number,
     deltaY: number,
-    isStatusAvailable: ((sender: string) => boolean) | undefined,
-    setStatus: ((sender: string, message: string, duration: number) => void) | undefined,
-    resetStatus: ((sender: string) => void) | undefined,
+    seperatorLine?: number,
+    watchdogIndices?: number[],
+    updateSystemStatusMessage: (status: DcduStatusMessage) => void
 }
 
-function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, deltaY: number, useDeltaY: boolean, ignoreHighlight: boolean) {
+function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, deltaY: number, useDeltaY: boolean, reminder: boolean, ignoreHighlight: boolean, backgroundActive: boolean) {
     if (startIdx >= line.length) {
         return <></>;
     }
 
     const highlight = line[startIdx].highlight && !ignoreHighlight;
+    const monitoring = line[startIdx].watchdog && !ignoreHighlight;
     let className = 'message-tspan';
-    if (highlight) {
-        className = ' message-highlight';
+    if (!reminder) {
+        if (backgroundActive) {
+            className += ' message-onbackground';
+        } else if (monitoring) {
+            className += ' message-monitoring';
+        } else if (highlight) {
+            className += ' message-highlight';
+        }
     }
     let nextIdx = line.length;
     let message = '';
@@ -51,14 +61,14 @@ function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, 
             return (
                 <>
                     <tspan x="224" dy={deltaY} className={className}>{message}</tspan>
-                    {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight)}
+                    {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, reminder, ignoreHighlight, backgroundActive)}
                 </>
             );
         }
         return (
             <>
                 <tspan x="224" y={startY} className={className}>{message}</tspan>
-                {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight)}
+                {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, reminder, ignoreHighlight, backgroundActive)}
             </>
         );
     }
@@ -67,12 +77,12 @@ function visualizeLine(line: ColorizedWord[], startIdx: number, startY: number, 
     return (
         <>
             <tspan className={className}>{message}</tspan>
-            {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, ignoreHighlight)}
+            {visualizeLine(line, nextIdx, startY, deltaY, useDeltaY, reminder, ignoreHighlight, backgroundActive)}
         </>
     );
 }
 
-function visualizeLines(lines: ColorizedLine[], yStart: number, deltaY: number, ignoreHighlight: boolean) {
+function visualizeLines(lines: ColorizedLine[], backgroundIdx: number, yStart: number, deltaY: number, reminder: boolean, ignoreHighlight: boolean) {
     if (lines.length === 0) {
         return <></>;
     }
@@ -80,22 +90,45 @@ function visualizeLines(lines: ColorizedLine[], yStart: number, deltaY: number, 
     const firstLine = lines[0];
     lines.shift();
 
+    let lineCount = 0;
     return (
         <>
-            {visualizeLine(firstLine.words, 0, yStart, deltaY, false, ignoreHighlight)}
-            {lines.map((line) => visualizeLine(line.words, 0, yStart, deltaY, true, ignoreHighlight))}
+            {visualizeLine(firstLine.words, 0, yStart, deltaY, false, reminder, ignoreHighlight, backgroundIdx <= 0)}
+            {lines.map((line) => {
+                lineCount += 1;
+                return visualizeLine(line.words, 0, yStart, deltaY, true, reminder, ignoreHighlight, backgroundIdx <= lineCount);
+            })}
         </>
     );
 }
 
-function colorizeWords(message: string, keepNewlines: boolean): ColorizedWord[] {
+function indexInList(list: number[], index: number): boolean {
+    for (const value of list) {
+        if (value === index) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function colorizeWords(message: string, keepNewlines: boolean, watchdogIndices: number[]): ColorizedWord[] {
     const words: ColorizedWord[] = [];
     if (!keepNewlines) {
         message = message.replace(/\n/gi, ' ');
     }
 
+    let watchdogColor = false;
     let highlightColor = false;
-    message.split(/\s+/).forEach((word) => {
+    const messageWords = message.match(/[-@_A-Z0-9]+|\[\s+\]/g);
+    if (!messageWords) {
+        return [];
+    }
+
+    for (let word of messageWords) {
+        if (word.length === 0) {
+            continue;
+        }
+
         /* check if the color needs to be changed */
         const highlightMarkers: number[] = [];
         for (let i = 0; i < word.length; ++i) {
@@ -108,11 +141,22 @@ function colorizeWords(message: string, keepNewlines: boolean): ColorizedWord[] 
         // we need to change the highlight state
         if (highlightMarkers.length === 1 && highlightMarkers[0] === 0) {
             highlightColor = !highlightColor;
+            watchdogColor = false;
+            if (highlightColor) {
+                if (indexInList(watchdogIndices, words.length)) {
+                    watchdogColor = true;
+                }
+            }
         } else if (highlightMarkers.length !== 0) {
             highlightColor = !highlightColor;
+            if (highlightColor) {
+                if (indexInList(watchdogIndices, words.length)) {
+                    watchdogColor = true;
+                }
+            }
         }
 
-        words.push({ word, highlight: highlightColor });
+        words.push({ word, highlight: highlightColor, watchdog: watchdogColor });
 
         // only one word needs to be highlighted
         if (highlightMarkers.length === 1 && highlightMarkers[0] !== 0) {
@@ -120,7 +164,7 @@ function colorizeWords(message: string, keepNewlines: boolean): ColorizedWord[] 
         } else if (highlightMarkers.length !== 0) {
             highlightColor = !highlightColor;
         }
-    });
+    }
 
     return words;
 }
@@ -143,11 +187,11 @@ function insertWord(lines: ColorizedLine[], word: ColorizedWord, keepNewlines: b
     lines[lines.length - 1].words.push(word);
 }
 
-function createVisualizationLines(message: string, keepNewlines: boolean): ColorizedLine[] {
+function createVisualizationLines(message: string, keepNewlines: boolean, watchdogIndices: number[]): ColorizedLine[] {
     const lines: ColorizedLine[] = [];
 
     if (!keepNewlines) {
-        const words = colorizeWords(message, keepNewlines);
+        const words = colorizeWords(message, keepNewlines, watchdogIndices);
         lines.push({ length: 0, words: [] });
 
         words.forEach((word) => {
@@ -161,7 +205,7 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
                 }
 
                 // insert the word
-                insertWord(lines, { word: entry, highlight: word.highlight }, keepNewlines);
+                insertWord(lines, { word: entry, highlight: word.highlight, watchdog: word.watchdog }, keepNewlines);
                 newline = !keepNewlines;
             });
         });
@@ -170,12 +214,20 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
         let lastLineHighlight = false;
 
         inputLines.forEach((line) => {
-            const words = colorizeWords(line, keepNewlines);
+            const words = colorizeWords(line, keepNewlines, watchdogIndices);
+            if (words.length === 1 && /-+/.test(line)) {
+                lastLineHighlight = false;
+            }
 
             if (words.length !== 0) {
                 // invert the highlights due to the old highlighted text of the last line
                 if (lastLineHighlight) {
-                    words.forEach((word) => word.highlight = !word.highlight);
+                    words.forEach((word) => {
+                        word.highlight = !word.highlight;
+                        if (!word.highlight) {
+                            word.watchdog = false;
+                        }
+                    });
                 }
                 lastLineHighlight = words[words.length - 1].highlight;
             }
@@ -188,8 +240,8 @@ function createVisualizationLines(message: string, keepNewlines: boolean): Color
 }
 
 export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
-    message, backgroundColor, keepNewlines, ignoreHighlight, cssClass, yStart, deltaY,
-    isStatusAvailable, setStatus, resetStatus,
+    message, backgroundColor, messageIsReminder, keepNewlines = false, ignoreHighlight, cssClass, yStart, deltaY,
+    seperatorLine = null, watchdogIndices = [], updateSystemStatusMessage,
 }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(0);
@@ -201,12 +253,10 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
         }
 
         if (pageIndex > 0) {
-            if (resetStatus !== undefined) {
-                resetStatus('DatalinkMessage');
-            }
+            updateSystemStatusMessage(DcduStatusMessage.NoMessage);
             setPageIndex(pageIndex - 1);
-        } else if (isStatusAvailable !== undefined && setStatus !== undefined && isStatusAvailable('DatalinkMessage') === true) {
-            setStatus('DatalinkMessage', 'NO MORE PGE', 5);
+        } else {
+            updateSystemStatusMessage(DcduStatusMessage.NoMorePages);
         }
     });
     useInteractionEvents(['A32NX_DCDU_BTN_MPL_POEPLUS', 'A32NX_DCDU_BTN_MPR_POEPLUS'], () => {
@@ -215,12 +265,10 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
         }
 
         if (pageCount > pageIndex + 1) {
-            if (resetStatus !== undefined) {
-                resetStatus('DatalinkMessage');
-            }
+            updateSystemStatusMessage(DcduStatusMessage.NoMessage);
             setPageIndex(pageIndex + 1);
-        } else if (isStatusAvailable !== undefined && setStatus !== undefined && isStatusAvailable('DatalinkMessage') === true) {
-            setStatus('DatalinkMessage', 'NO MORE PGE', 5);
+        } else {
+            updateSystemStatusMessage(DcduStatusMessage.NoMorePages);
         }
     });
 
@@ -228,7 +276,7 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
         return <></>;
     }
 
-    let lines = createVisualizationLines(message, keepNewlines);
+    let lines = createVisualizationLines(message, keepNewlines, watchdogIndices);
 
     // get the number of pages
     const messagePageCount = Math.ceil(lines.length / maxLines);
@@ -250,16 +298,43 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
     lines = lines.slice(startIndex, endIndex);
 
     // calculate the position of the background rectangle
-    const contentHeight = 120 + lines.length * 230;
-    const backgroundNeeded = backgroundColor[0] !== 0 || backgroundColor[1] !== 0 || backgroundColor[2] !== 0;
+    let backgroundY = 520;
+    let contentHeight = 120;
+    let backgroundNeeded = false;
+    if (backgroundColor[0] !== 0 || backgroundColor[1] !== 0 || backgroundColor[2] !== 0) {
+        if (seperatorLine) {
+            backgroundNeeded = true;
+            if (seperatorLine <= startIndex) {
+                // first line contains downlink message
+                contentHeight += lines.length * 220;
+            } else if (seperatorLine < endIndex) {
+                // mix of uplink and downlink message
+                contentHeight += (endIndex - seperatorLine) * 220;
+                backgroundY += (lines.length - (endIndex - seperatorLine)) * 220;
+            } else {
+                backgroundNeeded = false;
+            }
+        } else {
+            contentHeight += lines.length * 220;
+            backgroundNeeded = true;
+        }
+    }
     const rgb = `rgb(${backgroundColor[0]},${backgroundColor[1]},${backgroundColor[2]})`;
+    let backgroundIdx = maxLines;
+    if (backgroundNeeded) {
+        if (seperatorLine && seperatorLine >= startIndex) {
+            backgroundIdx = (seperatorLine - startIndex) >= maxLines ? 0 : (seperatorLine - startIndex);
+        } else if (seperatorLine) {
+            backgroundIdx = 0;
+        }
+    }
 
     return (
         <>
             {backgroundNeeded && (
                 <Checkerboard
                     x={130}
-                    y={472}
+                    y={backgroundY}
                     width={3600}
                     height={contentHeight}
                     cellSize={10}
@@ -267,12 +342,12 @@ export const MessageVisualization: React.FC<MessageVisualizationProps> = memo(({
                 />
             )}
             <text className={cssClass}>
-                {visualizeLines(lines, yStart, deltaY, ignoreHighlight)}
+                {visualizeLines(lines, backgroundIdx, yStart, deltaY, messageIsReminder, ignoreHighlight)}
             </text>
             {pageCount > 1 && (
                 <>
-                    <text className="status-atsu" x="65%" y="2480">PG</text>
-                    <text className="status-atsu" x="65%" y="2720">
+                    <text className="status-atsu" fill="white" x="65%" y="2480">PG</text>
+                    <text className="status-atsu" fill="white" x="65%" y="2720">
                         {pageIndex + 1}
                         {' '}
                         /

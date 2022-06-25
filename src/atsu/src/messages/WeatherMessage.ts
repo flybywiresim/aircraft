@@ -31,7 +31,7 @@ export class WeatherMessage extends AtsuMessage {
 
         let message = '';
 
-        if (format === AtsuMessageSerializationFormat.MCDU) {
+        if (format === AtsuMessageSerializationFormat.MCDU || format === AtsuMessageSerializationFormat.MCDUMonitored) {
             this.Reports.forEach((report) => {
                 message += `{cyan}${type} ${report.airport}{end}\n`;
 
