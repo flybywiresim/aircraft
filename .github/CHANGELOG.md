@@ -32,6 +32,7 @@
 1. [FMGC] Basic RNP at or below 0.3 support - @tracernz (Mike)
 1. [ND] Add TERR ON ND peaks mode map visualization - @Sven [de en] (Sven Czarnian)
 1. [SD] Improve F/CTL and WHEEL SD pages visuals - @lukecologne (luke)
+1. [MCDU] Added formatter to improve text alignment and ease integration - @derl30n (Leon)
 
 ## 0.8.0
 
