@@ -9,6 +9,7 @@ import { NDSimvars } from '../../NDSimvarPublisher';
 import { WaypointLayer } from './WaypointLayer';
 import { ConstraintsLayer } from './ConstraintsLayer';
 import { RunwayLayer } from './RunwayLayer';
+import { FixInfoLayer } from './FixInfoLayer';
 
 export interface CanvasMapProps {
     bus: EventBus,
@@ -41,6 +42,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
     private readonly waypointLayer = new WaypointLayer(this);
 
+    private readonly fixInfoLayer = new FixInfoLayer();
+
     private readonly constraintsLayer = new ConstraintsLayer();
 
     private readonly runwayLayer = new RunwayLayer();
@@ -55,11 +58,11 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     private setupCallbacks() {
         const sub = this.props.bus.getSubscriber<NDSimvars & FmsSymbolsData & ClockEvents>();
 
-        this.props.mapCenterLat.sub((v) => {
+        this.props.mapCenterLat.sub(() => {
             this.handleRecomputeMapParameters();
         });
 
-        this.props.mapCenterLong.sub((v) => {
+        this.props.mapCenterLong.sub(() => {
             this.handleRecomputeMapParameters();
         });
 
@@ -114,6 +117,10 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
         this.waypointLayer.data = waypoints;
 
+        const fixInfoSymbols = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.FixInfo);
+
+        this.fixInfoLayer.data = fixInfoSymbols;
+
         const constraints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.ConstraintUnknown | NdSymbolTypeFlags.ConstraintMet | NdSymbolTypeFlags.ConstraintMissed);
 
         this.constraintsLayer.data = constraints;
@@ -139,6 +146,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         context.translate(236, -6);
         context.clip(this.props.mapClip.get());
         context.resetTransform();
+
         context.beginPath();
         for (const vector of this.activeVectors) {
             this.drawVector(context, vector, 0);
@@ -148,84 +156,14 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         this.waypointLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.waypointLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
 
+        this.fixInfoLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
+        this.fixInfoLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
+
         this.constraintsLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.constraintsLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
 
         this.runwayLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.runwayLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
-    }
-
-    private drawScaledRunway(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
-        const identIcao = symbol.ident.substring(0, 4);
-        const identRwy = symbol.ident.substring(4);
-
-        // Runway shape
-        const length = symbol.length * this.mapParams.nmToPx;
-        const rotation = this.mapParams.rotation(symbol.direction);
-
-        function drawShape(color: string, lineWidth: number) {
-            context.lineWidth = lineWidth;
-            context.strokeStyle = color;
-            context.beginPath();
-            context.moveTo(x - 5, y);
-            context.lineTo(x - 5, y - length);
-            context.moveTo(x + 5, y);
-            context.lineTo(x + 5, y - length);
-            context.stroke();
-            context.closePath();
-            context.rotate(0);
-        }
-
-        context.translate(x, y);
-        context.rotate(rotation * MathUtils.DEGREES_TO_RADIANS);
-        context.translate(-x, -y);
-
-        drawShape('#000', 3.25);
-        drawShape('#fff', 1.75);
-
-        context.resetTransform();
-    }
-
-    private drawFixInfoRadius(context: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-        context.setLineDash([15, 12]);
-
-        function drawShape(color: string, lineWidth: number) {
-            context.strokeStyle = color;
-            context.lineWidth = lineWidth;
-
-            context.ellipse(cx, cy, r, r, 0, 0, Math.PI * 2);
-
-            context.stroke();
-        }
-
-        drawShape('#000', 3.25);
-        drawShape('#0ff', 1.75);
-
-        context.setLineDash([]);
-    }
-
-    private drawFixInfoRadial(context: CanvasRenderingContext2D, cx: number, cy: number, bearing: number) {
-        context.setLineDash([15, 12]);
-
-        const rotation = this.mapParams.rotation(bearing) * Math.PI / 180;
-        // TODO how long should a piece of string be?
-        const x2 = Math.sin(rotation) * 300;
-        const y2 = -Math.cos(rotation) * 300;
-
-        function drawShape(color: string, lineWidth: number) {
-            context.strokeStyle = color;
-            context.lineWidth = lineWidth;
-
-            context.beginPath();
-            context.moveTo(cx, cy);
-            context.lineTo(x2, y2);
-            context.stroke();
-        }
-
-        drawShape('#000', 3.25);
-        drawShape('#0ff', 1.75);
-
-        context.setLineDash([]);
     }
 
     private drawVector(context: CanvasRenderingContext2D, vector: PathVector, group: EfisVectorsGroup) {
@@ -274,21 +212,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         default:
             throw new Error(`Unknown path vector type: ${vector.type}`);
         }
-    }
-
-    private drawText(context: CanvasRenderingContext2D, x: number, y: number, text: string, color: string, shadow = false) {
-        context.translate(x, y);
-
-        if (shadow) {
-            context.strokeStyle = '#000';
-            context.lineWidth = 2.25;
-            context.strokeText(text, 0, 0);
-        }
-
-        context.fillStyle = color;
-        context.fillText(text, 0, 0);
-
-        context.resetTransform();
     }
 
     render(): VNode | null {
