@@ -6,6 +6,7 @@ import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 export interface FmsSymbolsData {
     symbols: NdSymbol[],
     vectorsActive: PathVector[],
+    vectorsTemporary: PathVector[],
 }
 
 export class FmsSymbolsPublisher extends BasePublisher<FmsSymbolsData> {
@@ -21,5 +22,9 @@ export class FmsSymbolsPublisher extends BasePublisher<FmsSymbolsData> {
         this.events.push(new FlowEventSync((ev, data: PathVector[]) => {
             this.publish('vectorsActive', data);
         }, 'A32NX_EFIS_VECTORS_L_ACTIVE'));
+
+        this.events.push(new FlowEventSync((ev, data: PathVector[]) => {
+            this.publish('vectorsTemporary', data);
+        }, 'A32NX_EFIS_VECTORS_L_TEMPORARY'));
     }
 }

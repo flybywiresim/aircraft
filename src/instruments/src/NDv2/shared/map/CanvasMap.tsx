@@ -2,7 +2,6 @@ import { ClockEvents, DisplayComponent, EventBus, FSComponent, MappedSubject, Su
 import { EfisVectorsGroup, NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import type { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { distanceTo } from 'msfs-geo';
-import { MathUtils } from '@shared/MathUtils';
 import { FmsSymbolsData } from '../../FmsSymbolsPublisher';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 import { NDSimvars } from '../../NDSimvarPublisher';
@@ -30,7 +29,17 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
     private readonly touchContainerRef = FSComponent.createRef<HTMLDivElement>();
 
-    private readonly activeVectors: PathVector[] = [];
+    private readonly vectors: { [k in EfisVectorsGroup]: PathVector[] } = {
+        [EfisVectorsGroup.ACTIVE]: [],
+        [EfisVectorsGroup.DASHED]: [],
+        [EfisVectorsGroup.OFFSET]: [],
+        [EfisVectorsGroup.TEMPORARY]: [],
+        [EfisVectorsGroup.SECONDARY]: [],
+        [EfisVectorsGroup.SECONDARY_DASHED]: [],
+        [EfisVectorsGroup.MISSED]: [],
+        [EfisVectorsGroup.ALTERNATE]: [],
+        [EfisVectorsGroup.ACTIVE_EOSID]: [],
+    };
 
     private readonly symbols: NdSymbol[] = [];
 
@@ -83,7 +92,13 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         });
 
         sub.on('vectorsActive').handle((data: PathVector[]) => {
-            this.handleNewVectors(data);
+            this.vectors[EfisVectorsGroup.ACTIVE].length = 0;
+            this.vectors[EfisVectorsGroup.ACTIVE].push(...data);
+        });
+
+        sub.on('vectorsTemporary').handle((data: PathVector[]) => {
+            this.vectors[EfisVectorsGroup.TEMPORARY].length = 0;
+            this.vectors[EfisVectorsGroup.TEMPORARY].push(...data);
         });
 
         sub.on('realTime').whenChangedBy(8).handle(() => {
@@ -130,11 +145,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         this.runwayLayer.data = runways;
     }
 
-    private handleNewVectors(vectors: PathVector[]) {
-        this.activeVectors.length = 0;
-        this.activeVectors.push(...vectors);
-    }
-
     private handleFrame() {
         // console.log(`center: lat=${this.props.mapCenterLat.get()}, long=${this.props.mapCenterLong.get()}`);
 
@@ -147,11 +157,15 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         context.clip(this.props.mapClip.get());
         context.resetTransform();
 
-        context.beginPath();
-        for (const vector of this.activeVectors) {
-            this.drawVector(context, vector, 0);
+        for (const key in this.vectors) {
+            if (this.vectors[key].length > 0) {
+                context.beginPath();
+                for (const vector of this.vectors[key]) {
+                    this.drawVector(context, vector, parseInt(key));
+                }
+                context.stroke();
+            }
         }
-        context.stroke();
 
         this.waypointLayer.paintShadowLayer(context, this.props.width, this.props.height, this.mapParams);
         this.waypointLayer.paintColorLayer(context, this.props.width, this.props.height, this.mapParams);
@@ -170,9 +184,15 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         switch (group) {
         case EfisVectorsGroup.ACTIVE:
             context.strokeStyle = '#0f0';
+            context.setLineDash([]);
+            break;
+        case EfisVectorsGroup.TEMPORARY:
+            context.strokeStyle = '#ffff00';
+            context.setLineDash([15, 12]);
             break;
         default:
             context.strokeStyle = '#f00';
+            context.setLineDash([]);
             break;
         }
 
