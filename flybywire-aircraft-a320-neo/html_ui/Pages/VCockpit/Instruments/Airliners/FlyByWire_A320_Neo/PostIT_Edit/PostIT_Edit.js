@@ -1,3 +1,5 @@
+//const { consoleSandbox } = require("@sentry/utils");
+
 class PostIT_Edit extends BaseInstrument {
     constructor() {
         super();
@@ -89,14 +91,22 @@ class PostIT_Edit extends BaseInstrument {
         });
 
         this.textElem.addEventListener("input", (e) => {
+            console.log("event input fired, target:" + e.target);
             // The character being replaced is U+007f (DELETE Character)
-            this.textElem.value = this.textElem.value.replace(/\u007f/g, '');
-            if (e.target.value.length < this.splitIndex) {
-                this.splitIndex = e.target.value.length;
-            }
+            //this.textElem.value = this.textElem.value.replace(/\u007f/g, '');
+            //if (e.target.value.length < this.splitIndex) {
+            //    this.splitIndex = e.target.value.length;
+            //}
         });
 
+        //this.textElem.addEventListener("click", () => {
+        //    console.log("textel focus (click), set focus, lock controls");
+        //    this.lockControls();
+        //    this.textElem.focus();
+        //});
+
         this.textElem.addEventListener("keypress", (e) => {
+            console.log("event keypress fired, value:" + e.target.value);
             // The character below is a one em-unit sized space
             this.invisElem.innerText = e.target.value + "\u2003";
 
@@ -105,20 +115,23 @@ class PostIT_Edit extends BaseInstrument {
             }
         });
 
-        this.textElem.addEventListener("focus", () => {
-            this.lockControls();
-            this.textElem.focus();
-        });
+        //        this.textElem.addEventListener("focus", () => {
+        //            console.log("textel focus, set focus, lock controls");
+        //            this.lockControls();
+        //            //this.textElem.focus();
+        //        });
     }
 
     lockControls() {
         Coherent.call("FOCUS_INPUT_FIELD");
         Coherent.trigger("FOCUS_INPUT_FIELD");
+        console.log("controls locked, input field focused");
     }
 
     unlockControls() {
         Coherent.call("UNFOCUS_INPUT_FIELD");
         Coherent.trigger("UNFOCUS_INPUT_FIELD");
+        console.log("controls unlocked, input field unfocused");
     }
 
     get isInteractive() {
