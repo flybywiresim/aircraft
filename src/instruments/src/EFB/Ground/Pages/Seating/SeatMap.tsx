@@ -1,25 +1,43 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BitFlags } from '@shared/bitFlags';
+import * as ReactDOMServer from 'react-dom/server';
+import { usePersistentProperty } from '@instruments/common/persistence';
 import { CanvasX, CanvasY, RowInfo, SeatConstants, SeatInfo, TYPE } from './Constants';
-// @ts-ignore
-import SVGFuselage from '../../../Assets/TopDownPayload.svg';
-// @ts-ignore
-import SVGSeat from '../../../Assets/seat.svg';
-// @ts-ignore
-import SVGSeatFilled from '../../../Assets/seatFilled.svg';
+import { Seat } from '../../../Assets/Seat';
+import { SeatOutlineBg } from '../../../Assets/SeatOutlineBg';
 
 interface SeatMapProps {
-    x: number,
-    y: number,
     seatMap: RowInfo[][],
-    activeFlags: BitFlags[],
+    activeFlags: BitFlags[]
 }
 
-export const SeatMap: React.FC<SeatMapProps> = ({ x, y, seatMap, activeFlags }) => {
+export const SeatMap: React.FC<SeatMapProps> = ({ seatMap, activeFlags }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
     const [seatImg, setSeatImg] = useState<HTMLImageElement | null>(null);
     const [seatFilledImg, setSeatFilledImg] = useState<HTMLImageElement | null>(null);
+    const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
+
+    const getTheme = (theme) => {
+        let base = '#fff';
+        let primary = '#00C9E4';
+        let secondary = '#84CC16';
+        switch (theme) {
+        case 'dark':
+            base = '#fff';
+            primary = '#3B82F6';
+            secondary = '#84CC16';
+            break;
+        case 'light':
+            base = '#000000';
+            primary = '#3B82F6';
+            secondary = '#84CC16';
+            break;
+        default:
+            break;
+        }
+        return [base, primary, secondary];
+    };
 
     const addXOffset = (xOff: number, sec: number, row: number) => {
         let seatType = TYPE.ECO;
@@ -83,13 +101,17 @@ export const SeatMap: React.FC<SeatMapProps> = ({ x, y, seatMap, activeFlags }) 
     };
 
     useEffect(() => {
-        const seatImg = new Image();
-        seatImg.src = SVGSeat;
-        setSeatImg(seatImg);
+        const [base, primary] = getTheme(theme);
 
-        const seatFilledImg = new Image();
-        seatFilledImg.src = SVGSeatFilled;
-        setSeatFilledImg(seatFilledImg);
+        const img = <Seat fill="none" stroke={base} />;
+        const imgElement = new Image();
+        imgElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(img))}`;
+        setSeatImg(imgElement);
+
+        const imgFilled = <Seat fill={primary} stroke="none" />;
+        const imgFilledElement = new Image();
+        imgFilledElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(imgFilled))}`;
+        setSeatFilledImg(imgFilledElement);
     }, []);
 
     useEffect(() => {
@@ -123,13 +145,8 @@ export const SeatMap: React.FC<SeatMapProps> = ({ x, y, seatMap, activeFlags }) 
 
     return (
         <div className="flex relative flex-col">
-            <img
-                className="absolute w-full"
-                src={SVGFuselage}
-                alt="Fuselage"
-            />
-
-            <canvas className="absolute" ref={canvasRef} style={{ transform: `translateX(${x}px) translateY(${y}px)` }} />
+            <SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
+            <canvas className="absolute" ref={canvasRef} style={{ transform: 'translateX(243px) translateY(78px)' }} />
         </div>
     );
 };

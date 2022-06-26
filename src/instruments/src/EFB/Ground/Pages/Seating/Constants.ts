@@ -36,7 +36,7 @@ export const SeatConstants = Object.freeze({
     },
 });
 
-export const Status = {
+export const Status = Object.freeze({
     Planned: 0,
     Loaded: 1,
-};
+});

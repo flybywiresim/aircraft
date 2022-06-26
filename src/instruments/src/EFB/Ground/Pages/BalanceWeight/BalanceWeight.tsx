@@ -1,52 +1,49 @@
+import { usePersistentProperty } from '@instruments/common/persistence';
 import React, { useEffect, useRef, useState } from 'react';
-import { CanvasConst } from './Constants';
+import { CanvasConst, PerformanceEnvelope } from './Constants';
 
 interface BalanceWeightProps {
-    x: number,
-    y: number,
     width: number,
     height: number,
+    envelope: PerformanceEnvelope,
 }
 
-export const BalanceWeight: React.FC<BalanceWeightProps> = ({ x, y, width, height }) => {
+export const BalanceWeight: React.FC<BalanceWeightProps> = ({ width, height, envelope }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
+    const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
+
+    const getTheme = (theme) => {
+        let base = '#fff';
+        let primary = '#00C9E4';
+        let secondary = '#84CC16';
+        switch (theme) {
+        case 'dark':
+            base = '#fff';
+            primary = '#3B82F6';
+            secondary = '#84CC16';
+            break;
+        case 'light':
+            base = '#000000';
+            primary = '#3B82F6';
+            secondary = '#84CC16';
+            break;
+        default:
+            break;
+        }
+        return [base, primary, secondary];
+    };
 
     const draw = () => {
         if (ctx) {
+            const [base, primary, secondary] = getTheme(theme);
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             ctx.fillStyle = '#C9C9C9';
             ctx.strokeStyle = '#2B313B';
-
-            // Borders
-            ctx.beginPath();
-            ctx.lineWidth = 5;
-            ctx.moveTo(0, 0);
-            ctx.lineTo(0, height);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(0, height);
-            ctx.lineTo(width, height);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(width, 0);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(width, 0);
-            ctx.lineTo(width, height);
-            ctx.stroke();
-
             ctx.lineWidth = 1;
 
-            const weightLines = 10;
-            const cgLines = 28;
-
-            const yStep = height / (weightLines - 1);
-            const xStep = width / cgLines;
+            const yStep = height / (CanvasConst.weightLines - 1);
+            const xStep = width / CanvasConst.cgLines;
             const shiftX = -(width / 6);
 
             const weightToY = (weight) => (80 - (weight / 1000)) * yStep / 5;
@@ -56,103 +53,89 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ x, y, width, heigh
                 const xStart = cgToX(cg);
                 const y = weightToY(weight);
 
-                const x = shiftX + xStart + ((300 - y) * Math.tan(15 / 16 * Math.PI + (cg - 12) * Math.PI / (cgLines * 8)));
+                const x = shiftX + xStart + ((300 - y) * Math.tan(15 / 16 * Math.PI + (cg - 12) * Math.PI / (CanvasConst.cgLines * 8)));
                 return [x, y];
             };
 
-            // Weight Lines
-            for (let y = 0; y < height; y += yStep) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(width, y);
-                ctx.closePath();
-                ctx.stroke();
-            }
-
-            // CG Lines
-            ctx.lineWidth = 1;
-            const cgWidth = width - shiftX;
-            for (let cgPercent = 12, x = 0; x < cgWidth; x += xStep, cgPercent++) {
-                if (x > (cgWidth * 0.17) && (x < (cgWidth) * 0.9)) {
-                    const [x1, y1] = cgWeightToXY(cgPercent, 35000);
-                    const [x2, y2] = cgWeightToXY(cgPercent, 80000);
+            const drawWeightLines = () => {
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = '#394049';
+                for (let y = yStep; y < height; y += yStep) {
                     ctx.beginPath();
-                    ctx.moveTo(x1, y1);
-                    ctx.lineTo(x2, y2);
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(width, y);
                     ctx.closePath();
                     ctx.stroke();
                 }
-            }
+            };
 
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(0, height);
-            ctx.closePath();
-            ctx.stroke();
+            const drawCgLines = () => {
+                ctx.lineWidth = 1;
+                const cgWidth = width - shiftX;
+                for (let cgPercent = 12, x = 0; x < cgWidth; x += xStep, cgPercent++) {
+                    if (x > (cgWidth * 0.17) && (x < (cgWidth) * 0.9)) {
+                        ctx.lineWidth = cgPercent % 5 ? 0.25 : 1;
+                        ctx.strokeStyle = cgPercent % 5 ? '#2B313B' : '#394049';
 
-            {
-                const [x1, y1] = cgWeightToXY(21.5, 37000);
-                const [x2, y2] = cgWeightToXY(19, 53000);
-                const [x3, y3] = cgWeightToXY(20.35, 63000);
-                const [x4, y4] = cgWeightToXY(20, 72000);
-                const [x5, y5] = cgWeightToXY(22, 73000);
-                const [x6, y6] = cgWeightToXY(30.8, 77000);
-                const [x7, y7] = cgWeightToXY(35.8, 77000);
-                const [x8, y8] = cgWeightToXY(38.3, 72000);
-                const [x9, y9] = cgWeightToXY(37.7, 58000);
-                const [x10, y10] = cgWeightToXY(33, 47500);
-                const [x11, y11] = cgWeightToXY(32, 37000);
-                ctx.beginPath();
-                ctx.lineWidth = 4;
-                ctx.strokeStyle = '#00C9E4';
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.lineTo(x3, y3);
-                ctx.lineTo(x4, y4);
-                ctx.lineTo(x5, y5);
-                ctx.lineTo(x6, y6);
-                ctx.lineTo(x7, y7);
-                ctx.lineTo(x8, y8);
-                ctx.lineTo(x9, y9);
-                ctx.lineTo(x10, y10);
-                ctx.lineTo(x11, y11);
-                ctx.stroke();
-            }
-            {
-                const [x1, y1] = cgWeightToXY(22.8, 37000);
-                const [x2, y2] = cgWeightToXY(20.5, 48000);
-                const [x3, y3] = cgWeightToXY(21, 53000);
-                const [x4, y4] = cgWeightToXY(20.8, 55900);
-                const [x5, y5] = cgWeightToXY(21.3, 60000);
-                const [x6, y6] = cgWeightToXY(21.2, 62500);
-                const [x7, y7] = cgWeightToXY(39, 62500);
-                const [x8, y8] = cgWeightToXY(37, 37000);
-                ctx.beginPath();
+                        const [x1, y1] = cgWeightToXY(cgPercent, 35000);
+                        const [x2, y2] = cgWeightToXY(cgPercent, 80000);
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y1);
+                        ctx.lineTo(x2, y2);
+                        ctx.closePath();
+                        ctx.stroke();
+                    }
+                }
+            };
+
+            const drawMzfw = () => {
+                // MZFW
                 ctx.lineWidth = 2;
-                ctx.strokeStyle = 'white';
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.lineTo(x3, y3);
-                ctx.lineTo(x4, y4);
-                ctx.lineTo(x5, y5);
-                ctx.lineTo(x6, y6);
-                ctx.lineTo(x7, y7);
-                ctx.lineTo(x8, y8);
-                ctx.stroke();
-            }
-            {
-                const [x1, y1] = cgWeightToXY(20.4, 64500);
-                const [x2, y2] = cgWeightToXY(38, 64500);
+                ctx.strokeStyle = base;
+                const mzfw = envelope.mzfw;
+                const [x, y] = cgWeightToXY(mzfw[0][0], mzfw[0][1]);
                 ctx.beginPath();
-                ctx.lineWidth = 3;
-                ctx.strokeStyle = '#22C55E';
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
+                ctx.moveTo(x, y);
+                for (let i = 1; i < mzfw.length; i++) {
+                    const [x, y] = cgWeightToXY(mzfw[i][0], mzfw[i][1]);
+                    ctx.lineTo(x, y);
+                }
                 ctx.stroke();
-            }
+            };
 
-            console.log('yStep', yStep);
-            console.log('xStep', xStep);
+            const drawMlw = () => {
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = secondary;
+                const mlw = envelope.mlw;
+                const [x, y] = cgWeightToXY(mlw[0][0], mlw[0][1]);
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                for (let i = 1; i < mlw.length; i++) {
+                    const [x, y] = cgWeightToXY(mlw[i][0], mlw[i][1]);
+                    ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            };
+
+            const drawMtow = () => {
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = primary;
+                const mtow = envelope.mtow;
+                const [x, y] = cgWeightToXY(mtow[0][0], mtow[0][1]);
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                for (let i = 1; i < mtow.length; i++) {
+                    const [x, y] = cgWeightToXY(mtow[i][0], mtow[i][1]);
+                    ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            };
+
+            drawWeightLines();
+            drawCgLines();
+            drawMzfw();
+            drawMlw();
+            drawMtow();
         }
     };
 
@@ -185,9 +168,44 @@ export const BalanceWeight: React.FC<BalanceWeightProps> = ({ x, y, width, heigh
         };
     }, [draw]);
 
+    const mtow = { transform: `translateX(${0.6 * width}px) translateY(${height * -0.02}px)` };
+    const mlw = { transform: `translateX(${0.6 * width}px) translateY(${height * 0.26}px)` };
+    const mzfw = { transform: `translateX(${0.6 * width}px) translateY(${height * 0.4}px)` };
+
+    const cgRow1 = { transform: `translateX(${0.04 * width}px) translateY(${height * -0.1}px)` };
+    const cgRow2 = { transform: `translateX(${0.265 * width}px) translateY(${height * -0.1}px)` };
+    const cgRow3 = { transform: `translateX(${0.49 * width}px) translateY(${height * -0.1}px)` };
+    const cgRow4 = { transform: `translateX(${0.715 * width}px) translateY(${height * -0.1}px)` };
+    const cgRow5 = { transform: `translateX(${0.94 * width}px) translateY(${height * -0.1}px)` };
+
+    const wRow1 = { transform: `translateX(${-0.065 * width}px) translateY(${height * -0.04}px)` };
+    const wRow2 = { transform: `translateX(${-0.065 * width}px) translateY(${height * 0.175}px)` };
+    const wRow3 = { transform: `translateX(${-0.065 * width}px) translateY(${height * 0.39}px)` };
+    const wRow4 = { transform: `translateX(${-0.065 * width}px) translateY(${height * 0.605}px)` };
+    const wRow5 = { transform: `translateX(${-0.065 * width}px) translateY(${height * 0.82}px)` };
+
     return (
-        <div className="flex relative flex-col">
-            <canvas className="absolute" ref={canvasRef} style={{ transform: `translateX(${x}px) translateY(${y}px)` }} />
+        <div>
+            <canvas ref={canvasRef} />
+            <text className="font-medium">
+                <p className="absolute top-0" style={cgRow1}>20%</p>
+                <p className="absolute top-0" style={cgRow2}>25%</p>
+                <p className="absolute top-0" style={cgRow3}>30%</p>
+                <p className="absolute top-0" style={cgRow4}>35%</p>
+                <p className="absolute top-0" style={cgRow5}>40%</p>
+
+                <p className="absolute top-0" style={wRow1}>80</p>
+                <p className="absolute top-0" style={wRow2}>70</p>
+                <p className="absolute top-0" style={wRow3}>60</p>
+                <p className="absolute top-0" style={wRow4}>50</p>
+                <p className="absolute top-0" style={wRow5}>40</p>
+
+            </text>
+            <text className="font-medium">
+                <p className="absolute top-0 text-theme-highlight" style={mtow}>MTOW</p>
+                <p className="absolute top-0 text-colors-lime-500" style={mlw}>MLW</p>
+                <p className="absolute top-0 text-theme-text" style={mzfw}>MZFW</p>
+            </text>
         </div>
     );
 };

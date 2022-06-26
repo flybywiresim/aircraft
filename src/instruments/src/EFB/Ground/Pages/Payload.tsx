@@ -8,6 +8,7 @@ import { BitFlags } from '@shared/bitFlags';
 import { useBitFlags } from '@instruments/common/bitFlags';
 import { BalanceWeight } from './BalanceWeight/BalanceWeight';
 import { RowInfo, SeatInfo, TYPE } from './Seating/Constants';
+import { PerformanceEnvelope } from './BalanceWeight/Constants';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -97,6 +98,37 @@ export const Payload = () => {
         [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Station C
         [addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow(), addRow()], // Station D
     ];
+
+    const defaultEnvelope: PerformanceEnvelope = {
+        mlw: [
+            [20.4, 64500],
+            [38, 64500],
+        ],
+        mzfw: [
+            [22.8, 37000],
+            [20.5, 48000],
+            [21, 53000],
+            [20.8, 55900],
+            [21.3, 60000],
+            [21.2, 62500],
+            [39, 62500],
+            [37, 37000],
+        ],
+        mtow: [
+            [21.5, 37000],
+            [19, 53000],
+            [20.35, 63000],
+            [20, 72000],
+            [22, 73000],
+            [30.8, 77000],
+            [35.8, 77000],
+            [38.3, 72000],
+            [37.7, 58000],
+            [33, 47500],
+            [32, 37000],
+        ],
+
+    };
 
     const [seatMap] = useState<RowInfo[][]>(defaultSeatMap);
 
@@ -200,8 +232,15 @@ export const Payload = () => {
     return (
         <div>
             <div className="h-content-section-reduced">
-                <SeatMap x={243} y={78} seatMap={seatMap} activeFlags={activeFlags} />
-                <BalanceWeight x={750} y={350} width={500} height={300} />
+                <div className="mb-10">
+                    <SeatMap seatMap={seatMap} activeFlags={activeFlags} />
+                </div>
+                <div className="flex relative right-0 flex-row justify-between mt-24">
+                    <div className="col-1" />
+                    <div className="rounded-2xl border col-1 border-theme-accent">
+                        <BalanceWeight width={450} height={300} envelope={defaultEnvelope}/* x={750} y={350}  */ />
+                    </div>
+                </div>
             </div>
 
             <div className="flex overflow-hidden absolute bottom-0 left-0 flex-row rounded-2xl border border-theme-accent ">
