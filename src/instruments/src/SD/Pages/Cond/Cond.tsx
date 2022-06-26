@@ -30,7 +30,7 @@ export const CondPage = () => {
     const [hotAir] = useSimVar('L:A32NX_AIRCOND_HOTAIR_TOGGLE', 'bool', 1000);
 
     return (
-        <svg id="cond-page" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
+        <svg id="cond-page" className="ecam-common-styles" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
             {/* Title and unit */}
             <g id="titleAndWarnings">
                 <text className="Title UnderlineWhite" x="7" y="33">COND</text>
