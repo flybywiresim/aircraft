@@ -4,7 +4,6 @@
 #include <SimConnect.h>
 
 #include "AdditionalData.h"
-#include "AnimationAileronHandler.h"
 #include "AutopilotLaws.h"
 #include "AutopilotStateMachine.h"
 #include "Autothrust.h"
@@ -355,10 +354,6 @@ class FlyByWireInterface {
 
   std::shared_ptr<ElevatorTrimHandler> elevatorTrimHandler;
   std::shared_ptr<RudderTrimHandler> rudderTrimHandler;
-
-  std::unique_ptr<LocalVariable> idAileronPositionLeft;
-  std::unique_ptr<LocalVariable> idAileronPositionRight;
-  std::shared_ptr<AnimationAileronHandler> animationAileronHandler;
 
   std::unique_ptr<LocalVariable> idRadioReceiverUsageEnabled;
   std::unique_ptr<LocalVariable> idRadioReceiverLocalizerValid;
