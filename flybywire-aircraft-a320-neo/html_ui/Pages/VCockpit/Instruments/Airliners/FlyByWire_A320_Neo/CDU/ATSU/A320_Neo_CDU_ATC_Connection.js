@@ -1,6 +1,8 @@
 class CDUAtcConnection {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCConnection;
+
         mcdu.setTemplate([
             ["\xa0CONNECTION"],
             [""],
@@ -35,14 +37,18 @@ class CDUAtcConnection {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage1(mcdu);
+            CDUAtcMenu.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[4] = () => {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onRightInput[4] = () => {
-            CDUAtcMaxUplinkDelay.ShowPage(mcdu);
+            if (mcdu.atsu.atc.fansMode() === Atsu.FansMode.FansA) {
+                CDUAtcMaxUplinkDelay.ShowPage(mcdu);
+            } else {
+                mcdu.setScratchpadMessage(NXSystemMessages.keyNotActive);
+            }
         };
     }
 }

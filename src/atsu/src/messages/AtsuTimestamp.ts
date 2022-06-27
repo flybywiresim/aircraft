@@ -1,6 +1,8 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
+import { timestampToString } from '../Common';
+
 /**
  * Defines the decoded UTC timestamp
  */
@@ -20,15 +22,11 @@ export class AtsuTimestamp {
         this.Seconds = jsonData.Seconds;
     }
 
-    public dcduTimestamp() {
-        const hours = Math.floor(this.Seconds / 3600);
-        const minutes = Math.floor(this.Seconds / 60) % 60;
-        return `${hours.toString().padStart(2, '0')}${minutes.toString().padStart(2, '0')}Z`;
+    public dcduTimestamp(): string {
+        return `${timestampToString(this.Seconds)}Z`;
     }
 
-    public mcduTimestamp() {
-        const hours = Math.floor(this.Seconds / 3600);
-        const minutes = Math.floor(this.Seconds / 60) % 60;
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    public mcduTimestamp(): string {
+        return timestampToString(this.Seconds);
     }
 }

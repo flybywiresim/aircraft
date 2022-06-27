@@ -60,7 +60,6 @@ class CDUAtcReportAtis {
 
     static ShowPage(mcdu, title, messages, messageIndex, offset = 0) {
         mcdu.clearDisplay();
-        mcdu.page.Current = mcdu.page.ATCAtisView;
 
         const message = messages[messageIndex];
         let serialized = message.serialize(Atsu.AtsuMessageSerializationFormat.MCDU);

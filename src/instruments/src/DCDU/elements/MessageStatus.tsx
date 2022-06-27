@@ -1,7 +1,8 @@
 import React from 'react';
 import { AtsuMessageComStatus, AtsuMessageDirection } from '@atsu/messages/AtsuMessage';
+import { AtsuTimestamp } from '@atsu/messages/AtsuTimestamp';
 import { CpdlcMessageExpectedResponseType, CpdlcMessagesDownlink } from '@atsu/messages/CpdlcMessageElements';
-import { CpdlcMessage } from '@atsu/messages/CpdlcMessage';
+import { CpdlcMessage, CpdlcMessageMonitoringState } from '@atsu/messages/CpdlcMessage';
 import { Checkerboard } from './Checkerboard';
 
 type MessageStatusProps = {
@@ -10,7 +11,7 @@ type MessageStatusProps = {
 }
 
 const translateResponseId = (response: number, message: CpdlcMessage): string => {
-    const answerExpected = message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
+    const answerExpected = message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
 
     if (response === -1) {
         if (message.Direction === AtsuMessageDirection.Uplink && answerExpected) {
@@ -30,37 +31,51 @@ const translateResponseId = (response: number, message: CpdlcMessage): string =>
         return text;
     }
 
-    return 'UKN';
+    return '';
 };
 
 const translateResponseMessage = (message: CpdlcMessage, response: CpdlcMessage | undefined): string => {
-    const answerExpected = message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content?.ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
+    const answerExpected = message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.NotRequired && message.Content[0].ExpectedResponse !== CpdlcMessageExpectedResponseType.No;
 
-    if (response === undefined) {
+    if (!response) {
         if (message.Direction === AtsuMessageDirection.Uplink && answerExpected) {
             return 'OPEN';
         }
         if (message.ComStatus === AtsuMessageComStatus.Sent) {
             return 'SENT';
         }
-    } else if (response.Content !== undefined && response.Content.TypeId in CpdlcMessagesDownlink) {
-        const text = CpdlcMessagesDownlink[response.Content.TypeId][0][0];
-        if (text === 'STANDBY') {
-            return 'STBY';
+    } else if (response.Content.length !== 0 && response.Content[0].TypeId in CpdlcMessagesDownlink) {
+        if (!message.SemanticResponseRequired) {
+            const text = CpdlcMessagesDownlink[response.Content[0].TypeId][0][0];
+            if (text === 'STANDBY') {
+                return 'STBY';
+            }
+            if (text === 'NEGATIVE') {
+                return 'NEGATV';
+            }
+            return text;
         }
-        if (text === 'NEGATIVE') {
-            return 'NEGATV';
+        if (response.ComStatus !== AtsuMessageComStatus.Sent) {
+            return 'OPEN';
         }
-        return text;
+        return '';
     }
 
-    return 'UKN';
+    return '';
 };
 
 export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedResponse }) => {
+    const messageIsReminder = !message.SemanticResponseRequired && message.MessageMonitoring === CpdlcMessageMonitoringState.Finished;
+
     let statusClass = 'status-message ';
     if (message.Direction === AtsuMessageDirection.Uplink) {
-        if (message.Response === undefined && selectedResponse === -1) {
+        if (!message.SemanticResponseRequired) {
+            if (message.Response || selectedResponse !== -1) {
+                statusClass += 'status-other';
+            } else {
+                statusClass += 'status-open';
+            }
+        } else if (message.Response?.ComStatus === AtsuMessageComStatus.Open) {
             statusClass += 'status-open';
         } else {
             statusClass += 'status-other';
@@ -73,7 +88,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
 
     // calculate the position of the background rectangle
     let text = '';
-    if (message.Direction === AtsuMessageDirection.Uplink) {
+    if (message.Direction === AtsuMessageDirection.Uplink && !messageIsReminder) {
         if (selectedResponse !== -1) {
             text = translateResponseId(selectedResponse, message);
         } else {
@@ -84,7 +99,7 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
     const backgroundRequired = text !== 'OPEN' && text !== 'SENT';
     let backgroundColor = 'rgba(0,0,0,0)';
     if (message.Direction === AtsuMessageDirection.Uplink) {
-        if (selectedResponse === -1 || message.Response?.Content?.TypeId === `DM${selectedResponse}`) {
+        if (selectedResponse === -1 || message.Response?.Content[0].TypeId === `DM${selectedResponse}`) {
             backgroundColor = 'rgb(0,255,0)';
         } else {
             backgroundColor = 'rgb(0,255,255)';
@@ -101,14 +116,21 @@ export const MessageStatus: React.FC<MessageStatusProps> = ({ message, selectedR
         background.y = 310 - background.height;
     }
 
+    let title = '';
+    if (message.MessageMonitoring === CpdlcMessageMonitoringState.Finished) {
+        if (message.SemanticResponseRequired) {
+            title = `${message.Response?.Timestamp?.dcduTimestamp()} TO ${message.Response?.Station}`;
+        } else {
+            title = (new AtsuTimestamp()).dcduTimestamp();
+            text = '';
+        }
+    } else {
+        title = `${message.Timestamp?.dcduTimestamp()} ${message.Direction === AtsuMessageDirection.Downlink ? ' TO ' : ' FROM '} ${message.Station}`;
+    }
+
     return (
         <g>
-            <text className="station" x="168" y="280">
-                {message.Timestamp?.dcduTimestamp()}
-                {' '}
-                {message.Direction === AtsuMessageDirection.Downlink ? ' TO ' : ' FROM '}
-                {message.Station}
-            </text>
+            <text className="station" x="168" y="280">{title}</text>
             <>
                 (
                 {backgroundRequired
