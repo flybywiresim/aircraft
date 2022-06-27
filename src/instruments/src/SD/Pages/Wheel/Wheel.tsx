@@ -1,18 +1,16 @@
 import React from 'react';
 import { render } from '@instruments/common/index';
-import classNames from 'classnames';
 import { useSimVar } from '@instruments/common/simVars';
 import { setIsEcamPage } from '@instruments/common/defaults';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { Arinc429Word } from '@shared/arinc429';
-import { PageTitle } from '../../Common/PageTitle';
-import './Wheel.scss';
 import { HydraulicsProvider, useHydraulics } from '../../Common/HydraulicsProvider';
 import { HydraulicIndicator } from '../../Common/HydraulicIndicator';
 import { ComponentPositionProps } from '../../Common/ComponentPositionProps';
-import { EcamPage } from '../../Common/EcamPage';
 import { SvgGroup } from '../../Common/SvgGroup';
 import { Spoilers } from '../../Common/Spoilers';
+
+import '../../Common/CommonStyles.scss';
 
 setIsEcamPage('wheel_page');
 
@@ -33,30 +31,30 @@ export const WheelPage = () => {
     const lgciu2DiscreteWord3 = useArinc429Var('L:A32NX_LGCIU_2_DISCRETE_WORD_3');
 
     return (
-        <EcamPage name="main-wheel">
-            <PageTitle x={6} y={115} text="WHEEL" />
+        <svg id="main-wheel" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
+            <text className="Title UnderlineWhite" x={15} y={149}>WHEEL</text>
 
             <HydraulicsProvider>
-                <Spoilers x={103} y={64} />
+                <Spoilers x={133} y={64} />
 
-                <NoseWheelSteering x={205} y={200} />
+                <NoseWheelSteering x={271} y={235} />
                 <LandingGearCtl
-                    x={255}
-                    y={263}
+                    x={326}
+                    y={320}
                     lgciu1DiscreteWord1={lgciu1DiscreteWord1}
                     lgciu2DiscreteWord1={lgciu2DiscreteWord1}
                 />
-                <AntiSkid x={300} y={312} />
+                <AntiSkid x={302} y={380} />
 
-                <NormalBraking x={220} y={333} />
-                <AlternateBraking x={220} y={360} />
+                <NormalBraking x={276} y={393} />
+                <AlternateBraking x={276} y={433} />
             </HydraulicsProvider>
 
-            <AutoBrake x={300} y={460} />
+            <AutoBrake x={318} y={570} />
 
             <Gear
-                x={18}
-                y={210}
+                x={40}
+                y={272}
                 location="left"
                 lgciu1DiscreteWord1={lgciu1DiscreteWord1}
                 lgciu2DiscreteWord1={lgciu2DiscreteWord1}
@@ -64,27 +62,27 @@ export const WheelPage = () => {
                 lgciu2DiscreteWord3={lgciu2DiscreteWord3}
             />
             <Wheels
-                x={12}
-                y={318}
+                x={36}
+                y={431}
                 left={{ number: 1, temperature: temperatures[0], hottest: maxTemperatureIndex === 0 }}
                 right={{ number: 2, temperature: temperatures[1], hottest: maxTemperatureIndex === 1 }}
             />
 
             <Gear
-                x={210}
-                y={107}
+                x={294}
+                y={137}
                 location="center"
                 lgciu1DiscreteWord1={lgciu1DiscreteWord1}
                 lgciu2DiscreteWord1={lgciu2DiscreteWord1}
                 lgciu1DiscreteWord3={lgciu1DiscreteWord3}
                 lgciu2DiscreteWord3={lgciu2DiscreteWord3}
             />
-            <WheelArch x={298} y={370} type="bottom" />
-            <WheelArch x={406} y={370} type="bottom" />
+            <WheelArch x={294} y={218} type="bottom" />
+            <WheelArch x={416} y={218} type="bottom" />
 
             <Gear
-                x={401}
-                y={210}
+                x={550}
+                y={272}
                 location="right"
                 lgciu1DiscreteWord1={lgciu1DiscreteWord1}
                 lgciu2DiscreteWord1={lgciu2DiscreteWord1}
@@ -92,12 +90,12 @@ export const WheelPage = () => {
                 lgciu2DiscreteWord3={lgciu2DiscreteWord3}
             />
             <Wheels
-                x={436}
-                y={318}
+                x={551}
+                y={431}
                 left={{ number: 3, temperature: temperatures[2], hottest: maxTemperatureIndex === 2 }}
                 right={{ number: 4, temperature: temperatures[3], hottest: maxTemperatureIndex === 3 }}
             />
-        </EcamPage>
+        </svg>
     );
 };
 
@@ -108,7 +106,7 @@ const NoseWheelSteering = ({ x, y }: ComponentPositionProps) => {
         <SvgGroup x={x} y={y}>
             <HydraulicIndicator x={0} y={0} type="Y" />
 
-            <text x={29} y={17} className="big-text align-left color-amber">N/W STEERING</text>
+            <text x={38} y={21} className="Large Amber">N/W STEERING</text>
         </SvgGroup>
     ) : null;
 };
@@ -119,14 +117,14 @@ const AntiSkid = ({ x, y }: ComponentPositionProps) => {
     return !antiSkidActive ? (
         <SvgGroup x={x} y={y}>
             {/* <!-- Text --> */}
-            <text x={0} y={0} className="big-text color-amber">ANTI SKID</text>
+            <text x={0} y={0} className="Large Amber">ANTI SKID</text>
 
             {/* <!-- Brake and Steering Control Units --> */}
-            <path className="shape color-gray" d="m 76 5 h 20 v -25" />
-            <text className="big-text color-green" x={86} y={0}>1</text>
+            <path className="LightGreyLine" d="m 166 5 h 22 v -27" />
+            <text className="Large Green" x={171} y={0}>1</text>
 
-            <path className="shape color-gray" d="m 103 5 h 20 v -25" />
-            <text className="big-text color-green" x={113} y={0}>2</text>
+            <path className="LightGreyLine" d="m 196 5 h 22 v -27" />
+            <text className="Large Green" x={200} y={0}>2</text>
         </SvgGroup>
     ) : null;
 };
@@ -152,7 +150,7 @@ const LandingGearCtl = ({ x, y, lgciu1DiscreteWord1, lgciu2DiscreteWord1 }: Land
                                                     || rightMainGearNotUplockedAndNotSelectedDown || noseGearNotUplockedAndNotSelectedDown);
 
     return landingGearInTransit ? (
-        <text id="center-lg-ctl" x={x} y={y} className="big-text align-left color-amber">L/G CTL</text>
+        <text id="center-lg-ctl" x={x} y={y} className="Large Amber">L/G CTL</text>
     ) : null;
 };
 
@@ -163,7 +161,7 @@ const NormalBraking = ({ x, y }: ComponentPositionProps) => {
         <SvgGroup x={x} y={y}>
             <HydraulicIndicator x={0} y={0} type="G" />
 
-            <text x={86} y={18} className="big-text color-amber">NORM BRK</text>
+            <text x={42} y={27} className="Large Amber">NORM BRK</text>
         </SvgGroup>
     ) : null;
 };
@@ -175,19 +173,19 @@ const AlternateBraking = ({ x, y }: ComponentPositionProps) => {
         <SvgGroup x={x} y={y}>
             <HydraulicIndicator x={0} y={0} type="Y" />
 
-            <text x={86} y={18} className="big-text color-green">ALTN BRK</text>
-            <AccumulatorOnly x={45} y={28} />
+            <text x={42} y={28} className="Large Green">ALTN BRK</text>
+            <AccumulatorOnly x={53} y={45} />
         </SvgGroup>
     ) : null;
 };
 
 const AccumulatorOnly = ({ x, y }: ComponentPositionProps) => (
-    <SvgGroup x={x} y={y} className="shape color-green">
+    <SvgGroup x={x} y={y}>
         {/* <!-- Arrow --> */}
-        <polygon points="0,0 8,0 4,-6" />
-        <path d="m 4 0 v 9 h 12" />
+        <polygon className="GreenLine" points="0,0 14,0 7,-10" />
+        <path className="GreenLine" d="m 7 0 v 14 h 15" />
 
-        <text x={84} y={18} className="big-text color-green">ACCU ONLY</text>
+        <text x={38} y={24} className="Large Green">ACCU ONLY</text>
     </SvgGroup>
 );
 
@@ -200,9 +198,9 @@ const AutoBrake = ({ x, y }: ComponentPositionProps) => {
 
     return autoBrakeLevel !== 0 ? (
         <SvgGroup x={x} y={y}>
-            <text className={`big-text color-${available ? 'green' : 'amber'}`}>AUTO BRK</text>
+            <text className={`Large ${available ? 'Green' : 'Amber'}`}>AUTO BRK</text>
 
-            <SvgGroup x={0} y={24}>
+            <SvgGroup x={40} y={32}>
                 { autoBrakeLevel === 1 ? <AutoBrakeLevel text="LO" available={available} /> : null }
                 { autoBrakeLevel === 2 ? <AutoBrakeLevel text="MED" available={available} /> : null }
                 { autoBrakeLevel === 3 ? <AutoBrakeLevel text="MAX" available={available} /> : null }
@@ -216,10 +214,10 @@ interface AutoBrakeLevelProps {
     available: boolean,
 }
 
-const AutoBrakeLevel = ({ text, available }: AutoBrakeLevelProps) => <text className={`big-text color-${available ? 'green' : 'amber'}`}>{text}</text>;
+const AutoBrakeLevel = ({ text, available }: AutoBrakeLevelProps) => <text className={`Large ${available ? 'Green' : 'Amber'}`}>{text}</text>;
 
 const GearDoorJoint = ({ x, y }: ComponentPositionProps) => (
-    <ellipse className="gear-door-joint" cx={x} cy={y} rx={2.6} ry={2.6} />
+    <ellipse className="WhiteLine" cx={x} cy={y} rx={4.5} ry={4.5} />
 );
 
 type GearLocation = 'left' | 'center' | 'right';
@@ -243,53 +241,35 @@ const GearDoor = ({ x, y, location, lgciu1DiscreteWord1, lgciu2DiscreteWord1, lg
         let leftGearDoorSymbol: JSX.Element | null;
         let rightGearDoorSymbol: JSX.Element | null;
         if (anyLgciuValid && !doorNotLockedUp && !leftDoorFullyOpen) {
-            leftGearDoorSymbol = <line className="gear-door-line" x1={19.48} x2={48.12} y1={0} y2={0} />;
+            leftGearDoorSymbol = <line className="GreenLine" x1={34} x2={78} y1={0} y2={0} />;
         } else if (anyLgciuValid && doorNotLockedUp && leftDoorFullyOpen) {
-            leftGearDoorSymbol = <line className="gear-door-in-transit-line" x1={15.73} x2={9.73} y1={3} y2={27.16} />;
+            leftGearDoorSymbol = <line className="AmberLine" x1={34} x2={78} y1={0} y2={0} transform="rotate(120, 29, 0)" />;
         } else if (anyLgciuValid && doorNotLockedUp && !leftDoorFullyOpen) {
-            leftGearDoorSymbol = (
-                <line
-                    className="gear-door-in-transit-line"
-                    transform={`rotate(${-45},${15.73},3)`}
-                    x1={15.73}
-                    x2={9.73}
-                    y1={3}
-                    y2={27.16}
-                />
-            );
+            leftGearDoorSymbol = <line className="AmberLine" x1={34} x2={78} y1={0} y2={0} transform="rotate(55, 29, 0)" />;
         } else {
-            leftGearDoorSymbol = <text x={24} y={3} className="color-amber" fontSize={17}>XX</text>;
+            leftGearDoorSymbol = <text x={44} y={6} className="Amber Medium">XX</text>;
         }
 
         if (anyLgciuValid && !doorNotLockedUp && !rightDoorFullyOpen) {
-            rightGearDoorSymbol = <line className="gear-door-line" x1={73.58} x2={104.22} y1={0} y2={0} />;
+            rightGearDoorSymbol = <line className="GreenLine" x1={106} x2={150} y1={0} y2={0} />;
         } else if (anyLgciuValid && doorNotLockedUp && rightDoorFullyOpen) {
-            rightGearDoorSymbol = <line className="gear-door-in-transit-line" x1={108.04} x2={114.04} y1={3} y2={27.16} />;
+            rightGearDoorSymbol = <line className="AmberLine" x1={106} x2={150} y1={0} y2={0} transform="rotate(-120, 155, 0)" />;
         } else if (anyLgciuValid && doorNotLockedUp && !rightDoorFullyOpen) {
-            rightGearDoorSymbol = (
-                <line
-                    className="gear-door-in-transit-line"
-                    transform={`rotate(${45},${108.04},3)`}
-                    x1={108.04}
-                    x2={114.04}
-                    y1={3}
-                    y2={27.16}
-                />
-            );
+            rightGearDoorSymbol = (<line className="AmberLine" x1={106} x2={150} y1={0} y2={0} transform="rotate(-55, 155, 0)" />);
         } else {
-            rightGearDoorSymbol = <text x={79} y={3} className="color-amber" fontSize={17}>XX</text>;
+            rightGearDoorSymbol = <text x={116} y={6} className="Amber Medium">XX</text>;
         }
 
         return (
             <SvgGroup x={x} y={y}>
-                <path className="gear-door-side-line" d="m 0 0 h 13.41" />
-                <path className="gear-door-side-line" d="m 111.31 0 h 13.41" />
+                <path className="WhiteLine" d="m 0 0 h 22" />
+                <path className="WhiteLine" d="m 161 0 h 22" />
 
                 {leftGearDoorSymbol}
                 {rightGearDoorSymbol}
 
-                <GearDoorJoint x={15.73} y={0} />
-                <GearDoorJoint x={108.04} y={0} />
+                <GearDoorJoint x={29} y={0} />
+                <GearDoorJoint x={155} y={0} />
             </SvgGroup>
         );
     }
@@ -305,32 +285,41 @@ const GearDoor = ({ x, y, location, lgciu1DiscreteWord1, lgciu2DiscreteWord1, lg
 
     let gearDoorSymbol: JSX.Element | null;
     if (anyLgciuValid && !doorNotLockedUp && !doorFullyOpen) {
-        gearDoorSymbol = <line className="gear-door-line" x1={23.35} x2={100.5} y1={0} y2={0} />;
+        gearDoorSymbol = <line className="GreenLine" x1={33} x2={149} y1={0} y2={0} />;
     } else if (anyLgciuValid && doorNotLockedUp && doorFullyOpen) {
-        gearDoorSymbol = <line className="gear-door-in-transit-line" x1={location === 'left' ? 103.01 : 21.69} x2={location === 'left' ? 112.33 : 12.37} y1={3} y2={70} />;
+        gearDoorSymbol = (
+            <line
+                className="AmberLine"
+                x1={location === 'left' ? 72 : 33}
+                x2={location === 'left' ? 149 : 105}
+                y1={0}
+                y2={0}
+                transform={`rotate(${location === 'left' ? -110 : 110},${location === 'left' ? 154 : 29},0)`}
+            />
+        );
     } else if (anyLgciuValid && doorNotLockedUp && !doorFullyOpen) {
         gearDoorSymbol = (
             <line
-                className="gear-door-in-transit-line"
-                transform={`rotate(${location === 'left' ? 45 : -45},${location === 'left' ? 103.01 : 21.69},3)`}
-                x1={location === 'left' ? 103.01 : 21.69}
-                x2={location === 'left' ? 112.33 : 12.37}
-                y1={3}
-                y2={70}
+                className="AmberLine"
+                x1={location === 'left' ? 72 : 33}
+                x2={location === 'left' ? 149 : 105}
+                y1={0}
+                y2={0}
+                transform={`rotate(${location === 'left' ? -55 : 55},${location === 'left' ? 154 : 29},0)`}
             />
         );
     } else {
-        gearDoorSymbol = <text x={51} y={5} className="color-amber" fontSize={17}>XX</text>;
+        gearDoorSymbol = <text x={80} y={6} className="Amber Medium">XX</text>;
     }
 
     return (
         <SvgGroup x={x} y={y}>
-            <path className="gear-door-side-line" d="m0 0 h17.91" />
-            <path className="gear-door-side-line" d="m106.43 0 h17.91" />
+            <path className="WhiteLine" d="m0 0 h24" />
+            <path className="WhiteLine" d="m159 0 h24" />
 
             {gearDoorSymbol}
 
-            <GearDoorJoint x={location === 'left' ? 103.01 : 21.13} y={0} />
+            <GearDoorJoint x={location === 'left' ? 154 : 29} y={0} />
         </SvgGroup>
     );
 };
@@ -375,54 +364,54 @@ const LandingGearPositionIndicators = ({ x, y, location, lgciu1DiscreteWord1, lg
     let lgciu1Color = '';
     let lgciu2Color = '';
     if (lgciu1GearDownlocked && lgciu1GearNotUplocked) {
-        lgciu1Color = 'green';
+        lgciu1Color = 'Green';
     } else if (!lgciu1GearDownlocked && lgciu1GearNotUplocked) {
-        lgciu1Color = 'red';
+        lgciu1Color = 'Red';
     }
     if (lgciu2GearDownlocked && lgciu2GearNotUplocked) {
-        lgciu2Color = 'green';
+        lgciu2Color = 'Green';
     } else if (!lgciu2GearDownlocked && lgciu2GearNotUplocked) {
-        lgciu2Color = 'red';
+        lgciu2Color = 'Red';
     }
 
     return (
-        <SvgGroup x={x} y={y} className="gear-lgcius">
+        <SvgGroup x={x} y={y}>
             {(lgciu1DataValid && lgciu1GearNotUplocked) && (
-                <g className={`shape gear-lgciu-1 color-${lgciu1Color}`}>
-                    <polygon points="0,0 22,0 22,29" />
+                <g className={`${lgciu1Color}Line`}>
+                    <path d="m 0 0 h 27 v 37 z" />
                     <path d="m 6 0 v 8" />
-                    <path d="m 11 0 v 14" />
-                    <path d="m 16.5 0 v 22" />
+                    <path d="m 13 0 v 17" />
+                    <path d="m 20 0 v 27" />
                 </g>
             )}
 
             {(lgciu2DataValid && lgciu2GearNotUplocked) && (
-                <g className={`shape gear-lgciu-2 color-${lgciu2Color}`}>
-                    <polygon points="30,0 52,0 30,29" />
-                    <path d="m 36 0 v 22" />
-                    <path d="m 41 0 v 14" />
-                    <path d="m 46 0 v 8" />
+                <g className={`${lgciu2Color}Line`}>
+                    <path d="m 63 0 h -27 v 37 z" />
+                    <path d="m 43 0 v 27" />
+                    <path d="m 50 0 v 17" />
+                    <path d="m 57 0 v 8" />
                 </g>
             )}
 
             {!lgciu1DataValid && (
-                <g className="color-amber">
-                    <path d="m 0 0 h 22" className="shape" />
+                <g>
+                    <path className="AmberLine" d="m 0 0 h 27" />
 
-                    <text x={1} y={16} fontSize={17}>XX</text>
+                    <text className="Amber Standard" x={1} y={22}>XX</text>
                 </g>
             )}
 
             {!lgciu2DataValid && (
-                <g className="color-amber">
-                    <path d="m 30 0 h 22" className="shape" />
+                <g>
+                    <path className="AmberLine" d="m 63 0 h -27" />
 
-                    <text x={31} y={16} fontSize={17}>XX</text>
+                    <text className="Amber Standard" x={36} y={22}>XX</text>
                 </g>
             )}
 
             {upLockFlagShown && (
-                <text className="color-amber" x={-10} y={-18} fontSize={17}>UP LOCK</text>
+                <text className="Amber Standard" x={-16} y={-22}>UP LOCK</text>
             )}
         </SvgGroup>
     );
@@ -437,28 +426,26 @@ interface GearProps extends ComponentPositionProps {
 }
 
 const Gear = ({ x, y, location, lgciu1DiscreteWord1, lgciu2DiscreteWord1, lgciu1DiscreteWord3, lgciu2DiscreteWord3 }: GearProps) => (
-    <g transform="scale(1.1)">
-        <SvgGroup x={x} y={y}>
-            <GearDoor
-                x={0}
-                y={0}
-                location={location}
-                lgciu1DiscreteWord1={lgciu1DiscreteWord1}
-                lgciu2DiscreteWord1={lgciu2DiscreteWord1}
-                lgciu1DiscreteWord3={lgciu1DiscreteWord3}
-                lgciu2DiscreteWord3={lgciu2DiscreteWord3}
-            />
-            <LandingGearPositionIndicators
-                x={35}
-                y={7}
-                location={location}
-                lgciu1DiscreteWord1={lgciu1DiscreteWord1}
-                lgciu2DiscreteWord1={lgciu2DiscreteWord1}
-                lgciu1DiscreteWord3={lgciu1DiscreteWord3}
-                lgciu2DiscreteWord3={lgciu2DiscreteWord3}
-            />
-        </SvgGroup>
-    </g>
+    <SvgGroup x={x} y={y}>
+        <GearDoor
+            x={0}
+            y={0}
+            location={location}
+            lgciu1DiscreteWord1={lgciu1DiscreteWord1}
+            lgciu2DiscreteWord1={lgciu2DiscreteWord1}
+            lgciu1DiscreteWord3={lgciu1DiscreteWord3}
+            lgciu2DiscreteWord3={lgciu2DiscreteWord3}
+        />
+        <LandingGearPositionIndicators
+            x={60}
+            y={9}
+            location={location}
+            lgciu1DiscreteWord1={lgciu1DiscreteWord1}
+            lgciu2DiscreteWord1={lgciu2DiscreteWord1}
+            lgciu1DiscreteWord3={lgciu1DiscreteWord3}
+            lgciu2DiscreteWord3={lgciu2DiscreteWord3}
+        />
+    </SvgGroup>
 );
 
 interface WheelArchProps extends ComponentPositionProps {
@@ -468,15 +455,14 @@ interface WheelArchProps extends ComponentPositionProps {
 }
 
 const WheelArch = ({ x, y, type, green, amber }: WheelArchProps) => {
-    const classes = classNames('wheel-set-brake-arch', { green: green && !amber }, { amber });
-
-    if (type === 'top') {
-        // eslint-disable-next-line max-len
-        return <path className={classes} strokeLinecap="round" d={`m${x} ${y}c-5.6511 0.0126-11.216 1.6606-15.547 4.4688-3.4807 2.2398-5.759 5.205-6.3809 8.4629l1.4258 0.27149c0.52976-2.7753 2.5075-5.4347 5.7422-7.5156v-2e-3h2e-3c4.0708-2.6394 9.3921-4.2224 14.762-4.2344 5.3729-0.0113 10.936 1.5183 15.041 4.0859 3.2313 2.0193 5.2676 4.6167 5.8984 7.3418l1.4121-0.32617c-0.73917-3.193-3.0677-6.0756-6.541-8.2461v2e-3c-4.382-2.741-10.167-4.3204-15.815-4.3086z`} />;
+    let classes = 'ThickGreyLine';
+    if (green && !amber) {
+        classes = 'GreenLine';
+    } else if (amber) {
+        classes = 'AmberLine';
     }
 
-    // eslint-disable-next-line max-len
-    return <path className={classes} stroke="#dadadf" strokeLinecap="round" d={`m${x} ${y}c-5.6511-0.01-11.216-1.3106-15.547-3.5268-3.4807-1.7678-5.759-4.1079-6.3809-6.6791l1.4258-0.21427c0.52976 2.1903 2.5075 4.2892 5.7422 5.9315v2e-3h2e-3c4.0708 2.0831 9.3921 3.3324 14.762 3.3419 5.3729 9e-3 10.936-1.1982 15.041-3.2247 3.2313-1.5937 5.2676-3.6436 5.8984-5.7944l1.4121 0.25743c-0.73917 2.52-3.0677 4.795-6.541 6.508v-2e-3c-4.382 2.1632-10.167 3.4098-15.815 3.4005z`} />;
+    return <path className={classes} d={`m${x} ${y} a -62 -62 0 0 ${type === 'bottom' ? 0 : 1} 60 0`} />;
 };
 
 interface Brake {
@@ -495,20 +481,20 @@ const Wheels = ({ x, y, left, right }: WheelsProps) => {
 
     return (
         <SvgGroup x={x} y={y}>
-            <WheelArch x={40} y={60} type="top" green={left.hottest && left.temperature > 100} amber={left.hottest && left.temperature > 300} />
-            <WheelArch x={138} y={60} type="top" green={right.hottest && right.temperature > 100} amber={right.hottest && right.temperature > 300} />
+            <WheelArch x={0} y={0} type="top" green={left.hottest && left.temperature > 100} amber={left.hottest && left.temperature > 300} />
+            <WheelArch x={124} y={0} type="top" green={right.hottest && right.temperature > 100} amber={right.hottest && right.temperature > 300} />
 
-            <WheelArch x={40} y={227} type="bottom" />
-            <WheelArch x={138} y={227} type="bottom" />
+            <WheelArch x={0} y={103} type="bottom" />
+            <WheelArch x={124} y={103} type="bottom" />
 
-            <text className="wheel-set-brake-celsius-marker" x={73} y={57}>°C</text>
-            <text className="wheel-set-brake-rel-marker" x={77} y={81}>REL</text>
+            <text className="Cyan Standard" x={73} y={32}>°C</text>
+            <text className="Standard" x={72} y={66}>REL</text>
 
-            <text className={`wheel-set-brake-temp${left.temperature > brakeAmberThreshold ? '-amber' : ''}`} x={51} y={59}>{Math.max(0, Math.round(left.temperature / 5) * 5)}</text>
-            <text className={`wheel-set-brake-temp${right.temperature > brakeAmberThreshold ? '-amber' : ''}`} x={134} y={59}>{Math.max(0, Math.round(right.temperature / 5) * 5)}</text>
+            <text className={`${left.temperature > brakeAmberThreshold ? 'Amber' : 'Green'} Large End`} x={57} y={33}>{Math.max(0, Math.round(left.temperature / 5) * 5)}</text>
+            <text className={`${right.temperature > brakeAmberThreshold ? 'Amber' : 'Green'} Large End`} x={181} y={33}>{Math.max(0, Math.round(right.temperature / 5) * 5)}</text>
 
-            <text className="wheel-set-brake-number" x={33} y={81}>{left.number}</text>
-            <text className="wheel-set-brake-number" x={116} y={81}>{right.number}</text>
+            <text className="Large" x={22} y={66}>{left.number}</text>
+            <text className="Large" x={146} y={66}>{right.number}</text>
         </SvgGroup>
     );
 };

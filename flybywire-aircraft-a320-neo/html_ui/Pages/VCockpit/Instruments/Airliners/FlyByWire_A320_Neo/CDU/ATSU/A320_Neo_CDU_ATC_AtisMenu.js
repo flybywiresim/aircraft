@@ -198,7 +198,7 @@ class CDUAtcAtisMenu {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage2(mcdu);
+            CDUAtcMenu.ShowPage(mcdu);
         };
 
         for (let i = 0; i < 4; ++i) {
