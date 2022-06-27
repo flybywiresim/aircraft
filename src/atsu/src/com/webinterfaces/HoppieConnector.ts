@@ -183,7 +183,7 @@ export class HoppieConnector {
     }
 
     private static levenshteinDistance(template: string, message: string, content: CpdlcMessageContent[]): number {
-        let elements = message.split(' ');
+        let elements = message.replace(/\n/g, ' ').split(' ');
         let validContent = true;
 
         // try to match the content
@@ -359,11 +359,11 @@ export class HoppieConnector {
                     if (elements[3] !== '') {
                         cpdlc.PreviousTransmissionId = parseInt(elements[3]);
                     }
-                    cpdlc.Content = HoppieConnector.cpdlcMessageClassification(elements[5]);
-                    if ((elements[4] as CpdlcMessageExpectedResponseType) !== cpdlc.Content.ExpectedResponse) {
-                        cpdlc.Content.ExpectedResponse = (elements[4] as CpdlcMessageExpectedResponseType);
+                    cpdlc.Message = elements[5].replace(/@/g, '').replace(/_/g, '\n');
+                    cpdlc.Content.push(HoppieConnector.cpdlcMessageClassification(cpdlc.Message));
+                    if ((elements[4] as CpdlcMessageExpectedResponseType) !== cpdlc.Content[0]?.ExpectedResponse) {
+                        cpdlc.Content[0].ExpectedResponse = (elements[4] as CpdlcMessageExpectedResponseType);
                     }
-                    cpdlc.Message = elements[5];
 
                     retval.push(cpdlc);
                     break;

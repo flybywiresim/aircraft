@@ -141,7 +141,7 @@
       "CateringTruck": "餐车",
       "Cones": "安全锥",
       "DoorAft": "后门",
-      "DoorCargo": "Cargo Door",
+      "DoorCargo": "货舱门",
       "DoorFwd": "前门",
       "ExternalPower": "外部电源",
       "FuelTruck": "加油车",
@@ -506,7 +506,7 @@
     "flyPad": {
       "AutoBrightness": "自动调节亮度",
       "AutomaticallyShowOnscreenKeyboard": "自动显示屏幕键盘",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "模拟电池电量",
       "Blue": "蓝色",
       "Brightness": "亮度",
       "Dark": "深色",
