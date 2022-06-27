@@ -206,11 +206,13 @@ class FMCMainDisplay extends BaseAirliners {
         this.guidanceController = new Fmgc.GuidanceController(this.flightPlanManager, this.guidanceManager, this);
         this.navRadioManager = new Fmgc.NavRadioManager(this);
         this.efisSymbols = new Fmgc.EfisSymbols(this.flightPlanManager, this.guidanceController);
+        this.navigation = new Fmgc.Navigation(this.flightPlanManager);
 
         Fmgc.initFmgcLoop(this, this.flightPlanManager);
 
         this.guidanceController.init();
         this.efisSymbols.init();
+        this.navigation.init();
 
         this.tempCurve = new Avionics.Curve();
         this.tempCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
@@ -515,6 +517,10 @@ class FMCMainDisplay extends BaseAirliners {
         this.groundTempPilot = undefined;
         this.onAirport = () => { };
 
+        if (this.navigation) {
+            this.navigation.requiredPerformance.clearPilotRnp();
+        }
+
         // FMGC Message Queue
         this._messageQueue.resetQueue();
 
@@ -579,6 +585,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.fmsUpdateThrottler.canUpdate(_deltaTime) !== -1) {
             this.updateRadioNavState();
             this.checkSpeedLimit();
+            this.navigation.update();
         }
 
         this.A32NXCore.update();
@@ -4792,7 +4799,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     //TODO: Can this be util?
     getFOB() {
-        return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.453592) / 1000;
+        return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY WEIGHT", "pound") * 0.4535934) / 1000;
     }
 
     /**
@@ -4801,7 +4808,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     //TODO: Can this be util?
     getGW() {
-        return (SimVar.GetSimVarValue("TOTAL WEIGHT", "Pounds") * 0.45359237) / 1000;
+        return (SimVar.GetSimVarValue("TOTAL WEIGHT", "Pounds") * 0.4535934) / 1000;
     }
 
     //TODO: Can this be util?

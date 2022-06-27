@@ -1,6 +1,6 @@
 import React from 'react';
 
-const LINE_SPACING = 28;
+const LINE_SPACING = 30;
 const LETTER_WIDTH = 16;
 
 type FormattedFwcTextProps = {

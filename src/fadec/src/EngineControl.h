@@ -20,11 +20,11 @@
 
 /* Values in gallons */
 struct Configuration {
-    double fuelCenter = 0;
-    double fuelLeft = 400;
-    double fuelRight = fuelLeft;
-    double fuelLeftAux = 228;
-    double fuelRightAux = fuelLeftAux;
+  double fuelCenter = 0;
+  double fuelLeft = 400;
+  double fuelRight = fuelLeft;
+  double fuelLeftAux = 228;
+  double fuelRightAux = fuelLeftAux;
 };
 
 class EngineControl {
@@ -34,6 +34,7 @@ class EngineControl {
   Polynomial* poly;
   Timer timerLeft;
   Timer timerRight;
+  Timer timerFuel;
 
   std::string confFilename = FILENAME_FADEC_CONF_DIRECTORY;
 
@@ -83,8 +84,8 @@ class EngineControl {
   int engineImbalanced;
   double paramImbalance;
 
-  const double LBS_TO_KGS = 0.453592;
-  const double KGS_TO_LBS = 2.20462;
+  const double LBS_TO_KGS = 0.4535934;
+  const double KGS_TO_LBS = 1/0.4535934;
   const double FUEL_THRESHOLD = 661;  // lbs/sec
 
   bool isFlexActive = false;
@@ -662,26 +663,28 @@ class EngineControl {
   void checkPayload() {
     double fuelWeightGallon = simVars->getFuelWeightGallon();
     double aircraftEmptyWeight = simVars->getEmptyWeight();                                   // in LBS
+    double conversionFactor = simVars->getConversionFactor();
+    double perPaxWeightLbs = simVars->getPerPaxWeight() / conversionFactor;                   // in LBS
     double aircraftTotalWeight = simVars->getTotalWeight();                                   // in LBS
     double fuelTotalWeight = simVars->getFuelTotalQuantity() * fuelWeightGallon;              // in LBS
     double payloadTotalWeight = aircraftTotalWeight - aircraftEmptyWeight - fuelTotalWeight;  // in LBS
 
-    double paxRows1to6Actual = simVars->getPaxRows1to6Actual() * 185;                       // in LBS
-    double paxRows7to13Actual = simVars->getPaxRows7to13Actual() * 185;                     // in LBS
-    double paxRows14to21Actual = simVars->getPaxRows14to21Actual() * 185;                   // in LBS
-    double paxRows22to29Actual = simVars->getPaxRows22to29Actual() * 185;                   // in LBS
-    double paxRows1to6Desired = simVars->getPaxRows1to6Desired() * 185;                     // in LBS
-    double paxRows7to13Desired = simVars->getPaxRows7to13Desired() * 185;                   // in LBS
-    double paxRows14to21Desired = simVars->getPaxRows14to21Desired() * 185;                 // in LBS
-    double paxRows22to29Desired = simVars->getPaxRows22to29Desired() * 185;                 // in LBS
-    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() * KGS_TO_LBS;    // in LBS
-    double cargoAftContainerActual = simVars->getCargoAftContainerActual() * KGS_TO_LBS;    // in LBS
-    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() * KGS_TO_LBS;        // in LBS
-    double cargoAftBulkActual = simVars->getCargoAftBulkActual() * KGS_TO_LBS;              // in LBS
-    double cargoFwdContainerDesired = simVars->getCargoFwdContainerDesired() * KGS_TO_LBS;  // in LBS
-    double cargoAftContainerDesired = simVars->getCargoAftContainerDesired() * KGS_TO_LBS;  // in LBS
-    double cargoAftBaggageDesired = simVars->getCargoAftBaggageDesired() * KGS_TO_LBS;      // in LBS
-    double cargoAftBulkDesired = simVars->getCargoAftBulkDesired() * KGS_TO_LBS;            // in LBS
+    double paxRows1to6Actual = simVars->getPaxRows1to6Actual() * perPaxWeightLbs;                       // in LBS
+    double paxRows7to13Actual = simVars->getPaxRows7to13Actual() * perPaxWeightLbs;                     // in LBS
+    double paxRows14to21Actual = simVars->getPaxRows14to21Actual() * perPaxWeightLbs;                   // in LBS
+    double paxRows22to29Actual = simVars->getPaxRows22to29Actual() * perPaxWeightLbs;                   // in LBS
+    double paxRows1to6Desired = simVars->getPaxRows1to6Desired() * perPaxWeightLbs;                     // in LBS
+    double paxRows7to13Desired = simVars->getPaxRows7to13Desired() * perPaxWeightLbs;                   // in LBS
+    double paxRows14to21Desired = simVars->getPaxRows14to21Desired() * perPaxWeightLbs;                 // in LBS
+    double paxRows22to29Desired = simVars->getPaxRows22to29Desired() * perPaxWeightLbs;                 // in LBS
+    double cargoFwdContainerActual = simVars->getCargoFwdContainerActual() / conversionFactor;    // in LBS
+    double cargoAftContainerActual = simVars->getCargoAftContainerActual() / conversionFactor;    // in LBS
+    double cargoAftBaggageActual = simVars->getCargoAftBaggageActual() / conversionFactor;        // in LBS
+    double cargoAftBulkActual = simVars->getCargoAftBulkActual() / conversionFactor;              // in LBS
+    double cargoFwdContainerDesired = simVars->getCargoFwdContainerDesired() / conversionFactor;  // in LBS
+    double cargoAftContainerDesired = simVars->getCargoAftContainerDesired() / conversionFactor;  // in LBS
+    double cargoAftBaggageDesired = simVars->getCargoAftBaggageDesired() / conversionFactor;      // in LBS
+    double cargoAftBulkDesired = simVars->getCargoAftBulkDesired() / conversionFactor;            // in LBS
     double paxTotalWeightActual = (paxRows1to6Actual + paxRows7to13Actual + paxRows14to21Actual + paxRows22to29Actual);
     double paxTotalWeightDesired = (paxRows1to6Desired + paxRows7to13Desired + paxRows14to21Desired + paxRows22to29Desired);
     double cargoTotalWeightActual = (cargoFwdContainerActual + cargoAftContainerActual + cargoAftBaggageActual + cargoAftBulkActual);
@@ -821,11 +824,13 @@ class EngineControl {
         fuelLeftAux = (fuelAuxLeftPre / fuelWeightGallon);    // USG
         fuelRightAux = (fuelAuxRightPre / fuelWeightGallon);  // USG
 
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelCenter);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelCenterMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                      &fuelCenter);
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeft);
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightMain, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRight);
         SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelLeftAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelLeftAux);
-        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &fuelRightAux);
+        SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::FuelRightAux, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
+                                      &fuelRightAux);
       }
     } else if (!uiFuelTamper && refuelStartedByUser == 1) {  // Detects refueling from the EFB
       simVars->setFuelLeftPre(leftQuantity);                 // in LBS
@@ -932,9 +937,9 @@ class EngineControl {
     }
 
     // Will save the current fuel quantities if on the ground AND engines being shutdown
-    if(simVars->getSimOnGround() &&
-        (engine1State == 0 || engine1State == 10 || engine1State == 4 || engine1State == 14 ||
-        engine2State == 0 || engine2State == 10 || engine2State == 4 || engine2State == 14)) {
+    if (timerFuel.elapsed() >= 1000 && simVars->getSimOnGround() &&
+        (engine1State == 0 || engine1State == 10 || engine1State == 4 || engine1State == 14 || engine2State == 0 || engine2State == 10 ||
+         engine2State == 4 || engine2State == 14)) {
       Configuration configuration;
 
       configuration.fuelLeft = simVars->getFuelLeftPre() / simVars->getFuelWeightGallon();
@@ -944,6 +949,7 @@ class EngineControl {
       configuration.fuelRightAux = simVars->getFuelAuxRightPre() / simVars->getFuelWeightGallon();
 
       saveFuelInConfiguration(configuration);
+      timerFuel.reset();
     }
   }
 
@@ -1056,7 +1062,7 @@ class EngineControl {
   /// <summary>
   /// Initialize the FADEC and Fuel model
   /// </summary>
-  void initialize(const char * acftRegistration) {
+  void initialize(const char* acftRegistration) {
     std::cout << "FADEC: Initializing EngineControl" << std::endl;
 
     simVars = new SimVars();
@@ -1250,8 +1256,9 @@ class EngineControl {
     mINI::INIFile iniFile(confFilename);
 
     if (!iniFile.read(stInitStructure)) {
-      std::cout << "EngineControl: failed to read configuration file " << confFilename << " due to error \"" << strerror(errno) << "\" -> use default main/aux/center: " <<
-        configuration.fuelLeft << "/" << configuration.fuelLeftAux << "/" << configuration.fuelCenter << std::endl;
+      std::cout << "EngineControl: failed to read configuration file " << confFilename << " due to error \"" << strerror(errno)
+                << "\" -> use default main/aux/center: " << configuration.fuelLeft << "/" << configuration.fuelLeftAux << "/"
+                << configuration.fuelCenter << std::endl;
     } else {
       configuration = loadConfiguration(stInitStructure);
     }
@@ -1261,11 +1268,11 @@ class EngineControl {
 
   Configuration loadConfiguration(const mINI::INIStructure& structure) {
     return {
-      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY, 0),
-      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY, 400.0),
-      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY, 400.0),
-      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY, 228.0),
-      mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY, 228.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_CENTER_QUANTITY, 0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_QUANTITY, 400.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_QUANTITY, 400.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY, 228.0),
+        mINI::INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_FUEL, CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY, 228.0),
     };
   }
 
@@ -1282,8 +1289,9 @@ class EngineControl {
     stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_LEFT_AUX_QUANTITY] = std::to_string(configuration.fuelLeftAux);
     stInitStructure[CONFIGURATION_SECTION_FUEL][CONFIGURATION_SECTION_FUEL_RIGHT_AUX_QUANTITY] = std::to_string(configuration.fuelRightAux);
 
-    if(!iniFile.write(stInitStructure, true)) {
-      std::cout << "EngineControl: failed to write engine conf " << confFilename << " due to error \"" << strerror(errno) << "\"" << std::endl;
+    if (!iniFile.write(stInitStructure, true)) {
+      std::cout << "EngineControl: failed to write engine conf " << confFilename << " due to error \"" << strerror(errno) << "\""
+                << std::endl;
     }
   }
 };

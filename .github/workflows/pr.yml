@@ -56,6 +56,7 @@ jobs:
           echo CLIENT_SECRET=${{ secrets.NAVIGRAPH_CLIENT_SECRET }} >> .env
           echo CHARTFOX_SECRET=${{ secrets.CHARTFOX_SECRET }} >> .env
           echo SENTRY_DSN=${{ secrets.SENTRY_DSN }} >> .env
+          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh

@@ -220,6 +220,8 @@ export type GaugeMarkerComponentType = {
     startAngle: number,
     endAngle: number,
     className: string,
+    textClassName?: string,
+    useCentralAlignmentBaseline?: boolean
     showValue?: boolean,
     indicator?: boolean,
     outer?: boolean,
@@ -229,11 +231,12 @@ export type GaugeMarkerComponentType = {
     textNudgeY?: number,
     halfIndicator?: boolean
     bold?: boolean,
+    roundLinecap?: boolean,
 };
 
 export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
-    value, x, y, min, max, radius, startAngle, endAngle, className, showValue,
-    indicator, outer, multiplierOuter = 1.15, multiplierInner = 0.85, textNudgeX = 0, textNudgeY = 0, bold, halfIndicator = false,
+    value, x, y, min, max, radius, startAngle, endAngle, className, textClassName = 'GaugeText', useCentralAlignmentBaseline = true, showValue,
+    indicator, outer, multiplierOuter = 1.15, multiplierInner = 0.85, textNudgeX = 0, textNudgeY = 0, bold, halfIndicator = false, roundLinecap = false,
 }) => {
     const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle });
 
@@ -280,8 +283,8 @@ export const GaugeMarkerComponent: FC<GaugeMarkerComponentType> = memo(({
 
     return (
         <>
-            <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} strokeWidth={bold ? 2 : undefined} className={className} />
-            <text x={pos.x} y={pos.y} className="GaugeText" alignmentBaseline="central" textAnchor="middle">{textValue}</text>
+            <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} strokeWidth={bold ? 2 : undefined} className={className} strokeLinecap={roundLinecap ? 'round' : 'square'} />
+            <text x={pos.x} y={pos.y} className={textClassName} alignmentBaseline={useCentralAlignmentBaseline ? 'central' : 'auto'} textAnchor="middle">{textValue}</text>
         </>
     );
 });

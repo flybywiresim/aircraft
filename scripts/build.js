@@ -75,13 +75,7 @@ const title = `A32NX (${titlePostfix})`;
 function copyDDSFiles(src_dds) {
     const TARGET_PATH = '/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds';
     // destination will be created or overwritten by default.
-    fs.copyFile(path.join(path.resolve(__dirname, '..', 'src'), src_dds), path.join(A32NX, TARGET_PATH),
-        (err) => {
-            if (err) {
-                throw err;
-            }
-            console.log('copying ' + src_dds + ` to ` + TARGET_PATH + "failed: " + err);
-        });
+    fs.copyFileSync(path.join(path.resolve(__dirname, '..', 'src'), src_dds), path.join(A32NX, TARGET_PATH));
 }
 
 if (edition === 'stable') {

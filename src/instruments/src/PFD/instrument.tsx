@@ -182,6 +182,9 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher.subscribe('daRaw');
         this.simVarPublisher.subscribe('ls1Button');
         this.simVarPublisher.subscribe('ls2Button');
+        this.simVarPublisher.subscribe('xtk');
+        this.simVarPublisher.subscribe('ldevRequestLeft');
+        this.simVarPublisher.subscribe('ldevRequestRight');
 
         FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
     }
