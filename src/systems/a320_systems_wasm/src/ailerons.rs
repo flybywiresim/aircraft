@@ -55,8 +55,9 @@ pub(super) fn ailerons(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Er
         |values| {
             const SPOILER_ROLL_COEFF: f64 = 0.5;
             const AILERON_ROLL_COEFF: f64 = 0.7;
-            let elevator_roll_component = 0.2 * (values[3] - values[2]);
+            const ELEVATOR_ROLL_COEFF: f64 = 0.2;
 
+            let elevator_roll_component = ELEVATOR_ROLL_COEFF * (values[3] - values[2]);
             let aileron_roll_asymetry = AILERON_ROLL_COEFF * (values[1] - values[0]);
             let spoiler_roll_asymetry = SPOILER_ROLL_COEFF * (values[5] - values[4]);
 

@@ -367,6 +367,9 @@ impl A320AileronFactory {
 
     fn new_a320_aileron_aero_model() -> AerodynamicModel {
         let body = Self::a320_aileron_body(true);
+
+        // Aerodynamic object has a little rotation from horizontal direction so that at X°
+        // of wing AOA the aileron gets some X°+Y° AOA as the overwing pressure sucks the aileron up
         AerodynamicModel::new(
             &body,
             Some(Vector3::new(0., 1., 0.)),
